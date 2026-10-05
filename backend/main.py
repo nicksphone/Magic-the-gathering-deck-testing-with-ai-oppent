@@ -107,6 +107,8 @@ SIM_JOBS_LOCK = threading.Lock()
 SIM_START_LOCK = threading.Lock()
 SIM_WORK_SLOT = threading.BoundedSemaphore(1)
 SIM_JOBS_CACHE_LIMIT = 20
+# Single-process new-job row quota; preserves existing results and retry keys.
+SIM_JOBS_ROW_LIMIT = 10000
 DIAGNOSTICS_ROOT = Path(__file__).resolve().parent / "diagnostics"
 
 
@@ -1011,6 +1013,12 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
             if original != requested:
                 raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This start key already identifies a different simulation request"})
             return {"job_id": key, "status": row.status if row is not None else existing["status"]}
+    if repo.count_simulation_jobs() >= SIM_JOBS_ROW_LIMIT:
+        raise HTTPException(status_code=429, detail={
+            "code": "simulation_job_quota_exceeded",
+            "message": "Stored simulation job limit reached; operator maintenance is required",
+            "limit": SIM_JOBS_ROW_LIMIT,
+        })
     deck_a = _validated_deck_cards(repo, payload.deck_a)
     deck_b = _validated_deck_cards(repo, payload.deck_b)
     if not SIM_WORK_SLOT.acquire(blocking=False):

@@ -1,0 +1,183 @@
+[
+  {
+    "colors": [
+      "U"
+    ],
+    "layout": "",
+    "mana_cost": "{U}{U}",
+    "name": "Counterspell",
+    "oracle_text": "Counter target spell.",
+    "scryfall_id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "type_line": "Instant"
+  },
+  {
+    "colors": [
+      "B"
+    ],
+    "layout": "",
+    "mana_cost": "{B}",
+    "name": "Fatal Push",
+    "oracle_text": "Destroy target creature if it has mana value 2 or less.\nRevolt — Destroy that creature if it has mana value 4 or less instead if a permanent left the battlefield under your control this turn.",
+    "scryfall_id": "6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7",
+    "type_line": "Instant"
+  },
+  {
+    "colors": [
+      "W"
+    ],
+    "layout": "",
+    "mana_cost": "{1}{W}",
+    "name": "Intangible Virtue",
+    "oracle_text": "Creature tokens you control get +1/+1 and have vigilance.",
+    "scryfall_id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77",
+    "type_line": "Enchantment"
+  },
+  {
+    "layout": "",
+    "mana_cost": "",
+    "name": "Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "scryfall_id": "77b88bb8-6bd9-4632-b937-89468fcb5e6a",
+    "type_line": "Basic Land — Island"
+  },
+  {
+    "colors": [
+      "R"
+    ],
+    "layout": "",
+    "mana_cost": "{R}",
+    "name": "Lava Spike",
+    "oracle_text": "Lava Spike deals 3 damage to target player or planeswalker.",
+    "scryfall_id": "79c21c1f-eaa4-454d-a1c7-b41466d0a428",
+    "type_line": "Sorcery — Arcane"
+  },
+  {
+    "colors": [
+      "R"
+    ],
+    "layout": "",
+    "mana_cost": "{R}",
+    "name": "Lightning Bolt",
+    "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+    "scryfall_id": "77c6fa74-5543-42ac-9ead-0e890b188e99",
+    "type_line": "Instant"
+  },
+  {
+    "colors": [
+      "W"
+    ],
+    "layout": "normal",
+    "mana_cost": "{1}{W}",
+    "name": "Rest in Peace",
+    "oracle_text": "When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
+    "scryfall_id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+    "type_line": "Enchantment"
+  },
+  {
+    "colors": [
+      "B"
+    ],
+    "layout": "",
+    "mana_cost": "{2}{B}{B}",
+    "name": "Sheoldred, the Apocalypse",
+    "oracle_text": "Deathtouch\nWhenever you draw a card, you gain 2 life.\nWhenever an opponent draws a card, they lose 2 life.",
+    "power": "4",
+    "scryfall_id": "d67be074-cdd4-41d9-ac89-0a0456c4e4b2",
+    "toughness": "5",
+    "type_line": "Legendary Creature — Phyrexian Praetor"
+  },
+  {
+    "colors": [
+      "R"
+    ],
+    "layout": "",
+    "mana_cost": "{R}",
+    "name": "Soul-Scar Mage",
+    "oracle_text": "Prowess\nIf a source you control would deal noncombat damage to a creature an opponent controls, put that many -1/-1 counters on that creature instead.",
+    "power": "1",
+    "scryfall_id": "a8003786-6e2a-4e2d-a915-f23293c7273a",
+    "toughness": "2",
+    "type_line": "Creature — Human Wizard"
+  },
+  {
+    "colors": [
+      "R",
+      "U"
+    ],
+    "layout": "",
+    "mana_cost": "{U}{R}",
+    "name": "Sprite Dragon",
+    "oracle_text": "Flying, haste\nWhenever you cast a noncreature spell, put a +1/+1 counter on this creature.",
+    "power": "1",
+    "scryfall_id": "361385d8-d9c7-4de8-a5c8-683e682779f4",
+    "toughness": "1",
+    "type_line": "Creature — Faerie Dragon"
+  },
+  {
+    "colors": [
+      "W"
+    ],
+    "layout": "",
+    "mana_cost": "{1}{W}",
+    "name": "Thalia, Guardian of Thraben",
+    "oracle_text": "First strike\nNoncreature spells cost {1} more to cast.",
+    "power": "2",
+    "scryfall_id": "c9f8b8fb-1cd8-450e-a1fe-892e7a323479",
+    "toughness": "1",
+    "type_line": "Legendary Creature — Human Soldier"
+  },
+  {
+    "colors": [
+      "G"
+    ],
+    "layout": "",
+    "mana_cost": "{1}{G}{G}",
+    "name": "Topiary Stomper",
+    "oracle_text": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhen this creature enters, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nThis creature can't attack or block unless you control seven or more lands.",
+    "power": "4",
+    "scryfall_id": "e8b92271-4412-4165-a4a6-e8653e755107",
+    "toughness": "4",
+    "type_line": "Creature — Plant Dinosaur"
+  },
+  {
+    "colors": [
+      "U"
+    ],
+    "layout": "",
+    "mana_cost": "{4}{U}{U}",
+    "name": "Torrential Gearhulk",
+    "oracle_text": "Flash\nWhen this creature enters, you may cast target instant card from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead.",
+    "power": "5",
+    "scryfall_id": "92872fea-2fb4-4154-815e-cad9d966e60f",
+    "toughness": "6",
+    "type_line": "Artifact Creature — Construct"
+  },
+  {
+    "layout": "",
+    "loyalty": "7",
+    "mana_cost": "{8}",
+    "name": "Ugin, the Spirit Dragon",
+    "oracle_text": "+2: Ugin deals 3 damage to any target.\n−X: Exile each permanent with mana value X or less that's one or more colors.\n−10: You gain 7 life, draw seven cards, then put up to seven permanent cards from your hand onto the battlefield.",
+    "scryfall_id": "9c017fa9-7021-417a-9c2e-3df409644fcf",
+    "type_line": "Legendary Planeswalker — Ugin"
+  },
+  {
+    "colors": [
+      "R"
+    ],
+    "layout": "",
+    "mana_cost": "{R}",
+    "name": "Unholy Heat",
+    "oracle_text": "Unholy Heat deals 2 damage to target creature or planeswalker.\nDelirium — Unholy Heat deals 6 damage instead if there are four or more card types among cards in your graveyard.",
+    "scryfall_id": "4e879386-b1f8-4f2a-9820-6e1291746f88",
+    "type_line": "Instant"
+  },
+  {
+    "layout": "",
+    "mana_cost": "{1}",
+    "name": "Witch's Oven",
+    "oracle_text": "{T}, Sacrifice a creature: Create a Food token. If the sacrificed creature's toughness was 4 or greater, create two Food tokens instead. (They're artifacts with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "scryfall_id": "04ef8493-d986-45f8-a718-617b028f7ad4",
+    "type_line": "Artifact"
+  }
+]

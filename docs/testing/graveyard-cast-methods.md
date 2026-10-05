@@ -43,7 +43,8 @@ lists were invented or changed.
   files exactly once. Four initially DB-free copies match 714 source hashes.
   The complete browser suite also passes. RCHFiles evidence:
   `diagnostics/strategic-draw-counts/20261005T102232Z/graveyard-cast-methods/full-qualification`.
-  Combined integration and broader tactical acceptance remain open.
+  Combined integration is complete in the consolidated main runtime; broader
+  tactical acceptance remains open.
 
 ## Known Limitations And Next Upgrades
 
@@ -54,5 +55,6 @@ Free prototype currently has a cost-collection regression; broader free-cast UI
 and resolution combinations need acceptance coverage. These fixtures do not
 certify every independent ability on the canonical cards.
 
-The candidate is isolated; main/live are unchanged. Successful games and replay
-repeatability are not proof of arbitrary-card fidelity, balance or expert AI.
+This bounded family is integrated into the consolidated main runtime.
+Successful games and replay repeatability are not proof of arbitrary-card
+fidelity, balance or expert AI.

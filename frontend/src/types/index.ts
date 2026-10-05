@@ -151,6 +151,7 @@ export type MatchState = {
 };
 
 export type LegalMove = {
+  inspected_cards?: CardView[];
   outputs?: Record<string, number>;
   cost_text?: string;
   cast_variant?: 'bestow';

@@ -478,6 +478,7 @@ def infer_effect_from_oracle(
         payload = {
             "top_n": _parse_count_token(creature_to_hand.group(1)),
             "bottom_random": "bottom" in oracle and "random order" in oracle,
+            "bottom_any_order": "bottom of your library in any order" in oracle,
             "optional": "may reveal" in oracle,
         }
         payload["power_max" if creature_to_hand.group(2) == "power" else "mv_max"] = int(creature_to_hand.group(3))
@@ -530,6 +531,14 @@ def infer_effect_from_oracle(
             'target_card_id': action_targets.get('target_card_id'),
             'lose_life_equal_to_mana_value': True,
         }
+    from rules_engine.conditional_instructions import conditional_effect, instruction_gaps
+    conditional = conditional_effect(state, oracle, card.name, action_targets)
+    if conditional is not None:
+        return conditional
+    if instruction_gaps(oracle, card.name):
+        if report_unsupported:
+            state.log.append(f'Unsupported resolution conditional instruction for {card.name}.')
+        return 'noop', {}
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any], str]] = []
     for clause in clauses:
@@ -1186,6 +1195,10 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
     future stack-resolution rechecks.
     """
     oracle = without_reminder_text((oracle_text or "").lower())
+    from rules_engine.conditional_instructions import parse_instruction
+    conditional = parse_instruction(oracle)
+    if conditional and conditional['effect_key'] == 'destroy_permanent':
+        return {'allowed_types': ['Creature']}
     restrictions: dict[str, Any] = {}
     if "nonartifact" in oracle:
         restrictions.setdefault("exclude_types", []).append("Artifact")

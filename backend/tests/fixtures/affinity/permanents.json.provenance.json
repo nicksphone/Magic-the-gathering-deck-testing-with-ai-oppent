@@ -1,0 +1,55 @@
+{
+  "source_url": "https://api.scryfall.com/cards/collection",
+  "identifiers": [
+    {
+      "name": "Universal Automaton"
+    },
+    {
+      "name": "Llanowar Elves"
+    },
+    {
+      "name": "Gingerbrute"
+    },
+    {
+      "name": "Basilisk Gate"
+    },
+    {
+      "name": "Seat of the Synod"
+    },
+    {
+      "name": "Snow-Covered Forest"
+    },
+    {
+      "name": "Hallowed Fountain"
+    },
+    {
+      "name": "Blood Moon"
+    },
+    {
+      "name": "Urborg, Tomb of Yawgmoth"
+    },
+    {
+      "name": "Humility"
+    },
+    {
+      "name": "Ornithopter"
+    },
+    {
+      "name": "Bitterblossom"
+    },
+    {
+      "name": "Urza's Saga"
+    },
+    {
+      "name": "Darksteel Citadel"
+    }
+  ],
+  "fetched_at": "2026-10-05T17:06:18.672Z",
+  "sha256": "bbba27b92d8c419aa80f39acbcf572ab82751edd82ba835508996be8181679ee",
+  "additional_sources": [
+    {
+      "source_url": "https://api.scryfall.com/cards/named?exact=Chromatic%20Star",
+      "fetched_at": "2026-10-05T17:11:24.989Z"
+    }
+  ]
+}

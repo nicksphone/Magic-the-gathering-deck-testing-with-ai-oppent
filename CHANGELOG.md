@@ -51,6 +51,25 @@
 - Add both-seat browser coverage and isolated engine replay, including stale
   draft selection, ineligible creatures and duplicate-click prevention.
 
+## Shared Affinity Costs - 2026-10-05
+
+- Preserve private top-card inspections even when no card qualifies; require
+  acknowledgement instead of silently skipping the human inspection window.
+- Resolve supported revolt destruction and delirium damage conditions from the
+  current game state rather than combining mutually exclusive instructions.
+- Add affinity to shared legality/payment/AI cost determination, including
+  current controlled permanent selectors and unconditional spell grants.
+- Preserve printed costs/mana values and non-generic mana requirements;
+  report unsupported conditional and next-spell grant clauses explicitly.
+- Share current land types with domain and printed changeling subtypes with
+  applicable type-dependent rules; do not alter printed card data.
+- Add canonical card provenance and both-seat rules, HTTP persistence and
+  production AI decision tests. No deck or card balance was altered.
+- Reconcile the announced-cost integration note with the completed consolidated
+  gate; broad rules, expert AI and release acceptance remain unfinished.
+- Bound new background simulator jobs to 10,000 persisted rows without deleting
+  results or retry keys; preserve existing-key replay before admission checks.
+
 ## Autoplay Deadline And Rejected Key Prototype - 2026-10-05
 
 - Give autoplay the existing bounded long-request timeout rather than the

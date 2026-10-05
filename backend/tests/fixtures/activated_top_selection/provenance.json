@@ -1,0 +1,19 @@
+{
+  "source": "Scryfall canonical named-card endpoint",
+  "fetched_date_utc": "2026-10-05",
+  "request": "GET https://api.scryfall.com/cards/named?exact=<URL-encoded canonical name>",
+  "cards": [
+    "Recruitment Officer",
+    "Savannah Lions",
+    "Llanowar Elves",
+    "Serra Angel",
+    "Opt",
+    "Forest",
+    "Militia Bugler",
+    "Plains",
+    "Narset, Parter of Veils",
+    "Impulse",
+    "Memory Deluge"
+  ],
+  "format": "Unmodified full Scryfall JSON responses, including Oracle IDs and canonical URI. Test instances retain canonical characteristics."
+}

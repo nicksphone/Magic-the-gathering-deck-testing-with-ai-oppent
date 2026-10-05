@@ -47,10 +47,17 @@ and the mana-value permission follows the official
   `diagnostics/strategic-draw-counts/20261005T102232Z/limited-graveyard-permissions/full-qualification`.
 - The predecessor runtime passes 8,784 full backend tests across 353 files and
   the complete browser suite; this is not qualification of the successor.
+- The subsequent natural review finished: three seat-balanced pairs, six
+  unique games and twelve deterministic executions. All twelve reconstruct and
+  match the predecessor result/log; no determinism or classified anomaly was
+  reported. Repeats are not independent balance samples. The scalar review
+  and full traces are archived in `limited-graveyard-permission-natural` under
+  the same diagnostics root.
 
 ## Known Limitations And Next Upgrades
 
-Finish seeded decision review and integration qualification, then qualify
+The implemented permission family is included in the qualified consolidated
+main runtime; natural reconstruction review is complete. Next qualify
 duration, granted/replaced abilities, dynamic source/type layering and complete
 casting-announcement ordering. Source-incarnation ledgers do not claim complete
 ability-instance lifecycle handling. Alternate casting methods and source/type
@@ -58,6 +65,6 @@ opportunity-cost decisions need broader fixtures and tactical evidence.
 
 Removing the permission-family diagnostic does not certify every other ability
 on these cards: companion setup and other independent mechanics need their own
-acceptance. This candidate is isolated; main/live are unchanged. Natural samples
+acceptance. Historical candidate-only results are not new release gates. Natural samples
 and deterministic repeats are not evidence of universal rules fidelity,
 competitive balance or expert-level AI.

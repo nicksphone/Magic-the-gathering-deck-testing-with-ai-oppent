@@ -1,0 +1,818 @@
+{
+  "p1-015": {
+    "id": "p1-015",
+    "name": "Hopeful Initiate",
+    "owner": 1,
+    "controller": 1,
+    "zone": "graveyard",
+    "types": [
+      "Creature"
+    ],
+    "is_token": false,
+    "mana_cost": "{W}",
+    "power": 1,
+    "toughness": 2,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 23,
+    "counters": {},
+    "keywords": [
+      "training"
+    ],
+    "oracle_text": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\n{2}{W}, Remove two +1/+1 counters from among creatures you control: Destroy target artifact or enchantment.",
+    "type_line": "Creature — Human Warlock",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": [
+      "W"
+    ],
+    "last_known_battlefield": {
+      "name": "Hopeful Initiate",
+      "oracle_text": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\n{2}{W}, Remove two +1/+1 counters from among creatures you control: Destroy target artifact or enchantment.",
+      "types": [
+        "Creature"
+      ],
+      "controller": 1,
+      "power": 3,
+      "toughness": 4,
+      "keywords": [
+        "training"
+      ],
+      "keyword_counts": {
+        "training": 1
+      },
+      "counters": {
+        "+1/+1": 1,
+        "__damage_marked": 4
+      },
+      "colors": [
+        "W"
+      ],
+      "color_names": [
+        "white"
+      ],
+      "selected_face_index": null,
+      "battlefield_incarnation": 39,
+      "effect_timestamp": 39,
+      "was_kicked": false,
+      "printed_abilities_suppressed": false
+    }
+  },
+  "p1-016": {
+    "id": "p1-016",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p1-036": {
+    "id": "p1-036",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p1-044": {
+    "id": "p1-044",
+    "name": "Adeline, Resplendent Cathar",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Creature"
+    ],
+    "is_token": false,
+    "mana_cost": "{1}{W}{W}",
+    "power": 4,
+    "toughness": 4,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 13,
+    "counters": {},
+    "keywords": [
+      "vigilance"
+    ],
+    "oracle_text": "Vigilance\nAdeline's power is equal to the number of creatures you control.\nWhenever you attack, for each opponent, create a 1/1 white Human creature token that's tapped and attacking that player or a planeswalker they control.",
+    "type_line": "Legendary Creature — Human Knight",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": [
+      "W"
+    ],
+    "last_known_battlefield": {}
+  },
+  "p1-045": {
+    "id": "p1-045",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p1-046": {
+    "id": "p1-046",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p1-052": {
+    "id": "p1-052",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p1-053": {
+    "id": "p1-053",
+    "name": "Wedding Festivity",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Enchantment"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 5,
+    "counters": {
+      "invitation": 3
+    },
+    "keywords": [],
+    "oracle_text": "Creatures you control get +1/+1.",
+    "type_line": "Enchantment",
+    "selected_face_index": 1,
+    "card_faces": [
+      {
+        "name": "Wedding Announcement",
+        "mana_cost": "{2}{W}",
+        "type_line": "Enchantment",
+        "oracle_text": "At the beginning of your end step, put an invitation counter on this enchantment. If you attacked with two or more creatures this turn, draw a card. Otherwise, create a 1/1 white Human creature token. Then if this enchantment has three or more invitation counters on it, transform it.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": [
+          "W"
+        ],
+        "image_uri": "https://cards.scryfall.io/normal/front/4/e/4e6f365d-c5c4-4fd6-94cb-833b89239d73.jpg?1783908174"
+      },
+      {
+        "name": "Wedding Festivity",
+        "mana_cost": "",
+        "type_line": "Enchantment",
+        "oracle_text": "Creatures you control get +1/+1.",
+        "power": null,
+        "toughness": null,
+        "loyalty": null,
+        "colors": [
+          "W"
+        ],
+        "image_uri": "https://cards.scryfall.io/normal/back/4/e/4e6f365d-c5c4-4fd6-94cb-833b89239d73.jpg?1783908174"
+      }
+    ],
+    "colors": [
+      "W"
+    ],
+    "last_known_battlefield": {}
+  },
+  "p1-056": {
+    "id": "p1-056",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p1-057": {
+    "id": "p1-057",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p1-059": {
+    "id": "p1-059",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p1-060": {
+    "id": "p1-060",
+    "name": "Plains",
+    "owner": 1,
+    "controller": 1,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {W}.)",
+    "type_line": "Basic Land — Plains",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-009": {
+    "id": "p2-009",
+    "name": "Topiary Stomper",
+    "owner": 2,
+    "controller": 2,
+    "zone": "graveyard",
+    "types": [
+      "Creature"
+    ],
+    "is_token": false,
+    "mana_cost": "{1}{G}{G}",
+    "power": 4,
+    "toughness": 4,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 22,
+    "counters": {},
+    "keywords": [
+      "vigilance"
+    ],
+    "oracle_text": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhen this creature enters, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nThis creature can't attack or block unless you control seven or more lands.",
+    "type_line": "Creature — Plant Dinosaur",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": [
+      "G"
+    ],
+    "last_known_battlefield": {
+      "name": "Topiary Stomper",
+      "oracle_text": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhen this creature enters, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nThis creature can't attack or block unless you control seven or more lands.",
+      "types": [
+        "Creature"
+      ],
+      "controller": 2,
+      "power": 4,
+      "toughness": 4,
+      "keywords": [
+        "vigilance"
+      ],
+      "keyword_counts": {
+        "vigilance": 1
+      },
+      "counters": {
+        "__damage_marked": 4
+      },
+      "colors": [
+        "G"
+      ],
+      "color_names": [
+        "green"
+      ],
+      "selected_face_index": null,
+      "battlefield_incarnation": 37,
+      "effect_timestamp": 37,
+      "was_kicked": false,
+      "printed_abilities_suppressed": false
+    }
+  },
+  "p2-020": {
+    "id": "p2-020",
+    "name": "The Meathook Massacre",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Enchantment"
+    ],
+    "is_token": false,
+    "mana_cost": "{X}{B}{B}",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 20,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "When The Meathook Massacre enters, each creature gets -X/-X until end of turn.\nWhenever a creature you control dies, each opponent loses 1 life.\nWhenever a creature an opponent controls dies, you gain 1 life.",
+    "type_line": "Legendary Enchantment",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": [
+      "B"
+    ],
+    "last_known_battlefield": {}
+  },
+  "p2-041": {
+    "id": "p2-041",
+    "name": "Swamp",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {B}.)",
+    "type_line": "Basic Land — Swamp",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-042": {
+    "id": "p2-042",
+    "name": "Forest",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 22,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {G}.)",
+    "type_line": "Basic Land — Forest",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-043": {
+    "id": "p2-043",
+    "name": "Forest",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 10,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {G}.)",
+    "type_line": "Basic Land — Forest",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-046": {
+    "id": "p2-046",
+    "name": "Forest",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {G}.)",
+    "type_line": "Basic Land — Forest",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-047": {
+    "id": "p2-047",
+    "name": "Forest",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 6,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {G}.)",
+    "type_line": "Basic Land — Forest",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-052": {
+    "id": "p2-052",
+    "name": "Swamp",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {B}.)",
+    "type_line": "Basic Land — Swamp",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-053": {
+    "id": "p2-053",
+    "name": "Topiary Stomper",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Creature"
+    ],
+    "is_token": false,
+    "mana_cost": "{1}{G}{G}",
+    "power": 4,
+    "toughness": 4,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 10,
+    "counters": {},
+    "keywords": [
+      "vigilance"
+    ],
+    "oracle_text": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhen this creature enters, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nThis creature can't attack or block unless you control seven or more lands.",
+    "type_line": "Creature — Plant Dinosaur",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": [
+      "G"
+    ],
+    "last_known_battlefield": {}
+  },
+  "p2-054": {
+    "id": "p2-054",
+    "name": "Forest",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {G}.)",
+    "type_line": "Basic Land — Forest",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-055": {
+    "id": "p2-055",
+    "name": "Forest",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Land"
+    ],
+    "is_token": false,
+    "mana_cost": "",
+    "power": null,
+    "toughness": null,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": true,
+    "summoning_sick": false,
+    "entered_turn": 0,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "({T}: Add {G}.)",
+    "type_line": "Basic Land — Forest",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": null,
+    "last_known_battlefield": {}
+  },
+  "p2-057": {
+    "id": "p2-057",
+    "name": "Topiary Stomper",
+    "owner": 2,
+    "controller": 2,
+    "zone": "battlefield",
+    "types": [
+      "Creature"
+    ],
+    "is_token": false,
+    "mana_cost": "{1}{G}{G}",
+    "power": 4,
+    "toughness": 4,
+    "printed_power": null,
+    "printed_toughness": null,
+    "tapped": false,
+    "summoning_sick": false,
+    "entered_turn": 6,
+    "counters": {},
+    "keywords": [
+      "vigilance"
+    ],
+    "oracle_text": "Vigilance (Attacking doesn't cause this creature to tap.)\nWhen this creature enters, search your library for a basic land card, put it onto the battlefield tapped, then shuffle.\nThis creature can't attack or block unless you control seven or more lands.",
+    "type_line": "Creature — Plant Dinosaur",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": [
+      "G"
+    ],
+    "last_known_battlefield": {}
+  },
+  "00000000-0000-0000-0000-000000000036": {
+    "id": "00000000-0000-0000-0000-000000000036",
+    "name": "Human",
+    "owner": 1,
+    "controller": 1,
+    "zone": "ceased",
+    "types": [
+      "Creature",
+      "Token"
+    ],
+    "is_token": true,
+    "mana_cost": "",
+    "power": 1,
+    "toughness": 1,
+    "printed_power": "1",
+    "printed_toughness": "1",
+    "tapped": true,
+    "summoning_sick": true,
+    "entered_turn": 25,
+    "counters": {},
+    "keywords": [],
+    "oracle_text": "",
+    "type_line": "Token Creature — Human",
+    "selected_face_index": null,
+    "card_faces": [],
+    "colors": [
+      "W"
+    ],
+    "last_known_battlefield": {
+      "name": "Human",
+      "oracle_text": "",
+      "types": [
+        "Creature",
+        "Token"
+      ],
+      "controller": 1,
+      "power": 2,
+      "toughness": 2,
+      "keywords": [],
+      "keyword_counts": {},
+      "counters": {
+        "__damage_marked": 4
+      },
+      "colors": [
+        "W"
+      ],
+      "color_names": [
+        "white"
+      ],
+      "selected_face_index": null,
+      "battlefield_incarnation": 41,
+      "effect_timestamp": 41,
+      "was_kicked": false,
+      "printed_abilities_suppressed": false
+    }
+  }
+}

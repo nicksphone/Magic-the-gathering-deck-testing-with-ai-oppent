@@ -74,6 +74,8 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         return []
     if state.pending_mechanic_choice:
         pending = state.pending_mechanic_choice
+        if pending['player_id'] != player_id:
+            return []
         if pending['kind'] == 'effect_cast':
             from rules_engine.effect_casts import cast_moves
             return cast_moves(state, player_id)
@@ -85,8 +87,13 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                      "options": list(pending["options"]), "count": pending["count"],
                      "label": pending["label"], "option_labels": labels,
                      "option_type_lines": type_lines}] if pending["player_id"] == player_id else []
+        inspection = {}
+        if pending.get('inspected_card_ids'):
+            from game_state.serializers import serialize_card_view
+            inspection['inspected_cards'] = [serialize_card_view(state, cid)
+                                             for cid in pending['inspected_card_ids']]
         return [{"type": "choose_mechanic", **pending, "option_labels": labels,
-                 "option_type_lines": type_lines}] if pending["player_id"] == player_id else []
+                 "option_type_lines": type_lines, **inspection}]
     pending_order = getattr(state, "pending_trigger_order", None)
     if pending_order:
         if int(pending_order.get("current_controller", -1)) != player_id:

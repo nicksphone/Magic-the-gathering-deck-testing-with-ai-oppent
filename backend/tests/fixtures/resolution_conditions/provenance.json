@@ -1,0 +1,141 @@
+{
+  "base_commit": "2207fd8c2d28773a89b4b5575617e6bb9d16ef3f",
+  "policy": "Existing Scryfall-backed seed/fixture records, extracted without changing printed fields. No new retrieval.",
+  "files": [
+    {
+      "file": "seed-cards.json",
+      "source_path": "backend/card_data/builtin_oracle_seed.json",
+      "sha256": "995493d00eba3bb6a01687a1d40887779b1dc101a9ac5b5b6b90bb17b2f7bb8e",
+      "cards": [
+        {
+          "name": "Counterspell",
+          "scryfall_id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+          "source": "https://api.scryfall.com/cards/4f616706-ec97-4923-bb1e-11a69fbaa1f8"
+        },
+        {
+          "name": "Fatal Push",
+          "scryfall_id": "6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7",
+          "source": "https://api.scryfall.com/cards/6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7"
+        },
+        {
+          "name": "Intangible Virtue",
+          "scryfall_id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77",
+          "source": "https://api.scryfall.com/cards/716d82a1-fb5d-4607-b1fa-e8e9edd4dd77"
+        },
+        {
+          "name": "Island",
+          "scryfall_id": "77b88bb8-6bd9-4632-b937-89468fcb5e6a",
+          "source": "https://api.scryfall.com/cards/77b88bb8-6bd9-4632-b937-89468fcb5e6a"
+        },
+        {
+          "name": "Lava Spike",
+          "scryfall_id": "79c21c1f-eaa4-454d-a1c7-b41466d0a428",
+          "source": "https://api.scryfall.com/cards/79c21c1f-eaa4-454d-a1c7-b41466d0a428"
+        },
+        {
+          "name": "Lightning Bolt",
+          "scryfall_id": "77c6fa74-5543-42ac-9ead-0e890b188e99",
+          "source": "https://api.scryfall.com/cards/77c6fa74-5543-42ac-9ead-0e890b188e99"
+        },
+        {
+          "name": "Rest in Peace",
+          "scryfall_id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+          "source": "https://api.scryfall.com/cards/d108c2b1-236e-4b8d-8445-d9749ccc4fea"
+        },
+        {
+          "name": "Sheoldred, the Apocalypse",
+          "scryfall_id": "d67be074-cdd4-41d9-ac89-0a0456c4e4b2",
+          "source": "https://api.scryfall.com/cards/d67be074-cdd4-41d9-ac89-0a0456c4e4b2"
+        },
+        {
+          "name": "Soul-Scar Mage",
+          "scryfall_id": "a8003786-6e2a-4e2d-a915-f23293c7273a",
+          "source": "https://api.scryfall.com/cards/a8003786-6e2a-4e2d-a915-f23293c7273a"
+        },
+        {
+          "name": "Sprite Dragon",
+          "scryfall_id": "361385d8-d9c7-4de8-a5c8-683e682779f4",
+          "source": "https://api.scryfall.com/cards/361385d8-d9c7-4de8-a5c8-683e682779f4"
+        },
+        {
+          "name": "Thalia, Guardian of Thraben",
+          "scryfall_id": "c9f8b8fb-1cd8-450e-a1fe-892e7a323479",
+          "source": "https://api.scryfall.com/cards/c9f8b8fb-1cd8-450e-a1fe-892e7a323479"
+        },
+        {
+          "name": "Topiary Stomper",
+          "scryfall_id": "e8b92271-4412-4165-a4a6-e8653e755107",
+          "source": "https://api.scryfall.com/cards/e8b92271-4412-4165-a4a6-e8653e755107"
+        },
+        {
+          "name": "Torrential Gearhulk",
+          "scryfall_id": "92872fea-2fb4-4154-815e-cad9d966e60f",
+          "source": "https://api.scryfall.com/cards/92872fea-2fb4-4154-815e-cad9d966e60f"
+        },
+        {
+          "name": "Ugin, the Spirit Dragon",
+          "scryfall_id": "9c017fa9-7021-417a-9c2e-3df409644fcf",
+          "source": "https://api.scryfall.com/cards/9c017fa9-7021-417a-9c2e-3df409644fcf"
+        },
+        {
+          "name": "Unholy Heat",
+          "scryfall_id": "4e879386-b1f8-4f2a-9820-6e1291746f88",
+          "source": "https://api.scryfall.com/cards/4e879386-b1f8-4f2a-9820-6e1291746f88"
+        },
+        {
+          "name": "Witch's Oven",
+          "scryfall_id": "04ef8493-d986-45f8-a718-617b028f7ad4",
+          "source": "https://api.scryfall.com/cards/04ef8493-d986-45f8-a718-617b028f7ad4"
+        }
+      ]
+    },
+    {
+      "file": "indestructible.json",
+      "source_path": "backend/tests/fixtures/pending_removal.json",
+      "sha256": "1e0260e7253df983f4f29bfe7ed42e613ea77ed40ac01190ee7afc69f9392397",
+      "cards": [
+        {
+          "name": "Darksteel Myr",
+          "scryfall_id": "0f5712cf-c6a9-4a2e-90db-8ca17c621724",
+          "source": "https://api.scryfall.com/cards/0f5712cf-c6a9-4a2e-90db-8ca17c621724"
+        }
+      ]
+    },
+    {
+      "file": "twincast.json",
+      "source_path": "backend/tests/fixtures/coupled_targets/twincast.json",
+      "sha256": "12662d131d174e48af42758b9e8fd3b38ce6701d2de7d88217a527062786014f",
+      "cards": [
+        {
+          "name": "Twincast",
+          "scryfall_id": "f38eec33-a40e-4739-ad2c-2f57008cef4e",
+          "source": "https://api.scryfall.com/cards/f38eec33-a40e-4739-ad2c-2f57008cef4e"
+        }
+      ]
+    },
+    {
+      "file": "furnace-of-rath.json",
+      "source_path": "backend/tests/fixtures/linked_damage/furnace-of-rath.json",
+      "sha256": "4a2feca3b6b9bb2da4e59bc5172b94c84505d74ffcb64598f697b9570143252a",
+      "cards": [
+        {
+          "name": "Furnace of Rath",
+          "scryfall_id": "d7f0e720-3c32-4040-b663-7f99ad5bc810",
+          "source": "https://api.scryfall.com/cards/d7f0e720-3c32-4040-b663-7f99ad5bc810"
+        }
+      ]
+    },
+    {
+      "file": "tokens.json",
+      "source_path": "backend/card_data/builtin_token_seed.json",
+      "sha256": "ce182646d581f69b78e685246112b86a7360c8218e4299989fcf281459987bf4",
+      "cards": [
+        {
+          "name": "Treasure",
+          "scryfall_id": "03992f88-7a15-4234-9bed-b7617d7ff09c",
+          "source": "https://api.scryfall.com/cards/03992f88-7a15-4234-9bed-b7617d7ff09c"
+        }
+      ]
+    }
+  ]
+}

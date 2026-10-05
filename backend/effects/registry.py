@@ -115,6 +115,10 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
     if not isinstance(payload, dict):
         state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
         return
+    if effect_key == 'conditional_instruction':
+        from rules_engine.conditional_instructions import resolve_instruction
+        resolve_instruction(state, controller, payload)
+        return
     if effect_key == 'landfall_alternative':
         from rules_engine.landfall import resolve_alternative
         resolve_alternative(state, controller, payload)

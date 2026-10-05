@@ -269,6 +269,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 copied.payload.pop(old_key, None)
             announced[key] = value
             copied.payload[key] = value
+            if copied.effect_key == 'conditional_instruction':
+                from rules_engine.conditional_instructions import capture_target
+                capture_target(state, copied.payload)
             if copied.effect_key == 'landfall_alternative':
                 for branch in copied.payload['branches']:
                     for old_key in ('target_player', 'target_card_id', 'target_stack_id'):
@@ -382,17 +385,13 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             return False
         from effects.handlers import finish_topdeck_reveal_creature
         chosen = None if ids[0] == "__none__" else ids[0]
-        if not finish_topdeck_reveal_creature(state, player_id, pending["top_ids"], chosen, pending["bottom_random"]):
-            return False
         state.pending_mechanic_choice = None
-        if pending.get("resolving_item"):
-            from game_state.state import StackItem
-            from rules_engine.stack_engine import finish_stack_resolution
-            item = StackItem(**pending["resolving_item"])
-            finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
-        if not state.pending_trigger_order and not state.pending_replacement_choice:
-            state.priority_player = state.active_player
-            state.passed_priority = set()
+        if not finish_topdeck_reveal_creature(state, player_id, pending["top_ids"], chosen,
+                                             pending["bottom_random"], pending.get("bottom_any_order", False)):
+            state.pending_mechanic_choice = pending
+            return False
+        from rules_engine.stack_engine import resume_paused_resolution
+        resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] == "topdeck_bottom_order":
         ids = action.get("card_ids")
@@ -404,14 +403,8 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             return False
         player.library[:len(bottom)] = ids
         state.pending_mechanic_choice = None
-        if pending.get("resolving_item"):
-            from game_state.state import StackItem
-            from rules_engine.stack_engine import finish_stack_resolution
-            item = StackItem(**pending["resolving_item"])
-            finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
-        if not state.pending_trigger_order and not state.pending_replacement_choice:
-            state.priority_player = state.active_player
-            state.passed_priority = set()
+        from rules_engine.stack_engine import resume_paused_resolution
+        resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] in {"topdeck_put", "look_top_choose", "look_top_select_hand", "search_library"}:
         ids = action.get("card_ids")

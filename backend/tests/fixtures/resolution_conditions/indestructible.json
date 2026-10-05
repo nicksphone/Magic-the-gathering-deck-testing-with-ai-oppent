@@ -1,0 +1,16 @@
+[
+  {
+    "id": "0f5712cf-c6a9-4a2e-90db-8ca17c621724",
+    "oracle_id": "f90fe86c-5cca-483b-93c2-6e856fa01c88",
+    "name": "Darksteel Myr",
+    "mana_cost": "{3}",
+    "type_line": "Artifact Creature — Myr",
+    "oracle_text": "Indestructible (Damage and effects that say \"destroy\" don't destroy this creature. If its toughness is 0 or less, it still dies.)",
+    "colors": [],
+    "power": "0",
+    "toughness": "1",
+    "keywords": [
+      "Indestructible"
+    ]
+  }
+]

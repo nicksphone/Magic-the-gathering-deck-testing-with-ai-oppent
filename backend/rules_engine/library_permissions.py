@@ -1,4 +1,6 @@
 from __future__ import annotations
+import re
+
 from rules_engine.type_effects import effective_types
 
 from game_state.state import MatchState
@@ -9,10 +11,19 @@ def chosen_creature_type(card) -> str:
 
 
 def creature_types(card) -> set[str]:
+    """Type-line subtypes plus current printed changeling, not layer-six grants."""
+    from rules_engine.card_types import CREATURE_SUBTYPES
+    from rules_engine.oracle_text import without_reminder_text
+
     type_line = str(getattr(card, "type_line", "") or "")
-    if "—" not in type_line:
-        return set()
-    return {part.lower() for part in type_line.split("—", 1)[1].split()}
+    subtypes = {part.lower() for part in type_line.split("—", 1)[1].split()} if "—" in type_line else set()
+    oracle = without_reminder_text(getattr(card, "oracle_text", "") or "")
+    if ({"Creature", "Kindred", "Tribal"}.intersection(getattr(card, "types", []) or [])
+            and any(re.fullmatch(r"changeling\.?", line.strip(), re.I) for line in oracle.splitlines())):
+        # CR 702.73a/613: the copied/printed CDA applies in layer four,
+        # before losing abilities in layer six, and functions in every zone.
+        subtypes.update(CREATURE_SUBTYPES)
+    return subtypes
 
 
 def top_library_creature_for_type(state: MatchState, player_id: int):

@@ -49,7 +49,9 @@ def register_replacement_effect(effect: ReplacementEffect) -> None:
 
 
 def apply_cost_modifiers(context: CostContext) -> CostContext:
+    from rules_engine.affinity import apply_affinity
     out = _apply_static_spell_taxes(context)
+    out = apply_affinity(out)
     out = _apply_domain_self_discount(out)
     out = _apply_first_kicked_discount(out)
     out = _apply_equip_discounts(out)

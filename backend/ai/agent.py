@@ -34,6 +34,8 @@ _PURE_COUNTER_SPELL_RE = re.compile(
     r"(?: unless its controller pays (?:\{[^}]+\})+)?\.?", re.IGNORECASE,
 )
 
+NEXT_COMBAT_FORECAST_BUDGET = 13
+
 
 def _only_counter_spell_text(text: str) -> bool:
     return bool(_PURE_COUNTER_SPELL_RE.fullmatch(without_reminder_text(text).strip()))
@@ -3781,6 +3783,7 @@ class AIAgent:
         state: MatchState,
         attackers: list[dict],
         blockers: list[dict],
+        *, consider_next_combat=True,
     ) -> dict[str, str | list[str]] | None:
         """Evaluate small-board blocker assignments by resolving cloned combat."""
         if self.difficulty not in {"master", "master_plus"}:
@@ -3794,7 +3797,7 @@ class AIAgent:
         assignments = block_intents(state, attacker_ids, blocker_ids)
         if not assignments:
             return None
-        best: tuple[float, tuple[tuple[str, tuple[str, ...]], ...], dict[str, str | list[str]]] | None = None
+        best: tuple[int, float, tuple[tuple[str, tuple[str, ...]], ...], dict[str, str | list[str]]] | None = None
         initial_life = state.players[defender].life
         opponent = 1 if defender == 2 else 2
         incoming_power = sum(
@@ -3803,6 +3806,20 @@ class AIAgent:
         )
         keyword_combat = self._combat_keyword_board(state, defender) or self._combat_keyword_board(state, opponent)
         face_only = all(state.attack_targets.get(aid, f'player:{defender}') == f'player:{defender}' for aid in attacker_ids)
+
+        def project(assignment):
+            try:
+                sim = planning_copy(state)
+                normalized = {aid: sorted(bids) for aid, bids in assignment.items()}
+                self.engine.take_action(sim, defender, {"type": "block", "blocks": normalized}, reject_invalid=True)
+                from ai.pending_effects import _settle_announced_stack
+                if not _settle_announced_stack(sim) or not self._finish_combat_projection(sim, state):
+                    return None
+                return sim
+            except Exception:
+                return None
+
+        followups = []
         for assignment in assignments:
             if face_only and initial_life > incoming_power and assignment and not keyword_combat:
                 chump_only = True
@@ -3821,16 +3838,8 @@ class AIAgent:
                         break
                 if chump_only:
                     continue
-            try:
-                sim = planning_copy(state)
-                normalized = {aid: sorted(bids) for aid, bids in assignment.items()}
-                self.engine.take_action(sim, defender, {"type": "block", "blocks": normalized}, reject_invalid=True)
-                from ai.pending_effects import _settle_announced_stack
-                if not _settle_announced_stack(sim):
-                    continue
-                if not self._finish_combat_projection(sim, state):
-                    continue
-            except Exception:
+            sim = project(assignment)
+            if sim is None:
                 continue
             score = evaluate_board(sim, defender)
             score += (sim.players[defender].life - initial_life) * 4.0
@@ -3848,16 +3857,35 @@ class AIAgent:
                 if attackers_lost == 0:
                     continue
                 score -= (blockers_lost - attackers_lost) * (12.0 + incoming_power)
+            outcome_rank = 0
             if sim.winner == defender:
+                outcome_rank = 2
                 score += 1000.0
             elif sim.winner is not None:
+                outcome_rank = -1
                 score -= 1000.0
-            normalized = {aid: bids if len(bids) > 1 else bids[0] for aid, bids in normalized.items()}
+            normalized = {aid: sorted(bids) if len(bids) > 1 else bids[0] for aid, bids in assignment.items()}
             key = tuple(sorted((aid, tuple(sorted(bids))) for aid, bids in assignment.items()))
-            candidate = (score, key, normalized)
-            if best is None or candidate[:2] > best[:2]:
+            candidate = (outcome_rank, score, key, normalized)
+            if consider_next_combat and sim.winner is None:
+                followups.append(candidate)
+            if best is None or candidate[:3] > best[:3]:
                 best = candidate
-        return best[2] if best is not None else None
+        if best is not None and best[0] == 0 and consider_next_combat:
+            # Conditional on no intervening plays, not a guaranteed game win.
+            # Explore strongest intents first, reserving legal no-block below;
+            # retain intents, not thousands of full gameplay copies.
+            ranked = sorted(followups, key=lambda item: item[:3], reverse=True)
+            forecast_candidates = ranked[:NEXT_COMBAT_FORECAST_BUDGET - 1]
+            no_block = next((candidate for candidate in ranked if not candidate[2]), None)
+            if no_block is not None and no_block not in forecast_candidates:
+                forecast_candidates.append(no_block)
+            # Budget exhaustion leaves unvisited races unknown, not losing.
+            for candidate in forecast_candidates:
+                sim = project(dict(candidate[2]))
+                if sim is not None and self._next_board_attack_wins(sim, defender):
+                    return candidate[3]
+        return best[3] if best is not None else None
 
     def _requires_two_or_more_blockers(self, state, attacker) -> bool:
         attacker_id = getattr(attacker, "id", None)
@@ -4083,7 +4111,34 @@ class AIAgent:
             self.engine.next_step(simulated)
         return False
 
-    def _project_attack_line(self, state, player_id, attackers):
+    def _next_board_attack_wins(self, state, player_id):
+        """Bounded next-combat race forecast; unseen draws stay opaque."""
+        from ai.information import decision_view
+        from ai.pending_effects import _settle_announced_stack
+        sim, _ = decision_view(state, player_id, [])
+        sim.mechanic_choice_players = sim.replacement_choice_players = {1, 2}
+        sim.trigger_order_choice_players = {1, 2}
+        sim.trigger_order_choice_required = True
+        for _ in range(24):
+            if not _settle_announced_stack(sim):
+                return False
+            if sim.winner is not None:
+                return sim.winner == player_id
+            if sim.turn > state.turn + 1:
+                return False
+            if sim.active_player == player_id and sim.step == Step.DECLARE_ATTACKERS:
+                from rules_engine.combat_requirements import attack_candidates
+                candidates = attack_candidates(sim)
+                blockers = [cid for cid in sim.players[3-player_id].battlefield
+                            if 'Creature' in effective_types(sim, sim.cards[cid]) and not sim.cards[cid].tapped]
+                if not candidates or len(candidates) > 3 or len(blockers) > 2:
+                    return False
+                outcome = self._project_attack_line(sim, player_id, candidates, consider_next_combat=False)
+                return outcome is not None and outcome[0].winner == player_id
+            self.engine.next_step(sim)
+        return False
+
+    def _project_attack_line(self, state, player_id, attackers, *, consider_next_combat=True):
         if not isinstance(state, MatchState):
             return None
         from rules_engine.combat_constraints import combat_rule_view
@@ -4107,7 +4162,8 @@ class AIAgent:
             if blockers:
                 blocks = self._search_block_assignments(sim,
                     [{'id': cid, 'name': sim.cards[cid].name} for cid in sim.attackers],
-                    [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers])
+                    [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers],
+                    **({} if consider_next_combat else {'consider_next_combat': False}))
                 if blocks is None:
                     return None
             self.engine.take_action(sim, opponent, {'type': 'block', 'blocks': blocks}, reject_invalid=True)

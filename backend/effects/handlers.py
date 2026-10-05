@@ -1806,6 +1806,7 @@ def look_top_select_hand(state: MatchState, controller: int, payload: dict) -> N
         state.pending_mechanic_choice = {
             "kind": "look_top_select_hand", "player_id": controller,
             "options": list(reversed(top_slice)), "count": count,
+            "inspected_card_ids": list(reversed(top_slice)),
             "top_ids": top_slice, "effect_payload": payload,
             "effect_key": "look_top_select_hand", "label": f"Choose {count} card(s) for your hand",
         }
@@ -2773,6 +2774,8 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
     player = state.players[controller]
     top_n = max(1, int(payload.get("top_n", 4)))
     top_slice = list(player.library[-top_n:])
+    if not top_slice:
+        return
     eligible = []
     for cid in top_slice:
         card = state.cards[cid]
@@ -2788,17 +2791,19 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
             if printed_power > int(payload["power_max"]):
                 continue
         eligible.append(cid)
-    if eligible and (controller in state.mechanic_choice_players
-                     or (state.replacement_choice_required and controller in state.replacement_choice_players)):
+    if (controller in state.mechanic_choice_players
+            or (state.replacement_choice_required and controller in state.replacement_choice_players)):
         options = list(eligible)
-        if payload.get("optional"):
+        if payload.get("optional") or not eligible:
             options.append("__none__")
         state.pending_mechanic_choice = {
             "kind": "topdeck_reveal_creature", "player_id": controller,
             "options": options, "count": 1, "top_ids": top_slice,
+            "inspected_card_ids": list(reversed(top_slice)),
             "bottom_random": bool(payload.get("bottom_random")),
-            "option_labels": {"__none__": "Reveal none"},
-            "label": "Reveal a qualifying creature",
+            "bottom_any_order": bool(payload.get("bottom_any_order")),
+            "option_labels": {"__none__": "Reveal none" if eligible else "Acknowledge inspected cards"},
+            "label": "Reveal a qualifying creature" if eligible else "No qualifying creature; inspect then continue",
         }
         state.priority_player = controller
         state.passed_priority = set()
@@ -2812,10 +2817,12 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
         return mana_value(card.mana_cost or ""), power
 
     chosen = max(eligible, key=value) if eligible else None
-    finish_topdeck_reveal_creature(state, controller, top_slice, chosen, bool(payload.get("bottom_random")))
+    finish_topdeck_reveal_creature(state, controller, top_slice, chosen,
+                                  bool(payload.get("bottom_random")), bool(payload.get("bottom_any_order")))
 
 
-def finish_topdeck_reveal_creature(state: MatchState, controller: int, top_ids: list[str], chosen: str | None, bottom_random: bool) -> bool:
+def finish_topdeck_reveal_creature(state: MatchState, controller: int, top_ids: list[str], chosen: str | None,
+                                  bottom_random: bool, bottom_any_order: bool = False) -> bool:
     player = state.players[controller]
     if not top_ids or player.library[-len(top_ids):] != top_ids or (chosen is not None and chosen not in top_ids):
         return False
@@ -2824,9 +2831,20 @@ def finish_topdeck_reveal_creature(state: MatchState, controller: int, top_ids: 
     if chosen is not None:
         state.cards[chosen].move_to_zone(Zone.HAND)
         player.hand.append(chosen)
+        from game_state.observations import observe_cards
+        observe_cards(state, [chosen])
     if bottom_random:
         state.rng.shuffle(remaining)
     player.library[:0] = remaining
+    if bottom_any_order and not bottom_random and len(remaining) > 1:
+        state.pending_mechanic_choice = {
+            "kind": "topdeck_bottom_order", "player_id": controller,
+            "options": remaining, "bottom_ids": remaining, "count": len(remaining),
+            "inspected_card_ids": remaining,
+            "label": "Choose bottom order, bottommost first",
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
     if chosen is not None:
         state.log.append(f"{player.name} reveals and puts {state.cards[chosen].name} into hand.")
     else:

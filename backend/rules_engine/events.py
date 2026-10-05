@@ -361,14 +361,16 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
         "spell_cast": r"^when you cast this spell\b",
         "sacrifice": r"^(?:when|whenever)\b.*\bsacrific(?:e|es|ed)\b",
         "creature_dies": r"^(?:when|whenever)\b.*\bdies\b",
-        "permanent_dies": r"^(?:when|whenever)\b.*\bput into a graveyard from the battlefield\b",
+        "permanent_dies": r"^(?:when|whenever)\b.*\b(?:dies|put into a graveyard from the battlefield)\b",
     }
     if event not in patterns or item.payload.get("__trigger_target_clause"):
         return None
     card = _departed_card_view(state, item.source_card_id)
     if not card:
         return None
-    for sentence in re.split(r"(?<=\.)\s+|\n", card.oracle_text or ""):
+    clauses = ([item.payload['__trigger_full_clause']] if item.payload.get('__trigger_full_clause')
+               else re.split(r"(?<=\.)\s+|\n", card.oracle_text or ""))
+    for sentence in clauses:
         clause = sentence.strip()
         if not re.match(patterns[event], clause, re.I):
             continue
@@ -679,30 +681,41 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "life_paid" and payload.get("player_id") == card.controller and "whenever you pay life" in oracle:
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
-            elif event == "creature_dies" and _matches_creature_dies_trigger(state, card, oracle, payload):
+            elif event in {'creature_dies', 'permanent_dies'}:
                 death_payload = payload
                 if cid == payload.get("card_id") and "power" not in payload and card.last_known_battlefield:
                     death_payload = {**payload, "power": card.last_known_battlefield["power"]}
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=death_payload))
-            elif (event == 'permanent_dies' and cid == payload.get('card_id')
-                  and any(re.fullmatch(
-                      r"when (?:" + re.escape(card.name.lower())
-                      + r"|this (?:aura|artifact|enchantment|creature|permanent))"
-                      + r" is put into a graveyard from the battlefield, return (?:"
-                      + re.escape(card.name.lower()) + r"|it) to its owner's hand\.",
-                      line.strip()) for line in oracle.splitlines())):
-                departed = state.cards[cid]
-                out.append({
-                    'source_card_id': cid, 'controller': card.controller,
-                    'label': f'{card.name} graveyard return trigger',
-                    'effect_key': 'return_from_graveyard',
-                    'payload': {'target_card_id': cid, 'target_player': departed.owner,
-                                '__graveyard_reference': {
-                                    'incarnation': object_incarnation(departed),
-                                    'zone_sequence': departed.zone_change_sequence}},
-                })
-            elif event == "permanent_dies" and _matches_permanent_dies_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
+                matcher = (_matches_creature_dies_trigger if event == 'creature_dies'
+                           else _matches_permanent_dies_trigger)
+                for line in oracle.splitlines():
+                    clause = line.strip()
+                    if not matcher(state, card, clause, death_payload):
+                        continue
+                    if (_matches_self_death_trigger(state, card, clause, death_payload, event)
+                            and re.search(r'\b(?:dies|battlefield),\s*if\b', clause)):
+                        state.log.append(f'Unsupported intervening-if self-death trigger on {card.name}: {clause}')
+                        continue
+                    if (event == 'permanent_dies' and cid == payload.get('card_id')
+                            and re.fullmatch(
+                                r"when (?:" + re.escape(card.name.lower())
+                                + r"|this (?:aura|artifact|enchantment|creature|permanent))"
+                                + r" is put into a graveyard from the battlefield, return (?:"
+                                + re.escape(card.name.lower()) + r"|it) to its owner's hand\.", clause)):
+                        departed = state.cards[cid]
+                        trigger = {
+                            'source_card_id': cid, 'controller': card.controller,
+                            'label': f'{card.name} graveyard return trigger',
+                            'effect_key': 'return_from_graveyard',
+                            'payload': {'target_card_id': cid, 'target_player': departed.owner,
+                                        '__graveyard_reference': {
+                                            'incarnation': object_incarnation(departed),
+                                            'zone_sequence': departed.zone_change_sequence}},
+                        }
+                    else:
+                        trigger = _trigger_from_oracle(state, cid, card.controller, clause,
+                            default_label=f'{card.name} trigger', event=event, payload=death_payload)
+                    trigger['payload']['__trigger_full_clause'] = clause
+                    out.append(trigger)
             elif event == "leaves_battlefield" and _matches_leaves_battlefield_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "day_night_changed" and _matches_day_night_trigger(oracle, payload):
@@ -881,7 +894,27 @@ def _creature_self_reference(card, oracle: str) -> str:
     return re.sub(rf"\b{re.escape(name)}\b", "this creature", oracle) if name else oracle
 
 
+def _matches_self_death_trigger(state, card, oracle, payload, event):
+    if payload.get('card_id') != card.id:
+        return False
+    reference = (r'this (?:permanent|creature|artifact|enchantment|land|planeswalker|battle|'
+                 r'aura|equipment|vehicle|token)|' + re.escape(card.name.lower()))
+    for line in oracle.splitlines():
+        match = re.match(r'^(?:when|whenever) (?:' + reference + r') '
+                         r'(dies|is put into (?:a |the |your )?graveyard from (?:the )?battlefield),',
+                         line.strip(), re.I)
+        if match:
+            # Costs emit both death events for creatures; a clause triggers only once.
+            clause_event = ('creature_dies' if match[1].lower() == 'dies'
+                            and 'Creature' in effective_types(state, card) else 'permanent_dies')
+            if event == clause_event:
+                return True
+    return False
+
+
 def _matches_creature_dies_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
+    if _matches_self_death_trigger(state, card, oracle, payload, 'creature_dies'):
+        return True
     oracle = _creature_self_reference(card, oracle)
     if "\n" in oracle:
         return any(_matches_creature_dies_trigger(state, card, line.strip(), payload) for line in oracle.splitlines())
@@ -934,6 +967,8 @@ def _matches_permanent_dies_trigger(state: MatchState, card, oracle: str, payloa
     dead_card = _departed_card_view(state, dead_id)
     if not dead_card:
         return False
+    if _matches_self_death_trigger(state, card, oracle, payload, 'permanent_dies'):
+        return True
     if "whenever an artifact you control is put into a graveyard from the battlefield" in oracle:
         return (
             "target opponent loses life equal to this creature's power" in oracle
@@ -1429,6 +1464,7 @@ def _trigger_from_oracle(
     matchers = {
         'enters_battlefield': _matches_enters_battlefield_trigger,
         'creature_dies': _matches_creature_dies_trigger,
+        'permanent_dies': _matches_permanent_dies_trigger,
         'combat_damage_dealt': _matches_combat_damage_trigger,
         'attack_declared': _matches_attack_trigger,
         'sacrifice': _matches_sacrifice_trigger,
@@ -1456,16 +1492,16 @@ def _trigger_from_oracle(
                 effects = [{'effect_key': 'proliferate', 'payload': {}} for _ in range(2 if instruction[1] else 1)]
                 return {'source_card_id': source_card_id, 'controller': controller,
                         'label': default_label, 'effect_key': 'effect_sequence', 'payload': {'effects': effects}}
-    if event in {"enters_battlefield", "creature_dies"}:
+    if event in {"enters_battlefield", "creature_dies", "permanent_dies"}:
         matching_clauses = [
             line.strip() for line in oracle.splitlines()
             if (
                 event == "enters_battlefield"
                 and re.match(r"^(?:when|whenever)\b.*\benters?\b", line.strip())
             ) or (
-                event == "creature_dies"
-                and source_card_id in state.cards
-                and _matches_creature_dies_trigger(state, state.cards[source_card_id], line.strip(), payload)
+                event in {"creature_dies", "permanent_dies"}
+                and (death_source := _departed_card_view(state, source_card_id)) is not None
+                and matchers[event](state, death_source, line.strip(), payload)
             )
         ]
         if len(matching_clauses) == 1:

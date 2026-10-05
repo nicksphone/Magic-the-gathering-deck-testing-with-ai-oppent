@@ -177,7 +177,10 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
     if ability_text is not None:
         proxy.types = []
         proxy.card_faces = []
-    key, _ = infer_effect_from_oracle(state, proxy, player_id, targets, report_unsupported=False)
+    key, payload = infer_effect_from_oracle(state, proxy, player_id, targets, report_unsupported=False)
+    conditional = payload if key == 'conditional_instruction' and payload['effect_key'] == 'destroy_permanent' else None
+    if conditional is not None:
+        key = conditional['effect_key']
     if key != "destroy_permanent":
         return set()
     excluded = set()
@@ -185,6 +188,11 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
         for cid in player.battlefield:
             if candidates is not None and cid not in candidates:
                 continue
+            if conditional is not None:
+                from rules_engine.conditional_instructions import selected_instruction
+                if selected_instruction(state, player_id, {**conditional, 'target_card_id': cid})[0] == 'noop':
+                    excluded.add(cid)
+                    continue
             friendly = state.cards[cid].controller == player_id
             if not friendly and not has_keyword(state, cid, 'indestructible'):
                 continue
@@ -477,7 +485,9 @@ def covered_removal_targets(state: MatchState, card, player_id: int, targets: di
     text = "\n".join(targets.get("mode_texts") or []) or targets.get("mode_text") or card.oracle_text
     if SECONDARY_EFFECT_RE.search(without_reminder_text(text)):
         return set()
-    key, _ = infer_effect_from_oracle(state, card, player_id, targets, report_unsupported=False)
+    key, payload = infer_effect_from_oracle(state, card, player_id, targets, report_unsupported=False)
+    if key == 'conditional_instruction':
+        key = payload['effect_key']
     if key not in {"destroy_permanent", "exile", "return_permanent_to_hand"}:
         return set()
     destinations = pending_removal_destinations(state, player_id)

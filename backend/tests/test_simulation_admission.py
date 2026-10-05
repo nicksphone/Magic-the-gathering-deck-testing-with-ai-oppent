@@ -16,6 +16,11 @@ from analytics.service import AnalyticsService, SimulationCancelled
 from persistence.repository import Repository
 
 
+class AdmissionRepo:
+    def count_simulation_jobs(self):
+        return 0
+
+
 def _request() -> BatchSimulationRequest:
     deck = [{"quantity": 60, "card_name": "Mountain"}]
     return BatchSimulationRequest(deck_a=deck, deck_b=deck, matches=1)
@@ -35,12 +40,12 @@ def test_second_batch_job_and_sync_batch_are_rejected_while_slot_is_held(monkeyp
     monkeypatch.setattr(main.threading, "Thread", DormantThread)
     job_id = None
     try:
-        started = main.simulate_batch_start(_request(), repo=object())
+        started = main.simulate_batch_start(_request(), repo=AdmissionRepo())
         job_id = started["job_id"]
         assert started["status"] == "queued"
         for route in (main.simulate_batch_start, main.simulate_batch):
             with pytest.raises(HTTPException) as raised:
-                route(_request(), repo=object())
+                route(_request(), repo=AdmissionRepo())
             assert raised.value.status_code == 429
             assert raised.value.detail["code"] == "simulation_busy"
     finally:
@@ -58,7 +63,7 @@ def test_failed_job_admission_releases_slot(monkeypatch):
     monkeypatch.setattr(main, "_persist_job", fail)
     before = set(main.SIM_JOBS)
     with pytest.raises(RuntimeError, match="storage unavailable"):
-        main.simulate_batch_start(_request(), repo=object())
+        main.simulate_batch_start(_request(), repo=AdmissionRepo())
     assert set(main.SIM_JOBS) == before
     assert main.SIM_WORK_SLOT.acquire(blocking=False)
     main.SIM_WORK_SLOT.release()
@@ -89,7 +94,7 @@ def test_cancel_job_stops_worker_and_releases_slot(monkeypatch):
         raise SimulationCancelled()
 
     monkeypatch.setattr(AnalyticsService, "run_batch", run_until_cancelled)
-    started = main.simulate_batch_start(_request(), repo=object())
+    started = main.simulate_batch_start(_request(), repo=AdmissionRepo())
     job_id = started["job_id"]
     try:
         assert entered.wait(2)
@@ -128,7 +133,7 @@ def test_cancel_queued_job_is_idempotent_and_unknown_job_is_404(monkeypatch):
             pass
 
     monkeypatch.setattr(main.threading, "Thread", DormantThread)
-    job_id = main.simulate_batch_start(_request(), repo=object())["job_id"]
+    job_id = main.simulate_batch_start(_request(), repo=AdmissionRepo())["job_id"]
     try:
         assert main.simulate_batch_cancel(job_id, repo=object())["status"] == "queued"
         assert main.simulate_batch_cancel(job_id, repo=object())["status"] == "queued"
@@ -179,7 +184,7 @@ def test_batch_start_key_replays_without_second_worker_and_rejects_conflict(monk
         def start(self):
             pass
 
-    class EmptyRepo:
+    class EmptyRepo(AdmissionRepo):
         def get_simulation_job(self, _job_id):
             return None
 
@@ -228,7 +233,7 @@ def test_batch_start_http_idempotency_header(monkeypatch):
         def start(self):
             pass
 
-    class EmptyRepo:
+    class EmptyRepo(AdmissionRepo):
         def get_simulation_job(self, _job_id):
             return None
 
@@ -299,7 +304,7 @@ def test_worker_start_failure_persists_failed_job_and_releases_slot(monkeypatch)
     monkeypatch.setattr(main.threading, "Thread", BrokenThread)
     key = "f" * 32
 
-    class EmptyRepo:
+    class EmptyRepo(AdmissionRepo):
         def get_simulation_job(self, _job_id):
             return None
 

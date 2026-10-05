@@ -60,6 +60,9 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
 def _replacement_context(state: MatchState, item: StackItem) -> tuple[str, int | None, str | None] | None:
     payload = item.payload or {}
     key = str(item.effect_key or "").lower()
+    if key == 'conditional_instruction':
+        from rules_engine.conditional_instructions import selected_instruction
+        key, payload = selected_instruction(state, item.controller, payload)
     if key == "deal_damage":
         target_player = payload.get("target_player")
         target_card_id = payload.get("target_card_id")
@@ -110,6 +113,11 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     item = state.stack[-1]
     from rules_engine.targeting import stack_source_card, stack_object_kind
     card = stack_source_card(state, item)
+    if item.effect_key == 'conditional_instruction':
+        from rules_engine.conditional_instructions import target_is_current
+        if not target_is_current(state, item.payload):
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
     if (item.payload or {}).get("__trigger_target_choice"):
         from rules_engine.events import trigger_target_options
         from game_state.state import object_incarnation
@@ -351,6 +359,12 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         surface.types = []
         effect_key, instructions = infer_effect_from_oracle(state, surface, item.controller, payload)
         payload.update(instructions)
+    if effect_key == 'conditional_instruction' and payload.get('__stack_copy_kind') == 'spell':
+        from rules_engine.colors import card_color_names
+        payload['__source_lki'] = {**(payload.get('__source_lki') or {}),
+                                  'controller': item.controller,
+                                  'color_names': sorted(card_color_names(card)),
+                                  'keywords': list(card.keywords or [])}
     resolve_effect(state, item.controller, effect_key, payload)
     pending_choice = state.pending_mechanic_choice or state.pending_replacement_choice
     if pending_choice:

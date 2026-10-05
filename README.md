@@ -16,20 +16,38 @@ attack costs, alternate defenders and bands require review and Submit Attackers.
 Blocking, responses and damage still follow the normal combat windows.
 An engine-declared game result stops human gameplay and displays the winner and
 series score; between-game sideboarding and next-game choices remain available.
-Paused AI-versus-AI series can advance between games manually; completed series
-disable further gameplay controls.
+Paused AI series can advance between games manually; completed series disable
+further gameplay controls. Local testing can reveal AI hands with the backend
+flag `MTG_DEBUG_HANDS=1` and **Reveal AI hands (debug)**. This is off by default,
+read-only, and separate from normal redacted views and AI inputs. Disable it
+outside trusted debugging. See [scope](docs/testing/ai-hand-debug.md).
 
-For local bug testing, start the backend with `MTG_DEBUG_HANDS=1` and select
-**Reveal AI hands (debug)** above the battlefield. It is off by default, read-only,
-and exposes only AI hands through a separate opt-in endpoint. Normal match views
-and AI information boundaries are unchanged. Disable the flag outside trusted
-local testing. See [debugging scope](docs/testing/ai-hand-debug.md).
+Supported day/night entry and self entry/transform triggers share canonical
+face handling, with incarnation-linked targeted exile and departure returns.
+See [evidence and limits](docs/testing/cathar-day-night.md).
+
+Supported [private card inspections](docs/testing/private-card-inspections.md)
+show the looked-at cards even when none qualifies, and survive restart/reload.
+Bounded [resolution conditions](docs/testing/resolution-conditions.md) implement
+revolt destruction and delirium damage alternatives without conflating clauses.
 
 Main includes qualified resource payments/events, bounded AI resource opportunity
 and instant-window reservation, ordinary/limited graveyard permissions, announced
 prototype/bestow checks and fixed color/type cost modifiers. The consolidated
 runtime passed the full backend and browser gates and is deployed locally.
 See [integration evidence and limits](docs/testing/backend-consolidation.md).
+Shared [affinity costs](docs/testing/affinity.md) now support printed selectors
+and unconditional spell grants without rewriting mana values; conditional
+grant wording remains explicitly unsupported.
+Background simulation admission has a [persisted job-row quota](docs/testing/simulation-job-quota.md)
+that preserves existing results and idempotent starts; byte limits, automatic
+retention and distributed operation remain unfinished.
+The shared rules batch also includes effective-type domain/changeling handling,
+supported self-sacrifice mana/death events, private zero-hit inspection choices,
+and bounded revolt/delirium resolution. See
+[qualification and limits](docs/testing/backend-rule-batch-2026-10-05.md).
+Small-board Master blocking has [bounded next-combat forecasts](docs/testing/next-combat-races.md);
+these assume no intervening plays and do not establish guaranteed wins.
 Subsequent [exact strategic score reuse](docs/testing/ai-exact-score-reuse.md)
 and [read-only layer query reuse](docs/testing/layer-query-reuse.md), plus
 [deferred forecast scores](docs/testing/deferred-forecast-scores.md), have
@@ -362,7 +380,6 @@ Implementation scopes and remaining limits:
 - Transforming Saga final chapters with the supported printed exile-and-return instruction now exile the Saga and return its back face as a new permanent under the chapter controller. Lore and other counters reset, the returned creature is summoning sick, and enter-transformed triggers fire instead of battlefield-transform triggers; Fable of the Mirror-Breaker has focused regression coverage.
 - The Fable final-chapter path also has a live HTTP regression: a names-and-quantities deck hydrates both faces, a pending chapter survives SQLite restore, and priority passes expose the returned back-face card view.
 - Core day/night state transitions from per-turn spell counts, including daybound/nightbound battlefield transformations. Upkeep start stages day/night, all resulting transform, and ordinary beginning-of-upkeep triggers into one APNAP order window after every affected face has changed; two-seat human order choice and snapshot continuation have focused backend coverage.
-- [Day/night entry and linked exile](docs/testing/cathar-day-night.md): entry routes use the correct daybound/nightbound face before preparation and commit. Supported self entry/transform triggers permit human target choice; targeted exile-until-departure survives transformation, returns on departure and respects source/target incarnations. Canonical Brutal Cathar/Moonrage Brute fixtures and both-seat HTTP/restart checks cover this bounded family, not every transforming card.
 - Day/night transition triggers use the normal stack and APNAP ordering path
 - Reusable Aura and Equipment attachment legality, target-choice exposure, and state-based cleanup for invalid Auras
 - Generic temporary control-change effects with ownership-safe battlefield movement, cleanup restoration, and snapshot persistence

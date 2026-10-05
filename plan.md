@@ -2,39 +2,48 @@
 
 ## Current Execution Order
 
-1. Finish composed rules, AI and browser qualification before integrating the
-   pending backend batch. Preserve saved games and publish bounded evidence.
-2. Qualify the generic held-deployment planner repair against the retained turn-19
-   position, hidden-information boundaries and instant interaction reservations.
-   Continue latency work without pruning legal responses or forcing deck balance.
+1. Finish repeatable inspection CI and dedicated Cathar browser acceptance; retain
+   the qualified composed rules batch and saved-match restoration evidence.
+2. Analyze new natural-game deployment traces, integrate verified corpus readiness
+   and mechanic metadata, then qualify the training-environment adapter. Preserve
+   hidden-information boundaries and do not force matchup win rates.
 3. Continue the original rules/AI/release gates below: conditional/compound
    semantics, affordable multi-action planning, restart behavior, network posture
    and competitive-quality evidence remain unfinished.
 
-Parallel knowledge work audits all-card metadata/provenance and conservative
-mechanic descriptors in isolated copies. Strategic learning prerequisites are
-tracked in [learned-policy groundwork](docs/plans/learned-policy-groundwork.md).
-No neural policy is trained or deployed; regression runs are not training.
+Parallel knowledge work audits all-card provenance and conservative mechanic
+descriptors in isolated copies. [Learned-policy groundwork](docs/plans/learned-policy-groundwork.md)
+tracks environment, data and evaluation prerequisites; no neural policy is trained
+or deployed, and regression runs are not training.
 
 Completed bounded work:
-- [x] Repair supported unknown-library deployment valuation without reading
-  unseen cards. Exact saved decision now casts the payable spell; live-code gate
-  passes 536 checks and the canonical mana-value correction passes 188. Broader
-  natural-game quality remains under evaluation. See
-  [evidence and limits](docs/testing/ai-topdeck-deployment.md).
-- [x] Provide an opt-in, read-only AI hand viewer for local debugging. Backend
-  flag checks, normal-redaction invariants and the ended-match browser check pass;
-  no live gameplay actions were sent. See [scope](docs/testing/ai-hand-debug.md).
-- [x] Repair shared day/night entry, supported self entry/transform triggers and
-  targeted incarnation-linked exile. Canonical fixtures, both-seat human/AI
-  choices and HTTP/SQLite restoration pass; dedicated Cathar browser and wider
-  transformation semantics remain open. Existing missed triggers are not
-  retrospectively inserted into user games. See
-  [scope and evidence](docs/testing/cathar-day-night.md).
+- [x] Composed acceptance: 595 delta checks and complete browser gate, exit 0,
+  466 PASS lines including restart, sideboard and all three BO3 control modes.
+  These are bounded correctness/flow checks, not expert strategic validation.
+  Follow-up inspection CI isolation and dedicated Cathar browser remain open.
+- [x] Repair supported unknown-library deployment valuation. Exact retained
+  Master Ramp-versus-Tokens configuration casts the payable spell without peeking
+  at library order. Live-code and composed gates each pass 536 affected checks;
+  canonical mana-value correction passes 188. Natural decision quality remains
+  under evaluation. See [scope](docs/testing/ai-topdeck-deployment.md).
+- [x] Repair shared day/night entry and incarnation-linked exile using canonical
+  Cathar fixtures; both-seat rules and HTTP restoration pass. Night entry uses
+  Moonrage Brute without the front face's trigger. Dedicated browser acceptance
+  and broader transformation semantics remain open. See
+  [evidence](docs/testing/cathar-day-night.md).
+- [x] Provide server-gated, read-only AI hand debugging. Normal redaction and AI
+  information inputs remain unchanged; real ended-match reveal/read/hide passes
+  without game writes. See [scope](docs/testing/ai-hand-debug.md).
 - [x] Stop human-game automatic ticks and stale actions after an authoritative
   winner, with a visible result/series banner. Preserve manual between-game
   choices and AI-series continuation; mocked actual-App browser, lint/build and
   frontend tests pass. Do not infer losses solely from a life counter.
+- [x] Qualify affinity, effective type consumers, sacrifice mana/self-death,
+  private inspections and bounded resolution conditions: 9,464 backend tests
+  across 374 modules; independent databases and explicit stale-test correction.
+  Combined inspection HTTP/browser restart checks and frontend unit/lint/build
+  pass. Complete combined browser gate and live-game racing review remain open.
+  See [evidence and limits](docs/testing/backend-rule-batch-2026-10-05.md).
 - [x] Human Attack All declares ordinary eligible attacks directly; separate
   Select all preserves selection-only behavior. Costs, alternate defenders and
   bands require deliberate review/confirmation. Fifteen isolated browser cases
@@ -64,7 +73,9 @@ Completed bounded work:
   seeded games per increment, repeated twice; all twelve reconstructions match
   and no reported determinism failures/anomalies. Timing changes Tempo/Control
   seat two at decision 524; tactical optimality remains unverified. Limited
-  graveyard natural runs are still in progress; do not restart live jobs.
+  graveyard runs also completed: six logical seat-balanced games, twelve repeat
+  executions; identical replay results/logs and no reported anomalies. These
+  narrow runs do not establish tactical optimality or matchup balance.
 - [x] Shared suppression/static-subject query reuse: 3,436 affected checks across
   82 files pass; retained complete action/state parity, 66.62 to 55.64 seconds
   for one position. Remaining nested forecasting/latency stays the priority.
@@ -88,30 +99,37 @@ notes below do not require repeating unchanged predecessor gates.
 
 ## Earlier Backend Work And Remaining Family Limits
 
+- [x] Add shared affinity cost determination for supported permanent selectors
+  and unconditional spell grants. Both-seat engine, HTTP/snapshot and actual AI
+  acceptance tests cover canonical cards; see [scope](docs/testing/affinity.md).
+  Conditional/next-spell grants and broader layer semantics remain unfinished.
+
 - [x] Consolidate implemented cost, graveyard and timing work into an integration
   milestone. The combined gate is complete and integrated into main. Fixed color/type modifiers, actual prototype color, both-seat
   HTTP/restart and browser flows pass. Broader unknown semantics stay explicit;
   do not require a new small-sample natural matrix for every independent clause.
   See [scope](docs/testing/announced-spell-costs.md).
 
-- [ ] Qualify announced casting-method permissions and strategic source/type
+- [x] Qualify announced casting-method permissions and strategic source/type
   selection. Prototype/bestow use chosen characteristics; AI preserves scarce
   allowances for known own-graveyard follow-ups. 194 backend checks, four focused
-  browser flows and frontend unit/lint/build pass. Complete frozen full gates,
-  then broaden affordable multi-action plans and announcement ordering. See
+  browser flows and frontend unit/lint/build pass. Frozen full/browser gates and
+  consolidated main integration are complete; broader affordable multi-action
+  plans and announcement ordering remain open. See
   [scope](docs/testing/graveyard-cast-methods.md).
 
-- [ ] Qualify shared graveyard casting/land permission and admission families:
+- [x] Qualify shared graveyard casting/land permission and admission families:
   ordinary self/subtype grants, source/timing/cost limits, modal land faces,
   suppression, global prohibitions and real departure events. Both-seat unit and
-  HTTP checks pass; complete exact-source full/browser/natural gates. See
+  HTTP checks and exact-source full/browser/natural gates pass; integrated into
+  the consolidated main runtime. Broader permission families remain open. See
   [scope](docs/testing/graveyard-play-permissions.md).
-- [ ] Qualify durable limited graveyard permission ledgers and source/type choices.
+- [x] Qualify durable limited graveyard permission ledgers and source/type choices.
   Shared Lurrus/Muldrotha/Gisa-style restrictions, actual X limits, land allowances,
-  snapshot isolation and stale-choice rejection are implemented in a successor
-  candidate; six focused browser flows, 8,824 full backend tests and the complete
-  browser suite pass. Complete seeded review and integration qualification,
-  then broaden duration, subtype layers and casting-announcement ordering. See
+  snapshot isolation and stale-choice rejection are integrated into main;
+  six focused browser flows, 8,824 full backend tests and the complete browser
+  suite pass. Seeded review and integration qualification are complete;
+  duration, subtype layers and casting-announcement ordering remain open. See
   [scope](docs/testing/limited-graveyard-permissions.md).
 
 - [ ] Qualify tactical casting-resource choices: twenty-three canonical cases and 342 earlier
@@ -1335,7 +1353,7 @@ Acceptance: health/import/start/action/media work under both documented deployme
 ### 15. Bound jobs and concurrent mutations
 
 Single-process batch admission now shares one slot across synchronous and background-job routes. A second request gets structured 429, and failure paths release the slot. Background jobs now support cooperative cancel at the next AI action, preserve completed-match progress, and release the slot on worker exit; no partial results are published. This does not provide a queue, durable retention, multiworker coordination or network authorization; the larger job-control checkbox remains open.
-The in-memory simulator history is now capped at 20 terminal jobs while old result lookups fall back to SQLite. Startup loads only recent rows plus unfinished jobs, which are marked failed after restart. Durable database retention and quotas remain open.
+The in-memory simulator history is capped at 20 terminal jobs while old result lookups fall back to SQLite. Startup loads only recent rows plus unfinished jobs, which are marked failed after restart. New background starts now have a 10,000-row persisted quota, after durable start-key replay/conflict checks; existing rows are not deleted. Offline retention tooling exists, but automatic retention, byte quotas and measured load guarantees remain open. See [job quota](docs/testing/simulation-job-quota.md).
 
 - [ ] Define single-process local topology and network exposure policy explicitly.
 - [x] Add cooperative cancellation and restore active simulator polling after a browser refresh.

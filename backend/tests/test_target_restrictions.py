@@ -46,7 +46,11 @@ def test_nonartifact_restriction_filters_creature_targets() -> None:
     assert validate_cast_targets(hints, {"target_card_id": "creature"})[0] is True
 
 
-def test_static_mana_value_restriction_filters_targets() -> None:
+def test_fatal_push_mana_value_condition_does_not_filter_targets() -> None:
+    import json
+    from pathlib import Path
+    raw = next(row for row in json.loads((Path(__file__).parent /
+               'fixtures/resolution_conditions/seed-cards.json').read_text()) if row['name'] == 'Fatal Push')
     state = _state()
     small = CardInstance("small", "Small Creature", 2, 2, Zone.BATTLEFIELD, ["Creature"], mana_cost="{2}")
     large = CardInstance("large", "Large Creature", 2, 2, Zone.BATTLEFIELD, ["Creature"], mana_cost="{3}")
@@ -54,11 +58,11 @@ def test_static_mana_value_restriction_filters_targets() -> None:
     _put_opponent_card(state, large)
     spell = CardInstance(
         "spell", "Fatal Push", 1, 1, Zone.HAND, ["Instant"], mana_cost="{B}",
-        oracle_text="Destroy target creature if it has mana value 2 or less.",
+        oracle_text=raw['oracle_text'],
     )
 
     hints = inspect_target_hints(state, spell, 1)
-    assert {item["id"] for item in hints["creature_targets"]} == {"small"}
+    assert {item["id"] for item in hints["creature_targets"]} == {"small", "large"}
 
 
 def test_controlled_type_restriction_uses_current_battlefield_count() -> None:

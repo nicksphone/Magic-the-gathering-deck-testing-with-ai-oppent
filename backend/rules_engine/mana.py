@@ -900,7 +900,8 @@ def _nonland_mana_effect_outputs(effect: str, *, state=None, card=None) -> dict[
             color = counter.group(1)
         elif power and power.group(2) in names:
             from rules_engine.continuous import effective_power
-            amount = max(0, effective_power(state, card.id))
+            amount = max(0, card.last_known_battlefield.get('power', card.power or 0)
+                         if card.zone != Zone.BATTLEFIELD else effective_power(state, card.id))
             color = power.group(1)
     if amount is not None:
         return {color: amount}

@@ -78,4 +78,4 @@ dynamic subtype/layer interactions, full casting-announcement/source-departure
 ordering, ordered compound costs and other battlefield-admission routes. This
 batch does not certify every other ability on its fixture cards or arbitrary
 Magic semantics. Broader tactical/strategic quality and release gates remain
-open; candidate branches have not been rolled into main/live.
+open; the bounded family above is integrated into the consolidated main runtime.

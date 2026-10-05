@@ -1,4 +1,4 @@
-"""Shared targetless tap-mana instructions, readiness and immediate activation."""
+"""Shared targetless mana instructions, readiness and immediate activation."""
 from dataclasses import dataclass
 from functools import lru_cache
 
@@ -17,13 +17,15 @@ class PaidManaStep:
 
 @lru_cache(maxsize=8192)
 def _printed_specs(name, type_line, oracle_text, is_land):
+    from rules_engine.costs import parse_activated_cost
     from rules_engine.oracle_effects import ACTIVATED_ABILITY_RE
     from rules_engine.oracle_text import without_reminder_text
     from rules_engine.mana import _land_colors, DUAL_LAND_NAME_COLORS
     rows = []
     for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(without_reminder_text(oracle_text))):
         cost, effect = match[1].strip(), match[2].strip()
-        if '{T}' in cost.upper() and 'target' not in effect.lower() and not any(
+        parsed = parse_activated_cost(cost)
+        if parsed.supported and (parsed.tap_source or parsed.sacrifice_source) and 'target' not in effect.lower() and not any(
                 word in (cost + ' ' + effect).lower() for word in ('library', 'libraries', 'draw ', 'mill ')) and (
                 effect.lower().startswith('add ') or effect.lower().startswith('choose a color. add ')):
             rows.append((index, cost, effect))
@@ -62,6 +64,7 @@ def mana_ability_specs(card, state=None, *, entering=False):
 
 def ability_outputs(state, card, spec):
     import re
+    from rules_engine.costs import parse_activated_cost
     from rules_engine.mana import _nonland_mana_effect_outputs, _counter_mana_replacement
     _, _, effect = spec
     rule = ability_spending_rule(spec)
@@ -72,7 +75,8 @@ def ability_outputs(state, card, spec):
     replacement = _counter_mana_replacement(card.name, card.oracle_text or '')
     if replacement and effect.lower().startswith(f'add {{{replacement[0].lower()}}}. if '):
         effect = 'Add one mana of any color' if card.counters.get(replacement[1], 0) > 0 else f'Add {{{replacement[0]}}}'
-    return multiplied_outputs(state, card, _nonland_mana_effect_outputs(effect, state=state, card=card))
+    outputs = _nonland_mana_effect_outputs(effect, state=state, card=card)
+    return multiplied_outputs(state, card, outputs) if parse_activated_cost(spec[1]).tap_source else outputs
 
 
 def mana_multiplier_clause(text):
@@ -94,21 +98,24 @@ def multiplied_outputs(state, card, outputs):
     return {color: amount * multiplier for color, amount in outputs.items()}
 
 
-def source_ready(state, card):
+def source_ready(state, card, spec=None):
     from rules_engine.continuous import printed_abilities_suppressed, has_keyword
-    return (card.zone == Zone.BATTLEFIELD and not card.tapped
+    from rules_engine.costs import parse_activated_cost
+    needs_tap = spec is None or parse_activated_cost(spec[1]).tap_source
+    return (card.zone == Zone.BATTLEFIELD
             and not printed_abilities_suppressed(state, card.id, include_land_types=False)
-            and ('Creature' not in effective_types(state, card) or not card.summoning_sick
-                 or has_keyword(state, card.id, 'haste')))
+            and (not needs_tap or (not card.tapped
+                 and ('Creature' not in effective_types(state, card) or not card.summoning_sick
+                      or has_keyword(state, card.id, 'haste')))))
 
 
 def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTERED, reserved_card_ids=(), protected_life=0):
     from rules_engine.mana import mana_activation_is_free
     from rules_engine.costs import activated_cost_available, parse_activated_cost
-    if not ignore_readiness and not source_ready(state, card):
-        return {}
     outputs = {}
     for spec in mana_ability_specs(card, state):
+        if not ignore_readiness and not source_ready(state, card, spec):
+            continue
         if payment_context is not UNFILTERED and not eligible(ability_spending_rule(spec), payment_context):
             continue
         cost = parse_activated_cost(spec[1])
@@ -141,13 +148,17 @@ def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UN
     from rules_engine.mana import mana_activation_is_free
     for cid in state.players[player_id].battlefield:
         card = state.cards[cid]
-        if cid in excluded_sources or not source_ready(state, card):
+        if cid in excluded_sources:
             continue
         for spec in mana_ability_specs(card, state):
             if payment_context is not UNFILTERED and not eligible(ability_spending_rule(spec), payment_context):
                 continue
             cost = parse_activated_cost(spec[1])
-            if cost != ActivatedCost(mana_cost=cost.mana_cost, tap_source=True):
+            if not source_ready(state, card, spec):
+                continue
+            tap_only = cost == ActivatedCost(mana_cost=cost.mana_cost, tap_source=True)
+            self_sacrifice = cost.supported and cost.sacrifice_source
+            if not (tap_only or self_sacrifice):
                 continue
             if mana_activation_is_free(state, cid, cost.mana_cost):
                 continue
@@ -160,10 +171,10 @@ def activate_mana_ability(state, player_id, source_id, ability_index, color, *, 
     from rules_engine.costs import ActivatedCost, parse_activated_cost, apply_activated_costs
     from rules_engine.mana import auto_pay_cost, add_mana_to_pool
     card = state.cards.get(source_id)
-    if card is None or card.controller != player_id or source_id not in state.players[player_id].battlefield or not source_ready(state, card):
+    if card is None or card.controller != player_id or source_id not in state.players[player_id].battlefield:
         return False
     spec = next((row for row in mana_ability_specs(card, state) if row[0] == ability_index), None)
-    if spec is None or color not in ability_outputs(state, card, spec):
+    if spec is None or not source_ready(state, card, spec) or color not in ability_outputs(state, card, spec):
         return False
     cost = parse_activated_cost(spec[1])
     if cost == ActivatedCost(mana_cost=cost.mana_cost, tap_source=True):
@@ -177,7 +188,8 @@ def activate_mana_ability(state, player_id, source_id, ability_index, color, *, 
     elif not apply_activated_costs(state, player_id, source_id, spec[1], ability_kind='mana', ability_index=ability_index, unavailable_resources=reserved_card_ids, protected_life=protected_life):
         return False
     # Amounts are determined after costs, including any resource departures.
-    amount = ability_outputs(state, card, spec).get(color, 0)
+    from rules_engine.events import _departed_card_view
+    amount = ability_outputs(state, _departed_card_view(state, source_id), spec).get(color, 0)
     add_mana_to_pool(state, player_id, color, amount, source_id=source_id, ability_effect=spec[2])
     state.log.append(f'{state.players[player_id].name} activates {card.name} for {amount} {color}.')
     return True
@@ -185,12 +197,10 @@ def activate_mana_ability(state, player_id, source_id, ability_index, color, *, 
 
 def mana_ability_views(state, card):
     from rules_engine.costs import activated_cost_available
-    if not source_ready(state, card):
-        return []
     return [{'ability_index': spec[0], 'cost_text': spec[1], 'outputs': outputs,
              'label': f'{spec[1]}: {spec[2]}'}
             for spec in mana_ability_specs(card, state)
-            if (outputs := ability_outputs(state, card, spec))
+            if source_ready(state, card, spec) and (outputs := ability_outputs(state, card, spec))
             and activated_cost_available(state, card.controller, card.id, spec[1], ability_kind='mana', ability_index=spec[0])]
 
 
@@ -201,6 +211,8 @@ def preferred_free_spec(state, card, color, amount, *, payment_context=UNFILTERE
     candidates = []
     for spec in mana_ability_specs(card, state):
         cost = parse_activated_cost(spec[1])
+        if not source_ready(state, card, spec):
+            continue
         if not cost.supported or (tap_only and cost != ActivatedCost(tap_source=True)):
             continue
         if not tap_only and not mana_activation_is_free(state, card.id, cost.mana_cost):

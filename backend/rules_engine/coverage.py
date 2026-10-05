@@ -68,6 +68,9 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     """Known gaps only; an empty result is not rules certification."""
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
+    from rules_engine.affinity import affinity_clauses
+    if any(affinity_clauses(text)[2] for text in texts):
+        out.append('unsupported affinity clause')
     from rules_engine.kicker import kicked_cast_clauses
     from rules_engine.oracle_text import without_reminder_text
     from rules_engine.foretell import PRINTED, GRANT, MODIFIER, FIRST, spell_variants, created_clauses
@@ -120,6 +123,9 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
                 *((str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
                   for face in card_faces or [] if isinstance(face, dict))]
     from rules_engine.spell_cost_clauses import spell_additional_costs
+    from rules_engine.conditional_instructions import instruction_gaps
+    for name, text in variants:
+        out.extend(instruction_gaps(text, name))
     if any(spell_additional_costs(text, name) is None for name, text in variants):
         out.append('unsupported spell additional cost')
     from rules_engine.spell_cost_clauses import resource_x_effect_gaps

@@ -275,6 +275,9 @@ class Repository:
     def get_simulation_job(self, job_id: str) -> SimulationJobRecord | None:
         return self.session.get(SimulationJobRecord, job_id)
 
+    def count_simulation_jobs(self) -> int:
+        return self.session.exec(select(func.count()).select_from(SimulationJobRecord)).one()
+
     def list_simulation_jobs(self, limit: int = 20) -> list[SimulationJobRecord]:
         return list(self.session.exec(select(SimulationJobRecord).order_by(SimulationJobRecord.started_at.desc()).limit(limit)).all())
 

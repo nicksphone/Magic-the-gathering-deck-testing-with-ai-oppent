@@ -175,7 +175,7 @@ def test_ai_prices_reusable_graveyard_cards_only_when_permission_exists(seat, na
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-def test_suppressed_land_grant_and_changeling_do_not_keep_permission(seat):
+def test_ability_loss_removes_land_grant_but_preserves_changeling_types(seat):
     state = position(seat)
     land = add(state, 'Forest', seat, Zone.GRAVEYARD, cards=ROWS)
     add(state, 'Ramunap Excavator', seat, cards=ROWS)
@@ -184,7 +184,8 @@ def test_suppressed_land_grant_and_changeling_do_not_keep_permission(seat):
     assert moves(state, seat, land.id) and moves(state, seat, spell.id)
     add(state, 'Humility', 3-seat, cards=ROWS)
     assert not moves(state, seat, land.id)
-    assert not moves(state, seat, spell.id)
+    # Changeling sets creature types in layer 4, before Humility's ability loss.
+    assert moves(state, seat, spell.id)
     add(state, 'Crucible of Worlds', seat, cards=ROWS)
     assert moves(state, seat, land.id)
 

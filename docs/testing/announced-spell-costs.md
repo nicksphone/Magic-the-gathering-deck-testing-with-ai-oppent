@@ -32,8 +32,9 @@ Supporting a clause does not certify every other ability on that card.
   rejection and SQLite restart cases. These counts overlap, not additive totals.
 - Six Chromium scenarios pass: both seats, own discount, unrelated color tax
   and prototype, actual UI choice/payment, reload and resolution.
-- Final parser simplification passes 84 focused checks. Complete integration
-  qualification remains outstanding; this document does not claim release.
+- Final parser simplification passes 84 focused checks. This increment was
+  subsequently included in the qualified `91b5dff` consolidated runtime; see
+  [integration evidence](backend-consolidation.md). Release gates remain open.
 
 ## Known Limitations And Next Upgrades
 

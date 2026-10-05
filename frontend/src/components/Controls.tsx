@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
+import { CardArt } from "./CardArt";
 
 type Props = {
   decks: DeckRecord[];
@@ -65,7 +66,7 @@ export function Controls(props: Props) {
   const variableDiscard = mechanicMove?.kind === "discard" && mechanicMove.min_count === 0;
   const [mechanicSelections, setMechanicSelections] = useState<string[]>([]);
   const [damageAmounts, setDamageAmounts] = useState<Record<string, number>>({});
-  const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.stage}:${mechanicMove?.source_id}:${mechanicMove?.target_slot_number}:${mechanicMove?.min_count}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}`;
+  const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.player_id}:${mechanicMove?.stage}:${mechanicMove?.source_id}:${mechanicMove?.target_slot_number}:${mechanicMove?.min_count}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}:${mechanicMove?.inspected_cards?.map(card => card.id).join(",")}`;
   useEffect(() => setMechanicSelections([]), [mechanicKey]);
   useEffect(() => setDamageAmounts({}), [mechanicKey]);
   const mechanicPaused = Boolean(mechanicMove || props.match?.pending_mechanic_choice);
@@ -260,6 +261,14 @@ export function Controls(props: Props) {
       {mechanicMove ? (
         <div className="block-panel">
           <h3>{mechanicMove.label ?? "Choose a draw replacement"} (P{mechanicMove.player_id})</h3>
+          {mechanicMove.inspected_cards?.length ? <section aria-label="Privately inspected cards">
+            <p>Inspected cards. Only qualifying cards below can be selected.</p>
+            {mechanicMove.inspected_cards.map((card) => <details key={card.id} className="cast-card-box">
+              <summary>{card.name} {card.mana_cost} {mechanicMove.options?.includes(card.id) ? "(selectable)" : "(not selectable)"}</summary>
+              <div style={{ maxWidth: 180 }}><CardArt uri={card.image_uri} name={card.name} /></div>
+              <p>{card.type_line}</p><p>{card.oracle_text}</p>
+            </details>)}
+          </section> : null}
           {mechanicMove.kind === "combat_damage" ? <>
             <p>Assign exactly {mechanicMove.count} damage in the {mechanicMove.stage} damage step.</p>
             {(mechanicMove.options ?? []).map((target) => <label key={target}>
@@ -285,7 +294,7 @@ export function Controls(props: Props) {
             {mechanicMove.can_restart ? <button onClick={() => props.onChooseMechanic(mechanicMove.player_id!, {
               type: "choose_mechanic", choice_id: "restart",
             })}>Restart Damage Assignments</button> : null}
-          </> : mechanicMove.kind === "effect_cast" || mechanicMove.kind === "ward_payment" || mechanicMove.kind === "counter_payment" || mechanicMove.kind === "optional_search" ? (mechanicMove.options ?? []).map((cid) => (
+          </> : mechanicMove.kind === "effect_cast" || mechanicMove.kind === "ward_payment" || mechanicMove.kind === "counter_payment" || mechanicMove.kind === "optional_search" || (mechanicMove.options?.length === 1 && mechanicMove.options[0] === "__none__") ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "attacking_token_target" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>Attack {mechanicMove.option_labels?.[cid] ?? cid}</button>
