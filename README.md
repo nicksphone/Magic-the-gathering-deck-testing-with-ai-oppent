@@ -481,6 +481,11 @@ Implementation scopes and remaining limits:
   actions and search work, backed by 799 composed tests; its 92.5-second latency
   remains too slow for interactive use. See [bounded evidence](docs/testing/combat-query-batches.md).
 - Combat search preserves blockers when a non-lethal line would only chump without removing an attacker, while retaining lethal-prevention and profitable-trade lines
+- Paid selection uses an own-inventory probability when available, preserves
+  known interaction and avoids verified zero-hit forced activations. Unknown
+  inventories retain a heuristic fallback, not a fabricated hit probability.
+  Legacy batch/replay now reject invalid AI actions rather than converting them
+  into passes. See [integrated scope](docs/testing/selection-policy-integration.md).
 - Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
 - Tactical ranking, rollout, opening-hand, closure, burn and threat heuristics use Oracle text/types and announced spell faces rather than name fragments. Printed fixed player-damage estimates recognize unlisted damage spells and Boros Charm's four-damage clause. Deck identity uses role density, curve and typed tribal support; missing type metadata yields an explicit zero-confidence fallback. These remain heuristics, not expert-play certification. See [scope](docs/testing/ai-oracle-semantics.md).
 

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from ai.selection_activation import selection_activation_plan, selection_activation_score, pending_selection_expectation
 from rules_engine.type_effects import effective_types
 
 import copy
@@ -913,6 +914,7 @@ class AIAgent:
         position = projected if projected is not None else state
         with rule_query_scope(position):
             expectation = (topdeck_deployment_value(state, player_id) if projected is None else 0.0)
+            expectation += (pending_selection_expectation(state, player_id) or 0.0) * 1.25 if projected is None else 0.0
             return evaluate_board(position, player_id) + self._strategic_features(position, player_id) + expectation
 
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
@@ -924,6 +926,8 @@ class AIAgent:
         score = self._strategic_position_score(sim, player_id)
         score += self._stack_two_ply_value(sim, player_id, score)
         score += self._instant_value_reservation(state, move, player_id)
+        plan = selection_activation_plan(state, move, player_id)
+        score -= 6 if plan is not None and plan["loses_known_interaction"] else 0
         return self._strategic_state_score(sim, player_id, depth, score)
 
     def _strategic_state_score(self, sim: MatchState, player_id: int, depth: int, score: float) -> float:
@@ -1615,8 +1619,17 @@ class AIAgent:
                 tax_plan = combat_tax_plan(state, move, player_id)
                 if tax_plan is not None:
                     base += tax_plan['score'] - 2.5
-                if "look at the top" in label or "draw" in label or "search" in label:
-                    base += 4.0
+                plan = selection_activation_plan(state, move, player_id)
+                if plan is not None and plan['expected_hand_cards'] is not None:
+                    base += selection_activation_score(plan, hand_value=1.25, interaction_reservation=6) - 2.5
+                    if plan["expected_hand_cards"] == 0:
+                        base = -float("inf")
+                elif "look at the top" in label or "draw" in label or "search" in label:
+                    # An unavailable inventory prior is not evidence of no hits.
+                    if plan is not None and plan['loses_known_interaction']:
+                        base -= 6
+                    else:
+                        base += 4.0
                 if "x damage to each creature and each player" in label:
                     from rules_engine.costs import restricted_x_color
                     source = state.cards.get(move.get("card_id"))
@@ -5028,6 +5041,11 @@ class AIAgent:
 
     def _best_proactive_non_pass(self, ranked_moves: list[dict], state: MatchState, player_id: int | None = None) -> dict | None:
         non_pass = [m for m in ranked_moves if m.get("type") not in {"pass_priority", "tap_land_for_mana", "tap_lands_bulk"}]
+        non_pass = [m for m in non_pass if player_id is None
+                    or (plan := selection_activation_plan(state, m, player_id)) is None
+                    or (plan['expected_hand_cards'] is None and not plan['loses_known_interaction'])
+                    or (plan['expected_hand_cards'] is not None
+                        and selection_activation_score(plan, hand_value=1.25, interaction_reservation=6) > 0)]
         if not non_pass:
             return None
         burn_convert = self._best_burn_conversion_cast(non_pass, state, player_id)

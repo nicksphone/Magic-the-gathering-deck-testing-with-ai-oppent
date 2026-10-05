@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "backend/ai/pending_effects.py": {
-    "mtime": 1791229229.9463654,
-    "seen": 1791232057.6668427,
-    "ast_hash": "37551f87c7c860c2333964a54d5b6159",
+    "mtime": 1791237218.1855228,
+    "seen": 1791237297.6578832,
+    "ast_hash": "63f0594df137fa6175eff990ce3515da",
     "semantic_hash": ""
   },
   "backend/ai/matchup_profiles.py": {
@@ -120,9 +120,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791229229.9403656,
-    "seen": 1791232057.6667938,
-    "ast_hash": "ec05fa4c7b99520e1a0730e0adbeec28",
+    "mtime": 1791237218.1885226,
+    "seen": 1791237297.6578352,
+    "ast_hash": "7e4e52b571216cb57f41d8a212351c23",
     "semantic_hash": ""
   },
   "backend/ai/sideboarding.py": {
@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/regression_matrix_replay.py": {
-    "mtime": 1791189653.4686096,
-    "seen": 1791232057.6671588,
-    "ast_hash": "2e7ad0446a1bdeeeb7c8f758312ff501",
+    "mtime": 1791237218.1975226,
+    "seen": 1791237297.6582184,
+    "ast_hash": "8b8638f0789db8d78bc7da654f5146e7",
     "semantic_hash": ""
   },
   "backend/scripts/build_ai_log_priors.py": {
@@ -2790,9 +2790,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_decisions.py": {
-    "mtime": 1791159505.511634,
-    "seen": 1791232057.6675706,
-    "ast_hash": "fdb5b965c201d5e870d73f0e5aaa812d",
+    "mtime": 1791237218.2005224,
+    "seen": 1791237297.6587334,
+    "ast_hash": "face05efc36865cf7b06bd7342b30584",
     "semantic_hash": ""
   },
   "backend/tests/test_life_conversion.py": {
@@ -2910,9 +2910,9 @@
     "semantic_hash": ""
   },
   "backend/analytics/service.py": {
-    "mtime": 1790764149.1142375,
-    "seen": 1791232057.6668675,
-    "ast_hash": "563e85f30552c2034ce0641ef2368898",
+    "mtime": 1791237218.1945226,
+    "seen": 1791237297.6579106,
+    "ast_hash": "359ebbbb1a60229d6874a97327f5654f",
     "semantic_hash": ""
   },
   "backend/analytics/schemas.py": {
@@ -4140,21 +4140,21 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791236446.45099,
-    "seen": 1791236489.8591528,
-    "ast_hash": "9d6f98aa7aef3f84c693edb00d7e0be0",
+    "mtime": 1791237207.6666932,
+    "seen": 1791237297.6598117,
+    "ast_hash": "8a592806f000632d5f26b3e4979406ae",
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791236415.453474,
-    "seen": 1791236489.8595223,
-    "ast_hash": "b33d3cc16b36a9174cd2026ba3ce8ba0",
+    "mtime": 1791237207.748692,
+    "seen": 1791237297.660189,
+    "ast_hash": "65d4fb4975abce4520d4f4fd7d35b188",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791236415.451474,
-    "seen": 1791236489.8591511,
-    "ast_hash": "7e10393f52fef63932d9c585e1c2a58c",
+    "mtime": 1791237207.8196907,
+    "seen": 1791237297.65981,
+    "ast_hash": "c1bedaa9d8d040323e39b78b855a8963",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -6993,6 +6993,60 @@
     "mtime": 1791236415.4484742,
     "seen": 1791236489.859492,
     "ast_hash": "b83e76887cde2daf8ce1b73d22a9f93b",
+    "semantic_hash": ""
+  },
+  "backend/ai/selection_activation.py": {
+    "mtime": 1791237218.1915226,
+    "seen": 1791237297.6578877,
+    "ast_hash": "3ffef4212e7295628754633e2c995ad7",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/selection_activation_policy/duskwatch-recruiter.json": {
+    "mtime": 1791237218.2175221,
+    "seen": 1791237297.6586127,
+    "ast_hash": "4ee61ea40e6036f3b607d10ee6591412",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/selection_activation_policy/provenance.json": {
+    "mtime": 1791237218.222522,
+    "seen": 1791237297.6586146,
+    "ast_hash": "71cce79a66e4624696268d1c7e885649",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/selection_activation_policy/search-for-azcanta.json": {
+    "mtime": 1791237218.2195222,
+    "seen": 1791237297.658616,
+    "ast_hash": "ecac4475b56de3335616308b1c2fec50",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_opaque_top_choose_horizon.py": {
+    "mtime": 1791237218.2055223,
+    "seen": 1791237297.6587825,
+    "ast_hash": "b3d8b46aeffb01aa7dbc23c2ff3a24f1",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_selection_activation_policy.py": {
+    "mtime": 1791237218.2025225,
+    "seen": 1791237297.6588106,
+    "ast_hash": "1a4cb8f570d90a064a7e3be98765f156",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_simulator_action_safety.py": {
+    "mtime": 1791237218.2075224,
+    "seen": 1791237297.6593459,
+    "ast_hash": "f58bc99b5f1ecf7e195f04f1dd28d15c",
+    "semantic_hash": ""
+  },
+  "docs/testing/selection-activation-policy.md": {
+    "mtime": 1791237218.2105224,
+    "seen": 1791237297.6601346,
+    "ast_hash": "4c571d7dbf01005ab3a428e59b97d1f3",
+    "semantic_hash": ""
+  },
+  "docs/testing/selection-policy-integration.md": {
+    "mtime": 1791237232.1342967,
+    "seen": 1791237297.6601362,
+    "ast_hash": "c93a489d56ead5b61067f8cd8fcf58fb",
     "semantic_hash": ""
   }
 }

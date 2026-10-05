@@ -7,6 +7,7 @@ from itertools import combinations
 from collections import Counter
 
 from ai.agent import AIAgent
+from ai.action_contract import complete_action
 from ai.deck_analysis import guess_archetype
 from analytics.decision_quality import (
     build_decision_quality_artifact,
@@ -18,6 +19,7 @@ from analytics.replay_tools import classify_first_divergence, first_log_divergen
 from rules_engine.mana import mana_value, parse_mana_cost
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+from rules_engine.action_validation import checked_action
 from rules_engine.coverage import deck_pair_coverage
 from game_state.state import MatchFactory, pregame_actor
 
@@ -85,19 +87,17 @@ class AnalyticsService:
                 else:
                     agent = b_agent if pid == 1 else a_agent
                 decision = agent.choose_action(state, legal, pid)
-                # Safety: if AI returns an action not in legal moves, treat as pass
-                legal_types = {m["type"] for m in legal}
-                if decision.action.get("type") not in legal_types:
-                    decision.action = {"type": "pass_priority"}
+                action = complete_action(decision.action)
                 trace_payload = build_trace_payload(
                     state,
                     pid,
                     legal,
-                    decision.action,
+                    action,
                     decision.reasoning,
                 )
-                state.log.append(f"AI TRACE {json.dumps(trace_payload, separators=(',', ':'))}")
-                self.engine.take_action(state, pid, decision.action)
+                candidate = checked_action(state, self.engine, pid, action)
+                candidate.log.insert(len(state.log), f"AI TRACE {json.dumps(trace_payload, separators=(',', ':'))}")
+                state = candidate
                 ticks += 1
 
             winner = state.winner
@@ -318,15 +318,11 @@ class AnalyticsService:
                     legal = self.engine.legal_moves(state, pid)
                     if not legal:
                         pair_counts["no_legal_moves"] += 1
-                        self.engine.take_action(state, pid, {"type": "pass_priority"})
+                        state = checked_action(state, self.engine, pid, {"type": "pass_priority"})
                     else:
                         agent = a_agent if pid == 1 else b_agent
                         decision = agent.choose_action(state, legal, pid)
-                        # Safety: if AI returns an action not in legal moves, treat as pass
-                        legal_types = {m["type"] for m in legal}
-                        if decision.action.get("type") not in legal_types:
-                            decision.action = {"type": "pass_priority"}
-                        self.engine.take_action(state, pid, decision.action)
+                        state = checked_action(state, self.engine, pid, complete_action(decision.action))
                     ticks += 1
 
                 if state.winner is None:

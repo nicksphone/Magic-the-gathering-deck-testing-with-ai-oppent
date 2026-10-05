@@ -18,7 +18,7 @@ def complete_card_bookkeeping(state):
                     continue
                 for field, value in {'id': cid, 'zone': zone, 'controller': seat,
                                      'owner': seat, 'summoning_sick': False,
-                                     'tapped': False, 'counters': {}}.items():
+                                     'tapped': False, 'counters': {}, 'oracle_text': ''}.items():
                     if not hasattr(card, field):
                         setattr(card, field, value)
     return state

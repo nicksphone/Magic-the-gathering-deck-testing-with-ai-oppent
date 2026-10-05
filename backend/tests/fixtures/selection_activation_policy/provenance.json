@@ -1,0 +1,22 @@
+[
+  {
+    "path": "backend/tests/fixtures/selection_activation_policy/duskwatch-recruiter.json",
+    "sha256": "8db5990fdd0eec9a37968a99939f2106a6abc0fa09137865b308a1014b28082f",
+    "name": "Duskwatch Recruiter // Krallenhorde Howler",
+    "oracle_id": "87c43776-dd98-4e12-9b95-82d2b8f4f1ab",
+    "scryfall_id": "4ef68479-ab2e-4a60-886c-ad007b64f185",
+    "canonical_uri": "https://api.scryfall.com/cards/4ef68479-ab2e-4a60-886c-ad007b64f185",
+    "fetched_utc": "2026-10-05",
+    "source": "Scryfall exact named endpoint, unmodified JSON bytes; no new rule admission implied"
+  },
+  {
+    "path": "backend/tests/fixtures/selection_activation_policy/search-for-azcanta.json",
+    "sha256": "03e2b9cc72925acf4789e8522fd3616077e26583d84d65b657e811142eb2eeb9",
+    "name": "Search for Azcanta // Azcanta, the Sunken Ruin",
+    "oracle_id": "f74c4d96-bc4a-4d32-9519-a753d192144e",
+    "scryfall_id": "1a7e242e-bb48-4134-a1c2-6033713d658f",
+    "canonical_uri": "https://api.scryfall.com/cards/1a7e242e-bb48-4134-a1c2-6033713d658f",
+    "fetched_utc": "2026-10-05",
+    "source": "Scryfall exact named endpoint, unmodified JSON bytes; no new rule admission implied"
+  }
+]

@@ -8,8 +8,9 @@ from contextvars import ContextVar
 import json
 import pickle
 import re
+from typing import Literal, TypedDict
 
-from game_state.state import CardInstance, MatchState, Zone
+from game_state.state import CardInstance, MatchState, StackItem, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_text import without_reminder_text
@@ -24,6 +25,24 @@ _decision_projection = ContextVar("ai_decision_projection", default=None)
 _immutable_card_types = frozenset((str, int, float, bool, type(None), Zone))
 POSITION_SCORE_CACHE_BYTES = 16 * 1024 * 1024
 POSITION_SCORE_CACHE_ENTRIES = 256
+
+
+class OpaqueExileOpportunity(TypedDict):
+    controller: int
+    count: int
+    expires_turn: int
+    permission: Literal['play']
+    playability: Literal['unknown']
+
+
+def opaque_exile_opportunities(state: MatchState, player_id: int) -> tuple[OpaqueExileOpportunity, ...]:
+    """Count-only forecast, not legal actions, mana readiness or known cards.
+
+    Projection annotations are deliberately not persisted as game permissions.
+    Recompute from a restored announced snapshot; never execute this forecast.
+    """
+    return tuple(record.copy() for record in getattr(state, 'ai_opaque_exile_opportunities', ())
+                 if record['controller'] == player_id and record['expires_turn'] >= state.turn)
 
 
 def reuse_position_score(state, player_id, owner, compute):
@@ -337,7 +356,7 @@ def _projection_copy(state: MatchState) -> MatchState:
 def _opaque_selection_choice(projected):
     from ai.information import is_unknown
     choice = projected.pending_mechanic_choice or {}
-    if choice.get('kind') not in {'look_top_select_hand', 'topdeck_bottom_order'}:
+    if choice.get('kind') not in {'look_top_select_hand', 'topdeck_bottom_order', 'look_top_choose'}:
         return None
     options = choice.get('options', [])
     chooser = choice.get('player_id')
@@ -348,8 +367,75 @@ def _opaque_selection_choice(projected):
     count = choice.get('count', 0)
     if not isinstance(count, int) or not 0 <= count <= len(options):
         return None
+    if choice['kind'] == 'look_top_choose' and (type(count) is not int or count < 2
+                                               or count != len(options) or len(set(options)) != count):
+        return None
     # Opaque alternatives have equal count value, never fabricated identities.
     return {'type': 'choose_mechanic', 'card_ids': list(options[:count])}
+
+
+def _opaque_acquisition_items(state):
+    items = list(state.stack)
+    choice = state.pending_mechanic_choice
+    if not choice:
+        return items
+    if (choice.get('kind') not in {'look_top_choose', 'look_top_select_hand', 'topdeck_bottom_order'}
+            or not isinstance(choice.get('resolving_item'), dict)
+            or any(choice.get(key) for key in ('counter_continuation_queue', 'draw_continuation_queue',
+                                               'remaining_draws', 'continuation_controller'))):
+        return None
+    try:
+        item = StackItem(**choice['resolving_item'])
+    except (TypeError, ValueError):
+        return None
+    expected = 'look_top_select_hand' if choice['kind'] == 'topdeck_bottom_order' else choice['kind']
+    if item.effect_key != expected or item.controller != choice.get('player_id'):
+        return None
+    return [item, *items]
+
+
+def _opaque_acquisition_stack(state, player_id):
+    """Admit full, unfiltered typed acquisitions, not partial Oracle matches."""
+    if getattr(state, 'ai_information_player', None) != player_id:
+        return False
+    items = _opaque_acquisition_items(state)
+    if items is None:
+        return False
+    acquisitions = {'draw_cards', 'look_top_select_hand', 'look_top_choose'}
+    if (not any(item.effect_key in acquisitions for item in items)
+            or any(item.effect_key not in acquisitions | {'counter_spell', 'counter_ability'}
+                   for item in items)):
+        return False
+    from rules_engine.oracle_effects import _parse_count_token
+    allowed_payload = {'top_n', 'play_exiled_until', 'mana_spent_to_cast', 'mana_spent',
+                       'snow_mana_spent', 'snow_mana_colors'}
+    for item in items:
+        if item.effect_key != 'look_top_choose':
+            continue
+        payload = item.payload
+        if any(not key.startswith('__') and key not in allowed_payload for key in payload):
+            return False
+        source = state.cards.get(item.source_card_id)
+        copied = payload.get('__copied_card', {})
+        if not isinstance(copied, dict):
+            return False
+        text = copied.get('oracle_text', getattr(source, 'oracle_text', ''))
+        if not isinstance(text, str):
+            return False
+        match = re.fullmatch(
+            r'look at the top (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards? of your library\. '
+            r'put one(?: of them)? into your hand, (?:put )?one(?: of them)? on the bottom of your library, '
+            r'and (?:exile one(?: of them)?|one(?: of them)? into exile)\. '
+            r'you may play (?:the exiled card|the card exiled this way) this turn\.?',
+            without_reminder_text(text).strip(), re.I,
+        )
+        duration = payload.get('play_exiled_until', state.turn)
+        if (match is None or type(payload.get('top_n')) is not int or payload['top_n'] < 1
+                or payload['top_n'] != _parse_count_token(match.group(1).lower())
+                or (duration is not None and type(duration) is not int)
+                or duration not in (None, 0, state.turn)):
+            return False
+    return True
 
 
 def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None,
@@ -383,15 +469,11 @@ def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, o
 
 def _opaque_draw_count_changes(state, projected, player_id):
     from ai.information import is_unknown
-    if getattr(state, 'ai_information_player', None) != player_id:
+    if not _opaque_acquisition_stack(state, player_id):
         return False
-    # Only guaranteed unfiltered hand acquisition, not search or filtered reveals.
-    acquisitions = {'draw_cards', 'look_top_select_hand'}
-    if (not any(item.effect_key in acquisitions for item in state.stack)
-            or any(item.effect_key not in acquisitions | {'counter_spell', 'counter_ability'}
-                   for item in state.stack)):
-        return False
-    may_reorder = any(item.effect_key == 'look_top_select_hand' for item in state.stack)
+    items = _opaque_acquisition_items(state)
+    may_reorder = any(item.effect_key in {'look_top_select_hand', 'look_top_choose'} for item in items)
+    may_exile = any(item.effect_key == 'look_top_choose' for item in items)
     for pid, original in state.players.items():
         final = projected.players[pid]
         removed = set(original.library) - set(final.library)
@@ -404,7 +486,12 @@ def _opaque_draw_count_changes(state, projected, player_id):
         if final.hand[:len(original.hand)] != original.hand:
             return False
         added = final.hand[len(original.hand):]
-        if len(added) != len(removed) or set(added) != removed:
+        if final.exile[:len(original.exile)] != original.exile:
+            return False
+        exiled = final.exile[len(original.exile):]
+        if ((exiled and not may_exile)
+                or len(added) + len(exiled) != len(removed) or set(added + exiled) != removed
+                or any(final.exile_play_until.get(cid) != projected.turn for cid in exiled)):
             return False
         if any(not is_unknown(state.cards[cid]) or not is_unknown(projected.cards[cid]) for cid in removed):
             return False
@@ -413,22 +500,30 @@ def _opaque_draw_count_changes(state, projected, player_id):
 
 def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_counts=False) -> MatchState | None:
     """Forecast declared effects; opt-in opaque hand counts never reveal identities."""
-    if not state.stack:
+    if not state.stack and not (state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order):
         return state
     libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
     opponent = 3 - player_id
     opposing_hand = tuple(state.players[opponent].hand)
     projected = _projection_copy(state)
-    opaque_selection = (opaque_draw_counts and getattr(state, 'ai_information_player', None) == player_id
-                        and any(item.effect_key == 'look_top_select_hand' for item in state.stack)
-                        and all(item.effect_key in {'draw_cards', 'look_top_select_hand', 'counter_spell', 'counter_ability'}
-                                for item in state.stack))
+    opaque_selection = opaque_draw_counts and _opaque_acquisition_stack(state, player_id)
     if not _settle_announced_stack(projected, player_id=player_id, opaque_hand_choices=opaque_selection):
         return None
     if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
             or tuple(projected.players[opponent].hand) != opposing_hand):
         if not opaque_draw_counts or not _opaque_draw_count_changes(state, projected, player_id):
             return None
+        opportunities: list[OpaqueExileOpportunity] = []
+        for pid, player in projected.players.items():
+            exiled = player.exile[len(state.players[pid].exile):]
+            if exiled:
+                opportunities.append({'controller': pid, 'count': len(exiled), 'expires_turn': projected.turn,
+                                      'permission': 'play', 'playability': 'unknown'})
+                # The engine created a real permission, but opaque placeholders
+                # must not become free executable spells in a planning forecast.
+                for cid in exiled:
+                    player.exile_play_until.pop(cid, None)
+        projected.ai_opaque_exile_opportunities = tuple(opportunities)
     return projected
 
 

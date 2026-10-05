@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Callable
 
 from ai.agent import AIAgent
+from ai.action_contract import complete_action
 from ai.deck_analysis import guess_archetype
 from analytics.replay_tools import classify_first_divergence, classify_log_line, classify_timeout_state, first_log_divergence, normalize_log_line
 from card_data.hydration import hydrate_deck_cards
@@ -25,6 +26,7 @@ from game_state.series_policy import game_seed, next_play_draw_chooser
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+from rules_engine.action_validation import checked_action
 from sqlmodel import Session
 
 
@@ -224,10 +226,8 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
         else:
             agent = ai_a if pid == 1 else ai_b
             action = _timed_stage(observer, context, 'choose_action', lambda: agent.choose_action(state, legal, pid)).action
-            legal_types = {m["type"] for m in legal}
-            if action.get("type") not in legal_types:
-                action = {"type": "pass_priority"}
-        state.log.append(
+        action = complete_action(action)
+        trace_line = (
             "AI TRACE "
             + json.dumps(
                 {
@@ -253,8 +253,10 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
                 separators=(",", ":"),
             )
         )
-        _timed_stage(observer, {**context, 'action': action}, 'apply_action',
-                     lambda: engine_rules.take_action(state, pid, action))
+        candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',
+                                 lambda: checked_action(state, engine_rules, pid, action))
+        candidate.log.insert(len(state.log), trace_line)
+        state = candidate
         ticks += 1
 
     normalized_log = [normalize_log_line(line) for line in state.log]

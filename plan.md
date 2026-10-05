@@ -17,6 +17,12 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Integrated paid-selection consumers and checked legacy batch/replay actions:
+  1,055 composed tests pass, including actual production decisions, privacy and
+  unknown-inventory regressions. Two seeded Burn/Aggro games finish in both seat
+  assignments with repeated replay equality. Opaque selection projections are
+  qualified, but retained Tempo cast-versus-pass ranking remains unfinished.
+  See [scope](docs/testing/selection-policy-integration.md).
 - [x] Complete training-choice prompts and explicit payload validation: 172
   composed checks pass for both-seat canonical modal/inspection/trigger/ward/
   replacement cases. Resource/hybrid mana encoding and broader choice coverage

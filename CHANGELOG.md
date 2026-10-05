@@ -1,5 +1,19 @@
 # Changelog
 
+## Paid Selection And Simulator Action Parity - 2026-10-05
+
+- Wire generic paid-selection priors into actual AI decisions while preserving
+  known interaction and the unknown-inventory fallback. Avoid verified zero-hit
+  forced activations; never manufacture hypothetical eligible cards.
+- Forecast supported opaque look/hand/bottom/exile clauses with count-only exile
+  opportunities that cannot become executable unknown spells in planning.
+- Check legacy batch, diagnostic and replay actions atomically; invalid decisions
+  now fail visibly instead of silently becoming passes. Accepted trace order is
+  preserved. Repair incomplete existing policy-test doubles, not card data.
+- Final composed gate passes 1,055 checks. Two logical seeded Burn/Aggro games
+  finish and repeat identically; this is not balance or expert-play evidence.
+  Retained Tempo positions still pass despite corrected acquisition forecasts.
+
 ## Complete Training Choices And Bounded Offline Import - 2026-10-05
 
 - Expose actor-private allowlisted pending prompts and inspected misses; require
