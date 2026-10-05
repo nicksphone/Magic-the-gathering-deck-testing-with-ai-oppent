@@ -72,8 +72,8 @@
     "hash": "2877c6c80d99e97294773fac8936347c"
   },
   "/home/nick/mtg-linked-landfall/backend/ai/agent.py": {
-    "mtime": 1791171226.405387,
-    "hash": "8bcd6081f760bb75db795a0172b1f63f"
+    "mtime": 1791171836.7380667,
+    "hash": "d20707f163b565284683fbda602ede76"
   },
   "/home/nick/mtg-linked-landfall/backend/ai/sideboarding.py": {
     "mtime": 1791165013.8223102,
@@ -1252,8 +1252,8 @@
     "hash": "f0696788b50c0ccf5cda6b66f7cdc5bd"
   },
   "/home/nick/mtg-linked-landfall/backend/tests/test_ai_beneficial_alternatives.py": {
-    "mtime": 1791171212.7095163,
-    "hash": "cb944177d49206edbf401ca3f7434e80"
+    "mtime": 1791172048.8421018,
+    "hash": "438dfb27ba4e23a14ce26165951576ea"
   },
   "/home/nick/mtg-linked-landfall/backend/tests/test_new_rules_batch.py": {
     "mtime": 1791165013.8663096,
@@ -1928,8 +1928,8 @@
     "hash": "cfa867ccdc84309b4c7b7fe55e10af55"
   },
   "/home/nick/mtg-linked-landfall/backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791167219.6074686,
-    "hash": "63cd45e797e195ca3ef1e92190664ff5"
+    "mtime": 1791171919.524925,
+    "hash": "2db655570e83ca1b5d1ac67ea341c006"
   },
   "/home/nick/mtg-linked-landfall/backend/rules_engine/keyword_effects.py": {
     "mtime": 1791165013.83231,
@@ -2108,8 +2108,8 @@
     "hash": "c3698d8ae5e66c5641d9450ea5736df8"
   },
   "/home/nick/mtg-linked-landfall/frontend/tests/ui_v2_fixture_server.py": {
-    "mtime": 1791170915.5663245,
-    "hash": "ff384f529a83126037f3762264a26ab4"
+    "mtime": 1791172336.5309186,
+    "hash": "e990ac456f33ba3fd4fe0c192339259e"
   },
   "/home/nick/mtg-linked-landfall/frontend/tests/browser-combat-coverage.mjs": {
     "mtime": 1791165013.900309,
@@ -2288,8 +2288,8 @@
     "hash": "a848807dc0134eff012073c07a9856c3"
   },
   "/home/nick/mtg-linked-landfall/frontend/tests/browser-conditional-copy.mjs": {
-    "mtime": 1791170915.5673244,
-    "hash": "7236593461ba074b4ff61a5c9d8cb12f"
+    "mtime": 1791172336.5319185,
+    "hash": "ab975ed6f60afc43eb4f824f65e724fc"
   },
   "/home/nick/mtg-linked-landfall/frontend/tests/browser-ui-v2.mjs": {
     "mtime": 1791165013.905309,
@@ -2332,16 +2332,16 @@
     "hash": "afce7797e83ea8bb4e4e867eae904e1a"
   },
   "/home/nick/mtg-linked-landfall/README.md": {
-    "mtime": 1791171342.27321,
-    "hash": "264cee08c197af01f26da075f456dfc8"
+    "mtime": 1791172570.6284294,
+    "hash": "55fe46d7ba349e01bfa2bca63b6a9118"
   },
   "/home/nick/mtg-linked-landfall/plan.md": {
-    "mtime": 1791171342.2752101,
-    "hash": "fd6304efde0902a4f44b9c8996c1d923"
+    "mtime": 1791172570.6294293,
+    "hash": "c01e5acc6c766ea59a51c35a8b1f5168"
   },
   "/home/nick/mtg-linked-landfall/CHANGELOG.md": {
-    "mtime": 1791171342.2782102,
-    "hash": "a9b63dd486d098a818a8c68ac188c12b"
+    "mtime": 1791172570.6314294,
+    "hash": "5eddee533cfc6d5d40446b6ba3136be6"
   },
   "/home/nick/mtg-linked-landfall/backend/requirements.txt": {
     "mtime": 1791165013.82831,
@@ -2670,6 +2670,10 @@
   "/home/nick/mtg-linked-landfall/docs/testing/saga-counter-events.md": {
     "mtime": 1791165013.8843093,
     "hash": "83e1dc61db47c47cd52a81bb06363d31"
+  },
+  "/home/nick/mtg-linked-landfall/docs/testing/beneficiary-polarity.md": {
+    "mtime": 1791172570.6274295,
+    "hash": "dc95b856981d67de09492ba51bcc4e27"
   },
   "/home/nick/mtg-linked-landfall/docs/testing/ai-draw-forecast.md": {
     "mtime": 1791165013.8773096,

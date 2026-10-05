@@ -49,7 +49,7 @@ def linked_copy(seat: int = 1, primary: str = 'player'):
 
 @app.post('/fixture/conditional-copy')
 def conditional_copy(seat: int = 1, name: str = 'groundswell', enhanced: bool = False):
-    if seat not in (1, 2) or name not in ('groundswell', 'rest-for-the-weary'):
+    if seat not in (1, 2) or name not in ('groundswell', 'rest-for-the-weary', 'lightning-helix', 'essence-drain'):
         from fastapi import HTTPException
         raise HTTPException(422, 'Expected a valid seat and supported alternative')
     import json
@@ -59,7 +59,13 @@ def conditional_copy(seat: int = 1, name: str = 'groundswell', enhanced: bool = 
     from tests.test_real_ordered_spell_copy import pass_twice
     from rules_engine.action_validation import checked_action
     from rules_engine.engine import RulesEngine
-    state, spell, old, targets = position(name, seat)
+    if name in ('lightning-helix', 'essence-drain'):
+        from tests.test_ai_beneficial_alternatives import damage_gain_position
+        state, spell = damage_gain_position(seat, name)
+        old = add(state, 'Torrential Gearhulk', seat)
+        targets = {'target_player': 3-seat}
+    else:
+        state, spell, old, targets = position(name, seat)
     copier = 3-seat
     new = add(state, 'Torrential Gearhulk', copier)
     state = checked_action(state, RulesEngine(), seat,

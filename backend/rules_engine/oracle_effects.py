@@ -230,6 +230,18 @@ def infer_effect_from_oracle(
     landfall = alternative_effect(oracle, action_targets)
     if landfall:
         return landfall
+    damage_gain = re.fullmatch(
+        rf'(?:{re.escape(card.name.lower())}|this spell) deals (\d+) damage to '
+        r'(?:any target|target creature|target player|target opponent|target planeswalker) '
+        r'and you gain (\d+) life\.?', oracle.strip(), re.I)
+    if damage_gain:
+        damage_clause, gain_clause = oracle.rsplit(' and ', 1)
+        damage = _infer_clause_effect(state, card, controller, damage_clause, action_targets, 0)
+        return 'effect_sequence', {'effects': [
+            {'effect_key': damage[0], 'payload': damage[1], 'clause_text': damage_clause},
+            {'effect_key': 'gain_life', 'payload': {'amount': int(damage_gain[2])},
+             'clause_text': gain_clause},
+        ]}
     from rules_engine.ordered_targets import ordered_counter_allocations, ordered_creature_modifiers
     modifiers = ordered_creature_modifiers(oracle)
     if modifiers:

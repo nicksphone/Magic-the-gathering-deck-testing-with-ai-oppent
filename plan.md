@@ -2,13 +2,23 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify complete joined damage/caster-gain instructions and semantic player
+  targeting. Two canonical cards expose self-targeting and a dropped gain clause;
+  both use shared parsing/sequence handlers after repair. A 151-check selection
+  and twelve paid-copy Chromium cases pass. Complete the latest frozen backend
+  and full browser gates, then review the fresh Boros/Dimir life/burn/drain matrix.
+  [Scope and before/after evidence](docs/testing/beneficiary-polarity.md).
+
 - [ ] Qualify the beneficial original-spell targeting repair exposed by the fresh
   copy matrix. Canonical pump/life cases reproduce 27 failures and nine passes
   before correction. Shared life-gain tagging and structural conditional pump
   polarity now pass 97 overlapping checks, including both seats/four style labels,
-  actual checked resolution and unknown-history immutability. A separate frozen
-  318-file full backend gate is running. Complete its exact-source verification
-  and fresh post-fix seeded games; the earlier copy matrix is pre-fix evidence.
+  actual checked resolution and unknown-history immutability. The separate frozen
+  318-file gate passes 7,797 tests, with all 603 backend files matching the isolated
+  integration. Full browser acceptance passes all three natural BO3 modes. Four
+  same-seed/seat logical games reduce beneficial originals targeting opponents
+  from eight to zero; all sixteen before/after executions strictly reconstruct.
+  Integration/deployment remains pending the subsequent joined-instruction fix.
 
 - [ ] Finish [linked conditional damage](docs/testing/linked-controller-targets.md).
   Complete-pair admission, exclusive damage amounts, captured recipients and

@@ -2,6 +2,18 @@
 
 ## Unreleased Candidate - Land-entry history and conditional alternatives
 
+- Interpret complete simple fixed damage plus caster-life gain as separate ordered
+  effects, and choose damage targets from the targeted instruction rather than
+  the spell's broad gain role. Two canonical cards exposed 16 target failures and
+  a dropped effect clause. A 151-check selection and twelve paid-copy Chromium
+  cases pass, including prevented damage, illegal-target fizzle and low-life
+  self-targeting. Latest full gates and fresh Boros/Dimir games remain pending.
+- Verify original beneficiary targeting with byte-identical seed/seat inputs:
+  four logical games reduce harmful original recipient choices from eight to zero;
+  all sixteen before/after executions strictly reconstruct. Its frozen 7,797-test
+  gate and full browser suite pass. This is bounded decision-quality evidence,
+  not expert AI or universal-card certification.
+
 - Fix original beneficial spell recipient selection exposed by a retained natural
   copy game: shared tactical roles now recognize life gain, and conditional pump
   branches reuse friendly beneficiary filtering. Thirty-six canonical cases

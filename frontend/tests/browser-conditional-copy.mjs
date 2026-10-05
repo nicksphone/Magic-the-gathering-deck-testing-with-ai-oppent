@@ -3,8 +3,8 @@ import {openBrowser} from './browser-driver.mjs';
 
 const api = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199';
 for (const seat of [1, 2]) {
-  for (const name of ['groundswell', 'rest-for-the-weary']) {
-    for (const enhanced of [false, true]) {
+  for (const name of ['groundswell', 'rest-for-the-weary', 'lightning-helix', 'essence-drain']) {
+    for (const enhanced of ['groundswell', 'rest-for-the-weary'].includes(name) ? [false, true] : [false]) {
       const response = await fetch(`${api}/fixture/conditional-copy?seat=${seat}&name=${name}&enhanced=${enhanced}`, {method: 'POST'});
       assert.equal(response.status, 200);
       const fixture = await response.json(), id = fixture.match.id;
@@ -13,7 +13,7 @@ for (const seat of [1, 2]) {
       try {
         await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(id)})`);
         await reload();
-        await waitFor(`document.body.innerText.includes(${JSON.stringify(`Choose a new target for ${fixture.spell_name} (copy)`)})`);
+        await waitFor(`document.body.innerText.includes(${JSON.stringify(fixture.match.pending_mechanic_choice.label)})`);
         await evaluate(`(() => {
           const label = [...document.querySelectorAll('.block-panel label')].find(label => label.textContent.trim() === ${JSON.stringify(fixture.recipient_name)});
           if (!label) throw new Error('Missing conditional copy recipient');
@@ -43,9 +43,12 @@ for (const seat of [1, 2]) {
           assert.deepEqual([card.power, card.toughness], [5+amount, 6+amount]);
           const old = state.players[String(seat)].battlefield.find(card => card.id === fixture.old_id);
           assert.deepEqual([old.power, old.toughness], [5, 6]);
-        } else {
+        } else if (name === 'rest-for-the-weary') {
           assert.equal(state.players[String(seat)].life, enhanced ? 28 : 24);
           assert.equal(state.players[String(3-seat)].life, 20);
+        } else {
+          assert.equal(state.players[String(seat)].life, 17);
+          assert.equal(state.players[String(3-seat)].life, 23);
         }
         console.log(`PASS copier seat ${3-seat}: paid ${name} ${enhanced ? 'enhanced' : 'ordinary'}, retarget/reload and resolved copy only`);
       } finally { await close(); }
