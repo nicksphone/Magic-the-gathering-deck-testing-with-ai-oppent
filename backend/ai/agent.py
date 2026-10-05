@@ -1582,7 +1582,12 @@ class AIAgent:
             elif mtype == "activate_ability":
                 base += 2.5
                 if move.get('payment_options'):
-                    base -= self._spell_payment_loss(state, player_id, move['payment_options'])
+                    choice = self._activation_resource_choice(state, move, player_id)
+                    if choice is None:
+                        base = -float('inf')
+                    else:
+                        payment = {**move['payment_options'], **choice}
+                        base -= self._spell_payment_loss(state, player_id, payment)
                 label = str(move.get("ability_label", "")).lower()
                 from ai.combat_tax_policy import combat_tax_plan
                 tax_plan = combat_tax_plan(state, move, player_id)
@@ -2816,6 +2821,40 @@ class AIAgent:
             loss += sum(rank(state, cid, player_id) for cid in fixed) + sum(values[:count-len(fixed)])
         return loss
 
+    def _activation_resource_choice(self, state, move, player_id):
+        from rules_engine.costs import activated_cost_available, parse_activated_cost, _activation_selections
+        from rules_engine.costs import restricted_x_color
+        payment = move['payment_options']
+        if not payment.get('discard_cards') and not payment.get('sacrifice_creatures'):
+            return {'discard_card_ids': [], 'sacrifice_card_ids': []}
+        chosen = {}
+        for key, count_key, rank in (
+            ('discard_card_ids', 'discard_cards', self._hand_retention_value),
+            ('sacrifice_card_ids', 'sacrifice_creatures', self._sacrifice_loss),
+        ):
+            fixed = list(payment.get('fixed_' + key, []))
+            options = [cid for cid in payment.get(key, []) if cid not in fixed]
+            count = payment.get(count_key, 0)
+            chosen[key] = fixed + sorted(options, key=lambda cid: (rank(state, cid, player_id), cid))[:max(0, count-len(fixed))]
+
+        def payable(choice):
+            return activated_cost_available(state, player_id, move['card_id'], move['mana_cost'],
+                move.get('hybrid_choices'), int((move.get('targets') or {}).get('x_value') or 0),
+                restricted_x_color(move.get('ability_label', '')), ability_index=move['ability_index'],
+                payment_choices=choice)
+
+        if move.get('payment_choices') is not None:
+            return move['payment_choices'] if payable(move['payment_choices']) else None
+        if payable(chosen):
+            return chosen
+        best, best_loss = None, float('inf')
+        cost = parse_activated_cost(move['mana_cost'])
+        for alternative in _activation_selections(state, player_id, move['card_id'], cost, None, ()):
+            loss = self._spell_payment_loss(state, player_id, {**payment, **alternative})
+            if loss < best_loss and payable(alternative):
+                best, best_loss = alternative, loss
+        return best
+
     def _kicker_draw_gain(self, state, player_id, base_count, kicked_count):
         """Use public library counts and restrictions, never future card identities."""
         from rules_engine.draw_restrictions import forecast_draw_count
@@ -3498,18 +3537,11 @@ class AIAgent:
                         own_choice_action=lambda projected, legal, pid: self.choose_action(projected, legal, pid).action) is False:
                         out['_invalid_ai_choice'] = True
         if mtype == 'activate_ability' and move.get('payment_options'):
-            payment = move['payment_options']
-            choice = dict(out.get('payment_choices') or {})
-            for key, count_key, rank in (
-                ('discard_card_ids', 'discard_cards', self._hand_retention_value),
-                ('sacrifice_card_ids', 'sacrifice_creatures', self._sacrifice_loss),
-            ):
-                fixed = list(payment.get('fixed_' + key, []))
-                count = payment.get(count_key, 0)
-                if key not in choice:
-                    options = [cid for cid in payment.get(key, []) if cid not in fixed]
-                    choice[key] = fixed + sorted(options, key=lambda cid: (rank(state, cid, player_id), cid))[:max(0, count-len(fixed))]
-            out['payment_choices'] = choice
+            choice = self._activation_resource_choice(state, {**move, **out}, player_id)
+            if choice is None:
+                out['_invalid_ai_choice'] = True
+            else:
+                out['payment_choices'] = choice
         return out
 
     def _choose_blocks(self, state: MatchState, attackers: list[dict], blockers: list[dict]) -> dict[str, str | list[str]]:

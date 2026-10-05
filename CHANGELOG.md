@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-10-05 - Joint activation mana/resource planning
+
+- Carry selected-resource reservations through free/paid mana planning, snow
+  payment, ability selection and execution; preserve legal tap-only use before
+  sacrifice. Try feasible automatic/AI resource alternatives.
+- Exact runtime `1d8fa7a`: 8,159 tests pass across all 330 recursive files with
+  644 matching source/fixture hashes, plus the complete browser gate in all
+  three natural BO3 modes. Eight focused browser and four new HTTP cases pass.
+- Nested mana life budgets remain a known separate gap, not hidden by this
+  qualification. Richer resource strategy and wider cost grammar remain open.
+
 ## 2026-10-05 - Deliberate activated payments
 
 - Share activation resource candidates and selected-payment validation between

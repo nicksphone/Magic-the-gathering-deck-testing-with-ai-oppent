@@ -29,3 +29,17 @@ def activation_payment(seat: int = 1, kind: str = 'sacrifice'):
     return {'match': result, 'source_id': source.id, 'source_name': source.name,
             'ability_index': index, 'chosen_id': chosen.id,
             'retained_id': next(card.id for card in cards if card.id != chosen.id)}
+
+
+@app.post('/fixture/joint-activation-payment')
+def joint_activation_payment(seat: int = 1):
+    if seat not in (1, 2):
+        raise HTTPException(422, 'Invalid seat')
+    from tests.test_joint_activation_payment import petal
+    state = bare_state(seat)
+    source = activation_card(state, 'trading-post', seat)
+    chosen, mana_source = petal(state, seat), petal(state, seat)
+    state.log.append('Canonical joint-payment test position, not a played competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Island'}])
+    return {'match': result, 'source_id': source.id, 'chosen_id': chosen.id,
+            'mana_source_id': mana_source.id}

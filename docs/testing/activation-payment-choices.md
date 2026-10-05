@@ -41,9 +41,10 @@ Scryfall responses with retrieval URLs, timestamps and SHA-256 provenance.
 Deliberate payments for mana abilities, cycling, ward and other action families
 are not part of this batch. More complex compound cost syntax remains outside
 the supported parser. An explicit resource consumed by automatic mana planning
-is rejected atomically. Two Lotus Petals plus Trading Post reproduce a valid
-selected payment rejected when automatic mana consumes the selected artifact;
-alternative joint mana/resource search is being repaired in a separate candidate.
+is rejected atomically. The separately qualified
+[joint planner](joint-activation-payment.md) repairs the reproduced Lotus Petal/
+Trading Post selected-resource ordering gap. Nested mana life budgets remain
+under isolated repair.
 Sacrifice/death rewards, impending losses and richer strategic resource value
 need deeper planning and actual-game evidence. This batch does not establish
 arbitrary-card rules fidelity, expert AI, accessibility or network release safety.

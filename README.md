@@ -1,5 +1,13 @@
 # MTG Deck Testing Lab
 
+Shared activation/mana planning preserves selected nonmana resources, allows
+legal tap-then-sacrifice sequences and searches jointly payable automatic
+choices. AI checks resource feasibility and ranks feasible losses. Exact runtime
+qualification: 8,159 backend tests across all 330 files with 644 matching source
+hashes and the complete browser gate in all three BO3 modes. Nested life costs
+remain a reproduced gap under isolated repair; see
+[joint payment scope](docs/testing/joint-activation-payment.md).
+
 The application exposes deliberate discard and sacrifice choices
 for supported nonmana activated abilities in both human seats. Shared cost
 validation rejects wrong resources before authoritative mutation; AI selects
@@ -7,8 +15,9 @@ resources using retention/loss estimates and includes those costs in ranking.
 Eighty targeted checks and six focused browser payment/reload cases pass;
 frontend tests, lint and build pass. The exact runtime passes 8,133 backend
 tests across all 328 files with 639 verified source/fixture hashes and the
-complete browser gate in all three BO3 controller modes. Joint mana/resource
-planning has a reproduced ordering gap being repaired in an isolated follow-up.
+complete browser gate in all three BO3 controller modes. Selected-resource
+ordering is repaired by the qualified planner above; nested life budgets remain
+under isolated repair.
 See [activation payment scope](docs/testing/activation-payment-choices.md).
 
 The shared engine applies recognized casting/activation life and creature

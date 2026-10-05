@@ -101,7 +101,7 @@ def source_ready(state, card):
                  or has_keyword(state, card.id, 'haste')))
 
 
-def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTERED):
+def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTERED, reserved_card_ids=()):
     from rules_engine.mana import mana_activation_is_free
     from rules_engine.costs import activated_cost_available, parse_activated_cost
     if not ignore_readiness and not source_ready(state, card):
@@ -113,7 +113,7 @@ def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTE
         cost = parse_activated_cost(spec[1])
         if not cost.supported or not mana_activation_is_free(state, card.id, cost.mana_cost):
             continue
-        if not ignore_readiness and not activated_cost_available(state, card.controller, card.id, spec[1], ability_kind='mana', ability_index=spec[0]):
+        if (not ignore_readiness or reserved_card_ids) and not activated_cost_available(state, card.controller, card.id, spec[1], ability_kind='mana', ability_index=spec[0], unavailable_resources=reserved_card_ids):
             continue
         for color, amount in ability_outputs(state, card, spec).items():
             if amount > 0:
@@ -155,7 +155,7 @@ def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UN
                     yield cid, spec, color
 
 
-def activate_mana_ability(state, player_id, source_id, ability_index, color, *, excluded_sources=()):
+def activate_mana_ability(state, player_id, source_id, ability_index, color, *, excluded_sources=(), reserved_card_ids=()):
     from rules_engine.costs import ActivatedCost, parse_activated_cost, apply_activated_costs
     from rules_engine.mana import auto_pay_cost, add_mana_to_pool
     card = state.cards.get(source_id)
@@ -169,10 +169,10 @@ def activate_mana_ability(state, player_id, source_id, ability_index, color, *, 
         if not auto_pay_cost(state, player_id, cost.mana_cost, payment_kind='activation',
                 payment_types=set(effective_types(state, card)), card_name=card.name,
                 source_card_id=source_id, ability_kind='mana', ability_index=ability_index,
-                excluded_sources=set(excluded_sources) | {source_id}):
+                excluded_sources=set(excluded_sources) | {source_id}, reserved_card_ids=reserved_card_ids):
             return False
         card.tapped = True
-    elif not apply_activated_costs(state, player_id, source_id, spec[1], ability_kind='mana', ability_index=ability_index):
+    elif not apply_activated_costs(state, player_id, source_id, spec[1], ability_kind='mana', ability_index=ability_index, unavailable_resources=reserved_card_ids):
         return False
     # Amounts are determined after costs, including any resource departures.
     amount = ability_outputs(state, card, spec).get(color, 0)
@@ -192,7 +192,7 @@ def mana_ability_views(state, card):
             and activated_cost_available(state, card.controller, card.id, spec[1], ability_kind='mana', ability_index=spec[0])]
 
 
-def preferred_free_spec(state, card, color, amount, *, payment_context=UNFILTERED, tap_only=False):
+def preferred_free_spec(state, card, color, amount, *, payment_context=UNFILTERED, tap_only=False, reserved_card_ids=()):
     """Preserve the selected ability's rule; prefer unrestricted tied outputs."""
     from rules_engine.costs import ActivatedCost, parse_activated_cost, activated_cost_available
     from rules_engine.mana import mana_activation_is_free
@@ -207,7 +207,7 @@ def preferred_free_spec(state, card, color, amount, *, payment_context=UNFILTERE
         if payment_context is not UNFILTERED and not eligible(rule, payment_context):
             continue
         if not activated_cost_available(state, card.controller, card.id, spec[1],
-                ability_kind='mana', ability_index=spec[0]):
+                ability_kind='mana', ability_index=spec[0], unavailable_resources=reserved_card_ids):
             continue
         if ability_outputs(state, card, spec).get(color) == amount:
             candidates.append(spec)

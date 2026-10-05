@@ -2,13 +2,22 @@
 
 ## Current Priority: Backend First
 
+- [x] Qualify [joint mana/resource activation planning](docs/testing/joint-activation-payment.md).
+  Exact runtime passes 8,159 tests in all 330 files with 644 matching backend
+  hashes and the complete browser gate in all three BO3 modes. Preserve selected
+  resources, allow tap-only use and choose feasible automatic/AI alternatives.
+- [ ] Repair nested mana life budgets. Mana production can spend Erebos's outer
+  life cost; both seats reproduce. A separate shared-budget candidate is under
+  targeted validation before full qualification. Extend actual-game timing and
+  decision-quality evidence beyond crafted states.
+
 - [x] Qualify [deliberate activated payments](docs/testing/activation-payment-choices.md).
   Shared ordinary activation resource selection, strict HTTP validation, both
   human seats, mandatory source costs, ownership and resource-aware AI pass
   targeted checks. Exact source passes 8,133 tests in all 328 recursive files
   with 639 verified source/fixture hashes and the full browser harness across
-  all three BO3 modes. Joint mana/resource planning has a reproduced ordering
-  gap under isolated repair; other cost-bearing action families remain open.
+  all three BO3 modes. Selected-resource ordering is repaired by the separately
+  qualified joint planner; nested life budgets and other action families remain open.
 
 - [x] Qualify [contextual costs and source sacrifice](docs/testing/contextual-cost-prohibitions.md).
   Batch casting/activation life and sacrifice prohibitions, effective-source
