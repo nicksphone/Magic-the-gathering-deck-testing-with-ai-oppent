@@ -1,5 +1,17 @@
 # Changelog
 
+## Offline Corpus And Dataset Tooling - 2026-10-05
+
+- Add explicit-source corpus audit, bounded artifact campaigns, ownership-aware
+  interrupted-start recovery and full-profile delivery validation. No implicit
+  live knowledge import or numerical tactical-score generation.
+- Add private-observation trajectory export with reversible encounter aliases,
+  immutable shards, heuristic teacher provenance and honest split diagnostics.
+  No trained policy or expert labels are claimed.
+- Full shared browser CI passes with 484 PASS lines on its pre-mana frozen source;
+  separate composed corpus/dataset/training/metadata/mana gate passes 245 checks,
+  including teacher-source hash coverage.
+
 ## Fixed Additional Mana - 2026-10-05
 
 - Share supported fixed triggered mana across manual activation, automatic

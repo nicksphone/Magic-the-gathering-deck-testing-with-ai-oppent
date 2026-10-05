@@ -87,6 +87,15 @@ Implementation scopes and remaining limits:
   deterministic in-memory adapter with private observations, checked complete
   actions, explicit choice prompts, terminal rewards and versioned snapshots.
   It currently uses supported built-in decks and is **not a trained neural AI**.
+- [Versioned trajectory export](docs/testing/training-dataset.md) records checked
+  actor-private actions with encounter aliases, terminal/incomplete distinctions,
+  immutable shards and grouped split diagnostics. Its baseline teacher is a
+  generic heuristic, not expert supervision or a deck-trained policy.
+- [Offline corpus readiness](docs/testing/corpus-readiness.md) prepares and
+  validates source-backed card/ruling artifacts with resumable ownership and
+  full-profile checks. Live import and all-row nested metadata materialization
+  remain separate work; [mechanic flags](docs/testing/corpus-mechanic-backlog.md)
+  are not execution certification.
 
 - [AI observation and utility boundary](docs/testing/ai-information.md): private
   decision copies exclude unseen opposing hands and uninspected library metadata;

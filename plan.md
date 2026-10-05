@@ -2,11 +2,11 @@
 
 ## Current Execution Order
 
-1. Finish natural-game mana/selection defects and combat latency validation;
-   retain the qualified rules batch and saved-match restoration evidence.
-2. Analyze new natural-game deployment traces, integrate verified corpus readiness
-   and mechanic metadata, then qualify the training-environment adapter. Preserve
-   hidden-information boundaries and do not force matchup win rates.
+1. Finish preserved selection/ranking and combat latency validation; extend
+   Suspend and choice-dependent mana families without card-name exceptions.
+2. Apply the verified corpus safely, materialize bounded mechanic metadata and
+   expand complete training choices/features. Preserve private observations,
+   qualified snapshots and expert-data provenance; do not force matchup win rates.
 3. Continue the original rules/AI/release gates below: conditional/compound
    semantics, affordable multi-action planning, restart behavior, network posture
    and competitive-quality evidence remain unfinished.
@@ -17,6 +17,14 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Recovery-safe offline corpus tooling and versioned trajectory export:
+  composed knowledge/dataset/training/metadata/mana gate passes 245 checks,
+  including teacher-source hash coverage. All 38,690 card/ruling patches remain
+  staged, not live imported; datasets use a generic heuristic, not expert labels.
+  See [corpus](docs/testing/corpus-readiness.md) and [dataset](docs/testing/training-dataset.md).
+- [x] Full shared browser gate exits zero with 484 PASS lines, including all
+  three BO3 control modes and independent Officer/Cathar epilogues. Its frozen
+  source precedes fixed-mana promotion; it is not full post-mana certification.
 - [x] Shared fixed additional triggered mana: complete colored output bundles,
   distinct snow/restriction provenance and actual activation/payment parity.
   Composed gates pass 1,865 affected checks plus a separate 300-check integration

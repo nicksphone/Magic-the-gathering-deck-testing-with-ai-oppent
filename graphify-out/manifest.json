@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/ingest.py": {
-    "mtime": 1790737428.9231863,
-    "seen": 1791232057.6669385,
-    "ast_hash": "6a0ead40b32259a5bcfbffaa9e25ec34",
+    "mtime": 1791233120.0449076,
+    "seen": 1791233751.5675223,
+    "ast_hash": "680ded4cae1e25aff14b26065e5c7faf",
     "semantic_hash": ""
   },
   "backend/knowledge/mechanic_metadata.py": {
@@ -4140,21 +4140,21 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791232446.896888,
-    "seen": 1791232492.4161255,
-    "ast_hash": "ee80bd00ecee96be3bdd2a3ee6269c0a",
+    "mtime": 1791233451.8689473,
+    "seen": 1791233751.5692742,
+    "ast_hash": "3d3388b650a641657fc8452c63f8954a",
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791232446.900888,
-    "seen": 1791232492.4166439,
-    "ast_hash": "735566376b96729706cecdc3928c5c41",
+    "mtime": 1791233710.4320521,
+    "seen": 1791233751.56963,
+    "ast_hash": "7c0334b5b18369a5a9eb9b04a9e06346",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791232446.8998878,
-    "seen": 1791232492.4161215,
-    "ast_hash": "e4182dad4cf9607b0562e5670588c90e",
+    "mtime": 1791233710.4340522,
+    "seen": 1791233751.5692723,
+    "ast_hash": "53bddf2320861e2ac3cccb71d7532a90",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -4200,9 +4200,9 @@
     "semantic_hash": ""
   },
   "docs/plans/learned-policy-groundwork.md": {
-    "mtime": 1791231830.9032435,
-    "seen": 1791232057.668517,
-    "ast_hash": "8b3d969cbc46a0c781091436bb256a2f",
+    "mtime": 1791233451.8699472,
+    "seen": 1791233751.5693126,
+    "ast_hash": "f8509bb49a49e3e621c7b732add3316c",
     "semantic_hash": ""
   },
   "docs/plans/2026-09-09-ai-knowledge-base.md": {
@@ -6882,9 +6882,57 @@
     "semantic_hash": ""
   },
   "docs/testing/additive-triggered-mana.md": {
-    "mtime": 1791232446.8958879,
-    "seen": 1791232492.416204,
-    "ast_hash": "b58f005386723b1dc65a872e423257b1",
+    "mtime": 1791232568.321035,
+    "seen": 1791233751.5693257,
+    "ast_hash": "28ed8a4d1682561f3a5f313575755800",
+    "semantic_hash": ""
+  },
+  "backend/scripts/corpus_knowledge_readiness.py": {
+    "mtime": 1791233120.0459075,
+    "seen": 1791233751.5677233,
+    "ast_hash": "22a53651f8d09e969b8e6c8e5752baf3",
+    "semantic_hash": ""
+  },
+  "backend/scripts/export_training_trajectories.py": {
+    "mtime": 1791233120.0489073,
+    "seen": 1791233751.5677297,
+    "ast_hash": "d85567b1e1c006a9cfd5ff6860439c66",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_corpus_knowledge_readiness.py": {
+    "mtime": 1791233120.0459075,
+    "seen": 1791233751.568455,
+    "ast_hash": "9e3d205a7300be600a19c0a824157ff3",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_training_dataset.py": {
+    "mtime": 1791233323.9378662,
+    "seen": 1791233751.5688622,
+    "ast_hash": "b9fce2093721bf4da2028d1f7e09764e",
+    "semantic_hash": ""
+  },
+  "backend/training/dataset.py": {
+    "mtime": 1791233323.9378662,
+    "seen": 1791233751.56897,
+    "ast_hash": "9cc4b682a9bb0debe8e872ae5b4c3d66",
+    "semantic_hash": ""
+  },
+  "docs/testing/corpus-mechanic-backlog.md": {
+    "mtime": 1791233120.0529072,
+    "seen": 1791233751.569445,
+    "ast_hash": "072c66dec880763741492c902e241d8a",
+    "semantic_hash": ""
+  },
+  "docs/testing/corpus-readiness.md": {
+    "mtime": 1791233710.4330523,
+    "seen": 1791233751.5694463,
+    "ast_hash": "73f8737dd022c25b0291f028a8337bfb",
+    "semantic_hash": ""
+  },
+  "docs/testing/training-dataset.md": {
+    "mtime": 1791233323.9378662,
+    "seen": 1791233751.569604,
+    "ast_hash": "55e28f500e6a0e8f8cae4e7baeabe0fc",
     "semantic_hash": ""
   }
 }

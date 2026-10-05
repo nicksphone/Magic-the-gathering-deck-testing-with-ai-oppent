@@ -8,8 +8,14 @@ actions, terminal rewards and snapshot restoration. Its action encoding is
 partial; some pending choices still require explicit encoding work. The composed
 adapter/AI/input/metadata gate passed 323 checks; this is not a trained policy.
 
-Dataset export, complete choice encoding and learned-policy evaluation remain
-under development. Existing simulations are regression/evaluation runs.
+The [versioned dataset exporter](../testing/training-dataset.md) is implemented
+with actor-private observations, complete accepted action labels, provenance,
+bounded immutable shards and explicit incomplete outcomes. Its teacher is a
+generic heuristic, not expert supervision. Grouped datasets without a held-out
+partition explicitly report NOT evaluation-ready.
+
+Complete choice encoding, useful feature coverage, expert data, training and
+learned-policy evaluation remain unfinished. Existing simulations are regression/evaluation runs.
 Canonical metadata, rulings evidence and tactical tags are knowledge inputs,
 not learned gameplay or proof of effect execution. No neural policy is trained
 or deployed, and no expert supervision is claimed from heuristic self-play.

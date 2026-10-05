@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import time
 from datetime import datetime, timezone
 from urllib.parse import urlparse
@@ -16,12 +17,37 @@ SCHEMA_VERSION = 1
 API = "https://api.scryfall.com"
 
 
+def canonical_hash(value) -> str:
+    """Hash JSON facts independently of archive formatting/compression."""
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()).hexdigest()
+
+
+def validate_rulings_page(payload: dict, oracle_id: str) -> list[dict]:
+    if not isinstance(oracle_id, str) or not oracle_id:
+        raise ValueError("Rulings require an Oracle identity.")
+    if payload.get("object") != "list" or not isinstance(payload.get("data"), list):
+        raise ValueError("Invalid rulings response.")
+    for ruling in payload["data"]:
+        if (not isinstance(ruling, dict) or ruling.get("object") != "ruling"
+                or ruling.get("oracle_id") != oracle_id
+                or ruling.get("source") not in {"wotc", "scryfall"}
+                or not isinstance(ruling.get("comment"), str)
+                or not ruling.get("published_at")):
+            raise ValueError("Invalid or mismatched canonical ruling.")
+    if type(payload.get("has_more")) is not bool:
+        raise ValueError("Rulings pagination status is missing.")
+    return payload["data"]
+
+
 class KnowledgeIngestor:
     """Persist canonical facts; ingestion does not certify gameplay support."""
 
     def __init__(self, repository: Repository, client: httpx.Client, interval: float = 0.12):
         self.repository = repository
         self.client = client
+        if self.client.headers.get("User-Agent", "").startswith("python-httpx/"):
+            self.client.headers["User-Agent"] = "MTGDeckTestingLab/0.1 (canonical knowledge ingest)"
+        self.client.headers.setdefault("Accept", "application/json")
         self.interval = max(0.1, interval)
         self._last_request = 0.0
         self.normalizer = ScryfallSyncService(repository)
@@ -30,9 +56,20 @@ class KnowledgeIngestor:
         parsed = urlparse(url)
         if parsed.scheme != "https" or parsed.netloc != "api.scryfall.com":
             raise ValueError("Knowledge requests must use the Scryfall API.")
-        time.sleep(max(0.0, self.interval - (time.monotonic() - self._last_request)))
+        # Scryfall's named/search endpoints now require 500ms spacing.
+        interval = max(self.interval, 0.5 if parsed.path in {"/cards/named", "/cards/search"} else 0.1)
+        time.sleep(max(0.0, interval - (time.monotonic() - self._last_request)))
         try:
-            response = get_with_backoff(self.client, url, params=params, timeout=30)
+            for attempt in range(3):
+                response = get_with_backoff(self.client, url, params=params, timeout=30, retries=0)
+                if response.status_code != 429 or attempt == 2:
+                    break
+                try:
+                    retry_after = float(response.headers.get("Retry-After", "30"))
+                except ValueError:
+                    retry_after = 30.0
+                # Current official policy blocks API access for 30s after 429.
+                time.sleep(max(30.0, retry_after))
             response.raise_for_status()
             result = response.json()
             if not isinstance(result, dict):
@@ -73,12 +110,15 @@ class KnowledgeIngestor:
         if not rulings_uri:
             raise ValueError("Canonical card has no rulings endpoint.")
         rulings_payload = self._get(rulings_uri)
-        if rulings_payload.get("object") != "list" or not isinstance(rulings_payload.get("data"), list):
-            raise ValueError("Invalid rulings response.")
-        rulings = list(rulings_payload["data"])
+        rulings = list(validate_rulings_page(rulings_payload, raw["oracle_id"]))
+        visited = {rulings_uri}
         while rulings_payload.get("has_more"):
-            rulings_payload = self._get(rulings_payload["next_page"])
-            rulings.extend(rulings_payload["data"])
+            next_page = rulings_payload.get("next_page")
+            if not isinstance(next_page, str) or next_page in visited or len(visited) >= 100:
+                raise ValueError("Invalid or unbounded rulings pagination.")
+            visited.add(next_page)
+            rulings_payload = self._get(next_page)
+            rulings.extend(validate_rulings_page(rulings_payload, raw["oracle_id"]))
 
         previous = self.repository.get_card_knowledge(raw["name"])
         profile = json.loads(previous.profiles_json) if previous else {}
@@ -88,7 +128,11 @@ class KnowledgeIngestor:
             "oracle_id": raw["oracle_id"],
             "rulings_verified": True,
             "rulings": rulings,
+            "rulings_provenance": {"source": "scryfall", "uri": rulings_uri,
+                                   "fetched_at": datetime.now(timezone.utc).isoformat(),
+                                   "sha256": canonical_hash(rulings), "complete": True},
             "card_data": raw,
+            "card_data_sha256": canonical_hash(raw),
             "facts": {
                 "mana_value": raw.get("cmc"),
                 "color_identity": raw.get("color_identity", []),
