@@ -10,6 +10,19 @@ MTG_FRONTEND_DEPS=/absolute/path/to/frontend/node_modules \
 node frontend/tests/browser-cathar.mjs
 ```
 
+No arguments preserves the original six-case CI gate. The optional target
+lifecycle sidecar runs four additional cases without editing the shared CI
+epilogue or its declared six-case scope:
+
+```bash
+MTG_TEST_PYTHON=/absolute/path/to/backend/.venv/bin/python \
+MTG_FRONTEND_DEPS=/absolute/path/to/frontend/node_modules \
+node frontend/tests/browser-cathar.mjs --target-lifecycle
+```
+
+Use `--all` for the combined ten-case run. Unknown flags fail before creating a
+runtime or starting services. Results record `scope` and `expected_cases`.
+
 The dependency variables are optional when those dependencies already exist in
 the checkout. Requirements: Node with global WebSocket, Python backend dependencies
 and pytest (canonical fixture helpers), installed frontend dependencies, Chromium
@@ -85,7 +98,39 @@ Entry/board/designation/blink arrangements are **explicit controlled fixtures**,
 not claims that a natural game sequence or historical repair occurred. Canonical
 card facts are never edited. A timing fixture is not an invented blink card.
 
+### Target Lifecycle Sidecar
+
+Both human seats additionally run these source-grounded pending-target edges:
+
+- **Target departure:** choose the second opposing Recruitment Officer through
+  the actual trigger-target buttons. Cast canonical Unsummon through the App,
+  resolve it while Cathar's original targeted exile remains on the stack, and
+  restore/reload with that target now in hand. Resolve the old trigger through
+  actual UI passes; it must not exile the departed object or create a ledger.
+  A labelled source blink at night then proves there is no phantom target return.
+- **Target blink:** after the real target choice, an explicitly labelled fixture
+  uses the shared `exile` effect and the canonical backend contract's
+  `return_exiled` helper. Restore/reload between departure and return, and also
+  restart the P2 backend with the target exiled and the old trigger still pending.
+  The returned Officer has a new incarnation; the original trigger payload must
+  remain unchanged. Actual UI passes resolve it without exiling the new object
+  or linking it. Unsummon the source through the App; the target must stay on the
+  battlefield with the same returned incarnation and no ledger.
+
+These are controlled timing positions, not fabricated blink spells, normal-game
+controls, or historical repairs. The target-return fixture rejects an unrelated
+source/target, a wrong pending effect or a target outside its required zone. All
+card facts/provenance, default six cases, shared driver, shared CI and Officer
+sources remain unchanged. This closes only the tested target-lifecycle sidecar;
+broader transformation/linked-exile/replacement/layer interactions remain open.
+
 ## Provenance And Evidence
+
+Parent qualification on `e645456` plus this three-file sidecar passed all ten
+combined cases, 84 App HTTP actions and three backend restarts. Verified private
+runtime evidence is at RCHFiles `cathar-browser/mtg-cathar-browser-run-JCboYI`;
+archive SHA256 `c88ebf687afaa7fd8a883e9f38faa7da98cd57cf5d48c2489185f09987f9a178`.
+This run precedes the separate checked-autoplay action candidate.
 
 Cathar, Recruitment Officer and Plains reuse `cathar_day_night.json`, canonical
 Scryfall face records in `cathar_canonical/`, and their SHA-256 provenance manifest.
@@ -114,7 +159,8 @@ cd /mnt/rchfiles/codex-storage/mtg-deck-testing-lab/cathar-browser/<run>
 sha256sum -c SHA256SUMS
 ```
 
-Successful output contains six `PASS` lines and `success=true`. Exit status is
+Successful output contains six `PASS` lines by default, four for
+`--target-lifecycle`, or ten for `--all`, and `success=true`. Exit status is
 nonzero on a missing control, rule mismatch, restoration failure, service failure,
 or inability to preserve and verify NFS evidence. This is a focused browser gate,
 not the whole browser CI suite.

@@ -6,9 +6,9 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1791229229.9513655,
-    "seen": 1791232057.666944,
-    "ast_hash": "3c8ef058d1a85248863f7fd6578ad682",
+    "mtime": 1791235194.7587826,
+    "seen": 1791235292.9718711,
+    "ast_hash": "3afb05bfb2fe09abca58ba855530d5ea",
     "semantic_hash": ""
   },
   "backend/ai/counter_policy.py": {
@@ -2682,9 +2682,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_autoplay_progression.py": {
-    "mtime": 1790573144.6751409,
-    "seen": 1791232057.6676755,
-    "ast_hash": "0001739ebd624beda1712b83166ed185",
+    "mtime": 1791235194.7767823,
+    "seen": 1791235292.9727175,
+    "ast_hash": "c1f9ad34c796fd0c7c48e94ffe62a157",
     "semantic_hash": ""
   },
   "backend/tests/test_stack_copies.py": {
@@ -3786,9 +3786,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-cathar.mjs": {
-    "mtime": 1791231946.0935023,
-    "seen": 1791232057.668337,
-    "ast_hash": "0e6c71b01328a34cc674b513b1122100",
+    "mtime": 1791234414.6333838,
+    "seen": 1791235292.973485,
+    "ast_hash": "936b127536ed80ee858ba8ee03cbf42e",
     "semantic_hash": ""
   },
   "frontend/tests/browser-driver.mjs": {
@@ -4062,9 +4062,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/cathar_fixture_server.py": {
-    "mtime": 1791230739.7630858,
-    "seen": 1791232057.6684475,
-    "ast_hash": "ff09fa1e215e52a683d125cec15326e8",
+    "mtime": 1791234414.6333838,
+    "seen": 1791235292.9735997,
+    "ast_hash": "13bd7b664186f2ada79b86adc5b7b296",
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
@@ -4140,21 +4140,21 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791233451.8689473,
-    "seen": 1791233751.5692742,
-    "ast_hash": "3d3388b650a641657fc8452c63f8954a",
+    "mtime": 1791235225.1862888,
+    "seen": 1791235292.973639,
+    "ast_hash": "f56a116389654e468e32ae099621ca95",
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791233710.4320521,
-    "seen": 1791233751.56963,
-    "ast_hash": "7c0334b5b18369a5a9eb9b04a9e06346",
+    "mtime": 1791235225.1872888,
+    "seen": 1791235292.9740133,
+    "ast_hash": "099e6f6fb05c1c9d2c7abd7132a94df7",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791233710.4340522,
-    "seen": 1791233751.5692723,
-    "ast_hash": "53bddf2320861e2ac3cccb71d7532a90",
+    "mtime": 1791235225.1902888,
+    "seen": 1791235292.9736369,
+    "ast_hash": "53ccc467e60f76c3d3021adca20c4e3a",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -4680,9 +4680,9 @@
     "semantic_hash": ""
   },
   "docs/testing/cathar-browser.md": {
-    "mtime": 1791231946.0935023,
-    "seen": 1791232057.6686113,
-    "ast_hash": "9f40e022b52439816254ba3a371b9466",
+    "mtime": 1791234414.682383,
+    "seen": 1791235292.9737966,
+    "ast_hash": "7989b4984638a893b34dbab9e393f956",
     "semantic_hash": ""
   },
   "docs/testing/mana-multiplier-prefilter.md": {
@@ -6906,15 +6906,15 @@
     "semantic_hash": ""
   },
   "backend/tests/test_training_dataset.py": {
-    "mtime": 1791233323.9378662,
-    "seen": 1791233751.5688622,
-    "ast_hash": "b9fce2093721bf4da2028d1f7e09764e",
+    "mtime": 1791235194.7797823,
+    "seen": 1791235292.9733014,
+    "ast_hash": "12dbad07df04b0188507a7c1d68de695",
     "semantic_hash": ""
   },
   "backend/training/dataset.py": {
-    "mtime": 1791233323.9378662,
-    "seen": 1791233751.56897,
-    "ast_hash": "9cc4b682a9bb0debe8e872ae5b4c3d66",
+    "mtime": 1791235194.7647824,
+    "seen": 1791235292.973344,
+    "ast_hash": "366ec79007431a62c46ff9f4d6ec785c",
     "semantic_hash": ""
   },
   "docs/testing/corpus-mechanic-backlog.md": {
@@ -6933,6 +6933,36 @@
     "mtime": 1791233323.9378662,
     "seen": 1791233751.569604,
     "ast_hash": "55e28f500e6a0e8f8cae4e7baeabe0fc",
+    "semantic_hash": ""
+  },
+  "backend/ai/action_contract.py": {
+    "mtime": 1791235194.7617826,
+    "seen": 1791235292.9717102,
+    "ast_hash": "abadfe99987deb8ac3bed769867e324a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_action_contract.py": {
+    "mtime": 1791235194.7677824,
+    "seen": 1791235292.972582,
+    "ast_hash": "5917cdb597dd9c6b344f278252017aca",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_autoplay_action_safety.py": {
+    "mtime": 1791235194.7697825,
+    "seen": 1791235292.9727154,
+    "ast_hash": "030bfaa22a583f9fd36d13ea5f8ca579",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_autoplay_seeded_games.py": {
+    "mtime": 1791235194.7727823,
+    "seen": 1791235292.9727197,
+    "ast_hash": "54773c0435ca1c78eecdaadda01a47d2",
+    "semantic_hash": ""
+  },
+  "docs/testing/autoplay-action-safety.md": {
+    "mtime": 1791235225.185289,
+    "seen": 1791235292.9737668,
+    "ast_hash": "082699af43a6fdaef6a16008bfd62ccc",
     "semantic_hash": ""
   }
 }

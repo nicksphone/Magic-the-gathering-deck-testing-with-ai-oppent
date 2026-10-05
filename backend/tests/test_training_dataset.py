@@ -7,6 +7,7 @@ import sys
 
 import pytest
 
+from game_state.state import Zone
 from rules_engine.action_validation import ActionRejected
 from tests.test_training_environment import env, position, cast
 from training.dataset import (DatasetRun, EpisodeAliases, HeuristicTeacher, VERSION,
@@ -23,6 +24,34 @@ def manifest():
     return {'configuration_hash': digest('config'), 'engine_hash': digest('engine'),
             'deck_hashes': [digest('a'), digest('b')], 'policy_hash': digest('script'),
             'origin': 'unverified'}
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+def test_actual_heuristic_cast_exports_without_legal_move_display_hints(seat, tmp_path):
+    environment, cid = position(seat)
+    # Controlled canonical position: Bolt is the only hand card. This tests
+    # serialization, not whether a teacher prioritizes it over other actions.
+    player = environment._state.players[seat]
+    for other in list(player.hand):
+        if other != cid:
+            player.hand.remove(other)
+            player.library.append(other)
+            environment._state.cards[other].move_to_zone(Zone.LIBRARY)
+    environment._state.players[3-seat].life = 3
+    teacher = HeuristicTeacher('strong')
+    rows = list(records(environment, teacher, tick_budget=1, origin='heuristic'))
+    transitions = [row for row in rows if row['kind'] == 'transition']
+    assert len(transitions) == 1
+    action = transitions[0]['action']
+    assert action['type'] == 'cast_spell'
+    assert action['targets']['target_player'] == 3-seat
+    assert environment._state.stack[-1].source_card_id == cid
+    assert not {'card_name', 'mana_cost', 'target_hints', 'cost_options'} & action.keys()
+    assert rows[-1]['reason'] == 'tick_budget'
+    run = DatasetRun(tmp_path / 'cast', {'configuration_hash': digest('controlled-cast'),
+                                       **teacher.provenance(environment)})
+    run.write_episode(iter(rows))
+    validate_episode(tmp_path / 'cast/episode-0000.jsonl', 'episode-0000')
 
 
 @pytest.mark.parametrize('seat', [1, 2])

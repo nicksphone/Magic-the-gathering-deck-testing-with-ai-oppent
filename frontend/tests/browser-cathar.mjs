@@ -9,6 +9,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { openBrowser, waitForApiState } from './browser-driver.mjs';
 
+const args = process.argv.slice(2);
+assert.ok(args.length === 0 || (args.length === 1 && ['--target-lifecycle', '--all'].includes(args[0])), 'Use no flags, --target-lifecycle, or --all');
+const originalScenarios = ['day-ledger', 'night-transform-pending', 'source-blink-pending'];
+const targetScenarios = ['target-departure-pending', 'target-blink-pending'];
+const scenarios = args[0] === '--all' ? [...originalScenarios, ...targetScenarios] : args[0] === '--target-lifecycle' ? targetScenarios : originalScenarios;
+const scope = args[0] || 'original-six';
 process.umask(0o077);
 const source = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const python = process.env.MTG_TEST_PYTHON || path.join(source, 'backend/.venv/bin/python');
@@ -130,11 +136,11 @@ try {
   await ready(`${process.env.MTG_BROWSER_ORIGIN}/json/version`, chromium);
   await mkdir(path.join(runtime, 'evidence'));
 
-  for (const seat of [1, 2]) for (const scenario of ['day-ledger', 'night-transform-pending', 'source-blink-pending']) {
+  for (const seat of [1, 2]) for (const scenario of scenarios) {
     const fixture = await fixtureRequest(`?seat=${seat}&designation=${scenario === 'night-transform-pending' ? 'night' : 'day'}`, 'POST');
     const id = fixture.match.id;
     const route = `/${id}`;
-    const query = `?source_id=${encodeURIComponent(fixture.source_id)}`;
+    const query = `?source_id=${encodeURIComponent(fixture.source_id)}&target_id=${encodeURIComponent(fixture.target_ids[1])}`;
     const browser = await openBrowser(`${frontend}/`);
     const { evaluate, waitFor, click, reload, command } = browser;
     const getAudit = () => fixtureRequest(`${route}/audit${query}`);
@@ -188,12 +194,11 @@ try {
       await fixtureRequest(`${route}/transition${query}&operation=${operation}`, 'POST');
       await reload(); await loaded();
     }
-    async function bounce() {
-      const cid = fixture.source_id;
+    async function bounce(cid = fixture.source_id, owner = seat, remainingStack = 0) {
       await waitFor(`document.querySelector('[data-hand-card-id="${fixture.bounce_id}"] select option[value="${cid}"]') !== null`);
       await evaluate(`(() => { const select = [...document.querySelectorAll('[data-hand-card-id="${fixture.bounce_id}"] select')].find(s => [...s.options].some(o => o.value === ${JSON.stringify(cid)})); if (!select) throw new Error('Missing human Unsummon target control'); select.value = ${JSON.stringify(cid)}; select.dispatchEvent(new Event('change', {bubbles:true})); })()`);
       await click('Cast Unsummon');
-      await passUntil(state => !!cardAt(state, seat, 'hand', cid) && state.stack.length === 0);
+      await passUntil(state => !!cardAt(state, owner, 'hand', cid) && state.stack.length === remainingStack);
     }
     try {
       await command('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
@@ -225,7 +230,50 @@ try {
       const chosen = fixture.target_ids[1];
       await target(chosen);
       const incarnation = (await getAudit()).source.incarnation;
-      if (scenario === 'source-blink-pending') {
+      if (targetScenarios.includes(scenario)) {
+        const pending = await checkpoint('target-selected');
+        const pendingStack = pending.snapshot.stack;
+        const targetIncarnation = pending.target.incarnation;
+        assert.equal(pending.target.zone, 'battlefield');
+        assert.equal(pending.linked_exiles.length, 0);
+        if (scenario === 'target-departure-pending') {
+          await bounce(chosen, 3-seat, 1);
+          assert.equal((await getAudit()).target.zone, 'hand');
+          await checkpoint('target-departed-via-unsummon');
+        } else {
+          await transition('target-departure');
+          assert.equal((await getAudit()).target.zone, 'exile');
+          await checkpoint('target-departed-controlled-exile');
+          await restore();
+          if (seat === 2) {
+            const before = await getAudit(); await restartBackend(); await reload(); await loaded();
+            assert.equal((await getAudit()).snapshot_sha256, before.snapshot_sha256);
+            await checkpoint('departed-target-pending-process-restart');
+          }
+          await transition('target-return');
+          const blinked = await checkpoint('target-returned-new-incarnation');
+          assert.equal(blinked.target.zone, 'battlefield');
+          assert.notEqual(blinked.target.incarnation, targetIncarnation);
+        }
+        const changed = await getAudit();
+        assert.equal(changed.source.incarnation, incarnation);
+        assert.deepEqual(changed.snapshot.stack, pendingStack, 'Original pending trigger payload must not be retargeted');
+        await restore();
+        await passUntil(state => state.stack.length === 0);
+        const stale = await checkpoint('stale-target-trigger-cleanup');
+        const expectedZone = scenario === 'target-blink-pending' ? 'battlefield' : 'hand';
+        assert.equal(stale.target.zone, expectedZone);
+        assert.equal(stale.target.incarnation, changed.target.incarnation);
+        assert.equal(stale.linked_exiles.length, 0);
+        // Source departure must not return or move an incorrectly linked target.
+        if (scenario === 'target-blink-pending') await bounce();
+        else await transition('blink-at-night');
+        const cleanup = await checkpoint('source-departure-no-phantom-link');
+        assert.equal(cleanup.target.zone, expectedZone);
+        assert.equal(cleanup.target.incarnation, stale.target.incarnation);
+        assert.equal(cleanup.linked_exiles.length, 0);
+        await restore();
+      } else if (scenario === 'source-blink-pending') {
         await transition('blink-at-night');
         assert.notEqual((await getAudit()).source.incarnation, incarnation);
         await restore();
@@ -279,6 +327,7 @@ try {
 finally {
   for (const child of [...children].reverse()) await stop(child);
   await writeFile(path.join(runtime, 'results.json'), JSON.stringify({ success, results, requests, ports,
+    scope, expected_cases: scenarios.length * 2,
     processes: children.map(child => ({ label: child.label, pid: child.pid, exit_code: child.exitCode, signal: child.signalCode })),
     failure: failure?.stack, fixture_claim: 'Controlled canonical positions; no natural historical game claim.' }, null, 2));
   const tar = path.join(archive, 'private/runtime-evidence.tar.gz');

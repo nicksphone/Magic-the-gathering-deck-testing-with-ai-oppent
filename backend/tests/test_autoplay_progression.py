@@ -125,9 +125,9 @@ def test_autoplay_forces_ai_land_drop_on_own_main_phase() -> None:
     finally:
         ACTIVE_MATCHES.pop(state.id, None)
 
-    assert len(p1.battlefield) == battlefield_before + 1
-    assert len(p1.hand) == hand_before - 1
-    assert p1.lands_played_this_turn == 1
+    assert len(match.state.players[1].battlefield) == battlefield_before + 1
+    assert len(match.state.players[1].hand) == hand_before - 1
+    assert match.state.players[1].lands_played_this_turn == 1
 
 
 def test_autoplay_land_guard_overrides_ai_pass_when_land_is_legal() -> None:
@@ -168,8 +168,8 @@ def test_autoplay_land_guard_overrides_ai_pass_when_land_is_legal() -> None:
     finally:
         ACTIVE_MATCHES.pop(state.id, None)
 
-    assert len(p1.battlefield) == battlefield_before + 1
-    assert p1.lands_played_this_turn == 1
+    assert len(match.state.players[1].battlefield) == battlefield_before + 1
+    assert match.state.players[1].lands_played_this_turn == 1
 
 
 def test_land_guard_returns_offered_move_when_ai_names_another_card() -> None:
@@ -234,8 +234,8 @@ def test_autoplay_land_guard_overrides_ai_cast_when_land_is_legal() -> None:
     finally:
         ACTIVE_MATCHES.pop(state.id, None)
 
-    assert len(p1.battlefield) == battlefield_before + 1
-    assert p1.lands_played_this_turn == 1
+    assert len(match.state.players[1].battlefield) == battlefield_before + 1
+    assert match.state.players[1].lands_played_this_turn == 1
 
 
 def test_autoplay_does_not_invent_land_move_when_rules_omit_it() -> None:
@@ -247,8 +247,8 @@ def test_autoplay_does_not_invent_land_move_when_rules_omit_it() -> None:
             moves = self._wrapped.legal_moves(state, player_id)
             return [m for m in moves if m.get("type") != "play_land"]
 
-        def take_action(self, state, player_id, action):
-            return self._wrapped.take_action(state, player_id, action)
+        def take_action(self, state, player_id, action, **kwargs):
+            return self._wrapped.take_action(state, player_id, action, **kwargs)
 
     class PassOnlyAI:
         def choose_action(self, state, legal_moves, player_id):
@@ -288,8 +288,8 @@ def test_autoplay_does_not_invent_land_move_when_rules_omit_it() -> None:
     finally:
         ACTIVE_MATCHES.pop(state.id, None)
 
-    assert len(p1.battlefield) == battlefield_before
-    assert p1.lands_played_this_turn == 0
+    assert len(match.state.players[1].battlefield) == battlefield_before
+    assert match.state.players[1].lands_played_this_turn == 0
 
 
 def test_autoplay_land_guard_ignores_stale_land_counter_drift() -> None:
@@ -333,5 +333,5 @@ def test_autoplay_land_guard_ignores_stale_land_counter_drift() -> None:
     finally:
         ACTIVE_MATCHES.pop(state.id, None)
 
-    assert len(p1.battlefield) == battlefield_before + 1
-    assert p1.last_land_play_turn == state.turn
+    assert len(match.state.players[1].battlefield) == battlefield_before + 1
+    assert match.state.players[1].last_land_play_turn == state.turn

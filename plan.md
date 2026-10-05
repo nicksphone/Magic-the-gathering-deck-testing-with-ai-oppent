@@ -17,6 +17,15 @@ tracks environment, data and evaluation prerequisites; no neural policy is train
 or deployed, and regression runs are not training.
 
 Completed bounded work:
+- [x] Checked live autoplay and complete heuristic intent conversion: 259 composed
+  tests pass, including four seeded Strong match smoke cases and actual cast
+  exports for both seats. Rejected requests preserve whole state and storage.
+  Legacy analytics/replay boundary parity, interactive support warnings and
+  strategic quality remain outstanding. See [scope](docs/testing/autoplay-action-safety.md).
+- [x] Opt-in Cathar target-lifecycle browser sidecar: ten combined cases pass
+  on parent-composed e645456 source, with 84 actual App HTTP actions and three
+  backend restarts. The default six-case shared CI scope remains unchanged.
+  This is focused lifecycle evidence, not whole-app or broad rules certification.
 - [x] Recovery-safe offline corpus tooling and versioned trajectory export:
   composed knowledge/dataset/training/metadata/mana gate passes 245 checks,
   including teacher-source hash coverage. All 38,690 card/ruling patches remain

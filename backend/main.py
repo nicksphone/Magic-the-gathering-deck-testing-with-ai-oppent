@@ -24,6 +24,7 @@ from sqlmodel import Session
 from sqlalchemy.exc import SQLAlchemyError
 
 from ai.agent import AIAgent
+from ai.action_contract import complete_action
 from ai.deck_analysis import analyze_deck, guess_archetype
 from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_priors
 from ai.sideboarding import plan_sideboard
@@ -866,27 +867,30 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
             legal = match.rules.legal_moves(match.state, pid)
             forced_land = _force_ai_land_action(match, pid, legal)
             if forced_land is not None:
-                match.rules.take_action(match.state, pid, forced_land)
+                action = forced_land
             else:
                 decision = match.ai[pid].choose_action(match.state, legal, pid)
                 action = decision.action
-                # Safety: if AI returns an action not in legal moves, treat as pass
-                legal_types = {m["type"] for m in legal}
-                if action.get("type") not in legal_types:
-                    action = {"type": "pass_priority"}
                 # Strict backend invariant: on legal own-main land-drop windows,
                 # override any non-land action to ensure deterministic land development.
-                if action.get("type") != "play_land":
+                if isinstance(action, dict) and action.get("type") != "play_land":
                     guard_land = _force_ai_land_action(match, pid, legal)
                     if guard_land is not None:
                         action = guard_land
-                match.rules.take_action(match.state, pid, action)
+            try:
+                action = complete_action(action)
+                match.state = checked_action(match.state, match.rules, pid, action)
+            except ActionRejected as exc:
+                raise HTTPException(status_code=422, detail={
+                    "code": "illegal_ai_action", "message": str(exc),
+                    "player_id": pid, "action_type": action.get("type") if isinstance(action, dict) else None,
+                }) from exc
         else:
             if match.state.pregame_pending:
                 break
             if _human_priority_pause(match, pid):
                 break
-            match.rules.take_action(match.state, pid, {"type": "pass_priority"})
+            match.state = checked_action(match.state, match.rules, pid, {"type": "pass_priority"})
         _remember_public_types(match)
     _post_step_finalize(match, repo)
     _persist_active_match(repo, match)
@@ -1679,7 +1683,7 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
     # Let AI keep color-aware land selection by choosing among only play-land actions.
     # Return an offered move, not an unverified card ID from the AI.
     picked = match.ai[player_id].choose_action(state, land_moves, player_id).action
-    if picked.get("type") == "play_land":
+    if isinstance(picked, dict) and picked.get("type") == "play_land":
         for move in land_moves:
             if move.get("card_id") == picked.get("card_id") and move.get("selected_face_index") == picked.get("selected_face_index"):
                 return move

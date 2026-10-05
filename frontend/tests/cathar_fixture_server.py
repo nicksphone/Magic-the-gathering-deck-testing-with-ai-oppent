@@ -27,7 +27,7 @@ from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from tests.test_ai_recurring_engines import add
 from tests.test_cathar_day_night_linked_exile import (
-    CATHAR, FACTS, setup, test_cached_fixture_facts_match_provenance_backed_canonical_records,
+    CATHAR, FACTS, setup, return_exiled, test_cached_fixture_facts_match_provenance_backed_canonical_records,
 )
 
 assert DATABASE_PATH.resolve() == ROOT / 'backend/mtg_lab.db'
@@ -73,15 +73,22 @@ def persist(match):
         main._persist_active_match(Repository(session), match)
 
 
-def audit(match, source):
+def audit(match, source, target_id=None):
     snapshot = serialize_match_snapshot(match.state)
-    return {'pid': os.getpid(), 'revision': match.revision,
+    result = {'pid': os.getpid(), 'revision': match.revision,
             'source': {'id': source.id, 'name': source.name, 'zone': source.zone.value,
                        'face': source.selected_face_index, 'power': source.power,
                        'toughness': source.toughness, 'incarnation': object_incarnation(source)},
             'linked_exiles': deepcopy(match.state.linked_exiles),
             'snapshot_sha256': hashlib.sha256(json.dumps(snapshot, sort_keys=True).encode()).hexdigest(),
             'snapshot': snapshot}
+    if target_id is not None:
+        target = match.state.cards.get(target_id)
+        if target is None or target.owner == source.owner:
+            raise HTTPException(422, 'Expected an opposing controlled fixture target')
+        result['target'] = {'id': target.id, 'name': target.name, 'zone': target.zone.value,
+                            'owner': target.owner, 'incarnation': object_incarnation(target)}
+    return result
 
 
 @app.get('/fixture/cathar/status')
@@ -122,11 +129,11 @@ def fixture(request: Request, seat: int = 1, designation: str = 'day'):
 
 
 @app.get('/fixture/cathar/{match_id}/audit')
-def read_audit(match_id: str, source_id: str, request: Request):
+def read_audit(match_id: str, source_id: str, request: Request, target_id: str | None = None):
     authorize(request)
     match, source = owned(match_id, source_id)
     with match.mutation_lock:
-        return audit(match, source)
+        return audit(match, source, target_id)
 
 
 @app.post('/fixture/cathar/{match_id}/restore')
@@ -145,7 +152,7 @@ def restore(match_id: str, source_id: str, request: Request):
 
 
 @app.post('/fixture/cathar/{match_id}/transition')
-def transition(match_id: str, source_id: str, operation: str, request: Request):
+def transition(match_id: str, source_id: str, operation: str, request: Request, target_id: str | None = None):
     authorize(request)
     match, source = owned(match_id, source_id)
     with match.mutation_lock:
@@ -163,9 +170,26 @@ def transition(match_id: str, source_id: str, operation: str, request: Request):
             resolve_effect(state, source.owner, 'linked_exile_return', {'returning': [{
                 'card_id': source_id, 'destination': 'battlefield',
                 'timestamp': object_incarnation(source)}]})
+        elif operation in {'target-departure', 'target-return'}:
+            # Same lifecycle path as the canonical target-blink backend contract.
+            if (not state.stack or state.stack[-1].effect_key != 'exile_until_source_leaves'
+                    or state.stack[-1].payload.get('source_card_id') != source_id
+                    or state.stack[-1].payload.get('target_card_id') != target_id):
+                raise HTTPException(422, 'Expected this source and its pending chosen target')
+            target = state.cards.get(target_id)
+            if target is None or target.owner == source.owner:
+                raise HTTPException(422, 'Expected the opposing canonical chosen target')
+            if operation == 'target-departure':
+                if target.zone != Zone.BATTLEFIELD:
+                    raise HTTPException(422, 'Target departure requires battlefield')
+                resolve_effect(state, target.owner, 'exile', {'target_card_id': target_id})
+            else:
+                if target.zone != Zone.EXILE:
+                    raise HTTPException(422, 'Target return requires fixture exile')
+                return_exiled(state, target)
         else:
             raise HTTPException(422, 'Unknown controlled transition')
         state.log.append(f'EXPLICIT FIXTURE TRANSITION: {operation}; not a player action or historical claim.')
         match.revision += 1
         persist(match)
-        return audit(match, source)
+        return audit(match, source, target_id)

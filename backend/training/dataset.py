@@ -111,9 +111,10 @@ class HeuristicTeacher:
                       for path in files}})
 
     def __call__(self, environment):
+        from ai.action_contract import complete_action
         seat = environment.acting_seat
         view, moves = environment._view(seat)
-        return self.agents[seat].choose_action(view, moves, seat).action
+        return complete_action(self.agents[seat].choose_action(view, moves, seat).action)
 
     def provenance(self, environment):
         # The full trusted snapshot is never returned, saved or made a model input.

@@ -1,5 +1,23 @@
 # Changelog
 
+## Checked Live AI Actions - 2026-10-05
+
+- Normalize AI move hints into typed complete action parameters, then use the
+  same copy-on-write engine validation as human actions. Invalid decisions return
+  a visible error, with whole-request state/storage/receipt rollback, not a pass.
+- Preserve offered-land fallback for malformed color preferences and use the
+  same conversion for actual heuristic cast trajectory export.
+- Final composed qualification passes 259 tests, including four seeded match
+  smoke cases. Frontend lint/build pass. These are legality/recovery checks,
+  not expert-play evidence or all-entry-point simulator certification.
+
+## Pending Exile Target Browser Coverage - 2026-10-05
+
+- Add opt-in target departure and return-as-new-object checks for both human
+  seats, preserving the default six-case shared CI scope.
+- Parent combined browser run passes ten cases, 84 App HTTP actions and three
+  actual backend restarts on e645456 plus the sidecar, with no live game writes.
+
 ## Offline Corpus And Dataset Tooling - 2026-10-05
 
 - Add explicit-source corpus audit, bounded artifact campaigns, ownership-aware

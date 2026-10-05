@@ -11,6 +11,11 @@ for unfinished acceptance and [changelog](CHANGELOG.md) for historical changes.
 
 ## Implementation Status
 
+Live [AI autoplay actions](docs/testing/autoplay-action-safety.md) use the same
+transactional engine validation as human actions. Invalid decisions pause with a
+diagnostic error instead of silently becoming passes. The trajectory exporter
+separates AI display hints from complete chosen parameters before validation.
+
 Attack all eligible declares ordinary attacks directly. Select all only selects;
 attack costs, alternate defenders and bands require review and Submit Attackers.
 Blocking, responses and damage still follow the normal combat windows.
@@ -30,6 +35,8 @@ share whole-vector payment and activation logic, preserving snow and spending
 restrictions. Choice-dependent and produced-type variants remain unfinished.
 The dedicated [actual-App browser gate](docs/testing/cathar-browser.md) covers
 both seats, pending exile choices, day/night transitions and backend restart.
+Its opt-in target-lifecycle checks cover a chosen target leaving or returning as
+a new object before the original exile trigger resolves; default CI remains six cases.
 
 Supported [private card inspections](docs/testing/private-card-inspections.md)
 show the looked-at cards even when none qualifies, and survive restart/reload.
