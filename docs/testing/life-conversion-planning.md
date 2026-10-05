@@ -1,7 +1,7 @@
 # Life Conversion and Public Beneficiary Planning
 
-Status: isolated candidate, not published or deployed. The live milestone remains
-unchanged. Complete qualification is required before promotion.
+Status: qualified supported-family milestone. Broader rules and strategic
+coverage remain open; see the boundaries below.
 
 ## Implemented Families
 
@@ -128,6 +128,31 @@ corrected assertions use the existing marked-damage counter. No runtime repair
 was needed for this supplement. These four additional HTTP cases are outside the
 frozen full gate at `865a9b4`, whose runtime is unchanged by the supplement.
 
+## Latest Qualification
+
+- The clean timing gate passes 7,944 tests across all 321 discovered files,
+  assigned exactly once to four isolated shards. All 617 source/fixture hashes
+  match the frozen `865a9b4` source in every shard. Databases are absent at launch.
+  Only the four separately passing HTTP cases differ in the later backend source;
+  no runtime source moved while this gate ran.
+- Frontend tests, lint and production build pass. The full browser gate passes
+  including natural BO3 in all three controller modes. Four new browser cases
+  cover both seats and both life-replacement orders, reload during the pause,
+  marked lethal damage and final spell/creature departure. These are actual UI
+  choices, separate from the eight HTTP/SQLite cases.
+- Four creature-source capability games retain eight exact repeat packets and
+  strictly reconstruct all eight executions, with 2,788 logical decisions.
+  Three canonical Plague Drone casts resolve, and the creature actually attacks
+  and receives lethal damage. No converted life event occurs in this sample;
+  targeted canonical tests, not this matrix, establish conversion timing.
+- A held converter is not automatically a missed play. A separate strict
+  opportunity audit of the first game finds two legal cast opportunities: land
+  play followed by Torrential Gearhulk. This is recorded context, not proof that
+  either alternative is optimal.
+- Completed source, gates and private decision logs are archived on verified
+  mounted NFS. Clean dependency installation, cross-device human acceptance and
+  long-session competitive play are not established by these checks.
+
 ## Boundaries and Next Gates
 
 - Public life-event planning explores at most sixteen replacement continuations
@@ -139,9 +164,9 @@ frozen full gate at `865a9b4`, whose runtime is unchanged by the supplement.
   not a complete implementation of conditional loss protection, all alternate
   wins, game-wide win prohibitions or multiplayer rules. Draw games remain
   distinct from a loss, and existing simultaneous-loss tests must stay green.
-- Complete the latest exact-source regression gate, HTTP/browser replacement
-  choice and restart checks, seed/seat-balanced post-fix games, strict retained
-  action reconstruction and per-event decision analysis before publication.
+- Expand natural samples that actually reach competing conversion effects and
+  secondary trigger value. Preserve exact source/seed provenance and private
+  decision traces; do not infer semantic coverage from completed game counts.
 - Continue broader strategic planning across adverse replacements and competing
   effects; a few deterministic capability games are not expert-player or
   tournament-balance certification.

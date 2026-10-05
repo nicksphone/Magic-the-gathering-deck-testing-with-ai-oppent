@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased Candidate - Life conversion and beneficiary planning
+## 2026-10-05 - Life conversion and beneficiary planning
 
 - Add shared opponent-gain-to-loss static replacement support, including printed
   ability-word labels, affected-player ordering and snapshot continuations.
@@ -12,7 +12,11 @@
   and durable replacement pauses; add paid HTTP/SQLite continuation regressions.
 - Strictly reconstruct eight post-fix executions; their unchanged baseline
   trajectories demonstrate exercised correctness, not measured AI improvement.
-- Qualification remains pending. The published `927ca5d` milestone is unchanged.
+- Qualify the runtime with 7,944 tests in 321 files/617 verified source files,
+  eight HTTP/SQLite cases, the full browser gate, four focused human-choice
+  browser cases, and frontend tests/lint/build. Creature-source capability
+  games strictly reconstruct eight executions with three real converter casts;
+  zero converted events in those games limits their semantic acceptance scope.
 
 ## 2026-10-05 - Qualified land-entry, copy and beneficiary milestone
 

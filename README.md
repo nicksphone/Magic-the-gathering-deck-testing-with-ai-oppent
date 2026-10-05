@@ -1,9 +1,12 @@
 # MTG Deck Testing Lab
 
-An isolated backend candidate adds shared life-gain conversion, unconditional
-loss protection and replacement-aware original/copy beneficiary planning.
-It is not part of the published build yet; see
-[scope and outstanding qualification](docs/testing/life-conversion-planning.md).
+Supported life-gain conversion, unconditional loss protection and public
+replacement-aware original/copy planning share the rules engine. Lethal creature
+sources remain active through complete spell resolution and durable human choices.
+Qualification includes 7,944 backend tests, eight HTTP continuation cases, the
+full browser gate and four focused replacement-choice browser cases. See
+[verified scope and remaining limits](docs/testing/life-conversion-planning.md).
+This is supported-family correctness, not arbitrary-card or expert-AI certification.
 
 Supported repeated temporary creature modifiers now preserve independent target
 instances, including shared recipients, partial resolution and object identity.

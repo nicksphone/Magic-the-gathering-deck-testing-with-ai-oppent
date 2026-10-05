@@ -13,6 +13,33 @@ from tests.ui_fixture_server import app, publish, fixture, add
 from game_state.state import Zone
 
 
+@app.post('/fixture/life-conversion')
+def life_conversion(seat: int = 1):
+    if seat not in (1, 2):
+        from fastapi import HTTPException
+        raise HTTPException(422, 'Expected a valid seat')
+    from tests.test_ai_beneficial_alternatives import damage_gain_position
+    from tests.test_life_conversion import permanent
+    from rules_engine.action_validation import checked_action
+    from rules_engine.engine import RulesEngine
+    from rules_engine.stack_engine import resolve_top_of_stack
+    state, spell = damage_gain_position(seat, 'lightning-helix')
+    state.players[seat].mana_pool = {color: int(color in 'WR') for color in 'WUBRGC'}
+    converter = permanent(state, 'plague-drone', 3-seat)
+    archive = permanent(state, 'alhammarrets-archive', seat)
+    state.replacement_choice_required = True
+    state.replacement_choice_players = {seat}
+    state = checked_action(state, RulesEngine(), seat, {'type': 'cast_spell',
+                           'card_id': spell.id, 'targets': {'target_card_id': converter.id}})
+    assert not resolve_top_of_stack(state)
+    assert state.pending_replacement_choice
+    assert state.cards[converter.id].counters['__damage_marked'] == 3
+    state.log.append('Canonical paused life-conversion UI fixture; not a played competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Mountain'}])
+    return {'match': result, 'spell_id': spell.id, 'converter_id': converter.id,
+            'archive_id': archive.id}
+
+
 @app.post('/fixture/linked-damage')
 def linked_damage(seat: int = 1, primary: str = 'player', enhanced: bool = False):
     if seat not in (1, 2) or primary not in ('player', 'planeswalker'):

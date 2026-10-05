@@ -2,16 +2,20 @@
 
 ## Current Priority: Backend First
 
-- [ ] Qualify and integrate [life conversion and beneficiary planning](docs/testing/life-conversion-planning.md).
+- [x] Qualify [life conversion and beneficiary planning](docs/testing/life-conversion-planning.md).
   Batch shared static replacement admission/resolution, affected-player ordering,
   durable continuations, loss-protection checks and original/copy AI decisions.
-  Canonical fixtures reproduce missed conversions, a false loss through Platinum
-  Angel and suicidal casting. Preserve frozen baseline games while the later
-  repair runs independently; require latest-source full regressions, human choice
-  integration and strictly reconstructed post-fix card use before publication.
-  Follow-up: retain lethal static sources through complete spell instructions
-  and human replacement pauses; 373 focused checks pass, but older full gates
-  and enchantment-only games do not qualify this later shared timing edit.
+  Canonical failures are repaired. The exact timing runtime passes 7,944 tests
+  in all 321 files with 617 matching source/fixture hashes. Eight HTTP cases,
+  full browser acceptance and four new choice/reload browser cases pass.
+  Both enchantment and creature matrices strictly reconstruct eight executions
+  each. Three actual creature casts, zero creature conversions: targeted tests
+  establish conversion timing, not those natural games or expert-level AI.
+
+- [ ] Qualify effective printed life restrictions after ability suppression.
+  A separate worktree reproduces 16 canonical failures and passes a 168-check
+  shared repair selection. Its new replacement-runtime edit requires its own
+  full gate and integration; the preceding milestone does not certify it.
 
 - [x] Qualify supported complete fixed damage/caster-gain instructions and
   semantic beneficiary targeting. Latest frozen gate: 7,829 tests in 318 files,
