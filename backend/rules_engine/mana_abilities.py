@@ -86,10 +86,11 @@ def multiplied_outputs(state, card, outputs):
     multiplier = 1
     for cid in state.players[card.controller].battlefield:
         source = state.cards[cid]
-        if printed_abilities_suppressed(state, cid):
-            continue
+        source_multiplier = 1
         for line in (source.oracle_text or '').splitlines():
-            multiplier *= mana_multiplier_clause(line) or 1
+            source_multiplier *= mana_multiplier_clause(line) or 1
+        if source_multiplier != 1 and not printed_abilities_suppressed(state, cid):
+            multiplier *= source_multiplier
     return {color: amount * multiplier for color, amount in outputs.items()}
 
 
