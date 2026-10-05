@@ -8,10 +8,13 @@
   tests in all 334 files/653 matching hashes and the complete browser gate.
   Actual seat-one trace now casts on turn 9 but still refuses a body later;
   this is not complete strategic play. Keep timing fields out of replay state.
-- [ ] Qualify shared stack-response deltas: seven reproduced failures repaired;
+- [x] Qualify shared stack-response deltas: seven reproduced failures repaired;
   129 selected checks and nine expanded contracts pass (overlapping). Complete
-  exact full gates and paired-seat natural traces, keeping unchanged canonical
-  inputs and sample accounting. Do not force a desired deck winner.
+  exact frozen full gate passes 8,303 tests across 335 files/656 matching hashes
+  and the full browser harness in all three BO3 modes.
+- [ ] Finish paired-seat and cross-archetype natural trace review, keeping
+  unchanged canonical inputs and sample accounting. The completed forward sample
+  develops four creatures rather than one; no desired deck winner is forced.
 - [ ] Optimize measured strategic/query hotspots with unchanged legality and
   decision-parity evidence. Baseline profiling finds many repeated ability-
   suppression queries in deep stack search; no optimization is qualified yet.

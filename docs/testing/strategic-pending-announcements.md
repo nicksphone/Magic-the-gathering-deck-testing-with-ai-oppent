@@ -41,8 +41,13 @@ absolute stack-score double counting. Return a response delta relative to the
 current projected position; both-seat no-response/score-offset fixtures and
 real harmful counter responses cover the shared arithmetic. Seven initial
 failures are repaired, 129 selected checks pass, and nine expanded contracts
-pass (overlapping selections). Full delta qualification and new natural traces
-remain pending; no card-specific forcing or balance adjustment is used.
+pass (overlapping selections). Exact `4aaf87a` qualifies 8,303 backend tests in
+all 335 files once with 656 matching hashes/absent initial databases, plus the
+complete browser gate in all three BO3 modes. The completed forward sample
+develops four creatures rather than one and still loses to Tribal; there are
+no invalid-cost/target diagnostic lines. Broader pair/seat and cross-archetype
+trace review is unfinished, not implied by qualification. No card-specific
+forcing or balance adjustment is used.
 
 Effects with unresolved choices or unknown future card
 contents remain conservative, not fully strategic. One observed Tribal upkeep

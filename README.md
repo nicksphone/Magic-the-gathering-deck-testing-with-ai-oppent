@@ -6,8 +6,11 @@ conservative unknown-choice/hidden-zone fallback. Optional `--decision-metrics`
 exports identify legal-move, AI-choice and action-application latency outside
 replay state. Frozen source `b8f59fb` passes 8,294 backend tests across 334
 recursive files with 653 matching hashes, plus the complete browser gate in all
-three BO3 modes. Actual game traces expose a remaining absolute stack-score
-bias; a separate response-delta repair is under qualification. These checks do
+three BO3 modes. The shared response-delta repair in frozen `4aaf87a` then passes
+8,303 backend tests in all 335 files with 656 matching hashes and the complete
+browser gate. A completed forward match develops four creatures rather than
+one in the baseline, without invalid-cost/target diagnostics; longer paired-seat
+and cross-archetype review remains open. These checks do
 not establish expert AI or complete Magic semantics;
 see [strategic scope](docs/testing/strategic-pending-announcements.md).
 

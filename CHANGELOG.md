@@ -14,7 +14,13 @@
 - Selection passes 129 checks, then nine expanded focused contracts, including
   both-seat no-response neutrality, score-offset invariance, harmful actual
   Counterspell responses, observed paid creature deployment and state safety.
-  Selections overlap; whole repair qualification and new match traces pending.
+  Selections overlap. Exact frozen `4aaf87a` passes 8,303 tests across all 335
+  recursive files once, with 656 matching hashes and absent initial databases,
+  plus the complete browser harness in all three natural BO3 modes. Later
+  qualification changes are documentation only.
+- Completed forward current-template sample casts four creatures versus one in
+  the baseline and still loses to Tribal, with no invalid-cost/target diagnostics.
+  Broader pair/seat review remains running; no balance or expert-play claim.
 
 ## Unreleased Candidate - Strategic horizon and private decision timings
 
