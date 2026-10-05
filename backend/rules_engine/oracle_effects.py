@@ -67,7 +67,9 @@ SPLIT_NAME_RE = re.compile(r"^(.+?)\s*//\s*(.+)$")
 LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
 SAGA_CHAPTER_RE = re.compile(r"^\s*([IVX]+(?:\s*,\s*[IVX]+)*)\s*[—-]\s*(.+?)\s*$", re.IGNORECASE)
 ACTIVATED_ABILITY_RE = re.compile(
-    r"(?m)((?:\{[^{}]+\})+(?:\s*,\s*(?:(?:\{[^{}]+\})+|[^:\n]+))*)\s*:\s*([^\n]+)"
+    r"(?m)((?:\{[^{}]+\})+(?:\s*,\s*(?:(?:\{[^{}]+\})+|[^:\n]+))*"
+    r"|^[ \t]*(?:pay\s+\d+\s+life|sacrifice\s+[^:\n]+|discard\s+[^:\n]+))"
+    r"\s*:\s*([^\n]+)", re.IGNORECASE
 )
 TARGET_TYPE_UNION_RE = re.compile(
     r'\btarget ((?:nonbasic )?(?:artifact|creature|enchantment|planeswalker|land)'

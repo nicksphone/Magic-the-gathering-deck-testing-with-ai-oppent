@@ -143,9 +143,11 @@ def can_pay_with_pool_and_lands(
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)
-    from rules_engine.replacement import can_pay_life
+    from rules_engine.replacement import can_pay_life, cost_payment_is_prohibited
     return any(
         can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
+        and not cost_payment_is_prohibited(state, player_id, payment_kind,
+                                          life=req.get("life", 0) + reserved_life)
         and (not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
              or _plan_payment(state, player_id, req, payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set()), excluded_sources=excluded_sources) is not None)
         for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color, floored_reductions=context.floored_reductions)
@@ -472,7 +474,7 @@ def auto_pay_cost(
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)
-    from rules_engine.replacement import can_pay_life, pay_life
+    from rules_engine.replacement import can_pay_life, pay_life, cost_payment_is_prohibited
     branches = []
     requirements = _payment_requirements(
         context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase,
@@ -480,6 +482,8 @@ def auto_pay_cost(
     )
     payment = next(
         ((req, plan) for req in requirements if can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
+        and not cost_payment_is_prohibited(state, player_id, payment_kind,
+                                          life=req.get("life", 0) + reserved_life)
         and (plan := ([], {}) if not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
              else _plan_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources,
                                 optimize_paid=ability_kind != 'mana')) is not None),

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Angel of Jubilation",
+    "url": "https://api.scryfall.com/cards/named?exact=Angel%20of%20Jubilation",
+    "retrieved_at": "2026-10-05T05:29:23.502Z",
+    "sha256": "9b026a3075748b636d564af1add54d02ee4a1db217b339202d1ac28e2566f043"
+  },
+  {
+    "name": "Viscera Seer",
+    "url": "https://api.scryfall.com/cards/named?exact=Viscera%20Seer",
+    "retrieved_at": "2026-10-05T05:29:23.504Z",
+    "sha256": "0ddefadab6514712109224dd547494ad6edf07f5aa123eed1612c2d2b70972c3"
+  },
+  {
+    "name": "Dismember",
+    "url": "https://api.scryfall.com/cards/named?exact=Dismember",
+    "retrieved_at": "2026-10-05T05:29:23.504Z",
+    "sha256": "31896d454d74a36596f9ffecf10beebdde55a5218951d23e5d77936a8db6cfa5"
+  },
+  {
+    "name": "Sacred Foundry",
+    "url": "https://api.scryfall.com/cards/named?exact=Sacred%20Foundry",
+    "retrieved_at": "2026-10-05T05:29:23.504Z",
+    "sha256": "4b932b31ec242087fa9a135ef47c3e4d3c08bddfd4259fa5976c2ca491acd6fd"
+  },
+  {
+    "name": "Kaervek's Spite",
+    "url": "https://api.scryfall.com/cards/named?exact=Kaervek's%20Spite",
+    "retrieved_at": "2026-10-05T05:35:11.668Z",
+    "sha256": "4bf175beab9f7f9f67ae56b758d8e4773c28737975202b7360331bec06d49d54"
+  },
+  {
+    "name": "Makeshift Munitions",
+    "url": "https://api.scryfall.com/cards/named?exact=Makeshift%20Munitions",
+    "retrieved_at": "2026-10-05T05:35:11.670Z",
+    "sha256": "5e86054854cc162fff12e9805ce7b3caf21d00d27fe17c509aff4f9a0861b1e0"
+  },
+  {
+    "name": "Bone Splinters",
+    "url": "https://api.scryfall.com/cards/named?exact=Bone%20Splinters",
+    "retrieved_at": "2026-10-05T05:35:11.670Z",
+    "sha256": "735e2aa5bef1070a6d99e0d8ed0a18d3a6690a674162a62c6d108cdb2cf1c419"
+  }
+]

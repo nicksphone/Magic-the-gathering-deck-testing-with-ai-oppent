@@ -576,6 +576,35 @@ def can_pay_life(state, player_id: int, amount: int) -> bool:
     return amount == 0 or (state.players[player_id].life >= amount and not player_cant_lose_life(state, player_id))
 
 
+_COST_PAYMENT_PROHIBITION_RE = re.compile(
+    r"(?m)^(players|you|your opponents) (?:can't|cannot) "
+    r"(pay life or sacrifice creatures|pay life|sacrifice creatures) to "
+    r"(cast spells or activate abilities|cast spells|activate abilities)\.?$"
+)
+
+
+def cost_payment_is_prohibited(state, player_id: int, payment_kind: str, *, life: int = 0,
+                               sacrifice_creature: bool = False) -> bool:
+    if payment_kind not in {'spell', 'activation'} or (life <= 0 and not sacrifice_creature):
+        return False
+    for source, text in _battlefield_oracle_texts(
+        state, text_filter=lambda text: _COST_PAYMENT_PROHIBITION_RE.search(text) is not None,
+    ):
+        for match in _COST_PAYMENT_PROHIBITION_RE.finditer(text):
+            who, costs, context = match.groups()
+            if who == 'you' and source.controller != player_id:
+                continue
+            if who == 'your opponents' and source.controller == player_id:
+                continue
+            if payment_kind == 'spell' and 'cast spells' not in context:
+                continue
+            if payment_kind == 'activation' and 'activate abilities' not in context:
+                continue
+            if (life > 0 and 'pay life' in costs) or (sacrifice_creature and 'sacrifice creatures' in costs):
+                return True
+    return False
+
+
 def pay_life(state, player_id: int, amount: int) -> bool:
     if not can_pay_life(state, player_id, amount):
         return False

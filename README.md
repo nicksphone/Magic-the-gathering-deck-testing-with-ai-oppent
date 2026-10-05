@@ -1,5 +1,12 @@
 # MTG Deck Testing Lab
 
+The next isolated backend candidate shares casting/activation life and creature
+sacrifice prohibitions across payment paths, preserves other payment contexts,
+and fixes actual source sacrifice for generic creature costs. Its 495 selected
+checks include six HTTP/SQLite recovery cases. Full source/browser qualification
+is running; this candidate is not live. See
+[scope and evidence](docs/testing/contextual-cost-prohibitions.md).
+
 The shared rules engine repairs printed life restrictions after their
 source loses its abilities. Control changes, expiry, real life payments and human
 recovery have targeted coverage; the combined source passes 7,988 backend tests

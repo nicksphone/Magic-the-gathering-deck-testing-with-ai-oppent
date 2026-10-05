@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased Candidate - Contextual costs and source sacrifice
+
+- Share recognized casting/activation life and creature-sacrifice prohibitions
+  across mana planning and payment; preserve other payment contexts, zero life
+  and payable colored Phyrexian branches.
+- Admit supported symbol-free activation costs and repair actual generic
+  sacrifice payment so the ability source can be sacrificed when eligible.
+- Preserve exhaustive sacrifice requirements and noncreature artifact choices.
+  Latest selection: 495 checks, six HTTP/SQLite cases and five query regressions.
+  All 634 integrated backend source/fixture files match the frozen candidate.
+  Full/backend browser qualification remains running; no release claim yet.
+
 ## 2026-10-05 - Effective printed life restrictions and query performance
 
 - Use shared effective-ability queries for life-total locks and printed gain/loss

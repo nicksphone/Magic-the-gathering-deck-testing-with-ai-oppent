@@ -2,6 +2,15 @@
 
 ## Current Priority: Backend First
 
+- [ ] Qualify [contextual costs and source sacrifice](docs/testing/contextual-cost-prohibitions.md).
+  Batch casting/activation life and sacrifice prohibitions, effective-source
+  suppression, Phyrexian payment branches, exhaustive/mixed costs and supported
+  symbol-free activations. Repair actual payment when a generic sacrifice can
+  consume the ability source. Latest selection: 495 checks, six paid HTTP/SQLite
+  cases and five query regressions. All 634 integrated backend files match the
+  frozen source currently undergoing its complete gate. Full/browser acceptance,
+  conditional cost rules and optimal resource strategy remain open.
+
 - [x] Qualify [life conversion and beneficiary planning](docs/testing/life-conversion-planning.md).
   Batch shared static replacement admission/resolution, affected-player ordering,
   durable continuations, loss-protection checks and original/copy AI decisions.

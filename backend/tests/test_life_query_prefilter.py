@@ -19,3 +19,15 @@ def test_irrelevant_canonical_board_does_not_scan_ability_layers_for_life_prohib
                side_effect=AssertionError('Irrelevant printed text should be rejected before layer queries')):
         assert not getattr(replacement, query)(state, 1)
     assert serialize_match_snapshot(state) == before
+
+
+@pytest.mark.parametrize('payment', [{'life': 2}, {'sacrifice_creature': True}])
+def test_irrelevant_canonical_board_skips_layers_for_contextual_payment_query(payment):
+    state = bare_state(1)
+    for index in range(32):
+        add(state, 'Torrential Gearhulk', 1 if index % 2 else 2)
+    before = serialize_match_snapshot(state)
+    with patch('rules_engine.replacement.printed_abilities_suppressed',
+               side_effect=AssertionError('Irrelevant cost text must not scan ability layers')):
+        assert not replacement.cost_payment_is_prohibited(state, 1, 'spell', **payment)
+    assert serialize_match_snapshot(state) == before

@@ -7,7 +7,7 @@ from typing import Any
 
 from game_state.state import MatchState, Zone
 from rules_engine.mana import can_pay_with_pool_and_lands
-from rules_engine.replacement import can_pay_life, replace_die_zone
+from rules_engine.replacement import can_pay_life, cost_payment_is_prohibited, replace_die_zone
 from rules_engine.zone_actions import is_departed_token, put_into_graveyard
 
 ALT_COST_RE = re.compile(r"pay\s+((?:\{[^}]+\})+)\s+rather than pay this spell's mana cost", re.IGNORECASE)
@@ -150,7 +150,7 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
         return False
     if not can_pay_life(state, player_id, cost.pay_life) or sum(cid != source_id and not is_departed_token(state.cards[cid]) for cid in player.hand) < cost.discard_cards:
         return False
-    creatures = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind)
+    creatures = _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind, payment_kind='activation')
     if cost.sacrifice_source:
         if source_id not in creatures:
             return False
@@ -196,7 +196,10 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     sacrifice_ids: list[str] = []
     if cost.sacrifice_source:
         sacrifice_ids.append(source_id)
-    sacrifice_ids.extend(cid for cid in _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind) if cid != source_id)
+    sacrifice_ids.extend(
+        cid for cid in _eligible_sacrifice_ids(state, player_id, cost.sacrifice_kind, payment_kind='activation')
+        if not cost.sacrifice_source or cid != source_id
+    )
     needed = cost.sacrifice_creatures
     sacrifice_ids = sacrifice_ids[:needed]
     destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids}
@@ -351,6 +354,8 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         return False
     if len(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)) < option.sacrifice_creatures:
         return False
+    if option.sacrifice_all and set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind, payment_kind='effect')) != set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)):
+        return False
     return can_pay_with_pool_and_lands(
         state, player_id, option.mana_cost, is_land=("Land" in effective_types(state, card)),
         card_name=card.name, x_value=x_value, spell_types=set(effective_types(state, card)),
@@ -393,6 +398,8 @@ def additional_cost_selection(state, player_id, option, spell_card_id, choice=No
             # mana abilities have consumed or produced resources.
             if ids:
                 return None
+            if key == 'sacrifice_card_ids' and set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind, payment_kind='effect')) != set(candidates[key]):
+                return None
             selected[key] = list(candidates[key])
             continue
         if ids is None:
@@ -412,7 +419,8 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
     if selected is None:
         return False
     life_amount = option.pay_life + (x_value if option.pay_life_x else 0)
-    if x_value < 0 or not can_pay_life(state, player_id, life_amount):
+    if (x_value < 0 or not can_pay_life(state, player_id, life_amount)
+            or cost_payment_is_prohibited(state, player_id, 'spell', life=life_amount)):
         return False
     if life_amount:
         from rules_engine.replacement import pay_life
@@ -452,7 +460,7 @@ def _first_discardable_card(state: MatchState, player_id: int, exclude: set[str]
     return None
 
 
-def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "creature") -> list[str]:
+def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "creature", *, payment_kind: str = 'spell') -> list[str]:
     from rules_engine.colors import card_color_names
     from rules_engine.library_permissions import creature_types
     eligible: list[str] = []
@@ -461,6 +469,8 @@ def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "crea
         if card is None or card.zone != Zone.BATTLEFIELD or card.controller != player_id:
             continue
         types = set(effective_types(state, card) or [])
+        if 'Creature' in types and cost_payment_is_prohibited(state, player_id, payment_kind, sacrifice_creature=True):
+            continue
         if not types.intersection({'Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'}):
             continue
         if kind.startswith('subtype_'):
