@@ -1,5 +1,15 @@
 # Changelog
 
+## Limited Graveyard Permissions (Candidate)
+
+- Shared once-per-turn mana-value/subtype permissions and per-permanent-type
+  permissions, with durable source-local usage and explicit multi-type choices.
+- Real X/spell mana-value checks, land allowances and stale-source rejection;
+  snapshot/tactical-copy independence and both-seat human/AI action coverage.
+- Six focused browser flows pass; broad/input selections pass. Exact-source
+  full backend/browser qualification and natural quality review remain open.
+- Canonical Walking Ballista and Exploration downloads retain full provenance.
+
 ## Graveyard Play Permissions (Candidate)
 
 - Shared ordinary self/subtype spell and land-from-graveyard permissions, with

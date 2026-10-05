@@ -246,6 +246,7 @@ class MatchState:
     # chapters. Entries are consumed by the next matching spell this turn.
     pending_entry_counters: list[dict] = field(default_factory=list)
     adventure_permissions: dict[str, int] = field(default_factory=dict)
+    graveyard_permission_uses: dict[str, int] = field(default_factory=dict)
     # Restrictions created by resolving spells that last through cleanup.
     turn_cant_gain_life: set[int] = field(default_factory=set)
     combat_cost_effects: list[dict] = field(default_factory=list)

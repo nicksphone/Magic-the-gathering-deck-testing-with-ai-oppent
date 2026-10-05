@@ -174,6 +174,8 @@ export type LegalMove = {
   from_exile?: boolean;
   from_library?: boolean;
   from_graveyard?: boolean;
+  graveyard_permission_key?: string;
+  graveyard_permission_name?: string;
   return_card_id?: string;
   crew_value?: number;
   crew_candidates?: { id: string; name: string; power: number }[];

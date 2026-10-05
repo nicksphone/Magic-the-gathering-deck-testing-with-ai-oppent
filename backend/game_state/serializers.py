@@ -133,6 +133,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "linked_exiles": [dict(item) for item in state.linked_exiles],
         "pending_entry_counters": [dict(item) for item in state.pending_entry_counters],
         "adventure_permissions": dict(state.adventure_permissions),
+        "graveyard_permission_uses": dict(state.graveyard_permission_uses),
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         'combat_cost_effects': deepcopy(state.combat_cost_effects),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
@@ -379,6 +380,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.pending_entry_counters = [dict(item) for item in payload.get("pending_entry_counters", [])]
     state.players_with_permanent_departure = {int(pid) for pid in payload.get("players_with_permanent_departure", [])}
     state.adventure_permissions = {str(cid): int(pid) for cid, pid in payload.get("adventure_permissions", {}).items()}
+    state.graveyard_permission_uses = {str(key): int(turn) for key, turn in payload.get('graveyard_permission_uses', {}).items()}
     state.turn_cant_gain_life = {int(value) for value in payload.get("turn_cant_gain_life", [])}
     state.combat_cost_effects = deepcopy(payload.get('combat_cost_effects', []))
     state.turn_damage_cant_be_prevented = bool(payload.get("turn_damage_cant_be_prevented", False))

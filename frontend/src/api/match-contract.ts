@@ -210,6 +210,10 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         && record(move.outputs) && Object.entries(move.outputs).every(([color, amount]) =>
           /^[WUBRGC]$/.test(color) && Number.isInteger(amount) && (amount as number) >= 0)))
       && (move.card_view === undefined || card(move.card_view))
+      && (move.graveyard_permission_key === undefined || (typeof move.graveyard_permission_key === 'string'
+        && move.graveyard_permission_key.length > 0 && move.graveyard_permission_key.length <= 100 && move.from_graveyard === true))
+      && (move.graveyard_permission_name === undefined || (typeof move.graveyard_permission_name === 'string'
+        && move.graveyard_permission_name.length > 0 && move.from_graveyard === true))
       && (move.payment_options === undefined || paymentOptions(move.payment_options))
       && (move.cost_options === undefined || (Array.isArray(move.cost_options) && move.cost_options.every(option =>
         record(option) && typeof option.id === 'string'

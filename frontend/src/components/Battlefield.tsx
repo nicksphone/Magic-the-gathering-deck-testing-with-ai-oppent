@@ -690,9 +690,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             </button> : null;
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
             const cardLandMoves = playLandMoves.filter((m) => m.card_id === card.id);
-            const landControls = cardLandMoves.map((landMove) => <button key={`${card.id}-land-${landMove.selected_face_index ?? 0}-${landMove.entry_choice ?? "normal"}`}
-              onClick={() => onCardAction(viewerSeat, { type: "play_land", card_id: card.id, selected_face_index: landMove.selected_face_index, from_exile: landMove.from_exile, from_graveyard: landMove.from_graveyard, entry_choice: landMove.entry_choice })}>
-              Play Land {landMove.card_name ?? card.card_faces?.[landMove.selected_face_index ?? 0]?.name ?? card.name}{landMove.entry_choice === "pay_two_life" ? " (pay 2 life, untapped)" : landMove.entry_choice === "tapped" ? " (tapped)" : ""}
+            const landControls = cardLandMoves.map((landMove, index) => <button key={`${card.id}-land-${landMove.selected_face_index ?? 0}-${landMove.entry_choice ?? "normal"}-${index}`}
+              onClick={() => onCardAction(viewerSeat, { type: "play_land", card_id: card.id, selected_face_index: landMove.selected_face_index, from_exile: landMove.from_exile, from_graveyard: landMove.from_graveyard, graveyard_permission_key: landMove.graveyard_permission_key, entry_choice: landMove.entry_choice })}>
+              Play Land {landMove.card_name ?? card.card_faces?.[landMove.selected_face_index ?? 0]?.name ?? card.name}{landMove.entry_choice === "pay_two_life" ? " (pay 2 life, untapped)" : landMove.entry_choice === "tapped" ? " (tapped)" : ""}{landMove.graveyard_permission_name ? ` via ${landMove.graveyard_permission_name}` : ""}
             </button>);
             const restrictedMove = restrictedCastMoves.find((m) => m.card_id === card.id);
             const faceNames = move?.target_hints?.face_names ?? [];

@@ -7,10 +7,12 @@
   suppression, global prohibitions and real departure events. Both-seat unit and
   HTTP checks pass; complete exact-source full/browser/natural gates. See
   [scope](docs/testing/graveyard-play-permissions.md).
-- [ ] Add durable limited graveyard permission ledgers and permission-source
-  choice for Lurrus/Muldrotha/Gisa-style restrictions. These canonical shapes
-  now report explicit unsupported-permission diagnostics; do not grant unlimited
-  casts. Broaden duration, subtype-layer and casting-announcement ordering fidelity.
+- [ ] Qualify durable limited graveyard permission ledgers and source/type choices.
+  Shared Lurrus/Muldrotha/Gisa-style restrictions, actual X limits, land allowances,
+  snapshot isolation and stale-choice rejection are implemented in a successor
+  candidate; six focused browser flows pass. Complete frozen full qualification,
+  then broaden duration, subtype layers and casting-announcement ordering. See
+  [scope](docs/testing/limited-graveyard-permissions.md).
 
 - [ ] Qualify tactical casting-resource choices: twenty-three canonical cases and 342 earlier
   overlapping checks pass. Preserve engine fallback, bounded legal projections,

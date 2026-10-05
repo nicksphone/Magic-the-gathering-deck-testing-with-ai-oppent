@@ -23,7 +23,14 @@ from rules_engine.zone_actions import is_departed_token
 
 def _land_moves(state: MatchState, player_id: int, card, move: dict) -> list[dict]:
     options = land_entry_options(state, player_id, card)
-    return [{**move, "entry_choice": choice} for choice in options] if options else [move]
+    moves = [{**move, "entry_choice": choice} for choice in options] if options else [move]
+    if move.get('from_graveyard'):
+        from rules_engine.graveyard_permissions import graveyard_land_choices
+        grants = graveyard_land_choices(state, player_id, card.id)
+        moves = [{**variant, **({'graveyard_permission_key': grant['key']} if grant['key'] else {}),
+                  'graveyard_permission_name': grant['source_name']}
+                 for variant in moves for grant in grants]
+    return moves
 
 
 def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:

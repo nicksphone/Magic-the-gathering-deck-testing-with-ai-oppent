@@ -692,7 +692,20 @@ class RulesEngine:
             face = select_cast_face(card, face_index)
             from_exile = bool(action.get("from_exile"))
             from_graveyard = bool(action.get('from_graveyard'))
+            if (from_graveyard and from_exile) or (action.get('graveyard_permission_key') and not from_graveyard):
+                reject('A graveyard permission requires an unambiguous graveyard source')
+                return
             from rules_engine.graveyard_permissions import graveyard_land_permission, battlefield_entry_prohibited
+            permission_key = None
+            if from_graveyard:
+                from rules_engine.graveyard_permissions import graveyard_land_choices
+                permissions = graveyard_land_choices(state, player_id, cid)
+                requested = action.get('graveyard_permission_key')
+                permission = next((grant for grant in permissions if grant['key'] == requested), None) if requested else next(iter(permissions), None)
+                if permission is None:
+                    reject('The selected graveyard land permission is unavailable')
+                    return
+                permission_key = permission['key']
             allowed_source = (exile_permission(state, player_id, cid, face_index) if from_exile
                               else graveyard_land_permission(state, player_id, cid) if from_graveyard
                               else cid in player.hand)
@@ -742,6 +755,9 @@ class RulesEngine:
                 state.cards[cid].summoning_sick = True
                 assign_static_order_on_battlefield_entry(state, cid)
                 state.log.append(f"{player.name} plays {state.cards[cid].name}.")
+                if permission_key:
+                    from rules_engine.graveyard_permissions import record_graveyard_permission
+                    record_graveyard_permission(state, permission_key)
                 if departures:
                     from rules_engine.resource_events import emit_graveyard_departures
                     emit_graveyard_departures(state, departures)
@@ -883,6 +899,10 @@ class RulesEngine:
                 if not options:
                     reject("No supported casting cost")
                     return
+                choice_id = (action.get('cost_choice') or {}).get('id')
+                if choice_id and not any(option.id == choice_id for option in options):
+                    reject('The selected casting cost or permission is unavailable')
+                    return
                 chosen = normalize_cost_choice(action, options)
                 from rules_engine.alternative_casts import validate_escape_exiles
                 escape_ids = validate_escape_exiles(state, player_id, cid, chosen.exile_graveyard, action.get("escape_exile_ids")) if casting_method(chosen.id) == "escape" else []
@@ -893,6 +913,11 @@ class RulesEngine:
                 # Extract x_value early — needed for cost checking and payment
                 at_targets = action.get("targets", {}) if isinstance(action, dict) else {}
                 x_value = int(at_targets.get("x_value", 0) or 0)
+                if choice_id and chosen.graveyard_permission_max_mana_value is not None:
+                    from rules_engine.mana import mana_value
+                    if mana_value(face_card.mana_cost or '', x_value=x_value) > chosen.graveyard_permission_max_mana_value:
+                        reject('This spell exceeds the graveyard permission mana-value limit')
+                        return
                 if effect_cast and '{x}' in (face_card.mana_cost or '').lower() and x_value != 0:
                     reject('X must be zero when casting without paying its mana cost')
                     return
@@ -1053,6 +1078,9 @@ class RulesEngine:
                     (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.move_to_zone(Zone.STACK)
+                if chosen.graveyard_permission_key:
+                    from rules_engine.graveyard_permissions import record_graveyard_permission
+                    record_graveyard_permission(state, chosen.graveyard_permission_key)
                 if not from_exile:
                     emit_graveyard_departures(state, departures)
                 if from_exile and was_foretold:

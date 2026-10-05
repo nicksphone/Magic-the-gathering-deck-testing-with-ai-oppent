@@ -206,6 +206,14 @@ for (const value of [{...combat,legal_blocks:{b:['outsider']}}, {...combat,legal
 }
 assert.deepEqual(parseLegalMoves(packet({type:'attack',options:['hero'],banding_attackers:['hero']})).moves[0].banding_attackers, ['hero']);
 console.log('PASS authoritative banding, blocker-target and finite/unlimited capacity contracts');
+const graveyardLand = {type: 'play_land', card_id: 'land', from_graveyard: true,
+  graveyard_permission_key: '1:source:0:0:Land', graveyard_permission_name: 'Muldrotha, the Gravetide'};
+assert.equal(parseLegalMoves(packet(graveyardLand)).moves[0].graveyard_permission_key, graveyardLand.graveyard_permission_key);
+for (const changed of [{graveyard_permission_key: ''}, {graveyard_permission_key: 5},
+  {graveyard_permission_key: 'x'.repeat(101)}, {graveyard_permission_name: 3}, {from_graveyard: false}]) {
+  assert.throws(() => parseLegalMoves(packet({...graveyardLand, ...changed})), /legal-moves/);
+}
+console.log('PASS limited graveyard permission source contracts');
 
 const resources = {delve: ['grave'], improvise: ['artifact'], convoke: [{card_id: 'creature', pay_as: ['generic', 'G']}]};
 const resourcePacket = value => ({...legal, moves: [{type: 'cast_spell', cost_options: [{...castCosts, resource_payment_candidates: value}]}]});

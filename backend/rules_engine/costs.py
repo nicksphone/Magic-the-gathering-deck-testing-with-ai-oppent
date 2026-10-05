@@ -43,6 +43,8 @@ class CostOption:
     additional_cost_group: str | None = None
     kicked: bool = False
     kicker_base_id: str | None = None
+    graveyard_permission_key: str | None = None
+    graveyard_permission_max_mana_value: int | None = None
 
 
 def casting_method(cost_id: str) -> str:
@@ -348,6 +350,13 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
         options = [base]
     elif card.zone == Zone.GRAVEYARD:
         options = [base] if card.mana_cost and ordinary_graveyard_cast(state, player_id, card.id) else []
+        from rules_engine.graveyard_permissions import limited_graveyard_casts
+        if card.mana_cost:
+            for grant in limited_graveyard_casts(state, player_id, card):
+                options.append(replace(base, id='base_graveyard:' + grant['key'],
+                    label='Graveyard cast - ' + grant['source_name'] + (' (' + grant['type'] + ')' if grant['type'] else ''),
+                    graveyard_permission_key=grant['key'],
+                    graveyard_permission_max_mana_value=grant['max_mana_value']))
         if has_aftermath(card):
             options.append(CostOption(id="aftermath", label="Aftermath", mana_cost=card.mana_cost or ""))
         if escape:
@@ -423,6 +432,10 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None) -> bool:
     from rules_engine.attachments import is_aura
+    if option.graveyard_permission_max_mana_value is not None:
+        from rules_engine.mana import mana_value
+        if mana_value(card.mana_cost or '', x_value=x_value) > option.graveyard_permission_max_mana_value:
+            return False
     if casting_method(option.id) == 'bestow':
         from rules_engine.bestow import bestow_cast_view
         card = bestow_cast_view(card)

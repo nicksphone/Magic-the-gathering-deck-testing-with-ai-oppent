@@ -15,6 +15,30 @@ from game_state.state import Zone
 import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
 
 
+@app.post('/fixture/limited-graveyard-permission')
+def limited_graveyard_permission(seat: int = 1, source: str = 'Lurrus of the Dream-Den'):
+    from fastapi import HTTPException
+    from tests.test_graveyard_play_permissions import position, ROWS
+    from tests.test_limited_graveyard_permissions import LIMITED
+    from tests.test_ai_recurring_engines import add as canonical
+    if seat not in (1, 2) or source not in {'Lurrus of the Dream-Den', 'Gisa and Geralf', 'Muldrotha, the Gravetide'}:
+        raise HTTPException(422, 'Expected a supported limited permission fixture')
+    state = position(seat)
+    state.mechanic_choice_players = {1, 2}
+    for player in state.players.values():
+        player.mana_pool = {color: 4 for color in 'WUBRGC'}
+    canonical(state, source, seat, cards=LIMITED)
+    name = 'Sol Ring' if source == 'Lurrus of the Dream-Den' else 'Diregraf Ghoul'
+    rows, count = ROWS, 2
+    if source == 'Muldrotha, the Gravetide':
+        from tests.test_cast_resource_payments import ROWS as RESOURCE_ROWS
+        name, rows, count = 'Ornithopter', RESOURCE_ROWS, 3
+    cards = [canonical(state, name, seat, Zone.GRAVEYARD, cards=rows) for _ in range(count)]
+    state.log.append('Canonical limited-permission fixture; not a competitive deck.')
+    return {'match': publish(state, [{'quantity': 60, 'card_name': 'Island'}]),
+            'card_ids': [card.id for card in cards], 'name': name}
+
+
 @app.post('/fixture/graveyard-permission')
 def graveyard_permission(seat: int = 1, name: str = 'Forest'):
     from fastapi import HTTPException

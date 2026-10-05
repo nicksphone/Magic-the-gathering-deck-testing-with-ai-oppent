@@ -86,6 +86,7 @@ echo 'Browser CI: competitive table v2'
 echo 'Browser CI: action scenarios'
 (cd frontend && timeout 300s node tests/browser-cast-resources.mjs)
 (cd frontend && timeout 300s node tests/browser-graveyard-permissions.mjs)
+(cd frontend && timeout 300s node tests/browser-limited-graveyard-permissions.mjs)
 (cd frontend && timeout 300s node tests/browser-opaque-selection.mjs)
 (cd frontend && timeout 180s node tests/browser-direct-combat.mjs)
 (cd frontend && timeout 120s node tests/browser-auto-progress.mjs)

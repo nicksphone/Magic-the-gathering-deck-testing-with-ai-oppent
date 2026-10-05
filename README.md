@@ -2,8 +2,11 @@
 
 An isolated graveyard-permission candidate adds ordinary self/subtype casting
 and land plays, including modal land faces, with real costs, land limits,
-source flags and shared cast/entry prohibitions. Limited per-turn permissions
-remain explicit coverage gaps. See [scope](docs/testing/graveyard-play-permissions.md).
+source flags and shared cast/entry prohibitions. A successor adds source-local
+once-per-turn and per-permanent-type usage, X/mana-value checks and deliberate
+source/type choices. See [ordinary scope](docs/testing/graveyard-play-permissions.md)
+and [limited scope](docs/testing/limited-graveyard-permissions.md). Successor full
+qualification and wider tactical review remain open; main/live are unchanged.
 
 An isolated instant-timing candidate distinguishes opponent end-step value
 casting from early-turn tap-outs and prices actual payment that loses the last
