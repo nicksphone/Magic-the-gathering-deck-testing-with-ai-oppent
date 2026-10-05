@@ -43,3 +43,14 @@ def joint_activation_payment(seat: int = 1):
     result = publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     return {'match': result, 'source_id': source.id, 'chosen_id': chosen.id,
             'mana_source_id': mana_source.id}
+
+
+@app.post('/fixture/nested-mana-life')
+def nested_mana_life(seat: int = 1, life: int = 5):
+    if seat not in (1, 2) or life not in (3, 5):
+        raise HTTPException(422, 'Invalid nested-life fixture')
+    from tests.test_nested_mana_life import position
+    state, source = position(seat, life)
+    state.log.append('Canonical nested-life test position, not a played competitive deck.')
+    result = publish(state, [{'quantity': 60, 'card_name': 'Island'}])
+    return {'match': result, 'source_id': source.id}

@@ -86,6 +86,7 @@ echo 'Browser CI: competitive table v2'
 echo 'Browser CI: action scenarios'
 (cd frontend && timeout 180s node tests/browser-activation-payments.mjs)
 (cd frontend && timeout 120s node tests/browser-joint-activation-payments.mjs)
+(cd frontend && timeout 120s node tests/browser-nested-mana-life.mjs)
 (cd frontend && timeout 120s node tests/browser-life-lock.mjs)
 (cd frontend && timeout 120s node tests/browser-life-conversion.mjs)
 (cd frontend && timeout 90s node tests/browser-land-types.mjs)

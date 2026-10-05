@@ -1,5 +1,12 @@
 # MTG Deck Testing Lab
 
+An isolated follow-up reserves life across nested mana production and outer
+activation/Phyrexian costs, searches life-aware ordinary/snow payment paths,
+and rejects unpaid activation life costs. Latest targeted selection: 505 checks;
+six focused browser cases and four new HTTP recovery cases pass. Exact-source
+full qualification remains pending; see
+[nested life-budget scope](docs/testing/nested-mana-life-budget.md).
+
 Shared activation/mana planning preserves selected nonmana resources, allows
 legal tap-then-sacrifice sequences and searches jointly payable automatic
 choices. AI checks resource feasibility and ranks feasible losses. Exact runtime

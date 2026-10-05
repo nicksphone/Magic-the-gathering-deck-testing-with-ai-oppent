@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased Candidate - Nested mana life budgets
+
+- Track life expenditure across ordinary and snow mana source selection;
+  protect outer life costs while funding nested paid mana abilities.
+- Preserve Phyrexian/explicit life payment context and verify activation life
+  payment actually succeeds instead of logging an unpaid cost as paid.
+- Initial canonical reproduction: four failures/two controls. Latest selected
+  engine/AI/HTTP coverage: 505 passed, including four new HTTP recovery cases,
+  paid Cabal Coffers funding, alternative painless sources and both-seat AI
+  materialization in ten style labels. Six focused browser cases pass.
+- Full backend/browser qualification is pending; broader output alternatives,
+  dynamic cost-changing mana effects and strategic life valuation remain open.
+
 ## 2026-10-05 - Joint activation mana/resource planning
 
 - Carry selected-resource reservations through free/paid mana planning, snow

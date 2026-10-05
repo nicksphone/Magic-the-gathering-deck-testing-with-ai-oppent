@@ -103,11 +103,11 @@ def count_untapped_nonland_mana_sources_by_color(state: MatchState, player_id: i
     return out
 
 
-def mana_source_outputs(state: MatchState, player_id: int, card_id: str, *, payment_context=UNFILTERED, reserved_card_ids=()) -> dict[str, int]:
+def mana_source_outputs(state: MatchState, player_id: int, card_id: str, *, payment_context=UNFILTERED, reserved_card_ids=(), protected_life=0) -> dict[str, int]:
     """Ready outputs used by both ordinary and snow payment planning."""
     card = state.cards[card_id]
     from rules_engine.mana_abilities import free_outputs
-    return free_outputs(state, card, payment_context=payment_context, reserved_card_ids=reserved_card_ids)
+    return free_outputs(state, card, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
 
 
 def can_pay_with_pool_and_lands(
@@ -133,6 +133,7 @@ def can_pay_with_pool_and_lands(
     spell_kicked: bool = False,
     ability_index: int | None = None,
     reserved_card_ids=(),
+    protected_life=0,
 ) -> bool:
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
@@ -146,11 +147,11 @@ def can_pay_with_pool_and_lands(
         context = apply_cost_modifiers(context)
     from rules_engine.replacement import can_pay_life, cost_payment_is_prohibited
     return any(
-        can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
+        can_pay_life(state, player_id, req.get("life", 0) + reserved_life + protected_life)
         and not cost_payment_is_prohibited(state, player_id, payment_kind,
                                           life=req.get("life", 0) + reserved_life)
         and (not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
-             or _plan_payment(state, player_id, req, payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set()), excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids) is not None)
+             or _plan_payment(state, player_id, req, payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set()), excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life) is not None)
         for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color, floored_reductions=context.floored_reductions)
     )
 
@@ -250,29 +251,55 @@ def add_mana_to_pool(state: MatchState, player_id: int, color: str, amount: int,
 def _plan_mana_sources(
     state: MatchState, player_id: int, req: dict[str, int], *,
     pool_override: dict[str, int] | None = None, excluded_sources: set[str] | None = None,
-    payment_context=None, reserved_card_ids=(),
+    payment_context=None, reserved_card_ids=(), protected_life=0,
 ) -> list[tuple[str, str, int, bool]] | None:
     colors = MANA_COLORS
     pool = pool_override if pool_override is not None else available_pool(state.players[player_id], payment_context)[0]
     needs = tuple(max(0, req[color] - max(0, pool.get(color, 0))) for color in colors)
     spare = sum(max(0, pool.get(color, 0) - req[color]) for color in colors)
     sources: list[tuple[str, dict[str, int], bool]] = []
+    prices = []
+    from rules_engine.mana_abilities import free_output_life_cost
     for cid in state.players[player_id].battlefield:
         if cid in (excluded_sources or set()):
             continue
         card = state.cards[cid]
         land = "Land" in effective_types(state, card)
-        outputs = mana_source_outputs(state, player_id, cid, payment_context=payment_context, reserved_card_ids=reserved_card_ids)
+        outputs = mana_source_outputs(state, player_id, cid, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
         if outputs:
             sources.append((cid, outputs, land))
+            prices.append({color: free_output_life_cost(state, card, color, amount,
+                payment_context=payment_context, reserved_card_ids=reserved_card_ids,
+                protected_life=protected_life) for color, amount in outputs.items()})
+
+    life_sensitive = any(any(cost for cost in price.values()) for price in prices)
 
     @lru_cache(maxsize=None)
-    def solve(remaining: tuple[int, ...], used: int, generic_credit: int) -> tuple[tuple[int, str], ...] | None:
+    def solve(remaining: tuple[int, ...], used: int, generic_credit: int, life_left: int) -> tuple[tuple[int, str], ...] | None:
         color_index = next((i for i, need in enumerate(remaining) if need), None)
         if color_index is None:
             generic_need = req["generic"] - generic_credit
             if generic_need <= 0:
                 return ()
+            if life_sensitive:
+                options = sorted(
+                    ((i, color, amount) for i, (_, outputs, _) in enumerate(sources)
+                     if not used & (1 << i) for color, amount in outputs.items()
+                     if prices[i][color] <= life_left),
+                    key=lambda row: (prices[row[0]][row[1]], -row[2],
+                        is_snow_source(state.cards[sources[row[0]][0]]), row[0], row[1]),
+                )
+                tried = set()
+                for i, color, amount in options:
+                    signature = (amount, prices[i][color])
+                    if signature in tried:
+                        continue
+                    tried.add(signature)
+                    tail = solve(remaining, used | (1 << i), generic_credit + amount,
+                                 life_left - prices[i][color])
+                    if tail is not None:
+                        return ((i, color),) + tail
+                return None
             available = []
             for i, (_, outputs, _) in enumerate(sources):
                 if used & (1 << i):
@@ -295,32 +322,35 @@ def _plan_mana_sources(
         if sum(outputs.get(color, 0) for i, (_, outputs, _) in enumerate(sources) if not used & (1 << i)) < remaining[color_index]:
             return None
         candidates = sorted(
-            (i for i, (_, outputs, _) in enumerate(sources) if not used & (1 << i) and color in outputs),
+            (i for i, (_, outputs, _) in enumerate(sources) if not used & (1 << i) and color in outputs
+             and prices[i][color] <= life_left),
             key=lambda i: (
-                is_snow_source(state.cards[sources[i][0]]), len(sources[i][1]),
+                prices[i][color], is_snow_source(state.cards[sources[i][0]]), len(sources[i][1]),
                 -sources[i][1][color], not sources[i][2], i,
             ),
         )
         tried: set[tuple[tuple[str, int], ...]] = set()
         for i in candidates:
-            signature = tuple(sorted(sources[i][1].items()))
+            signature = (tuple(sorted(sources[i][1].items())), tuple(sorted(prices[i].items())))
             if signature in tried:
                 continue
             tried.add(signature)
             amount = sources[i][1][color]
             next_remaining = list(remaining)
             next_remaining[color_index] = max(0, remaining[color_index] - amount)
-            tail = solve(tuple(next_remaining), used | (1 << i), generic_credit + max(0, amount - remaining[color_index]))
+            tail = solve(tuple(next_remaining), used | (1 << i), generic_credit + max(0, amount - remaining[color_index]),
+                         life_left - prices[i][color])
             if tail is not None:
                 return ((i, color),) + tail
         return None
 
-    choices = solve(needs, 0, spare)
+    choices = solve(needs, 0, spare, max(0, state.players[player_id].life - protected_life))
     return [(sources[i][0], color, sources[i][1][color], sources[i][2]) for i, color in choices] if choices is not None else None
 
 
-def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, optimize_paid=False, reserved_card_ids=()):
-    plan = _plan_free_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids)
+def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, optimize_paid=False, reserved_card_ids=(), protected_life=0):
+    held_life = protected_life + req.get('life', 0)
+    plan = _plan_free_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=held_life)
     if plan is not None and not optimize_paid:
         return plan
     from copy import deepcopy
@@ -331,21 +361,21 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
     best, best_score = plan, None
     if plan is not None:
         trial = deepcopy(state)
-        if _produce_planned_mana(trial, player_id, plan[0], payment_context=payment_context, reserved_card_ids=reserved_card_ids):
+        if _produce_planned_mana(trial, player_id, plan[0], payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=held_life):
             best_score = _remaining_mana_score(trial, player_id, payment_context)
     for cid, spec, color in candidates:
         # Each pending activation excludes its own source, preventing circular funding.
         excluded = frozenset(excluded_sources or ()) | {cid}
         trial = deepcopy(state)
-        if not activate_mana_ability(trial, player_id, cid, spec[0], color, excluded_sources=excluded, reserved_card_ids=reserved_card_ids):
+        if not activate_mana_ability(trial, player_id, cid, spec[0], color, excluded_sources=excluded, reserved_card_ids=reserved_card_ids, protected_life=held_life):
             continue
-        tail = _plan_payment(trial, player_id, req, payment_context=payment_context, excluded_sources=excluded, reserved_card_ids=reserved_card_ids)
+        tail = _plan_payment(trial, player_id, req, payment_context=payment_context, excluded_sources=excluded, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
         if tail is not None:
             steps, snow = tail
             candidate = [PaidManaStep(cid, spec[0], color, excluded), *steps], snow
             if not optimize_paid:
                 return candidate
-            if _produce_planned_mana(trial, player_id, steps, payment_context=payment_context, reserved_card_ids=reserved_card_ids):
+            if _produce_planned_mana(trial, player_id, steps, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=held_life):
                 score = _remaining_mana_score(trial, player_id, payment_context)
                 if best_score is None or score > best_score:
                     best, best_score = candidate, score
@@ -367,30 +397,32 @@ def _remaining_mana_score(state, player_id, payment_context):
     return score + state.players[player_id].life / 10
 
 
-def _produce_planned_mana(state, player_id, steps, *, payment_context=None, reserved_card_ids=()):
+def _produce_planned_mana(state, player_id, steps, *, payment_context=None, reserved_card_ids=(), protected_life=0):
     from rules_engine.mana_abilities import PaidManaStep, activate_mana_ability, preferred_free_spec
     for step in steps:
         if isinstance(step, PaidManaStep):
             if not activate_mana_ability(state, player_id, step.source_id, step.ability_index,
-                    step.color, excluded_sources=step.excluded_sources, reserved_card_ids=reserved_card_ids):
+                    step.color, excluded_sources=step.excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life):
                 return False
             continue
         cid, color, amount, _ = step
-        spec = preferred_free_spec(state, state.cards[cid], color, amount, payment_context=payment_context, reserved_card_ids=reserved_card_ids)
-        if spec is None or not activate_mana_ability(state, player_id, cid, spec[0], color, reserved_card_ids=reserved_card_ids):
+        spec = preferred_free_spec(state, state.cards[cid], color, amount, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
+        if spec is None or not activate_mana_ability(state, player_id, cid, spec[0], color, reserved_card_ids=reserved_card_ids, protected_life=protected_life):
             return False
     return True
 
 
-def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, reserved_card_ids=()):
+def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, reserved_card_ids=(), protected_life=0):
     snow_needed = req.get("S", 0)
     if not snow_needed:
-        plan = _plan_mana_sources(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids)
+        plan = _plan_mana_sources(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
         return (plan, {}) if plan is not None else None
 
     player = state.players[player_id]
     pool, snow = available_pool(player, payment_context)
     sources = []
+    prices = {}
+    from rules_engine.mana_abilities import free_output_life_cost
     for cid in player.battlefield:
         if cid in (excluded_sources or set()):
             continue
@@ -398,15 +430,18 @@ def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *
         if not is_snow_source(card):
             continue
         land = "Land" in effective_types(state, card)
-        outputs = mana_source_outputs(state, player_id, cid, payment_context=payment_context, reserved_card_ids=reserved_card_ids)
+        outputs = mana_source_outputs(state, player_id, cid, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
         if outputs:
             sources.append((cid, outputs, land))
+            prices[cid] = {color: free_output_life_cost(state, card, color, amount,
+                payment_context=payment_context, reserved_card_ids=reserved_card_ids,
+                protected_life=protected_life) for color, amount in outputs.items()}
 
     def solve(remaining: int, totals: dict[str, int], snow_left: dict[str, int],
-              selected: list[tuple[str, str, int, bool]], spent: dict[str, int]):
+              selected: list[tuple[str, str, int, bool]], spent: dict[str, int], life_spent: int):
         if remaining == 0:
             ordinary = _plan_mana_sources(state, player_id, req, pool_override=totals,
-                                          excluded_sources={entry[0] for entry in selected} | (excluded_sources or set()), payment_context=payment_context, reserved_card_ids=reserved_card_ids)
+                                          excluded_sources={entry[0] for entry in selected} | (excluded_sources or set()), payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=protected_life + life_spent)
             return (selected + ordinary, spent) if ordinary is not None else None
         for color in MANA_COLORS:
             if snow_left[color] <= 0:
@@ -415,7 +450,7 @@ def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *
             next_totals[color] -= 1
             next_snow[color] -= 1
             next_spent[color] = next_spent.get(color, 0) + 1
-            found = solve(remaining - 1, next_totals, next_snow, selected, next_spent)
+            found = solve(remaining - 1, next_totals, next_snow, selected, next_spent, life_spent)
             if found is not None:
                 return found
         if len(selected) >= snow_needed:
@@ -428,16 +463,19 @@ def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *
                 if not outputs.get(color):
                     continue
                 amount = outputs[color]
+                paid_life = prices[cid][color]
+                if life_spent + paid_life + protected_life > player.life:
+                    continue
                 next_totals, next_snow = totals.copy(), snow_left.copy()
                 next_totals[color] += amount
                 next_snow[color] += amount
                 found = solve(remaining, next_totals, next_snow,
-                              selected + [(cid, color, amount, land)], spent)
+                              selected + [(cid, color, amount, land)], spent, life_spent + paid_life)
                 if found is not None:
                     return found
         return None
 
-    return solve(snow_needed, pool, snow, [], {})
+    return solve(snow_needed, pool, snow, [], {}, 0)
 
 
 def auto_pay_cost(
@@ -464,6 +502,7 @@ def auto_pay_cost(
     ability_index: int | None = None,
     apply_modifiers: bool = True,
     reserved_card_ids=(),
+    protected_life=0,
 ) -> bool:
     payment_context = (payment_kind, payment_types if payment_types is not None else spell_types or set())
     context = CostContext(
@@ -483,12 +522,13 @@ def auto_pay_cost(
         hybrid_choices, restricted_x_color, branches, context.floored_reductions,
     )
     payment = next(
-        ((req, plan) for req in requirements if can_pay_life(state, player_id, req.get("life", 0) + reserved_life)
+        ((req, plan) for req in requirements if can_pay_life(state, player_id, req.get("life", 0) + reserved_life + protected_life)
         and not cost_payment_is_prohibited(state, player_id, payment_kind,
                                           life=req.get("life", 0) + reserved_life)
         and (plan := ([], {}) if not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S'))
              else _plan_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources,
-                                optimize_paid=ability_kind != 'mana', reserved_card_ids=reserved_card_ids)) is not None),
+                                optimize_paid=ability_kind != 'mana', reserved_card_ids=reserved_card_ids,
+                                protected_life=reserved_life + protected_life)) is not None),
         None,
     )
     if payment is None:
@@ -511,13 +551,13 @@ def auto_pay_cost(
     for step in plan:
         if isinstance(step, PaidManaStep):
             if not activate_mana_ability(state, player_id, step.source_id, step.ability_index,
-                    step.color, excluded_sources=step.excluded_sources, reserved_card_ids=reserved_card_ids):
+                    step.color, excluded_sources=step.excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life):
                 return False
             continue
         cid, color, amount, land = step
         from rules_engine.mana_abilities import preferred_free_spec
-        spec = preferred_free_spec(state, state.cards[cid], color, amount, payment_context=payment_context, reserved_card_ids=reserved_card_ids)
-        if spec is None or not activate_mana_ability(state, player_id, cid, spec[0], color, reserved_card_ids=reserved_card_ids):
+        spec = preferred_free_spec(state, state.cards[cid], color, amount, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life)
+        if spec is None or not activate_mana_ability(state, player_id, cid, spec[0], color, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life):
             return False
         cost_kind = payment_kind
         state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay {cost_kind} cost.")

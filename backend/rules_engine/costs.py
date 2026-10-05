@@ -213,7 +213,7 @@ def _activation_selections(state, player_id, source_id, cost, choice, unavailabl
 
 def _payable_activation_selection(state, player_id, source_id, cost, hybrid_choices, x_value,
                                  restricted_x_color, ability_kind, ability_index, payment_choices,
-                                 unavailable_resources):
+                                 unavailable_resources, protected_life=0):
     source = state.cards[source_id]
     for selected in _activation_selections(state, player_id, source_id, cost, payment_choices, unavailable_resources):
         reserved = set(unavailable_resources) | set(selected['discard_card_ids']) | set(selected['sacrifice_card_ids'])
@@ -223,12 +223,13 @@ def _payable_activation_selection(state, player_id, source_id, cost, hybrid_choi
             payment_kind='activation', payment_types=set(effective_types(state, source)),
             ability_kind=ability_kind, source_card_id=source_id, ability_index=ability_index,
             excluded_sources={source_id} if cost.tap_source else None, reserved_card_ids=reserved,
+            protected_life=protected_life,
         ):
             return selected
     return None
 
 
-def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, *, ability_kind='activated', ability_index=None, payment_choices=None, unavailable_resources=()) -> bool:
+def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, *, ability_kind='activated', ability_index=None, payment_choices=None, unavailable_resources=(), protected_life=0) -> bool:
     cost = parse_activated_cost(cost_text)
     if not cost.supported or x_value < 0:
         return False
@@ -238,24 +239,24 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
         return False
     if cost.discard_source and (source_id not in player.hand or source.zone != Zone.HAND):
         return False
-    if not can_pay_life(state, player_id, cost.pay_life):
+    if not can_pay_life(state, player_id, cost.pay_life + protected_life):
         return False
     return _payable_activation_selection(state, player_id, source_id, cost, hybrid_choices, x_value,
-        restricted_x_color, ability_kind, ability_index, payment_choices, unavailable_resources) is not None
+        restricted_x_color, ability_kind, ability_index, payment_choices, unavailable_resources, protected_life) is not None
 
 
-def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, ability_kind='activated', ability_index=None, payment_choices=None, unavailable_resources=()) -> bool:
+def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cost_text: str, *, context: dict | None = None, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, ability_kind='activated', ability_index=None, payment_choices=None, unavailable_resources=(), protected_life=0) -> bool:
     cost = parse_activated_cost(cost_text)
-    if not activated_cost_available(state, player_id, source_id, cost_text, hybrid_choices, x_value, restricted_x_color, ability_kind=ability_kind, ability_index=ability_index, payment_choices=payment_choices, unavailable_resources=unavailable_resources):
+    if not activated_cost_available(state, player_id, source_id, cost_text, hybrid_choices, x_value, restricted_x_color, ability_kind=ability_kind, ability_index=ability_index, payment_choices=payment_choices, unavailable_resources=unavailable_resources, protected_life=protected_life):
         return False
     player = state.players[player_id]
     source = state.cards[source_id]
     selected = _payable_activation_selection(state, player_id, source_id, cost, hybrid_choices, x_value,
-        restricted_x_color, ability_kind, ability_index, payment_choices, unavailable_resources)
+        restricted_x_color, ability_kind, ability_index, payment_choices, unavailable_resources, protected_life)
     if selected is None:
         return False
     reserved = set(unavailable_resources) | set(selected['discard_card_ids']) | set(selected['sacrifice_card_ids'])
-    if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(effective_types(state, source)), source_id, ability_kind, {source_id} if cost.tap_source else None, ability_index, reserved):
+    if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(effective_types(state, source)), source_id, ability_kind, {source_id} if cost.tap_source else None, ability_index, reserved, protected_life):
         return False
     selected = activated_cost_selection(state, player_id, source_id, cost, selected, unavailable_resources)
     if selected is None:
@@ -264,7 +265,8 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         source.tapped = True
     if cost.pay_life:
         from rules_engine.replacement import pay_life
-        pay_life(state, player_id, cost.pay_life)
+        if not pay_life(state, player_id, cost.pay_life):
+            return False
         state.log.append(f"{player.name} pays {cost.pay_life} life for {source.name}.")
     from rules_engine.events import emit_event, emit_event_batch, flush_staged_triggers, was_creature_on_battlefield
     if cost.discard_source:
@@ -312,10 +314,10 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     return True
 
 
-def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str, reserved_life: int = 0, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, source_types: set[str] | None = None, source_id=None, ability_kind='activated', excluded_sources=None, ability_index=None, reserved_card_ids=()) -> bool:
+def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_name: str, reserved_life: int = 0, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, source_types: set[str] | None = None, source_id=None, ability_kind='activated', excluded_sources=None, ability_index=None, reserved_card_ids=(), protected_life=0) -> bool:
     from rules_engine.mana import auto_pay_cost
 
-    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color, payment_kind="activation", payment_types=source_types, source_card_id=source_id, ability_kind=ability_kind, excluded_sources=excluded_sources, ability_index=ability_index, reserved_card_ids=reserved_card_ids)
+    return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color, payment_kind="activation", payment_types=source_types, source_card_id=source_id, ability_kind=ability_kind, excluded_sources=excluded_sources, ability_index=ability_index, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
 
 
 def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:

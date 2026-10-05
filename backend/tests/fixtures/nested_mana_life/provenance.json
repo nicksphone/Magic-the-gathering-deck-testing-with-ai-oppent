@@ -1,0 +1,16 @@
+[
+  {
+    "file": "mana-confluence.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Mana%20Confluence",
+    "resolved_uri": "https://api.scryfall.com/cards/504a69eb-3c2d-4bb1-b117-252b15acf0c2",
+    "retrieved_at": "2026-10-05T06:51:49.028Z",
+    "sha256": "8e280698f8a5b841b4e65cf4486b3d714acb452682f11035f5258108975ba156"
+  },
+  {
+    "file": "snow-covered-swamp.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Snow-Covered%20Swamp",
+    "resolved_uri": "https://api.scryfall.com/cards/6aa85af8-15f5-4620-8aea-0b45c28372ed",
+    "retrieved_at": "2026-10-05T06:59:51.721Z",
+    "sha256": "7fb9f7d59787b12e0fd3b4a2a0b9a95dafe0ca45ada9226b66acd847ae377690"
+  }
+]

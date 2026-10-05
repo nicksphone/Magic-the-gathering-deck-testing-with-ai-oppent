@@ -6,10 +6,11 @@
   Exact runtime passes 8,159 tests in all 330 files with 644 matching backend
   hashes and the complete browser gate in all three BO3 modes. Preserve selected
   resources, allow tap-only use and choose feasible automatic/AI alternatives.
-- [ ] Repair nested mana life budgets. Mana production can spend Erebos's outer
-  life cost; both seats reproduce. A separate shared-budget candidate is under
-  targeted validation before full qualification. Extend actual-game timing and
-  decision-quality evidence beyond crafted states.
+- [ ] Qualify [nested mana life budgets](docs/testing/nested-mana-life-budget.md).
+  Canonical four-failure reproduction is repaired by shared source-selection
+  budgets and protected outer life. Latest selection passes 505 checks, four
+  new HTTP recovery cases and six focused browser cases. Freeze and run exact
+  full backend/browser gates; extend real-game timing and decision evidence.
 
 - [x] Qualify [deliberate activated payments](docs/testing/activation-payment-choices.md).
   Shared ordinary activation resource selection, strict HTTP validation, both
