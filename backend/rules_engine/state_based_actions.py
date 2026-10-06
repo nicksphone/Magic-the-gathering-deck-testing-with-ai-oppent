@@ -232,7 +232,7 @@ def _apply_state_based_actions_once(state: MatchState) -> None:
         _resolve_lethal_creature_batch(state, lethal_ids)
 
     for cid, card in list(state.cards.items()):
-        if "Planeswalker" in effective_types(state, card) and card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0:
+        if card.zone == Zone.BATTLEFIELD and card.loyalty is not None and card.loyalty <= 0 and "Planeswalker" in effective_types(state, card):
             battlefield_owner = state.players[card.controller]
             if cid in battlefield_owner.battlefield:
                 emit_event(state, "leaves_battlefield", {"card_id": cid, "controller": card.controller})

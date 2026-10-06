@@ -2,6 +2,18 @@
 
 ## Current Execution Order
 
+### Land/Pass And State-Based-Action Composition
+
+Land/pass consumer validation is composed without reapplying the existing library
+increment. The worker's unchanged 29-module gate passes 2,624 checks in 1593.81s
+on its explicitly recorded older pins. The initial interrupted setup failure
+remains archived separately. With upgraded dependencies, the parent passes all
+136 focused land/pass cases in 115.63s and 261 combined cases in 241.35s across
+six complete land/pass, SBA and training-contract modules. Counts overlap.
+Only land/pass lookup validation and one planeswalker cheap-filter condition
+reorder change production code. Special-land consumer metadata, broader current
+framework/full-suite qualification, hosted CI and deployment remain open.
+
 ### Backend Dependency Compatibility
 
 Declared-requirements scanning identified 15 distinct advisories across three
@@ -21,9 +33,9 @@ Original 288 audit cases and 630 correction cases remain unchanged. The parent
 five-module gate passes 975 checks in 317.39 seconds with unchanged source hashes;
 the worker's broader 24-module composition passes 2,332 checks. Counts overlap.
 AST parity proves only eight context literals were added; typed choices, privacy,
-raw API strictness, foretell and Ninja behavior remain unchanged. The land/pass
-combined candidate and backend dependency upgrade are still pending separate
-qualification; this milestone does not certify either or the full release.
+raw API strictness, foretell and Ninja behavior remain unchanged. Land/pass and
+the dependency upgrade now have the scoped gates above; neither establishes
+full release readiness or certifies special-land consumer metadata.
 
 ### Release Check Isolation
 

@@ -432,6 +432,7 @@ class TrainingEnvironment:
             ManaAbilityAction, TapAction, NonlandManaAction, BulkTapAction, CastAction, AbilityAction,
             EquipAction, CrewAction, CycleAction, MechanicChoice, OptionalEffectChoice, TriggerChoice,
             ReplacementChoice, TriggerTargetChoice, AttackAction, BlockAction, ForetellAction, NinjutsuAction,
+            LandAction, PassAction,
         )
         models = {'activate_mana_ability': ManaAbilityAction, 'tap_land_for_mana': TapAction,
                   'tap_nonland_for_mana': NonlandManaAction, 'tap_lands_bulk': BulkTapAction,
@@ -442,7 +443,7 @@ class TrainingEnvironment:
                   'choose_trigger_order': TriggerChoice,
                   'choose_replacement': ReplacementChoice, 'choose_trigger_target': TriggerTargetChoice,
                   'attack': AttackAction, 'block': BlockAction, 'foretell': ForetellAction,
-                  'ninjutsu': NinjutsuAction}
+                  'ninjutsu': NinjutsuAction, 'play_land': LandAction, 'pass_priority': PassAction}
         if isinstance(intent, dict) and isinstance(intent.get('type'), str) and intent['type'] in models:
             display = {'card_name', 'mana_cost', 'cost_options', 'target_hints', 'outputs',
                        'cost_text', 'ability_label', 'label', 'payment_options',
@@ -492,6 +493,31 @@ class TrainingEnvironment:
                             raise ActionRejected('Ninjutsu metadata does not match current public view')
                 except _INPUT_ERRORS as exc:
                     raise ActionRejected('Invalid ninjutsu intent') from exc
+            elif intent['type'] == 'play_land':
+                display = {'card_view', 'card_name', 'graveyard_permission_name'}
+                contract = 'Land'
+                try:
+                    chosen = LandAction.model_validate({key: value for key, value in intent.items()
+                                                       if key not in display}).model_dump(exclude_none=True)
+                    supplied = display & set(intent)
+                    if supplied:
+                        actor = self.acting_seat if seat is None else seat
+                        candidate = deepcopy(self._state)
+                        view = next((move for move in self._rules.legal_moves(candidate, actor)
+                                     if move['type'] == 'play_land' and
+                                     LandAction.model_validate({key: value for key, value in move.items()
+                                                                if key in LandAction.model_fields}
+                                                               ).model_dump(exclude_none=True) == chosen), None)
+                        if view is not None and 'card_view' in supplied:
+                            view['card_view'] = serialize_card_view(candidate, intent['card_id'])
+                        if view is None or any(key not in view or _json(intent[key]) != _json(view[key])
+                                               for key in supplied):
+                            raise ActionRejected('Land metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid land intent') from exc
+            elif intent['type'] == 'pass_priority':
+                display = set()
+                contract = 'Priority pass'
             elif intent['type'] == 'activate_ability':
                 display = {'card_name', 'mana_cost', 'ability_label', 'payment_options',
                            'activation_costs', 'hybrid_symbols', 'target_hints'}

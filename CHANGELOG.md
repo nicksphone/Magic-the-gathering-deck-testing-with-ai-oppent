@@ -2,6 +2,15 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Validate land and priority-pass intents before normalization, preserving
+  explicit source/origin/face/entry choices and requiring supplied display to
+  match the current actor's offered move. The unchanged 29-module worker batch
+  passes 2,624 checks on its recorded older pins; upgraded-dependency parent
+  qualification passes 136 focused and 261 combined checks (overlapping counts).
+- Avoid unnecessary planeswalker type queries by checking battlefield zone and
+  nonpositive loyalty first. One condition reorder preserves complete decision
+  and state traces; two repeats per version on one capture measure a 7.03%
+  reduction. This is not a universal latency or AI-strength guarantee.
 - Upgrade FastAPI to 0.142.2, pin Starlette 1.3.1, and update pytest 9.0.3 and
   python-multipart 0.0.31 after a fresh declared-requirements advisory scan.
   The baseline has 15 distinct package/advisory pairs (30 duplicate-inclusive

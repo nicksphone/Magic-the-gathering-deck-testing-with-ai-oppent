@@ -137,6 +137,14 @@ priors do not by themselves teach full Oracle semantics or prove play quality.
 
 ## Testing
 
+Land and priority-pass training intents validate explicit public fields before
+normalization. Supplied land display metadata must match the acting player's
+currently offered move; unsupported fields are rejected rather than dropped.
+Basic-land views are qualified; special-land metadata remains under audit.
+State-based actions check zone and loyalty before querying planeswalker types,
+without changing rule ordering or AI search breadth. See
+[the query-order checks](docs/testing/sba-planeswalker-query-order.md).
+
 Private library-choice intent handling preserves explicit selections and order
 from owned legal views for the audited scry, surveil and look/select families.
 Server continuation metadata must match the current pending state exactly;
