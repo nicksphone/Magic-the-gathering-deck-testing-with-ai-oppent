@@ -1,0 +1,86 @@
+{
+  "canonical_sha256": "3c865aae6e0e85af644d38f3c0f1900fc71fad502b8e335b1085ec8ee2f04d10",
+  "compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "facts_modified": false,
+  "rows": {
+    "Captain Ripley Vance": {
+      "id": "d640bc10-51ce-48e9-bceb-c3e69d7eae31",
+      "oracle_id": "eefeeab1-b9f2-451a-9250-eb7b54d00fc1",
+      "raw_sha256": "82a92108396a29d77c2208f49d2be7ae6b0536856e89a3386f3322f4d4100906",
+      "source": "https://api.scryfall.com/cards/d640bc10-51ce-48e9-bceb-c3e69d7eae31"
+    },
+    "Clarion Spirit": {
+      "id": "86a4c348-1012-4339-960a-c7bc7fd84fbb",
+      "oracle_id": "dec20b18-afe6-405e-b47d-a757a5645c63",
+      "raw_sha256": "6dc3c3233ebf48b37e969dd3c968686b5a1a1329bf8f33368fe1dd3a4bc302cc",
+      "source": "https://api.scryfall.com/cards/86a4c348-1012-4339-960a-c7bc7fd84fbb"
+    },
+    "Cori-Steel Cutter": {
+      "id": "490eb213-9ae2-4b45-abec-6f1dfc83792a",
+      "oracle_id": "46b1a169-bc32-47bf-b379-fa0c3d13878f",
+      "raw_sha256": "cfae7725d62f2aadd8f4008d8b57dc3746692bc24104d18576910d7c0d31576d",
+      "source": "https://api.scryfall.com/cards/490eb213-9ae2-4b45-abec-6f1dfc83792a"
+    },
+    "Dress Down": {
+      "id": "04f9f061-67b8-4427-9fcb-b3ccfee8fc5d",
+      "oracle_id": "c1cbbda0-e02b-4b9c-8669-ea87ca629520",
+      "raw_sha256": "4d5e1245b70e81468af234a9b22d99c47e3914cb0de65e9b0013a9721864f100",
+      "source": "https://api.scryfall.com/cards/04f9f061-67b8-4427-9fcb-b3ccfee8fc5d"
+    },
+    "Intangible Virtue": {
+      "id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77",
+      "oracle_id": "d21c3c8f-d105-4ba9-bf69-e5f26f0f8ec5",
+      "raw_sha256": "a542d41bfa505ed84867e843d1facd315fd46c33356e5341d7d6f564328f2296",
+      "source": "https://api.scryfall.com/cards/716d82a1-fb5d-4607-b1fa-e8e9edd4dd77"
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "raw_sha256": "d748be7ca3497689c356bd7d41fea708f6883aa88affe8985813540337135769",
+      "source": "https://api.scryfall.com/cards/f3cc07cd-cc79-4745-b0b7-eade60175cc3"
+    },
+    "Jori En, Ruin Diver": {
+      "id": "40c020f2-5809-4aa6-a6f5-6030568058aa",
+      "oracle_id": "4cd9b48e-5774-4a1c-857f-9f4a92db9b41",
+      "raw_sha256": "74ab69adce592db68774b2d449b3f7f3694534723affcee9ccddaa3bacbce4a0",
+      "source": "https://api.scryfall.com/cards/40c020f2-5809-4aa6-a6f5-6030568058aa"
+    },
+    "Raise the Alarm": {
+      "id": "6c7c8527-55f6-494d-b4f7-c427a5735053",
+      "oracle_id": "5b2364d7-a811-4595-a1b4-224c70555ffa",
+      "raw_sha256": "afbfefef8df33819b260275b218031c21007862f0acd4419d56117a39bb9a931",
+      "source": "https://api.scryfall.com/cards/6c7c8527-55f6-494d-b4f7-c427a5735053"
+    },
+    "Rammas Echor, Ancient Shield": {
+      "id": "558c1fcc-cb01-4031-ada5-4e39d65aee27",
+      "oracle_id": "53d58401-c318-47e0-aab0-60001c071dbb",
+      "raw_sha256": "6ed49fc1b4d3c976cd9fa9dfa07f8fce35a80837b9ce9e7ba2f3ba8f54c76b65",
+      "source": "https://api.scryfall.com/cards/558c1fcc-cb01-4031-ada5-4e39d65aee27"
+    },
+    "Think Twice": {
+      "id": "85835de4-66ea-4ba1-87ca-6bcec2a8660a",
+      "oracle_id": "fa85c5a2-8e83-4624-a35a-a0bbf17ecbb4",
+      "raw_sha256": "223efd425f5bb197673cef2dbbe8dae181b0ac8f8674c5f01f1a58fef577da43",
+      "source": "https://api.scryfall.com/cards/85835de4-66ea-4ba1-87ca-6bcec2a8660a"
+    },
+    "Twincast": {
+      "id": "f38eec33-a40e-4739-ad2c-2f57008cef4e",
+      "oracle_id": "8f878efc-850f-43d2-a6fe-5ea8d1dd5afb",
+      "raw_sha256": "495258d45a5f3173915e33a55e5bffc097c50c553b95a427e9dc04a2eb369812",
+      "source": "https://api.scryfall.com/cards/f38eec33-a40e-4739-ad2c-2f57008cef4e"
+    },
+    "Wavebreak Hippocamp": {
+      "id": "d900dff5-1196-443f-b9b0-b8e75c67c868",
+      "oracle_id": "3405c8a9-a8d6-4b45-9b64-94141076603b",
+      "raw_sha256": "418c12f242392acb77aaf1813e4ca882101d549e8924da09ac2daa7796c3eb69",
+      "source": "https://api.scryfall.com/cards/d900dff5-1196-443f-b9b0-b8e75c67c868"
+    },
+    "Wingblade Disciple": {
+      "id": "71de7dca-0231-4407-86a0-c7fc95f5aaa0",
+      "oracle_id": "c566317e-cd82-46c1-b506-f41256d815f6",
+      "raw_sha256": "563f369f92d5ecd2cb27bfc8bb457bf9db995e6c6ceb5ad194b5622f49c2b092",
+      "source": "https://api.scryfall.com/cards/71de7dca-0231-4407-86a0-c7fc95f5aaa0"
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz"
+}

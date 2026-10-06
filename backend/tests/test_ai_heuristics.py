@@ -1,8 +1,17 @@
 from __future__ import annotations
 
+import pytest
+
+from ai.action_contract import complete_action
 from ai.agent import AIAgent
 from ai.heuristics import evaluate_board
-from game_state.state import MatchFactory, Zone
+from card_data.hydration import hydrate_deck_cards, ready_for_match
+from decks.builtin_decks import BUILTIN_DECKS
+from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+from game_state.state import MatchFactory, Step, Zone
+from rules_engine.action_validation import ActionRejected, checked_action
+from rules_engine.continuous import effective_keywords
+from rules_engine.engine import RulesEngine
 
 
 def test_evaluate_board_rewards_evasive_keyword_creatures() -> None:
@@ -160,50 +169,101 @@ def test_evaluate_board_rewards_artifact_or_enchantment_engine_permanents() -> N
     assert evaluate_board(engine, 1) > evaluate_board(baseline, 1)
 
 
-def test_control_ai_prefers_removal_against_evasive_threat() -> None:
-    ai = AIAgent(difficulty="master", archetype="Control")
-    moves = [
-        {
-            "type": "cast_spell",
-            "card_name": "Go for the Throat",
-            "card_id": "removal-1",
-            "target_hints": {"creature_targets": [{"id": "threat-1", "name": "Troll"}]},
-        },
-        {"type": "cast_spell", "card_name": "Consider", "card_id": "draw-1"},
-        {"type": "pass_priority"},
-    ]
+def _control_removal_position(seat):
+    decks = []
+    for name in ("Dimir Control", "Tempo"):
+        rows = [{"quantity": int(q), "card_name": card} for q, card in
+                (line.split(" ", 1) for line in BUILTIN_DECKS[name].strip().splitlines())]
+        deck = hydrate_deck_cards(None, rows)
+        assert sum(row["quantity"] for row in deck) == 60
+        assert all(ready_for_match(row) for row in deck)
+        decks.append(deck)
+    if seat == 2:
+        decks.reverse()
+    state = MatchFactory.from_decks(*decks, seed=17)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = seat
+    state.turn = 7
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[seat].life = 8
+    state.players[3-seat].life = 12
+    # Controlled board seam, not a replayed legal episode; preserve canonical cards.
+    for player in state.players.values():
+        for cid in player.hand:
+            state.cards[cid].move_to_zone(Zone.LIBRARY)
+            player.library.append(cid)
+        player.hand.clear()
 
-    class FakeState:
-        turn = 7
-        step = "precombat_main"
-        active_player = 1
-        priority_player = 1
-        pregame_pending = False
-        stack = []
-        winner = None
-        players = {
-            1: type("P", (), {"life": 8, "hand": ["removal-1", "draw-1"], "battlefield": ["land-1"], "mana_pool": {}})(),
-            2: type("P", (), {"life": 12, "hand": [], "battlefield": ["threat-1"], "mana_pool": {}})(),
-        }
-        cards = {
-            "removal-1": type("C", (), {"types": ["Instant"], "name": "Go for the Throat", "oracle_text": "Destroy target creature.", "mana_cost": "{1}{B}", "keywords": []})(),
-            "draw-1": type("C", (), {"types": ["Instant"], "name": "Consider", "oracle_text": "Draw a card.", "mana_cost": "{U}", "keywords": []})(),
-            "land-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "threat-1": type(
-                "C",
-                (),
-                {
-                    "types": ["Creature"],
-                    "name": "Serra Angel",
-                    "oracle_text": "",
-                    "power": 4,
-                    "toughness": 4,
-                    "keywords": ["Flying", "Lifelink"],
-                    "tapped": False,
-                },
-            )(),
-        }
+    def place(name, owner, zone):
+        card = next(card for card in state.cards.values() if card.owner == owner and card.name == name)
+        getattr(state.players[owner], card.zone.value).remove(card.id)
+        card.move_to_zone(zone)
+        if zone == Zone.BATTLEFIELD:
+            card.summoning_sick = False
+        getattr(state.players[owner], zone.value).append(card.id)
+        return card.id
 
-    decision = ai.choose_action(FakeState(), moves, 1)
-    assert decision.action["type"] == "cast_spell"
-    assert decision.action["card_id"] == "removal-1"
+    removal = place("Go for the Throat", seat, Zone.HAND)
+    draw = place("Consider", seat, Zone.HAND)
+    island = place("Island", seat, Zone.BATTLEFIELD)
+    swamp = place("Swamp", seat, Zone.BATTLEFIELD)
+    threat = place("Brazen Borrower", 3-seat, Zone.BATTLEFIELD)
+    return state, removal, draw, island, swamp, threat
+
+
+@pytest.mark.parametrize("seat", [1, 2])
+def test_control_ai_prefers_removal_against_evasive_threat(seat) -> None:
+    state, removal, draw, island, swamp, threat = _control_removal_position(seat)
+    rules = RulesEngine()
+    before = serialize_match_snapshot(state)
+    assert "flying" in effective_keywords(state, threat)
+    moves = rules.legal_moves(state, seat)
+    assert {removal, draw}.issubset({move.get("card_id") for move in moves if move["type"] == "cast_spell"})
+    checked_action(state, rules, seat, {"type": "cast_spell", "card_id": draw, "cost_choice": {"id": "base"}})
+
+    action = complete_action(AIAgent(difficulty="master", archetype="Control").choose_action(state, moves, seat).action)
+    assert action["type"] == "cast_spell"
+    assert action["card_id"] == removal
+    assert action["targets"]["target_card_id"] == threat
+    announced = checked_action(state, rules, seat, action)
+    assert announced.cards[removal].zone == Zone.STACK
+    assert announced.cards[island].tapped and announced.cards[swamp].tapped
+    assert announced.stack[-1].payload["mana_spent"] == 2
+    restored = deserialize_match_snapshot(before)
+    assert serialize_match_snapshot(checked_action(restored, rules, seat, action)) == serialize_match_snapshot(announced)
+    for _ in range(2):
+        announced = checked_action(announced, rules, announced.priority_player, {"type": "pass_priority"})
+    assert announced.cards[threat].zone == Zone.GRAVEYARD
+    assert serialize_match_snapshot(state) == before
+
+
+@pytest.mark.parametrize("seat", [1, 2])
+@pytest.mark.parametrize("resource_gap", ["missing_black", "tapped_black", "one_island"])
+def test_control_removal_requires_actual_payable_resources(seat, resource_gap):
+    state, removal, draw, _, swamp, threat = _control_removal_position(seat)
+    if resource_gap == "missing_black":
+        # A second canonical Island supplies generic mana, never black mana.
+        player = state.players[seat]
+        replacement = next(cid for cid in player.library if state.cards[cid].name == "Island")
+        player.library.remove(replacement)
+        state.cards[replacement].move_to_zone(Zone.BATTLEFIELD)
+        player.battlefield.append(replacement)
+    if resource_gap == "tapped_black":
+        state.cards[swamp].tapped = True
+    else:
+        state.players[seat].battlefield.remove(swamp)
+        state.cards[swamp].move_to_zone(Zone.LIBRARY)
+        state.players[seat].library.append(swamp)
+    rules = RulesEngine()
+    before = serialize_match_snapshot(state)
+    moves = rules.legal_moves(state, seat)
+    assert not any(move["type"] == "cast_spell" and move.get("card_id") == removal for move in moves)
+    assert any(move["type"] == "cast_spell" and move.get("card_id") == draw for move in moves)
+    with pytest.raises(ActionRejected):
+        checked_action(state, rules, seat, {"type": "cast_spell", "card_id": removal,
+            "cost_choice": {"id": "base"}, "targets": {"target_card_id": threat}})
+    action = complete_action(AIAgent(difficulty="master", archetype="Control").choose_action(state, moves, seat).action)
+    assert action.get("card_id") != removal
+    checked_action(state, rules, seat, action)
+    assert serialize_match_snapshot(state) == before

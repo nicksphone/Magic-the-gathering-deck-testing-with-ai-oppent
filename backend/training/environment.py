@@ -430,10 +430,18 @@ class TrainingEnvironment:
         from ai.action_contract import complete_action
         from api_contracts import (
             ManaAbilityAction, TapAction, NonlandManaAction, BulkTapAction, CastAction, AbilityAction,
+            EquipAction, CrewAction, CycleAction, MechanicChoice, OptionalEffectChoice, TriggerChoice,
+            ReplacementChoice, TriggerTargetChoice, AttackAction, BlockAction, ForetellAction,
         )
         models = {'activate_mana_ability': ManaAbilityAction, 'tap_land_for_mana': TapAction,
                   'tap_nonland_for_mana': NonlandManaAction, 'tap_lands_bulk': BulkTapAction,
-                  'cast_spell': CastAction, 'activate_ability': AbilityAction}
+                  'cast_spell': CastAction, 'activate_ability': AbilityAction,
+                  'activate_loyalty': AbilityAction, 'equip': EquipAction,
+                  'crew': CrewAction, 'cycle_card': CycleAction,
+                  'choose_mechanic': MechanicChoice, 'choose_optional_effect': OptionalEffectChoice,
+                  'choose_trigger_order': TriggerChoice,
+                  'choose_replacement': ReplacementChoice, 'choose_trigger_target': TriggerTargetChoice,
+                  'attack': AttackAction, 'block': BlockAction, 'foretell': ForetellAction}
         if isinstance(intent, dict) and isinstance(intent.get('type'), str) and intent['type'] in models:
             display = {'card_name', 'mana_cost', 'cost_options', 'target_hints', 'outputs',
                        'cost_text', 'ability_label', 'label', 'payment_options',
@@ -443,12 +451,133 @@ class TrainingEnvironment:
             if intent['type'] == 'cast_spell':
                 display = {'card_name', 'mana_cost', 'cost_options', 'target_hints'}
                 contract = 'Cast'
+            elif intent['type'] == 'foretell':
+                display = {'card_name', 'mana_cost', 'fixed_costs', 'granted_reductions', 'card_view'}
+                contract = 'Foretell'
+                try:
+                    ForetellAction.model_validate({key: value for key, value in intent.items()
+                                                   if key not in display})
+                    supplied = display & set(intent)
+                    if supplied:
+                        actor = self.acting_seat if seat is None else seat
+                        candidate = deepcopy(self._state)
+                        view = next((move for move in self._rules.legal_moves(candidate, actor)
+                                     if move['type'] == 'foretell'
+                                     and move['card_id'] == intent['card_id']), None)
+                        if view is not None and 'card_view' in supplied:
+                            view['card_view'] = serialize_card_view(candidate, intent['card_id'])
+                        if view is None or any(key not in view or _json(intent[key]) != _json(view[key])
+                                               for key in supplied):
+                            raise ActionRejected('Foretell metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid foretell intent') from exc
             elif intent['type'] == 'activate_ability':
                 display = {'card_name', 'mana_cost', 'ability_label', 'payment_options',
                            'activation_costs', 'hybrid_symbols', 'target_hints'}
                 contract = 'Activated ability'
+            elif intent['type'] == 'activate_loyalty':
+                display = {'card_name', 'ability_label', 'ability_delta', 'activation_costs',
+                           'ability_x_cost', 'ability_x_sign', 'target_hints'}
+                contract = 'Loyalty ability'
+            elif intent['type'] == 'equip':
+                display = {'card_name', 'mana_cost', 'targets'}
+                contract = 'Equip'
+                # The offered candidates are display, not a chosen Targets object.
+                if 'targets' in intent:
+                    candidates = intent['targets']
+                    if not (isinstance(candidates, list) and candidates and all(
+                            isinstance(candidate, dict) and set(candidate) == {'id', 'name'}
+                            and all(isinstance(candidate[key], str) and candidate[key]
+                                    for key in ('id', 'name')) for candidate in candidates)):
+                        raise ActionRejected('Equip targets must be a display candidate list')
+            elif intent['type'] == 'crew':
+                display = {'card_name', 'crew_value', 'suggested_crew_card_ids',
+                           'activation_costs', 'crew_candidates'}
+                contract = 'Crew'
+            elif intent['type'] == 'cycle_card':
+                display = {'card_name', 'mana_cost', 'activation_costs', 'cycling_variant'}
+                contract = 'Cycling'
+            elif intent['type'] == 'choose_mechanic':
+                display = {'kind', 'options', 'count', 'min_count', 'label',
+                           'option_labels', 'option_type_lines', 'inspected_cards',
+                           'inspected_card_ids', 'effect_payload', 'top_reference',
+                           'top_ids', 'bottom_any_order', 'bottom_random'}
+                contract = 'Mechanic choice'
+                # Whole engine views carry continuations, not authoritative input.
+                context = {'player_id', 'effect_controller', 'followup_effect', 'resolving_item'}
+                pending = self._state.pending_mechanic_choice or {}
+                actor = self.acting_seat if seat is None else seat
+                _seat(actor)
+                if pending.get('player_id') != actor:
+                    raise ActionRejected('Mechanic view context does not match pending actor')
+                moves = self._rules.legal_moves(deepcopy(self._state), actor)
+                offered = next((move for move in moves if move['type'] == 'choose_mechanic'), {})
+                for key in (display | context) & set(intent):
+                    try:
+                        authoritative = pending if key in context else offered
+                        matches = (key in authoritative
+                                   and _json(intent[key]) == _json(authoritative[key]))
+                    except _INPUT_ERRORS as exc:
+                        raise ActionRejected('Invalid mechanic view context') from exc
+                    if not matches:
+                        raise ActionRejected('Mechanic view context does not match pending state')
+                display |= context
+            elif intent['type'] == 'choose_optional_effect':
+                display = set()
+                contract = 'Optional effect choice'
+            elif intent['type'] == 'choose_trigger_order':
+                display = {'trigger_labels', 'event'}
+                contract = 'Trigger order'
+                if 'trigger_labels' in intent:
+                    labels = intent['trigger_labels']
+                    if not (isinstance(labels, list) and labels
+                            and all(isinstance(label, str) and label for label in labels)):
+                        raise ActionRejected('Trigger labels must be a display string list')
+                if 'event' in intent and not (isinstance(intent['event'], str) and intent['event']):
+                    raise ActionRejected('Trigger event must be a display string')
+            elif intent['type'] == 'choose_replacement':
+                display = {'event', 'replacement_name'}
+                contract = 'Replacement choice'
+                for key in display & set(intent):
+                    if not (isinstance(intent[key], str) and intent[key]):
+                        raise ActionRejected('Replacement metadata must be a display string')
+            elif intent['type'] == 'choose_trigger_target':
+                display = {'target_name'}
+                contract = 'Trigger target choice'
+                if 'target_name' in intent and not (isinstance(intent['target_name'], str)
+                                                   and intent['target_name']):
+                    raise ActionRejected('Trigger target name must be a display string')
+            elif intent['type'] in {'attack', 'block'}:
+                display = ({'options', 'defenders', 'banding_attackers', 'attack_taxes',
+                            'attack_costs', 'declaration_limits'} if intent['type'] == 'attack' else
+                           {'attackers', 'blockers', 'legal_blocks', 'blocker_capacities',
+                            'target_requirements', 'block_taxes', 'block_costs', 'declaration_limits'})
+                contract = 'Combat declaration'
+                # Display is a current public view, never an authoritative choice.
+                supplied = display & set(intent)
+                if supplied:
+                    try:
+                        actor = self.acting_seat if seat is None else seat
+                        view = next((move for move in self._rules.legal_moves(deepcopy(self._state), actor)
+                                     if move['type'] == intent['type']), None)
+                        matches = view is not None and all(
+                            key in view and _json(intent[key]) == _json(view[key]) for key in supplied)
+                    except _INPUT_ERRORS as exc:
+                        raise ActionRejected('Invalid combat display metadata') from exc
+                    if not matches:
+                        raise ActionRejected('Combat display metadata does not match current public view')
             if set(intent) - set(models[intent['type']].model_fields) - display - {'_invalid_ai_choice'}:
                 raise ActionRejected(contract + ' contract cannot carry requested fields')
+            if intent['type'] == 'choose_mechanic':
+                # Check the public chosen-parameter model before any completion helper.
+                try:
+                    action = MechanicChoice.model_validate({key: value for key, value in intent.items()
+                                                           if key in MechanicChoice.model_fields})
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Malformed mechanic choice parameters') from exc
+                intent = {**action.model_dump(exclude_none=True),
+                          **({'_invalid_ai_choice': intent['_invalid_ai_choice']}
+                             if '_invalid_ai_choice' in intent else {})}
         return self.lookup(complete_action(intent), seat)
 
     def simple_actions(self):

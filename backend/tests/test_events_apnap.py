@@ -184,29 +184,25 @@ def test_counted_creature_type_trigger_uses_resolution_time_board_state() -> Non
 
 
 def test_upkeep_transform_trigger_reveals_top_type_and_applies_back_face() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck)
-    state.pregame_pending = False
-    state.kept_hands = {1, 2}
-    state.active_player = 1
-    source = _put_trigger_creature(
-        state,
-        1,
-        "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform Delver of Secrets.",
-    )
-    state.cards[source].name = "Delver of Secrets"
-    state.cards[source].card_faces = [
-        {"name": "Delver of Secrets", "type_line": "Creature — Human Wizard", "power": "1", "toughness": "1"},
-        {"name": "Insectile Aberration", "type_line": "Creature — Human Insect", "power": "3", "toughness": "2"},
-    ]
-    top_id = state.players[1].library[-1]
-    state.cards[top_id].types = ["Instant"]
+    from tests.test_optional_reveal_transform import position
+
+    state, source, top_id = position(1)
     emit_event(state, "begin_step", {"step": "upkeep", "active_player": 1})
 
     trigger = next(item for item in state.stack if item.source_card_id == source)
     from effects.registry import resolve_effect
 
     resolve_effect(state, 1, trigger.effect_key, trigger.payload)
+    assert (state.cards[source].selected_face_index or 0) == 0
+    assert state.cards[source].name == "Delver of Secrets"
+    assert state.pending_mechanic_choice["kind"] == "optional_reveal"
+    assert state.pending_mechanic_choice["player_id"] == 1
+    assert state.pending_mechanic_choice["options"] == ["reveal", "decline"]
+    assert state.pending_mechanic_choice["inspected_card_ids"] == [top_id]
+    assert top_id in state.players[1].library
+    RulesEngine().take_action(state, 1, {"type": "choose_mechanic", "card_ids": ["reveal"]},
+                             reject_invalid=True)
+    assert state.pending_mechanic_choice is None
     assert state.cards[source].selected_face_index == 1
     assert state.cards[source].name == "Insectile Aberration"
     assert top_id in state.players[1].library

@@ -7,6 +7,7 @@ from copy import deepcopy
 from game_state.state import CardInstance, MatchState, PlayerState, StackItem, Step, TURN_STEPS, Zone
 from rules_engine.player_counters import public_counters
 from rules_engine.card_types import is_token_card
+from rules_engine.optional_reveal import public_choice
 
 
 def _tupleize(value):
@@ -487,7 +488,7 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
             for item in state.stack
         ],
         "attackers": state.attackers,
-        "pending_mechanic_choice": state.pending_mechanic_choice,
+        "pending_mechanic_choice": public_choice(state.pending_mechanic_choice),
         "attack_targets": state.attack_targets,
         "attack_bands": state.attack_bands,
         "blocks": state.blocks,

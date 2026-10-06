@@ -164,7 +164,7 @@ class Repository:
         return record
 
     def save_catalog_deck(self, name: str, source: str, mainboard: list[dict[str, Any]], sideboard: list[dict[str, Any]], archetype_guess: str) -> DeckRecord:
-        if not source.lower().startswith("expansion_top:"):
+        if not source.strip().lower().startswith("expansion_top:"):
             raise ValueError("Catalog deck source must identify an expansion")
         record = self.session.exec(
             select(DeckRecord).where(DeckRecord.source == source).order_by(DeckRecord.created_at.desc(), DeckRecord.id.desc())

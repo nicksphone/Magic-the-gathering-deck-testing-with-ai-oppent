@@ -41,6 +41,9 @@ class Repo:
     def list_decks(self) -> list[DeckRow]:
         return self.rows
 
+    def get_cached_cards_by_names(self, names: list[str]) -> dict:
+        return {}
+
 
 def test_saved_expansion_templates_refresh_in_place_without_touching_user_decks(monkeypatch) -> None:
     ramp_entry = next(item for item in EXPANSION_TOP_DECKS if item["code"] == "USG")

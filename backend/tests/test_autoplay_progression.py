@@ -250,6 +250,9 @@ def test_autoplay_does_not_invent_land_move_when_rules_omit_it() -> None:
         def take_action(self, state, player_id, action, **kwargs):
             return self._wrapped.take_action(state, player_id, action, **kwargs)
 
+        def advance_no_priority_step(self, state):
+            return self._wrapped.advance_no_priority_step(state)
+
     class PassOnlyAI:
         def choose_action(self, state, legal_moves, player_id):
             return AIDecision(action={"type": "pass_priority"}, reasoning="forced test pass")

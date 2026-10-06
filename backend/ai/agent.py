@@ -235,6 +235,25 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] == 'optional_reveal':
+                pending = state.pending_mechanic_choice or {}
+                payload = pending.get('effect_payload') or {}
+                inspected = pending.get('inspected_card_ids') or []
+                top = next((card for card in choice.get('inspected_cards', [])
+                            if inspected and card.get('id') == inspected[0]), None)
+                source = state.cards.get(payload.get('target_card_id'))
+                index = int(payload.get('face_index', 1))
+                beneficial = bool(
+                    top and source and source.controller == player_id
+                    and pending.get('player_id') == player_id
+                    and set(payload.get('required_types', [])).intersection(top.get('types', []))
+                    and 0 <= index < len(source.card_faces)
+                    and self._score_modal_face(state, source, source.card_faces[index], player_id)
+                    >= self._score_modal_face(state, source, source.card_faces[source.selected_face_index or 0], player_id)
+                )
+                selected = 'reveal' if beneficial else 'decline'
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': [selected]},
+                                  reasoning='Reveal a useful eligible transformation; otherwise retain private information')
             if choice['kind'] == 'suspend_cast':
                 from ai.suspend_policy import optional_cast
                 action = optional_cast(self, state, legal_moves, player_id)
@@ -3374,7 +3393,6 @@ class AIAgent:
             )
             if best_land:
                 targets["target_card_id"] = best_land["id"]
-                targets["target_card_name"] = best_land.get("name") or ""
 
         graveyard_creature_targets = hints.get("graveyard_creature_targets") or hints.get("graveyard_card_targets") or []
         if graveyard_creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
@@ -3388,7 +3406,6 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         graveyard_permanent_targets = hints.get("graveyard_permanent_targets") or []
         if graveyard_permanent_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
@@ -3402,7 +3419,6 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         graveyard_spell_targets = hints.get("graveyard_spell_targets") or []
         if graveyard_spell_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
@@ -3416,7 +3432,6 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         planeswalker_targets = hints.get("planeswalker_targets") or []
         if any_damage_target:
@@ -3441,7 +3456,6 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         if hints.get("permanent_targets") and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             best = max(

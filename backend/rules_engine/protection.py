@@ -41,11 +41,13 @@ _HEXPROOF_QUALITY = '(?:' + '|'.join(re.escape(value) for value in sorted(_COLOR
 HEXPROOF_VARIANT_RE = re.compile(r'\bhexproof from ' + _HEXPROOF_QUALITY + r'(?: and from ' + _HEXPROOF_QUALITY + r')*\b',re.I)
 
 
-def source_matches_quality(source_card, quality: str, *, state=None) -> bool:
+def source_matches_quality(source_card, quality: str, *, state=None, source_lki=None) -> bool:
     """Shared supported color/type qualities, not an arbitrary Oracle predicate."""
-    if source_card is None:
+    if source_lki is None:
+        source_lki = getattr(source_card, '_retained_source_lki', None)
+    if source_card is None and source_lki is None:
         return False
-    colors = card_color_names(source_card, state)
+    colors = set(source_lki.get('color_names', [])) if source_lki is not None else card_color_names(source_card, state)
     if quality == 'everything' or quality in colors:
         return True
     if quality == 'colorless':
@@ -53,7 +55,8 @@ def source_matches_quality(source_card, quality: str, *, state=None) -> bool:
     if quality in {'multicolored', 'monocolored'}:
         return len(colors) >= 2 if quality == 'multicolored' else len(colors) == 1
     kind = _TYPE_PROTECTION_MAP.get(quality)
-    types = set(effective_types(state, source_card) if state is not None else (getattr(source_card, 'types', []) or []))
+    types = set(source_lki.get('types', [])) if source_lki is not None else set(
+        effective_types(state, source_card) if state is not None else (getattr(source_card, 'types', []) or []))
     return (kind[1:] not in types if kind.startswith('!') else kind in types) if kind else False
 
 
@@ -72,14 +75,16 @@ def protected_from_source(state, target_id: str, source_card) -> bool:
     return protection_match_reason(state, target_id, source_card) is not None
 
 
-def protection_match_reason(state, target_id: str, source_card) -> str | None:
+def protection_match_reason(state, target_id: str, source_card, *, source_lki=None) -> str | None:
+    if source_lki is None:
+        source_lki = getattr(source_card, '_retained_source_lki', None)
     protections = _protection_tokens(state, target_id)
     if not protections:
         return None
     if "everything" in protections:
         return "everything"
 
-    source_colors = card_color_names(source_card, state)
+    source_colors = set(source_lki.get('color_names', [])) if source_lki is not None else card_color_names(source_card, state)
     color_hits = source_colors & protections
     if color_hits:
         return sorted(color_hits)[0]
@@ -89,7 +94,7 @@ def protection_match_reason(state, target_id: str, source_card) -> str | None:
     if "monocolored" in protections and len(source_colors) == 1:
         return "monocolored"
 
-    source_types = set(effective_types(state, source_card) or [])
+    source_types = set(source_lki.get('types', [])) if source_lki is not None else set(effective_types(state, source_card) or [])
     for token, canonical in _TYPE_PROTECTION_MAP.items():
         if token in protections:
             if canonical.startswith("!"):

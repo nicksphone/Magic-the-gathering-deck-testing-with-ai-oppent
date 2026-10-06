@@ -77,7 +77,7 @@ class RulesEngine:
             state.spells_cast_last_turn = int(state.spells_cast_this_turn.get(state.active_player, 0) or 0)
             state.turn += 1
             state.active_player = 1 if state.active_player == 2 else 2
-            state.spells_cast_this_turn[state.active_player] = 0
+            state.spells_cast_this_turn = {1: 0, 2: 0}
             state.kicked_spells_cast_this_turn = {1: 0, 2: 0}
             state.foretells_this_turn = {1: 0, 2: 0}
             state.declared_attackers_this_turn = {1: 0, 2: 0}
@@ -143,16 +143,20 @@ class RulesEngine:
     def _apply_step_start_actions(self, state: MatchState) -> None:
         player = state.players[state.active_player]
         if state.step == Step.UNTAP:
+            # Untap triggers wait with upkeep triggers for the first priority window.
+            if not state.trigger_staging:
+                state.trigger_staging = True
+                state.trigger_staging_event = "untap"
+            self._update_day_night(state)
             from rules_engine.named_counters import untap_permanent
             for cid in player.battlefield:
                 untap_permanent(state, cid, turn_based=True)
             state.log.append(f"{player.name} untaps.")
         elif state.step == Step.UPKEEP:
-            staged_here = not state.trigger_staging
+            staged_here = not state.trigger_staging or state.trigger_staging_event == "untap"
             if staged_here:
                 state.trigger_staging = True
                 state.trigger_staging_event = "begin_step"
-            self._update_day_night(state)
             emit_event(state, "begin_step", {"step": "upkeep", "active_player": state.active_player})
             if staged_here:
                 flush_staged_triggers(state)
@@ -276,18 +280,13 @@ class RulesEngine:
             state.temporary_control_changes.pop(cid, None)
 
     def _update_day_night(self, state: MatchState) -> None:
-        """Apply the core day/night turn-count rule at the beginning of upkeep."""
+        """Check an established designation before the active player's untapping."""
         if state.turn <= 1:
             return
         cast_count = int(getattr(state, "spells_cast_last_turn", 0) or 0)
         previous = str(getattr(state, "day_night", "none") or "none")
         next_state = previous
-        if previous == "none":
-            if cast_count == 0:
-                next_state = "night"
-            elif cast_count >= 2:
-                next_state = "day"
-        elif previous == "day" and cast_count == 0:
+        if previous == "day" and cast_count == 0:
             next_state = "night"
         elif previous == "night" and cast_count >= 2:
             next_state = "day"

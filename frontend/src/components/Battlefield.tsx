@@ -704,7 +704,6 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const faceCastMoves = cardCastMoves.filter((m) => (m.selected_face_index ?? 0) === selectedFaceIndex);
             const castCostOptions = [...new Map(faceCastMoves.flatMap((m) => m.cost_options ?? []).map((option) => [option.id, option])).values()];
             const move = faceCastMoves.find((m) => !costChoice[card.id] || m.cost_options?.some((option) => option.id === costChoice[card.id])) ?? faceCastMoves[0];
-            const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
             const foretellMove = foretellMoves.find((m) => m.card_id === card.id);
             const foretellControl = foretellMove ? <button onClick={() => onCardAction(viewerSeat, { type: "foretell", card_id: card.id })}>
               Foretell {card.name} ({foretellMove.mana_cost})
@@ -715,6 +714,21 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               Suspend {card.name} ({suspendMove.mana_cost}; {suspendMove.time_counters} time counter{suspendMove.time_counters === 1 ? "" : "s"})
             </button> : null;
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
+            const cycleMove = cardCycleMoves.find((m) => m.x_value === cycleChoices[card.id]) ?? cardCycleMoves[0];
+            const cycleControl = cycleMove ? <>
+              {cardCycleMoves.some((m) => m.x_value !== undefined) ? (
+                <select
+                  aria-label={`Cycling X for ${card.name}`}
+                  value={cycleMove.x_value}
+                  onChange={(e) => setCycleChoices((prev) => ({ ...prev, [card.id]: Number(e.target.value) }))}
+                >
+                  {cardCycleMoves.map((m) => <option key={`${card.id}-x-${m.x_value}`} value={m.x_value}>{`X=${m.x_value}`}</option>)}
+                </select>
+              ) : null}
+              <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleMove.x_value ?? 0 })}>
+                Cycle {card.name} {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
+              </button>
+            </> : null;
             const cardLandMoves = playLandMoves.filter((m) => m.card_id === card.id);
             const landControls = cardLandMoves.map((landMove, index) => <button key={`${card.id}-land-${landMove.selected_face_index ?? 0}-${landMove.entry_choice ?? "normal"}-${index}`}
               onClick={() => onCardAction(viewerSeat, { type: "play_land", card_id: card.id, selected_face_index: landMove.selected_face_index, from_exile: landMove.from_exile, from_graveyard: landMove.from_graveyard, graveyard_permission_key: landMove.graveyard_permission_key, entry_choice: landMove.entry_choice })}>
@@ -735,21 +749,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   onMouseLeave={() => setHoverPreview(null)}
                 >
                   {handFace(card)}
-                  {landControls.length ? landControls : cycleMove ? (
-                    <>
-                    {cardCycleMoves.some((m) => m.x_value !== undefined) ? (
-                      <select
-                        value={cycleChoices[card.id] ?? 0}
-                        onChange={(e) => setCycleChoices((prev) => ({ ...prev, [card.id]: Number(e.target.value) || 0 }))}
-                      >
-                        {cardCycleMoves.map((m) => <option key={`${card.id}-x-${m.x_value}`} value={m.x_value}>{`X=${m.x_value}`}</option>)}
-                      </select>
-                    ) : null}
-                    <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
-                      Cycle {card.name} {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
-                    </button>
-                    </>
-                  ) : (
+                  {landControls.length ? landControls : cycleControl ?? (
                     <button disabled>
                       {card.types.includes("Land") ? `${card.name} · ${landPlayHint(match, viewerSeat)}`
                         : `${card.name} ${card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)`}
@@ -832,11 +832,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 >
                   Cast {move.card_name ?? card.name} {selectedManaCost ? `(${selectedManaCost})` : ""}
                 </button>
-                {cycleMove ? (
-                  <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
-                    Cycle {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
-                  </button>
-                ) : null}
+                {cycleControl}
                 {faceNames.length > 1 ? (
                   <select
                     value={selectedFaceIndex}

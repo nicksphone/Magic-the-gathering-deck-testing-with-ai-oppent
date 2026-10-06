@@ -3,6 +3,17 @@ import { selectAttackers, toggleAttacker, type CombatDraft } from "./combat-sele
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { CardArt } from "./CardArt";
 
+// Includes engine-supported generic selections not yet listed in LegalMove.kind.
+const supportedMechanicControls = new Set<string>([
+  "effect_cast", "suspend_cast", "scry", "scry_top_order", "surveil", "surveil_top_order",
+  "proliferate", "ward_payment", "ward_cost_cards", "counter_payment", "optional_search",
+  "graveyard_return", "optional_reveal", "discard", "each_player_discard", "cleanup_discard", "mulligan_bottom",
+  "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "saga_entry",
+  "attacking_token_target", "topdeck_reveal_creature", "topdeck_put", "topdeck_bottom_order",
+  "look_top_choose", "look_top_select_hand", "search_library", "combat_damage", "copy_target",
+  "foretell_from_hand", "choose_revealed_discard", "choose_revealed_exile", "linked_exile_copy",
+]);
+
 type Props = {
   decks: DeckRecord[];
   selectedA: number | null;
@@ -262,14 +273,17 @@ export function Controls(props: Props) {
         <div className="block-panel">
           <h3>{mechanicMove.label ?? "Choose a draw replacement"} (P{mechanicMove.player_id})</h3>
           {mechanicMove.inspected_cards?.length ? <section aria-label="Privately inspected cards">
-            <p>Inspected cards. Only qualifying cards below can be selected.</p>
+            <p>{mechanicMove.kind === "optional_reveal" ? "This card remains on top. You may reveal it, even if it will not transform the source, or decline without revealing it." : "Inspected cards. Only qualifying cards below can be selected."}</p>
             {mechanicMove.inspected_cards.map((card) => <details key={card.id} className="cast-card-box">
-              <summary>{card.name} {card.mana_cost} {mechanicMove.options?.includes(card.id) ? "(selectable)" : "(not selectable)"}</summary>
+              <summary>{card.name} {card.mana_cost} {mechanicMove.kind === "optional_reveal" ? "(privately inspected)" : mechanicMove.options?.includes(card.id) ? "(selectable)" : "(not selectable)"}</summary>
               <div style={{ maxWidth: 180 }}><CardArt uri={card.image_uri} name={card.name} /></div>
               <p>{card.type_line}</p><p>{card.oracle_text}</p>
             </details>)}
           </section> : null}
-          {mechanicMove.kind === "combat_damage" ? <>
+          {!supportedMechanicControls.has(mechanicMove.kind ?? "") ? <p role="alert">
+            Unsupported mechanic choice: {typeof mechanicMove.kind === "string" && mechanicMove.kind ? mechanicMove.kind : "(missing or invalid kind)"}. No control is implemented
+            for this choice. Do not advance while this action is required.
+          </p> : mechanicMove.kind === "combat_damage" ? <>
             <p>Assign exactly {mechanicMove.count} damage in the {mechanicMove.stage} damage step.</p>
             {(mechanicMove.options ?? []).map((target) => <label key={target}>
               {mechanicMove.option_labels?.[target] ?? target} ({target})
@@ -294,7 +308,7 @@ export function Controls(props: Props) {
             {mechanicMove.can_restart ? <button onClick={() => props.onChooseMechanic(mechanicMove.player_id!, {
               type: "choose_mechanic", choice_id: "restart",
             })}>Restart Damage Assignments</button> : null}
-          </> : mechanicMove.kind === "effect_cast" || mechanicMove.kind === "ward_payment" || mechanicMove.kind === "counter_payment" || mechanicMove.kind === "optional_search" || (mechanicMove.options?.length === 1 && mechanicMove.options[0] === "__none__") ? (mechanicMove.options ?? []).map((cid) => (
+          </> : mechanicMove.kind === "optional_reveal" || mechanicMove.kind === "effect_cast" || mechanicMove.kind === "ward_payment" || mechanicMove.kind === "counter_payment" || mechanicMove.kind === "optional_search" || (mechanicMove.options?.length === 1 && mechanicMove.options[0] === "__none__") ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "attacking_token_target" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>Attack {mechanicMove.option_labels?.[cid] ?? cid}</button>

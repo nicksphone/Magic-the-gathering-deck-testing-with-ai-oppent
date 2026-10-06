@@ -1,5 +1,67 @@
 # Changelog
 
+## Unreleased Backend Composition - 2026-10-06
+
+- Add bounded complete-clause nth-spell triggers and reset both players' cast
+  counts each turn. Seven combined modules pass 279 checks in 81.88 seconds;
+  complex unsupported rewards remain explicit and this candidate is not deployed.
+- Replace the impossible Control-removal test setup with canonical, payable
+  alternatives in both seats. Five affected modules pass 182 tests in 10.42
+  seconds on the private-choice/foretell composition; production AI is unchanged.
+- Validate explicit mechanic choices before completion and accept only exact
+  current actor view/continuation context. Preserve declared nullable schema
+  compatibility; a separate test-only adaptation updates obsolete auto-transform
+  assumptions to canonical Delver setup with an explicit reveal choice.
+- Compose foretell prevalidation, private choice views, AI reveal/decline,
+  damage-resolution staging and seeded autoplay: 517 checks across 12 modules
+  pass in 344.41 seconds. Preserve the initial missing-marker setup failure.
+  Main/live remain unchanged; full-suite and further mechanic gates are pending.
+- Preserve official expansion-deck identities and exact stored source keys across
+  normalized aliases; validate sideboard bounds before saving and avoid cache
+  materialization for malformed imports. Five composed modules pass 218 checks
+  in 113.65 seconds with unchanged source hashes.
+- Reject unsupported combat intent fields without inferring attackers, blockers
+  or costs. The original shared timeout remains archived; the separately
+  authorized unchanged-source run passes 695 checks in 1167.76 seconds. The new
+  reveal/day-night/combat composition passes 189 checks in 211.49 seconds.
+- Requalify actual-App reveal/day-night flows: 362 assertions across 12 flows,
+  including 46 backend restarts, pass in 303.971 seconds. Full-suite results and
+  the newly audited private-choice/foretell consumer corrections remain pending.
+- Preserve admitted canonical expansion-deck labels across startup; retain
+  historical labels when the available facts do not support reclassification.
+- Reuse attachment classification queries only within a single read-only SBA
+  scope, ending that scope before any mutation.
+- The three-module focused composition passes 71 checks in 14.21 seconds with
+  identical before/after source hashes; seven neighbors pass 127 in 36.55 seconds.
+  Optional reveal/day-night passes 95 in 29.38 seconds after a separate reviewed
+  legacy timing-test correction; the initial five failures remain archived.
+  Broader release gates remain pending;
+  these changes are not deployed, and this is not an AI-strength certificate.
+
+## Qualified Candidate: Rules And Human Choices - 2026-10-06
+
+- Collect supported self-cycling and combined cycling/discard triggers without
+  double rewards; bind dynamic death quantities to frozen source LKI.
+- Use live/retained colors in qualified layer consumers and color predicates.
+- Reject unsupported intent selections before normalization across additional
+  action and pending-choice families. Preserve deliberate actor selections.
+- Remove AI display names from strict target payloads and improve physical
+  mana-plan ordering for locked discounted costs without pruning fallbacks.
+- Preserve distinct same-name cohort identities, legacy seeds and stored history;
+  classify admitted first built-in imports from canonical local facts.
+- Preserve artifact/enchantment token types, optional cycling rewards and
+  ordinary casting instructions. Matched trigger clauses no longer execute
+  unrelated cycling effects; cycling targets use the existing choice protocol.
+- Warn on unsupported UI choices and expose offered cycling X in both hand
+  branches, including the standard regression command.
+- Qualify 2,024 checks across 83 modules; later compositions pass 153 and 123
+  checks. Human-flow16 passes 212 assertions; modal/Adventure browser checks
+  pass 144 assertions. Counts overlap; no expert-AI or full-suite claim.
+- Rewrite README around current features, setup, architecture and limits.
+  The older default suite timed out at 64%; the candidate is not yet deployed.
+  Paid optional continuations, Delver choices, remaining guards and broader
+  regression/performance acceptance remain active work.
+
 ## Mana, Layers And Resource Identity - 2026-10-06
 
 - Use normal zone transitions for activated sacrifices, preserving departure

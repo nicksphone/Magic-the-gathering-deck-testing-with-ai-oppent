@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 import json
+
+from fastapi import HTTPException
 
 from ai.deck_analysis import analyze_deck
 from card_data.display import select_display_image_uri
-from card_data.hydration import is_playable_deck_card
+from card_data.hydration import hydrate_deck_cards, is_playable_deck_card, ready_for_match
 from card_data.sync import ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
@@ -53,10 +56,15 @@ class DeckService:
 
     def import_expansion_top_deck(self, code: str) -> dict:
         item = self.get_expansion_top_deck(code)
+        canonical_source = f"expansion_top:{item['code'].lower()}"
+        # list_decks is newest-first; reuse the exact source without rekeying history.
+        source = next((row.source for row in self.repo.list_decks()
+                       if (row.source or "").strip().lower() == canonical_source), canonical_source)
         return self.import_deck_text(
             name=item["deck_name"],
             deck_text=item["deck_text"],
-            source=f"expansion_top:{item['code']}",
+            source=source,
+            _official_catalog=True,
         )
 
     def import_all_expansion_top_decks(self) -> list[dict]:
@@ -65,18 +73,31 @@ class DeckService:
             results.append(self.import_expansion_top_deck(item["code"]))
         return results
 
-    def import_deck_text(self, name: str, deck_text: str, source: str = "user") -> dict:
+    def import_deck_text(self, name: str, deck_text: str, source: str = "user", *, _official_catalog: bool = False) -> dict:
         parsed = self.parser.parse(deck_text)
-        resolved_mainboard = self._resolve_card_metadata(parsed.mainboard)
-        resolved_sideboard = self._resolve_card_metadata(parsed.sideboard)
-        analysis = analyze_deck(resolved_mainboard)
-        archetype = analysis["primary_archetype"]
+        sideboard_count = sum(card["quantity"] for card in parsed.sideboard)
+        # MatchStart supports at most 15 sideboard cards. Reject before cache or deck writes.
+        if sideboard_count > 15:
+            raise HTTPException(status_code=422, detail={
+                "code": "sideboard_limit_exceeded", "maximum": 15, "actual": sideboard_count,
+            })
+        resolved_mainboard = self._resolve_card_metadata(parsed.mainboard, materialize=not parsed.errors)
+        resolved_sideboard = self._resolve_card_metadata(parsed.sideboard, materialize=not parsed.errors)
+        # Cache-shaped display metadata stays compatible; classification uses canonical facts.
+        canonical_mainboard = hydrate_deck_cards(self.repo, parsed.mainboard)
+        analysis = analyze_deck(canonical_mainboard)
+        admitted = (bool(canonical_mainboard)
+                    and all(card.get("card_data_sources") and ready_for_match(card) for card in canonical_mainboard)
+                    and analysis["type_metadata_coverage"] == 1 and analysis["confidence"] > 0
+                    and not {"missing_card_metadata", "partial_card_metadata", "fallback_midrange"}
+                    .intersection(analysis["signals"]))
+        archetype = analysis["primary_archetype"] if admitted else "unknown"
         for item in resolved_mainboard + resolved_sideboard:
             metadata = item.get("card_metadata")
             if metadata is not None and not is_playable_deck_card(metadata):
                 parsed.errors.append(f"{item['card_name']} is not a playable deck card.")
         if not parsed.errors:
-            save = self.repo.save_catalog_deck if source.lower().startswith("expansion_top:") else self.repo.save_deck
+            save = self.repo.save_catalog_deck if _official_catalog or source.lower().startswith("expansion_top:") else self.repo.save_deck
             record = save(name=name, source=source, mainboard=parsed.mainboard, sideboard=parsed.sideboard, archetype_guess=archetype)
             deck_id = record.id
         else:
@@ -94,6 +115,17 @@ class DeckService:
             "mana_curve": self._compute_curve(resolved_mainboard),
             "color_profile": self._color_profile(resolved_mainboard),
             "analysis": analysis,
+            "classification_status": "resolved" if admitted else "unknown",
+            "classification_provenance": {
+                "method": "ai.deck_analysis.analyze_deck",
+                "facts_method": "card_data.hydration.hydrate_deck_cards",
+                "admission": "complete-local-canonical-v1",
+                "sources": sorted({source for card in canonical_mainboard for source in card.get("card_data_sources", [])}),
+                "resolved_board_sha256": hashlib.sha256(json.dumps(canonical_mainboard, sort_keys=True,
+                    separators=(",", ":"), allow_nan=False).encode()).hexdigest(),
+                "cards": [{"card_name": card["card_name"], "sources": card["card_data_sources"],
+                           "ready_for_match": bool(ready_for_match(card))} for card in canonical_mainboard],
+            },
         }
 
     def _compute_curve(self, mainboard: list[dict]) -> dict[str, int]:
@@ -137,11 +169,11 @@ class DeckService:
                     color_map[color] += item["quantity"]
         return color_map
 
-    def _resolve_card_metadata(self, items: list[dict]) -> list[dict]:
+    def _resolve_card_metadata(self, items: list[dict], *, materialize: bool = True) -> list[dict]:
         names = [item["card_name"] for item in items]
         cache = self.repo.get_cached_cards_by_names(names)
         missing = {name for name in names if name.lower() not in cache}
-        if missing and hasattr(self.repo, "get_card_knowledge"):
+        if materialize and missing and hasattr(self.repo, "get_card_knowledge"):
             sync = ScryfallSyncService(self.repo)
             for name in sorted(missing):
                 sync.sync_card_from_local_knowledge(name)

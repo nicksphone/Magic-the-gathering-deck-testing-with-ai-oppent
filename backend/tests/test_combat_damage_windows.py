@@ -141,9 +141,9 @@ def test_replay_keeps_both_combat_damage_priority_windows(monkeypatch) -> None:
     original_take_action = RulesEngine.take_action
     windows: list[tuple[str, int]] = []
 
-    def record_action(self, state, player_id, action):
+    def record_action(self, state, player_id, action, *, reject_invalid=False):
         assert action["type"] != "combat_damage"
-        original_take_action(self, state, player_id, action)
+        original_take_action(self, state, player_id, action, reject_invalid=reject_invalid)
         windows.append((state.combat_damage_stage, state.players[2].life))
 
     monkeypatch.setattr(RulesEngine, "take_action", record_action)

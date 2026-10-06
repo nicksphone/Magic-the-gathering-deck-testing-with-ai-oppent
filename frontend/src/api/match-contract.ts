@@ -239,6 +239,12 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         && Number.isInteger(move.time_counters) && (move.time_counters as number) > 0))
       && (move.kind !== 'suspend_cast' || (move.type === 'choose_mechanic' && move.player_id === value.player_id
         && move.count === 1 && Array.isArray(move.options) && move.options.length === 1 && move.options[0] === 'decline'))
+      && (move.kind !== 'optional_reveal' || (move.type === 'choose_mechanic' && move.player_id === value.player_id
+        && move.count === 1 && Array.isArray(move.options) && move.options.length === 2
+        && move.options[0] === 'reveal' && move.options[1] === 'decline'
+        && Array.isArray(move.inspected_cards) && move.inspected_cards.length === 1 && move.inspected_cards.every(card)
+        && record(move.option_labels) && typeof move.option_labels.reveal === 'string'
+        && typeof move.option_labels.decline === 'string'))
       && (move.banding_attackers === undefined || (Array.isArray(move.banding_attackers)
         && move.banding_attackers.every(id => typeof id === "string" && Array.isArray(move.options) && move.options.includes(id))))
       && (move.legal_blocks === undefined || (record(move.legal_blocks) && Object.entries(move.legal_blocks).every(([id, targets]) =>

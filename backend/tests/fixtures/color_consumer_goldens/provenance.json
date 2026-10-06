@@ -1,0 +1,614 @@
+[
+  {
+    "source": "tests/fixtures/conditional_static.json",
+    "source_sha256": "4b23bf399643da1704f43322e3c8e61420ba1c480f7ff0200c6f6fb90199450c",
+    "row": {
+      "id": "30fe653b-956a-4e0e-981b-37e1a6b08c2c",
+      "oracle_id": "7cd7102d-6413-4f46-9434-9130aefa2f88",
+      "name": "Etched Champion",
+      "mana_cost": "{3}",
+      "type_line": "Artifact Creature — Soldier",
+      "oracle_text": "Metalcraft — This creature has protection from each color as long as you control three or more artifacts.",
+      "power": "2",
+      "toughness": "2",
+      "colors": [],
+      "keywords": [
+        "Metalcraft"
+      ],
+      "scryfall_uri": "https://scryfall.com/card/mm2/209/etched-champion?utm_source=api"
+    }
+  },
+  {
+    "source": "tests/fixtures/conditional_static.json",
+    "source_sha256": "4b23bf399643da1704f43322e3c8e61420ba1c480f7ff0200c6f6fb90199450c",
+    "row": {
+      "id": "9c9ac1bc-cdf3-4fa6-8319-a7ea164e9e47",
+      "oracle_id": "60ba93eb-39e6-4af2-9c66-cd38f72daff2",
+      "name": "Savannah Lions",
+      "mana_cost": "{W}",
+      "type_line": "Creature — Cat",
+      "oracle_text": "",
+      "power": "2",
+      "toughness": "1",
+      "colors": [
+        "W"
+      ],
+      "keywords": [],
+      "scryfall_uri": "https://scryfall.com/card/fdn/146/savannah-lions?utm_source=api"
+    }
+  },
+  {
+    "source": "tests/fixtures/conditional_static.json",
+    "source_sha256": "4b23bf399643da1704f43322e3c8e61420ba1c480f7ff0200c6f6fb90199450c",
+    "row": {
+      "id": "cec0ef55-57fd-404f-b9f6-b5d41e77b58c",
+      "oracle_id": "b292d183-1ba9-40b4-9cba-bd70bf1380ef",
+      "name": "Abzan Kin-Guard",
+      "mana_cost": "{3}{G}",
+      "type_line": "Creature — Human Warrior",
+      "oracle_text": "This creature has lifelink as long as you control a white or black permanent.",
+      "power": "3",
+      "toughness": "3",
+      "colors": [
+        "G"
+      ],
+      "keywords": [],
+      "scryfall_uri": "https://scryfall.com/card/frf/120/abzan-kin-guard?utm_source=api"
+    }
+  },
+  {
+    "source": "tests/fixtures/hexproof_variants.json",
+    "source_sha256": "360e2a971ac559351f35d58f7117ddfc1eaf1bb0a5f835b716d009f38d7c477e",
+    "row": {
+      "object": "card",
+      "id": "9c017fa9-7021-417a-9c2e-3df409644fcf",
+      "oracle_id": "eecb3047-a563-441a-9175-200421981ac3",
+      "multiverse_ids": [
+        485324
+      ],
+      "mtgo_id": 81229,
+      "arena_id": 71783,
+      "tcgplayer_id": 215338,
+      "cardmarket_id": 466234,
+      "name": "Ugin, the Spirit Dragon",
+      "lang": "en",
+      "released_at": "2020-07-03",
+      "uri": "https://api.scryfall.com/cards/9c017fa9-7021-417a-9c2e-3df409644fcf",
+      "scryfall_uri": "https://scryfall.com/card/m21/1/ugin-the-spirit-dragon?utm_source=api",
+      "layout": "normal",
+      "highres_image": true,
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T08:19:08Z",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.jpg?1783930748",
+        "normal": "https://cards.scryfall.io/normal/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.jpg?1783930748",
+        "large": "https://cards.scryfall.io/large/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.jpg?1783930748",
+        "png": "https://cards.scryfall.io/png/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.png?1783930748",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.jpg?1783930748",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.jpg?1783930748",
+        "thumb": "https://cards.scryfall.io/thumb/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.webp?1783930748",
+        "grid": "https://cards.scryfall.io/grid/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.webp?1783930748",
+        "display": "https://cards.scryfall.io/display/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.webp?1783930748",
+        "art": "https://cards.scryfall.io/art/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.webp?1783930748",
+        "crop": "https://cards.scryfall.io/crop/front/9/c/9c017fa9-7021-417a-9c2e-3df409644fcf.webp?1783930748"
+      },
+      "mana_cost": "{8}",
+      "cmc": 8,
+      "type_line": "Legendary Planeswalker — Ugin",
+      "oracle_text": "+2: Ugin deals 3 damage to any target.\n−X: Exile each permanent with mana value X or less that's one or more colors.\n−10: You gain 7 life, draw seven cards, then put up to seven permanent cards from your hand onto the battlefield.",
+      "loyalty": "7",
+      "colors": [],
+      "color_identity": [],
+      "keywords": [],
+      "legalities": {
+        "standard": "not_legal",
+        "future": "not_legal",
+        "historic": "legal",
+        "timeless": "legal",
+        "gladiator": "legal",
+        "pioneer": "legal",
+        "modern": "legal",
+        "legacy": "legal",
+        "pauper": "not_legal",
+        "vintage": "legal",
+        "penny": "legal",
+        "commander": "legal",
+        "oathbreaker": "legal",
+        "standardbrawl": "not_legal",
+        "brawl": "banned",
+        "competitivebrawl": "legal",
+        "alchemy": "not_legal",
+        "paupercommander": "not_legal",
+        "duel": "legal",
+        "oldschool": "not_legal",
+        "premodern": "not_legal",
+        "predh": "not_legal",
+        "tlr": "not_legal"
+      },
+      "games": [
+        "arena",
+        "paper",
+        "mtgo"
+      ],
+      "reserved": false,
+      "game_changer": false,
+      "foil": true,
+      "nonfoil": true,
+      "finishes": [
+        "nonfoil",
+        "foil"
+      ],
+      "oversized": false,
+      "promo": false,
+      "reprint": true,
+      "variation": false,
+      "set_id": "bc94aba1-7376-4e02-a12d-3a2efb66ab0f",
+      "set": "m21",
+      "set_name": "Core Set 2021",
+      "set_type": "core",
+      "set_uri": "https://api.scryfall.com/sets/bc94aba1-7376-4e02-a12d-3a2efb66ab0f",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am21&unique=prints",
+      "scryfall_set_uri": "https://scryfall.com/sets/m21?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/9c017fa9-7021-417a-9c2e-3df409644fcf/rulings",
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Aeecb3047-a563-441a-9175-200421981ac3&unique=prints",
+      "collector_number": "1",
+      "digital": false,
+      "rarity": "mythic",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "artist": "Raymond Swanland",
+      "artist_ids": [
+        "e956bacc-077d-4c12-b6bc-ba798b718af9"
+      ],
+      "illustration_id": "47715ae0-7456-449e-ad32-0a7bc47a4e7a",
+      "border_color": "black",
+      "frame": "2015",
+      "security_stamp": "oval",
+      "full_art": false,
+      "textless": false,
+      "booster": true,
+      "story_spotlight": false,
+      "edhrec_rank": 1604,
+      "penny_rank": 342,
+      "preview": {
+        "source": "Wizards of the Coast",
+        "source_uri": "https://www.twitch.tv/videos/641938177",
+        "previewed_at": "2020-06-05"
+      },
+      "prices": {
+        "usd": "11.82",
+        "usd_foil": "12.78",
+        "usd_etched": null,
+        "eur": "11.66",
+        "eur_foil": "14.01",
+        "tix": "0.02"
+      },
+      "related_uris": {
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=485324&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DUgin%252C%2Bthe%2BSpirit%2BDragon",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DUgin%252C%2Bthe%2BSpirit%2BDragon",
+        "edhrec": "https://edhrec.com/route/?cc=Ugin%2C+the+Spirit+Dragon"
+      },
+      "purchase_uris": {
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F215338%3Fpage%3D1",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=466234&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "cardhoarder": "https://www.cardhoarder.com/cards/81229?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+      },
+      "power": null,
+      "toughness": null,
+      "fixture_retrieved_at": "2026-10-02T02:57:48.449Z"
+    }
+  },
+  {
+    "source": "tests/fixtures/hexproof_variants.json",
+    "source_sha256": "360e2a971ac559351f35d58f7117ddfc1eaf1bb0a5f835b716d009f38d7c477e",
+    "row": {
+      "object": "card",
+      "id": "4efb8633-0a70-4ddc-80af-42508ec75cff",
+      "oracle_id": "7b51a979-47e0-4b98-8ec5-8064c83422e1",
+      "multiverse_ids": [
+        680715
+      ],
+      "mtgo_id": 134488,
+      "arena_id": 94004,
+      "tcgplayer_id": 590976,
+      "cardmarket_id": 795778,
+      "name": "Knight of Grace",
+      "lang": "en",
+      "released_at": "2024-11-15",
+      "uri": "https://api.scryfall.com/cards/4efb8633-0a70-4ddc-80af-42508ec75cff",
+      "scryfall_uri": "https://scryfall.com/card/fdn/576/knight-of-grace?utm_source=api",
+      "layout": "normal",
+      "highres_image": true,
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T02:15:38Z",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "normal": "https://cards.scryfall.io/normal/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "large": "https://cards.scryfall.io/large/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "png": "https://cards.scryfall.io/png/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.png?1783908938",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "thumb": "https://cards.scryfall.io/thumb/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938",
+        "grid": "https://cards.scryfall.io/grid/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938",
+        "display": "https://cards.scryfall.io/display/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938",
+        "art": "https://cards.scryfall.io/art/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938",
+        "crop": "https://cards.scryfall.io/crop/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938"
+      },
+      "mana_cost": "{1}{W}",
+      "cmc": 2,
+      "type_line": "Creature — Human Knight",
+      "oracle_text": "First strike (This creature deals combat damage before creatures without first strike.)\nHexproof from black (This creature can't be the target of black spells or abilities your opponents control.)\nThis creature gets +1/+0 as long as any player controls a black permanent.",
+      "power": "2",
+      "toughness": "2",
+      "colors": [
+        "W"
+      ],
+      "color_identity": [
+        "W"
+      ],
+      "keywords": [
+        "Hexproof from",
+        "Hexproof",
+        "First strike"
+      ],
+      "legalities": {
+        "standard": "legal",
+        "future": "legal",
+        "historic": "legal",
+        "timeless": "legal",
+        "gladiator": "legal",
+        "pioneer": "legal",
+        "modern": "legal",
+        "legacy": "legal",
+        "pauper": "not_legal",
+        "vintage": "legal",
+        "penny": "legal",
+        "commander": "legal",
+        "oathbreaker": "legal",
+        "standardbrawl": "legal",
+        "brawl": "legal",
+        "competitivebrawl": "legal",
+        "alchemy": "legal",
+        "paupercommander": "not_legal",
+        "duel": "legal",
+        "oldschool": "not_legal",
+        "premodern": "not_legal",
+        "predh": "not_legal",
+        "tlr": "legal"
+      },
+      "games": [
+        "paper",
+        "arena",
+        "mtgo"
+      ],
+      "reserved": false,
+      "game_changer": false,
+      "foil": false,
+      "nonfoil": true,
+      "finishes": [
+        "nonfoil"
+      ],
+      "oversized": false,
+      "promo": false,
+      "reprint": true,
+      "variation": false,
+      "set_id": "a7ecb771-d1b6-4dec-8cf5-8d45179f21e0",
+      "set": "fdn",
+      "set_name": "Foundations",
+      "set_type": "core",
+      "set_uri": "https://api.scryfall.com/sets/a7ecb771-d1b6-4dec-8cf5-8d45179f21e0",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Afdn&unique=prints",
+      "scryfall_set_uri": "https://scryfall.com/sets/fdn?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/4efb8633-0a70-4ddc-80af-42508ec75cff/rulings",
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A7b51a979-47e0-4b98-8ec5-8064c83422e1&unique=prints",
+      "collector_number": "576",
+      "digital": false,
+      "rarity": "uncommon",
+      "flavor_text": "A light to pierce the shadows.",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "artist": "Sidharth Chaturvedi",
+      "artist_ids": [
+        "55e6d846-2f73-4fba-9b88-441686bb8dcb"
+      ],
+      "illustration_id": "d18baa05-6de4-45f1-9a4b-e20fdc73026a",
+      "border_color": "black",
+      "frame": "2015",
+      "full_art": false,
+      "textless": false,
+      "booster": false,
+      "story_spotlight": false,
+      "promo_types": [
+        "startercollection"
+      ],
+      "edhrec_rank": 17401,
+      "penny_rank": 6730,
+      "prices": {
+        "usd": "0.13",
+        "usd_foil": null,
+        "usd_etched": null,
+        "eur": "0.03",
+        "eur_foil": null,
+        "tix": "0.02"
+      },
+      "related_uris": {
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=680715&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DKnight%2Bof%2BGrace",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DKnight%2Bof%2BGrace",
+        "edhrec": "https://edhrec.com/route/?cc=Knight+of+Grace"
+      },
+      "purchase_uris": {
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F590976%3Fpage%3D1",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=795778&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "cardhoarder": "https://www.cardhoarder.com/cards/134488?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+      },
+      "fixture_retrieved_at": "2026-10-02T02:57:46.031Z"
+    }
+  },
+  {
+    "source": "tests/fixtures/equip_costs.json",
+    "source_sha256": "4f0080fca83b00634b1f9bd720072dcc937300baa5cc9b8e98d0ebd82f910c49",
+    "row": {
+      "name": "Bonesplitter",
+      "oracle_text": "Equipped creature gets +2/+0.\nEquip {1}",
+      "mana_cost": "{1}",
+      "type_line": "Artifact — Equipment",
+      "power": null,
+      "toughness": null,
+      "colors": [],
+      "keywords": [
+        "Equip"
+      ],
+      "layout": "normal",
+      "oracle_id": "452e3f5f-ce17-4682-966b-5cc100210aee",
+      "source": "scryfall",
+      "scryfall_id": "690972a8-72df-4050-a353-16e45589167c"
+    }
+  },
+  {
+    "source": "tests/fixtures/ward.json",
+    "source_sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "row": {
+      "artist": "Jeremy Jarvis",
+      "artist_ids": [
+        "b40ac320-89b4-4c51-a85f-4a4b63ae614e"
+      ],
+      "booster": true,
+      "border_color": "black",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "cardmarket_id": 544701,
+      "cmc": 3,
+      "collector_number": "180",
+      "color_identity": [
+        "R"
+      ],
+      "colors": [
+        "R"
+      ],
+      "digital": false,
+      "edhrec_rank": 11666,
+      "finishes": [
+        "nonfoil",
+        "foil"
+      ],
+      "flavor_text": "\"Learn to burn!\"\n—Institute of Arcane Studies motto",
+      "foil": true,
+      "frame": "2015",
+      "full_art": false,
+      "game_changer": false,
+      "games": [
+        "paper",
+        "mtgo"
+      ],
+      "highres_image": true,
+      "id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+      "illustration_id": "072dc11f-0bc6-4289-ae8e-14bf545d8b3f",
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T07:29:52Z",
+      "image_uris": {
+        "art": "https://cards.scryfall.io/art/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "crop": "https://cards.scryfall.io/crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+        "display": "https://cards.scryfall.io/display/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+        "grid": "https://cards.scryfall.io/grid/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+        "large": "https://cards.scryfall.io/large/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "normal": "https://cards.scryfall.io/normal/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "png": "https://cards.scryfall.io/png/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.png?1783927792",
+        "small": "https://cards.scryfall.io/small/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "thumb": "https://cards.scryfall.io/thumb/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792"
+      },
+      "keywords": [],
+      "lang": "en",
+      "layout": "normal",
+      "legalities": {
+        "alchemy": "not_legal",
+        "brawl": "not_legal",
+        "commander": "legal",
+        "competitivebrawl": "not_legal",
+        "duel": "legal",
+        "future": "not_legal",
+        "gladiator": "not_legal",
+        "historic": "not_legal",
+        "legacy": "legal",
+        "modern": "legal",
+        "oathbreaker": "legal",
+        "oldschool": "not_legal",
+        "pauper": "legal",
+        "paupercommander": "legal",
+        "penny": "legal",
+        "pioneer": "not_legal",
+        "predh": "legal",
+        "premodern": "not_legal",
+        "standard": "not_legal",
+        "standardbrawl": "not_legal",
+        "timeless": "not_legal",
+        "tlr": "legal",
+        "vintage": "legal"
+      },
+      "mana_cost": "{2}{R}",
+      "mtgo_id": 86731,
+      "multiverse_ids": [
+        509545
+      ],
+      "name": "Prodigal Pyromancer",
+      "nonfoil": true,
+      "object": "card",
+      "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd",
+      "oracle_text": "{T}: This creature deals 1 damage to any target.",
+      "oversized": false,
+      "penny_rank": 16019,
+      "power": "1",
+      "preview": {
+        "previewed_at": "2021-03-02",
+        "source": "Wizards of the Coast",
+        "source_uri": "https://www.youtube.com/watch?v=7wX644_D4io"
+      },
+      "prices": {
+        "eur": "0.10",
+        "eur_foil": "0.26",
+        "tix": "0.04",
+        "usd": "0.21",
+        "usd_etched": null,
+        "usd_foil": "0.33"
+      },
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A29b3cb3e-aeb1-43eb-8095-9f7881aa34bd&unique=prints",
+      "promo": false,
+      "purchase_uris": {
+        "cardhoarder": "https://www.cardhoarder.com/cards/86731?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=544701&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F233947%3Fpage%3D1"
+      },
+      "rarity": "uncommon",
+      "related_uris": {
+        "edhrec": "https://edhrec.com/route/?cc=Prodigal+Pyromancer",
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=509545&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DProdigal%2BPyromancer",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DProdigal%2BPyromancer"
+      },
+      "released_at": "2021-03-19",
+      "reprint": true,
+      "reserved": false,
+      "rulings_uri": "https://api.scryfall.com/cards/cf16600a-c2a5-49e4-89e2-260cfaf58b52/rulings",
+      "scryfall_set_uri": "https://scryfall.com/sets/tsr?utm_source=api",
+      "scryfall_uri": "https://scryfall.com/card/tsr/180/prodigal-pyromancer?utm_source=api",
+      "set": "tsr",
+      "set_id": "11e90d1b-0502-43e6-b056-e24836523c13",
+      "set_name": "Time Spiral Remastered",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Atsr&unique=prints",
+      "set_type": "masters",
+      "set_uri": "https://api.scryfall.com/sets/11e90d1b-0502-43e6-b056-e24836523c13",
+      "story_spotlight": false,
+      "tcgplayer_id": 233947,
+      "textless": false,
+      "toughness": "1",
+      "type_line": "Creature — Human Wizard",
+      "uri": "https://api.scryfall.com/cards/cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+      "variation": false
+    }
+  },
+  {
+    "source": "tests/fixtures/ward.json",
+    "source_sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "row": {
+      "name": "Lightning Bolt",
+      "oracle_text": "Lightning Bolt deals 3 damage to any target.",
+      "mana_cost": "{R}",
+      "type_line": "Instant",
+      "power": null,
+      "toughness": null,
+      "colors": [
+        "R"
+      ],
+      "keywords": [],
+      "layout": "normal",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "card_faces": null,
+      "scryfall_id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "source": "scryfall"
+    }
+  },
+  {
+    "source": "tests/fixtures/basic_land_layer_goldens/cards.json",
+    "source_sha256": "24c0f075830f86e8d91d6d2a8182b166ac9c5d1e90eb8408f6b084e471ba3872",
+    "row": {
+      "id": "161e66e3-0339-495c-bd06-0a799a254906",
+      "oracle_id": "7c3944fa-7c86-4979-85a9-86196aa94594",
+      "name": "Song of the Dryads",
+      "mana_cost": "{2}{G}",
+      "type_line": "Enchantment — Aura",
+      "oracle_text": "Enchant permanent\nEnchanted permanent is a colorless Forest land.",
+      "power": null,
+      "toughness": null,
+      "colors": [
+        "G"
+      ],
+      "keywords": [
+        "Enchant"
+      ],
+      "layout": "normal",
+      "card_faces": null,
+      "scryfall_uri": "https://scryfall.com/card/cmm/324/song-of-the-dryads?utm_source=api"
+    }
+  },
+  {
+    "source": "tests/fixtures/basic_land_layer_goldens/cards.json",
+    "source_sha256": "24c0f075830f86e8d91d6d2a8182b166ac9c5d1e90eb8408f6b084e471ba3872",
+    "row": {
+      "id": "67ef9842-7142-4c63-8aea-fa73f02722a5",
+      "oracle_id": "9ed6f28f-a3db-48c5-9ab0-b90a7fba5f57",
+      "name": "Royal Assassin",
+      "mana_cost": "{1}{B}{B}",
+      "type_line": "Creature — Human Assassin",
+      "oracle_text": "{T}: Destroy target tapped creature.",
+      "power": "1",
+      "toughness": "1",
+      "colors": [
+        "B"
+      ],
+      "keywords": [],
+      "layout": "normal",
+      "scryfall_uri": "https://scryfall.com/card/dmr/101/royal-assassin?utm_source=api"
+    }
+  },
+  {
+    "source": "tests/fixtures/basic_land_layer_goldens/cards.json",
+    "source_sha256": "24c0f075830f86e8d91d6d2a8182b166ac9c5d1e90eb8408f6b084e471ba3872",
+    "row": {
+      "id": "d96266b3-a7cb-40ce-a328-ac13719fe5f0",
+      "oracle_id": "f3fad295-1af2-4ecc-8546-b121ad6be27b",
+      "name": "Soul Warden",
+      "mana_cost": "{W}",
+      "type_line": "Creature — Human Cleric",
+      "oracle_text": "Whenever another creature enters, you gain 1 life.",
+      "power": "1",
+      "toughness": "1",
+      "colors": [
+        "W"
+      ],
+      "keywords": [],
+      "layout": "normal",
+      "scryfall_uri": "https://scryfall.com/card/mm3/24/soul-warden?utm_source=api"
+    }
+  },
+  {
+    "source": "tests/fixtures/defensive_responses.json",
+    "source_sha256": "d98473ab105e003da485a42ae98d6906f49a7c89f9dfe13cf5ae10babbe3eeaa",
+    "row": {
+      "id": "ddad9f16-52d5-49de-82b0-b1a5294a9c44",
+      "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561",
+      "name": "Unsummon",
+      "mana_cost": "{U}",
+      "type_line": "Instant",
+      "oracle_text": "Return target creature to its owner's hand.",
+      "power": null,
+      "toughness": null,
+      "colors": [
+        "U"
+      ],
+      "keywords": [],
+      "scryfall_uri": "https://scryfall.com/card/fra/46/unsummon?utm_source=api",
+      "layout": "normal",
+      "card_faces": null
+    }
+  }
+]

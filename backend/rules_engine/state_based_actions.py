@@ -364,7 +364,8 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
             continue
         target_id = attached_to(card)
         from rules_engine.bestow import is_bestowed, end_bestow
-        aura, equipment, fortification = is_aura(card, state), is_equipment(card, state), is_fortification(card, state)
+        with rule_query_scope(state):
+            aura, equipment, fortification = is_aura(card, state), is_equipment(card, state), is_fortification(card, state)
         if not (aura or equipment or fortification):
             if target_id:
                 if is_bestowed(card):

@@ -383,11 +383,21 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
         return None
     held_life = protected_life + req.get('life', 0)
     plan = _plan_free_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=held_life)
-    if plan is not None and not optimize_paid:
+    if plan is not None and (not optimize_paid or not plan[0]):
         return plan
     from copy import deepcopy
     from rules_engine.mana_abilities import paid_candidates, activate_planned_mana_ability, PaidManaStep
     candidates = list(paid_candidates(state, player_id, excluded_sources or (), payment_context=payment_context))
+    pool, _ = available_pool(state.players[player_id], payment_context)
+    needed = {color: max(0, req[color] - pool[color]) for color in MANA_COLORS}
+    from rules_engine.mana_abilities import output_bundles
+    # Try outputs serving the locked requirement before speculative funding.
+    # Keep all fallback candidates: an off-color prerequisite may be necessary.
+    def usefulness(candidate):
+        cid, spec, color = candidate
+        bundle = output_bundles(state, state.cards[cid], spec, payment_context=payment_context).get(color, {})
+        return sum(min(needed[c], bundle.get(c, 0)) for c in MANA_COLORS)
+    candidates.sort(key=usefulness, reverse=True)
     if not candidates:
         return plan
     best, best_score = plan, None

@@ -2,7 +2,7 @@ from __future__ import annotations
 from rules_engine.type_effects import effective_types
 
 import re
-from copy import copy
+from copy import copy, deepcopy
 from typing import Any
 
 from game_state.state import MatchState, StackItem, Zone, object_incarnation
@@ -499,6 +499,26 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     out.extend(collect_foretell_triggers(state, event, payload))
     from rules_engine.suspend import collect_triggers as collect_suspend_triggers
     out.extend(collect_suspend_triggers(state, event, payload))
+    if event == 'cycle':
+        cycled = state.cards.get(payload.get('card_id'))
+        controller = payload.get('controller')
+        if cycled is not None and cycled.zone != Zone.BATTLEFIELD and controller in state.players:
+            from rules_engine.ability_model import build_ability_spec
+            for clause, instruction in _self_cycling_clauses(cycled):
+                proxy = copy(cycled)
+                proxy.oracle_text = instruction
+                proxy.card_faces = []
+                proxy.selected_face_index = None
+                proxy.source_oracle_text = cycled.oracle_text
+                ability = build_ability_spec(state, proxy, controller,
+                                            action_targets={**payload, 'source_card_id': cycled.id})
+                data = _maybe_payload(clause, dict(ability.effect.payload))
+                data['__trigger_full_clause'] = clause
+                if re.search(r'\btarget\b', instruction):
+                    data['__trigger_resolution_text'] = instruction
+                out.append({'source_card_id': cycled.id, 'controller': controller,
+                            'label': f'{cycled.name} cycling trigger',
+                            'effect_key': ability.effect.key, 'payload': data})
     if event == 'damage_dealt':
         return out
     if event == 'surveilled':
@@ -694,10 +714,14 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                     clause = line.strip()
                     if not matcher(state, card, clause, death_payload):
                         continue
-                    if (_matches_self_death_trigger(state, card, clause, death_payload, event)
-                            and re.search(r'\b(?:dies|battlefield),\s*if\b', clause)):
+                    self_death = _matches_self_death_trigger(state, card, clause, death_payload, event)
+                    if self_death and re.search(r'\b(?:dies|battlefield),\s*if\b', clause):
                         state.log.append(f'Unsupported intervening-if self-death trigger on {card.name}: {clause}')
                         continue
+                    # Bind this departure before a returned incarnation can replace its LKI.
+                    source_lki = deepcopy(card.last_known_battlefield) if self_death else None
+                    clause_payload = ({**death_payload, '__source_lki': source_lki}
+                                      if source_lki is not None else death_payload)
                     if (event == 'permanent_dies' and cid == payload.get('card_id')
                             and re.fullmatch(
                                 r"when (?:" + re.escape(card.name.lower())
@@ -716,7 +740,9 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                         }
                     else:
                         trigger = _trigger_from_oracle(state, cid, card.controller, clause,
-                            default_label=f'{card.name} trigger', event=event, payload=death_payload)
+                            default_label=f'{card.name} trigger', event=event, payload=clause_payload)
+                    if source_lki is not None:
+                        trigger['payload']['__source_lki'] = deepcopy(source_lki)
                     trigger['payload']['__trigger_full_clause'] = clause
                     out.append(trigger)
             elif event == "leaves_battlefield" and _matches_leaves_battlefield_trigger(state, card, oracle, payload):
@@ -746,10 +772,14 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                     })
             elif event == "sacrifice" and _matches_sacrifice_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} sacrifice trigger", event=event, payload=payload))
-            elif event == "discard" and _matches_discard_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} discard trigger", event=event, payload=payload))
-            elif event == "cycle" and _matches_cycle_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} cycling trigger", event=event, payload=payload))
+            elif event == "discard":
+                for clause in oracle.splitlines():
+                    if _matches_discard_trigger(state, card, clause, payload):
+                        out.append(_trigger_from_oracle(state, cid, card.controller, clause, default_label=f"{card.name} discard trigger", event=event, payload=payload))
+            elif event == "cycle":
+                for clause in oracle.splitlines():
+                    if _matches_cycle_trigger(state, card, clause, payload):
+                        out.append(_trigger_from_oracle(state, cid, card.controller, clause, default_label=f"{card.name} cycling trigger", event=event, payload=payload))
             elif event == "combat_damage_dealt" and _matches_combat_damage_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} combat damage trigger", event=event, payload=payload))
             elif event == "attack_declared" and _matches_attack_trigger(state, card, oracle, payload):
@@ -759,6 +789,9 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             elif event == "block_declared" and _matches_block_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} block trigger", event=event, payload=payload))
             elif event in {"spell_cast", "spell_copy"}:
+                from rules_engine.nth_spell_triggers import collect_nth_spell_triggers
+                nth_triggers, oracle = collect_nth_spell_triggers(state, card, event, payload, oracle)
+                out.extend(nth_triggers)
                 cast_controller = int(payload.get("controller", 0) or 0)
                 source_card_id = str(payload.get("source_card_id", "") or "")
                 source_card = state.cards.get(source_card_id) if source_card_id else None
@@ -1259,6 +1292,11 @@ def _matches_discard_trigger(state: MatchState, card, oracle: str, payload: dict
         return False
     discarded_card = state.cards[discarded_id]
     discarding_player = payload.get("controller", discarded_card.controller)
+    combined = re.search(r"\b(?:when|whenever) you (?:cycle or discard|discard or cycle) (a|another) card,", oracle)
+    if combined:
+        # Cycling pays a discard cost and emits both events; recognize this
+        # combined condition only on discard, not again on cycle (CR702.29d).
+        return discarding_player == card.controller and (combined[1] != 'another' or discarded_id != card.id)
     if "whenever you discard a card" in oracle:
         return discarding_player == card.controller
     if "whenever you discard one or more cards" in oracle:
@@ -1276,10 +1314,21 @@ def _matches_discard_trigger(state: MatchState, card, oracle: str, payload: dict
     return False
 
 
+def _self_cycling_clauses(card):
+    subject = re.escape(card.name.lower())
+    for line in without_reminder_text(card.oracle_text or '').lower().splitlines():
+        match = re.fullmatch(
+            rf'(?:when|whenever) you cycle (?:this card|this creature|{subject}), (.+)', line.strip())
+        if match:
+            yield line.strip(), match[1]
+
+
 def _matches_cycle_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
     cycled_id = payload.get("card_id")
     cycled = state.cards.get(cycled_id) if cycled_id else None
     if cycled is None:
+        return False
+    if re.search(r"\b(?:when|whenever) you (?:cycle or discard|discard or cycle) (?:a|another) card,", oracle):
         return False
     cycling_controller = int(payload.get("controller", getattr(cycled, "controller", 0)) or 0)
     if "an opponent cycles" in oracle or "whenever an opponent cycles" in oracle:
@@ -1288,6 +1337,8 @@ def _matches_cycle_trigger(state: MatchState, card, oracle: str, payload: dict[s
         return False
     if cycling_controller != card.controller:
         return False
+    if 'you cycle this card' in oracle or 'you cycle this creature' in oracle:
+        return cycled_id == card.id
     if "you cycle a card" in oracle or "you cycle one or more cards" in oracle:
         return True
     # Named cycling triggers (for example, "When you cycle Shark Typhoon")
@@ -1396,6 +1447,31 @@ def _order_apnap(state: MatchState, triggers: list[dict[str, Any]]) -> list[dict
     return first + second
 
 
+def _matched_cast_trigger_clauses(state, source, oracle, event, payload):
+    spell = state.cards.get(payload.get('source_card_id'))
+    if spell is None or payload.get('controller') != source.controller:
+        return []
+    types = {kind.lower() for kind in effective_types(state, spell)}
+    subjects = {
+        'a spell': True,
+        'this spell': spell.id == source.id,
+        'a noncreature spell': 'creature' not in types,
+        'a non-creature spell': 'creature' not in types,
+        'a creature spell': 'creature' in types,
+        'an instant spell': 'instant' in types,
+        'a sorcery spell': 'sorcery' in types,
+        'an instant or sorcery spell': bool(types & {'instant', 'sorcery'}),
+    }
+    matches = []
+    for line in oracle.splitlines():
+        match = re.search(r'\b(?:when|whenever) you (cast or copy|cast|copy) ([^,]+),\s*(.+)', line)
+        if (match and subjects.get(match[2], False)
+                and (event == 'spell_cast' and match[1] != 'copy'
+                     or event == 'spell_copy' and match[1] != 'cast')):
+            matches.append((line.strip(), match[3]))
+    return matches
+
+
 def _trigger_from_oracle(
     state: MatchState,
     source_card_id: str,
@@ -1407,6 +1483,40 @@ def _trigger_from_oracle(
 ) -> dict[str, Any]:
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
+    cast_instruction = None
+    if source is not None and event in {'spell_cast', 'spell_copy'}:
+        clauses = _matched_cast_trigger_clauses(state, source, oracle, event, payload)
+        if len(clauses) == 1:
+            oracle, cast_instruction = clauses[0]
+            if re.search(r'\byou may pay\b|\bif you do\b', cast_instruction):
+                state.log.append(f'Unsupported optional trigger payment for {source.name}.')
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'noop',
+                        'payload': {'__trigger_full_clause': oracle,
+                                    '__unsupported_trigger_instruction': cast_instruction}}
+    if source is not None and event in {'discard', 'cycle'}:
+        for clause in oracle.splitlines():
+            instruction = re.fullmatch(r'(?:when|whenever) ([^,]+), (.+)', clause.strip())
+            if instruction and event in instruction[1]:
+                if re.search(r'\byou may pay\b|\bif you do\b', instruction[2]):
+                    state.log.append(f'Unsupported optional trigger payment for {source.name}.')
+                    return {'source_card_id': source_card_id, 'controller': controller,
+                            'label': default_label, 'effect_key': 'noop',
+                            'payload': {'__trigger_full_clause': clause,
+                                        '__unsupported_trigger_instruction': instruction[2]}}
+                from rules_engine.oracle_effects import infer_effect_from_oracle
+                proxy = copy(source)
+                proxy.oracle_text, proxy.card_faces, proxy.types = instruction[2], [], []
+                proxy.selected_face_index = None
+                key, data = infer_effect_from_oracle(
+                    state, proxy, controller,
+                    action_targets={**payload, 'source_card_id': source_card_id})
+                data = _maybe_payload(clause, data)
+                data['__trigger_full_clause'] = clause
+                if re.search(r'\btarget\b', instruction[2]):
+                    data['__trigger_resolution_text'] = instruction[2]
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': key, 'payload': data}
     if source is not None and event in {'enters_battlefield', 'transformed'}:
         for clause, instruction in _self_entry_transform_clauses(source, oracle):
             if payload.get('card_id') != source_card_id:
@@ -1672,14 +1782,19 @@ def _trigger_from_oracle(
                 "effect_key": "deal_damage",
                 "payload": {"target_player": opponent, "amount": max(0, amount)},
             }
-        if event == "begin_step" and "transform" in oracle and "top card" in oracle and "instant or sorcery" in oracle:
-            return {
-                "source_card_id": source_card_id,
-                "controller": controller,
-                "label": default_label,
-                "effect_key": "transform_if_top_matches",
-                "payload": {"target_card_id": source_card_id, "required_types": ["Instant", "Sorcery"], "face_index": 1},
-            }
+        if event == "begin_step":
+            from rules_engine.optional_reveal import parse_upkeep_reveal
+            instruction = parse_upkeep_reveal(oracle)
+            if instruction is not None:
+                if payload.get('step') != 'upkeep' or payload.get('active_player') != controller:
+                    return {'source_card_id': source_card_id, 'controller': controller,
+                            'label': default_label, 'effect_key': 'noop', 'payload': {}}
+                return {
+                    'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': 'transform_if_top_matches',
+                    'payload': {**instruction, 'target_card_id': source_card_id,
+                                'source_reference': [source_card_id, object_incarnation(source_card), source_card.zone_change_sequence]},
+                }
         source_name = re.escape((source_card.name or "").lower())
         self_counter = re.search(
             rf"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:this creature|this card|{source_name})",
@@ -1793,7 +1908,7 @@ def _trigger_from_oracle(
         source_card = state.cards.get(source_card_id)
         if source_card is not None:
             parser_card = copy(source_card)
-            parser_card.oracle_text = oracle
+            parser_card.oracle_text = cast_instruction or oracle
             parser_card.card_faces = []
             parser_card.selected_face_index = None
             parser_card.source_oracle_text = source_card.oracle_text
@@ -1806,6 +1921,10 @@ def _trigger_from_oracle(
             ability = build_ability_spec(state, parser_card, controller, action_targets=parser_payload)
             effect_key, effect_payload = ability.effect.key, ability.effect.payload
             if effect_key and effect_key != "noop":
+                if cast_instruction is not None:
+                    effect_payload['__trigger_full_clause'] = oracle
+                    if re.search(r'\btarget\b', cast_instruction):
+                        effect_payload['__trigger_resolution_text'] = cast_instruction
                 return {
                     "source_card_id": source_card_id,
                     "controller": controller,

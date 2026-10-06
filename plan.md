@@ -2,6 +2,111 @@
 
 ## Current Execution Order
 
+### Rules, Human Choices And Corpus Identity
+
+This newer composition is qualified in isolated copies, not yet deployed.
+Counts below overlap; they are not independent games or expert-play evidence.
+
+Nth-spell trigger dispatch and both-player turn counter reset are now composed
+with the funded-removal correction: seven complete modules pass 279 checks in
+81.88 seconds, with identical before/after Python source hashes. Cast-vs-copy,
+controller, suppression, restart and canonical readiness controls are retained.
+This scoped gate does not renew the earlier full-source release qualification.
+
+The funded Control-removal test correction is composed and qualified: 182 tests
+across five affected modules pass in 10.42 seconds, with unchanged source hashes.
+It preserves the removal preference while testing legal payment, resolution,
+restart and unaffordable alternatives; it does not change production AI.
+Canonical Ninjutsu intake is now available. Its frozen 44-case audit reports
+16 intent-consumer failures, two separate source-incarnation failures and 26
+passing controls. Consumer validation and object-reference fixes are assigned
+separately and remain open until qualified on the combined source.
+
+Next backend candidate (not deployed): startup label preservation and per-card
+SBA query batching compose cleanly. Their three-module gate passes 71 tests in
+14.21 seconds; seven neighbor modules pass 127 tests in 36.55 seconds, with
+identical before/after source hashes. Broader qualification, replays and the
+full release gate remain outstanding. See
+[startup admission](docs/testing/expansion-startup-classification.md) and
+[SBA query scope](docs/testing/sba-classification-query-batches.md).
+
+The subsequent optional-reveal/day-night composition passes 95 checks across
+six modules on a fresh database in 29.38 seconds, with source hashes unchanged.
+The initial 90-pass/five-failure run (32.83 seconds) and missing-fixture collection
+error remain preserved. A separate reviewed test-only increment sets established
+day where fixtures bypass real entry and exercises untap followed by upkeep;
+production was not changed to satisfy obsolete timing assumptions. Frontend
+lint/build/tests, including the new optional-reveal boundary regression, pass.
+Actual-App requalification on that exact combined source passes 362 assertions
+across 12 flows, including 46 backend restarts, in 303.971 seconds.
+The isolated combat guard's original 900-second shared gate timed out (exit 124).
+Its separately authorized, unchanged-source 2400-second qualification subsequently
+passes all 695 tests across the same 18 modules in 1167.76 seconds. The original
+timeout remains archived; these results do not qualify later source changes.
+
+The next import-and-combat candidate passes 218 checks across five whole modules
+in 113.65 seconds on a fresh local database, with before/after source hashes
+identical. It preserves existing official expansion IDs and exact stored source
+keys when resolving normalized source aliases, rejects sideboards over 15 cards
+before writes, and avoids materializing malformed imports. Its combat guard also
+passes a separate 189-check composition with reveal/day-night neighbors.
+The full backend suite is still running against the earlier reveal/day-night
+candidate; it is not yet a completed release gate for this newer composition.
+Private-choice and foretell consumer audits have outstanding rejection/view gaps.
+
+- [x] Preserve self-cycling triggers and frozen counter/power-based self-death
+  quantities; diagnose unsupported quantities instead of inventing one token.
+- [x] Use effective/retained colors in qualified damage, exile, protection and
+  static consumers; qualify color-dependent Liege/Jubilation predicates.
+- [x] Reject unsupported requested fields for the qualified mana, cast,
+  activated, loyalty, crew, equip, cycling and pending-choice intent families.
+- [x] Repair AI target-wire metadata and discounted physical mana-plan ordering
+  without weakening targets/costs or removing fallback candidates.
+- [x] Preserve representative cohort identities, original names and legacy seeds;
+  refresh admitted built-ins and classify first imports from canonical facts.
+- [x] Preserve artifact/enchantment creature-token descriptors and separate
+  ordinary spell instructions from supported cycling-trigger paragraphs.
+- [x] Bind matched cast-trigger instructions and targeted cycling context.
+  The original six compiler failures now pass on the composed source.
+- [x] Block unsupported UI confirmations and offer cycling X in both hand
+  branches; wire its regression into the standard frontend test command.
+- [x] Qualify the six-patch 83-module composition: 2,024 ordinary passes,
+  654.71 seconds, unchanged source. Preserve the earlier environment-error run.
+- [x] Qualify subsequent token/cold-import and trigger-context compositions:
+  153 and 123 ordinary passes. Actual-App human-flow16 passes 212 assertions.
+- [x] Qualify canonical modal and Adventure flows through names/quantity HTTP
+  hydration, both human seats, privacy and restart: 144 browser assertions.
+- [x] Qualify generic-import admission/classification, replacement/trigger-target
+  intent guards and Delver optional reveal/upkeep behavior in isolated copies.
+- [x] Qualify combat intent rejection and source-preserving expansion refresh;
+  keep the historical timeout and malformed-import evidence distinct.
+- [x] Close qualified private card-choice whole-view/prevalidation and foretell
+  intent gaps while preserving nullable schema compatibility and explicit actor
+  selections. The combined 12-module gate passes 517 checks in 344.41 seconds
+  with unchanged Python source hashes; the missing-marker setup run is archived.
+- [ ] Finish full-suite qualification and reconcile the remaining canonical
+  funded-removal golden; original full-suite errors remain in their own ledger.
+- [ ] Audit ninjutsu with a complete verified canonical fixture; the foretell
+  qualification is not evidence for the distinct ninjutsu action family.
+- [ ] Implement actual paid optional-trigger payment/continuation; preserve
+  actor, restrictions, targets, stack tails and restart without free rewards.
+- [ ] Qualify multiple matched cast abilities/order and uncommon conditions.
+- [ ] Requalify the readonly combat-query optimization on this exact composition;
+  preserve all candidate projections, actions and full applied states.
+- [ ] Complete representative seeded/seat-balanced replays with full termination
+  provenance. Tokens/Ramp's prior second arrangement exceeded its wall-clock
+  bound; reconstructed profiling is separate from the original incomplete trace.
+- [ ] Complete a full current-source release gate with a sufficient declared
+  duration. The prior default run timed out at 64%, exit 124; it is not green.
+- [ ] Publish only the qualified milestone, with updated feature documentation,
+  changelog and graph; back up live user data, safely restart and verify LAN
+  health, snapshots and recovery. Do not install archived test SQLite.
+
+See [composition scope](docs/testing/rules-choice-color-composition.md),
+[token types](docs/testing/token-descriptor-types.md),
+[matched triggers](docs/testing/matched-trigger-context.md) and
+[cold imports](docs/testing/builtin-cold-import.md).
+
 ### Qualified Mana And Layer Milestone
 
 - [x] Compose explicit chosen-resource/hybrid/base-vector mana execution,
@@ -40,13 +145,12 @@
   Fix optional metadata reads in the shared layer/type query helpers: 277 focused
   checks pass, including eight new ordinary before-fail/after-pass controls.
   Fresh 70-module rerun: 2,836 pass, 722.20 seconds, no skips/xfails/deselection.
-- [ ] Resolve post-mana escape-fuel witness gaps; qualify remaining printed-color
-  consumers and face/selection composition separately; extend requested-field
-  qualification to remaining non-mana action families.
-- [ ] Resolve dynamic self-death token counts and retained-source incarnation
-  contamination identified by strict canonical regression fixtures.
-- [ ] Warn and block unsupported UI action confirmations without hiding supported
-  controls; verify both human seats and private choice displays.
+- [ ] Resolve post-mana escape-fuel witness gaps and broader layer/face variants;
+  qualify remaining small-choice request families in the newer stage above.
+- [x] Dynamic self-death counts and retained-source incarnation fixtures now pass
+  in the newer isolated composition above, not retrospectively in this old gate.
+- [x] Unsupported UI confirmation warnings and both-seat private controls now
+  pass in the newer isolated composition above; its deployment remains pending.
 - [x] Promote only after the intended gates pass, with a verified live-data
   backup, current documentation, graph refresh and safe runtime restart.
   Backend and frontend health/proxy/LAN checks pass on `0.0.0.0:9999` and

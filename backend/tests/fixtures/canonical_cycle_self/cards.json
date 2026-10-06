@@ -1,0 +1,284 @@
+[
+  {
+    "object": "card",
+    "id": "605ca3c0-7c9a-4bc1-9795-82aeb6f552ee",
+    "oracle_id": "8c0520fa-276b-4d21-b4a9-dce1fce59f6b",
+    "multiverse_ids": [],
+    "tcgplayer_id": 717763,
+    "cardmarket_id": 909837,
+    "name": "Shark Typhoon",
+    "lang": "en",
+    "released_at": "2026-10-02",
+    "uri": "https://api.scryfall.com/cards/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee",
+    "scryfall_uri": "https://scryfall.com/card/frc/44/shark-typhoon?utm_source=api",
+    "layout": "normal",
+    "highres_image": true,
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-09-16T23:03:56Z",
+    "image_uris": {
+      "small": "https://cards.scryfall.io/small/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.jpg?1789599836",
+      "normal": "https://cards.scryfall.io/normal/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.jpg?1789599836",
+      "large": "https://cards.scryfall.io/large/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.jpg?1789599836",
+      "png": "https://cards.scryfall.io/png/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.png?1789599836",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.jpg?1789599836",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.jpg?1789599836",
+      "thumb": "https://cards.scryfall.io/thumb/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.webp?1789599836",
+      "grid": "https://cards.scryfall.io/grid/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.webp?1789599836",
+      "display": "https://cards.scryfall.io/display/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.webp?1789599836",
+      "art": "https://cards.scryfall.io/art/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.webp?1789599836",
+      "crop": "https://cards.scryfall.io/crop/front/6/0/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee.webp?1789599836"
+    },
+    "mana_cost": "{5}{U}",
+    "cmc": 6.0,
+    "type_line": "Enchantment",
+    "oracle_text": "Whenever you cast a noncreature spell, create an X/X blue Shark creature token with flying, where X is that spell's mana value.\nCycling {X}{1}{U} ({X}{1}{U}, Discard this card: Draw a card.)\nWhen you cycle this card, create an X/X blue Shark creature token with flying.",
+    "colors": [
+      "U"
+    ],
+    "color_identity": [
+      "U"
+    ],
+    "keywords": [
+      "Cycling"
+    ],
+    "all_parts": [
+      {
+        "object": "related_card",
+        "id": "605ca3c0-7c9a-4bc1-9795-82aeb6f552ee",
+        "component": "combo_piece",
+        "name": "Shark Typhoon",
+        "type_line": "Enchantment",
+        "uri": "https://api.scryfall.com/cards/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee"
+      },
+      {
+        "object": "related_card",
+        "id": "21a614b0-2e65-4ea0-94c3-9c9afa0bc03c",
+        "component": "token",
+        "name": "Shark",
+        "type_line": "Token Creature — Shark",
+        "uri": "https://api.scryfall.com/cards/21a614b0-2e65-4ea0-94c3-9c9afa0bc03c"
+      }
+    ],
+    "legalities": {
+      "standard": "not_legal",
+      "future": "not_legal",
+      "historic": "legal",
+      "timeless": "legal",
+      "gladiator": "legal",
+      "pioneer": "legal",
+      "modern": "legal",
+      "legacy": "legal",
+      "pauper": "not_legal",
+      "vintage": "legal",
+      "penny": "legal",
+      "commander": "legal",
+      "oathbreaker": "legal",
+      "standardbrawl": "not_legal",
+      "brawl": "legal",
+      "competitivebrawl": "legal",
+      "alchemy": "not_legal",
+      "paupercommander": "not_legal",
+      "duel": "legal",
+      "oldschool": "not_legal",
+      "premodern": "not_legal",
+      "predh": "not_legal",
+      "tlr": "not_legal"
+    },
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "reserved": false,
+    "game_changer": false,
+    "foil": false,
+    "nonfoil": true,
+    "finishes": [
+      "nonfoil"
+    ],
+    "oversized": false,
+    "promo": false,
+    "reprint": true,
+    "variation": false,
+    "set_id": "cfd10490-7397-4143-bda7-d388b877636f",
+    "set": "frc",
+    "set_name": "Reality Fracture Commander",
+    "set_type": "commander",
+    "set_uri": "https://api.scryfall.com/sets/cfd10490-7397-4143-bda7-d388b877636f",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Afrc&unique=prints",
+    "scryfall_set_uri": "https://scryfall.com/sets/frc?utm_source=api",
+    "rulings_uri": "https://api.scryfall.com/cards/605ca3c0-7c9a-4bc1-9795-82aeb6f552ee/rulings",
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A8c0520fa-276b-4d21-b4a9-dce1fce59f6b&unique=prints",
+    "collector_number": "44",
+    "digital": false,
+    "rarity": "rare",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "artist": "Caio Monteiro",
+    "artist_ids": [
+      "d5053eb6-af72-47a0-b6e8-023cc3b9aefb"
+    ],
+    "illustration_id": "6ea9e1b7-0172-454f-9ab8-70ac63db87fc",
+    "border_color": "black",
+    "frame": "2015",
+    "frame_effects": [
+      "enchantment"
+    ],
+    "security_stamp": "oval",
+    "full_art": false,
+    "textless": false,
+    "booster": false,
+    "story_spotlight": false,
+    "edhrec_rank": 1247,
+    "penny_rank": 64,
+    "prices": {
+      "usd": "1.83",
+      "usd_foil": null,
+      "usd_etched": null,
+      "eur": "1.23",
+      "eur_foil": null,
+      "tix": null
+    },
+    "related_uris": {
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DShark%2BTyphoon",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DShark%2BTyphoon",
+      "edhrec": "https://edhrec.com/route/?cc=Shark+Typhoon"
+    },
+    "purchase_uris": {
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F717763%3Fpage%3D1",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=909837&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "cardhoarder": "https://www.cardhoarder.com/cards?affiliate_id=scryfall&data%5Bsearch%5D=Shark+Typhoon&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+    }
+  },
+  {
+    "object": "card",
+    "id": "a7d66dd3-330f-4b12-81f6-52d7a31013a9",
+    "oracle_id": "aa4ecefa-808e-4706-af16-4ea5af9743fc",
+    "multiverse_ids": [
+      598897
+    ],
+    "mtgo_id": 107535,
+    "tcgplayer_id": 457547,
+    "cardmarket_id": 688667,
+    "name": "Renewed Faith",
+    "lang": "en",
+    "released_at": "2023-01-13",
+    "uri": "https://api.scryfall.com/cards/a7d66dd3-330f-4b12-81f6-52d7a31013a9",
+    "scryfall_uri": "https://scryfall.com/card/dmr/23/renewed-faith?utm_source=api",
+    "layout": "normal",
+    "highres_image": true,
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T04:55:08Z",
+    "image_uris": {
+      "small": "https://cards.scryfall.io/small/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.jpg?1783918508",
+      "normal": "https://cards.scryfall.io/normal/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.jpg?1783918508",
+      "large": "https://cards.scryfall.io/large/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.jpg?1783918508",
+      "png": "https://cards.scryfall.io/png/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.png?1783918508",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.jpg?1783918508",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.jpg?1783918508",
+      "thumb": "https://cards.scryfall.io/thumb/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.webp?1783918508",
+      "grid": "https://cards.scryfall.io/grid/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.webp?1783918508",
+      "display": "https://cards.scryfall.io/display/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.webp?1783918508",
+      "art": "https://cards.scryfall.io/art/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.webp?1783918508",
+      "crop": "https://cards.scryfall.io/crop/front/a/7/a7d66dd3-330f-4b12-81f6-52d7a31013a9.webp?1783918508"
+    },
+    "mana_cost": "{2}{W}",
+    "cmc": 3.0,
+    "type_line": "Instant",
+    "oracle_text": "You gain 6 life.\nCycling {1}{W} ({1}{W}, Discard this card: Draw a card.)\nWhen you cycle this card, you may gain 2 life.",
+    "colors": [
+      "W"
+    ],
+    "color_identity": [
+      "W"
+    ],
+    "keywords": [
+      "Cycling"
+    ],
+    "legalities": {
+      "standard": "not_legal",
+      "future": "not_legal",
+      "historic": "legal",
+      "timeless": "legal",
+      "gladiator": "legal",
+      "pioneer": "legal",
+      "modern": "legal",
+      "legacy": "legal",
+      "pauper": "legal",
+      "vintage": "legal",
+      "penny": "legal",
+      "commander": "legal",
+      "oathbreaker": "legal",
+      "standardbrawl": "not_legal",
+      "brawl": "legal",
+      "competitivebrawl": "legal",
+      "alchemy": "not_legal",
+      "paupercommander": "legal",
+      "duel": "legal",
+      "oldschool": "not_legal",
+      "premodern": "legal",
+      "predh": "legal",
+      "tlr": "legal"
+    },
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "reserved": false,
+    "game_changer": false,
+    "foil": true,
+    "nonfoil": true,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "oversized": false,
+    "promo": false,
+    "reprint": true,
+    "variation": false,
+    "set_id": "ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+    "set": "dmr",
+    "set_name": "Dominaria Remastered",
+    "set_type": "masters",
+    "set_uri": "https://api.scryfall.com/sets/ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admr&unique=prints",
+    "scryfall_set_uri": "https://scryfall.com/sets/dmr?utm_source=api",
+    "rulings_uri": "https://api.scryfall.com/cards/a7d66dd3-330f-4b12-81f6-52d7a31013a9/rulings",
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Aaa4ecefa-808e-4706-af16-4ea5af9743fc&unique=prints",
+    "collector_number": "23",
+    "digital": false,
+    "rarity": "common",
+    "flavor_text": "Skepticism fades in the face of the miraculous.",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "artist": "Steve Argyle",
+    "artist_ids": [
+      "a44ddda4-5331-4f83-aac9-3e00ed36bd7b"
+    ],
+    "illustration_id": "b20d0057-3fc7-4a7f-bced-50c3ee1d18c0",
+    "border_color": "black",
+    "frame": "2015",
+    "full_art": false,
+    "textless": false,
+    "booster": true,
+    "story_spotlight": false,
+    "edhrec_rank": 16353,
+    "penny_rank": 2492,
+    "prices": {
+      "usd": "0.17",
+      "usd_foil": "0.12",
+      "usd_etched": null,
+      "eur": "0.05",
+      "eur_foil": "0.12",
+      "tix": "0.04"
+    },
+    "related_uris": {
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=598897&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DRenewed%2BFaith",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DRenewed%2BFaith",
+      "edhrec": "https://edhrec.com/route/?cc=Renewed+Faith"
+    },
+    "purchase_uris": {
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F457547%3Fpage%3D1",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=688667&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "cardhoarder": "https://www.cardhoarder.com/cards/107535?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+    }
+  }
+]

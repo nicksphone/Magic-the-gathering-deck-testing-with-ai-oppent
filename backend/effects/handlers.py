@@ -195,7 +195,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
     if source_lki is not None:
         source_colors = set(source_lki.get("color_names", []))
     elif source_card_id in state.cards:
-        source_colors = card_color_names(state.cards[source_card_id])
+        source_colors = card_color_names(state.cards[source_card_id], state)
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
         kws = effective_keywords(state, target_card_id)
@@ -205,7 +205,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 return 0
         if card.zone == Zone.BATTLEFIELD and amount > 0:
             if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount, source_lki=source_lki) is not None:
-                if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in effective_types(state, card) and _creature_is_lethally_damaged(state, target_card_id):
+                if not state.trigger_staging and not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in effective_types(state, card) and _creature_is_lethally_damaged(state, target_card_id):
                     _move_creature_to_graveyard(state, target_card_id)
                 return 0
             replaced_amount = apply_permanent_damage_replacements(
@@ -732,7 +732,7 @@ def exile_colored_permanents_mana_value_at_most(state: MatchState, controller: i
     mv_max = int(payload["mv_max"])
     affected = [
         cid for player in state.players.values() for cid in player.battlefield
-        if card_color_names(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
+        if card_color_names(state.cards[cid], state) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
     ]
     for cid in affected:
         capture_last_known_battlefield(state, cid)
@@ -1939,6 +1939,10 @@ def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
 
 def transform_if_top_matches(state: MatchState, controller: int, payload: dict) -> None:
     """Reveal the top card and transform the source when its type condition passes."""
+    if payload.get('optional_reveal'):
+        from rules_engine.optional_reveal import begin_reveal
+        begin_reveal(state, controller, payload)
+        return
     target_id = payload.get("target_card_id")
     player = state.players[controller]
     if not target_id or target_id not in state.cards or not player.library:
@@ -2130,10 +2134,14 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
 
 def add_counters_each_creature(state: MatchState, controller: int, payload: dict) -> None:
     from effects.registry import resolve_effect
+    recipients = payload.get('recipients', 'controller')
+    if recipients not in {'controller', 'opponents'}:
+        return
+    player_ids = [controller] if recipients == 'controller' else [pid for pid in state.players if pid != controller]
     resolve_effect(state, controller, 'effect_sequence', {'effects': [
         {'effect_key': 'add_counters', 'payload': {**payload, 'target_card_id': cid,
                                                 'effect_timestamp': object_incarnation(state.cards[cid])}}
-        for cid in list(state.players[controller].battlefield)
+        for pid in player_ids for cid in list(state.players[pid].battlefield)
         if cid in state.cards and 'Creature' in effective_types(state, state.cards[cid])
     ]})
 
