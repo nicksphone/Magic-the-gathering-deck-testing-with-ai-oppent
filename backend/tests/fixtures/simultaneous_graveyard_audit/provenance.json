@@ -1,0 +1,20 @@
+{
+  "fixture_sha256": "83eeab6a2325e3d06af4d3fbfcf1c147fc4bdfbae0812000fb66ca1c52ddd2ee",
+  "sources": [
+    {
+      "name": "Delirium Skeins",
+      "oracle_id": "7397036f-8114-47cc-b52f-c532a6845d16",
+      "response_sha256": "bdeceab7fc0e0bdce599cee21ac126a23de04c2bfa8ac96b25ce25007b82325a",
+      "retrieved_utc": "2026-10-06T14:44:58.085155+00:00",
+      "url": "https://api.scryfall.com/cards/named?exact=Delirium%20Skeins"
+    },
+    {
+      "name": "Desecrated Tomb",
+      "oracle_id": "07ff619a-21ee-44b6-b666-ceab4a78096a",
+      "response_sha256": "dd849d22f058a0889de4e425bb86d6414289633ec7be9f562c9b92da6d3b58b7",
+      "retrieved_utc": "2026-10-06T14:44:57.609163+00:00",
+      "url": "https://api.scryfall.com/cards/named?exact=Desecrated%20Tomb"
+    }
+  ],
+  "transformation": "Full response objects serialized as JSONL; no fields or Oracle text removed/modified. Original raw response bytes retained in NFS evidence."
+}

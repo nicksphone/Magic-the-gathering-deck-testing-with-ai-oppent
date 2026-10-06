@@ -1,0 +1,13 @@
+{
+  "source_sha256": "d4677c1bf4b6bd0fedda199c4aebc4ba62dd5db7f23dfd330855ed7446bc4218",
+  "other_functions": {
+    "ninjutsu_cost": "07aa1e414c368ce168eea9426316a2ae09cc89dcdf97b63e29685ac055789461",
+    "ninjutsu_attackers": "33fb060b91f79f02dc9dd21242cab31778bbed19b85f8df8c85f10372c911112",
+    "activate_ninjutsu": "70c1bffd2652224e3906920a7e28225083df88df897fefce6983351f18cff412",
+    "resolve_ninjutsu": "7898af2db8f9761b1a434118184ac26407db5a906282eab91455e40ccbfa57e2",
+    "resolve_annihilator": "aca9e1bc0ef6ed94c7dbf1510c3f5cba7a1069093d51e884324518f4c069d67b",
+    "ninjutsu_moves": "24777fe1b54632e0324ff506e86391f32350c797605d86e141ab564b7f0c748c"
+  },
+  "prefix_sha256": "fa7dbdf4f8989ec5d54494e8ba40577d2028fcf83c3bc559c0e57bc364e073b5",
+  "suffix_sha256": "5fbc4cf4faaf3339d7fcb3346010d94a3f9f77ee3deee3b5a625f1d965066dbd"
+}

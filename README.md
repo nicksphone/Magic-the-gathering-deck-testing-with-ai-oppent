@@ -69,10 +69,17 @@ LAN deployment and broader AI-quality qualification remain open.
   source-incarnation/last-known-information handling and live color predicates.
 - Supported printed self-graveyard replacements on shared discard, mill and
   selected sacrifice/discard cost routes preserve owner-library destinations,
-  pre-departure identity and genuine static shuffle causes. Competing unresolved
-  destinations reject before payment; public per-cost replacement selection and
-  direct death/combat callers are not yet covered. Kozilek's from-anywhere trigger
-  remains unsupported, not an immediate replacement.
+  pre-departure identity and genuine static shuffle causes. Supported handler,
+  keyword-sacrifice and shared lethal/legend SBA routes use the same entry plans;
+  combat deaths reach that shared SBA path. Public per-cost competing replacement
+  selection remains unqualified.
+- Supported from-anywhere graveyard triggers, including the canonical Kozilek
+  shuffle instruction, retain real source references and owner identity through
+  responses and restart. Source departure does not erase an already-triggered
+  ability; a legal counter can stop it. Genuine simultaneous discard entries
+  are collected after the whole validated batch commits. Other simultaneous
+  death/mill/sacrifice publication remains separate work.
+  See [current lifecycle acceptance](docs/testing/graveyard-lifecycle-current.md).
 - Supported self-cycling, combined cycling/discard and self-death triggers.
   Dynamic death quantities use the retained source receipt; ordinary spell
   instructions are separated from supported cycling-trigger paragraphs.
@@ -282,11 +289,14 @@ start fresh matches when comparing newly compiled rule behavior.
 
 - Observed unsupported spell instructions and selected compiler fallbacks reject
   before payment, rather than resolving as successful no-ops. Coverage diagnostics
-  identify known gaps; an empty gap list is not certification. Extra turns,
-  additional phases, turn ending and player-turn control remain unsupported.
+  identify known gaps; an empty gap list is not certification. Bounded complete
+  extra-turn and additional combat/main clauses are supported; other turn-ending,
+  player-turn control and unadmitted turn-changing instructions remain unsupported.
   See [admission safety](docs/testing/spell-admission-safety.md).
-- Shuffle-specific observers/replacements and broader reorder grammars remain
-  unqualified; the new look/reorder route is not arbitrary library-effect support.
+- Unadmitted shuffle observers/replacements and broader reorder grammars remain
+  unqualified; supported Probe/Cosi/Tomb episodes do not certify arbitrary effects.
+- Illegal Aura departure LBF bookkeeping, deliberate human legend keeper choices,
+  other simultaneous entry batches and full stack-face lifecycle remain open.
 - Arbitrary Oracle interpretation, complete layer/replacement interactions,
   uncommon mechanics and all formats are not implemented or certified.
 - Paid optional-trigger continuations, Delver's optional private reveal/timing,

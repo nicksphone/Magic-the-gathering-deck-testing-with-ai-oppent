@@ -1,6 +1,7 @@
 """Canonical diagnostic controls plus an ordinary RED for the harmful sealed play."""
 import json
 import os
+from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
 
@@ -42,6 +43,33 @@ def _assert_legacy_snapshot_parity(actual, historical):
         {k: v for k, v in expected.items() if k != 'log'})
 
 
+def _legacy_snapshot_with_public_entry(snapshot, card_id):
+    expected = _current_legacy_snapshot(snapshot)
+    card = expected['cards'][card_id]
+    assert card['zone'] == 'graveyard'
+    assert card_id in expected['players'][str(card['owner'])]['graveyard']
+    for seat in ('1', '2'):
+        observations = expected['card_observations'].setdefault(seat, {})
+        assert card_id not in observations
+        observations[card_id] = deepcopy(card)
+    return expected
+
+
+def _legacy_snapshot_with_committed_death(snapshot, card_id, previous_sequence):
+    expected = _current_legacy_snapshot(snapshot)
+    card = expected['cards'][card_id]
+    assert card['zone'] == 'graveyard'
+    assert card_id in expected['players'][str(card['owner'])]['graveyard']
+    assert card['zone_change_sequence'] == previous_sequence
+    card['zone_change_sequence'] = previous_sequence + 1
+    for seat in ('1', '2'):
+        observation = expected['card_observations'][seat][card_id]
+        assert observation['zone'] == 'graveyard'
+        assert observation['zone_change_sequence'] == previous_sequence
+        observation['zone_change_sequence'] = previous_sequence + 1
+    return expected
+
+
 def test_exact_captured_resolution_preserves_original_trace_and_proves_loss():
     row, state = exact_state()
     before = canonical(serialize_match_snapshot(state))
@@ -49,9 +77,21 @@ def test_exact_captured_resolution_preserves_original_trace_and_proves_loss():
     for receipt in receipts():
         if receipt['event'] != 'applied' or not 303 <= receipt['tick'] <= 305:
             continue
+        source_id = row['action']['card_id']
+        source_before = state.cards[source_id]
+        victim_id = row['action']['targets']['target_card_id']
+        victim_before = state.cards[victim_id]
         state = checked_action(state, RulesEngine(), receipt['pid'], receipt['action'])
         actual = serialize_match_snapshot(state)
-        _assert_legacy_snapshot_parity(actual, receipt['snapshot'])
+        expected = receipt['snapshot']
+        if victim_before.zone == Zone.BATTLEFIELD and state.cards[victim_id].zone == Zone.GRAVEYARD:
+            assert state.cards[victim_id].zone_change_sequence == victim_before.zone_change_sequence + 1
+            expected = _legacy_snapshot_with_committed_death(
+                expected, victim_id, victim_before.zone_change_sequence)
+        if source_before.zone == Zone.STACK and state.cards[source_id].zone == Zone.GRAVEYARD:
+            assert state.cards[source_id].zone_change_sequence == source_before.zone_change_sequence + 1
+            expected = _legacy_snapshot_with_public_entry(expected, source_id)
+        _assert_legacy_snapshot_parity(actual, expected)
     victim = row['action']['targets']['target_card_id']
     assert state.cards[victim].zone == Zone.GRAVEYARD
     assert row['action']['card_id'] in state.players[row['pid']].graveyard

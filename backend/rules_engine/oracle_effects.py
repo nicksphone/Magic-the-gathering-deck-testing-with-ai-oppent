@@ -239,6 +239,8 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    if re.fullmatch(r'its owner shuffles their graveyard into their library\.', oracle.strip()):
+        return 'shuffle_graveyard_into_library', {'graveyard_owner': card.owner}
     from rules_engine.turn_scheduler import instruction
     scheduled = instruction(oracle)
     if scheduled in {'target', 'controller'}:

@@ -122,7 +122,7 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
     if event == 'enters_battlefield':
         from rules_engine.land_history import record_land_entry
         record_land_entry(state, payload)
-    if event in {'leaves_battlefield', 'enters_battlefield', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
+    if event in {'leaves_battlefield', 'enters_battlefield', 'enters_graveyard', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
         from game_state.observations import observe_cards
         observe_cards(state, [payload.get('card_id')])
     if event == "leaves_battlefield":
@@ -142,7 +142,7 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
         from rules_engine.land_history import record_land_entry
         for payload in payloads:
             record_land_entry(state, payload)
-    if event in {'leaves_battlefield', 'enters_battlefield', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
+    if event in {'leaves_battlefield', 'enters_battlefield', 'enters_graveyard', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
         from game_state.observations import observe_cards
         observe_cards(state, [payload.get('card_id') for payload in payloads])
     triggers: list[dict[str, Any]] = []
@@ -156,7 +156,8 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
         event_payload = {**payload, "__simultaneous_source_ids": departed_ids} if departed_ids else payload
         for trigger in _collect_triggers(state, event, event_payload):
             source_id = str(trigger.get("source_card_id", ""))
-            source = _departed_card_view(state, source_id)
+            source = (state.cards.get(source_id) if event == 'enters_graveyard'
+                      else _departed_card_view(state, source_id))
             oracle = (getattr(source, "oracle_text", "") or "").lower() if source else ""
             if "one or more" in oracle:
                 if source_id in one_or_more_sources:
@@ -529,7 +530,53 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
     return True
 
 
+def _collect_graveyard_entry_triggers(state, payload):
+    """From-anywhere self triggers inspect the new graveyard object, not death LKI."""
+    card = state.cards.get(payload.get('card_id'))
+    owner = payload.get('owner')
+    previous = payload.get('previous_reference')
+    entered = payload.get('entry_reference')
+    reference_keys = {'incarnation', 'zone_change_sequence'}
+    if (card is None or type(owner) is not int or owner not in state.players
+            or card.owner != owner or card.zone != Zone.GRAVEYARD
+            or state.players[owner].graveyard.count(card.id) != 1
+            or payload.get('from_zone') not in {zone.value for zone in Zone if zone != Zone.GRAVEYARD}
+            or type(payload.get('previous_controller')) is not int
+            or payload.get('previous_controller') not in state.players
+            or not isinstance(previous, dict) or set(previous) != reference_keys
+            or not isinstance(entered, dict) or set(entered) != reference_keys
+            or any(type(value) is not int or value < 0
+                   for reference in (previous, entered) for value in reference.values())
+            or entered != {'incarnation': object_incarnation(card),
+                           'zone_change_sequence': card.zone_change_sequence}
+            or entered['zone_change_sequence'] != previous['zone_change_sequence'] + 1):
+        return []
+    from rules_engine.oracle_effects import infer_effect_from_oracle
+    names = {card.name, card.name.split(',')[0], 'this card', 'this creature', 'this permanent'}
+    subject = '|'.join(re.escape(name) for name in names if name)
+    pattern = re.compile(r'when (?:' + subject + r') is put into a graveyard from anywhere, (.+)', re.I)
+    triggers = []
+    for index, clause in enumerate(without_reminder_text(card.oracle_text or '').splitlines()):
+        match = pattern.fullmatch(clause.strip())
+        if match is None:
+            continue
+        proxy = copy(card)
+        proxy.oracle_text, proxy.card_faces, proxy.types = match[1], [], []
+        proxy.selected_face_index = None
+        key, data = infer_effect_from_oracle(state, proxy, owner, report_unsupported=False)
+        if key != 'shuffle_graveyard_into_library':
+            continue
+        triggers.append({'source_card_id': card.id, 'controller': owner,
+                         'label': f'{card.name} graveyard entry trigger', 'effect_key': key,
+                         'payload': {**data, '__trigger_full_clause': clause,
+                                     '__trigger_ability_index': index,
+                                     '__trigger_source_reference': dict(entered)}})
+    return triggers
+
+
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if event == 'enters_graveyard':
+        return _collect_graveyard_entry_triggers(state, payload)
     if event == 'becomes_tapped':
         from rules_engine.resource_events import collect_tap_triggers
         return collect_tap_triggers(state, payload)

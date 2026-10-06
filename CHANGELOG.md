@@ -2,6 +2,15 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Qualify shared graveyard lifecycle on `fc22540`: 995 passes across 50
+  declared whole modules in 752.67s, with zero failures, errors or skips,
+  unchanged backend hashes and no network attempts. Compose committed entry,
+  retained shuffle references, keyword/handler/SBA death routing and simultaneous
+  discard publication. Keep immutable historical receipts; test-only event-alias
+  observation and narrowly checked legacy reference adapters are separate.
+  Frontend lint, configured tests and production build pass. This is an isolated
+  milestone, not deployment, whole-suite or expert-AI certification.
+
 - Compose friendly-damage AI materialization and media-cache eviction recovery
   on `efbd52d`: 282 cases across 22 complete modules pass in 80.80s with offline
   isolation and preserved source hashes. Preserve beneficial friendly-death

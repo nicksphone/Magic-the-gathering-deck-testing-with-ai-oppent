@@ -21,10 +21,12 @@ def prepare_graveyard_entry_causes(state, plans):
 
 
 def execute_graveyard_entry(state, plan, *, prevalidated=False, resolving_item=None,
-                           _prepared_cause=None) -> Zone:
+                           _prepared_cause=None, _entry_receipts=None) -> Zone:
     """Execute a retained entry plan after the caller has validated its selection."""
     from game_state.state import object_incarnation
     from rules_engine.action_validation import ActionRejected
+    if _entry_receipts is not None and type(_entry_receipts) is not list:
+        raise ActionRejected('Graveyard entry receipt collection must be a list')
     card = state.cards.get(plan.card_id)
     if (card is None or card.zone != plan.origin or card.owner != plan.owner
             or card.controller != plan.controller or object_incarnation(card) != plan.incarnation
@@ -54,6 +56,26 @@ def execute_graveyard_entry(state, plan, *, prevalidated=False, resolving_item=N
     if card.id not in destination:
         destination.append(card.id)
     card.move_to_zone(plan.destination)
+    if plan.destination == Zone.GRAVEYARD and plan.origin != Zone.GRAVEYARD:
+        receipt = {
+            'card_id': plan.card_id,
+            'owner': plan.owner,
+            'from_zone': plan.origin.value,
+            'previous_controller': plan.controller,
+            'previous_reference': {
+                'incarnation': plan.incarnation,
+                'zone_change_sequence': plan.sequence,
+            },
+            'entry_reference': {
+                'incarnation': object_incarnation(card),
+                'zone_change_sequence': card.zone_change_sequence,
+            },
+        }
+        if _entry_receipts is None:
+            from rules_engine.events import emit_event
+            emit_event(state, 'enters_graveyard', receipt)
+        else:
+            _entry_receipts.append(receipt)
     if plan.reveal_shuffle:
         from rules_engine.shuffle_actions import shuffle_library
         # The printed replacement caused this shuffle, not an announcing spell.
@@ -154,15 +176,19 @@ def discard_simultaneous(state, selections: dict[int, list[str]]) -> bool:
              for card_ids in selections.values() for cid in card_ids}
     causes = prepare_graveyard_entry_causes(state, plans.values())
     events = []
+    entry_receipts = []
     for player_id, card_ids in selections.items():
         player = state.players[player_id]
         for cid in card_ids:
             card = state.cards[cid]
             player.hand.remove(cid)
-            execute_graveyard_entry(state, plans[cid], prevalidated=True, _prepared_cause=causes[cid])
+            execute_graveyard_entry(state, plans[cid], prevalidated=True,
+                                   _prepared_cause=causes[cid], _entry_receipts=entry_receipts)
             state.log.append(f"{player.name} discards {card.name}.")
             events.append({"card_id": cid, "controller": player_id})
         state.discards_this_turn[player_id] = state.discards_this_turn.get(player_id, 0) + len(card_ids)
+    if entry_receipts:
+        emit_event_batch(state, 'enters_graveyard', entry_receipts)
     if events:
         emit_event_batch(state, "discard", events)
     return True

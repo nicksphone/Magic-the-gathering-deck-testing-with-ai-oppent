@@ -372,6 +372,15 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
+        if (effect_key == 'shuffle_graveyard_into_library'
+                or effect_key == 'effect_sequence' and any(
+                    effect.get('effect_key') == 'shuffle_graveyard_into_library'
+                    for effect in payload.get('effects', []))):
+            from dataclasses import asdict
+            # Transport the real popped item only where shuffle attribution needs it.
+            frame = asdict(item)
+            frame['payload'].pop('__resolving_item', None)
+            payload['__resolving_item'] = frame
         resolve_effect(state, item.controller, effect_key, payload)
     pending_choice = state.pending_mechanic_choice or state.pending_replacement_choice
     if pending_choice:

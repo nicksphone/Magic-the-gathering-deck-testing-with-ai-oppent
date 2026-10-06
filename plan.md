@@ -2,6 +2,35 @@
 
 ## Current Execution Order
 
+### Shared Graveyard Lifecycle (Qualified Candidate)
+
+The isolated composition on `fc22540` passes 995 cases across all 50 declared
+whole modules in 752.67s, with zero failures/errors/skips, unchanged backend
+hashes and no network attempts. Frontend lint, configured tests and build pass.
+It includes committed entry, retained shuffle references, keyword/handler/SBA
+death routing and deferred simultaneous discard collection. Main/live remain
+unchanged; this is not a full-suite or expert-AI certificate.
+
+Earlier 605-case, 746-case and test-interface ledgers remain immutable. Exact
+legacy zone-reference/public-observation adapters and imported event-observer
+aliases are separate from gameplay; negative parity checks remain strict.
+See [current lifecycle acceptance](docs/testing/graveyard-lifecycle-current.md).
+
+Next ordered work:
+
+1. Repair the audited illegal-Aura LBF/LKI omission without rewriting already
+   correct zero-loyalty/shared destination handling.
+2. Qualify simultaneous mill, sacrifice and SBA/destruction entry collection;
+   discard-only publication is not all-batch certification.
+3. Make cold deck import metadata/curve/colors agree with admitted canonical
+   hydration without invented database IDs or implicit cache writes.
+4. Add deliberate human legend keeper choices and complete stack-face lifecycle.
+5. Compose paid optional effects only after their full warm/cold/opt-in gates.
+6. Improve dominant tactical latency with measured decision/state parity;
+   the narrow LKI reuse experiment showed no chooser speedup and is not included.
+7. Complete broader natural-game, clean-checkout, browser/LAN/HTTPS and release
+   qualification on the actual later source, with honest unsupported-corpus limits.
+
 ### Friendly Damage And Media Cache Recovery
 
 The isolated candidate on `efbd52d` composes the friendly-damage materialization

@@ -32,6 +32,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "destroy_permanent": handlers.destroy_permanent,
     "destroy_with_controller_search": handlers.destroy_with_controller_search,
     "mill_cards": handlers.mill_cards,
+    "shuffle_graveyard_into_library": handlers.shuffle_graveyard_into_library,
     "choose_graveyard_return": handlers.choose_graveyard_return,
     "change_control": handlers.change_control,
     "destroy_all_creatures": handlers.destroy_all_creatures,
@@ -204,6 +205,8 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
                 data["__source_card_id"] = source_card_id
             if source_lki is not None:
                 data.setdefault("__source_lki", source_lki)
+            if payload.get('__resolving_item') is not None:
+                data['__resolving_item'] = payload['__resolving_item']
             if snow_mana_spent:
                 data.setdefault("snow_mana_spent", snow_mana_spent)
             if not key:
@@ -219,6 +222,8 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
                         next_data.setdefault("__source_card_id", source_card_id)
                     if source_lki is not None:
                         next_data.setdefault("__source_lki", source_lki)
+                    if payload.get('__resolving_item') is not None:
+                        next_data['__resolving_item'] = payload['__resolving_item']
                     if snow_mana_spent:
                         next_data.setdefault("snow_mana_spent", snow_mana_spent)
                     remaining.append({**next_effect, "payload": next_data})

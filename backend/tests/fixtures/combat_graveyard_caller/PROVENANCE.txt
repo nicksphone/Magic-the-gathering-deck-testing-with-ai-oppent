@@ -1,0 +1,8 @@
+Full official Scryfall objects, unchanged, selected by exact name from frozen bulk:
+/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz
+Bulk SHA256: 17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13
+Selection: jq -c select(.name == exact listed name), retained entire JSON object.
+canonical.jsonl SHA256: 27ce324c7811574f1334776ccdf561aeaaf87a410019c55a856315409ed0cc6e
+Doomed Traveler; Grizzly Bears; Rest in Peace; Humility; Act of Treason;
+Shadowspear; Darksteel Colossus; Progenitus; Island; Deadly Recluse.
+No aliases, Oracle modifications, invented cards, or balance changes.

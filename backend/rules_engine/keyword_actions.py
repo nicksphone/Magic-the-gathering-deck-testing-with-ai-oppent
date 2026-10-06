@@ -458,14 +458,15 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     if not isinstance(ids, list) or any(not isinstance(cid, str) for cid in ids) or len(ids) != pending["count"] or len(set(ids)) != len(ids) or any(cid not in state.players[player_id].battlefield or cid not in pending["options"] for cid in ids):
         return False
     events = [{"card_id": cid, "controller": player_id} for cid in ids]
-    destinations = {cid: replace_die_zone(state, player_id, cid) for cid in ids}
+    from rules_engine.replacement import select_graveyard_entry_plan
+    from rules_engine.zone_actions import prepare_graveyard_entry_causes, execute_graveyard_entry
+    plans = {cid: select_graveyard_entry_plan(state, cid) for cid in ids}
+    # Prepare the whole batch before LBF can remove a replacement source.
+    causes = prepare_graveyard_entry_causes(state, plans.values())
     emit_event_batch(state, "leaves_battlefield", events)
     for cid in ids:
         card = state.cards[cid]
-        state.players[player_id].battlefield.remove(cid)
-        zone = Zone.EXILE if destinations[cid] == "exile" else Zone.GRAVEYARD
-        getattr(state.players[card.owner], zone.value).append(cid)
-        card.zone = zone
+        execute_graveyard_entry(state, plans[cid], prevalidated=True, _prepared_cause=causes[cid])
         state.log.append(f"{state.players[player_id].name} sacrifices {card.name}.")
     emit_event_batch(state, "sacrifice", events)
     for event in events:

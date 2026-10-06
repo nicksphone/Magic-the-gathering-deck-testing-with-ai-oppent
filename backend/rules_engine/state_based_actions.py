@@ -6,8 +6,8 @@ from rules_engine.card_types import is_token_card
 from rules_engine.attachments import attached_to, attachment_target_is_legal, is_aura, is_equipment, is_fortification
 from rules_engine.events import emit_event, emit_event_batch, was_creature_on_battlefield
 from rules_engine.continuous import effective_toughness, effective_combat_stats, has_keyword
-from rules_engine.replacement import replace_die_zone, replacement_options
-from rules_engine.zone_actions import put_into_graveyard
+from rules_engine.replacement import replacement_options, select_graveyard_entry_plan
+from rules_engine.zone_actions import put_into_graveyard, prepare_graveyard_entry_causes, execute_graveyard_entry
 from rules_engine.query_context import rule_query_scope
 
 DMG_MARK_KEY = "__damage_marked"
@@ -41,22 +41,20 @@ def _move_lethal_creature(state: MatchState, card_id: str, replacement_source_id
     if not card or card.zone != Zone.BATTLEFIELD:
         return
     battlefield_owner = state.players[card.controller]
-    zone_owner = state.players[getattr(card, "owner", card.controller)]
     if card_id not in battlefield_owner.battlefield:
         return
-    destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
+    plan = select_graveyard_entry_plan(state, card_id, replacement_source_id or None)
+    causes = prepare_graveyard_entry_causes(state, [plan])
     emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
-    battlefield_owner.battlefield.remove(card_id)
-    if destination == "exile":
-        zone_owner.exile.append(card_id)
-        card.move_to_zone(Zone.EXILE)
-        state.log.append(f"State-based action: {card.name} is exiled instead of dying.")
+    was_creature = was_creature_on_battlefield(card)
+    destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=causes[card_id])
+    if destination != Zone.GRAVEYARD:
+        state.log.append(f"State-based action: {card.name} {'is exiled' if destination == Zone.EXILE else f'is put into {destination.value}'} instead of dying.")
         return
-    zone_owner.graveyard.append(card_id)
-    card.zone = Zone.GRAVEYARD
     state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
     emit_event(state, "permanent_dies", {"card_id": card_id, "controller": card.controller})
-    emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
+    if was_creature:
+        emit_event(state, "creature_dies", {"card_id": card_id, "controller": plan.controller})
 
 
 def resume_state_based_die_replacement(state: MatchState, card_id: str, replacement_source_id: str) -> None:
@@ -75,25 +73,22 @@ def resume_legend_rule_replacement(
     if not card or card.zone != Zone.BATTLEFIELD:
         return
     player = state.players[player_id]
-    owner = state.players[getattr(card, "owner", card.controller)]
-    destination = replace_die_zone(state, card.controller, card_id, replacement_source_id)
+    plan = select_graveyard_entry_plan(state, card_id, replacement_source_id or None)
+    causes = prepare_graveyard_entry_causes(state, [plan])
     if card_id in player.battlefield:
         emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
-        player.battlefield.remove(card_id)
-    if destination == "exile":
-        owner.exile.append(card_id)
-        card.move_to_zone(Zone.EXILE)
+    was_creature = was_creature_on_battlefield(card)
+    destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=causes[card_id])
+    if destination != Zone.GRAVEYARD:
         state.log.append(
-            f"State-based action: {state.players[player_id].name} keeps one {card.name}; the other is exiled by a replacement effect (legend rule)."
+            f"State-based action: {state.players[player_id].name} keeps one {card.name}; the other {'is exiled' if destination == Zone.EXILE else f'is put into {destination.value}'} by a replacement effect (legend rule)."
         )
         return
-    owner.graveyard.append(card_id)
-    card.zone = Zone.GRAVEYARD
     state.log.append(
         f"State-based action: {state.players[player_id].name} keeps one {card.name}; the other is put into graveyard (legend rule)."
     )
     emit_event(state, "permanent_dies", {"card_id": card_id, "controller": card.controller})
-    if was_creature_on_battlefield(card):
+    if was_creature:
         emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
 
 
@@ -112,32 +107,30 @@ def _resolve_lethal_creature_batch(state: MatchState, card_ids: list[str]) -> No
         {"card_id": cid, "controller": state.cards[cid].controller}
         for cid in valid_ids
     ]
-    destinations = {
-        cid: replace_die_zone(state, state.cards[cid].controller, cid)
+    plans = {
+        cid: select_graveyard_entry_plan(state, cid)
         for cid in valid_ids
     }
+    # Retain every replacement and receipt before any source leaves or loses abilities.
+    causes = prepare_graveyard_entry_causes(state, plans.values())
     emit_event_batch(state, "leaves_battlefield", leave_events)
+    creatures = {cid: was_creature_on_battlefield(state.cards[cid]) for cid in valid_ids}
     for cid in valid_ids:
-        card = state.cards[cid]
-        state.players[card.controller].battlefield.remove(cid)
+        state.players[plans[cid].controller].battlefield.remove(cid)
 
     death_events: list[dict] = []
     creature_death_events: list[dict] = []
     for cid in valid_ids:
         card = state.cards[cid]
-        owner = state.players[getattr(card, "owner", card.controller)]
-        destination = destinations[cid]
-        if destination == "exile":
-            owner.exile.append(cid)
-            card.move_to_zone(Zone.EXILE)
-            state.log.append(f"State-based action: {card.name} is exiled instead of dying.")
+        destination = execute_graveyard_entry(state, plans[cid], prevalidated=True, _prepared_cause=causes[cid])
+        if destination != Zone.GRAVEYARD:
+            state.log.append(f"State-based action: {card.name} {'is exiled' if destination == Zone.EXILE else f'is put into {destination.value}'} instead of dying.")
             continue
-        owner.graveyard.append(cid)
-        card.zone = Zone.GRAVEYARD
         state.log.append(f"State-based action: {card.name} is put into graveyard due to lethal damage or 0 toughness.")
         event = {"card_id": cid, "controller": card.controller}
         death_events.append(event)
-        creature_death_events.append(event)
+        if creatures[cid]:
+            creature_death_events.append(event)
     emit_event_batch(state, "permanent_dies", death_events)
     emit_event_batch(state, "creature_dies", creature_death_events)
 

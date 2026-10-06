@@ -29,12 +29,15 @@ from rules_engine.replacement import (
     player_cant_lose_life,
     replacement_options,
     replacement_source_used,
-    replace_die_zone,
+    select_graveyard_entry_plan,
     replace_draw_cards,
     replace_gain_life,
     replace_noncombat_damage_to_creature,
 )
-from rules_engine.zone_actions import move_spell_from_stack, is_departed_token, put_into_graveyard
+from rules_engine.zone_actions import (
+    move_spell_from_stack, is_departed_token, put_into_graveyard,
+    execute_graveyard_entry, prepare_graveyard_entry_causes,
+)
 
 
 def _queue_human_damage_replacement_choice(
@@ -148,21 +151,18 @@ def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
 def _move_creature_to_graveyard(state: MatchState, card_id: str) -> None:
     card = state.cards[card_id]
     battlefield_owner = state.players[card.controller]
-    zone_owner = state.players[getattr(card, "owner", card.controller)]
     if card_id in battlefield_owner.battlefield:
-        destination = replace_die_zone(state, card.controller, card_id)
-        emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
-        battlefield_owner.battlefield.remove(card_id)
-        if destination == "exile":
-            zone_owner.exile.append(card_id)
-            card.move_to_zone(Zone.EXILE)
+        plan = select_graveyard_entry_plan(state, card_id)
+        cause = prepare_graveyard_entry_causes(state, [plan])[card_id]
+        event = {"card_id": card_id, "controller": plan.controller}
+        emit_event(state, "leaves_battlefield", event)
+        destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
+        if destination == Zone.EXILE:
             state.log.append(f"{card.name} is exiled instead of dying.")
-        else:
-            zone_owner.graveyard.append(card_id)
-            card.zone = Zone.GRAVEYARD
+        elif destination == Zone.GRAVEYARD:
             state.log.append(f"{card.name} dies.")
-            emit_event(state, "permanent_dies", {"card_id": card_id, "controller": card.controller})
-            emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
+            emit_event(state, "permanent_dies", event)
+            emit_event(state, "creature_dies", event)
 
 
 def deal_damage_to_controller(state: MatchState, controller: int, payload: dict) -> None:
@@ -471,25 +471,28 @@ def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None
         return
     card = state.cards[target]
     battlefield_owner = state.players[card.controller]
-    zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
         from rules_engine.named_counters import destruction_prevented
+        # Prevented destruction needs no graveyard replacement choice.
+        if has_keyword(state, target, "indestructible") or card.counters.get('shield', 0) > 0:
+            destruction_prevented(state, target)
+            return
+        plan = select_graveyard_entry_plan(state, target, payload.get("__replacement_source_id"))
+        cause = prepare_graveyard_entry_causes(state, [plan])[target]
         if destruction_prevented(state, target):
             return
-        destination = replace_die_zone(state, card.controller, target, payload.get("__replacement_source_id"))
-        emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
-        battlefield_owner.battlefield.remove(target)
-        if destination == "exile":
-            zone_owner.exile.append(target)
-            card.move_to_zone(Zone.EXILE)
+        event = {"card_id": target, "controller": plan.controller}
+        emit_event(state, "leaves_battlefield", event)
+        destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
+        if destination == Zone.EXILE:
             state.log.append(f"{card.name} is exiled instead of dying.")
             return
-        zone_owner.graveyard.append(target)
-        card.move_to_zone(Zone.GRAVEYARD)
+        if destination != Zone.GRAVEYARD:
+            return
         state.log.append(f"{card.name} is destroyed.")
-        emit_event(state, "permanent_dies", {"card_id": target, "controller": card.controller})
+        emit_event(state, "permanent_dies", event)
         if was_creature_on_battlefield(card):
-            emit_event(state, "creature_dies", {"card_id": target, "controller": card.controller})
+            emit_event(state, "creature_dies", event)
 
 
 def change_control(state: MatchState, controller: int, payload: dict) -> None:
@@ -517,90 +520,49 @@ def change_control(state: MatchState, controller: int, payload: dict) -> None:
     state.log.append(f"{state.players[new_controller].name} gains control of {card.name}.")
 def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
     del controller, payload
-    destroyed = False
-    leaves: list[dict] = []
-    permanent_deaths: list[dict] = []
-    creature_deaths: list[dict] = []
-    from rules_engine.named_counters import destruction_prevented
-    destinations = {
-        cid: replace_die_zone(state, card.controller, cid)
-        for cid, card in state.cards.items()
-        if "Creature" in effective_types(state, card) and cid in state.players[card.controller].battlefield
-        and not destruction_prevented(state, cid)
-    }
-    for cid in destinations:
-        capture_last_known_battlefield(state, cid)
-    for cid, card in list(state.cards.items()):
-        if cid not in destinations:
-            continue
-        battlefield_owner = state.players[card.controller]
-        zone_owner = state.players[getattr(card, "owner", card.controller)]
-        if cid in battlefield_owner.battlefield:
-            event_payload = {"card_id": cid, "controller": card.controller}
-            leaves.append(event_payload)
-            battlefield_owner.battlefield.remove(cid)
-            destination = destinations[cid]
-            if destination == "exile":
-                zone_owner.exile.append(cid)
-                card.zone = Zone.EXILE
-                state.log.append(f"{card.name} is exiled instead of dying.")
-                destroyed = True
-                continue
-            zone_owner.graveyard.append(cid)
-            card.zone = Zone.GRAVEYARD
-            destroyed = True
-            state.log.append(f"{card.name} is destroyed.")
-            permanent_deaths.append(event_payload)
-            creature_deaths.append(event_payload)
-    emit_event_batch(state, "leaves_battlefield", leaves)
-    emit_event_batch(state, "permanent_dies", permanent_deaths)
-    emit_event_batch(state, "creature_dies", creature_deaths)
-    if destroyed:
-        state.log.append("All creatures are destroyed.")
+    _destroy_all_permanents_of_types(state, {"Creature"}, "All creatures are destroyed.")
 
 
 def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str], log_label: str) -> None:
-    destroyed = False
-    leaves: list[dict] = []
-    permanent_deaths: list[dict] = []
-    creature_deaths: list[dict] = []
     from rules_engine.named_counters import destruction_prevented
-    destinations = {
-        cid: replace_die_zone(state, card.controller, cid)
-        for cid, card in state.cards.items()
-        if allowed_types.intersection(set(effective_types(state, card) or [])) and cid in state.players[card.controller].battlefield
-        and not destruction_prevented(state, cid)
-    }
-    for cid in destinations:
-        capture_last_known_battlefield(state, cid)
-    for cid, card in list(state.cards.items()):
-        if cid not in destinations:
-            continue
-        battlefield_owner = state.players[card.controller]
-        zone_owner = state.players[getattr(card, "owner", card.controller)]
-        if cid in battlefield_owner.battlefield:
-            event_payload = {"card_id": cid, "controller": card.controller}
-            leaves.append(event_payload)
-            battlefield_owner.battlefield.remove(cid)
-            destination = destinations[cid]
-            if destination == "exile":
-                zone_owner.exile.append(cid)
-                card.zone = Zone.EXILE
-                destroyed = True
-                state.log.append(f"{card.name} is exiled instead of dying.")
-                continue
-            zone_owner.graveyard.append(cid)
-            card.zone = Zone.GRAVEYARD
-            destroyed = True
-            state.log.append(f"{card.name} is destroyed.")
-            permanent_deaths.append(event_payload)
-            if "Creature" in effective_types(state, card):
-                creature_deaths.append(event_payload)
+    from rules_engine.events import flush_staged_triggers
+    targets = [cid for cid, card in state.cards.items()
+               if allowed_types.intersection(set(effective_types(state, card) or []))
+               and cid in state.players[card.controller].battlefield]
+    # Shield consumption/logging is a mutation: preflight every actual death first.
+    plans = {cid: select_graveyard_entry_plan(state, cid) for cid in targets
+             if not has_keyword(state, cid, "indestructible")
+             and state.cards[cid].counters.get('shield', 0) <= 0}
+    causes = prepare_graveyard_entry_causes(state, plans.values())
+    for cid in targets:
+        destruction_prevented(state, cid)
+    if not plans:
+        return
+    started_staging = not state.trigger_staging
+    if started_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "permanent_dies"
+    leaves = [{"card_id": cid, "controller": plan.controller} for cid, plan in plans.items()]
     emit_event_batch(state, "leaves_battlefield", leaves)
+    permanent_deaths = []
+    creature_deaths = []
+    for event in leaves:
+        cid = event["card_id"]
+        card = state.cards[cid]
+        destination = execute_graveyard_entry(state, plans[cid], prevalidated=True,
+                                              _prepared_cause=causes[cid])
+        if destination == Zone.EXILE:
+            state.log.append(f"{card.name} is exiled instead of dying.")
+        elif destination == Zone.GRAVEYARD:
+            state.log.append(f"{card.name} is destroyed.")
+            permanent_deaths.append(event)
+            if was_creature_on_battlefield(card):
+                creature_deaths.append(event)
     emit_event_batch(state, "permanent_dies", permanent_deaths)
     emit_event_batch(state, "creature_dies", creature_deaths)
-    if destroyed:
-        state.log.append(log_label)
+    state.log.append(log_label)
+    if started_staging and not state.pending_mechanic_choice:
+        flush_staged_triggers(state)
 
 
 def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> None:
@@ -1287,6 +1249,37 @@ def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) 
     card.tapped = False
     card.summoning_sick = False
     state.log.append(f"{card.name} returns to its owner's hand.")
+
+
+def shuffle_graveyard_into_library(state: MatchState, controller: int, payload: dict) -> None:
+    from game_state.state import StackItem
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    from rules_engine.shuffle_actions import shuffle_library
+
+    owner = payload.get('graveyard_owner')
+    frame = payload.get('__resolving_item')
+    if type(owner) is not int or owner not in state.players or not isinstance(frame, dict):
+        raise ValueError('Graveyard shuffle requires an owner and actual resolving item')
+    item = StackItem(**frame)
+    if (type(controller) is not int or type(item.controller) is not int
+            or item.source_card_id not in state.cards or item.controller != controller
+            or controller not in state.players):
+        raise ValueError('Graveyard shuffle requires its retained resolving source')
+    player = state.players[owner]
+    ids = list(player.graveyard)
+    if (len(set(ids)) != len(ids) or any(cid not in state.cards
+            or state.cards[cid].zone != Zone.GRAVEYARD or state.cards[cid].owner != owner
+            or any(cid in getattr(other, zone.value, [])
+                   for other in state.players.values() for zone in Zone
+                   if other.id != owner or zone != Zone.GRAVEYARD) for cid in ids)):
+        raise ValueError('Graveyard shuffle requires unique current graveyard membership')
+    captured = capture_graveyard_departures(state, ids)
+    for cid in ids:
+        player.graveyard.remove(cid)
+        player.library.append(cid)
+        state.cards[cid].move_to_zone(Zone.LIBRARY)
+    emit_graveyard_departures(state, captured)
+    shuffle_library(state, owner, resolving_item=frame)
 
 
 def mill_cards(state: MatchState, controller: int, payload: dict) -> None:
@@ -2244,31 +2237,23 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if target in state.cards and target in state.players[controller].battlefield:
         from rules_engine.events import flush_staged_triggers
+        plan = select_graveyard_entry_plan(state, target)
+        cause = prepare_graveyard_entry_causes(state, [plan])[target]
         started_staging = not state.trigger_staging
         if started_staging:
             state.trigger_staging = True
             state.trigger_staging_event = "sacrifice"
         card = state.cards[target]
-        destination = replace_die_zone(state, card.controller, target)
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": controller})
-        state.players[controller].battlefield.remove(target)
-        zone_owner = state.players[getattr(card, "owner", card.controller)]
-        if destination == "exile":
-            zone_owner.exile.append(target)
-            card.zone = Zone.EXILE
+        destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
+        if destination == Zone.EXILE:
             state.log.append(f"{card.name} is exiled instead of dying.")
-            emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
-            card.reset_zone_counters(Zone.EXILE)
-            if started_staging:
-                flush_staged_triggers(state)
-            return
-        zone_owner.graveyard.append(target)
-        card.zone = Zone.GRAVEYARD
-        emit_event(state, "permanent_dies", {"card_id": target, "controller": controller})
-        if was_creature_on_battlefield(card):
-            emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
+        elif destination == Zone.GRAVEYARD:
+            emit_event(state, "permanent_dies", {"card_id": target, "controller": controller})
+            if was_creature_on_battlefield(card):
+                emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
         emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
-        card.reset_zone_counters(Zone.GRAVEYARD)
+        card.reset_zone_counters(destination)
         if started_staging:
             flush_staged_triggers(state)
 

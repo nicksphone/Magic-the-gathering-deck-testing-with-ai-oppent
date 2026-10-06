@@ -119,11 +119,24 @@ def shuffle_library(state, player_id, *, resolving_item=None, cause=None):
         source = state.cards.get(item.source_card_id)
         if source is None or type(item.controller) is not int or item.controller not in state.players:
             raise ValueError('Shuffle requires a retained resolving source and controller')
+        kind = stack_object_kind(state, item)
+        reference = {'incarnation': object_incarnation(source),
+                     'zone_change_sequence': source.zone_change_sequence}
+        payload = item.payload or {}
+        if (payload.get('__trigger_event') == 'enters_graveyard'
+                or '__trigger_source_reference' in payload):
+            retained = payload.get('__trigger_source_reference')
+            if (kind != 'triggered' or payload.get('__trigger_event') != 'enters_graveyard'
+                    or not isinstance(retained, dict)
+                    or set(retained) != {'incarnation', 'zone_change_sequence'}
+                    or any(type(value) is not int or value < 0 for value in retained.values())):
+                raise ValueError('Graveyard shuffle requires a complete retained trigger reference')
+            # The real source may have moved again; its trigger keeps the entry identity.
+            reference = dict(retained)
         cause = {
             'stack_id': item.id, 'source_card_id': item.source_card_id,
-            'controller': item.controller, 'kind': stack_object_kind(state, item),
-            'source_reference': {'incarnation': object_incarnation(source),
-                                 'zone_change_sequence': source.zone_change_sequence},
+            'controller': item.controller, 'kind': kind,
+            'source_reference': reference,
         }
     state.rng.shuffle(state.players[player_id].library)
     state.log.append(f'{state.players[player_id].name} shuffles their library.')
