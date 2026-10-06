@@ -4,6 +4,15 @@
 
 ### Release Check Isolation
 
+Fresh declared dependency installation is now exercised in a new local Python
+environment and a separate npm ci checkout. The two affected backend modules
+pass 157 checks in 46.39 seconds; complete frontend tests, lint and build pass.
+A targeted source-map-js lockfile update to 1.2.2 clears the refreshed full npm
+audit. This is bounded install/contract validation, not full release acceptance.
+The older 12,890-check full-suite attempt times out after 7,200 seconds at 85%
+with no terminal summary. Its four earlier failure markers and timeout evidence
+are retained; later scoped fixes do not retroactively qualify that source.
+
 The milestone CI candidate now archives all tracked source for backend tests,
 creates the private-choice ownership marker only in the disposable checkout,
 and supplies Python fixture dependencies for the complete frontend test command.

@@ -2,6 +2,11 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Update the transitive build dependency source-map-js from 1.2.1 to 1.2.2
+  for GHSA-68fv-2mgg-jv7q without changing direct dependencies. Fresh npm ci,
+  lint, build and complete frontend tests pass; the refreshed full npm audit
+  reports no advisories. A newly created Python environment also installs the
+  declared requirements and passes the 157 affected backend checks in 46.39s.
 - Fix CI isolation to archive the complete tracked source and create the private
   choice audit marker only in its disposable checkout. Configure frontend CI
   with Python fixture dependencies and the complete `npm test` command. The old

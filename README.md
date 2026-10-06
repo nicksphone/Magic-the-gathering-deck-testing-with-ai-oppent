@@ -179,8 +179,11 @@ Scoped green gates are not a whole-suite or release certificate. The recent
 six-patch composition passed 2,024 checks across 83 modules. Separate token/cold
 classification and trigger-context compositions passed 153 and 123 checks.
 Human-flow qualification passed 212 assertions across 16 actual-App scenarios.
-Counts overlap and are not independent matches. A separate default-suite run
-exceeded its 30-minute bound; full current-source release acceptance remains open.
+Counts overlap and are not independent matches. Fresh declared Python/npm
+installation passes the 157 affected backend checks and complete frontend
+tests/lint/build; the source-map-js 1.2.2 lockfile has a clean refreshed npm audit.
+The older 12,890-check full-suite attempt exceeded its two-hour bound at 85%,
+without a terminal summary. Full current-source release acceptance remains open.
 
 For deterministic matrix work, prepare a supported local catalog separately or
 supply a pinned deck manifest to `backend/scripts/regression_matrix_replay.py`.
