@@ -2,6 +2,22 @@
 
 ## Current Execution Order
 
+### Private Library Reorder And Nonmodal Validation
+
+Complete look/reorder, optional shuffle and draw clauses now use explicit private
+choices and the existing paused-resolution/draw paths. Canonical Index/Ponder are
+qualified with both-seat order/shuffle/keep, small/empty libraries, countering,
+seeded replay, rejection purity, inspected-only AI and actual HTTP/process restore.
+The complete 16-module current-framework gate passes 516 cases in 216.80s;
+fresh npm ci, complete frontend tests, lint and build pass. The prior broad run's
+two obsolete Ponder failclosed assertions are preserved as historical evidence,
+then replaced with genuine successful fresh-process continuation tests.
+
+Client mode text on nonmodal spells/abilities now rejects before costs. This is
+not a general all-clause compiler proof. Shuffle observers/replacements, broader
+library grammars, representative natural-match AI quality and release soak remain
+unfinished. No live deployment or main-branch merge is implied.
+
 ### Unsupported Spell Admission And Scheduling
 
 The safety increment is composed on the current land/library/Ninjutsu/SBA source.

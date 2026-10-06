@@ -235,6 +235,16 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] in {'library_top_order', 'library_order_shuffle'}:
+                selected = self._choose_library_search(state, options, len(options), player_id)
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},
+                                  reasoning='Order legally inspected cards for known resource needs')
+            if choice['kind'] == 'library_shuffle':
+                inspected = state.pending_mechanic_choice.get('inspected_card_ids', [])
+                shuffle = bool(inspected and self._hand_retention_value(state, inspected[0], player_id)
+                               < self._draw_trade_value(state, player_id, 1, 0))
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': ['shuffle' if shuffle else 'keep']},
+                                  reasoning='Compare the known next card with the submitted-deck draw prior')
             if choice['kind'] == 'optional_reveal':
                 pending = state.pending_mechanic_choice or {}
                 payload = pending.get('effect_payload') or {}

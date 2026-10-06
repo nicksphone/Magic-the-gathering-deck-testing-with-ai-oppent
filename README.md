@@ -137,6 +137,13 @@ priors do not by themselves teach full Oracle semantics or prove play quality.
 
 ## Testing
 
+Complete look/reorder instructions support explicit topmost-first ordering and
+optional shuffle followed by a replacement-aware draw, as qualified with canonical
+Index and Ponder. Choices survive fresh-process restart. AI sees inspected cards,
+not the remaining hidden library, and uses known resource/deck priors to choose.
+Nonmodal spells cannot substitute client mode text for their printed instructions.
+See [library reorder](docs/testing/library-reorder.md) for scope and limitations.
+
 Land and priority-pass training intents validate explicit public fields before
 normalization. Supplied land display metadata must match the acting player's
 currently offered move; unsupported fields are rejected rather than dropped.
@@ -247,6 +254,8 @@ start fresh matches when comparing newly compiled rule behavior.
   identify known gaps; an empty gap list is not certification. Extra turns,
   additional phases, turn ending and player-turn control remain unsupported.
   See [admission safety](docs/testing/spell-admission-safety.md).
+- Shuffle-specific observers/replacements and broader reorder grammars remain
+  unqualified; the new look/reorder route is not arbitrary library-effect support.
 - Arbitrary Oracle interpretation, complete layer/replacement interactions,
   uncommon mechanics and all formats are not implemented or certified.
 - Paid optional-trigger continuations, Delver's optional private reveal/timing,

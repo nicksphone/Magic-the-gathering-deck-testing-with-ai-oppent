@@ -10,6 +10,8 @@ _UNSUPPORTED_RESOLUTION_PATTERNS = (
     ('player-turn control', re.compile(r'\byou control target player during\b', re.I)),
     ('top-library reorder and optional shuffle', re.compile(
         r'\bput them back in any order\.\s*you may shuffle\b', re.I)),
+    ('top-library reorder procedure', re.compile(
+        r'\blook at the top\b.+?\bput them back in any order\b', re.I | re.S)),
 )
 
 
@@ -17,7 +19,9 @@ def unsupported_resolution_clauses(text: str) -> list[str]:
     """Bounded observed gaps, not proof that other clauses are executable."""
     from rules_engine.oracle_text import without_reminder_text
     text = without_reminder_text(text or '')
-    return [name for name, pattern in _UNSUPPORTED_RESOLUTION_PATTERNS if pattern.search(text)]
+    from rules_engine.library_reorder import reorder_clause
+    return [name for name, pattern in _UNSUPPORTED_RESOLUTION_PATTERNS if pattern.search(text)
+            and not (name.startswith('top-library reorder') and reorder_clause(text))]
 
 
 _UNSUPPORTED_PATTERNS = (

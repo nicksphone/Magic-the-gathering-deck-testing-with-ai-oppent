@@ -511,6 +511,13 @@ def infer_effect_from_oracle(
         return "reveal_defending_top_land", {
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
         }
+    from rules_engine.library_reorder import reorder_clause
+    reorder = reorder_clause(oracle)
+    if reorder:
+        effects = [{'effect_key': 'look_reorder', 'payload': reorder}]
+        if reorder['draw_after']:
+            effects.append({'effect_key': 'draw_cards', 'payload': {'amount': 1}})
+        return 'effect_sequence', {'effects': effects}
     mana_spent_hand = LOOK_TOP_MANA_SPENT_HAND_RE.search(oracle)
     if mana_spent_hand:
         return "look_top_select_hand", {

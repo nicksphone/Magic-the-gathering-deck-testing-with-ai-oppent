@@ -8,7 +8,7 @@ import sys
 from urllib.parse import unquote, urlsplit
 
 
-def run(phase, seat, name, root):
+def run(phase, seat, name, root, behavior='reject'):
     import persistence.db as db
     from sqlmodel import create_engine, Session
     db.DATABASE_PATH = root / 'owned.sqlite'
@@ -47,7 +47,10 @@ def run(phase, seat, name, root):
                 'http_transport': 'actual FastAPI TestClient; no listener',
                 'extra_sequence_execution_certified': False}
     with TestClient(main.app) as client:
-        if phase == 'seed':
+        if behavior == 'reorder':
+            from tests.library_reorder_restart_worker import reorder_flow
+            reorder_flow(client, phase, seat, name, root, evidence)
+        elif phase == 'seed':
             with Session(db.engine) as session:
                 seed_cache(Repository(session))
             deck = [{'card_name': 'Island', 'quantity': 7}, {'card_name': name, 'quantity': 1}]
@@ -113,4 +116,5 @@ def run(phase, seat, name, root):
 
 
 if __name__ == '__main__':
-    run(sys.argv[1], int(sys.argv[2]), sys.argv[3], Path(sys.argv[4]))
+    run(sys.argv[1], int(sys.argv[2]), sys.argv[3], Path(sys.argv[4]),
+        sys.argv[5] if len(sys.argv) > 5 else 'reject')

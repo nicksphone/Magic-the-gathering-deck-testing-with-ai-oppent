@@ -86,6 +86,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
+    if pending and pending.get('kind') in {'library_top_order', 'library_order_shuffle', 'library_shuffle'}:
+        from rules_engine.library_reorder import finish_reorder
+        return finish_reorder(state, player_id, action)
     if pending and pending.get('kind') == 'optional_reveal':
         from rules_engine.optional_reveal import finish_reveal
         return finish_reveal(state, player_id, action)

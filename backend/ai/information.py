@@ -9,6 +9,7 @@ from ai.pending_effects import planning_copy
 
 
 INSPECTED_CHOICES = frozenset({
+    'library_top_order', 'library_order_shuffle', 'library_shuffle',
     'scry', 'scry_top_order', 'surveil', 'surveil_top_order', 'topdeck_bottom_order',
     'search_library', 'topdeck_put', 'topdeck_reveal_creature',
     'look_top_choose', 'look_top_select_hand', 'choose_revealed_discard', 'choose_revealed_exile',
@@ -42,6 +43,7 @@ def decision_view(state, player_id, legal_moves):
     choice = getattr(state, 'pending_mechanic_choice', None) or {}
     if choice.get('player_id') == player_id and choice.get('kind') in INSPECTED_CHOICES:
         visible.update(cid for cid in choice.get('options', []) if isinstance(cid, str))
+        visible.update(cid for cid in choice.get('inspected_card_ids', []) if isinstance(cid, str))
     for move in legal_moves:
         cid = move.get('card_id')
         # Authoritative source actions include permitted top-library plays.

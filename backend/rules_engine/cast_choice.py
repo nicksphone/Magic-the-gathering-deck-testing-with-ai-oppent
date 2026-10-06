@@ -178,6 +178,8 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
     if not ok:
         return ok, err
     selected_modes = (action_targets.get("mode_texts") or []) + ([action_targets["mode_text"]] if action_targets.get("mode_text") else [])
+    if (selected_modes or mode_targets) and not hints.get('modes'):
+        return False, 'This spell or ability has no modes.'
     if "available_modes" in hints and any(mode not in hints["available_modes"] for mode in selected_modes):
         return False, "Selected mode has no legal target."
     face_names = hints.get("face_names") or []

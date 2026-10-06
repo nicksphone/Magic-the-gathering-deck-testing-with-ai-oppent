@@ -82,7 +82,7 @@ def test_caller_mode_text_cannot_replace_nonmodal_full_oracle(seat,name):
     state=position(seat)
     source=add(state,name,seat)
     before=pickle.dumps(state)
-    with pytest.raises(ActionRejected,match='Unsupported spell resolution'):
+    with pytest.raises(ActionRejected,match='Unsupported spell resolution|has no modes'):
         checked_action(state,RulesEngine(),seat,{'type':'cast_spell','card_id':source.id,
             'targets':{'target_player':seat,'mode_text':'Draw a card'}})
     assert pickle.dumps(state)==before

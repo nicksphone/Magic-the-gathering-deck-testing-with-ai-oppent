@@ -1,0 +1,16 @@
+{
+  "source": "Scryfall official API",
+  "start_utc": "2026-10-06T08:04:11Z",
+  "end_utc": "2026-10-06T08:04:17Z",
+  "oracle_modified": false,
+  "files": {
+    "index.json": {
+      "url": "https://api.scryfall.com/cards/named?exact=Index",
+      "sha256": "1d2fbfd86b4925e31ca481b3690770278de29651de4c8d706c54be68bb756a87"
+    },
+    "ponder.json": {
+      "url": "https://api.scryfall.com/cards/named?exact=Ponder",
+      "sha256": "c9fb3deb951f6c3193cd681641f9a0e4cea6e23b0a8f2c11da1cb21b0e5b4535"
+    }
+  }
+}

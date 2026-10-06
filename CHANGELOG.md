@@ -2,6 +2,15 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Add generic complete-clause look/reorder, optional shuffle and draw resolution
+  with explicit private choices, seeded replay and durable continuations. Canonical
+  Index/Ponder fixtures are unchanged official API bodies. Full current gate:
+  516 passes across 16 complete modules in 216.80s; fresh frontend install/tests/
+  lint/build pass. Replace obsolete Ponder rejection assertions with actual
+  fresh-process pending-order/shuffle execution; preserve historical failure logs.
+- Reject client-supplied modes on nonmodal spells/abilities before payment.
+  A corrected six-case baseline reproduces the two missing spell mechanics and
+  both-seat instruction-substitution defect; no Oracle or named-card rule hacks.
 - Reject observed unsupported complete spell instructions and selected modal
   fallbacks before paying costs. Preserve explicit HTTP diagnostics and full
   root/RNG/database state on rejection; supported modal and permanent controls

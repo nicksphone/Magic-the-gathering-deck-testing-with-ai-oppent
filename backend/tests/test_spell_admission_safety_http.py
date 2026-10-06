@@ -67,7 +67,7 @@ def test_actual_http_full_unsupported_rejection_is_explicit_and_atomic(repo, cli
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-@pytest.mark.parametrize('name', ['Time Warp', "Day's Undoing", 'Worst Fears', 'Ponder'])
+@pytest.mark.parametrize('name', ['Time Warp', "Day's Undoing", 'Worst Fears'])
 def test_actual_startup_fresh_process_restart_remains_failclosed(seat, name, tmp_path):
     root = tmp_path / 'restart'
     root.mkdir()
