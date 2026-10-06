@@ -684,8 +684,8 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791266332.7571075,
-    "seen": 1791266471.3661232,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.824517,
     "ast_hash": "9bfc7c2cb143dae9d6c1b5ac9e3f5fc2",
     "semantic_hash": ""
   },
@@ -702,8 +702,8 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791266332.7561076,
-    "seen": 1791266471.36613,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.8245237,
     "ast_hash": "a9da2f25dade3ee34ee21e526c5972a3",
     "semantic_hash": ""
   },
@@ -732,9 +732,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_actions.py": {
-    "mtime": 1791263775.0,
-    "seen": 1791263940.336902,
-    "ast_hash": "5a1bf24477d0b5033fa01ea5252c9fb6",
+    "mtime": 1791267449.6140456,
+    "seen": 1791267588.9816802,
+    "ast_hash": "57cfa5253e37ac1a86c24a8e66b4fbbd",
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_effects.py": {
@@ -5682,9 +5682,9 @@
     "semantic_hash": ""
   },
   "backend/training/environment.py": {
-    "mtime": 1791264664.0,
-    "seen": 1791265327.9413848,
-    "ast_hash": "65d30644f762c55673d41701df8b93ad",
+    "mtime": 1791266852.0,
+    "seen": 1791267588.98335,
+    "ast_hash": "21d387b998e48285bd30650aef497814",
     "semantic_hash": ""
   },
   "docs/audits/2026-09-27-api-validation-jev-provenance.json": {
@@ -6774,14 +6774,14 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791266437.4973254,
-    "seen": 1791266471.3681343,
-    "ast_hash": "1a8971ac57b401cbf49c9402dfc1b796",
+    "mtime": 1791267173.0,
+    "seen": 1791267588.9836721,
+    "ast_hash": "21a284549a5d8a7c75011fbd7dc1d43b",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791266498.6772985,
-    "seen": 1791266578.0152352,
+    "mtime": 1791266498.0,
+    "seen": 1791267002.8298962,
     "ast_hash": "53c0fdd5804790bcff37c978aab0e0bc",
     "semantic_hash": ""
   },
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791266437.5063252,
-    "seen": 1791266471.368588,
-    "ast_hash": "b8c0d4e7a3d466000cc22ec3b147f36e",
+    "mtime": 1791267173.0,
+    "seen": 1791267588.9842045,
+    "ast_hash": "eddaad63e5f3ec4093f05e12766b4d29",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -8532,75 +8532,123 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/nth_spell_triggers.py": {
-    "mtime": 1791266332.7571075,
-    "seen": 1791266471.3661716,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.824568,
     "ast_hash": "7f7ffb38ebbd6da0550764f5270781a9",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/nth_spell_triggers/canonical.json": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.3666363,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.8250785,
     "ast_hash": "2e47150b7c4957450af178512dda37c5",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/nth_spell_triggers/provenance.json": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.3666382,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.8250802,
     "ast_hash": "77248a5d88b2f20ea9a0647ef133cb06",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/readiness_rules_seam/canonical.json": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.366678,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.8251216,
     "ast_hash": "6d0e521c7c4897502e630f48c2db4fa1",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/readiness_rules_seam/provenance.json": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.3666797,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.825123,
     "ast_hash": "036218880ee26f200310d45e3ebc5fd2",
     "semantic_hash": ""
   },
   "backend/tests/nth_spell_restart_worker.py": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.3667953,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.825237,
     "ast_hash": "9b650c9233760a4e4ba706ce243d7a4f",
     "semantic_hash": ""
   },
   "backend/tests/nth_spell_trigger_support.py": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.366797,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.8252397,
     "ast_hash": "4508692e690e4228d60d8d35484862fe",
     "semantic_hash": ""
   },
   "backend/tests/readiness_rules_seam_support.py": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.3668013,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.8252444,
     "ast_hash": "0bc834fa139d17747326ec5cc982be3b",
     "semantic_hash": ""
   },
   "backend/tests/test_nth_spell_triggers.py": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.3675056,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.8291612,
     "ast_hash": "984012eac633f4e057b80d32ceb9ba1d",
     "semantic_hash": ""
   },
   "backend/tests/test_readiness_rules_seam.py": {
-    "mtime": 1791266332.7701073,
-    "seen": 1791266471.3675742,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.829251,
     "ast_hash": "50b84f99d86cbef787923e67a33c15b6",
     "semantic_hash": ""
   },
   "docs/testing/nth-spell-triggers.md": {
-    "mtime": 1791266332.7711074,
-    "seen": 1791266471.368439,
+    "mtime": 1791266332.0,
+    "seen": 1791267002.8302588,
     "ast_hash": "4d6a529706830c89aa7daa3f09e9c9a5",
     "semantic_hash": ""
   },
   "evidence/source-files.txt": {
-    "mtime": 1791266424.2355492,
-    "seen": 1791266578.0157547,
-    "ast_hash": "29b247b9e590e7fa0a5d3382976f95ae",
+    "mtime": 1791267449.6230454,
+    "seen": 1791267588.9841964,
+    "ast_hash": "8c2cc7978db4b95b7d3110630cb9a8f4",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ninjutsu_canonical/ninja-of-the-deep-hours.json": {
+    "mtime": 1791266852.0,
+    "seen": 1791267588.982194,
+    "ast_hash": "74f900c5f45de804685705ace00d4083",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ninjutsu_canonical/ninja-of-the-deep-hours.provenance.json": {
+    "mtime": 1791266852.0,
+    "seen": 1791267588.9821959,
+    "ast_hash": "468982aa8af1428f36362e5ef74c67d7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_training_ninjutsu_intent_audit.py": {
+    "mtime": 1791266852.0,
+    "seen": 1791267588.9832914,
+    "ast_hash": "f4364276b6d39e16764acdf0281e25ab",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_training_ninjutsu_intent_guard.py": {
+    "mtime": 1791266852.0,
+    "seen": 1791267588.9832928,
+    "ast_hash": "eff0e5a258af80490b341124f51b1d44",
+    "semantic_hash": ""
+  },
+  "docs/testing/training-canonical-ninjutsu-intent-audit.md": {
+    "mtime": 1791266852.0,
+    "seen": 1791267588.9841385,
+    "ast_hash": "6946b18d240cd2dcd1402fc2c250f1e2",
+    "semantic_hash": ""
+  },
+  "docs/testing/training-ninjutsu-intent-guard.md": {
+    "mtime": 1791266852.0,
+    "seen": 1791267588.9841573,
+    "ast_hash": "af3ba303012e81e9fe4ebda886c58e17",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ninjutsu_source_identity.py": {
+    "mtime": 1791267449.6140456,
+    "seen": 1791267588.983066,
+    "ast_hash": "c632ea1f384191f24374d9a2d78ee32e",
+    "semantic_hash": ""
+  },
+  "docs/testing/ninjutsu-source-identity.md": {
+    "mtime": 1791267449.6140456,
+    "seen": 1791267588.9840434,
+    "ast_hash": "a4978ae246696df27e7cd84b997782be",
     "semantic_hash": ""
   }
 }

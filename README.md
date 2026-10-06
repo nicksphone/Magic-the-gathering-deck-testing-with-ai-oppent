@@ -42,6 +42,10 @@ the existing public schema remain compatible. The full release gate is pending.
   output vectors. Manual choices are not silently replaced with inferred ones.
 - Supported cast/activated costs, graveyard/exile permissions, tokens,
   attachments, counters, planeswalkers, keywords and state-based actions.
+- Ninjutsu preserves explicit source/return choices and the activated source's
+  hand-zone identity through snapshots. Pending abilities do not move a card
+  that left and reentered hand; legacy missing-reference payloads fail closed.
+  This correction is qualified in the unreleased candidate, not yet deployed.
 - Bounded replacement and continuous-effect layers, effective combat statistics,
   source-incarnation/last-known-information handling and live color predicates.
 - Supported self-cycling, combined cycling/discard and self-death triggers.

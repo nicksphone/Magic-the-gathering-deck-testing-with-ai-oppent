@@ -431,7 +431,7 @@ class TrainingEnvironment:
         from api_contracts import (
             ManaAbilityAction, TapAction, NonlandManaAction, BulkTapAction, CastAction, AbilityAction,
             EquipAction, CrewAction, CycleAction, MechanicChoice, OptionalEffectChoice, TriggerChoice,
-            ReplacementChoice, TriggerTargetChoice, AttackAction, BlockAction, ForetellAction,
+            ReplacementChoice, TriggerTargetChoice, AttackAction, BlockAction, ForetellAction, NinjutsuAction,
         )
         models = {'activate_mana_ability': ManaAbilityAction, 'tap_land_for_mana': TapAction,
                   'tap_nonland_for_mana': NonlandManaAction, 'tap_lands_bulk': BulkTapAction,
@@ -441,7 +441,8 @@ class TrainingEnvironment:
                   'choose_mechanic': MechanicChoice, 'choose_optional_effect': OptionalEffectChoice,
                   'choose_trigger_order': TriggerChoice,
                   'choose_replacement': ReplacementChoice, 'choose_trigger_target': TriggerTargetChoice,
-                  'attack': AttackAction, 'block': BlockAction, 'foretell': ForetellAction}
+                  'attack': AttackAction, 'block': BlockAction, 'foretell': ForetellAction,
+                  'ninjutsu': NinjutsuAction}
         if isinstance(intent, dict) and isinstance(intent.get('type'), str) and intent['type'] in models:
             display = {'card_name', 'mana_cost', 'cost_options', 'target_hints', 'outputs',
                        'cost_text', 'ability_label', 'label', 'payment_options',
@@ -471,6 +472,26 @@ class TrainingEnvironment:
                             raise ActionRejected('Foretell metadata does not match current public view')
                 except _INPUT_ERRORS as exc:
                     raise ActionRejected('Invalid foretell intent') from exc
+            elif intent['type'] == 'ninjutsu':
+                display = {'card_name', 'mana_cost', 'card_view'}
+                contract = 'Ninjutsu'
+                try:
+                    NinjutsuAction.model_validate({key: value for key, value in intent.items()
+                                                   if key not in display})
+                    supplied = display & set(intent)
+                    if supplied:
+                        actor = self.acting_seat if seat is None else seat
+                        candidate = deepcopy(self._state)
+                        view = next((move for move in self._rules.legal_moves(candidate, actor)
+                                     if move['type'] == 'ninjutsu' and move['card_id'] == intent['card_id']
+                                     and move['return_card_id'] == intent['return_card_id']), None)
+                        if view is not None and 'card_view' in supplied:
+                            view['card_view'] = serialize_card_view(candidate, intent['card_id'])
+                        if view is None or any(key not in view or _json(intent[key]) != _json(view[key])
+                                               for key in supplied):
+                            raise ActionRejected('Ninjutsu metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid ninjutsu intent') from exc
             elif intent['type'] == 'activate_ability':
                 display = {'card_name', 'mana_cost', 'ability_label', 'payment_options',
                            'activation_costs', 'hybrid_symbols', 'target_hints'}

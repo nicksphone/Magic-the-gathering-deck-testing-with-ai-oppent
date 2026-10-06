@@ -19,8 +19,18 @@ It preserves the removal preference while testing legal payment, resolution,
 restart and unaffordable alternatives; it does not change production AI.
 Canonical Ninjutsu intake is now available. Its frozen 44-case audit reports
 16 intent-consumer failures, two separate source-incarnation failures and 26
-passing controls. Consumer validation and object-reference fixes are assigned
-separately and remain open until qualified on the combined source.
+passing controls. Consumer validation is now composed: original 44 plus 52 guard
+and 13 action-contract checks execute with 107 passes and two unchanged engine
+incarnation failures in 251.84 seconds (exit 1), without skips or expected
+failures. The subsequently composed resolver correction captures and validates
+the original hand-zone sequence. All 167 checks in five complete modules pass
+in 187.43 seconds, including both unchanged former incarnation failures, the
+original consumer audit, new validation and identity controls, action contract,
+and nth-spell cases. No skipped or expected failures; Python source hashes match.
+Legacy pending Ninjutsu without a captured sequence fails closed without cost
+refunds. Deployment/release-wide acceptance remains open. Frontend
+lint/build and the documented Python-configured npm test pass on this candidate;
+the initial missing-Python-setting failure is retained as setup evidence.
 
 Next backend candidate (not deployed): startup label preservation and per-card
 SBA query batching compose cleanly. Their three-module gate passes 71 tests in

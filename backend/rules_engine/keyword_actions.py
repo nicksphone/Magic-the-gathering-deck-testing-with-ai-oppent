@@ -28,6 +28,7 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     if card_id not in player.hand or return_id not in ninjutsu_attackers(state, player_id) or is_departed_token(state.cards[card_id]):
         return False
     card = state.cards[card_id]
+    source_sequence = card.zone_change_sequence
     cost = ninjutsu_cost(card)
     if not cost or not auto_pay_cost(state, player_id, cost, card_name=card.name,
             payment_kind='activation', payment_types=set(effective_types(state, card)), source_card_id=card_id, ability_kind='ninjutsu'):
@@ -40,7 +41,8 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     returned.move_to_zone(Zone.HAND)
     state.attackers.remove(return_id)
     state.attack_targets.pop(return_id, None)
-    add_to_stack(state, card_id, player_id, f"{card.name} ninjutsu", "ninjutsu", {"attack_target": target}, is_spell=False)
+    add_to_stack(state, card_id, player_id, f"{card.name} ninjutsu", "ninjutsu",
+                 {"attack_target": target, "__source_zone_sequence": source_sequence}, is_spell=False)
     return True
 
 
@@ -49,11 +51,15 @@ def resolve_ninjutsu(state, controller: int, payload: dict) -> None:
     card_id = payload.get("__source_card_id")
     player = state.players[controller]
     from rules_engine.zone_actions import is_departed_token
-    if card_id not in player.hand or is_departed_token(state.cards[card_id]):
+    card = state.cards.get(card_id)
+    source_sequence = payload.get("__source_zone_sequence")
+    # A returned hand card is a new object; paid costs do not follow it.
+    if (card_id not in player.hand or card is None or card.zone != Zone.HAND
+            or type(source_sequence) is not int or source_sequence != card.zone_change_sequence
+            or is_departed_token(card)):
         return
     player.hand.remove(card_id)
     player.battlefield.append(card_id)
-    card = state.cards[card_id]
     card.zone = Zone.BATTLEFIELD
     card.tapped = True
     card.summoning_sick = True

@@ -2,6 +2,15 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Bind pending Ninjutsu to its original hand-zone sequence. A card that leaves
+  and reenters hand is not moved by the old ability; paid costs remain paid.
+  Combined consumer/engine/nth gate: 167 passes in 187.43 seconds, including the
+  two unchanged former incarnation failures. Legacy missing references fail
+  closed; deployment and broader release qualification remain pending.
+- Validate explicit Ninjutsu intent fields before normalization; supplied display
+  must match the actor's eligible choice. Composed gate: 107 passes and two
+  unchanged incarnation engine failures in 251.84 seconds. Engine fix remains
+  open; this is not a green Ninja gate or a deployed change.
 - Add bounded complete-clause nth-spell triggers and reset both players' cast
   counts each turn. Seven combined modules pass 279 checks in 81.88 seconds;
   complex unsupported rewards remain explicit and this candidate is not deployed.
