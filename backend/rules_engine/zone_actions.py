@@ -3,20 +3,79 @@ from __future__ import annotations
 from game_state.state import Zone
 from rules_engine.card_types import is_token_card
 from rules_engine.events import emit_event_batch
-from rules_engine.replacement import graveyard_destination
+from rules_engine.replacement import graveyard_entry_plans, select_graveyard_entry_plan
+
+
+def prepare_graveyard_entry_causes(state, plans):
+    """Validate the complete batch and prepare receipts before any departure."""
+    from rules_engine.action_validation import ActionRejected
+    from rules_engine.replacement import GraveyardEntryPlan
+    from rules_engine.shuffle_actions import prepare_static_replacement_cause
+    plans = tuple(plans)
+    if (any(type(plan) is not GraveyardEntryPlan or plan.card_id not in state.cards
+            or plan not in graveyard_entry_plans(state, plan.card_id) for plan in plans)
+            or len({plan.card_id for plan in plans}) != len(plans)):
+        raise ActionRejected('Graveyard entry batch is no longer available')
+    return {plan.card_id: prepare_static_replacement_cause(state, plan)
+            if plan.reveal_shuffle else None for plan in plans}
+
+
+def execute_graveyard_entry(state, plan, *, prevalidated=False, resolving_item=None,
+                           _prepared_cause=None) -> Zone:
+    """Execute a retained entry plan after the caller has validated its selection."""
+    from game_state.state import object_incarnation
+    from rules_engine.action_validation import ActionRejected
+    card = state.cards.get(plan.card_id)
+    if (card is None or card.zone != plan.origin or card.owner != plan.owner
+            or card.controller != plan.controller or object_incarnation(card) != plan.incarnation
+            or card.zone_change_sequence != plan.sequence
+            or not prevalidated and plan not in graveyard_entry_plans(state, card.id)):
+        raise ActionRejected('Graveyard entry plan is no longer available')
+    if plan.reveal_shuffle:
+        from rules_engine.shuffle_actions import prepare_static_replacement_cause, StaticReplacementCause
+        if _prepared_cause is None:
+            _prepared_cause = prepare_static_replacement_cause(state, plan)
+        if (type(_prepared_cause) is not StaticReplacementCause
+                or (_prepared_cause.source_card_id, _prepared_cause.controller,
+                    _prepared_cause.source_owner, _prepared_cause.source_zone,
+                    _prepared_cause.incarnation, _prepared_cause.zone_change_sequence)
+                != (plan.card_id, plan.controller, plan.owner, plan.origin,
+                    plan.source_incarnation, plan.source_sequence)):
+            raise ActionRejected('Prepared replacement cause does not match entry plan')
+    elif _prepared_cause is not None:
+        raise ActionRejected('Entry plan does not cause a replacement shuffle')
+    holder = state.players[plan.controller if plan.origin == Zone.BATTLEFIELD else plan.owner]
+    origin_ids = getattr(holder, plan.origin.value, [])
+    if card.id in origin_ids:
+        origin_ids.remove(card.id)
+    if plan.reveal_shuffle:
+        state.log.append(f'{state.players[plan.owner].name} reveals {card.name}.')
+    destination = getattr(state.players[plan.owner], plan.destination.value)
+    if card.id not in destination:
+        destination.append(card.id)
+    card.move_to_zone(plan.destination)
+    if plan.reveal_shuffle:
+        from rules_engine.shuffle_actions import shuffle_library
+        # The printed replacement caused this shuffle, not an announcing spell.
+        shuffle_library(state, plan.owner, cause=_prepared_cause)
+    return plan.destination
 
 
 def is_departed_token(card) -> bool:
     return card.zone != Zone.BATTLEFIELD and is_token_card(card)
 
 
-def sacrifice_selected(state, controller, ids):
+def sacrifice_selected(state, controller, ids, *, replacement_choices=None):
     """Sacrifice a selected set simultaneously, preserving LKI and events."""
     from rules_engine.events import was_creature_on_battlefield, flush_staged_triggers
-    from rules_engine.replacement import replace_die_zone
     if len(set(ids)) != len(ids) or any(cid not in state.players[controller].battlefield for cid in ids):
         return False
-    destinations = {cid: replace_die_zone(state, controller, cid) for cid in ids}
+    if replacement_choices is not None and (not isinstance(replacement_choices, dict)
+                                           or set(replacement_choices) - set(ids)):
+        return False
+    plans = {cid: select_graveyard_entry_plan(state, cid, (replacement_choices or {}).get(cid))
+             for cid in ids}
+    causes = prepare_graveyard_entry_causes(state, plans.values())
     staged_here = not state.trigger_staging
     if staged_here:
         state.trigger_staging = True
@@ -24,11 +83,7 @@ def sacrifice_selected(state, controller, ids):
     events = [{"card_id": cid, "controller": controller} for cid in ids]
     emit_event_batch(state, "leaves_battlefield", events)
     for cid in ids:
-        card = state.cards[cid]
-        state.players[controller].battlefield.remove(cid)
-        destination = Zone(destinations[cid])
-        card.move_to_zone(destination)
-        getattr(state.players[card.owner], destination.value).append(cid)
+        execute_graveyard_entry(state, plans[cid], prevalidated=True, _prepared_cause=causes[cid])
     emit_event_batch(state, "sacrifice", events)
     died = [event for event in events if state.cards[event["card_id"]].zone == Zone.GRAVEYARD]
     emit_event_batch(state, "permanent_dies", died)
@@ -38,17 +93,13 @@ def sacrifice_selected(state, controller, ids):
     return True
 
 
-def put_into_graveyard(state, cid: str) -> Zone:
+def put_into_graveyard(state, cid: str, *, replacement_source_id=None, resolving_item=None) -> Zone:
     """Move an already-removed card to its actual destination after replacement."""
     card = state.cards[cid]
     if is_departed_token(card):
         return card.zone
-    zone = Zone(graveyard_destination(state, card))
-    destination = getattr(state.players[card.owner], zone.value)
-    if cid not in destination:
-        destination.append(cid)
-    card.move_to_zone(zone)
-    return zone
+    return execute_graveyard_entry(state, select_graveyard_entry_plan(state, cid, replacement_source_id),
+                                  resolving_item=resolving_item)
 
 
 def move_spell_from_stack(state, item, destination: Zone = Zone.GRAVEYARD) -> Zone | None:
@@ -99,13 +150,16 @@ def discard_simultaneous(state, selections: dict[int, list[str]]) -> bool:
         hand = state.players[player_id].hand
         if any(cid not in hand or state.cards[cid].zone != Zone.HAND or is_departed_token(state.cards[cid]) for cid in card_ids):
             return False
+    plans = {cid: select_graveyard_entry_plan(state, cid)
+             for card_ids in selections.values() for cid in card_ids}
+    causes = prepare_graveyard_entry_causes(state, plans.values())
     events = []
     for player_id, card_ids in selections.items():
         player = state.players[player_id]
         for cid in card_ids:
             card = state.cards[cid]
             player.hand.remove(cid)
-            put_into_graveyard(state, cid)
+            execute_graveyard_entry(state, plans[cid], prevalidated=True, _prepared_cause=causes[cid])
             state.log.append(f"{player.name} discards {card.name}.")
             events.append({"card_id": cid, "controller": player_id})
         state.discards_this_turn[player_id] = state.discards_this_turn.get(player_id, 0) + len(card_ids)

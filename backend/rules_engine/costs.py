@@ -270,12 +270,30 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         restricted_x_color, ability_kind, ability_index, payment_choices, unavailable_resources, protected_life)
     if selected is None:
         return False
+    from rules_engine.replacement import graveyard_entry_plans, select_graveyard_entry_plan
+    from rules_engine.zone_actions import execute_graveyard_entry, prepare_graveyard_entry_causes
+    from rules_engine.action_validation import ActionRejected
+    # Replacement choices are not part of the cost payload. Reject unresolved
+    # choices before payment can tap resources, change life, or consume RNG.
+    sacrifice_plans = {cid: select_graveyard_entry_plan(state, cid)
+                       for cid in selected['sacrifice_card_ids']}
+    selected_discard_ids = tuple(selected['discard_card_ids'])
+    discard_ids = list(dict.fromkeys(([source_id] if cost.discard_source else [])
+                                    + list(selected_discard_ids)))
+    discard_plans = {cid: select_graveyard_entry_plan(state, cid) for cid in discard_ids}
+    resource_plans = {**discard_plans, **sacrifice_plans}
     reserved = set(unavailable_resources) | set(selected['discard_card_ids']) | set(selected['sacrifice_card_ids'])
     if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(effective_types(state, source)), source_id, ability_kind, {source_id} if cost.tap_source else None, ability_index, reserved, protected_life):
         return False
     selected = activated_cost_selection(state, player_id, source_id, cost, selected, unavailable_resources)
     if selected is None:
         return False
+    if (set(selected['sacrifice_card_ids']) != set(sacrifice_plans)
+            or set(selected['discard_card_ids']) != set(selected_discard_ids)
+            or any(plan not in graveyard_entry_plans(state, cid)
+                   for cid, plan in resource_plans.items())):
+        raise ActionRejected('Graveyard replacement plan changed during mana payment')
+    resource_causes = prepare_graveyard_entry_causes(state, resource_plans.values())
     if cost.tap_source:
         from rules_engine.resource_events import tap_permanents
         tap_permanents(state, [source_id])
@@ -285,6 +303,9 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
             return False
         state.log.append(f"{player.name} pays {cost.pay_life} life for {source.name}.")
     from rules_engine.events import emit_event, emit_event_batch, flush_staged_triggers, was_creature_on_battlefield
+    if any(plan not in graveyard_entry_plans(state, cid)
+           for cid, plan in resource_plans.items()):
+        raise ActionRejected('Graveyard replacement plan is no longer available')
     if cost.discard_source:
         from rules_engine.zone_actions import discard_selected
         if not discard_selected(state, player_id, [source_id]):
@@ -292,12 +313,14 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     for discard_id in selected['discard_card_ids']:
         if cost.discard_source and discard_id == source_id:
             continue
-        player.hand.remove(discard_id)
-        put_into_graveyard(state, discard_id)
+        execute_graveyard_entry(state, discard_plans[discard_id], prevalidated=True,
+                               _prepared_cause=resource_causes[discard_id])
         state.log.append(f"{player.name} discards {state.cards[discard_id].name} for {source.name}.")
         emit_event(state, "discard", {"card_id": discard_id, "controller": player_id})
     sacrifice_ids = selected['sacrifice_card_ids']
-    destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids}
+    if any(plan not in graveyard_entry_plans(state, cid)
+           for cid, plan in sacrifice_plans.items()):
+        raise ActionRejected('Sacrifice replacement plan is no longer available')
     events = [{"card_id": cid, "controller": player_id} for cid in sacrifice_ids]
     started_staging = bool(events) and not state.trigger_staging
     if started_staging:
@@ -309,13 +332,9 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
             context["__sacrificed_toughness"] = effective_toughness(state, sac_id)
     emit_event_batch(state, "leaves_battlefield", events)
     for sac_id in sacrifice_ids:
-        if sac_id in player.battlefield:
-            player.battlefield.remove(sac_id)
         card = state.cards[sac_id]
-        owner = state.players[getattr(card, "owner", player_id)]
-        zone = Zone.EXILE if destinations[sac_id] == "exile" else Zone.GRAVEYARD
-        getattr(owner, zone.value).append(sac_id)
-        card.move_to_zone(zone)
+        execute_graveyard_entry(state, sacrifice_plans[sac_id], prevalidated=True,
+                               _prepared_cause=resource_causes[sac_id])
         state.log.append(f"{player.name} sacrifices {card.name} for {source.name}.")
     emit_event_batch(state, "sacrifice", events)
     died = [event for event in events if state.cards[event["card_id"]].zone == Zone.GRAVEYARD]

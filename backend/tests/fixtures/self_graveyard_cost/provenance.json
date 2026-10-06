@@ -1,0 +1,26 @@
+{
+  "source": "oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "0ee819837ab6f44d5d25fcf3721539f0d996d68010bfff5c2f94311f082ae8cd",
+  "selection": "Full unchanged official objects selected by exact name",
+  "cards": [
+    {
+      "name": "Trading Post",
+      "id": "03499a72-e865-46ff-bcb2-75e53e4b600e",
+      "oracle_id": "63788566-e25a-44bb-bb55-197e1b93b3e8",
+      "uri": "https://api.scryfall.com/cards/03499a72-e865-46ff-bcb2-75e53e4b600e"
+    },
+    {
+      "name": "Bloodsoaked Altar",
+      "id": "b9169431-a5b1-42ea-bcf4-6c750d2a2dbb",
+      "oracle_id": "67631753-f37a-4f41-a6e6-1edead385acc",
+      "uri": "https://api.scryfall.com/cards/b9169431-a5b1-42ea-bcf4-6c750d2a2dbb"
+    },
+    {
+      "name": "Dauthi Voidwalker",
+      "id": "3573b9a2-7911-475c-8ae7-25bd0dbb7159",
+      "oracle_id": "f1c2dbe2-fbe0-4058-bdf1-91d1b1832786",
+      "uri": "https://api.scryfall.com/cards/3573b9a2-7911-475c-8ae7-25bd0dbb7159"
+    }
+  ]
+}

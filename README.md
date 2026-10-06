@@ -60,6 +60,12 @@ LAN deployment and broader AI-quality qualification remain open.
   duplicate observers apply consistently. Unknown compound bodies remain diagnostic.
 - Bounded replacement and continuous-effect layers, effective combat statistics,
   source-incarnation/last-known-information handling and live color predicates.
+- Supported printed self-graveyard replacements on shared discard, mill and
+  selected sacrifice/discard cost routes preserve owner-library destinations,
+  pre-departure identity and genuine static shuffle causes. Competing unresolved
+  destinations reject before payment; public per-cost replacement selection and
+  direct death/combat callers are not yet covered. Kozilek's from-anywhere trigger
+  remains unsupported, not an immediate replacement.
 - Supported self-cycling, combined cycling/discard and self-death triggers.
   Dynamic death quantities use the retained source receipt; ordinary spell
   instructions are separated from supported cycling-trigger paragraphs.

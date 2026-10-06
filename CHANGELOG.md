@@ -2,6 +2,16 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Compose printed self-graveyard replacement plans, selected cost routing and
+  trusted static shuffle receipts on the queued/lazy milestone. Capture batch
+  references before departures and retain actual owner/source identities;
+  Probe damage uses the static cause, not a fabricated resolving spell.
+  Current-source qualification passes 1,081 cases across 31 whole modules in
+  380.82s. A separate complete 60-case audit passes 58 and retains two strict
+  Kozilek trigger failures. Direct death callers and public competing-cost
+  selection remain unsupported; historical expectation changes are separate
+  test-only deltas with unchanged archives.
+
 - Make private restart test clients hydrate through public GET before their
   existing authenticated audit, preserving privacy checks. Compare disk and
   cache inventories independently in failed-start rollback tests, with a new

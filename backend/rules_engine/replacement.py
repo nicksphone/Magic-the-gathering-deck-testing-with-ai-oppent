@@ -2,6 +2,9 @@ from __future__ import annotations
 from rules_engine.type_effects import effective_types
 
 import re
+from dataclasses import dataclass
+
+from game_state.state import Zone, object_incarnation
 
 from rules_engine.continuous import effect_timestamp, printed_abilities_suppressed
 from rules_engine.card_types import is_token_card
@@ -512,6 +515,68 @@ def graveyard_destination(state, target) -> str:
         _graveyard_exile_applies(card, text, target)
         for card, text in _battlefield_oracle_texts(state)
     ) else "graveyard"
+
+
+@dataclass(frozen=True)
+class GraveyardEntryPlan:
+    card_id: str
+    origin: Zone
+    owner: int
+    controller: int
+    incarnation: int
+    sequence: int
+    destination: Zone
+    replacement_source_id: str | None = None
+    source_incarnation: int | None = None
+    source_sequence: int | None = None
+    reveal_shuffle: bool = False
+
+
+def _printed_self_graveyard_shuffle(state, card) -> bool:
+    if printed_abilities_suppressed(state, card.id):
+        return False
+    reference = rf'(?:{re.escape(card.name)}|this card|this creature|this permanent)'
+    pattern = re.compile(
+        rf'if {reference} would be put into a graveyard from anywhere, '
+        rf'reveal {reference} and shuffle (?:it|{reference}) into its owner\'s library instead\.', re.I)
+    return any(pattern.fullmatch(line.strip()) for line in (card.oracle_text or '').splitlines())
+
+
+def graveyard_entry_plans(state, card_id: str) -> tuple[GraveyardEntryPlan, ...]:
+    """Describe candidates before entry, without executing or choosing an effect."""
+    card = state.cards[card_id]
+    base = dict(card_id=card.id, origin=card.zone, owner=card.owner,
+                controller=card.controller, incarnation=object_incarnation(card),
+                sequence=card.zone_change_sequence)
+    if card.zone == Zone.BATTLEFIELD:
+        sources = _die_zone_candidates(state, card)
+    else:
+        sources = [(source, text) for source, text in _battlefield_oracle_texts(state)
+                   if _graveyard_exile_applies(source, text, card)]
+    out = [GraveyardEntryPlan(
+        **base, destination=Zone.EXILE, replacement_source_id=source.id,
+        source_incarnation=object_incarnation(source), source_sequence=source.zone_change_sequence)
+        for source, _ in sources]
+    if _printed_self_graveyard_shuffle(state, card):
+        out.append(GraveyardEntryPlan(
+            **base, destination=Zone.LIBRARY, replacement_source_id=card.id,
+            source_incarnation=object_incarnation(card), source_sequence=card.zone_change_sequence,
+            reveal_shuffle=True))
+    return tuple(out) or (GraveyardEntryPlan(**base, destination=Zone.GRAVEYARD),)
+
+
+def select_graveyard_entry_plan(state, card_id: str, replacement_source_id=None) -> GraveyardEntryPlan:
+    from rules_engine.action_validation import ActionRejected
+    plans = graveyard_entry_plans(state, card_id)
+    if replacement_source_id is not None:
+        chosen = next((p for p in plans if p.replacement_source_id == replacement_source_id), None)
+        if chosen is None:
+            raise ActionRejected('Unavailable graveyard replacement source')
+        return chosen
+    if len({p.destination for p in plans}) > 1:
+        raise ActionRejected('Announce the competing graveyard replacement source')
+    # Preserve legacy same-destination exile selection, without query logging.
+    return plans[0]
 
 
 def _graveyard_exile_applies(source, text: str, target) -> bool:

@@ -41,7 +41,7 @@
   "unchanged": {
     "main.py": "5276bf212fc4769d2a60e69ae9e8234e86438c83def59d22bcaa5d4c063aa9ef",
     "persistence/repository.py": "a1da2eb6fa3ee5eadd01ad619aa223a271f9c3add65c29ac09e9f27d5d7b5202",
-    "rules_engine/costs.py": "4ba22bbe98802ad0abd6af50efd09db8ab844a5e19631a9420dbce18d0bbc748",
+    "rules_engine/costs.py": "9f5ed2bb8a76768f02df9becf818bf8e501b2f22b60e5950283c037e6f37e3eb",
     "tests/land_consumer_variant_fixture_server.py": "540e885e4b08524b006f7c29a051860b55c317bd48d8fe4cc5b1a4282e44c7e5",
     "tests/library_choice_fixture_server.py": "2953e697e7fab2b586b9234d43279213ef76bbd5aaaca2bb57fd77d631b5556f",
     "tests/private_choice_boundary_fixture_server.py": "7babe0352fe20539480d7a8b3f46f2c5255e9860eacbbc1361aacb3e737d17c9",

@@ -2,6 +2,29 @@
 
 ## Current Execution Order
 
+### Printed Replacement Costs And Static Causes
+
+The queued/lazy milestone `a6cf671` now has a qualified current-source
+composition of immutable entry plans, selected sacrifice/discard cost routing
+and trusted static shuffle receipts. All 1,081 cases in 31 declared complete
+modules pass in 380.82s with zero failures, errors or skips and unchanged source
+hashes. Actual paid Probe episodes resolve two damage with retained PRE-source
+references; current private HTTP and mana/resource guards pass.
+
+The separate complete 60-case audit passes 58 and fails two unchanged Kozilek
+from-anywhere trigger assertions. Those are known rule gaps, not replaced by
+immediate shuffle semantics. Same-library sequence and obsolete no-static-cause
+test expectations were adapted separately; original evidence remains immutable.
+See [current replacement acceptance](docs/testing/static-replacement-current.md).
+
+Next: implement committed-graveyard trigger collection and a respondable generic
+owner-graveyard shuffle resolver with actual retained stack context. Qualify
+Stifle, source exile in response, owner/controller, APNAP and restart. Migrate
+direct death callers only after lawful canonical audits; do not weaken protection
+or indestructible to create tests. Public competing-cost selection and an
+authentic post-mana eligibility-change episode remain unqualified. Separately
+compose the now-qualified AI repair and media eviction repair on this source.
+
 ### Queued Sequences, Static Grants And Lazy Recovery
 
 The current isolated integration candidate combines queued turns/combat-main
@@ -25,8 +48,8 @@ this is not full-suite, browser, deployment or expert-AI acceptance.
 
 Next gates: compose paid optional effects only after their partitioned gates;
 finish newer-source qualification of harmful friendly-damage AI materialization;
-admit the frozen self-graveyard cost/static-cause producer only after current-source
-composition tests. Worker producer/resolution passes do not certify this source.
+retain current-source self-graveyard cost/static-cause qualification as new
+caller families are admitted. Worker-only results do not certify later sources.
 Kozilek triggers, direct death-route migrations and image-cache eviction recovery
 remain separate open work. Private HTTP harness recovery is included in the
 completed coupled gate. See the candidate acceptance record below.

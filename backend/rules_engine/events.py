@@ -45,9 +45,12 @@ def _shuffle_observer_triggers(state, card, oracle, payload):
             r'a spell or ability causes (a player) to shuffle) their library, (.+)', clause.strip())
         if not match or (match[1] == 'an opponent' and player == card.controller):
             continue
-        if match[2] and (
-                not isinstance(cause, dict) or cause.get('kind') not in {'spell', 'activated', 'triggered'}):
-            continue
+        if match[2]:
+            from rules_engine.shuffle_actions import is_static_replacement_event_cause
+            if (not isinstance(cause, dict) or (
+                    cause.get('kind') not in {'spell', 'activated', 'triggered'}
+                    and not is_static_replacement_event_cause(cause))):
+                continue
         damage = re.fullmatch(r'this (?:artifact|creature|permanent) deals (a|an|one|two|three|four|five|\d+) damage to that player\.', match[3])
         counter = re.fullmatch(r'you may put (a|an|one|two|three|four|five|\d+) ([+-]\d+/[+-]\d+) counters? on this (?:creature|artifact|permanent)\.', match[3])
         if damage:
