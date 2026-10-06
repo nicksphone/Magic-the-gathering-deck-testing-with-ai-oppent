@@ -45,7 +45,9 @@ export type DeckImportResponse = {
 };
 
 export type ResolvedCardMetadata = {
-  id: string;
+  id?: string | number;
+  card_data_sources?: string[];
+  match_ready?: boolean;
   scryfall_id: string;
   name: string;
   oracle_text?: string;

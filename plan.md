@@ -2,6 +2,37 @@
 
 ## Current Execution Order
 
+### Aura And Offline Import Metadata (Qualified Candidate)
+
+The composition on published milestone `a0e7dc8` repairs the audited illegal-Aura
+departure seam and read-only local import metadata projection. Current-source
+frontend lint, configured tests and build pass; 35 actual HTTP requests across
+five terminated server lifetimes also pass. Required Scryfall IDs remain
+unchanged: 267 frozen actual response literals type-check against the current DTO.
+
+The first complete 67-module run passed 1,471 cases with two harness loopback
+setup errors, not application failures. The corrected cold module passes all
+four cases. The fresh expanded gate passes **1,483 cases across 68 whole modules
+in 1047.52s**, with zero failures/errors/skips and unchanged source hashes.
+The three actual fixture subprocesses have verified installed network guards,
+only the registered loopback listener, no outbound attempts and stopped receipts.
+See [the current acceptance record](docs/testing/aura-catalog-current.md).
+
+Next ordered work:
+
+1. Repair simultaneous mill, sacrifice and SBA/destruction entry publication
+   using actual canonical episode tests and existing retained entry receipts.
+2. Implement deliberate human legend keeper choices with private pending-state,
+   stale-reference, owner/controller and restart validation.
+3. Complete stack-face lifecycle and separate full canonical cast-trigger gaps.
+4. Compose paid optional effects only after warm/cold/opt-in gates finish.
+5. Measure pure combat-query reuse without reducing search depth or claiming
+   professional AI strength from smoke tests.
+6. Finish full-suite/clean-install/browser/LAN/HTTPS and natural-game acceptance.
+
+The sections below retain earlier milestone evidence and its original scope.
+Their historical remaining-work statements do not override this execution order.
+
 ### Shared Graveyard Lifecycle (Qualified Candidate)
 
 The isolated composition on `fc22540` passes 995 cases across all 50 declared

@@ -352,6 +352,9 @@ def _is_legendary(card) -> bool:
 
 
 def _apply_attachment_state_checks(state: MatchState) -> None:
+    from rules_engine.replacement import select_graveyard_entry_plan
+    from rules_engine.zone_actions import prepare_graveyard_entry_causes, execute_graveyard_entry
+
     for cid, card in list(state.cards.items()):
         if card.zone != Zone.BATTLEFIELD:
             continue
@@ -375,8 +378,11 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
             if aura:
                 owner = state.players[card.controller]
                 if cid in owner.battlefield:
+                    plan = select_graveyard_entry_plan(state, cid)
+                    cause = prepare_graveyard_entry_causes(state, [plan])[cid]
+                    emit_event(state, 'leaves_battlefield', {'card_id': cid, 'controller': card.controller})
                     owner.battlefield.remove(cid)
-                    zone = put_into_graveyard(state, cid)
+                    zone = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
                     state.log.append(f"State-based action: {card.name} has no legal attachment and is put into {zone.value}.")
             continue
         target = state.cards.get(target_id)
@@ -384,8 +390,11 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
             if aura:
                 owner = state.players[card.controller]
                 if cid in owner.battlefield:
+                    plan = select_graveyard_entry_plan(state, cid)
+                    cause = prepare_graveyard_entry_causes(state, [plan])[cid]
+                    emit_event(state, 'leaves_battlefield', {'card_id': cid, 'controller': card.controller})
                     owner.battlefield.remove(cid)
-                    zone = put_into_graveyard(state, cid)
+                    zone = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
                     state.log.append(f"State-based action: {card.name} loses attachment and is put into {zone.value}.")
             elif equipment or fortification:
                 card.attached_to = None

@@ -85,7 +85,8 @@ def test_complete_local_metadata_refresh_only_guess_and_idempotent(repo, name, e
     board = json.loads(row.mainboard_json)
     cold = analyze_deck(DeckService(repo)._resolve_card_metadata(board))
     assert row.archetype_guess == expected
-    assert cold['confidence'] == cold['type_metadata_coverage'] == 0
+    assert cold['primary_archetype'] == expected
+    assert cold['confidence'] > 0 and cold['type_metadata_coverage'] == 1
     if warm:
         seed_cache(repo, board)
     canonical = hydration.hydrate_deck_cards(repo, board)

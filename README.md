@@ -18,6 +18,14 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- Illegal noncreature Aura departures capture battlefield last-known information
+  before shared graveyard/replacement handling. Simultaneous multi-Aura behavior
+  remains a separate acceptance task.
+- Deck imports project available offline seed and canonical knowledge metadata
+  without implicit card-cache writes or invented database IDs. Import analysis
+  and cache inventory are separate; art, rulings and explicit synchronization
+  remain independently reported.
+
 - AI spell materialization checks harmful friendly damage against legal targets
   while preserving demonstrated beneficial sacrifice/death interactions. This
   is a bounded tactical safeguard, not an expert-policy or balance guarantee.

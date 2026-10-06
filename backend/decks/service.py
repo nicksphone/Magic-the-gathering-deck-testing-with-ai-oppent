@@ -170,22 +170,39 @@ class DeckService:
         return color_map
 
     def _resolve_card_metadata(self, items: list[dict], *, materialize: bool = True) -> list[dict]:
+        from card_data.hydration import cached_json
+
+        # Keep the keyword compatible; metadata projection never materializes cache rows.
         names = [item["card_name"] for item in items]
         cache = self.repo.get_cached_cards_by_names(names)
-        missing = {name for name in names if name.lower() not in cache}
-        if materialize and missing and hasattr(self.repo, "get_card_knowledge"):
-            sync = ScryfallSyncService(self.repo)
-            for name in sorted(missing):
-                sync.sync_card_from_local_knowledge(name)
-            cache = self.repo.get_cached_cards_by_names(names)
+        missing = [item for item in items if item["card_name"].lower() not in cache]
+        local = {card["card_name"].lower(): card for card in hydrate_deck_cards(self.repo, missing)} if missing else {}
         resolved: list[dict] = []
         for item in items:
             card = cache.get(item["card_name"].lower())
+            metadata = None
+            if card is not None:
+                metadata = self._serialize_cached_card(card)
+                metadata["loyalty"] = getattr(card, "loyalty", None)
+                metadata["card_data_sources"] = ["cache"]
+                metadata["match_ready"] = ready_for_match(metadata)
+            else:
+                hydrated = local.get(item["card_name"].lower(), {})
+                if hydrated.get("card_data_sources") and ready_for_match(hydrated):
+                    metadata = {key: hydrated[key] for key in (
+                        "scryfall_id", "name", "oracle_text", "mana_cost", "type_line", "layout",
+                        "colors", "power", "toughness", "loyalty", "image_uri", "card_faces",
+                        "card_data_sources",
+                    ) if key in hydrated}
+                    metadata.setdefault("name", item["card_name"])
+                    metadata["legalities"] = cached_json(hydrated.get("legalities_json"), dict)
+                    metadata["rulings"] = cached_json(hydrated.get("rulings_json"), list)
+                    metadata["match_ready"] = True
             resolved.append(
                 {
                     "quantity": item["quantity"],
                     "card_name": item["card_name"],
-                    "card_metadata": self._serialize_cached_card(card) if card else None,
+                    "card_metadata": metadata,
                 }
             )
         return resolved

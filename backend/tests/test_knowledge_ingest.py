@@ -154,9 +154,12 @@ def test_bulk_cards_supply_offline_import_and_match_metadata(repo, bolt, monkeyp
     assert imported["mana_curve"]["lands"] == 56
     hydrated = _hydrate_deck_cards(repo, imported["mainboard"])
     assert hydrated[0]["oracle_text"] == bolt["oracle_text"]
-    assert repo.get_cached_card_by_name("Lightning Bolt").scryfall_id == bolt["id"]
-    assert repo.get_cached_card_by_name("Island").scryfall_id == island["id"]
-    assert json.loads(repo.get_cached_card_by_name("Lightning Bolt").rulings_json) == []
+    assert repo.get_cached_card_by_name("Lightning Bolt") is None
+    assert repo.get_cached_card_by_name("Island") is None
+    metadata = imported["resolved_mainboard_cards"][0]["card_metadata"]
+    assert metadata["scryfall_id"] == bolt["id"] and "id" not in metadata
+    assert metadata["card_data_sources"] == ["offline_seed", "local_knowledge"]
+    assert metadata["match_ready"] is True and metadata["rulings"] == []
 
 
 def test_bulk_only_cards_are_visible_to_completeness_and_suggestions(repo, bolt):

@@ -2,6 +2,16 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Qualify illegal-Aura departure preflight and read-only offline import metadata
+  on `a0e7dc8`: 1,483 passes across 68 whole modules in 1047.52s, with zero
+  failures/errors/skips, unchanged source hashes and verified loopback-only HTTP
+  child guards. Preserve the initial two harness setup errors separately.
+  Current frontend lint/configured tests/build and 35 real HTTP requests across
+  five server lifetimes pass. Cached IDs stay genuine; seed/knowledge projection
+  does not invent SQL rows or implicitly synchronize. Required Scryfall IDs stay
+  unchanged; 267 frozen actual response literals pass the current DTO contract.
+  This is not deployment, whole-suite or professional-AI certification.
+
 - Qualify shared graveyard lifecycle on `fc22540`: 995 passes across 50
   declared whole modules in 752.67s, with zero failures, errors or skips,
   unchanged backend hashes and no network attempts. Compose committed entry,
