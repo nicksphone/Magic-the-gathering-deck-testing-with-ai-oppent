@@ -39,6 +39,7 @@ from card_data.service import CardService
 from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.builtin_decks import BUILTIN_DECKS
+from decks.catalog import CatalogImportRequest, catalog_context
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from data_ingest.service import TournamentIngestService
@@ -537,22 +538,29 @@ def get_expansion_top_deck(code: str, repo: Repository = Depends(get_repo)) -> d
         "finish": item["finish"],
         "decklist_source_url": item["decklist_source_url"],
         "event_source_url": item["event_source_url"],
+        "catalog": catalog_context(item),
     }
 
 
 @app.post("/decks/expansion-top/{code}/import")
-def import_expansion_top_deck(code: str, repo: Repository = Depends(get_repo)) -> dict:
+def import_expansion_top_deck(code: str, request: CatalogImportRequest | None = None,
+                            format_scope: Literal["historical", "current"] | None = Query(None),
+                            repo: Repository = Depends(get_repo)) -> dict:
     service = DeckService(repo)
     try:
-        return service.import_expansion_top_deck(code)
+        scope = "current" if (format_scope == "current" or request and request.format_scope == "current") else "historical"
+        return service.import_expansion_top_deck(code, format_scope=scope)
     except KeyError:
         raise HTTPException(status_code=404, detail="Expansion top deck not found") from None
 
 
 @app.post("/decks/expansion-top/import-all")
-def import_all_expansion_top_decks(repo: Repository = Depends(get_repo)) -> dict:
+def import_all_expansion_top_decks(request: CatalogImportRequest | None = None,
+                                  format_scope: Literal["historical", "current"] | None = Query(None),
+                                  repo: Repository = Depends(get_repo)) -> dict:
     service = DeckService(repo)
-    results = service.import_all_expansion_top_decks()
+    scope = "current" if (format_scope == "current" or request and request.format_scope == "current") else "historical"
+    results = service.import_all_expansion_top_decks(format_scope=scope)
     imported = [r for r in results if r.get("deck_id")]
     errors = [r for r in results if r.get("errors")]
     return {

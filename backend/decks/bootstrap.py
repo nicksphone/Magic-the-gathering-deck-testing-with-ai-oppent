@@ -102,6 +102,6 @@ def ensure_expansion_top_decks(repo: Repository) -> None:
                 repo.session.add(row)
                 updated = True
             continue
-        service.import_deck_text(name=name, deck_text=item["deck_text"], source=source)
+        service.import_expansion_top_deck(item["code"])
     if updated:
         repo.session.commit()

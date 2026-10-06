@@ -1,0 +1,103 @@
+{
+  "all_exact_name_or_face_alias_joined": true,
+  "ambiguous": {},
+  "bulk_as_of": "2026-09-27",
+  "canonical_printing_relation": "genuine bulk representative Oracle printing; NOT necessarily event printing; publisher source_card_id remains separate",
+  "canonical_raw_hash_basis": "full raw JSON sorted keys, compact separators, UTF8; original compressed bulk hash independently verified",
+  "current_builtin_source_hash": "236bc11807d9aeea3134c2b1ec9d1fa73a29d9dc366bf0e11a79ed605a14c0b3",
+  "current_catalog_source_hash": "63c1757dc5dbe041001ce3be8329e472732a3ae72d8bd02fb97f9582bfdeab7e",
+  "files_sha256": {
+    "candidate-event-lists.json": "45f38e743db19a50f9c6145eb265c3a9f608071d387d61c5c33f2ea746c56159",
+    "canonical.jsonl": "827a0eaaf921b021d13d2f362940f0113d0715cb7890984b25728a539c29d0a2",
+    "catalog-source-format-proposal.schema.json": "9831cd7d4b8613ae895a4e6a9ee8975a69d09aa21dec90571ef7f2e1fc91b46c",
+    "inventory52.json": "39422f201e2bd52b2a88a2211fdf1b5261974fea97b4aff3b3a3f709074ab1be",
+    "primary/951f910.js": "5aac7dc267f135ffd74957a230f91851a14c7497aa10a3ae47c5f2df744ee7f9",
+    "primary/mh3-wins-lessons.html": "27a9224021cbc3afaf636c6cecc5b86dad5e0b78ca10d31c746556a2365fd780",
+    "primary/modern-ban-2024-08-26.html": "ab66d33b794e30015d5ef09988ebf8b79ee60113ea1e20b3a500166a551796bc",
+    "primary/otj-ikawa.json": "43576b5366a2d02aa09944f73e1dd3b4298481b59cd612940ac33f414d26d9da",
+    "primary/pro-tour-modern-horizons-3-metagame-breakdown.html": "dd0fafcea99cf628d0238b699eee447723334ba16a080a2df97a754d39a2c80a",
+    "primary/pro-tour-modern-horizons-3-top-8-players-and-decks.html": "48513e98279884515735970495813972f196e4c68cf25ecbe8a54bb4006fad3a",
+    "primary/pro-tour-thunder-junction-event.html": "b11d988def67da3577d18402c9e5865cd0e52d1dfb8f10936d7c8a0c561bf1a2",
+    "primary/pro-tour-thunder-junction-standard-metagame-breakdown.html": "30019cbef2731149e7fcbd3e455f0d2e545b6c8bb1913c5085707fe5d18124b2",
+    "primary/pro-tour-thunder-junction-top-8-players-and-decks.html": "2bfde2eff7c06b5f2172bb381e369aef68b88efb300d2bef3c66d6404c088902"
+  },
+  "missing": [],
+  "name_join_normalization": "NFC and right single quotation mark to ASCII apostrophe only; preserve source_name",
+  "primary_source_chain": {
+    "mh3": "official Top8 page full deck-list/main-deck/side-board contents",
+    "otj": "official Top8 page decklistId -> official JS module821 URL builder -> publisher cloudfront JSON"
+  },
+  "primary_sources": [
+    {
+      "file": "primary/otj-ikawa.json",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.601922+00:00",
+      "requested_url": "https://d3ke0m2z3n6in9.cloudfront.net/Domain_Ramp_Yoshihiko%20Ikawa_Pro%20Tour%20Thunder%20Junction_April%2026%2C%202024_a81e7b1c-1894-47ef-88c3-ea7932d6aaa3.json",
+      "role": "official decklist payload",
+      "sha256": "43576b5366a2d02aa09944f73e1dd3b4298481b59cd612940ac33f414d26d9da"
+    },
+    {
+      "file": "primary/951f910.js",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.602113+00:00",
+      "requested_url": "https://magic.gg/_nuxt/951f910.js",
+      "role": "official legacy decklist URL builder",
+      "sha256": "5aac7dc267f135ffd74957a230f91851a14c7497aa10a3ae47c5f2df744ee7f9"
+    },
+    {
+      "file": "primary/pro-tour-thunder-junction-event.html",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.602538+00:00",
+      "requested_url": "https://magic.gg/events/pro-tour-thunder-junction",
+      "role": "official winner",
+      "sha256": "b11d988def67da3577d18402c9e5865cd0e52d1dfb8f10936d7c8a0c561bf1a2"
+    },
+    {
+      "file": "primary/mh3-wins-lessons.html",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.602887+00:00",
+      "requested_url": "https://magic.gg/news/metagame-mentor-wins-and-lessons-from-pro-tour-modern-horizons-3",
+      "role": "official winner",
+      "sha256": "27a9224021cbc3afaf636c6cecc5b86dad5e0b78ca10d31c746556a2365fd780"
+    },
+    {
+      "file": "primary/modern-ban-2024-08-26.html",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.603093+00:00",
+      "requested_url": "https://magic.wizards.com/en/news/announcements/august-26-2024-banned-and-restricted-announcement",
+      "role": "later format ban witness",
+      "sha256": "ab66d33b794e30015d5ef09988ebf8b79ee60113ea1e20b3a500166a551796bc"
+    },
+    {
+      "file": "primary/pro-tour-thunder-junction-top-8-players-and-decks.html",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.603321+00:00",
+      "requested_url": "https://magic.gg/news/pro-tour-thunder-junction-top-8-players-and-decks",
+      "role": "official lists",
+      "sha256": "2bfde2eff7c06b5f2172bb381e369aef68b88efb300d2bef3c66d6404c088902"
+    },
+    {
+      "file": "primary/pro-tour-modern-horizons-3-top-8-players-and-decks.html",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.603529+00:00",
+      "requested_url": "https://magic.gg/news/pro-tour-modern-horizons-3-top-8-players-and-decks",
+      "role": "official lists",
+      "sha256": "48513e98279884515735970495813972f196e4c68cf25ecbe8a54bb4006fad3a"
+    },
+    {
+      "file": "primary/pro-tour-thunder-junction-standard-metagame-breakdown.html",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.603786+00:00",
+      "requested_url": "https://magic.gg/news/pro-tour-thunder-junction-standard-metagame-breakdown",
+      "role": "official format and event date range",
+      "sha256": "30019cbef2731149e7fcbd3e455f0d2e545b6c8bb1913c5085707fe5d18124b2"
+    },
+    {
+      "file": "primary/pro-tour-modern-horizons-3-metagame-breakdown.html",
+      "receipt_created_after_fetch_UTC": "2026-10-06T19:13:22.604040+00:00",
+      "requested_url": "https://magic.gg/news/pro-tour-modern-horizons-3-metagame-breakdown",
+      "role": "official format and event date range",
+      "sha256": "dd0fafcea99cf628d0238b699eee447723334ba16a080a2df97a754d39a2c80a"
+    }
+  ],
+  "raw_facts_modified": false,
+  "runtime_effect_certificate": false,
+  "schema_version": 1,
+  "source_bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "source_commit": "6ec48e09b2465a051311aef167da6e652edcb09e",
+  "source_rows_scanned": 38690,
+  "unique_canonical_cards": 67
+}

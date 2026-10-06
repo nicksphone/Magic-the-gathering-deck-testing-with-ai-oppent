@@ -15,6 +15,19 @@ BEFORE = json.loads((FIXTURE / 'seed_before.json').read_text())
 RAW = [json.loads(line) for line in (FIXTURE / 'canonical.jsonl').read_text().splitlines()]
 ADMISSION = json.loads((FIXTURE / 'reviewed_admission.json').read_text())
 sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+QUALIFIED119 = Path(__file__).parent / 'fixtures/mh3_seed_gap/seed119_before.json'
+CLI_FIXTURE = Path(__file__).with_name('historical_seed_export_worker.py')
+
+
+@pytest.fixture(autouse=True)
+def historical119_export_cohort(monkeypatch):
+    qualified = json.loads(QUALIFIED119.read_text())
+    ledger = json.loads((Path(exporter.__file__).parents[1] / 'card_data/mh3_catalog_seed_provenance.json').read_text())
+    assert sha(QUALIFIED119) == ledger['baseline_seed_sha256']
+    assert set(qualified['cards']) == set(BEFORE['cards']) and len(qualified['cards']) == 119
+    # These goldens exercise the original 119-card inputs, not the global 155-card inventory.
+    monkeypatch.setattr(exporter, 'shipped_names', lambda: set(qualified['cards']))
+    monkeypatch.setattr(exporter, 'DEFAULT_SEED', QUALIFIED119)
 
 
 def cache(tmp_path, seed=None):
@@ -112,7 +125,7 @@ def test_cli_atomic_failure_preserves_existing_payload_and_ledger(tmp_path):
     output = tmp_path / 'output.json'; output.write_bytes(b'original output\n')
     ledger = tmp_path / 'output-ledger.json'; ledger.write_bytes(b'original ledger\n')
     before = sha(db)
-    command = [sys.executable, str(Path(exporter.__file__)), '--database', str(db), '--output', str(output),
+    command = [sys.executable, str(CLI_FIXTURE), '--database', str(db), '--output', str(output),
                '--fact-ledger', str(ledger)]
     for key, value in options.items(): command += ['--' + key.replace('_', '-'), str(value)]
     run = subprocess.run(command, capture_output=True, text=True)
@@ -141,7 +154,7 @@ def test_unadmitted_cost_grammar_rejected_directly_not_masked_by_preservation(co
 def test_cli_success_publishes_complete_golden_and_distinct_external_fact_ledger(tmp_path):
     db = cache(tmp_path); options = kwargs(tmp_path)
     output = tmp_path / 'output.json'; ledger = tmp_path / 'output-ledger.json'
-    command = [sys.executable, str(Path(exporter.__file__)), '--database', str(db), '--output', str(output),
+    command = [sys.executable, str(CLI_FIXTURE), '--database', str(db), '--output', str(output),
                '--fact-ledger', str(ledger)]
     for key, value in options.items(): command += ['--' + key.replace('_', '-'), str(value)]
     before = sha(db)

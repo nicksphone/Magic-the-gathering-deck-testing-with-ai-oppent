@@ -2,6 +2,14 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Preserve historical catalog identity and distinguish event lists from
+  archetype templates. Add sourced MH3 historical imports and 36 full canonical
+  records without changing original 119 seed properties. Current-format admission
+  remains explicitly unsupported. Current composition: 501 affected tests,
+  437 neighboring tests, two-process HTTP/restart checks and frontend
+  test/lint/build pass. Preserve the initial 500-pass/one SQLite-full setup-error
+  ledger separately; no gameplay or AI-strength conclusion follows from metadata.
+
 - Compose fixed source counter costs, complete targeted basic-land searches,
   original-controller/private-choice continuations and genuine shuffle frames.
   Redact internal search packets from public views. Twenty-two whole modules

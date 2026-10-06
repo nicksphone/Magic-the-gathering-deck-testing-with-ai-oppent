@@ -8,6 +8,7 @@ from card_data import hydration
 from card_data.fallback_cards import fallback_card_payload
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS
 from decks.service import DeckService
+from decks.catalog import load_catalog
 
 FAMILIES = [('LEA', 'Kumano Faces Kakkazan', 'Burn'), ('ARN', 'Delver of Secrets', 'Tempo')]
 
@@ -33,6 +34,14 @@ def facts_inventory(board):
     result = Counter()
     for card in board:
         raw = fallback_card_payload(card['card_name'])
+        if raw is None:
+            # Catalog facts bind inventory identity, not global runtime admission.
+            key = card['card_name'].replace('\u2019', "'").casefold()
+            canonical = next((r for r in load_catalog()['cards'].values()
+                if key in {n.replace('\u2019', "'").casefold()
+                    for n in [r['name'], *(f['name'] for f in r.get('card_faces', []))]}), None)
+            if canonical is not None:
+                raw = {**canonical, 'scryfall_id': canonical['id']}
         assert raw and raw['scryfall_id']
         result[raw['scryfall_id']] += card['quantity']
     return dict(sorted(result.items()))

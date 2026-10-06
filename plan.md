@@ -62,7 +62,7 @@ patches. Parent composition must preserve newer source and qualify interactions.
 2. [x] Generic creature observers: first distinguish already-supported cast
    clauses from missing nontoken entry admission. Preserve copied-spell behavior,
    ability suppression, controller predicates, optional choices and source LKI.
-3. [ ] Historical deck provenance: preserve existing IDs/template identities,
+3. [x] Historical deck provenance: preserve existing IDs/template identities,
    verify historical event records and canonical import facts. Historical success
    is not current format legality or a promise that an old deck is competitive.
 4. [x] Global as-though-flash permissions: implement generic continuous timing
@@ -74,14 +74,30 @@ patches. Parent composition must preserve newer source and qualify interactions.
 6. [x] Targeted search resolution: separate original effect controller from
    library/choice owner; private fail-to-find, actual selected-card validation,
    destination/entry handling and genuine shuffle causality through restart.
-7. [ ] Compose the completed slices once, run affected whole-module and cross-
+7. [x] Compose the completed slices once, run affected whole-module and cross-
    family gates on captured unchanged source, fix failures, refresh docs/Graphify,
    archive verified evidence and publish the qualified milestone.
 
 Checked items are complete only for the scoped families in their linked
 acceptance reports. Conditional timing/observer grammar, arbitrary search/cost
 clauses and broader source-departure/continuation episodes remain open. Catalog
-and additional corpus/release acceptance still need current composition.
+provenance and canonical seed now have current scoped acceptance in
+[catalog composition](docs/testing/catalog-canonical-seed-current-composition.md).
+Full corpus, lifecycle and release acceptance remain unfinished.
+
+## Next Backend Batch
+
+1. [ ] Qualify phase-aware tactical combat scoring against actual checked
+   damage/winners, preserving response and crackback uncertainty. Tactical
+   fixtures are not a natural-game strength measurement.
+2. [ ] Audit and implement canonical land-animation admission and continuous
+   characteristics, including summoning sickness, cleanup and source incarnation.
+3. [ ] Verify targeted search source departure/reentry and partial target loss
+   through actual response spells, private choices and cold restart.
+4. [ ] Audit full 155-record seed regeneration for non-lossy canonical and
+   approved derived facts, without weakening the historical 119-record fixture.
+5. [ ] Resume deterministic natural play only after storage checks; preserve
+   failed resource-exhaustion runs separately from gameplay outcomes.
 
 ## Gate 1: Reliable Local Human Playtesting
 

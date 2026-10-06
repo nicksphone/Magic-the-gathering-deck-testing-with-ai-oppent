@@ -64,9 +64,16 @@ LAN deployment and broader AI-quality qualification remain open.
   mana cost; genuine chosen-X ability values and source/LKI protection are retained.
   Other counter kinds, variable removals and unsupported cost clauses remain
   outside this admission.
-- The offline seed preserves all 119 rows and supplies colors for all eight
-  two-faced cards: ten canonical face facts and six separately provenance-backed
-  derived facts. Generic exact-printing loyalty recovery avoids named exceptions.
+- The offline seed contains 155 canonical records, preserving every property of
+  the original 119 and appending 36 verified full records for historical imports.
+  The original eight two-faced cards retain ten canonical and six
+  provenance-backed derived color facts. Metadata admission is not rules support.
+  Generic exact-printing loyalty recovery avoids named exceptions.
+- The 53-entry expansion catalog distinguishes archetype templates from sourced
+  historical OTJ and MH3 tournament lists. Historical imports preserve published
+  60-card mainboards and 15-card sideboards, stable identity and event provenance.
+  They do not certify current legality or competitive strength; current-format
+  imports fail closed. See [catalog acceptance](docs/testing/catalog-canonical-seed-current-composition.md).
 - Backend human legend keeper choices require an explicit offered card. Whole-view
   training intents accept legend context only when it exactly matches current
   authoritative state; supplied context cannot select or replace the keeper.

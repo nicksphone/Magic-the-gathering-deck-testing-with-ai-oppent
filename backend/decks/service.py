@@ -10,6 +10,7 @@ from card_data.display import select_display_image_uri
 from card_data.hydration import hydrate_deck_cards, is_playable_deck_card, ready_for_match
 from card_data.sync import ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
+from decks.catalog import CatalogFacts, catalog_context
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
 from decks.parser import DeckParser
 from persistence.repository import Repository
@@ -44,6 +45,7 @@ class DeckService:
                     "finish": item["finish"],
                     "decklist_source_url": item["decklist_source_url"],
                     "event_source_url": item["event_source_url"],
+                    "catalog": catalog_context(item),
                 }
             )
         return out
@@ -54,23 +56,36 @@ class DeckService:
             raise KeyError(key)
         return EXPANSION_TOP_DECKS_BY_CODE[key]
 
-    def import_expansion_top_deck(self, code: str) -> dict:
+    @staticmethod
+    def _catalog_format_scope(format_scope: str) -> None:
+        if format_scope != "historical":
+            raise HTTPException(status_code=422, detail={
+                "code": "current_catalog_format_unsupported",
+                "reason": "Catalog provenance is historical or a template, not a current-format legality certificate.",
+            })
+
+    def import_expansion_top_deck(self, code: str, *, format_scope: str = "historical") -> dict:
         item = self.get_expansion_top_deck(code)
+        self._catalog_format_scope(format_scope)
         canonical_source = f"expansion_top:{item['code'].lower()}"
         # list_decks is newest-first; reuse the exact source without rekeying history.
         source = next((row.source for row in self.repo.list_decks()
                        if (row.source or "").strip().lower() == canonical_source), canonical_source)
-        return self.import_deck_text(
+        service = DeckService(CatalogFacts(self.repo, item)) if item["kind"] == "tournament" else self
+        result = service.import_deck_text(
             name=item["deck_name"],
             deck_text=item["deck_text"],
             source=source,
             _official_catalog=True,
         )
+        result["catalog"] = catalog_context(item)
+        return result
 
-    def import_all_expansion_top_decks(self) -> list[dict]:
+    def import_all_expansion_top_decks(self, *, format_scope: str = "historical") -> list[dict]:
+        self._catalog_format_scope(format_scope)
         results: list[dict] = []
         for item in EXPANSION_TOP_DECKS:
-            results.append(self.import_expansion_top_deck(item["code"]))
+            results.append(self.import_expansion_top_deck(item["code"], format_scope=format_scope))
         return results
 
     def import_deck_text(self, name: str, deck_text: str, source: str = "user", *, _official_catalog: bool = False) -> dict:

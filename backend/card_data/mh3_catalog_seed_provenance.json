@@ -1,0 +1,568 @@
+{
+  "schema_version": 1,
+  "scope": "append36_verified_MH3_canonical_metadata_only",
+  "baseline_composition_source_sha256": "458cd6c71bbd41269206af41a4e597baac27a0b965fc7f3dd8c9982fe1bf5a6d",
+  "baseline_seed_sha256": "a07caf7e2faa72ba860a44930e5d0df2f6f79eb858044564befa1434bfc4d0e6",
+  "seed_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+  "baseline_entries": 119,
+  "added_entries": 36,
+  "final_entries": 155,
+  "source_packet": "backend/decks/historical_event_catalog.json",
+  "source_packet_sha256": "2c589f58596f09b3d3b2e7387e5bebe23030fa5c5c11c510f48f655e2c200277",
+  "canonical_source": {
+    "bulk_as_of": "2026-09-27",
+    "canonical_printing_relation": "genuine bulk representative Oracle printing; NOT necessarily event printing; publisher source_card_id remains separate",
+    "canonical_raw_hash_basis": "full raw JSON sorted keys, compact separators, UTF8; original compressed bulk hash independently verified",
+    "raw_facts_modified": false,
+    "source_bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+    "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "source_rows_scanned": 38690
+  },
+  "printing_relation": "genuine canonical bulk representative; not necessarily historical event printing",
+  "network_fetches": 0,
+  "original119_all_properties_preserved": true,
+  "derived_facts_added": false,
+  "metadata_readiness_not_engine_certification": true,
+  "records": [
+    {
+      "requested_name": "Breeding Pool",
+      "scryfall_id": "63e4dc07-c742-41bd-8301-861637908fd1",
+      "oracle_id": "20283c4a-f1f0-42f0-bc08-6da87474426b",
+      "canonical_raw_sha256": "9770aea79712271316eb3f164ae13b675458e74917d7a78a70c579d518f2346d",
+      "seed_payload_sha256": "fb2057048bb2f05e748bd81d396c4f4c9213d44e8b83d7e21519fb51c9b7c72c",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Bristly Bill, Spine Sower",
+      "scryfall_id": "52eef0d6-24b7-40b7-8403-e8e863d0cd55",
+      "oracle_id": "d3b2d8a2-d3bc-448c-9cf6-6bead6010c28",
+      "canonical_raw_sha256": "df1bd32515c01e7058a517f043e86478060e51202fdd508ca6fd413b3fe0f969",
+      "seed_payload_sha256": "427d7625a6f44cfe4d134544db08c7f734db64a0b84ecc02c31cc1f2e3a324b5",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Burrenton Forge-Tender",
+      "scryfall_id": "40dd31ae-f252-449b-9d79-749a9a255763",
+      "oracle_id": "70bb275b-3458-4690-a50f-b231fbf0bccb",
+      "canonical_raw_sha256": "6df40beaf34a29ad7542b808ba5c3f611fc4c260af00c1b1f05a2e84fc3cf59e",
+      "seed_payload_sha256": "0a287df4982fee201746b60a197e27527047ddaee6673fe5327af1ddf56d44a6",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Chord of Calling",
+      "scryfall_id": "b18fe7e0-8344-40cc-b242-83f01c6be7a6",
+      "oracle_id": "6789a170-f2c5-4fc0-8a45-2b2361e67410",
+      "canonical_raw_sha256": "93dc0230cb40288d6b996484e05cda3cac4e7fe6544ad39e82224b40785038fe",
+      "seed_payload_sha256": "a3cb50ac8c003aecce5e97acb538ab2ae9b988c8425696b7c0b5659d150706eb",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Delighted Halfling",
+      "scryfall_id": "71384418-173a-4f77-adab-56e52fa23692",
+      "oracle_id": "f9d3b046-0b95-4103-a630-4b3fb88bb60b",
+      "canonical_raw_sha256": "4bd75f0fb869075d953227d69884a04da84450abeff3dc704184c02b0d49f3d0",
+      "seed_payload_sha256": "22990fffefdcd0356bf3e780cf70a5d317f65d59f7b3782cc23bfaa08eb2065a",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Dismember",
+      "scryfall_id": "3d286cf6-3e16-4941-9326-1818b1e06d69",
+      "oracle_id": "fd74f8eb-0253-42dd-8277-186d4934da38",
+      "canonical_raw_sha256": "50239768005858cf6a76f70d1ee8be768da48122e8fe7131dee984960f2f344a",
+      "seed_payload_sha256": "719b35e02cbecb4b23d628ed79532edbfa5eba047cddff6f10ebf70b35ae38f5",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Drannith Magistrate",
+      "scryfall_id": "98b0a4a8-9319-451b-9b79-b0bca7a41e91",
+      "oracle_id": "aadd10d0-6dd0-4bdc-8d93-ff08e29a5863",
+      "canonical_raw_sha256": "882de4644920c2fbe281849eb01081bba16fd5f494cfcf5fca8238bfd9d4f4a4",
+      "seed_payload_sha256": "3e1c26aa70e1dbebca7a216faf4b40b4a018e85097fb130042f10c26333f1c88",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Dryad Arbor",
+      "scryfall_id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7",
+      "oracle_id": "e996cd67-739c-40f4-b276-0042acf26c71",
+      "canonical_raw_sha256": "bb6228089ad901172d7b44a6733ef6df7048cc04b5bbb715a9d0ded54d5654a5",
+      "seed_payload_sha256": "cd3547afc21c5820dbba336ee9f8c68c57a89c6c065d63d6935afad0e8e8b383",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Endurance",
+      "scryfall_id": "b770471c-1bf7-4179-8418-dcd790ca5405",
+      "oracle_id": "c85d824b-c190-4d04-ab99-918ad0e6516c",
+      "canonical_raw_sha256": "826bf82139595c48410d3d07583145b63523e719199b61ed809b4ebdb9be324b",
+      "seed_payload_sha256": "5a4e2ff281eabd8f3f2c314bce4e9674b832ca437117a0a961aaaaf8330e0c19",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Force of Vigor",
+      "scryfall_id": "017c415b-d635-43c6-92b8-8c95d1c4ff8d",
+      "oracle_id": "5f627e45-deee-4a4f-8128-57b0d8ebc553",
+      "canonical_raw_sha256": "92d9e0c952fc1b70acb4cd23cd507c738453421252d932f9c49e1cdcace92166",
+      "seed_payload_sha256": "d4cac406eeec33bb195a7b427c0652cacb2a76fe02c220347787ee1b867c0793",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Haywire Mite",
+      "scryfall_id": "6f813bc3-6d81-4555-8e4b-6ecd9a6757b7",
+      "oracle_id": "749d2994-44e7-40d3-8630-7bebed239e9e",
+      "canonical_raw_sha256": "822531a7baa906897e9279886ed719e75cfc689c715c9a4dc4ec595ac71fc795",
+      "seed_payload_sha256": "5cac0b4309def34b431bf4df5cfad3408c1cb14f439336710f6f49f64de00295",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Hedge Maze",
+      "scryfall_id": "5260f8ae-805b-4eae-badf-62de0f768867",
+      "oracle_id": "ca4b6689-04ee-4227-9bdc-cb5a9590c745",
+      "canonical_raw_sha256": "8e1d17da83c595f3e854c9c3e5829be759559aaab72028bfafdfff987e1abd39",
+      "seed_payload_sha256": "4f07ae9d7fe8e64222855ee86c37dc4161783bf10f9fd4d808936c83487c0d7b",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Lush Portico",
+      "scryfall_id": "c17816e8-28b1-4295-a637-efb0e5c18873",
+      "oracle_id": "d51831b1-7394-456e-a1de-6787a59f5932",
+      "canonical_raw_sha256": "c8d27be0bd3d7a46b8d848ed37568e2b3c0206aec7ee6ea9165c3a1dd78beae2",
+      "seed_payload_sha256": "a4d3c2ef0e13beb8e44e7e383f56f68cdf2f18042818392069c6f383ac30a6ee",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Misty Rainforest",
+      "scryfall_id": "88231c0d-0cc8-44ec-bf95-81d1710ac141",
+      "oracle_id": "09dd85aa-47bc-4713-a9b9-8b52ff2285ed",
+      "canonical_raw_sha256": "173cf8048d3eb0691760177f091ebffea1601e249c783e904c78a0194a25bd8d",
+      "seed_payload_sha256": "f326bb037532ea1689be1fa7890b857b983ee1531d84c14a8cf9ccb5c19d252e",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Nadu, Winged Wisdom",
+      "scryfall_id": "94b67489-5eb0-4406-9bf3-27e50dc632eb",
+      "oracle_id": "0ff11a61-6fe3-4c70-aba8-417023a5e54e",
+      "canonical_raw_sha256": "e1315e744e853a73c097d9e6303b42f31be433339fdfe8bde5f8fa173b85e333",
+      "seed_payload_sha256": "4b9112d62a601c0e73aa6ec87ac8fa37a4b1fadbb9f713c639a87dee38e6dc0d",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Noble Hierarch",
+      "scryfall_id": "400382a4-aea2-4827-b06a-1b0b3745908b",
+      "oracle_id": "98aa9424-5912-4bd6-9300-b3972a31d8af",
+      "canonical_raw_sha256": "b74d8aeb03fc2b8a8c7f4b80dd4736c3b1927c0dd86c2b5261b57910e79ba8dd",
+      "seed_payload_sha256": "95bd96398c8030c20628d6635616f52b170f8d6af126ece066e1444638d5725e",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Otawara, Soaring City",
+      "scryfall_id": "486d7edc-d983-41f0-8b78-c99aecd72996",
+      "oracle_id": "e9b6a394-691c-425a-9307-76d8edc7375e",
+      "canonical_raw_sha256": "a032111123a922d0335616c5ace5079263684dbce48082476aa7b5425bb70342",
+      "seed_payload_sha256": "3565ac43dfca18c51f79e3a4c808528266e39d1053462c0eeaa416639cefb214",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Outrider en-Kor",
+      "scryfall_id": "de9b2506-ead4-49ff-a733-66f3f13dbe17",
+      "oracle_id": "644b7aba-a7b8-4861-9e83-73329cf85be2",
+      "canonical_raw_sha256": "8073318bb7b4f5ff6c8402bbb4a37c9071443566ee20cd502e042cceebb14749",
+      "seed_payload_sha256": "524810756765693b0fa20196a1df7eef7fda58fb820eac85878c5a3a62048029",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Shadowspear",
+      "scryfall_id": "939c6e19-4b27-4023-bb9c-ae440f91e21c",
+      "oracle_id": "8b27326f-e7b8-4a4d-b589-df459246d19a",
+      "canonical_raw_sha256": "f38aba73e167db9e819ffa67cf27b97942dd37a80ca6ae1e2632808e5a70b7c8",
+      "seed_payload_sha256": "9c3cf362ba6fa139b5c32f061cb96bf9fd1bd9525f4af86900a99da0adf7e181",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Shifting Woodland",
+      "scryfall_id": "059164e1-894d-4586-9800-e60d6fbd6eb6",
+      "oracle_id": "7c2a4fe5-43e8-4e20-bef2-0278d18afc4b",
+      "canonical_raw_sha256": "2b85045c1f68ff78cb61b23626fe1ed20abf93650470abf27572449179259c85",
+      "seed_payload_sha256": "d1e25e0ab7787f6c65f7390c37a001b4184aaa06787a5777a79c97db4f77f61a",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Shuko",
+      "scryfall_id": "a47456b8-cef8-4085-90b1-92788e16fd27",
+      "oracle_id": "8abe0577-8fdb-4e4a-a871-01b21732c961",
+      "canonical_raw_sha256": "d641c8e5151e0525b79b904dea6986318e4be6fccf6baef4f391844b0585eed9",
+      "seed_payload_sha256": "fa0a86fb6b5f7371dd6df8e7bea24f2b9e807c4160629bd9bce8118d064f9c48",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Soulless Jailer",
+      "scryfall_id": "bf9991fd-ea6a-4ed7-b5f1-46a95f8d0634",
+      "oracle_id": "7866ab01-22f3-4d87-bdb0-c0ae0e91ffc9",
+      "canonical_raw_sha256": "0744750a744b010552b631b2b5578e76f13b7a2c68d81b1eea4ede7080b6fe33",
+      "seed_payload_sha256": "29f4c9c844dd87e0b4c6756df13a34148d0318ab8b0c66120303df0e1b8def93",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Springheart Nantuko",
+      "scryfall_id": "54a3ea87-005e-4985-b2a5-21711d0b71c0",
+      "oracle_id": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+      "canonical_raw_sha256": "dec8bbe5c2555f0d728b0f074aa15d193fcc7c73a15d846bca57df26f0889156",
+      "seed_payload_sha256": "a6f2bd89e9dbdbbd08cb1722639ad1ed0bf817715df951f433dd1bd6aabc33e6",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Summoner's Pact",
+      "scryfall_id": "ee0f88ac-8a90-4057-b0e6-c15fbd02da38",
+      "oracle_id": "782dcbc4-5a11-42f5-b8d9-4572e36d45b3",
+      "canonical_raw_sha256": "462c1e3982b772f3cdc933ce92e9c24cbdf0fadf926fb649e2fbe028d2403dfc",
+      "seed_payload_sha256": "67674372e78be59f17807beed55a68d65e79ac137f4c6b54b52ca52cf3d7444f",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Suncleanser",
+      "scryfall_id": "3644df41-b690-4581-ac7d-c85cec75411f",
+      "oracle_id": "437661f7-a32f-45c9-a006-05a1e38ee8d9",
+      "canonical_raw_sha256": "85411b480f87089ea55e466d60b00d05575f1dd07ad67c9ff73790d614e431df",
+      "seed_payload_sha256": "765d45af3a6fdbbfc600c78aa2decb0e1e904710935c5859c0fbe54740b0f623",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Sylvan Safekeeper",
+      "scryfall_id": "83036e21-21ea-4324-aa07-11757f80c417",
+      "oracle_id": "bddf8f4a-3149-4dd6-a9e5-7747e7e45a1c",
+      "canonical_raw_sha256": "320296234768fcee986e9477b25c235c39d48908e18337f2953ada888c98c5af",
+      "seed_payload_sha256": "ee1867c95779529db997b409ce59c68ba546f99361c5fb31593557641c6da2da",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Teferi, Time Raveler",
+      "scryfall_id": "662fe50f-d75c-422c-8c6c-1f9b5c4ba21f",
+      "oracle_id": "ae7604bb-4818-45a3-960c-cf3d83f15964",
+      "canonical_raw_sha256": "c2548f5678e9249d352b58bf032c4e7b32b0a8c92472cb479e84ac77dc5a9dbe",
+      "seed_payload_sha256": "f2c8145494ee343ac88e4b7568778ebd54c84c3817d7f5eb0850a95d9648ad48",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Temple Garden",
+      "scryfall_id": "b9b0589d-f327-46a7-8bac-06b7654c547a",
+      "oracle_id": "f413a83d-a40d-434c-b20a-4c707c0527fa",
+      "canonical_raw_sha256": "abd5536f3f71d6ca916a9838c2d87c621302acee3cc02f7ad1a3c4c8357c4ca0",
+      "seed_payload_sha256": "56a0271482fcb6acc47222a7084c253fcacca272180fe277a20033b60e658867",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "The One Ring",
+      "scryfall_id": "d5806e68-1054-458e-866d-1f2470f682b2",
+      "oracle_id": "3aa83ed2-f48b-4ce6-a614-2c54ddf50538",
+      "canonical_raw_sha256": "81a8c7769bcb84a3b851351188d8236d5e7d346ca620f49d18bcebdb079839c3",
+      "seed_payload_sha256": "584970710e2a2bd273ecb2fbdc8448e6ee7c01688241035b417183575ff8e83c",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Urza's Saga",
+      "scryfall_id": "c1e0f201-42cb-46a1-901a-65bb4fc18f6c",
+      "oracle_id": "4c6a0c30-b547-4eff-8ff4-0ca25803c076",
+      "canonical_raw_sha256": "39065a92513980e89995b335f0d689714c745a81f77b72ded612e58feed0ee56",
+      "seed_payload_sha256": "180cfba12dfade0e85ec67c047241ee957ce2f0bd35ff28a2a5655c8ec04b850",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Veil of Summer",
+      "scryfall_id": "aa686c34-1c11-469f-93c2-f9891aea521f",
+      "oracle_id": "002965be-a36f-4a09-9ce0-c6535bca1703",
+      "canonical_raw_sha256": "5030bffebf1eded98808f63bae59c330d8135f86d36660e8d95b8e8781781b70",
+      "seed_payload_sha256": "4e01f7886e1d28799c86fc75ebe27eee1f0b57072edde7a7b7a8d717e2fec11f",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Volatile Stormdrake",
+      "scryfall_id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+      "oracle_id": "08d64b16-9221-4532-890c-d5cdbf181e28",
+      "canonical_raw_sha256": "42670ff083c39f3ca25e8aff4b2432970f986db325520657a067879313cb503d",
+      "seed_payload_sha256": "724ff1c21e5e5358dd1f9e34d676ef7d390089bcac14c1201f37cc7e31da3b06",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Wall of Roots",
+      "scryfall_id": "e4e7d3b7-9b0c-463d-975c-ef81d7fd8dad",
+      "oracle_id": "3a21a6ae-b2f2-4f0c-acfd-5f3e8d63fd2f",
+      "canonical_raw_sha256": "64da166ffe14601599b793b8794905078b0dd95bd2a7c2670603141d41657e4f",
+      "seed_payload_sha256": "9e0a75cb0e06bd3b48b7f4d825a4ee9bf51f0f54c571d0430d5ded33a861391c",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Waterlogged Grove",
+      "scryfall_id": "0ab6bfbd-d2e1-4c4c-9f91-6f69c5b8e3bb",
+      "oracle_id": "70fa2eba-565e-4fed-adc9-7f5d9fcbf1fa",
+      "canonical_raw_sha256": "235c349e2c577423fb1bad21bfa7df4b6d62f3d871f6c0b102bece37427771bd",
+      "seed_payload_sha256": "8a198a38398adc26636b23a1fd1a2646a7f6bf804d548ef5b84ac2d347a47644",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Windswept Heath",
+      "scryfall_id": "bd1d13f7-fd38-4f0b-a8e0-1eac78668117",
+      "oracle_id": "29737a60-3ebd-40d9-b935-c4f54b90d45d",
+      "canonical_raw_sha256": "af42f474ac0873a0ed626c8aed9232922ba9d50df11a1caaf94516d1cfe58635",
+      "seed_payload_sha256": "b4e5480ea76665929d2f626d44953f28d339089ef8355f5c3ba049f9e0925379",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    },
+    {
+      "requested_name": "Yavimaya, Cradle of Growth",
+      "scryfall_id": "4e4b6e22-93b2-4896-bba5-0ceaa5d8ea3c",
+      "oracle_id": "8dd5f5af-d2d8-4356-8617-8381081b930c",
+      "canonical_raw_sha256": "4fb0f1f6f21ace02a11976dcd467c9086aeb9b8bef897d0efbcff3f4a525b4ac",
+      "seed_payload_sha256": "4edd7a7223c1a8c9738f2b5461e2ba88442da91691729416ec2bf6d25bc3bc1b",
+      "fact_kind": "canonical_explicit",
+      "full_raw_preserved": true,
+      "contract_alias": {
+        "scryfall_id": "Scryfall.Card.id"
+      },
+      "field_derivations": [],
+      "runtime_effect_certificate": false,
+      "current_format_certificate": false
+    }
+  ]
+}

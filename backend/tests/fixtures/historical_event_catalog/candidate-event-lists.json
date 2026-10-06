@@ -1,0 +1,745 @@
+{
+  "schema_version": 1,
+  "publication_status": "candidate only; not production catalog",
+  "decks": [
+    {
+      "record_id": "official:pro-tour-thunder-junction:2024-04-26:yoshihiko-ikawa",
+      "kind": "official_event_submission",
+      "associated_set_code": "OTJ",
+      "set_association": "event branding, not block construction or card-set restriction",
+      "event": {
+        "name": "Pro Tour Thunder Junction",
+        "start_date": "2024-04-26",
+        "end_date": "2024-04-28"
+      },
+      "player_name": "Yoshihiko Ikawa",
+      "published_archetype": "Domain Ramp",
+      "source_date": "April 26, 2024",
+      "format": {
+        "name": "Standard",
+        "historical_evidence": "official published event submission",
+        "independent_legality_certificate": false,
+        "current_legality": "unverified"
+      },
+      "finish": {
+        "rank": 1,
+        "source_url": "https://magic.gg/events/pro-tour-thunder-junction"
+      },
+      "provenance": {
+        "decklist_page": "https://magic.gg/news/pro-tour-thunder-junction-top-8-players-and-decks",
+        "decklist_payload": "https://d3ke0m2z3n6in9.cloudfront.net/Domain_Ramp_Yoshihiko%20Ikawa_Pro%20Tour%20Thunder%20Junction_April%2026%2C%202024_a81e7b1c-1894-47ef-88c3-ea7932d6aaa3.json",
+        "source_file": "otj-ikawa.json",
+        "source_sha256": "43576b5366a2d02aa09944f73e1dd3b4298481b59cd612940ac33f414d26d9da"
+      },
+      "runtime_effect_certificate": false,
+      "mainboard": [
+        {
+          "quantity": 3,
+          "source_name": "Atraxa, Grand Unifier",
+          "source_card_id": "57547f98-383b-4f62-b822-f7670cffc0c2",
+          "canonical_name": "Atraxa, Grand Unifier",
+          "scryfall_id": "4a1f905f-1d55-4d02-9d24-e58070793d3f",
+          "oracle_id": "abbcb153-0763-44c6-964f-b4ff0eb64257",
+          "canonical_raw_sha256": "68faa7b11dbf8c3fbf34fbea36387dd6b29973fcdf6e1e9f5af29c0961908401",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Archangel of Wrath",
+          "source_card_id": "fac3451f-fc5a-4459-aece-e23652e34c4f",
+          "canonical_name": "Archangel of Wrath",
+          "scryfall_id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+          "oracle_id": "022e97af-2a3a-4e13-9b6b-d34fcc8cf168",
+          "canonical_raw_sha256": "8a9f1d3250031ffcc273e64300e874e6da4dafcbba04bf96f15ac13f2e11baf6",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Imodane’s Recruiter",
+          "source_card_id": "04adb7b2-ebcb-487d-acb3-abeeee04d0b5",
+          "canonical_name": "Imodane's Recruiter // Train Troops",
+          "scryfall_id": "4dbaa855-3f8e-42e6-8ec8-5ffbc5c8acf0",
+          "oracle_id": "50bee80e-89df-48c2-b608-ba66ff3e794a",
+          "canonical_raw_sha256": "9749c7b483a8085fe5a4cdc6ebed5c77dad66ca2cf3a82a680a5281815eccf25",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Topiary Stomper",
+          "source_card_id": "91b9be70-f6c6-4533-a523-4a5dba86ac4b",
+          "canonical_name": "Topiary Stomper",
+          "scryfall_id": "e8b92271-4412-4165-a4a6-e8653e755107",
+          "oracle_id": "e3fc10d2-2733-4265-8275-112c285fd11a",
+          "canonical_raw_sha256": "aafce086ca91167a7e50ac4e9dda95c292382cbd972589ad84699fb2f59276a4",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Herd Migration",
+          "source_card_id": "73c996dd-8340-4438-984a-80b47540eaa2",
+          "canonical_name": "Herd Migration",
+          "scryfall_id": "b0244a1f-e696-4223-9c14-22c2ca3cb738",
+          "oracle_id": "dfdc0eab-309b-4441-a94c-930c6dde4c48",
+          "canonical_raw_sha256": "cd53aeb75932193df964cab081286a5b9d69727bbdb6f86cd191b8bd521b5eae",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 3,
+          "source_name": "Sunfall",
+          "source_card_id": "077d52eb-46cb-4c5f-80f1-5cb029e0ecd4",
+          "canonical_name": "Sunfall",
+          "scryfall_id": "a560b9a7-4c00-4c0c-b63d-774d3f6b9aa9",
+          "oracle_id": "fb3f5097-0da0-458c-8508-60823567e2da",
+          "canonical_raw_sha256": "f242a3a2bb2acf0dfe4bf19734d140da892ec4457a6521a317f6f8028392c117",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Cartographer’s Survey",
+          "source_card_id": "c308aecc-e026-4e36-98e4-b1867fa392ba",
+          "canonical_name": "Cartographer's Survey",
+          "scryfall_id": "b9a41cfc-f329-4e69-a785-835f69c7d2ba",
+          "oracle_id": "e05029b4-552d-4691-a5c4-885284fb1636",
+          "canonical_raw_sha256": "9d3bde9cf11ccd40bcbb623e7ecef775b160f8e1688b7bd5132f7cf92469f7b1",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 3,
+          "source_name": "Depopulate",
+          "source_card_id": "77a0436d-ed6d-4f13-b8ad-a7b3469d403b",
+          "canonical_name": "Depopulate",
+          "scryfall_id": "c53c1898-9107-4bf8-b249-d0502fb9596d",
+          "oracle_id": "4a83c2fa-f2d2-4b86-8407-4269f127936d",
+          "canonical_raw_sha256": "123e77af122daba649ceb26820ea84cab23bfbcb64e6b78ec4e866aecc0971bf",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Glimpse the Core",
+          "source_card_id": "2db3d348-32f2-4ce5-81f2-609814661abd",
+          "canonical_name": "Glimpse the Core",
+          "scryfall_id": "de7d6aed-3dc8-417d-a190-1660cfc8ee4a",
+          "oracle_id": "fa44fa48-d270-4f0f-b672-d63e1c1942ce",
+          "canonical_raw_sha256": "06be521f8332ba8e9d94fbaaff4785896e979d644728e1eb7c00d5833fbdc2b1",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Long Goodbye",
+          "source_card_id": "74189d66-e456-4d2a-80e1-f820a8aea771",
+          "canonical_name": "Long Goodbye",
+          "scryfall_id": "c3896705-bbd2-4ffb-a590-ee78e0eabdc5",
+          "oracle_id": "9d63ba8a-a5cd-4fdb-bba3-95612be0077c",
+          "canonical_raw_sha256": "d7e12af9104a5711d9c2d2b247078d68461a20b3403102cbd5ea373a7fef4740",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Leyline Binding",
+          "source_card_id": "adddf3fd-e79d-4033-8246-2060166c0f0b",
+          "canonical_name": "Leyline Binding",
+          "scryfall_id": "3c3ac3dd-35db-447f-8674-37b4680a1ef7",
+          "oracle_id": "b49642f6-20bd-468d-9dac-e578f9ac3091",
+          "canonical_raw_sha256": "a9068017128cbd9d3844ce5c7745e995e431c2ad2780573a5ffd860cc3d4be61",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Spelunking",
+          "source_card_id": "5dd6fb34-8af6-403f-8b7b-3aab00a4dc0b",
+          "canonical_name": "Spelunking",
+          "scryfall_id": "d3be4257-2316-4a2e-b347-f71c0368a947",
+          "oracle_id": "2962fe4c-bf48-454b-8a6b-0f8253352ae8",
+          "canonical_raw_sha256": "8cdb135d3cfef913d56b78c3ba9dc325453519c8947d893792b322c5c34450e0",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 3,
+          "source_name": "Up the Beanstalk",
+          "source_card_id": "0758af17-3df2-4f6e-93ac-a19e070a6d7d",
+          "canonical_name": "Up the Beanstalk",
+          "scryfall_id": "2d5e991f-23b2-4db0-a452-7755125b1fd2",
+          "oracle_id": "050f5733-7c0b-4991-9a6c-7ea12ccf0ca9",
+          "canonical_raw_sha256": "179b9ebada5af87039f8e73aebf87108952d2b9db89adf887ad5924fc9f65e70",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Raffine’s Tower",
+          "source_card_id": "48e312f9-3cb7-4991-8ce1-3dc1ab1849a9",
+          "canonical_name": "Raffine's Tower",
+          "scryfall_id": "a2c56479-4bee-4edb-80d7-4af010b7c793",
+          "oracle_id": "6e9ef5ef-6aed-4d3e-a59b-9e3dc8740b1b",
+          "canonical_raw_sha256": "84d02ce804e79eb25eb7a6617232b502f865a6263fdda0f4529f8e5dce15ce24",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Ziatora’s Proving Ground",
+          "source_card_id": "d5227cfb-b619-40e0-8cdd-718be687ab69",
+          "canonical_name": "Ziatora's Proving Ground",
+          "scryfall_id": "75fdce80-e338-4a50-bdc6-786511feaeef",
+          "oracle_id": "f7e7b78c-c769-4720-8585-1874773eb342",
+          "canonical_raw_sha256": "9d89aa0586183fc53e9c204adbdf262f0778657f17e023e240e02ca98df3cb44",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 3,
+          "source_name": "Plains",
+          "source_card_id": "1e52e710-3304-4c68-9d1d-0c14c4b14a06",
+          "canonical_name": "Plains",
+          "scryfall_id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+          "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+          "canonical_raw_sha256": "96d267598e275ed64ad08a1390234dfc87cc50a29e14778c48d874b7344941b5",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Cavern of Souls",
+          "source_card_id": "6f9514be-8570-48dc-8e47-752407b54b5a",
+          "canonical_name": "Cavern of Souls",
+          "scryfall_id": "3aad15a2-8a1b-4460-9b06-e85863081878",
+          "oracle_id": "89ca686a-7c72-4d8f-9290-e89635624a83",
+          "canonical_raw_sha256": "2665a16ca450d0aa92dff81fb3b30b009ae06b2eba47d3b7be30c168469ef792",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Spara’s Headquarters",
+          "source_card_id": "464ba65c-a53d-49f8-96e9-9abf7601bbfb",
+          "canonical_name": "Spara's Headquarters",
+          "scryfall_id": "7363f1fb-9af3-4212-921f-d59533faf0e5",
+          "oracle_id": "3123ec89-8e95-4761-ba17-747ec667509f",
+          "canonical_raw_sha256": "6eb0dedbbec92a5fc85412d68c9504c5c94928cd1a6a8a3f5e8c0c0b4b9808f9",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Island",
+          "source_card_id": "56f352d5-7701-496c-998f-f9bda6521f8e",
+          "canonical_name": "Island",
+          "scryfall_id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+          "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+          "canonical_raw_sha256": "3dc84687094c5831a9901fbbaa489f78006bdaf0275fffda1c5f8985df8b3a37",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 3,
+          "source_name": "Forest",
+          "source_card_id": "1f6ca235-1500-40fe-a897-00faf4a7843b",
+          "canonical_name": "Forest",
+          "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+          "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+          "canonical_raw_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Jetmir’s Garden",
+          "source_card_id": "54a3ca9c-e66f-4e02-8105-e2cb77f80294",
+          "canonical_name": "Jetmir's Garden",
+          "scryfall_id": "26d40e03-6de4-4373-9fbf-04c1dd79e995",
+          "oracle_id": "f5896356-5744-4f7e-a4e5-1cc36dde5958",
+          "canonical_raw_sha256": "e8f0f694cc62eddd95281c6859113b745f1444795ebfa380053b575f556bdbd9",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Swamp",
+          "source_card_id": "45fe9c35-229f-4391-9d73-cc7f0dee94f5",
+          "canonical_name": "Swamp",
+          "scryfall_id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+          "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+          "canonical_raw_sha256": "acd8b971986fbf6fa6d55e931a8249cc5f84700cf8218978e32ba67ec0a98c2e",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Boseiju, Who Endures",
+          "source_card_id": "d5080a93-5f6e-4c63-8ab2-c5918559c7f5",
+          "canonical_name": "Boseiju, Who Endures",
+          "scryfall_id": "2135ac5a-187b-4dc9-8f82-34e8d1603416",
+          "oracle_id": "bf1341dd-41a3-49f6-87ec-63170dde4324",
+          "canonical_raw_sha256": "f090bc6a33c0426d96dc5eec2809ca5ac7121272b235bd1919c3e37b124cf34d",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        }
+      ],
+      "sideboard": [
+        {
+          "quantity": 1,
+          "source_name": "Nissa, Ascended Animist",
+          "source_card_id": "eee0a409-8d22-490e-8597-2bdab57bfec1",
+          "canonical_name": "Nissa, Ascended Animist",
+          "scryfall_id": "1dd64b1d-bcef-476c-bf0b-3ac7df7cbed3",
+          "oracle_id": "9c8845d6-fa65-4731-b348-dc724fc2d285",
+          "canonical_raw_sha256": "2848ccc268a2e29d7529caa2840cc7e77ed91f4cb51e5ac41fa5298b25a8df1e",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Tranquil Frillback",
+          "source_card_id": "4e922e24-8827-490e-9484-a25153bf38c7",
+          "canonical_name": "Tranquil Frillback",
+          "scryfall_id": "5b647377-d47e-4630-8ccc-933ef6127880",
+          "oracle_id": "e87a4461-f3d1-443f-ad4c-dba91a993809",
+          "canonical_raw_sha256": "581811121d1d54b72eea1f8f0804a489fdb45c951954128b67d70230c59fc976",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Chrome Host Seedshark",
+          "source_card_id": "6fefa769-42f7-430c-8859-d5d462db20c8",
+          "canonical_name": "Chrome Host Seedshark",
+          "scryfall_id": "04e02176-16ee-4676-8b33-cedebdb18cbc",
+          "oracle_id": "837c5d0e-0a33-4f9d-ae25-68a687bdf640",
+          "canonical_raw_sha256": "3a08252d6f50815ed2cb3220668aa4d5bff3732acf285cd8864b5f0a85ca72b9",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 3,
+          "source_name": "Negate",
+          "source_card_id": "128bd48b-f84e-4401-aa7f-71fc71e4987c",
+          "canonical_name": "Negate",
+          "scryfall_id": "52d58fe4-6070-4022-9cd7-c35a11b44525",
+          "oracle_id": "3407fe41-fdd3-4119-8f70-4bc4590a379f",
+          "canonical_raw_sha256": "90d37bb8ead523ea99cf40dff8eeb4187dd55f400a32ce4769c1001dc943b92c",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 3,
+          "source_name": "Long Goodbye",
+          "source_card_id": "74189d66-e456-4d2a-80e1-f820a8aea771",
+          "canonical_name": "Long Goodbye",
+          "scryfall_id": "c3896705-bbd2-4ffb-a590-ee78e0eabdc5",
+          "oracle_id": "9d63ba8a-a5cd-4fdb-bba3-95612be0077c",
+          "canonical_raw_sha256": "d7e12af9104a5711d9c2d2b247078d68461a20b3403102cbd5ea373a7fef4740",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Temporary Lockdown",
+          "source_card_id": "c5901287-7ce0-461a-a7fb-4a5c564b0f42",
+          "canonical_name": "Temporary Lockdown",
+          "scryfall_id": "82b3088f-7b49-45e9-b447-129a597ceb75",
+          "oracle_id": "b21c99b3-b975-4428-9c9a-326ded2fa8dc",
+          "canonical_raw_sha256": "e31769334619fa798750fee703e147a752dc71e13f51dc45b63b5e0963b5229c",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Rest in Peace",
+          "source_card_id": "037122db-746b-4d63-a7e9-319989132772",
+          "canonical_name": "Rest in Peace",
+          "scryfall_id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+          "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+          "canonical_raw_sha256": "c645d23b51a82f54bc5f3d10dd21dd75130670e631a1f0331b4aa3161e2d4dd9",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        }
+      ]
+    },
+    {
+      "record_id": "official:pro-tour-modern-horizons-3:2024-06-28:simon-nielsen",
+      "kind": "official_event_submission",
+      "associated_set_code": "MH3",
+      "set_association": "event branding, not block construction or card-set restriction",
+      "event": {
+        "name": "Pro Tour Modern Horizons 3",
+        "start_date": "2024-06-28",
+        "end_date": "2024-06-30"
+      },
+      "player_name": "Simon Nielsen",
+      "published_archetype": "Bant Nadu",
+      "source_date": "June 28, 2024",
+      "format": {
+        "name": "Modern",
+        "historical_evidence": "official published event submission",
+        "independent_legality_certificate": false,
+        "current_legality": "unverified"
+      },
+      "finish": {
+        "rank": 1,
+        "source_url": "https://magic.gg/news/metagame-mentor-wins-and-lessons-from-pro-tour-modern-horizons-3"
+      },
+      "provenance": {
+        "decklist_page": "https://magic.gg/news/pro-tour-modern-horizons-3-top-8-players-and-decks",
+        "decklist_payload": "https://magic.gg/news/pro-tour-modern-horizons-3-top-8-players-and-decks",
+        "source_file": "pro-tour-modern-horizons-3-top-8-players-and-decks.html",
+        "source_sha256": "48513e98279884515735970495813972f196e4c68cf25ecbe8a54bb4006fad3a"
+      },
+      "runtime_effect_certificate": false,
+      "mainboard": [
+        {
+          "quantity": 1,
+          "source_name": "Outrider en-Kor",
+          "canonical_name": "Outrider en-Kor",
+          "scryfall_id": "de9b2506-ead4-49ff-a733-66f3f13dbe17",
+          "oracle_id": "644b7aba-a7b8-4861-9e83-73329cf85be2",
+          "canonical_raw_sha256": "8073318bb7b4f5ff6c8402bbb4a37c9071443566ee20cd502e042cceebb14749",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Endurance",
+          "canonical_name": "Endurance",
+          "scryfall_id": "b770471c-1bf7-4179-8418-dcd790ca5405",
+          "oracle_id": "c85d824b-c190-4d04-ab99-918ad0e6516c",
+          "canonical_raw_sha256": "826bf82139595c48410d3d07583145b63523e719199b61ed809b4ebdb9be324b",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Nadu, Winged Wisdom",
+          "canonical_name": "Nadu, Winged Wisdom",
+          "scryfall_id": "94b67489-5eb0-4406-9bf3-27e50dc632eb",
+          "oracle_id": "0ff11a61-6fe3-4c70-aba8-417023a5e54e",
+          "canonical_raw_sha256": "e1315e744e853a73c097d9e6303b42f31be433339fdfe8bde5f8fa173b85e333",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Springheart Nantuko",
+          "canonical_name": "Springheart Nantuko",
+          "scryfall_id": "54a3ea87-005e-4985-b2a5-21711d0b71c0",
+          "oracle_id": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+          "canonical_raw_sha256": "dec8bbe5c2555f0d728b0f074aa15d193fcc7c73a15d846bca57df26f0889156",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Bristly Bill, Spine Sower",
+          "canonical_name": "Bristly Bill, Spine Sower",
+          "scryfall_id": "52eef0d6-24b7-40b7-8403-e8e863d0cd55",
+          "oracle_id": "d3b2d8a2-d3bc-448c-9cf6-6bead6010c28",
+          "canonical_raw_sha256": "df1bd32515c01e7058a517f043e86478060e51202fdd508ca6fd413b3fe0f969",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Wall of Roots",
+          "canonical_name": "Wall of Roots",
+          "scryfall_id": "e4e7d3b7-9b0c-463d-975c-ef81d7fd8dad",
+          "oracle_id": "3a21a6ae-b2f2-4f0c-acfd-5f3e8d63fd2f",
+          "canonical_raw_sha256": "64da166ffe14601599b793b8794905078b0dd95bd2a7c2670603141d41657e4f",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Haywire Mite",
+          "canonical_name": "Haywire Mite",
+          "scryfall_id": "6f813bc3-6d81-4555-8e4b-6ecd9a6757b7",
+          "oracle_id": "749d2994-44e7-40d3-8630-7bebed239e9e",
+          "canonical_raw_sha256": "822531a7baa906897e9279886ed719e75cfc689c715c9a4dc4ec595ac71fc795",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Sylvan Safekeeper",
+          "canonical_name": "Sylvan Safekeeper",
+          "scryfall_id": "83036e21-21ea-4324-aa07-11757f80c417",
+          "oracle_id": "bddf8f4a-3149-4dd6-a9e5-7747e7e45a1c",
+          "canonical_raw_sha256": "320296234768fcee986e9477b25c235c39d48908e18337f2953ada888c98c5af",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Noble Hierarch",
+          "canonical_name": "Noble Hierarch",
+          "scryfall_id": "400382a4-aea2-4827-b06a-1b0b3745908b",
+          "oracle_id": "98aa9424-5912-4bd6-9300-b3972a31d8af",
+          "canonical_raw_sha256": "b74d8aeb03fc2b8a8c7f4b80dd4736c3b1927c0dd86c2b5261b57910e79ba8dd",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Delighted Halfling",
+          "canonical_name": "Delighted Halfling",
+          "scryfall_id": "71384418-173a-4f77-adab-56e52fa23692",
+          "oracle_id": "f9d3b046-0b95-4103-a630-4b3fb88bb60b",
+          "canonical_raw_sha256": "4bd75f0fb869075d953227d69884a04da84450abeff3dc704184c02b0d49f3d0",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Dryad Arbor",
+          "canonical_name": "Dryad Arbor",
+          "scryfall_id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7",
+          "oracle_id": "e996cd67-739c-40f4-b276-0042acf26c71",
+          "canonical_raw_sha256": "bb6228089ad901172d7b44a6733ef6df7048cc04b5bbb715a9d0ded54d5654a5",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Chord of Calling",
+          "canonical_name": "Chord of Calling",
+          "scryfall_id": "b18fe7e0-8344-40cc-b242-83f01c6be7a6",
+          "oracle_id": "6789a170-f2c5-4fc0-8a45-2b2361e67410",
+          "canonical_raw_sha256": "93dc0230cb40288d6b996484e05cda3cac4e7fe6544ad39e82224b40785038fe",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Summoner's Pact",
+          "canonical_name": "Summoner's Pact",
+          "scryfall_id": "ee0f88ac-8a90-4057-b0e6-c15fbd02da38",
+          "oracle_id": "782dcbc4-5a11-42f5-b8d9-4572e36d45b3",
+          "canonical_raw_sha256": "462c1e3982b772f3cdc933ce92e9c24cbdf0fadf926fb649e2fbe028d2403dfc",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "The One Ring",
+          "canonical_name": "The One Ring",
+          "scryfall_id": "d5806e68-1054-458e-866d-1f2470f682b2",
+          "oracle_id": "3aa83ed2-f48b-4ce6-a614-2c54ddf50538",
+          "canonical_raw_sha256": "81a8c7769bcb84a3b851351188d8236d5e7d346ca620f49d18bcebdb079839c3",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Shuko",
+          "canonical_name": "Shuko",
+          "scryfall_id": "a47456b8-cef8-4085-90b1-92788e16fd27",
+          "oracle_id": "8abe0577-8fdb-4e4a-a871-01b21732c961",
+          "canonical_raw_sha256": "d641c8e5151e0525b79b904dea6986318e4be6fccf6baef4f391844b0585eed9",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Urza's Saga",
+          "canonical_name": "Urza's Saga",
+          "scryfall_id": "c1e0f201-42cb-46a1-901a-65bb4fc18f6c",
+          "oracle_id": "4c6a0c30-b547-4eff-8ff4-0ca25803c076",
+          "canonical_raw_sha256": "39065a92513980e89995b335f0d689714c745a81f77b72ded612e58feed0ee56",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Hallowed Fountain",
+          "canonical_name": "Hallowed Fountain",
+          "scryfall_id": "b7285986-7e08-4969-86ef-452dc5bfdd9f",
+          "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea",
+          "canonical_raw_sha256": "c5d8e69f9b677f493a57537c4a9ef28710ab5f43710c6d896750e6b20c6b546f",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Lush Portico",
+          "canonical_name": "Lush Portico",
+          "scryfall_id": "c17816e8-28b1-4295-a637-efb0e5c18873",
+          "oracle_id": "d51831b1-7394-456e-a1de-6787a59f5932",
+          "canonical_raw_sha256": "c8d27be0bd3d7a46b8d848ed37568e2b3c0206aec7ee6ea9165c3a1dd78beae2",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Forest",
+          "canonical_name": "Forest",
+          "scryfall_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+          "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+          "canonical_raw_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Hedge Maze",
+          "canonical_name": "Hedge Maze",
+          "scryfall_id": "5260f8ae-805b-4eae-badf-62de0f768867",
+          "oracle_id": "ca4b6689-04ee-4227-9bdc-cb5a9590c745",
+          "canonical_raw_sha256": "8e1d17da83c595f3e854c9c3e5829be759559aaab72028bfafdfff987e1abd39",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Windswept Heath",
+          "canonical_name": "Windswept Heath",
+          "scryfall_id": "bd1d13f7-fd38-4f0b-a8e0-1eac78668117",
+          "oracle_id": "29737a60-3ebd-40d9-b935-c4f54b90d45d",
+          "canonical_raw_sha256": "af42f474ac0873a0ed626c8aed9232922ba9d50df11a1caaf94516d1cfe58635",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Waterlogged Grove",
+          "canonical_name": "Waterlogged Grove",
+          "scryfall_id": "0ab6bfbd-d2e1-4c4c-9f91-6f69c5b8e3bb",
+          "oracle_id": "70fa2eba-565e-4fed-adc9-7f5d9fcbf1fa",
+          "canonical_raw_sha256": "235c349e2c577423fb1bad21bfa7df4b6d62f3d871f6c0b102bece37427771bd",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Yavimaya, Cradle of Growth",
+          "canonical_name": "Yavimaya, Cradle of Growth",
+          "scryfall_id": "4e4b6e22-93b2-4896-bba5-0ceaa5d8ea3c",
+          "oracle_id": "8dd5f5af-d2d8-4356-8617-8381081b930c",
+          "canonical_raw_sha256": "4fb0f1f6f21ace02a11976dcd467c9086aeb9b8bef897d0efbcff3f4a525b4ac",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 4,
+          "source_name": "Misty Rainforest",
+          "canonical_name": "Misty Rainforest",
+          "scryfall_id": "88231c0d-0cc8-44ec-bf95-81d1710ac141",
+          "oracle_id": "09dd85aa-47bc-4713-a9b9-8b52ff2285ed",
+          "canonical_raw_sha256": "173cf8048d3eb0691760177f091ebffea1601e249c783e904c78a0194a25bd8d",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Breeding Pool",
+          "canonical_name": "Breeding Pool",
+          "scryfall_id": "63e4dc07-c742-41bd-8301-861637908fd1",
+          "oracle_id": "20283c4a-f1f0-42f0-bc08-6da87474426b",
+          "canonical_raw_sha256": "9770aea79712271316eb3f164ae13b675458e74917d7a78a70c579d518f2346d",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Shifting Woodland",
+          "canonical_name": "Shifting Woodland",
+          "scryfall_id": "059164e1-894d-4586-9800-e60d6fbd6eb6",
+          "oracle_id": "7c2a4fe5-43e8-4e20-bef2-0278d18afc4b",
+          "canonical_raw_sha256": "2b85045c1f68ff78cb61b23626fe1ed20abf93650470abf27572449179259c85",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Otawara, Soaring City",
+          "canonical_name": "Otawara, Soaring City",
+          "scryfall_id": "486d7edc-d983-41f0-8b78-c99aecd72996",
+          "oracle_id": "e9b6a394-691c-425a-9307-76d8edc7375e",
+          "canonical_raw_sha256": "a032111123a922d0335616c5ace5079263684dbce48082476aa7b5425bb70342",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Temple Garden",
+          "canonical_name": "Temple Garden",
+          "scryfall_id": "b9b0589d-f327-46a7-8bac-06b7654c547a",
+          "oracle_id": "f413a83d-a40d-434c-b20a-4c707c0527fa",
+          "canonical_raw_sha256": "abd5536f3f71d6ca916a9838c2d87c621302acee3cc02f7ad1a3c4c8357c4ca0",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Boseiju, Who Endures",
+          "canonical_name": "Boseiju, Who Endures",
+          "scryfall_id": "2135ac5a-187b-4dc9-8f82-34e8d1603416",
+          "oracle_id": "bf1341dd-41a3-49f6-87ec-63170dde4324",
+          "canonical_raw_sha256": "f090bc6a33c0426d96dc5eec2809ca5ac7121272b235bd1919c3e37b124cf34d",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        }
+      ],
+      "sideboard": [
+        {
+          "quantity": 2,
+          "source_name": "Teferi, Time Raveler",
+          "canonical_name": "Teferi, Time Raveler",
+          "scryfall_id": "662fe50f-d75c-422c-8c6c-1f9b5c4ba21f",
+          "oracle_id": "ae7604bb-4818-45a3-960c-cf3d83f15964",
+          "canonical_raw_sha256": "c2548f5678e9249d352b58bf032c4e7b32b0a8c92472cb479e84ac77dc5a9dbe",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Endurance",
+          "canonical_name": "Endurance",
+          "scryfall_id": "b770471c-1bf7-4179-8418-dcd790ca5405",
+          "oracle_id": "c85d824b-c190-4d04-ab99-918ad0e6516c",
+          "canonical_raw_sha256": "826bf82139595c48410d3d07583145b63523e719199b61ed809b4ebdb9be324b",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Drannith Magistrate",
+          "canonical_name": "Drannith Magistrate",
+          "scryfall_id": "98b0a4a8-9319-451b-9b79-b0bca7a41e91",
+          "oracle_id": "aadd10d0-6dd0-4bdc-8d93-ff08e29a5863",
+          "canonical_raw_sha256": "882de4644920c2fbe281849eb01081bba16fd5f494cfcf5fca8238bfd9d4f4a4",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Suncleanser",
+          "canonical_name": "Suncleanser",
+          "scryfall_id": "3644df41-b690-4581-ac7d-c85cec75411f",
+          "oracle_id": "437661f7-a32f-45c9-a006-05a1e38ee8d9",
+          "canonical_raw_sha256": "85411b480f87089ea55e466d60b00d05575f1dd07ad67c9ff73790d614e431df",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Volatile Stormdrake",
+          "canonical_name": "Volatile Stormdrake",
+          "scryfall_id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+          "oracle_id": "08d64b16-9221-4532-890c-d5cdbf181e28",
+          "canonical_raw_sha256": "42670ff083c39f3ca25e8aff4b2432970f986db325520657a067879313cb503d",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Soulless Jailer",
+          "canonical_name": "Soulless Jailer",
+          "scryfall_id": "bf9991fd-ea6a-4ed7-b5f1-46a95f8d0634",
+          "oracle_id": "7866ab01-22f3-4d87-bdb0-c0ae0e91ffc9",
+          "canonical_raw_sha256": "0744750a744b010552b631b2b5578e76f13b7a2c68d81b1eea4ede7080b6fe33",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Burrenton Forge-Tender",
+          "canonical_name": "Burrenton Forge-Tender",
+          "scryfall_id": "40dd31ae-f252-449b-9d79-749a9a255763",
+          "oracle_id": "70bb275b-3458-4690-a50f-b231fbf0bccb",
+          "canonical_raw_sha256": "6df40beaf34a29ad7542b808ba5c3f611fc4c260af00c1b1f05a2e84fc3cf59e",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Force of Vigor",
+          "canonical_name": "Force of Vigor",
+          "scryfall_id": "017c415b-d635-43c6-92b8-8c95d1c4ff8d",
+          "oracle_id": "5f627e45-deee-4a4f-8128-57b0d8ebc553",
+          "canonical_raw_sha256": "92d9e0c952fc1b70acb4cd23cd507c738453421252d932f9c49e1cdcace92166",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Dismember",
+          "canonical_name": "Dismember",
+          "scryfall_id": "3d286cf6-3e16-4941-9326-1818b1e06d69",
+          "oracle_id": "fd74f8eb-0253-42dd-8277-186d4934da38",
+          "canonical_raw_sha256": "50239768005858cf6a76f70d1ee8be768da48122e8fe7131dee984960f2f344a",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Spell Pierce",
+          "canonical_name": "Spell Pierce",
+          "scryfall_id": "8dd4374f-0301-4b2e-bc99-2cd19568cb3b",
+          "oracle_id": "d64b0848-0193-4025-ba62-63ecd8fb9f50",
+          "canonical_raw_sha256": "ca07e889cb4b40d255d843a5c20f9882bb6391bc0b9fe24f7ecab903d4a0db9d",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 2,
+          "source_name": "Veil of Summer",
+          "canonical_name": "Veil of Summer",
+          "scryfall_id": "aa686c34-1c11-469f-93c2-f9891aea521f",
+          "oracle_id": "002965be-a36f-4a09-9ce0-c6535bca1703",
+          "canonical_raw_sha256": "5030bffebf1eded98808f63bae59c330d8135f86d36660e8d95b8e8781781b70",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        },
+        {
+          "quantity": 1,
+          "source_name": "Shadowspear",
+          "canonical_name": "Shadowspear",
+          "scryfall_id": "939c6e19-4b27-4023-bb9c-ae440f91e21c",
+          "oracle_id": "8b27326f-e7b8-4a4d-b589-df459246d19a",
+          "canonical_raw_sha256": "f38aba73e167db9e819ffa67cf27b97942dd37a80ca6ae1e2632808e5a70b7c8",
+          "join_basis": "NFC + typographic apostrophe normalization + exact canonical root/face alias; no fuzzy match"
+        }
+      ]
+    }
+  ]
+}
