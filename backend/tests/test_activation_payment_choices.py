@@ -28,6 +28,8 @@ def position(seat, kind):
         key = 'sacrifice_card_ids'
     else:
         source = activation_card(state, 'rummaging-goblin', seat)
+        # This fixture tests discard selection after the creature is ready to tap.
+        source.summoning_sick = False
         candidates = [canonical(state, 'sacred-foundry', seat, Zone.HAND),
                       canonical(state, 'dismember', seat, Zone.HAND)]
         key = 'discard_card_ids'

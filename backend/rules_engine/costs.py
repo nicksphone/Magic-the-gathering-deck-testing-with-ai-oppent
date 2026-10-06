@@ -286,6 +286,10 @@ def activated_cost_available(state: MatchState, player_id: int, source_id: str, 
     player = state.players[player_id]
     if cost.tap_source and (source.zone != Zone.BATTLEFIELD or source.tapped):
         return False
+    if cost.tap_source and "Creature" in effective_types(state, source) and source.summoning_sick:
+        from rules_engine.continuous import has_keyword
+        if not has_keyword(state, source_id, "haste"):
+            return False
     if cost.discard_source and (source_id not in player.hand or source.zone != Zone.HAND):
         return False
     if not can_pay_life(state, player_id, cost.pay_life + protected_life):

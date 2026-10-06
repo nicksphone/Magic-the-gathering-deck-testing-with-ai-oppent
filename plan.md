@@ -2,6 +2,16 @@
 
 ## Current Execution Order
 
+### Shared Tap-Source Readiness
+
+The generic activated-cost readiness guard is qualified: eight complete modules,
+277 passes, 19.52s. New controlled-board tests cover effective haste and snapshot
+restore; unchanged canonical Scout/Atlas tests with the separate optional-land
+validator hook pass all 48 cases, including actual paid casts and HTTP restart.
+The optional-land consumer/compiler and paid-trigger current-source integration
+still require combined acceptance and frontend choice controls before promotion.
+No arbitrary-card, animation/control-change episode or live deployment claim.
+
 ### Corrected Self-Trigger Shared-Source Gate
 
 The corrected unconditional draw/life-draw compiler is now combined with the

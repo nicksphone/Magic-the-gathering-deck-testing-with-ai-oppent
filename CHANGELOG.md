@@ -2,6 +2,12 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Enforce summoning sickness and effective haste for shared creature self-tap
+  activation costs. Eight complete affected modules pass all 277 cases. A
+  separate canonical Scout/Atlas composition with the optional-land validator
+  hook passes all 48 unchanged tests, including actual paid casts and HTTP
+  restart. This does not deploy or certify the broader optional-land feature.
+
 - Compile complete unconditional self-trigger draw/life-draw instructions through
   shared handlers, preserving earlier routing and genuine source/controller.
   Shared-source 79-module gate: 2,175 passes / four known extra-land failures;

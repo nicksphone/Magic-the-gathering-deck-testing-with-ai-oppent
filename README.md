@@ -2,6 +2,11 @@
 
 A desktop-first React/TypeScript and Python/FastAPI application for two-player
 Magic deck testing, human play, AI matches and reproducible gameplay diagnostics.
+
+Shared activated-cost validation enforces summoning sickness for effective
+creature self-tap costs and honors effective haste. See
+[bounded acceptance](docs/acceptance/tap-source-readiness-20261006.md) for tested
+scope and remaining limitations.
 SQLite stores cards, decks, snapshots and results. Gameplay rules live in code,
 not SQL functions, triggers or stored procedures.
 
