@@ -3,6 +3,17 @@ import { selectAttackers, toggleAttacker, type CombatDraft } from "./combat-sele
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { CardArt } from "./CardArt";
 
+// Includes engine-supported generic selections not yet listed in LegalMove.kind.
+const supportedMechanicControls = new Set<string>([
+  "effect_cast", "suspend_cast", "scry", "scry_top_order", "surveil", "surveil_top_order",
+  "proliferate", "ward_payment", "ward_cost_cards", "counter_payment", "optional_search",
+  "graveyard_return", "discard", "each_player_discard", "cleanup_discard", "mulligan_bottom",
+  "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "saga_entry",
+  "attacking_token_target", "topdeck_reveal_creature", "topdeck_put", "topdeck_bottom_order",
+  "look_top_choose", "look_top_select_hand", "search_library", "combat_damage", "copy_target",
+  "foretell_from_hand", "choose_revealed_discard", "choose_revealed_exile", "linked_exile_copy",
+]);
+
 type Props = {
   decks: DeckRecord[];
   selectedA: number | null;
@@ -269,7 +280,10 @@ export function Controls(props: Props) {
               <p>{card.type_line}</p><p>{card.oracle_text}</p>
             </details>)}
           </section> : null}
-          {mechanicMove.kind === "combat_damage" ? <>
+          {!supportedMechanicControls.has(mechanicMove.kind ?? "") ? <p role="alert">
+            Unsupported mechanic choice: {typeof mechanicMove.kind === "string" && mechanicMove.kind ? mechanicMove.kind : "(missing or invalid kind)"}. No control is implemented
+            for this choice. Do not advance while this action is required.
+          </p> : mechanicMove.kind === "combat_damage" ? <>
             <p>Assign exactly {mechanicMove.count} damage in the {mechanicMove.stage} damage step.</p>
             {(mechanicMove.options ?? []).map((target) => <label key={target}>
               {mechanicMove.option_labels?.[target] ?? target} ({target})

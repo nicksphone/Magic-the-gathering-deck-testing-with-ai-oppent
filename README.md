@@ -2,597 +2,61 @@
 
 A desktop-first React/TypeScript and Python/FastAPI application for two-player
 Magic deck testing, human play, AI matches and reproducible gameplay diagnostics.
-SQLite stores cards, decks, snapshots and results; gameplay rules live in code.
+SQLite stores cards, decks, snapshots and results. Gameplay rules live in code,
+not SQL functions, triggers or stored procedures.
 
-The engine implements an explicitly bounded set of mechanics. Imported card data
-and a successful match do not prove complete Oracle semantics or expert AI play.
-Preflight diagnostics identify known unsupported mechanics. See [plan](plan.md)
-for unfinished acceptance and [changelog](CHANGELOG.md) for historical changes.
-
-## Implementation Status
-
-Explicit chosen-resource and hybrid mana payments, complete base output vectors,
-conservative planner pruning and joint fixed spell-cost witnesses are implemented.
-Human controls pass 14 explicit-payment and six shortcut actual-App cases; two
-AI affordability fixes pass a 652-check gate. The final composed backend gate
-passes 2,836 checks across 70 modules. Shared-browser qualification passes 497
-checks, including both human seats, BO3, recovery and restart; frontend
-lint/build/unit gates pass. Counts overlap and do not establish expert AI play.
-Remaining layer consumers and post-mana Escape fuel remain open. See the
-[finish plan](plan.md) and [qualification scope](docs/testing/mana-layer-candidate-qualification.md).
-
-The engine also composes bounded permanent-to-basic-land replacement with
-effective LKI/protection and attachment detachment. Its 594-check affected gate
-passes ordinarily; remaining color readers and universal layer fidelity are not
-certified. See [composition scope](docs/testing/current-layer-composition.md).
-
-Retained-resource AI comparisons use surviving held instances, not discarded
-duplicates. The layer-composed 672-check AI gate passes; this is decision-boundary
-correctness, not a seasoned-player claim. See
-[scope](docs/testing/ai-surviving-resource-access.md).
-
-Live [AI autoplay actions](docs/testing/autoplay-action-safety.md) use the same
-transactional engine validation as human actions. Invalid decisions pause with a
-diagnostic error instead of silently becoming passes. The trajectory exporter
-separates AI display hints from complete chosen parameters before validation.
-
-Attack all eligible declares ordinary attacks directly. Select all only selects;
-attack costs, alternate defenders and bands require review and Submit Attackers.
-Blocking, responses and damage still follow the normal combat windows.
-An engine-declared game result stops human gameplay and displays the winner and
-series score; between-game sideboarding and next-game choices remain available.
-Paused AI series can advance between games manually; completed series disable
-further gameplay controls. Local testing can reveal AI hands with the backend
-flag `MTG_DEBUG_HANDS=1` and **Reveal AI hands (debug)**. This is off by default,
-read-only, and separate from normal redacted views and AI inputs. Disable it
-outside trusted debugging. See [scope](docs/testing/ai-hand-debug.md).
-
-Supported day/night entry and self entry/transform triggers share canonical
-face handling, with incarnation-linked targeted exile and departure returns.
-See [evidence and limits](docs/testing/cathar-day-night.md).
-Supported [fixed additional mana triggers](docs/testing/additive-triggered-mana.md)
-share whole-vector payment and activation logic, preserving snow and spending
-restrictions. Choice-dependent and produced-type variants remain unfinished.
-The dedicated [actual-App browser gate](docs/testing/cathar-browser.md) covers
-both seats, pending exile choices, day/night transitions and backend restart.
-Its opt-in target-lifecycle checks cover a chosen target leaving or returning as
-a new object before the original exile trigger resolves; default CI remains six cases.
-
-Supported [private card inspections](docs/testing/private-card-inspections.md)
-show the looked-at cards even when none qualifies, and survive restart/reload.
-Bounded [resolution conditions](docs/testing/resolution-conditions.md) implement
-revolt destruction and delirium damage alternatives without conflating clauses.
-
-Main includes qualified resource payments/events, bounded AI resource opportunity
-and instant-window reservation, ordinary/limited graveyard permissions, announced
-prototype/bestow checks and fixed color/type cost modifiers. The consolidated
-runtime passed the full backend and browser gates and is deployed locally.
-See [integration evidence and limits](docs/testing/backend-consolidation.md).
-Shared [affinity costs](docs/testing/affinity.md) now support printed selectors
-and unconditional spell grants without rewriting mana values; conditional
-grant wording remains explicitly unsupported.
-Background simulation admission has a [persisted job-row quota](docs/testing/simulation-job-quota.md)
-that preserves existing results and idempotent starts; byte limits, automatic
-retention and distributed operation remain unfinished.
-The shared rules batch also includes effective-type domain/changeling handling,
-supported self-sacrifice mana/death events, private zero-hit inspection choices,
-and bounded revolt/delirium resolution. See
-[qualification and limits](docs/testing/backend-rule-batch-2026-10-05.md).
-Small-board Master blocking has [bounded next-combat forecasts](docs/testing/next-combat-races.md);
-these assume no intervening plays and do not establish guaranteed wins.
-Subsequent [exact strategic score reuse](docs/testing/ai-exact-score-reuse.md)
-and [read-only layer query reuse](docs/testing/layer-query-reuse.md), plus
-[deferred forecast scores](docs/testing/deferred-forecast-scores.md), have
-affected-suite and retained-decision validation; these are not new full-suite
-or expert-play certifications.
-The shared [lethal-check ordering](docs/testing/lethal-query-order.md) also avoids
-unnecessary indestructible queries without changing destruction rules.
-[Continuous source reuse](docs/testing/continuous-source-reuse.md) shares ordered
-sources and suppression flags only inside immutable queries; later mutations
-receive fresh views. Interactive AI latency remains unfinished.
-Autoplay requests have a [bounded extended deadline](docs/testing/autoplay-request-deadline.md)
-for long Master decisions; ordinary reads and manual writes retain shorter
-timeouts. This does not eliminate slow planning or cancel server-side mutations.
-
-Implementation scopes and remaining limits:
-- [Unknown-library deployment estimates](docs/testing/ai-topdeck-deployment.md)
-- [Casting resources and human choices](docs/testing/cast-resource-payments.md)
-- [AI resource opportunity](docs/testing/ai-resource-opportunity.md)
-- [Instant value windows](docs/testing/instant-value-window.md)
-- [Ordinary graveyard permissions](docs/testing/graveyard-play-permissions.md)
-- [Limited permission ledgers](docs/testing/limited-graveyard-permissions.md)
-- [Announced casting methods](docs/testing/graveyard-cast-methods.md)
-- [Color/type spell costs](docs/testing/announced-spell-costs.md)
+This is an alpha with **bounded rules support and heuristic AI**, not a certified
+implementation of every Magic card or a trained professional-level opponent.
+Known-gap diagnostics are useful, but an absent warning does not prove support.
+See [the finish plan](plan.md) for remaining acceptance work and
+[the changelog](CHANGELOG.md) for historical changes.
 
 ## Current Features
 
-- [Canonical tactical metadata](docs/testing/mechanic-metadata.md) includes versioned clause/face evidence,
-  source spans, input hashes and explicit unknown semantics. Legacy tags are
-  unchanged; this does not certify execution support or assess card quality.
-  Existing knowledge rows are not automatically backfilled.
-- [Training environment groundwork](docs/testing/training-environment.md): a
-  deterministic in-memory adapter with private observations, checked complete
-  actions, explicit choice prompts, terminal rewards and versioned snapshots.
-  It currently uses supported built-in decks and is **not a trained neural AI**.
-- [Complete training choices](docs/testing/training-choice-coverage.md) adds
-  explicit actor-private prompts and checked modal, X/discard, inspection/order,
-  trigger, ward and replacement choices; broader encoding remains unfinished.
-- [Training mana safeguards](docs/testing/training-mana-choice-coverage.md)
-  expose unsupported payment choices and reject silent selection loss or
-  ambiguous legacy activations. The 304-test composed gate passes; actual
-  selected resource/hybrid mana payments remain under implementation.
-- [Versioned trajectory export](docs/testing/training-dataset.md) records checked
-  actor-private actions with encounter aliases, terminal/incomplete distinctions,
-  immutable shards and grouped split diagnostics. Its baseline teacher is a
-  generic heuristic, not expert supervision or a deck-trained policy.
-- [Offline corpus readiness](docs/testing/corpus-readiness.md) prepares and
-  validates source-backed card/ruling artifacts with resumable ownership and
-  full-profile checks. Explicit offline index application bounds compressed
-  inputs and preserves unrelated data. All 38,690 profiles now have staged offline
-  mechanic metadata; live import remains separate work. Import recomputes the
-  declared extractor output and rejects forged metadata bodies. See
-  [materialization scope](docs/testing/offline-nested-mechanic-materialization.md);
-  [mechanic flags](docs/testing/corpus-mechanic-backlog.md)
-  are not execution certification.
-- [Offline engine-gap report](docs/testing/knowledge-engine-coverage.md) compares
-  canonical profiles with existing known-gap classifiers and separately reports
-  metadata gaps and unknown mechanic surfaces. It never treats absent warnings
-  as affirmative rules support or trained competence.
+- Human versus AI, AI versus AI and shared-device human versus human play.
+- Manual turn steps and priority, response windows, stack inspection, combat,
+  action logs, life totals and public/private zone views.
+- Best-of-three series, between-game sideboarding, play/draw choices and seeded
+  setup for newer matches. Older saved matches may lack seed provenance.
+- Text/file deck import, saved decks, built-in archetypes, expansion examples,
+  fuzzy lookup, curve/color analysis and readiness diagnostics.
+- Cached canonical card data, face-aware hydration, local image reuse and
+  offline fallback art. Modal land/spell choices and supported Adventure flows
+  have both-seat browser and restart coverage.
+- Ordinary mana, generic versus colorless requirements, supported restricted,
+  snow, hybrid and life payments, explicit resource selections and whole mana
+  output vectors. Manual choices are not silently replaced with inferred ones.
+- Supported cast/activated costs, graveyard/exile permissions, tokens,
+  attachments, counters, planeswalkers, keywords and state-based actions.
+- Bounded replacement and continuous-effect layers, effective combat statistics,
+  source-incarnation/last-known-information handling and live color predicates.
+- Supported self-cycling, combined cycling/discard and self-death triggers.
+  Dynamic death quantities use the retained source receipt; ordinary spell
+  instructions are separated from supported cycling-trigger paragraphs.
+- Artifact/enchantment creature-token descriptors retain their types, subtypes,
+  colors, statistics and keywords rather than treating a card type as its name.
+- Seat-aware legal-action controls, offered cycling-X selection, private card
+  inspection, saved-match recovery, visible errors and unsupported-choice warnings.
+- Autoplay, cancellable background simulation, progress diagnostics, saved
+  results, deterministic replay checks and decision/anomaly traces.
+- Archetype-aware tactical heuristics, combat/resource forecasts, private
+  observations and versioned training-environment/trajectory groundwork.
+  Regression tests are not neural training or evidence of expert play.
+- Provenance-backed local archetype classification for admitted built-ins and
+  identity-preserving representative cohorts. Missing facts remain unknown;
+  duplicate display names do not merge distinct imported inventories.
 
-- [AI observation and utility boundary](docs/testing/ai-information.md): private
-  decision copies exclude unseen opposing hands and uninspected library metadata;
-  owned inspection choices and privately persisted submitted deck composition
-  remain available. Shared removal and optional-trigger projections conserve
-  resources while retaining profitable friendly death-trigger lines. Public
-  hand memory now survives supported reveals, public returns and restart through
-  a [private observation ledger](docs/testing/ai-memory.md). Hidden library trips
-  invalidate instance-based recall. Selective copying avoids traversing unseen
-  metadata; broader memory, information-set inference and expert play remain
-  unfinished.
-
-- [Known-composition draw priors](docs/testing/ai-resource-priors.md): supported
-  optional rummage and whole-hand draw decisions estimate land/spell draws from
-  the pilot's submitted list and known inventory, not hidden library order.
-  Curve/role credit is shared with held-card retention; unreconciled or ordered
-  information falls back conservatively. Resolving spell sources remain public
-  during pending choices. This is not a complete future-resource/belief model.
-
-- [Live devotion payoffs](docs/testing/devotion.md): controller-relative mana-symbol
-  counts feed supported pump, damage, life gain/actual-loss drain, counters and
-  token instructions at resolution. Existing replacements and snapshot choices
-  are reused. Double-faced instances initialize front characteristics; current
-  effect proxies do not accidentally reparse an entire face. General variable
-  expressions remain unsupported; bounded devotion mana is covered by the
-  shared mana-ability reader below.
-
-- [Conditional creature types](docs/testing/conditional-creature-types.md):
-  shared effective types drive supported devotion-based
-  self-removal, combat/targets, ability loss and public stats without overwriting
-  copiable characteristics. New entry/control tenure does not bypass summoning
-  sickness when a permanent becomes a creature. Combat departure preserves
-  blocked status and announced bands; counted life loss uses current types.
-  Both-seat HTTP/restart and actual browser casts have regression coverage.
-  Arbitrary type clauses, devotion mana and full dependencies remain unfinished.
-
-- [Resolution-created type effects](docs/testing/type-effect-lifecycle.md): crew
-  and supported indefinite land animations share object-bound type additions,
-  timestamped stats/keywords and separate copiable types. Cleanup, face changes,
-  departure, re-entry, copies and death-trigger last-known information have
-  both-seat regression coverage. General conditional/global type changes and
-  full layer dependencies remain unfinished.
-
-- [Simultaneous wheels and hand-defined stats](docs/testing/wheel-draw.md): shared
-  whole-hand discard followed by fixed, actual-count or largest-count draws;
-  owned draw continuations and effective hand-size creature characteristics.
-  Signed canonical stats are preserved. AI prices known hand retention and public
-  opposing counts; broader replacement, graveyard and tactical planning is open.
-
-- [Bounded rummaging and discard history](docs/testing/discard-history.md): shared
-  optional discard/draw instructions work through modal and loyalty actions;
-  whole-hand draws can count all of the controller's discards this turn. Costs,
-  cleanup, replacement exile and copies share persisted counters. AI evaluates
-  hand retention and supported draw limits; broader graveyard strategy is open.
-
-- [Resolution-time linked discards](docs/testing/linked-discard.md): chosen variable
-  or whole-hand discards feed actual counts into supported basic-land searches
-  and fixed/count-linked draws. Shared events, replacements, copies and nested
-  draw choices survive recovery. Both seats have bounded choices; AI preserves
-  useful hands and exercised mana plans. General linked counts and graveyard
-  strategy remain unfinished.
-
-- [Exhaustive and announced-X payments](docs/testing/variable-spell-costs.md):
-  mandatory whole-hand discard and all-permanent sacrifice share event-aware
-  costs; discard-based X uses an announced exact hand selection, not available
-  mana. Both seats have controls and checked normal/free casts. AI tests retain
-  minimal public-state finishes and avoid exercised self-loss/resource wipes.
-  Random costs, X recipient lists and general payment order remain unfinished.
-
-- [Qualified spell costs](docs/testing/qualified-spell-costs.md): fixed creature-subtype
-  and color-qualified sacrifices share checked eligibility and resource selection.
-  Canonical green-creature searches keep their restriction; referenced-controller
-  damage uses the current controller and ordinary prevention. General type/color
-  layers, compound costs and deeper sacrifice planning remain unfinished.
-
-- [Canonical kicker goldens and removal targeting](docs/testing/kicker-goldens.md):
-  real sacrifice-union and mana-kicker discard fixtures cover both seats, checked
-  payments and restore. AI negative-stat targets share the engine's effective lethal
-  predicate, including tested counters, anthems, marked damage and indestructible.
-  This is bounded decision correctness, not expert-play or full-card certification.
-
-### Gameplay
-
-- [Cross-family rules repairs](docs/testing/rules-regression-repairs.md): supported
-  compound counters retain later draws and conditional destinations; graveyard
-  exile uses legal zone-specific targets; linked recursion preserves post-entry
-  life loss through choices. Undying uses pre-death abilities/counters and original
-  object references. Canonical global damage doubling shares replacement chains
-  with supported spell/combat damage and is not disabled by prevention bans.
-  Arbitrary compound clauses and mixed replacement conversions remain unfinished.
-
-- [Basic-land subtype layers](docs/testing/land-type-layers.md): shared global,
-  controller-only and Aura additions/replacements drive intrinsic mana,
-  prospective land entry, counted subtypes, landwalk, AI color reads and public
-  type lines. Printed data remains intact. Source-existence dependencies override
-  timestamps in the supported land-source case. Selected mana abilities retain
-  their own spending restrictions; automatic spell payment uses effective types.
-  All 5,724 backend tests, frontend/browser gates and 24 repeated seat-balanced
-  replay samples pass without timeout, anomaly or drift;
-  arbitrary type clauses, spell-based changes and general dependencies remain open.
-
-- [Shared mana abilities](docs/testing/mana-abilities.md): bounded devotion and
-  battlefield/graveyard-counted outputs, paid tap activations and pure mana
-  doubling/tripling use one reader for payment, legal actions, AI and public
-  views. Either human seat can choose an indexed mana ability and output color.
-  Automatic payments compare supported plans to preserve follow-up resources;
-  mixed-color bundles, triggered extra mana and general replacements remain open.
-
-- [Kicked-cast payoffs](docs/testing/kicked-cast-payoffs.md): recognized token, self-counter and temporary base-stat triggers share actual cast events, source suppression and original-object history. First-kicked-spell discounts share affordability/payment and persisted per-turn counts; copies do not consume them. Fixed token ETBs and AI guards for prohibited counters and draw exhaustion are tested. Broader kicker forms, general payoff forecasting and expert decisions remain unfinished.
-- [Replacement-aware optional draw estimates](docs/testing/ai-draw-forecast.md): kicker valuation reuses shared default draw replacements, first-draw exceptions and restrictions with public library counts. Canonical before/after decisions avoid doubled-draw deck-out while retaining tested safe choices. Optional dredge, downstream draw triggers, alternative replacement ordering and general draw strategy remain unfinished.
-- [Fixed nonmana kicker](docs/testing/nonmana-kicker.md): recognized life/discard/typed-sacrifice payments reuse ordinary checked costs, branch effects, copies and snapshots. Both seats have tested resource selections and owned discard resolution. AI weighs payment loss and supported removal/counter gains; controller-scoped self-or-other death triggers preserve sacrifice payoffs. Compounds, qualified costs, multikicker and deeper resource strategy remain unfinished.
-- [Bounded spell kicker](docs/testing/kicker.md): optional mana payment and conditional damage, pump and fixed draw instructions share ordinary/free casting, branch-specific targets, copies and snapshot recovery. [Permanent kicker](docs/testing/permanent-kicker.md) adds shared entry counters/replacements, conditional ETB draw/damage/noncreature removal, copied permanent spells and durable casting history without blink leakage. Both seats have tested cost/target controls. AI uses bounded payoff estimates; multikicker, broader permanent/conditional clauses and expert play remain unfinished.
-- [Surveil, mill and effect-authorized casting](docs/testing/surveil-mill.md): fixed private surveil partition/top ordering, supported surveil/cast/draw payoffs and fixed recipient milling survive choices and restoration. Effect-authorized graveyard casts use normal targets, taxes, cast events and departures; X token counts and actual mana-spent provenance are shared. [Deliberate casting choices](docs/testing/effect-cast-choices.md) let either human seat select the trigger target, then cast with ordinary controls or decline during resolution. AI filters unusable graveyard targets before ranking supported casts. Broader replacements, optimal curation and optional-cost continuations remain unfinished.
-- [Spell payment selections](docs/testing/cast-payment-selections.md): both human seats can select the recognized discard/sacrifice cost cards for normal and effect-authorized casts. AI uses known hand retention and sacrifice loss, including either-cost branches. Shared discard and sacrifice events preserve ownership, replacements and supported leave/dies triggers; broader cost grammar and payment-order choices remain open.
-- [Legendary Channel lands](docs/testing/legendary-channels.md): all five canonical fixtures share legendary-creature discounts, target unions, owned optional land search, post-mill graveyard choices and temporary token haste. Master can retain a land for a proved winning hand ability on bounded public boards. Arbitrary clauses, long-term retention and expert-level play remain unfinished.
-- [Hand activations and counter payments](docs/testing/hand-activations.md): recognized source-bound discard costs expose selected abilities from hand, with independent activated stack objects, shared discard replacements and snapshot recovery. Generic graveyard-card targets include noncreatures; human counter payments belong to the targeted object's controller. Both-seat functional controls are covered; arbitrary zone permissions, unusual cost clauses and expert AI remain unfinished.
-- [Bounded bestow casting](docs/testing/bestow.md): separate creature/Aura cost choices, effective targeting and payment, illegal-target creature resolution, copied/retargeted spells, unattachment and snapshot restore. Both human seats have tested mode/target controls; AI uses the Aura view and shared attachment projection. Phasing and arbitrary type-layer interactions remain unsupported and conservatively warned.
-- [Conditional attack and static block costs](docs/testing/conditional-combat-costs.md): source tapped/untapped/attacking/blocking status and supported source/controller conditions feed shared locked mana payments, source suppression, both-seat hints and all-difficulty AI declaration checks. Block taxes can be global or controller/opponent scoped. Qualified subsets, recipient-dependent conditions, nonmana costs and arbitrary cost continuations remain unfinished.
-- [Capacity-aware combat planning](docs/testing/combat-intents.md): bounded direct-block enumeration shares legality, requirements and payments; multi-block fallback, band-safe declarations, explicit damage-choice projections and planeswalker defense are covered. Wide-board optimality and adversarial multi-turn search remain unfinished.
-- [Activation cost modifiers](docs/testing/activation-modifiers.md): supported numeric/source-power and selected-ability discounts, one-mana floors, controller-turn opponent spell/ability taxes, mana exceptions and recipient scope share legality/payment paths. Selected abilities support other-artifact, graveyard-creature and controlled-creature counter counts, plus bounded controlled-creature/turn conditions. Reserved sources cannot fund a second tap; AI uses payable crew groups and source-aware X checks. Unsupported ability-specific forms remain visible; arbitrary clauses, paid-mana conversion search and explicit reduction-order choices remain unfinished.
-- [Recipient-specific combat clauses](docs/testing/recipient-combat.md): supported self/attachment/global recipients constrain fixed attack/block payments without taxing unrelated creatures; static all-block clauses support alternative self/attachment recipients. Bounded [bestow execution](docs/testing/bestow.md) is supported; arbitrary characteristic changes and unrecognized activation-modifier clauses remain unsupported.
-- [Domain and temporary combat taxes](docs/testing/combat-domain-temporary-costs.md): controller-relative domain counts distinct basic land types, including nonbasic dual lands. Resolving global attack/block taxes retain announced X and independent source provenance until cleanup, surviving source loss and snapshots. Block costs charge once per chosen creature, allow chosen mana blockers to tap and still block, and preserve optional payment versus mandatory requirements. AI uses bounded public-board activation/value planning and shared affordability; arbitrary conditional taxes, nonmana costs and general combat timing remain unfinished.
-- [Combat payments and target requirements](docs/testing/combat-payments-requirements.md): shared mana attack taxes (including enchantment-count scaling), optional-payment-aware attack requirements and target-specific Lure-style blocking feed checked declarations, all AI difficulties, legal hints and live diagnostics. [Hybrid/Phyrexian choices and minimum blocking requirements](docs/testing/combat-branches-minimums.md) use the same paths: humans explicitly choose mana/life branches, AI announces payable branches, and minimum requirements remain distinct from menace restrictions. Actual payment/required-block traces distinguish use from mere card presence. Nonmana/conditional costs, block payments and qualified/temporary requirements remain unfinished.
-- [Combat coverage diagnostics](docs/testing/combat-coverage-diagnostics.md): shared runtime/coverage predicates flag known unsupported taxes, limits, subjects and conditions in cached-card readiness, simulator preflight/results and a locked public-battlefield diagnostics API. Existing preflight controls require exploratory review; warnings do not implement the missing rules or certify an unflagged deck.
-- [Conditional combat constraints](docs/testing/conditional-combat.md): self, attached and supported global restrictions share current-state conditions, source suppression and engine trace provenance. Supported land/counter gates, effective-power blocking limits and cumulative extra-block capacity feed live combat and AI legality. Arbitrary conditions, broader paid costs and dedicated UI diagnostics remain unfinished.
-- [Combat ability provenance](docs/testing/combat-ability-provenance.md): supported printed combat restrictions and player/counter protection respect ability loss. Bushido, Rampage and Flanking use counterable APNAP triggers with numeric instances, resolution-time bonuses and original-object references. Bounded Master combat search resolves them before damage; arbitrary restrictions and complex-board play remain unfinished.
-- [Temporary ability loss/base stats](docs/testing/temporary-ability-loss.md): supported targeted/player-wide effects retain object identity and resolution timestamps, preserve ETB tap-then-loss instructions, and expire at cleanup. Split second gates supported spells/nonmana activations without blocking mana or triggers; AI projects recognized targeted loss on public boards. Arbitrary effects, complete dependencies and pro-level AI remain unfinished.
-- [Static/replacement source suppression](docs/testing/static-ability-suppression.md): supported ability loss now disables recognized anthems, keyword sources, counter/token/life replacements, draw limits, permissions and cost modifiers. Supported combined loss/base-stat effects continue across layers without reviving independent abilities; physical shields remain active. General dependency and pre-entry fidelity remain unfinished.
-- [Printed ability suppression](docs/testing/printed-ability-suppression.md): supported all-ability loss now disables mana capacity, activation moves/writes and printed trigger collection, including pre-death last-known state. Already-stacked abilities remain independent; full static/replacement suppression and cross-layer dependencies remain unfinished.
-- [Resolution-created keyword effects](docs/testing/keyword-effect-timestamps.md): object-bound grants/removals retain creation timestamps, duration and source provenance independently of printed keywords and physical counters. Supported targeted gain/loss clauses, cleanup expiry, snapshots and public-board AI target evaluation are covered; full layer dependencies and optional tap/untap choices remain unfinished.
-- [Proliferation](docs/testing/proliferation.md): supported instructions select any number of permanents or players, including none, and add every existing counter kind without targeting. Multi-kind replacement decisions and atomic batches survive snapshots and preserve spell/trigger order. Shared AI evaluates mixed public counters and avoids self-poison lethal. Proliferation-event replacements, conditional paid instructions and general resource strategy remain unfinished.
-- [Named counters and untap](docs/testing/named-counters.md): permanent-counter timestamps survive snapshots; keyword counters contribute to effective abilities in supported layer-6 order and feed combat, targeting and public views. Stun replaces turn/spell/animated-land untaps, consuming one counter only when an actual untap would happen. Fixed-number scry supports private bottom/top ordering, resumable later clauses and AI selection through existing choice controls. Shield, combat keywords and supported hexproof variants are covered separately; arbitrary variants and full ability suppression remain unfinished.
-- [Combat keyword triggers](docs/testing/combat-keyword-triggers.md): Exalted uses independent stack triggers for supported printed/static/counter instances. Decayed prevents blocking and schedules a counterable end-of-combat sacrifice tied to the original object, surviving snapshots/restart. Small-board Master search includes these consequences without ranking newly drawn hidden cards; arbitrary grants/layers and expert play remain unverified.
-- [Source-specific hexproof](docs/testing/hexproof-variants.md): supported printed color/type variants and keyword counters use source-aware target checks and resolution rechecks. Canonical family labels no longer become unrestricted immunity; loyalty hints retain source identity. Resolved battlefield keyword grants are object-bound, snapshot-safe and separate from printed metadata/counters. Arbitrary qualities, as-though overrides and full layers remain open.
-- [Shared entry routes](docs/testing/entry-routes.md): supported tokens, permanent-spell copies, graveyard/library entries, green-creature hand placement and [linked-exile returns](docs/testing/linked-entry-counters.md) share durable counter/chapter preparation before commit. Linked returns use each owner's choices and preserve mixed-owner batches through snapshots. Token creation doubles separately from entry counters; copied spells preserve X but were not cast. The stack stages triggers until the full effect sequence and state-based checks finish, preserving the original caster across nested choices. Unusual entries, conditional token replacements and general projected layers remain unfinished.
-- [Entry replacement order](docs/testing/entry-replacement-order.md): compleated reductions compete with supported scalar counter modifiers using affected-player choices and snapshot recovery. Prepared entry counters are not retroactively blocked by the incoming permanent's global ban. Human seat-two controls and AI amount ordering share the legal event contract; generalized entry layers and nonlinear counter valuation remain unfinished.
-- [Projected transformed entry](docs/testing/transformed-entry.md): supported exile-and-return operations prepare the incoming back face before leaving exile. Entry loyalty and in-place transformation counters remain distinct, with snapshot recovery and later front-face restoration. This does not imply complete Oracle interpretation for every transforming card.
-- [Saga lore and chapters](docs/testing/saga-counter-events.md): supported turn-based and registered-effect lore placement shares scalar replacements, chapter ordering/targeting and snapshot recovery. Grouped chapter symbols trigger at crossed thresholds; final sacrifice waits for original pending chapters, not copies or unrelated abilities. Both battlefield lanes show lore. [Normal permanent-spell entry](docs/testing/permanent-spell-entry.md) supports initial loyalty, lore, bounded creature counters and resumable Read Ahead choices. Read Ahead enforces exact lore on its entry turn. Other entry routes, arbitrary chapter effects and tactical chapter selection remain unfinished.
-- [Loyalty counter costs](docs/testing/loyalty-counter-costs.md): positive activation costs support shared replacements, resumable order and deferred ward triggers; negative costs remain removal. Initial loyalty on entry and other counter-cost families are not implied to be complete.
-- [Shield counters](docs/testing/shield-counters.md): damage and effect-driven destruction consume one counter; unpreventable damage still consumes it and retains actual results. Bulk destruction shares indestructible checks, and simultaneous multi-block combat consumes one shield per damage step. Supported scalar choices survive HTTP/SQLite restore; AI prefers free reduction before spending shields. Full simultaneous replacement/prevention ordering remains open.
-- [Player counters and dynamic ward](docs/testing/player-counters.md): named counters persist across turns, source departure and snapshots, while poison keeps one authoritative count. Supported cast/entry/death/end-step gain triggers, current-controller P/T scaling and counter-defined ward X feed combat, AI and human views. Both seats see counters and the resolved ward amount; unknown dependent clauses and counter replacements remain explicitly flagged.
-- [Counter prohibitions](docs/testing/counter-prohibitions.md): supported unconditional player/type/self counter bans apply to effects, infect/wither/toxic, supported damage-to-counter replacement, tokens, spell-entry counters and Saga lore. Existing counters, ordinary damage and separate animation effects are preserved. Conditional bans and complete replacement integration across entry/damage/cost routes remain unfinished.
-- [Counter-effect replacement order](docs/testing/counter-replacements.md): supported doubling, halving and plus-one clauses distinguish placer from recipient and pause competing effects for the affected player's choice. Registered counter effects, effect sequences and snapshots resume without duplicate placement; AI selects the resulting counter amount. Entry, costs and general simultaneous multi-kind placement remain incomplete.
-- [Damage counter replacements](docs/testing/damage-counter-replacements.md): supported infect/wither/toxic and noncombat damage-to-counter results now use scalar modifiers with source-controller attribution and effect-only provenance. Supported simultaneous combat contributions combine before modifiers; choices and deferred lifelink/SBA survive snapshots. Engine, HTTP and browser checks cover the bounded increment; broader noncombat/prevention/multi-kind semantics and entry/cost integration remain open.
-- [Printed and conditional ward forms](docs/testing/ward-forms.md): canonical keyword lists and supported named self-grants now trigger ward; tapped/untapped conditions use the state when targeting occurs. Payment labels preserve Oracle text. Unsupported inline X costs receive known-gap warnings, not zero-cost approximations; arbitrary conditions and full-card semantics remain unfinished.
-- Scoped keyword prohibitions recognize supported composed "lose ... and can't have or gain ..." clauses, including all five Archetypes. Prohibitions override later grants; control changes and source departure update effective keywords immediately. This does not implement arbitrary ability suppression or full dependency layers.
-- [Ward triggers and payments](docs/testing/ward-resolution.md): supported ward costs trigger for opponent spells, activated/triggered abilities and copies rather than inflating the casting cost. Human controllers can respond to the trigger, pay or decline, and select discard/sacrifice cards; choices survive snapshots. Shared AI compares the immediate payment/removal trade. Arbitrary X definitions/grants, cost-prevention overrides and full layer dependencies remain unfinished; named player-counter X is supported above.
-- [Restricted mana and ordinary equip](docs/testing/restricted-mana-equipment.md): supported spending restrictions survive floating, partial spending, source departure and snapshots. Casting/activation costs share eligibility; the UI labels restricted units. Ordinary equip uses the stack with responses and resolution revalidation. Supported attached fixed buffs and keywords affect combat, targeting, AI and effective views; special equip/reconfigure and full attachment/layer semantics remain open.
-- [Attached scaling and diagnostics](docs/testing/attached-scaling.md): supported battlefield-type/land-subtype and source-counter bonuses update combat, AI and displayed stats from public state. Type unions count permanents once; unknown detected attached clauses show a visible warning rather than guessed flat bonuses. Conditional and arbitrary attachment semantics remain incomplete.
-- [Attached predicates](docs/testing/attached-predicates.md): supported conditional bonuses/keywords, domain, target-color and attachment-count scaling use current public state and source control. False and unknown conditions select different outcomes; unsupported clauses remain visible. Compound predicates, arbitrary attached cost reductions, reconfigure and full layers remain unfinished.
-- [Target-aware equipment](docs/testing/equip-context.md): supported equip discounts use the actual target, its effective power and the discount source's controller. Legal moves and payment agree; shared AI planning selects concrete beneficial equip targets instead of crashing on target lists. Attached base stats affect only the attached permanent; reattachment renews layer timestamps without changing battlefield identity. arbitrary Aura cost clauses, special equip/reconfigure and full ability suppression remain unfinished.
-- [Target-aware Aura casts](docs/testing/aura-costs.md): supported global and target-dependent Aura reductions share casting legality and actual payment, including permitted exile and escape casts. Human controls require a payable target/cost combination. AI projects beneficial and harmful attachments, preserving source permissions and immediate heroic triggers. Casting targets come from the enchant instruction, not later ability text; unknown enchant constraints warn rather than broaden into arbitrary targets.
-- Targeted destruction respects indestructible. Pure signed numeric targeted power/toughness changes until end of turn use the shared temporary-effect handler; additional clauses, keywords and X-based pump wording still need coverage.
-- Two-player match flow with turn structure, priority, stack, combat, cleanup, and turn advancement
-- Supported "whenever you attack" triggers fire once for an attacker group, while "whenever a creature attacks" still fires per creature. Tokens created tapped and attacking join combat without being declared as attackers. Adeline's power tracks creatures controlled, including the new token. When multiple defenders are legal, human and AI controllers choose where each new token attacks; the choice survives snapshot restore.
-- Training uses the power of creatures declared as attackers together, creates one stack trigger even when several companions have greater power, and adds a +1/+1 counter only if that battlefield incarnation remains when the trigger resolves. Hopeful Initiate has real-card, snapshot and re-entry regressions; other attack-trigger keywords are not implied to be supported.
-- Supported end-step text that adds counters, rewards declaring a minimum number of attackers with a draw instead of a creature token, then transforms at a counter threshold now resolves in printed order. The declared-attacker count persists through combat and snapshots, excludes tokens that enter already attacking, and resets each turn. Wedding Announcement has focused token/draw/transform, departure/re-entry and turn-boundary regressions; a names-only HTTP start, attack, saved-match restore and priority-pass test reaches the draw branch. This is a bounded Oracle pattern, not general conditional-trigger interpretation.
-- Supported "one or more other [creature subtype] you control enter" triggers check the entrant's controller and subtype, and once-per-turn limits are consumed only by an actual trigger. The limit survives stack countering and snapshots, resets each turn, and belongs to the current battlefield incarnation. Inferred creature tokens now carry a creature subtype line; supported activated subtype-wide temporary bonuses affect only qualifying creatures present on resolution. Static subtype anthems share plural-to-singular matching, including Elf and Zombie. Elvish Warmaster and a second Zombie wording have focused regressions. This does not certify all simultaneous-entry or creature-type-changing effects. [Kaldheim release notes](https://magic.wizards.com/en/news/feature/kaldheim-release-notes-2021-01-22) describe the Warmaster timing boundaries.
-- Multi-token effects, supported topdeck effects, and library searches that put several cards onto the battlefield collect their entries as one simultaneous batch. A "one or more" entry trigger fires once for the group, while an individual-entry trigger still fires for each qualifying permanent. Human choices of different attack targets for tokens are collected before any of those tokens enter, including across snapshot restore. Other multi-entry effects and replacement-order cases remain unverified.
-- Combat legality enforces supported single-keyword blocking restrictions and numeric land gates using the current battlefield. Brazen Borrower and Topiary Stomper have real-card regressions; the shared conditional-combat query adds bounded attachment/global and land/counter conditions. Arbitrary conditional text remains uncertified.
-- Untap happens without a priority window; play resumes at upkeep. Pending replacement/trigger choices remain answerable, and AI defers optional cycling on its own empty-stack upkeep/draw until a main phase.
-- Supported fixed next-turn-upkeep draws use saved one-shot delayed triggers, normal priority and countering. Aura entry and instant resolution share this path; copied spells schedule independently. Quoted token entry abilities do not trigger on their creator's entry. Arbitrary delayed instructions remain unsupported. [Scope and acceptance](docs/testing/ai-public-mana-changes.md).
-- Supported enter-the-battlefield text granting creatures you control a numeric power/toughness bonus and a keyword until end of turn now affects the creatures present when the trigger resolves, including the source. The bonus expires at cleanup; this is not a general continuous-effect interpreter.
-- Supported "look at the top N ... put up to M land cards ... onto the battlefield tapped" spells now share the resolution-time card-choice path with other topdeck permanent effects. The remaining cards are bottomed in the printed random order using persisted match RNG; this covers Cartographer's Survey wording, not every land-selection clause.
-- Supported "reveal the top N ... for each card type, you may put a card of that type ... into your hand" triggers use a resumable human/AI choice and distinct-type matching, including Kindred. A multitype card can fill one type, not two; choosing none still resolves the reveal and random-bottom step. The choice list shows type lines alongside card names. This covers Atraxa's printed ETB wording, not every reveal or card-type variant.
-- Supported "exile each nonland permanent with mana value N or less until this permanent leaves the battlefield" ETB text uses a persisted source-to-exiled-object link. The exiled nontokens return under their owners when that battlefield incarnation leaves; a source that leaves before its trigger resolves exiles nothing. Temporary Lockdown has cast, stack, snapshot, state-based-action and simultaneous-source regressions. Other linked-exile wordings and replacement interactions are not certified.
-- Supported "each opponent reveals their hand ... exile a creature card they revealed this way until this permanent leaves" ETB text reuses the revealed-hand human/AI choice and the linked-exile record. In a two-player game, the exiled card returns to its owner's hand when that source incarnation leaves. The hand is still revealed if the source left before resolution, but nothing is exiled. Activated {X} costs use the announced X for legality and payment; printed "spend only [color] mana on X" restricts only the X portion. Supported "choose a creature card exiled with this permanent with mana value X ... becomes a copy" wording chooses at resolution, copies printed characteristics, and restores the source on departure. Crypt Rats-style all-recipient damage and Pyrotechnics-style divided damage share a snapshot-resumable batch path that defers lethal checks. Noncombat lifelink uses post-prevention damage and one gain event per source across each batch. Full copy-layer fidelity and other multi-recipient damage interactions remain uncertified.
-- Damage abilities from a departed permanent retain its last battlefield controller, effective damage keywords and colors on the stack. This covers granted lifelink, infect, wither, damage prevention and single-target activated-ability protection checks even if the physical card returns as a new object before the old ability resolves. Sources still on the battlefield use their current characteristics at resolution. Other last-known-information uses remain uncertified.
-- Activated sacrifice costs emit leave, sacrifice and actual-destination death events as a staged group. Sacrifice triggers inspect departing watchers' last battlefield state, including a watcher sacrificed itself or in a simultaneous batch. Replacement exile still causes sacrifice triggers but not death triggers; resulting triggers resolve above the activated ability, with human ordering when required. Supported creature-death and sacrifice-triggered drain wording applies both the opponent's loss and controller's gain. "Target opponent" offers only an eligible opposing player, checks hexproof/shroud when stacked and at resolution, and prevents both life changes if the target becomes illegal. Supported "a player sacrifices another permanent" team-counter wording gives each creature controlled at resolution a counter, excluding the watcher's own sacrifice. Other sacrifice-cost selection, replacement-choice and Oracle variants remain uncertified.
-- Death triggers using the printed card name as a self-reference in the supported "[name] or another creature dies" wording fire when either that creature or another creature dies. Targeted player-life drain offers a human target choice, filters hexproof/shroud, prefers an opposing legal target for AI, and rechecks legality at resolution; an illegal target stops both life changes. Simultaneously dying creatures' triggered abilities look back at the pre-death battlefield, so a departing watcher sees each eligible death once; supported "another creature" and "another nontoken creature" wording excludes its own death, and the latter excludes tokens. Wipes, state-based lethal batches, APNAP order, and exile replacement have regressions. This follows [Comprehensive Rules 603.10a](https://media.wizards.com/2026/downloads/MagicCompRules%2020260619.pdf); broader named-reference grammar and replacement interactions remain open.
-- Starting-player-first mulligan declarations and resumable paired redraw rounds through zero cards. Mandatory ordered bottom selections follow each redraw before another declaration; Keep does not select them again. Human controls and AI choices use the same durable queue. Supported unconditional entries and printed nonstarting-player entry with a counter and mandatory hand exile use a resumable opening-hand window. Opening entries share off-zone counter preparation, affected-player replacement ordering, incarnation-checked commitment and durable mandatory-exile follow-up. Other conditional entry, reveal and mulligan-time abilities remain open. See [opening-hand scope](docs/testing/opening-hand-actions.md). See [the rule boundary](docs/testing/mulligan-declarations.md).
-- Manual phase progression and autoplay
-- Land drops, casting, activated abilities, combat actions, and response windows
-- Seat-aware human hand and ability controls, including permitted exile/top-library spells, explicit crew selection and Ninjutsu; unhandled legal action kinds show a warning
-- Both public graveyards and face-up exile zones are available as compact, scrollable lists with card preview on hover or keyboard focus. Face-down exiles contribute to the total count without exposing their identities; AI hands remain hidden.
-- Bounded typed deck/action inputs, checked copy-on-write human actions, structured request errors and visible manual-action failure feedback
-- Live match, legal-move and saved-match discovery responses pass bounded runtime shape checks before entering the UI; broader generated API contracts remain unfinished
-- Public live-match responses hide AI-controlled hands while retaining hand counts; AI legal-move queries cannot expose their playable cards
-- Unrevealed hand-tutor and top-card hand-choice results are omitted from the public match log; publicly exiled cards remain named. AI-owned pending mechanic choices expose only a generic status, not hidden library options or order. Shared-device human-vs-human still lacks per-seat authorization.
-- Testing Simulator job responses check status, progress and completed summary metrics at runtime; the result no longer crosses the UI boundary as `any`
-- Batch results and the Testing Simulator label win rates `exploratory`, never rules-certified; they list detected unsupported mechanics in the input decks. This does not block a run or certify cards with no warning.
-- The Testing Simulator checks known unsupported mechanics before starting a batch. When it finds one, the UI names the affected cards and requires a second `Run Anyway (Exploratory)` click; direct API runs remain possible and are still labeled exploratory. `Master+` is accepted by the batch API as well as the live-match AI.
-- Saved-match discovery/refresh recovery, automatic-play pause/resume, one coordinated UI writer and durable revision/idempotency metadata for guarded match mutations and match creation
-- Interactive BO3 matches persist a root seed and derive per-game seeds without exposing them during play. The prior game's human loser chooses play or draw between games; AI losers choose play by default. The choice and subsequent game survive match restore.
-- Simultaneous life/poison state-based losses end the game in a draw. Drawn BO3 games do not award a point, and the same play/draw chooser retains the choice for the next game; this is covered through snapshot, HTTP and rendered controls. Seeded diagnostic series distinguish drawn games from timeout games and report an explicit draw cap.
-- Attempting to draw from an empty library is recorded until the next state-based-action check, rather than immediately assigning a winner. Both players failing to draw before that check produce a draw; multi-card draw effects stop and do not claim undrawn cards in the log. Snapshot and replacement-path regressions cover this bounded rule.
-- Exact "Each player draws N/X cards" clauses use active-player-first order, with each player's individual draws, replacements and choice continuation handled by the shared draw path. Vision Skeins and Prosperity fixtures cover stack resolution, X, snapshot continuation and simultaneous deck-out; other multi-player draw wordings remain unverified.
-- Seeded AI-vs-AI BO3 regressions use real built-in Aggro/Burn and Control/Ramp decklists, restore the controller from SQLite between games, and verify natural match finishes through HTTP; an Aggro/Burn series also finishes through rendered UI controls. Scripted human-vs-AI and human-vs-human BO3s use Mono Red Aggro against a 60-Island opponent through rendered mulligan, land, cast, attack, pass, trigger-order and next-game controls. These are lifecycle checks, not competitive AI or broad human-game acceptance.
-- Default spell timing: sorceries and non-flash permanents require an empty-stack main phase; instants and flash remain usable in response windows
-- Damage, prevention, protection, replacement effects, trigger resolution, and state-based actions
-- Supported X-based “all creatures get” and “each creature gets” temporary debuffs resolve from the announced X. Printed ETB and creature-death ability lines are evaluated separately, so a Meathook-style sweep handles both controllers' deaths and life triggers.
-- Bounded Incubate support creates a transforming Incubator artifact token with entry counters, a responseable `{2}` transform ability, persistent faces/counters across snapshots, and 0/0 state-based death. Sunfall counts creatures actually exiled; Chrome Host Seedshark uses the triggering noncreature spell's mana value. Fixed-number Incubate ETB text and "incubate X twice" using controlled land count also resolve. Unknown X sources are not silently treated as zero. Noncreature permanents now age out of summoning sickness before later animation or transformation; newly animated lands cannot tap for mana without haste. Both battlefield transform paths emit a rules event; the supported "transforms into a [subtype], put a +1/+1 counter on it" trigger uses a responseable stack item, as tested with Norn's Inquisitor. Corruption of Towashi's optional transform/enter-transformed draw uses the normal choice window and stops triggering only after its controller chooses to draw; its Incubate ETB does not accidentally draw. Other Incubate forms and transform-trigger clauses remain unverified and preflight still warns.
-- Declared attackers deal combat damage automatically on entering the combat-damage step, before priority; an explicit repeated damage action cannot deal it twice
-- Combat with first or double strike uses separate first and regular damage priority windows; live autoplay, batch simulation and replay advance through priority passes rather than forcing both windows closed. Participants are recorded for snapshot-safe second-step eligibility, and the UI labels the active window.
-- Human controllers can divide combat damage among multiple blockers, or among multiple attackers blocked by one creature, before the damage step resolves. The numeric choice survives snapshots; trample checks lethal damage assigned by all attacking sources in that step before damage reaches the defender. A pending split can be restarted before damage is dealt. AI uses a bounded threat-based allocation, while low-level unattended calls retain a deterministic fallback. First- and double-strike steps request separate choices.
-- Supported spell-driven discard now lets the affected human choose cards from their current hand at resolution; the choice survives snapshots and resumes later spell effects. AI-controlled seats choose lower-retention cards instead of the first hand entries. Explicit random discard uses seeded RNG without a choice window. This is not complete coverage of every discard wording or cross-event trigger interaction.
-- Supported "each player discards N cards" spells now request choices in active-player order, keep earlier selections private, and discard both players' selections in one event batch after all choices are made. The real Delirium Skeins spell is covered by engine, snapshot, AI and two-seat browser tests. Random variants bypass human selection. Another-player chooser wording and competing replacement ordering remain open.
-- Supported "target opponent reveals their hand; you choose a card; that player discards it" wording now targets only an opponent and gives the caster the resolution choice. The Coercion path exposes the revealed options in that caster's legal move, retains ordinary hidden-hand behavior outside the reveal window, and survives a snapshot. The player-target dropdown now has an accessible label. Other revealed-hand selection wordings and per-seat authorization for shared-device human matches remain open.
-- Selective revealed-hand discard also supports the printed nonland restriction on Thoughtseize and noncreature, nonland restriction on Duress. The public match log records the entire revealed hand, while the chooser offers only cards eligible under the printed restriction. Thoughtseize's 2-life loss waits until the selection resolves and still occurs when no card qualifies; it does not occur if its sole target becomes illegal. Human and AI use the same filtered choice options. Other reveal-and-choose grammars remain unverified.
-- The same revealed-hand chooser supports Inquisition of Kozilek's nonland mana-value ceiling and Despise's creature-or-planeswalker restriction. These are exact supported Oracle patterns; other comparisons, conjunctions and reveal effects are not implied.
-- Supported reveal-and-choose clauses may exile the chosen card instead of discarding it. Appetite for Brains applies its mana-value minimum, lets the caster choose at resolution, and moves the chosen card from hand to exile without a discard event. The reveal and chosen exile are logged. Both battlefield exile trays now list and preview face-up exiled cards; a face-down exile is count-only and its identity is withheld from the public response. Effects that exile cards face down remain outside the supported rules corpus.
-- Live matches, restored matches, batch analytics and verbose head-to-head diagnostics now supply both deck archetypes to their agents; the diagnostic runner also enables the same AI mechanic-choice windows as replay. When selecting from an opponent's revealed hand, AI hand-retention scoring uses that opponent's archetype when known. This is a bounded heuristic, not a general strategic model.
-- AI counterspell choices require an opposing stack target unless the printed clause explicitly targets a spell or ability the AI controls. This applies to ordinary and supported modal counter clauses; a two-seed Tempo/Blue Control trace no longer counters Tempo's own Lightning Bolt with Spell Pierce.
-- Combat-damage events include actual trample damage to a defender and damage dealt by blockers; source-specific player-hit triggers do not fire for another creature's damage. The damage step stages those events with resulting death triggers before a shared APNAP trigger-order choice, and staged triggers survive snapshots. Human death-replacement continuation and broader state-based-action waves still need certification.
-- If a blocker has banding, its defending controller chooses the attacker's supported damage split; if a blocker is blocking an attacker with banding, the active player chooses that blocker's supported split. The UI and AI follow the choice owner. Ordinary banding is inferred from Oracle text in live deck construction, distinct from "bands with other." Human players can select an ordinary attacking band; its legal direct blocks propagate to all live members and persist through snapshots. "Bands with other" remains unsupported, and AI does not yet form bands strategically.
-- Current bounded verification (2026-10-03): 5,234 isolated backend tests pass,
-  including 19 new opponent-resource, static-admission, HTTP and AI checks.
-  Frontend lint, production build, runtime contracts and complete Chromium pass,
-  including conditional clause warning disclosure, recovery and BO3 flows.
-  Two seat-balanced matrices repeat 24 samples twice without reported
-  anomaly/timeout/drift; one explicitly selects Dimir Control/Tempo/Tokens/Ramp
-  and the other uses expansion templates.
-  These checks do not certify arbitrary-card rules, expert AI, matchup balance,
-  fresh installs, competitive human release or long-session network reliability.
-  See [current scope and evidence](docs/testing/static-admission.md).
-- Land identity and deck-analysis land counts follow explicit card types/type lines, with exact basic-name fallback only for missing metadata; mana abilities and land-name substrings do not create land plays, and AI land priority uses offered legal moves only
-- Lands with the supported "pay 2 life or enter tapped" wording offer explicit choices on land plays and resumable choices when effects put them onto the battlefield from hand, library or graveyard. Forced-tapped effects and payment legality share the same pre-entry helper. Multiple effect-driven entries now defer payment and ETB triggers until all choices and entries finish, preserving human trigger ordering across a snapshot. This is bounded wording support, not general replacement-effect certification.
-- Life-total locks with the supported "can't change" wording suppress gain/loss and noninfect damage life changes, prevent nonzero life payments, and still allow damage to count for an unlocked opponent's lifelink. Activated and additional costs may pay exactly the remaining life when no lock applies. Positive payments now emit separate amount-bearing events; supported Font of Agonies-style counter triggers are staged above the paid-for spell or ability, including land-entry payment. Other pay-life wording and broader simultaneous replacement ordering remain unverified.
-- Spells with the supported "pay X life" additional-cost wording require an announced affordable X and offer a bounded human input. Supported all-creatures `-X/-X` resolves across both battlefields through cleanup; AI uses a bounded board-value choice rather than always spending maximum life. The specific Toxic Deluge path is engine, HTTP and browser tested; other variable-cost/effect wordings remain unverified.
-- Spell additional costs are parsed from their own printed clause, not later effects: bounded counted discards, typed sacrifices/unions, mixed components and fixed-life alternatives. Unmodeled clauses produce a coverage warning and no cast option. Selected-resource controls and grouped AI payment estimates share these contracts; conditional kicker effects and broader cost grammar remain unfinished. See [cost grammar scope](docs/testing/spell-cost-clauses.md).
-- Battlefield re-entry clears the prior object's counters, marked damage and until-end-of-turn power/toughness modifiers before supported Escape/entry counters are added. Direct and mass exile paths clear old counters after supported leave triggers inspect the departing object; graveyard paths clear them after supported death triggers are collected. Printed "counters remain ... other than hand or library" wording preserves real counters where allowed. Battlefield exits reset transformed faces, break old attachments and end temporary control durations after leave triggers are collected, including lethal spell damage. Departing permanents retain a snapshot of pre-exit effective power, toughness, controller, types and Oracle face for supported death triggers; simultaneous wipes capture all affected permanents before moving any. The snapshot survives match restore and is cleared on battlefield re-entry. Copied characteristics, broader last-known-information consumers and other zone-change state still need a wider audit.
-- The supported artifact-to-graveyard trigger clause fires when an artifact actually reaches the graveyard through destruction, sacrifice, or a simultaneous creature wipe, including when its trigger source dies in that wipe. Marionette Master's printed opponent-life-loss clause uses its effective or last-known power. Rest in Peace replacement suppresses the graveyard trigger. Optional-payment variants and other artifact-death effects are not covered by this clause implementation.
-- A sacrifice groups its supported leave, graveyard-death and sacrifice triggers into one ordering window, preserving an enclosing staged action. Merchant of Venom's printed untargeted counter trigger can be ordered with Marionette Master's graveyard trigger; it also sees an opponent's sacrifice or one replaced by exile. Supported one-damage "any target" sacrifice triggers such as Mayhem Devil now choose a player, creature or planeswalker as the trigger enters the stack and recheck legality at resolution. This does not cover Battles or arbitrary triggered clauses.
-- Combat lifelink routes one gain-life event per damaging source through supported gain replacements, including Alhammarret's Archive-style doubling and Nefarious Lich-style gain-to-draw conversion. Human matches can choose between multiple applicable gain replacements; the paused damage step, remaining gains, state-based actions and staged triggers survive snapshots. Double-strike damage windows apply gains separately. Broader cross-event replacement ordering remains unverified.
-- Deck archetype estimates use cached layout to distinguish split cards from modal/transform faces; modal front-face cost and type drive curve and creature-density priors. These descriptive estimates do not prove strategic play quality.
-- Continuous-effect and replacement ordering use deterministic battlefield tie-breaks when timestamps collide
-- Multiple prevention/replacement candidates use one explicit or deterministic timestamp-ordered choice per event, with source metadata preserved for replay diagnostics
-- Continuous and replacement sources carry persisted monotonic effect timestamps, with deterministic tie-breakers for legacy snapshots and same-timestamp entries
-- Continuous-effect diagnostics expose explicit layer ordering for supported keyword and power/toughness effects
-- Supported `can't have` keyword overrides remain authoritative even when a later effect grants the keyword
-- Draw/life replacement chains preserve consumed sources to prevent repeated application loops
-- Canonical unconditional and "except the first one you draw in each of your draw steps" draw-doubling text is supported per actual draw. Multiple sources, spell/turn draws, dredge pauses, human choices and snapshot-safe draw-step counts have focused coverage. Alhammarret's Archive-style life-gain doubling is separate from its draw clause. Other conditional replacement families remain unsupported.
-- Supported "each player/opponent can't draw more than one card each turn" static abilities count successful draws on either player's turn. Prohibited draws are skipped before replacement or dredge choices and do not cause empty-library loss; the count survives snapshots and resets when the turn changes. Spirit of the Labyrinth, Narset and Divination fixtures cover this family. Other draw prohibitions and optional multi-draw wording remain unverified.
-- Human-controlled matches pause supported top-level and direct draw-step replacement events and present legal `choose_replacement` buttons; pending draws and stack items survive snapshots and resume after selection. AI/replay uses deterministic timestamp ordering.
-- Human-controlled simultaneous trigger groups pause before stack insertion and expose validated `choose_trigger_order` moves; APNAP grouping and AI/replay fallback remain deterministic.
-- Supported single-target ETB, self-cast and bounded sacrifice-damage abilities choose targets in their trigger window, separate from the permanent spell. Human choices survive snapshots; unattended play selects a legal target, and target legality is rechecked on resolution. Supported optional triggers offer a separate accept/decline decision at resolution. This is not yet a general triggered-ability target/mode model.
-- Unconditional battlefield text granting a player hexproof or shroud now filters spell and trigger target choices and is rechecked at resolution. Hexproof still permits the protected player's own spells; shroud does not. Untargeted damage still applies. Conditional/temporary player grants and player protection from a quality remain outside this bounded implementation.
-- For supported single-target player-or-permanent actions, selecting one target in the GUI clears the other, including on selected modal faces. Multi-target actions retain independent selections.
-- Supported `Choose one` and `Choose two` spells expose only modes with legal mandatory targets; targetless modes stay castable when targeted modes cannot be chosen. AI and the human mode picker use the same available-mode list. Selected modes compile in printed order with independent target announcements. Cryptic Command counter/return can target a stack item and a permanent; Kolaghan's Command destroy/damage can target two different permanents. Either valid mode resolves when the other target becomes illegal; both illegal targets stop the spell. The printed return-creature-card mode uses the announced card in your graveyard, not an arbitrary card. Human and AI casts use per-mode target choices. Repeated modes, multiple targets within one mode, and general Oracle interpretation remain open.
-- AI target materialization now selects only players offered by legal target hints. Battlefield target hints also omit creatures and other permanents protected by hexproof, shroud, or protection from the source. When a player shield leaves a pure direct-damage spell with only friendly targets, automated play holds that spell instead of attempting an illegal cast or burning its own player; an exposed opposing creature remains a valid damage target. This bounded safeguard does not plan around all modal or multi-effect spells.
-- Divided-damage spells recheck each announced recipient at resolution. Illegal recipients take no damage, legal recipients retain their original allocation, and a spell with no legal recipients does not resolve. Protection is checked for divided recipients at announcement as well as resolution.
-- Human-controlled lethal creature deaths in state-based actions and combat cleanup pause for multiple die replacements and resume through the same ownership-correct zone-change path.
-- Human-controlled legend-rule zone changes use the same resumable die-replacement choice contract; chained prevention choices and simultaneous SBA batching remain under active rules hardening.
-- Damage prevention re-evaluates the modified event and applies remaining applicable sources once each; human matches receive follow-up choices for the chain, while AI/replay uses deterministic timestamp ordering.
-- Common continuous `can't have` keyword overrides are applied after applicable grants through deterministic layer ordering.
-- Simultaneous lethal creature state-based actions batch zone changes and deduplicate supported `one or more` death triggers before stack insertion.
-- Supported "when this creature dies" abilities are collected from the departed creature after zone movement; a Doomed Traveler combat regression resolves its 1/1 flying Spirit. Generic colored-token parsing separates the token name from its color, preserves that color across snapshots, and exposes it in the card view and hover preview.
-- Saga chapters can create one-shot next-creature entry counters and transform a double-faced Saga through the stack; pending delayed entries survive snapshots and expire at cleanup.
-- Master+ uses a bounded three-ply strategic search on late, developed boards with a reduced candidate beam; early states retain cheaper search.
-- AI land-only target actions now materialize the selected land without depending on a creature-target candidate; the regression covers a Nissa-style loyalty action. This prevents a simulator crash, not a claim of optimal planeswalker play.
-- For supported colored-permanent X-loyalty sweeps, Master AI tests board-changing X thresholds on copied game states and accounts for both players' lost permanents and the paid loyalty. It forces the sweep only when the evaluated gain clears a bounded threshold; other X-loyalty families and opponent-response planning remain open.
-- Single-clause "any target" actions announce one player or permanent. For fixed damage, AI takes lethal player damage first; otherwise it chooses a killable creature over nonlethal creature damage when a player is legal. Supported sacrifice-damage triggers now use a separate AI target policy with the same lethal-first intent; a killable opposing creature or planeswalker can beat nonlethal player damage. These are local tactical rules, not general damage-planning search.
-- Planeswalker loyalty abilities, including X-cost loyalty abilities
-- Oracle `−` and ASCII `-` loyalty costs are normalized before activation. Supported X-cost mass exile checks each battlefield permanent's color and mana value on both sides; colored zero-mana tokens are included and colorless permanents are excluded. Supported noncreature-land animation adds printed counters and vigilance/haste. Canonical Ugin and Nissa fixtures cover these paths, but broader loyalty-effect and AI ability-selection fidelity remain open.
-- Explicit `{C}` mana handling separate from generic mana
-- Ownership-aware zone movement for stolen permanents
-- Support for common Oracle patterns such as reanimation, graveyard recursion, tutor effects, and battlefield-tutor resolution
-- Supported topdeck creature/permanent battlefield effects inspect and choose cards at resolution: legal cast hints reveal only counts, human choices can select up to the limit after a response window and snapshot restore, and live/simulator AI uses contextual ranking. Direct effect calls without a match chooser retain deterministic fallback. Random-order bottom clauses consume the persisted match RNG; supported "any order" clauses offer a second ordered human choice.
-- Resolution-time library-search candidates and validated choices for human and AI controllers. AI hand searches rank mana fixing and near-term card value; graveyard searches instead rank recursion value and avoid exiling premium targets under supported graveyard replacement. Direct low-level effect calls retain deterministic fallback selection.
-- Unrestricted one-card and creature-limited library searches can put selected cards into the graveyard, including supported "from anywhere" exile replacement. A human must select an available card for a mandatory unrestricted search; "up to" searches may select none. AI can decline an optional graveyard search when every candidate would be exiled. Entomb has an HTTP choice regression and Buried Alive has a snapshot-choice regression.
-- Canonical Ramp tutor handling for Cultivate and Migration Path, including basic-land counts, shuffle, tapped battlefield placement, and Cultivate's first-to-battlefield/second-to-hand split
-- Fixed, variable, and alternate cycling, including draw replacement, discard/cycle triggers, optional trigger choices, and basic-landcycling searches
-- Broader support for artifact, enchantment, permanent, and combined artifact-or-enchantment trigger wording
-- Generic named self-counter triggers for common cast/combat/ETB payoff patterns
-- Resolution-time counted creature-type effects for tribal ETB payoffs
-- Structured top-card hand/exile/bottom choices with temporary play permissions
-- Look-at-top creature reveals with printed mana-value or power limits, optional human selection at resolution, ranked AI selection, and random-order bottom placement where Oracle text requires it
-- Supported counter-dependent land mana reads current permanent state across automatic payment, manual tapping, AI source estimates and card views. Land piles separate differing outputs and offer authoritative color choices; alternatives share physical sources. Other land activation costs, restrictions and dynamic outputs remain incomplete.
-- Shared cast-choice plumbing for modes, faces, X values, and targets; library-search selection occurs at resolution
-- Generic conditional target legality for common type exclusions and mana-value ceilings, including nonartifact/nonland/noncreature, creature-or-planeswalker, controlled-basic-land, and controller-graveyard restrictions
-- Simple single-target player-or-permanent Oracle alternatives expose both candidate types and use one combined human target selector; damage to a planeswalker reduces loyalty, with prevention and printed clause order respected. Multi-target and more complex alternatives remain unsupported.
-- Conditional counterspell payment and noncreature stack-target legality, with explicit API payment choices and deterministic automated fallback
-- Stack targeting distinguishes spells from activated and triggered abilities. Counterspell cannot target a Sheoldred draw trigger or move its battlefield source to the graveyard; canonical Stifle wording can counter supported activated or triggered abilities. Negate resolves as a counterspell and excludes creature spells at selection and resolution. [Counterability scope](docs/testing/counterability-scope.md) separates intrinsic spell protection from supported standalone battlefield color/type protection, without making protected spells illegal targets or protecting their source's activated abilities. Conditional/granted protection, ability-removal layers and broader copy/stack interactions remain uncertified.
-- Drown in the Loch's selected counter mode limits stack targets by the target spell's mana value and its controller's current graveyard count, including announced X; the target is rechecked at resolution.
-- Canonical Memory Deluge-style text now looks at cards equal to mana spent, puts two chosen cards into hand without causing draw triggers, and bottoms the rest in random order. Both humans and AI choose at resolution; AI uses library-choice scoring. Basic printed Flashback costs can be paid from the graveyard, and those spells exile on resolution or when countered. A seeded Dimir Control vs Ramp replay completed both games without timeout and exercised normal and Flashback selections. Unusual cost changes and broader Flashback interactions still need coverage.
-- Oracle reminder text is excluded from executable effects on its source, so quoted token abilities are not mistakenly granted to the creator card. When that same printed text defines a named artifact token, the engine can create it with its own printed ability: Food and Blood tokens can be activated, paid for, sacrificed, and cease after leaving play. Witch's Oven uses the sacrificed creature's effective toughness for its one-or-two Food replacement. This does not yet cover named tokens without a supplied definition, deliberate sacrifice selection, or Cauldron Familiar's graveyard Food ability.
-- Reflection of Kiki-Jiki-style activated text now creates a token copy of a legal other nonlegendary creature you control, copies its base characteristics without counters, adds the printed haste exception, and sacrifices the token at the next end step regardless of whose turn it is. This supports the checked-in Fable back face, not arbitrary copy-layer interactions; Fable's Goblin token attack ability is covered separately below.
-- Fable's chapter-I Goblin token retains its quoted attack trigger and creates Treasure when it attacks. An offline [Scryfall-backed token seed](backend/card_data/builtin_token_seed.json) provides exact Oracle text and token types for Food, Blood and Treasure. Supported nonland tap mana abilities can be activated manually by a human or consumed during automatic cost payment; Treasure offers five colored choices and is sacrificed as a cost, while summoning-sick creatures cannot tap. Printed fixed same-color output (Sol Ring/Llanowar Tribe) and fixed amounts of any one color (Gilded Lotus) retain leftover mana. Legal-move affordability and automatic payment share an exact allocation search over supported fixed-output sources, including mixed land/artifact pools; each physical source is consumed once. Supported two-part hybrid symbols such as `{W/U}`, `{2/W}` and `{C/W}` enumerate legal mana payments, and mana value uses the largest hybrid component. A human may select every printed hybrid branch in the cast controls for legal hand, graveyard, exile or top-library casts, or leave all on Auto; AI and older clients use the first payable branch. Supported Phyrexian symbols also offer colored-mana or two-life payment, including hybrid Phyrexian choices; the cast and activated-ability controls expose the life branch. Supported self-activated single-keyword grants (including Pestilent Souleater gaining infect) persist through snapshots and expire at cleanup. Human branch choice for cycling, interactions among loyalty-entry replacement effects, broader snow-spend-dependent effects and dynamically changing snow-source types, unmodeled mana-ability costs/output grammars, mixed-color bundles and complex mana-trigger ordering remain open.
-- Activated abilities printed with "Activate only as a sorcery" are offered only during their controller's empty-stack main phase, and direct out-of-window actions are rejected before costs are paid. Other activation timing clauses still need coverage.
-- A compleated planeswalker cast with life for a Phyrexian mana symbol enters with two fewer loyalty counters per symbol; this payment choice persists through stack snapshots. Mana payment leaves its printed starting loyalty unchanged, and leaving play restores printed loyalty for a later cast. Tamiyo, Compleated Sage covers the supported entry case; interactions with other loyalty-entry replacement effects are not yet certified.
-- Supported `{S}` costs require mana from a snow source, following [Comprehensive Rules 107.4h](https://media.wizards.com/2026/downloads/MagicCompRules%2020260619.pdf). The pool tracks each color's snow-produced subset across manual taps, automatic payment and saved matches; colored and generic spending use ordinary mana first when available. The battlefield displays the snow subset as `(nS)` beside each pooled color. For supported fixed-output sources, the engine records how much snow-produced mana paid a spell, including colored and generic costs; copied spells count zero. Search for Glory uses that record to gain life after its snow-permanent/legendary/Saga library search, including when a human search choice pauses and resumes resolution. Icehide Golem, Snow-Covered Forest, Boreal Druid and Search for Glory have focused fixtures. Dynamic snow supertypes, arbitrary mana-source abilities and other snow-spend-dependent Oracle wordings still need coverage.
-- Offline built-in play uses a checked-in 119-card Scryfall-backed Oracle seed instead of handwritten approximations. It includes the 11 built-in decks, additional cards, front-face data and double-faced/Adventure face metadata. A catalog test checks that each color has land sources scaled to its spell package. App-managed built-in and expansion templates refresh in place, preserving saved deck IDs and leaving user decks alone. These format-agnostic examples use original dual lands with no entry condition rather than approximating shock-land life-payment choices. Custom cards outside the seed require complete canonical local bulk data or explicit card sync; canonical text alone does not imply full mechanics support.
-- Replacement candidates are queryable through `/matches/{match_id}/replacement-options`, and explicit source IDs can be carried through structured cast choices; deterministic timestamp selection remains the AI/replay default
-- Replacement-option responses identify the deterministic policy as `latest_effect_timestamp` and suppress choices that a supported prevention override makes impossible
-- Generic noncombat-damage replacement to -1/-1 counters, power-based death triggers, self-cast X triggers, and X-counter entry handling
-- Realmwalker-style chosen creature-type persistence and legal casting of the matching creature from the top of the library
-- Modal target generation selects the mode before materializing targets, and `Choose two` modes resolve through ordered structured effect sequences
-- AI tutor selection happens at resolution, not by peeking at library candidates during cast; its current ranking is heuristic rather than deep tactical planning
-- AI mechanic choices preserve lands and high-value creatures against Annihilator when expendable permanents exist, and choose cleanup discards from the whole hand instead of dropping the first cards by library order
-- Opening-hand mulligan checks count only mandatory colored pips for supported two-part hybrid costs, so a blue source does not falsely appear unable to cast a `{W/U}` spell. Land-selection demand distributes optional hybrid-color interest rather than treating the first half as required. Phyrexian mana colors are optional in this heuristic because life can pay the printed cost; it does not yet budget life across an opening hand.
-- Graveyard spell targets are legal AI actions for recursion effects such as Torrential Gearhulk-style abilities
-- Legacy combat keywords such as `shadow`, `fear`, `intimidate`, and landwalk in blocking logic
-- Manual and autoplay-driven best-of-three matches; human seats can inspect current mainboard/sideboard counts and submit one sideboard swap between games. AI seats with supplied sideboards make up to four conservative, color-source-checked swaps between games using opposing types observed in public zones or on the stack across the match; that type-only memory survives restart but never reads a hidden hand. AI-vs-AI testing can also use its known matchup archetype. This is a narrow heuristic, not optimized tournament sideboarding.
-
-### Card Data
-- Local card cache synced from live card data
-- A tracked 119-card Scryfall-backed offline seed covers all 112 unique cards in the shipped built-in and expansion decklists, plus test/deck extras. It includes front-face metadata for Adventure cards. This supplies card data without a developer-only SQLite cache; it does not certify that every printed effect is implemented.
-- When the all-Oracle Scryfall bulk import has populated `CardKnowledge`, deck import and live match start lazily materialize previously uncached cards into the gameplay cache without a network request. Existing cached printings and local art are not replaced by this path. Exact bulk names also participate in import validation and fuzzy suggestions. This supplies Oracle text, costs, layout, faces, legalities and available image URLs; it does not download every image or verify missing rulings, and metadata coverage is not rules-engine support.
-- Card completeness and name suggestions also read the local bulk corpus without writing the gameplay cache. The report distinguishes available metadata from uncached art/data and treats a verified empty rulings list as verified; its rules-support label remains exploratory.
-- Oracle text, mana cost, type line, colors, rulings, legalities, and image metadata
-- Double-faced, split, modal, adventure, and token-aware card handling
-- Double-faced type lines use the front face until a legal transform selects the back face, avoiding premature creature/land characteristics from combined metadata
-- Both battlefield transform paths normalize face power, toughness, loyalty and keywords through the shared face adapter; AI threat checks use effective power rather than raw printed strings
-- Generic upkeep top-card transform handling for double-faced cards
-- Transforming Saga final chapters with the supported printed exile-and-return instruction now exile the Saga and return its back face as a new permanent under the chapter controller. Lore and other counters reset, the returned creature is summoning sick, and enter-transformed triggers fire instead of battlefield-transform triggers; Fable of the Mirror-Breaker has focused regression coverage.
-- The Fable final-chapter path also has a live HTTP regression: a names-and-quantities deck hydrates both faces, a pending chapter survives SQLite restore, and priority passes expose the returned back-face card view.
-- Core day/night state transitions from per-turn spell counts, including daybound/nightbound battlefield transformations. Upkeep start stages day/night, all resulting transform, and ordinary beginning-of-upkeep triggers into one APNAP order window after every affected face has changed; two-seat human order choice and snapshot continuation have focused backend coverage.
-- Day/night transition triggers use the normal stack and APNAP ordering path
-- Reusable Aura and Equipment attachment legality, target-choice exposure, and state-based cleanup for invalid Auras
-- Generic temporary control-change effects with ownership-safe battlefield movement, cleanup restoration, and snapshot persistence
-- Shared battlefield-leave events for destruction, exile, sacrifice, lethal combat, and state-based actions, including common leave-trigger resolution
-- Token-aware death replacements that distinguish nontoken clauses from token permanents
-- Non-battlefield tokens cease to exist at the next state-based check without suppressing dies triggers already generated. Token identity survives type changes and snapshots; supported graveyard returns, recasts, dredge, escape costs, hand discard, Ninjutsu and hand-to-battlefield effects reject departed tokens before that check. Other same-resolution library/exile transfers remain unverified.
-- Canonical Rest in Peace graveyard replacement and ETB exile sweep, with HTTP action and SQLite-restore regressions for damage-spell resolution, suppressed dies triggers, and existing graveyards; interacting replacement choices remain uncertified
-- Owner-scoped opponent-card graveyard replacement for Leyline of the Void wording: opposing cards are exiled from discard, stack and battlefield paths, but tokens and the controller's own cards are not; a resolved opponent spell is HTTP/restore-tested, with supported simple opening-hand entry now available (conditional/reveal families remain unsupported)
-- Dynamic characteristic-defining power/toughness for graveyard card-type counts
-- Corpus audit distinguishes structured cast effects, structured event/replacement paths, and static/no-op cards; all 112 distinct shipped deck names have offline Oracle metadata, with zero missing-Oracle or parser-fallback classifications in the empty-cache report. It shares front-face card-type parsing with gameplay, including Battle and Kindred while excluding supertypes and subtypes. Parser classification alone does not certify any card's rules behavior.
-- Fuzzy matching for deck import correction
-- Cached fallback metadata when remote lookups fail
-- Token creation uses cached art or an immediate local fallback, never a network request in the rules path; explicit token-art sync stores local art for later games
-- Diagnostic replay scripts hydrate cards from the local cache before simulation; unknown cards retain unknown characteristics instead of being silently treated as generic 2/2s
-
-### AI
-
-- [Strategic priority and public stack threats](docs/testing/ai-strategic-wait.md)
-  retain better-scoring waits through root and reply search, distinguish spell
-  and ability prevention, and avoid duplicate single-alternative targets.
-  Full backend/frontend/browser gates pass and thirty games repeat identically;
-  strict action replay still rejects one missing-creature Searing Blaze cast.
-  Linked targeting remains open; this is not expert-AI certification.
-
-- [Public mana-change planning](docs/testing/ai-public-mana-changes.md) values supported fixing and disruption through paid engine projections, known own-hand costs and public resources. It retains unhelpful pure fixing, revisits it as needs change, compares type-changing lands with ordinary alternatives, and excludes hidden cards. Resource weights and broader strategic play remain heuristic; focused decisions and the six-archetype repeated replay gate pass, not expert-AI certification.
-- [Bounded combat setup planning](docs/testing/combat-setup.md): Master evaluates real precombat casting/equipment/activation effects followed by legal public-board blocks and damage before choosing cheap creature development. Known gaps, hidden draws and unresolved choices prevent a claimed win; already-winning boards preserve cards. Canonical probes improve across all fourteen archetype labels and thirty repeated seat-balanced samples pass; wider boards, adversarial responses and expert-AI certification remain open.
-- Small-board Master/Master+ blocker search projects attacker-to-blocker assignments through actual engine combat, including recognized declaration costs. Both-seat lethal-flyer regressions resolve combat rather than treating a selected block as proof of survival; final block payloads use the checked-action list contract. This is bounded tactical coverage, not optimal arbitrary-board play.
-- [State-aware variable mana](docs/testing/variable-mana.md) uses supported battlefield counts, source counters and effective power across payment, manual tapping, public views, resource valuation and postcombat reservation. It does not treat an unrecognized quantity as one mana; mixed/color-dependent outputs, granted abilities and full type/layer semantics remain unsupported.
-- [Postcombat mana reservation](docs/testing/ai-postcombat-mana.md) compares supported unblocked mana-creature attacks against actual fixed-cost hand casts, using legal payment checks with floating mana removed. Both seats/archetypes share the forecast; redundant sources and vigilance can still attack. Qualified token/color/type continuous subjects and noncreature protection now reach effective stats, targeting and destruction. Compound turns, opposing responses, variable mana and full conditional/layer semantics remain open.
-- [Repeatable mana-resource valuation](docs/testing/ai-mana-resources.md) distinguishes printed tap-only capacity from current payment readiness. Supported mana creatures and artifacts retain future board/sacrifice value while tapped or summoning-sick; creature cast/threat ranking uses the same public-board estimate across archetypes. Flexible colors are alternatives, not additive sources. Extra-cost, restricted and non-untapping sources do not receive this unconditional bonus; deeper activation and combat-resource planning remain open.
-- [Recurring payoff and safe-wipe evaluation](docs/testing/ai-recurring-payoffs.md) shares printed recurring drain/draw/token rewards across creature board value, cast ranking, threat assessment and sacrifice retention. Supported death rewards require an eligible public creature without an applicable graveyard replacement; spent entry abilities and trigger conditions are not counted as rewards. Fixed-cost mass destruction is held when an actual unanswered engine projection proves a public death-trigger loss. Unknown opposing choices remain unknown; human legality is unchanged. Deeper mana-resource and compound-effect planning remain open.
-- [Winning self-removal](docs/testing/ai-self-removal.md) uses actual cost, stack, trigger and replacement simulation to recognize supported unanswered winning lines against a friendly permanent. Own choices use an isolated AI policy; unresolved opposing choices or hidden-zone changes do not certify a win. Recurring drain/draw/token payoffs receive additional sacrifice-retention value without borrowing their spent entry rewards. Nonterminal self-removal and broader response planning remain open.
-- [Productive destruction targeting](docs/testing/ai-destruction-targets.md) avoids indestructible and friendly permanents for supported pure single-target destroy clauses, including spells, selected modes, activated abilities and loyalty abilities. An engine-projected unanswered winning friendly-target line can bypass the AI strategy guard, not legality or costs. Human targets remain legal. Secondary draw clauses are preserved; nonterminal self-removal and compound-effect optimization need deeper planning.
-- [Pending-removal awareness](docs/testing/ai-pending-removal.md) projects announced stack effects using the rules engine before committing another simple removal spell. AI preserves backup interaction when a known counter or pump defeats the pending effect, and prefers uncovered threats. Unknown choices retain options rather than inventing outcomes; arbitrary compound-effect valuation remains open.
-- [Counterability-aware decisions](docs/testing/ai-counterability.md) conserve supported pure counters against protected spells and prefer counterable opposing targets. Modal scoring can choose useful non-counter modes instead; human counter targets remain legal. Compound-effect valuation, protection-removal planning and expert-level play remain open.
-- Tactical role tags derive from Oracle text and card types rather than card-name substrings. Canonical live and bulk knowledge sync store these tags, including per-face tags, and backfill verified cached rows offline. An isolated import of the local Scryfall bulk file populated all 38,690 Oracle rows and repeated without changes; this is metadata coverage, not gameplay certification. Persisted play-value/threat profiles and expert-level decision quality remain future work.
-- Master AI scores supported X-based all-creature debuffs against effective toughness and creature threat rather than maximizing X by default. It holds those spells when the affordable X removes no opposing creature, including when main-phase anti-stall logic would otherwise force a cast. This is a bounded tactical heuristic, not an optimal sweep planner.
-- Control-oriented AI holds pure counterspells against a sole low-impact creature spell and avoids double-countering a spell already covered by its own pending counter. A distinct opposing stack spell remains targetable, and a new opposing response on top of the counter reopens the counter-war line. Threat scoring is heuristic; this does not certify optimal counter timing against combos or unusual enter-the-battlefield effects.
-- Archetype-aware AI with difficulty levels: `casual`, `strong`, `master`, `master_plus`
-- Hand-profile-aware mulligan decisions, curve evaluation, interaction timing, threat assessment, attack selection, and combat math
-- X-spell value selection that trades off board pressure, archetype pressure, and mana efficiency
-- Modal, split, and transform-face selection based on board state and matchup pressure
-- Board-role-aware planning for stabilize, convert, race, control, and related board states
-- Matchup-aware scoring for control, ramp, tempo, tokens, midrange, aggro, and attrition lines
-- Exact shared-draw casts are screened against both library sizes and current hand disparity before forced-play heuristics. Master AI holds Vision Skeins when it would mostly refill the opponent, avoids self-decking, and keeps an opponent-decking line; this is bounded tactical screening, not a general shared-resource planner.
-- Replay-prior tuning and training exports for deeper decision analysis
-- Adaptive bounded two-ply Master planning on developed boards, including spell sequencing and resource-preserving proactive actions
-- Bounded tactical search minimizes our evaluation on opponent priority and materializes target choices before simulating replies. Its candidate beam remains heuristic; this is not a guarantee of optimal play.
-- Ranking rollouts likewise materialize targeted candidate and opponent-reply actions before evaluating cloned states. Their eight-reply cap can still miss a better response.
-- Search reply caps use a shallow tactical ranking rather than a lexical prefix, so a relevant spell is not excluded merely because several ability moves sort first. Ranking still reflects heuristics and does not exhaust legal replies.
-- Speculative AI casts and replies request strict engine rejection on cloned states, so supported cost/target failures are not scored as successful plays. Other silent no-op paths still need audit.
-- Master-level bounded blocker-assignment search on small combat boards, resolving cloned combat states to compare lethal prevention, trades, and post-combat board value
-- Combat AI evaluates resolved effective stats and blocker ownership, including counters, continuous buffs, temporary changes, and characteristic-defined values
-- On boards too large for bounded block search, AI fallback checks the engine's direct-block legality before assigning a blocker. It counts all attacking members stopped by a legal band block; this does not make AI form bands strategically.
-- AI block search and fallback use the same engine minimum-blocker requirement, including creatures that require three or more blockers; choosing no block remains legal. This is not a claim that all combat decisions are optimal.
-- Complexity-bounded Master deep search: dense token boards fall back to deterministic heuristic/combat evaluation so long simulations remain responsive
-- Decision-local announced-stack projection reuse, history-free alias-preserving flat-container clones and bounded immutable static-text instruction caches reduce repeated work while retaining gameplay state, RNG and search limits. Effective stats/keywords still read current state. Offline paired benchmarks check full decision/reasoning equality and authoritative-state preservation; see [projection scope](docs/testing/ai-projection-performance.md) and [hot-path scope](docs/testing/ai-hotpaths.md).
-- Synchronous pure-query scopes reuse land layers, effective stats/keyword counts,
-  ability-loss sources and board scores only while that state is unchanged.
-  Simulated branches, later actions and concurrent queries stay isolated;
-  search horizons and candidate limits are not reduced. See
-  [query latency scope and acceptance](docs/testing/ai-query-latency.md).
-- Immutable combat query batches end before payments, damage and trigger/state
-  changes. A retained current-source Master decision is 20.3% faster with identical
-  actions and search work, backed by 799 composed tests; its 92.5-second latency
-  remains too slow for interactive use. See [bounded evidence](docs/testing/combat-query-batches.md).
-- Combat search preserves blockers when a non-lethal line would only chump without removing an attacker, while retaining lethal-prevention and profitable-trade lines
-- Paid selection uses an own-inventory probability when available, preserves
-  known interaction and avoids verified zero-hit forced activations. Unknown
-  inventories retain a heuristic fallback, not a fabricated hit probability.
-  Legacy batch/replay now reject invalid AI actions rather than converting them
-  into passes. See [integrated scope](docs/testing/selection-policy-integration.md).
-- Engine-tagged control spell scoring now uses board-role context without crashing the head-to-head simulator
-- Tactical ranking, rollout, opening-hand, closure, burn and threat heuristics use Oracle text/types and announced spell faces rather than name fragments. Printed fixed player-damage estimates recognize unlisted damage spells and Boros Charm's four-damage clause. Deck identity uses role density, curve and typed tribal support; missing type metadata yields an explicit zero-confidence fallback. These remain heuristics, not expert-play certification. See [scope](docs/testing/ai-oracle-semantics.md).
-
-### Simulation and Diagnostics
-- Bounded printed fixed-cost Suspend has engine lifecycle, hand controls,
-  durable cast/decline choices and actual AI consumers. Parent qualification
-  passes 892 backend checks plus ten actual-App and ten real-HTTP AI cases.
-  Variable/granted/complex variants and expert timing remain unfinished. See
-  [supported scope](docs/testing/suspend.md).
-- Printed Foretell has special-action payments, later-turn alternative costs,
-  durable private exile permissions and both-seat hand controls. Supported grants,
-  action-cost modifiers and self-buff triggers use shared engine paths; AI banks
-  idle mana conservatively across archetypes. Supported conditional token and
-  scry clauses use shared effect handlers; selected alternative X costs drive
-  human choices and AI action construction. Mandatory game-end reveals survive
-  saved history and BO3 transitions. Supported draw/hand-exile and damage/self-exile
-  clauses create owner-held Foretell permissions through counterable triggers,
-  not special actions; saved choices, selected-face costs and AI hand selection
-  share the same paths. Absent mana costs are unpayable rather than free unless
-  an explicit alternative/free-cast permission applies. Other conditional
-  clauses and deeper planning remain open. See
-  [implemented scope and limitations](docs/testing/foretell.md).
-- AI vs AI autoplay
-- Batch simulation with progress tracking
-- Replay inspection and deterministic regression checks
-- Strategic search preserves scoring perspective while executing replies as their
-  actual player, then reuses selected executed prefixes without reducing search
-  depth or candidate limits. [Acceptance and open risks](docs/testing/ai-search-prefix.md)
-  distinguish search correctness/performance from optimal play.
-- Replay matrices can export and import hash-verified resolved deck manifests,
-  pinning deck order and card metadata across runs without rehydrating from a
-  changed cache. Reports include input/corpus provenance; hashes establish
-  repeatability, not canonical-data correctness or rules coverage.
-- Seeded best-of-3/5/7/9 replay validation with per-game hashes, legal-action traces, and timeout classification
-- Timeout classification distinguishes isolated legal conditional-counter payment failures from repeated recent cost failures; low tick caps can still end legitimate long games
-- Match logs, anomaly output, and training trace export
-- Stable AI decision-reason labels and legal-action summaries in verbose traces, analytics, and training exports
-- Card-play analytics flag pass-with-unused-mana and main-phase land-not-first decisions with the surrounding hand/board context
-- Card-play analytics excludes tapped blockers from attack-quality warnings and preserves hand/board context for missed-land investigations
-- Tactical analytics record effective keywords, attacker/blocker assignments, evasion-aware bad attacks, lethal misses, block trades, and resource-preservation decisions
-- First-divergence drilldown with compact trace context for both sides
-- Tokens, stack objects, copies and triggers use a persisted per-game identity sequence independent of shuffle RNG. Replay normalization retains these identities to expose target/block tie drift; operational match/job IDs remain random.
-- Replay matrices run each seed in both seat orders by default, record per-game seeds/choosers/starters and separate unresolved series from completed win rates. Repeated determinism executions are not counted as new samples; anomalous runs retain traces. Replay shares live-match loser/draw chooser, seed and mulligan-actor policies, chooses play by default and stops at the first timeout. Sideboarding parity and conditional/reveal opening-hand effects remain open. See [the replay protocol](docs/testing/seat-balanced-replay.md).
-- Per-game batch results and matchup summaries
-- Diagnostic scripts for head-to-head runs, replay regression, anomaly clustering, and training-data extraction
-- Offline match-latency profiler reports per-decision counts, p50/p95/p99/max timing and diagnostic target exceedances without hands/card identities. It never changes gameplay or truncates a decision for exceeding the target. Exact card-instance planning clones isolate all mutable fields while reusing immutable scalars; see [measured scope](docs/testing/ai-card-copy-latency.md).
-- Corpus audit script for ranking parser fallbacks and missing Oracle metadata across built-in and expansion decks
-- SQLite cache resolution is stable across launch directories; API, sync jobs, and diagnostics use `backend/mtg_lab.db`
-
-### UI
-- Saved-match and persisted diagnostic histories start with three entries, expand three at a time and collapse back to the preview; expanded lists scroll rather than crowding play controls.
-- Desktop-first battlefield layout with readable stack, priority, mana, and hand presentation
-- Explicit interrupt-window state in the controls panel
-- Hover inspection and card zoom for readable long-session testing
-- Density-aware battlefield scaling for crowded boards
-- Match simulator panel with progress and first-divergence reporting
-- Testing Simulator can browse persisted diagnostic summaries without loading raw anomaly logs; selected runs show bounded samples and cluster metadata
-
-## Architecture
-
-Gameplay logic lives in application code. SQL is for storage only.
-
-### Backend Layers
-- `backend/card_data` - card sync/cache, image cache hydration, and fuzzy lookup
-- `backend/rules_engine` - turn structure, priority, stack, combat, timing, state-based checks, and rules inference
-- `backend/effects` - modular effect handlers and resolver registry
-- `backend/game_state` - canonical state model and serialization
-- `backend/ai` - tactical AI, archetype detection, matchup policies, and endgame behavior
-- `backend/decks` - deck parser/import, built-ins, expansion decks, and sideboarding support
-- `backend/analytics` - batch simulation, replay summaries, diagnostics, and anomaly analysis
-- `backend/persistence` - storage layer only
-- `frontend/src` - match UI, deck UI, controls, logs, and simulator views
+Support applies to the qualified clause families, not every card sharing a
+keyword. The [rules/choice/color scope](docs/testing/rules-choice-color-composition.md),
+[input contracts](docs/api/input-contracts.md),
+[training groundwork](docs/plans/learned-policy-groundwork.md) and
+[qualification documents](docs/testing/) explain the boundaries.
 
 ## Setup
 
-### Backend
+Use Python 3.12 and Node 22 as tested by the current development workflow.
+From the repository root, start the backend:
+
 ```bash
 cd backend
 python3 -m venv .venv
@@ -601,317 +65,149 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 9999 --reload
 ```
 
-### Frontend
+In another terminal, start the frontend:
+
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev -- --host 0.0.0.0 --port 5173
 ```
 
-The Vite development server proxies `/api` and `/card-images` to the backend on port `9999`. Production builds also default to same-origin `/api`, so a static deployment must proxy both `/api` (stripping that prefix) and `/card-images` to the backend. For a separate backend origin, copy `frontend/.env.example` to `.env.production` and set `VITE_API_BASE_URL` before building, for example `http://192.168.1.50:9999` on an HTTP-only LAN. Use an HTTPS backend origin when serving the frontend over HTTPS; the app no longer guesses an HTTP backend on port `9999`.
+Open `http://<server-ip>:5173`. `0.0.0.0` is a bind address, not a browser
+address. The development proxy forwards `/api` and `/card-images` to port 9999.
+Production defaults to same-origin `/api`; configure a reverse proxy for that
+path, stripping its prefix, and `/card-images`. For a separate API origin, set
+`VITE_API_BASE_URL` before building; use HTTPS when the page uses HTTPS.
 
-### Open the App
-- Frontend: `http://<server-ip>:5173`
-- Backend: `http://<server-ip>:9999`
+Operation is **private, single-user and single-worker**. Human versus human is
+a shared-device sandbox, not an authenticated two-account game. Do not expose
+the development servers publicly. Per-match process locks are not distributed
+coordination or authorization. `MTG_DEBUG_HANDS=1` plus the UI's debug toggle can
+reveal AI hands for trusted testing; leave it off outside that context.
+
+## Architecture
+
+| Layer | Directory | Responsibility |
+| --- | --- | --- |
+| Card data | `backend/card_data` | Sync, cache, faces, images and canonical hydration |
+| Rules | `backend/rules_engine` | Timing, legality, priority, stack, combat, layers and events |
+| Effects | `backend/effects` | Reusable effect handlers and resolution |
+| State | `backend/game_state` | Authoritative objects, snapshots and public views |
+| AI | `backend/ai` | Private observations, deck profiles and action evaluation |
+| Decks | `backend/decks` | Parsing, imports, templates, sideboards and cohorts |
+| Analytics | `backend/analytics` | Simulations, diagnostics and statistics |
+| Storage | `backend/persistence` | SQLite models/repositories and saved data |
+| Knowledge/training | `backend/knowledge`, `backend/training` | Provenance, observations and trajectory contracts |
+| UI | `frontend/src` | Deck setup, battlefield, actions and diagnostic views |
+
+Actions are validated against authoritative state, timing, targets and costs.
+Checked projections preserve the original state. The live write boundary adds
+revision/idempotency coordination and snapshot persistence. Events queue
+supported triggers; effects resolve through shared handlers, replacements and
+state-based checks. Continuous queries provide effective characteristics without
+rewriting printed card facts. SQL stores those facts/results; it does not decide
+what an action means. PostgreSQL and multiworker deployment are not certified.
+
+The AI analyzes admitted deck data, enumerates legal actions and evaluates
+resources, threats, combat and supported future opportunities. It does not read
+unseen opposing hands or hidden library order. Master search can still be slow
+and strategically imperfect. Offline mechanic metadata and tournament/deck
+priors do not by themselves teach full Oracle semantics or prove play quality.
 
 ## Testing
 
-### Backend
-Run committed backend sources in an isolated local directory from the repository
-root. API fixtures use source-relative SQLite; running them in the live checkout
-can overwrite user data and the canonical regression fixtures reject it.
+**Do not run backend tests against the live checkout/database.** API fixtures
+use source-relative SQLite. Run a disposable local copy without a physical
+`.git` directory; never execute SQLite on NFS. From the repository root:
+
 ```bash
 PY="$PWD/backend/.venv/bin/python"
 scratch=$(mktemp -d)
-git archive HEAD backend | tar -xf - -C "$scratch"
-echo "Isolated test source: $scratch"
-(cd "$scratch/backend" && MTG_ISOLATED_TEST_ROOT="$scratch" "$PY" -m pytest -q)
-# Remove the isolated directory after reviewing/preserving its results.
+git archive HEAD | tar -xf - -C "$scratch"
+(cd "$scratch/backend" && \
+  PYTHONPATH="$scratch/backend" MTG_ISOLATED_TEST_ROOT="$scratch" \
+  "$PY" -m pytest -q)
 ```
-This tests committed `HEAD`, not uncommitted edits. Use a separate disposable
-source copy for developing changes; do not point test database paths at live
-SQLite or NFS. CI follows the same isolated-source contract.
 
-### Frontend
+This tests committed `HEAD`, not uncommitted work. Preserve results before
+removing your disposable checkout. Cold child-process probes require the shown
+`PYTHONPATH`. Large suites can take substantially longer than a smoke test.
+
+Frontend gates use the external backend interpreter for canonical fixtures:
+
 ```bash
+export MTG_TEST_PYTHON="$PWD/backend/.venv/bin/python"
 cd frontend
-npm test
 npm run lint
 npm run build
+npm test
 ```
 
-The dependency-free Chromium action regression is available through `npm run test:browser` after starting its isolated fixture API and browser. Setup and coverage limits: [human action browser tests](docs/testing/human-actions-browser.md).
+`npm test` includes API/runtime contracts, mutation/combat selection, manual mana,
+mechanic warnings, cycling controls and Suspend checks. Dedicated browser scripts
+exercise actual App/HTTP flows in isolated runtimes; use their documented
+interpreter/dependency settings. Some scripts need an external Git inventory to
+capture source, while isolation-sensitive backend fixtures reject physical Git
+metadata in their runtime. Read each qualification's command before execution.
 
-Run the complete isolated browser suite from the repository root with
-`bash frontend/tests/run-browser-ci.sh`. Successful runs stop their services and
-delete their generated checkouts/profiles. Failed runs retain diagnostics and
-print their locations. Set `MTG_KEEP_TEST_ARTIFACTS=1` to retain successful-run
-artifacts for investigation; `TMPDIR` selects the scratch filesystem. Archive
-unique reports, not redundant source/database copies, before periodic cleanup.
+Scoped green gates are not a whole-suite or release certificate. The recent
+expanded composition passed 2,394 checks across 95 modules in 1,359.02 seconds
+with identical before/after source hashes. Its frontend lint/build/tests pass.
+The earlier six-patch composition passed 2,024 checks across 83 modules. Separate token/cold
+classification and trigger-context compositions passed 153 and 123 checks.
+Human-flow qualification passed 212 assertions across 16 actual-App scenarios.
+Counts overlap and are not independent matches. A separate default-suite run
+exceeded its 30-minute bound; full current-source release acceptance remains open.
 
-On this workstation, completed evidence and cold diagnostic/training/corpus
-exports use `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`. Existing local
-artifact paths are symlinks; the mounted share is required to access those
-archives. Active source, dependencies and live SQLite databases remain local.
-Offline database backups are integrity-checked snapshots, not live NFS databases.
+For deterministic matrix work, prepare a supported local catalog separately or
+supply a pinned deck manifest to `backend/scripts/regression_matrix_replay.py`.
+The catalog consumers are read-only. Identified v2 manifests preserve distinct
+same-name records; legacy name-only manifests keep their seed convention.
+Record seeds, seat ordering, time limits, incomplete games and uncertainty.
+A small winning streak is not evidence of balance or seasoned-player strength.
 
-To smoke the built frontend through an isolated HTTPS proxy and a separately configured HTTPS backend origin (requires `openssl`, Chromium, and the backend venv):
+## Card And Deck Development
 
-```bash
-npm --prefix frontend run build
-D=$(mktemp -d /tmp/mtg-routing-XXXXXX)
-git ls-files backend | tar -cf - -T - | tar -xf - -C "$D"
-python3 frontend/tests/production_proxy_smoke.py --backend-dir "$D/backend" --dist-dir frontend/dist --python "$PWD/backend/.venv/bin/python" --browser --cross-origin
-```
+Card data comes from cached Scryfall/canonical facts and local knowledge.
+Syncing/importing data does not implement its rules. Faces, Oracle text, mana,
+types, keywords, provenance and images must survive hydration and serialization.
+Use the existing compiler/handler for a supported clause; for new semantics, add
+a reusable handler or scoped adapter and canonical fixtures. Test timing, costs,
+targets, replacements, ownership, privacy and restart through HTTP/UI, not only
+helper functions. Report unresolved clauses instead of inventing an effect.
 
-The harness writes only to the disposable backend copy, uses a temporary self-signed certificate, and restores the original frontend build after its cross-origin variant. It checks the built page in Chromium plus HTTPS health, import, match start/action and card media in both modes. It is not a trusted-certificate LAN deployment or an authorization test.
+Decklists use counts and card names, for example `4 Lightning Bolt`; optional
+sideboards are supported. Import via the UI/API or add a curated template in
+`backend/decks/builtin_decks.py`. Validate the genuine inventory and mana base,
+then run admitted hydration, analysis and legal-play tests. Labels and template
+names are not evidence of tournament strength. Import validation is not a
+comprehensive tournament-format/copy-limit judge.
 
-The production frontend shows a backend health indicator and polls `GET /health`. A red/offline indicator means the page loaded but cannot reach the API; use the Retry control after correcting `VITE_API_BASE_URL` or the reverse-proxy route.
+Use `/docs` on the backend for current OpenAPI endpoints. Core surfaces include
+`/cards`, `/decks`, `/matches`, `/simulate/batch`, `/diagnostics` and
+`/analytics/history`. Active match/job IDs allow local recovery; job cancellation
+is cooperative at the next action. Interrupted jobs fail after backend restart,
+and partial results must not be reported as completed win rates.
 
-The rules engine exposes explicit choice contracts for supported tutor and top-library effects. Expressive Iteration-style effects inspect the current library at resolution; a human orders the inspected cards as hand, exile, then library bottom through a pending choice, while AI uses a deterministic fallback. Supported library searches likewise expose eligible cards only when the search resolves. Invalid or incomplete choices are rejected without changing state. Broader search wordings and strategic AI tutor selection remain to be verified.
-
-Common tempo bounce is also handled through the rules engine: nonland-permanent and creature returns use legal target hints, preserve ownership for stolen cards, emit battlefield-leave events, and return the permanent to its owner's hand. Master AI additionally evaluates small-board attack subsets through blocker search and combat resolution before committing attackers.
-
-### Expanded keyword engine
-
-Battlefield controls follow the acting human seat instead of assuming player 1. Legal-move responses include public card views for playable non-hand cards; exile/library/graveyard casting preserves its source flags. Ordinary permanent abilities offer target/mode controls and advanced JSON choices. Ability targets are checked before paying activation costs, and adjacent mana symbols are retained. Variable activated mana costs are explicitly unsupported and are not offered as legal actions.
-
-Cleanup offers deliberate discard selection to human seats, persists that choice through snapshots, and emits the same discard events used by spells. Damage and turn-duration effects expire after discarding; resulting state-based actions/triggers open priority and force another cleanup. Normal cleanup cannot cast spells or activate abilities. The controls panel exposes pending cleanup, draw-replacement and mandatory sacrifice choices with the correct acting seat.
-
-Live starts, sideboarding and diagnostics share face-aware cached-card hydration. Public views retain both faces and the selected face, expose effective battlefield stats separately from base stats, and include counters, damage and effective keywords. Hover previews display this information. The generic token fallback ships as a tracked asset and is installed into an empty image cache automatically; artwork retrieval still prefers real token images.
-
-Dedicated core handlers now cover Infect/Wither damage, poison loss, Toxic combat damage, Ninjutsu, Annihilator sacrifice choices, Escape graveyard costs and Prototype alternative characteristics. Dredge is optional per draw; draw-step and spell draws share the replacement-aware handler. Pending draw/sacrifice choices and resolving spells survive snapshots, including multi-draw effect continuations. Activated abilities and cycling do not count as casting spells.
-
-These are engine/API foundations, not all-card certification. Competitive-opponent human-game/browser acceptance, complex action choices, interacting replacement choices, Prototype copy/layer edge cases, and complete combat assignment semantics still need integration work. Morph/Manifest, Suspend, Mutate, Discover, Craft, "bands with other," and complete Battle rules remain unfinished. See `docs/rules/expanded-keywords.md` for contracts and coverage limits.
-
-Master attack search is intentionally bounded to late-game positions with no more than three candidate attackers and two untapped blockers. Larger boards use the normal tactical heuristic so long-running simulator batches remain responsive.
-
-Master two-ply and rollout search is also bounded by total battlefield permanents and legal-action count. This keeps token-heavy matchups responsive; it is a performance guard, not a claim of exhaustive search or pro-level optimal play on large boards.
-
-Common Sagas now receive lore counters during precombat main, put matching chapter abilities on the stack, and are sacrificed by state-based actions after the final chapter resolves.
-
-Vehicles expose explicit crew actions. The engine validates creature power and pays tap costs at activation, then puts a counterable crew ability on the stack. On resolution, the same battlefield Vehicle becomes a creature until cleanup; the AI selects a legal crew group but skips redundant repeat activations. Crewing an already-creature Vehicle remains legal for humans. Vehicle-specific "becomes crewed" triggers and unusual copy/layer interactions still need broader coverage. See [crew timing checks](docs/testing/crew-stack-timing.md).
-
-Targeted actions are validated against the current candidate set before entering the stack. Stale, cross-zone, or restricted-card IDs are rejected, while broad “any target” effects continue through protection and hexproof checks.
-
-Farewell-style mass exile of creatures is handled separately from destruction: ownership is preserved, battlefield-leave triggers are emitted, and creatures move to their owners' exile zones.
-
-### Diagnostics
-```bash
-cd backend
-python3 scripts/debug_head_to_head.py --deck-a Tempo --deck-b "Blue Control" --matches 1
-python3 scripts/debug_head_to_head.py --deck-a Tempo --deck-b "Dimir Control" --matches 1 --seed 849124 --out-dir diagnostics
-python3 scripts/card_play_analytics.py --games-jsonl diagnostics/RUN_DIR/games.jsonl --out diagnostics/card-play.json
-python3 scripts/regression_matrix_replay.py --matches-per-pair 1 --max-decks 2 --progress
-python3 scripts/ci_regression_gate.py --matches-per-pair 1 --max-decks 2
-```
-
-`--progress` emits flushed JSON records and atomically updates
-`<output>.progress.json` after each completed logical sample. Counts distinguish
-seat-balanced samples from their two repeatability executions; the ETA is an
-observed-average estimate, not a deadline. The file records failures but is not a
-resumable game snapshot or proof that a process remains live after interruption.
-Default CLI output stays unchanged without the flag. Run validation from a
-disposable local checkout because SQLite paths are source-relative; archive results
-on RCHFiles, but never run the SQLite database on NFS.
-The head-to-head runner records full hand/board decisions, effective keywords, marked damage and stack objects, including announced targets, saved copy characteristics and engine-detected counterability. Its trace uses the shared six-metric decision-quality evidence path, including `redundant_removal_casts`. Legacy, malformed or unresolved-choice evidence does not become a measured zero for that metric. `--seed` records per-game seeds for reruns; generated stack IDs can still differ in raw logs, so compare normalized actions rather than raw bytes. Replace `RUN_DIR` with the run directory printed by the preceding head-to-head command. Metrics may remain unavailable when a complex combat line cannot be validated.
-
-The `debug_head_to_head.py` smoke path now completes cleanly for Tempo vs Blue Control in local verification.
-
-### Canonical Card Knowledge
-
-The knowledge database can ingest every unique Oracle card from Scryfall's official bulk dataset, including face data, keywords, legalities, image URLs and provenance. This stores metadata, not new rules implementations or trained AI behavior. Same-name token variants retain separate Oracle identities; their exact printed names remain in the canonical payload.
-
-```bash
-cd backend
-./.venv/bin/python -m scripts.sync_all_card_knowledge
-./.venv/bin/python -m scripts.sync_all_card_knowledge --backfill-tags
-./.venv/bin/python -m scripts.sync_corpus_cards --out knowledge/data/corpus-sync-summary.json
-./.venv/bin/python -m scripts.knowledge_gap_report --require-rulings
-./.venv/bin/python -m scripts.card_mechanics_inventory --out knowledge/data/mechanics-inventory.json
-```
-
-The bulk command writes `CardKnowledge` in the application's SQLite database without replacing the gameplay/image cache. Repeated imports reuse the downloaded dataset and unchanged rows. Bulk download files and summaries live in ignored `backend/knowledge/data/`; rebuild them after a fresh checkout. Back up `backend/mtg_lab.db` before refreshing local data. Both sync commands accept `--database /path/to/isolated.db` for isolated ingestion.
-
-`--backfill-tags` uses canonical payloads already stored in SQLite, makes no network request, and writes a separate `knowledge/data/tag-backfill-summary.json`. It skips rows without canonical payloads and leaves rulings, provenance, and tactical score fields unchanged. Back up the database first; use `--database` to rehearse on a copy.
-
-The September 30 local backfill updated all 38,690 knowledge rows; 3,214 multiface rows have per-face tags. A second run changed zero rows. Keep cold database backups and completed diagnostic evidence separately from active data; they are not shipped application dependencies. This metadata migration does not add rules support or prove stronger AI decisions.
-
-The 119-card offline shipped-deck seed is tracked at `backend/card_data/builtin_oracle_seed.json`, with Scryfall IDs for provenance. From `backend/`, regenerate it with `./.venv/bin/python scripts/export_builtin_oracle_seed.py`. The read-only exporter uses verified cached metadata or canonical local Scryfall bulk records and fails if a requested card lacks both; it does not invent an Oracle clause. The cache stores nullable printed loyalty; older databases receive an additive column migration, and canonical local knowledge or the seed can supply missing loyalty without rewriting cache rows. Face art is intentionally not bundled; sync images separately or use the tracked generic fallback.
-
-Match admission and diagnostics share a read-only local hydrator: no Scryfall, image or ruling requests and no database materialization during setup. Canonical bulk records can supply complete faces, printed stats and costs directly, including front/back name aliases. Missing types, instant/sorcery Oracle text, required creature/planeswalker stats, special-layout faces or unresolved legacy split colors produce `422 card_data_unavailable` with sync/readiness endpoint hints. Tokens, art-series and emblems remain non-playable. Admission readiness measures available metadata, **not** complete card semantics or format legality. See [offline hydration and tests](docs/testing/offline-match-hydration.md).
-
-`GET /cards/completeness?names=Card%20Name` reports `match_ready`, `needs_card_sync`, local data sources and local/remote/fallback image status; queries are limited to 250 names of up to 200 characters. Explicit `POST /cards/sync?name=...&force=true` or `/cards/sync-bulk` with `force: true` refreshes stale data. Explicit sync still performs synchronous network work and can fall back to an existing incomplete cache during an outage: recheck readiness rather than treating a successful sync response as proof of complete metadata. The bulk knowledge importer remains a separate offline-first operation.
-The head-to-head diagnostic uses the same card hydrator as live matches. In a local seed-100 Tempo/Dimir comparison, offline and cache-backed games had identical normalized actions and final state after that duplicate-hydration path was removed; this is a one-seed parity check, not a broad rules certificate.
-
-Bulk data does not include downloaded rulings. The corpus command verifies them separately, treating a successful empty list as valid and marking failed fetches as errors. Use repeatable `--name "Card Name"` or `--query "f:standard" --limit 200` to verify additional cards; `--force` refreshes previously verified entries. Knowledge coverage does not certify gameplay support, and the current AI does not yet consume this table.
-
-The September 27 local import contains 38,690 unique Oracle records and 6,433 faces. Rulings verification passes for the shipped/saved corpus (88 requested names, 87 verified canonical records). The mechanics inventory records metadata and explicit gap candidates, including Morph, Suspend, Infect, Ninjutsu, Mutate, Discover and Escape; it does not infer complete support from a keyword match. Counts and provenance are recorded in `docs/plans/baselines/2026-09-27-card-knowledge.json` and `2026-09-27-mechanics-inventory.json`.
-
-## Deck Import
-
-Supported text format:
-```text
-4 Lightning Bolt
-3 Counterspell
-20 Island
-
-Sideboard
-2 Negate
-2 Dispel
-```
-
-Import sources:
-- Paste deck text
-- Upload a `.txt` deck file
-- Choose built-in decks
-- Choose expansion decks
-
-The parser accepts common `Mainboard`, `Maindeck`, `Sideboard`, and `SB:` section headers, set annotations such as `[M11]`, `4x` multiplier notation, and common comment lines.
-Known cached art-series, token and emblem objects are reported as non-playable on import and rejected before a match starts. Unknown cards still require metadata sync before play.
-The import panel shows a mana curve computed from cached Oracle mana costs, with lands and unresolved cards counted separately. For modal/transform cards the curve uses the front face; X is zero outside the stack. Spell-color counts use cached card colors and exclude lands, so they are not a mana-source analysis. Archetype analysis receives resolved metadata, but remains a heuristic rather than a verified deck strategy.
-The card-data report checks both mainboard and sideboard and flags known unsupported Oracle mechanics: "bands with other", Morph, Manifest, Suspend, Mutate, Craft, and Discover. It also inspects cached face text. It distinguishes `known_unsupported` from `not_certified`; no card is currently presented as rules-certified. Live cards retain cached color metadata for color-based rules; selected faces use their own cached colors, and uncached hybrid costs are parsed as a fallback. Combat lethal deaths use the shared state-based-action pass, which rechecks the battlefield after a permanent leaves and evaluates supported simultaneous death replacements before moving their sources. Supported "from anywhere" graveyard replacement text, including Rest in Peace, redirects common death, discard, cost, mill, cycling and spell-resolution moves to exile; its entry trigger exiles existing graveyards. Metadata completeness is not rules certification, and other unsupported or approximate effects may still be unflagged.
-
-## Card Data and Images
-
-The app syncs and caches card data locally.
-- Card metadata is stored for repeatable testing
-- Missing art falls back to local placeholder handling
-- Cached double-faced cards reuse face-level art when the root image is missing
-- Exact cached card names take precedence over face aliases; non-playable art-series records cannot masquerade as a land or other split-face alias
-- Token art resolves from the local index when available, with a generic token fallback before blank placeholders; game actions never wait on Scryfall
-- Fallback card lookups normalize punctuation, spacing, and common transform-face import names
-
-To prefetch a token image explicitly, run from `backend`:
-
-```bash
-python -m card_data.token_images "White Soldier" 1 1
-```
-
-This network operation writes the image and `token-index.json` into the disposable image cache. Without prefetching, newly created tokens use the shipped generic art until a later game loads a synced image. Back up the image cache if retaining token art across installations matters.
-
-## API Overview
-
-Base backend default: `http://0.0.0.0:9999`
-
-`0.0.0.0` is a bind address; browsers use the host's real address. Operation is currently private, single-user and single-worker. Per-match locks coordinate this process only; they do not provide network authorization or multiworker consistency. Do not expose the dev service to the public internet.
-Human-vs-human mode is a shared-device sandbox, not a private two-account game: both human hands remain available to the same unauthenticated client. Seat authentication and per-viewer redaction are required before claiming hidden-information privacy for separate human players.
-The single-process API admits one batch simulation at a time across synchronous and background-job routes; additional requests receive `429 simulation_busy`. Background jobs can be stopped with the Testing Simulator's Cancel Run button or `POST /simulate/batch/{job_id}/cancel`. Cancellation is cooperative at the next AI action; completed-match progress is retained, but partial win-rate results are not published. The worker slot is released after the job acknowledges cancellation. This does not bound total CPU for an admitted game, provide on-disk job retention or multiworker coordination. Interrupted jobs are marked failed after backend restart.
-The process keeps at most 20 terminal simulator jobs in memory; older results remain queryable from SQLite. The browser remembers the active job ID to resume polling after a refresh. While a start request is unresolved, it temporarily keeps that request and a random 32-character idempotency key in local storage; retrying the same key returns the original job, even after a backend restart, and a different request with that key gets `409`. The pending request is removed when its job ID is recovered. This recovery depends on browser storage being available and does not discover jobs started on another device. A backend restart marks an interrupted job failed; failure to start a worker after saving its job also marks it failed rather than leaving it queued. Database retention and automatic cleanup are not yet configured.
-
-Start/batch payloads accept `{quantity, card_name}` entries, resolving gameplay data from the card cache/source rather than arbitrary client Oracle text. Mainboards require 60-250 cards; `sandbox: true` permits 1-250. The upper bound is an application resource limit, not a Magic rule. Sideboards are capped at 15. See [input contracts](docs/api/input-contracts.md) for actions, errors and remaining guarantees.
-
-Key endpoints:
-- `GET /health`
-- `GET /cards`
-- `POST /cards/sync`
-- `POST /cards/sync-bulk`
-- `GET /decks`
-- `POST /decks/import`
-- `POST /decks/import-file`
-- `GET /decks/builtin`
-- `GET /decks/expansion-top`
-- `POST /decks/analyze`
-- `POST /matches/start`
-- `GET /matches`
-- `GET /matches/{match_id}`
-- `GET /matches/{match_id}/legal-moves`
-- `POST /matches/{match_id}/action`
-- `POST /matches/{match_id}/autoplay`
-- `GET /matches/{match_id}/replay`
-- `POST /matches/{match_id}/sideboard`
-- `POST /matches/{match_id}/next-game`
-- `POST /simulate/batch`
-- `POST /simulate/batch/start`
-- `GET /simulate/batch/{job_id}`
-- `POST /ai/diagnostics`
-- `GET /diagnostics/runs`
-- `GET /diagnostics/runs/{run_name}`
-- `GET /diagnostics/compare`
-- `GET /diagnostics/compare/replay`
-- `GET /diagnostics/runs/{run_name}/games/{game_index}`
-- `GET /ai/priors`
-- `POST /ai/priors/rebuild`
-- `GET /analytics/history`
-
-## Current Status
-
-The application currently supports:
-- Rules-aware 2-player testing with turn structure, priority, stack, combat, cleanup, and turn advancement
-- Shared cost-modifier handling for supported static spell taxes, including opponent-scoped taxes
-- Human vs AI, AI vs human, and AI vs AI matches
-- Manual phase progression and autoplay-driven simulation
-- Built-in deck imports, expansion deck imports, file/text deck import, and deck saving
-- Local card caching with image fallback handling
-- Replay logs, batch simulations, matchup stats, anomaly diagnostics, turn-level AI trace summaries, and training trace export
-- Compact first-divergence drilldown for replay drift analysis
-- Bounded persisted-game replay comparison with categorized first-divergence context
-- Paginated persisted game-log playback with bounded response pages
-- Role-aware log priors derived from replay traces and training exports
-- AI seat control with archetype detection, hand-profile mulligan logic, curve evaluation, interaction heuristics, attack heuristics, and keyword-aware battlefield evaluation
-- Matchup profiles for control, ramp, tempo, token, and removal-heavy shells
-- Responsive desktop UI with readable stack, priority, mana, and hover inspection
-
-Current focus:
-- expanding targeted trigger choices beyond bounded ETB/self-cast clauses, compound multi-target rechecks and broader face mechanics
-- competitive-opponent and more varied full-game browser acceptance, extended match-creation recovery and broader successful-response runtime validation
-- broader AI sideboarding plans, competitive-opponent BO3 browser coverage and full response-contract acceptance
-- expanding Oracle coverage for older and unusual cards
-- improving replacement, prevention, and layer fidelity in edge cases
-- deepening tactical AI for complex board states and matchup-specific heuristics
-- broadening deterministic replay coverage across more representative deck pairings
-- keeping the UI dense and readable during long sessions
-- validating LAN and long-session UX, then adding richer state-by-state replay reconstruction
-
-GitHub Actions runs a clean-checkout backend test suite, frontend `npm ci`/build/hooks lint/unit checks, and a separate loopback Chromium action/recovery flow on pushes and pull requests. The browser job includes backend-process restart and scripted complete BO3 flows; these are not competitive-opponent, long-session or deployment tests. Local instructions are in [the human-action test guide](docs/testing/human-actions-browser.md).
-
-Run frontend unit checks with `cd frontend && npm test` (`npm run test:unit` is the equivalent explicit script).
-
-## Development Notes
-
-Backend work follows [capability-sized batches](docs/development/batch-workflow.md):
-focused checks during implementation, broader regression/replay gates per milestone,
-and explicit evidence before publication. This does not reduce the release goals.
-
-- Gameplay rules live in application code, not in SQL.
-- `README.md` describes the current product state.
-- `CHANGELOG.md` records milestone-level history.
-- `plan.md` tracks the remaining finish work.
+Keep active code/dependencies and SQLite local. Back up SQLite consistently,
+including uncommitted/user data separately from Git. Store verified cold logs,
+exports and backups on mounted archival storage; GitHub restores committed code,
+not user matches or databases. Preserve existing snapshots when deploying and
+start fresh matches when comparing newly compiled rule behavior.
 
 ## Known Limitations and Next Upgrades
 
-- Hidden-information masking, bounded observation memory and pure-removal utility
-  have regression coverage; the captured self-removal decision is repaired. Broader
-  opponent beliefs, uncertain future-resource planning, complex choice continuations
-  and decision latency remain backend priorities. Deterministic replay does not
-  certify seasoned-player AI. See [implemented boundaries](docs/testing/ai-information.md).
-
-- Restricted-X payment, Crypt Rats/Pyrotechnics-style damage batches and departed damage-source characteristics have bounded tests, not universal certification. Other color-spending restrictions, source-dependent replacement/prevention wording, sacrifice-trigger ordering and arbitrary all-recipient wording still need rules and AI coverage.
-- All shipped deck names have offline Oracle metadata. Temporary Lockdown's battlefield linked-exile wording, Valki's hand linked-exile ETB and bounded exiled-card copy activation, and Atraxa's Kindred-aware reveal now have regressions, alongside Cartographer's Survey and Imodane's Recruiter. Full copy-layer fidelity, other linked-exile wordings, zone-change replacements, and cards classified as structured may still have incorrect semantics; parser status is not certification.
-- The X-debuff/ETB/death-trigger coverage is bounded to tested Oracle wording. The real-card sequence passed engine/snapshot tests and four seeded Tokens/Ramp games finished without timeout or obvious target/cost errors; Tokens won all four, which is not balance evidence. Multi-line abilities with overlapping conditions, unusual replacement effects and complete timestamp/layer fidelity remain unverified.
-- The untap/cycling sequencing fix passed 1,370 isolated backend tests, frontend lint/build/unit checks, the complete Chromium harness, a two-game deterministic replay with zero reported drift, and four seeded Tokens/Ramp games with no timeout or obvious cost/target error. In the previously missed turn-eight position, Ramp cast The Meathook Massacre for X=2. Tokens won all four sampled games; this does not certify matchup balance, all pre-main ability timing, or optimal AI use of sweepers and instant-speed effects.
-- Supported spell and ability copies are independent stack objects with response windows. Copies preserve announced modes, X and targets, survive the original being countered, and can themselves be countered without moving the original card. A resolving permanent-spell copy enters as a token without being "created"; Lithoform-style "copy target permanent spell you control" filters the stack by controller and permanent type. Search for Glory and Memory Deluge copies count zero mana spent to cast. Twincast- and Lithoform-style single-target copies can keep or legally change their target before priority resumes; AI handles the same choice. Supported divided-damage spell copies let the controller decide each target separately without changing target count or allocated damage, including across snapshots. Modal spell copies with one target and one effect per selected mode can change those targets independently, whether cast with explicit per-mode or unambiguous shared targets; only the copied effect payload changes. AI redirects supported copied removal, damage, counter and bounce modes away from its own side. Activated-ability target legality is rechecked at resolution, and supported targeted triggered copies use their trigger clause. Other multi-target, divided-damage ability copies, non-damage distribution, ambiguous or multi-target modal clauses, Battle/token entry, copy-layer/last-known-information and permanent-entry replacement interactions remain uncertified.
-- The supported "pay X life" additional-cost wording requires an announced affordable X, emits a life-payment event, and can resolve the matching all-creatures `-X/-X` effect through cleanup. The [Toxic Deluge boundary audit](docs/audits/2026-09-29-variable-life-cost-and-name-fallback.md) has engine, snapshot, HTTP and AI-choice regressions. This is not blanket support for variable costs, all continuous-effect layers, or seasoned-player AI; unsupported Oracle clauses still need explicit corpus review. Card-name effect guesses no longer override present Oracle text.
-- The expansion catalog distinguishes 51 archetype templates from one sourced historical tournament list: Yoshihiko Ikawa's 60+15 Domain Ramp deck from Pro Tour Thunder Junction 2024. The catalog exposes player, event, finish, historical format and source links. A historical Standard list is not necessarily legal in current Standard, and the engine is not certified to execute every card in it correctly. Herd Migration's Domain token count and Leyline Binding's printed generic-mana discount use distinct basic land subtypes; bounded Incubate paths now cover fixed counts, Sunfall and Chrome Host Seedshark. Other Domain effects, kicker outcomes and Incubate variants remain unsupported, so preflight still warns. The other 51 entries are not verified tournament decklists or format-legal for their named sets. Syncing the catalog refreshes app-managed rows in place by expansion code, preserving saved deck IDs and user decks. Repeated syncs do not add duplicates; duplicates created by older versions are retained because matches may refer to their IDs.
-- Conditional land entry now has a shared choice path for the supported pay-2-life wording, including effect-driven entry and snapshot continuation. Human play and effect choices passed browser/API scenarios; a seeded AI replay paid 2 life deterministically. Other entry replacements, competing replacements, arbitrary Oracle wording and broader replay/matchup acceptance remain open; see the [entry-boundary audit](docs/audits/2026-09-28-battlefield-entry-choice.md). Built-in lists still use unconditional duals rather than assuming this narrow fix certifies all conditional lands.
-- The supported look-at-top creature-reveal pattern is tested with Recruitment Officer and Militia Bugler text. Creature/permanent topdeck battlefield, Expressive Iteration-style placement, and supported library-search choices now occur at resolution, with browser-tested human controls. Entomb/Buried Alive graveyard destinations have focused engine/HTTP checks. Storm the Festival's random-order bottom clause and Collected Company's two-step human "any order" choice are snapshot-tested; other search wordings and full Oracle clause fidelity need further coverage. A successful parser match is not proof of correct resolution.
-- Conventional permanent spells compile separately from their later abilities: resolving them puts them onto the battlefield rather than executing activated or triggered Oracle text. Aura attachment and supported entry choices remain intact; modern "enters" wording uses the entry-event matcher. Bounded single-target ETB, self-cast and sacrifice-damage triggers choose targets in the ability window, with an optional accept/decline decision at resolution where applicable. Other trigger families, modal/multi-target clauses and multiple ability clauses remain local-beta blockers. See [targeted trigger boundary](docs/testing/targeted-trigger-choices.md).
-- Canonical modal spell faces have independent timing/cost/target moves, selected stack characteristics, snapshot restoration and correct spell/permanent resolution zones in the tested fixtures. Humans can select available faces; AI materialization and cast bias use the offered face. [Face-boundary tests and limits](docs/testing/modal-spell-faces.md) cover this narrow contract, not every face mechanic. Common modal land-face plays and Adventure resolution/exile permission paths are [tested separately](docs/testing/land-adventure-boundary.md). Simple clause-derived multi-target spells recheck separate announced targets independently; Meager Meal resolves only legal effects and reaches the graveyard if all its targets become illegal. Its optional creature target can be declined. Copies of supported separate-clause spells now offer one retarget choice per announced target without changing the original or granting an Adventure creature-cast permission. [Surviving spell copies](docs/testing/stack-copy-characteristics.md) retain their saved type and mana cost for targeting, counter resolution and AI threat scoring after the original leaves the stack; supported exact/minimum mana-value filters use those saved values. [Basic split-card halves](docs/testing/split-card-boundary.md) use separate timing, costs and stack characteristics, with combined off-stack identity and colors; [Aftermath graveyard permission and exile](docs/testing/aftermath-boundary.md) are supported; Fuse and arbitrary split effects remain open. Divided-damage recipients and pay-2-life land entries also have bounded legality coverage; compound multi-target effects, other conditional entry families and full face-specific restart/browser acceptance remain open. Cached face rows missing layout or carrying legacy split-color errors are backfilled from canonical local knowledge when available.
-- Guarded match writes persist history/snapshots together and restore memory on storage faults. Match creation now commits a start-key receipt with its snapshot; ambiguous successful responses retry the same key, including after reload. Saved-match restore, overlap suppression and lost-response reconciliation have focused browser coverage. Extended disconnect/soak acceptance remains open. Legacy headerless callers have no stale-version guarantee.
-- New interactive matches persist root/per-game seed provenance and previous-loser play/draw choice. Human sideboard inventory is visible only between games for human-controlled seats; a swap survives reload and changes the next game's deck in bounded HTTP/browser tests. AI seats use a bounded public-evidence sideboard heuristic when a sideboard was supplied; public card types are remembered across actions and SQLite restore even after a card leaves view. Next-game HTTP, full-AI autoplay and hidden-hand privacy have regressions. Scripted human-vs-AI and human-vs-human BO3s complete through the browser against a noncompetitive all-Island opponent; competitive-opponent and more varied full-series coverage, broader sideboard strategy, and legacy seed migration remain open. Existing saved matches without root seeds remain unseeded in later games.
-- Human action browser fixtures cover focused paths including two-step Collected Company, ordered top-library and tutor choices, nested draw/dredge replacement, and both BO3 play/draw choices. Two additional paths play complete scripted human-vs-AI and human-vs-human series against an all-Island opponent. The crew scenario checks a responseable stack ability and the cast-trigger scenario checks target choice above a creature spell; unusual variable activated cost clauses remain incomplete.
-- Incomplete type metadata for a nonbasic card is no longer guessed to be Land from mana text or a basic-land word in its name. Canonical cache hydration must supply that card's type line; the AI will not bypass missing legal moves by fabricating a land action.
-- Replay timeout labels now inspect the timed-out game alone; a prior game's cost error cannot make a long control game look like a rules failure. Deliberately low tick caps can still truncate legitimate games, so simulator conclusions require the recorded cap, seed and termination status.
-- Target declaration checks cover supported patterns, not complete multi-role/controller-qualified Oracle targeting. Player hexproof/shroud currently recognizes only unconditional "You have ..." battlefield clauses; conditional/temporary grants, player protection from a quality, and all Battles as "any target" remain open. Generic AI allocation is legal for tested clauses but not a complete tactical optimizer.
-- First/double-strike priority windows and controller-chosen numeric damage division have focused engine, HTTP and browser tests, including Palace Guard, multiple blockers, shared-source trample, deathtouch, banding choice ownership and planeswalker damage. Ordinary attacking-band declaration and block propagation are supported with focused engine tests; "bands with other," simultaneous damage-replacement interactions and unusual keyword changes remain open. See the [combat assignment audit](docs/rules/combat-damage-assignment-audit.md).
-- Private single-user/single-worker operation only: authentication, bounded job admission, cross-worker coordination and production HTTPS/proxy validation remain release gates.
-- Long-tail Oracle coverage is still incomplete for fringe older cards and uncommon wordings.
-- Some replacement and prevention interactions still rely on heuristic inference instead of a fully generic rules model.
-- The [life-total-lock audit](docs/audits/2026-09-28-life-total-lock.md) covers a bounded Platinum Emperion-style interaction. Combat gains use the shared replacement handler. The [Font of Agonies pay-life trigger audit](docs/audits/2026-09-28-life-payment-triggers.md) records the repaired payment event and stack timing boundary; unusual payment wording and competing replacements remain open.
-- The [lifelink event audit](docs/audits/2026-09-28-lifelink-events.md) covers per-source gain triggers, supported gain doublers, gain-to-draw conversion, human choice continuation and double-strike windows. Nested draw-replacement choices and general simultaneous replacement ordering remain uncertified.
-- Layer ordering and timestamp resolution still need more fidelity in obscure overlapping effects.
-- The AI still needs more long-run tuning for control, tempo, ramp, token, and combo-lite matchups.
-- Master AI can now cast fixed-cost planeswalkers whose later loyalty text mentions X and choose profitable X values for the supported colored-permanent sweep. This is not a general X-loyalty planner or broad decision-quality certification.
-- Larger deterministic replay matrices and longer validation runs would improve confidence in balance and edge-case coverage.
-- Persisted replay inspection is paginated and bounded; state-by-state card highlighting and full long-session/LAN validation remain future work.
-- The UI still has room for more polished long-session deck-testing ergonomics.
+- Arbitrary Oracle interpretation, complete layer/replacement interactions,
+  uncommon mechanics and all formats are not implemented or certified.
+- Paid optional-trigger continuations, Delver's optional private reveal/timing,
+  multiple matched cast abilities and remaining small-choice guards are active
+  work; see [plan.md](plan.md) for precise acceptance status.
+- Post-mana Escape witnesses are not a complete atomic cast-transaction fix.
+- Generic-import classification/admission, full corpus application and broader
+  face/condition/choice composition still need qualification.
+- Expert-level tactical/strategic play, representative seat-balanced matchup
+  matrices, long-run replay and credible improvement measurements remain open.
+- Interactive AI latency, long-session ergonomics, disconnect/LAN/HTTPS soak,
+  accessibility and full current-source release gates remain unfinished.
+- Network authorization, worker coordination, storage quotas/retention and
+  operational security review are required before broader deployment.

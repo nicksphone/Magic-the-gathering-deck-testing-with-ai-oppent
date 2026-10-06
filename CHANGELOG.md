@@ -1,5 +1,34 @@
 # Changelog
 
+## Qualified Candidate: Rules And Human Choices - 2026-10-06
+
+- The expanded candidate passes 2,394 checks across 95 complete modules in
+  1,359.02 seconds, with identical before/after source hashes. Frontend lint,
+  build and standard tests pass. This remains scoped qualification, not a
+  full default-suite, arbitrary-card, expert-AI or deployment certificate.
+
+- Collect supported self-cycling and combined cycling/discard triggers without
+  double rewards; bind dynamic death quantities to frozen source LKI.
+- Use live/retained colors in qualified layer consumers and color predicates.
+- Reject unsupported intent selections before normalization across additional
+  action and pending-choice families. Preserve deliberate actor selections.
+- Remove AI display names from strict target payloads and improve physical
+  mana-plan ordering for locked discounted costs without pruning fallbacks.
+- Preserve distinct same-name cohort identities, legacy seeds and stored history;
+  classify admitted first built-in imports from canonical local facts.
+- Preserve artifact/enchantment token types, optional cycling rewards and
+  ordinary casting instructions. Matched trigger clauses no longer execute
+  unrelated cycling effects; cycling targets use the existing choice protocol.
+- Warn on unsupported UI choices and expose offered cycling X in both hand
+  branches, including the standard regression command.
+- Qualify 2,024 checks across 83 modules; later compositions pass 153 and 123
+  checks. Human-flow16 passes 212 assertions; modal/Adventure browser checks
+  pass 144 assertions. Counts overlap; no expert-AI or full-suite claim.
+- Rewrite README around current features, setup, architecture and limits.
+  The older default suite timed out at 64%; the candidate is not yet deployed.
+  Paid optional continuations, Delver choices, remaining guards and broader
+  regression/performance acceptance remain active work.
+
 ## Mana, Layers And Resource Identity - 2026-10-06
 
 - Use normal zone transitions for activated sacrifices, preserving departure

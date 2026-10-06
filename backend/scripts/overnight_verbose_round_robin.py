@@ -28,7 +28,7 @@ from analytics.replay_tools import classify_timeout_state
 from analytics.service import AnalyticsService
 from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
-from decks.selection import select_representative_decks
+from decks.selection import select_representative_decks, prepare_cohort, cohort_pair_seed
 from game_state.state import MatchFactory, pregame_actor
 from persistence.db import engine, init_db
 from persistence.repository import Repository
@@ -123,7 +123,9 @@ def battlefield_snapshot(state, pid: int) -> list[dict]:
 def _deck_artifact(deck_pool: list[dict]) -> list[dict]:
     return sorted(
         [
-            {"id": deck.get("id"), "name": deck["name"], "archetype": deck["archetype"]}
+            {"id": deck.get("id"), "name": deck["name"], "archetype": deck["archetype"],
+             **({key: deck[key] for key in ('source', 'identity_key', 'classification_status', 'analysis',
+                 'classification_provenance', 'stored_archetype') if key in deck} if deck.get('identity_key') else {})}
             for deck in deck_pool
         ],
         key=lambda deck: (deck["name"], str(deck["id"])),
@@ -132,6 +134,9 @@ def _deck_artifact(deck_pool: list[dict]) -> list[dict]:
 
 def _game_identity(left: dict, right: dict) -> dict:
     return {
+        **({"deck_a_identity": left.get('identity_key'), "deck_b_identity": right.get('identity_key'),
+            "deck_a_source": left.get('source'), "deck_b_source": right.get('source')}
+           if left.get('identity_key') or right.get('identity_key') else {}),
         "deck_a": left["name"],
         "deck_a_id": left.get("id"),
         "deck_a_archetype": left["archetype"],
@@ -245,7 +250,6 @@ def _write_game_record(
 
 def run() -> int:
     args = parse_args()
-    init_db()
 
     out_base = Path(args.output_dir)
     if not out_base.is_absolute():
@@ -260,40 +264,19 @@ def run() -> int:
 
     with Session(engine) as session:
         repo = Repository(session)
-        ensure_builtin_decks(repo)
-        ensure_expansion_top_decks(repo)
         analytics = AnalyticsService(repo)
         rows = repo.list_decks()
 
         wanted = {x.strip().lower() for x in args.sources.split(",") if x.strip()}
         selected = [r for r in rows if (r.source or "").strip().lower() in wanted]
+        selected = prepare_cohort(selected, resolve_deck_fn=lambda board: hydrate_deck_cards(repo, board))
         if len(selected) < 2:
             raise SystemExit(f"Need at least 2 decks from sources={sorted(wanted)}; found {len(selected)}")
         if args.max_decks and args.max_decks > 0:
             selected = select_representative_decks(selected, args.max_decks, guess_archetype_fn=guess_archetype)
-
-        deck_pool: list[dict] = []
-        for row in selected:
-            if isinstance(row, dict):
-                mainboard = hydrate_deck_cards(repo, row["mainboard"])
-                deck_pool.append(
-                    {
-                        "id": row.get("id"),
-                        "name": row["name"],
-                        "mainboard": mainboard,
-                        "archetype": guess_archetype(mainboard),
-                    }
-                )
-            else:
-                mainboard = hydrate_deck_cards(repo, json.loads(row.mainboard_json))
-                deck_pool.append(
-                    {
-                        "id": row.id,
-                        "name": row.name,
-                        "mainboard": mainboard,
-                        "archetype": guess_archetype(mainboard),
-                    }
-                )
+        if len(selected) < 2 or any(row.get('classification_status') == 'unknown' for row in selected):
+            raise SystemExit('Need at least two cohorts with complete local canonical card data')
+        deck_pool = [{**row, 'archetype': row.get('archetype') or row['archetype_guess']} for row in selected]
 
         total_pairs = len(list(combinations(deck_pool, 2)))
         total_games = total_pairs * args.matches_per_pair
@@ -321,7 +304,8 @@ def run() -> int:
                 right_arch = right["archetype"]
 
                 for game_idx in range(args.matches_per_pair):
-                    state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
+                    seed = cohort_pair_seed(left, right, game_idx) if left.get('identity_key') or right.get('identity_key') else None
+                    state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"], seed=seed)
                     a_agent = AIAgent(difficulty=args.difficulty, archetype=left_arch)
                     b_agent = AIAgent(difficulty=args.difficulty, archetype=right_arch)
 
@@ -408,6 +392,7 @@ def run() -> int:
                     game_counter += 1
 
                     game_record = {
+                        "seed": seed,
                         **_game_identity(left, right),
                         "game_index": game_idx + 1,
                         "winner": state.winner,
@@ -456,6 +441,7 @@ def run() -> int:
 
                 avg_turns = round(sum(pair_turns) / max(1, len(pair_turns)), 2)
                 pair_summary = {
+                    **_game_identity(left, right),
                     "deck_a": left["name"],
                     "deck_b": right["name"],
                     "games": args.matches_per_pair,
@@ -536,6 +522,9 @@ def _write_anomaly_clusters(anomaly_games_path: Path, out_path: Path) -> None:
                         "deck_a": row.get("deck_a"),
                         "deck_b": row.get("deck_b"),
                         "game_index": row.get("game_index"),
+                        **({key: row.get(key) for key in ('deck_a_identity', 'deck_b_identity',
+                            'deck_a_id', 'deck_b_id', 'deck_a_source', 'deck_b_source')}
+                           if row.get('deck_a_identity') or row.get('deck_b_identity') else {}),
                         "winner": row.get("winner"),
                         "turns": row.get("turns"),
                     }

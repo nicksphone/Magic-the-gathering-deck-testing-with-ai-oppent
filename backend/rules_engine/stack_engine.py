@@ -170,10 +170,13 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             source.types = list(source_lki["types"])
             source.colors = list(source_lki.get("colors", []))
             source.card_faces = []
+            # Nested hint filters must also use this receipt, never new-object layers.
+            source._retained_source_lki = source_lki
         hints = inspect_target_hints(state, source, item.controller, announced)
+        # A captured source belongs to the old object, not a same-ID reentry.
         legal = (validate_cast_targets(hints, announced)[0]
-                 and validate_protection_targets(state, source, announced)[0]
-                 and validate_hexproof_shroud_targets(state, item.controller, announced, source)[0])
+                 and validate_protection_targets(state, source, announced, source_lki=source_lki)[0]
+                 and validate_hexproof_shroud_targets(state, item.controller, announced, source, source_lki=source_lki)[0])
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})

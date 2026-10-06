@@ -1,0 +1,663 @@
+[
+  {
+    "source": "backend/tests/fixtures/qualified_continuous.json",
+    "source_sha256": "beaa040c5640d1bd6ed5ede9e65db19c9f1a4011919726e69192768593d2e0cc",
+    "row": {
+      "name": "Creakwood Liege",
+      "oracle_text": "Other black creatures you control get +1/+1.\nOther green creatures you control get +1/+1.\nAt the beginning of your upkeep, you may create a 1/1 black and green Worm creature token.",
+      "mana_cost": "{1}{B/G}{B/G}{B/G}",
+      "type_line": "Creature — Horror",
+      "power": "2",
+      "toughness": "2",
+      "colors": [
+        "B",
+        "G"
+      ],
+      "keywords": [],
+      "layout": "normal",
+      "provenance": {
+        "oracle_id": "1e67b4eb-e5d2-4368-8284-4ba5c4c42455",
+        "source": "scryfall",
+        "scryfall_id": "9a05c8f9-e810-498d-ab51-632661dd000d"
+      }
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/qualified_continuous.json",
+    "source_sha256": "beaa040c5640d1bd6ed5ede9e65db19c9f1a4011919726e69192768593d2e0cc",
+    "row": {
+      "name": "Angel of Jubilation",
+      "oracle_text": "Flying\nOther nonblack creatures you control get +1/+1.\nPlayers can't pay life or sacrifice creatures to cast spells or activate abilities.",
+      "mana_cost": "{1}{W}{W}{W}",
+      "type_line": "Creature — Angel",
+      "power": "3",
+      "toughness": "3",
+      "colors": [
+        "W"
+      ],
+      "keywords": [
+        "Flying"
+      ],
+      "layout": "normal",
+      "provenance": {
+        "oracle_id": "36c2fc4c-7d8b-47c2-91c3-e356df60b219",
+        "source": "scryfall",
+        "scryfall_id": "16c5dfed-4dee-4e48-a445-89f03d7794e6"
+      }
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/qualified_continuous.json",
+    "source_sha256": "beaa040c5640d1bd6ed5ede9e65db19c9f1a4011919726e69192768593d2e0cc",
+    "row": {
+      "name": "Blood Artist",
+      "oracle_text": "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+      "mana_cost": "{1}{B}",
+      "type_line": "Creature — Vampire",
+      "power": "0",
+      "toughness": "1",
+      "colors": [
+        "B"
+      ],
+      "keywords": [],
+      "layout": "normal",
+      "provenance": {
+        "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+        "source": "scryfall",
+        "scryfall_id": "b5275d76-2947-4219-be21-614c7421614a"
+      }
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/qualified_continuous.json",
+    "source_sha256": "beaa040c5640d1bd6ed5ede9e65db19c9f1a4011919726e69192768593d2e0cc",
+    "row": {
+      "name": "Llanowar Elves",
+      "oracle_text": "{T}: Add {G}.",
+      "mana_cost": "{G}",
+      "type_line": "Creature — Elf Druid",
+      "power": "1",
+      "toughness": "1",
+      "colors": [
+        "G"
+      ],
+      "keywords": [],
+      "layout": "normal",
+      "provenance": {
+        "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+        "source": "scryfall",
+        "scryfall_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd"
+      }
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/basic_land_layer_goldens/cards.json",
+    "source_sha256": "24c0f075830f86e8d91d6d2a8182b166ac9c5d1e90eb8408f6b084e471ba3872",
+    "row": {
+      "id": "161e66e3-0339-495c-bd06-0a799a254906",
+      "oracle_id": "7c3944fa-7c86-4979-85a9-86196aa94594",
+      "name": "Song of the Dryads",
+      "mana_cost": "{2}{G}",
+      "type_line": "Enchantment — Aura",
+      "oracle_text": "Enchant permanent\nEnchanted permanent is a colorless Forest land.",
+      "power": null,
+      "toughness": null,
+      "colors": [
+        "G"
+      ],
+      "keywords": [
+        "Enchant"
+      ],
+      "layout": "normal",
+      "card_faces": null,
+      "scryfall_uri": "https://scryfall.com/card/cmm/324/song-of-the-dryads?utm_source=api"
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/basic_land_layer_goldens/cards.json",
+    "source_sha256": "24c0f075830f86e8d91d6d2a8182b166ac9c5d1e90eb8408f6b084e471ba3872",
+    "row": {
+      "id": "37454c1c-4098-4ac2-884e-3f65f1384bdb",
+      "oracle_id": "af32757c-9d3c-4f6c-a6fa-d5729a440382",
+      "name": "Spreading Seas",
+      "mana_cost": "{1}{U}",
+      "type_line": "Enchantment — Aura",
+      "oracle_text": "Enchant land\nWhen this Aura enters, draw a card.\nEnchanted land is an Island.",
+      "power": null,
+      "toughness": null,
+      "colors": [
+        "U"
+      ],
+      "keywords": [
+        "Enchant"
+      ],
+      "layout": "normal",
+      "card_faces": null,
+      "scryfall_uri": "https://scryfall.com/card/zen/70/spreading-seas?utm_source=api"
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/type_effect_lifecycle.json",
+    "source_sha256": "057372efdfa60d499a94a39f6771831beece600ee0fff0819b47a39e6337e486",
+    "row": {
+      "id": "f857bbe4-5619-4733-a0c7-69700f2ef4f3",
+      "oracle_id": "5aa3abf1-d56b-4f42-8c84-7e5a2c15ee0f",
+      "name": "Nissa, Who Shakes the World",
+      "mana_cost": "{3}{G}{G}",
+      "type_line": "Legendary Planeswalker — Nissa",
+      "oracle_text": "Whenever you tap a Forest for mana, add an additional {G}.\n+1: Put three +1/+1 counters on up to one target noncreature land you control. Untap it. It becomes a 0/0 Elemental creature with vigilance and haste that's still a land.\n−8: You get an emblem with \"Lands you control have indestructible.\" Search your library for any number of Forest cards, put them onto the battlefield tapped, then shuffle.",
+      "power": null,
+      "toughness": null,
+      "loyalty": "5",
+      "colors": [
+        "G"
+      ],
+      "keywords": [],
+      "scryfall_uri": "https://scryfall.com/card/war/169/nissa-who-shakes-the-world?utm_source=api",
+      "layout": "normal",
+      "card_faces": null
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/combat_coverage.json",
+    "source_sha256": "cf8bf79e7a8bdf82e2afed3d4a316896570310957ccbdaaf146210cf24ed347c",
+    "row": {
+      "object": "card",
+      "id": "684ca60c-7ed4-49e1-b54a-91d129539375",
+      "oracle_id": "0e3ac581-3d78-4879-9afb-3db69c5c47a5",
+      "multiverse_ids": [
+        472965
+      ],
+      "mtgo_id": 78092,
+      "arena_id": 70150,
+      "tcgplayer_id": 199294,
+      "cardmarket_id": 401299,
+      "name": "Archon of Absolution",
+      "lang": "en",
+      "released_at": "2019-10-04",
+      "uri": "https://api.scryfall.com/cards/684ca60c-7ed4-49e1-b54a-91d129539375",
+      "scryfall_uri": "https://scryfall.com/card/eld/3/archon-of-absolution?utm_source=api",
+      "layout": "normal",
+      "highres_image": true,
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T08:51:21Z",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.jpg?1783932681",
+        "normal": "https://cards.scryfall.io/normal/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.jpg?1783932681",
+        "large": "https://cards.scryfall.io/large/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.jpg?1783932681",
+        "png": "https://cards.scryfall.io/png/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.png?1783932681",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.jpg?1783932681",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.jpg?1783932681",
+        "thumb": "https://cards.scryfall.io/thumb/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.webp?1783932681",
+        "grid": "https://cards.scryfall.io/grid/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.webp?1783932681",
+        "display": "https://cards.scryfall.io/display/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.webp?1783932681",
+        "art": "https://cards.scryfall.io/art/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.webp?1783932681",
+        "crop": "https://cards.scryfall.io/crop/front/6/8/684ca60c-7ed4-49e1-b54a-91d129539375.webp?1783932681"
+      },
+      "mana_cost": "{3}{W}",
+      "cmc": 4,
+      "type_line": "Creature — Archon",
+      "oracle_text": "Flying\nProtection from white (This creature can't be blocked, targeted, dealt damage, enchanted, or equipped by anything white.)\nCreatures can't attack you or planeswalkers you control unless their controller pays {1} for each of those creatures.",
+      "power": "3",
+      "toughness": "2",
+      "colors": [
+        "W"
+      ],
+      "color_identity": [
+        "W"
+      ],
+      "keywords": [
+        "Flying",
+        "Protection"
+      ],
+      "legalities": {
+        "standard": "not_legal",
+        "future": "not_legal",
+        "historic": "legal",
+        "timeless": "legal",
+        "gladiator": "legal",
+        "pioneer": "legal",
+        "modern": "legal",
+        "legacy": "legal",
+        "pauper": "not_legal",
+        "vintage": "legal",
+        "penny": "not_legal",
+        "commander": "legal",
+        "oathbreaker": "legal",
+        "standardbrawl": "not_legal",
+        "brawl": "legal",
+        "competitivebrawl": "legal",
+        "alchemy": "not_legal",
+        "paupercommander": "not_legal",
+        "duel": "legal",
+        "oldschool": "not_legal",
+        "premodern": "not_legal",
+        "predh": "not_legal",
+        "tlr": "not_legal"
+      },
+      "games": [
+        "arena",
+        "paper",
+        "mtgo"
+      ],
+      "reserved": false,
+      "game_changer": false,
+      "foil": true,
+      "nonfoil": true,
+      "finishes": [
+        "nonfoil",
+        "foil"
+      ],
+      "oversized": false,
+      "promo": false,
+      "reprint": false,
+      "variation": false,
+      "set_id": "a90a7b2f-9dd8-4fc7-9f7d-8ea2797ec782",
+      "set": "eld",
+      "set_name": "Throne of Eldraine",
+      "set_type": "expansion",
+      "set_uri": "https://api.scryfall.com/sets/a90a7b2f-9dd8-4fc7-9f7d-8ea2797ec782",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aeld&unique=prints",
+      "scryfall_set_uri": "https://scryfall.com/sets/eld?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/684ca60c-7ed4-49e1-b54a-91d129539375/rulings",
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A0e3ac581-3d78-4879-9afb-3db69c5c47a5&unique=prints",
+      "collector_number": "3",
+      "digital": false,
+      "rarity": "uncommon",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "artist": "Igor Kieryluk",
+      "artist_ids": [
+        "9c3e9d17-509f-485c-9360-46d897ce716b"
+      ],
+      "illustration_id": "d5e6fe44-78ac-43b2-b673-2aaf543eeaa2",
+      "border_color": "black",
+      "frame": "2015",
+      "full_art": false,
+      "textless": false,
+      "booster": true,
+      "story_spotlight": false,
+      "edhrec_rank": 7562,
+      "penny_rank": 9556,
+      "preview": {
+        "source": "Millenium",
+        "source_uri": "https://www.millenium.org/news/344772.html",
+        "previewed_at": "2019-09-16"
+      },
+      "prices": {
+        "usd": "0.20",
+        "usd_foil": "0.49",
+        "usd_etched": null,
+        "eur": "0.10",
+        "eur_foil": "0.42",
+        "tix": "0.03"
+      },
+      "related_uris": {
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=472965&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DArchon%2Bof%2BAbsolution",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DArchon%2Bof%2BAbsolution",
+        "edhrec": "https://edhrec.com/route/?cc=Archon+of+Absolution"
+      },
+      "purchase_uris": {
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F199294%3Fpage%3D1",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=401299&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "cardhoarder": "https://www.cardhoarder.com/cards/78092?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+      },
+      "fixture_source": "https://api.scryfall.com/cards/named?exact=Archon%20of%20Absolution",
+      "fixture_retrieved_at": "2026-10-02T06:43:46.829Z"
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/conditional_static.json",
+    "source_sha256": "4b23bf399643da1704f43322e3c8e61420ba1c480f7ff0200c6f6fb90199450c",
+    "row": {
+      "id": "187ebb67-1bdd-4a9c-aeeb-554e7580ce24",
+      "oracle_id": "cf3b79cc-ce97-48e9-a578-625e323d1b62",
+      "name": "Mystic Enforcer",
+      "mana_cost": "{2}{G}{W}",
+      "type_line": "Creature — Human Nomad Mystic",
+      "oracle_text": "Protection from black\nThreshold — As long as there are seven or more cards in your graveyard, this creature gets +3/+3 and has flying.",
+      "power": "3",
+      "toughness": "3",
+      "colors": [
+        "G",
+        "W"
+      ],
+      "keywords": [
+        "Protection",
+        "Threshold"
+      ],
+      "scryfall_uri": "https://scryfall.com/card/dmr/192/mystic-enforcer?utm_source=api"
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/hexproof_variants.json",
+    "source_sha256": "360e2a971ac559351f35d58f7117ddfc1eaf1bb0a5f835b716d009f38d7c477e",
+    "row": {
+      "object": "card",
+      "id": "67ef9842-7142-4c63-8aea-fa73f02722a5",
+      "oracle_id": "9ed6f28f-a3db-48c5-9ab0-b90a7fba5f57",
+      "multiverse_ids": [
+        598975
+      ],
+      "mtgo_id": 107691,
+      "tcgplayer_id": 457186,
+      "cardmarket_id": 688501,
+      "name": "Royal Assassin",
+      "lang": "en",
+      "released_at": "2023-01-13",
+      "uri": "https://api.scryfall.com/cards/67ef9842-7142-4c63-8aea-fa73f02722a5",
+      "scryfall_uri": "https://scryfall.com/card/dmr/101/royal-assassin?utm_source=api",
+      "layout": "normal",
+      "highres_image": true,
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T04:54:31Z",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.jpg?1783918471",
+        "normal": "https://cards.scryfall.io/normal/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.jpg?1783918471",
+        "large": "https://cards.scryfall.io/large/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.jpg?1783918471",
+        "png": "https://cards.scryfall.io/png/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.png?1783918471",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.jpg?1783918471",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.jpg?1783918471",
+        "thumb": "https://cards.scryfall.io/thumb/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.webp?1783918471",
+        "grid": "https://cards.scryfall.io/grid/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.webp?1783918471",
+        "display": "https://cards.scryfall.io/display/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.webp?1783918471",
+        "art": "https://cards.scryfall.io/art/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.webp?1783918471",
+        "crop": "https://cards.scryfall.io/crop/front/6/7/67ef9842-7142-4c63-8aea-fa73f02722a5.webp?1783918471"
+      },
+      "mana_cost": "{1}{B}{B}",
+      "cmc": 3,
+      "type_line": "Creature — Human Assassin",
+      "oracle_text": "{T}: Destroy target tapped creature.",
+      "power": "1",
+      "toughness": "1",
+      "colors": [
+        "B"
+      ],
+      "color_identity": [
+        "B"
+      ],
+      "keywords": [],
+      "legalities": {
+        "standard": "not_legal",
+        "future": "not_legal",
+        "historic": "not_legal",
+        "timeless": "not_legal",
+        "gladiator": "not_legal",
+        "pioneer": "not_legal",
+        "modern": "legal",
+        "legacy": "legal",
+        "pauper": "not_legal",
+        "vintage": "legal",
+        "penny": "legal",
+        "commander": "legal",
+        "oathbreaker": "legal",
+        "standardbrawl": "not_legal",
+        "brawl": "not_legal",
+        "competitivebrawl": "not_legal",
+        "alchemy": "not_legal",
+        "paupercommander": "not_legal",
+        "duel": "legal",
+        "oldschool": "not_legal",
+        "premodern": "legal",
+        "predh": "legal",
+        "tlr": "legal"
+      },
+      "games": [
+        "paper",
+        "mtgo"
+      ],
+      "reserved": false,
+      "game_changer": false,
+      "foil": true,
+      "nonfoil": true,
+      "finishes": [
+        "nonfoil",
+        "foil"
+      ],
+      "oversized": false,
+      "promo": false,
+      "reprint": true,
+      "variation": false,
+      "set_id": "ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+      "set": "dmr",
+      "set_name": "Dominaria Remastered",
+      "set_type": "masters",
+      "set_uri": "https://api.scryfall.com/sets/ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admr&unique=prints",
+      "scryfall_set_uri": "https://scryfall.com/sets/dmr?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/67ef9842-7142-4c63-8aea-fa73f02722a5/rulings",
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A9ed6f28f-a3db-48c5-9ab0-b90a7fba5f57&unique=prints",
+      "collector_number": "101",
+      "digital": false,
+      "rarity": "rare",
+      "flavor_text": "Trained in the arts of stealth, royal assassins choose their victims carefully, relying on timing and precision rather than brute force.",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "artist": "Mark Zug",
+      "artist_ids": [
+        "48e2b98c-5467-4671-bd42-4c3746115117"
+      ],
+      "illustration_id": "6c24a711-fc33-4cd0-9fe8-a4dca296a0a6",
+      "border_color": "black",
+      "frame": "2015",
+      "security_stamp": "oval",
+      "full_art": false,
+      "textless": false,
+      "booster": true,
+      "story_spotlight": false,
+      "edhrec_rank": 2276,
+      "penny_rank": 8381,
+      "prices": {
+        "usd": "0.42",
+        "usd_foil": "0.50",
+        "usd_etched": null,
+        "eur": "0.39",
+        "eur_foil": "0.62",
+        "tix": "0.03"
+      },
+      "related_uris": {
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=598975&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DRoyal%2BAssassin",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DRoyal%2BAssassin",
+        "edhrec": "https://edhrec.com/route/?cc=Royal+Assassin"
+      },
+      "purchase_uris": {
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F457186%3Fpage%3D1",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=688501&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "cardhoarder": "https://www.cardhoarder.com/cards/107691?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+      },
+      "fixture_retrieved_at": "2026-10-02T02:57:47.908Z"
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/player_counters.json",
+    "source_sha256": "1a999508fa879730388799cd3ec3b46f2faadfc4a042540967dc31f302746288",
+    "row": {
+      "all_parts": [
+        {
+          "component": "combo_piece",
+          "id": "1374bfa2-9714-486d-90aa-7a9b8d8ef3a8",
+          "name": "Experience",
+          "object": "related_card",
+          "type_line": "Card",
+          "uri": "https://api.scryfall.com/cards/1374bfa2-9714-486d-90aa-7a9b8d8ef3a8"
+        },
+        {
+          "component": "combo_piece",
+          "id": "039d25d4-ce26-4ecf-bbf5-42187cf0230a",
+          "name": "Kelsien, the Plague",
+          "object": "related_card",
+          "type_line": "Legendary Creature — Human Assassin",
+          "uri": "https://api.scryfall.com/cards/039d25d4-ce26-4ecf-bbf5-42187cf0230a"
+        }
+      ],
+      "artist": "Chris Rallis",
+      "artist_ids": [
+        "a8e7b854-b15a-421a-b66d-6e68187ae285"
+      ],
+      "booster": false,
+      "border_color": "black",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "cardmarket_id": 452108,
+      "cmc": 3,
+      "collector_number": "11",
+      "color_identity": [
+        "B",
+        "R",
+        "W"
+      ],
+      "colors": [
+        "B",
+        "R",
+        "W"
+      ],
+      "digital": false,
+      "edhrec_rank": 8531,
+      "finishes": [
+        "nonfoil",
+        "foil"
+      ],
+      "flavor_text": "\"Aim for an eye. Better they never see you.\"",
+      "foil": true,
+      "frame": "2015",
+      "frame_effects": [
+        "legendary"
+      ],
+      "full_art": false,
+      "game_changer": false,
+      "games": [
+        "paper",
+        "mtgo"
+      ],
+      "highres_image": true,
+      "id": "039d25d4-ce26-4ecf-bbf5-42187cf0230a",
+      "illustration_id": "5174eb91-6f36-4544-8b21-82dfca061ba9",
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T08:27:11Z",
+      "image_uris": {
+        "art": "https://cards.scryfall.io/art/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.webp?1783931231",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.jpg?1783931231",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.jpg?1783931231",
+        "crop": "https://cards.scryfall.io/crop/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.webp?1783931231",
+        "display": "https://cards.scryfall.io/display/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.webp?1783931231",
+        "grid": "https://cards.scryfall.io/grid/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.webp?1783931231",
+        "large": "https://cards.scryfall.io/large/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.jpg?1783931231",
+        "normal": "https://cards.scryfall.io/normal/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.jpg?1783931231",
+        "png": "https://cards.scryfall.io/png/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.png?1783931231",
+        "small": "https://cards.scryfall.io/small/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.jpg?1783931231",
+        "thumb": "https://cards.scryfall.io/thumb/front/0/3/039d25d4-ce26-4ecf-bbf5-42187cf0230a.webp?1783931231"
+      },
+      "keywords": [
+        "Vigilance",
+        "Haste"
+      ],
+      "lang": "en",
+      "layout": "normal",
+      "legalities": {
+        "alchemy": "not_legal",
+        "brawl": "not_legal",
+        "commander": "legal",
+        "competitivebrawl": "not_legal",
+        "duel": "legal",
+        "future": "not_legal",
+        "gladiator": "not_legal",
+        "historic": "not_legal",
+        "legacy": "legal",
+        "modern": "not_legal",
+        "oathbreaker": "legal",
+        "oldschool": "not_legal",
+        "pauper": "not_legal",
+        "paupercommander": "not_legal",
+        "penny": "not_legal",
+        "pioneer": "not_legal",
+        "predh": "not_legal",
+        "premodern": "not_legal",
+        "standard": "not_legal",
+        "standardbrawl": "not_legal",
+        "timeless": "not_legal",
+        "tlr": "legal",
+        "vintage": "legal"
+      },
+      "mana_cost": "{R}{W}{B}",
+      "mtgo_id": 80745,
+      "multiverse_ids": [
+        484718
+      ],
+      "name": "Kelsien, the Plague",
+      "nonfoil": true,
+      "object": "card",
+      "oracle_id": "5b3326a5-18c5-4d45-90e1-f6d00ca2bced",
+      "oracle_text": "Vigilance, haste\nKelsien gets +1/+1 for each experience counter you have.\n{T}: Kelsien deals 1 damage to target creature you don't control. When that creature dies this turn, you get an experience counter.",
+      "oversized": false,
+      "power": "2",
+      "preview": {
+        "previewed_at": "2020-04-04",
+        "source": "MTGGoldfish",
+        "source_uri": "https://www.mtggoldfish.com/articles/kelsien-the-plague-shiny-impetus-exclusive-commander-2020-preview"
+      },
+      "prices": {
+        "eur": "1.18",
+        "eur_foil": "1.45",
+        "tix": "3.38",
+        "usd": "2.52",
+        "usd_etched": null,
+        "usd_foil": "1.12"
+      },
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A5b3326a5-18c5-4d45-90e1-f6d00ca2bced&unique=prints",
+      "promo": false,
+      "purchase_uris": {
+        "cardhoarder": "https://www.cardhoarder.com/cards/80745?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=452108&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F212154%3Fpage%3D1"
+      },
+      "rarity": "mythic",
+      "related_uris": {
+        "edhrec": "https://edhrec.com/route/?cc=Kelsien%2C+the+Plague",
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=484718&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DKelsien%252C%2Bthe%2BPlague",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DKelsien%252C%2Bthe%2BPlague"
+      },
+      "released_at": "2020-04-17",
+      "reprint": false,
+      "reserved": false,
+      "rulings_uri": "https://api.scryfall.com/cards/039d25d4-ce26-4ecf-bbf5-42187cf0230a/rulings",
+      "scryfall_set_uri": "https://scryfall.com/sets/c20?utm_source=api",
+      "scryfall_uri": "https://scryfall.com/card/c20/11/kelsien-the-plague?utm_source=api",
+      "security_stamp": "oval",
+      "set": "c20",
+      "set_id": "f60ec786-1f8d-42f7-9abc-0d880fe243f6",
+      "set_name": "Commander 2020",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Ac20&unique=prints",
+      "set_type": "commander",
+      "set_uri": "https://api.scryfall.com/sets/f60ec786-1f8d-42f7-9abc-0d880fe243f6",
+      "story_spotlight": false,
+      "tcgplayer_id": 212154,
+      "textless": false,
+      "toughness": "2",
+      "type_line": "Legendary Creature — Human Assassin",
+      "uri": "https://api.scryfall.com/cards/039d25d4-ce26-4ecf-bbf5-42187cf0230a",
+      "variation": false
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/qualified_continuous.json",
+    "source_sha256": "beaa040c5640d1bd6ed5ede9e65db19c9f1a4011919726e69192768593d2e0cc",
+    "row": {
+      "name": "Naturalize",
+      "oracle_text": "Destroy target artifact or enchantment.",
+      "mana_cost": "{1}{G}",
+      "type_line": "Instant",
+      "power": null,
+      "toughness": null,
+      "colors": [
+        "G"
+      ],
+      "keywords": [],
+      "layout": "normal",
+      "provenance": {
+        "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+        "source": "scryfall",
+        "scryfall_id": "390c40ba-2464-44ae-8d67-93c72ab3c425"
+      }
+    }
+  }
+]

@@ -1024,7 +1024,8 @@ def _subject_match_result(state, card_id: str, subject: str) -> bool:
     if s.endswith(" creatures"):
         if "Creature" not in effective_types(state, card):
             return False
-        colors = set(getattr(card, "colors", None) or [])
+        from rules_engine.colors import card_color_symbols
+        colors = card_color_symbols(card, state)
         color_names = _COLOR_SYMBOLS
         front_types = set((getattr(card, "type_line", "") or "").split("—", 1)[0].split("-", 1)[0].lower().split())
 

@@ -1,0 +1,95 @@
+{
+  "canonical_json_sha256": "82a096075b1577480e7c966f1efdb364edda3966c6a5ad9fdc073dcab836f7b5",
+  "facts_modified": false,
+  "http_requests": 0,
+  "rows": {
+    "Archfiend of Ifnir": {
+      "id": "83057af6-cb88-4401-92ef-5b5d10463140",
+      "oracle_id": "535e2af0-7b08-4026-b1bf-87626407dd42",
+      "raw_canonical_sha256": "9471d1c806fde25668370fe7b022b0d4f301a11db723c0e014301fb005cf7aa4"
+    },
+    "Chromatic Star": {
+      "id": "c2e8d492-2c67-410b-b556-c157a14c4cec",
+      "oracle_id": "fedbd40b-e3a5-449c-a8a3-b42e9da191a9",
+      "raw_canonical_sha256": "bcae6df06aa4341c52e5c5cffb4e44e99b9320134a85ad1015666fdf4172877b"
+    },
+    "Dress Down": {
+      "id": "04f9f061-67b8-4427-9fcb-b3ccfee8fc5d",
+      "oracle_id": "c1cbbda0-e02b-4b9c-8669-ea87ca629520",
+      "raw_canonical_sha256": "e50409c06eb42f164ca6998eb2fff3d6e367658d95e5d88da24a0b2b286ebf86"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "raw_canonical_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0"
+    },
+    "Heartfire Hero": {
+      "id": "48ace959-66b2-40c8-9bff-fd7ed9c99a82",
+      "oracle_id": "49e1e202-37bf-46ed-93d1-1adb13726039",
+      "raw_canonical_sha256": "4304be72eebe56143704b34cafb506e0dca99c4cf42757e0919976ddf66dc1c1"
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "raw_canonical_sha256": "3dc84687094c5831a9901fbbaa489f78006bdaf0275fffda1c5f8985df8b3a37"
+    },
+    "Krosan Tusker": {
+      "id": "0a368f72-cc88-4f32-aad4-22d92c4d032d",
+      "oracle_id": "82406175-63b3-4972-be8b-db0e70c908cb",
+      "raw_canonical_sha256": "4472532f9c6979b8e12c128251595df862724cb34bc4b655b939747e57c2534f"
+    },
+    "Leyline of the Void": {
+      "id": "aeaa3aff-608d-4723-bb7c-8daedebe9f36",
+      "oracle_id": "f4e32fc1-1b8d-441e-8e76-71f19f98e925",
+      "raw_canonical_sha256": "27e6e1e44435b5daad9bf8c336024793947ee9e74de9b21c71289446afb17bec"
+    },
+    "Life from the Loam": {
+      "id": "cdb6432f-3f56-4c92-b09a-2a5b64620c04",
+      "oracle_id": "ac8fba34-512c-4f24-999a-ab72f1ce4acb",
+      "raw_canonical_sha256": "ced6b619f0c5f2e40d26fb6fd339a55de1d05d4233fd8eabdb6ac8bf5f8b02ea"
+    },
+    "Lonely Sandbar": {
+      "id": "42f8591e-df30-49ec-962c-a75d32e6d9f5",
+      "oracle_id": "765863c8-1be0-4bb1-9e9c-db7701cffde3",
+      "raw_canonical_sha256": "baf47ee600637e636208b6709935df030b289c1ec8250aac88e0f54ff8a56e06"
+    },
+    "Phyrexian Tower": {
+      "id": "0b47f6d2-9f65-47a4-bfc4-15619befe53d",
+      "oracle_id": "1861e642-21d5-4232-89f3-b5557f2946c1",
+      "raw_canonical_sha256": "4bcdf6294aa8f6b90e7a01ab1562e417ac6176923869bf4fb84f135d66931ea7"
+    },
+    "Planar Cleansing": {
+      "id": "5eddac86-947e-48c1-9f02-4634a7918c98",
+      "oracle_id": "a98c2d81-4add-4292-bbdd-e1b69ff936d4",
+      "raw_canonical_sha256": "3a82275b2d7c5d13df899c9f1198d98964bd500bd4ad81793285932f29a65012"
+    },
+    "Raging Goblin": {
+      "id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b",
+      "raw_canonical_sha256": "b084c49cbd337b82de4f5051f1dec661250e61df2c697a79c4994adfe10bf453"
+    },
+    "Reef Worm": {
+      "id": "25576181-a5a4-4baf-a2b4-fbfe13fb9df6",
+      "oracle_id": "e3ad5cbc-4245-4e1e-8204-509381fa0c1c",
+      "raw_canonical_sha256": "3efabaf451b36a56c300b690febfd2a76da2716aa2f67e28b79fbbfa9317122b"
+    },
+    "Rest in Peace": {
+      "id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+      "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+      "raw_canonical_sha256": "c645d23b51a82f54bc5f3d10dd21dd75130670e631a1f0331b4aa3161e2d4dd9"
+    },
+    "Shark Typhoon": {
+      "id": "605ca3c0-7c9a-4bc1-9795-82aeb6f552ee",
+      "oracle_id": "8c0520fa-276b-4d21-b4a9-dce1fce59f6b",
+      "raw_canonical_sha256": "da89fb7ca4268244bba196f01bcf05ce22595ed80710fce88a92bbdb06b7d26f"
+    },
+    "Swamp": {
+      "id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "raw_canonical_sha256": "acd8b971986fbf6fa6d55e931a8249cc5f84700cf8218978e32ba67ec0a98c2e"
+    }
+  },
+  "source_compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "source_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_records_verified": 38690
+}

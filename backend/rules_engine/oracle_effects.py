@@ -89,9 +89,18 @@ def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
     from rules_engine.foretell import resolution_text
     from rules_engine.suspend import PRINTED
     oracle_text = resolution_text(card, oracle_text)
+    # Printed cycling triggers are separate abilities. A trigger-only proxy
+    # lacks the cycling keyword line and must keep its resolution instruction.
+    has_cycling = any(re.match(r"^cycling\b", line.strip(), re.IGNORECASE)
+                      for line in oracle_text.splitlines())
+    self_cycle_trigger = re.compile(
+        rf"^when(?:ever)? you cycle (?:this card|this spell|{re.escape(card.name)})(?=\s*[,\.])",
+        re.IGNORECASE,
+    )
     return "\n".join(
         line for line in oracle_text.splitlines()
         if not ACTIVATED_ABILITY_RE.match(line.strip())
+        and not (has_cycling and self_cycle_trigger.match(without_reminder_text(line).strip()))
         and not PRINTED.fullmatch(without_reminder_text(line).strip())
         and without_reminder_text(line).strip().lower() not in {'split second', 'delve', 'convoke', 'improvise'}
     )
@@ -230,6 +239,15 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    team_counters = re.fullmatch(
+        r'put (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
+        r'([+-]\d+/[+-]\d+) counters? on each creature (you control|your opponents control)\.?',
+        oracle.strip(), re.IGNORECASE)
+    if team_counters:
+        return 'add_counters_each_creature', {
+            'counter': team_counters[2], 'amount': _parse_count_token(team_counters[1].lower()),
+            'recipients': 'opponents' if team_counters[3].lower() == 'your opponents control' else 'controller',
+        }
     from rules_engine.linked_targets import linked_damage_instruction, linked_damage_effect
     if linked_damage_instruction(oracle, card.name):
         from copy import copy
@@ -565,6 +583,8 @@ def infer_effect_from_oracle(
             continue
         inferred = _infer_clause_effect(state, card, controller, clause, action_targets, x_value)
         if inferred is not None:
+            if inferred[1].get('__unsupported_token_quantity') and report_unsupported:
+                state.log.append(f'Unsupported token base quantity for {card.name}: {clause}')
             # The existing land-animation handler already performs its untap.
             if inferred[0] == "untap" and any(
                 payload.get("animate_untap")
@@ -1448,6 +1468,41 @@ def crew_value(card: CardInstance) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def _token_base_quantity(oracle: str, action_targets: dict[str, Any], x_value: int) -> int | None:
+    # Quoted token abilities do not describe the quantity of the enclosing creation.
+    text = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '', oracle).strip(' .')
+    # The existing two-seat attack route has one opponent and a fixed per-opponent body.
+    text = re.sub(r'^(?:whenever you attack,\s*)?for each opponent,\s*(?=create\b)', '', text)
+    count = TOKEN_COUNT_RE.search(text)
+    if not count:
+        return None
+    fixed = None if count[1].lower() == 'x' else _parse_count_token(count[1])
+    per_counter = re.search(
+        r'\bfor each ([+-]\d+/[+-]\d+|[a-z][a-z -]*) counter on '
+        r'(?:this (?:creature|permanent|artifact|enchantment)|it)$', text)
+    counter_x = re.search(
+        r'\bwhere x is the number of ([+-]\d+/[+-]\d+|[a-z][a-z -]*) counters? on '
+        r'(?:this (?:creature|permanent|artifact|enchantment)|it)$', text)
+    counter = per_counter or counter_x
+    power = re.search(r"\bwhere x is this creature's power$", text)
+    lki = action_targets.get('__source_lki')
+    if counter:
+        counters = lki.get('counters') if isinstance(lki, dict) else None
+        value = counters.get(counter[1], 0) if isinstance(counters, dict) else None
+        multiplier = fixed if per_counter else 1 if fixed is None else None
+        return max(0, value) * multiplier if type(value) is int and multiplier is not None else None
+    if power:
+        value = lki.get('power') if isinstance(lki, dict) else None
+        return max(0, value) if type(value) is int and fixed is None else None
+    domain = re.search(r'\bfor each basic land type among lands you control$', text)
+    if (re.search(r'\bfor each\b', text) and not domain
+            or re.search(r'\bwhere x is\b|\bequal to\b|\bthat many\b', text)):
+        return None
+    if fixed is not None:
+        return fixed
+    return max(0, x_value) if 'x_value' in action_targets else None
+
+
 def _infer_clause_effect(
     state: MatchState,
     card: CardInstance,
@@ -1874,9 +1929,9 @@ def _infer_clause_effect(
 
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:
-        count_match = TOKEN_COUNT_RE.search(oracle)
-        token_count = (max(0, x_value) if count_match.group(1).lower() == 'x'
-                       else _parse_count_token(count_match.group(1))) if count_match else 1
+        token_count = _token_base_quantity(oracle, action_targets, x_value)
+        if token_count is None:
+            return 'noop', {'__unsupported_token_quantity': True}
         token_name_match = TOKEN_NAME_RE.search(oracle)
         token_name = "Token"
         token_colors: list[str] = []
@@ -1897,6 +1952,10 @@ def _infer_clause_effect(
         }
         if token_name_match:
             out["type_line"] = f"Token Creature — {token_name}"
+        from rules_engine.token_descriptors import creature_token_descriptor
+        descriptor = creature_token_descriptor(oracle)
+        if descriptor is not None:
+            out.update(descriptor)
         if "tapped and attacking" in oracle:
             out["tapped_and_attacking"] = True
         if re.search(r'\bcreate\s+\S+\s+tapped\s+\d+/\d+\b', oracle):
@@ -1921,7 +1980,9 @@ def _infer_clause_effect(
     token_definition = named_artifact_token(named_token.group(2)) if named_token else None
     if named_token and (reminder_ability or token_definition) and " instead" not in oracle:
         token_name = named_token.group(2).title()
-        amount = _parse_count_token(named_token.group(1))
+        amount = _token_base_quantity(oracle, action_targets, x_value)
+        if amount is None:
+            return 'noop', {'__unsupported_token_quantity': True}
         conditional = SAC_TOUGHNESS_TOKEN_RE.search(without_reminder_text(source_oracle))
         sacrificed_toughness = getattr(card, "sacrificed_toughness", None)
         if (conditional and conditional.group(3).lower() == token_name.lower()

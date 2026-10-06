@@ -195,7 +195,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
     if source_lki is not None:
         source_colors = set(source_lki.get("color_names", []))
     elif source_card_id in state.cards:
-        source_colors = card_color_names(state.cards[source_card_id])
+        source_colors = card_color_names(state.cards[source_card_id], state)
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
         kws = effective_keywords(state, target_card_id)
@@ -732,7 +732,7 @@ def exile_colored_permanents_mana_value_at_most(state: MatchState, controller: i
     mv_max = int(payload["mv_max"])
     affected = [
         cid for player in state.players.values() for cid in player.battlefield
-        if card_color_names(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
+        if card_color_names(state.cards[cid], state) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
     ]
     for cid in affected:
         capture_last_known_battlefield(state, cid)
@@ -2130,10 +2130,14 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
 
 def add_counters_each_creature(state: MatchState, controller: int, payload: dict) -> None:
     from effects.registry import resolve_effect
+    recipients = payload.get('recipients', 'controller')
+    if recipients not in {'controller', 'opponents'}:
+        return
+    player_ids = [controller] if recipients == 'controller' else [pid for pid in state.players if pid != controller]
     resolve_effect(state, controller, 'effect_sequence', {'effects': [
         {'effect_key': 'add_counters', 'payload': {**payload, 'target_card_id': cid,
                                                 'effect_timestamp': object_incarnation(state.cards[cid])}}
-        for cid in list(state.players[controller].battlefield)
+        for pid in player_ids for cid in list(state.players[pid].battlefield)
         if cid in state.cards and 'Creature' in effective_types(state, state.cards[cid])
     ]})
 

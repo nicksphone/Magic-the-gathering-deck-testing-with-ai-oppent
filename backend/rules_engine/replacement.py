@@ -5,29 +5,32 @@ import re
 
 from rules_engine.continuous import effect_timestamp, printed_abilities_suppressed
 from rules_engine.card_types import is_token_card
+from rules_engine.query_context import rule_query_scope
 
 
 def _battlefield_oracle_texts(state, controller: int | None = None, *, text_filter=None):
     ordered: list[tuple[tuple[int, int, int, str], object, str]] = []
-    battlefield_index = _battlefield_position_map(state)
-    for pid in state.players:
-        for cid in state.players[pid].battlefield:
-            card = state.cards[cid]
-            text = (card.oracle_text or '').lower()
-            if text_filter is not None and not text_filter(text):
-                continue
-            if printed_abilities_suppressed(state, cid):
-                continue
-            if controller is not None and card.controller != controller:
-                continue
-            order_key = (
-                -effect_timestamp(card),
-                -int(getattr(card, "entered_turn", 0) or 0),
-                -int(battlefield_index.get(cid, 0) or 0),
-                -int(getattr(card, "instance_order", 0) or 0),
-                str(cid),
-            )
-            ordered.append((order_key, card, text))
+    # Construction is readonly; end reuse before yielding to mutating callers.
+    with rule_query_scope(state):
+        battlefield_index = _battlefield_position_map(state)
+        for pid in state.players:
+            for cid in state.players[pid].battlefield:
+                card = state.cards[cid]
+                text = (card.oracle_text or '').lower()
+                if text_filter is not None and not text_filter(text):
+                    continue
+                if printed_abilities_suppressed(state, cid):
+                    continue
+                if controller is not None and card.controller != controller:
+                    continue
+                order_key = (
+                    -effect_timestamp(card),
+                    -int(getattr(card, "entered_turn", 0) or 0),
+                    -int(battlefield_index.get(cid, 0) or 0),
+                    -int(getattr(card, "instance_order", 0) or 0),
+                    str(cid),
+                )
+                ordered.append((order_key, card, text))
     for _, card, text in sorted(ordered, key=lambda item: item[0]):
         yield card, text
 

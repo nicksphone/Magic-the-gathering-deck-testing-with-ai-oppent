@@ -3374,7 +3374,6 @@ class AIAgent:
             )
             if best_land:
                 targets["target_card_id"] = best_land["id"]
-                targets["target_card_name"] = best_land.get("name") or ""
 
         graveyard_creature_targets = hints.get("graveyard_creature_targets") or hints.get("graveyard_card_targets") or []
         if graveyard_creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
@@ -3388,7 +3387,6 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         graveyard_permanent_targets = hints.get("graveyard_permanent_targets") or []
         if graveyard_permanent_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
@@ -3402,7 +3400,6 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         graveyard_spell_targets = hints.get("graveyard_spell_targets") or []
         if graveyard_spell_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
@@ -3416,7 +3413,6 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         planeswalker_targets = hints.get("planeswalker_targets") or []
         if any_damage_target:
@@ -3441,7 +3437,6 @@ class AIAgent:
             )
             if best:
                 targets["target_card_id"] = best["id"]
-                targets["target_card_name"] = best.get("name") or best.get("label") or ""
 
         if hints.get("permanent_targets") and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):
             best = max(

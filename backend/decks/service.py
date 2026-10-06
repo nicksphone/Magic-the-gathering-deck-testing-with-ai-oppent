@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import hashlib
 import json
 
 from ai.deck_analysis import analyze_deck
 from card_data.display import select_display_image_uri
-from card_data.hydration import is_playable_deck_card
+from card_data.hydration import hydrate_deck_cards, is_playable_deck_card, ready_for_match
 from card_data.sync import ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS, EXPANSION_TOP_DECKS_BY_CODE
@@ -69,8 +70,15 @@ class DeckService:
         parsed = self.parser.parse(deck_text)
         resolved_mainboard = self._resolve_card_metadata(parsed.mainboard)
         resolved_sideboard = self._resolve_card_metadata(parsed.sideboard)
-        analysis = analyze_deck(resolved_mainboard)
-        archetype = analysis["primary_archetype"]
+        # Cache-shaped display metadata stays compatible; classification uses canonical facts.
+        canonical_mainboard = hydrate_deck_cards(self.repo, parsed.mainboard)
+        analysis = analyze_deck(canonical_mainboard)
+        admitted = (bool(canonical_mainboard)
+                    and all(card.get("card_data_sources") and ready_for_match(card) for card in canonical_mainboard)
+                    and analysis["type_metadata_coverage"] == 1 and analysis["confidence"] > 0
+                    and not {"missing_card_metadata", "partial_card_metadata", "fallback_midrange"}
+                    .intersection(analysis["signals"]))
+        archetype = analysis["primary_archetype"] if admitted else "unknown"
         for item in resolved_mainboard + resolved_sideboard:
             metadata = item.get("card_metadata")
             if metadata is not None and not is_playable_deck_card(metadata):
@@ -94,6 +102,17 @@ class DeckService:
             "mana_curve": self._compute_curve(resolved_mainboard),
             "color_profile": self._color_profile(resolved_mainboard),
             "analysis": analysis,
+            "classification_status": "resolved" if admitted else "unknown",
+            "classification_provenance": {
+                "method": "ai.deck_analysis.analyze_deck",
+                "facts_method": "card_data.hydration.hydrate_deck_cards",
+                "admission": "complete-local-canonical-v1",
+                "sources": sorted({source for card in canonical_mainboard for source in card.get("card_data_sources", [])}),
+                "resolved_board_sha256": hashlib.sha256(json.dumps(canonical_mainboard, sort_keys=True,
+                    separators=(",", ":"), allow_nan=False).encode()).hexdigest(),
+                "cards": [{"card_name": card["card_name"], "sources": card["card_data_sources"],
+                           "ready_for_match": bool(ready_for_match(card))} for card in canonical_mainboard],
+            },
         }
 
     def _compute_curve(self, mainboard: list[dict]) -> dict[str, int]:

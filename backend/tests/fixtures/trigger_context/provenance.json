@@ -1,0 +1,39 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "399e57fcbb8616b4a9b2f0e21e0d5c83972cdee1e3d6e4366aa3bd5749f64b5b",
+  "offline": true,
+  "facts_modified": false,
+  "rows": [
+    {
+      "name": "Wall of Denial",
+      "id": "049ce45b-ab07-4bce-bb4a-83f5720b6ee7",
+      "oracle_id": "9cc092f9-e8f0-40ea-847d-813b70f889db"
+    },
+    {
+      "name": "Storm-Kiln Artist",
+      "id": "da7ae8e0-cb6b-4386-8a30-9527d1af9be5",
+      "oracle_id": "a145ff8c-5812-4bcb-bd16-9839dc25121d"
+    },
+    {
+      "name": "Disenchant",
+      "id": "7ac43e16-8b14-46f2-877a-600ea918766b",
+      "oracle_id": "a7e97fa9-4b72-4548-b854-5be5f18a6f1a"
+    },
+    {
+      "name": "Resounding Thunder",
+      "id": "680b7955-d939-4195-aba8-b46a8c925616",
+      "oracle_id": "b0e1d26e-2fa1-4826-bfe9-01b0bd2c138b"
+    },
+    {
+      "name": "Slippery Bogle",
+      "id": "c4e4bbea-7e3f-4de0-bb01-dfd67f21c254",
+      "oracle_id": "f64878c1-1fba-44f7-a24f-d24bef2e03ae"
+    },
+    {
+      "name": "Kor Firewalker",
+      "id": "8dcd4a52-0c8f-4fca-b7dc-c2503794e5a4",
+      "oracle_id": "fb37ff1c-7461-4a16-b27f-6eef0db937fe"
+    }
+  ]
+}

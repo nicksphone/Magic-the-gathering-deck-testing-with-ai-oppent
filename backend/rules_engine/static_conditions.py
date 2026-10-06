@@ -127,8 +127,8 @@ def evaluate_static_condition(state, source, target, text):
         scope, mode, colors = args
         needed = {COLORS[color] for color in colors}
         players = [source.controller] if scope == 'you' else [pid for pid in state.players if pid != source.controller]
-        return any((needed <= card_color_symbols(state.cards[cid]) if mode == ' and '
-                    else bool(needed & card_color_symbols(state.cards[cid])))
+        return any((needed <= card_color_symbols(state.cards[cid], state) if mode == ' and '
+                    else bool(needed & card_color_symbols(state.cards[cid], state)))
                    for pid in players for cid in state.players[pid].battlefield)
     if kind == 'graveyard':
         return sum(not is_token_card(state.cards[cid]) for cid in state.players[source.controller].graveyard) >= args[0]

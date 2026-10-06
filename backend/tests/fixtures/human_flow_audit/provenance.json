@@ -1,0 +1,46 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "rows_scanned": 38690,
+  "expanded_bytes": 203114006,
+  "max_line_bytes": 2097152,
+  "http_requests": 0,
+  "facts_modified": false,
+  "canonical_json_sha256": "b6aded73ee431f8eb5639f5557776b0b99ee9d4a71ddb2dd154ed2724e3a9cbf",
+  "rows": {
+    "Grizzly Bears": {
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0"
+    },
+    "Phyrexian Tower": {
+      "id": "0b47f6d2-9f65-47a4-bfc4-15619befe53d",
+      "oracle_id": "1861e642-21d5-4232-89f3-b5557f2946c1"
+    },
+    "Shark Typhoon": {
+      "id": "605ca3c0-7c9a-4bc1-9795-82aeb6f552ee",
+      "oracle_id": "8c0520fa-276b-4d21-b4a9-dce1fce59f6b"
+    },
+    "Renewed Faith": {
+      "id": "a7d66dd3-330f-4b12-81f6-52d7a31013a9",
+      "oracle_id": "aa4ecefa-808e-4706-af16-4ea5af9743fc"
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6"
+    },
+    "Hangarback Walker": {
+      "id": "cc387ccf-f746-4855-81e5-64f5a5e0fdda",
+      "oracle_id": "dde55256-5259-44e7-a267-fca45a7f0d04"
+    },
+    "Glorious Anthem": {
+      "id": "17d154d3-7ae5-43ff-9978-d974285e2c89",
+      "oracle_id": "e3886fe8-9b76-4613-8891-4ec74657c087"
+    }
+  },
+  "baseline": "3ccbdf203a4ee1aeb848e219769c9dfac0f20e8c",
+  "scope": "Raw canonical records only; explicit diagnostic positions, no historical game claim."
+}

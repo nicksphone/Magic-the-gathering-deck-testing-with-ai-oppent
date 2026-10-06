@@ -1,0 +1,42 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "records_scanned": 38690,
+  "facts_modified": false,
+  "http_requests": 0,
+  "canonical_sha256": "346bc1e961129e70ebe52f181162ea8fd184fc1b037f93a1ad370e5ef62b11ca",
+  "rows": {
+    "Phyrexian Tower": {
+      "id": "0b47f6d2-9f65-47a4-bfc4-15619befe53d",
+      "oracle_id": "1861e642-21d5-4232-89f3-b5557f2946c1"
+    },
+    "Blade Splicer": {
+      "id": "3dac9526-388d-487e-a790-066f83050794",
+      "oracle_id": "194166ad-0179-42a3-86b9-ba7f322ec576"
+    },
+    "Myr Sire": {
+      "id": "11ba43d1-e879-40e0-b49c-e009deb7e3aa",
+      "oracle_id": "25794033-bd17-4056-b116-68d3acf52569"
+    },
+    "Hangarback Walker": {
+      "id": "cc387ccf-f746-4855-81e5-64f5a5e0fdda",
+      "oracle_id": "dde55256-5259-44e7-a267-fca45a7f0d04"
+    },
+    "Glorious Anthem": {
+      "id": "17d154d3-7ae5-43ff-9978-d974285e2c89",
+      "oracle_id": "e3886fe8-9b76-4613-8891-4ec74657c087"
+    },
+    "Talrand, Sky Summoner": {
+      "id": "1be3ed47-072e-481a-b3d9-dc232ac4b24f",
+      "oracle_id": "ea1eb902-a23c-44ff-9169-19baf71de238"
+    },
+    "Shock": {
+      "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+      "oracle_id": "a9d288b8-cdc1-4e55-a0c9-d6edfc95e65d"
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373"
+    }
+  }
+}

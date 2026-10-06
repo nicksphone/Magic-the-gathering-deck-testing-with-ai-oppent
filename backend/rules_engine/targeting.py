@@ -236,7 +236,7 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     return True, ""
 
 
-def validate_protection_targets(state, source_card, action_targets: dict[str, Any]) -> tuple[bool, str]:
+def validate_protection_targets(state, source_card, action_targets: dict[str, Any], *, source_lki=None) -> tuple[bool, str]:
     target_ids: list[str] = []
     target_card_id = action_targets.get("target_card_id")
     if target_card_id:
@@ -249,7 +249,7 @@ def validate_protection_targets(state, source_card, action_targets: dict[str, An
         target = state.cards.get(cid)
         if not target:
             continue
-        reason = protection_match_reason(state, cid, source_card)
+        reason = protection_match_reason(state, cid, source_card, source_lki=source_lki)
         if reason is not None:
             return False, f"Target {target.name} has protection from {reason}."
     return True, ""
@@ -260,6 +260,8 @@ def validate_hexproof_shroud_targets(
     source_controller: int,
     action_targets: dict[str, Any],
     source_card=None,
+    *,
+    source_lki=None,
 ) -> tuple[bool, str]:
     player_ids = []
     if action_targets.get("target_player") is not None:
@@ -293,7 +295,8 @@ def validate_hexproof_shroud_targets(
             if 'hexproof' in keywords:
                 return False, f"Target {target.name} has hexproof."
             for keyword in keywords:
-                if keyword.startswith('hexproof from ') and source_matches_quality(source_card,keyword.removeprefix('hexproof from '), state=state):
+                if keyword.startswith('hexproof from ') and source_matches_quality(
+                        source_card, keyword.removeprefix('hexproof from '), state=state, source_lki=source_lki):
                     return False, f'Target {target.name} has {keyword}.'
     return True, ""
 

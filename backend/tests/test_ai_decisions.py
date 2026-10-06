@@ -1,15 +1,29 @@
 from __future__ import annotations
 
+from copy import deepcopy
+from dataclasses import fields
+
 from ai.agent import AIAgent
 from ai.matchup_profiles import profile_for
 from card_data.fallback_cards import fallback_card_payload
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import CardInstance, MatchFactory, MatchState, PlayerState, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack
 
 
 def complete_card_bookkeeping(state):
     """Give policy-test doubles the same zone/identity bookkeeping as live cards."""
+    if not isinstance(state, MatchState):
+        defaults = MatchState(id='policy-fixture', players=state.players, cards=state.cards, stack=[])
+        defaults.pregame_pending = False
+        for field in fields(MatchState):
+            if not hasattr(state, field.name):
+                setattr(state, field.name, deepcopy(getattr(defaults, field.name)))
+    for seat, player in state.players.items():
+        defaults = PlayerState(id=seat, name=f'Player {seat}')
+        for field in fields(PlayerState):
+            if not hasattr(player, field.name):
+                setattr(player, field.name, deepcopy(getattr(defaults, field.name)))
     for cid, card in state.cards.items():
         for seat, player in state.players.items():
             for attribute, zone in [('battlefield', Zone.BATTLEFIELD), ('hand', Zone.HAND),
@@ -21,6 +35,13 @@ def complete_card_bookkeeping(state):
                                      'tapped': False, 'counters': {}, 'oracle_text': ''}.items():
                     if not hasattr(card, field):
                         setattr(card, field, value)
+        if not isinstance(card, CardInstance):
+            defaults = CardInstance(id=cid, name=getattr(card, 'name', ''),
+                                    owner=getattr(card, 'owner', 1), controller=getattr(card, 'controller', 1),
+                                    zone=getattr(card, 'zone', Zone.HAND))
+            for field in fields(CardInstance):
+                if not hasattr(card, field.name):
+                    setattr(card, field.name, deepcopy(getattr(defaults, field.name)))
     return state
 
 
@@ -44,7 +65,9 @@ def test_ai_materializes_land_only_target_without_creature_target() -> None:
     }
     action = AIAgent(difficulty="master", archetype="Ramp")._materialize_action(state, move, 1)
     assert action["targets"]["target_card_id"] == land_id
-    assert action["targets"]["target_card_name"] == "Forest"
+    assert "target_card_name" not in action["targets"]
+    from ai.action_contract import complete_action
+    assert complete_action(action)["targets"]["target_card_id"] == land_id
 
 
 def test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability() -> None:

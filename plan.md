@@ -2,6 +2,57 @@
 
 ## Current Execution Order
 
+### Rules, Human Choices And Corpus Identity
+
+This newer composition is qualified in isolated copies, not yet deployed.
+Counts below overlap; they are not independent games or expert-play evidence.
+
+- [x] Preserve self-cycling triggers and frozen counter/power-based self-death
+  quantities; diagnose unsupported quantities instead of inventing one token.
+- [x] Use effective/retained colors in qualified damage, exile, protection and
+  static consumers; qualify color-dependent Liege/Jubilation predicates.
+- [x] Reject unsupported requested fields for the qualified mana, cast,
+  activated, loyalty, crew, equip, cycling and pending-choice intent families.
+- [x] Repair AI target-wire metadata and discounted physical mana-plan ordering
+  without weakening targets/costs or removing fallback candidates.
+- [x] Preserve representative cohort identities, original names and legacy seeds;
+  refresh admitted built-ins and classify first imports from canonical facts.
+- [x] Preserve artifact/enchantment creature-token descriptors and separate
+  ordinary spell instructions from supported cycling-trigger paragraphs.
+- [x] Bind matched cast-trigger instructions and targeted cycling context.
+  The original six compiler failures now pass on the composed source.
+- [x] Block unsupported UI confirmations and offer cycling X in both hand
+  branches; wire its regression into the standard frontend test command.
+- [x] Qualify the six-patch 83-module composition: 2,024 ordinary passes,
+  654.71 seconds, unchanged source. Preserve the earlier environment-error run.
+- [x] Qualify subsequent token/cold-import and trigger-context compositions:
+  153 and 123 ordinary passes. Actual-App human-flow16 passes 212 assertions.
+- [x] Qualify canonical modal and Adventure flows through names/quantity HTTP
+  hydration, both human seats, privacy and restart: 144 browser assertions.
+- [x] Qualify generic-import admission/classification and replacement/trigger-target
+  guards in the expanded composition: 2,394 passes across 95 modules, 1,359.02
+  seconds, identical before/after source hashes; frontend lint/build/tests pass.
+- [ ] Finish Delver optional reveal/upkeep and global day/night behavior on the
+  final composition, including the existing legacy timing regression module.
+- [ ] Implement actual paid optional-trigger payment/continuation; preserve
+  actor, restrictions, targets, stack tails and restart without free rewards.
+- [ ] Qualify multiple matched cast abilities/order and uncommon conditions.
+- [ ] Requalify the readonly combat-query optimization on this exact composition;
+  preserve all candidate projections, actions and full applied states.
+- [ ] Complete representative seeded/seat-balanced replays with full termination
+  provenance. Tokens/Ramp's prior second arrangement exceeded its wall-clock
+  bound; reconstructed profiling is separate from the original incomplete trace.
+- [ ] Complete a full current-source release gate with a sufficient declared
+  duration. The prior default run timed out at 64%, exit 124; it is not green.
+- [ ] Publish only the qualified milestone, with updated feature documentation,
+  changelog and graph; back up live user data, safely restart and verify LAN
+  health, snapshots and recovery. Do not install archived test SQLite.
+
+See [composition scope](docs/testing/rules-choice-color-composition.md),
+[token types](docs/testing/token-descriptor-types.md),
+[matched triggers](docs/testing/matched-trigger-context.md) and
+[cold imports](docs/testing/builtin-cold-import.md).
+
 ### Qualified Mana And Layer Milestone
 
 - [x] Compose explicit chosen-resource/hybrid/base-vector mana execution,
@@ -40,13 +91,12 @@
   Fix optional metadata reads in the shared layer/type query helpers: 277 focused
   checks pass, including eight new ordinary before-fail/after-pass controls.
   Fresh 70-module rerun: 2,836 pass, 722.20 seconds, no skips/xfails/deselection.
-- [ ] Resolve post-mana escape-fuel witness gaps; qualify remaining printed-color
-  consumers and face/selection composition separately; extend requested-field
-  qualification to remaining non-mana action families.
-- [ ] Resolve dynamic self-death token counts and retained-source incarnation
-  contamination identified by strict canonical regression fixtures.
-- [ ] Warn and block unsupported UI action confirmations without hiding supported
-  controls; verify both human seats and private choice displays.
+- [ ] Resolve post-mana escape-fuel witness gaps and broader layer/face variants;
+  qualify remaining small-choice request families in the newer stage above.
+- [x] Dynamic self-death counts and retained-source incarnation fixtures now pass
+  in the newer isolated composition above, not retrospectively in this old gate.
+- [x] Unsupported UI confirmation warnings and both-seat private controls now
+  pass in the newer isolated composition above; its deployment remains pending.
 - [x] Promote only after the intended gates pass, with a verified live-data
   backup, current documentation, graph refresh and safe runtime restart.
   Backend and frontend health/proxy/LAN checks pass on `0.0.0.0:9999` and

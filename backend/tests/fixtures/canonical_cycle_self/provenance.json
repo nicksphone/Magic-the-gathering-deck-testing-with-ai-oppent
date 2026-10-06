@@ -1,0 +1,17 @@
+{
+  "source_archive": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "fixture_sha256": "f9d53d8a03c95ce036bc53661c6f74aac1c32348d15ee28a0c334b8db410300b",
+  "policy": "Exact canonical raw records from the archived Scryfall Oracle corpus; no altered Oracle text or invented cards.",
+  "cards": [
+    {
+      "name": "Shark Typhoon",
+      "id": "605ca3c0-7c9a-4bc1-9795-82aeb6f552ee",
+      "oracle_id": "8c0520fa-276b-4d21-b4a9-dce1fce59f6b"
+    },
+    {
+      "name": "Renewed Faith",
+      "id": "a7d66dd3-330f-4b12-81f6-52d7a31013a9",
+      "oracle_id": "aa4ecefa-808e-4706-af16-4ea5af9743fc"
+    }
+  ]
+}
