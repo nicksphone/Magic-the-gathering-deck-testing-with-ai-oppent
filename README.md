@@ -25,6 +25,14 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- Generic supported nontoken-creature entry observers distinguish tokens and
+  preserve controller predicates and ability suppression. Unconditional global
+  as-though-flash grants follow their source and controller without bypassing
+  priority, costs, prohibitions or explicit casting restrictions.
+- Batch opening-hand quality is attributed to deck identity when seats alternate,
+  rather than always assigning player 1 to deck A. Scoped combined acceptance:
+  [observer, flash and simulator checks](docs/testing/observer-flash-simulator-current-composition.md).
+
 - Supported optional own-hand land deployment uses private, explicit identity or
   decline choices, retains the original controller and resumes entry choices
   after snapshots/restart. The existing GUI handles this choice without allowing

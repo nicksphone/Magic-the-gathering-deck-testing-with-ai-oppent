@@ -1,0 +1,11 @@
+# Creature Observer Admission
+
+Bounded product fix over immutable corrected-prefix source 9b14 plus the frozen creature-observer-audit-9AUJ0M tests/fixtures (3af780 patch). Product scope is events.py only: _collect_triggers, _entry_observer_clause, _matches_enters_battlefield_trigger. _trigger_from_oracle, compilers, optional handlers, costs and public schemas are unchanged.
+
+Creature-cast admission uses existing _matched_cast_trigger_clauses for actor and effective Creature type, and accepts only the actual cast event and exact creature-spell subject. Copying a creature spell is not casting it. Entry subject grammar recognizes nontoken creature without changing the five capture-group positions consumed by compilation; the matcher rejects tokens and retains another, control and effective-type checks.
+
+Existing optional draw compilation and source/LKI continuation do the remaining work. Actual paid canonical Grizzly Bears casts/entries now trigger Primordial Sage/Soul of the Harvest; both human seats deliberately accept/decline. Actual paid Unsummon removes the observer without canceling its retained trigger. NEW HTTP foreign-owned source episodes retain original controller and source/LKI after owner-hand return, cold GET/fresh-process snapshot restoration and optional acceptance/decline. Wrong actor, stale stack ID and duplicate choice remain 422/root-controller-SQL pure. These are funded retained positions, not naturally played deployment games.
+
+No card-name branches. Full official responses are preserved and hashed. New controls: actual paid Lithoform Engine permanent-spell copy does not retrigger Sage; real Sol Ring paid noncreature entry does not match; retained canonical Humility suppresses observer abilities. Existing original tests cover actual Raise the Alarm token creation, self/opponent/type negatives, private views, HTTP and fresh-process restoration.
+
+Terminal same-source qualification: original 56 unchanged PASS (23.08s); NEW26 PASS (19.38s); 11 whole neighbor modules 192 PASS (99.11s), all serial and fresh local test SQLite. Total 274 checks, no skips/xfails/exclusions. No main/live/parent composition certification, no claim all creature-trigger bodies or conditional/payed rewards are supported. Historical c16 four reds and previous 20-red audit remain immutable.

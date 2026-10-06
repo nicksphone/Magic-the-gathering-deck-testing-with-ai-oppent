@@ -1164,7 +1164,7 @@ def _self_entry_transform_clauses(card, oracle):
 
 def _entry_observer_clause(oracle: str):
     return re.fullmatch(
-        r"(?:when|whenever) (a|an|another) (creature|permanent|artifact|enchantment)"
+        r"(?:when|whenever) (a|an|another) (nontoken creature|creature|permanent|artifact|enchantment)"
         r"( you control)? enters(?: the battlefield)?( under your control)?, (.+)",
         oracle.strip(), re.I,
     )
@@ -1205,8 +1205,12 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
         clause = _entry_observer_clause(line)
         if clause:
             another, kind, modern_control, legacy_control, _ = clause.groups()
+            nontoken = kind.lower().startswith('nontoken ')
+            if nontoken:
+                kind = kind[len('nontoken '):]
             if ((not modern_control and not legacy_control or enters_for_controller)
                     and (another.lower() != 'another' or entering_id != card.id)
+                    and (not nontoken or not entering_card.is_token)
                     and (kind.lower() == 'permanent' or kind.title() in entering_types)):
                 return True
     if "another creature enters the battlefield under your control" in oracle:

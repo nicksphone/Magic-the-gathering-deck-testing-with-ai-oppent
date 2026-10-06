@@ -17,7 +17,7 @@ from rules_engine.graveyard_permissions import graveyard_land_permission, battle
 from rules_engine.mana import can_pay_with_pool_and_lands, hybrid_payment_symbols
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.library_permissions import top_library_creature_for_type
-from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing, split_second_active
+from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing, split_second_active, has_global_flash_permission
 from rules_engine.zone_actions import is_departed_token
 
 
@@ -609,7 +609,7 @@ def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:
         return True
     if has_keyword(state, card.id, "flash"):
         return True
-    return False
+    return has_global_flash_permission(state, player_id)
 
 
 def _extract_equip_cost(oracle_text: str) -> str:

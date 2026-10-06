@@ -68,8 +68,10 @@ class AnalyticsService:
             else:
                 state = MatchFactory.from_decks(deck_b, deck_a, player_a_name="Deck B", player_b_name="Deck A", seed=seed)
             state.mechanic_choice_players = {1, 2}
-            opener_quality_a.append(self._opening_hand_quality(state, 1))
-            opener_quality_b.append(self._opening_hand_quality(state, 2))
+            deck_a_player = 1 if deck_a_on_play else 2
+            deck_b_player = 3 - deck_a_player
+            opener_quality_a.append(self._opening_hand_quality(state, deck_a_player))
+            opener_quality_b.append(self._opening_hand_quality(state, deck_b_player))
             a_archetype, b_archetype = guess_archetype(deck_a), guess_archetype(deck_b)
             a_agent = AIAgent(difficulty=difficulty, archetype=a_archetype, opponent_archetype=b_archetype)
             b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)

@@ -37,6 +37,9 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - [x] Unchanged supplemental bare-helper and actual paid-cast HTTP regression:
   eight passes, 18.78s; cold restart and atomic immediate sick-tap rejection.
   Scope: [HTTP supplement](docs/testing/activated-handland-paid-sickness-supplement.md).
+- [x] Supported nontoken entry observers, unconditional global flash permission
+  and deck-identity opening-quality metrics: ten whole modules / 293 passes,
+  60.41s. [Current composition](docs/testing/observer-flash-simulator-current-composition.md).
 
 These gates overlap. They are not one summed full-suite run, an expert-AI
 measurement, live deployment, or universal MTG certification. The historical
@@ -52,13 +55,13 @@ patches. Parent composition must preserve newer source and qualify interactions.
    and charge removal with mana/tap costs. Preserve shared readiness, reservations
    and source references; reject unknown composite costs in full. Adapt obsolete
    unsupported-cost characterizations separately; retain genuine search failures.
-2. [ ] Generic creature observers: first distinguish already-supported cast
+2. [x] Generic creature observers: first distinguish already-supported cast
    clauses from missing nontoken entry admission. Preserve copied-spell behavior,
    ability suppression, controller predicates, optional choices and source LKI.
 3. [ ] Historical deck provenance: preserve existing IDs/template identities,
    verify historical event records and canonical import facts. Historical success
    is not current format legality or a promise that an old deck is competitive.
-4. [ ] Global as-though-flash permissions: implement generic continuous timing
+4. [x] Global as-though-flash permissions: implement generic continuous timing
    grants with controller, ability suppression, departure and prohibitions.
    Do not grant extra land plays, off-turn loyalty or override card restrictions.
 5. [ ] Targeted library-search compilation: complete anchored instruction
@@ -70,6 +73,10 @@ patches. Parent composition must preserve newer source and qualify interactions.
 7. [ ] Compose the completed slices once, run affected whole-module and cross-
    family gates on captured unchanged source, fix failures, refresh docs/Graphify,
    archive verified evidence and publish the qualified milestone.
+
+Items 2 and 4 are complete only for the scoped families in the linked acceptance
+report. Conditional/quoted timing grants and broader observer grammar remain
+open. Counter, catalog and targeted-search slices still need current composition.
 
 ## Gate 1: Reliable Local Human Playtesting
 

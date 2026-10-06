@@ -2,6 +2,14 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Admit supported generic nontoken entry observers and unconditional global
+  as-though-flash permissions; retain controller, suppression, costs, priority
+  and casting restrictions. Correct seat-alternating batch hand-quality metrics.
+  Ten whole modules pass 293 checks in 60.41s. Upgrade the former unsupported
+  Leyline recast characterization to real paid recast/source-incarnation checks;
+  protect existing disposable root databases in the isolated API fixture.
+  Historical failures and setup errors remain archived separately.
+
 - Replace the 2,000-line finish-plan timeline with an actionable execution index.
   Preserve the entire previous plan under docs/history, including historical
   failures and evidence. Keep all original rules, AI and release goals open.

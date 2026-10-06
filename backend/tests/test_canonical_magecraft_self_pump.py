@@ -223,9 +223,10 @@ def test_actual_unsummon_old_buff_cannot_modify_hand_source(seat, tmp_path):
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-def test_actual_bounce_recast_setup_blocked_without_supported_flash_permission(seat):
+def test_actual_bounce_recast_old_trigger_cannot_buff_new_object(seat, tmp_path):
     state, source, spell, action = position(seat)
     raw_card(state, ROWS['Leyline of Anticipation'], seat, Zone.BATTLEFIELD)
+    original_reference = ref(state, source)
     state = act(state, seat, action)
     require_buff(state, source, seat)
     bounce = raw_card(state, ROWS['Unsummon'], seat, Zone.HAND)
@@ -234,9 +235,24 @@ def test_actual_bounce_recast_setup_blocked_without_supported_flash_permission(s
     state = passes(passes(state))
     state.players[seat].mana_pool = {'W': 1}
     assert state.cards[source].zone == Zone.HAND and buffs(state, source)
-    # Characterizes a separate actual flash permission gap, not engine acceptance.
     offered = RulesEngine().legal_moves(state, seat)
-    assert not any(m['type'] == 'cast_spell' and m.get('card_id') == source for m in offered)
+    assert any(m['type'] == 'cast_spell' and m.get('card_id') == source for m in offered)
+    state = act(state, seat, {'type': 'cast_spell', 'card_id': source, 'targets': {}})
+    assert state.players[seat].mana_pool.get('W', 0) == 0
+    assert state.stack[-1].source_card_id == source
+    assert stack_object_kind(state, state.stack[-1]) == 'spell'
+    state = passes(restart(state, tmp_path, 'actual-recast-announced'))
+    assert state.cards[source].zone == Zone.BATTLEFIELD
+    assert state.cards[source].summoning_sick
+    assert ref(state, source) != original_reference
+    assert stats(state, source) == (0, 1)
+    assert len(buffs(state, source)) == 1
+    assert buffs(state, source)[0].payload['__self_buff_reference'] == original_reference
+    state = passes(restart(state, tmp_path, 'actual-reentered-source'))
+    assert not buffs(state, source)
+    assert stats(state, source) == (0, 1)
+    assert state.cards[source].counters.get('__eot_power', 0) == 0
+    assert state.cards[source].counters.get('__eot_toughness', 0) == 0
 
 
 @pytest.mark.parametrize('seat', [1, 2])
