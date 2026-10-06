@@ -1514,6 +1514,38 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
     emit_event(state, "enters_battlefield", {"card_id": target, "controller": controller})
 
 
+def _search_resolution_context(state: MatchState, controller: int, payload: dict):
+    from game_state.state import StackItem
+
+    owner = payload.get('target_player', controller)
+    if type(owner) is not int or owner not in state.players:
+        raise ValueError('Unknown searching player')
+    frame = payload.get('__resolving_item')
+    if 'target_player' in payload and frame is None:
+        raise ValueError('Targeted search requires its genuine resolving item')
+    if frame is None:
+        return owner, controller, None
+    if not isinstance(frame, dict):
+        raise ValueError('Invalid retained search resolution')
+    item = StackItem(**frame)
+    if (type(item.controller) is not int or item.controller not in state.players
+            or item.source_card_id not in state.cards):
+        raise ValueError('Search requires a retained source and controller')
+    # Preflight the central shuffle helper's retained-trigger contract before moving cards.
+    if payload.get('shuffle'):
+        from rules_engine.targeting import stack_object_kind
+        data = item.payload or {}
+        if data.get('__trigger_event') == 'enters_graveyard' or '__trigger_source_reference' in data:
+            reference = data.get('__trigger_source_reference')
+            if (stack_object_kind(state, item) != 'triggered'
+                    or data.get('__trigger_event') != 'enters_graveyard'
+                    or not isinstance(reference, dict)
+                    or set(reference) != {'incarnation', 'zone_change_sequence'}
+                    or any(type(value) is not int or value < 0 for value in reference.values())):
+                raise ValueError('Search has an invalid retained shuffle reference')
+    return owner, item.controller, frame
+
+
 def search_library(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.oracle_effects import search_card_matches
     from rules_engine.entry_counters import prepare_counter_entries
@@ -1523,39 +1555,68 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     limit = int(payload.get("count", 0) or 0)
     mv_max = payload.get("mv_max")
     mv_max = int(mv_max) if mv_max is not None else None
-    player = state.players[controller]
+    owner, effect_controller, frame = _search_resolution_context(state, controller, payload)
+    player = state.players[owner]
+
+    def retain_continuation():
+        pending = state.pending_mechanic_choice or state.pending_replacement_choice
+        if pending:
+            pending.setdefault('continuation_controller', effect_controller)
+            if frame is not None:
+                pending.setdefault('resolving_item', frame)
+
     if payload.get('optional') and not payload.get('__search_accepted'):
-        if controller in state.mechanic_choice_players:
+        if owner in state.mechanic_choice_players:
             state.pending_mechanic_choice = {
-                'kind': 'optional_search', 'player_id': controller, 'count': 1,
+                'kind': 'optional_search', 'player_id': owner, 'count': 1,
                 'options': ['search', 'decline'], 'option_labels': {'search': 'Search library', 'decline': 'Decline search'},
                 'effect_payload': payload, 'label': 'You may search your library',
             }
-            state.priority_player = controller
+            retain_continuation()
+            state.priority_player = owner
             state.passed_priority = set()
             return
     if not subtype:
         return
     if (payload.get("selected_card_ids") is None
-            and (controller in state.mechanic_choice_players
-                 or (state.replacement_choice_required and controller in state.replacement_choice_players))):
+            and (owner in state.mechanic_choice_players
+                 or (state.replacement_choice_required and owner in state.replacement_choice_players))):
         eligible = [cid for cid in player.library if search_card_matches(state.cards[cid], subtype, mv_max)]
         if eligible:
             state.pending_mechanic_choice = {
-                "kind": "search_library", "player_id": controller,
+                "kind": "search_library", "player_id": owner,
                 "options": eligible, "count": min(limit, len(eligible)) if limit else len(eligible),
                 "min_count": min(limit, len(eligible)) if subtype == "card" and not payload.get("up_to") else 0,
-                "library_ids": list(player.library), "effect_payload": payload,
+                "library_ids": list(player.library), "effect_payload": {
+                    **payload, '__search_references': {
+                        cid: [object_incarnation(state.cards[cid]), state.cards[cid].zone_change_sequence]
+                        for cid in eligible}},
                 "effect_key": "search_library",
                 "label": ("Search your library: first selection enters tapped, remaining cards go to hand"
                           if destination == "split_battlefield_hand" else
                           "Search your library: choose the required card" if subtype == "card" and not payload.get("up_to") else
                           "Search your library (you may fail to find a matching card)"),
             }
-            state.priority_player = controller
+            retain_continuation()
+            state.priority_player = owner
             state.passed_priority = set()
             return
     selected = payload.get("selected_card_ids")
+    if selected is not None:
+        if (not isinstance(selected, list) or any(not isinstance(cid, str) for cid in selected)
+                or len(selected) != len(set(selected)) or limit and len(selected) > limit
+                or any(cid not in player.library or cid not in state.cards
+                       or state.cards[cid].zone != Zone.LIBRARY or state.cards[cid].owner != owner
+                       or not search_card_matches(state.cards[cid], subtype, mv_max)
+                       for cid in selected)):
+            raise ValueError('Unavailable library search selection')
+        references = payload.get('__search_references')
+        if references is not None and any(
+                references.get(cid) != [object_incarnation(state.cards[cid]), state.cards[cid].zone_change_sequence]
+                for cid in selected):
+            raise ValueError('Library search selection changed incarnation')
+        if subtype == 'card' and not payload.get('up_to') and len(selected) < min(limit, len(player.library)):
+            raise ValueError('Required library search selection is missing')
     selected_ids = list(selected) if isinstance(selected, list) else None
     candidates = selected_ids if selected_ids is not None else list(player.library)
     chosen = []
@@ -1568,10 +1629,12 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
                 break
     entering = chosen[:1] if destination == "split_battlefield_hand" else chosen if destination == "battlefield" else []
     entering = [cid for cid in entering if not battlefield_entry_prohibited(state, cid)]
-    if pause_for_land_entries(state, controller, entering, "search_library", {**payload, "selected_card_ids": chosen}):
+    if pause_for_land_entries(state, owner, entering, "search_library", {**payload, "selected_card_ids": chosen}):
+        retain_continuation()
         return
-    if entering and prepare_counter_entries(state, controller, [state.cards[cid] for cid in entering],
+    if entering and prepare_counter_entries(state, owner, [state.cards[cid] for cid in entering],
                                            'search_library', {**payload, 'selected_card_ids': chosen}):
+        retain_continuation()
         return
     found: list[str] = []
     entry_events = []
@@ -1582,10 +1645,10 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             continue
         choice = (payload.get("__entry_choices") or {}).get(cid, "tapped")
         player.library.remove(cid)
-        _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")),
+        _place_searched_card(state, owner, cid, zone, tapped=bool(payload.get("tapped")),
                              entry_choice=choice, emit_entry=destination != "battlefield", entry_payload=payload)
         if destination == "battlefield":
-            entry_events.append({"card_id": cid, "controller": controller})
+            entry_events.append({"card_id": cid, "controller": owner})
         found.append(state.cards[cid].name)
         placed.append(cid)
     if entry_events:
@@ -1599,10 +1662,10 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             from game_state.observations import observe_cards
             observe_cards(state, placed)
         detail = f": {', '.join(found)}" if public_names else ""
-        state.log.append(f"{state.players[controller].name} searched library and found {len(found)} card(s){detail}.")
+        state.log.append(f"{player.name} searched library and found {len(found)} card(s){detail}.")
     if payload.get("shuffle"):
-        state.rng.shuffle(player.library)
-        state.log.append(f"{player.name} shuffles their library.")
+        from rules_engine.shuffle_actions import shuffle_library
+        shuffle_library(state, owner, resolving_item=frame)
 
 
 def _place_searched_card(

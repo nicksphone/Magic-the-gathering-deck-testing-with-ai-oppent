@@ -1,0 +1,27 @@
+{
+  "retrieved_utc": "2026-10-06T21:17:37Z",
+  "provider": "Full official Scryfall API response, unchanged bytes",
+  "cards": [
+    {
+      "file": "fertilid.json",
+      "name": "Fertilid",
+      "url": "https://api.scryfall.com/cards/named?exact=Fertilid",
+      "sha256": "f3eb5a506c9fc73bce5669efdf78a67e510eb1ba31f875c03245830b8e8840bc",
+      "oracle_id": "21f1c6d7-8289-44b2-b88f-c09e202be200"
+    },
+    {
+      "file": "fertilids-favor.json",
+      "name": "Fertilid's Favor",
+      "url": "https://api.scryfall.com/cards/named?exact=Fertilid%27s%20Favor",
+      "sha256": "90c891c1464d13f0e71c7a8711709563c68bd344daecb8296894dae0f37d040f",
+      "oracle_id": "e2da8c3e-6ffc-41dd-a68a-62e64f7e9c60"
+    },
+    {
+      "file": "rampant-growth.json",
+      "name": "Rampant Growth",
+      "url": "https://api.scryfall.com/cards/named?exact=Rampant%20Growth",
+      "sha256": "f133fc697156f65bbb8063cd4ad8a3da02cd172fb71945192b825ec7187ac17f",
+      "oracle_id": "8539f295-5d58-4436-a73a-b9277c4c7795"
+    }
+  ]
+}

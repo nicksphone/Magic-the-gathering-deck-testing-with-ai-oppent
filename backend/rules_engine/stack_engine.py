@@ -381,9 +381,9 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
-        if (effect_key == 'shuffle_graveyard_into_library'
+        if (effect_key in {'shuffle_graveyard_into_library', 'search_library'}
                 or effect_key == 'effect_sequence' and any(
-                    effect.get('effect_key') == 'shuffle_graveyard_into_library'
+                    effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library'}
                     for effect in payload.get('effects', []))):
             from dataclasses import asdict
             # Transport the real popped item only where shuffle attribution needs it.

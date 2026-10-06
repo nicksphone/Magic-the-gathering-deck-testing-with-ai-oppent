@@ -33,6 +33,16 @@ LAN deployment and broader AI-quality qualification remain open.
   rather than always assigning player 1 to deck A. Scoped combined acceptance:
   [observer, flash and simulator checks](docs/testing/observer-flash-simulator-current-composition.md).
 
+- Supported complete fixed source +1/+1 and charge-counter activation costs
+  combine with mana and tapping, validate before payment, and reject unknown
+  cost clauses without partial payment.
+- Supported targeted basic-land searches preserve the original effect controller
+  while the affected player privately chooses cards or fails to find. Complete
+  admitted search-then-counter instructions retain their ordered continuation;
+  genuine stack context supplies shuffle attribution. Public prompts omit
+  private library and continuation data. See
+  [current counter/search acceptance](docs/testing/counter-targeted-search-current-composition.md).
+
 - Supported optional own-hand land deployment uses private, explicit identity or
   decline choices, retains the original controller and resumes entry choices
   after snapshots/restart. The existing GUI handles this choice without allowing
@@ -49,10 +59,11 @@ LAN deployment and broader AI-quality qualification remain open.
   use shared replacement-aware handlers. Unknown suffixes in these newly
   admitted instructions produce diagnostics without partial rewards. Optional,
   targeted and search routes retain their existing bounded behavior.
-- Fixed positive source +1/+1 counter activation costs are validated and paid
-  once on announcement. Ability target hints do not inherit the source's spell
+- Fixed positive source +1/+1 and charge-counter activation costs are validated
+  and paid once on announcement. Ability target hints do not inherit the source's spell
   mana cost; genuine chosen-X ability values and source/LKI protection are retained.
-  Other counter kinds and compound counter costs remain outside this admission.
+  Other counter kinds, variable removals and unsupported cost clauses remain
+  outside this admission.
 - The offline seed preserves all 119 rows and supplies colors for all eight
   two-faced cards: ten canonical face facts and six separately provenance-backed
   derived facts. Generic exact-printing loyalty recovery avoids named exceptions.

@@ -166,4 +166,17 @@ def test_counter_cost_resource_negative_queries_are_root_pure(seat, problem):
 ])
 def test_bounded_source_counter_proposal_does_not_guess_other_costs(text):
     # Pure proposed grammar boundaries, never fabricated gameplay Oracle/card rows.
+    if text == 'Remove a charge counter from this artifact':
+        from rules_engine.costs import ActivatedCost, apply_activated_costs
+        from tests.test_paid_counter_family_audit import board as family_board
+        assert parse_activated_cost(text) == ActivatedCost(remove_source_counters=1,
+                                                          remove_counter_kind='charge')
+        state, source, _ = family_board(1, 'Lux Cannon')
+        before = snap(state)
+        assert activated_cost_available(state, 1, source, text)
+        assert snap(state) == before
+        assert apply_activated_costs(state, 1, source, text)
+        assert state.cards[source].counters['charge'] == 2 and not state.cards[source].tapped
+        assert not state.stack
+        return
     assert not parse_activated_cost(text).supported

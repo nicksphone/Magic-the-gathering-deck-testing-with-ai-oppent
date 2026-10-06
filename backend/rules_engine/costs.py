@@ -67,25 +67,58 @@ class ActivatedCost:
     remove_counter_kind: str | None = None
 
 
-def parse_activated_cost(cost_text: str) -> ActivatedCost:
-    """Parse common activated costs without treating them as Oracle effects."""
-    if re.search(r"\bremove\b", cost_text or "", re.IGNORECASE):
-        # Counter payment is bounded to the complete fixed self-source cost.
-        # Never let an unsupported conjunction fall through to life-only payment.
+def _parse_source_counter_cost(cost_text: str) -> ActivatedCost:
+    from rules_engine.oracle_effects import _parse_count_token
+
+    mana_symbols = []
+    tap_source = False
+    amount = 0
+    counter_kind = None
+    for part in (segment.strip() for segment in cost_text.split(',')):
         match = re.fullmatch(
             r"\s*remove\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+)"
-            r"\s+\+1/\+1\s+counters?\s+from\s+this\s+(?:creature|permanent|artifact|enchantment)\s*",
-            cost_text, re.IGNORECASE,
+            r"\s+(\+1/\+1|charge)\s+counters?\s+from\s+this\s+(?:creature|permanent|artifact|enchantment)\s*",
+            part, re.IGNORECASE,
         )
         if match:
-            from rules_engine.oracle_effects import _parse_count_token
+            if counter_kind is not None:
+                return ActivatedCost(supported=False)
             try:
                 amount = int(match[1]) if match[1].isdigit() else _parse_count_token(match[1])
             except ValueError:
                 return ActivatedCost(supported=False)
-            if amount > 0:
-                return ActivatedCost(remove_source_counters=amount, remove_counter_kind='+1/+1')
+            if amount <= 0:
+                return ActivatedCost(supported=False)
+            counter_kind = match[2].lower()
+        elif part.upper() == '{T}' and not tap_source:
+            tap_source = True
+        elif re.fullmatch(
+            r"(?:\{(?:[0-9]+|[WUBRGCS]|[WUBRG]/[WUBRG]|2/[WUBRG]|[WUBRG](?:/[WUBRG])?/P)\}\s*)+",
+            part, re.IGNORECASE,
+        ):
+            symbols = re.findall(r'\{([^}]+)\}', part.upper())
+            try:
+                for symbol in symbols:
+                    if symbol.isdigit():
+                        int(symbol)
+                    elif '/' in symbol and symbol.split('/')[0] == symbol.split('/')[1]:
+                        return ActivatedCost(supported=False)
+            except ValueError:
+                return ActivatedCost(supported=False)
+            mana_symbols.extend('{' + symbol + '}' for symbol in symbols)
+        else:
+            return ActivatedCost(supported=False)
+    if counter_kind is None:
         return ActivatedCost(supported=False)
+    return ActivatedCost(mana_cost=''.join(mana_symbols), tap_source=tap_source,
+                         remove_source_counters=amount, remove_counter_kind=counter_kind)
+
+
+def parse_activated_cost(cost_text: str) -> ActivatedCost:
+    """Parse common activated costs without treating them as Oracle effects."""
+    if re.search(r"\bremove\b", cost_text or "", re.IGNORECASE):
+        # Match the entire cost; unknown clauses must never fall through to partial payment.
+        return _parse_source_counter_cost(cost_text)
     mana_symbols: list[str] = []
     tap_source = False
     pay_life = discard_cards = sacrifice_creatures = 0

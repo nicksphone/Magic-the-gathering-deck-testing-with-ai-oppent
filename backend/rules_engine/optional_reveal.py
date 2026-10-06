@@ -81,6 +81,9 @@ def finish_reveal(state, player_id, action):
 
 
 def public_choice(pending):
+    if pending and pending.get('kind') in {'search_library', 'optional_search'}:
+        return {key: pending[key] for key in
+                ('kind', 'player_id', 'label', 'count', 'min_count') if key in pending}
     if pending and pending.get('kind') == 'land_from_hand':
         return {key: pending[key] for key in ('kind', 'player_id', 'label', 'count', 'min_count')}
     if pending and pending.get('kind') == 'optional_reveal':

@@ -53,6 +53,26 @@ def test_fixed_quantity_parser_and_exact_resource_payment(quantity, amount):
 ])
 def test_unsupported_whole_counter_cost_rejects_without_partial_payment(text):
     state, source, _ = board(1, funded=True)
+    if text == '{T}, Remove a +1/+1 counter from this creature':
+        # Now supported grammar; this retained creature must first be ready to tap.
+        assert costs.parse_activated_cost(text) == costs.ActivatedCost(
+            tap_source=True, remove_source_counters=1, remove_counter_kind='+1/+1')
+        before = snap(state)
+        assert not costs.activated_cost_available(state, 1, source, text)
+        assert not costs.apply_activated_costs(state, 1, source, text)
+        assert snap(state) == before
+        state.cards[source].summoning_sick = False
+        before = snap(state)
+        assert costs.activated_cost_available(state, 1, source, text)
+        assert snap(state) == before
+        assert costs.apply_activated_costs(state, 1, source, text)
+        assert state.cards[source].tapped and state.cards[source].counters['+1/+1'] == 2
+        assert state.players[1].mana_pool == {'C': 4}
+        assert not state.stack
+        paid = snap(state)
+        assert not costs.apply_activated_costs(state, 1, source, text)
+        assert snap(state) == paid
+        return
     before = snap(state)
     assert not costs.parse_activated_cost(text).supported
     assert not costs.activated_cost_available(state, 1, source, text)

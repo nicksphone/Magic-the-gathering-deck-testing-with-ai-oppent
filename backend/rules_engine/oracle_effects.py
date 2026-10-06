@@ -614,6 +614,8 @@ def infer_effect_from_oracle(
                                'count': 1, 'shuffle': True, 'optional': True}}
     search_effect = _infer_search_effect(oracle, action_targets)
     if search_effect is not None:
+        if search_effect[1].get('__unsupported_targeted_search') and report_unsupported:
+            state.log.append(f'Unsupported complete targeted search instruction for {card.name}.')
         if re.search(r"you gain 1 life for each \{s\} spent to cast this spell", oracle):
             return "effect_sequence", {"effects": [
                 {"effect_key": search_effect[0], "payload": search_effect[1]},
@@ -809,7 +811,37 @@ def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, An
     return "topdeck_put_creatures_battlefield", payload
 
 
+def _infer_targeted_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    body = re.sub(r'\s+', ' ', oracle.strip()).lower()
+    if not body.startswith('target player searches their library for '):
+        return None
+    match = re.fullmatch(
+        r'target player searches their library for (?:a|one) basic land card, '
+        r'puts it onto the battlefield(?P<tapped> tapped)?, then shuffles(?: their library)?\.?'
+        r'(?: put (?P<amount>a|one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) '
+        r'\+1/\+1 counters? on up to one target (?P<target>artifact or creature|artifact|creature|permanent)\.?)?',
+        body,
+    )
+    if match is None:
+        return 'noop', {'__unsupported_targeted_search': oracle}
+    payload = {'target_player': action_targets.get('target_player'), 'contains': 'basic_land',
+               'destination': 'battlefield', 'count': 1, 'tapped': bool(match['tapped']), 'shuffle': True}
+    if match['amount'] is None:
+        return 'search_library', payload
+    amount = _parse_count_token(match['amount'])
+    if amount <= 0:
+        return 'noop', {'__unsupported_targeted_search': oracle}
+    return 'effect_sequence', {'effects': [
+        {'effect_key': 'search_library', 'payload': payload},
+        {'effect_key': 'add_counters', 'payload': {'target_card_id': action_targets.get('target_card_id'),
+                                                  'counter': '+1/+1', 'amount': amount}},
+    ]}
+
+
 def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    targeted = _infer_targeted_search_effect(oracle, action_targets)
+    if targeted is not None:
+        return targeted
     if "search your library for" not in oracle:
         return None
     contains = action_targets.get("search_contains")
@@ -1169,8 +1201,10 @@ def inspect_target_hints(
             if cid in state.cards and {"Instant", "Sorcery"}.intersection(effective_types(state, state.cards[cid]))
         ]
     search_effect = _infer_search_effect(oracle, {})
-    if search_effect is not None:
+    if search_effect is not None and search_effect[0] in {'search_library', 'effect_sequence'}:
         _, search_payload = search_effect
+        if search_effect[0] == 'effect_sequence':
+            search_payload = search_payload['effects'][0]['payload']
         contains = search_payload.get("contains")
         mv_max = search_payload.get("mv_max")
         hints["library_search"] = {
@@ -1179,6 +1213,12 @@ def inspect_target_hints(
             "max_count": int(search_payload.get("count", 0) or 0),
             "allow_zero": True,
         }
+        if _infer_targeted_search_effect(oracle, {}) is not None and 'up to one target artifact or creature' in oracle:
+            hints['creature_targets'] = [
+                {'id': cid, 'name': state.cards[cid].name}
+                for pid in target_players for cid in state.players[pid].battlefield
+                if {'Artifact', 'Creature'}.intersection(effective_types(state, state.cards[cid]))
+            ]
     divided_one_or_two = bool(DIVIDED_ONE_OR_TWO_RE.search(oracle))
     if "any target" in oracle or "any number of targets" in oracle or "target player" in oracle or divided_one_or_two:
         hints["player_targets"] = [

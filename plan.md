@@ -40,6 +40,10 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - [x] Supported nontoken entry observers, unconditional global flash permission
   and deck-identity opening-quality metrics: ten whole modules / 293 passes,
   60.41s. [Current composition](docs/testing/observer-flash-simulator-current-composition.md).
+- [x] Fixed source counter costs and supported complete targeted basic-land
+  searches: 22 whole modules / 749 passes, 85.34s; separate prior-feature gate
+  293 passes, 56.61s; frontend checks pass.
+  [Current search composition](docs/testing/counter-targeted-search-current-composition.md).
 
 These gates overlap. They are not one summed full-suite run, an expert-AI
 measurement, live deployment, or universal MTG certification. The historical
@@ -51,7 +55,7 @@ knowledge, replay and frontend milestones without recertifying them here.
 The workers use immutable published source, disjoint ownership and surgical
 patches. Parent composition must preserve newer source and qualify interactions.
 
-1. [ ] Compound source counter costs: integrate fixed positive source +1/+1
+1. [x] Compound source counter costs: integrate fixed positive source +1/+1
    and charge removal with mana/tap costs. Preserve shared readiness, reservations
    and source references; reject unknown composite costs in full. Adapt obsolete
    unsupported-cost characterizations separately; retain genuine search failures.
@@ -64,19 +68,20 @@ patches. Parent composition must preserve newer source and qualify interactions.
 4. [x] Global as-though-flash permissions: implement generic continuous timing
    grants with controller, ability suppression, departure and prohibitions.
    Do not grant extra land plays, off-turn loyalty or override card restrictions.
-5. [ ] Targeted library-search compilation: complete anchored instruction
+5. [x] Targeted library-search compilation: complete anchored instruction
    grammar with explicit targets and existing filters; preserve canonical cards
    and reject unsupported suffixes without partial rewards.
-6. [ ] Targeted search resolution: separate original effect controller from
+6. [x] Targeted search resolution: separate original effect controller from
    library/choice owner; private fail-to-find, actual selected-card validation,
    destination/entry handling and genuine shuffle causality through restart.
 7. [ ] Compose the completed slices once, run affected whole-module and cross-
    family gates on captured unchanged source, fix failures, refresh docs/Graphify,
    archive verified evidence and publish the qualified milestone.
 
-Items 2 and 4 are complete only for the scoped families in the linked acceptance
-report. Conditional/quoted timing grants and broader observer grammar remain
-open. Counter, catalog and targeted-search slices still need current composition.
+Checked items are complete only for the scoped families in their linked
+acceptance reports. Conditional timing/observer grammar, arbitrary search/cost
+clauses and broader source-departure/continuation episodes remain open. Catalog
+and additional corpus/release acceptance still need current composition.
 
 ## Gate 1: Reliable Local Human Playtesting
 

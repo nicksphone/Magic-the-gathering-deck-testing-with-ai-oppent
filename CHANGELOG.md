@@ -2,6 +2,16 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Compose fixed source counter costs, complete targeted basic-land searches,
+  original-controller/private-choice continuations and genuine shuffle frames.
+  Redact internal search packets from public views. Twenty-two whole modules
+  pass 749 cases in 85.34s; ten previous-feature cross-family modules pass
+  293 in 56.61s. Frontend tests, lint and build pass. Preserve the initial
+  737-pass/12-fail ledger (obsolete Fertilid rejection and omitted isolated-root
+  test setting); upgrade only that obsolete HTTP branch to paid, selected,
+  restart-preserved execution. No worker archive or desired search assertion
+  was weakened.
+
 - Admit supported generic nontoken entry observers and unconditional global
   as-though-flash permissions; retain controller, suppression, costs, priority
   and casting restrictions. Correct seat-alternating batch hand-quality metrics.

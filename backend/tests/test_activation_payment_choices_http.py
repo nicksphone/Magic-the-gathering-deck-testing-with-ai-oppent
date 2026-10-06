@@ -34,6 +34,8 @@ def test_selected_payment_rejects_foreign_resource_then_pays_and_resumes_sqlite(
         key, index = 'sacrifice_card_ids', 3
     else:
         source = activation_card(state, 'rummaging-goblin', seat)
+        # Retained-board payment scene: this creature is already ready to tap.
+        source.summoning_sick = False
         selected = canonical(state, 'dismember', seat, Zone.HAND)
         foreign = canonical(state, 'dismember', 3-seat, Zone.HAND)
         key, index = 'discard_card_ids', 0
