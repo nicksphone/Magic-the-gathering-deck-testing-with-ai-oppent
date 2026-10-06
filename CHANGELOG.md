@@ -2,6 +2,11 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Qualify eight unchanged Scout/Atlas supplement cases on the shared source:
+  bare availability and actual paid HTTP casting, cold restart, immediate sick
+  tap rejection and unchanged state/SQLite. Eight passes in 18.78s; no new
+  production logic or expanded haste/type-changing coverage claim.
+
 - Compose supported private optional hand-land choices and paid optional trigger
   costs, including checked decline, deliberate identity selection and restart.
   Expose the hand-land choice in the existing GUI with mandatory/optional count

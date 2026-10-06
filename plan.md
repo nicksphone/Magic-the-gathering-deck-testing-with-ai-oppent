@@ -31,6 +31,12 @@ The optional-land consumer/compiler and paid-trigger integration now pass the
 combined gate above, including minimal frontend choice controls.
 No arbitrary-card, animation/control-change episode or live deployment claim.
 
+The separate unchanged eight-case paid-cast HTTP supplement passes on current
+7c743fe: 8 passes in 18.78s, including bare helper query purity and actual
+paid cast/resolve/cold restart/sick tap HTTP 422 with state/SQLite unchanged.
+See docs/testing/activated-handland-paid-sickness-supplement.md. This is not a
+new combined 56-case execution or broader haste/type-changing certification.
+
 ### Corrected Self-Trigger Shared-Source Gate
 
 The corrected unconditional draw/life-draw compiler is now combined with the

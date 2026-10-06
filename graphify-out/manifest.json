@@ -6774,9 +6774,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791320799.7568314,
-    "seen": 1791320894.4390109,
-    "ast_hash": "55d80d3e0cfe93f277b11497af67e25c",
+    "mtime": 1791321201.338334,
+    "seen": 1791321263.6741493,
+    "ast_hash": "0ac923c2b9ebb35c4eb4c774b2de3a82",
     "semantic_hash": ""
   },
   "README.md": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791320799.7548316,
-    "seen": 1791320894.4395971,
-    "ast_hash": "5710d42a52ce189239f826466e6aa060",
+    "mtime": 1791321201.340334,
+    "seen": 1791321263.674859,
+    "ast_hash": "7a89e474d1995e2762383175e0653ab4",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -10416,9 +10416,9 @@
     "semantic_hash": ""
   },
   "backend/tests/activated_handland_http_fixture_server.py": {
-    "mtime": 1791318041.3340883,
-    "seen": 1791320894.4367468,
-    "ast_hash": "0b501838205a968bc89f28771650bdad",
+    "mtime": 1791321201.2963347,
+    "seen": 1791321263.6717653,
+    "ast_hash": "0dd326a24f2d10025952dbd29ee5fd45",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/activated_handland/provenance.json": {
@@ -10731,6 +10731,18 @@
     "mtime": 1791320597.5290596,
     "seen": 1791320894.4394102,
     "ast_hash": "670307cbdabf6865ba2c7aded1c44333",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_activated_handland_paid_sickness_supplement.py": {
+    "mtime": 1791321201.2963347,
+    "seen": 1791321263.6725767,
+    "ast_hash": "38e0a16eb62699578bf4291e825e93c4",
+    "semantic_hash": ""
+  },
+  "docs/testing/activated-handland-paid-sickness-supplement.md": {
+    "mtime": 1791321201.336334,
+    "seen": 1791321263.6742084,
+    "ast_hash": "14775355f79e49e6dd7d50c7332bea70",
     "semantic_hash": ""
   }
 }
