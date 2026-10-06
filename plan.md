@@ -2,6 +2,26 @@
 
 ## Current Execution Order
 
+### Local Corpus Diagnostic
+
+The reporter now uses shared local hydration and runtime card construction,
+preserving knowledge and face data. It separates parser status and data admission
+from semantic verification. See [the scoped acceptance record](docs/testing/corpus-diagnostic-current.md).
+This diagnostic change does not close the gameplay/AI/deployment work below.
+
+Current separately observed gaps remain:
+
+1. Two strict Walking Ballista activation-admission failures in the separate
+   death-batch/protection composition (283 passes / two failures across 14 modules).
+2. Numbered self-cast draw and compound self-entry trigger compilation.
+3. Deliberate human legend keeper choices and whole-public-view consumer parity.
+4. Provenance-backed offline face colors and printed loyalty preservation.
+5. Current paid-optional integration and selected-face/interaction-aware AI.
+6. Complete supported-corpus, human/browser, fresh-install and network acceptance.
+
+Worker results on frozen sources must be composed and retested; none of these
+remaining items is claimed complete by the corpus report.
+
 ### Mill And Selected Sacrifice Publication (Qualified Candidate)
 
 The composition on `cb1ba8f` passes **1,263 cases across 37 whole modules in

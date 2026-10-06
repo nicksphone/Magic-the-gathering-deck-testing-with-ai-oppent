@@ -2,6 +2,12 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Route the corpus reporter through shared read-only hydration and runtime card
+  construction. Retain canonical local knowledge and card faces; expose parser
+  choices/data admission separately from semantic correctness. Canonical empty
+  vanilla Oracle text is not classified as a missing card record. This is a
+  diagnostic milestone, not broader gameplay or AI certification.
+
 - Compose retained mill and selected annihilator sacrifice batches on `cb1ba8f`:
   1,263 passes across 37 declared whole modules in 627.44s, with zero failures,
   errors, skips or network attempts and unchanged source hashes. Preserve the

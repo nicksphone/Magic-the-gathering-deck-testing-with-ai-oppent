@@ -18,6 +18,11 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- The local corpus diagnostic uses shared hydration and runtime card facts,
+  including verified knowledge and faces. It reports data admission, parser
+  paths and choices without equating parser recognition with rules correctness.
+  Alternate faces are listed, not independently certified.
+
 - Supported simultaneous mill and selected sacrifice instructions publish genuine
   graveyard-entry receipts only after all selected moves commit. Mill retains its
   original top-card set through replacement shuffles; wider simultaneous event
