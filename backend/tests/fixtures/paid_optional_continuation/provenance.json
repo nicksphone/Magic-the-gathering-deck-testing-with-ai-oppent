@@ -1,0 +1,27 @@
+{
+  "facts_modified": false,
+  "fixture_sha256": "c30ea113a490f803e734298d3acf7bf49655a128d4c09f3e48a7429ebf1204c3",
+  "http_requests": 0,
+  "rows": [
+    {
+      "canonical_row_sha256": "35e38a25e87857cf0d63916e9c43b281d64278aa54353283ae5d59353f64e84f",
+      "id": "758f95f8-bcb0-43ae-b474-56ebd855951e",
+      "name": "Lion's Eye Diamond",
+      "oracle_id": "ee6099b0-fb1f-42f1-b862-7708c6e36d05"
+    },
+    {
+      "canonical_row_sha256": "592e8f22a40facf9e2cf4a4d681a6479bdca59a5e2599edb99dc3172844ec295",
+      "id": "c8a32b4b-4b8d-40e0-9166-06a678fd6e06",
+      "name": "Lunar Mystic",
+      "oracle_id": "9652f79c-3060-4e9c-9623-0ebe4ab4094c"
+    },
+    {
+      "canonical_row_sha256": "0c90b0c38b3dba4a23762e65c023011caa454fcdaff73b90e778a4e37de40883",
+      "id": "95d9f93c-50a8-41a9-be98-d1900bf1c12f",
+      "name": "Phyrexian Altar",
+      "oracle_id": "8d02b297-97c4-4379-9862-0a462400f66f"
+    }
+  ],
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

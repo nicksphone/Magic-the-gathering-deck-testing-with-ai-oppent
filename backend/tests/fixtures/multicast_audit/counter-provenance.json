@@ -1,0 +1,14 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "7c26699f5fd12334490c1f90539596d1d52e567a156d96ef0111c6443bfe2c29",
+  "offline": true,
+  "facts_modified": false,
+  "rows": [
+    {
+      "name": "Negate",
+      "id": "52d58fe4-6070-4022-9cd7-c35a11b44525",
+      "oracle_id": "3407fe41-fdd3-4119-8f70-4bc4590a379f"
+    }
+  ]
+}

@@ -113,7 +113,8 @@ def test_copied_other_paid_state_context_rejects(position, receipts, tmp_path):
 def test_cold_http_consumer_keeper_and_replacement(seat, destination, tmp_path):
     pids = []
     for phase in ('seed', 'keeper', 'replacement'):
-        result = subprocess.run([sys.executable, __file__, phase, str(seat), destination, str(tmp_path)],
+        result = subprocess.run([sys.executable, '-m', 'tests.test_training_legend_keeper_context', phase, str(seat), destination, str(tmp_path)],
+                                cwd=Path(__file__).resolve().parents[1],
                                 env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'},
                                 capture_output=True, text=True, timeout=120)
         (tmp_path / (phase + '-consumer.log')).write_text(result.stdout + result.stderr)

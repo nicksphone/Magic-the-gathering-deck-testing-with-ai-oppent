@@ -1,0 +1,20 @@
+{
+  "retrieved_utc": "2026-10-06T19:45:31Z",
+  "cards": [
+    {
+      "file": "sakura-tribe-scout.json",
+      "name": "Sakura-Tribe Scout",
+      "oracle_id": "0c319f45-cb0f-4641-acd8-145768acb3fc",
+      "sha256": "4f71168776e04c5fccb43012e430470acaa21ddd15878c24a51ebe9225ff8248",
+      "url": "https://api.scryfall.com/cards/named?exact=Sakura-Tribe%20Scout"
+    },
+    {
+      "file": "walking-atlas.json",
+      "name": "Walking Atlas",
+      "oracle_id": "855a4837-7fc8-4b97-afbd-daa88e322c89",
+      "sha256": "8bc53b9bd2aab8bcd0904cfd0815e5b35752ba6561099f508c563dbe0135ed9f",
+      "url": "https://api.scryfall.com/cards/named?exact=Walking%20Atlas"
+    }
+  ],
+  "source": "Official Scryfall API; full response bytes unchanged"
+}

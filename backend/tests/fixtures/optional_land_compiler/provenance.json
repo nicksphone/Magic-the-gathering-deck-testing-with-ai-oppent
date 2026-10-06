@@ -1,0 +1,23 @@
+{
+  "source": "Scryfall official public API",
+  "cards": [
+    {
+      "file": "arboreal-grazer.json",
+      "sha256": "e9fbc06d43fd0cbdada2bdbc8bf273c5466712bdcb3f776f21d9747efab7795c",
+      "url": "https://api.scryfall.com/cards/named?exact=Arboreal%20Grazer",
+      "request_start_utc": "2026-10-06T19:07:03Z",
+      "oracle_id": "d18a0815-59d3-4667-b52b-9acda741215e",
+      "name": "Arboreal Grazer",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "growth-spiral.json",
+      "sha256": "904609eb9dbd958de05f7954dbdfe986960587cab4d3040717ef170b40c1c208",
+      "url": "https://api.scryfall.com/cards/named?exact=Growth%20Spiral",
+      "request_start_utc": "2026-10-06T19:07:01Z",
+      "oracle_id": "34bcc217-dd91-45a0-90d7-a94d02f1f317",
+      "name": "Growth Spiral",
+      "complete_raw_response_preserved": true
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "actual_display_fields": [],
+  "actual_optional_fields": [
+    "type",
+    "stack_id",
+    "accept"
+  ],
+  "dependencies": {
+    "backend/api_contracts.py": "73066efb66fbdce758885e6554dda0fab5d833cdc80041c83d16cd3e7d2373da",
+    "backend/card_data/assets/generic-token-creature.svg": "a3114095c760517186807f8753d109000174460a20ee72693ff9b9a69efc5e85",
+    "backend/rules_engine/move_generator.py": "37732dd71fb55783245830ce4e9cdf4e4dbbf01545110336d48f0c59c8ec1aab",
+    "backend/tests/fixtures/cycle_discard_limits/canonical.jsonl": "03a372fe6a2e9a121d10e3f855d6186ac5a85d44f3f771ca45e5a1f324905b38",
+    "backend/tests/fixtures/cycle_discard_limits/provenance.json": "53be9e5b0db4506fc2da3086f041837277a8da855dabd850cfd3b5ddb2b94264",
+    "backend/tests/fixtures/paid_trigger_ai_audit/canonical.jsonl": "8b1506eb5130d646464eaadc4fa5fc280a99d0813dbb84ea38538c8bd108caaa",
+    "backend/tests/test_cycle_discard_paid_limits.py": "81615391e56984245a5fb9a774cba317d16848c711449a3458dcceaba7fd580f",
+    "backend/tests/test_death_cycle_ordering_audit.py": "e8595c0adf618bbfb02dce4ce6c597072d92421dfbd4e86299f1eb9630094c94",
+    "backend/tests/test_death_cycle_ordering_http_audit.py": "9ec1084121515c4925ce1ebbfab2f8bc728f5d05288884ef1f10a561abde1a32",
+    "backend/tests/test_paid_optional_triggers.py": "c674fe0dca2219527d61bf485600ca61f36638faca4885e5c22d903840f72c0b",
+    "backend/tests/test_paid_trigger_ai_integration_audit.py": "30cd34b2ce3b1b5585a6e626948ac3e01a50e28cb914aabdb574a206b0d71e74",
+    "backend/tests/test_spell_cost_overlap_investigation.py": "3af7791e7cce029ef9e6b35fcd3d287e6ae0089471f5e6e6efec3112c232a171",
+    "backend/training/environment.py": "b4852d4ae92c112873888bdda4d707fcfa2858f8a976bf488f4839a1654994af"
+  },
+  "fixture_oracle_edited": false,
+  "source": "readonly parent yNHhgE source-only before/end matched",
+  "source_manifest_sha256": "c86ee0cbca62c847a9bd9884ca50715ee19031df2965f7fcb0df4f89b6d19cc7"
+}

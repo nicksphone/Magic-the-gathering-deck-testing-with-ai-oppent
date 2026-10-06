@@ -2,6 +2,17 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Compose supported private optional hand-land choices and paid optional trigger
+  costs, including checked decline, deliberate identity selection and restart.
+  Expose the hand-land choice in the existing GUI with mandatory/optional count
+  handling. Keep original failed setup and prior-source ledgers separate.
+- Restore complete printed self-pump cast/copy instructions without the former
+  blanket +1/+1 fallback; retain source incarnation through response and cleanup.
+  Add generic printed ramp-role recognition for hand-land deployment, shared by
+  runtime AI and canonical metadata. Combined acceptance: 800 passes across 27
+  complete backend modules in 390.20s; frontend tests, lint and build pass.
+  Preserve the earlier failed harness and role-classification ledgers separately.
+
 - Enforce summoning sickness and effective haste for shared creature self-tap
   activation costs. Eight complete affected modules pass all 277 cases. A
   separate canonical Scout/Atlas composition with the optional-land validator

@@ -223,6 +223,35 @@ def compile_draw_life_instruction(instruction: str) -> tuple[str, dict[str, Any]
     return None
 
 
+def optional_land_instruction_candidate(instruction: str) -> bool:
+    body = re.sub(r'\s+', ' ', instruction.strip()).lower()
+    land = r'you may put (?:a|one) land card from your hand\b'
+    return bool(re.match(land, body) or
+                (re.match(r'draw\b', body) and re.search(land, body)))
+
+
+def compile_optional_land_instruction(instruction: str) -> tuple[str, dict[str, Any]] | None:
+    """Recognize the complete optional own-hand clause, with an ordered draw."""
+    body = re.sub(r'\s+', ' ', instruction.strip()).lower()
+    draw = None
+    if body.startswith('draw '):
+        prefix, separator, body = body.partition('. ')
+        draw = compile_draw_life_instruction(prefix)
+        if not separator or draw is None or draw[0] != 'draw_cards':
+            return None
+    land = re.fullmatch(r'you may put (?:a|one) land card from your hand onto the battlefield'
+                        r'(?P<tapped> tapped)?\.?', body)
+    if land is None:
+        return None
+    data = {'optional': True, 'tapped': bool(land['tapped'])}
+    if draw is None:
+        return 'put_land_from_hand', data
+    return 'effect_sequence', {'effects': [
+        {'effect_key': draw[0], 'payload': draw[1]},
+        {'effect_key': 'put_land_from_hand', 'payload': data},
+    ]}
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,
@@ -256,6 +285,13 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    if optional_land_instruction_candidate(oracle):
+        compiled = compile_optional_land_instruction(oracle)
+        if compiled is not None:
+            return compiled
+        if report_unsupported:
+            state.log.append(f'Unsupported optional land instruction on {card.name}: {oracle}')
+        return 'noop', {'__unsupported_instruction': oracle}
     if re.fullmatch(r'its owner shuffles their graveyard into their library\.', oracle.strip()):
         return 'shuffle_graveyard_into_library', {'graveyard_owner': card.owner}
     from rules_engine.turn_scheduler import instruction
@@ -604,7 +640,12 @@ def infer_effect_from_oracle(
         return 'noop', {}
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any], str]] = []
-    for clause in clauses:
+    for clause_index, clause in enumerate(clauses):
+        if (clause in {'untap those creatures', 'untap them'} and clause_index
+                and effects and effects[-1][0] == 'temporary_pt_buff_all'
+                and effects[-1][2] == clauses[clause_index - 1]):
+            effects[-1][1]['untap_affected_creatures'] = True
+            continue
         from rules_engine.combat_payments import temporary_combat_tax
         combat_tax = temporary_combat_tax(clause)
         if combat_tax:

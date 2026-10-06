@@ -25,20 +25,32 @@ def test_canonical_paid_records_are_pinned():
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('name', ['Drake Haven', 'Faith of the Devoted'])
 @pytest.mark.parametrize('funded', [False, True])
-def test_unimplemented_optional_trigger_payment_reports_without_free_effect(request, seat, name, funded):
+def test_supported_optional_trigger_payment_has_no_free_effect(request, seat, name, funded):
+    from rules_engine.action_validation import ActionRejected
+    from tests.test_paid_optional_triggers import offered, require_pending, reward
     state, source, action = cycle_position(seat, 'Lonely Sandbar')
-    add(state, name, seat)
+    watcher = add(state, name, seat)
     state.players[seat].mana_pool = {'U': 1, 'C': int(funded)}
     with cards.unchanged_root(state):
         paid = checked_action(state, RulesEngine(), seat, action)
-    for _ in range(4):
-        if not paid.stack:
-            break
-        assert resolve_top_of_stack(paid)
-    receipt(request, {'action': action, 'canonical': ROWS[name],
-                      'resolved': serialize_match_snapshot(paid)})
+    resolve_top_of_stack(paid)
+    pending = require_pending(paid, watcher)
     assert not tokens(paid, seat)
     assert paid.players[seat].life == paid.players[3-seat].life == 20
     assert paid.players[seat].mana_pool.get('C', 0) == int(funded)
     assert paid.players[seat].mana_pool.get('U', 0) == 0
-    assert any('Unsupported optional trigger payment' in line for line in paid.log)
+    if not funded:
+        with cards.unchanged_root(paid):
+            with pytest.raises(ActionRejected):
+                checked_action(paid, RulesEngine(), seat, offered(pending, True))
+    with cards.unchanged_root(paid):
+        result = checked_action(paid, RulesEngine(), seat, offered(pending, funded))
+    reward(result, seat, name, funded)
+    assert result.players[seat].mana_pool.get('C', 0) == 0
+    assert not result.pending_trigger_order and len(result.stack) == 1
+    assert resolve_top_of_stack(result)
+    reward(result, seat, name, funded)
+    assert not result.stack
+    assert not any('Unsupported optional trigger payment' in line for line in result.log)
+    receipt(request, {'action': action, 'canonical': ROWS[name],
+                      'resolved': serialize_match_snapshot(result), 'paid': funded})

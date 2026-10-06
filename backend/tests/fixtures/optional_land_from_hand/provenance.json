@@ -1,0 +1,24 @@
+{
+  "source_path": "backend/card_data/builtin_oracle_seed.json",
+  "source_sha256": "a07caf7e2faa72ba860a44930e5d0df2f6f79eb858044564befa1434bfc4d0e6",
+  "source_kind": "verbatim admitted offline canonical profiles, not invented or full Scryfall raw objects",
+  "card_names": [
+    "Growth Spiral",
+    "Arboreal Grazer",
+    "Forest",
+    "Tropical Island",
+    "Ugin, the Spirit Dragon",
+    "Brazen Borrower",
+    "Island",
+    "Delver of Secrets"
+  ],
+  "release_notes": [
+    "https://magic.wizards.com/en/news/feature/ravnica-allegiance-release-notes-2019-01-16",
+    "https://magic.wizards.com/en/news/feature/war-spark-release-notes-2019-04-19"
+  ],
+  "current_rules": "https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt",
+  "supporting_entry_fixture": "backend/tests/fixtures/contextual_cost_prohibitions/sacred-foundry.json",
+  "supporting_entry_provenance": "backend/tests/fixtures/contextual_cost_prohibitions/provenance.json",
+  "previous_source_sha256": "257e0276f8c4f4526dbabddd662a2cb1c2098295085b348441a09b0334b0c1d4",
+  "refresh_note": "Current published seed; only already qualified face colors differ from historical admitted profiles. Oracle, costs, identities and all non-color fields are unchanged."
+}

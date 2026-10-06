@@ -8,7 +8,7 @@ const supportedMechanicControls = new Set<string>([
   "effect_cast", "suspend_cast", "scry", "scry_top_order", "surveil", "surveil_top_order",
   "proliferate", "ward_payment", "ward_cost_cards", "counter_payment", "optional_search",
   "graveyard_return", "optional_reveal", "discard", "each_player_discard", "cleanup_discard", "mulligan_bottom",
-  "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "saga_entry",
+  "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "land_from_hand", "saga_entry",
   "attacking_token_target", "topdeck_reveal_creature", "topdeck_put", "topdeck_bottom_order",
   "look_top_choose", "look_top_select_hand", "search_library", "combat_damage", "copy_target",
   "foretell_from_hand", "choose_revealed_discard", "choose_revealed_exile", "linked_exile_copy",
@@ -74,7 +74,7 @@ export function Controls(props: Props) {
   const [bottomCards, setBottomCards] = useState<string[]>([]);
   useEffect(() => setBottomCards([]), [props.match?.id, pregameActor, bottomCount]);
   const mechanicMove = props.legalMoves.find((move) => move.type === "choose_mechanic");
-  const variableDiscard = mechanicMove?.kind === "discard" && mechanicMove.min_count === 0;
+  const variableDiscard = ["discard", "land_from_hand"].includes(mechanicMove?.kind ?? "") && mechanicMove?.min_count === 0;
   const [mechanicSelections, setMechanicSelections] = useState<string[]>([]);
   const [damageAmounts, setDamageAmounts] = useState<Record<string, number>>({});
   const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.player_id}:${mechanicMove?.stage}:${mechanicMove?.source_id}:${mechanicMove?.target_slot_number}:${mechanicMove?.min_count}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}:${mechanicMove?.inspected_cards?.map(card => card.id).join(",")}`;

@@ -495,6 +495,11 @@ class RulesEngine:
                 if kind != "choose_optional_effect" or not state.stack or state.stack[-1].id != pending_order.get("current_stack_id") or action.get("stack_id") != pending_order.get("current_stack_id") or type(action.get("accept")) is not bool:
                     reject("Invalid optional effect choice")
                     return
+                if action['accept'] and state.stack[-1].payload.get('__optional_payment_cost'):
+                    from rules_engine.paid_triggers import can_pay_optional
+                    if not can_pay_optional(state, state.stack[-1]):
+                        reject('Cannot pay optional trigger cost')
+                        return
                 state.stack[-1].payload["__may_choose"] = action["accept"]
                 state.stack[-1].payload["__may_decided"] = True
                 state.pending_trigger_order = None

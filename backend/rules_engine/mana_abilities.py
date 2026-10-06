@@ -218,6 +218,9 @@ def multiplied_outputs(state, card, outputs):
 
 
 def source_ready(state, card, spec=None):
+    from rules_engine.paid_triggers import resolution_mana_ability_allowed
+    if not resolution_mana_ability_allowed(state, card, spec):
+        return False
     from rules_engine.continuous import printed_abilities_suppressed, has_keyword
     from rules_engine.costs import parse_activated_cost
     needs_tap = spec is None or parse_activated_cost(spec[1]).tap_source
@@ -259,11 +262,14 @@ def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTE
 def tap_only_outputs(state, card, *, ignore_readiness=False):
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     from rules_engine.continuous import printed_abilities_suppressed
+    from rules_engine.paid_triggers import resolution_mana_ability_allowed
     if printed_abilities_suppressed(state, card.id, include_land_types=False) or (not ignore_readiness and not source_ready(state, card)):
         return {}
     outputs = {}
     for spec in mana_ability_specs(card, state):
         if parse_activated_cost(spec[1]) == ActivatedCost(tap_source=True):
+            if not resolution_mana_ability_allowed(state, card, spec):
+                continue
             for color, bundle, _ in _output_options(state, card, spec, UNFILTERED):
                 amount = bundle.get(color, 0)
                 if amount > 0:

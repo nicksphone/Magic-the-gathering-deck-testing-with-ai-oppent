@@ -1,0 +1,69 @@
+{
+  "source": "Scryfall official public API; full raw inherited or fetched before offline tests",
+  "cards": [
+    {
+      "name": "Clever Lumimancer",
+      "file": "clever-lumimancer.json",
+      "sha256": "4eb541dfdb2444d20e198181392a5d240336b1e419cac2ab0a84beafff2c66cc",
+      "oracle_id": "901eb916-f318-4a30-a43e-8e7f9eef358b",
+      "url": "https://api.scryfall.com/cards/69957656-cfdf-4001-8e84-0ef29e4a468d",
+      "inherited_from": "/tmp/mtg-optional-current-coupled-yNHhgE-evidence/magecraft-intake",
+      "request_start_utc": "2026-10-06T20:31:47Z",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "name": "Opt",
+      "file": "opt.json",
+      "sha256": "4c1d4b713ae2884e8475dad6c93239d564eb3edfacec3969615df623d40fa3db",
+      "oracle_id": "713332c1-5bd8-400f-bfff-c1ca0697a043",
+      "url": "https://api.scryfall.com/cards/named?exact=Opt",
+      "request_start_utc": "2026-10-06T20:37:20.649864+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "name": "Twincast",
+      "file": "twincast.json",
+      "sha256": "12662d131d174e48af42758b9e8fd3b38ce6701d2de7d88217a527062786014f",
+      "oracle_id": "8f878efc-850f-43d2-a6fe-5ea8d1dd5afb",
+      "url": "https://api.scryfall.com/cards/named?exact=Twincast",
+      "request_start_utc": "2026-10-06T20:37:20.945269+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "name": "Grizzly Bears",
+      "file": "grizzly-bears.json",
+      "sha256": "f50920c8a99928b6119b81aba8a7f7a3a74068036091a2bd929323125f7481b1",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "url": "https://api.scryfall.com/cards/named?exact=Grizzly%20Bears",
+      "request_start_utc": "2026-10-06T20:37:21.179079+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "name": "Island",
+      "file": "island.json",
+      "sha256": "d8d45bda942640f4cbcc5af201e1a91e13785fa7f266303af031531b11782c43",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "url": "https://api.scryfall.com/cards/named?exact=Island",
+      "request_start_utc": "2026-10-06T20:37:21.409074+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "name": "Unsummon",
+      "file": "unsummon.json",
+      "sha256": "9affc85f38bc98cec2218a89bbdbbc0dee444cb3151be63ecad6ee30fd0b66de",
+      "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561",
+      "url": "https://api.scryfall.com/cards/named?exact=Unsummon",
+      "request_start_utc": "2026-10-06T20:38:03.880195+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "name": "Leyline of Anticipation",
+      "file": "leyline-of-anticipation.json",
+      "sha256": "ef29f3f72a77d201848b0cabbf33824d25e076e8bd5b9f6ba3fc1ac7656c5455",
+      "oracle_id": "9dc65ffe-17fc-4280-b4bd-78073ac7e12b",
+      "url": "https://api.scryfall.com/cards/named?exact=Leyline%20of%20Anticipation",
+      "request_start_utc": "2026-10-06T20:38:04.164090+00:00",
+      "complete_raw_response_preserved": true
+    }
+  ]
+}

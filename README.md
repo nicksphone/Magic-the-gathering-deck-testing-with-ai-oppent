@@ -23,6 +23,18 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- Supported optional own-hand land deployment uses private, explicit identity or
+  decline choices, retains the original controller and resumes entry choices
+  after snapshots/restart. The existing GUI handles this choice without allowing
+  an empty selection for mandatory land placement.
+- Supported paid optional triggers validate and pay actual available resources
+  before granting their compiled reward. Unknown clauses remain diagnostics,
+  not free rewards. Shared printed-role metadata recognizes hand-to-battlefield
+  land deployment in spells, entry triggers and activated instructions.
+- Complete self-pump cast/copy instructions retain their printed P/T amount and
+  original source incarnation. A pending old self-trigger cannot buff a source
+  that leaves and reenters. This is bounded support, not all magecraft effects.
+
 - Complete unconditional self-cast/self-entry draw and life-then-draw instructions
   use shared replacement-aware handlers. Unknown suffixes in these newly
   admitted instructions produce diagnostics without partial rewards. Optional,
@@ -38,8 +50,8 @@ LAN deployment and broader AI-quality qualification remain open.
   training intents accept legend context only when it exactly matches current
   authoritative state; supplied context cannot select or replace the keeper.
 - AI valuation uses the selected casting face and authoritative available costs
-  when reserving supported Adventure interaction. Optional extra-land execution
-  remains unfinished; these policies are not professional-level AI certification.
+  when reserving supported Adventure interaction. These policies and role tags
+  are not professional-level AI certification.
 
 - The local corpus diagnostic uses shared hydration and runtime card facts,
   including verified knowledge and faces. It reports data admission, parser

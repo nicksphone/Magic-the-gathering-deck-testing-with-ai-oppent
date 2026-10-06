@@ -86,6 +86,31 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
+    if pending and pending['kind'] == 'land_from_hand':
+        ids = action.get('card_ids')
+        if (pending['player_id'] != player_id or not isinstance(ids, list)
+                or not pending['min_count'] <= len(ids) <= 1
+                or any(not isinstance(cid, str) or cid not in pending['options'] for cid in ids)):
+            return False
+        if ids:
+            from game_state.state import object_incarnation
+            from rules_engine.zone_actions import is_departed_token
+            card = state.cards.get(ids[0])
+            if (card is None or card.owner != pending['controller'] or card.zone != Zone.HAND
+                    or card.id not in state.players[pending['controller']].hand
+                    or 'Land' not in effective_types(state, card) or is_departed_token(card)
+                    or pending['land_references'].get(card.id) != [object_incarnation(card), card.zone_change_sequence]):
+                return False
+        from effects.registry import resolve_effect
+        from rules_engine.stack_engine import resume_paused_resolution
+        state.pending_mechanic_choice = None
+        if ids:
+            resolve_effect(state, pending['controller'], 'put_land_from_hand', {
+                **pending['effect_payload'], 'land_id': ids[0],
+                '__land_reference': pending['land_references'][ids[0]],
+            })
+        resume_paused_resolution(state, pending)
+        return True
     if pending and pending.get('kind') in {'library_top_order', 'library_order_shuffle', 'library_shuffle'}:
         from rules_engine.library_reorder import finish_reorder
         return finish_reorder(state, player_id, action)

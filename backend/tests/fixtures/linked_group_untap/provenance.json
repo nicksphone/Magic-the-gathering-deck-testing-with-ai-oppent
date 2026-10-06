@@ -1,0 +1,29 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "834ceaee478daccd50ad001746c44b2a83a10eb982a7fe6c3b50ddcb6969f08e",
+  "offline": true,
+  "facts_modified": false,
+  "rows": [
+    {
+      "name": "Rallying Roar",
+      "id": "d03a5efb-fde9-4bba-be80-d073eba2ad8d",
+      "oracle_id": "40ee79dd-cf53-415c-8e3c-d1a125a735db"
+    },
+    {
+      "name": "Naturalize",
+      "id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+      "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728"
+    },
+    {
+      "name": "Inspired Charge",
+      "id": "9f17e624-219a-4e76-bfe0-f49c9ddd4a6d",
+      "oracle_id": "d465a3d6-5830-456c-8e7a-908b464db846"
+    },
+    {
+      "name": "Dryad Arbor",
+      "id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7",
+      "oracle_id": "e996cd67-739c-40f4-b276-0042acf26c71"
+    }
+  ]
+}

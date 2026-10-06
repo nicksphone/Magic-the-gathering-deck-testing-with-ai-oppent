@@ -882,69 +882,20 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 from rules_engine.nth_spell_triggers import collect_nth_spell_triggers
                 nth_triggers, oracle = collect_nth_spell_triggers(state, card, event, payload, oracle)
                 out.extend(nth_triggers)
-                cast_controller = int(payload.get("controller", 0) or 0)
-                source_card_id = str(payload.get("source_card_id", "") or "")
-                source_card = state.cards.get(source_card_id) if source_card_id else None
-                source_types = {t.lower() for t in (effective_types(state, source_card) or [])}
-                if event == "spell_cast" and cast_controller == card.controller and "whenever you cast a spell" in oracle:
-                    out.append(
-                        _trigger_from_oracle(
-                            state,
-                            cid,
-                            card.controller,
-                            oracle,
-                            default_label=f"{card.name} cast trigger",
-                            event=event,
-                            payload=payload,
-                        )
-                    )
-                elif event == "spell_cast" and cast_controller == card.controller and (
-                    ("whenever you cast an instant spell" in oracle and "instant" in source_types)
-                    or ("whenever you cast a sorcery spell" in oracle and "sorcery" in source_types)
-                    or ("whenever you cast an instant or sorcery spell" in oracle and ("instant" in source_types or "sorcery" in source_types))
-                ):
-                    out.append(
-                        _trigger_from_oracle(
-                            state,
-                            cid,
-                            card.controller,
-                            oracle,
-                            default_label=f"{card.name} cast trigger",
-                            event=event,
-                            payload=payload,
-                        )
-                    )
-                elif cast_controller == card.controller and source_card and "creature" not in source_types and (
-                    ("prowess" in oracle and event == "spell_cast")
-                    or "magecraft" in oracle
-                    or (event == "spell_cast" and "whenever you cast a noncreature spell" in oracle)
-                    or (event == "spell_cast" and "whenever you cast a non-creature spell" in oracle)
-                    or "whenever you cast or copy an instant or sorcery spell" in oracle
-                    or "whenever you cast or copy a noncreature spell" in oracle
-                    or "whenever you cast or copy a non-creature spell" in oracle
-                    or (event == "spell_cast" and "gets +1/+1 until end of turn" in oracle)
-                ):
-                    ability = _trigger_from_oracle(
-                        state,
-                        cid,
-                        card.controller,
-                        oracle,
-                        default_label=f"{card.name} spell trigger",
-                        event=event,
-                        payload=payload,
-                    )
-                    if ability["effect_key"] != "noop":
+                for clause, instruction in _matched_cast_trigger_clauses(state, card, oracle, event, payload):
+                    ability = _cast_clause_trigger(state, card, clause, instruction, event, payload)
+                    if (ability['effect_key'] != 'noop'
+                            or '__unsupported_trigger_instruction' in ability['payload']):
                         out.append(ability)
-                    elif "prowess" in oracle or "magecraft" in oracle or "gets +1/+1 until end of turn" in oracle:
-                        out.append(
-                            {
-                                "source_card_id": cid,
-                                "controller": card.controller,
-                                "label": f"{card.name} spell trigger",
-                                "effect_key": "temporary_pt_buff",
-                                "payload": {"target_card_id": cid, "power": 1, "toughness": 1},
-                            }
-                        )
+                source_card = _cast_event_source(state, event, payload)
+                if (event == 'spell_cast' and payload.get('controller') == card.controller
+                        and source_card is not None
+                        and 'Creature' not in effective_types(state, source_card)
+                        and 'prowess' in oracle):
+                    out.append({'source_card_id': cid, 'controller': card.controller,
+                                'label': f'{card.name} prowess trigger',
+                                'effect_key': 'temporary_pt_buff',
+                                'payload': {'target_card_id': cid, 'power': 1, 'toughness': 1}})
             elif event == "begin_step":
                 step = str(payload.get("step", "")).lower()
                 active_player = int(payload.get("active_player", 0) or 0)
@@ -1553,8 +1504,21 @@ def _order_apnap(state: MatchState, triggers: list[dict[str, Any]]) -> list[dict
     return first + second
 
 
+def _cast_event_source(state, event, payload):
+    from rules_engine.targeting import stack_source_card
+
+    stack_id = payload.get('source_stack_id')
+    for item in reversed(state.stack):
+        if (stack_id and item.id == stack_id or
+                event == 'spell_cast' and not stack_id
+                and item.source_card_id == payload.get('source_card_id')
+                and item.payload == payload.get('stack_payload')):
+            return stack_source_card(state, item)
+    return state.cards.get(payload.get('source_card_id'))
+
+
 def _matched_cast_trigger_clauses(state, source, oracle, event, payload):
-    spell = state.cards.get(payload.get('source_card_id'))
+    spell = _cast_event_source(state, event, payload)
     if spell is None or payload.get('controller') != source.controller:
         return []
     types = {kind.lower() for kind in effective_types(state, spell)}
@@ -1578,6 +1542,33 @@ def _matched_cast_trigger_clauses(state, source, oracle, event, payload):
     return matches
 
 
+def _cast_clause_trigger(state, source, clause, instruction, event, payload):
+    self_pump = re.fullmatch(
+        r'(?:this creature|' + re.escape(source.name) + r') gets ([+-]\d+)/([+-]\d+) until end of turn\.',
+        instruction, re.I,
+    )
+    if self_pump:
+        return {'source_card_id': source.id, 'controller': source.controller,
+                'label': f'{source.name} cast trigger', 'effect_key': 'temporary_pt_buff',
+                'payload': {'target_card_id': source.id, 'power': int(self_pump[1]),
+                            'toughness': int(self_pump[2]), '__trigger_full_clause': clause,
+                            '__self_buff_reference': [source.id, object_incarnation(source), source.zone_change_sequence]}}
+    # Paid/unknown conditional instructions retain the coordinated guard.
+    free_loot = re.fullmatch(r'you may draw a card\. if you do, discard a card\.', instruction)
+    if not free_loot:
+        return _trigger_from_oracle(state, source.id, source.controller, clause,
+                                    f'{source.name} cast trigger', event, payload)
+    data = _maybe_payload(clause, {'effects': [
+        {'effect_key': 'draw_cards', 'payload': {'amount': 1}},
+        {'effect_key': 'discard_cards', 'payload': {'self_discard': True, 'amount': 1}},
+    ]})
+    data['__trigger_full_clause'] = clause
+    if re.search(r'\btarget\b', instruction):
+        data['__trigger_resolution_text'] = instruction
+    return {'source_card_id': source.id, 'controller': source.controller,
+            'label': f'{source.name} cast trigger', 'effect_key': 'effect_sequence', 'payload': data}
+
+
 def _trigger_from_oracle(
     state: MatchState,
     source_card_id: str,
@@ -1595,6 +1586,13 @@ def _trigger_from_oracle(
         if len(clauses) == 1:
             oracle, cast_instruction = clauses[0]
             if re.search(r'\byou may pay\b|\bif you do\b', cast_instruction):
+                from rules_engine.paid_triggers import compile_paid_instruction
+                paid = compile_paid_instruction(state, source, controller, cast_instruction, payload)
+                if paid is not None:
+                    key, data = paid
+                    return {'source_card_id': source_card_id, 'controller': controller,
+                            'label': f"{default_label} (pay {data['__optional_payment_cost']})",
+                            'effect_key': key, 'payload': {**data, '__trigger_full_clause': oracle}}
                 state.log.append(f'Unsupported optional trigger payment for {source.name}.')
                 return {'source_card_id': source_card_id, 'controller': controller,
                         'label': default_label, 'effect_key': 'noop',
@@ -1605,6 +1603,13 @@ def _trigger_from_oracle(
             instruction = re.fullmatch(r'(?:when|whenever) ([^,]+), (.+)', clause.strip())
             if instruction and event in instruction[1]:
                 if re.search(r'\byou may pay\b|\bif you do\b', instruction[2]):
+                    from rules_engine.paid_triggers import compile_paid_instruction
+                    paid = compile_paid_instruction(state, source, controller, instruction[2], payload)
+                    if paid is not None:
+                        key, data = paid
+                        return {'source_card_id': source_card_id, 'controller': controller,
+                                'label': f"{default_label} (pay {data['__optional_payment_cost']})",
+                                'effect_key': key, 'payload': {**data, '__trigger_full_clause': clause}}
                     state.log.append(f'Unsupported optional trigger payment for {source.name}.')
                     return {'source_card_id': source_card_id, 'controller': controller,
                             'label': default_label, 'effect_key': 'noop',
@@ -1987,6 +1992,20 @@ def _trigger_from_oracle(
                                  + r') enters(?: the battlefield)?, (.+)', line.strip(), re.I)
             if entry:
                 self_instructions.append((line.strip(), entry[1]))
+    if self_instructions:
+        from rules_engine.oracle_effects import (compile_optional_land_instruction,
+                                                 optional_land_instruction_candidate)
+        if any(optional_land_instruction_candidate(body) for _, body in self_instructions):
+            clause, instruction = self_instructions[0]
+            compiled = compile_optional_land_instruction(instruction) if len(self_instructions) == 1 else None
+            key, data = compiled if compiled is not None else ('noop', {})
+            data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
+            if compiled is None:
+                data['__unsupported_trigger_instruction'] = '\n'.join(body for _, body in self_instructions)
+                state.log.append(f'Unsupported optional land trigger instruction on {source.name}: '
+                                 + data['__unsupported_trigger_instruction'])
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
     if self_instructions and any(re.match(r'^(?:draw\b|you gain\b)', body, re.I)
                                  and re.search(r'\bdraws?\b', body, re.I)
                                  for _, body in self_instructions):

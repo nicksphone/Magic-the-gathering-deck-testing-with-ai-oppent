@@ -1,0 +1,129 @@
+{
+  "Arboreal Grazer": {
+    "colors": [
+      "G"
+    ],
+    "layout": "",
+    "mana_cost": "{G}",
+    "name": "Arboreal Grazer",
+    "oracle_text": "Reach\nWhen this creature enters, you may put a land card from your hand onto the battlefield tapped.",
+    "power": "0",
+    "scryfall_id": "9eb7b2ae-a364-485b-ae75-10dbb0af5541",
+    "toughness": "3",
+    "type_line": "Creature \u2014 Sloth Beast"
+  },
+  "Brazen Borrower": {
+    "card_faces": [
+      {
+        "colors": [
+          "U"
+        ],
+        "mana_cost": "{1}{U}{U}",
+        "name": "Brazen Borrower",
+        "oracle_text": "Flash\nFlying\nThis creature can block only creatures with flying.",
+        "power": "3",
+        "toughness": "1",
+        "type_line": "Creature \u2014 Faerie Rogue"
+      },
+      {
+        "colors": [
+          "U"
+        ],
+        "mana_cost": "{1}{U}",
+        "name": "Petty Theft",
+        "oracle_text": "Return target nonland permanent an opponent controls to its owner's hand.",
+        "type_line": "Instant \u2014 Adventure"
+      }
+    ],
+    "colors": [
+      "U"
+    ],
+    "layout": "adventure",
+    "mana_cost": "{1}{U}{U}",
+    "name": "Brazen Borrower // Petty Theft",
+    "oracle_text": "Flash\nFlying\nThis creature can block only creatures with flying.",
+    "power": "3",
+    "scryfall_id": "25d309d6-9e56-441e-bd29-5c903d5221bf",
+    "toughness": "1",
+    "type_line": "Creature \u2014 Faerie Rogue"
+  },
+  "Delver of Secrets": {
+    "card_faces": [
+      {
+        "colors": [
+          "U"
+        ],
+        "mana_cost": "{U}",
+        "name": "Delver of Secrets",
+        "oracle_text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform this creature.",
+        "power": "1",
+        "toughness": "1",
+        "type_line": "Creature \u2014 Human Wizard"
+      },
+      {
+        "colors": [
+          "U"
+        ],
+        "mana_cost": "",
+        "name": "Insectile Aberration",
+        "oracle_text": "Flying",
+        "power": "3",
+        "toughness": "2",
+        "type_line": "Creature \u2014 Human Insect"
+      }
+    ],
+    "layout": "transform",
+    "mana_cost": "{U}",
+    "name": "Delver of Secrets // Insectile Aberration",
+    "oracle_text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform this creature.",
+    "power": "1",
+    "scryfall_id": "6904ea20-e504-47da-95a0-08739fdde260",
+    "toughness": "1",
+    "type_line": "Creature \u2014 Human Wizard"
+  },
+  "Forest": {
+    "layout": "",
+    "mana_cost": "",
+    "name": "Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "scryfall_id": "f169dfb2-e4c8-46e9-8591-e51bb82da082",
+    "type_line": "Basic Land \u2014 Forest"
+  },
+  "Growth Spiral": {
+    "colors": [
+      "G",
+      "U"
+    ],
+    "layout": "",
+    "mana_cost": "{G}{U}",
+    "name": "Growth Spiral",
+    "oracle_text": "Draw a card. You may put a land card from your hand onto the battlefield.",
+    "scryfall_id": "1e10e2b4-9639-41ae-8b8e-253224d3d513",
+    "type_line": "Instant"
+  },
+  "Island": {
+    "layout": "",
+    "mana_cost": "",
+    "name": "Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "scryfall_id": "77b88bb8-6bd9-4632-b937-89468fcb5e6a",
+    "type_line": "Basic Land \u2014 Island"
+  },
+  "Tropical Island": {
+    "layout": "normal",
+    "mana_cost": "",
+    "name": "Tropical Island",
+    "oracle_text": "({T}: Add {G} or {U}.)",
+    "scryfall_id": "47033ba4-8f26-4a6b-97bd-5b366327325e",
+    "type_line": "Land \u2014 Forest Island"
+  },
+  "Ugin, the Spirit Dragon": {
+    "layout": "",
+    "loyalty": "7",
+    "mana_cost": "{8}",
+    "name": "Ugin, the Spirit Dragon",
+    "oracle_text": "+2: Ugin deals 3 damage to any target.\n\u2212X: Exile each permanent with mana value X or less that's one or more colors.\n\u221210: You gain 7 life, draw seven cards, then put up to seven permanent cards from your hand onto the battlefield.",
+    "scryfall_id": "9c017fa9-7021-417a-9c2e-3df409644fcf",
+    "type_line": "Legendary Planeswalker \u2014 Ugin"
+  }
+}

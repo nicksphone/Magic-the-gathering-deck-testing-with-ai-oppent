@@ -102,9 +102,14 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if int(pending_order.get("current_controller", -1)) != player_id:
             return []
         if pending_order.get("phase") == "optional":
+            item = next((item for item in state.stack if item.id == pending_order['current_stack_id']), None)
+            choices = (True, False)
+            if item is not None and item.payload.get('__optional_payment_cost'):
+                from rules_engine.paid_triggers import can_pay_optional
+                choices = (True, False) if can_pay_optional(state, item) else (False,)
             return [
                 {"type": "choose_optional_effect", "stack_id": pending_order["current_stack_id"], "accept": accept}
-                for accept in (True, False)
+                for accept in choices
             ]
         if pending_order.get("phase") == "targets":
             from rules_engine.events import trigger_target_options

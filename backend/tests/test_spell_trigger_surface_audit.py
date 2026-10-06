@@ -241,15 +241,49 @@ def test_paid_optional_boundary_actual_http_is_not_a_free_reward(request, offlin
     response = act(offline_http, match, seat, {'type': 'cycle_card', 'card_id': source.id})
     assert response.status_code == 200, response.text
     queued = serialize_match_snapshot(restore(state.id).state)
-    match, choices = settle(offline_http, state.id, seat)
-    record(request, {'canonical_watcher': RAW[name], 'queued': queued, 'choices': choices,
-                     'resolved': serialize_match_snapshot(match.state)})
-    assert not choices
+    for _ in range(12):
+        match = restore(state.id)
+        pending = match.state.pending_trigger_order
+        if pending:
+            break
+        assert match.state.stack
+        response = act(offline_http, match, match.state.priority_player, {'type': 'pass_priority'})
+        assert response.status_code == 200, response.text
+    else:
+        pytest.fail('Supported paid trigger did not offer its optional choice')
+    assert pending['phase'] == 'optional' and pending['current_controller'] == seat
+    item = next(item for item in match.state.stack if item.id == pending['current_stack_id'])
+    assert item.source_card_id == watcher.id
+    assert item.payload['__optional_payment_cost'] == '{1}'
     assert not any(match.state.cards[cid].is_token for cid in match.state.players[seat].battlefield)
     assert match.state.players[seat].life == match.state.players[3-seat].life == 20
     assert match.state.players[seat].mana_pool.get('C', 0) == int(funded)
-    assert any('Unsupported optional trigger payment' in line for line in match.state.log)
-    assert any(item['payload'].get('__unsupported_trigger_instruction') for item in queued['stack'])
+    before = snapshot(match)
+    choice = {'type': 'choose_optional_effect', 'stack_id': item.id, 'accept': True}
+    response = act(offline_http, match, 3-seat, choice)
+    assert response.status_code == 422 and snapshot(match) == before
+    response = act(offline_http, match, seat, {**choice, 'stack_id': 'stale'})
+    assert response.status_code == 422 and snapshot(match) == before
+    if not funded:
+        response = act(offline_http, match, seat, choice)
+        assert response.status_code == 422 and snapshot(match) == before
+    match, choices = settle(offline_http, state.id, seat, accept=funded)
+    record(request, {'canonical_watcher': RAW[name], 'queued': queued, 'choices': choices,
+                     'resolved': serialize_match_snapshot(match.state)})
+    assert len(choices) == 1 and choices[0]['current_stack_id'] == item.id
+    tokens = [match.state.cards[cid] for cid in match.state.players[seat].battlefield
+              if match.state.cards[cid].is_token]
+    assert len(tokens) == int(funded and name == 'Drake Haven')
+    if tokens:
+        assert tokens[0].name == 'Drake' and tokens[0].power == tokens[0].toughness == 2
+        assert 'flying' in {keyword.lower() for keyword in tokens[0].keywords}
+    drain = 2 * int(funded and name == 'Faith of the Devoted')
+    assert match.state.players[seat].life == 20 + drain
+    assert match.state.players[3-seat].life == 20 - drain
+    assert match.state.players[seat].mana_pool.get('C', 0) == 0
+    assert not match.state.pending_trigger_order and not match.state.stack
+    assert not any('Unsupported optional trigger payment' in line for line in match.state.log)
+    assert not any(item['payload'].get('__unsupported_trigger_instruction') for item in queued['stack'])
 
 
 @pytest.mark.parametrize('seat', [1, 2])

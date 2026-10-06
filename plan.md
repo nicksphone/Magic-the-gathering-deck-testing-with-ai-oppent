@@ -2,14 +2,33 @@
 
 ## Current Execution Order
 
+### Optional-Land And Paid-Trigger Integration
+
+Canonical optional land selection/decline, activated creature tap readiness and
+private restart flows are implemented on the isolated combined candidate.
+The final combined gate passes all 800 cases across 27 complete modules in
+390.20s, with no failures, skips or expected failures and unchanged captured
+backend source hashes. Frontend tests, lint and build pass. The previous
+759-pass/four-role-failure gate remains preserved as historical evidence.
+This is scoped integration acceptance, not a full-suite or live release.
+
+Next backend tasks: compose the qualified generic creature-observer and compound
+counter-cost slices; implement still-missing search instructions; investigate
+global as-though-flash permissions; validate exact paid-choice whole-view training
+compatibility. Continue broader supported-corpus, deterministic replay, measured
+AI and release gates. Global flash, arbitrary-card coverage and expert AI are not
+certified by the current work. Historical gate notes below are retained evidence,
+not an authoritative list of current defects; this section supersedes old
+optional-land implementation status only after the combined gate qualifies.
+
 ### Shared Tap-Source Readiness
 
 The generic activated-cost readiness guard is qualified: eight complete modules,
 277 passes, 19.52s. New controlled-board tests cover effective haste and snapshot
 restore; unchanged canonical Scout/Atlas tests with the separate optional-land
 validator hook pass all 48 cases, including actual paid casts and HTTP restart.
-The optional-land consumer/compiler and paid-trigger current-source integration
-still require combined acceptance and frontend choice controls before promotion.
+The optional-land consumer/compiler and paid-trigger integration now pass the
+combined gate above, including minimal frontend choice controls.
 No arbitrary-card, animation/control-change episode or live deployment claim.
 
 ### Corrected Self-Trigger Shared-Source Gate

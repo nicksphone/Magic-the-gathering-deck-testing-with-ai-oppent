@@ -78,6 +78,15 @@ const render = (component, p) => renderToStaticMarkup(createElement(component, p
 for (const row of rows.rows) {
   parseMatchState(row.state); parseLegalMoves(row.legal);
   const real = props(row, row.legal.moves);
+  // Cardinality seam: an optional hand-land choice may decline; a mandatory one may not.
+  for (const min_count of [0, 1]) {
+    const html = render(current, props(row, [{ type: 'choose_mechanic', kind: 'land_from_hand',
+      player_id: row.seat, options: [], count: 1, min_count }]));
+    assert.ok(!html.includes('Unsupported mechanic choice:'));
+    const button = html.match(/<button([^>]*)>Confirm Selection<\/button>/);
+    assert.ok(button, 'Hand-land choice has a control');
+    assert.equal(button[1].includes('disabled'), min_count === 1);
+  }
   assert.equal(render(current, real), render(old, real), 'Actual canonical surveil markup unchanged');
   // Protocol seam variants, not fabricated card positions or mechanism certification.
   for (const kind of kinds) {

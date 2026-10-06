@@ -282,7 +282,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if (item.payload or {}).get("__may"):
         is_trigger = bool(item.payload.get("__trigger_event"))
         choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
-        if is_trigger and getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players) and not item.payload.get("__may_decided"):
+        paid_optional = bool(item.payload.get('__optional_payment_cost'))
+        if is_trigger and (paid_optional or (getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players))) and not item.payload.get("__may_decided"):
             state.pending_trigger_order = {
                 "phase": "optional", "event": item.payload["__trigger_event"],
                 "current_stack_id": item.id, "current_controller": item.controller,
@@ -352,6 +353,12 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         state.trigger_staging_event = 'stack_resolution'
         item.payload['__resolution_stage_owned'] = True
         payload['__resolution_stage_owned'] = True
+    if payload.get('__optional_payment_cost'):
+        from rules_engine.paid_triggers import pay_optional
+        from rules_engine.action_validation import ActionRejected
+        if not pay_optional(state, item):
+            raise ActionRejected('Cannot pay optional trigger cost')
+        payload['__optional_payment_paid'] = item.payload['__optional_payment_paid']
     if payload.get("__once_on_accept"):
         state.trigger_once_seen_this_turn.add(str(payload["__once_on_accept"]))
     effect_key = item.effect_key

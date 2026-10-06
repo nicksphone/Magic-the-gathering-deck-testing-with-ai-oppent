@@ -5,6 +5,9 @@ from pathlib import Path
 import sys
 
 root = Path(os.environ['MTG_ISOLATED_TEST_ROOT']).resolve()
+backend = Path(__file__).resolve().parents[1]
+assert backend.parent == root
+sys.path.insert(0, str(backend))
 database, expected_path = map(Path, sys.argv[1:])
 assert database.resolve().is_relative_to(root)
 assert expected_path.resolve().is_relative_to(root)

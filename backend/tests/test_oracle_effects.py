@@ -1006,8 +1006,16 @@ def test_topdeck_creature_deploy_effect_puts_eligible_creatures_onto_battlefield
 
 
 def test_arboreal_grazer_style_land_from_hand_enters_tapped_without_land_play() -> None:
+    import pytest
+    from game_state.serializers import serialize_match_snapshot
+    from rules_engine.action_validation import ActionRejected, checked_action
+
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
+    # This handler unit resolves during play; pregame entries do not count in land history.
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
     land_id = state.players[1].hand[0]
     state.cards[land_id].name = "Forest"
     state.cards[land_id].types = ["Land"]
@@ -1025,10 +1033,29 @@ def test_arboreal_grazer_style_land_from_hand_enters_tapped_without_land_play() 
     effect_key, payload = infer_effect_from_oracle(state, grazer, 1)
 
     assert effect_key == "put_land_from_hand"
+    assert payload == {"tapped": True}  # Preserve this legacy mandatory handler contract.
+    hand_count = len(state.players[1].hand)
+    land_plays = state.players[1].lands_played_this_turn
     resolve_effect(state, 1, effect_key, payload)
+    assert land_id in state.players[1].hand
+    assert land_id not in state.players[1].battlefield
+    assert state.pending_mechanic_choice["kind"] == "land_from_hand"
+    assert state.pending_mechanic_choice["min_count"] == 1
+    offered = RulesEngine().legal_moves(state, 1)[0]
+    assert land_id in offered["options"] and offered["count"] == 1
+    before = serialize_match_snapshot(state)
+    with pytest.raises(ActionRejected):
+        checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": []})
+    assert serialize_match_snapshot(state) == before
+    state = checked_action(state, RulesEngine(), 1,
+                           {"type": "choose_mechanic", "card_ids": [land_id]})
     assert land_id in state.players[1].battlefield
     assert land_id not in state.players[1].hand
     assert state.cards[land_id].tapped
+    assert len(state.players[1].hand) == hand_count - 1
+    assert state.players[1].lands_played_this_turn == land_plays
+    assert state.land_entries_this_turn[1] == 1
+    assert state.pending_mechanic_choice is None
 
 
 def test_torrential_gearhulk_style_casts_target_instant_from_graveyard() -> None:
@@ -1190,7 +1217,7 @@ def test_shark_typhoon_style_effect_uses_cast_spell_mana_value() -> None:
     state.cards[enchantment.id] = enchantment
     state.cards[spell.id] = spell
     state.players[1].battlefield.append(enchantment.id)
-    state.stack.append(type("Stack", (), {"source_card_id": spell.id, "controller": 1, "id": "stack"})())
+    state.stack.append(type("Stack", (), {"source_card_id": spell.id, "controller": 1, "id": "stack", "payload": {}})())
 
     from rules_engine.events import emit_event
     emit_event(state, "spell_cast", {"source_card_id": spell.id, "controller": 1})

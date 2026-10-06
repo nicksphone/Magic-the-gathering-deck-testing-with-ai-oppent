@@ -1365,10 +1365,31 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     controller's land-play allowance and the effect may enter the land tapped.
     """
     player = state.players[controller]
-    eligible = [cid for cid in player.hand if cid in state.cards and "Land" in effective_types(state, state.cards[cid]) and not is_departed_token(state.cards[cid])]
-    land_id = payload.get("land_id") if payload.get("land_id") in eligible else next(iter(eligible), None)
-    if not land_id:
+    eligible = [cid for cid in player.hand if cid in state.cards
+                and state.cards[cid].owner == controller and state.cards[cid].zone == Zone.HAND
+                and "Land" in effective_types(state, state.cards[cid])
+                and not is_departed_token(state.cards[cid])]
+    if not eligible:
         state.log.append(f"{player.name} has no land in hand for the effect.")
+        return
+    land_id = payload.get("land_id")
+    if land_id is None:
+        state.pending_mechanic_choice = {
+            'kind': 'land_from_hand', 'player_id': controller, 'controller': controller,
+            'options': eligible, 'count': 1, 'min_count': 0 if payload.get('optional') is True else 1,
+            'land_references': {cid: [object_incarnation(state.cards[cid]),
+                                     state.cards[cid].zone_change_sequence] for cid in eligible},
+            'effect_key': 'put_land_from_hand', 'effect_payload': copy.deepcopy(payload),
+            'label': 'Choose a land from your hand to put onto the battlefield',
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    if land_id not in eligible:
+        return
+    reference = payload.get('__land_reference')
+    if reference is not None and reference != [object_incarnation(state.cards[land_id]),
+                                               state.cards[land_id].zone_change_sequence]:
         return
     if pause_for_land_entries(state, controller, [land_id], "put_land_from_hand", {**payload, "land_id": land_id}):
         return
@@ -1376,7 +1397,7 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     apply_entry_choice(state, controller, land, choice=(payload.get("__entry_choices") or {}).get(land_id, "tapped"), effect_tapped=bool(payload.get("tapped", False)))
     player.hand.remove(land_id)
     player.battlefield.append(land_id)
-    land.zone = Zone.BATTLEFIELD
+    land.move_to_zone(Zone.BATTLEFIELD)
     land.controller = controller
     land.summoning_sick = True
     land.entered_turn = state.turn
@@ -2199,6 +2220,11 @@ def put_green_creature_from_hand(state: MatchState, controller: int, payload: di
 
 def temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
+    if '__self_buff_reference' in payload:
+        card = state.cards.get(target)
+        if (card is None or card.zone != Zone.BATTLEFIELD
+                or payload['__self_buff_reference'] != [card.id, object_incarnation(card), card.zone_change_sequence]):
+            return
     power = int(payload.get("power", payload.get("amount", 1)) or 0)
     toughness = int(payload.get("toughness", payload.get("amount", 1)) or 0)
     if target in state.cards and (power or toughness):
@@ -2219,6 +2245,7 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
     players = [state.players[controller]] if payload.get("controller_only") else state.players.values()
     required_subtypes = set(payload.get("creature_subtypes") or [])
     keyword_timestamp = allocate_effect_timestamp(state) if keyword else None
+    affected_creatures = []
     for player in players:
         for card_id in list(player.battlefield):
             card = state.cards[card_id]
@@ -2230,12 +2257,19 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
                 if (not required_subtypes.intersection(creature_types(card))
                         and "changeling" not in {keyword.lower() for keyword in (card.keywords or [])}):
                     continue
+            affected_creatures.append(card_id)
             card.counters["__eot_power"] = int(card.counters.get("__eot_power", 0)) + power
             card.counters["__eot_toughness"] = int(card.counters.get("__eot_toughness", 0)) + toughness
             if keyword:
                 from rules_engine.keyword_effects import add_keyword_effect
                 add_keyword_effect(state,card_id,[keyword],until_end_of_turn=True,timestamp=keyword_timestamp,
                                    source_card_id=payload.get('__source_card_id'))
+    if payload.get('untap_affected_creatures'):
+        from rules_engine.named_counters import untap_permanent
+
+        # The follow-up refers to the buff's resolution-time group, not a new query.
+        for card_id in affected_creatures:
+            untap_permanent(state, card_id)
     scope = (f"{payload['creature_subtype_label']} you control" if payload.get("creature_subtype_label")
              else "Creatures you control" if payload.get("controller_only") else "All creatures")
     state.log.append(f"{scope} get {power:+d}/{toughness:+d} until end of turn.")

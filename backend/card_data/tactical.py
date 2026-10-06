@@ -8,6 +8,11 @@ CARD_TYPES = frozenset({
     "land", "planeswalker", "sorcery", "tribal",
 })
 
+HAND_LAND_DEPLOYMENT_RE = re.compile(
+    r"(?:^|[.\n,:]\s*)(?:you may )?put (?:a|an|one) land card from your hand onto the battlefield(?: tapped)?\.",
+    re.IGNORECASE,
+)
+
 
 def printed_card_types(type_line: str = "", types: list[str] | None = None) -> set[str]:
     words = re.findall(r"[a-z]+", str(type_line or "").split("\u2014", 1)[0].lower())
@@ -99,7 +104,8 @@ def _effect_tags(text: str) -> set[str]:
         tags.add("burn")
     if (re.search(r"\badd\b[^.\n]*\{[wubrgc]\}", text)
             or re.search(r"\badd (?:" + quantity + r" mana|mana of any)", text)
-            or re.search(r"\bsearch your library for\b[^.\n]*\bland cards?\b", text)):
+            or re.search(r"\bsearch your library for\b[^.\n]*\bland cards?\b", text)
+            or HAND_LAND_DEPLOYMENT_RE.search(_rules_surface(text))):
         tags.add("ramp")
     if re.search(r"\bcreates?\b[^.\n]*\btokens?\b", text):
         tags.add("token")
@@ -146,7 +152,9 @@ def tactical_tags(oracle_text: str, type_line: str = "", types: list[str] | None
         tags.add("removal")
     if re.search(r"\bdeals?\s+(?:\d+|x|that much)\s+damage to\s+(?:any target|target (?:player|opponent)|each (?:player|opponent))", text):
         tags.add("burn")
-    if re.search(r"\badd\b[^.\n]{0,35}\{[wubrgc]\}", text) or re.search(r"search your library for[^.]*\bland cards?\b", text):
+    if (re.search(r"\badd\b[^.\n]{0,35}\{[wubrgc]\}", text)
+            or re.search(r"search your library for[^.]*\bland cards?\b", text)
+            or HAND_LAND_DEPLOYMENT_RE.search(_rules_surface(text))):
         tags.add("ramp")
     if "create" in text and "token" in text:
         tags.add("token")
