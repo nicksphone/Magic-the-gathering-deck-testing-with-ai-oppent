@@ -1,0 +1,36 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "a5dfdcfd276fa3949a6c77f9c27cf6b193d5494c4d7a65925b98d30a3e6428f9",
+  "selection": "Exact four names, full unchanged official objects selected with jq -c; no field edits",
+  "cards": [
+    {
+      "name": "Psychogenic Probe",
+      "id": "e83d1ed5-3a49-4cfa-bad2-e342ef28649e",
+      "oracle_id": "1beb81a8-b4aa-4964-93d2-2b5414fc6ce3",
+      "uri": "https://api.scryfall.com/cards/e83d1ed5-3a49-4cfa-bad2-e342ef28649e",
+      "oracle_text": "Whenever a spell or ability causes a player to shuffle their library, this artifact deals 2 damage to that player."
+    },
+    {
+      "name": "Cosi's Trickster",
+      "id": "e1eb7372-481a-44a6-937d-21430ee02ff9",
+      "oracle_id": "372633d9-ac74-4630-a1ae-a1906bb2aed0",
+      "uri": "https://api.scryfall.com/cards/e1eb7372-481a-44a6-937d-21430ee02ff9",
+      "oracle_text": "Whenever an opponent shuffles their library, you may put a +1/+1 counter on this creature."
+    },
+    {
+      "name": "Darksteel Colossus",
+      "id": "70197723-c61b-4600-b61d-41380c8f3067",
+      "oracle_id": "1b09d0cf-403c-4a15-aeee-602a1bdaf0c1",
+      "uri": "https://api.scryfall.com/cards/70197723-c61b-4600-b61d-41380c8f3067",
+      "oracle_text": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nIndestructible (Damage and effects that say \"destroy\" don't destroy this creature.)\nIf Darksteel Colossus would be put into a graveyard from anywhere, reveal Darksteel Colossus and shuffle it into its owner's library instead."
+    },
+    {
+      "name": "Village Rites",
+      "id": "42ed35e9-51cd-468a-86a9-9412553cf50d",
+      "oracle_id": "365548fb-5acc-4a8a-b20b-26d28b7d029f",
+      "uri": "https://api.scryfall.com/cards/42ed35e9-51cd-468a-86a9-9412553cf50d",
+      "oracle_text": "As an additional cost to cast this spell, sacrifice a creature.\nDraw two cards."
+    }
+  ]
+}

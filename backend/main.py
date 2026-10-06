@@ -60,7 +60,6 @@ async def lifespan(app_instance: FastAPI):
         repo = Repository(session)
         _ensure_builtin_decks(repo)
         _ensure_expansion_top_decks(repo)
-        _restore_active_matches(repo)
         _restore_simulation_jobs(repo)
     yield
 
@@ -101,6 +100,7 @@ class MatchController:
 
 
 ACTIVE_MATCHES: dict[str, MatchController] = {}
+MATCH_LOAD_LOCK = threading.RLock()
 START_MATCH_LOCK = threading.RLock()
 SIM_JOBS: dict[str, dict] = {}
 SIM_JOB_CANCEL_EVENTS: dict[str, threading.Event] = {}
@@ -118,14 +118,14 @@ def coordinated_match(handler):
     @wraps(handler)
     def wrapped(*args, **kwargs):
         match_id = args[0] if args else kwargs["match_id"]
-        match = ACTIVE_MATCHES.get(match_id)
+        bound = inspect.signature(handler).bind(*args, **kwargs)
+        bound.apply_defaults()
+        match = _load_saved_match(match_id, bound.arguments.get("repo"))
         if match is None:
             raise HTTPException(status_code=404, detail="Match not found")
         with match.mutation_lock:
             if handler.__name__ not in {"take_action", "autoplay_tick", "set_priority_stops", "apply_sideboard", "next_game"}:
                 return deepcopy(handler(*args, **kwargs))
-            bound = inspect.signature(handler).bind(*args, **kwargs)
-            bound.apply_defaults()
             request = bound.arguments.get("request")
             key = request.headers.get("Idempotency-Key") if request is not None else None
             expected = request.headers.get("X-Match-Revision") if request is not None else None
@@ -292,14 +292,38 @@ def _persist_active_match(repo: Repository | object, match: MatchController) -> 
         Repository(session).save_active_match(match.state.id, state_json, controller_json)
 
 
+def _load_saved_match(match_id: str, repo=None) -> MatchController | None:
+    match = ACTIVE_MATCHES.get(match_id)
+    if match is not None:
+        return match
+    # Only cache misses acquire this local-process lock. Publish once, before
+    # any caller acquires the controller's separate mutation lock.
+    with MATCH_LOAD_LOCK:
+        if match_id not in ACTIVE_MATCHES:
+            if isinstance(repo, Repository):
+                _restore_active_matches(repo, match_id)
+            else:
+                with Session(engine) as session:
+                    _restore_active_matches(Repository(session), match_id)
+        return ACTIVE_MATCHES.get(match_id)
+
+
 def _restore_active_matches(repo: Repository, match_id: str | None = None) -> None:
+    """Legacy explicit eager restore; never replace an already live controller."""
+    with MATCH_LOAD_LOCK:
+        _restore_active_matches_locked(repo, match_id)
+
+
+def _restore_active_matches_locked(repo: Repository, match_id: str | None = None) -> None:
     rows = [repo.get_active_match(match_id)] if match_id is not None else repo.list_active_matches()
     for row in rows:
-        if row is None:
+        if row is None or row.id in ACTIVE_MATCHES:
             continue
         try:
             snapshot = json.loads(row.state_json)
             state = deserialize_match_snapshot(snapshot)
+            if state.id != row.id:
+                continue
             if not any(key in snapshot for key in ("mechanic_choice_players", "library_choice_players", "search_choice_players")):
                 state.mechanic_choice_players = {1, 2}
             config = json.loads(row.controller_json)
@@ -621,10 +645,7 @@ def start_match(payload: StartMatchRequest, request: Request, repo: Repository =
             if receipt is not None:
                 if receipt.request_hash != fingerprint:
                     raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This start key already identifies a different match request"})
-                match = ACTIVE_MATCHES.get(receipt.match_id)
-                if match is None:
-                    _restore_active_matches(repo, receipt.match_id)
-                    match = ACTIVE_MATCHES.get(receipt.match_id)
+                match = _load_saved_match(receipt.match_id, repo)
                 if match is None:
                     raise HTTPException(503, detail={"code": "match_restore_unavailable", "message": "Created match could not be restored"})
                 with match.mutation_lock:
@@ -681,15 +702,23 @@ def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None,
 
 
 @app.get("/matches")
-def list_active_matches() -> list[dict]:
-    items = []
-    for match in list(ACTIVE_MATCHES.values()):
+def list_active_matches(repo: Repository = Depends(get_repo)) -> list[dict]:
+    if isinstance(repo, Repository):
+        items = {item['id']: item for item in repo.iter_active_match_summaries()}
+    else:
+        with Session(engine) as session:
+            items = {item['id']: item for item in Repository(session).iter_active_match_summaries()}
+    with MATCH_LOAD_LOCK:
+        loaded = list(ACTIVE_MATCHES.values())
+    for match in loaded:
         with match.mutation_lock:
-            if not match.match_complete:
-                items.append({"id": match.state.id, "mode": match.mode, "turn": match.state.turn,
+            if match.match_complete:
+                items.pop(match.state.id, None)
+            else:
+                items[match.state.id] = {"id": match.state.id, "mode": match.mode, "turn": match.state.turn,
                               "game_number": match.game_number, "revision": match.revision,
-                              "players": [match.state.players[pid].name for pid in (1, 2)]})
-    return items
+                              "players": [match.state.players[pid].name for pid in (1, 2)]}
+    return list(items.values())
 
 
 @app.get("/matches/{match_id}")

@@ -9,6 +9,7 @@ from game_state.state import MatchFactory, Step, Zone, assign_static_order_on_ba
 from rules_engine.action_validation import ActionRejected
 from training.environment import TrainingEnvironment, decode_action, encode_action
 from tests.test_training_environment import keep, resolve
+from tests.scheduler_fixture_position import ordinary_position
 
 
 FIXTURES = Path(__file__).parent / 'fixtures'
@@ -47,6 +48,7 @@ def position(seat=1):
     state = environment._state
     state.active_player = state.priority_player = seat
     state.step = Step.PRECOMBAT_MAIN
+    ordinary_position(state)
     state.players[seat].mana_pool = {color: 20 for color in 'WUBRGC'}
     return environment
 
@@ -338,6 +340,7 @@ def test_actual_cleanup_exact_count_discard_is_not_defaulted(seat):
     card(environment, 'Lightning Bolt', seat)
     card(environment, 'Opt', seat)
     environment._state.step = Step.END_STEP
+    ordinary_position(environment._state)
     resolve(environment)
     hint = environment.prompts()[0]['hint']
     assert hint['kind'] == 'cleanup_discard' and hint['count'] == 2

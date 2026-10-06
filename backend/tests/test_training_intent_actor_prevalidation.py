@@ -15,6 +15,7 @@ from tests.test_training_foretell_intent_audit import scenario as foretell_posit
 from tests.test_training_ninjutsu_intent_audit import scenario as ninja_position
 from tests.test_nonmana_intent_audit import scenario as nonmana_position
 from tests.test_training_combat_intent_audit import scenario as combat_position
+from tests.scheduler_fixture_position import ordinary_position
 
 
 KINDS = (
@@ -103,6 +104,7 @@ def real_position(family, seat):
         env, action, hint, _, _ = nonmana_position(seat, family)
     else:
         env, action, hint, _ = combat_position(seat, family, 'ordinary')
+    ordinary_position(env._state)
     return env, action, {**hint, **action}
 
 

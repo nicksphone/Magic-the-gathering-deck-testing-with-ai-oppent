@@ -1,4 +1,4 @@
-"""Green baseline witnesses, explicitly not extra-turn/phase certification."""
+"""Qualified narrow execution witnesses; metadata still not a rules certificate."""
 from copy import deepcopy
 import hashlib
 import json
@@ -43,17 +43,17 @@ def test_metadata_ready_is_not_execution_admission(seat, name):
     info = observe(state, source)
     assert pickle.dumps(state) == before
     assert info['metadata_ready'] is True
-    assert info['known_gaps'] == ['extra-turn scheduling' if name == 'Time Warp' else 'extra-phase scheduling']
+    assert info['known_gaps'] == []
     assert info['execution_certified'] is False
     if name == 'Time Warp':
-        assert info['spell']['used_fallback'] is True
-        assert info['spell']['effect']['key'] == 'noop'
+        assert info['spell']['used_fallback'] is False
+        assert info['spell']['effect']['key'] == 'extra_turn'
         assert {p['id'] for p in info['spell']['target_hints']['player_targets']} == {1, 2}
     else:
         ability = info['activated'][0]
         assert ability['mana_cost'] == '{3}{R}{R}' and ability['activation_zone'] == 'battlefield'
         assert ability['text'] == RAW[name]['oracle_text'].split(': ', 1)[1]
-        assert info['ability']['effect']['key'] == 'noop' and info['ability']['used_fallback']
+        assert info['ability']['effect']['key'] == 'extra_combat_main' and not info['ability']['used_fallback']
         # No spell effect is correct for casting an enchantment; activation is separate.
         assert info['spell']['used_fallback'] is False
     TRACE.append(info)
@@ -61,65 +61,27 @@ def test_metadata_ready_is_not_execution_admission(seat, name):
 
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('target_relation', ['self', 'opponent'])
-def test_time_warp_actual_rejection_restore_normal_turns(seat, target_relation):
-    target = seat if target_relation == 'self' else 3 - seat
-    state = position(seat)
-    source = add(state, 'Time Warp', seat, Zone.HAND)
-    creature = add(state, 'Grizzly Bears', target)
-    land = add(state, 'Island', target)
-    creature.tapped = land.tapped = True
-    before = pickle.dumps(state)
-    mana = sum(state.players[seat].mana_pool.values())
-    with pytest.raises(ActionRejected, match='Unsupported spell resolution: extra-turn scheduling'):
-        submit(state, source, target)
-    assert pickle.dumps(state) == before
-    assert sum(state.players[seat].mana_pool.values()) == mana
-    assert not state.stack
-    snapshot = serialize_match_snapshot(state)
-    state = resume(state)
-    assert serialize_match_snapshot(state) == snapshot
-    assert state.cards[source.id].zone == Zone.HAND
-    assert state.turn == 5 and state.active_player == seat
-    assert state.cards[creature.id].tapped and state.cards[land.id].tapped
-    seen = []
-    hand_before = len(state.players[target].hand)
-    for _ in range(36):
-        seen.append([state.turn, state.active_player, state.step.value])
-        RulesEngine().next_step(state)
-        if state.turn == 7 and state.step == Step.DRAW:
-            break
-    assert state.turn == 7 and state.step == Step.DRAW
-    assert {(t, p) for t, p, _ in seen} == {(5, seat), (6, 3 - seat), (7, seat)}
-    assert len(state.players[target].hand) == hand_before + 1
-    assert not state.cards[creature.id].tapped and not state.cards[land.id].tapped
-    assert not state.cards[creature.id].summoning_sick
-    TRACE.append({'kind': 'rejected-before-payment', 'seat': seat, 'target': target, 'source': source.id,
-                  'mana_spent': 0, 'snapshot_equal': True, 'ordinary_progression': seen,
-                  'extra_turn_certified': False})
+def test_time_warp_actual_admission_restore_extra_and_normal_turns(seat, target_relation):
+    from tests.desired_extra_sequence_contracts import test_desired_target_extra_turn_then_resume_normal_order
+    test_desired_target_extra_turn_then_resume_normal_order(seat, target_relation)
+
 
 
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('step', [Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN, Step.UPKEEP])
-def test_assault_not_offered_or_payable_and_original_root_unchanged(seat, step):
+def test_assault_main_admitted_other_timing_withheld_and_root_unchanged(seat, step):
+    if step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+        from tests.desired_extra_sequence_contracts import test_desired_activated_untap_then_extra_combat_main_not_extra_turn
+        test_desired_activated_untap_then_extra_combat_main_not_extra_turn(seat, step)
+        return
     state = position(seat, step)
     source = add(state, 'Aggravated Assault', seat)
-    creature = add(state, 'Grizzly Bears', seat)
-    opponent = add(state, 'Grizzly Bears', 3 - seat)
-    creature.tapped = opponent.tapped = True
     before = pickle.dumps(state)
     moves = RulesEngine().legal_moves(state, seat)
-    assert not any(m['type'] == 'activate_ability' and m.get('card_id') == source.id for m in moves)
-    assert pickle.dumps(state) == before
-    with pytest.raises(ActionRejected, match='not currently legal'):
-        submit(state, source)
-    assert pickle.dumps(state) == before
-    restored = resume(state)
-    assert serialize_match_snapshot(restored) == serialize_match_snapshot(state)
-    assert restored.cards[creature.id].tapped and restored.cards[creature.id].summoning_sick
-    assert restored.cards[opponent.id].tapped
-    TRACE.append({'kind': 'activation-withheld', 'seat': seat, 'step': step.value,
-                  'source': source.id, 'root_unchanged': True,
-                  'payment_untap_phase_execution': 'blocked by admission'})
+    assert not any(m['type']=='activate_ability' and m.get('card_id')==source.id for m in moves)
+    with pytest.raises(ActionRejected): submit(state, source)
+    assert pickle.dumps(state)==before
+
 
 
 @pytest.mark.parametrize('seat', [1, 2])

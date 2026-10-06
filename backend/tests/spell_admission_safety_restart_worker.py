@@ -87,6 +87,11 @@ def run(phase, seat, name, root, behavior='reject'):
             (root / 'expected.json').write_text(json.dumps(saved, sort_keys=True))
         else:
             saved = json.loads((root / 'expected.json').read_text())
+            listed = client.get('/matches')
+            assert listed.status_code == 200, listed.text
+            assert saved['mid'] in {item['id'] for item in listed.json()}
+            restored = client.get('/matches/' + saved['mid'])
+            assert restored.status_code == 200, restored.text
             controller = main.ACTIVE_MATCHES[saved['mid']]
             assert wire(serialize_match_snapshot(controller.state)) == saved['snapshot']
             assert wire(main._controller_snapshot(controller)) == saved['config']

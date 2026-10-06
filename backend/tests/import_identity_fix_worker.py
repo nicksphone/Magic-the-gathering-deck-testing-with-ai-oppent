@@ -125,6 +125,11 @@ def run(phase, mode, root):
                             all_match_root_fields_unchanged=True, settings_receipt_unchanged=True)
         else:
             saved = json.loads((root / 'expected.json').read_text())
+            listed = client.get('/matches')
+            assert listed.status_code == 200, listed.text
+            assert saved['mid'] in {item['id'] for item in listed.json()}
+            restored = client.get('/matches/' + saved['mid'])
+            assert restored.status_code == 200, restored.text
             match = main.ACTIVE_MATCHES[saved['mid']]
             snapshot = wire(serialize_match_snapshot(match.state))
             actual_inventory = inventory()

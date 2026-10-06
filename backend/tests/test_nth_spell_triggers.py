@@ -222,7 +222,10 @@ def test_new_opponent_turn_first_instant_restarts_actor_count(seat):
     state.spells_cast_this_turn[seat]=3
     state.step=Step.CLEANUP
     RulesEngine().next_step(state)
-    state.step=Step.PRECOMBAT_MAIN;state.priority_player=seat
+    RulesEngine().next_step(state)
+    RulesEngine().next_step(state)
+    assert state.step==Step.PRECOMBAT_MAIN and state.active_player==3-seat
+    state.priority_player=seat
     state.players[seat].mana_pool={'U':5,'C':5}
     state=cast(state,add(state,'Think Twice',seat,Zone.HAND))
     assert state.spells_cast_this_turn[seat]==1

@@ -1,0 +1,39 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "cards": [
+    {
+      "name": "Wonder",
+      "id": "567abd78-d4a3-4a33-9b5b-b5ca361059cc",
+      "oracle_id": "232284f7-c623-4895-9ab9-8b1a39926830",
+      "uri": "https://api.scryfall.com/cards/567abd78-d4a3-4a33-9b5b-b5ca361059cc",
+      "source_line": 5282,
+      "raw_line_sha256": "2952059da29890af91aea5e9babf87356b8e8d15b7d5ef378b3d8619cfc714b9"
+    },
+    {
+      "name": "Mass Hysteria",
+      "id": "3c1854c9-11df-406d-b751-302b6f3a08fd",
+      "oracle_id": "4500131b-7417-4f30-a1b0-97d51b2e6458",
+      "uri": "https://api.scryfall.com/cards/3c1854c9-11df-406d-b751-302b6f3a08fd",
+      "source_line": 10355,
+      "raw_line_sha256": "4e8c2d27763ff4e624c9d7154614b631a4a21e49a8e7bee40be50c0ca6e9c618"
+    },
+    {
+      "name": "Levitation",
+      "id": "63e5124a-67c0-44ed-8085-28bf37816423",
+      "oracle_id": "94b703c4-5584-4913-8365-7e9f2f535c2d",
+      "uri": "https://api.scryfall.com/cards/63e5124a-67c0-44ed-8085-28bf37816423",
+      "source_line": 22425,
+      "raw_line_sha256": "9ea34a39dc05a9bffeaedd3022861a57d760ab5ea38a9a7744e94487f03a3158"
+    },
+    {
+      "name": "Bedlam",
+      "id": "2788ec1a-930e-4a19-ad69-ea456c1390fd",
+      "oracle_id": "c28d4caf-9b7c-40b1-9cbe-275ca9dae06a",
+      "uri": "https://api.scryfall.com/cards/2788ec1a-930e-4a19-ad69-ea456c1390fd",
+      "source_line": 29303,
+      "raw_line_sha256": "deb648a0dab11857ede788154e56ce4e0fa86c652f90716b5ce20115c88c9445"
+    }
+  ],
+  "metadata_is_execution_certification": false
+}

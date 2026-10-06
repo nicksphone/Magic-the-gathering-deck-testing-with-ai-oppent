@@ -70,6 +70,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
 
 def serialize_match_snapshot(state: MatchState) -> dict:
     """Serialize all mutable rules state needed to resume a match."""
+    from rules_engine.turn_scheduler import snapshot
     return {
         "id": state.id,
         "starting_decks": {str(pid): deepcopy(rows) for pid, rows in state.starting_decks.items()},
@@ -78,6 +79,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "active_player": state.active_player,
         "priority_player": state.priority_player,
         "step": state.step.value,
+        "scheduler": snapshot(state),
         "passed_priority": sorted(state.passed_priority),
         "attackers": list(state.attackers),
         "attack_targets": dict(state.attack_targets),
@@ -309,6 +311,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         if payload.get(key) is not None:
             setattr(state, key, int(payload[key]) if key != "winner" else payload[key])
     state.step = Step(payload.get("step", Step.UNTAP.value))
+    from rules_engine.turn_scheduler import restore
+    if 'scheduler' in payload:
+        restore(state, payload['scheduler'])
     state.starting_decks = {int(pid): deepcopy(rows) for pid, rows in payload.get('starting_decks', {}).items()}
     state.card_observations = {int(pid): deepcopy(rows) for pid, rows in payload.get('card_observations', {}).items()}
     state.failed_draw_players = {int(value) for value in payload.get("failed_draw_players", [])}

@@ -57,8 +57,8 @@ def finish_reorder(state, player_id, action):
         if len(ids) != 1 or ids[0] not in {'keep', 'shuffle'}:
             return False
         if ids[0] == 'shuffle':
-            state.rng.shuffle(library)
-            state.log.append(f'{state.players[player_id].name} shuffles their library.')
+            from rules_engine.shuffle_actions import shuffle_library
+            shuffle_library(state, player_id, resolving_item=pending.get('resolving_item'))
     else:
         options = pending['options']
         if (set(ids) != set(options) or len(ids) != len(options)

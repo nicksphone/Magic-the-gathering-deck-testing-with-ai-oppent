@@ -2,6 +2,22 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Make private restart test clients hydrate through public GET before their
+  existing authenticated audit, preserving privacy checks. Compare disk and
+  cache inventories independently in failed-start rollback tests, with a new
+  corrupt-summary regression. These are test-interface corrections, not a
+  production rollback relaxation. Expanded coupled qualification passes all
+  3,904 cases across 133 declared whole modules in 1474.44s, with no failures,
+  errors or skips. Source hashes and JUnit module coverage are verified.
+
+- Integrate queued sequence scheduling, global static keyword grants and lazy
+  saved-match loading in an isolated candidate. Adapt four restart test workers
+  to restore through public HTTP before inspecting the cache, retaining all
+  original assertions. Independent adapter qualification passes 221 cases;
+  the expanded combined gate passes all 3,904 cases. Current frontend lint,
+  tests and build also pass with existing dependencies. No live deployment
+  or complete rules/AI certification is claimed.
+
 - Compose generic modern/legacy entry-observer dispatch, ordinary Ninjutsu entry
   bookkeeping and complete article-mill instructions on the current Mulligan
   source. Preserve source identity, paid costs, private choices and existing

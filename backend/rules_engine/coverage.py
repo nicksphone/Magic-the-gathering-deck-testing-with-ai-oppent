@@ -19,6 +19,12 @@ def unsupported_resolution_clauses(text: str) -> list[str]:
     """Bounded observed gaps, not proof that other clauses are executable."""
     from rules_engine.oracle_text import without_reminder_text
     text = without_reminder_text(text or '')
+    from rules_engine.turn_scheduler import instruction
+    if instruction(text):
+        return []
+    # A whole activated schema may follow its printed cost on a permanent.
+    text = '\n'.join(line for line in text.splitlines()
+                     if not (':' in line and instruction(line.split(':', 1)[1])))
     from rules_engine.library_reorder import reorder_clause
     return [name for name, pattern in _UNSUPPORTED_RESOLUTION_PATTERNS if pattern.search(text)
             and not (name.startswith('top-library reorder') and reorder_clause(text))]

@@ -244,6 +244,36 @@ class Repository:
     def list_active_matches(self) -> list[ActiveMatchRecord]:
         return list(self.session.exec(select(ActiveMatchRecord).order_by(ActiveMatchRecord.updated_at.desc())).all())
 
+    def iter_active_match_summaries(self):
+        """Discovery metadata only; do not construct gameplay objects or agents."""
+        from game_state.state import Step, Zone
+        query = select(ActiveMatchRecord.id, ActiveMatchRecord.state_json,
+                       ActiveMatchRecord.controller_json).order_by(ActiveMatchRecord.updated_at.desc())
+        for mid, state_json, controller_json in self.session.exec(query.execution_options(yield_per=50)):
+            try:
+                raw, config = json.loads(state_json), json.loads(controller_json)
+                if not isinstance(raw, dict) or not isinstance(config, dict) or raw['id'] != mid:
+                    continue
+                if config.get('match_complete', False):
+                    continue
+                # Reject malformed snapshot envelopes without hydrating every
+                # card. The by-ID loader remains authoritative for full restore.
+                Step(raw.get('step', Step.UNTAP.value))
+                for card in raw['cards'].values():
+                    Zone(card['zone'])
+                    str(card['id']), str(card['name']), int(card['owner']), int(card['controller'])
+                names = {}
+                for player in raw['players'].values():
+                    int(player['life'])
+                    names[int(player['id'])] = str(player['name'])
+                yield {'id': mid, 'mode': str(config.get('mode', 'player_vs_ai')),
+                       'turn': int(raw.get('turn', 1)),
+                       'game_number': int(config.get('game_number', 1)),
+                       'revision': int(config.get('revision', 0)),
+                       'players': [names[pid] for pid in (1, 2)]}
+            except (KeyError, TypeError, ValueError, AttributeError):
+                continue
+
     def delete_active_match(self, match_id: str) -> None:
         row = self.session.get(ActiveMatchRecord, match_id)
         if row is not None:

@@ -55,6 +55,8 @@ def reorder_flow(client, phase, seat, name, root, evidence):
     else:
         saved = json.loads((root / 'reorder-expected.json').read_text())
         identifier = saved['id']
+        response = client.get(f'/matches/{identifier}')
+        assert response.status_code == 200, response.text
         controller = main.ACTIVE_MATCHES[identifier]
         assert wire(serialize_match_snapshot(controller.state)) == saved['snapshot']
         assert wire(main._controller_snapshot(controller)) == saved['config']

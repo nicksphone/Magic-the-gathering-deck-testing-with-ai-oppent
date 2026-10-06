@@ -918,6 +918,13 @@ def _pt_setter_applies(state, source, target_id, scope, other_only, subject):
 
 @_static_parser
 def _iter_keyword_grants(text):
+    # Unconditional global grants use live membership and the source timestamp.
+    for clause in re.split(r'[.\n]', text):
+        match = re.fullmatch(r'(?:all )?(creatures) have (.+)', clause.strip())
+        if match:
+            granted = _attached_keywords(match[2])
+            if granted:
+                yield ('all', False, match[1], tuple(granted))
     for match in PT_AND_KW_STATIC_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()

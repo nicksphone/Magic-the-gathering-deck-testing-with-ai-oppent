@@ -13,6 +13,7 @@ from tests.test_training_suspend_intent_audit import suspend_position, isolated_
 from tests.test_training_keep_hand_intent_audit import opening
 from tests.test_selected_mana_http import game, retain, restart, rejected, forbid_external_network
 from tests.test_api_input_contracts import persist
+from tests.scheduler_fixture_position import ordinary_position
 
 
 def observed_helper(monkeypatch):
@@ -129,6 +130,7 @@ def test_suspend_actual_view_actor_or_incarnation_not_discarded(game, monkeypatc
 @pytest.mark.parametrize('finish', ['cast', 'decline'])
 def test_actual_suspend_upkeep_free_cast_or_decline_http_restart(game, seat, name, finish):
     env, action = suspend_position(seat, name)
+    ordinary_position(env._state)
     cid = action['card_id']
     before = env.snapshot()
     client, match = game
@@ -161,6 +163,7 @@ def test_actual_suspend_upkeep_free_cast_or_decline_http_restart(game, seat, nam
     for count in range(hint['time_counters'], 0, -1):
         controller = main.ACTIVE_MATCHES[identifier]
         controller.state.step = Step.UPKEEP
+        ordinary_position(controller.state)
         emit_event(controller.state, 'begin_step', {'step': 'upkeep', 'active_player': seat})
         assert controller.state.stack[-1].effect_key == 'suspend_upkeep'
         persist(controller)

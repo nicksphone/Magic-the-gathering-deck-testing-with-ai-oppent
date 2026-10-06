@@ -32,6 +32,44 @@ ATTACK_REWARD_RE = re.compile(
 )
 
 
+def _shuffle_observer_triggers(state, card, oracle, payload):
+    """Only complete, anchored shuffle clauses with supported complete bodies."""
+    player = payload.get('player_id')
+    if type(player) is not int or player not in state.players:
+        return []
+    cause = payload.get('cause')
+    out = []
+    for clause in oracle.splitlines():
+        match = re.fullmatch(
+            r'whenever (?:(an opponent|a player) shuffles|'
+            r'a spell or ability causes (a player) to shuffle) their library, (.+)', clause.strip())
+        if not match or (match[1] == 'an opponent' and player == card.controller):
+            continue
+        if match[2] and (
+                not isinstance(cause, dict) or cause.get('kind') not in {'spell', 'activated', 'triggered'}):
+            continue
+        damage = re.fullmatch(r'this (?:artifact|creature|permanent) deals (a|an|one|two|three|four|five|\d+) damage to that player\.', match[3])
+        counter = re.fullmatch(r'you may put (a|an|one|two|three|four|five|\d+) ([+-]\d+/[+-]\d+) counters? on this (?:creature|artifact|permanent)\.', match[3])
+        if damage:
+            key = 'deal_damage'
+            effect = {'amount': _number_token(damage[1]), 'target_player': player}
+        elif counter:
+            key = 'add_counters'
+            effect = {'amount': _number_token(counter[1]), 'counter': counter[2],
+                      'target_card_id': card.id, 'effect_timestamp': object_incarnation(card), '__may': True}
+        else:
+            continue
+        out.append({
+            'source_card_id': card.id, 'controller': card.controller,
+            'label': f'{card.name} shuffle trigger', 'effect_key': key,
+            'payload': {**effect, '__trigger_full_clause': clause,
+                        '__shuffle_player': player, '__shuffle_cause': deepcopy(cause),
+                        '__shuffle_source_reference': {'incarnation': object_incarnation(card),
+                                                      'zone_change_sequence': card.zone_change_sequence}},
+        })
+    return out
+
+
 def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.BATTLEFIELD:
@@ -772,6 +810,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                     })
             elif event == "sacrifice" and _matches_sacrifice_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} sacrifice trigger", event=event, payload=payload))
+            elif event == 'shuffle':
+                out.extend(_shuffle_observer_triggers(state, card, oracle, payload))
             elif event == "discard":
                 for clause in oracle.splitlines():
                     if _matches_discard_trigger(state, card, clause, payload):
@@ -1592,7 +1632,8 @@ def _trigger_from_oracle(
             instruction = entries[0][5]
             data = {'__trigger_full_clause': entries[0][0]}
             supported = (len(entries) == 1 and re.fullmatch(
-                r'(?:each opponent mills (?:a|an) card|you gain \d+ life|put (?:a|an|one|two|three|four|five|\d+) '
+                r'(?:draw (?:a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?'
+                r'|each opponent mills (?:a|an) card|you gain \d+ life|put (?:a|an|one|two|three|four|five|\d+) '
                 r'[+-]\d+/[+-]\d+ counters? on each creature you control)\.',
                 instruction, re.I,
             ))

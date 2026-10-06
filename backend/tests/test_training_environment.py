@@ -8,6 +8,7 @@ from game_state.state import Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from training import TrainingEnvironment, decode_action, encode_action
+from tests.scheduler_fixture_position import ordinary_position
 
 
 def env(seed=17, blue=False):
@@ -43,6 +44,7 @@ def position(seat, spell='Lightning Bolt'):
     state = environment._state
     state.active_player = state.priority_player = seat
     state.step = Step.PRECOMBAT_MAIN
+    ordinary_position(state)
     cid = place(environment, spell, seat, Zone.HAND)
     place(environment, 'Mountain' if spell == 'Lightning Bolt' else 'Island', seat, Zone.BATTLEFIELD)
     return environment, cid
@@ -426,6 +428,7 @@ def test_real_oven_activation_does_not_guess_sacrifice_payment():
     environment.reset('Drain Deck', 'Mono Red Aggro', seed=1)
     keep(environment)
     environment._state.step = Step.PRECOMBAT_MAIN
+    ordinary_position(environment._state)
     oven = place(environment, "Witch's Oven", 1, Zone.BATTLEFIELD)
     familiar = place(environment, 'Cauldron Familiar', 1, Zone.BATTLEFIELD)
     action = {'type': 'activate_ability', 'card_id': oven, 'ability_index': 0, 'targets': {}}

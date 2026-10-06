@@ -8,7 +8,7 @@ from tests.readiness_rules_seam_support import normalize
 
 FIXTURE = Path(__file__).parent / 'fixtures/spell_admission_safety'
 RAW = json.loads((FIXTURE / 'canonical.json').read_text())
-UNSUPPORTED = ('Time Warp', "Day's Undoing", 'Worst Fears', 'Temporal Mastery', 'Relentless Assault')
+UNSUPPORTED = ("Day's Undoing", 'Worst Fears', 'Temporal Mastery', 'Relentless Assault')
 
 
 def canonical(name):

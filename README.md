@@ -18,6 +18,15 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- Queued extra turns and additional combat/main phases for the currently admitted
+  complete clause families, with persisted phase visits and ordinary successor
+  tracking. Other turn-changing mechanics remain unsupported.
+- Saved matches are discovered from persisted summaries and loaded on first
+  match-ID access, rather than eagerly constructing every game at startup.
+  This is a local single-worker design, not distributed-worker coordination.
+- Supported global static keyword grants affect both players' creatures and
+  follow source lifetime and layer ordering.
+
 - Strict Mulligan, Suspend and keep-hand training intents, with explicit source/bottom
   choices and current-actor validation before normalization. Supplied Suspend
   display metadata must match the current offered action. Supplied Mulligan
@@ -200,6 +209,12 @@ capture source, while isolation-sensitive backend fixtures reject physical Git
 metadata in their runtime. Read each qualification's command before execution.
 
 Scoped green gates are not a whole-suite or release certificate. The recent
+queued/global/lazy-recovery composition passes all 3,904 checks across its 133
+declared complete modules, with no failures, errors or skips; frontend lint,
+tests and production build pass with reused installed dependencies. See the
+[coupled acceptance record](docs/testing/queued-global-lazy-current.md) for
+source preservation, prior failures and remaining release limits.
+The recent
 declared Python dependency upgrade passes 600 coupled checks across 13 complete
 API, private-choice, library, recovery, session, sideboard and image modules.
 The refreshed requirements advisory scan is clean; remaining TestClient/httpx

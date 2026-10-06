@@ -1,6 +1,10 @@
 # Queued Turn/Phase Scheduler Proposal
 
-STATUS: design only, not authorized implementation or engine certification.
+STATUS: historical design, now implemented for the bounded families below in
+the unreleased integration candidate. This document retains the original
+proposal rationale; its baseline/red counts are historical, not current status.
+Current coupled qualification remains pending; see
+[the current candidate record](queued-global-lazy-current.md).
 Baseline is frozen M+nth with qualified admission safety, not moving parent.
 The source has fixed TURN_STEPS and no admitted insertion queue. The ten
 historical scheduler contracts remain ordinary red. Do not relax safety markers

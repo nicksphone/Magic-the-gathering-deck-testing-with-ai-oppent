@@ -239,6 +239,13 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.turn_scheduler import instruction
+    scheduled = instruction(oracle)
+    if scheduled in {'target', 'controller'}:
+        return 'extra_turn', ({'target_player': action_targets.get('target_player', controller)}
+                              if scheduled == 'target' else {})
+    if scheduled == 'combat_main':
+        return 'extra_combat_main', {}
     article_mill = re.match(r'(?:(target player|each opponent|you) mills?|mill) (a|an) card\b', oracle.strip())
     if article_mill:
         # Do not compile one supported reward from an unknown compound body.

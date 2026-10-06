@@ -197,6 +197,12 @@ class MatchState:
     active_player: int = 1
     priority_player: int = 1
     step: Step = Step.UNTAP
+    normal_turn_successor: int | None = None
+    extra_turns: list[dict] = field(default_factory=list)
+    next_schedule_ordinal: int = 1
+    phase_plan: list[dict] = field(default_factory=list)
+    phase_cursor: int = 0
+    next_phase_visit: int = 1
     passed_priority: set[int] = field(default_factory=set)
     attackers: list[str] = field(default_factory=list)
     attack_targets: dict[str, str] = field(default_factory=dict)

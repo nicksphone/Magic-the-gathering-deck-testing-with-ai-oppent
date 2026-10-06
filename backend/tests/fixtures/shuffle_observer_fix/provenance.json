@@ -1,0 +1,79 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "b2940c590f40c0377c5e6abdf5e2459abd4e1c45fdc75fd300b0e450b4e15e71",
+  "selection": "Exact nine names; full unchanged canonical raw objects",
+  "cards": [
+    {
+      "name": "Lightning Bolt",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "uri": "https://api.scryfall.com/cards/7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_text": "Lightning Bolt deals 3 damage to any target."
+    },
+    {
+      "name": "Leyline of Sanctity",
+      "id": "be8b1acf-dd87-42ca-ad19-c27d21066030",
+      "oracle_id": "492e0e6c-8c27-4376-938b-f8a8b6205810",
+      "uri": "https://api.scryfall.com/cards/be8b1acf-dd87-42ca-ad19-c27d21066030",
+      "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nYou have hexproof. (You can't be the target of spells or abilities your opponents control.)"
+    },
+    {
+      "name": "Unsummon",
+      "id": "ddad9f16-52d5-49de-82b0-b1a5294a9c44",
+      "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561",
+      "uri": "https://api.scryfall.com/cards/ddad9f16-52d5-49de-82b0-b1a5294a9c44",
+      "oracle_text": "Return target creature to its owner's hand."
+    },
+    {
+      "name": "Widespread Panic",
+      "id": "d9e1b37f-8168-4dc0-858f-434ee96ff748",
+      "oracle_id": "853a3c2b-3d37-453a-8a77-4d90bd3a1cb7",
+      "uri": "https://api.scryfall.com/cards/d9e1b37f-8168-4dc0-858f-434ee96ff748",
+      "oracle_text": "Whenever a spell or ability causes its controller to shuffle their library, that player puts a card from their hand on top of their library."
+    },
+    {
+      "name": "Disenchant",
+      "id": "7ac43e16-8b14-46f2-877a-600ea918766b",
+      "oracle_id": "a7e97fa9-4b72-4548-b854-5be5f18a6f1a",
+      "uri": "https://api.scryfall.com/cards/7ac43e16-8b14-46f2-877a-600ea918766b",
+      "oracle_text": "Destroy target artifact or enchantment."
+    },
+    {
+      "name": "Protection of the Hekma",
+      "id": "15d01e04-7c40-4af0-b5bd-5fa267d10378",
+      "oracle_id": "c5f611c9-9e6e-4719-ad71-8686327a8564",
+      "uri": "https://api.scryfall.com/cards/15d01e04-7c40-4af0-b5bd-5fa267d10378",
+      "oracle_text": "If a source an opponent controls would deal damage to you, prevent 1 of that damage."
+    },
+    {
+      "name": "Counterspell",
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "uri": "https://api.scryfall.com/cards/4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_text": "Counter target spell."
+    },
+    {
+      "name": "Psychic Surgery",
+      "id": "51ea9a6d-d6ca-48cb-adac-958ad0e7440c",
+      "oracle_id": "e5128230-3535-4f77-8b97-20d0791e7b1d",
+      "uri": "https://api.scryfall.com/cards/51ea9a6d-d6ca-48cb-adac-958ad0e7440c",
+      "oracle_text": "Whenever an opponent shuffles their library, you may look at the top two cards of that library. You may exile one of those cards. Then put the rest on top of that library in any order."
+    },
+    {
+      "name": "Absolute Law",
+      "id": "59d1f05b-f165-47c7-8a78-3b60ee3298ca",
+      "oracle_id": "f4aa8391-34d5-4ad2-a981-9aa08f8229db",
+      "uri": "https://api.scryfall.com/cards/59d1f05b-f165-47c7-8a78-3b60ee3298ca",
+      "oracle_text": "All creatures have protection from red."
+    }
+  ],
+  "extra_files": {
+    "mask-of-law-and-grace.json": {
+      "sha256": "f024a826e3a2b5c78d068d53839adcbea9b4aaa68311bb7e172a67b61cfc45c5",
+      "raw_source": "same full canonical corpus; exact name unchanged object",
+      "oracle_id": "21474195-5d91-466d-8874-4818c900dea7",
+      "uri": "https://api.scryfall.com/cards/6bd97150-b405-4bb5-b5a8-fceda4a45ebb"
+    }
+  }
+}

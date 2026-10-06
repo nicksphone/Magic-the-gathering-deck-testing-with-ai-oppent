@@ -115,6 +115,10 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
     if not isinstance(payload, dict):
         state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
         return
+    if effect_key in {'extra_turn', 'extra_combat_main'}:
+        from rules_engine.turn_scheduler import resolve_turn, resolve_combat_main
+        (resolve_turn if effect_key == 'extra_turn' else resolve_combat_main)(state, controller, payload)
+        return
     if effect_key == 'conditional_instruction':
         from rules_engine.conditional_instructions import resolve_instruction
         resolve_instruction(state, controller, payload)

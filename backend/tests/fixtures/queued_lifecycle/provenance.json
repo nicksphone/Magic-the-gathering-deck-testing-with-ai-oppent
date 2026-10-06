@@ -1,0 +1,27 @@
+{
+  "canonical_sha256": "e268165b1fed84e45a0586449d1e3a1f526929ba4b519015f80f96aff01422c8",
+  "facts_modified": false,
+  "intake_before_tests": true,
+  "rows": {
+    "Giant Growth": {
+      "id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900",
+      "oracle_id": "5748ebf1-24e3-499d-ab7c-c2cebd462a24",
+      "raw_sha256": "746434ce8ebf896d5574a6290b774906828a23459a54e4d038cb545bbc81743a",
+      "source_line": 13086
+    },
+    "Sangromancer": {
+      "id": "59f7f84c-d0a8-4204-a68e-93075f2a96b0",
+      "oracle_id": "920445ab-0ac2-4de7-bc1c-f5e58eb4424c",
+      "raw_sha256": "a50b957e3df4fefa7715f20dad6f25e0e37bdf24d27809b72d7f88f950f556d0",
+      "source_line": 21979
+    },
+    "Verdant Force": {
+      "id": "1d972f97-1945-440b-8bd3-63038db22257",
+      "oracle_id": "7a21ea22-3cd7-4c11-8895-5943c0d93a0d",
+      "raw_sha256": "c5c12a3491ebe5fc867d9043b4717863358c5cd87601724b7bae97e318fd3dd5",
+      "source_line": 18392
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

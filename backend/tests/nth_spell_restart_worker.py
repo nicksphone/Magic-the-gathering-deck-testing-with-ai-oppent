@@ -60,6 +60,11 @@ def run(phase,seat,root):
             evidence.update(pending_trigger_survives=True,count=2)
         else:
             saved=json.loads((root/'expected.json').read_text())
+            listed=client.get('/matches')
+            assert listed.status_code==200,listed.text
+            assert saved['mid'] in {item['id'] for item in listed.json()}
+            restored=client.get('/matches/'+saved['mid'])
+            assert restored.status_code==200,restored.text
             c=main.ACTIVE_MATCHES[saved['mid']]
             assert wire(serialize_match_snapshot(c.state))==saved['snapshot']
             assert wire(main._controller_snapshot(c))==saved['config']

@@ -72,11 +72,11 @@ class RulesEngine:
             return
 
         self._clear_mana_pools(state)
-        idx = TURN_STEPS.index(state.step)
-        if idx == len(TURN_STEPS) - 1:
-            state.spells_cast_last_turn = int(state.spells_cast_this_turn.get(state.active_player, 0) or 0)
+        from rules_engine.turn_scheduler import advance
+        outgoing_count = int(state.spells_cast_this_turn.get(state.active_player, 0) or 0)
+        if advance(state):
+            state.spells_cast_last_turn = outgoing_count
             state.turn += 1
-            state.active_player = 1 if state.active_player == 2 else 2
             state.spells_cast_this_turn = {1: 0, 2: 0}
             state.kicked_spells_cast_this_turn = {1: 0, 2: 0}
             state.foretells_this_turn = {1: 0, 2: 0}
@@ -87,7 +87,6 @@ class RulesEngine:
             state.land_entries_this_turn = {1: 0, 2: 0}
             state.land_entry_history_known = True
             state.players_with_permanent_departure = set()
-            state.step = TURN_STEPS[0]
             state.loyalty_activated_this_turn = set()
             state.trigger_once_seen_this_turn = set()
             player = state.players[state.active_player]
@@ -107,7 +106,18 @@ class RulesEngine:
                     if expiry >= state.turn and cid in player_state.exile
                 }
         else:
-            state.step = TURN_STEPS[idx + 1]
+            if state.step == Step.BEGIN_COMBAT:
+                state.attackers = []
+                state.attack_targets = {}
+                state.blocks = {}
+                state.blockers_declared = False
+                state.attack_bands = []
+                state.attackers_declared = False
+                state.combat_damage_resolved = False
+                state.combat_damage_stage = "none"
+                state.first_strike_damage_ids = set()
+                state.combat_damage_assignments = {}
+                state.combat_assignment_queue = []
             if state.step == Step.DECLARE_ATTACKERS:
                 state.attack_bands = []
                 state.attackers_declared = False

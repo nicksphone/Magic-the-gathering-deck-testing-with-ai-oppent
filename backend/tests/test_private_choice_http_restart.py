@@ -74,6 +74,8 @@ class Server:
         assert self.proc.pid != prior
 
     def audit(self, identifier):
+        status, _ = self.call(f'/matches/{identifier}')
+        assert status == 200
         status, row = self.call(f'/fixture/private-choice/{identifier}/audit')
         assert status == 200
         return row

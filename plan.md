@@ -2,6 +2,35 @@
 
 ## Current Execution Order
 
+### Queued Sequences, Static Grants And Lazy Recovery
+
+The current isolated integration candidate combines queued turns/combat-main
+phases, explicit shuffle observers, bounded global keyword grants, lazy saved
+match loading and public-HTTP restart adapters. It is not deployed.
+
+The first combined gate was interrupted after 20 failures and 1,534 passes:
+old test workers inspected the intentionally empty startup cache before making
+a public match request. Four worker adapters now discover and GET the saved
+match first, preserving the original assertions. Their independent six-module
+gate passed 221 cases; the current-source rerun also passed all 221 in 190.83s
+with unchanged source hashes. An interrupted combined attempt exposed missing
+isolation configuration and a disk/cache inventory assumption. The affected
+modules pass separately after correcting the declaration and preserving separate
+pre-write inventories. The fresh expanded coupled gate passes all 3,904 cases
+across all 133 declared whole modules in 1474.44s, with zero failures, errors or
+skips. JUnit counts/module coverage and unchanged backend source hashes are
+verified. Frontend lint, tests and production build pass with reused installed
+dependencies. The earlier interrupted runs remain separate historical evidence;
+this is not full-suite, browser, deployment or expert-AI acceptance.
+
+Next gates: compose paid optional effects only after their partitioned gates;
+finish newer-source qualification of harmful friendly-damage AI materialization;
+admit the frozen self-graveyard cost/static-cause producer only after current-source
+composition tests. Worker producer/resolution passes do not certify this source.
+Kozilek triggers, direct death-route migrations and image-cache eviction recovery
+remain separate open work. Private HTTP harness recovery is included in the
+completed coupled gate. See the candidate acceptance record below.
+
 ### Entry Bookkeeping And Complete Article Mill
 
 Modern and legacy entry observers now share anchored predicate handling and
