@@ -529,8 +529,11 @@ Private-choice and foretell consumer audits have outstanding rejection/view gaps
   funded-removal golden; original full-suite errors remain in their own ledger.
 - [ ] Audit ninjutsu with a complete verified canonical fixture; the foretell
   qualification is not evidence for the distinct ninjutsu action family.
-- [ ] Implement actual paid optional-trigger payment/continuation; preserve
+- [x] Implement supported paid optional-trigger payment/continuation; preserve
   actor, restrictions, targets, stack tails and restart without free rewards.
+  Current acceptance: 27 whole modules / 800 passes plus a separate unchanged
+  25-case whole-view audit. See docs/testing/optional-paid-current-composition.md;
+  arbitrary optional clauses remain outside this bounded completion.
 - [ ] Qualify multiple matched cast abilities/order and uncommon conditions.
 - [ ] Requalify the readonly combat-query optimization on this exact composition;
   preserve all candidate projections, actions and full applied states.
