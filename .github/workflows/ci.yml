@@ -11,8 +11,8 @@ jobs:
   backend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.12'
       - name: Install backend dependencies
@@ -20,15 +20,21 @@ jobs:
       - name: Backend tests
         run: |
           scratch=$(mktemp -d "$RUNNER_TEMP/mtg-backend-tests-XXXXXX")
-          git archive HEAD backend | tar -xf - -C "$scratch"
+          git archive HEAD | tar -xf - -C "$scratch"
+          printf '%s' "$scratch" > "$scratch/.private-choice-audit-source"
           cd "$scratch/backend"
-          MTG_ISOLATED_TEST_ROOT="$scratch" python -m pytest -q
+          PYTHONPATH="$scratch/backend" MTG_ISOLATED_TEST_ROOT="$scratch" python -m pytest -q
 
   frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12'
+      - name: Install backend fixture dependencies
+        run: python -m pip install -r backend/requirements.txt
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '22'
           cache: npm
@@ -44,17 +50,19 @@ jobs:
         run: npm run lint
       - name: Frontend unit tests
         working-directory: frontend
-        run: npm run test:unit
+        env:
+          MTG_TEST_PYTHON: python
+        run: npm test
 
   browser:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.12'
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '22'
           cache: npm

@@ -145,6 +145,7 @@ use source-relative SQLite. Run a disposable local copy without a physical
 PY="$PWD/backend/.venv/bin/python"
 scratch=$(mktemp -d)
 git archive HEAD | tar -xf - -C "$scratch"
+printf '%s' "$scratch" > "$scratch/.private-choice-audit-source"
 (cd "$scratch/backend" && \
   PYTHONPATH="$scratch/backend" MTG_ISOLATED_TEST_ROOT="$scratch" \
   "$PY" -m pytest -q)
@@ -153,6 +154,9 @@ git archive HEAD | tar -xf - -C "$scratch"
 This tests committed `HEAD`, not uncommitted work. Preserve results before
 removing your disposable checkout. Cold child-process probes require the shown
 `PYTHONPATH`. Large suites can take substantially longer than a smoke test.
+Keep the complete source tree: backend contract checks also inspect frontend
+sources. The exact-path marker belongs only in that disposable, Git-free copy;
+it does not authorize testing against a live database.
 
 Frontend gates use the external backend interpreter for canonical fixtures:
 

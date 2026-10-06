@@ -2,6 +2,12 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Fix CI isolation to archive the complete tracked source and create the private
+  choice audit marker only in its disposable checkout. Configure frontend CI
+  with Python fixture dependencies and the complete `npm test` command. The old
+  backend-only setup reproduces one failure and eight errors; the corrected two
+  affected modules pass 157 checks in 44.60 seconds and full frontend tests pass.
+  Hosted CI, fresh dependency installation and release-wide acceptance remain open.
 - Bind pending Ninjutsu to its original hand-zone sequence. A card that leaves
   and reenters hand is not moved by the old ability; paid costs remain paid.
   Combined consumer/engine/nth gate: 167 passes in 187.43 seconds, including the

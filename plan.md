@@ -2,6 +2,17 @@
 
 ## Current Execution Order
 
+### Release Check Isolation
+
+The milestone CI candidate now archives all tracked source for backend tests,
+creates the private-choice ownership marker only in the disposable checkout,
+and supplies Python fixture dependencies for the complete frontend test command.
+The former backend-only setup reproduces one failure and eight errors in nine
+checks. Both affected complete backend modules pass 157 checks in 44.60 seconds
+with unchanged Python source hashes; the complete frontend test command passes.
+Workflow YAML and shell syntax are validated locally. Hosted CI and clean-install
+verification remain outstanding; this is not a full-suite or deployment claim.
+
 ### Rules, Human Choices And Corpus Identity
 
 This newer composition is qualified in isolated copies, not yet deployed.
