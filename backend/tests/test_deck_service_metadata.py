@@ -52,7 +52,8 @@ class _FakeRepo:
         return _FakeRecord()
 
 
-def test_import_deck_text_exposes_resolved_card_metadata() -> None:
+def test_import_deck_text_exposes_resolved_card_metadata(monkeypatch) -> None:
+    monkeypatch.setattr("card_data.display.local_image_available", lambda uri: uri == "/card-images/fire-ice.png")
     service = DeckService(_FakeRepo())
     out = service.import_deck_text("Modal Test", "4 Fire // Ice\n56 Island", source="user")
     assert out["deck_id"] == 7

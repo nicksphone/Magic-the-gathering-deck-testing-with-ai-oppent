@@ -18,6 +18,20 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- Fixed positive source +1/+1 counter activation costs are validated and paid
+  once on announcement. Ability target hints do not inherit the source's spell
+  mana cost; genuine chosen-X ability values and source/LKI protection are retained.
+  Other counter kinds and compound counter costs remain outside this admission.
+- The offline seed preserves all 119 rows and supplies colors for all eight
+  two-faced cards: ten canonical face facts and six separately provenance-backed
+  derived facts. Generic exact-printing loyalty recovery avoids named exceptions.
+- Human legend keeper choices require an explicit offered card. Whole-view
+  training intents accept legend context only when it exactly matches current
+  authoritative state; supplied context cannot select or replace the keeper.
+- AI valuation uses the selected casting face and authoritative available costs
+  when reserving supported Adventure interaction. Optional extra-land execution
+  remains unfinished; these policies are not professional-level AI certification.
+
 - The local corpus diagnostic uses shared hydration and runtime card facts,
   including verified knowledge and faces. It reports data admission, parser
   paths and choices without equating parser recognition with rules correctness.

@@ -1,0 +1,470 @@
+[
+  {
+    "basis": "this canonical face mana_cost; not root colors or color_identity",
+    "characteristic_context": "normal characteristics; not stack-as-Adventure",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "R"
+    ],
+    "derivation": {
+      "color_defining_ability_admission": "reviewed_absent_in_complete_canonical_face_oracle",
+      "contract_version": "proposal-1-basic-colored-symbols-reviewed-no-CDA",
+      "devoid_present": false,
+      "official_cr_sha256": "8d860e451f20f38865b725b42d82feb714c725373dd8f3b32b8652b3eeb070ca",
+      "reviewed_clauses": [
+        "targeting trigger deals damage"
+      ],
+      "rules": [
+        "105.2",
+        "202.2a",
+        "202.2b",
+        "202.2c",
+        "715.3b",
+        "715.4"
+      ],
+      "unsupported_color_semantics": []
+    },
+    "face_index": 0,
+    "face_mana_cost": "{2}{R}",
+    "face_name": "Bonecrusher Giant",
+    "face_oracle_sha256": "3618b0f3ed700f6bd1a2add542921393dff5690710ef86c11d1a97d5268d7d05",
+    "fact_kind": "derived_rule_fact",
+    "layout": "adventure",
+    "oracle_id": "d6d72f5f-8f5d-4180-b514-f22ff5482902",
+    "raw_colors_present": false,
+    "raw_sha256": "d4d02d17fad14ea9b121cc0e98393366c358ad1cb304350b737a6cfbf695793b",
+    "requested_name": "Bonecrusher Giant",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "b5b71cd2-de35-451f-b16e-2e3936169407"
+  },
+  {
+    "basis": "this canonical face mana_cost; not root colors or color_identity",
+    "characteristic_context": "stack-as-Adventure alternative characteristics",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "R"
+    ],
+    "derivation": {
+      "color_defining_ability_admission": "reviewed_absent_in_complete_canonical_face_oracle",
+      "contract_version": "proposal-1-basic-colored-symbols-reviewed-no-CDA",
+      "devoid_present": false,
+      "official_cr_sha256": "8d860e451f20f38865b725b42d82feb714c725373dd8f3b32b8652b3eeb070ca",
+      "reviewed_clauses": [
+        "turn-long damage-prevention prohibition",
+        "damage to any target"
+      ],
+      "rules": [
+        "105.2",
+        "202.2a",
+        "202.2b",
+        "202.2c",
+        "715.3b",
+        "715.4"
+      ],
+      "unsupported_color_semantics": []
+    },
+    "face_index": 1,
+    "face_mana_cost": "{1}{R}",
+    "face_name": "Stomp",
+    "face_oracle_sha256": "a7c562eb1cf3b9072e684de88c0229bdaca91821876228093e73b38362035898",
+    "fact_kind": "derived_rule_fact",
+    "layout": "adventure",
+    "oracle_id": "d6d72f5f-8f5d-4180-b514-f22ff5482902",
+    "raw_colors_present": false,
+    "raw_sha256": "d4d02d17fad14ea9b121cc0e98393366c358ad1cb304350b737a6cfbf695793b",
+    "requested_name": "Bonecrusher Giant",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "b5b71cd2-de35-451f-b16e-2e3936169407"
+  },
+  {
+    "basis": "this canonical face mana_cost; not root colors or color_identity",
+    "characteristic_context": "normal characteristics; not stack-as-Adventure",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "U"
+    ],
+    "derivation": {
+      "color_defining_ability_admission": "reviewed_absent_in_complete_canonical_face_oracle",
+      "contract_version": "proposal-1-basic-colored-symbols-reviewed-no-CDA",
+      "devoid_present": false,
+      "official_cr_sha256": "8d860e451f20f38865b725b42d82feb714c725373dd8f3b32b8652b3eeb070ca",
+      "reviewed_clauses": [
+        "Flash",
+        "Flying",
+        "blocking restriction"
+      ],
+      "rules": [
+        "105.2",
+        "202.2a",
+        "202.2b",
+        "202.2c",
+        "715.3b",
+        "715.4"
+      ],
+      "unsupported_color_semantics": []
+    },
+    "face_index": 0,
+    "face_mana_cost": "{1}{U}{U}",
+    "face_name": "Brazen Borrower",
+    "face_oracle_sha256": "21bef2c12d7eab77c00be8877e1992e40e6aa8024957eddfd93415d4ac7aec06",
+    "fact_kind": "derived_rule_fact",
+    "layout": "adventure",
+    "oracle_id": "c7b044c3-3cfa-407e-bf20-2875e8e04b7b",
+    "raw_colors_present": false,
+    "raw_sha256": "676ddf7297bc8cd2e8ee8161df47a4af5b1266a4e50fd0b43217f23849b5ca46",
+    "requested_name": "Brazen Borrower",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "25d309d6-9e56-441e-bd29-5c903d5221bf"
+  },
+  {
+    "basis": "this canonical face mana_cost; not root colors or color_identity",
+    "characteristic_context": "stack-as-Adventure alternative characteristics",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "U"
+    ],
+    "derivation": {
+      "color_defining_ability_admission": "reviewed_absent_in_complete_canonical_face_oracle",
+      "contract_version": "proposal-1-basic-colored-symbols-reviewed-no-CDA",
+      "devoid_present": false,
+      "official_cr_sha256": "8d860e451f20f38865b725b42d82feb714c725373dd8f3b32b8652b3eeb070ca",
+      "reviewed_clauses": [
+        "return targeted opposing nonland permanent"
+      ],
+      "rules": [
+        "105.2",
+        "202.2a",
+        "202.2b",
+        "202.2c",
+        "715.3b",
+        "715.4"
+      ],
+      "unsupported_color_semantics": []
+    },
+    "face_index": 1,
+    "face_mana_cost": "{1}{U}",
+    "face_name": "Petty Theft",
+    "face_oracle_sha256": "a5b4e812359fb4553931eb3bb4c23d202e2e006b6bdbbe0daf542fcdf3dddb03",
+    "fact_kind": "derived_rule_fact",
+    "layout": "adventure",
+    "oracle_id": "c7b044c3-3cfa-407e-bf20-2875e8e04b7b",
+    "raw_colors_present": false,
+    "raw_sha256": "676ddf7297bc8cd2e8ee8161df47a4af5b1266a4e50fd0b43217f23849b5ca46",
+    "requested_name": "Brazen Borrower",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "25d309d6-9e56-441e-bd29-5c903d5221bf"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "W"
+    ],
+    "derivation": null,
+    "face_index": 0,
+    "face_mana_cost": "{2}{W}",
+    "face_name": "Brutal Cathar",
+    "face_oracle_sha256": "99c7d767232331525c88bd2fcba60ed0b8b0f5150e736f9d63ec28c321255a8a",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "1ed2d8e0-462b-468e-8fd3-1f3c6d99fb8a",
+    "raw_colors_present": true,
+    "raw_sha256": "985cd305e718521aa25ab927260984375ae7358977a532819f3b8486010c908f",
+    "requested_name": "Brutal Cathar",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "0dbac7ce-a6fa-466e-b6ba-173cf2dec98e"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": [
+      "R"
+    ],
+    "color_indicator_present": true,
+    "colors": [
+      "R"
+    ],
+    "derivation": null,
+    "face_index": 1,
+    "face_mana_cost": "",
+    "face_name": "Moonrage Brute",
+    "face_oracle_sha256": "cf48c85da5d1efc5c4af81ce3e165426a15efc433e65e4f9601bc6b1cedb6383",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "1ed2d8e0-462b-468e-8fd3-1f3c6d99fb8a",
+    "raw_colors_present": true,
+    "raw_sha256": "985cd305e718521aa25ab927260984375ae7358977a532819f3b8486010c908f",
+    "requested_name": "Brutal Cathar",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "0dbac7ce-a6fa-466e-b6ba-173cf2dec98e"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "U"
+    ],
+    "derivation": null,
+    "face_index": 0,
+    "face_mana_cost": "{U}",
+    "face_name": "Delver of Secrets",
+    "face_oracle_sha256": "4e31a06f1ef4092854183aefc6905e2f2e78439932d720d23524450321c12bc4",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "edd531b9-f615-4399-8c8c-1c5e18c4acbf",
+    "raw_colors_present": true,
+    "raw_sha256": "7e9b6ff983469671659cf9a56bde06535c0938f6cf8ac45cae2619c3040311f6",
+    "requested_name": "Delver of Secrets",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "6904ea20-e504-47da-95a0-08739fdde260"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": [
+      "U"
+    ],
+    "color_indicator_present": true,
+    "colors": [
+      "U"
+    ],
+    "derivation": null,
+    "face_index": 1,
+    "face_mana_cost": "",
+    "face_name": "Insectile Aberration",
+    "face_oracle_sha256": "75a4c2fe3b9e4d3cd2bd3d7787c7c138adf405fad5c27011227787947baf9b14",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "edd531b9-f615-4399-8c8c-1c5e18c4acbf",
+    "raw_colors_present": true,
+    "raw_sha256": "7e9b6ff983469671659cf9a56bde06535c0938f6cf8ac45cae2619c3040311f6",
+    "requested_name": "Delver of Secrets",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "6904ea20-e504-47da-95a0-08739fdde260"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "R"
+    ],
+    "derivation": null,
+    "face_index": 0,
+    "face_mana_cost": "{2}{R}",
+    "face_name": "Fable of the Mirror-Breaker",
+    "face_oracle_sha256": "3f7bb0279fbd06fa2123024154d55dec88d95ed0ed7bcdce5d0b20e6531845b3",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "c0957e5e-c71b-439c-931c-9f55d2f76ace",
+    "raw_colors_present": true,
+    "raw_sha256": "e13080b2035523d7f9728e70f67b88c60417e156ffceb10471a5783abc183bf3",
+    "requested_name": "Fable of the Mirror-Breaker",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "24c0d87b-0049-4beb-b9cb-6f813b7aa7dc"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": [
+      "R"
+    ],
+    "color_indicator_present": true,
+    "colors": [
+      "R"
+    ],
+    "derivation": null,
+    "face_index": 1,
+    "face_mana_cost": "",
+    "face_name": "Reflection of Kiki-Jiki",
+    "face_oracle_sha256": "bf2a32d3f64b1dc9229d111304dcf5878f5f6f8a521fb355e2bf18f2d807deb3",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "c0957e5e-c71b-439c-931c-9f55d2f76ace",
+    "raw_colors_present": true,
+    "raw_sha256": "e13080b2035523d7f9728e70f67b88c60417e156ffceb10471a5783abc183bf3",
+    "requested_name": "Fable of the Mirror-Breaker",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "24c0d87b-0049-4beb-b9cb-6f813b7aa7dc"
+  },
+  {
+    "basis": "this canonical face mana_cost; not root colors or color_identity",
+    "characteristic_context": "normal characteristics; not stack-as-Adventure",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "R"
+    ],
+    "derivation": {
+      "color_defining_ability_admission": "reviewed_absent_in_complete_canonical_face_oracle",
+      "contract_version": "proposal-1-basic-colored-symbols-reviewed-no-CDA",
+      "devoid_present": false,
+      "official_cr_sha256": "8d860e451f20f38865b725b42d82feb714c725373dd8f3b32b8652b3eeb070ca",
+      "reviewed_clauses": [
+        "entry-triggered temporary creature pump and haste"
+      ],
+      "rules": [
+        "105.2",
+        "202.2a",
+        "202.2b",
+        "202.2c",
+        "715.3b",
+        "715.4"
+      ],
+      "unsupported_color_semantics": []
+    },
+    "face_index": 0,
+    "face_mana_cost": "{2}{R}",
+    "face_name": "Imodane's Recruiter",
+    "face_oracle_sha256": "3b04690e8b3090f8d56e59c9d6de8229778944fcb211ae0035e5d79630e2c97c",
+    "fact_kind": "derived_rule_fact",
+    "layout": "adventure",
+    "oracle_id": "50bee80e-89df-48c2-b608-ba66ff3e794a",
+    "raw_colors_present": false,
+    "raw_sha256": "9749c7b483a8085fe5a4cdc6ebed5c77dad66ca2cf3a82a680a5281815eccf25",
+    "requested_name": "Imodane's Recruiter",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "4dbaa855-3f8e-42e6-8ec8-5ffbc5c8acf0"
+  },
+  {
+    "basis": "this canonical face mana_cost; not root colors or color_identity",
+    "characteristic_context": "stack-as-Adventure alternative characteristics",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "W"
+    ],
+    "derivation": {
+      "color_defining_ability_admission": "reviewed_absent_in_complete_canonical_face_oracle",
+      "contract_version": "proposal-1-basic-colored-symbols-reviewed-no-CDA",
+      "devoid_present": false,
+      "official_cr_sha256": "8d860e451f20f38865b725b42d82feb714c725373dd8f3b32b8652b3eeb070ca",
+      "reviewed_clauses": [
+        "create explicitly white Knight tokens",
+        "Adventure exile/casting reminder"
+      ],
+      "rules": [
+        "105.2",
+        "202.2a",
+        "202.2b",
+        "202.2c",
+        "715.3b",
+        "715.4"
+      ],
+      "unsupported_color_semantics": []
+    },
+    "face_index": 1,
+    "face_mana_cost": "{4}{W}",
+    "face_name": "Train Troops",
+    "face_oracle_sha256": "139e71fd9ab53d7483447ce59331a28f8825d5437b10dbd67699cd1af98b40de",
+    "fact_kind": "derived_rule_fact",
+    "layout": "adventure",
+    "oracle_id": "50bee80e-89df-48c2-b608-ba66ff3e794a",
+    "raw_colors_present": false,
+    "raw_sha256": "9749c7b483a8085fe5a4cdc6ebed5c77dad66ca2cf3a82a680a5281815eccf25",
+    "requested_name": "Imodane's Recruiter",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "4dbaa855-3f8e-42e6-8ec8-5ffbc5c8acf0"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "R"
+    ],
+    "derivation": null,
+    "face_index": 0,
+    "face_mana_cost": "{R}",
+    "face_name": "Kumano Faces Kakkazan",
+    "face_oracle_sha256": "00b018119af15ca69c42833f61a81b51ecc5ad2f3a9b0cb80091a24312f14323",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "535916f8-b51a-4414-8ab0-fdccdefd9433",
+    "raw_colors_present": true,
+    "raw_sha256": "9b5209d442edbb8a282163085f6cbb81c19474a4c120dccb4ac009e09cee5ddd",
+    "requested_name": "Kumano Faces Kakkazan",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "28d92cad-45b0-479d-97fc-c175f3a3f259"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": [
+      "R"
+    ],
+    "color_indicator_present": true,
+    "colors": [
+      "R"
+    ],
+    "derivation": null,
+    "face_index": 1,
+    "face_mana_cost": "",
+    "face_name": "Etching of Kumano",
+    "face_oracle_sha256": "6fec9c4f8a64fbaab0d7157b9690476e04db2417fa684a772c667dce8f159923",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "535916f8-b51a-4414-8ab0-fdccdefd9433",
+    "raw_colors_present": true,
+    "raw_sha256": "9b5209d442edbb8a282163085f6cbb81c19474a4c120dccb4ac009e09cee5ddd",
+    "requested_name": "Kumano Faces Kakkazan",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "28d92cad-45b0-479d-97fc-c175f3a3f259"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": null,
+    "color_indicator_present": false,
+    "colors": [
+      "W"
+    ],
+    "derivation": null,
+    "face_index": 0,
+    "face_mana_cost": "{2}{W}",
+    "face_name": "Wedding Announcement",
+    "face_oracle_sha256": "e2186f15d238603560eaf36e29fc9749ad1b6635ad354b3bb6f659dc83f90c64",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "259ac30c-cc05-4c04-9b23-71283f84b808",
+    "raw_colors_present": true,
+    "raw_sha256": "193fd308cdafe8e7dab1cc780ec043a636596b6719c6808b362eecc4dc4f559a",
+    "requested_name": "Wedding Announcement",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "4e6f365d-c5c4-4fd6-94cb-833b89239d73"
+  },
+  {
+    "basis": "Scryfall card_faces.colors",
+    "characteristic_context": "selected transform face base characteristics",
+    "color_indicator": [
+      "W"
+    ],
+    "color_indicator_present": true,
+    "colors": [
+      "W"
+    ],
+    "derivation": null,
+    "face_index": 1,
+    "face_mana_cost": "",
+    "face_name": "Wedding Festivity",
+    "face_oracle_sha256": "ce0bb963a8a090d56153734aa724b38c056130c01caae4d3824e308561fc2ca4",
+    "fact_kind": "canonical_explicit",
+    "layout": "transform",
+    "oracle_id": "259ac30c-cc05-4c04-9b23-71283f84b808",
+    "raw_colors_present": true,
+    "raw_sha256": "193fd308cdafe8e7dab1cc780ec043a636596b6719c6808b362eecc4dc4f559a",
+    "requested_name": "Wedding Announcement",
+    "runtime_effect_certificate": false,
+    "scryfall_id": "4e6f365d-c5c4-4fd6-94cb-833b89239d73"
+  }
+]

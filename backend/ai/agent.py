@@ -1882,8 +1882,7 @@ class AIAgent:
             if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
         )
         if mtype == "cast_spell":
-            cid = move.get("card_id")
-            card = state.cards.get(cid) if cid else None
+            card = _card_for_move(state, move)
             if card:
                 tags = self._spell_tags(card)
                 if "draw" in tags or "removal" in tags or "counter" in tags:
@@ -2039,11 +2038,42 @@ class AIAgent:
                        if cid in state.cards and 'Creature' in effective_types(state, state.cards[cid]))
         if pressure >= state.players[player_id].life:
             return 0.0
-        responses = [state.cards[cid] for cid in state.players[player_id].hand
-                     if cid != card.id and cid in state.cards
-                     and 'Instant' in effective_types(state, state.cards[cid])
-                     and self._spell_tags(state.cards[cid]) & {'counter', 'removal'}
-                     and self._can_pay_card_cost(state, player_id, state.cards[cid])]
+        from rules_engine.ability_model import unsupported_spell_reason
+        from rules_engine.cast_choice import available_cast_options_and_hints
+        from rules_engine.costs import collect_cost_options, check_cost_option_available
+        from rules_engine.restrictions import can_cast_in_current_timing
+        responses = []
+        for cid in state.players[player_id].hand:
+            if cid == card.id or cid not in state.cards:
+                continue
+            original = state.cards[cid]
+            indices = (range(len(original.card_faces))
+                       if original.layout in {'modal_dfc', 'adventure', 'split'} else [0])
+            for index in indices:
+                response_move = {'type': 'cast_spell', 'card_id': cid, 'selected_face_index': index}
+                response = _card_for_move(state, response_move)
+                if ('Instant' not in effective_types(state, response)
+                        or not can_cast_in_current_timing(state, response, player_id)[0]
+                        or unsupported_spell_reason(original, response_move)):
+                    continue
+                response_tags = self._spell_tags(response)
+                if 'counter' in response_tags:
+                    # Reserve a payable future counter without inventing a stack target.
+                    options = [option for option in collect_cost_options(state, player_id, response)
+                               if check_cost_option_available(state, player_id, response, option)]
+                else:
+                    options, _ = available_cast_options_and_hints(state, response, player_id)
+                    if not options:
+                        continue
+                    if 'removal' not in response_tags:
+                        effect, payload = infer_effect_from_oracle(
+                            state, response, player_id, report_unsupported=False)
+                        target = state.cards.get(payload.get('target_card_id'))
+                        if not (effect == 'return_permanent_to_hand' and target is not None
+                                and target.id in opponent.battlefield):
+                            continue
+                if options:
+                    responses.append(response_move)
         if not responses:
             return 0.0
         action = self._materialize_action(state, move, player_id)
@@ -2055,9 +2085,13 @@ class AIAgent:
             self.engine.take_action(projected, player_id, action, reject_invalid=True)
         except ActionRejected:
             return 0.0
-        if any(self._can_pay_card_cost(projected, player_id, projected.cards[response.id])
-               for response in responses):
-            return 0.0
+        for response_move in responses:
+            if response_move['card_id'] not in projected.players[player_id].hand:
+                continue
+            response = _card_for_move(projected, response_move)
+            if any(check_cost_option_available(projected, player_id, response, option)
+                   for option in collect_cost_options(projected, player_id, response)):
+                return 0.0
         return -6.0
 
     def _cast_bias(self, state: MatchState, move: dict, player_id: int) -> float:

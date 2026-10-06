@@ -427,6 +427,16 @@ class RulesEngine:
                 reject("This permanent has lost its printed abilities")
                 return
         if state.pending_mechanic_choice:
+            if state.pending_mechanic_choice['kind'] == 'legend_keeper':
+                from rules_engine.state_based_actions import finish_legend_keeper_choice
+                from rules_engine.stack_engine import resume_paused_resolution
+                pending = state.pending_mechanic_choice
+                if not finish_legend_keeper_choice(state, player_id, action):
+                    reject('Invalid legend keeper choice')
+                    return
+                resume_paused_resolution(state, pending)
+                apply_state_based_actions(state)
+                return
             if state.pending_mechanic_choice['kind'] == 'suspend_cast':
                 from rules_engine.suspend import finish_cast_choice
                 if not finish_cast_choice(state, player_id, action):
@@ -511,6 +521,15 @@ class RulesEngine:
             if chosen_id not in allowed:
                 reject("Invalid replacement choice")
                 state.log.append("Invalid replacement choice; resolution remains paused.")
+                return
+            if pending.get('resume_kind') == 'legend_keeper_die':
+                from rules_engine.state_based_actions import finish_legend_keeper_replacement
+                from rules_engine.stack_engine import resume_paused_resolution
+                if not finish_legend_keeper_replacement(state, player_id, chosen_id):
+                    reject('Invalid legend keeper replacement')
+                    return
+                resume_paused_resolution(state, pending)
+                apply_state_based_actions(state)
                 return
             if pending.get('resume_kind') == 'counter_event':
                 from rules_engine.stack_engine import resume_paused_resolution

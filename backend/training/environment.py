@@ -606,6 +606,25 @@ class TrainingEnvironment:
                 _seat(actor)
                 if pending.get('player_id') != actor:
                     raise ActionRejected('Mechanic view context does not match pending actor')
+                legend_context = {'legend_group_index', 'legend_context'}
+                supplied_legend = legend_context & set(intent)
+                if supplied_legend:
+                    try:
+                        matches = (pending.get('kind') == 'legend_keeper'
+                                   and all(key in pending and intent[key] is not None
+                                           and _json(intent[key]) == _json(pending[key])
+                                           for key in supplied_legend))
+                    except _INPUT_ERRORS as exc:
+                        raise ActionRejected('Invalid legend keeper view context') from exc
+                    if not matches:
+                        raise ActionRejected('Legend keeper view context does not match pending state')
+                    context |= legend_context
+                if pending.get('kind') == 'legend_keeper':
+                    if not (isinstance(intent.get('card_ids'), list)
+                            and len(intent['card_ids']) == 1
+                            and isinstance(intent['card_ids'][0], str)
+                            and intent['card_ids'][0] in pending.get('options', [])):
+                        raise ActionRejected('Legend keeper requires exactly one explicit card_ids entry')
                 moves = self._rules.legal_moves(deepcopy(self._state), actor)
                 offered = next((move for move in moves if move['type'] == 'choose_mechanic'), {})
                 for key in (display | context) & set(intent):

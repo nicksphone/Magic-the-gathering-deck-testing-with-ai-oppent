@@ -1,0 +1,7 @@
+Six full untouched official Scryfall objects selected by exact name from frozen
+knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz
+Bulk SHA25617cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13
+Fixture SHA25678fa7c5b27d788caaffaa9e3c7276c871aaca1901eab812f10df1596a0b02318
+Kozilek, Butcher of Truth; Progenitus; Rest in Peace; Donate; Act of Treason; Isamaru, Hound of Konda.
+Donate payload is retained as intake only; no supported Donate execution claim.
+No Oracle rewrite, alias, fabricated card, event or StackItem.

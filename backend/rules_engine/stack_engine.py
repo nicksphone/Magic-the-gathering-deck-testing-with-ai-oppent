@@ -172,7 +172,9 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             source.card_faces = []
             # Nested hint filters must also use this receipt, never new-object layers.
             source._retained_source_lki = source_lki
-        hints = inspect_target_hints(state, source, item.controller, announced)
+        hint_source = copy(source)
+        hint_source.mana_cost = ""
+        hints = inspect_target_hints(state, hint_source, item.controller, announced)
         # A captured source belongs to the old object, not a same-ID reentry.
         legal = (validate_cast_targets(hints, announced)[0]
                  and validate_protection_targets(state, source, announced, source_lki=source_lki)[0]

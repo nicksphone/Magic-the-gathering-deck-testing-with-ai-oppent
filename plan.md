@@ -2,6 +2,45 @@
 
 ## Current Execution Order
 
+### Counter Costs And Seed Data Shared-Source Acceptance
+
+The next isolated candidate additionally includes fixed source +1/+1 counter
+costs, ability hint-copy separation, and the full eight-card/sixteen-face offline
+color refresh. The seed/hydration gate passes **437 cases across sixteen whole
+modules in 154.46s**. The counter/target gate passes **522 cases across twenty-one
+whole modules in 71.89s**. Both have zero failures/skips, unchanged captured
+backend hashes, and fresh local SQLite. These are separate scoped executions,
+not a combined full-suite count or deployment certificate.
+
+The original Walking Ballista admission and resolution failures now pass on
+this shared source. Actual X-cost abilities and departed-source protection/LKI
+are covered. Compound counter costs and counter kinds other than the admitted
+source +1/+1 family remain fail-closed. All 119 seed rows and non-color fields
+are preserved; six Adventure face colors remain labeled derived rule facts.
+See docs/testing/counter-seed-current-composition.md.
+
+Next: integrate the corrected self-trigger compiler only after its prefix-only
+preservation gate, then complete the optional own-hand land choice/continuation.
+Paid-optional integration retains a stale stack-order test pending its separate
+authorized correction and shared-source acceptance. Full-suite/frontend/browser
+and release operational gates still remain open; no main/live replacement.
+
+### Unpromoted Legend Consumer And AI Integration
+
+The isolated candidate combines the prior death/protection/legend gameplay
+composition with exact-context legend whole-view consumption and selected-face
+AI valuation/reservation. Five complete modules produce **113 passes / four
+strict extra-land failures in 76.02s**. Source hashes are unchanged after the run.
+Legend context is display metadata only; an explicit offered keeper remains
+required. No private choice is inferred from client context.
+
+The four failures concern Growth Spiral and Arboreal Grazer in both seats.
+Their optional land instructions and private resolution choices still require
+engine work, not stronger AI tags. This candidate is not published or deployed.
+Earlier Walking Ballista and self-trigger gaps are not covered or closed by
+this five-module check. Counter-cost, compiler, seed-color and paid-optional
+increments require a subsequent shared-source regression gate.
+
 ### Local Corpus Diagnostic
 
 The reporter now uses shared local hydration and runtime card construction,
@@ -9,14 +48,14 @@ preserving knowledge and face data. It separates parser status and data admissio
 from semantic verification. See [the scoped acceptance record](docs/testing/corpus-diagnostic-current.md).
 This diagnostic change does not close the gameplay/AI/deployment work below.
 
-Current separately observed gaps remain:
+Current remaining work after the scoped integrations above:
 
-1. Two strict Walking Ballista activation-admission failures in the separate
-   death-batch/protection composition (283 passes / two failures across 14 modules).
-2. Numbered self-cast draw and compound self-entry trigger compilation.
-3. Deliberate human legend keeper choices and whole-public-view consumer parity.
-4. Provenance-backed offline face colors and printed loyalty preservation.
-5. Current paid-optional integration and selected-face/interaction-aware AI.
+1. Counter-cost coverage beyond fixed source +1/+1 costs and general target fidelity.
+2. Corrected self-cast draw and compound self-entry routing, followed by optional
+   own-hand land mechanics and private continuation.
+3. Wider simultaneous legend/state-based-action lifecycle and human browser acceptance.
+4. Broader canonical corpus data, rulings, and unsupported-clause reporting.
+5. Current paid-optional shared-source integration and measured broader AI decisions.
 6. Complete supported-corpus, human/browser, fresh-install and network acceptance.
 
 Worker results on frozen sources must be composed and retested; none of these

@@ -113,6 +113,9 @@
     "Bonecrusher Giant": {
       "card_faces": [
         {
+          "colors": [
+            "R"
+          ],
           "mana_cost": "{2}{R}",
           "name": "Bonecrusher Giant",
           "oracle_text": "Whenever this creature becomes the target of a spell, this creature deals 2 damage to that spell's controller.",
@@ -121,6 +124,9 @@
           "type_line": "Creature — Giant"
         },
         {
+          "colors": [
+            "R"
+          ],
           "mana_cost": "{1}{R}",
           "name": "Stomp",
           "oracle_text": "Damage can't be prevented this turn. Stomp deals 2 damage to any target.",
@@ -162,6 +168,9 @@
     "Brazen Borrower": {
       "card_faces": [
         {
+          "colors": [
+            "U"
+          ],
           "mana_cost": "{1}{U}{U}",
           "name": "Brazen Borrower",
           "oracle_text": "Flash\nFlying\nThis creature can block only creatures with flying.",
@@ -170,6 +179,9 @@
           "type_line": "Creature — Faerie Rogue"
         },
         {
+          "colors": [
+            "U"
+          ],
           "mana_cost": "{1}{U}",
           "name": "Petty Theft",
           "oracle_text": "Return target nonland permanent an opponent controls to its owner's hand.",
@@ -191,6 +203,9 @@
     "Brutal Cathar": {
       "card_faces": [
         {
+          "colors": [
+            "W"
+          ],
           "mana_cost": "{2}{W}",
           "name": "Brutal Cathar",
           "oracle_text": "Whenever this creature enters or transforms into Brutal Cathar, exile target creature an opponent controls until this creature leaves the battlefield.\nDaybound (If a player casts no spells during their own turn, it becomes night next turn.)",
@@ -199,6 +214,9 @@
           "type_line": "Creature — Human Soldier Werewolf"
         },
         {
+          "colors": [
+            "R"
+          ],
           "mana_cost": "",
           "name": "Moonrage Brute",
           "oracle_text": "First strike\nWard—Pay 3 life.\nNightbound (If a player casts at least two spells during their own turn, it becomes day next turn.)",
@@ -343,6 +361,9 @@
     "Delver of Secrets": {
       "card_faces": [
         {
+          "colors": [
+            "U"
+          ],
           "mana_cost": "{U}",
           "name": "Delver of Secrets",
           "oracle_text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform this creature.",
@@ -351,6 +372,9 @@
           "type_line": "Creature — Human Wizard"
         },
         {
+          "colors": [
+            "U"
+          ],
           "mana_cost": "",
           "name": "Insectile Aberration",
           "oracle_text": "Flying",
@@ -485,12 +509,18 @@
     "Fable of the Mirror-Breaker": {
       "card_faces": [
         {
+          "colors": [
+            "R"
+          ],
           "mana_cost": "{2}{R}",
           "name": "Fable of the Mirror-Breaker",
           "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — Create a 2/2 red Goblin Shaman creature token with \"Whenever this token attacks, create a Treasure token.\"\nII — You may discard up to two cards. If you do, draw that many cards.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
           "type_line": "Enchantment — Saga"
         },
         {
+          "colors": [
+            "R"
+          ],
           "mana_cost": "",
           "name": "Reflection of Kiki-Jiki",
           "oracle_text": "{1}, {T}: Create a token that's a copy of another target nonlegendary creature you control, except it has haste. Sacrifice it at the beginning of the next end step.",
@@ -632,6 +662,9 @@
     "Imodane's Recruiter": {
       "card_faces": [
         {
+          "colors": [
+            "R"
+          ],
           "mana_cost": "{2}{R}",
           "name": "Imodane's Recruiter",
           "oracle_text": "When this creature enters, creatures you control get +1/+0 and gain haste until end of turn.",
@@ -640,6 +673,9 @@
           "type_line": "Creature — Human Knight"
         },
         {
+          "colors": [
+            "W"
+          ],
           "mana_cost": "{4}{W}",
           "name": "Train Troops",
           "oracle_text": "Create two 2/2 white Knight creature tokens with vigilance. (Then exile this card. You may cast the creature later from exile.)",
@@ -688,12 +724,18 @@
     "Kumano Faces Kakkazan": {
       "card_faces": [
         {
+          "colors": [
+            "R"
+          ],
           "mana_cost": "{R}",
           "name": "Kumano Faces Kakkazan",
           "oracle_text": "(As this Saga enters and after your draw step, add a lore counter.)\nI — This Saga deals 1 damage to each opponent and each planeswalker they control.\nII — When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it.\nIII — Exile this Saga, then return it to the battlefield transformed under your control.",
           "type_line": "Enchantment — Saga"
         },
         {
+          "colors": [
+            "R"
+          ],
           "mana_cost": "",
           "name": "Etching of Kumano",
           "oracle_text": "Haste\nIf a creature dealt damage this turn by a source you controlled would die, exile it instead.",
@@ -1404,12 +1446,18 @@
     "Wedding Announcement": {
       "card_faces": [
         {
+          "colors": [
+            "W"
+          ],
           "mana_cost": "{2}{W}",
           "name": "Wedding Announcement",
           "oracle_text": "At the beginning of your end step, put an invitation counter on this enchantment. If you attacked with two or more creatures this turn, draw a card. Otherwise, create a 1/1 white Human creature token. Then if this enchantment has three or more invitation counters on it, transform it.",
           "type_line": "Enchantment"
         },
         {
+          "colors": [
+            "W"
+          ],
           "mana_cost": "",
           "name": "Wedding Festivity",
           "oracle_text": "Creatures you control get +1/+1.",

@@ -63,10 +63,29 @@ class ActivatedCost:
     sacrifice_kind: str = "creature"
     sacrifice_source: bool = False
     supported: bool = True
+    remove_source_counters: int = 0
+    remove_counter_kind: str | None = None
 
 
 def parse_activated_cost(cost_text: str) -> ActivatedCost:
     """Parse common activated costs without treating them as Oracle effects."""
+    if re.search(r"\bremove\b", cost_text or "", re.IGNORECASE):
+        # Counter payment is bounded to the complete fixed self-source cost.
+        # Never let an unsupported conjunction fall through to life-only payment.
+        match = re.fullmatch(
+            r"\s*remove\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+)"
+            r"\s+\+1/\+1\s+counters?\s+from\s+this\s+(?:creature|permanent|artifact|enchantment)\s*",
+            cost_text, re.IGNORECASE,
+        )
+        if match:
+            from rules_engine.oracle_effects import _parse_count_token
+            try:
+                amount = int(match[1]) if match[1].isdigit() else _parse_count_token(match[1])
+            except ValueError:
+                return ActivatedCost(supported=False)
+            if amount > 0:
+                return ActivatedCost(remove_source_counters=amount, remove_counter_kind='+1/+1')
+        return ActivatedCost(supported=False)
     mana_symbols: list[str] = []
     tap_source = False
     pay_life = discard_cards = sacrifice_creatures = 0
@@ -244,9 +263,24 @@ def _payable_activation_selection(state, player_id, source_id, cost, hybrid_choi
     return None
 
 
+def _source_counter_cost_available(state, player_id, source_id, cost, unavailable_resources):
+    if not cost.remove_source_counters:
+        return True
+    source = state.cards.get(source_id)
+    player = state.players.get(player_id)
+    amount = source.counters.get(cost.remove_counter_kind, 0) if source else None
+    return (source is not None and player is not None and source.id == source_id
+            and source.zone == Zone.BATTLEFIELD and source.controller == player_id
+            and player.battlefield.count(source_id) == 1
+            and source_id not in unavailable_resources
+            and type(amount) is int and amount >= cost.remove_source_counters)
+
+
 def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, *, ability_kind='activated', ability_index=None, payment_choices=None, unavailable_resources=(), protected_life=0) -> bool:
     cost = parse_activated_cost(cost_text)
     if not cost.supported or x_value < 0:
+        return False
+    if not _source_counter_cost_available(state, player_id, source_id, cost, unavailable_resources):
         return False
     source = state.cards[source_id]
     player = state.players[player_id]
@@ -266,6 +300,8 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         return False
     player = state.players[player_id]
     source = state.cards[source_id]
+    from game_state.state import object_incarnation
+    counter_reference = (object_incarnation(source), source.zone_change_sequence) if cost.remove_source_counters else None
     selected = _payable_activation_selection(state, player_id, source_id, cost, hybrid_choices, x_value,
         restricted_x_color, ability_kind, ability_index, payment_choices, unavailable_resources, protected_life)
     if selected is None:
@@ -285,6 +321,11 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     reserved = set(unavailable_resources) | set(selected['discard_card_ids']) | set(selected['sacrifice_card_ids'])
     if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(effective_types(state, source)), source_id, ability_kind, {source_id} if cost.tap_source else None, ability_index, reserved, protected_life):
         return False
+    if cost.remove_source_counters and (
+            state.cards.get(source_id) is not source
+            or (object_incarnation(source), source.zone_change_sequence) != counter_reference
+            or not _source_counter_cost_available(state, player_id, source_id, cost, unavailable_resources)):
+        raise ActionRejected('Source counter payment changed during mana payment')
     selected = activated_cost_selection(state, player_id, source_id, cost, selected, unavailable_resources)
     if selected is None:
         return False
@@ -294,6 +335,8 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
                    for cid, plan in resource_plans.items())):
         raise ActionRejected('Graveyard replacement plan changed during mana payment')
     resource_causes = prepare_graveyard_entry_causes(state, resource_plans.values())
+    if cost.remove_source_counters:
+        source.counters[cost.remove_counter_kind] -= cost.remove_source_counters
     if cost.tap_source:
         from rules_engine.resource_events import tap_permanents
         tap_permanents(state, [source_id])

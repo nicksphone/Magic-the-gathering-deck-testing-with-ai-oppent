@@ -191,17 +191,14 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
         target_player=int(target_player) if target_player is not None else None,
         target_card_id=target_card_id,
     )
-    source_colors: set[str] = set()
-    if source_lki is not None:
-        source_colors = set(source_lki.get("color_names", []))
-    elif source_card_id in state.cards:
-        source_colors = card_color_names(state.cards[source_card_id], state)
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
-        kws = effective_keywords(state, target_card_id)
-        for color in source_colors:
-            if not prevention_locked and f"protection from {color}" in kws:
-                state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
+        source = state.cards.get(source_card_id)
+        if not prevention_locked:
+            from rules_engine.protection import protection_match_reason
+            reason = protection_match_reason(state, target_card_id, source, source_lki=source_lki)
+            if reason is not None and (source is not None or source_lki is not None or reason == "everything"):
+                state.log.append(f"{card.name} prevents damage from {reason} source due to protection.")
                 return 0
         if card.zone == Zone.BATTLEFIELD and amount > 0:
             if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount, source_lki=source_lki) is not None:
@@ -546,11 +543,12 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
     emit_event_batch(state, "leaves_battlefield", leaves)
     permanent_deaths = []
     creature_deaths = []
+    entry_receipts = []
     for event in leaves:
         cid = event["card_id"]
         card = state.cards[cid]
         destination = execute_graveyard_entry(state, plans[cid], prevalidated=True,
-                                              _prepared_cause=causes[cid])
+                                              _prepared_cause=causes[cid], _entry_receipts=entry_receipts)
         if destination == Zone.EXILE:
             state.log.append(f"{card.name} is exiled instead of dying.")
         elif destination == Zone.GRAVEYARD:
@@ -558,6 +556,8 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
             permanent_deaths.append(event)
             if was_creature_on_battlefield(card):
                 creature_deaths.append(event)
+    if entry_receipts:
+        emit_event_batch(state, "enters_graveyard", entry_receipts)
     emit_event_batch(state, "permanent_dies", permanent_deaths)
     emit_event_batch(state, "creature_dies", creature_deaths)
     state.log.append(log_label)

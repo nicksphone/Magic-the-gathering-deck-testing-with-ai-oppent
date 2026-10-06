@@ -2,6 +2,19 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Shared-source counter/target acceptance: 522 passes; validate fixed source
+  +1/+1 counter costs and keep spell mana costs out of ability target hints
+  while preserving genuine ability X values and actual source/LKI protection.
+- Shared-source seed/hydration acceptance: 437 passes; populate all sixteen face
+  colors with ten canonical and six provenance-backed derived facts, preserve
+  all 119 seed rows, and recover missing loyalty by exact canonical printing.
+  The separate mock-media fixture adaptation preserves every original assertion.
+
+- Unpromoted integration: require exact current legend context plus an explicit
+  keeper, and use selected casting faces for AI valuation and interaction
+  reservation. Combined scoped validation: 113 passes / four existing
+  extra-land failures; not a release or expert-level AI certification.
+
 - Route the corpus reporter through shared read-only hydration and runtime card
   construction. Retain canonical local knowledge and card faces; expose parser
   choices/data admission separately from semantic correctness. Canonical empty
