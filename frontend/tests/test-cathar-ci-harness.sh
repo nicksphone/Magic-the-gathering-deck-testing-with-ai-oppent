@@ -21,6 +21,7 @@ printf 'private sentinel\n' > "$scratch/repo/backend/foreign.sqlite"
 ln -s "$scratch/repo/backend/foreign.sqlite" "$scratch/repo/backend/foreign.py"
 ln -s "$scratch/deps/node_modules" "$scratch/repo/frontend/node_modules"
 touch "$scratch/repo/frontend/tests/ui_fixture_server.py" "$scratch/repo/frontend/tests/ui_v2_fixture_server.py" "$scratch/repo/frontend/tests/browser-cathar.mjs"
+touch "$scratch/repo/frontend/tests/browser-interactive-preflight.mjs"
 cat > "$scratch/repo/frontend/tests/run-activated-top-selection.sh" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -38,10 +39,19 @@ SH
 cat > "$scratch/bin/node" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
+if [[ "$1" == tests/browser-interactive-preflight.mjs ]]; then
+  test "$PWD" = "$GIT_WORK_TREE/frontend"
+  test "$MTG_UI_EVIDENCE" = "$GIT_WORK_TREE/interactive-preflight-evidence"
+  test -f tests/browser-interactive-preflight.mjs
+  for pid in $(cat "$MTG_CHECK_PIDS"); do ! kill -0 -- "-$pid" 2>/dev/null; done
+  test -z "$(ss -H -ltn '( sport = :10199 or sport = :15173 or sport = :19222 )')"
+  echo Preflight >> "$MTG_CHECK_EVENT_LOG"
+  exit "${MTG_CHECK_PREFLIGHT_EXIT:-0}"
+fi
 test "$1" = frontend/tests/browser-cathar.mjs
 test "$MTG_FRONTEND_DEPS" = "$MTG_CHECK_DEPS/node_modules"
 test "$MTG_CATHAR_ARCHIVE" = "$RUNNER_TEMP/mtg-cathar-evidence"
-test "$(cat "$MTG_CHECK_EVENT_LOG")" = Officer
+test "$(cat "$MTG_CHECK_EVENT_LOG")" = $'Preflight\nOfficer'
 test "$PWD" = "$GIT_WORK_TREE"
 test ! -e .git
 test -f backend/expected.py
@@ -94,17 +104,22 @@ kill -0 "$listener"
 kill "$listener"; wait "$listener" || true; listener=''
 echo 'PASS occupied port fails closed without killing its listener'
 bash "$wrapper" > "$scratch/success.log" 2>&1
-test "$(cat "$scratch/order")" = $'Officer\nCathar'
+test "$(cat "$scratch/order")" = $'Preflight\nOfficer\nCathar'
 grep -q 'six controlled cases, both seats; not full transform support' "$scratch/success.log"
 test "$(cat "$scratch/repo/backend/foreign.sqlite")" = 'private sentinel'
 test -L "$scratch/repo/backend/foreign.py"
-echo 'PASS actual frozen-source CI epilogue invokes Officer then scoped Cathar after owned services stop'
+echo 'PASS actual frozen-source CI epilogue invokes preflight, Officer and scoped Cathar after owned services stop'
 : > "$scratch/pids"; : > "$scratch/order"
 if MTG_CHECK_CATHAR_EXIT=23 bash "$wrapper" > "$scratch/failure.log" 2>&1; then exit 1; else test "$?" = 23; fi
 grep -q 'Retained browser test artifacts:' "$scratch/failure.log"
 retained=$(sed -n 's/Retained browser test artifacts: \([^ ]*\) and .*/\1/p' "$scratch/failure.log")
 test -f "$retained/source-revision.txt"
 echo 'PASS Cathar failure propagates and frozen diagnostic source is retained'
+: > "$scratch/pids"; : > "$scratch/order"
+if MTG_CHECK_PREFLIGHT_EXIT=17 bash "$wrapper" > "$scratch/preflight-failure.log" 2>&1; then exit 1; else test "$?" = 17; fi
+test "$(cat "$scratch/order")" = Preflight
+grep -q 'Retained browser test artifacts:' "$scratch/preflight-failure.log"
+echo 'PASS preflight failure propagates before Officer/Cathar and preserves frozen evidence'
 if GITHUB_ACTIONS=false MTG_CATHAR_ARCHIVE="$scratch/local-evidence" "$node_bin" "$tests/browser-cathar.mjs" > "$scratch/storage.log" 2>&1; then exit 1; fi
 grep -q 'Local Cathar evidence requires mounted NFS' "$scratch/storage.log"
 test ! -e "$scratch/local-evidence"

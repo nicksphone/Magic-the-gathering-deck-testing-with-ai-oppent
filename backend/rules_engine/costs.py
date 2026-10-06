@@ -92,6 +92,9 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
         if upper in {"T", "TAP"}:
             tap_source = True
         elif "SACRIFICE" in upper and any(term in upper for term in ("CREATURE", "ARTIFACT", "ENCHANTMENT", "PERMANENT", "TOKEN")):
+            if sacrifice_kind.startswith('subtype_'):
+                supported = False
+                continue
             match = ACTIVATED_SACRIFICE_RE.search(upper)
             if not match:
                 supported = False
@@ -109,6 +112,16 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
                 sacrifice_kind = "artifact"
             elif "ENCHANTMENT" in upper:
                 sacrifice_kind = "enchantment"
+        elif upper.startswith("SACRIFICE"):
+            from rules_engine.spell_cost_clauses import fixed_cost_component
+            component = fixed_cost_component(part)
+            kind = (component or {}).get('sacrifice_kind', '')
+            if (not kind.startswith('subtype_')
+                    or sacrifice_creatures and sacrifice_kind != kind):
+                supported = False
+                continue
+            sacrifice_creatures += component['sacrifice_creatures']
+            sacrifice_kind = kind
         elif "DISCARD" in upper and "CARD" in upper:
             if upper == 'DISCARD THIS CARD':
                 discard_source = True
@@ -302,7 +315,7 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         owner = state.players[getattr(card, "owner", player_id)]
         zone = Zone.EXILE if destinations[sac_id] == "exile" else Zone.GRAVEYARD
         getattr(owner, zone.value).append(sac_id)
-        card.zone = zone
+        card.move_to_zone(zone)
         state.log.append(f"{player.name} sacrifices {card.name} for {source.name}.")
     emit_event_batch(state, "sacrifice", events)
     died = [event for event in events if state.cards[event["card_id"]].zone == Zone.GRAVEYARD]
@@ -457,7 +470,8 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         return False
     if option.sacrifice_all and set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind, payment_kind='effect')) != set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)):
         return False
-    return can_pay_with_pool_and_lands(
+    from rules_engine.spell_cost_witness import fixed_cost_selections
+    return any(can_pay_with_pool_and_lands(
         state, player_id, option.mana_cost, is_land=("Land" in effective_types(state, card)),
         card_name=card.name, x_value=x_value, spell_types=set(effective_types(state, card)),
         spell_is_aura=is_aura(card),
@@ -466,7 +480,8 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
         source_card_id=card.id, target_card_id=target_card_id,
         cast_resource_card=card,
-    )
+        reserved_card_ids={card.id, *selected['discard_card_ids'], *selected['sacrifice_card_ids']},
+    ) for selected in fixed_cost_selections(state, player_id, card.id, option, x_value))
 
 
 def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> CostOption:

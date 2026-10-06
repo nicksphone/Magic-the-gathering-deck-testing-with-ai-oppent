@@ -54,7 +54,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
         "attached_to": card.attached_to,
         "bestowed": bool(card.bestow_characteristics),
         "effect_warnings": attachment_effect_warnings(state, cid),
-        "colors": sorted(card_color_symbols(card)),
+        "colors": sorted(card_color_symbols(card, state)),
         "mana_source_colors": sorted(outputs),
         "mana_source_amounts": outputs,
         "chosen_creature_type": card.chosen_creature_type,

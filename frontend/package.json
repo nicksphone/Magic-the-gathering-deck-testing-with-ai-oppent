@@ -11,9 +11,10 @@
     "test:browser": "node tests/browser-human-actions.mjs",
     "test:unit:suspend": "node --experimental-strip-types tests/suspend-human-actions.mjs",
     "test:browser:suspend": "node tests/browser-suspend.mjs",
-    "test:unit": "node --experimental-strip-types tests/api-errors.mjs && node --experimental-strip-types tests/api-routing.mjs && node --experimental-strip-types tests/api-request-deadlines.mjs && node --experimental-strip-types tests/match-contract.mjs && node --experimental-strip-types tests/simulation-contract.mjs && node --experimental-strip-types tests/mutation-gate.mjs && node --experimental-strip-types tests/combat-selection.mjs && node tests/browser-driver-navigation.mjs",
+    "test:unit": "node --experimental-strip-types tests/api-errors.mjs && node --experimental-strip-types tests/api-routing.mjs && node --experimental-strip-types tests/api-request-deadlines.mjs && node --experimental-strip-types tests/match-contract.mjs && node --experimental-strip-types tests/simulation-contract.mjs && node --experimental-strip-types tests/mutation-gate.mjs && node --experimental-strip-types tests/combat-selection.mjs && node tests/browser-driver-navigation.mjs && node --experimental-strip-types tests/interactive-preflight.mjs",
     "test:browser:recovery": "node tests/browser-recovery.mjs",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test:browser:preflight": "node tests/browser-interactive-preflight.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",

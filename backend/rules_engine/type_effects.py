@@ -29,6 +29,16 @@ def devotion_type_condition(oracle_text, name):
 
 
 def effective_types(state, card_or_id):
+    card = state.cards.get(card_or_id) if isinstance(card_or_id, str) and state is not None else card_or_id
+    if card is not None and state is not None and getattr(card, 'zone', None) == Zone.BATTLEFIELD:
+        from rules_engine.basic_land_layer import layer_four_view
+        types = layer_four_view(state)[2].get(card.id)
+        if types is not None:
+            return list(types)
+    return _base_effective_types(state, card)
+
+
+def _base_effective_types(state, card_or_id):
     """Pure layer-four view; later ability loss does not undo this layer."""
     card = state.cards.get(card_or_id) if isinstance(card_or_id, str) and state is not None else card_or_id
     if card is None:
@@ -60,14 +70,15 @@ def effective_types(state, card_or_id):
 
 
 def active_type_effects(card):
-    return [effect for effect in card.type_effects
+    return [effect for effect in (getattr(card, 'type_effects', []) or [])
             if card.zone == Zone.BATTLEFIELD and effect['incarnation'] == object_incarnation(card)]
 
 
 def copiable_types(card):
-    if card.type_effect_base is not None:
+    if getattr(card, 'type_effect_base', None) is not None:
         return list(card.type_effect_base)
-    return [kind for kind in card.types if not card.counters.get('__crew_added_' + kind.lower())]
+    counters = getattr(card, 'counters', {}) or {}
+    return [kind for kind in card.types if not counters.get('__crew_added_' + kind.lower())]
 
 
 def refresh_type_effects(card):

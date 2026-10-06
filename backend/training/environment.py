@@ -32,7 +32,7 @@ _PROMPT_FIELDS = frozenset({
     'targets', 'target_hints', 'cost_options', 'outputs', 'stack_id',
     'target_card_id', 'target_player', 'trigger_order', 'replacement_source_id',
     'accept', 'cost_text', 'payment_options', 'activation_costs', 'hybrid_symbols',
-    'ability_x_cost',
+    'ability_x_cost', 'output_bundles', 'output_options', 'base_output_bundles',
     'inspected_cards', 'bottom_any_order', 'bottom_random', 'trigger_labels',
     'replacement_name', 'event', 'ward_cost', 'mode_target_text',
 })
@@ -191,6 +191,16 @@ class TrainingEnvironment:
         _seat(seat)
         state = deepcopy(self._state)
         moves = self._rules.legal_moves(state, seat) if seat == self.acting_seat else []
+        from rules_engine.costs import activated_cost_candidates, parse_activated_cost
+        from rules_engine.mana import hybrid_payment_symbols
+        for move in moves:
+            if move['type'] == 'activate_mana_ability':
+                if 'activation_costs' not in move or 'hybrid_symbols' not in move:
+                    cost = parse_activated_cost(move['cost_text'])
+                    if 'activation_costs' not in move:
+                        move['activation_costs'] = activated_cost_candidates(state, seat, move['card_id'], cost)
+                    if 'hybrid_symbols' not in move:
+                        move['hybrid_symbols'] = hybrid_payment_symbols(cost.mana_cost)
         return decision_view(state, seat, moves)
 
     def prompts(self, seat=None):
@@ -235,9 +245,12 @@ class TrainingEnvironment:
             prompt = {'hint': hint, 'required_choices': choices}
             if move['type'] == 'activate_mana_ability':
                 missing = _unsupported_mana_choices(move.get('cost_text', ''))
-                prompt['encoding_supported'] = not missing
-                prompt['unsupported_choices'] = missing
+                unsupported = [field for field in missing if field == 'targets.x_value']
+                prompt['encoding_supported'] = not unsupported
+                prompt['unsupported_choices'] = unsupported
                 choices.extend(missing)
+                if len(move.get('base_output_bundles', [])) > 1:
+                    choices.append('output_bundle if color matches multiple offered base vectors')
             result.append(prompt)
         return result
 
@@ -347,18 +360,20 @@ class TrainingEnvironment:
             require(not move.get('ability_x_cost') or action.get('targets', {}).get('x_value') is not None,
                     'Missing required choice: targets.x_value')
             if kind == 'activate_mana_ability':
-                require(not _unsupported_mana_choices(move.get('cost_text', move.get('mana_cost', ''))),
-                        'Unsupported required choices: mana ability resource/hybrid/X payments '
-                        'are not representable in the existing action contract')
-            else:
-                payments = action.get('payment_choices') or {}
-                require(not cost.discard_cards or payments.get('discard_card_ids') is not None,
-                        'Missing required choice: payment_choices.discard_card_ids')
-                require(not cost.sacrifice_creatures or cost.sacrifice_source
-                        or payments.get('sacrifice_card_ids') is not None,
-                        'Missing required choice: payment_choices.sacrifice_card_ids')
-                require(not move.get('hybrid_symbols') or action.get('hybrid_choices') is not None,
-                        'Missing required choice: hybrid_choices')
+                require('{X}' not in cost.mana_cost.upper(),
+                        'Unsupported required choice: variable mana production')
+                options = [option for option in move.get('output_options', [])
+                           if option['color'] == action['color']]
+                require(len(options) <= 1 or action.get('output_bundle') is not None,
+                        'Missing required choice: output_bundle')
+            payments = action.get('payment_choices') or {}
+            require(not cost.discard_cards or payments.get('discard_card_ids') is not None,
+                    'Missing required choice: payment_choices.discard_card_ids')
+            require(not cost.sacrifice_creatures or cost.sacrifice_source
+                    or payments.get('sacrifice_card_ids') is not None,
+                    'Missing required choice: payment_choices.sacrifice_card_ids')
+            require(not move.get('hybrid_symbols') or action.get('hybrid_choices') is not None,
+                    'Missing required choice: hybrid_choices')
         if kind != 'cast_spell':
             return
         choice = action.get('cost_choice') or {}
@@ -413,11 +428,27 @@ class TrainingEnvironment:
         boundary strips presentation fields using the parent-owned model map.
         """
         from ai.action_contract import complete_action
-        if isinstance(intent, dict) and intent.get('type') in {
-                'activate_mana_ability', 'tap_nonland_for_mana', 'tap_land_for_mana', 'tap_lands_bulk'}:
-            if any(intent.get(field) is not None for field in ('payment_choices', 'hybrid_choices')) \
-                    or intent.get('targets'):
-                raise ActionRejected('Immediate mana contract cannot carry selected resource/hybrid/X payments')
+        from api_contracts import (
+            ManaAbilityAction, TapAction, NonlandManaAction, BulkTapAction, CastAction, AbilityAction,
+        )
+        models = {'activate_mana_ability': ManaAbilityAction, 'tap_land_for_mana': TapAction,
+                  'tap_nonland_for_mana': NonlandManaAction, 'tap_lands_bulk': BulkTapAction,
+                  'cast_spell': CastAction, 'activate_ability': AbilityAction}
+        if isinstance(intent, dict) and isinstance(intent.get('type'), str) and intent['type'] in models:
+            display = {'card_name', 'mana_cost', 'cost_options', 'target_hints', 'outputs',
+                       'cost_text', 'ability_label', 'label', 'payment_options',
+                       'activation_costs', 'hybrid_symbols', 'ability_x_cost', 'output_bundles',
+                       'output_options', 'base_output_bundles', 'required_choices'}
+            contract = 'Mana'
+            if intent['type'] == 'cast_spell':
+                display = {'card_name', 'mana_cost', 'cost_options', 'target_hints'}
+                contract = 'Cast'
+            elif intent['type'] == 'activate_ability':
+                display = {'card_name', 'mana_cost', 'ability_label', 'payment_options',
+                           'activation_costs', 'hybrid_symbols', 'target_hints'}
+                contract = 'Activated ability'
+            if set(intent) - set(models[intent['type']].model_fields) - display - {'_invalid_ai_choice'}:
+                raise ActionRejected(contract + ' contract cannot carry requested fields')
         return self.lookup(complete_action(intent), seat)
 
     def simple_actions(self):

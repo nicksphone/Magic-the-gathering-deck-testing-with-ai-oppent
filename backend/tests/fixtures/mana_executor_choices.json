@@ -1,0 +1,126 @@
+[
+  {
+    "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+    "oracle_id": "a9d288b8-cdc1-4e55-a0c9-d6edfc95e65d",
+    "name": "Shock",
+    "mana_cost": "{R}",
+    "type_line": "Instant",
+    "oracle_text": "Shock deals 2 damage to any target.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/msc/809/shock?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "df797e0d-8ae2-4fdb-a33d-4ba7852b0172",
+    "oracle_id": "dc974eb4-72b9-4213-887b-8ee684b93420",
+    "name": "Flooded Grove",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "{T}: Add {C}.\n{G/U}, {T}: Add {G}{G}, {G}{U}, or {U}{U}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/soc/373/flooded-grove?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "42ed35e9-51cd-468a-86a9-9412553cf50d",
+    "oracle_id": "365548fb-5acc-4a8a-b20b-26d28b7d029f",
+    "name": "Village Rites",
+    "mana_cost": "{B}",
+    "type_line": "Instant",
+    "oracle_text": "As an additional cost to cast this spell, sacrifice a creature.\nDraw two cards.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/inr/137/village-rites?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "74a13fea-4f48-428b-b42b-4ba63d4752ed",
+    "oracle_id": "5004b84a-33b7-4f6f-b2c2-7086b9087535",
+    "name": "Graven Cairns",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "{T}: Add {C}.\n{B/R}, {T}: Add {B}{B}, {B}{R}, or {R}{R}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/280/graven-cairns?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "7bc508b3-8b38-4cf0-89a7-a2cb247ed083",
+    "oracle_id": "c18013e4-0b99-44e3-a2b2-027ace68723a",
+    "name": "Skirk Prospector",
+    "mana_cost": "{R}",
+    "type_line": "Creature \u2014 Goblin",
+    "oracle_text": "Sacrifice a Goblin: Add {R}.",
+    "power": "1",
+    "toughness": "1",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dmr/137/skirk-prospector?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "92662394-c31d-4348-9b9c-0fe619949ea3",
+    "oracle_id": "85573cba-07ae-4421-a167-a8569f85c0f7",
+    "name": "Bog Witch",
+    "mana_cost": "{2}{B}",
+    "type_line": "Creature \u2014 Human Spellshaper",
+    "oracle_text": "{B}, {T}, Discard a card: Add {B}{B}{B}.",
+    "power": "1",
+    "toughness": "1",
+    "loyalty": null,
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/arc/11/bog-witch?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "3480927c-10da-4817-9954-10aea2bc7100",
+    "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b",
+    "name": "Raging Goblin",
+    "mana_cost": "{R}",
+    "type_line": "Creature \u2014 Goblin Berserker",
+    "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+    "power": "1",
+    "toughness": "1",
+    "loyalty": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [
+      "Haste"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/oana/43/raging-goblin?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

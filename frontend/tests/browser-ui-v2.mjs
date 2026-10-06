@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { openBrowser } from './browser-driver.mjs';
+import { startReviewed } from './review-start.mjs';
 
 // Isolated v2 suite. No dependency on production data or edits to the shared harness.
 const api = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
@@ -54,7 +55,7 @@ try {
   await select('[aria-label="Deck A"]',deckIds[0]);
   await select('[aria-label="Deck B"]',deckIds[1]);
   await select('[aria-label="Match mode"]','human_vs_human');
-  await click('Start Best-of-3 Match');
+  await startReviewed(b);
   await waitFor("document.querySelector('.battlefield') && [...document.querySelectorAll('button')].some(e=>e.textContent==='Keep Hand'&&!e.disabled)");
   const realId=await evaluate("localStorage.getItem('mtg.activeMatch')");
   for(let i=0;i<2;i++) { const rev=await evaluate("document.querySelector('[data-match-revision]').dataset.matchRevision");await click('Keep Hand');await waitFor(`document.querySelector('[data-match-revision]').dataset.matchRevision!==${JSON.stringify(rev)}`); }

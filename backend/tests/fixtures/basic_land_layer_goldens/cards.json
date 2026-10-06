@@ -1,0 +1,306 @@
+[
+  {
+    "id": "d072e9ca-aae7-45dc-8025-3ce590bae63f",
+    "oracle_id": "94fac5fe-97d5-4c12-a80c-8efff9d853ae",
+    "name": "Blood Moon",
+    "mana_cost": "{2}{R}",
+    "type_line": "Enchantment",
+    "oracle_text": "Nonbasic lands are Mountains.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "R"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/2xm/118/blood-moon?utm_source=api"
+  },
+  {
+    "id": "37454c1c-4098-4ac2-884e-3f65f1384bdb",
+    "oracle_id": "af32757c-9d3c-4f6c-a6fa-d5729a440382",
+    "name": "Spreading Seas",
+    "mana_cost": "{1}{U}",
+    "type_line": "Enchantment — Aura",
+    "oracle_text": "Enchant land\nWhen this Aura enters, draw a card.\nEnchanted land is an Island.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/zen/70/spreading-seas?utm_source=api"
+  },
+  {
+    "id": "d62047f2-a41f-44b5-a6bc-28e35fad093b",
+    "oracle_id": "c8f8fbf0-4f51-4a5c-82f9-99917513df6d",
+    "name": "Lush Growth",
+    "mana_cost": "{G}",
+    "type_line": "Enchantment — Aura",
+    "oracle_text": "Enchant land\nEnchanted land is a Mountain, Forest, and Plains.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/ala/136/lush-growth?utm_source=api"
+  },
+  {
+    "id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7",
+    "oracle_id": "e996cd67-739c-40f4-b276-0042acf26c71",
+    "name": "Dryad Arbor",
+    "mana_cost": "",
+    "type_line": "Land Creature — Forest Dryad",
+    "oracle_text": "(This land isn't a spell, it's affected by summoning sickness, and it has \"{T}: Add {G}.\")",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/dsc/273/dryad-arbor?utm_source=api"
+  },
+  {
+    "id": "b7285986-7e08-4969-86ef-452dc5bfdd9f",
+    "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea",
+    "name": "Hallowed Fountain",
+    "mana_cost": "",
+    "type_line": "Land — Plains Island",
+    "oracle_text": "({T}: Add {W} or {U}.)\nAs this land enters, you may pay 2 life. If you don't, it enters tapped.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/trk/286/hallowed-fountain?utm_source=api"
+  },
+  {
+    "id": "9e1a9e38-6ffc-490f-b0be-23ba4e8204c6",
+    "oracle_id": "db6174d7-211d-4817-b8e4-8384594c83f9",
+    "name": "Urborg, Tomb of Yawgmoth",
+    "mana_cost": "",
+    "type_line": "Legendary Land",
+    "oracle_text": "Each land is a Swamp in addition to its other land types.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/tsr/287/urborg-tomb-of-yawgmoth?utm_source=api"
+  },
+  {
+    "id": "e75594cc-de47-49f2-9a8b-ba76c576368e",
+    "oracle_id": "d90882ae-6572-4214-8d9c-0bdfb75f9be2",
+    "name": "Prismatic Omen",
+    "mana_cost": "{1}{G}",
+    "type_line": "Enchantment",
+    "oracle_text": "Lands you control are every basic land type in addition to their other types.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/shm/126/prismatic-omen?utm_source=api"
+  },
+  {
+    "id": "edfbf056-c3b7-40e9-8e2b-333585978ac9",
+    "oracle_id": "86187aed-77ce-4b2d-aab0-0a8f807a9451",
+    "name": "River Boa",
+    "mana_cost": "{1}{G}",
+    "type_line": "Creature — Snake",
+    "oracle_text": "Islandwalk (This creature can't be blocked as long as defending player controls an Island.)\n{G}: Regenerate this creature.",
+    "power": "2",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Landwalk",
+      "Regenerate",
+      "Islandwalk"
+    ],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/ddm/49/river-boa?utm_source=api"
+  },
+  {
+    "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "name": "Llanowar Elves",
+    "mana_cost": "{G}",
+    "type_line": "Creature — Elf Druid",
+    "oracle_text": "{T}: Add {G}.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/fdn/227/llanowar-elves?utm_source=api"
+  },
+  {
+    "id": "67ef9842-7142-4c63-8aea-fa73f02722a5",
+    "oracle_id": "9ed6f28f-a3db-48c5-9ab0-b90a7fba5f57",
+    "name": "Royal Assassin",
+    "mana_cost": "{1}{B}{B}",
+    "type_line": "Creature — Human Assassin",
+    "oracle_text": "{T}: Destroy target tapped creature.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/dmr/101/royal-assassin?utm_source=api"
+  },
+  {
+    "id": "d96266b3-a7cb-40ce-a328-ac13719fe5f0",
+    "oracle_id": "f3fad295-1af2-4ecc-8546-b121ad6be27b",
+    "name": "Soul Warden",
+    "mana_cost": "{W}",
+    "type_line": "Creature — Human Cleric",
+    "oracle_text": "Whenever another creature enters, you gain 1 life.",
+    "power": "1",
+    "toughness": "1",
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/mm3/24/soul-warden?utm_source=api"
+  },
+  {
+    "id": "b5275d76-2947-4219-be21-614c7421614a",
+    "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+    "name": "Blood Artist",
+    "mana_cost": "{1}{B}",
+    "type_line": "Creature — Vampire",
+    "oracle_text": "Whenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+    "power": "0",
+    "toughness": "1",
+    "colors": [
+      "B"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/soc/209/blood-artist?utm_source=api"
+  },
+  {
+    "id": "161e66e3-0339-495c-bd06-0a799a254906",
+    "oracle_id": "7c3944fa-7c86-4979-85a9-86196aa94594",
+    "name": "Song of the Dryads",
+    "mana_cost": "{2}{G}",
+    "type_line": "Enchantment — Aura",
+    "oracle_text": "Enchant permanent\nEnchanted permanent is a colorless Forest land.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/cmm/324/song-of-the-dryads?utm_source=api"
+  },
+  {
+    "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "name": "Forest",
+    "mana_cost": "",
+    "type_line": "Basic Land — Forest",
+    "oracle_text": "({T}: Add {G}.)",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/trk/325/forest?utm_source=api"
+  },
+  {
+    "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "name": "Island",
+    "mana_cost": "",
+    "type_line": "Basic Land — Island",
+    "oracle_text": "({T}: Add {U}.)",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/trk/319/island?utm_source=api"
+  },
+  {
+    "id": "47260e7c-29bf-46f1-a029-9da7bbb418b5",
+    "oracle_id": "706ae742-1807-44b7-a4fa-f2e26f61519a",
+    "name": "Wild Growth",
+    "mana_cost": "{G}",
+    "type_line": "Enchantment — Aura",
+    "oracle_text": "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional {G}.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Enchant"
+    ],
+    "layout": "normal",
+    "card_faces": null,
+    "scryfall_uri": "https://scryfall.com/card/mkc/195/wild-growth?utm_source=api"
+  },
+  {
+    "id": "2edd7be9-9334-4684-b642-1aaf2000e054",
+    "oracle_id": "f7518456-45ed-41d4-bd3c-5aacea28eb35",
+    "name": "Jump",
+    "mana_cost": "{U}",
+    "type_line": "Instant",
+    "oracle_text": "Target creature gains flying until end of turn.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/m10/59/jump?utm_source=api"
+  },
+  {
+    "id": "55ad6a45-a840-45ba-89ad-066e20e983f3",
+    "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+    "name": "Humility",
+    "mana_cost": "{2}{W}{W}",
+    "type_line": "Enchantment",
+    "oracle_text": "All creatures lose all abilities and have base power and toughness 1/1.",
+    "power": null,
+    "toughness": null,
+    "colors": [
+      "W"
+    ],
+    "keywords": [],
+    "layout": "normal",
+    "scryfall_uri": "https://scryfall.com/card/tpr/16/humility?utm_source=api"
+  }
+]

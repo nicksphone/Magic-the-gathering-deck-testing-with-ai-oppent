@@ -1,5 +1,42 @@
 # Changelog
 
+## Mana, Layers And Resource Identity - 2026-10-06
+
+- Use normal zone transitions for activated sacrifices, preserving departure
+  identity and existing death LKI handling. A 134-check current-parent gate passes;
+  dynamic token quantities and older trigger incarnation leaks remain open.
+- Preserve metadata-light cost-query compatibility in the shared layer and type
+  readers. The expanded gate caught a crash; 277 focused checks pass after the
+  correction. Fresh full-composition qualification passes 2,836 checks across
+  70 modules in 722.20 seconds, without skips/xfails/deselection.
+- Compose explicit resource/hybrid/base-vector mana choices and fail-closed
+  training intent guards without changing internal automatic-payment defaults.
+- Add conservative fixed-color impossibility pruning, joint fixed-cost resource
+  witnesses and concrete-source forwarding in two AI affordability calls.
+- Qualify frontend lint/build/units, 14 explicit-mana actual-App cases and six
+  shortcut cases against the composed candidate; the AI neighbor gate passes
+  652 checks without exclusions.
+- Fresh 63-module backend gate passes 2,577 checks with two existing Song/type-layer
+  expected failures; seeded replay smoke matches both repeats in both seat orders.
+- Subsequent bounded basic-land layer and LKI/protection/attachment composition
+  passes 594 affected checks ordinarily, including both previously marked Song
+  mana assertions. This later source is distinct from the prior 63-module gate.
+- Resource-access comparisons test surviving original hand instances across
+  projections instead of stale discarded representatives. The layer-composed
+  parent AI gate passes 672 checks without exclusions.
+- Current shared-browser qualification passes 497 checks, with frontend
+  lint/build/unit and Suspend gates green. Escape-fuel witnesses and broader
+  layer/face composition remain unfinished.
+- Promote the qualified source after a verified consistent SQLite backup.
+  Restart both LAN services and verify backend health, frontend API proxy and
+  LAN page delivery; preserve every database table count and all 1,264 saved
+  match payloads. This is not a claim of complete rules or expert AI.
+- Reject unsupported cast/activated-intent fields before normalization, including
+  null extras. Worker acceptance passes 116 focused and 620 shared checks; original
+  historical witnesses remain archived and working acceptance tests use independent
+  valid actions. The newer layer/resource-access parent passes all 116 focused
+  checks and all 116 neighboring mana checks, without skips/xfails/deselection.
+
 ## Integrated Bounded Suspend - 2026-10-05
 
 - Integrate fixed-cost printed Suspend, separate upkeep/final-counter triggers,

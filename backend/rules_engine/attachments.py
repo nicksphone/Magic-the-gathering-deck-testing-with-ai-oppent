@@ -16,34 +16,50 @@ def enchant_restriction(oracle_text: str):
     return re.fullmatch(r"(?:(basic|nonbasic|nonland|noncreature) )?(artifact creature|creature|artifact|enchantment|land|planeswalker|permanent)(?: or (creature|artifact|enchantment|land|planeswalker|permanent))?(?: (you control|an opponent controls|your opponent controls))?", match.group(1).strip())
 
 
-def is_aura(card) -> bool:
+def is_aura(card, state=None) -> bool:
     from rules_engine.bestow import is_bestowed
-    if is_bestowed(card):
+    if is_bestowed(card) and state is None:
         return True
-    type_line = (getattr(card, "type_line", "") or "").lower()
-    types = {str(value).lower() for value in (getattr(card, "types", []) or [])}
+    type_line, types = _attachment_characteristics(card, state)
     return "enchantment" in types and "aura" in type_line
 
 
-def is_equipment(card) -> bool:
-    type_line = (getattr(card, "type_line", "") or "").lower()
-    types = {str(value).lower() for value in (getattr(card, "types", []) or [])}
+def is_equipment(card, state=None) -> bool:
+    type_line, types = _attachment_characteristics(card, state)
     return "artifact" in types and "equipment" in type_line
 
 
+def is_fortification(card, state=None) -> bool:
+    type_line, types = _attachment_characteristics(card, state)
+    return "artifact" in types and "fortification" in type_line
+
+
+def _attachment_characteristics(card, state):
+    from rules_engine.land_types import effective_type_line
+    line = effective_type_line(state, card) if state is not None else getattr(card, 'type_line', '') or ''
+    types = effective_types(state, card) if state is not None else getattr(card, 'types', []) or []
+    return line.lower(), {str(value).lower() for value in types}
+
+
 def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool:
+    aura = is_aura(attachment, state)
+    equipment = is_equipment(attachment, state)
+    fortification = is_fortification(attachment, state)
+    if not (aura or equipment or fortification):
+        return False
     if not target_id:
         return False
     if target_id.startswith("player:"):
-        return is_aura(attachment) and "enchant player" in (attachment.oracle_text or "").lower()
+        return aura and "enchant player" in (attachment.oracle_text or "").lower()
     target = state.cards.get(target_id)
     if not target or target.zone != Zone.BATTLEFIELD:
         return False
-    if is_equipment(attachment) and ("Creature" in effective_types(state, attachment) or "Creature" not in effective_types(state, target)):
+    if (equipment or fortification) and ("Creature" in effective_types(state, attachment)
+            or ("Creature" if equipment else "Land") not in effective_types(state, target)):
         return False
     if protected_from_source(state, target_id, attachment):
         return False
-    if not is_aura(attachment):
+    if not aura:
         return True
     from rules_engine.bestow import is_bestowed
     if is_bestowed(attachment):

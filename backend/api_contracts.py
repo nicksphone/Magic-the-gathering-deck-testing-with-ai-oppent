@@ -183,6 +183,11 @@ class ManaAbilityAction(CardAction):
     type: Literal['activate_mana_ability']
     ability_index: Annotated[StrictInt, Field(ge=0, le=100)]
     color: Literal['W', 'U', 'B', 'R', 'G', 'C']
+    payment_choices: PaymentCards | None = None
+    hybrid_choices: HybridChoices | None = None
+    output_bundle: Annotated[dict[Literal['W', 'U', 'B', 'R', 'G', 'C'],
+                                  Annotated[StrictInt, Field(ge=1, le=100000)]],
+                             Field(min_length=1, max_length=6)] | None = None
 
 
 class BulkTapAction(InputModel):

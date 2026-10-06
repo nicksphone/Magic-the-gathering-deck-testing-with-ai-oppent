@@ -1,0 +1,126 @@
+[
+  {
+    "id": "d5114607-df8f-4e44-8ef5-b6af89964bbc",
+    "oracle_id": "01cb56d7-f859-46fd-b6c9-40d2c4965b69",
+    "name": "Dictate of Karametra",
+    "mana_cost": "{3}{G}{G}",
+    "type_line": "Enchantment",
+    "oracle_text": "Flash\nWhenever a player taps a land for mana, that player adds one mana of any type that land produced.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [
+      "Flash"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/jou/121/dictate-of-karametra?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "8ccb1e59-b858-42cf-93f8-8a3badb3eaad",
+    "oracle_id": "f15911a5-f597-452e-a015-b115339f28fc",
+    "name": "Heartbeat of Spring",
+    "mana_cost": "{2}{G}",
+    "type_line": "Enchantment",
+    "oracle_text": "Whenever a player taps a land for mana, that player adds one mana of any type that land produced.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/2xm/171/heartbeat-of-spring?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "38e6e9aa-2e5f-49f7-beef-b876c070d72d",
+    "oracle_id": "38538aff-b6f9-4c30-992e-7fd78da3c44a",
+    "name": "Matter Reshaper",
+    "mana_cost": "{2}{C}",
+    "type_line": "Creature \u2014 Eldrazi",
+    "oracle_text": "({C} represents colorless mana.)\nWhen this creature dies, reveal the top card of your library. You may put that card onto the battlefield if it's a permanent card with mana value 3 or less. Otherwise, put that card into your hand.",
+    "power": "3",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/cmm/806/matter-reshaper?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "359b2f2b-7b58-47b6-b00c-8616f981e3a3",
+    "oracle_id": "f712aed5-d6e0-45d3-ae20-518b765ce9da",
+    "name": "Merfolk Trickster",
+    "mana_cost": "{U}{U}",
+    "type_line": "Creature \u2014 Merfolk Wizard",
+    "oracle_text": "Flash\nWhen this creature enters, tap target creature an opponent controls. It loses all abilities until end of turn.",
+    "power": "2",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flash"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/dom/56/merfolk-trickster?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b30a8f92-ce42-4b27-a893-bcf97fde228d",
+    "oracle_id": "c97361b5-af16-4a7b-af85-a429dbaf4ad2",
+    "name": "Mind Stone",
+    "mana_cost": "{2}",
+    "type_line": "Artifact",
+    "oracle_text": "{T}: Add {C}.\n{1}, {T}, Sacrifice this artifact: Draw a card.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mbc/76/mind-stone?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "0b47f6d2-9f65-47a4-bfc4-15619befe53d",
+    "oracle_id": "1861e642-21d5-4232-89f3-b5557f2946c1",
+    "name": "Phyrexian Tower",
+    "mana_cost": "",
+    "type_line": "Legendary Land",
+    "oracle_text": "{T}: Add {C}.\n{T}, Sacrifice a creature: Add {B}{B}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/mh3/303/phyrexian-tower?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b7c47024-5e08-4b17-b41a-7647f8b814b9",
+    "oracle_id": "8539f295-5d58-4436-a73a-b9277c4c7795",
+    "name": "Rampant Growth",
+    "mana_cost": "{1}{G}",
+    "type_line": "Sorcery",
+    "oracle_text": "Search your library for a basic land card, put that card onto the battlefield tapped, then shuffle.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "G"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/tdc/265/rampant-growth?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

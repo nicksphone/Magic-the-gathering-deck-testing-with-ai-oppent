@@ -40,7 +40,9 @@ def test_canonical_printed_capacity_is_shared_but_not_payment_permission(name, e
         source.summoning_sick = "Creature" in source.types
         assert nonland_mana_outputs(state, source.id, source) == ({} if source.summoning_sick else expected)
     source.tapped = True
-    assert nonland_mana_outputs(state, source.id, source) == {}
+    # A source-free sacrifice activation is legal even while tapped or sick.
+    # Repeatable capacity still excludes this consumable source below.
+    assert nonland_mana_outputs(state, source.id, source) == ({'R': 1} if name == 'Skirk Prospector' else {})
     assert repeatable_nonland_mana_outputs(source) == expected
     source.tapped = False
     source.summoning_sick = initial_sickness

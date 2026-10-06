@@ -862,6 +862,9 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
                 _start_next_game_state(match, repo=repo)
                 continue
             break
+        if match.rules.advance_no_priority_step(match.state):
+            _remember_public_types(match)
+            continue
         pid = _default_player_for_state(match)
         if match.controllers.get(pid) == "ai":
             legal = match.rules.legal_moves(match.state, pid)

@@ -170,14 +170,61 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(state.step != Step.CLEANUP or state.cleanup_repeat_required, "No mana actions during ordinary cleanup")
         if kind == 'activate_mana_ability':
             from rules_engine.mana_abilities import mana_ability_views
+            from rules_engine.costs import parse_activated_cost, activated_cost_selection, activated_cost_available
+            from rules_engine.mana import hybrid_payment_symbols
             card = state.cards.get(action.get('card_id'))
             require(card is not None and card.id in state.players[player_id].battlefield and card.controller == player_id,
                     'Mana source must be a permanent you control')
-            require(any(view['ability_index'] == action.get('ability_index')
-                        and action.get('color') in view['outputs'] for view in mana_ability_views(state, card)),
+            bundle = action.get('output_bundle')
+            matching = [view for view in mana_ability_views(state, card)
+                        if view['ability_index'] == action.get('ability_index')
+                        and (action.get('color') in view['outputs'] if bundle is None else
+                             any(option['color'] == action.get('color') and option['output_bundle'] == bundle
+                                 for option in view.get('output_options', [])))]
+            require(bool(matching),
                     'Mana ability, color or activation payment is not legal')
+            options = [option for option in matching[0].get('output_options', [])
+                       if option['color'] == action['color']]
+            require(len(options) <= 1 or bundle is not None, 'Choose the complete mana output vector explicitly')
+            cost_text = matching[0]['cost_text']
+            cost = parse_activated_cost(cost_text)
+            require('{X}' not in cost.mana_cost.upper(), 'Variable mana production is not supported by this contract')
+            payments = action.get('payment_choices') or {}
+            require(not cost.discard_cards or payments.get('discard_card_ids') is not None,
+                    'Choose each discarded payment card explicitly')
+            require(not cost.sacrifice_creatures or cost.sacrifice_source
+                    or payments.get('sacrifice_card_ids') is not None,
+                    'Choose each sacrificed payment card explicitly')
+            require(activated_cost_selection(state, player_id, card.id, cost, action.get('payment_choices')) is not None,
+                    'Invalid selected mana ability resources')
+            symbols = hybrid_payment_symbols(cost.mana_cost)
+            branches = action.get('hybrid_choices')
+            require(not symbols or branches is not None, 'Choose each hybrid mana payment branch explicitly')
+            require(branches is None or len(branches) == len(symbols) and all(
+                branch in symbol['choices'] for branch, symbol in zip(branches, symbols)),
+                'Invalid hybrid mana ability payment branch')
+            require(activated_cost_available(state, player_id, card.id, cost_text,
+                    hybrid_choices=branches, payment_choices=action.get('payment_choices'),
+                    ability_kind='mana', ability_index=action['ability_index']),
+                    'Selected mana ability payment is not affordable')
         else:
             validate_tap(state, player_id, action)
+            if kind == 'tap_nonland_for_mana':
+                from rules_engine.mana_abilities import mana_ability_views
+                from rules_engine.costs import parse_activated_cost
+                from rules_engine.mana import hybrid_payment_symbols
+                matching = [view for view in mana_ability_views(state, state.cards[action['card_id']])
+                            if action['color'] in view['outputs'] and (
+                                view['outputs'][action['color']] > 0 or
+                                sum(view.get('output_bundles', {}).get(action['color'], {}).values()) > 0)]
+                require(len(matching) <= 1, 'Choose the mana ability index explicitly; use activate_mana_ability')
+                for view in matching:
+                    cost = parse_activated_cost(view['cost_text'])
+                    require(not cost.discard_cards and not (cost.sacrifice_creatures and not cost.sacrifice_source)
+                            and not hybrid_payment_symbols(cost.mana_cost) and '{X}' not in cost.mana_cost.upper(),
+                            'Legacy mana action cannot choose payments; use activate_mana_ability')
+                    require(all(len(bundle) <= 1 for bundle in view.get('base_output_bundles', [])),
+                            'Announce the complete mixed mana vector; use activate_mana_ability')
         return
     # Declaring no attackers is legal even when the move generator has none.
     if kind == "attack" and not action["attackers"]:

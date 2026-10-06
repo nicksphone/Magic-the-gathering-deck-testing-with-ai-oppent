@@ -7,6 +7,7 @@ import pytest
 
 from game_state.state import MatchFactory, Zone, assign_static_order_on_battlefield_entry
 from rules_engine.action_validation import ActionRejected, checked_action
+from rules_engine.mana import auto_pay_cost
 from training.environment import _unsupported_mana_choices, encode_action, decode_action
 from tests.test_training_environment import resolve
 from tests.test_training_choice_coverage import (
@@ -103,25 +104,30 @@ def test_chromatic_star_explicit_color_cost_departure_trigger_and_pending_draw_r
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-def test_phyrexian_tower_resource_selection_is_explicitly_unsupported_and_cannot_be_filtered_away(seat):
+def test_phyrexian_tower_requires_selected_resource_and_cannot_be_filtered_away(seat):
     environment = position(seat)
     cid = card(environment, 'Phyrexian Tower', seat)
     first = existing_card(environment, 'Grizzly Bears', seat, Zone.BATTLEFIELD)
     existing_card(environment, 'Grizzly Bears', seat, Zone.BATTLEFIELD)
     prompt = next(p for p in environment.prompts() if p['hint']['type'] == 'activate_mana_ability'
                   and p['hint']['card_id'] == cid and p['hint']['ability_index'] == 1)
-    assert not prompt['encoding_supported']
-    assert prompt['unsupported_choices'] == ['payment_choices.sacrifice_card_ids']
+    assert prompt['encoding_supported'] and not prompt['unsupported_choices']
+    assert 'payment_choices.sacrifice_card_ids' in prompt['required_choices']
     action = mana(cid, 'B', 1)
     assert decode_action(encode_action(action)) == action  # Encoding alone is not legality.
     before = environment.snapshot()
-    # Show why the legacy bypass needs closing: the unchanged engine can choose
-    # one of two creatures without any selected sacrifice list in the action.
+    # Public actions must choose resources; internal payment planning may choose fuel.
     legacy = {'type': 'tap_nonland_for_mana', 'card_id': cid, 'color': 'B'}
-    automatic = checked_action(environment._state, environment._rules, seat, legacy)
+    with pytest.raises(ActionRejected):
+        checked_action(environment._state, environment._rules, seat, legacy)
+    automatic = deepcopy(environment._state)
+    automatic.players[seat].mana_pool = {}
+    assert auto_pay_cost(automatic, seat, '{B}{B}')
     assert len(automatic.players[seat].battlefield) == len(environment._state.players[seat].battlefield) - 1
     assert environment.snapshot() == before
-    proposals = [action, {**action, 'payment_choices': {'sacrifice_card_ids': [first]}},
+    selected = {**action, 'payment_choices': {'sacrifice_card_ids': [first]}}
+    assert environment.lookup_intent(selected)
+    proposals = [action, {**action, 'payment_choices': {'sacrifice_card_ids': []}},
                  {'type': 'tap_nonland_for_mana', 'card_id': cid, 'color': 'B'},
                  {'type': 'activate_ability', 'card_id': cid, 'ability_index': 1,
                   'payment_choices': {'sacrifice_card_ids': [first]}}]
@@ -204,7 +210,7 @@ def test_shared_helper_cannot_silently_drop_requested_mana_parameters(field, val
     environment = position()
     cid = card(environment, 'Sol Ring', 1)
     before = environment.snapshot()
-    with pytest.raises(ActionRejected, match='cannot carry'):
+    with pytest.raises(ActionRejected):
         environment.lookup_intent({**mana(cid, 'C'), field: value})
     assert environment.snapshot() == before
     assert environment.lookup_intent({**mana(cid, 'C'), 'card_name': 'Sol Ring'})

@@ -157,7 +157,7 @@ def _attached_scale_count(state, source, target, phrase):
         return basic_land_type_count(state, source.controller)
     if phrase == "of its colors":
         from rules_engine.colors import card_color_symbols
-        return len(card_color_symbols(target))
+        return len(card_color_symbols(target, state))
     if phrase == "aura and equipment attached to it":
         from rules_engine.attachments import is_aura, is_equipment
         return sum((is_aura(card) or is_equipment(card)) and card.attached_to == target.id
@@ -516,6 +516,9 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
                 if _subject_matches(state, card_id, subject):
                     out.update(granted)
         for scope, other_only, subject, removed in _iter_keyword_removals(src):
+            from rules_engine.basic_land_layer import prior_layer_abilities_lost
+            if prior_layer_abilities_lost(state, src):
+                continue
             if not source_active and 'all abilities' not in removed:
                 continue
             if _scope_controller(src.controller, scope, card.controller):
@@ -581,12 +584,14 @@ def _apply_keyword_modifier(keywords, effect):
 
 @scoped_query
 def _printed_ability_loss_sources(state):
+    from rules_engine.basic_land_layer import prior_layer_abilities_lost
     losses = []
     # This union of recognized losses does not depend on source timestamp order.
     for player in state.players.values():
         for source_id in player.battlefield:
             source = state.cards.get(source_id)
-            if source is None or 'all abilities' not in _static_oracle_text(source):
+            if (source is None or 'all abilities' not in _static_oracle_text(source)
+                    or prior_layer_abilities_lost(state, source)):
                 continue
             for scope, other_only, subject, removed in _iter_keyword_removals(source):
                 if 'all abilities' in removed:
@@ -652,7 +657,7 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
     # Minimal layer support: base PT setters from static text.
     setters = []
     for src_id, src, source_active in _continuous_sources(state):
-        setter_source = src if source_active else _ability_layer_continuation_source(src)
+        setter_source = src if source_active else _ability_layer_continuation_source(state, src)
         if setter_source is None:
             continue
         for scope, other_only, subject, p_set, t_set in _iter_pt_setters(setter_source):
@@ -672,9 +677,12 @@ def _resolved_base_stat_effects(card):
             and effect['incarnation'] == object_incarnation(card)]
 
 
-def _ability_layer_continuation_source(source):
+def _ability_layer_continuation_source(state, source):
     """The supported combined loss/base-PT instruction starts in layer six."""
     from copy import copy
+    from rules_engine.basic_land_layer import prior_layer_abilities_lost
+    if prior_layer_abilities_lost(state, source):
+        return None
     clauses = [clause.strip() for clause in re.split(r'[.\n]', _static_oracle_text(source))
                if re.fullmatch(r'(?:all )?creatures lose all abilities and have base power and toughness \d+/\d+', clause.strip())]
     if not clauses:
@@ -1203,9 +1211,10 @@ def continuous_layer_trace(state, card_id: str) -> dict[str, Any]:
         if not src or not _is_battlefield(src):
             continue
         if printed_abilities_suppressed(state, src_id, losses=ability_losses):
-            continued = _ability_layer_continuation_source(src)
+            continued = _ability_layer_continuation_source(state, src)
             layer_entries = _source_continuous_layer_entries(state, continued, card_id) if continued else []
-            if not continued:
+            from rules_engine.basic_land_layer import prior_layer_abilities_lost
+            if not continued and not prior_layer_abilities_lost(state, src):
                 layer_entries = [entry for entry in _source_continuous_layer_entries(state, src, card_id)
                                  if entry['layer'] == 'keyword-remove:all-abilities']
         else:

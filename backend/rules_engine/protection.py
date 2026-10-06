@@ -45,7 +45,7 @@ def source_matches_quality(source_card, quality: str, *, state=None) -> bool:
     """Shared supported color/type qualities, not an arbitrary Oracle predicate."""
     if source_card is None:
         return False
-    colors = card_color_names(source_card)
+    colors = card_color_names(source_card, state)
     if quality == 'everything' or quality in colors:
         return True
     if quality == 'colorless':
@@ -79,7 +79,7 @@ def protection_match_reason(state, target_id: str, source_card) -> str | None:
     if "everything" in protections:
         return "everything"
 
-    source_colors = card_color_names(source_card)
+    source_colors = card_color_names(source_card, state)
     color_hits = source_colors & protections
     if color_hits:
         return sorted(color_hits)[0]

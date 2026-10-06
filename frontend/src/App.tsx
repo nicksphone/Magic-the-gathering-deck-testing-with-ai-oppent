@@ -10,9 +10,11 @@ import { DeckPanel } from "./components/DeckPanel";
 import { StackLog } from "./components/StackLog";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "./types";
 import { emptyCombatDraft } from "./components/combat-selection";
+import { canStartReviewed, parsePendingInteractiveStart, reviewMatchesPayload, startSignature,
+  type InteractiveReview, type PendingInteractiveStart } from "./lib/interactive-preflight";
 
 const PENDING_START_KEY = "mtg.pendingStart";
-type PendingStart = { key: string; payload: StartMatchPayload };
+type PendingStart = PendingInteractiveStart;
 
 function isAiSeries(state: MatchState) {
   return state.mode === "ai_vs_ai" || (state.controllers?.["1"] === "ai" && state.controllers?.["2"] === "ai");
@@ -20,22 +22,15 @@ function isAiSeries(state: MatchState) {
 
 function readPendingStart(): PendingStart | null {
   try {
-    const raw = localStorage.getItem(PENDING_START_KEY);
-    if (!raw || raw.length > 100000) return null;
-    const value: unknown = JSON.parse(raw);
-    if (value && typeof value === "object" && "key" in value && "payload" in value
-      && typeof value.key === "string" && /^[0-9a-f]{32}$/.test(value.key)
-      && value.payload && typeof value.payload === "object"
-      && "deck_a" in value.payload && "deck_b" in value.payload
-      && Array.isArray(value.payload.deck_a) && Array.isArray(value.payload.deck_b)) {
-      return value as PendingStart;
-    }
+    return parsePendingInteractiveStart(localStorage.getItem(PENDING_START_KEY));
   } catch { /* Optional local recovery data may be unavailable. */ }
   return null;
 }
 
-function clearPendingStart() {
-  try { localStorage.removeItem(PENDING_START_KEY); } catch { /* Optional storage. */ }
+function clearPendingStart(key: string | undefined) {
+  try {
+    if (readPendingStart()?.key === key && key) localStorage.removeItem(PENDING_START_KEY);
+  } catch { /* Optional storage. */ }
 }
 
 export function App() {
@@ -63,11 +58,64 @@ export function App() {
   const [mutationPending, setMutationPending] = useState(false);
   const [restoring, setRestoring] = useState(true);
   const [autoProgressPaused, setAutoProgressPaused] = useState(false);
+  const [pendingStart, setPendingStart] = useState(readPendingStart);
+  const pendingStartRef = useRef(pendingStart);
+  const pendingStartPersisted = useRef(pendingStart !== null);
+  const [startReview, setStartReview] = useState<InteractiveReview | null>(pendingStart?.review ?? null);
+  const [preflightChecking, setPreflightChecking] = useState(false);
+  const [preflightNote, setPreflightNote] = useState("");
+  const startIntentInFlight = useRef(false);
+  const preflightGeneration = useRef(0);
   const gate = useRef(createMutationGate());
   const currentMatch = useRef<MatchState | null>(null);
   const autoTickInFlight = useRef(false);
   const responsePassInFlight = useRef(false);
   const responseWindowSigRef = useRef("");
+
+  const deckA = decks.find(deck => deck.id === selectedA);
+  const deckB = decks.find(deck => deck.id === selectedB);
+  const selectedStart: StartMatchPayload | null = deckA && deckB ? {
+    deck_a: deckA.mainboard, deck_b: deckB.mainboard,
+    deck_a_sideboard: deckA.sideboard, deck_b_sideboard: deckB.sideboard,
+    deck_a_id: deckA.id, deck_b_id: deckB.id,
+    controller_a: mode === "ai_vs_ai" ? "ai" : "human",
+    controller_b: mode === "human_vs_human" ? "human" : "ai",
+    ai_difficulty: difficulty, mode, best_of: bestOf,
+  } : null;
+  const reviewTarget = pendingStart?.payload ?? selectedStart;
+  const reviewSignature = reviewTarget ? startSignature(reviewTarget) : "";
+  const reviewSignatureRef = useRef(reviewSignature);
+  reviewSignatureRef.current = reviewSignature;
+  const visibleReview = reviewTarget && reviewMatchesPayload(startReview, reviewTarget) ? startReview : null;
+
+  useEffect(() => {
+    preflightGeneration.current++;
+    setStartReview(pendingStart?.review ?? null);
+  }, [reviewSignature, pendingStart]);
+
+  function invalidateStartReview() {
+    preflightGeneration.current++;
+    setStartReview(null);
+  }
+
+  const rememberPendingStart = useCallback((pending: PendingStart) => {
+    pendingStartRef.current = pending;
+    setPendingStart(pending);
+    try {
+      localStorage.setItem(PENDING_START_KEY, JSON.stringify(pending));
+      pendingStartPersisted.current = true;
+    } catch { pendingStartPersisted.current = false; }
+  }, []);
+
+  const forgetPendingStart = useCallback((key: string) => {
+    if (pendingStartRef.current?.key === key) {
+      pendingStartRef.current = null;
+      setPendingStart(null);
+      setStartReview(null);
+      preflightGeneration.current++;
+    }
+    clearPendingStart(key);
+  }, []);
 
   const applyMatch = useCallback(async (next: MatchState) => {
     let data = next;
@@ -120,14 +168,16 @@ export function App() {
         const records = await api.savedMatches();
         if (disposed) return;
         setSavedMatches(records);
-        const pending = readPendingStart();
+        const pending = pendingStartRef.current;
         let pendingMatch: MatchState | null = null;
-        if (pending) {
+        if (pending && canStartReviewed(pending.review, pending.payload)) {
           try { pendingMatch = await api.startMatch(pending.payload, pending.key); }
           catch (error) {
-            if (error instanceof HttpResponseError && error.status < 500) clearPendingStart();
+            if (error instanceof HttpResponseError && error.status < 500) forgetPendingStart(pending.key);
             if (!disposed) setActionError(`Pending match creation could not be recovered: ${String(error)}`);
           }
+        } else if (pending) {
+          setPreflightNote("Pending start has no acknowledged support review. Review its original decks and configuration before recovering it.");
         }
         let id: string | null = null;
         try { id = pendingMatch?.id ?? localStorage.getItem("mtg.activeMatch"); } catch { /* Optional persistence. */ }
@@ -141,9 +191,9 @@ export function App() {
           setLegalPlayerId(legal.player_id); setLegalMoves(data.winner != null ? [] : legal.moves);
           setCanAutoPass(data.winner == null && legal.can_auto_pass === true);
           setAutoProgressPaused(true);
-          if (pendingMatch) {
+          if (pendingMatch && pending) {
             try { localStorage.setItem("mtg.activeMatch", id); } catch { /* Optional persistence. */ }
-            clearPendingStart();
+            forgetPendingStart(pending.key);
             try { setSavedMatches(await api.savedMatches()); } catch { /* Match is already restored. */ }
           }
         }
@@ -152,7 +202,7 @@ export function App() {
       } finally { if (!disposed) setRestoring(false); }
     })();
     return () => { disposed = true; };
-  }, []);
+  }, [forgetPendingStart]);
 
   function reportAction<Args extends unknown[]>(operation: (...args: Args) => Promise<void>) {
     return (...args: Args) => {
@@ -181,48 +231,85 @@ export function App() {
     setDecks(records);
   }, []);
 
-  async function startMatch() {
-    if (restoring) return;
-    const previousPending = readPendingStart();
-    const deckA = decks.find((d) => d.id === selectedA);
-    const deckB = decks.find((d) => d.id === selectedB);
-    if (!previousPending && (!deckA || !deckB)) return;
-    await gate.current.run(async () => {
-      setMutationPending(true);
-      try {
-        const payload: StartMatchPayload = previousPending?.payload ?? {
-          deck_a: deckA?.mainboard ?? [],
-          deck_b: deckB?.mainboard ?? [],
-          deck_a_sideboard: deckA?.sideboard,
-          deck_b_sideboard: deckB?.sideboard,
-          deck_a_id: deckA?.id,
-          deck_b_id: deckB?.id,
-          controller_a: mode === "ai_vs_ai" ? "ai" : "human",
-          controller_b: mode === "human_vs_human" ? "human" : "ai",
-          ai_difficulty: difficulty,
-          mode,
-          best_of: bestOf,
-        };
-        const pending = previousPending ?? { key: newMutationKey(), payload };
-        try { localStorage.setItem(PENDING_START_KEY, JSON.stringify(pending)); } catch { /* Optional storage. */ }
+  async function startMatch(recover = false) {
+    if (restoring || startIntentInFlight.current) return;
+    const previousPending = pendingStartRef.current;
+    const storedPending = readPendingStart();
+    if (storedPending && !previousPending) {
+      pendingStartRef.current = storedPending;
+      pendingStartPersisted.current = true;
+      setPendingStart(storedPending);
+      setStartReview(storedPending.review ?? null);
+      preflightGeneration.current++;
+      setPreflightNote("An existing pending start was found. Use its recovery control; the current selectors do not replace its intent.");
+      return;
+    }
+    if (storedPending && previousPending && (storedPending.key !== previousPending.key
+      || startSignature(storedPending.payload) !== startSignature(previousPending.payload))) {
+      throw new Error("Another window changed the stored pending start. No start was submitted; resolve that intent before retrying here.");
+    }
+    if (previousPending && !recover) throw new Error("Recover the original pending start before creating another match.");
+    const requested = recover ? previousPending?.payload : selectedStart;
+    if (!requested) return;
+    const payload = JSON.parse(JSON.stringify(requested)) as StartMatchPayload;
+    const signature = startSignature(payload);
+    const generation = preflightGeneration.current;
+    const isCurrent = () => generation === preflightGeneration.current && signature === reviewSignatureRef.current;
+    startIntentInFlight.current = true;
+    try {
+      if (!canStartReviewed(startReview, payload)) {
+        setStartReview(null);
+        setPreflightChecking(true);
+        setPreflightNote("Checking known rules gaps in both mainboards and sideboards...");
         try {
-          await applyMatch(await api.startMatch(payload, pending.key));
+          const coverage = await api.preflightSimulateBatch(
+            [...payload.deck_a, ...(payload.deck_a_sideboard ?? [])],
+            [...payload.deck_b, ...(payload.deck_b_sideboard ?? [])],
+          );
+          if (!isCurrent()) {
+            setPreflightNote("Decks or configuration changed. The stale preflight was discarded; check again.");
+            return;
+          }
+          setStartReview({ version: 1, signature, coverage, exploratoryAcknowledged: false });
+          setPreflightNote("");
         } catch (error) {
-          if (error instanceof HttpResponseError && error.status < 500) {
-            clearPendingStart();
-            throw error;
+          if (!isCurrent()) {
+            setPreflightNote("Decks or configuration changed. The stale preflight error was discarded; check again.");
+            return;
           }
-          try { await applyMatch(await api.startMatch(payload, pending.key)); }
-          catch (retryError) {
-            if (retryError instanceof HttpResponseError && retryError.status < 500) clearPendingStart();
-            throw new Error(`Match creation outcome is uncertain. Refresh to recover it: ${String(retryError)}`, { cause: retryError });
+          setPreflightNote("Support preflight failed. No start was submitted; retry the check.");
+          throw error;
+        } finally { setPreflightChecking(false); }
+        return;
+      }
+      await gate.current.run(async () => {
+        if (!isCurrent()) return;
+        setMutationPending(true);
+        const pending: PendingStart = { key: previousPending?.key ?? newMutationKey(), payload, review: startReview };
+        try {
+          const stored = readPendingStart();
+          if (stored && stored.key !== pending.key) throw new Error("Another window has a pending start. No start was submitted; recover it before creating another match.");
+          rememberPendingStart(pending);
+          try {
+            await applyMatch(await api.startMatch(payload, pending.key));
+          } catch (error) {
+            if (error instanceof HttpResponseError && error.status < 500) {
+              forgetPendingStart(pending.key);
+              throw error;
+            }
+            try { await applyMatch(await api.startMatch(payload, pending.key)); }
+            catch (retryError) {
+              if (retryError instanceof HttpResponseError && retryError.status < 500) forgetPendingStart(pending.key);
+              const recovery = pendingStartPersisted.current ? "Refresh to recover it" : "Browser persistence is unavailable. Keep this window open and use Recover pending match start";
+              throw new Error(`Match creation outcome is uncertain. ${recovery}: ${String(retryError)}`, { cause: retryError });
+            }
           }
-        }
-        clearPendingStart();
-        setAutoProgressPaused(false);
-        setSavedMatches(await api.savedMatches());
-      } finally { setMutationPending(false); }
-    });
+          forgetPendingStart(pending.key);
+          setAutoProgressPaused(false);
+          setSavedMatches(await api.savedMatches());
+        } finally { setMutationPending(false); }
+      });
+    } finally { startIntentInFlight.current = false; }
   }
 
   const passPriority = useCallback(async () => {
@@ -450,21 +537,53 @@ export function App() {
       <section className="left-column" id="match-controls" tabIndex={-1} aria-label="Actions and choices">
         {match ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.winner != null ? (match.match_complete ? "Series complete" : "Between games") : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.winner != null ? "This game is over. Review the result above and the series controls below." : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
         {match ? <StackLog match={match} /> : null}
+        <section className="panel" aria-label="Interactive match support preflight">
+          <h3>Rules support preflight</h3>
+          <p>Interactive matches are exploratory, not rules-certified. This check reports known gaps only; an empty result is not certification.</p>
+          {preflightNote ? <p role="status">{preflightNote}</p> : null}
+          {pendingStart && !pendingStartPersisted.current ? <p role="status">Browser persistence is unavailable. Keep this window open to recover the original pending start.</p> : null}
+          {reviewTarget ? <>
+            <p>{pendingStart ? "Original pending start" : "Selected configuration"}: A {decks.find(deck => deck.id === reviewTarget.deck_a_id)?.name ?? "Deck"} (#{reviewTarget.deck_a_id ?? "unsaved"}) vs B {decks.find(deck => deck.id === reviewTarget.deck_b_id)?.name ?? "Deck"} (#{reviewTarget.deck_b_id ?? "unsaved"}); {reviewTarget.mode}; seats {reviewTarget.controller_a}/{reviewTarget.controller_b}; {reviewTarget.ai_difficulty}; best-of-{reviewTarget.best_of}.</p>
+            {pendingStart ? <details><summary>Original pending deck lists (not the current selectors)</summary>
+              {(["a", "b"] as const).map(seat => <div key={seat}><strong>Deck {seat.toUpperCase()}</strong>
+                <p>Mainboard: {reviewTarget[`deck_${seat}`].map(card => `${card.quantity} ${card.card_name}`).join("; ")}</p>
+                <p>Sideboard: {(reviewTarget[`deck_${seat}_sideboard`] ?? []).map(card => `${card.quantity} ${card.card_name}`).join("; ") || "None"}</p>
+              </div>)}
+            </details> : null}
+          </> : <p>Select both decks, then use Start to check support before creation.</p>}
+          {visibleReview ? <>
+            <p>{visibleReview.coverage.known_unsupported_cards.length ? "Known unsupported gaps (mainboards and sideboards):" : "No known unsupported gaps were reported in these lists. Coverage is incomplete; this is still exploratory, not certification."}</p>
+            <ul style={{ maxHeight: "16rem", overflowY: "auto" }}>
+              {visibleReview.coverage.known_unsupported_cards.map((card, index) => <li key={`${card.deck}:${card.card_name}:${index}`}>
+                <strong>Deck {card.deck}: {card.card_name}</strong><p>Mechanics: {card.mechanics.join(", ") || "None reported"}</p>
+                {card.static_clause_gaps?.map((gap, gapIndex) => <p key={gapIndex}>
+                  Face: {gap.face_name}; index: {gap.face_index ?? "none"}; clause: <code>{gap.clause}</code>; condition: {gap.condition}; reasons: {gap.reasons.join(", ")}
+                </p>)}
+              </li>)}
+            </ul>
+            <label><input type="checkbox" aria-label="Acknowledge exploratory interactive match" disabled={preflightChecking || mutationPending || restoring}
+              checked={visibleReview.exploratoryAcknowledged} onChange={event => {
+                const checked = event.currentTarget.checked;
+                setStartReview(review => review && review.signature === reviewSignature ? { ...review, exploratoryAcknowledged: checked } : null);
+              }} /> I understand this exact deck pair and configuration is exploratory, not rules-certified.</label>
+          </> : null}
+          {pendingStart ? <button disabled={restoring || mutationPending || preflightChecking || (!!visibleReview && !visibleReview.exploratoryAcknowledged)} onClick={reportAction(() => startMatch(true))}>Recover pending match start</button> : null}
+        </section>
         <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <Controls
           decks={decks}
           selectedA={selectedA}
           selectedB={selectedB}
-          setSelectedA={setSelectedA}
-          setSelectedB={setSelectedB}
+          setSelectedA={value => { invalidateStartReview(); setSelectedA(value); }}
+          setSelectedB={value => { invalidateStartReview(); setSelectedB(value); }}
           startMode={mode}
-          setStartMode={setMode}
+          setStartMode={value => { invalidateStartReview(); setMode(value); }}
           difficulty={difficulty}
-          setDifficulty={setDifficulty}
+          setDifficulty={value => { invalidateStartReview(); setDifficulty(value); }}
           bestOf={bestOf}
-          setBestOf={setBestOf}
-          onStart={reportAction(startMatch)}
-          startDisabled={restoring || mutationPending || (!readPendingStart() && (!decks.some((deck) => deck.id === selectedA) || !decks.some((deck) => deck.id === selectedB)))}
+          setBestOf={value => { invalidateStartReview(); setBestOf(value); }}
+          onStart={reportAction(() => startMatch())}
+          startDisabled={restoring || mutationPending || preflightChecking || !!pendingStart || !selectedStart || (!!visibleReview && !visibleReview.exploratoryAcknowledged)}
           onPassPriority={reportAction(passPriority)}
           onKeepHand={reportAction(keepHand)}
           onMulligan={reportAction(mulligan)}

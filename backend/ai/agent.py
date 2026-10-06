@@ -5334,6 +5334,7 @@ class AIAgent:
                 state, player_id, getattr(card, "mana_cost", ""),
                 card_name=getattr(card, "name", ""), spell_types=set(effective_types(state, card) or []),
                 oracle_text=getattr(card, "oracle_text", "") or "",
+                source_card_id=getattr(card, 'id', None), cast_resource_card=card,
             ):
                 opp_id = 1 if player_id == 2 else 2
                 opp_creatures = sum(

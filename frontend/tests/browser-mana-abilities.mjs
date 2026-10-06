@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {openBrowser, waitForApiState} from './browser-driver.mjs';
+import {activateIndexedMana} from './indexed-mana-control.mjs';
 const api = 'http://127.0.0.1:10199';
 const ready = label => `Boolean([...document.querySelectorAll('button')].find(button =>
   button.textContent.trim() === ${JSON.stringify(label)} && !button.disabled && !button.closest('fieldset[disabled]')))`;
@@ -18,9 +19,10 @@ for (const seat of [1, 2]) for (const index of [0, 1, 2, 3]) {
     let state;
     if (index !== 1) {
       const amount = [3, 0, 6, 4][index];
-      await waitFor(ready(`Add ${amount} G`));
-      await evaluate("[...document.querySelectorAll('details')].find(detail => detail.querySelector('summary')?.textContent.startsWith('Mana abilities')).open = true");
-      await click(`Add ${amount} G`);
+      const source = fixture.players[String(seat)].battlefield.find(card =>
+        index === 0 ? card.name.startsWith('Nykthos') : card.name === (index === 2 ? 'Forest' : "Karametra's Acolyte"));
+      assert.ok(source);
+      await activateIndexedMana(browser, {api, id: fixture.id, seat, cardId: source.id, color: 'G'});
       state = await waitForApiState(`${api}/matches/${fixture.id}`, state => state.players[String(seat)].mana_pool.G === amount);
       assert.equal(state.stack.length, 0, 'Mana activation must resolve without stack/priority passing');
       if (index === 0) {

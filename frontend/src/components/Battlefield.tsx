@@ -6,6 +6,9 @@ import { cardStates, groupBattlefield, landPlayHint, phases, phaseIndex, type La
 import type { LegalMove, MatchState, PlayerView, ResourcePaymentChoice } from "../types";
 import { CastingResources } from './CastingResources';
 import { PermanentActions } from "./PermanentActions";
+import { ManualManaOutput } from './ManualManaOutput';
+import { manaShortcut } from './manual-mana-shortcut';
+import { formatManaVector } from './manual-mana-output';
 import { CardRail } from "./CardRail";
 import { CardArt } from "./CardArt";
 
@@ -94,6 +97,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const loyaltyMoves = useMemo(() => legalMoves.filter((m) => m.type === "activate_loyalty"), [legalMoves]);
   const equipMoves = useMemo(() => legalMoves.filter((m) => m.type === "equip"), [legalMoves]);
   const manaMoves = useMemo(() => legalMoves.filter((m) => m.type === 'activate_mana_ability'), [legalMoves]);
+  function plainManaShortcut(cardId: string, color: string) {
+    return manaShortcut(manaMoves, cardId, color, true);
+  }
   const attackMove = legalMoves.find(move => move.type === "attack");
   const blockMove = legalMoves.find(move => move.type === "block");
   const [combatError, setCombatError] = useState("");
@@ -323,14 +329,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     <section className={`panel battlefield ${battlefieldDensityClass}`} data-match-revision={match.revision}>
       {manaMoves.length > 0 ? <details className="zone-tray">
         <summary>Mana abilities ({manaMoves.length})</summary>
-        {manaMoves.map(move => <div className="row" key={`${move.card_id}-mana-${move.ability_index}`}>
-          <span>{move.card_name}: {move.cost_text}</span>
-          {Object.entries(move.outputs ?? {}).map(([color, amount]) => <button key={color} title={move.label}
-            onClick={() => onCardAction(viewerSeat, {type: 'activate_mana_ability', card_id: move.card_id,
-              ability_index: move.ability_index, color})}>
-            Add {amount} {color}
-          </button>)}
-        </div>)}
+        {manaMoves.map(move => <ManualManaOutput key={`${match.revision}:${move.card_id}-mana-${move.ability_index}`}
+          move={move} playerId={viewerSeat} cards={[...p1.hand, ...p1.battlefield]} onAction={onCardAction} />)}
       </details> : null}
       <header>
         <div>
@@ -502,11 +502,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   {card.mana_source_colors.map((color) => (
                     <button
                       key={`${card.id}-mana-${color}`}
-                      disabled={card.tapped || (card.types.includes("Creature") && card.summoning_sick && !card.keywords?.includes("haste"))}
-                      onClick={() => onCardAction(viewerSeat, { type: card.types.includes("Land") ? "tap_land_for_mana" : "tap_nonland_for_mana", card_id: card.id, color })}
+                      disabled={card.tapped || !plainManaShortcut(card.id, color) || (card.types.includes("Creature") && card.summoning_sick && !card.keywords?.includes("haste"))}
+                      onClick={() => {const action = manaShortcut(manaMoves, card.id, color, card.types.includes('Land')); if (action) onCardAction(viewerSeat, action);}}
                       title={`Activate ${card.name} for ${color}`}
                     >
-                      Add {(card.mana_source_amounts?.[color] ?? 1) > 1 ? `${card.mana_source_amounts?.[color]} ` : ""}{color}
+                      {manaShortcut(manaMoves, card.id, color, false)?.output_bundle
+                        ? `Add base ${formatManaVector(manaShortcut(manaMoves, card.id, color, false)?.output_bundle)}`
+                        : `Add ${(card.mana_source_amounts?.[color] ?? 1) > 1 ? `${card.mana_source_amounts?.[color]} ` : ''}${color}`}
                     </button>
                   ))}
                 </div>
@@ -537,7 +539,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     </select>
                     {pile.colors.map(color => {
                       const card = pile.cards.find(member => member.id === landSelections[pile.key]) ?? pile.cards[0];
-                      return <button key={color} disabled={!canManualTap || card.tapped} onClick={() => onCardAction(viewerSeat, {type: "tap_land_for_mana", card_id: card.id, color})}>Tap selected for {color}</button>;
+                      const action = plainManaShortcut(card.id, color);
+                      return <button key={color} disabled={!canManualTap || card.tapped || !action} onClick={() => {if (action) onCardAction(viewerSeat, action);}}>Tap selected for {action?.output_bundle ? `base ${formatManaVector(action.output_bundle)}` : color}</button>;
                     })}
                   </details>
                   {canManualTap && pile.untapped > 0 && p1Groups.lands.filter(group => group.name === pile.name).length === 1 ? (
@@ -559,6 +562,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                         ))}
                       </select>
                       {pile.colors.map((color) => <button key={color}
+                        disabled={!pile.cards.filter(card => !card.tapped).every(card => plainManaShortcut(card.id, color)?.type === 'tap_land_for_mana')}
+                        title="Bulk tapping is available only for unambiguous plain outputs; use individual controls for complete vectors."
                         onClick={() =>
                           onCardAction(viewerSeat, {
                             type: "tap_lands_bulk",

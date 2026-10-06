@@ -224,6 +224,12 @@ export type LegalMove = {
   targets?: { id: string; name: string }[];
   ability_index?: number;
   ability_label?: string;
+  activation_costs?: LegalMove['payment_options'];
+  output_options?: {color: string; output_bundle: Record<string, number>}[];
+  base_output_bundles?: Record<string, number>[];
+  output_bundles?: Record<string, Record<string, number>>;
+  required_choices?: {payment_choices: boolean; hybrid_choices: boolean;
+    discard_card_count: number; sacrifice_card_count: number; hybrid_choice_count: number};
   payment_options?: {
     pay_life: number;
     discard_cards: number;

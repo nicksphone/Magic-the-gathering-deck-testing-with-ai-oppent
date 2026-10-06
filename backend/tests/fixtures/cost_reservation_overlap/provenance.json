@@ -1,0 +1,149 @@
+{
+  "canonical_json_sha256": "fd6c5a98c5d88557589f6fa5f7b87dcb33a88be5bff76aa6a316595d1aa1f9ec",
+  "decompressed_bytes": 203114006,
+  "facts_modified": false,
+  "freshness": "Pinned already-qualified local public bulk, not claimed current live HTTP.",
+  "http_requests": 0,
+  "line_limit_bytes": 2097152,
+  "rows": {
+    "Altar's Reap": {
+      "id": "1db55625-25a5-46eb-9d9c-9b3ed219359f",
+      "oracle_id": "6a125750-2b8c-4f9d-8173-ac8d14c91ddb",
+      "raw_canonical_sha256": "e4ce47d3327561e6e7b1a6258fd4330ee00462eb549e0bce1c64df53b84a4939"
+    },
+    "Ashnod's Altar": {
+      "id": "3c0f7157-a375-499c-92c7-d47d2e95dbad",
+      "oracle_id": "4d18bcba-a346-445e-a182-6cc30b7e066d",
+      "raw_canonical_sha256": "5c63fcda1b3072bac79941e3057d254554b979f30943318bd336228d6af202d5"
+    },
+    "Bog Witch": {
+      "id": "92662394-c31d-4348-9b9c-0fe619949ea3",
+      "oracle_id": "85573cba-07ae-4421-a167-a8569f85c0f7",
+      "raw_canonical_sha256": "7e7e5f63a84081c8a6df740290ab346df1b9d3368e004bff7d530522801258e7"
+    },
+    "Chief Engineer": {
+      "id": "8c67872b-f375-42b9-b81c-3c8c52c0c24e",
+      "oracle_id": "02dbb6f8-ef84-4156-87dc-34033e64fdb7",
+      "raw_canonical_sha256": "c3e447de607855cbdfc761734e98f425096e2e0d24beaaba6b8cc95092e5e873"
+    },
+    "Cling to Dust": {
+      "id": "52c2de5f-e486-4cfe-9fb6-be0078ce5f93",
+      "oracle_id": "9c44e556-4c7a-48bf-a108-c584f69c2cfa",
+      "raw_canonical_sha256": "d27c4fbf8c2d0f6192287629d16c98e033f6597f98e4112a328c0a0a895ebc25"
+    },
+    "Crop Rotation": {
+      "id": "523414cb-f8db-407a-808a-01454e03d8b9",
+      "oracle_id": "28b46183-c62f-47b1-9fee-3ba148202cab",
+      "raw_canonical_sha256": "12fb9dae6db2341d3db03cd2b15b06c6cc21b1f986c95745fd6a1e07d9ed29d7"
+    },
+    "Deadly Dispute": {
+      "id": "d86fa72c-25c1-43ef-9cb0-fe76f7568ed3",
+      "oracle_id": "457af74a-02b3-4659-846d-63e482667f34",
+      "raw_canonical_sha256": "61d2c0b85c9a6b42dcd9a417b05e7330c287463f8f1f0f3c1518d049941f6c14"
+    },
+    "Deathrite Shaman": {
+      "id": "cfdb1c47-14be-491f-88b3-bed03489dbc5",
+      "oracle_id": "22f1a4a4-c423-4d1c-8775-0ed604a9fa51",
+      "raw_canonical_sha256": "964d2d0ce7ce31e30f109e113d5e0f86264c7bdff8ab8510ef50592ed1f1ef71"
+    },
+    "Dig Through Time": {
+      "id": "020939d6-72f0-4aa0-9ac2-d16cc896cd7f",
+      "oracle_id": "f8b17b89-26ce-4208-874a-9e1d66514640",
+      "raw_canonical_sha256": "ad632a6b84ddc293be0abe7ac31444c64ce5eef0840380c60ff6113743b5ce15"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "raw_canonical_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0"
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "raw_canonical_sha256": "3dc84687094c5831a9901fbbaa489f78006bdaf0275fffda1c5f8985df8b3a37"
+    },
+    "Kaervek's Spite": {
+      "id": "d385b9e5-e13d-4098-ba74-ea55bde164d9",
+      "oracle_id": "7d69be1e-701a-4bcb-a83e-38b4174f7828",
+      "raw_canonical_sha256": "011c413b38222793af24f4b64545d28fa5674994b9aa2761bc82d176eb3a4841"
+    },
+    "Llanowar Elves": {
+      "id": "cbcb0668-e88c-4462-b079-34f140c0277e",
+      "oracle_id": "eaddc7cf-5d58-422a-ba00-6708dee2d853",
+      "raw_canonical_sha256": "6d6c891ddd17414fee8bb7b243bfdc836789d9526415bf9c7f3040751bdec116"
+    },
+    "Lotus Petal": {
+      "id": "f85ab5f9-508e-45de-8fa1-ce1f16552ffc",
+      "oracle_id": "32e5339e-9e4f-46f8-b305-f9d6d3ba8bb5",
+      "raw_canonical_sha256": "7089d4dee82e63c4450e470c42c9c23615042d07708b478f08c4d3049f91792b"
+    },
+    "Natural Order": {
+      "id": "bfe3329c-7faa-4925-b9d2-075a1ab27e80",
+      "oracle_id": "8c1fe337-375a-4add-93b6-0ac39ed72b4f",
+      "raw_canonical_sha256": "b8c9f6b8d41bfcab26266e69ae9ae4afb14831f046cabf43d11c8195592b6977"
+    },
+    "Ornithopter": {
+      "id": "305078a5-ac18-4721-bba2-3434eba5b1cf",
+      "oracle_id": "a3a98bc9-caa0-49b7-951c-fe4e4f54e4ba",
+      "raw_canonical_sha256": "788edcd8a8935486b580b7547075d30b5b1b413d1ab0b6ce827c886060aa7efa"
+    },
+    "Phyrexian Tower": {
+      "id": "0b47f6d2-9f65-47a4-bfc4-15619befe53d",
+      "oracle_id": "1861e642-21d5-4232-89f3-b5557f2946c1",
+      "raw_canonical_sha256": "4bcdf6294aa8f6b90e7a01ab1562e417ac6176923869bf4fb84f135d66931ea7"
+    },
+    "Raging Goblin": {
+      "id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b",
+      "raw_canonical_sha256": "b084c49cbd337b82de4f5051f1dec661250e61df2c697a79c4994adfe10bf453"
+    },
+    "Raze": {
+      "id": "56d51b3c-24e9-41b6-b7cd-c70329e498ca",
+      "oracle_id": "02fde433-955d-49df-bd72-270b6feac9e7",
+      "raw_canonical_sha256": "1077fcc8c15396ab7d88a73664a0d9cd96f64c3b3508b8246aba58ed3cb3e702"
+    },
+    "Skirge Familiar": {
+      "id": "2d92fcf1-2ccd-47d2-9a24-f44b766a0b68",
+      "oracle_id": "ba95f24d-42da-48ce-bcf1-1b7c4b3c45b5",
+      "raw_canonical_sha256": "4dd7871a4363ef2d8f0a2b3962abfd0277c9937714ac06f00cddbe69ac6a4d8e"
+    },
+    "Stoke the Flames": {
+      "id": "04113b3c-cc8f-4b15-9091-f82ea3df2e7c",
+      "oracle_id": "2249001c-08d5-4c0a-86f8-d97519a39f37",
+      "raw_canonical_sha256": "0bb8a4468bc9f9f18179ed0796264b25fdd658d1a571e2725f0d854371de06c5"
+    },
+    "Swamp": {
+      "id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "raw_canonical_sha256": "acd8b971986fbf6fa6d55e931a8249cc5f84700cf8218978e32ba67ec0a98c2e"
+    },
+    "Tormenting Voice": {
+      "id": "6da46103-a14c-4aa2-92fc-fd758335caf4",
+      "oracle_id": "f307b5b4-e949-4f69-8dc7-856e33a45a16",
+      "raw_canonical_sha256": "c90244e3493b7dd61a75d7d76c6f91d4d917707a3cb2d79832d24865eb4b0505"
+    },
+    "Treasure Cruise": {
+      "id": "42c45880-15c7-4259-8066-c04d031d8216",
+      "oracle_id": "5b6bdf5a-2742-4851-92cd-a857a3852836",
+      "raw_canonical_sha256": "28bfd7cd689a2f81ae3985df345d95522d2307e41183ea3ccd154d094d19acdb"
+    },
+    "Underworld Breach": {
+      "id": "0e51d796-7279-4c06-87f0-37adbdaa41df",
+      "oracle_id": "27e0948b-9916-473b-8d8c-a51bdfbc7457",
+      "raw_canonical_sha256": "61499be13f380873a8fc6243b138278ef9e70157e6b03c39b2368d597c3f91bf"
+    },
+    "Village Rites": {
+      "id": "42ed35e9-51cd-468a-86a9-9412553cf50d",
+      "oracle_id": "365548fb-5acc-4a8a-b20b-26d28b7d029f",
+      "raw_canonical_sha256": "c4df062ae82dd9cc26bab3b187d945493d8e72bf46d0bfb66e1e747ed6ab3642"
+    },
+    "Woe Strider": {
+      "id": "f458ae68-5cda-4c40-a348-47b4196fba02",
+      "oracle_id": "3adbd963-e85d-4569-963a-4472594f06f9",
+      "raw_canonical_sha256": "899cb210dc72c2bd0df8e3c9e7c6f34f0d8d84c73356b3aaa54afeab7d2d954d"
+    }
+  },
+  "source_archive_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "source_bulk_updated_at": "2026-09-27T09:01:57.616+00:00",
+  "source_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_records_verified": 38690
+}

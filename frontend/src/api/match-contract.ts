@@ -1,5 +1,6 @@
 import type { CardView, LegalMove, MatchState } from "../types";
 import type { SavedMatch } from "./client";
+import { baseManaOptions } from '../components/manual-mana-output.ts';
 
 function record(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -207,6 +208,26 @@ function paymentOptions(value: unknown): boolean {
   });
 }
 
+function manaChoiceView(move: Record<string, unknown>): boolean {
+  if (move.activation_costs !== undefined && !paymentOptions(move.activation_costs)) return false;
+  if (move.hybrid_symbols !== undefined && (!Array.isArray(move.hybrid_symbols) || !move.hybrid_symbols.every(symbol =>
+    record(symbol) && typeof symbol.symbol === 'string' && Array.isArray(symbol.choices) && symbol.choices.length > 0
+    && new Set(symbol.choices).size === symbol.choices.length
+    && symbol.choices.every(branch => typeof branch === 'string' && /^(?:[WUBRGCS]|2|P)$/.test(branch))))) return false;
+  const options = baseManaOptions({output_options: move.output_options, base_output_bundles: move.base_output_bundles});
+  if (options !== null && !options.length) return false;
+  const required = move.required_choices;
+  if (required === undefined) return true;
+  if (!record(required) || !record(move.activation_costs) || !Array.isArray(move.hybrid_symbols)) return false;
+  const costs = move.activation_costs;
+  const discard = Number(costs.discard_cards) - (costs.fixed_discard_card_ids as string[]).length;
+  const sacrifice = Number(costs.sacrifice_creatures) - (costs.fixed_sacrifice_card_ids as string[]).length;
+  return required.discard_card_count === discard && required.sacrifice_card_count === sacrifice
+    && required.hybrid_choice_count === move.hybrid_symbols.length
+    && required.payment_choices === Boolean(discard || sacrifice)
+    && required.hybrid_choices === Boolean(move.hybrid_symbols.length);
+}
+
 export function parseLegalMoves(value: unknown): LegalMovesResponse {
   if (!record(value) || (value.player_id !== 1 && value.player_id !== 2)
     || (value.can_auto_pass !== undefined && typeof value.can_auto_pass !== "boolean")
@@ -231,7 +252,8 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
       && (move.type !== 'activate_mana_ability' || (Number.isInteger(move.ability_index)
         && (move.ability_index as number) >= 0 && typeof move.cost_text === 'string'
         && record(move.outputs) && Object.entries(move.outputs).every(([color, amount]) =>
-          /^[WUBRGC]$/.test(color) && Number.isInteger(amount) && (amount as number) >= 0)))
+          /^[WUBRGC]$/.test(color) && Number.isInteger(amount) && (amount as number) >= 0)
+        && manaChoiceView(move)))
       && (move.card_view === undefined || card(move.card_view))
       && (move.graveyard_permission_key === undefined || (typeof move.graveyard_permission_key === 'string'
         && move.graveyard_permission_key.length > 0 && move.graveyard_permission_key.length <= 100 && move.from_graveyard === true))

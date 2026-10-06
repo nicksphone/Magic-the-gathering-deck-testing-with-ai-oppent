@@ -12,7 +12,12 @@ _MANA_COLOR_MAP = {
 }
 
 
-def card_color_symbols(card) -> set[str]:
+def card_color_symbols(card, state=None) -> set[str]:
+    if state is not None:
+        from game_state.state import Zone
+        from rules_engine.basic_land_layer import layer_four_view
+        if getattr(card, 'zone', None) == Zone.BATTLEFIELD and card.id in layer_four_view(state)[3]:
+            return set()
     faces = getattr(card, "card_faces", None) or []
     if faces:
         index = getattr(card, "selected_face_index", None)
@@ -39,5 +44,5 @@ def _printed_color_symbols(explicit, mana_cost, oracle_text) -> set[str]:
     return {symbol for cost in re.findall(r"\{([^}]+)\}", mana_cost) for symbol in cost if symbol in _MANA_COLOR_MAP}
 
 
-def card_color_names(card) -> set[str]:
-    return {_MANA_COLOR_MAP[symbol] for symbol in card_color_symbols(card)}
+def card_color_names(card, state=None) -> set[str]:
+    return {_MANA_COLOR_MAP[symbol] for symbol in card_color_symbols(card, state)}

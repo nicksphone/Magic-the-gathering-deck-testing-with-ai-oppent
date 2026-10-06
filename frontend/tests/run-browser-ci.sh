@@ -245,6 +245,11 @@ echo 'Browser CI: natural human-vs-human BO3'
 
 echo 'Browser CI: stopping ordinary harness before independent Officer restart flows'
 stop_owned_services
+# The independent App fixture uses owned ports/profile and substitutes every API
+# response; it must never borrow the ordinary harness's user/session storage.
+echo 'Browser CI: interactive support review and pending-start recovery'
+(cd frontend && MTG_UI_EVIDENCE="$scratch/interactive-preflight-evidence" \
+  CHROMIUM_BINARY="$browser" timeout 180s node tests/browser-interactive-preflight.mjs)
 # Hosted CI explicitly opts into ephemeral evidence; local runs still require NFS.
 if [[ "${GITHUB_ACTIONS:-}" == true && -z "${MTG_OFFICER_EVIDENCE_ROOT:-}" ]]; then
   export MTG_OFFICER_EVIDENCE_ROOT="${RUNNER_TEMP:?GitHub CI requires RUNNER_TEMP}/mtg-officer-evidence"

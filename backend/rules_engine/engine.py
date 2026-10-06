@@ -29,6 +29,16 @@ from effects.registry import resolve_effect
 
 
 class RulesEngine:
+    def advance_no_priority_step(self, state: MatchState) -> bool:
+        """End an already-entered untap step, never submit a player action."""
+        if (state.step != Step.UNTAP or state.pregame_pending or state.winner is not None
+                or state.stack or state.pending_mechanic_choice
+                or state.pending_replacement_choice or state.pending_trigger_order):
+            return False
+        # Entry already performed untapping (including stun); do not repeat it.
+        self.next_step(state)
+        return True
+
     def next_step(self, state: MatchState) -> None:
         if state.pregame_pending:
             return
@@ -775,7 +785,10 @@ class RulesEngine:
 
         elif kind == 'activate_mana_ability':
             from rules_engine.mana_abilities import activate_mana_ability
-            if not activate_mana_ability(state, player_id, action['card_id'], action['ability_index'], action['color']):
+            if not activate_mana_ability(state, player_id, action['card_id'], action['ability_index'], action['color'],
+                                         payment_choices=action.get('payment_choices'),
+                                         hybrid_choices=action.get('hybrid_choices'),
+                                         output_bundle=action.get('output_bundle')):
                 reject('Cannot activate selected mana ability')
                 return
 
@@ -994,9 +1007,20 @@ class RulesEngine:
                         return
                 ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
                 from rules_engine.costs import additional_cost_selection
-                if additional_cost_selection(state, player_id, chosen, cid, action.get('cost_choice'), x_value=x_value) is None:
+                selected_cost_cards = additional_cost_selection(
+                    state, player_id, chosen, cid, action.get('cost_choice'), x_value=x_value)
+                if selected_cost_cards is None:
                     reject('Invalid additional-cost card selection')
                     return
+                # Preserve fixed-count announcements through mana activation.
+                # Exhaustive costs still select all remaining cards after mana.
+                frozen_cost_choice = dict(action.get('cost_choice') or {})
+                reserved_cost_cards = {cid, *escape_ids}
+                for key, exhaustive in (('discard_card_ids', chosen.discard_all),
+                                        ('sacrifice_card_ids', chosen.sacrifice_all)):
+                    if not exhaustive:
+                        frozen_cost_choice[key] = selected_cost_cards[key]
+                        reserved_cost_cards.update(selected_cost_cards[key])
                 adjusted_cost = chosen.mana_cost
                 cost_staging = not state.trigger_staging
                 if cost_staging:
@@ -1014,6 +1038,7 @@ class RulesEngine:
                     payment_details=payment_details,
                     source_card_id=cid, target_card_id=action_targets.get("target_card_id"),
                     cast_resource_card=face_card, resource_choices=action.get('resource_payment'),
+                    reserved_card_ids=reserved_cost_cards,
                 )
                 if not paid:
                     if cost_staging:
@@ -1025,7 +1050,7 @@ class RulesEngine:
                     return
                 spell_cost_context: dict = {}
                 if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value,
-                                              choice=action.get('cost_choice'), context=spell_cost_context):
+                                              choice=frozen_cost_choice, context=spell_cost_context):
                     if cost_staging:
                         state.staged_triggers.clear()
                         state.trigger_staging = False

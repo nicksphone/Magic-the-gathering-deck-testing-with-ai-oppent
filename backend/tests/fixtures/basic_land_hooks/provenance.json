@@ -1,0 +1,497 @@
+[
+  {
+    "source": "backend/tests/fixtures/bestow.json",
+    "source_sha256": "503524a2cd52147926782ea8f1e46d991f0069ccd17a583b9fb3ebf710efa876",
+    "row": {
+      "name": "Leafcrown Dryad",
+      "oracle_id": "01914751-af8e-4aea-a254-6fa4f9fd3457",
+      "uri": "https://api.scryfall.com/cards/8202e426-ad91-4d2e-9373-7a829b58fff5",
+      "scryfall_uri": "https://scryfall.com/card/ths/161/leafcrown-dryad?utm_source=api",
+      "mana_cost": "{1}{G}",
+      "type_line": "Enchantment Creature — Nymph Dryad",
+      "oracle_text": "Bestow {3}{G} (If you cast this card for its bestow cost, it's an Aura spell with enchant creature. It becomes a creature again if it's not attached.)\nReach\nEnchanted creature gets +2/+2 and has reach.",
+      "power": "2",
+      "toughness": "2",
+      "keywords": [
+        "Reach",
+        "Bestow"
+      ],
+      "colors": [
+        "G"
+      ]
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/equip_costs.json",
+    "source_sha256": "4f0080fca83b00634b1f9bd720072dcc937300baa5cc9b8e98d0ebd82f910c49",
+    "row": {
+      "name": "Belt of Giant Strength",
+      "oracle_text": "Equipped creature has base power and toughness 10/10.\nEquip {10}. This ability costs {X} less to activate, where X is the power of the creature it targets.",
+      "mana_cost": "{1}{G}",
+      "type_line": "Artifact — Equipment",
+      "power": null,
+      "toughness": null,
+      "colors": [
+        "G"
+      ],
+      "keywords": [
+        "Equip"
+      ],
+      "layout": "normal",
+      "oracle_id": "eb70939f-c4ce-4224-ab74-acc24771d7f0",
+      "source": "scryfall",
+      "scryfall_id": "4ef2b9aa-4f7c-4640-bb34-9775e1be0935"
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/equip_costs.json",
+    "source_sha256": "4f0080fca83b00634b1f9bd720072dcc937300baa5cc9b8e98d0ebd82f910c49",
+    "row": {
+      "name": "Bonesplitter",
+      "oracle_text": "Equipped creature gets +2/+0.\nEquip {1}",
+      "mana_cost": "{1}",
+      "type_line": "Artifact — Equipment",
+      "power": null,
+      "toughness": null,
+      "colors": [],
+      "keywords": [
+        "Equip"
+      ],
+      "layout": "normal",
+      "oracle_id": "452e3f5f-ce17-4682-966b-5cc100210aee",
+      "source": "scryfall",
+      "scryfall_id": "690972a8-72df-4050-a353-16e45589167c"
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/ward.json",
+    "source_sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "row": {
+      "artist": "Jeremy Jarvis",
+      "artist_ids": [
+        "b40ac320-89b4-4c51-a85f-4a4b63ae614e"
+      ],
+      "booster": true,
+      "border_color": "black",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "cardmarket_id": 544701,
+      "cmc": 3,
+      "collector_number": "180",
+      "color_identity": [
+        "R"
+      ],
+      "colors": [
+        "R"
+      ],
+      "digital": false,
+      "edhrec_rank": 11666,
+      "finishes": [
+        "nonfoil",
+        "foil"
+      ],
+      "flavor_text": "\"Learn to burn!\"\n—Institute of Arcane Studies motto",
+      "foil": true,
+      "frame": "2015",
+      "full_art": false,
+      "game_changer": false,
+      "games": [
+        "paper",
+        "mtgo"
+      ],
+      "highres_image": true,
+      "id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+      "illustration_id": "072dc11f-0bc6-4289-ae8e-14bf545d8b3f",
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T07:29:52Z",
+      "image_uris": {
+        "art": "https://cards.scryfall.io/art/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "crop": "https://cards.scryfall.io/crop/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+        "display": "https://cards.scryfall.io/display/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+        "grid": "https://cards.scryfall.io/grid/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792",
+        "large": "https://cards.scryfall.io/large/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "normal": "https://cards.scryfall.io/normal/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "png": "https://cards.scryfall.io/png/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.png?1783927792",
+        "small": "https://cards.scryfall.io/small/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.jpg?1783927792",
+        "thumb": "https://cards.scryfall.io/thumb/front/c/f/cf16600a-c2a5-49e4-89e2-260cfaf58b52.webp?1783927792"
+      },
+      "keywords": [],
+      "lang": "en",
+      "layout": "normal",
+      "legalities": {
+        "alchemy": "not_legal",
+        "brawl": "not_legal",
+        "commander": "legal",
+        "competitivebrawl": "not_legal",
+        "duel": "legal",
+        "future": "not_legal",
+        "gladiator": "not_legal",
+        "historic": "not_legal",
+        "legacy": "legal",
+        "modern": "legal",
+        "oathbreaker": "legal",
+        "oldschool": "not_legal",
+        "pauper": "legal",
+        "paupercommander": "legal",
+        "penny": "legal",
+        "pioneer": "not_legal",
+        "predh": "legal",
+        "premodern": "not_legal",
+        "standard": "not_legal",
+        "standardbrawl": "not_legal",
+        "timeless": "not_legal",
+        "tlr": "legal",
+        "vintage": "legal"
+      },
+      "mana_cost": "{2}{R}",
+      "mtgo_id": 86731,
+      "multiverse_ids": [
+        509545
+      ],
+      "name": "Prodigal Pyromancer",
+      "nonfoil": true,
+      "object": "card",
+      "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd",
+      "oracle_text": "{T}: This creature deals 1 damage to any target.",
+      "oversized": false,
+      "penny_rank": 16019,
+      "power": "1",
+      "preview": {
+        "previewed_at": "2021-03-02",
+        "source": "Wizards of the Coast",
+        "source_uri": "https://www.youtube.com/watch?v=7wX644_D4io"
+      },
+      "prices": {
+        "eur": "0.10",
+        "eur_foil": "0.26",
+        "tix": "0.04",
+        "usd": "0.21",
+        "usd_etched": null,
+        "usd_foil": "0.33"
+      },
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A29b3cb3e-aeb1-43eb-8095-9f7881aa34bd&unique=prints",
+      "promo": false,
+      "purchase_uris": {
+        "cardhoarder": "https://www.cardhoarder.com/cards/86731?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=544701&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F233947%3Fpage%3D1"
+      },
+      "rarity": "uncommon",
+      "related_uris": {
+        "edhrec": "https://edhrec.com/route/?cc=Prodigal+Pyromancer",
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=509545&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DProdigal%2BPyromancer",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DProdigal%2BPyromancer"
+      },
+      "released_at": "2021-03-19",
+      "reprint": true,
+      "reserved": false,
+      "rulings_uri": "https://api.scryfall.com/cards/cf16600a-c2a5-49e4-89e2-260cfaf58b52/rulings",
+      "scryfall_set_uri": "https://scryfall.com/sets/tsr?utm_source=api",
+      "scryfall_uri": "https://scryfall.com/card/tsr/180/prodigal-pyromancer?utm_source=api",
+      "set": "tsr",
+      "set_id": "11e90d1b-0502-43e6-b056-e24836523c13",
+      "set_name": "Time Spiral Remastered",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Atsr&unique=prints",
+      "set_type": "masters",
+      "set_uri": "https://api.scryfall.com/sets/11e90d1b-0502-43e6-b056-e24836523c13",
+      "story_spotlight": false,
+      "tcgplayer_id": 233947,
+      "textless": false,
+      "toughness": "1",
+      "type_line": "Creature — Human Wizard",
+      "uri": "https://api.scryfall.com/cards/cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+      "variation": false
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/combat_ability_provenance.json",
+    "source_sha256": "1921f7439fd82e2ec1a589db8028581933f2a9af4dcc9a978d41346b9989aa92",
+    "row": {
+      "object": "card",
+      "id": "ddef832c-b2be-4fa6-8d66-ac0d442f2d7d",
+      "oracle_id": "feb65f2e-6f71-4f29-bf31-b210c85f3ab3",
+      "multiverse_ids": [
+        74173
+      ],
+      "mtgo_id": 22016,
+      "mtgo_foil_id": 22017,
+      "tcgplayer_id": 12449,
+      "cardmarket_id": 12677,
+      "name": "Hand of Honor",
+      "lang": "en",
+      "released_at": "2005-06-03",
+      "uri": "https://api.scryfall.com/cards/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d",
+      "scryfall_uri": "https://scryfall.com/card/sok/12/hand-of-honor?utm_source=api",
+      "layout": "normal",
+      "highres_image": true,
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T12:02:52Z",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.jpg?1783944172",
+        "normal": "https://cards.scryfall.io/normal/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.jpg?1783944172",
+        "large": "https://cards.scryfall.io/large/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.jpg?1783944172",
+        "png": "https://cards.scryfall.io/png/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.png?1783944172",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.jpg?1783944172",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.jpg?1783944172",
+        "thumb": "https://cards.scryfall.io/thumb/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.webp?1783944172",
+        "grid": "https://cards.scryfall.io/grid/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.webp?1783944172",
+        "display": "https://cards.scryfall.io/display/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.webp?1783944172",
+        "art": "https://cards.scryfall.io/art/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.webp?1783944172",
+        "crop": "https://cards.scryfall.io/crop/front/d/d/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d.webp?1783944172"
+      },
+      "mana_cost": "{W}{W}",
+      "cmc": 2,
+      "type_line": "Creature — Human Samurai",
+      "oracle_text": "Protection from black\nBushido 1 (Whenever this creature blocks or becomes blocked, it gets +1/+1 until end of turn.)",
+      "power": "2",
+      "toughness": "2",
+      "colors": [
+        "W"
+      ],
+      "color_identity": [
+        "W"
+      ],
+      "keywords": [
+        "Bushido",
+        "Protection"
+      ],
+      "legalities": {
+        "standard": "not_legal",
+        "future": "not_legal",
+        "historic": "not_legal",
+        "timeless": "not_legal",
+        "gladiator": "not_legal",
+        "pioneer": "not_legal",
+        "modern": "legal",
+        "legacy": "legal",
+        "pauper": "not_legal",
+        "vintage": "legal",
+        "penny": "not_legal",
+        "commander": "legal",
+        "oathbreaker": "legal",
+        "standardbrawl": "not_legal",
+        "brawl": "not_legal",
+        "competitivebrawl": "not_legal",
+        "alchemy": "not_legal",
+        "paupercommander": "not_legal",
+        "duel": "legal",
+        "oldschool": "not_legal",
+        "premodern": "not_legal",
+        "predh": "legal",
+        "tlr": "legal"
+      },
+      "games": [
+        "paper",
+        "mtgo"
+      ],
+      "reserved": false,
+      "game_changer": false,
+      "foil": true,
+      "nonfoil": true,
+      "finishes": [
+        "nonfoil",
+        "foil"
+      ],
+      "oversized": false,
+      "promo": false,
+      "reprint": false,
+      "variation": false,
+      "set_id": "4db16ad3-2b95-442f-bb6b-e9aa7fe7f769",
+      "set": "sok",
+      "set_name": "Saviors of Kamigawa",
+      "set_type": "expansion",
+      "set_uri": "https://api.scryfall.com/sets/4db16ad3-2b95-442f-bb6b-e9aa7fe7f769",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Asok&unique=prints",
+      "scryfall_set_uri": "https://scryfall.com/sets/sok?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/ddef832c-b2be-4fa6-8d66-ac0d442f2d7d/rulings",
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Afeb65f2e-6f71-4f29-bf31-b210c85f3ab3&unique=prints",
+      "collector_number": "12",
+      "digital": false,
+      "rarity": "uncommon",
+      "flavor_text": "\"The sword is just a tool. It is the samurai's hand that brings it to life.\"",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "artist": "Kev Walker",
+      "artist_ids": [
+        "f366a0ee-a0cd-466d-ba6a-90058c7a31a6"
+      ],
+      "illustration_id": "85e5cee6-fdea-4c96-b51c-920d8a57d437",
+      "border_color": "black",
+      "frame": "2003",
+      "full_art": false,
+      "textless": false,
+      "booster": true,
+      "story_spotlight": false,
+      "edhrec_rank": 18820,
+      "penny_rank": 14102,
+      "prices": {
+        "usd": "0.52",
+        "usd_foil": "5.75",
+        "usd_etched": null,
+        "eur": "0.45",
+        "eur_foil": "1.94",
+        "tix": "0.03"
+      },
+      "related_uris": {
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=74173&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DHand%2Bof%2BHonor",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DHand%2Bof%2BHonor",
+        "edhrec": "https://edhrec.com/route/?cc=Hand+of+Honor"
+      },
+      "purchase_uris": {
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F12449%3Fpage%3D1",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=12677&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "cardhoarder": "https://www.cardhoarder.com/cards/22016?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+      },
+      "fixture_source": "https://api.scryfall.com/cards/named?exact=Hand%20of%20Honor",
+      "fixture_retrieved_at": "2026-10-02T05:23:02.671Z"
+    }
+  },
+  {
+    "source": "backend/tests/fixtures/hexproof_variants.json",
+    "source_sha256": "360e2a971ac559351f35d58f7117ddfc1eaf1bb0a5f835b716d009f38d7c477e",
+    "row": {
+      "object": "card",
+      "id": "4efb8633-0a70-4ddc-80af-42508ec75cff",
+      "oracle_id": "7b51a979-47e0-4b98-8ec5-8064c83422e1",
+      "multiverse_ids": [
+        680715
+      ],
+      "mtgo_id": 134488,
+      "arena_id": 94004,
+      "tcgplayer_id": 590976,
+      "cardmarket_id": 795778,
+      "name": "Knight of Grace",
+      "lang": "en",
+      "released_at": "2024-11-15",
+      "uri": "https://api.scryfall.com/cards/4efb8633-0a70-4ddc-80af-42508ec75cff",
+      "scryfall_uri": "https://scryfall.com/card/fdn/576/knight-of-grace?utm_source=api",
+      "layout": "normal",
+      "highres_image": true,
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T02:15:38Z",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "normal": "https://cards.scryfall.io/normal/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "large": "https://cards.scryfall.io/large/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "png": "https://cards.scryfall.io/png/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.png?1783908938",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.jpg?1783908938",
+        "thumb": "https://cards.scryfall.io/thumb/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938",
+        "grid": "https://cards.scryfall.io/grid/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938",
+        "display": "https://cards.scryfall.io/display/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938",
+        "art": "https://cards.scryfall.io/art/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938",
+        "crop": "https://cards.scryfall.io/crop/front/4/e/4efb8633-0a70-4ddc-80af-42508ec75cff.webp?1783908938"
+      },
+      "mana_cost": "{1}{W}",
+      "cmc": 2,
+      "type_line": "Creature — Human Knight",
+      "oracle_text": "First strike (This creature deals combat damage before creatures without first strike.)\nHexproof from black (This creature can't be the target of black spells or abilities your opponents control.)\nThis creature gets +1/+0 as long as any player controls a black permanent.",
+      "power": "2",
+      "toughness": "2",
+      "colors": [
+        "W"
+      ],
+      "color_identity": [
+        "W"
+      ],
+      "keywords": [
+        "Hexproof from",
+        "Hexproof",
+        "First strike"
+      ],
+      "legalities": {
+        "standard": "legal",
+        "future": "legal",
+        "historic": "legal",
+        "timeless": "legal",
+        "gladiator": "legal",
+        "pioneer": "legal",
+        "modern": "legal",
+        "legacy": "legal",
+        "pauper": "not_legal",
+        "vintage": "legal",
+        "penny": "legal",
+        "commander": "legal",
+        "oathbreaker": "legal",
+        "standardbrawl": "legal",
+        "brawl": "legal",
+        "competitivebrawl": "legal",
+        "alchemy": "legal",
+        "paupercommander": "not_legal",
+        "duel": "legal",
+        "oldschool": "not_legal",
+        "premodern": "not_legal",
+        "predh": "not_legal",
+        "tlr": "legal"
+      },
+      "games": [
+        "paper",
+        "arena",
+        "mtgo"
+      ],
+      "reserved": false,
+      "game_changer": false,
+      "foil": false,
+      "nonfoil": true,
+      "finishes": [
+        "nonfoil"
+      ],
+      "oversized": false,
+      "promo": false,
+      "reprint": true,
+      "variation": false,
+      "set_id": "a7ecb771-d1b6-4dec-8cf5-8d45179f21e0",
+      "set": "fdn",
+      "set_name": "Foundations",
+      "set_type": "core",
+      "set_uri": "https://api.scryfall.com/sets/a7ecb771-d1b6-4dec-8cf5-8d45179f21e0",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Afdn&unique=prints",
+      "scryfall_set_uri": "https://scryfall.com/sets/fdn?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/4efb8633-0a70-4ddc-80af-42508ec75cff/rulings",
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A7b51a979-47e0-4b98-8ec5-8064c83422e1&unique=prints",
+      "collector_number": "576",
+      "digital": false,
+      "rarity": "uncommon",
+      "flavor_text": "A light to pierce the shadows.",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "artist": "Sidharth Chaturvedi",
+      "artist_ids": [
+        "55e6d846-2f73-4fba-9b88-441686bb8dcb"
+      ],
+      "illustration_id": "d18baa05-6de4-45f1-9a4b-e20fdc73026a",
+      "border_color": "black",
+      "frame": "2015",
+      "full_art": false,
+      "textless": false,
+      "booster": false,
+      "story_spotlight": false,
+      "promo_types": [
+        "startercollection"
+      ],
+      "edhrec_rank": 17401,
+      "penny_rank": 6730,
+      "prices": {
+        "usd": "0.13",
+        "usd_foil": null,
+        "usd_etched": null,
+        "eur": "0.03",
+        "eur_foil": null,
+        "tix": "0.02"
+      },
+      "related_uris": {
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=680715&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DKnight%2Bof%2BGrace",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DKnight%2Bof%2BGrace",
+        "edhrec": "https://edhrec.com/route/?cc=Knight+of+Grace"
+      },
+      "purchase_uris": {
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F590976%3Fpage%3D1",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=795778&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "cardhoarder": "https://www.cardhoarder.com/cards/134488?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+      },
+      "fixture_retrieved_at": "2026-10-02T02:57:46.031Z"
+    }
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "fd99bce1-ce39-464b-8e61-2631eb3ed6f6",
+    "oracle_id": "dba4fd31-8931-42dd-bd86-45479c2abf74",
+    "name": "Tolarian Academy",
+    "mana_cost": "",
+    "type_line": "Legendary Land",
+    "oracle_text": "{T}: Add {U} for each artifact you control.",
+    "power": null,
+    "toughness": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/vma/319/tolarian-academy?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

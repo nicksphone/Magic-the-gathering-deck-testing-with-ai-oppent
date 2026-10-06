@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { openBrowser } from "./browser-driver.mjs";
-const { evaluate, waitFor, click, close } = await openBrowser("http://127.0.0.1:15173/tests/human-actions.html");
+import { activateIndexedMana } from './indexed-mana-control.mjs';
+const browser = await openBrowser("http://127.0.0.1:15173/tests/human-actions.html");
+const { evaluate, waitFor, click, close } = browser;
 async function reset() {
   await click("Reset Fixture");
   await waitFor("window.fixtureActions?.length === 0 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
@@ -587,7 +589,8 @@ try {
   await waitFor("window.fixtureState.players['2'].battlefield.some(c => c.id === 'mana-treasure') && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
   await click("Add G");
   await waitFor("window.fixtureState.players['2'].mana_pool.G === 1 && window.fixtureState.players['2'].battlefield.find(c => c.id === 'mana-creature').tapped");
-  await click("Add U");
+  await activateIndexedMana(browser, {api: process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199',
+    id: await evaluate('window.fixtureState.id'), seat: 2, cardId: 'mana-treasure', color: 'U'});
   await waitFor("window.fixtureState.players['2'].mana_pool.U === 1 && !window.fixtureState.players['2'].battlefield.some(c => c.id === 'mana-treasure')");
   await click("Add 2 C");
   await waitFor("window.fixtureState.players['2'].mana_pool.C === 2 && window.fixtureState.players['2'].battlefield.find(c => c.id === 'mana-ring').tapped");

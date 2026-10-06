@@ -1,0 +1,126 @@
+[
+  {
+    "id": "aafd4637-737d-4913-80e3-ab4bf3428680",
+    "oracle_id": "784970de-ef8c-4672-b5d0-24a4b0a978a3",
+    "name": "Composite Golem",
+    "mana_cost": "{6}",
+    "type_line": "Artifact Creature \u2014 Golem",
+    "oracle_text": "Sacrifice this creature: Add {W}{U}{B}{R}{G}.",
+    "power": "4",
+    "toughness": "4",
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/10e/318/composite-golem?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "aac0c8df-f01d-4178-8d66-ee603f814d24",
+    "oracle_id": "ba284fe6-bb29-455c-8321-9714a0cdc05e",
+    "name": "Mishra's Workshop",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "{T}: Add {C}{C}{C}. Spend this mana only to cast artifact spells.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/vma/305/mishras-workshop?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "79ec30d9-daf7-4f1d-ac16-4d11e8160d97",
+    "oracle_id": "f0587c55-06c1-4930-a62e-668f37464ce9",
+    "name": "Jegantha, the Wellspring",
+    "mana_cost": "{4}{R/G}",
+    "type_line": "Legendary Creature \u2014 Elemental Elk",
+    "oracle_text": "Companion \u2014 No card in your starting deck has more than one of the same mana symbol in its mana cost. (If this card is your chosen companion, you may put it into your hand from outside the game for {3} as a sorcery.)\n{T}: Add {W}{U}{B}{R}{G}. This mana can't be spent to pay generic mana costs.",
+    "power": "5",
+    "toughness": "5",
+    "loyalty": null,
+    "colors": [
+      "G",
+      "R"
+    ],
+    "keywords": [
+      "Companion"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/ecc/125/jegantha-the-wellspring?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "e9320033-d8d7-4a01-80db-60de222040e6",
+    "oracle_id": "75a49bce-ab48-44d6-906d-6f51a30702ba",
+    "name": "Frost Marsh",
+    "mana_cost": "",
+    "type_line": "Snow Land",
+    "oracle_text": "This land enters tapped.\n{T}: Add {U} or {B}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/csp/146/frost-marsh?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "55999d8e-50f8-4c8b-a0c3-f3256af62491",
+    "oracle_id": "ca68648f-fe3a-4770-9842-a3dc2310f099",
+    "name": "Crystal Quarry",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "{T}: Add {C}.\n{5}, {T}: Add {W}{U}{B}{R}{G}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dmc/206/crystal-quarry?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "eb37a8bd-6b6c-47f3-b7a0-5a20fa2d507c",
+    "oracle_id": "312a5a75-9b68-4e4b-97fe-3ab644e3e493",
+    "name": "Firewild Borderpost",
+    "mana_cost": "{1}{R}{G}",
+    "type_line": "Artifact",
+    "oracle_text": "You may pay {1} and return a basic land you control to its owner's hand rather than pay this spell's mana cost.\nThis artifact enters tapped.\n{T}: Add {R} or {G}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "G",
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/arb/54/firewild-borderpost?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "04f9f061-67b8-4427-9fcb-b3ccfee8fc5d",
+    "oracle_id": "c1cbbda0-e02b-4b9c-8669-ea87ca629520",
+    "name": "Dress Down",
+    "mana_cost": "{1}{U}",
+    "type_line": "Enchantment",
+    "oracle_text": "Flash\nWhen this enchantment enters, draw a card.\nCreatures lose all abilities.\nAt the beginning of the end step, sacrifice this enchantment.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "U"
+    ],
+    "keywords": [
+      "Flash"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/mh2/39/dress-down?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

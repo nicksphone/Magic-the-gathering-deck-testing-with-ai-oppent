@@ -11,6 +11,26 @@ for unfinished acceptance and [changelog](CHANGELOG.md) for historical changes.
 
 ## Implementation Status
 
+Explicit chosen-resource and hybrid mana payments, complete base output vectors,
+conservative planner pruning and joint fixed spell-cost witnesses are implemented.
+Human controls pass 14 explicit-payment and six shortcut actual-App cases; two
+AI affordability fixes pass a 652-check gate. The final composed backend gate
+passes 2,836 checks across 70 modules. Shared-browser qualification passes 497
+checks, including both human seats, BO3, recovery and restart; frontend
+lint/build/unit gates pass. Counts overlap and do not establish expert AI play.
+Remaining layer consumers and post-mana Escape fuel remain open. See the
+[finish plan](plan.md) and [qualification scope](docs/testing/mana-layer-candidate-qualification.md).
+
+The engine also composes bounded permanent-to-basic-land replacement with
+effective LKI/protection and attachment detachment. Its 594-check affected gate
+passes ordinarily; remaining color readers and universal layer fidelity are not
+certified. See [composition scope](docs/testing/current-layer-composition.md).
+
+Retained-resource AI comparisons use surviving held instances, not discarded
+duplicates. The layer-composed 672-check AI gate passes; this is decision-boundary
+correctness, not a seasoned-player claim. See
+[scope](docs/testing/ai-surviving-resource-access.md).
+
 Live [AI autoplay actions](docs/testing/autoplay-action-safety.md) use the same
 transactional engine validation as human actions. Invalid decisions pause with a
 diagnostic error instead of silently becoming passes. The trajectory exporter

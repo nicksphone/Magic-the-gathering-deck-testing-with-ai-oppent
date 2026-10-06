@@ -1,0 +1,380 @@
+{
+  "base": "d88dbf049209e015f222f9d47d0658e8958c8c01",
+  "policy": "Exact selected fields from committed canonical fixtures; no Oracle edits or fetched/fabricated gameplay cards.",
+  "rules_url": "https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt",
+  "effective": "2026-09-25",
+  "cards": [
+    {
+      "name": "Blood Moon",
+      "source": "backend/tests/fixtures/land_types.json",
+      "source_sha256": "a080fedcf0314f76c42102ba8b5d28312f08b119ef39c7f8b84f8e6de56e4597",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "86aea2a34511ac9e120c2727e4c3cfd707134f7d1b0fbd92e9022b6414d4d7fb"
+    },
+    {
+      "name": "Spreading Seas",
+      "source": "backend/tests/fixtures/land_types.json",
+      "source_sha256": "a080fedcf0314f76c42102ba8b5d28312f08b119ef39c7f8b84f8e6de56e4597",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "a8bc1e8c018e2a1548af5e9570e27c65fa4cb2481dc5168a44cdd160257a2dd1"
+    },
+    {
+      "name": "Lush Growth",
+      "source": "backend/tests/fixtures/land_types.json",
+      "source_sha256": "a080fedcf0314f76c42102ba8b5d28312f08b119ef39c7f8b84f8e6de56e4597",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "dbef52f0efd6d7202334e660aba460a397bd7e5293e786cf874ec699c4fb7c6b"
+    },
+    {
+      "name": "Dryad Arbor",
+      "source": "backend/tests/fixtures/land_types.json",
+      "source_sha256": "a080fedcf0314f76c42102ba8b5d28312f08b119ef39c7f8b84f8e6de56e4597",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "48f73d685873ff84a7f5f3c2daf0419eb2c59bda54f9f65eb5ce87fc2ccf41bf"
+    },
+    {
+      "name": "Hallowed Fountain",
+      "source": "backend/tests/fixtures/land_types.json",
+      "source_sha256": "a080fedcf0314f76c42102ba8b5d28312f08b119ef39c7f8b84f8e6de56e4597",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "d6ab872fa7f4feaefd3a9b03080805e80ae46081ddf7ed3dad2aed92c4586e68"
+    },
+    {
+      "name": "Urborg, Tomb of Yawgmoth",
+      "source": "backend/tests/fixtures/land_types.json",
+      "source_sha256": "a080fedcf0314f76c42102ba8b5d28312f08b119ef39c7f8b84f8e6de56e4597",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "50790478f7da8c7067a68eb0f05a07a66fa6b27bbc3e0d5da17ffafd267a4c84"
+    },
+    {
+      "name": "Prismatic Omen",
+      "source": "backend/tests/fixtures/land_types.json",
+      "source_sha256": "a080fedcf0314f76c42102ba8b5d28312f08b119ef39c7f8b84f8e6de56e4597",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "a420080ceea9abc678aa336d3f9143c2030f7235032c77a380ef0c2aca5e3115"
+    },
+    {
+      "name": "River Boa",
+      "source": "backend/tests/fixtures/land_types.json",
+      "source_sha256": "a080fedcf0314f76c42102ba8b5d28312f08b119ef39c7f8b84f8e6de56e4597",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "a22a4fc3be6939f869c3fdc4539ac2c37c66ca11efa387f7bcc6559dd25cd6bb"
+    },
+    {
+      "name": "Llanowar Elves",
+      "source": "backend/tests/fixtures/ability_suppression.json",
+      "source_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "00230a74ce76d03113fc7552c7c90be3bd3f1ddbda10c87336bdbb44c59e2ca9"
+    },
+    {
+      "name": "Royal Assassin",
+      "source": "backend/tests/fixtures/ability_suppression.json",
+      "source_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "477d96a9d17905e5937c233d01f6e92c79d42b7844f42085f83e29f30a7b4a2d"
+    },
+    {
+      "name": "Soul Warden",
+      "source": "backend/tests/fixtures/ability_suppression.json",
+      "source_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "47c7742a2b8ef149587a942dcbe77d5d302db3c23c8ed6070a1234d4482a05f8"
+    },
+    {
+      "name": "Blood Artist",
+      "source": "backend/tests/fixtures/ability_suppression.json",
+      "source_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "e38ff444953066b859db1a871c2f0eb60498d9cf9ee213dea5631e9086c2a583"
+    },
+    {
+      "name": "Song of the Dryads",
+      "source": "backend/tests/fixtures/additive_mana.json",
+      "source_sha256": "007c02feda85d778b3114e4e349ae1cad771b8436897c900975149623e7216b3",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "a8875341c4f8cbd0172d98a02fa7a55b86fa2a72355ac3d0e8414c3780e0b5e8"
+    },
+    {
+      "name": "Forest",
+      "source": "backend/tests/fixtures/additive_mana.json",
+      "source_sha256": "007c02feda85d778b3114e4e349ae1cad771b8436897c900975149623e7216b3",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "619a37d3103d6dcddfcafe8549df9b3b63c74eea936b3ce3db476e57c819a978"
+    },
+    {
+      "name": "Island",
+      "source": "backend/tests/fixtures/additive_mana.json",
+      "source_sha256": "007c02feda85d778b3114e4e349ae1cad771b8436897c900975149623e7216b3",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "8fe723ce4fbe65a97089f694fd2f2a8262e215115b2769e96e2bac6fee71eb14"
+    },
+    {
+      "name": "Wild Growth",
+      "source": "backend/tests/fixtures/additive_mana.json",
+      "source_sha256": "007c02feda85d778b3114e4e349ae1cad771b8436897c900975149623e7216b3",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "card_faces",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "786e1245a5353bf48f6e5d3135cb451e91d42430094b5a49ea6c3d86a9934033"
+    },
+    {
+      "name": "Jump",
+      "source": "backend/tests/fixtures/keyword_effect_timestamps.json",
+      "source_sha256": "cbce906b0e1f83b338a7ce364deec3ee3d8da4f132abfaba8fcedcfc37276dcb",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "d7a456328d99e9f648c65692b36a4526d7b349d26b140a81041af5e28d1caa45"
+    },
+    {
+      "name": "Humility",
+      "source": "backend/tests/fixtures/ability_suppression.json",
+      "source_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+      "fields": [
+        "id",
+        "oracle_id",
+        "name",
+        "mana_cost",
+        "type_line",
+        "oracle_text",
+        "power",
+        "toughness",
+        "colors",
+        "keywords",
+        "layout",
+        "scryfall_uri"
+      ],
+      "canonical_row_sha256": "6d8fb6dcde2bcd3d0e9c03697ae353e6dc57ae7e2d891309d09810b455861e4d"
+    }
+  ]
+}

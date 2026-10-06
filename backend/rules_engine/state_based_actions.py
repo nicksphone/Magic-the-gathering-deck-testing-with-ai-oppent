@@ -3,7 +3,7 @@ from rules_engine.type_effects import effective_types
 
 from game_state.state import MatchState, Zone
 from rules_engine.card_types import is_token_card
-from rules_engine.attachments import attached_to, attachment_target_is_legal, is_aura, is_equipment
+from rules_engine.attachments import attached_to, attachment_target_is_legal, is_aura, is_equipment, is_fortification
 from rules_engine.events import emit_event, emit_event_batch, was_creature_on_battlefield
 from rules_engine.continuous import effective_toughness, effective_combat_stats, has_keyword
 from rules_engine.replacement import replace_die_zone, replacement_options
@@ -362,16 +362,23 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
     for cid, card in list(state.cards.items()):
         if card.zone != Zone.BATTLEFIELD:
             continue
-        if not (is_aura(card) or is_equipment(card)):
-            continue
         target_id = attached_to(card)
         from rules_engine.bestow import is_bestowed, end_bestow
+        aura, equipment, fortification = is_aura(card, state), is_equipment(card, state), is_fortification(card, state)
+        if not (aura or equipment or fortification):
+            if target_id:
+                if is_bestowed(card):
+                    end_bestow(card)
+                else:
+                    card.attached_to = None
+                state.log.append(f'State-based action: {card.name} becomes unattached.')
+            continue
         if is_bestowed(card) and not attachment_target_is_legal(state, card, target_id):
             end_bestow(card)
             state.log.append(f'State-based action: {card.name} ceases to be bestowed.')
             continue
         if not target_id:
-            if is_aura(card):
+            if aura:
                 owner = state.players[card.controller]
                 if cid in owner.battlefield:
                     owner.battlefield.remove(cid)
@@ -380,12 +387,12 @@ def _apply_attachment_state_checks(state: MatchState) -> None:
             continue
         target = state.cards.get(target_id)
         if not attachment_target_is_legal(state, card, target_id):
-            if is_aura(card):
+            if aura:
                 owner = state.players[card.controller]
                 if cid in owner.battlefield:
                     owner.battlefield.remove(cid)
                     zone = put_into_graveyard(state, cid)
                     state.log.append(f"State-based action: {card.name} loses attachment and is put into {zone.value}.")
-            elif is_equipment(card):
+            elif equipment or fortification:
                 card.attached_to = None
                 state.log.append(f"State-based action: {card.name} becomes unattached.")

@@ -39,18 +39,19 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
     from rules_engine.continuous import effective_keyword_counts, effective_power, effective_toughness, printed_abilities_suppressed
     from rules_engine.colors import card_color_names, card_color_symbols
     keyword_counts = effective_keyword_counts(state, card_id)
+    types = list(effective_types(state, card))
     card.last_known_battlefield = {
         "name": card.name,
         "oracle_text": card.oracle_text,
-        "types": list(effective_types(state, card)),
+        "types": types,
         "controller": card.controller,
-        "power": effective_power(state, card_id),
-        "toughness": effective_toughness(state, card_id),
+        "power": effective_power(state, card_id) if 'Creature' in types else None,
+        "toughness": effective_toughness(state, card_id) if 'Creature' in types else None,
         "keywords": list(keyword_counts),
         "keyword_counts": keyword_counts,
         "counters": dict(card.counters),
-        "colors": sorted(card_color_symbols(card)),
-        "color_names": sorted(card_color_names(card)),
+        "colors": sorted(card_color_symbols(card, state)),
+        "color_names": sorted(card_color_names(card, state)),
         "selected_face_index": card.selected_face_index,
         "battlefield_incarnation": object_incarnation(card),
         "effect_timestamp": card.effect_timestamp,

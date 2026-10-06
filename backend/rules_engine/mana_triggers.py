@@ -10,6 +10,35 @@ _activation = ContextVar('mana_tap_activation', default=None)
 
 
 @lru_cache(maxsize=4096)
+def produced_type_clauses(text):
+    from rules_engine.oracle_text import without_reminder_text
+    return sum(bool(re.fullmatch(
+        r'Whenever (?:a player taps a land|a land is tapped) for mana, '
+        r'(?:that player|its controller) adds (?:an additional )?one mana '
+        r'of any type that land produced\.', line.strip(), re.I))
+        for line in without_reminder_text(text or '').splitlines())
+
+
+def _proven_tap_type(state, tapped):
+    from rules_engine.costs import ActivatedCost, parse_activated_cost
+    from rules_engine.mana_abilities import ability_outputs, mana_ability_specs
+    colors = set()
+    for spec in mana_ability_specs(tapped, state):
+        cost = parse_activated_cost(spec[1])
+        if not cost.tap_source:
+            continue
+        # Without the selected activation context, every possible tap must agree.
+        # Departure costs and zero/unsupported outputs cannot prove production.
+        if cost != ActivatedCost(tap_source=True):
+            return None
+        outputs = ability_outputs(state, tapped, spec)
+        if len(outputs) != 1 or next(iter(outputs.values())) <= 0:
+            return None
+        colors.update(outputs)
+    return next(iter(colors)) if len(colors) == 1 else None
+
+
+@lru_cache(maxsize=4096)
 def fixed_mana_clauses(text):
     from rules_engine.oracle_text import without_reminder_text
     rows = []
@@ -29,11 +58,14 @@ def fixed_mana_triggers(state, tapped):
     from rules_engine.type_effects import effective_types
     from rules_engine.mana import is_snow_source
     triggers = []
+    produced_type = None
+    type_checked = False
     for player in state.players.values():
         for cid in player.battlefield:
             source = state.cards[cid]
             clauses = fixed_mana_clauses(source.oracle_text)
-            if not clauses or source.zone != Zone.BATTLEFIELD:
+            produced = produced_type_clauses(source.oracle_text)
+            if not (clauses or produced) or source.zone != Zone.BATTLEFIELD:
                 continue
             matching = []
             for subject, outputs in clauses:
@@ -47,6 +79,13 @@ def fixed_mana_triggers(state, tapped):
                     match = subject == 'permanent' or subject.title() in effective_types(state, tapped)
                 if match:
                     matching.append(outputs)
+            if (produced and 'Land' in effective_types(state, tapped)
+                    and not printed_abilities_suppressed(state, cid)):
+                if not type_checked:
+                    produced_type = _proven_tap_type(state, tapped)
+                    type_checked = True
+                if produced_type is not None:
+                    matching.extend([((produced_type, 1),)] * produced)
             if matching and not printed_abilities_suppressed(state, cid):
                 for outputs in matching:
                     triggers.append((tapped.controller, cid, object_incarnation(source), is_snow_source(source), dict(outputs)))
@@ -55,6 +94,7 @@ def fixed_mana_triggers(state, tapped):
 
 def has_fixed_mana_triggers(state):
     return any(fixed_mana_clauses(state.cards[cid].oracle_text)
+               or produced_type_clauses(state.cards[cid].oracle_text)
                for player in state.players.values() for cid in player.battlefield)
 
 

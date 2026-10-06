@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {openBrowser, waitForApiState} from './browser-driver.mjs';
+import {activateIndexedMana} from './indexed-mana-control.mjs';
 const api = 'http://127.0.0.1:10199';
 const ready = label => `Boolean([...document.querySelectorAll('button')].find(button =>
   button.textContent.trim() === ${JSON.stringify(label)} && !button.disabled && !button.closest('fieldset[disabled]')))`;
@@ -9,7 +10,8 @@ for (const seat of [1, 2]) for (const index of [0, 1, 2, 3]) {
   const response = await fetch(`${api}/fixture?face_kind=land_types_${index}_${seat}`, {method: 'POST'});
   assert.equal(response.status, 200);
   const fixture = await response.json();
-  const {evaluate, reload, waitFor, click, close} = await openBrowser('http://127.0.0.1:15173/');
+  const browser = await openBrowser('http://127.0.0.1:15173/');
+  const {evaluate, reload, waitFor, click, close} = browser;
   try {
     await waitFor("document.querySelector('.saved-games') !== null && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
@@ -39,9 +41,7 @@ for (const seat of [1, 2]) for (const index of [0, 1, 2, 3]) {
       }
       assert.equal(state.players[String(3-seat)].life, 17);
     } else {
-      await waitFor(ready('Add 1 R'));
-      await evaluate("[...document.querySelectorAll('details')].find(detail => detail.querySelector('summary')?.textContent.startsWith('Mana abilities')).open = true");
-      await evaluate(`(() => { const row = [...document.querySelectorAll('details .row')].find(row => row.querySelector('span')?.textContent.startsWith(${JSON.stringify(landName + ':')}) && [...row.querySelectorAll('button')].some(button => button.textContent.trim() === 'Add 1 R')); if (!row) throw new Error('Missing named land mana control'); row.querySelector('button').click(); })()`);
+      await activateIndexedMana(browser, {api, id: fixture.id, seat, cardId: land.id, color: 'R'});
       state = await waitForApiState(`${api}/matches/${fixture.id}`, state => state.players[String(seat)].mana_pool.R === 1);
     }
     assert.equal(state.stack.length, 0);

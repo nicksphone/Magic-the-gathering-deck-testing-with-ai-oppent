@@ -71,7 +71,7 @@ class ResourcePayment:
 
 
 def resource_payment(state, player_id, card, requirements, choices, *,
-                     reserved_card_ids=(), unavailable_tap_ids=()):
+                     reserved_card_ids=(), unavailable_tap_ids=(), reserved_consumption_ids=()):
     """Pure validation: substitutions never become mana or change mana value."""
     if (player_id not in state.players or not isinstance(choices, dict)
             or set(choices) - KEYWORDS or not isinstance(requirements, dict)
@@ -96,6 +96,7 @@ def resource_payment(state, player_id, card, requirements, choices, *,
     all_ids = [*delve, *improvise, *[cid for cid, _ in convoke]]
     if (len(all_ids) != len(set(all_ids)) or card.id in all_ids
             or set(all_ids).intersection(reserved_card_ids)
+            or set(delve).intersection(reserved_consumption_ids)
             or set(improvise + [cid for cid, _ in convoke]).intersection(unavailable_tap_ids)
             or any(cid not in candidates['delve'] for cid in delve)
             or any(cid not in candidates['improvise'] for cid in improvise)
@@ -135,19 +136,26 @@ def apply_resource_payment(state, player_id, card, plan):
     return True
 
 
-def joint_resource_payment(state, player_id, card, requirements, choices, mana_planner):
+def joint_resource_payment(state, player_id, card, requirements, choices, mana_planner, *,
+                           reserved_consumption_ids=()):
     """Find a legal witness; this is not an AI opportunity-cost evaluator.
 
 The callback excludes selected taps from mana sources and reserves all selected
-objects against consuming mana abilities. No branch mutates the game.
-"""
+    objects against consuming mana abilities. No branch mutates the game.
+    """
+    reserved_consumption_ids = frozenset(reserved_consumption_ids)
+
+    def validate(selected):
+        return resource_payment(state, player_id, card, requirements, selected,
+                                reserved_consumption_ids=reserved_consumption_ids)
+
     def physical(plan):
         tapped = {cid for cid, _ in plan.convoke} | set(plan.improvise)
         held = tapped | set(plan.delve)
         return mana_planner(plan.remaining, tapped, held)
 
     if choices is not None:
-        plan = resource_payment(state, player_id, card, requirements, choices)
+        plan = validate(choices)
         if plan is None:
             return None
         mana = physical(plan)
@@ -160,11 +168,13 @@ objects against consuming mana abilities. No branch mutates the game.
         alternatives[row['card_id']].append(('convoke', 'generic'))
     for keyword in ('delve', 'improvise'):
         for cid in candidates[keyword]:
+            if keyword == 'delve' and cid in reserved_consumption_ids:
+                continue
             alternatives.setdefault(cid, []).append((keyword, 'generic'))
     objects = list(alternatives.items())
 
     def search(index, selected):
-        plan = resource_payment(state, player_id, card, requirements, selected)
+        plan = validate(selected)
         if plan is None:
             return None
         mana = physical(plan)

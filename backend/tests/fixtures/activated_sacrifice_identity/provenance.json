@@ -1,0 +1,60 @@
+{
+  "canonical_json_sha256": "4a20cfefa830fb6d1bb13f99fb952a238d28f9dbc1efac69a3c807374b42b333",
+  "facts_modified": false,
+  "http_requests": 0,
+  "rows": {
+    "Basal Thrull": {
+      "id": "f4cf027e-2021-4ce7-b156-199cf1ca25eb",
+      "oracle_id": "9da50130-3f83-4968-983c-7dcba257cf1b",
+      "raw_canonical_sha256": "d3b2dcd9753ce697e8b8caf0d9b5738f357d114fd27fa526a252a6956ca511a4"
+    },
+    "Chromatic Star": {
+      "id": "c2e8d492-2c67-410b-b556-c157a14c4cec",
+      "oracle_id": "fedbd40b-e3a5-449c-a8a3-b42e9da191a9",
+      "raw_canonical_sha256": "bcae6df06aa4341c52e5c5cffb4e44e99b9320134a85ad1015666fdf4172877b"
+    },
+    "Dream Devourer": {
+      "id": "ff1d88a6-a74d-44b5-b7a8-866e866807f1",
+      "oracle_id": "0ff7440b-b831-40a9-81c4-99d77bf93b8d",
+      "raw_canonical_sha256": "381893e0ddd00073cc002cc9d1fa73d7b70645f68b902e6847c75f12a5885264"
+    },
+    "Hangarback Walker": {
+      "id": "cc387ccf-f746-4855-81e5-64f5a5e0fdda",
+      "oracle_id": "dde55256-5259-44e7-a267-fca45a7f0d04",
+      "raw_canonical_sha256": "f5fb1aca8d87461441b18d51271e474c22daaa0ade95beacdf6f124b99c07eb0"
+    },
+    "Phyrexian Tower": {
+      "id": "0b47f6d2-9f65-47a4-bfc4-15619befe53d",
+      "oracle_id": "1861e642-21d5-4232-89f3-b5557f2946c1",
+      "raw_canonical_sha256": "4bcdf6294aa8f6b90e7a01ab1562e417ac6176923869bf4fb84f135d66931ea7"
+    },
+    "Raging Goblin": {
+      "id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b",
+      "raw_canonical_sha256": "b084c49cbd337b82de4f5051f1dec661250e61df2c697a79c4994adfe10bf453"
+    },
+    "Rest in Peace": {
+      "id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+      "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+      "raw_canonical_sha256": "c645d23b51a82f54bc5f3d10dd21dd75130670e631a1f0331b4aa3161e2d4dd9"
+    },
+    "Riftwing Cloudskate": {
+      "id": "1a2b228d-db4d-44a3-b208-6cf7a9f57da6",
+      "oracle_id": "ae2e6ffd-fb93-4c47-88e7-e84460eefbe5",
+      "raw_canonical_sha256": "27d9b622c671ba8885f0b5ad918ab65f2afbb97a5c4cc469cfa46914642d4656"
+    },
+    "Skullbriar, the Walking Grave": {
+      "id": "3dd0bf11-4e43-43f1-82e3-755beed0ede0",
+      "oracle_id": "088ac883-6f44-4046-bf19-81c7fd952e55",
+      "raw_canonical_sha256": "a6f554ecb57fec2f9ec2441b3d6dcae5422ec55fba321d5d007630abc80f41f8"
+    },
+    "Woe Strider": {
+      "id": "f458ae68-5cda-4c40-a348-47b4196fba02",
+      "oracle_id": "3adbd963-e85d-4569-963a-4472594f06f9",
+      "raw_canonical_sha256": "899cb210dc72c2bd0df8e3c9e7c6f34f0d8d84c73356b3aaa54afeab7d2d954d"
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_records_verified": 38690,
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

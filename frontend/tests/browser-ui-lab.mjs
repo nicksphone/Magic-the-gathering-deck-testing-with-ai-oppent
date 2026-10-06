@@ -23,6 +23,8 @@ try {
     await evaluate(`(() => {const el=document.querySelector('[aria-label="${label}"]');el.value=${JSON.stringify(String(imported.id))};el.dispatchEvent(new Event('change',{bubbles:true}));})()`);
   }
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent.startsWith('Start Best-of')).disabled"),false);
+  assert.equal(await evaluate("Boolean(document.querySelector('[aria-label=\"Acknowledge exploratory interactive match\"]'))"), false,
+    'Selecting imported decks must not silently preflight or acknowledge a match');
   console.log('PASS deck imported through visible controls, canonical list persisted and selectable for both seats');
   onIntercept(async event=>command('Fetch.failRequest',{requestId:event.requestId,errorReason:'Failed'}));
   await command('Fetch.enable',{patterns:[{urlPattern:'*/decks/import*',requestStage:'Request'}]});

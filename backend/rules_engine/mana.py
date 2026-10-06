@@ -125,8 +125,8 @@ def mana_source_outputs(state: MatchState, player_id: int, card_id: str, *, paym
 
 
 def mana_source_capacity(state, card_id):
-    from rules_engine.mana_triggers import has_fixed_mana_triggers
-    if not has_fixed_mana_triggers(state):
+    from rules_engine.mana_abilities import needs_mana_bundles
+    if not needs_mana_bundles(state):
         return max(mana_source_outputs(state, state.cards[card_id].controller, card_id).values(), default=0)
     from rules_engine.mana_abilities import free_mana_options
     return max((sum(bundle.values()) for _, _, bundle, _, _ in
@@ -378,12 +378,15 @@ def _plan_mana_sources(
 
 
 def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, optimize_paid=False, reserved_card_ids=(), protected_life=0):
+    from rules_engine.mana_abilities import proven_missing_fixed_color
+    if proven_missing_fixed_color(state, player_id, req, payment_context):
+        return None
     held_life = protected_life + req.get('life', 0)
     plan = _plan_free_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=held_life)
     if plan is not None and not optimize_paid:
         return plan
     from copy import deepcopy
-    from rules_engine.mana_abilities import paid_candidates, activate_mana_ability, PaidManaStep
+    from rules_engine.mana_abilities import paid_candidates, activate_planned_mana_ability, PaidManaStep
     candidates = list(paid_candidates(state, player_id, excluded_sources or (), payment_context=payment_context))
     if not candidates:
         return plan
@@ -396,9 +399,15 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
         # Each pending activation excludes its own source, preventing circular funding.
         excluded = frozenset(excluded_sources or ()) | {cid}
         trial = deepcopy(state)
-        if not activate_mana_ability(trial, player_id, cid, spec[0], color, excluded_sources=excluded, reserved_card_ids=reserved_card_ids, protected_life=held_life):
+        if not activate_planned_mana_ability(trial, player_id, cid, spec[0], color, excluded_sources=excluded, reserved_card_ids=reserved_card_ids, protected_life=held_life):
             continue
-        tail = _plan_payment(trial, player_id, req, payment_context=payment_context, excluded_sources=excluded, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
+        from rules_engine.costs import parse_activated_cost
+        cost = parse_activated_cost(spec[1])
+        # Source-free resource costs strictly consume cards and may activate again.
+        reusable = not cost.tap_source and not cost.sacrifice_source and (
+            cost.sacrifice_creatures > 0 or cost.discard_cards > 0)
+        tail_excluded = frozenset(excluded_sources or ()) if reusable else excluded
+        tail = _plan_payment(trial, player_id, req, payment_context=payment_context, excluded_sources=tail_excluded, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
         if tail is not None:
             steps, snow = tail
             candidate = [PaidManaStep(cid, spec[0], color, excluded), *steps], snow
@@ -427,23 +436,23 @@ def _remaining_mana_score(state, player_id, payment_context):
 
 
 def _produce_planned_mana(state, player_id, steps, *, payment_context=None, reserved_card_ids=(), protected_life=0):
-    from rules_engine.mana_abilities import PaidManaStep, activate_mana_ability, preferred_free_spec
+    from rules_engine.mana_abilities import PaidManaStep, activate_planned_mana_ability, preferred_free_spec
     for step in steps:
         if isinstance(step, PaidManaStep):
-            if not activate_mana_ability(state, player_id, step.source_id, step.ability_index,
+            if not activate_planned_mana_ability(state, player_id, step.source_id, step.ability_index,
                     step.color, excluded_sources=step.excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life):
                 return False
             continue
         cid, color, amount, _ = step
         spec = preferred_free_spec(state, state.cards[cid], color, amount, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
-        if spec is None or not activate_mana_ability(state, player_id, cid, spec[0], color, reserved_card_ids=reserved_card_ids, protected_life=protected_life):
+        if spec is None or not activate_planned_mana_ability(state, player_id, cid, spec[0], color, reserved_card_ids=reserved_card_ids, protected_life=protected_life):
             return False
     return True
 
 
 def _plan_free_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, reserved_card_ids=(), protected_life=0):
-    from rules_engine.mana_triggers import has_fixed_mana_triggers
-    if has_fixed_mana_triggers(state):
+    from rules_engine.mana_abilities import needs_mana_bundles
+    if needs_mana_bundles(state):
         return _plan_bundled_payment(state, player_id, req, payment_context=payment_context,
             excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
     snow_needed = req.get("S", 0)
@@ -590,6 +599,14 @@ def _plan_bundled_payment(state, player_id, req, *, payment_context, excluded_so
              for i, index, color in steps], dict(spent))
 
 
+def _consumption_reservations(payment_context, card, source_card_id, reserved_card_ids):
+    reserved = set(reserved_card_ids)
+    source = getattr(card, 'id', None) or source_card_id
+    if payment_context[0] == 'spell' and source is not None:
+        reserved.add(source)
+    return reserved
+
+
 def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='',
                         source_card_id=None, card=None, resource_choices=None,
                         excluded_sources=None, reserved_card_ids=(), protected_life=0,
@@ -597,6 +614,7 @@ def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='
     from types import SimpleNamespace
     from rules_engine.casting_resources import resource_keywords, joint_resource_payment
     view = card or SimpleNamespace(id=source_card_id, oracle_text=oracle_text, keywords=[])
+    reserved_card_ids = _consumption_reservations(payment_context, view, source_card_id, reserved_card_ids)
     enabled = payment_context[0] == 'spell' and resource_keywords(view)
     cannot_spend = payment_context[0] == 'spell' and "you can't spend mana to cast this spell" in oracle_text.lower()
 
@@ -611,7 +629,8 @@ def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='
                              protected_life=protected_life, optimize_paid=optimize_paid)
 
     if enabled or resource_choices is not None:
-        return joint_resource_payment(state, player_id, view, req, resource_choices, physical)
+        return joint_resource_payment(state, player_id, view, req, resource_choices, physical,
+                                      reserved_consumption_ids=reserved_card_ids)
     mana = physical(req)
     return (req, None, mana) if mana is not None else None
 
@@ -645,6 +664,9 @@ def auto_pay_cost(
     resource_choices=None,
 ) -> bool:
     payment_context = (payment_kind, payment_types if payment_types is not None else spell_types or set())
+    # Replay reselects activation resources; protect the source there as in planning.
+    reserved_card_ids = _consumption_reservations(payment_context, cast_resource_card,
+                                                source_card_id, reserved_card_ids)
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types, spell_is_aura=spell_is_aura,
@@ -700,17 +722,17 @@ def auto_pay_cost(
         return pay_resources()
     for color in MANA_COLORS:
         player.mana_pool.setdefault(color, 0)
-    from rules_engine.mana_abilities import PaidManaStep, activate_mana_ability
+    from rules_engine.mana_abilities import PaidManaStep, activate_planned_mana_ability
     for step in plan:
         if isinstance(step, PaidManaStep):
-            if not activate_mana_ability(state, player_id, step.source_id, step.ability_index,
+            if not activate_planned_mana_ability(state, player_id, step.source_id, step.ability_index,
                     step.color, excluded_sources=step.excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life):
                 return False
             continue
         cid, color, amount, land = step
         from rules_engine.mana_abilities import preferred_free_spec
         spec = preferred_free_spec(state, state.cards[cid], color, amount, payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life)
-        if spec is None or not activate_mana_ability(state, player_id, cid, spec[0], color, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life):
+        if spec is None or not activate_planned_mana_ability(state, player_id, cid, spec[0], color, reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life):
             return False
         cost_kind = payment_kind
         state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay {cost_kind} cost.")
@@ -937,6 +959,30 @@ def repeatable_nonland_mana_outputs(card, *, state=None, payment_context=None) -
     return outputs
 
 
+@lru_cache(maxsize=8192)
+def fixed_mana_vector(effect):
+    """Adjacent symbols are simultaneous; 'or' and any-color remain alternatives."""
+    from rules_engine.oracle_text import without_reminder_text
+    text = without_reminder_text(effect).strip()
+    text = re.sub(r'\.\s*Spend this mana only to [^.]+\.$', '', text, flags=re.I)
+    text = text.rstrip('.').upper()
+    if re.fullmatch(r'ADD (?:\{[WUBRGC]\})+', text):
+        return dict(Counter(MANA_SYMBOL_RE.findall(text)))
+    return None
+
+
+@lru_cache(maxsize=8192)
+def fixed_mana_alternatives(effect):
+    from rules_engine.oracle_text import without_reminder_text
+    text = without_reminder_text(effect).strip()
+    text = re.sub(r'\.\s*Spend this mana only to [^.]+\.$', '', text, flags=re.I)
+    text = text.rstrip('.').upper()
+    if re.fullmatch(r'ADD (?:\{[WUBRGC]\})+(?:, (?:\{[WUBRGC]\})+)*,? OR (?:\{[WUBRGC]\})+', text):
+        return tuple(tuple(sorted(Counter(MANA_SYMBOL_RE.findall(branch)).items()))
+                     for branch in re.split(r',\s*(?:OR\s+)?|\s+OR\s+', text[4:]))
+    return None
+
+
 def _nonland_mana_effect_outputs(effect: str, *, state=None, card=None) -> dict[str, int]:
     from rules_engine.oracle_text import without_reminder_text
     effect = without_reminder_text(effect).strip().rstrip('.').upper()
@@ -968,10 +1014,16 @@ def _nonland_mana_effect_outputs(effect: str, *, state=None, card=None) -> dict[
         if 1 <= amount <= 20 and (amount == 1 or any_color.group(2)):
             return {color: amount for color in "WUBRG"}
         return {}
-    if re.fullmatch(r"ADD (?:\{[WUBRGC]\})+", effect):
-        symbols = MANA_SYMBOL_RE.findall(effect)
-        if len(set(symbols)) == 1:
-            return {symbols[0]: len(symbols)}
+    vector = fixed_mana_vector(effect)
+    if vector is not None:
+        return vector
+    alternatives = fixed_mana_alternatives(effect)
+    if alternatives is not None:
+        outputs = {}
+        for vector in alternatives:
+            for color, amount in vector:
+                outputs[color] = max(outputs.get(color, 0), amount)
+        return outputs
     if re.fullmatch(r"ADD \{[WUBRGC]\}(?:,? (?:OR )?\{[WUBRGC]\})+", effect) and " OR " in effect:
         return {color: 1 for color in MANA_SYMBOL_RE.findall(effect)}
     if state is None or card is None:

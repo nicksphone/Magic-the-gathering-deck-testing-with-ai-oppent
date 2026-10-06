@@ -29,7 +29,8 @@ def _can_pay(state, player_id, cost, card=None):
     return can_pay_with_pool_and_lands(
         state, player_id, cost, card_name=card.name if card else '',
         spell_types=set(effective_types(state, card)) if card else set(),
-        oracle_text=card.oracle_text if card else '')
+        oracle_text=card.oracle_text if card else '',
+        source_card_id=getattr(card, 'id', None), cast_resource_card=card)
 
 
 def _resource_value(state, player_id, known_cards, *, public_only=False):
@@ -64,10 +65,21 @@ def resource_delta(before, after, player_id, *, excluded_card_ids=()):
     _, enemy_old = _resource_value(before, 3-player_id, public[3-player_id], public_only=True)
     _, enemy_new = _resource_value(after, 3-player_id, public[3-player_id], public_only=True)
     # Do not inspect hidden zones, or reward newly drawn unknowns.
-    costs = {(card.mana_cost, card.oracle_text, tuple(effective_types(before, card))): card
-             for card in held if card.mana_cost and '{X}' not in card.mana_cost.upper()}
-    access = sum(int(_can_pay(new, player_id, card.mana_cost, card))
-                 - int(_can_pay(old, player_id, card.mana_cost, card)) for card in costs.values())
+    costs = {}
+    for card in held:
+        if card.mana_cost and '{X}' not in card.mana_cost.upper():
+            key = (card.mana_cost, card.oracle_text, tuple(effective_types(before, card)))
+            costs.setdefault(key, []).append(card.id)
+
+    def has_access(state, hand, card_ids):
+        # Only original held instances that survive in this projection count.
+        return any(_can_pay(state, player_id, state.cards[cid].mana_cost, state.cards[cid])
+                   for cid in card_ids if cid in hand)
+
+    old_hand = set(old.players[player_id].hand)
+    new_hand = set(new.players[player_id].hand)
+    access = sum(int(has_access(new, new_hand, card_ids))
+                 - int(has_access(old, old_hand, card_ids)) for card_ids in costs.values())
     return new_value - old_value + enemy_old - enemy_new + 3.0 * access
 
 

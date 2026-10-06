@@ -1,0 +1,128 @@
+[
+  {
+    "id": "1e10e2b4-9639-41ae-8b8e-253224d3d513",
+    "oracle_id": "34bcc217-dd91-45a0-90d7-a94d02f1f317",
+    "name": "Growth Spiral",
+    "mana_cost": "{G}{U}",
+    "type_line": "Instant",
+    "oracle_text": "Draw a card. You may put a land card from your hand onto the battlefield.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [
+      "G",
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/88/growth-spiral?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "50ef0ac3-e911-4d67-a751-8d86160ae843",
+    "oracle_id": "189fc8f4-17ac-4f1d-82c8-8401445bdaf4",
+    "name": "Azorius Chancery",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "This land enters tapped.\nWhen this land enters, return a land you control to its owner's hand.\n{T}: Add {W}{U}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/261/azorius-chancery?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "f19d2b68-1415-4a0c-bb68-cfacb611c4d2",
+    "oracle_id": "657243dd-e479-4f4b-99d2-09b55d833a35",
+    "name": "Gruul Turf",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "This land enters tapped.\nWhen this land enters, return a land you control to its owner's hand.\n{T}: Add {R}{G}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/ecc/152/gruul-turf?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "26dd6a1d-4dcb-4392-9856-c0e4140efbd7",
+    "oracle_id": "27eef5c1-259a-4d37-93af-7451f50905af",
+    "name": "Gyre Engineer",
+    "mana_cost": "{1}{G}{U}",
+    "type_line": "Creature \u2014 Vedalken Wizard",
+    "oracle_text": "{T}: Add {G}{U}.",
+    "power": "1",
+    "toughness": "1",
+    "loyalty": null,
+    "colors": [
+      "G",
+      "U"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/rna/180/gyre-engineer?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "212d97c5-c144-483b-b42e-00623477e928",
+    "oracle_id": "046f5783-cc7b-416a-8cf6-2bcef9c2cc1a",
+    "name": "Simic Growth Chamber",
+    "mana_cost": "",
+    "type_line": "Land",
+    "oracle_text": "This land enters tapped.\nWhen this land enters, return a land you control to its owner's hand.\n{T}: Add {G}{U}.",
+    "power": null,
+    "toughness": null,
+    "loyalty": null,
+    "colors": [],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/dsc/298/simic-growth-chamber?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "354b9ea4-3d55-48cc-b426-c46b1d1bb397",
+    "oracle_id": "d43463d2-4395-4616-acc3-c4f80ebe3242",
+    "name": "Watcher of the Spheres",
+    "mana_cost": "{W}{U}",
+    "type_line": "Creature \u2014 Bird Wizard",
+    "oracle_text": "Flying\nCreature spells with flying you cast cost {1} less to cast.\nWhenever another creature you control with flying enters, this creature gets +1/+1 until end of turn.",
+    "power": "2",
+    "toughness": "2",
+    "loyalty": null,
+    "colors": [
+      "U",
+      "W"
+    ],
+    "keywords": [
+      "Flying"
+    ],
+    "scryfall_uri": "https://scryfall.com/card/m21/227/watcher-of-the-spheres?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  },
+  {
+    "id": "b82d8359-4841-478c-851b-13a1a0f94737",
+    "oracle_id": "5979310e-38c8-489f-ab9e-2723af98a3a5",
+    "name": "Zhur-Taa Druid",
+    "mana_cost": "{R}{G}",
+    "type_line": "Creature \u2014 Human Druid",
+    "oracle_text": "{T}: Add {G}.\nWhenever you tap this creature for mana, it deals 1 damage to each opponent.",
+    "power": "1",
+    "toughness": "1",
+    "loyalty": null,
+    "colors": [
+      "G",
+      "R"
+    ],
+    "keywords": [],
+    "scryfall_uri": "https://scryfall.com/card/c16/232/zhur-taa-druid?utm_source=api",
+    "layout": "normal",
+    "card_faces": null
+  }
+]

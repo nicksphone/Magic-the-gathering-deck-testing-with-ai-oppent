@@ -2,6 +2,61 @@
 
 ## Current Execution Order
 
+### Qualified Mana And Layer Milestone
+
+- [x] Compose explicit chosen-resource/hybrid/base-vector mana execution,
+  conservative fixed-color impossibility pruning and joint fixed spell costs
+  in an isolated candidate; retain canonical card data and exhaustive fallback.
+- [x] Close concrete-card self-funding predictions in two AI affordability
+  heuristics: 652 checks pass with no exclusions. See
+  [bounded evidence](docs/testing/ai-announced-source-affordability.md).
+- [x] Retained-resource comparisons now probe surviving original held instances
+  in each projection, rather than a discarded duplicate. The layer-composed
+  672-check AI gate passes without exclusions; anonymous capacity and class
+  weighting remain unchanged. See [scope](docs/testing/ai-surviving-resource-access.md).
+- [x] Compose human mana controls and preflight frontend: lint/build/unit gates,
+  14 actual-App explicit-payment cases and six shortcut cases pass against the
+  current candidate, including both seats and restart.
+- [x] Complete fresh 63-module backend regression: 2,577 pass, two existing
+  Song/type-layer expected failures, no skips/exclusions, 510.53 seconds.
+- [x] Compose bounded permanent-to-basic-land replacement and effective LKI,
+  protection and attachment/SBA consumers: 594 current-candidate checks pass
+  ordinarily, including the two previously marked Song mana assertions. Other
+  printed-color consumers and general layer cycles remain unqualified.
+- [x] Complete the full shared browser gate on the layer/resource-access candidate:
+  497 checks pass, including both human seats, AI BO3, recovery and backend restart.
+  Frontend lint/build/unit and Suspend gates also pass. Historical failed runs
+  remain separate evidence, not passing results.
+- [x] Qualify cast/activated-intent requested-field guards independently: 116
+  focused and 620 shared checks pass on the worker baseline; unchanged archived
+  contradictory witnesses remain diagnostic. The newer layer/resource-access
+  parent also passes all 116 focused checks (107.81 seconds) and all 116
+  neighboring mana checks (108.09 seconds), without skips/xfails/deselection.
+- [x] Compose activated-sacrifice normal zone transitions; 134 current-parent
+  identity/layer/mana checks pass ordinarily. Dynamic death-token quantities and
+  old-trigger LKI after reentry remain separate open issues.
+- [x] Complete the final expanded backend gate on this entire composition.
+  Initial 69-module run: 2,827 pass, one metadata-light query crash.
+  Fix optional metadata reads in the shared layer/type query helpers: 277 focused
+  checks pass, including eight new ordinary before-fail/after-pass controls.
+  Fresh 70-module rerun: 2,836 pass, 722.20 seconds, no skips/xfails/deselection.
+- [ ] Resolve post-mana escape-fuel witness gaps; qualify remaining printed-color
+  consumers and face/selection composition separately; extend requested-field
+  qualification to remaining non-mana action families.
+- [ ] Resolve dynamic self-death token counts and retained-source incarnation
+  contamination identified by strict canonical regression fixtures.
+- [ ] Warn and block unsupported UI action confirmations without hiding supported
+  controls; verify both human seats and private choice displays.
+- [x] Promote only after the intended gates pass, with a verified live-data
+  backup, current documentation, graph refresh and safe runtime restart.
+  Backend and frontend health/proxy/LAN checks pass on `0.0.0.0:9999` and
+  `0.0.0.0:5173`; all database table counts and 1,264 saved-match payloads
+  remain unchanged. The protected untracked plan is preserved.
+
+This section records the qualified source milestone. Deployment health and saved
+data preservation are checked separately during promotion. Test counts overlap
+and are not summed; no neural training or expert-play claim is made.
+
 1. Finish preserved selection/ranking and combat latency validation; extend
    remaining Suspend and choice-dependent mana families without card-name exceptions.
 2. Apply the verified corpus safely, materialize bounded mechanic metadata and
@@ -30,7 +85,9 @@ Completed bounded work:
 - [x] Training mana choice safeguards: 304 composed tests pass. Unsupported
   resource/hybrid/X selections are reported and rejected rather than silently
   dropped; ambiguous legacy ability selection and stack-route bypasses reject.
-  Actual chosen-payment execution remains unfinished. See
+  This was a safeguard-only milestone; chosen-resource/hybrid/base-vector
+  execution now qualifies in the candidate above. Broader variable and
+  choice-dependent mana families remain unfinished. See
   [scope](docs/testing/training-mana-choice-coverage.md).
 - [x] Offline knowledge-to-engine report: 49 checks pass; a current-source
   read-only run over all 38,690 qualified profiles is byte-identical to the
