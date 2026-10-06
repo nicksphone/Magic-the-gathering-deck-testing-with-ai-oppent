@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import re
 from typing import Any
 
@@ -34,15 +34,59 @@ class AbilitySpec:
     effect: EffectSpec
     used_fallback: bool = False
     event_supported: bool = False
+    unsupported_resolution: tuple[str, ...] = ()
 
 
-def build_spell_spec(state: MatchState, card: CardInstance, controller: int, action_targets: dict[str, Any] | None = None) -> AbilitySpec:
+def spell_resolution_gaps(card: CardInstance, action_targets: dict[str, Any] | None = None) -> tuple[str, ...]:
+    """Inspect the full selected spell surface before any costs are paid."""
+    from rules_engine.card_faces import select_cast_face
+    from rules_engine.coverage import unsupported_resolution_clauses
+    from rules_engine.oracle_effects import _extract_modes, spell_resolution_text
+    targets = action_targets or {}
+    selected = targets.get('selected_face_index', getattr(card, 'selected_face_index', None))
+    if getattr(card, 'card_faces', None) and (
+            getattr(card, 'selected_face_index', None) is None or selected != card.selected_face_index):
+        try:
+            card = select_cast_face(card, selected)
+        except (ValueError, TypeError):
+            # Invalid choices belong to the existing face validation, not inference.
+            return ()
+    if not set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
+        return ()
+    text = spell_resolution_text(card, card.oracle_text or '')
+    modes = _extract_modes(text)
+    if modes:
+        selected = targets.get('mode_texts') or ([targets['mode_text']] if targets.get('mode_text') else [])
+        if not selected:
+            # A legal supported mode must not be removed by an unselected one.
+            return ()
+        printed = {mode.casefold(): mode for mode in modes}
+        text = ' '.join(printed.get(str(mode).casefold(), '') for mode in selected)
+    return tuple(unsupported_resolution_clauses(text))
+
+
+def unsupported_spell_reason(card: CardInstance, action_targets: dict[str, Any] | None = None) -> str | None:
+    gaps = spell_resolution_gaps(card, action_targets)
+    return 'Unsupported spell resolution: ' + ', '.join(gaps) if gaps else None
+
+
+def build_spell_spec(state: MatchState, card: CardInstance, controller: int, action_targets: dict[str, Any] | None = None, *, report_unsupported: bool = True) -> AbilitySpec:
     """Compile a spell, never a permanent's later activated/triggered text."""
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     types = set(getattr(card, "types", []) or [])
     if types.intersection({"Instant", "Sorcery"}) or not types.intersection({"Creature", "Artifact", "Enchantment", "Planeswalker", "Battle", "Land"}):
-        return build_ability_spec(state, card, controller, action_targets)
+        spec = build_ability_spec(state, card, controller, action_targets, report_unsupported=report_unsupported)
+        gaps = spell_resolution_gaps(card, action_targets)
+        if spec.used_fallback and not gaps:
+            gaps = ('unrecognized spell resolution',)
+        for mode in (action_targets or {}).get('mode_texts') or []:
+            branch_targets = {**action_targets, **(action_targets.get('mode_targets') or {}).get(mode, {}),
+                              'mode_text': mode, 'mode_texts': []}
+            branch = build_ability_spec(state, card, controller, branch_targets, report_unsupported=False)
+            if branch.used_fallback:
+                gaps = tuple(dict.fromkeys((*gaps, 'unrecognized selected-mode resolution')))
+        return replace(spec, unsupported_resolution=gaps)
     from rules_engine.cast_choice import build_cast_hints
     choices = {key: value for key, value in (action_targets or {}).items() if key in {
         "selected_face_index", "x_value", "target_card_id", "chosen_creature_type",
@@ -122,7 +166,8 @@ def build_ability_spec(
     )
     # A modal spell with no selected mode is waiting for a choice, not an
     # unsupported Oracle parse. The selected mode is parsed when materialized.
-    used_fallback = effect_key == "noop" and bool(oracle) and not static_only and not modes and not event_supported
+    awaiting_mode = bool(modes) and not (action_targets.get('mode_text') or action_targets.get('mode_texts'))
+    used_fallback = effect_key == "noop" and bool(oracle) and not static_only and not awaiting_mode and not event_supported
     restrictions = infer_target_restrictions(state, str(action_targets.get("mode_text") or oracle), controller)
     if restrictions:
         payload.setdefault("target_restrictions", restrictions)

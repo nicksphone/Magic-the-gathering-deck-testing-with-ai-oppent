@@ -2,6 +2,12 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Reject observed unsupported complete spell instructions and selected modal
+  fallbacks before paying costs. Preserve explicit HTTP diagnostics and full
+  root/RNG/database state on rejection; supported modal and permanent controls
+  remain usable. Current upgraded-dependency integration passes 297 checks in
+  seven whole modules and 130 checks in eight casting/stack neighbor modules.
+  The separate scheduler proposal remains unimplemented; no extra turns claimed.
 - Validate land and priority-pass intents before normalization, preserving
   explicit source/origin/face/entry choices and requiring supplied display to
   match the current actor's offered move. The unchanged 29-module worker batch

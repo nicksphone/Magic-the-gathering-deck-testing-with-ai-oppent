@@ -2,6 +2,24 @@
 
 ## Current Execution Order
 
+### Unsupported Spell Admission And Scheduling
+
+The safety increment is composed on the current land/library/Ninjutsu/SBA source.
+Observed unsupported full instructions and actual selected fallbacks reject
+before payment with explicit diagnostics and unchanged root/RNG/database state.
+The upgraded-framework parent passes 297 cases in seven complete safety/API/
+consumer modules in 303.93s and 130 cases in eight complete casting/stack/cost
+neighbor modules in 39.87s. No skipped or expected failures. The older worker's
+1,254 checks remain separate pinned evidence, not a current-framework claim.
+
+Next: implement the generic queued-turn/phase plan described in
+[the scheduler proposal](docs/testing/queued-turn-phase-scheduler-proposal.md).
+Extra turns and combat/main insertion must preserve normal successor order,
+cleanup, controller continuity, cast counts and durable pending-state restore.
+The ten desired scheduler contracts remain ordinary red in a separate diagnostic
+module, not default-suite successes. Do not remove unsupported admission markers
+until actual complete instruction execution and restart/order tests pass.
+
 ### Land/Pass And State-Based-Action Composition
 
 Land/pass consumer validation is composed without reapplying the existing library

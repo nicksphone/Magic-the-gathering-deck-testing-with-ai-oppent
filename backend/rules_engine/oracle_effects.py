@@ -378,6 +378,7 @@ def infer_effect_from_oracle(
             key, payload = infer_effect_from_oracle(
                 state, card, controller,
                 {**action_targets, **mode_target, "mode_text": selected_mode, "mode_texts": []},
+                report_unsupported=report_unsupported,
             )
             for effect in payload["effects"] if key == "effect_sequence" else [{"effect_key": key, "payload": payload}]:
                 effects.append({**effect, "mode_text": selected_mode})

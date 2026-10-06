@@ -242,6 +242,11 @@ start fresh matches when comparing newly compiled rule behavior.
 
 ## Known Limitations and Next Upgrades
 
+- Observed unsupported spell instructions and selected compiler fallbacks reject
+  before payment, rather than resolving as successful no-ops. Coverage diagnostics
+  identify known gaps; an empty gap list is not certification. Extra turns,
+  additional phases, turn ending and player-turn control remain unsupported.
+  See [admission safety](docs/testing/spell-admission-safety.md).
 - Arbitrary Oracle interpretation, complete layer/replacement interactions,
   uncommon mechanics and all formats are not implemented or certified.
 - Paid optional-trigger continuations, Delver's optional private reveal/timing,

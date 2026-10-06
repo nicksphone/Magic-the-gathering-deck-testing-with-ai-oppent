@@ -1004,6 +1004,14 @@ class RulesEngine:
                         state.log.append(f"Invalid mode targets for {card.name}: {error}")
                         apply_state_based_actions(state)
                         return
+                # Actual announced choices are available; no mana/additional costs yet.
+                admission = build_spell_spec(state, face_card, player_id, action_targets=action_targets,
+                                            report_unsupported=False)
+                if admission.unsupported_resolution:
+                    reason = 'Unsupported spell resolution: ' + ', '.join(admission.unsupported_resolution)
+                    reject(reason)
+                    state.log.append(reason)
+                    return
                 ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
                 from rules_engine.costs import additional_cost_selection
                 selected_cost_cards = additional_cost_selection(

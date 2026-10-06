@@ -1,0 +1,118 @@
+{
+  "canonical_sha256": "a789129a43548da1bc0821b0c6cf52e88487f8f744dacb12e644861546fef923",
+  "engine_certification": false,
+  "facts_modified": false,
+  "intake_before_tests": true,
+  "rows": {
+    "Ancestral Vision": {
+      "id": "9ec075ba-db56-4dcf-b1dc-fe6270b7ab36",
+      "oracle_id": "9728dec9-d482-4c7a-8cdc-44d010dc878d",
+      "raw_sha256": "2ddfc6a0cfa149095b805ca22be687acde334bb62d547891b1e68202d7ba6993",
+      "source_line": 22756
+    },
+    "Commit // Memory": {
+      "id": "855af9a8-31fc-4290-8204-04ee026f8853",
+      "oracle_id": "56fd8895-3be2-4591-86fa-87567d9cdc14",
+      "raw_sha256": "51c42d90bb5e44c48e32cd59420e429339235190b11b5fead0214ee2d6f6fb74",
+      "source_line": 13044
+    },
+    "Counterspell": {
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "raw_sha256": "fe9513a8443f2f78ceb48e835c4e81d5b6d6eb995581683c73dfff9acecdb6b9",
+      "source_line": 30747
+    },
+    "Cryptic Command": {
+      "id": "30f6fca9-003b-4f6b-9d6e-1e88adda4155",
+      "oracle_id": "a3e51a35-09df-4189-b131-08a21e6a557d",
+      "raw_sha256": "bba020997fe40bd9baab18313d6344fa293a5b5df46ad8ef2f88a2e50eab36ae",
+      "source_line": 24699
+    },
+    "Day's Undoing": {
+      "id": "ac13a82d-43f5-4b96-bf5f-18e33fae921b",
+      "oracle_id": "810a6cf5-e9f4-48e1-8e06-3e0af85633ce",
+      "raw_sha256": "c4980599fbe0fd1dd89c166da8f1687361a80fa1e5d0de49be8d4810ac796027",
+      "source_line": 19403
+    },
+    "Distorting Wake": {
+      "id": "77e28743-3694-48ef-9f16-0a3a4ff7e934",
+      "oracle_id": "e5387fc7-c3b3-4933-bffa-580ad793c7ab",
+      "raw_sha256": "14238e92dbae9f5e5e2f4898054b1d10f488d6eca75f132c7d9064b8a924175b",
+      "source_line": 34567
+    },
+    "Fling": {
+      "id": "8f42d773-c742-4465-b6d5-31feaba49146",
+      "oracle_id": "24227761-b50e-4b9e-93a2-e82d053b3e3d",
+      "raw_sha256": "678fc8545806a5d0b66d13f0da10e864a437ea7be561a73d7b14545884a173c7",
+      "source_line": 5437
+    },
+    "Grizzly Bears": {
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "raw_sha256": "b18887a25ea64587ccdc5382aeedcf356c8a81aec76282c7652d4e704cdca6d2",
+      "source_line": 3179
+    },
+    "Intangible Virtue": {
+      "id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77",
+      "oracle_id": "d21c3c8f-d105-4ba9-bf69-e5f26f0f8ec5",
+      "raw_sha256": "a542d41bfa505ed84867e843d1facd315fd46c33356e5341d7d6f564328f2296",
+      "source_line": 31671
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "raw_sha256": "d748be7ca3497689c356bd7d41fea708f6883aa88affe8985813540337135769",
+      "source_line": 26902
+    },
+    "Lightning Bolt": {
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "raw_sha256": "dda8d1932134be44819433afe4fa360294201b7bd5d73cfae95579f1d571a4e4",
+      "source_line": 10255
+    },
+    "Opt": {
+      "id": "bbc99a51-1501-4525-a3cc-f48249b64bed",
+      "oracle_id": "713332c1-5bd8-400f-bfff-c1ca0697a043",
+      "raw_sha256": "5d5b7f6d2eaf40a3802a1f0bd80ae68b2a7d6435e42427b4197d789a70816feb",
+      "source_line": 17024
+    },
+    "Ponder": {
+      "id": "dc69f960-68ba-4315-8146-6a7a82047503",
+      "oracle_id": "02090581-61aa-4348-ad57-451be8ee91c2",
+      "raw_sha256": "f5243e764320f24a482c825d06dd5c6b355b6a846c00a92d9d90766b31939df4",
+      "source_line": 332
+    },
+    "Raise the Alarm": {
+      "id": "6c7c8527-55f6-494d-b4f7-c427a5735053",
+      "oracle_id": "5b2364d7-a811-4595-a1b4-224c70555ffa",
+      "raw_sha256": "afbfefef8df33819b260275b218031c21007862f0acd4419d56117a39bb9a931",
+      "source_line": 13684
+    },
+    "Relentless Assault": {
+      "id": "97622209-9357-4347-8961-f77f8d2389d8",
+      "oracle_id": "dc1c0e8c-d0c1-445c-968f-7dec91e5d5fc",
+      "raw_sha256": "df83de950b518ca836e7d8ba1a53ec9e7c5ded8ca4fc54dcd39d40439fb21553",
+      "source_line": 33202
+    },
+    "Temporal Mastery": {
+      "id": "0f46a800-b443-461d-87e0-5587249a42d8",
+      "oracle_id": "5c58b8e6-c572-461e-893e-a8c05f20ba17",
+      "raw_sha256": "ee003e7eb361f1ec6e0ee457c1ae742acac861f65c57dc25e9989d21953692a1",
+      "source_line": 13878
+    },
+    "Time Warp": {
+      "id": "7c46dd99-8af8-4cf2-9f98-734f73d9c456",
+      "oracle_id": "dbd6a94b-62ff-4a10-9d52-bdd90b26e425",
+      "raw_sha256": "2363c6cca27dcd734aed36deaed331ed9b7f186fcc5de2f86216d26d5e15224f",
+      "source_line": 33165
+    },
+    "Worst Fears": {
+      "id": "8f4e21ac-4f3e-4a3e-83c0-0a59a1b84020",
+      "oracle_id": "face0a43-6604-4508-b511-81ab0bef7b18",
+      "raw_sha256": "e6f04045139449b462ea44f8ee9ccb8426efc96c700e541a02a34395a06115b1",
+      "source_line": 37877
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

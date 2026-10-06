@@ -592,7 +592,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     'from_graveyard': original.zone == Zone.GRAVEYARD,
                     **({'selected_face_index': index} if original.card_faces else {}),
                     'cost_options': [_cost_option_view(option, state, player_id, cid) for option in options], 'target_hints': hints})
-    return moves
+    from rules_engine.ability_model import unsupported_spell_reason
+    return [move for move in moves if move['type'] != 'cast_spell'
+            or not unsupported_spell_reason(state.cards[move['card_id']], move)]
 
 
 def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:

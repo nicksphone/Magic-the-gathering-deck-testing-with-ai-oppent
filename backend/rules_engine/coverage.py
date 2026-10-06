@@ -3,6 +3,23 @@ from __future__ import annotations
 import re
 
 
+_UNSUPPORTED_RESOLUTION_PATTERNS = (
+    ('extra-turn scheduling', re.compile(r'\b(?:take|takes) (?:an?|one|two|three|\d+) extra turns?\b', re.I)),
+    ('extra-phase scheduling', re.compile(r'\badditional (?:combat|main) phase\b', re.I)),
+    ('turn-ending procedure', re.compile(r'\bend the turn\b', re.I)),
+    ('player-turn control', re.compile(r'\byou control target player during\b', re.I)),
+    ('top-library reorder and optional shuffle', re.compile(
+        r'\bput them back in any order\.\s*you may shuffle\b', re.I)),
+)
+
+
+def unsupported_resolution_clauses(text: str) -> list[str]:
+    """Bounded observed gaps, not proof that other clauses are executable."""
+    from rules_engine.oracle_text import without_reminder_text
+    text = without_reminder_text(text or '')
+    return [name for name, pattern in _UNSUPPORTED_RESOLUTION_PATTERNS if pattern.search(text)]
+
+
 _UNSUPPORTED_PATTERNS = (
     ('controller-linked damage targets', re.compile(
         r'damage to target (?:player(?: or planeswalker)?|planeswalker)[^.]*'
@@ -68,6 +85,7 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     """Known gaps only; an empty result is not rules certification."""
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
+    out.extend(gap for value in texts for gap in unsupported_resolution_clauses(value))
     from rules_engine.affinity import affinity_clauses
     if any(affinity_clauses(text)[2] for text in texts):
         out.append('unsupported affinity clause')

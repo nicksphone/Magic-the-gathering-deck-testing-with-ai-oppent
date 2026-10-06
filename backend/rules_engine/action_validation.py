@@ -163,6 +163,12 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
     moves = rules.legal_moves(state, player_id)
     available = [move for move in moves if move["type"] == kind]
     if kind == 'cast_spell':
+        from rules_engine.ability_model import unsupported_spell_reason
+        source = state.cards.get(action.get('card_id'))
+        if source is not None and source.owner == player_id and source.zone != Zone.LIBRARY:
+            reason = unsupported_spell_reason(source, {**action.get('targets', {}), **{
+                key: action[key] for key in ('selected_face_index',) if key in action}})
+            require(reason is None, reason or '')
         bestowed = casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow'
         available = [move for move in available if (move.get('cast_variant') == 'bestow') == bestowed]
     if kind in {"tap_land_for_mana", "tap_lands_bulk", "tap_nonland_for_mana", 'activate_mana_ability'}:
