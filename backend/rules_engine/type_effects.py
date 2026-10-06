@@ -91,7 +91,8 @@ def refresh_type_effects(card):
         card.type_effect_base = None
 
 
-def add_type_effect(state, card_id, types, *, until_end_of_turn=False, timestamp=None, source_card_id=None):
+def add_type_effect(state, card_id, types, *, until_end_of_turn=False, timestamp=None, source_card_id=None,
+                    creature_subtypes=None, colors=None):
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.BATTLEFIELD or not types:
         return
@@ -113,6 +114,8 @@ def add_type_effect(state, card_id, types, *, until_end_of_turn=False, timestamp
         'timestamp': allocate_effect_timestamp(state) if timestamp is None else timestamp,
         'incarnation': object_incarnation(card), 'timestamp_origin': 'resolution',
         'source_card_id': source_card_id, 'source_name': source.name if source else None,
+        **({'creature_subtypes': list(creature_subtypes)} if creature_subtypes is not None else {}),
+        **({'colors': list(colors)} if colors is not None else {}),
     })
     refresh_type_effects(card)
 

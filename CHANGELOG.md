@@ -2,6 +2,52 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Compose complete nontoken-permanent Flicker admission with announced-target
+  identity, animation, entry choices and color queries. Current whole30 gate:
+  692 passed / 38 failed, 194 warnings, 201.38s; no errors/skips. All 78 new
+  Flicker and all 62 Favor lifecycle/HTTP/clause checks pass. Retained failures:
+  24 Ray admission, 2 scheduler fixtures, 4 stale empty-pool expectations,
+  4 explicit old exile-only characterizations and 4 Ghostly Flicker cases.
+  Frontend unit, lint and build pass; browser/restart qualification remains open.
+
+- Compose announced card-target references across casts, generic activations,
+  resolution and supported copy/retarget seams. Current pure gates: 56 passes
+  for Favor clauses/copies; 36 passes and 12 unchanged Ray of Command failures
+  for helpers, graveyard targets and the external temporary-control audit.
+  Four original Favor blink and two Act blink failures close unchanged.
+  Current HTTP/browser and broad-neighbor qualification remain outstanding.
+
+- Forward current state to static color predicates and convoke color queries;
+  three complete modules pass 85 pure checks, 5.75s. Existing canonical gameplay
+  positives prove compatibility, not a newly demonstrated prior gameplay bug.
+
+- Compose supported source-bound land animations with actual layers, payment,
+  sickness and cleanup. Four real Cloudshift/reentry cases pass; original
+  animation ledgers retain unsupported Flicker families and stale self-payment
+  characterizations. No card-name dispatch or printed-data overwrite.
+- Compose the conservative checked-combat leaf with engine animation support:
+  64 focused decision cases pass, including two previously blocked Mutavault
+  attacks. This is not a measured natural-match improvement or broad AI claim.
+  Twenty-six whole layer/payment/AI neighbors pass 1011 checks in 108.79s.
+
+- Compose supported immediate exile/return, independent search/counter clauses
+  and pre-cost source references. Thirty whole modules: 854 passes and 12
+  strict failures (eight temporary-control, four announced target-incarnation).
+  Preserve these failures and fix shared targeting rather than the card name.
+- Preserve full 155-record seed metadata and the 17-fact ledger through real
+  idempotent CLI exports; eight whole modules pass 194 tests. Retain historical
+  119 fixtures; adapt only the global-current-seed count expectations.
+- Complete separate seat-swapped before/after tactical AI replay. All 2610
+  normalized recorded actions are identical, with the same turn-22/25 outcomes.
+  No natural strength improvement; resource-exhaustion runs remain separate.
+
+- Retain actual generic activation source incarnation before costs and reuse it
+  in supported shuffle receipts after source movement. Current 13-whole-module
+  gate: 469 passes and 16 strict pre-existing Cloudshift/Ray failures, 107.18s;
+  all eight paid-bounce witnesses now pass. Preserve the initial run's separate
+  SQLite-full setup error. This is scoped lifecycle support, not complete blink,
+  temporary control or all dedicated activation paths.
+
 - Preserve historical catalog identity and distinguish event lists from
   archetype templates. Add sourced MH3 historical imports and 36 full canonical
   records without changing original 119 seed properties. Current-format admission

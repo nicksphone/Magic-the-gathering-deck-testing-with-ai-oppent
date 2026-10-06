@@ -118,7 +118,7 @@ def evaluate_static_condition(state, source, target, text):
         from rules_engine.continuous import _has_subtype
         characteristic = args[0]
         if characteristic in COLORS:
-            return COLORS[characteristic] in card_color_symbols(target)
+            return COLORS[characteristic] in card_color_symbols(target, state)
         if characteristic in TYPES:
             return characteristic.title() in effective_types(state, target)
         return _has_subtype(target, characteristic, state=state)

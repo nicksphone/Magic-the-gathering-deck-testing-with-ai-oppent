@@ -110,7 +110,7 @@ def _has_creature_subtype(state, card, subtype):
     from rules_engine.continuous import has_keyword
     from rules_engine.library_permissions import creature_types
     return bool({'Creature', 'Kindred', 'Tribal'} & set(effective_types(state, card))) and (
-        subtype in creature_types(card) or has_keyword(state, card.id, 'changeling'))
+        subtype in creature_types(card, state) or has_keyword(state, card.id, 'changeling'))
 
 
 @scoped_query

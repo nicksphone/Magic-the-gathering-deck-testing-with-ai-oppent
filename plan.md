@@ -87,17 +87,37 @@ Full corpus, lifecycle and release acceptance remain unfinished.
 
 ## Next Backend Batch
 
-1. [ ] Qualify phase-aware tactical combat scoring against actual checked
+1. [x] Qualify phase-aware tactical combat scoring against actual checked
    damage/winners, preserving response and crackback uncertainty. Tactical
    fixtures are not a natural-game strength measurement.
+   Scoped animation composition: 64 focused passes; natural previous-stage
+   actions remain identical. Broader blocking/crackback planning stays open.
 2. [ ] Audit and implement canonical land-animation admission and continuous
    characteristics, including summoning sickness, cleanup and source incarnation.
+   Product and real Cloudshift reentry execute. Complete single-target
+   nontoken-permanent Flicker now passes 78 core/HTTP cases in the current
+   whole30 composition. Ghostly Flicker's two-target body remains unsupported;
+   old exile-only and empty-pool characterizations require separate reconciliation.
+   [Current scope](docs/testing/animation-strategic-current-composition.md).
 3. [ ] Verify targeted search source departure/reentry and partial target loss
    through actual response spells, private choices and cold restart.
-4. [ ] Audit full 155-record seed regeneration for non-lossy canonical and
+   Supported ordinary activation/bounce reference retention is now qualified;
+   [current acceptance](docs/testing/retained-reference-current-composition.md).
+   Immediate exile/return and independent clause binding now execute in the
+   [current stage](docs/testing/blink-clause-exporter-current-stage.md). Shared
+   announced-target identity now closes four original Favor blink cases and
+   two Act blink cases unchanged. Current whole30 integration executes 730 cases,
+   including all 62 Favor lifecycle/HTTP/clause checks passing. Browser,
+   Ray of Command and dedicated activation paths
+   remain open; see [target acceptance](docs/testing/announced-target-current-composition.md).
+4. [x] Audit full 155-record seed regeneration for non-lossy canonical and
    approved derived facts, without weakening the historical 119-record fixture.
-5. [ ] Resume deterministic natural play only after storage checks; preserve
+   Eight whole modules / 194 passes; real CLI idempotence and unchanged SQL.
+   Cross-file interruption/recovery remains separate release work.
+5. [x] Resume deterministic natural play only after storage checks; preserve
    failed resource-exhaustion runs separately from gameplay outcomes.
+   Before/after seat-swapped replay has zero deterministic failures; all 2610
+   recorded action entries are identical. No AI-strength improvement is measured.
 
 ## Gate 1: Reliable Local Human Playtesting
 
@@ -172,6 +192,11 @@ the supported-corpus exit does not redefine that larger goal as achieved.
    upgrades; run clean installs, dependency consistency/security checks and gates.
 5. [ ] Verify clean-machine install, offline fallback, backup/restore, saved-game
    reconstruction, long-session browser soak, accessibility and actionable errors.
+   Two-output seed export needs explicit restart recovery: the real 12-case
+   fault audit has eight passes and four immediate-publication failures. A local
+   rollback-journal/recovery implementation is in progress; it must preserve
+   original bytes without source inputs and refuse altered outputs. Recovery is
+   not atomic two-file visibility, and the stricter historical failures remain.
 6. [ ] Reconcile features/limitations with current source, record changed files,
    checks, evidence, risks and manual review; publish and deploy only after the
    appropriate gates pass. Git pushes alone are not running-server updates.

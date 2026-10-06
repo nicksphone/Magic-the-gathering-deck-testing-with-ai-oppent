@@ -51,7 +51,7 @@ def no_remote(monkeypatch):
 
 
 def test_every_ready_seed_actual_projection_preserves_pinned_id_and_faces(repo):
-    assert len(FALLBACK_CARD_DATA) == 119
+    assert len(FALLBACK_CARD_DATA) == 155
     original = deepcopy(FALLBACK_CARD_DATA)
     before = '\n'.join(repo.session.connection().connection.driver_connection.iterdump())
     board = [{'quantity': 1, 'card_name': name} for name in sorted(FALLBACK_CARD_DATA)]
@@ -88,7 +88,7 @@ def test_actual_http_all_seed_faces_and_colors(repo, client):
     assert response.status_code == 200, response.text
     result = response.json()
     assert not result['errors']
-    assert len(result['resolved_mainboard_cards']) == 119
+    assert len(result['resolved_mainboard_cards']) == 155
     for item in result['resolved_mainboard_cards']:
         contract(item['card_metadata'])
     assert repo.list_cards() == []

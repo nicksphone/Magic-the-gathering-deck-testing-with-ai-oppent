@@ -44,7 +44,7 @@ def resource_candidates(state, player_id, card):
             continue
         types = effective_types(state, permanent)
         if 'convoke' in enabled and 'Creature' in types:
-            colors = card_color_symbols(permanent)
+            colors = card_color_symbols(permanent, state)
             result['convoke'].append({'card_id': cid, 'pay_as': ['generic', *[c for c in COLORS if c in colors]]})
         if 'improvise' in enabled and 'Artifact' in types:
             result['improvise'].append(cid)

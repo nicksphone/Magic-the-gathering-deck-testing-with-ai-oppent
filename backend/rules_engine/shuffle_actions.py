@@ -123,6 +123,19 @@ def shuffle_library(state, player_id, *, resolving_item=None, cause=None):
         reference = {'incarnation': object_incarnation(source),
                      'zone_change_sequence': source.zone_change_sequence}
         payload = item.payload or {}
+        if '__activation_source_reference' in payload:
+            retained = payload['__activation_source_reference']
+            if (payload.get('__trigger_event') or '__trigger_source_reference' in payload
+                    or payload.get('__stack_copy_kind') not in (None, 'activated')
+                    or not isinstance(payload.get('__ability_target_text'), str)
+                    or not payload['__ability_target_text'].strip()
+                    or not isinstance(retained, dict)
+                    or set(retained) != {'incarnation', 'zone_change_sequence'}
+                    or any(type(value) is not int or value < 0 for value in retained.values())):
+                raise ValueError('Ability shuffle requires a complete retained activation reference')
+            # Costs or responses may move the source; the activation keeps its identity.
+            reference = dict(retained)
+            kind = 'activated'
         if (payload.get('__trigger_event') == 'enters_graveyard'
                 or '__trigger_source_reference' in payload):
             retained = payload.get('__trigger_source_reference')

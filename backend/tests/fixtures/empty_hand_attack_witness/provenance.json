@@ -1,0 +1,95 @@
+{
+  "source": "official Scryfall API captured before offline tests",
+  "cards": [
+    {
+      "name": "Sheoldred, the Apocalypse",
+      "file": "sheoldred-the-apocalypse.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Sheoldred%2C%20the%20Apocalypse",
+      "request_start_utc": "2026-10-06T21:51:34.285849+00:00",
+      "sha256": "b3139f9b73bd6564a25468417fe913a39d6626c40138c5df936054dcb6e04399",
+      "oracle_id": "34f34409-326d-4994-a0ea-1a69aa278f03",
+      "full_raw_response": true
+    },
+    {
+      "name": "Torrential Gearhulk",
+      "file": "torrential-gearhulk.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Torrential%20Gearhulk",
+      "request_start_utc": "2026-10-06T21:51:39.561489+00:00",
+      "sha256": "90b35722cf297aceedc98b20e07ce604e985788e5065d5c5cc893fbf606fd63f",
+      "oracle_id": "a6395447-677d-4c39-8eda-2d57e527c94e",
+      "full_raw_response": true
+    },
+    {
+      "name": "Mountain",
+      "file": "mountain.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Mountain",
+      "request_start_utc": "2026-10-06T21:51:39.778639+00:00",
+      "sha256": "e3a86f512078f737ea523c843ac19be91d21837cb227e4adcd3e879cfea2e640",
+      "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+      "full_raw_response": true
+    },
+    {
+      "name": "Island",
+      "file": "island.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Island",
+      "request_start_utc": "2026-10-06T21:51:40.015918+00:00",
+      "sha256": "d8d45bda942640f4cbcc5af201e1a91e13785fa7f266303af031531b11782c43",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "full_raw_response": true
+    },
+    {
+      "name": "Swamp",
+      "file": "swamp.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Swamp",
+      "request_start_utc": "2026-10-06T21:51:40.232094+00:00",
+      "sha256": "aa9b6a928d2af580245cff59c9642d42c883a0cb5c48bbb27e03b8f34e9ff7a4",
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "full_raw_response": true
+    },
+    {
+      "name": "Counterspell",
+      "file": "counterspell.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Counterspell",
+      "request_start_utc": "2026-10-06T21:51:40.495825+00:00",
+      "sha256": "ec5a66be537961755633aa3a100712f9f5e33ac4bc57225eaa14002530fdfb33",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "full_raw_response": true
+    },
+    {
+      "name": "Memory Deluge",
+      "file": "memory-deluge.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Memory%20Deluge",
+      "request_start_utc": "2026-10-06T21:51:40.724208+00:00",
+      "sha256": "4b9157e3b00bb060d81205687fa780e665176fc339b2f5f3acb5d796ad3c0257",
+      "oracle_id": "e6fd55f2-7e26-469c-a44a-ea2eb90e19a9",
+      "full_raw_response": true
+    },
+    {
+      "name": "Monastery Swiftspear",
+      "file": "monastery-swiftspear.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Monastery%20Swiftspear",
+      "request_start_utc": "2026-10-06T21:51:41.231542+00:00",
+      "sha256": "e2ddcfca826391839b3956c426ee85516e0959fc09f0c23d473207f564cda10a",
+      "oracle_id": "dafd2713-d1bc-474b-b390-d2ff20b5375e",
+      "full_raw_response": true
+    },
+    {
+      "name": "Lightning Bolt",
+      "file": "lightning-bolt.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Lightning%20Bolt",
+      "request_start_utc": "2026-10-06T21:51:41.765206+00:00",
+      "sha256": "6e81b27b75f947367be2b413f9383c172ff594769a1abf135cbfef7ff44e4145",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "full_raw_response": true
+    },
+    {
+      "name": "Mutavault",
+      "file": "mutavault.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Mutavault",
+      "request_start_utc": "2026-10-06T21:51:42.001889+00:00",
+      "sha256": "176e2dd9dfbb942f24b5b699fb79c3d1a11a1ccce77ede885a5487dfd3ab4399",
+      "oracle_id": "6b3cc59a-7ea5-4eb5-9bf9-5a9c07f80e2b",
+      "full_raw_response": true
+    }
+  ]
+}

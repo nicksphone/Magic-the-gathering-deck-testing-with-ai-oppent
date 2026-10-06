@@ -135,6 +135,11 @@ def choose_ordered_copy_target(state, copied, pending, chosen):
         packet.update(target_card_id=cid, __target_incarnation=object_incarnation(target),
                       __target_zone_sequence=target.zone_change_sequence)
         ids[index] = cid
+        if '__announced_target_references' in copied.payload:
+            from rules_engine.targeting import replace_announced_target_reference
+            copied.payload['__announced_target_references'] = replace_announced_target_reference(
+                state, copied.payload['__announced_target_references'],
+                copied.payload['__announced_targets'], [('target_card_ids', index)])
         copied.targets = list(ids)
         state.log.append(f'{state.players[copied.controller].name} changes a target of {copied.label}.')
     state.pending_mechanic_choice = None

@@ -1046,6 +1046,8 @@ class RulesEngine:
                     reject(reason)
                     state.log.append(reason)
                     return
+                from rules_engine.targeting import capture_announced_target_references
+                target_references = capture_announced_target_references(state, action_targets)
                 ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
                 from rules_engine.costs import additional_cost_selection
                 selected_cost_cards = additional_cost_selection(
@@ -1105,6 +1107,7 @@ class RulesEngine:
                 ability = build_spell_spec(state, effect_surface, player_id, action_targets=action_targets)
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
+                payload['__announced_target_references'] = target_references
                 payload['mana_spent'] = payment_details.get('mana_spent', 0)
                 if payment_details.get('resource_payment') is not None:
                     payload['__casting_resource_payment'] = payment_details['resource_payment']
@@ -1284,6 +1287,15 @@ class RulesEngine:
                 reject("Cannot pay activation costs")
                 state.log.append(f"{player.name} cannot pay activation cost for {state.cards[cid].name}.")
                 return
+            from rules_engine.targeting import capture_announced_target_references
+            target_references = capture_announced_target_references(state, action_targets)
+            activation_source_reference = {
+                "incarnation": object_incarnation(state.cards[cid]),
+                "zone_change_sequence": state.cards[cid].zone_change_sequence,
+            }
+            if any(type(value) is not int or value < 0 for value in activation_source_reference.values()):
+                reject("Invalid activation source reference")
+                return
             ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
             cost_context: dict = {}
             cost_staging = not state.trigger_staging
@@ -1304,7 +1316,9 @@ class RulesEngine:
             resolved_payload = {**resolved.effect.payload,
                                 "__announced_targets": dict(action_targets),
                                 "__ward_trigger_specs": ward_specs,
-                                "__ability_target_text": ability["text"]}
+                                "__ability_target_text": ability["text"],
+                                "__activation_source_reference": activation_source_reference,
+                                "__announced_target_references": target_references}
             if (activation_source_zone == Zone.BATTLEFIELD and state.cards[cid].zone != Zone.BATTLEFIELD
                     and state.cards[cid].last_known_battlefield):
                 resolved_payload["__source_lki"] = dict(state.cards[cid].last_known_battlefield)

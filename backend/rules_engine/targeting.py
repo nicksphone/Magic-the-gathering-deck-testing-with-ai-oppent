@@ -18,6 +18,106 @@ _PLAYER_PERMANENT_ALTERNATIVE_RE = re.compile(
 )
 
 
+def _target_reference_shape(announced, make_reference):
+    result = {}
+    if announced.get('target_card_id') is not None:
+        result['target_card_id'] = make_reference(announced['target_card_id'])
+    if 'target_card_ids' in announced:
+        result['target_card_ids'] = [make_reference(cid) for cid in announced['target_card_ids']]
+    if 'target_distribution' in announced:
+        result['target_distribution'] = {cid: make_reference(cid)
+            for cid in announced['target_distribution'] if str(cid) not in {'1', '2'}}
+    if 'mode_targets' in announced:
+        result['mode_targets'] = {mode: _target_reference_shape(selected, make_reference)
+                                 for mode, selected in announced['mode_targets'].items()}
+    return result
+
+
+def _capture_target_reference(state, cid):
+    from game_state.state import object_incarnation
+    from rules_engine.action_validation import ActionRejected
+    card = state.cards.get(cid)
+    if card is None:
+        raise ActionRejected('Unknown announced target object')
+    reference = {'card_id': cid, 'incarnation': object_incarnation(card),
+                 'zone_change_sequence': card.zone_change_sequence}
+    if any(type(reference[key]) is not int or reference[key] < 0
+           for key in ('incarnation', 'zone_change_sequence')):
+        raise ActionRejected('Invalid announced target identity')
+    return reference
+
+
+def capture_announced_target_references(state, announced):
+    return {'version': 1, 'targets': _target_reference_shape(
+        announced, lambda cid: _capture_target_reference(state, cid))}
+
+
+def validate_announced_target_references(announced, bundle):
+    from rules_engine.action_validation import ActionRejected
+
+    def valid(expected, actual):
+        if isinstance(expected, list):
+            return (isinstance(actual, list) and len(expected) == len(actual)
+                    and all(valid(a, b) for a, b in zip(expected, actual)))
+        if not isinstance(actual, dict) or set(expected) != set(actual):
+            return False
+        if set(expected) == {'card_id', 'incarnation', 'zone_change_sequence'}:
+            return (actual['card_id'] == expected['card_id']
+                    and all(type(actual[key]) is int and actual[key] >= 0
+                            for key in ('incarnation', 'zone_change_sequence')))
+        return all(valid(value, actual[key]) for key, value in expected.items())
+
+    shape = _target_reference_shape(announced, lambda cid: {
+        'card_id': cid, 'incarnation': 0, 'zone_change_sequence': 0})
+    if (not isinstance(bundle, dict) or set(bundle) != {'version', 'targets'}
+            or type(bundle['version']) is not int or bundle['version'] != 1
+            or not valid(shape, bundle['targets'])):
+        raise ActionRejected('Malformed announced target references')
+
+
+def _reference_at(bundle, path):
+    value = bundle['targets']
+    for key in path:
+        value = value[key]
+    return value
+
+
+def announced_target_reference_matches(state, bundle, slot_path, card_id):
+    from game_state.state import object_incarnation
+    if bundle is None:
+        return True  # Legacy frames do not contain reconstructible target identity.
+    try:
+        reference = _reference_at(bundle, slot_path)
+    except (KeyError, IndexError, TypeError):
+        return False
+    card = state.cards.get(card_id)
+    return (card is not None and reference['card_id'] == card_id
+            and reference['incarnation'] == object_incarnation(card)
+            and reference['zone_change_sequence'] == card.zone_change_sequence)
+
+
+def replace_announced_target_reference(state, bundle, announced, changed_slots, *, remapped_slots=None):
+    """Rebuild the current shape, querying only explicitly changed card slots."""
+    if bundle is None:
+        return None
+    changed = set(changed_slots)
+    remapped = remapped_slots or {}
+    shape = _target_reference_shape(announced, lambda cid: {
+        'card_id': cid, 'incarnation': 0, 'zone_change_sequence': 0})
+
+    def replace(node, path=()):
+        if isinstance(node, list):
+            return [replace(value, (*path, index)) for index, value in enumerate(node)]
+        if set(node) == {'card_id', 'incarnation', 'zone_change_sequence'}:
+            return (_capture_target_reference(state, node['card_id']) if path in changed
+                    else deepcopy(_reference_at(bundle, remapped.get(path, path))))
+        return {key: replace(value, (*path, key)) for key, value in node.items()}
+
+    result = {'version': 1, 'targets': replace(shape)}
+    validate_announced_target_references(announced, result)
+    return result
+
+
 def stack_object_kind(state: Any, item: Any) -> str:
     payload = getattr(item, 'payload', None) or {}
     copied_kind = payload.get("__stack_copy_kind")

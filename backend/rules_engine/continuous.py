@@ -1061,14 +1061,8 @@ def _has_subtype(card, subtype: str, *, state=None) -> bool:
     types = effective_types(state, card) if state is not None else (getattr(card, "types", []) or [])
     if "Creature" not in types:
         return False
-    type_line = (getattr(card, "type_line", "") or "").lower()
-    if "—" in type_line:
-        right = type_line.split("—", 1)[1]
-    elif "-" in type_line:
-        right = type_line.split("-", 1)[1]
-    else:
-        right = ""
-    tokens = [t.strip(" ,.") for t in right.split()]
+    from rules_engine.library_permissions import creature_types
+    tokens = creature_types(card, state)
     candidates = {subtype.lower(), f"{subtype.lower()}s"}
     if subtype.lower().endswith("f"):
         candidates.add(f"{subtype.lower()[:-1]}ves")

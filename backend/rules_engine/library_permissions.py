@@ -10,15 +10,23 @@ def chosen_creature_type(card) -> str:
     return str(getattr(card, "chosen_creature_type", "") or "").strip().lower()
 
 
-def creature_types(card) -> set[str]:
+def creature_types(card, state=None) -> set[str]:
     """Type-line subtypes plus current printed changeling, not layer-six grants."""
     from rules_engine.card_types import CREATURE_SUBTYPES
     from rules_engine.oracle_text import without_reminder_text
+    from rules_engine.type_effects import active_type_effects
 
     type_line = str(getattr(card, "type_line", "") or "")
+    if state is not None:
+        from rules_engine.land_types import effective_type_line
+        type_line = effective_type_line(state, card)
     subtypes = {part.lower() for part in type_line.split("—", 1)[1].split()} if "—" in type_line else set()
+    subtypes.update(kind for kind in CREATURE_SUBTYPES if ' ' in kind
+                    and re.search(r'\b' + re.escape(kind) + r'\b', type_line.lower()))
     oracle = without_reminder_text(getattr(card, "oracle_text", "") or "")
-    if ({"Creature", "Kindred", "Tribal"}.intersection(getattr(card, "types", []) or [])
+    if (state is None or not any('creature_subtypes' in effect for effect in
+                                active_type_effects(card))) and (
+            {"Creature", "Kindred", "Tribal"}.intersection(getattr(card, "types", []) or [])
             and any(re.fullmatch(r"changeling\.?", line.strip(), re.I) for line in oracle.splitlines())):
         # CR 702.73a/613: the copied/printed CDA applies in layer four,
         # before losing abilities in layer six, and functions in every zone.
@@ -45,7 +53,7 @@ def top_library_creature_for_type(state: MatchState, player_id: int):
         if "cast creature spells of the chosen type from the top of your library" not in oracle:
             continue
         chosen = chosen_creature_type(source)
-        if chosen and (chosen in creature_types(top) or "changeling" in {k.lower() for k in (getattr(top, "keywords", []) or [])}):
+        if chosen and (chosen in creature_types(top, state) or "changeling" in {k.lower() for k in (getattr(top, "keywords", []) or [])}):
             return top
     return None
 
@@ -55,6 +63,6 @@ def choose_type_for_realmwalker(state: MatchState, player_id: int) -> str:
     player = state.players[player_id]
     for cid in [*player.library, *player.hand, *player.battlefield]:
         card = state.cards.get(cid)
-        for kind in creature_types(card):
+        for kind in creature_types(card, state):
             counts[kind] = counts.get(kind, 0) + 1
     return max(counts, key=lambda kind: (counts[kind], kind)) if counts else "creature"

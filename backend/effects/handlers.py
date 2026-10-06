@@ -879,7 +879,7 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
 
 def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -> None:
     from rules_engine.cast_choice import build_cast_hints
-    from rules_engine.targeting import validate_cast_targets
+    from rules_engine.targeting import validate_cast_targets, announced_target_reference_matches
 
     copied_payload = copied_item.payload
     trigger_clause = copied_payload.get("__trigger_target_clause") if copied_payload.get("__trigger_target_choice") else None
@@ -924,9 +924,20 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
             if len(per_mode) == len(modes) and shared == {
                 key: value for selected in per_mode.values() for key, value in selected.items()
             }:
+                references = copied_payload.get('__announced_target_references')
+                if '__announced_target_references' in copied_payload:
+                    from rules_engine.targeting import validate_announced_target_references, replace_announced_target_reference
+                    validate_announced_target_references(announced, references)
+                    updated = {key: value for key, value in announced.items() if key not in keys}
+                    updated['mode_targets'] = per_mode
+                    migrated = replace_announced_target_reference(state, references, updated, [],
+                        remapped_slots={('mode_targets', mode, 'target_card_id'): ('target_card_id',)
+                            for mode, selected in per_mode.items() if 'target_card_id' in selected})
                 for key in keys:
                     announced.pop(key, None)
                 announced["mode_targets"] = per_mode
+                if references is not None:
+                    copied_payload['__announced_target_references'] = migrated
                 copied_item.targets = [str(value) for selected in per_mode.values() for value in selected.values()]
         if announced.get("mode_targets"):
             _offer_modal_copy_target_choice(state, controller, copied_item)
@@ -976,7 +987,10 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         if target_key == "target_stack_id" and value == copied_item.id:
             continue
         option = f"{target_key}:{value}"
-        if option in options or (target_key == target_keys[0] and str(value) == str(announced[target_keys[0]])):
+        unchanged = (target_key == target_keys[0] and str(value) == str(announced[target_keys[0]])
+                     and (target_key != 'target_card_id' or announced_target_reference_matches(
+                         state, copied_payload.get('__announced_target_references'), (target_key,), value)))
+        if option in options or unchanged:
             continue
         proposed = {key: value for key, value in announced.items() if key not in target_keys}
         proposed[target_key] = value
@@ -998,7 +1012,7 @@ def _offer_clause_copy_target_choice(
     remaining_indices: list[int] | None = None, slot_number: int = 1,
 ) -> None:
     from rules_engine.oracle_effects import clause_target_assignments, inspect_target_hints
-    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets, announced_target_reference_matches
 
     from rules_engine.targeting import stack_source_card
     copied_card = stack_source_card(state, copied_item)
@@ -1036,7 +1050,10 @@ def _offer_clause_copy_target_choice(
         for surface in surfaces[target_key]:
             for candidate in hints.get(surface, []):
                 value = candidate["id"]
-                if str(value) == str(old_value) or value == copied_item.id:
+                unchanged = (str(value) == str(old_value) and (
+                    target_key != 'target_card_id' or announced_target_reference_matches(
+                        state, copied_item.payload.get('__announced_target_references'), (target_key,), value)))
+                if unchanged or value == copied_item.id:
                     continue
                 proposed = {target_key: value}
                 if not (validate_cast_targets(hints, proposed)[0]
@@ -1064,7 +1081,7 @@ def _offer_divided_copy_target_choice(
     remaining_targets: list[str] | None = None, slot_number: int = 1, slot_total: int | None = None,
 ) -> None:
     from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
-    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
+    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets, announced_target_reference_matches
 
     announced = copied_item.payload["__announced_targets"]
     distribution = copied_item.payload["target_distribution"]
@@ -1092,7 +1109,11 @@ def _offer_divided_copy_target_choice(
         labels = {"keep": f"Keep {amount} damage on {target_name}"}
         for key, new_id, label in candidates:
             option = f"{key}:{new_id}"
-            if new_id in distribution or option in options:
+            replaces_stale = (new_id == old_id and key == 'target_card_id'
+                              and not announced_target_reference_matches(state,
+                                  copied_item.payload.get('__announced_target_references'),
+                                  ('target_distribution', old_id), old_id))
+            if (new_id in distribution and not replaces_stale) or option in options:
                 continue
             proposed = {**announced, "target_distribution": {new_id: amount}, "divide_total": amount}
             if not (validate_cast_choice(hints, proposed)[0]
@@ -1119,7 +1140,7 @@ def _offer_modal_copy_target_choice(
     remaining_modes: list[str] | None = None, slot_number: int = 1,
 ) -> None:
     from rules_engine.oracle_effects import inspect_target_hints
-    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets, announced_target_reference_matches
 
     announced = copied_item.payload["__announced_targets"]
     modes = list(remaining_modes) if remaining_modes is not None else list(announced.get("mode_texts") or [])
@@ -1151,7 +1172,11 @@ def _offer_modal_copy_target_choice(
         for surface, target_key in surfaces.items():
             for candidate in hints.get(surface, []):
                 value = candidate["id"]
-                if (target_key == key and str(value) == str(selected[key])) or value == copied_item.id:
+                unchanged = (target_key == key and str(value) == str(selected[key]) and (
+                    key != 'target_card_id' or announced_target_reference_matches(state,
+                        copied_item.payload.get('__announced_target_references'),
+                        ('mode_targets', mode, key), value)))
+                if unchanged or value == copied_item.id:
                     continue
                 proposed = {"mode_text": mode, target_key: value}
                 if not (validate_cast_targets(hints, proposed)[0]
@@ -1227,6 +1252,68 @@ def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
         zone_owner.exile.append(target)
         card.move_to_zone(Zone.EXILE)
         state.log.append(f"{card.name} is exiled.")
+
+
+def exile_return_immediate(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+
+    target = payload.get('target_card_id')
+    card = state.cards.get(target)
+    policy = payload.get('return_control')
+    if card is None or controller not in state.players or policy not in {'owner', 'resolving_controller'}:
+        return
+    data = dict(payload)
+    if '__exiled_reference' not in data:
+        reference = {'incarnation': object_incarnation(card),
+                     'zone_change_sequence': card.zone_change_sequence}
+        if (reference != data.get('__announced_reference') or card.zone != Zone.BATTLEFIELD
+                or target not in state.players[card.controller].battlefield
+                or (data.get('requires_control') and card.controller != controller)
+                or (data.get('requires_nontoken') and card.is_token)):
+            return
+        exile_permanent(state, controller, {'target_card_id': target})
+        data['__exiled_reference'] = {'incarnation': object_incarnation(card),
+                                     'zone_change_sequence': card.zone_change_sequence}
+        data['__return_controller'] = card.owner if policy == 'owner' else controller
+    reference = {'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
+    if (card.zone != Zone.EXILE or target not in state.players[card.owner].exile
+            or reference != data['__exiled_reference'] or is_departed_token(card)
+            or battlefield_entry_prohibited(state, target)):
+        return
+    recipient = data['__return_controller']
+    if pause_for_land_entries(state, controller, [target], 'exile_return_immediate', data,
+                              controllers={target: recipient}):
+        return
+    from rules_engine.oracle_effects import _parse_count_token
+    from rules_engine.continuous import printed_abilities_suppressed
+    entry_counts = {}
+    projected = copy.copy(card)
+    projected.zone, projected.controller = Zone.BATTLEFIELD, recipient
+    projection = copy.copy(state)
+    projection.cards = {**state.cards, target: projected}
+    clauses = '' if printed_abilities_suppressed(projection, target) else card.oracle_text
+    for amount, kind in re.findall(
+            r'^This (?:creature|artifact|enchantment|permanent) enters with '
+            r'(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
+            r'([+-]\d+/[+-]\d+|[a-z][a-z -]*) counters? on it\.$',
+            clauses, re.I | re.M):
+        entry_counts[kind.lower()] = entry_counts.get(kind.lower(), 0) + _parse_count_token(amount.lower())
+    data['counters'] = entry_counts
+    if prepare_counter_entries(state, controller, [card], 'exile_return_immediate', data,
+                               controllers={target: recipient}):
+        return
+    state.players[card.owner].exile.remove(target)
+    card.move_to_zone(Zone.BATTLEFIELD)
+    card.controller = recipient
+    card.summoning_sick = True
+    card.entered_turn = state.turn
+    state.players[recipient].battlefield.append(target)
+    apply_entry_choice(state, recipient, card,
+                       choice=(data.get('__entry_choices') or {}).get(target, 'tapped'))
+    assign_static_order_on_battlefield_entry(state, target)
+    commit_entry_counters(state, card, data)
+    state.log.append(f'{card.name} returns to the battlefield under {state.players[recipient].name}\'s control.')
+    emit_event(state, 'enters_battlefield', {'card_id': target, 'controller': recipient})
 
 
 def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) -> None:
@@ -2317,7 +2404,7 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
             if required_subtypes:
                 from rules_engine.library_permissions import creature_types
 
-                if (not required_subtypes.intersection(creature_types(card))
+                if (not required_subtypes.intersection(creature_types(card, state))
                         and "changeling" not in {keyword.lower() for keyword in (card.keywords or [])}):
                     continue
             affected_creatures.append(card_id)

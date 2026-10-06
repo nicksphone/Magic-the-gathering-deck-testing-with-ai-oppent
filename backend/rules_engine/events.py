@@ -1194,7 +1194,7 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
             entering_card.controller == card.controller
             and (not tribal_group.group(1) or entering_id != card.id)
             and "Creature" in (effective_types(state, entering_card) or [])
-            and (bool(subtypes & creature_types(entering_card))
+            and (bool(subtypes & creature_types(entering_card, state))
                  or "changeling" in {keyword.lower() for keyword in (entering_card.keywords or [])})
         )
     # Check controller-scoped clauses before their broader prefixes. Without

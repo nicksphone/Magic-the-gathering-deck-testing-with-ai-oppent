@@ -24,12 +24,14 @@ def layer_four_view(state, entering=None, controller=None):
     if cache is not None and key in cache:
         return cache[key]
     from rules_engine.land_types import land_type_instructions
+    from rules_engine.type_effects import active_type_effects
     cards = [state.cards[cid] for player in state.players.values() for cid in player.battlefield
              if state.cards[cid].zone == Zone.BATTLEFIELD]
     if entering is not None:
         cards = [card for card in cards if card.id != entering.id] + [entering]
     if not any(land_type_instructions(getattr(card, 'oracle_text', '')) or
-               permanent_land_replacement(getattr(card, 'oracle_text', ''))
+               permanent_land_replacement(getattr(card, 'oracle_text', '')) or
+               any('creature_subtypes' in effect for effect in active_type_effects(card))
                for card in cards):
         result = (MappingProxyType({}), frozenset(), MappingProxyType({}), frozenset())
     else:
@@ -56,6 +58,8 @@ def _type_operations(state, card):
     from rules_engine.type_effects import active_type_effects, devotion_type_condition
     from rules_engine.devotion import devotion_count
     operations = [(effect['timestamp'], 'add', tuple(effect['types'])) for effect in active_type_effects(card)]
+    operations.extend((effect['timestamp'], 'creature_subtypes', tuple(effect['creature_subtypes']))
+                      for effect in active_type_effects(card) if 'creature_subtypes' in effect)
     stamp = int(getattr(card, 'effect_timestamp', 0) or getattr(card, 'static_order', 0) or 0)
     condition = devotion_type_condition(getattr(card, 'oracle_text', ''), card.name)
     if condition and devotion_count(state, card.controller, condition[0]) < condition[1]:
@@ -67,11 +71,16 @@ def _type_operations(state, card):
 
 @lru_cache(maxsize=512)
 def _resolve(rows):
-    from rules_engine.card_types import CARD_TYPES
+    from rules_engine.card_types import CARD_TYPES, CREATURE_SUBTYPES
     from rules_engine.land_types import LAND_TYPES, BASIC_TYPES, land_type_instructions, _split_line
     by_id = {row[0]: row for row in rows}
     types = {row[0]: list(row[4]) for row in rows}
     subtypes = {row[0]: _split_line(row[1])[1] for row in rows}
+    for row in rows:
+        if set(row[4]) & {'Creature', 'Kindred', 'Tribal'} and any(
+                re.fullmatch(r'changeling\.?', line.strip(), re.I)
+                for line in without_reminder_text(row[2]).splitlines()):
+            subtypes[row[0]] = list(dict.fromkeys([*subtypes[row[0]], *sorted(CREATURE_SUBTYPES)]))
     lost, colorless, replaced = set(), set(), set()
     effects = []
     replacement_targets = {row[6] for row in rows if permanent_land_replacement(row[2])}
@@ -82,7 +91,7 @@ def _resolve(rows):
         if replacement:
             effects.append((row, 'replace', replacement, -1, row[5]))
         # Resolved additions survive source loss and compete with replacement timestamps.
-        if row[0] in replacement_targets:
+        if row[0] in replacement_targets or any(operation == 'creature_subtypes' for _, operation, _ in row[8]):
             effects.extend((row, operation, values, index, stamp)
                            for index, (stamp, operation, values) in enumerate(row[8]))
             types[row[0]] = list(row[9])
@@ -91,7 +100,7 @@ def _resolve(rows):
 
     def targets(effect, current_types=types):
         source, operation, instruction, _, _ = effect
-        if operation in {'add', 'remove'}:
+        if operation in {'add', 'remove', 'creature_subtypes'}:
             return {source[0]}
         if operation == 'replace':
             return {source[6]} if source[6] in by_id else set()
@@ -107,10 +116,10 @@ def _resolve(rows):
         return effect[1] == 'replace' or effect[1] == 'subtypes' and not effect[2][2]
 
     def depends(effect, other):
-        if effect is other or other[0][0] in lost and other[1] != 'add':
+        if effect is other or other[0][0] in lost and other[1] not in {'add', 'creature_subtypes'}:
             return False
         affected = targets(other)
-        if removes_printed(other) and effect[1] != 'add' and effect[0][0] in affected:
+        if removes_printed(other) and effect[1] not in {'add', 'creature_subtypes'} and effect[0][0] in affected:
             return True
         if other[1] == 'replace':
             changed = {cid: (['Land'] if cid in affected else values) for cid, values in types.items()}
@@ -122,7 +131,7 @@ def _resolve(rows):
         effect = min(available or effects, key=lambda item: (item[4], item[0][0], item[3]))
         effects.remove(effect)
         source, operation, instruction, _, _ = effect
-        if source[0] in lost and operation != 'add':
+        if source[0] in lost and operation not in {'add', 'creature_subtypes'}:
             continue
         for cid in targets(effect):
             if operation == 'add':
@@ -130,6 +139,9 @@ def _resolve(rows):
                 subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *(kind for kind in instruction if kind not in CARD_TYPES)]))
             elif operation == 'remove':
                 types[cid] = [kind for kind in types[cid] if kind not in instruction]
+            elif operation == 'creature_subtypes':
+                subtypes[cid] = [word for word in subtypes[cid] if word.lower() not in CREATURE_SUBTYPES]
+                subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *(word.capitalize() for word in instruction)]))
             elif operation == 'replace':
                 types[cid], subtypes[cid] = ['Land'], [instruction]
                 lost.add(cid)
@@ -143,7 +155,7 @@ def _resolve(rows):
                 subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *values]))
     lines = {}
     for cid, row in by_id.items():
-        if cid in replaced:
+        if cid in replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8]):
             supertypes = [word for word in _split_line(row[1])[0].split()
                           if word in {'Basic', 'Legendary', 'Snow', 'World', 'Ongoing'}]
             prefix = ' '.join([*supertypes, *(kind for kind in types[cid] if kind in CARD_TYPES)])

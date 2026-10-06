@@ -13,11 +13,23 @@ _MANA_COLOR_MAP = {
 
 
 def card_color_symbols(card, state=None) -> set[str]:
+    from rules_engine.type_effects import active_type_effects
+    overlays = [effect for effect in active_type_effects(card) if 'colors' in effect]
+    overlay = max(overlays, key=lambda effect: effect['timestamp']) if overlays else None
     if state is not None:
         from game_state.state import Zone
         from rules_engine.basic_land_layer import layer_four_view
         if getattr(card, 'zone', None) == Zone.BATTLEFIELD and card.id in layer_four_view(state)[3]:
-            return set()
+            from rules_engine.basic_land_layer import permanent_land_replacement
+            replacements = [source for source in state.cards.values()
+                            if source.zone == Zone.BATTLEFIELD and source.attached_to == card.id
+                            and permanent_land_replacement(source.oracle_text)]
+            stamp = max((int(source.effect_timestamp or source.static_order or 0)
+                         for source in replacements), default=0)
+            if overlay is None or overlay['timestamp'] <= stamp:
+                return set()
+    if overlay is not None:
+        return set(overlay['colors'])
     faces = getattr(card, "card_faces", None) or []
     if faces:
         index = getattr(card, "selected_face_index", None)

@@ -67,16 +67,23 @@ def _bulk_cards(path: Path, expected_hash: str | None, ids: set[str]) -> dict:
     return cards
 
 
-def _exact_card(conn: sqlite3.Connection, card: dict, bulk: dict | None) -> dict:
-    if bulk is None:
-        try:
-            rows = conn.execute("SELECT * FROM cardknowledge WHERE scryfall_id = ?", (card["scryfall_id"],)).fetchall()
-        except sqlite3.OperationalError as exc:
-            raise ValueError(f"Missing exact canonical printing: {card['name']}") from exc
-        candidates = [json.loads(row["profiles_json"] or "{}").get("card_data", {})
-                      for row in rows if row["oracle_source"] == "scryfall"]
+def _exact_card(conn: sqlite3.Connection, card: dict, bulk: dict | None, *, required: bool = True) -> dict | None:
+    try:
+        rows = conn.execute("SELECT * FROM cardknowledge WHERE scryfall_id = ?", (card["scryfall_id"],)).fetchall()
+    except sqlite3.OperationalError:
+        rows = []
+    knowledge = [json.loads(row["profiles_json"] or "{}").get("card_data", {})
+                 for row in rows if row["oracle_source"] == "scryfall"]
+    if bulk is not None and card["scryfall_id"] in bulk:
+        candidates = [bulk[card["scryfall_id"]]]
+        if len(knowledge) > 1 or any(raw != candidates[0] for raw in knowledge):
+            raise ValueError(f"Conflicting or ambiguous canonical sources: {card['name']}")
+    elif bulk is not None and required:
+        candidates = []
     else:
-        candidates = [bulk[card["scryfall_id"]]] if card["scryfall_id"] in bulk else []
+        candidates = knowledge
+    if not candidates and not required:
+        return None
     if len(candidates) != 1:
         raise ValueError(f"Missing or ambiguous exact canonical printing: {card['name']}")
     raw = candidates[0]
@@ -233,17 +240,123 @@ def _canonical_knowledge_card(conn: sqlite3.Connection, requested: str) -> dict:
                 for face in faces
             ]
         colors = front.get("colors") or raw.get("colors") or []
-        if colors:
-            card["colors"] = colors
+        card["colors"] = colors
         if card["type_line"] and (card["oracle_text"] or "Land" in card["type_line"]):
             return card
     raise ValueError(f"No verified canonical cached or bulk card for {requested}")
 
 
+def _preserved_card(projected: dict, before: dict, raw: dict | None, admission: list) -> dict:
+    if raw is not None:
+        if "object" in before:
+            if before != {**raw, "scryfall_id": raw["id"]}:
+                raise ValueError(f"Existing full canonical facts conflict: {before['name']}")
+        else:
+            front = (raw.get("card_faces") or [{}])[0]
+            for key, value in before.items():
+                if key == "scryfall_id":
+                    actual = raw["id"]
+                elif key == "card_faces":
+                    canonical_faces = raw.get("card_faces") or []
+                    if len(value) != len(canonical_faces):
+                        raise ValueError(f"Canonical face ordering mismatch: {before['name']}")
+                    for index, face in enumerate(value):
+                        for field, fact in face.items():
+                            actual = (_face_colors(raw, index, admission)[0] if field == "colors"
+                                      else canonical_faces[index].get(field))
+                            if actual != fact:
+                                raise ValueError(f"Existing canonical face fact conflicts: {face['name']}")
+                    continue
+                elif key == "layout" and value == "" and raw.get("layout") == "normal" and not raw.get("card_faces"):
+                    continue  # Legacy cache absence stays unknown, not a canonical update.
+                elif key in {"oracle_text", "mana_cost", "type_line", "power", "toughness", "colors"}:
+                    actual = front.get(key, raw.get(key))
+                else:
+                    actual = raw.get(key)
+                if actual != value:
+                    raise ValueError(f"Existing canonical fact conflicts: {before['name']}.{key}")
+    known = {"scryfall_id", "name", "oracle_text", "mana_cost", "type_line", "layout",
+             "power", "toughness", "loyalty", "colors", "card_faces"}
+    if raw is None and set(before) - known:
+        raise ValueError(f"Missing exact canonical facts for preserved fields: {before['name']}")
+    result = deepcopy(before)
+    for key, value in before.items():
+        if key not in known:
+            continue  # Full/unknown raw fields were verified above, never projected away.
+        if key == "card_faces":
+            faces = projected.get(key) or []
+            if len(faces) != len(value):
+                raise ValueError(f"Missing or conflicting projected faces: {before['name']}")
+            for index, face in enumerate(value):
+                if any(faces[index].get(field) != fact for field, fact in face.items()):
+                    raise ValueError(f"Missing or conflicting projected face facts: {before['name']}")
+                if "colors" not in face and "colors" in faces[index]:
+                    result[key][index]["colors"] = deepcopy(faces[index]["colors"])
+        elif projected.get(key) != value:
+            raise ValueError(f"Missing or conflicting projected fact: {before['name']}.{key}")
+    if "loyalty" not in before and "loyalty" in projected:
+        result["loyalty"] = projected["loyalty"]
+    return result
+
+
+def _retained_ledger(prior: list, generated: list, cards: dict, conn: sqlite3.Connection,
+                     bulk: dict | None, admission: list) -> list:
+    by_id = {card["scryfall_id"]: card for card in cards.values()}
+    retained = {}
+    for entry in prior:
+        if not isinstance(entry, dict):
+            raise ValueError("Invalid preserved fact ledger")
+        key = (entry.get("scryfall_id"), entry.get("fact_path"))
+        if key in retained or key[0] not in by_id:
+            raise ValueError("Duplicate or unknown preserved fact")
+        card = by_id[key[0]]
+        raw = _exact_card(conn, card, bulk)
+        if (entry.get("oracle_id") != raw["oracle_id"] or entry.get("raw_sha256") != _raw_hash(raw)
+                or entry.get("runtime_effect_certificate") is not False
+                or entry.get("fact_schema_version") != 1):
+            raise ValueError("Preserved fact canonical provenance conflicts")
+        match = re.fullmatch(r"card_faces\[([0-9]+)\]\.colors", key[1] or "")
+        if match:
+            index = int(match[1])
+            if index >= len(raw.get("card_faces") or []):
+                raise ValueError("Invalid preserved face index")
+            colors, kind, derivation = _face_colors(raw, index, admission)
+            face = raw["card_faces"][index]
+            if (entry.get("face_index") != index or entry.get("face_name") != face["name"]
+                    or entry.get("colors") != colors or card["card_faces"][index].get("colors") != colors
+                    or entry.get("fact_kind") != kind or entry.get("derivation") != derivation
+                    or entry.get("face_mana_cost") != face.get("mana_cost")
+                    or entry.get("face_oracle_sha256") != hashlib.sha256(face.get("oracle_text", "").encode()).hexdigest()
+                    or entry.get("raw_colors_present") != ("colors" in face)
+                    or entry.get("cr_sha256") != CR_SHA256):
+                raise ValueError("Preserved face fact conflicts")
+        elif key[1] == "loyalty":
+            if (entry.get("value") != raw.get("loyalty") or card.get("loyalty") != raw.get("loyalty")
+                    or entry.get("fact_kind") != "canonical_explicit"):
+                raise ValueError("Preserved loyalty fact conflicts")
+        else:
+            raise ValueError("Unsupported preserved fact path")
+        retained[key] = deepcopy(entry)
+    for entry in generated:
+        key = (entry["scryfall_id"], entry["fact_path"])
+        if key not in retained:
+            retained[key] = entry
+    return list(retained.values())
+
+
 def export_seed(database: Path, *, canonical_bulk: Path | None = None, bulk_sha256: str | None = None,
                 semantic_admission: Path | None = None, admission_sha256: str | None = None,
-                preservation_seed: Path = DEFAULT_SEED, fact_ledger: list | None = None) -> dict:
+                preservation_seed: Path = DEFAULT_SEED, fact_ledger: list | None = None,
+                preservation_ledger: Path | None = None, preservation_ledger_sha256: str | None = None) -> dict:
     original = json.loads(preservation_seed.read_text(encoding="utf-8"))
+    if set(original.get("cards", {})) != shipped_names():
+        raise ValueError("Seed inventory changed")
+    prior = []
+    if preservation_ledger is not None:
+        _verified_file(preservation_ledger, preservation_ledger_sha256)
+        prior = json.loads(preservation_ledger.read_text(encoding="utf-8"))
+        if not isinstance(prior, list):
+            raise ValueError("Invalid preserved fact ledger")
     admission = []
     if semantic_admission is not None:
         _verified_file(semantic_admission, admission_sha256)
@@ -289,8 +402,7 @@ def export_seed(database: Path, *, canonical_bulk: Path | None = None, bulk_sha2
             if faces:
                 card["card_faces"] = faces
             colors = front.get("colors") or [part for part in (row["colors"] or "").split(",") if part]
-            if colors:
-                card["colors"] = colors
+            card["colors"] = colors
             cards[requested] = card
         bulk = _bulk_cards(canonical_bulk, bulk_sha256, {card["scryfall_id"] for card in cards.values()}) if canonical_bulk else None
         provenance = {"canonical_source": "verified-local-scryfall-bulk" if bulk is not None else "scryfall-cardknowledge",
@@ -299,10 +411,17 @@ def export_seed(database: Path, *, canonical_bulk: Path | None = None, bulk_sha2
                       "bulk_sha256": bulk_sha256 if bulk is not None else None,
                       "semantic_admission_sha256": admission_sha256 if semantic_admission else None,
                       "cr_version": CR_VERSION, "cr_sha256": CR_SHA256}
-        for card in cards.values():
+        preserved = {}
+        for requested, before in original["cards"].items():
+            card = cards[requested]
+            needs_raw = (card.get("card_faces") or "Planeswalker" in card["type_line"]
+                         or "loyalty" in card or "object" in before)
+            raw = _exact_card(conn, card, bulk, required=bool(needs_raw))
             if card.get("card_faces") or "Planeswalker" in card["type_line"] or "loyalty" in card:
-                _enrich_card(card, _exact_card(conn, card, bulk), admission, staged_ledger, provenance)
-    payload = {"source": "Scryfall card cache and canonical local Oracle bulk; starting loyalty verified via exact-name API on 2026-09-28", "cards": cards}
+                _enrich_card(card, raw, admission, staged_ledger, provenance)
+            preserved[requested] = _preserved_card(card, before, raw, admission)
+        staged_ledger = _retained_ledger(prior, staged_ledger, preserved, conn, bulk, admission)
+    payload = {**deepcopy(original), "cards": preserved}
     _preserve_seed(payload, original)
     if fact_ledger is not None:
         fact_ledger.extend(staged_ledger)
@@ -337,14 +456,21 @@ def main() -> None:
     parser.add_argument("--semantic-admission", type=Path, help="Pinned reviewed full-face color-semantic ledger")
     parser.add_argument("--admission-sha256")
     parser.add_argument("--preservation-seed", type=Path, default=DEFAULT_SEED)
+    parser.add_argument("--preservation-ledger", type=Path, help="Prior admitted facts, retained only after exact canonical validation")
+    parser.add_argument("--preservation-ledger-sha256")
     parser.add_argument("--fact-ledger", type=Path, required=True)
     args = parser.parse_args()
+    protected = {path.resolve() for path in (args.database, args.canonical_bulk, args.semantic_admission) if path is not None}
+    if args.output.resolve() in protected or args.fact_ledger.resolve() in protected:
+        raise ValueError("Export destinations must not overwrite canonical inputs or database")
     ledger = []
     payload = export_seed(args.database, canonical_bulk=args.canonical_bulk, bulk_sha256=args.bulk_sha256,
                           semantic_admission=args.semantic_admission, admission_sha256=args.admission_sha256,
-                          preservation_seed=args.preservation_seed, fact_ledger=ledger)
-    _write_outputs([(args.output, json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n"),
-                    (args.fact_ledger, json.dumps(ledger, ensure_ascii=False, indent=2, sort_keys=True) + "\n")])
+                          preservation_seed=args.preservation_seed, fact_ledger=ledger,
+                          preservation_ledger=args.preservation_ledger,
+                          preservation_ledger_sha256=args.preservation_ledger_sha256)
+    _write_outputs([(args.output, json.dumps(payload, ensure_ascii=False, indent=2) + "\n"),
+                    (args.fact_ledger, json.dumps(ledger, ensure_ascii=False, indent=2) + "\n")])
     print(f"Exported {len(payload['cards'])} verified cards to {args.output}")
 
 

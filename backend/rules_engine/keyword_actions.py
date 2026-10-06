@@ -195,6 +195,16 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         copied = next((item for item in state.stack if item.id == pending["stack_id"]), None)
         if copied is None:
             return False
+        from rules_engine.targeting import validate_announced_target_references, replace_announced_target_reference
+        references = copied.payload.get('__announced_target_references')
+        if '__announced_target_references' in copied.payload:
+            validate_announced_target_references(copied.payload.get('__announced_targets') or {}, references)
+
+        def refresh(paths):
+            if references is not None:
+                copied.payload['__announced_target_references'] = replace_announced_target_reference(
+                    state, references, copied.payload.get('__announced_targets') or {}, paths)
+
         chosen = ids[0]
         if pending.get('linked_target_index') is not None:
             from rules_engine.linked_targets import choose_linked_copy_target
@@ -230,6 +240,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 value = int(raw_value) if key == "target_player" else raw_value
                 announced[key] = value
                 effects[index]["payload"][key] = value
+                refresh([(key,)])
                 copied.targets = [str(announced[target]) for target in ("target_card_id", "target_player", "target_stack_id")
                                   if announced.get(target) is not None]
                 state.log.append(f"{state.players[player_id].name} changes a target of {copied.label}.")
@@ -258,6 +269,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 announced["mode_targets"][mode] = {key: value}
                 effects[0]["payload"].pop(old_key)
                 effects[0]["payload"][key] = value
+                refresh([('mode_targets', mode, key)])
                 copied.targets = [
                     str(target)
                     for mode_targets in announced["mode_targets"].values()
@@ -280,12 +292,13 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 return False
             if chosen != "keep":
                 new_id = chosen.split(":", 1)[1]
-                if new_id in distribution:
+                if new_id in distribution and new_id != old_id:
                     return False
                 updated = {new_id if target == old_id else target: amount
                            for target, amount in distribution.items()}
                 copied.payload["target_distribution"] = updated
                 copied.payload["__announced_targets"]["target_distribution"] = dict(updated)
+                refresh([('target_distribution', new_id)])
                 copied.targets = list(updated)
                 state.log.append(f"{state.players[player_id].name} changes a target of {copied.label}.")
             state.pending_mechanic_choice = None
@@ -306,6 +319,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 copied.payload.pop(old_key, None)
             announced[key] = value
             copied.payload[key] = value
+            refresh([(key,)])
             if copied.effect_key == 'conditional_instruction':
                 from rules_engine.conditional_instructions import capture_target
                 capture_target(state, copied.payload)

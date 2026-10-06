@@ -1,0 +1,4 @@
+2026-10-06T22:37:26Z https://api.scryfall.com/cards/named?exact=Doubling%20Season
+2026-10-06T22:37:26Z https://api.scryfall.com/cards/named?exact=Hardened%20Scales
+2026-10-06T22:37:26Z https://api.scryfall.com/cards/named?exact=Raise%20the%20Alarm
+2026-10-06T22:37:27Z https://api.scryfall.com/cards/named?exact=Unsummon

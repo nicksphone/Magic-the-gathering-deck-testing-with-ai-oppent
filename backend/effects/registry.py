@@ -1,5 +1,6 @@
 from __future__ import annotations
 from rules_engine.flashback_grants import resolve_grant
+from rules_engine.land_animation import resolve_self_land_animation
 
 from collections.abc import Callable
 
@@ -11,6 +12,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'animate_self_land': resolve_self_land_animation,
     'set_combat_cost': handlers.set_combat_cost,
     'temporary_ability_loss': handlers.temporary_ability_loss,
     'set_base_stats': handlers.set_base_stats,
@@ -52,6 +54,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "copy_spell": handlers.copy_spell,
     "copy_ability": handlers.copy_ability,
     "exile": handlers.exile_permanent,
+    "exile_return_immediate": handlers.exile_return_immediate,
     "exile_from_graveyard": handlers.exile_from_graveyard,
     "return_permanent_to_hand": handlers.return_permanent_to_hand,
     "return_from_graveyard": handlers.return_from_graveyard,

@@ -285,6 +285,15 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.land_animation import animation_candidate, compile_self_land_animation
+    if animation_candidate(card, oracle):
+        compiled = compile_self_land_animation(state, card, oracle)
+        return compiled if compiled is not None else ('noop', {'__unsupported_instruction': oracle})
+    immediate_return = _infer_immediate_return_effect(state, oracle, action_targets)
+    if immediate_return is not None:
+        if immediate_return[1].get('__unsupported_immediate_return') and report_unsupported:
+            state.log.append(f'Unsupported complete immediate-return instruction: {oracle}')
+        return immediate_return
     if optional_land_instruction_candidate(oracle):
         compiled = compile_optional_land_instruction(oracle)
         if compiled is not None:
@@ -812,14 +821,15 @@ def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, An
 
 
 def _infer_targeted_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
-    body = re.sub(r'\s+', ' ', oracle.strip()).lower()
+    clause_body = re.sub(r'\s+', ' ', oracle.strip())
+    body = clause_body.lower()
     if not body.startswith('target player searches their library for '):
         return None
     match = re.fullmatch(
-        r'target player searches their library for (?:a|one) basic land card, '
-        r'puts it onto the battlefield(?P<tapped> tapped)?, then shuffles(?: their library)?\.?'
-        r'(?: put (?P<amount>a|one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) '
-        r'\+1/\+1 counters? on up to one target (?P<target>artifact or creature|artifact|creature|permanent)\.?)?',
+        r'(?P<search_clause>target player searches their library for (?:a|one) basic land card, '
+        r'puts it onto the battlefield(?P<tapped> tapped)?, then shuffles(?: their library)?\.?)'
+        r'(?: (?P<counter_clause>put (?P<amount>a|one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) '
+        r'\+1/\+1 counters? on up to one target (?P<target>artifact or creature|artifact|creature|permanent)\.?))?',
         body,
     )
     if match is None:
@@ -832,10 +842,35 @@ def _infer_targeted_search_effect(oracle: str, action_targets: dict[str, Any]) -
     if amount <= 0:
         return 'noop', {'__unsupported_targeted_search': oracle}
     return 'effect_sequence', {'effects': [
-        {'effect_key': 'search_library', 'payload': payload},
+        {'effect_key': 'search_library', 'payload': payload,
+         'clause_text': clause_body[slice(*match.span('search_clause'))]},
         {'effect_key': 'add_counters', 'payload': {'target_card_id': action_targets.get('target_card_id'),
-                                                  'counter': '+1/+1', 'amount': amount}},
+                                                  'counter': '+1/+1', 'amount': amount},
+         'clause_text': clause_body[slice(*match.span('counter_clause'))]},
     ]}
+
+
+def _infer_immediate_return_effect(state, oracle, action_targets):
+    body = re.sub(r'\s+', ' ', oracle.strip()).lower()
+    if not re.match(r'^exile target (?:creature(?: or enchantment)?|nontoken permanent)(?: you control)?, then return\b', body):
+        return None
+    match = re.fullmatch(
+        r"exile target (?P<domain>creature(?: or enchantment)?|nontoken permanent)(?P<controlled> you control)?, then return "
+        r"(?:that card|it) to the battlefield under (?P<policy>your control|its owner's control)\.?", body)
+    if match is None:
+        return 'noop', {'__unsupported_immediate_return': oracle}
+    target = action_targets.get('target_card_id')
+    card = state.cards.get(target)
+    payload = {
+        'target_card_id': target,
+        'return_control': 'resolving_controller' if match['policy'] == 'your control' else 'owner',
+        'requires_control': bool(match['controlled']),
+        '__announced_reference': ({'incarnation': object_incarnation(card),
+                                   'zone_change_sequence': card.zone_change_sequence} if card else None),
+    }
+    if match['domain'] == 'nontoken permanent':
+        payload['requires_nontoken'] = True
+    return 'exile_return_immediate', payload
 
 
 def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
@@ -1263,6 +1298,17 @@ def inspect_target_hints(
             {"id": cid, "name": state.cards[cid].name}
             for cid in state.players[opponent].battlefield
             if "Planeswalker" in effective_types(state, state.cards[cid])
+        ]
+    immediate_return = _infer_immediate_return_effect(state, oracle, action_targets)
+    if (immediate_return and immediate_return[0] == 'exile_return_immediate'
+            and immediate_return[1].get('requires_nontoken')):
+        hints.pop('creature_targets', None)
+        hints['permanent_targets'] = [
+            {'id': cid, 'name': state.cards[cid].name}
+            for pid in target_players for cid in state.players[pid].battlefield
+            if not state.cards[cid].is_token
+            and set(effective_types(state, state.cards[cid])).intersection(
+                {'Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'})
         ]
     restrictions = infer_target_restrictions(state, oracle, controller)
     if TARGET_TYPE_UNION_RE.search(oracle) or 'combat_status' in restrictions:

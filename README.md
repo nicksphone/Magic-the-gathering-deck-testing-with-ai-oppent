@@ -25,6 +25,35 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- Supported battlefield/hand `activate_ability` frames capture the announced
+  source incarnation before costs change zones. Their supported shuffles retain
+  that reference through responses, private choices and snapshot recovery, rather
+  than attributing the ability to the source's later object. Older frames without
+  the field retain legacy behavior; dedicated cycling/loyalty paths are not
+  covered by this change. See [retained-reference acceptance](docs/testing/retained-reference-current-composition.md).
+
+- Supported complete immediate exile/return instructions reuse entry handling
+  and retain object identity rather than treating exile alone as completion.
+  Supported complete nontoken-permanent instructions offer legal noncreature
+  permanents, reject tokens and preserve owner/entry choices. Current composed
+  core and HTTP coverage: 78 passing cases; broader blink bodies remain open.
+  Search/counter children use independent target clauses. Announced card targets
+  retain object identity through resolution and supported copy/retarget choices.
+  The original four Favor blink and two Act of Treason blink failures now pass;
+  Ray of Command remains unsupported. Thirty whole affected modules execute
+  730 cases: 692 passes and 38 retained failures, not an all-green release. See
+  [current target acceptance](docs/testing/announced-target-current-composition.md).
+
+- Supported self-land animations use source-bound continuous type, subtype,
+  color, P/T and keyword records, with real payment, sickness and cleanup.
+  The conservative tactical combat leaf uses checked damage/winner outcomes;
+  64 focused decision checks pass after animation composition. Broader response
+  planning and expert-level play remain unverified. See
+  [animation/AI scope](docs/testing/animation-strategic-current-composition.md).
+- Static color predicates and convoke resource queries receive the current
+  state rather than relying only on printed colors. The bounded color/resource
+  composition passes 85 checks; this is not full color-mechanics certification.
+
 - Generic supported nontoken-creature entry observers distinguish tokens and
   preserve controller predicates and ability suppression. Unconditional global
   as-though-flash grants follow their source and controller without bypassing
@@ -69,6 +98,10 @@ LAN deployment and broader AI-quality qualification remain open.
   The original eight two-faced cards retain ten canonical and six
   provenance-backed derived color facts. Metadata admission is not rules support.
   Generic exact-printing loyalty recovery avoids named exceptions.
+- The offline exporter preserves all 155 records and the explicit 17-fact
+  preservation ledger through validated cache/bulk and cache/knowledge routes.
+  Repeated CLI outputs are byte-identical; cross-file crash recovery is not yet
+  qualified. Historical 119-record fixtures retain their separate contract.
 - The 53-entry expansion catalog distinguishes archetype templates from sourced
   historical OTJ and MH3 tournament lists. Historical imports preserve published
   60-card mainboards and 15-card sideboards, stable identity and event provenance.
@@ -367,6 +400,12 @@ not user matches or databases. Preserve existing snapshots when deploying and
 start fresh matches when comparing newly compiled rule behavior.
 
 ## Known Limitations and Next Upgrades
+
+- Canonical audits expose incomplete immediate exile/return compilation,
+  missing self-land animation and temporary-control admission, and missing
+  independent counter-clause legality in a targeted search sequence. These are
+  active generic rules fixes, not supported-card certificates. Current milestone
+  gates preserve their strict failures rather than silently skipping them.
 
 - Observed unsupported spell instructions and selected compiler fallbacks reject
   before payment, rather than resolving as successful no-ops. Coverage diagnostics

@@ -692,13 +692,13 @@ def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "crea
         if kind.startswith('subtype_'):
             subtype = kind.removeprefix('subtype_')
             if types.intersection({'Creature', 'Kindred'}) and (
-                    subtype in creature_types(card)
+                    subtype in creature_types(card, state)
                     or 'changeling' in {str(k).lower() for k in card.keywords or []}):
                 eligible.append(cid)
             continue
         color, separator, typed_kind = kind.partition('_')
         if separator and color in {'white', 'blue', 'black', 'red', 'green'}:
-            if color in card_color_names(card) and (typed_kind == 'permanent' or typed_kind.title() in types):
+            if color in card_color_names(card, state) and (typed_kind == 'permanent' or typed_kind.title() in types):
                 eligible.append(cid)
             continue
         if (

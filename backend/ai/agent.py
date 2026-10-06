@@ -961,6 +961,10 @@ class AIAgent:
             self.engine.take_action(sim, player_id, move, reject_invalid=True)
         except Exception:
             return -9999.0
+        combat_outcome = self._complete_strategic_combat_leaf(sim, player_id)
+        if combat_outcome is not None:
+            return (self._strategic_position_score(combat_outcome, player_id)
+                    + self._instant_value_reservation(state, move, player_id))
         score = self._strategic_position_score(sim, player_id)
         score += self._stack_two_ply_value(sim, player_id, score)
         score += self._instant_value_reservation(state, move, player_id)
@@ -968,9 +972,57 @@ class AIAgent:
         score -= 6 if plan is not None and plan["loses_known_interaction"] else 0
         return self._strategic_state_score(sim, player_id, depth, score)
 
+    def _complete_strategic_combat_leaf(self, state: MatchState, player_id: int) -> MatchState | None:
+        """Finish a response-free public combat, not an unanswered speculative attack."""
+        if (state.active_player != player_id or not state.attackers_declared
+                or state.step not in {Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE}
+                or state.stack or state.pending_mechanic_choice or state.pending_replacement_choice
+                or state.pending_trigger_order):
+            return None
+        opponent = state.players[3 - player_id]
+        if opponent.hand or opponent.graveyard or opponent.exile:
+            return None
+
+        def basic_land(card):
+            types = effective_types(state, card)
+            return ('Land' in types and 'Creature' not in types
+                    and 'Basic' in card.type_line.split('\u2014', 1)[0].split())
+
+        # Land-only is not response-free: nonbasic activations may be unsupported.
+        if any(not basic_land(state.cards[cid]) for cid in opponent.battlefield):
+            return None
+        from rules_engine.combat_constraints import combat_rule_view
+        for cid in state.players[player_id].battlefield:
+            card = state.cards[cid]
+            if basic_land(card):
+                continue
+            text = without_reminder_text(card.oracle_text or '').lower()
+            if ('Creature' not in effective_types(state, card) or ':' in text
+                    or combat_rule_view(state, cid)['unsupported']
+                    or re.search(r'\b(?:when|whenever)\b[^\n]*\b(?:attack\w*|block\w*|damage)\b', text)):
+                return None
+        from ai.information import decision_view
+        projected, _ = decision_view(state, player_id, [])
+        # Preserve every offered effectful response; do not silently pass it away.
+        for pid in state.players:
+            response = planning_copy(projected)
+            response.priority_player = pid
+            if any(move['type'] not in {'pass_priority', 'activate_mana_ability', 'block', 'attack_restricted'}
+                   for move in self.engine.legal_moves(response, pid)):
+                return None
+        if not self._finish_combat_projection(projected, state):
+            return None
+        if any(line.startswith('Oracle effect not inferred') for line in projected.log):
+            return None
+        return projected
+
     def _strategic_state_score(self, sim: MatchState, player_id: int, depth: int, score: float) -> float:
         """Continue the chosen, already executed prefix from its original perspective."""
         if depth <= 0 or sim.winner is not None:
+            combat_outcome = self._complete_strategic_combat_leaf(sim, player_id)
+            if combat_outcome is not None:
+                return (score - self._strategic_position_score(sim, player_id)
+                        + self._strategic_position_score(combat_outcome, player_id))
             return score
         pid = sim.priority_player
         available = self.engine.legal_moves(sim, pid)
