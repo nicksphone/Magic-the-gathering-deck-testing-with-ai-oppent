@@ -2459,6 +2459,24 @@ def temporary_ability_loss(state: MatchState, controller: int, payload: dict) ->
 def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.keyword_effects import add_keyword_effect
     keywords = payload.get('keywords') or ([payload['keyword']] if payload.get('keyword') else [])
+    if payload.get('recipient_kind') in {'creatures', 'permanents'}:
+        from game_state.state import allocate_effect_timestamp
+        from rules_engine.type_effects import effective_types
+        # Resolution locks in recipients; later entrants do not inherit this grant.
+        stamp = allocate_effect_timestamp(state)
+        for player_id, player in state.players.items():
+            scope = payload.get('recipients')
+            if scope == 'controller' and player_id != controller or scope == 'opponents' and player_id == controller:
+                continue
+            for card_id in list(player.battlefield):
+                card = state.cards[card_id]
+                if payload['recipient_kind'] == 'creatures' and 'Creature' not in effective_types(state, card):
+                    continue
+                add_keyword_effect(state, card_id, keywords,
+                                   operation=payload.get('operation', 'grant'),
+                                   until_end_of_turn=bool(payload.get('until_end_of_turn')),
+                                   timestamp=stamp, source_card_id=payload.get('__source_card_id'))
+        return
     add_keyword_effect(state,payload.get('target_card_id'),keywords,
                        operation=payload.get('operation','grant'),until_end_of_turn=bool(payload.get('until_end_of_turn')),
                        source_card_id=payload.get('__source_card_id'))

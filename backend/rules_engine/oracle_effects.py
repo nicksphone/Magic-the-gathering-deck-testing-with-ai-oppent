@@ -1570,6 +1570,21 @@ def _infer_clause_effect(
                 payload.update(base_power=int(loss[2]), base_toughness=int(loss[3]))
             return 'temporary_ability_loss', payload
 
+    team_keywords = re.fullmatch(
+        r'(creatures|permanents)( you control| your opponents control)? '
+        r'(gain|lose) (.+) until end of turn', oracle.strip(' .'),
+    )
+    if team_keywords:
+        from rules_engine.continuous import _attached_keywords
+        keywords = _attached_keywords(team_keywords[4])
+        if keywords and not any(keyword == 'ward' or keyword.startswith('ward ') for keyword in keywords):
+            return 'grant_keyword', {
+                'keywords': keywords, 'until_end_of_turn': True,
+                'operation': 'remove' if team_keywords[3] == 'lose' else 'grant',
+                'recipient_kind': team_keywords[1],
+                'recipients': {' you control': 'controller', ' your opponents control': 'opponents'}.get(team_keywords[2], 'all'),
+            }
+
     keyword_change = re.fullmatch(
         rf'(target (?:creature|permanent)(?: you control| an opponent controls)?|it|this (?:creature|permanent|artifact)|{re.escape(card.name.lower())}) '
         r'(gains|loses) (.+) until end of turn', oracle.strip(' .'),

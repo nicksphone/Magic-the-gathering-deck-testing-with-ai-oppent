@@ -2,6 +2,31 @@
 
 ## Current Execution Order
 
+### Suspend/Keep, Actor Validation And Group Keywords
+
+Suspend and keep-hand consumers now validate public action fields before
+normalization. Suspend display metadata must match the current actor's offered
+action; invalid actor values reject before source/choice helpers. The coupled
+pre-keyword composition passes 1,507 cases across 25 whole modules in 1350.74s.
+Prior consumer branches remain unchanged.
+
+Complete supported temporary group keyword clauses now resolve through the
+existing object-bound keyword layers. Actual printed Boros Charm protection
+and Heroic Intervention have both-seat cast/HTTP/restart, fixed-recipient,
+timestamp, cleanup and rejection-purity coverage. The subsequent 20-module
+repair gate passes 440 cases in 373.51s, including the unchanged four seeded
+autoplay tests. Color subprocess isolation and a canonical alternate-cost
+fixture are repaired without loosening spell admission.
+
+Next: finish the separately running 15,947-case baseline, preserve its failures,
+and reproduce remaining failures against the repaired candidate. That baseline
+does not contain these keyword/test repairs; its observed failures are not
+silently reclassified as passes. The two scoped gate counts overlap and must
+not be added as independent games. Full-release, live deployment, broader
+mechanics and seasoned-player AI acceptance remain open.
+
+Evidence: [composition acceptance](docs/testing/suspend-keep-group-keyword-composition.md).
+
 ### Private Library Reorder And Nonmodal Validation
 
 Complete look/reorder, optional shuffle and draw clauses now use explicit private

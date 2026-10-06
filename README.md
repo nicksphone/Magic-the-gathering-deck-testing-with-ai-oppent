@@ -27,6 +27,13 @@ the existing public schema remain compatible. The full release gate is pending.
 
 ## Current Features
 
+- Strict Suspend and keep-hand training intents, with explicit source/bottom
+  choices and current-actor validation before normalization. Supplied Suspend
+  display metadata must match the current offered action.
+- Complete temporary group keyword grants for supported creature/permanent
+  clauses. Recipients are fixed at resolution; later entrants and reentered
+  objects do not inherit the grant. Canonical Boros Charm and Heroic Intervention
+  casts have both-seat HTTP, layer-order, cleanup and snapshot coverage.
 - Human versus AI, AI versus AI and shared-device human versus human play.
 - Manual turn steps and priority, response windows, stack inspection, combat,
   action logs, life totals and public/private zone views.

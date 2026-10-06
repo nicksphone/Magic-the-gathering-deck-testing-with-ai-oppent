@@ -1,36 +1,26 @@
 from __future__ import annotations
 
-from game_state.state import MatchFactory, Step, Zone
+import json
+from pathlib import Path
+
+from game_state.state import Zone
 from rules_engine.engine import RulesEngine
+from tests.extra_sequence_support import position
+from tests.test_linked_damage_targets import raw_card
 
 
 def test_cast_uses_available_alternate_cost_when_no_cost_choice_provided() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck)
-    engine = RulesEngine()
-    state.pregame_pending = False
-    state.kept_hands = {1, 2}
-    state.step = Step.PRECOMBAT_MAIN
-    state.priority_player = 1
-    p1 = state.players[1]
+    state = position(1)
+    raw = json.loads((Path(__file__).parent / "fixtures/cost_choice_fallback/bringer-red-dawn.json").read_text())
+    spell = raw_card(state, raw, 1, Zone.HAND)
+    player = state.players[1]
+    player.mana_pool = {color: 1 for color in "WUBRG"}
+    assert spell.mana_cost == "{7}{R}{R}"
+    assert spell.oracle_text == raw["oracle_text"]
 
-    spell_id = p1.hand[0]
-    spell = state.cards[spell_id]
-    spell.name = "Test Alt Spell"
-    spell.types = ["Instant"]
-    spell.mana_cost = "{3}{U}"
-    spell.oracle_text = "You may pay {U} rather than pay this spell's mana cost."
+    # The normal nine-mana cost is unavailable; the five-colour alternative is payable.
+    RulesEngine().take_action(state, 1, {"type": "cast_spell", "card_id": spell.id})
 
-    land_id = p1.library.pop()
-    p1.battlefield.append(land_id)
-    land = state.cards[land_id]
-    land.zone = Zone.BATTLEFIELD
-    land.types = ["Land"]
-    land.name = "Island"
-    land.tapped = False
-
-    # No explicit cost_choice sent; backend should fallback to currently available option.
-    engine.take_action(state, 1, {"type": "cast_spell", "card_id": spell_id})
-
-    assert spell_id not in p1.hand
+    assert spell.id not in player.hand
     assert spell.zone == Zone.STACK
+    assert all(player.mana_pool.get(color, 0) == 0 for color in "WUBRG")

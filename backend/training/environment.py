@@ -427,12 +427,13 @@ class TrainingEnvironment:
         Encoded actions and lookup/step remain strict. This explicit convenience
         boundary strips presentation fields using the parent-owned model map.
         """
+        _seat(self.acting_seat if seat is None else seat)
         from ai.action_contract import complete_action
         from api_contracts import (
             ManaAbilityAction, TapAction, NonlandManaAction, BulkTapAction, CastAction, AbilityAction,
             EquipAction, CrewAction, CycleAction, MechanicChoice, OptionalEffectChoice, TriggerChoice,
             ReplacementChoice, TriggerTargetChoice, AttackAction, BlockAction, ForetellAction, NinjutsuAction,
-            LandAction, PassAction,
+            LandAction, PassAction, SuspendAction, KeepAction,
         )
         models = {'activate_mana_ability': ManaAbilityAction, 'tap_land_for_mana': TapAction,
                   'tap_nonland_for_mana': NonlandManaAction, 'tap_lands_bulk': BulkTapAction,
@@ -443,7 +444,8 @@ class TrainingEnvironment:
                   'choose_trigger_order': TriggerChoice,
                   'choose_replacement': ReplacementChoice, 'choose_trigger_target': TriggerTargetChoice,
                   'attack': AttackAction, 'block': BlockAction, 'foretell': ForetellAction,
-                  'ninjutsu': NinjutsuAction, 'play_land': LandAction, 'pass_priority': PassAction}
+                  'ninjutsu': NinjutsuAction, 'play_land': LandAction, 'pass_priority': PassAction,
+                  'suspend': SuspendAction, 'keep_hand': KeepAction}
         if isinstance(intent, dict) and isinstance(intent.get('type'), str) and intent['type'] in models:
             display = {'card_name', 'mana_cost', 'cost_options', 'target_hints', 'outputs',
                        'cost_text', 'ability_label', 'label', 'payment_options',
@@ -453,6 +455,33 @@ class TrainingEnvironment:
             if intent['type'] == 'cast_spell':
                 display = {'card_name', 'mana_cost', 'cost_options', 'target_hints'}
                 contract = 'Cast'
+            elif intent['type'] == 'suspend':
+                display = {'card_name', 'mana_cost', 'time_counters', 'card_view'}
+                contract = 'Suspend'
+                try:
+                    SuspendAction.model_validate({key: value for key, value in intent.items()
+                                                  if key not in display})
+                    supplied = display & set(intent)
+                    if supplied:
+                        actor = self.acting_seat if seat is None else seat
+                        candidate = deepcopy(self._state)
+                        view = next((move for move in self._rules.legal_moves(candidate, actor)
+                                     if move['type'] == 'suspend'
+                                     and move['card_id'] == intent['card_id']), None)
+                        if view is not None and 'card_view' in supplied:
+                            view['card_view'] = serialize_card_view(candidate, intent['card_id'])
+                        if view is None or any(key not in view or _json(intent[key]) != _json(view[key])
+                                               for key in supplied):
+                            raise ActionRejected('Suspend metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid suspend intent') from exc
+            elif intent['type'] == 'keep_hand':
+                display = set()
+                contract = 'Keep hand'
+                try:
+                    KeepAction.model_validate(intent)
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid keep hand intent') from exc
             elif intent['type'] == 'foretell':
                 display = {'card_name', 'mana_cost', 'fixed_costs', 'granted_reductions', 'card_view'}
                 contract = 'Foretell'

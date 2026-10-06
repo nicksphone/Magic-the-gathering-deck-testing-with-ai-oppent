@@ -258,6 +258,11 @@ def audit(event,args):
     if event in {'sqlite3.connect','socket.connect','socket.bind'}:
         raise AssertionError(event)
 sys.addaudithook(audit)
+from pathlib import Path
+import game_state.serializers as serializers
+import rules_engine.colors as colors
+assert Path(serializers.__file__).resolve().parent == Path.cwd() / 'game_state'
+assert Path(colors.__file__).resolve().parent == Path.cwd() / 'rules_engine'
 from game_state.serializers import deserialize_match_snapshot,serialize_match_snapshot
 from rules_engine.colors import card_color_symbols
 from rules_engine.continuous import effective_combat_stats
@@ -276,7 +281,7 @@ print(json.dumps(result))
 '''
     result = subprocess.run([sys.executable, '-c', script],
         input=json.dumps({'snapshot': snapshot, 'cid': cid, 'seat': seat}),
-        text=True, capture_output=True, check=True, timeout=20, cwd=ROOT)
+        text=True, capture_output=True, check=True, timeout=20, cwd=ROOT / 'backend')
     assert json.loads(result.stdout) == {
         'stats': list(effective_combat_stats(state, cid)), 'colors': [], 'domain': 1}
     assert serialize_match_snapshot(state) == snapshot

@@ -1,0 +1,17 @@
+{
+  "oracle_modified": false,
+  "start_utc": "2026-10-06T09:27:49Z",
+  "end_utc": "2026-10-06T09:27:50Z",
+  "cards": [
+    {
+      "file": "boros-charm.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Boros%20Charm",
+      "sha256": "c04fab56ba9d8b86c1ff4efdde8acc6e2c0cec3350c5a54347cce5329efbf74c"
+    },
+    {
+      "file": "heroic-intervention.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Heroic%20Intervention",
+      "sha256": "df7beaa1934ad39b8adab994f6f05960a07513e496ed414b71a1276bae241d2b"
+    }
+  ]
+}

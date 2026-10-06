@@ -2,6 +2,21 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Validate Suspend/keep-hand intents and reject invalid actor values before
+  normalization or helper calls. Preserve explicit choices and prior consumer
+  contracts. The pre-keyword-repair composition passes 1,507 checks across 25
+  complete modules in 1350.74s on the upgraded dependencies.
+- Compile supported complete temporary creature/permanent group keyword grants
+  through the existing keyword effect system. Fix the observed seeded autoplay
+  rejection of Boros Charm's actual printed protection mode without named-card
+  overrides. Canonical Boros Charm/Heroic Intervention both-seat tests cover
+  object membership, timestamp ordering, cleanup and durable HTTP restore.
+  The current repair gate passes 440 checks across 20 complete modules in
+  373.51s; this is not a full-suite or professional-AI qualification.
+- Repair fresh-process color tests to import the isolated backend, and replace
+  the invented cost-only alternate-cost fixture with the unchanged canonical
+  Bringer of the Red Dawn. The public explicit-choice API is unchanged.
+  See [the acceptance record](docs/testing/suspend-keep-group-keyword-composition.md).
 - Add generic complete-clause look/reorder, optional shuffle and draw resolution
   with explicit private choices, seeded replay and durable continuations. Canonical
   Index/Ponder fixtures are unchanged official API bodies. Full current gate:
