@@ -2,6 +2,10 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Replace the 2,000-line finish-plan timeline with an actionable execution index.
+  Preserve the entire previous plan under docs/history, including historical
+  failures and evidence. Keep all original rules, AI and release goals open.
+
 - Qualify eight unchanged Scout/Atlas supplement cases on the shared source:
   bare availability and actual paid HTTP casting, cold restart, immediate sick
   tap rejection and unchanged state/SQLite. Eight passes in 18.78s; no new

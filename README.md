@@ -15,6 +15,8 @@ implementation of every Magic card or a trained professional-level opponent.
 Known-gap diagnostics are useful, but an absent warning does not prove support.
 See [the finish plan](plan.md) for remaining acceptance work and
 [the changelog](CHANGELOG.md) for historical changes.
+The previous detailed gate timeline is preserved in
+[the historical plan](docs/history/finish-plan-through-b81862a.md).
 
 This branch is an **unreleased integration candidate**, not necessarily the
 version running on the live servers. Scoped acceptance and remaining work are
