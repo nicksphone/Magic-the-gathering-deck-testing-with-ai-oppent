@@ -239,6 +239,15 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    article_mill = re.match(r'(?:(target player|each opponent|you) mills?|mill) (a|an) card\b', oracle.strip())
+    if article_mill:
+        # Do not compile one supported reward from an unknown compound body.
+        if oracle.strip()[article_mill.end():].strip() not in {'', '.'}:
+            return 'noop', {'__unsupported_mill_instruction': oracle}
+        recipient = (action_targets.get('target_player') if article_mill[1] == 'target player'
+                     else 3-controller if article_mill[1] == 'each opponent' else controller)
+        # A targeted preview remains incomplete until an actual target is announced.
+        return 'mill_cards', {'target_player': recipient, 'amount': _parse_count_token(article_mill[2])}
     team_counters = re.fullmatch(
         r'put (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
         r'([+-]\d+/[+-]\d+) counters? on each creature (you control|your opponents control)\.?',

@@ -1121,6 +1121,14 @@ def _self_entry_transform_clauses(card, oracle):
             yield line.strip(), match[2]
 
 
+def _entry_observer_clause(oracle: str):
+    return re.fullmatch(
+        r"(?:when|whenever) (a|an|another) (creature|permanent|artifact|enchantment)"
+        r"( you control)? enters(?: the battlefield)?( under your control)?, (.+)",
+        oracle.strip(), re.I,
+    )
+
+
 def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
     if payload.get('card_id') == card.id and any(_self_entry_transform_clauses(card, oracle)):
         return True
@@ -1152,6 +1160,14 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     # this ordering, "a creature enters" also matches "under your control".
     entering_types = set(effective_types(state, entering_card) or [])
     enters_for_controller = entering_card.controller == card.controller
+    for line in oracle.splitlines():
+        clause = _entry_observer_clause(line)
+        if clause:
+            another, kind, modern_control, legacy_control, _ = clause.groups()
+            if ((not modern_control and not legacy_control or enters_for_controller)
+                    and (another.lower() != 'another' or entering_id != card.id)
+                    and (kind.lower() == 'permanent' or kind.title() in entering_types)):
+                return True
     if "another creature enters the battlefield under your control" in oracle:
         return "Creature" in entering_types and enters_for_controller and entering_id != card.id
     if "a creature enters the battlefield under your control" in oracle:
@@ -1565,6 +1581,37 @@ def _trigger_from_oracle(
             if re.search(r'\btarget\b', kicker['instruction'], re.I):
                 data.update(__trigger_resolution_text=kicker['instruction'],
                             __trigger_full_clause=kicker['clause'])
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
+        entries = [clause for line in oracle.splitlines()
+                   if (clause := _entry_observer_clause(line)) is not None
+                   and _matches_enters_battlefield_trigger(state, source, line, payload)]
+        # Paid and loot paths retain their existing choice/cost delegation.
+        if entries and not any(re.search(r'\byou may\b|\bif you do\b|\bdiscard\b', entry[5], re.I)
+                               for entry in entries):
+            instruction = entries[0][5]
+            data = {'__trigger_full_clause': entries[0][0]}
+            supported = (len(entries) == 1 and re.fullmatch(
+                r'(?:each opponent mills (?:a|an) card|you gain \d+ life|put (?:a|an|one|two|three|four|five|\d+) '
+                r'[+-]\d+/[+-]\d+ counters? on each creature you control)\.',
+                instruction, re.I,
+            ))
+            key = 'noop'
+            if supported:
+                from rules_engine.ability_model import build_ability_spec
+                proxy = copy(source)
+                proxy.oracle_text = instruction
+                proxy.card_faces = []
+                proxy.selected_face_index = None
+                proxy.source_oracle_text = source.oracle_text
+                ability = build_ability_spec(state, proxy, controller,
+                                             action_targets=payload, report_unsupported=False)
+                key = ability.effect.key
+                data.update(ability.effect.payload)
+            if key == 'noop':
+                instruction = '\n'.join(entry[5] for entry in entries)
+                data['__unsupported_trigger_instruction'] = instruction
+                state.log.append(f'Unsupported entry trigger instruction on {source.name}: {instruction}')
             return {'source_card_id': source_card_id, 'controller': controller,
                     'label': default_label, 'effect_key': key, 'payload': data}
     if event == 'spell_cast':

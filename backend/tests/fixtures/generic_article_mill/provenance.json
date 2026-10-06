@@ -1,0 +1,57 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "b9247f1984e8809351732ce0e07c73e60cb31cf170c2157c6fff9cd23c8aa0a1",
+  "selection": "jq -c exact7names;full unchanged official objects; no field edits",
+  "cards": [
+    {
+      "name": "Rest in Peace",
+      "id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+      "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+      "uri": "https://api.scryfall.com/cards/d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+      "oracle_text": "When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead."
+    },
+    {
+      "name": "Raise the Alarm",
+      "id": "6c7c8527-55f6-494d-b4f7-c427a5735053",
+      "oracle_id": "5b2364d7-a811-4595-a1b4-224c70555ffa",
+      "uri": "https://api.scryfall.com/cards/6c7c8527-55f6-494d-b4f7-c427a5735053",
+      "oracle_text": "Create two 1/1 white Soldier creature tokens."
+    },
+    {
+      "name": "Sol Ring",
+      "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "uri": "https://api.scryfall.com/cards/8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "oracle_text": "{T}: Add {C}{C}."
+    },
+    {
+      "name": "Thought Scour",
+      "id": "4afee6b3-55a4-44e5-b08c-85e0c813cd09",
+      "oracle_id": "83101ba8-a569-4827-8c53-9ca0dfcd59a7",
+      "uri": "https://api.scryfall.com/cards/4afee6b3-55a4-44e5-b08c-85e0c813cd09",
+      "oracle_text": "Target player mills two cards.\nDraw a card."
+    },
+    {
+      "name": "Stifle",
+      "id": "616d1b20-61c1-4d39-a9b5-ad9fd61699e4",
+      "oracle_id": "b3b00911-ece7-4484-bc36-f211ce72b6cc",
+      "uri": "https://api.scryfall.com/cards/616d1b20-61c1-4d39-a9b5-ad9fd61699e4",
+      "oracle_text": "Counter target activated or triggered ability. (Mana abilities can't be targeted.)"
+    },
+    {
+      "name": "Altar of the Brood",
+      "id": "8d59d264-87ee-4305-bffb-110549331a82",
+      "oracle_id": "c3aafcdd-c890-4971-b8a9-5bfcad794c0b",
+      "uri": "https://api.scryfall.com/cards/8d59d264-87ee-4305-bffb-110549331a82",
+      "oracle_text": "Whenever another permanent you control enters, each opponent mills a card."
+    },
+    {
+      "name": "Codex Shredder",
+      "id": "4f5a3293-f3e7-4f68-af6a-b478959226c1",
+      "oracle_id": "ef7b11ab-24e7-4e7c-91a7-920bade6e60b",
+      "uri": "https://api.scryfall.com/cards/4f5a3293-f3e7-4f68-af6a-b478959226c1",
+      "oracle_text": "{T}: Target player mills a card. (They put the top card of their library into their graveyard.)\n{5}, {T}, Sacrifice this artifact: Return target card from your graveyard to your hand."
+    }
+  ]
+}

@@ -2,6 +2,26 @@
 
 ## Current Execution Order
 
+### Entry Bookkeeping And Complete Article Mill
+
+Modern and legacy entry observers now share anchored predicate handling and
+complete supported instruction dispatch. Ninjutsu enters via the standard
+zone transition rather than directly assigning the battlefield zone. Complete
+`a/an card` mill instructions reuse the generic count parser/handler; unsupported
+compound bodies cannot receive a partial reward.
+
+On base `0a50a16`, the coupled current gate passes 1,040 cases across 43 whole
+modules in 707.02s, including unchanged desired entry/mill, Ninja identity,
+both-seat HTTP/restart, group keyword, library and current Mulligan/actor cases.
+The worker's 1,765 cases remain separate pinned-source evidence, not additional
+games. [Current acceptance](docs/testing/entry-current-composition.md).
+
+Next: compose queued turns/combat-main phases and shuffle observers with these
+entry routes, retain ordinary known-red replacement/static-protection evidence,
+and finish current-source coupled qualification. Startup restoration has a
+separately measured scaling cost; lazy loading must preserve all saved-match
+discovery/resume, revisions and idempotency rather than hide older matches.
+
 ### Mulligan Consumer Completion
 
 Mulligan intents now use the public chosen-parameter schema before normalization.

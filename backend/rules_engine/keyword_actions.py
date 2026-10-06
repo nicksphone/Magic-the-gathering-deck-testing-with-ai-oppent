@@ -60,7 +60,7 @@ def resolve_ninjutsu(state, controller: int, payload: dict) -> None:
         return
     player.hand.remove(card_id)
     player.battlefield.append(card_id)
-    card.zone = Zone.BATTLEFIELD
+    card.move_to_zone(Zone.BATTLEFIELD)
     card.tapped = True
     card.summoning_sick = True
     card.entered_turn = state.turn

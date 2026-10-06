@@ -2,6 +2,13 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Compose generic modern/legacy entry-observer dispatch, ordinary Ninjutsu entry
+  bookkeeping and complete article-mill instructions on the current Mulligan
+  source. Preserve source identity, paid costs, private choices and existing
+  library/group-keyword behavior. All 1,040 checks across 43 complete modules
+  pass in 707.02s, including six unchanged desired entry/mill regressions.
+  Unknown compound and other unsupported entry instructions remain diagnostic;
+  no named-card exception or arbitrary-card support claim.
 - Record an unresolved long-running Control/Ramp BO3 qualification: the original
   two-case run on `9714ee5` hit its 1200-second outer bound after Burn/Aggro
   passed. Preserve the exact last-persisted checkpoint and source pins; no

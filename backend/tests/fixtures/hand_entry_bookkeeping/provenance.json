@@ -1,0 +1,8 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "99a897459c994dedb916a59104c0023cab4e9d96aac274d60fd3f7603c44cfc0",
+  "fields_modified": false,
+  "http_requests": 0,
+  "extraction": "jq select exact canonical names; full records unchanged"
+}
