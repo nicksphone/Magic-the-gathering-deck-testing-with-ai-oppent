@@ -1,0 +1,68 @@
+{
+  "source": "Scryfall official public API",
+  "cards": [
+    {
+      "file": "hydroid-krasis.json",
+      "sha256": "d08a7be4fb671eeb2bf9bbec68d3d2e507be8fd60e70998b2cc5674542a8e86a",
+      "name": "Hydroid Krasis",
+      "oracle_id": "6bd872b2-5c40-4e11-9a7f-0136a51b0642",
+      "url": "https://api.scryfall.com/cards/named?exact=Hydroid%20Krasis",
+      "request_start_utc": "2026-10-06T18:40:43Z",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "man-o-war.json",
+      "sha256": "9955d9cc3bd4e23d2c35be024bca1d1df5c326bcdaf66b77d1fafe8d329636e5",
+      "name": "Man-o'-War",
+      "oracle_id": "67a3541c-8408-40c8-b44f-90035b860f57",
+      "url": "https://api.scryfall.com/cards/named?exact=Man-o%27-War",
+      "request_start_utc": "2026-10-06T18:40:49Z",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "primordial-sage.json",
+      "sha256": "6e89cdcbea03d3ad446c0fd1c1f25ebf8dc10d8ad302d69439bff410623e91ea",
+      "name": "Primordial Sage",
+      "oracle_id": "499f1e1e-d96e-481f-a5d9-eb38da927cd7",
+      "url": "https://api.scryfall.com/cards/named?exact=Primordial%20Sage",
+      "request_start_utc": "2026-10-06T18:43:39Z",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "solemn-simulacrum.json",
+      "sha256": "2f21822a0723ef223bd8480c12f2bcc2f52b91878224860afc27035c5c7529a2",
+      "name": "Solemn Simulacrum",
+      "oracle_id": "00c0543c-2a1f-4425-8283-4062d74a1637",
+      "url": "https://api.scryfall.com/cards/named?exact=Solemn%20Simulacrum",
+      "request_start_utc": "2026-10-06T18:43:40Z",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "soul-of-the-harvest.json",
+      "sha256": "ea61353552154f67a9cd8767de1f657942178de29f2cc17fb635445d022b4d5f",
+      "name": "Soul of the Harvest",
+      "oracle_id": "6b9194dd-2296-4879-ac5e-f89b18431df6",
+      "url": "https://api.scryfall.com/cards/named?exact=Soul%20of%20the%20Harvest",
+      "request_start_utc": "2026-10-06T18:40:49Z",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "harvester-of-souls.json",
+      "sha256": "bfca9bf9c8e4ea5feced87e94b12a3f2e9ba7c67bcc6cb0000b969c6e0808440",
+      "name": "Harvester of Souls",
+      "oracle_id": "5987ce77-10ad-4871-900a-5a005fcf4955",
+      "url": "https://api.scryfall.com/cards/named?exact=Harvester%20of%20Souls",
+      "request_start_utc": "2026-10-06T18:45:37Z",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "village-rites.json",
+      "sha256": "af060bbb9e76829d1f7ff8322e369e914bfcbec02492235c0c0f6dd1304895f9",
+      "name": "Village Rites",
+      "oracle_id": "365548fb-5acc-4a8a-b20b-26d28b7d029f",
+      "url": "https://api.scryfall.com/cards/named?exact=Village%20Rites",
+      "request_start_utc": "2026-10-06T18:45:37Z",
+      "complete_raw_response_preserved": true
+    }
+  ]
+}

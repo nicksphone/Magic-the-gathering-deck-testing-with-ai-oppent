@@ -18,6 +18,10 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- Complete unconditional self-cast/self-entry draw and life-then-draw instructions
+  use shared replacement-aware handlers. Unknown suffixes in these newly
+  admitted instructions produce diagnostics without partial rewards. Optional,
+  targeted and search routes retain their existing bounded behavior.
 - Fixed positive source +1/+1 counter activation costs are validated and paid
   once on announcement. Ability target hints do not inherit the source's spell
   mana cost; genuine chosen-X ability values and source/LKI protection are retained.
@@ -25,7 +29,7 @@ LAN deployment and broader AI-quality qualification remain open.
 - The offline seed preserves all 119 rows and supplies colors for all eight
   two-faced cards: ten canonical face facts and six separately provenance-backed
   derived facts. Generic exact-printing loyalty recovery avoids named exceptions.
-- Human legend keeper choices require an explicit offered card. Whole-view
+- Backend human legend keeper choices require an explicit offered card. Whole-view
   training intents accept legend context only when it exactly matches current
   authoritative state; supplied context cannot select or replace the keeper.
 - AI valuation uses the selected casting face and authoritative available costs

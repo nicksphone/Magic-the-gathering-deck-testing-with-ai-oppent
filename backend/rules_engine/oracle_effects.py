@@ -206,6 +206,23 @@ def parse_temporary_target_buff(text):
     return {'power': int(match[1]), 'toughness': int(match[2]), 'keywords': keywords}
 
 
+def compile_draw_life_instruction(instruction: str) -> tuple[str, dict[str, Any]] | None:
+    """Compile only complete unconditional draw or life-then-draw bodies."""
+    body = instruction.strip().lower().removesuffix('.').strip()
+    draw = DRAW_RE.fullmatch(body)
+    if draw:
+        return 'draw_cards', {'amount': _parse_count_token(draw[1])}
+    life_text, joined, draw_text = body.partition(' and ')
+    life = GAIN_RE.fullmatch(life_text[4:]) if life_text.startswith('you gain ') else None
+    draw = DRAW_RE.fullmatch(draw_text)
+    if joined and life and draw:
+        return 'effect_sequence', {'effects': [
+            {'effect_key': 'gain_life', 'payload': {'amount': _parse_count_token(life[1])}},
+            {'effect_key': 'draw_cards', 'payload': {'amount': _parse_count_token(draw[1])}},
+        ]}
+    return None
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,

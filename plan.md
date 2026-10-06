@@ -2,6 +2,27 @@
 
 ## Current Execution Order
 
+### Corrected Self-Trigger Shared-Source Gate
+
+The corrected unconditional draw/life-draw compiler is now combined with the
+published counter-cost, legend, offline-data and AI changes. **79 complete
+modules / 2,179 cases: 2,175 passed, four failed, 703.18s, exit 1.** Captured
+backend source hashes are unchanged. No filtering, skips or expected failures.
+The only failures are the existing Growth Spiral / Arboreal Grazer extra-land
+assertions in both seats; they remain ordinary failures, not accepted behavior.
+See docs/testing/self-trigger-current-composition.md.
+
+The previous Kozilek draw-four and Ballista cost/target paths now pass on this
+shared source. New admission is restricted to complete draw/life-draw prefixes;
+earlier targeted, optional, search, half-X and dedicated routes are preserved.
+This is not arbitrary-card or global-observer certification. Primordial Sage
+and Soul of the Harvest observer gaps remain separate open diagnostics.
+
+Next priorities: finish explicit private optional-land identity/decline and
+resumable entry handling; integrate paid-optional work on this shared source;
+complete cast/entry observer coverage; validate actual AI gameplay traces and
+the supported-corpus/release gates. Main/live remain unchanged.
+
 ### Counter Costs And Seed Data Shared-Source Acceptance
 
 The next isolated candidate additionally includes fixed source +1/+1 counter
@@ -19,13 +40,13 @@ source +1/+1 family remain fail-closed. All 119 seed rows and non-color fields
 are preserved; six Adventure face colors remain labeled derived rule facts.
 See docs/testing/counter-seed-current-composition.md.
 
-Next: integrate the corrected self-trigger compiler only after its prefix-only
-preservation gate, then complete the optional own-hand land choice/continuation.
-Paid-optional integration retains a stale stack-order test pending its separate
-authorized correction and shared-source acceptance. Full-suite/frontend/browser
-and release operational gates still remain open; no main/live replacement.
+The compiler is now integrated under the gate above. Complete the optional
+own-hand land choice/continuation next. Paid-optional integration still needs
+shared-source acceptance; the separately corrected stack-order expectation
+does not itself qualify that product. Broader full-suite/browser and release
+operational gates remain open; no main/live replacement.
 
-### Unpromoted Legend Consumer And AI Integration
+### Legend Consumer And AI Scoped Evidence
 
 The isolated candidate combines the prior death/protection/legend gameplay
 composition with exact-context legend whole-view consumption and selected-face
@@ -36,10 +57,10 @@ required. No private choice is inferred from client context.
 
 The four failures concern Growth Spiral and Arboreal Grazer in both seats.
 Their optional land instructions and private resolution choices still require
-engine work, not stronger AI tags. This candidate is not published or deployed.
-Earlier Walking Ballista and self-trigger gaps are not covered or closed by
-this five-module check. Counter-cost, compiler, seed-color and paid-optional
-increments require a subsequent shared-source regression gate.
+engine work, not stronger AI tags. These changes are in the published unreleased
+checkpoint, not on live servers. Later counter-cost/seed/compiler gates above
+supersede the narrow check for those covered paths; paid-optional and broader
+AI/release requirements still remain separate.
 
 ### Local Corpus Diagnostic
 
@@ -51,8 +72,8 @@ This diagnostic change does not close the gameplay/AI/deployment work below.
 Current remaining work after the scoped integrations above:
 
 1. Counter-cost coverage beyond fixed source +1/+1 costs and general target fidelity.
-2. Corrected self-cast draw and compound self-entry routing, followed by optional
-   own-hand land mechanics and private continuation.
+2. Optional own-hand land mechanics/private continuation and wider generic
+   creature-cast/non-token entry observers beyond the admitted self-trigger paths.
 3. Wider simultaneous legend/state-based-action lifecycle and human browser acceptance.
 4. Broader canonical corpus data, rulings, and unsupported-clause reporting.
 5. Current paid-optional shared-source integration and measured broader AI decisions.

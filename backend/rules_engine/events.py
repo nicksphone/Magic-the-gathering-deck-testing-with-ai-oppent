@@ -1972,6 +1972,36 @@ def _trigger_from_oracle(
                 "payload": _maybe_payload(oracle, {"target_player": drawn_by, "amount": lose_amount}),
             }
 
+    # A self trigger's complete instruction must not become a substring reward.
+    self_instructions = []
+    if (source is not None and cast_instruction is not None
+            and payload.get('source_card_id') == source_card_id
+            and re.match(r'(?:when|whenever) you cast this spell,', oracle, re.I)):
+        self_instructions = [(oracle, cast_instruction)]
+    elif (source is not None and event == 'enters_battlefield'
+          and payload.get('card_id') == source_card_id):
+        reference = (r'this (?:creature|artifact|enchantment|permanent|planeswalker|aura|equipment|vehicle|land|battle|token)|'
+                     + re.escape(source.name))
+        for line in oracle.splitlines():
+            entry = re.fullmatch(r'(?:when|whenever) (?:' + reference
+                                 + r') enters(?: the battlefield)?, (.+)', line.strip(), re.I)
+            if entry:
+                self_instructions.append((line.strip(), entry[1]))
+    if self_instructions and any(re.match(r'^(?:draw\b|you gain\b)', body, re.I)
+                                 and re.search(r'\bdraws?\b', body, re.I)
+                                 for _, body in self_instructions):
+        from rules_engine.oracle_effects import compile_draw_life_instruction
+        clause, instruction = self_instructions[0]
+        compiled = compile_draw_life_instruction(instruction) if len(self_instructions) == 1 else None
+        key, data = compiled if compiled is not None else ('noop', {})
+        data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
+        if compiled is None:
+            data['__unsupported_trigger_instruction'] = '\n'.join(body for _, body in self_instructions)
+            state.log.append(f'Unsupported self trigger instruction on {source.name}: '
+                             + data['__unsupported_trigger_instruction'])
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': key, 'payload': data}
+
     if "draw a card" in oracle:
         return {
             "source_card_id": source_card_id,

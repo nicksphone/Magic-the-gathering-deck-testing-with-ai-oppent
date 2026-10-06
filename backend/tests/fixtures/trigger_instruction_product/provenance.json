@@ -1,0 +1,55 @@
+{
+  "source": "Scryfall public API, offline after intake",
+  "cards": [
+    {
+      "file": "counterspell.json",
+      "sha256": "ec5a66be537961755633aa3a100712f9f5e33ac4bc57225eaa14002530fdfb33",
+      "url": "https://api.scryfall.com/cards/named?exact=Counterspell",
+      "request_start_utc": "2026-10-06T17:54:00Z",
+      "name": "Counterspell",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "scryfall_id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "riverwise-augur.json",
+      "sha256": "58ca11e4630797cc268674abd77029e17289bdd83f652a91126a21b39ad6d373",
+      "url": "https://api.scryfall.com/cards/named?exact=Riverwise%20Augur",
+      "request_start_utc": "2026-10-06T17:53:59Z",
+      "name": "Riverwise Augur",
+      "oracle_id": "eac79f15-3b63-457a-b6a8-f9237439c93c",
+      "scryfall_id": "cc1c3923-aeb0-4f53-a210-10542534b121",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "stinkweed-imp.json",
+      "sha256": "3a12356ed9fa1de98b56500f5c0bb3a26f3ef6949e549e81184441ba19dab1e9",
+      "url": "https://api.scryfall.com/cards/named?exact=Stinkweed%20Imp",
+      "request_start_utc": "2026-10-06T17:53:59Z",
+      "name": "Stinkweed Imp",
+      "oracle_id": "e005bc76-4985-4ec6-b9f6-cf6d0d9f5df4",
+      "scryfall_id": "2ab08d69-210b-4b06-88a2-45281a1a4e1e",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "ulamog.json",
+      "sha256": "1417a73457fed5f3cc0844e39ad4ae57d487762782860adf88bac808095c725c",
+      "url": "https://api.scryfall.com/cards/named?exact=Ulamog%2C%20the%20Infinite%20Gyre",
+      "request_start_utc": "2026-10-06T17:54:00Z",
+      "name": "Ulamog, the Infinite Gyre",
+      "oracle_id": "b817bc56-9b4d-4c50-bafa-3c652b99578f",
+      "scryfall_id": "9464a820-65de-44f2-9895-46a35e8621a0",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "copter.json",
+      "sha256": "ac9f098693e540e0b5f7996d069f3bbf9b81fa4eb511703ec5d77c50c83faba1",
+      "url": "https://api.scryfall.com/cards/named?exact=Smuggler%27s%20Copter",
+      "request_start_utc": "2026-10-06T17:58:00Z",
+      "name": "Smuggler's Copter",
+      "oracle_id": "49136bdc-bc50-49a2-999a-1ef9c16ea130",
+      "scryfall_id": "2680ed41-da35-475a-9d80-ae2f4686feed",
+      "complete_raw_response_preserved": true
+    }
+  ]
+}

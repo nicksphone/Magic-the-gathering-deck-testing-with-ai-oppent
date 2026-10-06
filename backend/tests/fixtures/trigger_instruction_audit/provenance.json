@@ -1,0 +1,53 @@
+{
+  "source": "Scryfall public named-card API, no credentials",
+  "cards": [
+    {
+      "file": "kozilek.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Kozilek%2C%20Butcher%20of%20Truth",
+      "sha256": "1d6014c13740b848fedfa5da19a5d2a4916169c7f39c81d4bd09f66e676fe5ce",
+      "name": "Kozilek, Butcher of Truth",
+      "oracle_id": "7b8528b0-71eb-4c9e-bed9-aa2d2e84038f",
+      "scryfall_id": "d27cf7b7-7982-46bd-a559-7789c0e74bae",
+      "capture_timestamp": "2026-10-06 17:28:32.501270582 +0000",
+      "timestamp_basis": "original intake response file completion mtime; not HTTP server time",
+      "oracle_preserved_in_full": true,
+      "raw_response_bytes_preserved": true
+    },
+    {
+      "file": "cloudblazer.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Cloudblazer",
+      "sha256": "1b189f5c7dc159e102f902d8311103873503508754036ef40e13688162ac7dfa",
+      "name": "Cloudblazer",
+      "oracle_id": "f84d1291-1f82-4b67-a26e-b79624b4ce1d",
+      "scryfall_id": "a9c966ab-0d92-4fa7-8a91-1f77089d8fc7",
+      "capture_timestamp": "2026-10-06 17:28:32.890264534 +0000",
+      "timestamp_basis": "original intake response file completion mtime; not HTTP server time",
+      "oracle_preserved_in_full": true,
+      "raw_response_bytes_preserved": true
+    },
+    {
+      "file": "thought-reflection.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Thought%20Reflection",
+      "sha256": "be46dc4724e675d029e095db7e065399de74e1b33b0379fd498e3ac90592128f",
+      "name": "Thought Reflection",
+      "oracle_id": "692a6833-3014-42f6-b1ad-333bb3292c65",
+      "scryfall_id": "e169e197-5ef4-454d-a31f-fcadedb74cfc",
+      "capture_timestamp": "2026-10-06T17:33:43Z",
+      "timestamp_basis": "UTC recorded immediately before request",
+      "oracle_preserved_in_full": true,
+      "raw_response_bytes_preserved": true
+    },
+    {
+      "file": "elvish-visionary.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Elvish%20Visionary",
+      "sha256": "a961487190f41f513161a4439db9d9a174d709c875e6d959828f2eeb73c0bd4c",
+      "name": "Elvish Visionary",
+      "oracle_id": "c6a3a882-a127-4590-93d7-679ef4313efe",
+      "scryfall_id": "6d2f4a37-453f-4a2c-bfba-2d1227394c90",
+      "capture_timestamp": "2026-10-06T17:33:46Z",
+      "timestamp_basis": "UTC recorded immediately before request",
+      "oracle_preserved_in_full": true,
+      "raw_response_bytes_preserved": true
+    }
+  ]
+}

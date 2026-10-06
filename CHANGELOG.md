@@ -2,6 +2,12 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Compile complete unconditional self-trigger draw/life-draw instructions through
+  shared handlers, preserving earlier routing and genuine source/controller.
+  Shared-source 79-module gate: 2,175 passes / four known extra-land failures;
+  no skipped/expected failures. Correct the stale Ulamog single-resolution test
+  separately, retaining actual graveyard-shuffle then cast-trigger outcomes.
+
 - Shared-source counter/target acceptance: 522 passes; validate fixed source
   +1/+1 counter costs and keep spell mana costs out of ability target hints
   while preserving genuine ability X values and actual source/LKI protection.
