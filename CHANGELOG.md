@@ -2,6 +2,10 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Record an unresolved long-running Control/Ramp BO3 qualification: the original
+  two-case run on `9714ee5` hit its 1200-second outer bound after Burn/Aggro
+  passed. Preserve the exact last-persisted checkpoint and source pins; no
+  infinite-loop diagnosis, reduced search budget or passing full-pair claim.
 - Validate Mulligan intents before normalization, rejecting unknown/null choice
   aliases and stale or malformed count metadata before helpers. Preserve the
   current actor-first boundary and all 23 existing consumer bindings. Current

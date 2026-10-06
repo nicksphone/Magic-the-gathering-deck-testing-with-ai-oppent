@@ -17,6 +17,12 @@ source manifests and JUnit counts are verified, with no skips or xfails. The
 older worker98/346 gates remain separate pinned evidence, not extra matches.
 Acceptance: [current composition](docs/testing/mulligan-current-composition.md).
 
+Subsequent original two-case live BO3 qualification on `9714ee5` reached its
+1200-second outer bound (exit124): Burn/Aggro passed, Control/Ramp was still
+active at termination. The full pair is not green. Preserve the captured last
+persisted game2/turn38 state and profile an exact-state replay before attributing
+the delay or changing search breadth. Details: [timeout record](docs/testing/live-bo3-timeout-20261006.md).
+
 Next: finish the separate full backend baseline and diagnose long-running
 Control/Ramp BO3 decisions from captured state, without hiding failures or
 reducing AI ambition merely to pass a smoke test. Queued-turn/phase, entry/mill,
