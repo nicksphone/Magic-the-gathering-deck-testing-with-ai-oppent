@@ -464,10 +464,14 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     # Prepare the whole batch before LBF can remove a replacement source.
     causes = prepare_graveyard_entry_causes(state, plans.values())
     emit_event_batch(state, "leaves_battlefield", events)
+    entry_receipts = []
     for cid in ids:
         card = state.cards[cid]
-        execute_graveyard_entry(state, plans[cid], prevalidated=True, _prepared_cause=causes[cid])
+        execute_graveyard_entry(state, plans[cid], prevalidated=True,
+                               _prepared_cause=causes[cid], _entry_receipts=entry_receipts)
         state.log.append(f"{state.players[player_id].name} sacrifices {card.name}.")
+    if entry_receipts:
+        emit_event_batch(state, 'enters_graveyard', entry_receipts)
     emit_event_batch(state, "sacrifice", events)
     for event in events:
         card = state.cards[event["card_id"]]

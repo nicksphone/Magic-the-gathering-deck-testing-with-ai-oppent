@@ -2,6 +2,35 @@
 
 ## Current Execution Order
 
+### Mill And Selected Sacrifice Publication (Qualified Candidate)
+
+The composition on `cb1ba8f` passes **1,263 cases across 37 whole modules in
+627.44s**, with zero failures/errors/skips/network attempts and unchanged source
+hashes. Frontend lint, configured tests and build pass. Original timing audits
+remain unchanged and now pass with the current composition.
+
+Only `mill_cards` and the selected sacrifice branch change. Mill preflights
+the retained original top-card set and all static causes before removals, so
+replacement shuffles do not cause sequential repops. Both callers publish
+committed graveyard entries after the selected cohort completes. Existing
+discard handling and unrelated keyword/destruction behavior remain intact.
+See [the acceptance record](docs/testing/mill-sacrifice-current.md).
+
+Next execution order:
+
+1. Complete simultaneous SBA/destruction publication and the separately observed
+   colored-damage protection gap, preserving strict canonical audits.
+2. Implement human legend keeper/replacement choices with retained references,
+   restart/atomicity checks and compatible public action views.
+3. Preserve canonical face colors across all provenance-backed offline seed faces.
+4. Finish stack-face lifecycle, canonical self-cast triggers and resumable
+   competing replacement choices without inferred player decisions.
+5. Qualify paid optional integration and measured tactical/strategic AI changes.
+6. Complete natural games, full-suite, clean install, browser/LAN/HTTPS and
+   long-session acceptance. No milestone here establishes professional AI.
+
+Earlier execution lists below are historical; this order supersedes them.
+
 ### Aura And Offline Import Metadata (Qualified Candidate)
 
 The composition on published milestone `a0e7dc8` repairs the audited illegal-Aura

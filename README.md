@@ -18,6 +18,11 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- Supported simultaneous mill and selected sacrifice instructions publish genuine
+  graveyard-entry receipts only after all selected moves commit. Mill retains its
+  original top-card set through replacement shuffles; wider simultaneous event
+  handling and competing-replacement continuations remain separate.
+
 - Illegal noncreature Aura departures capture battlefield last-known information
   before shared graveyard/replacement handling. Simultaneous multi-Aura behavior
   remains a separate acceptance task.

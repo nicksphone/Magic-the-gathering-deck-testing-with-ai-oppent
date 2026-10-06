@@ -1283,14 +1283,22 @@ def shuffle_graveyard_into_library(state: MatchState, controller: int, payload: 
 
 
 def mill_cards(state: MatchState, controller: int, payload: dict) -> None:
-    from rules_engine.zone_actions import put_into_graveyard
+    from rules_engine.replacement import select_graveyard_entry_plan
     player = state.players[int(payload.get('target_player', controller))]
+    count = min(len(player.library), max(0, int(payload.get('amount', 0))))
+    # Retain the simultaneous top set even if a replacement shuffles the library.
+    ids = list(reversed(player.library[-count:])) if count else []
+    plans = {cid: select_graveyard_entry_plan(state, cid) for cid in ids}
+    causes = prepare_graveyard_entry_causes(state, plans.values())
     events = []
-    for _ in range(min(len(player.library), max(0, int(payload.get('amount', 0))))):
-        cid = player.library.pop()
-        put_into_graveyard(state, cid)
+    entry_receipts = []
+    for cid in ids:
+        execute_graveyard_entry(state, plans[cid], prevalidated=True,
+                               _prepared_cause=causes[cid], _entry_receipts=entry_receipts)
         events.append({'card_id': cid, 'controller': player.id})
         state.log.append(f'{player.name} mills {state.cards[cid].name}.')
+    if entry_receipts:
+        emit_event_batch(state, 'enters_graveyard', entry_receipts)
     emit_event_batch(state, 'mill', events)
 
 

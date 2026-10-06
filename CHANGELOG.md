@@ -2,6 +2,15 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Compose retained mill and selected annihilator sacrifice batches on `cb1ba8f`:
+  1,263 passes across 37 declared whole modules in 627.44s, with zero failures,
+  errors, skips or network attempts and unchanged source hashes. Preserve the
+  original selected mill set through real replacement shuffles; collect genuine
+  graveyard entries after all selected moves commit. Frontend lint/configured
+  tests/build pass after supplying the required test-interpreter setting.
+  Death-batch publication, protection, human keeper and broader replacement
+  continuation gaps remain separate, not hidden behind this bounded result.
+
 - Qualify illegal-Aura departure preflight and read-only offline import metadata
   on `a0e7dc8`: 1,483 passes across 68 whole modules in 1047.52s, with zero
   failures/errors/skips, unchanged source hashes and verified loopback-only HTTP
