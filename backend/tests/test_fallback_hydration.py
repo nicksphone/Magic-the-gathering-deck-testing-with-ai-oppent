@@ -111,7 +111,8 @@ def test_hydrate_deck_cards_merges_partial_cache_rows_with_fallback() -> None:
     assert card["type_line"] == "Legendary Planeswalker"
 
 
-def test_hydrate_deck_cards_uses_face_image_when_root_image_missing() -> None:
+def test_hydrate_deck_cards_uses_face_image_when_root_image_missing(monkeypatch) -> None:
+    monkeypatch.setattr("card_data.display.local_image_available", lambda uri: uri == "/card-images/delver-front.png")
     class FakeRepo:
         def get_cached_cards_by_names(self, names):
             del names

@@ -18,6 +18,13 @@ LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
+- AI spell materialization checks harmful friendly damage against legal targets
+  while preserving demonstrated beneficial sacrifice/death interactions. This
+  is a bounded tactical safeguard, not an expert-policy or balance guarantee.
+- Card and token presentation rechecks local image availability after cache
+  eviction and selects honest offline fallback art. Repair occurs on resolver
+  access; previously stored match image URLs can still return 404 until refreshed.
+
 - Queued extra turns and additional combat/main phases for the currently admitted
   complete clause families, with persisted phase visits and ordinary successor
   tracking. Other turn-changing mechanics remain unsupported.

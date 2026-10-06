@@ -98,10 +98,14 @@ def test_sync_card_by_name_falls_back_to_cached_card_on_http_error(monkeypatch) 
     assert repo.upsert_called is False
 
 
-def test_sync_card_by_name_merges_fallback_text_for_blank_cached_card() -> None:
+def test_sync_card_by_name_merges_fallback_text_for_blank_cached_card(monkeypatch) -> None:
     repo = _DummyRepo(cached=_BlankCachedCard())
     service = ScryfallSyncService(repo)
 
+    def _offline(*args, **kwargs):
+        raise httpx.ConnectError("Declared offline transport", request=httpx.Request("GET", "https://api.scryfall.com/cards/named"))
+
+    monkeypatch.setattr("card_data.sync.get_with_backoff", _offline)
     out = service.sync_card_by_name("Clarion Spirit")
 
     assert "second spell each turn" in out["oracle_text"]

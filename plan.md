@@ -2,6 +2,25 @@
 
 ## Current Execution Order
 
+### Friendly Damage And Media Cache Recovery
+
+The isolated candidate on `efbd52d` composes the friendly-damage materialization
+repair and local media-cache eviction recovery. All 282 cases across 22 declared
+whole modules pass in 80.80s with zero failures, errors, skips or network attempts.
+Pre-gate source hashes remain unchanged. Immutable historical AI receipts are
+compared through current snapshot normalization with explicit scheduler checks;
+queued-schedule negative controls remain strict. Approved media fixtures model
+actual file availability without fabricated canonical art or weakened assertions.
+See [the coupled acceptance record](docs/testing/friendly-media-current.md).
+
+Remaining: naturally completed multi-archetype AI games, wider decision-quality
+and performance evidence, stale stored image URL handling, and actual browser/LAN
+qualification. This repair is not neural training or professional-play acceptance.
+The separate committed-graveyard consumer/emitter currently passes both Kozilek
+cases in parent testing but has two retained shuffle-reference failures; it is
+not part of this published-source slice. Direct death migrations and paid optional
+effects remain separately gated; do not infer their completion from this result.
+
 ### Printed Replacement Costs And Static Causes
 
 The queued/lazy milestone `a6cf671` now has a qualified current-source
@@ -22,8 +41,9 @@ owner-graveyard shuffle resolver with actual retained stack context. Qualify
 Stifle, source exile in response, owner/controller, APNAP and restart. Migrate
 direct death callers only after lawful canonical audits; do not weaken protection
 or indestructible to create tests. Public competing-cost selection and an
-authentic post-mana eligibility-change episode remain unqualified. Separately
-compose the now-qualified AI repair and media eviction repair on this source.
+authentic post-mana eligibility-change episode remain unqualified. AI repair and
+media eviction recovery are composed above; broader natural-game and stale-URL
+acceptance remain open.
 
 ### Queued Sequences, Static Grants And Lazy Recovery
 
@@ -47,11 +67,11 @@ dependencies. The earlier interrupted runs remain separate historical evidence;
 this is not full-suite, browser, deployment or expert-AI acceptance.
 
 Next gates: compose paid optional effects only after their partitioned gates;
-finish newer-source qualification of harmful friendly-damage AI materialization;
+expand natural-game qualification beyond the composed friendly-damage repair;
 retain current-source self-graveyard cost/static-cause qualification as new
 caller families are admitted. Worker-only results do not certify later sources.
-Kozilek triggers, direct death-route migrations and image-cache eviction recovery
-remain separate open work. Private HTTP harness recovery is included in the
+Kozilek trigger lifecycle, direct death-route migrations and stale stored image
+URL recovery remain separate open work. Private HTTP harness recovery is included in the
 completed coupled gate. See the candidate acceptance record below.
 
 ### Entry Bookkeeping And Complete Article Mill

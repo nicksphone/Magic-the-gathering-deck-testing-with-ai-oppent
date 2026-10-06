@@ -3083,7 +3083,84 @@ class AIAgent:
         from ai.casting_resources import choose_resource_payment
         action = self._materialize_action_without_resources(state, move, player_id,
             allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
-        return choose_resource_payment(self, state, action, player_id)
+        action = choose_resource_payment(self, state, action, player_id)
+        if not self._harmful_friendly_damage(state, action, player_id):
+            return action
+        from rules_engine.cast_choice import build_cast_hints
+        card = _card_for_move(state, action)
+        hints = build_cast_hints(state, card, player_id, action.get('targets') or {})
+        alternatives = {target['id'] for key, group in hints.items()
+                        if key.endswith('_targets') and isinstance(group, list)
+                        for target in group if isinstance(target, dict) and target.get('id') in state.cards
+                        and state.cards[target['id']].zone == Zone.BATTLEFIELD
+                        and state.cards[target['id']].controller == 3-player_id}
+        for cid in sorted(alternatives, key=lambda cid: (
+                self._creature_threat_score(state, cid, player_id)
+                if 'Creature' in effective_types(state, cid)
+                else self._noncreature_permanent_threat_score(state, cid, player_id), cid), reverse=True):
+            redirected = self._materialize_action(state, {**action,
+                'targets': {**action.get('targets', {}), 'target_card_id': cid}}, player_id,
+                allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
+            if not redirected.get('_invalid_ai_choice'):
+                from rules_engine.action_validation import ActionRejected, checked_action
+                try:
+                    checked_action(state, RulesEngine(), player_id, redirected)
+                except ActionRejected:
+                    continue
+                return redirected
+        return {**action, '_invalid_ai_choice': True}
+
+    def _harmful_friendly_damage(self, state, action, player_id):
+        if (not isinstance(state, MatchState) or action.get('_invalid_ai_choice')
+                or action.get('type') != 'cast_spell'):
+            return False
+        target = state.cards.get((action.get('targets') or {}).get('target_card_id'))
+        if target is None or target.zone != Zone.BATTLEFIELD or target.controller != player_id:
+            return False
+        from rules_engine.oracle_effects import infer_effect_from_oracle
+        effect, payload = infer_effect_from_oracle(state, _card_for_move(state, action), player_id,
+            action.get('targets') or {}, report_unsupported=False)
+        if (payload.get('effect_key') if effect == 'conditional_instruction' else effect) != 'deal_damage':
+            return False
+        from ai.pending_effects import friendly_destruction_profit, _projection_copy
+        choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype,
+                              opponent_archetype=self.opponent_archetype)
+        profitable = friendly_destruction_profit(state, player_id, action,
+            own_choice_action=lambda projected, legal, pid: choice_agent.choose_action(projected, legal, pid).action)
+        if profitable is not None:
+            return not profitable
+        from rules_engine.action_validation import ActionRejected, checked_action
+        rules = RulesEngine()
+        try:
+            projected = checked_action(_projection_copy(state), rules, player_id, action)
+        except ActionRejected:
+            return False
+        original_stack = tuple(item.id for item in state.stack)
+        if (tuple(item.id for item in projected.stack[:-1]) != original_stack
+                or len(projected.stack) != len(original_stack) + 1):
+            return False
+        announced = projected.stack[-1].id
+        # Stop before older effects or any unresolved choice/payoff; never guess a library continuation.
+        while projected.stack and projected.stack[-1].id == announced:
+            if projected.pending_mechanic_choice or projected.pending_trigger_order or projected.pending_replacement_choice:
+                return False
+            try:
+                rules.take_action(projected, projected.priority_player, {'type': 'pass_priority'}, reject_invalid=True)
+            except ActionRejected:
+                return False
+        if projected.winner is not None:
+            return projected.winner != player_id
+        if (tuple(item.id for item in projected.stack) != original_stack
+                or projected.pending_mechanic_choice or projected.pending_trigger_order
+                or projected.pending_replacement_choice):
+            return False
+        expected_hand = [cid for cid in state.players[player_id].hand if cid != action.get('card_id')]
+        if (any(player.library != state.players[pid].library for pid, player in projected.players.items())
+                or projected.players[3-player_id].hand != state.players[3-player_id].hand
+                or projected.players[player_id].hand != expected_hand):
+            return False
+        return (projected.cards[target.id].zone != Zone.BATTLEFIELD
+                and evaluate_board(projected, player_id) < evaluate_board(state, player_id))
 
     def _materialize_action_without_resources(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False, allow_zero_x: bool = False) -> dict:
         mtype = move.get("type")

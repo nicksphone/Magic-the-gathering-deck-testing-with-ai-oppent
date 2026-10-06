@@ -2,6 +2,13 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Compose friendly-damage AI materialization and media-cache eviction recovery
+  on `efbd52d`: 282 cases across 22 complete modules pass in 80.80s with offline
+  isolation and preserved source hashes. Preserve beneficial friendly-death
+  interactions, explicit historical scheduler assertions and honest fallback art.
+  Stale stored image URLs and broader expert-AI/browser acceptance remain open.
+  See `docs/testing/friendly-media-current.md` for exact scope and evidence.
+
 - Compose printed self-graveyard replacement plans, selected cost routing and
   trusted static shuffle receipts on the queued/lazy milestone. Capture batch
   references before departures and retain actual owner/source identities;
