@@ -2,6 +2,17 @@
 
 ## Current Execution Order
 
+### Backend Dependency Compatibility
+
+Declared-requirements scanning identified 15 distinct advisories across three
+packages (the raw report repeats each record). The compatible framework/parser/
+test-runner upgrade has a clean fresh scan and passes a coupled 600-case gate
+across 13 whole modules on the current library/Ninja source in 692.16 seconds.
+Fresh frontend fixture tests, lint and build pass. No source assertion changes
+or application-code workaround was needed. TestClient/httpx and datetime
+deprecation warnings remain; this is not a full-suite, exploitability, hosted-CI,
+browser or network-security certificate. Live dependency migration is pending.
+
 ### Private Library Choices
 
 The current Ninja composition now includes exact pending-context validation for

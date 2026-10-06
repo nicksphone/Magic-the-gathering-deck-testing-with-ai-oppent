@@ -182,6 +182,11 @@ capture source, while isolation-sensitive backend fixtures reject physical Git
 metadata in their runtime. Read each qualification's command before execution.
 
 Scoped green gates are not a whole-suite or release certificate. The recent
+declared Python dependency upgrade passes 600 coupled checks across 13 complete
+API, private-choice, library, recovery, session, sideboard and image modules.
+The refreshed requirements advisory scan is clean; remaining TestClient/httpx
+and datetime deprecation warnings are not silently suppressed.
+The earlier
 six-patch composition passed 2,024 checks across 83 modules. Separate token/cold
 classification and trigger-context compositions passed 153 and 123 checks.
 Human-flow qualification passed 212 assertions across 16 actual-App scenarios.

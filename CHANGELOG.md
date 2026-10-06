@@ -2,6 +2,12 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Upgrade FastAPI to 0.142.2, pin Starlette 1.3.1, and update pytest 9.0.3 and
+  python-multipart 0.0.31 after a fresh declared-requirements advisory scan.
+  The baseline has 15 distinct package/advisory pairs (30 duplicate-inclusive
+  records); the upgraded scan is clean. All 600 checks across 13 complete
+  current-library/API/recovery/image modules pass in 692.16s. Frontend contracts,
+  lint and build also pass. Deprecation warnings and full-release gates remain.
 - Preserve explicitly selected private library choices when consuming legitimate
   whole legal views. Eight server-owned continuation fields must match current
   pending state exactly before normalization; client continuations never execute.
