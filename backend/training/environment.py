@@ -525,7 +525,10 @@ class TrainingEnvironment:
                            'top_ids', 'bottom_any_order', 'bottom_random'}
                 contract = 'Mechanic choice'
                 # Whole engine views carry continuations, not authoritative input.
-                context = {'player_id', 'effect_controller', 'followup_effect', 'resolving_item'}
+                context = {'player_id', 'effect_controller', 'followup_effect', 'resolving_item',
+                           'controller', 'amount', 'bottom_ids', 'effect_key',
+                           'continuation_controller', 'continuation_effects',
+                           'counter_continuation_queue', 'draw_continuation_queue'}
                 pending = self._state.pending_mechanic_choice or {}
                 actor = self.acting_seat if seat is None else seat
                 _seat(actor)

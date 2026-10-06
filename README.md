@@ -137,6 +137,12 @@ priors do not by themselves teach full Oracle semantics or prove play quality.
 
 ## Testing
 
+Private library-choice intent handling preserves explicit selections and order
+from owned legal views for the audited scry, surveil and look/select families.
+Server continuation metadata must match the current pending state exactly;
+it cannot be supplied as new client execution instructions. See
+[the bounded contract](docs/testing/library-choice-context-correction.md).
+
 **Do not run backend tests against the live checkout/database.** API fixtures
 use source-relative SQLite. Run a disposable local copy without a physical
 `.git` directory; never execute SQLite on NFS. From the repository root:

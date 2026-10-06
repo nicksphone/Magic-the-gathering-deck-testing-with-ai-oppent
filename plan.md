@@ -2,6 +2,18 @@
 
 ## Current Execution Order
 
+### Private Library Choices
+
+The current Ninja composition now includes exact pending-context validation for
+the six audited canonical library cards (scry, surveil and look/select/order).
+Original 288 audit cases and 630 correction cases remain unchanged. The parent
+five-module gate passes 975 checks in 317.39 seconds with unchanged source hashes;
+the worker's broader 24-module composition passes 2,332 checks. Counts overlap.
+AST parity proves only eight context literals were added; typed choices, privacy,
+raw API strictness, foretell and Ninja behavior remain unchanged. The land/pass
+combined candidate and backend dependency upgrade are still pending separate
+qualification; this milestone does not certify either or the full release.
+
 ### Release Check Isolation
 
 Fresh declared dependency installation is now exercised in a new local Python

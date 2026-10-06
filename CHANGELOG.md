@@ -2,6 +2,12 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Preserve explicitly selected private library choices when consuming legitimate
+  whole legal views. Eight server-owned continuation fields must match current
+  pending state exactly before normalization; client continuations never execute.
+  Original audit and correction cases plus current Ninja/action neighbors pass
+  all 975 parent checks in 317.39s. Worker composition independently passes 2,332
+  checks across 24 complete modules; counts overlap, not independent matches.
 - Update the transitive build dependency source-map-js from 1.2.1 to 1.2.2
   for GHSA-68fv-2mgg-jv7q without changing direct dependencies. Fresh npm ci,
   lint, build and complete frontend tests pass; the refreshed full npm audit

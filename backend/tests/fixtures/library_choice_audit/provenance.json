@@ -1,0 +1,17 @@
+{
+  "fetched_at_utc": "Tue, 06 Oct 2026 05:30:27 GMT",
+  "request_url": "https://api.scryfall.com/cards/named?exact=Preordain",
+  "actual_uri": "https://api.scryfall.com/cards/dd29a0e5-c1de-4e8a-8866-715e9f9cde1f",
+  "scryfall_id": "dd29a0e5-c1de-4e8a-8866-715e9f9cde1f",
+  "oracle_id": "ac641490-ca14-48d7-8cc4-b69ce984befa",
+  "raw_sha256": "cd8db27755b759b23dfeaa0c989efce02d62e6e2eb751fb1e33b3ad479d7a783",
+  "existing_sources": {
+    "Opt": "backend/tests/fixtures/activated_top_selection/opt.json",
+    "Consider": "backend/tests/fixtures/surveil_mill.json",
+    "Notion Rain": "backend/tests/fixtures/surveil_mill.json",
+    "Impulse": "backend/tests/fixtures/activated_top_selection/impulse.json",
+    "Memory Deluge": "backend/tests/fixtures/activated_top_selection/memory-deluge.json"
+  },
+  "full_oracle_preserved": true,
+  "no_existing_fixture_changes": true
+}
