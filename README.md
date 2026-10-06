@@ -11,25 +11,17 @@ Known-gap diagnostics are useful, but an absent warning does not prove support.
 See [the finish plan](plan.md) for remaining acceptance work and
 [the changelog](CHANGELOG.md) for historical changes.
 
-This checkout is an **unreleased integration candidate**. Its startup-classification
-and scoped SBA-query additions pass 71 focused and 127 neighbor checks. The
-optional-reveal/day-night composition passes 95 checks after a reviewed legacy
-timing-test correction. Actual-App reveal/day-night flows pass 362 assertions;
-the subsequent combat/import composition passes 218 checks. Broader release
-acceptance and newly identified private-choice/foretell consumer gaps remain open.
-These results do not describe the currently running app.
-
-The subsequent isolated private-choice/foretell composition passes 517 checks
-across 12 modules, including explicit Delver/Recruitment Officer choices,
-seeded autoplay, restart and privacy controls. Whole choice views are checked
-against current owned context before normalization. Nullable fields allowed by
-the existing public schema remain compatible. The full release gate is pending.
+This branch is an **unreleased integration candidate**, not necessarily the
+version running on the live servers. Scoped acceptance and remaining work are
+recorded in [the finish plan](plan.md) and `docs/testing/`. Full-suite, browser,
+LAN deployment and broader AI-quality qualification remain open.
 
 ## Current Features
 
-- Strict Suspend and keep-hand training intents, with explicit source/bottom
+- Strict Mulligan, Suspend and keep-hand training intents, with explicit source/bottom
   choices and current-actor validation before normalization. Supplied Suspend
-  display metadata must match the current offered action.
+  display metadata must match the current offered action. Supplied Mulligan
+  counts must match the current actor's offer and cannot override engine state.
 - Complete temporary group keyword grants for supported creature/permanent
   clauses. Recipients are fixed at resolution; later entrants and reentered
   objects do not inherit the grant. Canonical Boros Charm and Heroic Intervention

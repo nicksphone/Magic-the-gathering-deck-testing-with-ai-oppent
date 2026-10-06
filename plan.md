@@ -2,6 +2,27 @@
 
 ## Current Execution Order
 
+### Mulligan Consumer Completion
+
+Mulligan intents now use the public chosen-parameter schema before normalization.
+Only strict nonnegative integer `current_mulligans` display is accepted, and it
+must match the current actor's current legal offer. Unknown/null aliases and
+stale/pending/wrong-actor contexts reject before helpers. No keep/bottom/actor
+choice is inferred. The actor-first boundary and all 23 prior bindings remain.
+
+The current upgraded-framework gate passes 310 cases across 10 whole modules
+in 277.61s: unchanged original46, new guard52, current actor composition22,
+Suspend/keep neighbors and London round/choice/timing/environment tests. Full
+source manifests and JUnit counts are verified, with no skips or xfails. The
+older worker98/346 gates remain separate pinned evidence, not extra matches.
+Acceptance: [current composition](docs/testing/mulligan-current-composition.md).
+
+Next: finish the separate full backend baseline and diagnose long-running
+Control/Ramp BO3 decisions from captured state, without hiding failures or
+reducing AI ambition merely to pass a smoke test. Queued-turn/phase, entry/mill,
+paid-trigger and shuffle-observer workers are active; their frozen batches must
+be composed and tested against current source before becoming release features.
+
 ### Suspend/Keep, Actor Validation And Group Keywords
 
 Suspend and keep-hand consumers now validate public action fields before

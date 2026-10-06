@@ -2,6 +2,14 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Validate Mulligan intents before normalization, rejecting unknown/null choice
+  aliases and stale or malformed count metadata before helpers. Preserve the
+  current actor-first boundary and all 23 existing consumer bindings. Current
+  qualification passes 310 cases across 10 whole modules in 277.61s, including
+  unchanged original audit cases and both-seat London rounds/private bottom
+  choices/HTTP restart. Add a separately passing inventory regression requiring
+  every public action type to have a consumer model. Simplify the README to current capabilities rather than
+  accumulated historical patch counts. See the composition acceptance record.
 - Validate Suspend/keep-hand intents and reject invalid actor values before
   normalization or helper calls. Preserve explicit choices and prior consumer
   contracts. The pre-keyword-repair composition passes 1,507 checks across 25

@@ -433,7 +433,7 @@ class TrainingEnvironment:
             ManaAbilityAction, TapAction, NonlandManaAction, BulkTapAction, CastAction, AbilityAction,
             EquipAction, CrewAction, CycleAction, MechanicChoice, OptionalEffectChoice, TriggerChoice,
             ReplacementChoice, TriggerTargetChoice, AttackAction, BlockAction, ForetellAction, NinjutsuAction,
-            LandAction, PassAction, SuspendAction, KeepAction,
+            LandAction, PassAction, SuspendAction, KeepAction, MulliganAction,
         )
         models = {'activate_mana_ability': ManaAbilityAction, 'tap_land_for_mana': TapAction,
                   'tap_nonland_for_mana': NonlandManaAction, 'tap_lands_bulk': BulkTapAction,
@@ -445,7 +445,7 @@ class TrainingEnvironment:
                   'choose_replacement': ReplacementChoice, 'choose_trigger_target': TriggerTargetChoice,
                   'attack': AttackAction, 'block': BlockAction, 'foretell': ForetellAction,
                   'ninjutsu': NinjutsuAction, 'play_land': LandAction, 'pass_priority': PassAction,
-                  'suspend': SuspendAction, 'keep_hand': KeepAction}
+                  'suspend': SuspendAction, 'keep_hand': KeepAction, 'mulligan': MulliganAction}
         if isinstance(intent, dict) and isinstance(intent.get('type'), str) and intent['type'] in models:
             display = {'card_name', 'mana_cost', 'cost_options', 'target_hints', 'outputs',
                        'cost_text', 'ability_label', 'label', 'payment_options',
@@ -482,6 +482,23 @@ class TrainingEnvironment:
                     KeepAction.model_validate(intent)
                 except _INPUT_ERRORS as exc:
                     raise ActionRejected('Invalid keep hand intent') from exc
+            elif intent['type'] == 'mulligan':
+                display = {'current_mulligans'}
+                contract = 'Mulligan'
+                try:
+                    MulliganAction.model_validate({key: value for key, value in intent.items()
+                                                   if key not in display})
+                    if 'current_mulligans' in intent:
+                        count = intent['current_mulligans']
+                        if type(count) is not int or count < 0:
+                            raise ActionRejected('Mulligan count must be integer display metadata')
+                        actor = self.acting_seat if seat is None else seat
+                        view = next((move for move in self._rules.legal_moves(deepcopy(self._state), actor)
+                                     if move['type'] == 'mulligan'), None)
+                        if view is None or count != view.get('current_mulligans'):
+                            raise ActionRejected('Mulligan metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid mulligan intent') from exc
             elif intent['type'] == 'foretell':
                 display = {'card_name', 'mana_cost', 'fixed_costs', 'granted_reductions', 'card_view'}
                 contract = 'Foretell'
