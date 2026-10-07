@@ -11,7 +11,7 @@ from game_state.state import MatchFactory, draw_card
 from main import (
     ACTIVE_MATCHES, MatchController, NextGameRequest, _controller_snapshot,
     _post_step_finalize, _persist_active_match, _restore_active_matches, _serialize_match_controller,
-    _start_next_game_state, app, next_game,
+    _start_next_game_state, app, next_game, apply_sideboard, SideboardRequest,
 )
 from persistence.db import engine, init_db
 from persistence.repository import Repository
@@ -113,6 +113,8 @@ def test_drawn_game_keeps_score_and_previous_chooser_after_restore():
             url = f"/matches/{restored.state.id}"
             assert client.get(url).json()["next_play_draw_chooser"] == 2
             assert client.post(f"{url}/next-game", json={"player_id": 1, "play_first": True}).status_code == 422
+            for pid in (1, 2):
+                client.post(f"{url}/sideboard", json={"player_id": pid, "cards_out": [], "cards_in": []}).raise_for_status()
             result = client.post(f"{url}/next-game", json={"player_id": 2, "play_first": False})
             assert result.status_code == 200, result.text
             view = result.json()
@@ -150,6 +152,9 @@ def test_loser_may_choose_draw_and_choice_is_not_open_to_winner():
         assert wrong.value.status_code == 422
         assert match.game_number == 1
         assert match.state.winner == 1
+        with Session(engine) as session:
+            for pid in (1, 2):
+                apply_sideboard(match.state.id, payload=SideboardRequest(player_id=pid, cards_out=[], cards_in=[]), repo=Repository(session))
         result = next_game(match.state.id, payload=NextGameRequest(player_id=2, play_first=False))
         assert result["game_number"] == 2
         assert result["active_player"] == 1
@@ -163,6 +168,8 @@ def test_ai_loser_chooses_play_without_human_payload():
     match = _match(controllers={1: "human", 2: "ai"})
     ACTIVE_MATCHES[match.state.id] = match
     try:
+        with Session(engine) as session:
+            apply_sideboard(match.state.id, payload=SideboardRequest(player_id=1, cards_out=[], cards_in=[]), repo=Repository(session))
         result = next_game(match.state.id)
         assert result["active_player"] == 2
         assert result["next_play_draw_chooser"] is None
@@ -178,6 +185,8 @@ def test_http_choice_and_restored_seed_provenance():
         try:
             rejected = client.post(f"/matches/{match_id}/next-game", json={"player_id": 1, "play_first": True})
             assert rejected.status_code == 422
+            for pid in (1, 2):
+                client.post(f"/matches/{match_id}/sideboard", json={"player_id": pid, "cards_out": [], "cards_in": []}).raise_for_status()
             chosen = client.post(f"/matches/{match_id}/next-game", json={"player_id": 2, "play_first": False})
             assert chosen.status_code == 200, chosen.text
             assert (chosen.json()["active_player"], chosen.json()["game_seed"]) == (1, None)

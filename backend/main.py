@@ -1008,6 +1008,13 @@ def next_game(match_id: str, payload: NextGameRequest | None = None, repo: Repos
         if payload is not None and payload.play_first is not None:
             raise HTTPException(status_code=422, detail={"code": "invalid_play_draw_choice", "message": "AI seat chooses play or draw"})
         play_first = True
+    unfinished = [pid for pid in (1, 2)
+                  if match.controllers.get(pid) == "human" and pid not in match.sideboarded_players]
+    if unfinished:
+        raise HTTPException(status_code=409, detail={
+            "code": "sideboarding_not_ready", "players": unfinished,
+            "message": "Each human seat must submit swaps or confirm no swaps before the next game.",
+        })
     _start_next_game_state(match, play_first=play_first, repo=repo)
     _persist_active_match(repo, match)
     return _serialize_match_controller(match)

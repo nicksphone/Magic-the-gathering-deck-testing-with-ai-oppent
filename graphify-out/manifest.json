@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2177587,
-    "ast_hash": "39bad8d7b156a7fe6e0465153d78d59b",
+    "mtime": 1791365391.1493995,
+    "seen": 1791365465.1186647,
+    "ast_hash": "17b223e1edde259bbad3df12b274ae50",
     "semantic_hash": ""
   },
   "backend/persistence/__init__.py": {
@@ -3240,9 +3240,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_sideboarding.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2189844,
-    "ast_hash": "c8f231c3a109bbaf71c83103599341b9",
+    "mtime": 1791365391.1503994,
+    "seen": 1791365465.1203432,
+    "ast_hash": "f0de18ad5c223ef3ff9769cda09e7358",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_stack_response_delta.py": {
@@ -4554,9 +4554,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_live_bo3_policy.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2195861,
-    "ast_hash": "879249222c55a5b5fced70bdaebb6fa5",
+    "mtime": 1791365391.1503994,
+    "seen": 1791365465.1209598,
+    "ast_hash": "fec11d63023b23ada2a6ccd586679e6c",
     "semantic_hash": ""
   },
   "backend/tests/test_live_bo3_series.py": {
@@ -5196,9 +5196,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_sideboard.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2198718,
-    "ast_hash": "9782742a3f4d5093a0edfc76abe41eb8",
+    "mtime": 1791365391.1503994,
+    "seen": 1791365465.1212897,
+    "ast_hash": "2faf6b3b061a9fcc9330462a860261af",
     "semantic_hash": ""
   },
   "backend/tests/test_simulation_admission.py": {
@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791360111.1267822,
-    "seen": 1791360307.6766357,
-    "ast_hash": "38695acd683788e7490b686dc6e6f7e3",
+    "mtime": 1791365391.1493995,
+    "seen": 1791365465.1216211,
+    "ast_hash": "b6295d289d2a13076fc83302ca076da9",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791361603.2608192,
-    "seen": 1791361675.6266983,
-    "ast_hash": "5c129886ec8344d976ac4293eddfd440",
+    "mtime": 1791365391.2133985,
+    "seen": 1791365465.1227925,
+    "ast_hash": "e9967b6b06724c95e0cd2a2be15be271",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13092,9 +13092,9 @@
     "semantic_hash": ""
   },
   "docs/testing/offline-assets-cold-component.md": {
-    "mtime": 1791361255.1593091,
-    "seen": 1791361675.626406,
-    "ast_hash": "4c6857fd64f5bca774cd65a04b050487",
+    "mtime": 1791365271.1232948,
+    "seen": 1791365465.1225092,
+    "ast_hash": "fcce98d61e2af0b9c7b73d6273f51a6c",
     "semantic_hash": ""
   },
   "audit/exile-counter-body/body-goldens/test_full_body_cda.py": {
@@ -13299,6 +13299,48 @@
     "mtime": 1791361562.2214677,
     "seen": 1791361675.6264758,
     "ast_hash": "e73268aa5ca33a39afb9c10cd0c7613d",
+    "semantic_hash": ""
+  },
+  "backend/tests/human_bo3_cold_worker.py": {
+    "mtime": 1791365391.1513996,
+    "seen": 1791365465.120026,
+    "ast_hash": "e012ce489797922c636486460b6db193",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_human_bo3_interactive.py": {
+    "mtime": 1791365391.1513996,
+    "seen": 1791365465.1207983,
+    "ast_hash": "6744d065b07d75b7e3037fea383eaee4",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_human_bo3_native_swaps.py": {
+    "mtime": 1791365391.1513996,
+    "seen": 1791365465.1208003,
+    "ast_hash": "f7c67c229f0d2b0270f8062bce987689",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_human_bo3_readiness.py": {
+    "mtime": 1791365391.1513996,
+    "seen": 1791365465.1208022,
+    "ast_hash": "75fc3627b8c3e8868ad5a77d4bc27129",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_human_bo3_terminal_restore.py": {
+    "mtime": 1791365391.1513996,
+    "seen": 1791365465.1208036,
+    "ast_hash": "169ef47e57958c60900cacc1f26ca4bf",
+    "semantic_hash": ""
+  },
+  "frontend/tests/human-bo3-readiness.cjs": {
+    "mtime": 1791365391.1513996,
+    "seen": 1791365465.1218195,
+    "ast_hash": "aa85897cedcf28455e97ccf820240b06",
+    "semantic_hash": ""
+  },
+  "backend/docs/testing/human-bo3-readiness.md": {
+    "mtime": 1791365391.2123985,
+    "seen": 1791365465.1219594,
+    "ast_hash": "3c89918e361a3b092b6d29aa5be4a497",
     "semantic_hash": ""
   }
 }

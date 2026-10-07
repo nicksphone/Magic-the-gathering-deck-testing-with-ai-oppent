@@ -159,6 +159,7 @@ export function Controls(props: Props) {
   const humanSeats = [1, 2].filter((pid) => props.match?.controllers?.[String(pid)] === "human");
   const selectedSbPlayer = humanSeats.includes(sbPlayer) ? sbPlayer : humanSeats[0];
   const sideboardInventory = props.match?.sideboarding?.[String(selectedSbPlayer)];
+  const unfinishedSideboardPlayers = humanSeats.filter((pid) => props.match?.sideboarding?.[String(pid)]?.applied !== true);
   useEffect(() => { setSbOut(""); setSbIn(""); }, [selectedSbPlayer]);
   const gamesNeeded = props.match?.games_needed ?? Math.floor((props.match?.best_of ?? 3) / 2) + 1;
   const p1Score = props.match?.score?.["1"] ?? 0;
@@ -684,7 +685,10 @@ export function Controls(props: Props) {
       {betweenGames ? (
         <div className="sideboard-panel">
           <h3>Between Games</h3>
-          <p className="status-line">Game complete. Human-controlled seats may sideboard once before the next game.</p>
+          <p className="status-line">Each human seat must submit sideboard swaps or confirm no swaps before the next game.</p>
+          {unfinishedSideboardPlayers.length > 0 ? <p className="status-line" role="status">
+            Waiting for {unfinishedSideboardPlayers.map((pid) => `P${pid}`).join(", ")} to finish sideboarding.
+          </p> : null}
           <div className="row">
             {humanSeats.length > 0 ? <>
               <select aria-label="Sideboarding player" value={selectedSbPlayer} onChange={(e) => setSbPlayer(Number(e.target.value))}>
@@ -693,11 +697,14 @@ export function Controls(props: Props) {
               <button disabled={sideboardInventory?.applied} onClick={() => props.onApplySideboard(selectedSbPlayer, parseDeckLines(sbOut), parseDeckLines(sbIn))}>
                 {sideboardInventory?.applied ? "Sideboard Applied" : "Apply Sideboard Swaps"}
               </button>
-            </> : <span className="status-line">AI sideboarding strategy is not implemented.</span>}
+              <button disabled={sideboardInventory?.applied} onClick={() => props.onApplySideboard(selectedSbPlayer, [], [])}>
+                Confirm No Swaps
+              </button>
+            </> : <span className="status-line">AI sideboarding is handled automatically.</span>}
             {props.match?.next_play_draw_chooser && props.match.controllers?.[String(props.match.next_play_draw_chooser)] === "human" ? <>
-              <button onClick={() => props.onNextGame(true)}>P{props.match.next_play_draw_chooser} Play First</button>
-              <button onClick={() => props.onNextGame(false)}>P{props.match.next_play_draw_chooser} Draw First</button>
-            </> : <button onClick={() => props.onNextGame()}>Start Next Game (AI chooses play)</button>}
+              <button disabled={unfinishedSideboardPlayers.length > 0} onClick={() => props.onNextGame(true)}>P{props.match.next_play_draw_chooser} Play First</button>
+              <button disabled={unfinishedSideboardPlayers.length > 0} onClick={() => props.onNextGame(false)}>P{props.match.next_play_draw_chooser} Draw First</button>
+            </> : <button disabled={unfinishedSideboardPlayers.length > 0} onClick={() => props.onNextGame()}>Start Next Game (AI chooses play)</button>}
           </div>
           {sideboardInventory ? <div className="sideboard-inventory">
             <details><summary>Current mainboard ({sideboardInventory.mainboard.reduce((n, card) => n + card.quantity, 0)})</summary>

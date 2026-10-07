@@ -63,6 +63,7 @@ def test_http_next_game_applies_ai_swaps_without_revealing_names():
         with Session(engine) as session:
             _persist_active_match(Repository(session), match)
         with TestClient(app) as client:
+            client.post(f"/matches/{state.id}/sideboard", json={"player_id": 2, "cards_out": [], "cards_in": []}).raise_for_status()
             response = client.post(f"/matches/{state.id}/next-game")
             assert response.status_code == 200, response.text
             view = response.json()

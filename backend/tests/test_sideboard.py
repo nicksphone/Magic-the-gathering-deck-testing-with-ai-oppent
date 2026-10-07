@@ -80,6 +80,7 @@ def test_sideboard_can_only_be_applied_once_per_game() -> None:
                 )
 
             match.state.winner = 1
+            apply_sideboard(state.id, payload=SideboardRequest(player_id=2, cards_out=[], cards_in=[]), repo=repo)
             next_game(state.id, payload=NextGameRequest(player_id=2, play_first=True))
             assert match.sideboarded_players == set()
     finally:

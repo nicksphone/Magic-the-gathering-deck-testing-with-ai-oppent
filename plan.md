@@ -29,7 +29,8 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - [x] Strict sideboard core entry/quantity validation and per-card inventory
   conservation: three whole modules / 49 passes on fresh isolated SQLite.
   Public quantities were already strict; internal coercion is now rejected.
-  Seeded interactive BO3 and complete browser games remain open.
+  Seeded native interactive BO3 is qualified in the checkpoint below;
+  complete browser games remain open.
   [Scoped acceptance](docs/testing/sideboard-quantity-current.md).
 - [x] Shared creature self-tap readiness and effective haste query guard:
   eight whole modules / 277 passes. Separate unchanged canonical Scout/Atlas
@@ -206,16 +207,18 @@ features or claims based on helpers alone.
 6. [ ] Verify seeded interactive BO3 transitions, loser play/draw selection,
    sideboard inventory and restart parity. Implement deliberate AI sideboarding
    or label it unavailable, never silently substitute an untested policy.
+   Current441 native/API acceptance now passes eleven whole modules / 100
+   cases, including real three-game human series, deliberate different-card
+   swaps, play/draw readiness and cold restoration. Controls callbacks and
+   frontend checks pass; actual browser series and broader policy strength
+   remain open. See `backend/docs/testing/human-bo3-readiness.md`.
 7. [ ] Run clean-checkout offline assets, API/runtime contracts, frontend tests,
    lint/build and the configured browser flow without developer-only cache files.
-   Pinned `6f9e29e` cold ASGI offline fallback passed with 155 shipped card
-   names hydrated and served without network access. The first warm attempt
-   stopped before collection on a harness logging-path denial. A separately
-   authorized warm-only continuation collected all 73 tests: 71 passed, while
-   two explicit-refresh sync tests were blocked by the endpoint guard before
-   application routing. This is not a complete passing warm gate. Both failed
-   ledgers remain immutable. See `docs/testing/offline-assets-cold-component.md`. Current-source,
-   warm-suite and actual browser qualification remain open.
+   Current441 cold ASGI fallback qualified all 155 shipped names without
+   network access, followed on the same database/cache by eight whole warm
+   modules / 73 passes. Prior pinned-source harness failures remain immutable.
+   See `docs/testing/offline-assets-cold-component.md`. Later compositions,
+   actual browser/proxy fallback and full clean-checkout release remain open.
 
 Exit: reliable supported-card local human games and BO3/recovery work through
 actual UI/API, with no silent legal-action gaps or unexplained internal errors.
