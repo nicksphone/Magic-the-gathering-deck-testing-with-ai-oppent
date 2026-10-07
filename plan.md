@@ -26,6 +26,11 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Latest Verified Milestones
 
+- [x] Strict sideboard core entry/quantity validation and per-card inventory
+  conservation: three whole modules / 49 passes on fresh isolated SQLite.
+  Public quantities were already strict; internal coercion is now rejected.
+  Seeded interactive BO3 and complete browser games remain open.
+  [Scoped acceptance](docs/testing/sideboard-quantity-current.md).
 - [x] Shared creature self-tap readiness and effective haste query guard:
   eight whole modules / 277 passes. Separate unchanged canonical Scout/Atlas
   plus decline hook: 48 passes. Scope: [tap readiness](docs/acceptance/tap-source-readiness-20261006.md).

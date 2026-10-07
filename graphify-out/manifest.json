@@ -372,9 +372,9 @@
     "semantic_hash": ""
   },
   "backend/decks/sideboard.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.217734,
-    "ast_hash": "4fc740af8d86e5ae6850c99e9c14d0d4",
+    "mtime": 1791350027.4548397,
+    "seen": 1791350099.0594275,
+    "ast_hash": "c4d592575445cc3bcb87ae62c171a93a",
     "semantic_hash": ""
   },
   "backend/effects/__init__.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791339864.7977276,
-    "seen": 1791339933.6726801,
-    "ast_hash": "8119be2662a3a18ff9afd20a969ee384",
+    "mtime": 1791350027.5268385,
+    "seen": 1791350099.0634046,
+    "ast_hash": "762f31f2b702297bd73704c0f145f643",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -12669,6 +12669,18 @@
     "mtime": 1791346311.4688952,
     "seen": 1791346382.0950272,
     "ast_hash": "0880eea2c548bebb1e9ce0cbf1ab9150",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_sideboard_inventory_boundary_audit.py": {
+    "mtime": 1791350027.4568396,
+    "seen": 1791350099.061955,
+    "ast_hash": "6a3ed4bcd36a9055f1497ce4fdd5ef61",
+    "semantic_hash": ""
+  },
+  "docs/testing/sideboard-quantity-current.md": {
+    "mtime": 1791350027.5268385,
+    "seen": 1791350099.0632305,
+    "ast_hash": "1ac762f23e2cd5778b8a6ec439c876b8",
     "semantic_hash": ""
   }
 }

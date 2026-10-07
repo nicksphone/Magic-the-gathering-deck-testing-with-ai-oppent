@@ -44,10 +44,13 @@ def apply_sideboard_swaps(
 def _to_counter(deck_items: list[dict]) -> Counter:
     c = Counter()
     for item in deck_items:
-        name = item["card_name"]
-        qty = int(item["quantity"])
-        if qty <= 0:
-            continue
+        if not isinstance(item, dict):
+            raise SideboardError("Deck entries must be objects.")
+        name, qty = item.get("card_name"), item.get("quantity")
+        if not isinstance(name, str) or not name.strip():
+            raise SideboardError("Deck entries require a nonblank card name.")
+        if type(qty) is not int or qty <= 0:
+            raise SideboardError("Deck quantities must be positive integers.")
         c[name] += qty
     return c
 
