@@ -122,9 +122,12 @@ Full corpus, lifecycle and release acceptance remain unfinished.
   this is not arbitrary replacement-clause or browser-game certification.
   [Current acceptance](docs/testing/source-controller-heroic-current.md).
 - [ ] Establish complete graveyard clause/zone/permission inventory before
-  relaxing conservative combat leaves. Inventory audit: 22 passes / two explicit
-  graveyard-activation zone failures; current AI cohort retains 40 strict failures.
+  broader relaxation of conservative combat leaves. Current bounded inventory,
+  canonical self-return and public combat cohorts pass 323 checks across four
+  whole modules; the older zone and 40-failure ledgers are historical, not current
+  defects in this cohort. Arbitrary clauses, layouts and AI strength remain open.
   Absence of offered moves is not proof of inertness. Preserve hidden information.
+  [Current acceptance](docs/testing/graveyard-combat-current.md).
 
 These are distinct frozen audit and current-composition ledgers, not a summed
 suite. Soul-Scar and Suspend audits used no SQLite/network; the natural App still
