@@ -357,3 +357,12 @@ pass the configured frontend test chain, typecheck, lint and production build.
 See `docs/testing/native-type-note-controls.md` for the fixture failure ledger
 and scope. This closes the identified control-routing gap, not manual browser,
 full-game, BO3, copied-bind/APNAP or overall release acceptance.
+
+## 2026-10-07 Pinned Offline Warm Checkpoint
+
+The preserved `6f9e29e` backend now has an independently checked eight-whole-
+module warm result: 73 passes, exact original node identities, 23 paired
+lifespans, strict runtime stub provenance and quiet resource closure. Earlier
+cold and failed warm ledgers remain distinct. See
+`docs/testing/offline-assets-cold-component.md`. This does not close current-
+source offline/browser fallback, full Gate 1.7 or overall release acceptance.

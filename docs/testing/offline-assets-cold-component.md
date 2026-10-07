@@ -66,12 +66,37 @@ default database SHA is
 runtime media increased to 169 files. Any future continuation must pin these
 actual warm-end bytes, not reuse the earlier database hash or 156-file inventory.
 
+## Qualified V6 Warm Continuation
+
+One separately authorized v6 warm-only execution completed all eight whole
+modules: 73 ordinary passes, 26 warnings, exit zero in 27.51 seconds. Parent
+acceptance compared the actual 73 node identities with the preserved original
+list, not merely the test count. JUnit has no failures, errors or skips. The
+worker recorded isolation true, 23 startup/shutdown pairs, unchanged 1,560
+source hashes and unchanged 169-file warmed media inventory. Jobs, database
+descriptors, threads, children and unexpected violations were empty.
+
+The strict stub predicate qualified four real endpoint observations: sync and
+sync-bulk for each original False/True node. Every conjunctive provenance and
+recursive code-body equality check passed. The observed module was
+`test_offline_match_hydration`. This establishes runtime equality on this exact
+run, not retrospectively captured operands for the failed v5 run. A parent
+inspection initially expected two observations; that administrative count was
+corrected to four endpoint-matched observations without a test rerun or changed
+guard tolerance.
+
+Supervisor and worker PIDs ended. The supervisor and independent parent fuser
+checks of actual default/migration databases returned one with empty output;
+owned resource lists were empty. Independent acceptance evidence is under
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/parent-integration/offline-v6-independent-acceptance-20261007/`.
+Worker final closed-byte archival is a separate handoff. No cold rerun, database
+reset, source/test change or prior-ledger mutation occurred.
+
 ## Remaining Work
 
-Review the narrow exact-stub provenance guard correction and complete runtime
-path contract before any separately authorized continuation. Preserve the cold
-result and both failed warm ledgers; do not reset the database or relabel warmed
-state as a fresh cold run.
+Preserve the cold result and both failed warm ledgers; do not reset the database
+or relabel warmed state as a fresh cold run. The v6 result qualifies the pinned
+`6f9e29e` backend warm component, not the newer composed application.
 Current-source offline qualification, canonical artwork, browser fallback,
 production routing and broader release acceptance remain unproven. No application
 fix or deployment resulted from this gate.
