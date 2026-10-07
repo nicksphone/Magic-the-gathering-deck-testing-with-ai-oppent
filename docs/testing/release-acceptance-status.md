@@ -17,6 +17,7 @@ substitute for qualification of the final combined source.
 | Pending-stack privacy | Current `db16186` composition: 22 whole pure modules / 950 passes; parent applied tested bytes | Mixed HTTP/SQL and complete private hand-to-library response remain separate |
 | Domain continuations | Fresh immutable `607a70b` plus the surgical compiler delta: two whole modules / 36 passes, 10.60s; paid Herd Migration search-then-life and Leyline Binding linked exile | Coverage warnings unchanged; no final-union, SQL or whole-card certificate |
 | Standalone storage recovery | Pinned `29e86e4`: three unchanged whole modules / 43 passes, 6.79s; retention rollback/protection, WAL backup and actual controller restore | Not online cache/tombstone coordination, quotas/cancellation, clean-machine or soak acceptance |
+| Private HTTPS operator | Pinned `0e57baf` plus exact four new Caddy files: TLS/auth, 26 atomic Origin rejections, incomplete-upload 403, lock and real restart/recovery passed | Native loopback single-user component only; not current combined engine, browser, LAN/public or clean-machine acceptance |
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 
@@ -28,6 +29,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `parent-integration/pending-source-privacy-current-db161-20261007/`
 - `parent-integration/domain-compilers-current-607a70-20261007/`
 - `parent-integration/storage-acceptance-current-29e86-20261007/`
+- `diagnostics/operator-packaging/caddy-0e57-full-duplex-qualified-20261007-wVfKHc/`
 
 Read each report's source pin, failure history, isolation limits and raw evidence
 before transferring a result. Closed SQLite evidence must be copied locally for
@@ -44,9 +46,10 @@ inspection; never execute a database on NFS.
 3. Requalify current built UI, offline assets, BO3 and recovery with the exact
    origin configuration and fresh locked dependencies. Test supported actions
    not encountered in the successful browser episodes.
-4. Qualify the proposed private HTTPS/auth proxy: verified certificates,
-   authentication, API/media routing, rejected-mutation atomicity, restart and
-   resource closure. Static configuration checks are not runtime proof.
+4. Requalify the integrated private HTTPS/auth proxy with the final combined
+   source and browser. Its pinned native TLS/auth/API/media/atomicity/restart
+   component passed; wider user-approved hostname/trust/topology configuration
+   remains separate. See `caddy-operator-current-acceptance.md`.
 5. Complete the declared job/cancellation/retention/backup/restore, clean-machine,
    soak, accessibility and supported-topology operator acceptance requirements.
 6. Measure legal hidden-information decision quality and completed, seed/seat-

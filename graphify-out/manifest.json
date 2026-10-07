@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791405591.1808987,
-    "seen": 1791405681.12098,
-    "ast_hash": "e6b3d7e2cd17759164091c2a3f2a3281",
+    "mtime": 1791406298.2946408,
+    "seen": 1791406375.911515,
+    "ast_hash": "3760f97e5e59d4747229a4e6c30178c5",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13521,6 +13521,30 @@
     "mtime": 1791405591.1808987,
     "seen": 1791405681.1210868,
     "ast_hash": "0b363d7332b52d602d98d6415163bd24",
+    "semantic_hash": ""
+  },
+  "ops/caddy/run.py": {
+    "mtime": 1791406128.643567,
+    "seen": 1791406375.9107924,
+    "ast_hash": "4eb770961bda3ca5b2dc2fcee210b8e1",
+    "semantic_hash": ""
+  },
+  "ops/caddy/verify-config.py": {
+    "mtime": 1791406128.6419346,
+    "seen": 1791406375.9107952,
+    "ast_hash": "8ed7e336a794f5f268925fd42ce62a4a",
+    "semantic_hash": ""
+  },
+  "docs/testing/caddy-operator-current-acceptance.md": {
+    "mtime": 1791406298.2946408,
+    "seen": 1791406375.911058,
+    "ast_hash": "344416328ee9137364b76430a9de3769",
+    "semantic_hash": ""
+  },
+  "ops/caddy/README.md": {
+    "mtime": 1791406128.645564,
+    "seen": 1791406375.91176,
+    "ast_hash": "86970ee205bbbca5392740f40a140857",
     "semantic_hash": ""
   }
 }

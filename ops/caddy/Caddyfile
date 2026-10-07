@@ -1,0 +1,41 @@
+{
+	admin off
+	persist_config off
+	auto_https off
+	skip_install_trust
+	servers {
+		enable_full_duplex
+		protocols h1 h2
+	}
+	log {
+		output discard
+	}
+}
+
+{$MTG_SITE_ORIGIN} {
+	bind 127.0.0.1
+	tls {$MTG_TLS_CERT} {$MTG_TLS_KEY}
+	route {
+		basic_auth {
+			{env.MTG_AUTH_USER} {env.MTG_AUTH_HASH}
+		}
+		handle_path /api/* {
+			reverse_proxy 127.0.0.1:{$MTG_BACKEND_PORT} {
+				header_up -Authorization
+			}
+		}
+		handle /card-images/* {
+			reverse_proxy 127.0.0.1:{$MTG_BACKEND_PORT} {
+				header_up -Authorization
+			}
+		}
+		handle /api {
+			respond 404
+		}
+		handle {
+			root * {$MTG_FRONTEND_DIST}
+			try_files {path} /index.html
+			file_server
+		}
+	}
+}
