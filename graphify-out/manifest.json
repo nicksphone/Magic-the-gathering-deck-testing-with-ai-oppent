@@ -13056,9 +13056,9 @@
     "semantic_hash": ""
   },
   "docs/testing/frontend-locked-current.md": {
-    "mtime": 1791353920.0443845,
-    "seen": 1791354798.5053513,
-    "ast_hash": "6f44f8463f0cce61ee673f28807c4161",
+    "mtime": 1791409558.922322,
+    "seen": 1791409660.2151985,
+    "ast_hash": "8a838eb77ed7c15439ad9e1d60087034",
     "semantic_hash": ""
   },
   "backend/audit/exile-counter-body/body-goldens/test_full_body_cda.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791407738.5290792,
-    "seen": 1791407813.5643141,
-    "ast_hash": "23e5281ffcfeb737c8a6854cd8318bd9",
+    "mtime": 1791409558.923322,
+    "seen": 1791409660.2154691,
+    "ast_hash": "4d8006ef6fd0ced557b2674e12fd91e9",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {

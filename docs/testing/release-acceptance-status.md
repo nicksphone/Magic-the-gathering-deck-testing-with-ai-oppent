@@ -12,7 +12,7 @@ substitute for qualification of the final combined source.
 | Offline backend | Pinned `441201c`: cold 155 hydrated/served, then eight whole modules / 73 passes, 23 paired lifespans | Not the later hardened source, browser or proxy |
 | Native browser BO3 | Pinned `2331bb2`: HH three natural games, 2-1, 787 writes; human/Master two natural games, 2-0, 818 writes including 399 AI beats; cold restore and closure passed | Encountered UI branches only; reused declared dependency cache; not AI strength |
 | Browser-origin boundary | Exact five applied product/test/doc postimages: nine whole modules / 235 passes; parent pure policy 101 passes | Origin rejection, not authentication, LAN trust or whole-current browser qualification |
-| Frontend dependencies | Fresh locked install, typecheck, lint, configured test chain and build passed; full/production advisory scans reported zero | Clean frontend component, not a clean-machine end-to-end installation |
+| Frontend dependencies | Current `2af9200`: fresh offline locked install, typecheck, lint, full configured test chain and build passed; full/production registry advisory scans reported zero | Current frontend component; cached package intake, not clean-machine/browser end-to-end acceptance |
 | Python installer maintenance | Qualified EnC3vJ runtime pip 24.0 -> 26.2.1; pip check passed; all non-pip file hashes and package versions equal | Installer-only change; no application gate inferred from pip check |
 | Pending-stack privacy | Current `db16186` composition: 22 whole pure modules / 950 passes; parent applied tested bytes | Mixed HTTP/SQL and complete private hand-to-library response remain separate |
 | HAND source and entry damage | Exact ten-file production union: 21 whole modules / 673 passes, 255.17s; original assertions and 36 serializer children verified | Pure component only; final coverage union, mixed HTTP/SQL and browser remain separate |
@@ -27,6 +27,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `parent-integration/native-browser-r9-qualified-20261007/`
 - `diagnostics/api-security/retained2331-origin-20261007-ExTz1I/`
 - `diagnostics/dependency-audit/retained2331-fresh-20261007-v8A4Tj/`
+- `parent-integration/frontend-current-2af920-20261007-BDMUj3/`
 - `parent-integration/pip-only-maintenance-20261007/`
 - `parent-integration/pending-source-privacy-current-db161-20261007/`
 - `parent-integration/hand-domain-applied-current-6e0b420-20261007/`

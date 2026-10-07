@@ -1,5 +1,28 @@
 # Locked Frontend Release Checkpoint
 
+## Current Published Source Recheck
+
+On `2af9200f8b743b534576b6f58bea764a8e578305`, a fresh isolated checkout
+passed the complete configured `npm test`, TypeScript no-emit check, lint,
+production build and `npm ls --all`. Fresh `node_modules` were installed with
+`npm ci --offline --no-fund` from npm's default local cache, using the unchanged
+lockfile. This was not a new network-fetched dependency installation.
+
+Full and production-only registry advisory scans both returned zero findings.
+All original source hashes remained equal. The Python fixtures used a
+fail-closed pre-import native SQL/socket guard, including native socket
+allocation denial; both explicit canaries passed and no default database was
+created. This is Python fixture isolation, not a Node process-tree or OS sandbox.
+
+Verified source/build output, guard, logs, dependency tree and advisory responses:
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/parent-integration/`
+`frontend-current-2af920-20261007-BDMUj3/`.
+Actual browser games, current HTTPS/BO3, clean-machine installation and final
+combined rules acceptance remain separate. The earlier checkpoint follows
+unchanged.
+
+## Earlier Checkpoint
+
 Application source: `6f9e29ec2e8ea7f1ebb880a4f553960b887edafb`.
 Fresh isolated source and `npm ci` installed the existing lockfile (164 packages,
 four seconds); no shared node_modules or application dependencies were changed.
