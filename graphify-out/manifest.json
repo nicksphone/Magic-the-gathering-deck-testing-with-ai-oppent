@@ -408,9 +408,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/serializers.py": {
-    "mtime": 1791345791.5980735,
-    "seen": 1791346045.98591,
-    "ast_hash": "914ca5bf435d103405bfe809321c1d65",
+    "mtime": 1791415358.4596493,
+    "seen": 1791415879.110713,
+    "ast_hash": "a6b41a42fcb4246b3b8eaaa01e3773ad",
     "semantic_hash": ""
   },
   "backend/game_state/series_policy.py": {
@@ -420,9 +420,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/state.py": {
-    "mtime": 1791345791.5980735,
-    "seen": 1791346045.9859142,
-    "ast_hash": "9f57bae8bd0b05631412237e85d98dac",
+    "mtime": 1791415358.4596493,
+    "seen": 1791415879.1107178,
+    "ast_hash": "9d3676c5d3285155af3de6d4163ebb0e",
     "semantic_hash": ""
   },
   "backend/knowledge/__init__.py": {
@@ -606,9 +606,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/costs.py": {
-    "mtime": 1791328054.2432995,
-    "seen": 1791328526.167619,
-    "ast_hash": "043d318e82b047e4e14f7c084fe55def",
+    "mtime": 1791415358.4596493,
+    "seen": 1791415879.1107936,
+    "ast_hash": "b176cae1089ec99adb93946e5c9b1257",
     "semantic_hash": ""
   },
   "backend/rules_engine/counter_placement.py": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791407690.565891,
-    "seen": 1791407813.5604136,
-    "ast_hash": "71bf7eac281af6b19cade9b69c4d7f25",
+    "mtime": 1791415358.4596493,
+    "seen": 1791415879.1108186,
+    "ast_hash": "4aa379b235f150894f1398fdbe5ebc17",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791407690.566891,
-    "seen": 1791407813.5604196,
-    "ast_hash": "843a69583ab96865fb98f2c47da7138d",
+    "mtime": 1791415358.4596493,
+    "seen": 1791415879.1108239,
+    "ast_hash": "a6361cd937eab2fe000581d6fd11eb56",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -750,9 +750,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/kicker.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2178833,
-    "ast_hash": "9ddfc82174c28aa0062dd9cd7bc4b62e",
+    "mtime": 1791415358.4596493,
+    "seen": 1791415879.110844,
+    "ast_hash": "f8454c858a0477c79780c7d8e9fad059",
     "semantic_hash": ""
   },
   "backend/rules_engine/land_history.py": {
@@ -936,9 +936,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
-    "mtime": 1791407690.566891,
-    "seen": 1791407813.56051,
-    "ast_hash": "956011c1d5c92e5e53e3dba72c6c101e",
+    "mtime": 1791415358.4596493,
+    "seen": 1791415879.110927,
+    "ast_hash": "08af07c73ce929537e9162bf1801ec0a",
     "semantic_hash": ""
   },
   "backend/rules_engine/state_based_actions.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791413908.99219,
-    "seen": 1791414020.687884,
-    "ast_hash": "7aa6f92b2cd9807a18d420603c27009b",
+    "mtime": 1791415663.1598666,
+    "seen": 1791415879.1148107,
+    "ast_hash": "f9316f51c359140c0f35165cb1a60c1c",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13725,6 +13725,84 @@
     "mtime": 1791413969.0594022,
     "seen": 1791414020.687742,
     "ast_hash": "9c7f2a59761bcd5a0c36d5584e42be1f",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/archangel-of-wrath.json": {
+    "mtime": 1791415358.501648,
+    "seen": 1791415879.1111734,
+    "ast_hash": "13a063ef5236ca2abf5b1d248829b5dd",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/cackling-counterpart.json": {
+    "mtime": 1791415358.499648,
+    "seen": 1791415879.1111763,
+    "ast_hash": "2ce3cbb16c3d8add73801dc4d59e3e0d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/clone.json": {
+    "mtime": 1791415358.5026479,
+    "seen": 1791415879.1111782,
+    "ast_hash": "8c4d713986e74af07ba445313324430f",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/essence-scatter.json": {
+    "mtime": 1791415358.5066478,
+    "seen": 1791415879.1111805,
+    "ast_hash": "7ec1151af6e3e5ffadcc361f02a487ec",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/flicker-of-fate.json": {
+    "mtime": 1791415358.504648,
+    "seen": 1791415879.1111825,
+    "ast_hash": "cf4245929f11531f61c90f1dd3c8e08f",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/forest.json": {
+    "mtime": 1791415358.501648,
+    "seen": 1791415879.111184,
+    "ast_hash": "663e6aa6df501b770a8f03d43ac61a47",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/lithoform-engine.json": {
+    "mtime": 1791415358.500648,
+    "seen": 1791415879.1111853,
+    "ast_hash": "26422d27bb1b0b441611d5d79b7eef8a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/stifle.json": {
+    "mtime": 1791415358.5036478,
+    "seen": 1791415879.1111872,
+    "ast_hash": "47f2ba111af3ad1aee716b0065eb5d12",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/unsummon.json": {
+    "mtime": 1791415358.505648,
+    "seen": 1791415879.1111887,
+    "ast_hash": "a85d6cafc950247f0154eaab5cf888b8",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/archangel_pair/wall-of-omens.json": {
+    "mtime": 1791415358.504648,
+    "seen": 1791415879.11119,
+    "ast_hash": "64fc04440f29308ba085a7906b1232fb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_archangel_pair_additional_goldens.py": {
+    "mtime": 1791415358.497648,
+    "seen": 1791415879.112525,
+    "ast_hash": "9c33485e50cad9571353335bd4b425b8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_archangel_pair_paid_desired.py": {
+    "mtime": 1791415358.496648,
+    "seen": 1791415879.112527,
+    "ast_hash": "3453810a01c7c887421cf9a1534f292c",
+    "semantic_hash": ""
+  },
+  "docs/testing/paired-kicker-count-acceptance.md": {
+    "mtime": 1791415724.740168,
+    "seen": 1791415879.1147568,
+    "ast_hash": "355c6648cefb9ac948cbf0a684541afd",
     "semantic_hash": ""
   }
 }

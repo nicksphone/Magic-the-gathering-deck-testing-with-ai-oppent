@@ -645,6 +645,10 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
 
     copied = payload["__copied_card"]
+    kicker_count = None
+    if '__kicker_count' in payload:
+        from rules_engine.kicker import validate_kicker_count
+        kicker_count = validate_kicker_count(payload['__kicker_count'], payload.get('__kicked', False))
     types = list(copied.get("types") or [])
     token = (CardInstance(**{**payload['__entry_candidates'][0], 'zone': Zone.BATTLEFIELD})
              if '__entry_candidates' in payload else CardInstance(
@@ -662,12 +666,16 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
         bestow_characteristics=deepcopy(copied.get('bestow_characteristics') or {}),
         summoning_sick=True, entered_turn=state.turn,
         was_kicked=bool(payload.get('__kicked')),
+        kicker_count=kicker_count,
     ))
+    token.was_kicked = bool(payload.get('__kicked'))
+    token.kicker_count = kicker_count
     completion = ({'entry_item': asdict(item), 'entry_payload': payload}
                   if '__entry_counters_by_id' not in payload else payload)
     if prepare_counter_entries(state, item.controller, [token], 'permanent_spell_copy_entry',
                                completion, entry_payload={'x_value': payload.get('x_value', 0),
-                                                          '__kicked': bool(payload.get('__kicked'))}):
+                                                          '__kicked': bool(payload.get('__kicked')),
+                                                          **({'__kicker_count': kicker_count} if kicker_count is not None else {})}):
         return False
     state.cards[token.id] = token
     state.players[item.controller].battlefield.append(token.id)

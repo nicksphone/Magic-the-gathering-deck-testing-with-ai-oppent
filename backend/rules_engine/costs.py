@@ -42,6 +42,7 @@ class CostOption:
     exile_graveyard: int = 0
     additional_cost_group: str | None = None
     kicked: bool = False
+    kicker_count: int | None = None
     kicker_base_id: str | None = None
     graveyard_permission_key: str | None = None
     graveyard_permission_max_mana_value: int | None = None
@@ -505,9 +506,21 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     if card.zone == Zone.EXILE and not without_mana:
         options.extend(CostOption(id=f'foretell_{index}', label='Foretell', mana_cost=cost)
                        for index, cost in enumerate(cast_costs(state, card, player_id)))
-    from rules_engine.kicker import kicker_price, kicker_cost
+    from rules_engine.kicker import kicker_price, kicker_cost, paired_permanent_kicker
     kicker = kicker_cost(card)
-    if kicker:
+    paired = paired_permanent_kicker(card)
+    if paired:
+        options = [variant for option in options for variant in (
+            replace(option, kicker_count=0),
+            *[replace(option,
+                      id=('kicker' if option.id == 'base' else option.id + '_kicker') + suffix,
+                      label=option.label + ' + kicker ' + price,
+                      mana_cost=_join_costs(option.mana_cost, price), kicked=True,
+                      kicker_count=count, kicker_base_id=option.id)
+              for suffix, price, count in (
+                  ('_1', paired['prices'][0], 1), ('_2', paired['prices'][1], 1),
+                  ('_1_2', _join_costs(*paired['prices']), 2))])]
+    elif kicker:
         options = [variant for option in options for variant in (
             option, replace(option, id='kicker' if option.id == 'base' else option.id + '_kicker',
                             label=option.label + f' + kicker {kicker_price(card)}',

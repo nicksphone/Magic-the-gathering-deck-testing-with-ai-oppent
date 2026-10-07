@@ -102,6 +102,7 @@ class CardInstance:
     granted_flashback: dict = field(default_factory=dict)
     was_foretold: bool = False
     was_kicked: bool = False
+    kicker_count: int | None = None
     printed_power: str | None = None
     printed_toughness: str | None = None
 
@@ -129,6 +130,7 @@ class CardInstance:
             clear_type_effects(self)
         if zone != self.zone and not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):
             self.was_kicked = False
+            self.kicker_count = None
         if zone not in {Zone.STACK, Zone.BATTLEFIELD} and self.bestow_characteristics:
             from rules_engine.bestow import end_bestow
             end_bestow(self)

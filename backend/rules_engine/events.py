@@ -97,6 +97,7 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "battlefield_incarnation": object_incarnation(card),
         "effect_timestamp": card.effect_timestamp,
         "was_kicked": card.was_kicked,
+        **({'kicker_count': card.kicker_count} if card.kicker_count is not None else {}),
         "printed_abilities_suppressed": printed_abilities_suppressed(state, card_id),
     }
     for item in state.stack:
@@ -740,7 +741,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             oracle = without_reminder_text((card.oracle_text or "").lower())
             from rules_engine.foretell import without_created_clauses
             oracle = without_created_clauses(oracle, card.name.lower())
-            from rules_engine.kicker import kicked_cast_clauses
+            from rules_engine.kicker import kicked_cast_clauses, paired_permanent_kicker, validate_kicker_count
             kicker_clauses = kicked_cast_clauses(oracle)
             if (event == 'spell_cast' and payload.get('controller') == card.controller
                     and (payload.get('stack_payload') or {}).get('__kicked')):
@@ -877,6 +878,24 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "day_night_changed" and _matches_day_night_trigger(oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
+            elif event == "enters_battlefield" and (paired := paired_permanent_kicker(card)):
+                count = (validate_kicker_count(card.kicker_count, card.was_kicked)
+                         if card.kicker_count is not None else int(card.was_kicked))
+                if payload.get('card_id') == cid:
+                    from rules_engine.ability_model import build_ability_spec
+                    for clause in paired['triggers']:
+                        if count < clause['threshold']:
+                            continue
+                        proxy = copy(card)
+                        proxy.oracle_text, proxy.card_faces = clause['instruction'], []
+                        ability = build_ability_spec(state, proxy, card.controller,
+                                                    action_targets={'source_card_id': cid})
+                        out.append({'source_card_id': cid, 'controller': card.controller,
+                                    'label': f"{card.name} ETB {clause['threshold']}",
+                                    'effect_key': ability.effect.key,
+                                    'payload': {**ability.effect.payload,
+                                                '__trigger_resolution_text': clause['instruction'],
+                                                '__trigger_full_clause': clause['clause']}})
             elif event == "enters_battlefield" and _matches_enters_battlefield_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
             elif event == "transformed" and payload.get("card_id") in state.cards:

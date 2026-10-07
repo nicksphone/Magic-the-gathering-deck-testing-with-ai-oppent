@@ -1137,6 +1137,9 @@ class RulesEngine:
                 if payment_details.get('resource_payment') is not None:
                     payload['__casting_resource_payment'] = payment_details['resource_payment']
                 payload['__kicked'] = chosen.kicked
+                if chosen.kicker_count is not None:
+                    from rules_engine.kicker import validate_kicker_count
+                    payload['__kicker_count'] = validate_kicker_count(chosen.kicker_count, chosen.kicked)
                 payload["__ward_trigger_specs"] = ward_specs
                 payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)
                 payload["snow_mana_colors"] = payment_details.get("snow_mana_colors", {})
@@ -1205,6 +1208,7 @@ class RulesEngine:
                     card.was_foretold = True
                     payload['__was_foretold'] = True
                 card.was_kicked = chosen.kicked
+                card.kicker_count = chosen.kicker_count
                 card.controller = player_id
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
                 if chosen.kicked:

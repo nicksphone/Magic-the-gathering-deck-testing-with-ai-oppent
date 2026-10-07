@@ -24,6 +24,7 @@ substitute for qualification of the final combined source.
 | Native job shutdown | Tested main `2109f88`: 44 passes, genuine midgame cancellation, actual worker join and database-pool closure before external cleanup; real next-lifespan restart | Single-process background-worker component; synchronous drain, byte limits, load/crash and final-source operations remain open |
 | Simulation byte measurement | Immutable `8cfcb4f`: two real bounded batch cases pass, 305.27s; each 500-tick game retains 929,767 bytes of log text while result JSON is 8,683/15,939 bytes | Measurement, not enforced resource bounds, exclusive memory/performance attribution, completed games or AI strength |
 | March targeting partial repair | Exact generic Oracle delta: donor 64 target controls pass; fresh parent two-whole-module targeting/inventory gate 72 passes, 9.91s | Payment remains unsupported: unchanged desired module retains 30 cost failures; warning stays; not paid March or full semantics |
+| Paired kicker and current targeting union | Exact seven-file paired-kicker patch plus parent March Oracle: 16 whole pure modules / 475 passes, 69.75s; real payments, independent triggers, copies, LKI and strict snapshot metadata | Pure component only; mixed HTTP/SQL, admission warning review and AI policy remain separate |
 | Private HTTPS operator | Pinned `0e57baf` plus exact four new Caddy files: TLS/auth, 26 atomic Origin rejections, incomplete-upload 403, lock and real restart/recovery passed | Native loopback single-user component only; not current combined engine, browser, LAN/public or clean-machine acceptance |
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
@@ -43,6 +44,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `diagnostics/job-resource-contract/becc866-engine44-qualified-20261007-L6DFnr/`
 - `parent-integration/combined905-and-simulation-bytes-current-8cf-20261007/`
 - `parent-integration/march-target-current-d40-20261007/`
+- `parent-integration/archangel-march-current475-1ee-20261007/`
 - `diagnostics/operator-packaging/caddy-0e57-full-duplex-qualified-20261007-wVfKHc/`
 
 Read each report's source pin, failure history, isolation limits and raw evidence

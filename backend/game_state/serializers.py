@@ -71,6 +71,13 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
 
 def serialize_match_snapshot(state: MatchState) -> dict:
     """Serialize all mutable rules state needed to resume a match."""
+    from rules_engine.kicker import validate_kicker_count
+    for card in state.cards.values():
+        if card.kicker_count is not None:
+            validate_kicker_count(card.kicker_count, card.was_kicked)
+    for item in state.stack:
+        if '__kicker_count' in item.payload:
+            validate_kicker_count(item.payload['__kicker_count'], item.payload.get('__kicked', False))
     from rules_engine.turn_scheduler import snapshot
     return {
         "id": state.id,
@@ -219,6 +226,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "granted_flashback": deepcopy(card.granted_flashback),
                 "was_foretold": card.was_foretold,
                 "was_kicked": card.was_kicked,
+                **({'kicker_count': card.kicker_count} if card.kicker_count is not None else {}),
                 "selected_face_index": card.selected_face_index,
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
@@ -244,6 +252,11 @@ def serialize_match_snapshot(state: MatchState) -> dict:
 
 
 def deserialize_match_snapshot(payload: dict) -> MatchState:
+    from rules_engine.kicker import validate_kicker_count
+    for item in payload.get('stack', []):
+        data = item.get('payload', {})
+        if '__kicker_count' in data:
+            validate_kicker_count(data['__kicker_count'], data.get('__kicked', False))
     from rules_engine.prevention import restore_numeric_prevention_shields
     numeric_shields = restore_numeric_prevention_shields(payload)
     players = {}
@@ -267,6 +280,9 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     cards = {}
     from rules_engine.keyword_effects import restore_keyword_effects
     for cid, raw in payload["cards"].items():
+        if 'kicker_count' in raw:
+            from rules_engine.kicker import validate_kicker_count
+            validate_kicker_count(raw['kicker_count'], raw.get('was_kicked', False))
         cards[cid] = CardInstance(
             id=str(raw["id"]), name=str(raw["name"]), owner=int(raw["owner"]),
             controller=int(raw["controller"]), zone=Zone(raw["zone"]),
@@ -300,6 +316,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             granted_flashback=deepcopy(raw.get('granted_flashback', {})),
             was_foretold=bool(raw.get('was_foretold', False)),
             was_kicked=bool(raw.get('was_kicked', False)),
+            kicker_count=raw.get('kicker_count'),
         )
 
     state = MatchState(
