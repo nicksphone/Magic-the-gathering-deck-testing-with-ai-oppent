@@ -75,10 +75,25 @@ def test_x_and_one_shot_entry_counters_form_one_supported_same_kind_event():
     card = add_card(state, 'Walking Ballista', cards=ROWS)
     state.pending_entry_counters = [{'controller': 1, 'counter': '+1/+1', 'amount': 1, 'expires_turn': state.turn}]
     modifier(state, 'Doubling Season')
-    modifier(state, 'Winding Constrictor')
+    constrictor = modifier(state, 'Winding Constrictor')
     spell(state, card, x_value=2)
     assert card.zone == Zone.STACK and state.pending_entry_counters
-    state = choose(state, 'add')
+    packet = serialize_match_snapshot(state)['pending_entry_counters']
+    for role in ('one_shot', 'intrinsic', 'constrictor'):
+        state = deserialize_match_snapshot(serialize_match_snapshot(state))
+        assert state.cards[card.id].zone == Zone.STACK
+        assert state.cards[card.id].counters.get('+1/+1', 0) == 0
+        assert state.pending_entry_counters == packet
+        before = serialize_match_snapshot(state)
+        option = next(o for o in state.pending_replacement_choice['options'] if (
+            o.get('next_entry_producer') if role == 'one_shot' else
+            o.get('intrinsic_entry') if role == 'intrinsic' else
+            o['operation'] == 'add' and not o.get('entry_producer')
+            and o.get('source_card_id') == constrictor.id))
+        updated = checked_action(state, RulesEngine(), 1, {
+            'type': 'choose_replacement', 'replacement_source_id': option['source_id']})
+        assert serialize_match_snapshot(state) == before
+        state = updated
     assert state.cards[card.id].zone == Zone.BATTLEFIELD
     assert state.cards[card.id].counters['+1/+1'] == 8
     assert effective_combat_stats(state, card.id) == (8, 8)

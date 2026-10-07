@@ -41,6 +41,12 @@ def counter_options(state, controller, payload, used=()):
             return []
     out = [dict(option) for option in payload.get('__counter_entry_modifiers', [])
            if option['source_id'] not in used]
+    if payload.get('__intrinsic_entry_counter') and kind == '+1/+1':
+        from rules_engine.entry_counters import intrinsic_entry_counter_options
+        out.extend(intrinsic_entry_counter_options(state, controller, payload, used) or [])
+    if payload.get('__next_entry_counter') and kind == '+1/+1':
+        from rules_engine.entry_counters import retained_next_entry_options
+        out.extend(retained_next_entry_options(state, controller, payload, used) or [])
     if context is not None and not payload.get('amount', 0):
         return [option for option in out if option.get('entry_producer')]
     for pid in sorted(state.players):
@@ -90,6 +96,8 @@ def modified_count(amount, op, operand=1):
 
 def counter_effect_amount(state, controller, effect_key, payload):
     """Return final amount or None while the affected player's event is paused."""
+    from copy import deepcopy
+    retained_event = payload.get('__entry_counter_event') if payload.get('counter') == '+1/+1' else None
     player = payload.get('target_player')
     card = state.cards.get(payload.get('target_card_id'))
     kind = payload['counter']
@@ -105,7 +113,7 @@ def counter_effect_amount(state, controller, effect_key, payload):
     selected = payload.get('__counter_choice')
     while amount or entry_event:
         if entry_event:
-            payload = {**payload, 'amount': amount}
+            payload = {**payload, 'amount': amount, '__counter_used': used}
         options = counter_options(state, controller, payload, used)
         if not options:
             break
@@ -126,9 +134,22 @@ def counter_effect_amount(state, controller, effect_key, payload):
         used.append(chosen['source_id'])
         before = amount
         amount = modified_count(amount, chosen['operation'], chosen.get('operand', 1))
+        if payload.get('__entry_counter_event') and kind == '+1/+1':
+            event = deepcopy(payload['__entry_counter_event'])
+            event['amount'] = amount
+            event['applied_ids'] = list(used)
+            event['history'].append({'source_id': chosen['source_id'],
+                'role': ('intrinsic' if chosen.get('intrinsic_entry') else
+                         'one_shot' if chosen.get('next_entry_producer') else
+                         'resident' if chosen.get('entry_producer') else 'modifier'),
+                'instruction_ref': chosen.get('instruction_ref', chosen['clause']), 'before': before, 'after': amount})
+            payload = {**payload, '__entry_counter_event': event}
         payload = {**payload, '__counter_is_effect': True}
         state.log.append(f"{chosen['name']} replaces {before} {kind} counters with {amount}.")
         selected = None
+    if retained_event is not None and retained_event is not payload['__entry_counter_event']:
+        retained_event.clear()
+        retained_event.update(payload['__entry_counter_event'])
     return amount
 
 

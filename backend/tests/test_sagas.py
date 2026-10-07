@@ -80,7 +80,20 @@ def test_saga_next_creature_chapter_applies_one_shot_entry_counter() -> None:
     )
     state.cards[creature.id] = creature
     add_to_stack(state, creature.id, 1, creature.name, "noop", {})
+    from rules_engine.targeting import stack_object_kind
+    original, binding = state.stack[-2:]
+    assert original.source_card_id == creature.id
+    assert binding.effect_key == 'bind_creature_spell_entry_counter'
+    assert stack_object_kind(state, binding) == 'triggered'
+    assert not binding.payload.get('uncounterable')
+    assert binding.payload['__native_cast']['stack_id'] == original.id
+    assert state.cards[creature.id].zone == Zone.STACK
+    assert state.pending_entry_counters == []
     resolve_top_of_stack(state)
+    assert state.stack[-1].id == original.id
+    assert state.cards[creature.id].zone == Zone.STACK
+    resolve_top_of_stack(state)
+    assert state.cards[creature.id].zone == Zone.BATTLEFIELD
 
     assert state.cards[creature.id].counters["+1/+1"] == 1
     assert state.pending_entry_counters == []

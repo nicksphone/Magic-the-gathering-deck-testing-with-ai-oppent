@@ -288,6 +288,12 @@ the supported-corpus exit does not redefine that larger goal as achieved.
 
 ## Completion Checklist
 
+Current native next-cast and entry-counter integration has one 36-whole-module
+834-pass qualification on the composed `91c40e2` application baseline. Parent
+applied bytes match the actual tested archive. See
+`docs/testing/native-entry-current.md`; copied-bind, broader native APNAP,
+historical aggregate diagnostics and full release acceptance remain open.
+
 - [ ] All current batch items and all three release gates have authoritative
   evidence for their declared scope, on the actual composed source.
 - [ ] Builds/runs succeed and no obvious broken page, action or data flow remains.

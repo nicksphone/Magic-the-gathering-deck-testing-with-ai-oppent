@@ -232,7 +232,7 @@ class TrainingEnvironment:
             }.get(move['type'], [] if move['type'] in _SIMPLE else ['Complete action contract'])
             if move['type'] == 'choose_mechanic':
                 field = ('damage_assignment' if move['kind'] == 'combat_damage' else
-                         'choice_id' if move['kind'] in {'draw', 'land_entry', 'saga_entry'} else 'card_ids')
+                         'choice_id' if move['kind'] in {'draw', 'land_entry', 'saga_entry', 'note_creature_type'} else 'card_ids')
                 choices = [field + ' (explicit selection; preserve order; count/range from hint)']
             elif move['type'] == 'choose_trigger_order':
                 choices = ['trigger_order (complete permutation, bottom-to-top stack order)']
@@ -335,7 +335,7 @@ class TrainingEnvironment:
             pending = self._state.pending_mechanic_choice
             require(bool(pending), 'No pending mechanic choice')
             field = ('damage_assignment' if pending['kind'] == 'combat_damage' else
-                     'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry'} else 'card_ids')
+                     'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry', 'note_creature_type'} else 'card_ids')
             require(action.get(field) is not None, 'Missing required choice: ' + field)
         if kind in {'tap_land_for_mana', 'tap_lands_bulk'}:
             require(action.get('color') is not None, 'Missing required choice: color')

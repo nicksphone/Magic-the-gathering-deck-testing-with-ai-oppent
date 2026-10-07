@@ -1,0 +1,12 @@
+{
+  "canonical_record_sha256": "f5fb1aca8d87461441b18d51271e474c22daaa0ade95beacdf6f124b99c07eb0",
+  "existing_fixture": "/home/nick/mtg-gy-self-product-7f-FPD9Yz/backend/tests/fixtures/activated_sacrifice_identity/canonical.json",
+  "existing_fixture_sha256": "4a20cfefa830fb6d1bb13f99fb952a238d28f9dbc1efac69a3c807374b42b333",
+  "existing_provenance": "/home/nick/mtg-gy-self-product-7f-FPD9Yz/backend/tests/fixtures/activated_sacrifice_identity/provenance.json",
+  "facts_modified": false,
+  "http_requests": 0,
+  "id": "cc387ccf-f746-4855-81e5-64f5a5e0fdda",
+  "oracle_id": "dde55256-5259-44e7-a267-fca45a7f0d04",
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

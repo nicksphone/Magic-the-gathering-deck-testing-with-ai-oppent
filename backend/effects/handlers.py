@@ -2520,11 +2520,62 @@ def add_counters_each_creature(state: MatchState, controller: int, payload: dict
     ]})
 
 
+def retained_next_creature_entry_origin(state, controller, payload):
+    """Retain native provenance, not a certificate of upstream instruction support."""
+    from copy import deepcopy
+    frame = payload.get('__resolving_item')
+    if not isinstance(frame, dict):
+        return None
+    publication = frame.get('payload', {}).get('__one_shot_publication')
+    if not isinstance(publication, dict):
+        return None
+    position = payload.get('__one_shot_child_position')
+    if frame.get('effect_key') == 'set_next_creature_entry_counter':
+        if position is not None:
+            return None
+        instruction = frame.get('payload', {})
+    elif frame.get('effect_key') == 'effect_sequence':
+        effects = frame.get('payload', {}).get('effects', [])
+        if type(position) is not int or not 0 <= position < len(effects):
+            return None
+        child = effects[position]
+        if child.get('effect_key') != 'set_next_creature_entry_counter':
+            return None
+        instruction = child.get('payload', {})
+    else:
+        return None
+    reference = publication.get('reference')
+    if (not isinstance(reference, dict) or set(reference) != {'incarnation', 'zone_change_sequence', 'zone'}
+            or any(type(reference.get(key)) is not int or reference[key] < 0
+                   for key in ('incarnation', 'zone_change_sequence'))
+            or reference['zone'] != 'battlefield' or frame.get('controller') != controller
+            or (publication.get('controller') != controller
+                and not instruction.get('__native_next_instruction'))
+            or publication.get('source_card_id') != frame.get('source_card_id')
+            or not isinstance(frame.get('id'), str) or not frame['id']
+            or not isinstance(publication.get('oracle_text'), str)
+            or instruction.get('counter', '+1/+1') != payload.get('counter', '+1/+1')
+            or instruction.get('amount', 1) != payload.get('amount', 1)):
+        return None
+    return {'version': 1, 'kind': 'retained_native_resolution',
+            'frame': deepcopy(frame), 'publication': deepcopy(publication),
+            'child_position': position, 'controller': controller,
+            'instruction': {'effect_key': 'set_next_creature_entry_counter',
+                            'counter': payload.get('counter', '+1/+1'),
+                            'amount': payload.get('amount', 1)},
+            'semantic_qualification': 'upstream_not_certified'}
+
+
 def set_next_creature_entry_counter(state: MatchState, controller: int, payload: dict) -> None:
     """Arm a one-shot counter for the next creature spell cast this turn."""
+    if '__native_next_instruction' in payload:
+        from rules_engine.next_creature_entry_trigger import arm
+        arm(state, controller, payload)
+        return
     amount = max(0, int(payload.get("amount", 1) or 0))
     if amount <= 0:
         return
+    origin = retained_next_creature_entry_origin(state, controller, payload)
     state.pending_entry_counters.append(
         {
             "controller": int(controller),
@@ -2532,11 +2583,17 @@ def set_next_creature_entry_counter(state: MatchState, controller: int, payload:
             "amount": amount,
             "expires_turn": int(state.turn),
             "source_card_id": payload.get("__source_card_id"),
+            **({'__entry_origin': origin} if origin is not None else {}),
         }
     )
     state.log.append(
         f"{state.players[controller].name} will put {amount} +1/+1 counter on the next creature they cast this turn."
     )
+
+
+def bind_creature_spell_entry_counter(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.next_creature_entry_trigger import bind
+    bind(state, controller, payload)
 
 
 def put_green_creature_from_hand(state: MatchState, controller: int, payload: dict) -> None:

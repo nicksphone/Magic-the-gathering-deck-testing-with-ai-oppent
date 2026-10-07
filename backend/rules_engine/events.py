@@ -289,6 +289,20 @@ def _append_trigger_groups(
             lki = source.last_known_battlefield if source else {}
             if lki.get("battlefield_incarnation") == payload.get("ward_incarnation"):
                 payload.setdefault("__source_lki", dict(lki))
+        if (trig['effect_key'] == 'set_next_creature_entry_counter'
+                or trig['effect_key'] == 'effect_sequence' and any(
+                    child.get('effect_key') == 'set_next_creature_entry_counter'
+                    for child in payload.get('effects', []))):
+            source = state.cards.get(trig['source_card_id'])
+            if source is not None and source.zone == Zone.BATTLEFIELD:
+                payload['__one_shot_publication'] = {
+                    'source_card_id': source.id, 'controller': trig['controller'],
+                    'reference': {'incarnation': object_incarnation(source),
+                                  'zone_change_sequence': source.zone_change_sequence,
+                                  'zone': source.zone.value},
+                    'oracle_text': source.oracle_text,
+                    'clause': payload.get('__chapter_clause'),
+                }
         item = StackItem(
             id=state.allocate_object_id(),
             source_card_id=trig["source_card_id"],
@@ -297,6 +311,9 @@ def _append_trigger_groups(
             effect_key=trig["effect_key"],
             payload={**payload, "__trigger_order": order_index, "__trigger_event": payload.get("__trigger_event", event)},
         )
+        if item.effect_key == 'bind_creature_spell_entry_counter':
+            from rules_engine.next_creature_entry_trigger import publication
+            item.payload['__native_publication'] = publication(item)
         clause = _targeted_trigger_clause(state, item)
         if clause:
             item.payload["__trigger_target_clause"] = clause
@@ -596,6 +613,9 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     out.extend(collect_foretell_triggers(state, event, payload))
     from rules_engine.suspend import collect_triggers as collect_suspend_triggers
     out.extend(collect_suspend_triggers(state, event, payload))
+    if event == 'spell_cast':
+        from rules_engine.next_creature_entry_trigger import collect_cast
+        out.extend(collect_cast(state, payload))
     if event == 'cycle':
         cycled = state.cards.get(payload.get('card_id'))
         controller = payload.get('controller')
@@ -641,6 +661,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 continue
             proxy = copy(saga)
             proxy.oracle_text = chapter['text']
+            proxy.source_oracle_text = saga.oracle_text
             proxy.mana_cost = ''
             ability = build_ability_spec(state, proxy, saga.controller,
                                         action_targets={'source_card_id': saga.id, 'target_card_id': saga.id})

@@ -83,6 +83,9 @@ def resolve_annihilator(state, controller: int, payload: dict) -> None:
 
 
 def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'note_creature_type':
+        from rules_engine.next_creature_entry_trigger import finish_note
+        return finish_note(state, player_id, action)
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice

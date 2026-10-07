@@ -351,6 +351,15 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.next_creature_entry_trigger import compile_instruction
+    next_entry = compile_instruction(oracle, getattr(card, 'source_oracle_text', None))
+    if next_entry is not None:
+        return 'set_next_creature_entry_counter', {
+            'counter': '+1/+1', 'amount': 1, '__native_next_instruction': next_entry}
+    if 'when you next cast a creature spell' in oracle.lower():
+        if report_unsupported:
+            state.log.append('Unsupported complete next-creature cast instruction.')
+        return 'noop', {'__unsupported_instruction': oracle}
     if re.search(r'\bput target face-up exiled card\b', oracle.strip(), re.I):
         if FACE_UP_EXILE_GRAVEYARD_RE.fullmatch(oracle.strip()):
             return 'put_exiled_card_into_graveyard', {'target_card_id': action_targets.get('target_card_id')}
@@ -1944,8 +1953,13 @@ def _infer_clause_effect(
             "sacrifice_next_end_step": "sacrifice it at the beginning of the next end step" in (card.oracle_text or "").lower(),
         }
 
-    if "when you next cast a creature spell" in oracle and "additional +1/+1 counter" in oracle:
-        return "set_next_creature_entry_counter", {"counter": "+1/+1", "amount": 1}
+    if "when you next cast a creature spell" in oracle:
+        from rules_engine.next_creature_entry_trigger import compile_instruction
+        instruction = compile_instruction(oracle, getattr(card, 'source_oracle_text', None))
+        if instruction is not None:
+            return 'set_next_creature_entry_counter', {
+                'counter': '+1/+1', 'amount': 1, '__native_next_instruction': instruction}
+        return 'noop', {'__unsupported_instruction': oracle}
 
     if "exile this saga" in oracle and "return it to the battlefield transformed" in oracle:
         target = target_card_id or action_targets.get("source_card_id")

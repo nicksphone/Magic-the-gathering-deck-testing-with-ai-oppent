@@ -40,6 +40,7 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
             "spell_cast",
             {
                 "source_card_id": source_card_id,
+                "source_stack_id": item.id,
                 "controller": controller,
                 "label": label,
                 "stack_payload": dict(payload or {}),
@@ -518,15 +519,20 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
-        if (control_frame_required or prevention_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library', 'put_exiled_card_into_graveyard'}
+        if (control_frame_required or prevention_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library', 'put_exiled_card_into_graveyard', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter'}
                 or effect_key == 'effect_sequence' and any(
-                    effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library'}
+                    effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter'}
                     for effect in payload.get('effects', []))):
             from dataclasses import asdict
             # Transport the real popped item only where shuffle attribution needs it.
             frame = asdict(item)
             frame['payload'].pop('__resolving_item', None)
             payload['__resolving_item'] = frame
+            if effect_key == 'effect_sequence':
+                payload['effects'] = [
+                    {**effect, 'payload': {**effect.get('payload', {}), '__one_shot_child_position': index}}
+                    if effect.get('effect_key') == 'set_next_creature_entry_counter' else effect
+                    for index, effect in enumerate(payload.get('effects', []))]
         resolve_effect(state, item.controller, effect_key, payload)
     pending_choice = state.pending_mechanic_choice or state.pending_replacement_choice
     if pending_choice:
@@ -575,6 +581,10 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             if '__entry_counters_ready' not in payload:
                 from rules_engine.entry_counters import begin_spell_entry
                 return begin_spell_entry(state, item, payload)
+            from rules_engine.entry_counters import next_entry_commit_matches
+            if not next_entry_commit_matches(state, item, payload):
+                from rules_engine.action_validation import ActionRejected
+                raise ActionRejected('Stale retained next-creature entry packet')
             entry_staged_here = not state.trigger_staging
             if entry_staged_here:
                 state.trigger_staging = True

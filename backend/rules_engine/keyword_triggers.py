@@ -67,6 +67,9 @@ def collect_keyword_triggers(state, event, payload):
     if event == 'begin_step':
         due, remaining = [], []
         for record in state.delayed_triggers:
+            if record.get('kind') == 'native_noted_creature_type_history':
+                remaining.append(record)
+                continue
             (due if record.get('step') == payload.get('step')
              and state.turn >= record.get('earliest_turn', state.turn) else remaining).append(record)
         state.delayed_triggers = remaining

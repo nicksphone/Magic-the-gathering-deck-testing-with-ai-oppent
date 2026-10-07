@@ -76,6 +76,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         pending = state.pending_mechanic_choice
         if pending['player_id'] != player_id:
             return []
+        if pending['kind'] == 'note_creature_type':
+            from rules_engine.next_creature_entry_trigger import note_view
+            return [note_view(pending)]
         if pending['kind'] == 'effect_cast':
             from rules_engine.effect_casts import cast_moves
             return cast_moves(state, player_id)
