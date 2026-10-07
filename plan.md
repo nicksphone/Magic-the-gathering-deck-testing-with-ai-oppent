@@ -170,6 +170,9 @@ UI redesign is later; functional access to backend choices is not optional.
 5. [ ] Improve combat/racing, blocking, resource reservations, removal/counter
    timing, threat assessment, mana efficiency, mulligans, dynamic faces and
    multi-turn planning. No blind attack, power-zero or named-card policy fixes.
+   Intrinsic-mana dual-land combat admission is composed: 225 pure checks pass;
+   the 316-case public combat cohort has 276 passes and 40 retained graveyard
+   decision failures. No weights/depth or hidden-information policy changes.
 6. [ ] Define decision-quality benchmarks and before/after comparisons under
    hidden information. Training/data tooling needs legal-action traces, causal
    anomalies and evaluation; storage or a neural net alone does not prove skill.
@@ -197,8 +200,9 @@ the supported-corpus exit does not redefine that larger goal as achieved.
    reconstruction, long-session browser soak, accessibility and actionable errors.
    Two-output seed export needs explicit restart recovery: the real 12-case
    fault audit has eight passes and four immediate-publication failures. A local
-   rollback-journal/recovery implementation is in progress; it must preserve
-   original bytes without source inputs and refuse altered outputs. Recovery is
+   rollback-journal/recovery implementation now passes 245 checks across ten
+   modules, preserving original bytes without source inputs and refusing
+   altered outputs. Real SIGKILL/new-process recovery is covered. Recovery is
    not atomic two-file visibility, and the stricter historical failures remain.
 6. [ ] Reconcile features/limitations with current source, record changed files,
    checks, evidence, risks and manual review; publish and deploy only after the

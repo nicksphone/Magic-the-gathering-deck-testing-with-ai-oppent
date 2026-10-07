@@ -6,14 +6,17 @@ except ImportError:  # pragma: no cover
     import _bootstrap  # noqa: F401
 
 import argparse
+import base64
 from copy import deepcopy
+import fcntl
 import gzip
 import hashlib
 import json
 import os
 import re
 import sqlite3
-import tempfile
+import stat
+import uuid
 from pathlib import Path
 
 from decks.builtin_decks import BUILTIN_DECKS
@@ -428,29 +431,250 @@ def export_seed(database: Path, *, canonical_bulk: Path | None = None, bulk_sha2
     return payload
 
 
-def _write_outputs(outputs: list[tuple[Path, str]]) -> None:
-    if len({path.resolve() for path, _ in outputs}) != len(outputs):
+def _output_pair(paths: list[Path]) -> list[Path]:
+    paths = [Path(os.path.abspath(path)) for path in paths]
+    if len(paths) != 2 or len({path.resolve() for path in paths}) != 2:
         raise ValueError("Output and ledger must be distinct paths")
-    staged = []
+    if all(path.exists() for path in paths) and os.path.samefile(*paths):
+        raise ValueError("Output and ledger must not alias the same file")
+    for path in paths:
+        if path.is_symlink() or path.parent.resolve() != path.parent:
+            raise ValueError("Publication paths must not contain symlinks")
+    return paths
+
+
+def _journal_path(paths: list[Path]) -> Path:
+    key = hashlib.sha256(json.dumps([str(p) for p in paths]).encode()).hexdigest()
+    return paths[0].parent / f".oracle-publication-{key}.journal"
+
+
+def _file_state(path: Path) -> dict | None:
     try:
-        # All validation/serialization and staging finish before any publication.
-        for path, content in outputs:
-            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as stream:
-                staged.append((path, Path(stream.name)))
-                stream.write(content)
-                stream.flush()
-                os.fsync(stream.fileno())
-        for path, temporary in staged:
-            os.replace(temporary, path)
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    except FileNotFoundError:
+        return None
+    with os.fdopen(fd, "rb") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode):
+            raise ValueError(f"Publication requires regular files: {path}")
+        raw = stream.read()
+    return {"length": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
+            "mode": stat.S_IMODE(info.st_mode), "bytes": base64.b64encode(raw).decode("ascii")}
+
+
+def _signature(state: dict | None) -> dict | None:
+    return None if state is None else {key: state[key] for key in ("length", "sha256", "mode")}
+
+
+def _sync_directory(path: Path) -> None:
+    fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY)
+    try:
+        os.fsync(fd)
     finally:
-        for _, temporary in staged:
-            temporary.unlink(missing_ok=True)
+        os.close(fd)
+
+
+def _journal_identity(fd: int, journal: Path) -> None:
+    info, current = os.fstat(fd), journal.lstat()
+    if (not stat.S_ISREG(current.st_mode) or stat.S_IMODE(current.st_mode) != 0o600
+            or (info.st_dev, info.st_ino) != (current.st_dev, current.st_ino)):
+        raise ValueError("Publication journal identity changed")
+
+
+def _lock_journal(fd: int, journal: Path) -> None:
+    fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    _journal_identity(fd, journal)
+
+
+def _journal_record(payload: dict) -> bytes:
+    return (json.dumps({"payload": payload, "sha256": _raw_hash(payload)},
+                       sort_keys=True, separators=(",", ":")) + "\n").encode()
+
+
+def _append_record(fd: int, payload: dict) -> None:
+    raw = _journal_record(payload)
+    os.lseek(fd, 0, os.SEEK_END)
+    while raw:
+        written = os.write(fd, raw)
+        if not written:
+            raise OSError("Short publication journal write")
+        raw = raw[written:]
+    os.fsync(fd)
+
+
+def _read_journal(fd: int, paths: list[Path]) -> tuple[dict, bool]:
+    os.lseek(fd, 0, os.SEEK_SET)
+    with os.fdopen(os.dup(fd), "rb") as stream:
+        raw = stream.read()
+    lines = raw.split(b"\n")
+    if len(lines) < 2:
+        raise ValueError("Incomplete prepared publication record")
+    prepared = json.loads(lines[0])
+    data = prepared["payload"]
+    if (prepared["sha256"] != _raw_hash(data) or data["version"] != 1
+            or data["paths"] != [str(p) for p in paths]
+            or len(data["entries"]) != 2
+            or not re.fullmatch(r"[0-9a-f]{32}", data["nonce"])):
+        raise ValueError("Invalid publication journal")
+    for index, (path, entry) in enumerate(zip(paths, data["entries"])):
+        prefix = path.parent / f".oracle-{data['nonce']}-{index}"
+        if (entry["stage"] != str(prefix) + ".new"
+                or entry["restore"] != str(prefix) + ".old"):
+            raise ValueError("Foreign publication staging path")
+        for state in (entry["old"], entry["new"]):
+            if state is not None and (type(state["length"]) is not int or state["length"] < 0
+                    or type(state["mode"]) is not int or not 0 <= state["mode"] <= 0o7777
+                    or not re.fullmatch(r"[0-9a-f]{64}", state["sha256"])):
+                raise ValueError("Invalid publication file signature")
+        if entry["new"] is None:
+            raise ValueError("Missing publication generation")
+        if entry["old"] is not None:
+            old = base64.b64decode(entry["old"]["bytes"], validate=True)
+            if len(old) != entry["old"]["length"] or hashlib.sha256(old).hexdigest() != entry["old"]["sha256"]:
+                raise ValueError("Corrupt original publication backup")
+    suffix = raw[len(lines[0]) + 1:]
+    commit = _journal_record({"committed": _raw_hash(data)})
+    if suffix != commit and not commit.startswith(suffix):
+        raise ValueError("Invalid publication commit")
+    # Only a prefix of our exact commit record is a recognized interrupted write.
+    return data, suffix == commit
+
+
+def _preflight_pair(fd: int, journal: Path, paths: list[Path], data: dict, committed: bool) -> None:
+    _journal_identity(fd, journal)
+    for path, entry in zip(paths, data["entries"]):
+        actual = _signature(_file_state(path))
+        allowed = [entry["new"]] if committed else [_signature(entry["old"]), entry["new"]]
+        if actual not in allowed:
+            raise ValueError(f"Publication output changed; recovery refused: {path}")
+        for key, expected in (("stage", entry["new"]), ("restore", _signature(entry["old"]))):
+            stage = _file_state(Path(entry[key]))
+            if stage is not None and _signature(stage) != expected:
+                raise ValueError("Publication stage changed; recovery refused")
+
+
+def _stage_bytes(path: Path, raw: bytes, mode: int, owned: list[Path] | None = None) -> None:
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    if owned is not None:
+        owned.append(path)
+    with os.fdopen(fd, "wb") as stream:
+        stream.write(raw)
+        os.fchmod(stream.fileno(), mode)
+        stream.flush()
+        os.fsync(stream.fileno())
+
+
+def _finish_publication(fd: int, journal: Path, paths: list[Path], data: dict, committed: bool) -> None:
+    _preflight_pair(fd, journal, paths, data, committed)
+    if not committed:
+        for path, entry in zip(paths, data["entries"]):
+            old = entry["old"]
+            if old is not None and _signature(_file_state(path)) != _signature(old):
+                restore = Path(entry["restore"])
+                if _file_state(restore) is None:
+                    _stage_bytes(restore, base64.b64decode(old["bytes"]), old["mode"])
+        # All restoration bytes are staged before changing any destination.
+        _preflight_pair(fd, journal, paths, data, False)
+        for path, entry in zip(paths, data["entries"]):
+            if _signature(_file_state(path)) == _signature(entry["old"]):
+                continue
+            _journal_identity(fd, journal)
+            if entry["old"] is None:
+                path.unlink()
+            else:
+                os.replace(entry["restore"], path)
+            _sync_directory(path.parent)
+    for path, entry in zip(paths, data["entries"]):
+        expected = entry["new"] if committed else _signature(entry["old"])
+        if _signature(_file_state(path)) != expected:
+            raise ValueError("Publication generation verification failed")
+    _preflight_pair(fd, journal, paths, data, committed)
+    for entry in data["entries"]:
+        for key in ("stage", "restore"):
+            _journal_identity(fd, journal)
+            Path(entry[key]).unlink(missing_ok=True)
+    for directory in {path.parent for path in paths}:
+        _sync_directory(directory)
+    _journal_identity(fd, journal)
+    journal.unlink()
+    _sync_directory(journal.parent)
+
+
+def _recover_publication(paths: list[Path]) -> bool:
+    paths = _output_pair(paths)
+    journal = _journal_path(paths)
+    try:
+        fd = os.open(journal, os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK)
+    except FileNotFoundError:
+        return False
+    try:
+        _lock_journal(fd, journal)
+        data, committed = _read_journal(fd, paths)
+        _finish_publication(fd, journal, paths, data, committed)
+    finally:
+        os.close(fd)
+    return True
+
+
+def _write_outputs(outputs: list[tuple[Path, str]]) -> None:
+    paths = _output_pair([path for path, _ in outputs])
+    journal = _journal_path(paths)
+    if os.path.lexists(journal):
+        raise ValueError("Pending publication journal; use --recover-publication")
+    nonce = uuid.uuid4().hex
+    entries, staged = [], []
+    fd = None
+    prepared = False
+    try:
+        for index, (path, (_, content)) in enumerate(zip(paths, outputs)):
+            old = _file_state(path)
+            stage = path.parent / f".oracle-{nonce}-{index}.new"
+            restore = path.parent / f".oracle-{nonce}-{index}.old"
+            _stage_bytes(stage, content.encode("utf-8"), old["mode"] if old else 0o600, staged)
+            entries.append({"old": old, "new": _signature(_file_state(stage)),
+                            "stage": str(stage), "restore": str(restore)})
+        fd = os.open(journal, os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+        os.fchmod(fd, 0o600)
+        _lock_journal(fd, journal)
+        data = {"version": 1, "nonce": nonce, "paths": [str(p) for p in paths], "entries": entries}
+        for path, entry in zip(paths, entries):
+            if _file_state(path) != entry["old"]:
+                raise ValueError("Publication output changed during staging")
+        _append_record(fd, data)
+        _sync_directory(journal.parent)
+        prepared = True
+        for path, entry in zip(paths, entries):
+            _journal_identity(fd, journal)
+            os.replace(entry["stage"], path)
+            _sync_directory(path.parent)
+        _preflight_pair(fd, journal, paths, data, True)
+        _append_record(fd, {"committed": _raw_hash(data)})
+        _finish_publication(fd, journal, paths, data, True)
+    except Exception:
+        if prepared:
+            try:
+                recorded, recorded_commit = _read_journal(fd, paths)
+                _finish_publication(fd, journal, paths, recorded, recorded_commit)
+            except Exception as recovery_error:
+                raise RuntimeError(f"Publication failed; journal retained for --recover-publication: {journal}") from recovery_error
+        raise
+    finally:
+        try:
+            if not prepared:
+                if fd is not None:
+                    _journal_identity(fd, journal)
+                    journal.unlink()
+                for stage in staged:
+                    stage.unlink(missing_ok=True)
+        finally:
+            if fd is not None:
+                os.close(fd)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Export verified built-in Oracle metadata from a synced local cache")
     parser.add_argument("--database", type=Path, default=Path(__file__).resolve().parents[1] / "mtg_lab.db")
-    parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[1] / "card_data" / "builtin_oracle_seed.json")
+    parser.add_argument("--output", type=Path)
     parser.add_argument("--canonical-bulk", type=Path, help="Local full Scryfall JSONL or JSONL.gz; never downloaded")
     parser.add_argument("--bulk-sha256")
     parser.add_argument("--semantic-admission", type=Path, help="Pinned reviewed full-face color-semantic ledger")
@@ -459,16 +683,36 @@ def main() -> None:
     parser.add_argument("--preservation-ledger", type=Path, help="Prior admitted facts, retained only after exact canonical validation")
     parser.add_argument("--preservation-ledger-sha256")
     parser.add_argument("--fact-ledger", type=Path, required=True)
+    parser.add_argument("--recover-publication", action="store_true",
+                        help="Recover the recorded output pair without reading card data or SQLite")
     args = parser.parse_args()
+    if args.output is None:
+        if args.recover_publication:
+            parser.error("--recover-publication requires explicit --output and --fact-ledger")
+        args.output = DEFAULT_SEED
     protected = {path.resolve() for path in (args.database, args.canonical_bulk, args.semantic_admission) if path is not None}
-    if args.output.resolve() in protected or args.fact_ledger.resolve() in protected:
+    if (args.output.resolve() in protected or args.fact_ledger.resolve() in protected
+            or any(destination.exists() and source.exists() and os.path.samefile(destination, source)
+                   for destination in (args.output, args.fact_ledger)
+                   for source in (args.database, args.canonical_bulk, args.semantic_admission) if source is not None)):
         raise ValueError("Export destinations must not overwrite canonical inputs or database")
+    paths = _output_pair([args.output, args.fact_ledger])
+    if args.recover_publication:
+        recovered = _recover_publication(paths)
+        print("Publication recovered" if recovered else "No publication journal; no files certified or changed")
+        return
+    if os.path.lexists(_journal_path(paths)):
+        raise ValueError("Pending publication journal; use --recover-publication")
+    preservation_inputs = [p for p in (args.preservation_seed, args.preservation_ledger) if p is not None]
+    preservation_before = [_file_state(p) for p in preservation_inputs]
     ledger = []
     payload = export_seed(args.database, canonical_bulk=args.canonical_bulk, bulk_sha256=args.bulk_sha256,
                           semantic_admission=args.semantic_admission, admission_sha256=args.admission_sha256,
                           preservation_seed=args.preservation_seed, fact_ledger=ledger,
                           preservation_ledger=args.preservation_ledger,
                           preservation_ledger_sha256=args.preservation_ledger_sha256)
+    if [_file_state(p) for p in preservation_inputs] != preservation_before:
+        raise ValueError("Preservation inputs changed during admission; publication refused")
     _write_outputs([(args.output, json.dumps(payload, ensure_ascii=False, indent=2) + "\n"),
                     (args.fact_ledger, json.dumps(ledger, ensure_ascii=False, indent=2) + "\n")])
     print(f"Exported {len(payload['cards'])} verified cards to {args.output}")

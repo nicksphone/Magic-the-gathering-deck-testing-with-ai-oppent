@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791328201.5800276,
-    "seen": 1791328526.1673427,
-    "ast_hash": "5f0759913fcfdb40a5ef6c0d44d38948",
+    "mtime": 1791333377.711528,
+    "seen": 1791334082.5472717,
+    "ast_hash": "16ac21dcac6b21a0b1d055089c4d1555",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -1068,9 +1068,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/export_builtin_oracle_seed.py": {
-    "mtime": 1791327512.2086437,
-    "seen": 1791328031.6470976,
-    "ast_hash": "a0e3c6be3bc29384b5ed38d68d6ff882",
+    "mtime": 1791333969.1434443,
+    "seen": 1791334082.5476406,
+    "ast_hash": "63321e596a1c25ca5e3e046b2d22018f",
     "semantic_hash": ""
   },
   "backend/scripts/export_training_trajectories.py": {
@@ -6774,15 +6774,15 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791332986.0065222,
-    "seen": 1791333309.306331,
-    "ast_hash": "695cd5da195c8c8ce6e4656f6bc571e6",
+    "mtime": 1791333997.0389779,
+    "seen": 1791334082.5503216,
+    "ast_hash": "e92ab54bfe3f8e9d17d9322e94f4347f",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791330875.303599,
-    "seen": 1791330942.4050746,
-    "ast_hash": "4f96c35ead751aac0d205bcac8544911",
+    "mtime": 1791334016.9196458,
+    "seen": 1791334082.5503235,
+    "ast_hash": "e3ee5f8781e2b781267b80b79ad32937",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791332986.008522,
-    "seen": 1791333309.3070939,
-    "ast_hash": "0d3da5461af60a0c459ed9b506b71be4",
+    "mtime": 1791333997.0399778,
+    "seen": 1791334082.5510871,
+    "ast_hash": "ea9978116f759dca45f8b88ecbfd47fb",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -11853,6 +11853,90 @@
     "mtime": 1791331263.4912136,
     "seen": 1791331447.790331,
     "ast_hash": "29fb8a54ccd06a3cc80b14664d0cb3e6",
+    "semantic_hash": ""
+  },
+  "backend/tests/export_recovery_cli_worker.py": {
+    "mtime": 1791333969.1474442,
+    "seen": 1791334082.5476832,
+    "ast_hash": "fc9083f33cc88bccdbf23ba0ed889f03",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/public_combat_boundary/provenance.json": {
+    "mtime": 1791333377.705528,
+    "seen": 1791334082.5483553,
+    "ast_hash": "cf5712669626b51248ee2e61e4cc0249",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/public_combat_boundary/tropical-island.json": {
+    "mtime": 1791333377.704528,
+    "seen": 1791334082.5483575,
+    "ast_hash": "7c8ea0db0303f73bc9731ac02480e8bf",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/public_combat_boundary/underground-sea.json": {
+    "mtime": 1791333377.704528,
+    "seen": 1791334082.5483592,
+    "ast_hash": "01dac1c4fd3aa59c65fd84a454cb1372",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_export_publication_recovery.py": {
+    "mtime": 1791333969.1474442,
+    "seen": 1791334082.549208,
+    "ast_hash": "412997b5d07daf56626fe42b065ba02b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_export_publication_recovery_cli.py": {
+    "mtime": 1791333969.1474442,
+    "seen": 1791334082.5492096,
+    "ast_hash": "7019cf98802f5ebf319580a411e912e7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_intrinsic_mana_combat_leaf.py": {
+    "mtime": 1791333377.711528,
+    "seen": 1791334082.5492997,
+    "ast_hash": "97f3fbfdb8ec43977ff2296546ac10d9",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_public_block_leaf_audit.py": {
+    "mtime": 1791333377.7005281,
+    "seen": 1791334082.5495977,
+    "ast_hash": "8910a653d447687d40c8bea8f75af401",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_public_combat_boundary_audit.py": {
+    "mtime": 1791333377.711528,
+    "seen": 1791334082.5495994,
+    "ast_hash": "f691a6d6ed98dc07e2bceeb194763f41",
+    "semantic_hash": ""
+  },
+  "docs/testing/export-publication-recovery.md": {
+    "mtime": 1791333969.1474442,
+    "seen": 1791334082.5506473,
+    "ast_hash": "2e6f9f3a02a03bf45c6d1a47c5e9b749",
+    "semantic_hash": ""
+  },
+  "docs/testing/intrinsic-exporter-current-composition.md": {
+    "mtime": 1791334016.920646,
+    "seen": 1791334082.5507164,
+    "ast_hash": "6e02fce2d77aae6c038f791e2bbe8573",
+    "semantic_hash": ""
+  },
+  "docs/testing/intrinsic-mana-combat-leaf-stage1.md": {
+    "mtime": 1791333377.711528,
+    "seen": 1791334082.5507183,
+    "ast_hash": "0f56c613e879605b3655c2c0b9ea9c54",
+    "semantic_hash": ""
+  },
+  "docs/testing/public-block-leaf-audit.md": {
+    "mtime": 1791333377.7005281,
+    "seen": 1791334082.550882,
+    "ast_hash": "98a31dd8b3df926c71df003c25ea19b5",
+    "semantic_hash": ""
+  },
+  "docs/testing/public-combat-boundary-candidates.md": {
+    "mtime": 1791333377.705528,
+    "seen": 1791334082.5508838,
+    "ast_hash": "b53247b38ef02a2eaf9cc6030508f1e2",
     "semantic_hash": ""
   }
 }

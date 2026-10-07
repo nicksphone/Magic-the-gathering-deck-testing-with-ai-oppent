@@ -1,5 +1,17 @@
 # Changelog
 
+## Backend Composition - 2026-10-07
+
+- Admit canonical intrinsic-mana dual lands in the conservative combat leaf
+  without changing weights, search depth or private-information access.
+  Current pure cohorts: 225 passes; then 276 passes / 40 retained graveyard
+  decision failures across 316 cases. An earlier missing-record-path attempt
+  is preserved separately, not classified as gameplay failures.
+- Add explicit journal-based seed/ledger recovery after interrupted publication.
+  Ten whole modules pass 245 checks, including real SIGKILL/restart CLI cases
+  and unchanged full155/prior17 metadata contracts. This is recoverability,
+  not atomic two-file visibility or power-loss durability certification.
+
 ## Unreleased Backend Composition - 2026-10-06
 
 - Subsequent 2026-10-07 shape-validation increment rejects malformed recognized

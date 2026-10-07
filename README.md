@@ -47,8 +47,9 @@ LAN deployment and broader AI-quality qualification remain open.
 - Supported self-land animations use source-bound continuous type, subtype,
   color, P/T and keyword records, with real payment, sickness and cleanup.
   The conservative tactical combat leaf uses checked damage/winner outcomes;
-  64 focused decision checks pass after animation composition. Broader response
-  planning and expert-level play remain unverified. See
+  Canonical intrinsic-mana dual lands also qualify without Basic-label or
+  card-name heuristics. Broader graveyard-response planning and expert-level
+  play remain unverified; 40 desired attack cases are still failing. See
   [animation/AI scope](docs/testing/animation-strategic-current-composition.md).
 - Static color predicates and convoke resource queries receive the current
   state rather than relying only on printed colors. The bounded color/resource
@@ -100,8 +101,10 @@ LAN deployment and broader AI-quality qualification remain open.
   Generic exact-printing loyalty recovery avoids named exceptions.
 - The offline exporter preserves all 155 records and the explicit 17-fact
   preservation ledger through validated cache/bulk and cache/knowledge routes.
-  Repeated CLI outputs are byte-identical; cross-file crash recovery is not yet
-  qualified. Historical 119-record fixtures retain their separate contract.
+  Repeated CLI outputs are byte-identical. Interrupted publication has explicit
+  journal-based recovery using `--recover-publication` without original inputs;
+  this is not atomic two-file visibility. Historical 119-record fixtures retain
+  their separate contract. See [recovery](docs/testing/export-publication-recovery.md).
 - The 53-entry expansion catalog distinguishes archetype templates from sourced
   historical OTJ and MH3 tournament lists. Historical imports preserve published
   60-card mainboards and 15-card sideboards, stable identity and event provenance.

@@ -983,18 +983,25 @@ class AIAgent:
         if opponent.hand or opponent.graveyard or opponent.exile:
             return None
 
-        def basic_land(card):
+        from rules_engine.land_types import BASIC_TYPES, effective_type_line, has_land_type
+        from rules_engine.mana_abilities import tap_only_outputs
+
+        def intrinsic_land(card):
             types = effective_types(state, card)
             return ('Land' in types and 'Creature' not in types
-                    and 'Basic' in card.type_line.split('\u2014', 1)[0].split())
+                    and isinstance(card.oracle_text, str)
+                    and not without_reminder_text(card.oracle_text).strip()
+                    and bool(effective_type_line(state, card))
+                    and any(has_land_type(state, card, subtype) for subtype in BASIC_TYPES)
+                    and bool(tap_only_outputs(state, card, ignore_readiness=True)))
 
-        # Land-only is not response-free: nonbasic activations may be unsupported.
-        if any(not basic_land(state.cards[cid]) for cid in opponent.battlefield):
+        # Missing functional abilities are not evidence that arbitrary lands are safe.
+        if any(not intrinsic_land(state.cards[cid]) for cid in opponent.battlefield):
             return None
         from rules_engine.combat_constraints import combat_rule_view
         for cid in state.players[player_id].battlefield:
             card = state.cards[cid]
-            if basic_land(card):
+            if intrinsic_land(card):
                 continue
             text = without_reminder_text(card.oracle_text or '').lower()
             if ('Creature' not in effective_types(state, card) or ':' in text
