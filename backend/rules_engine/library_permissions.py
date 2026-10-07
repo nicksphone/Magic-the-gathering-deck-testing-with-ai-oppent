@@ -20,7 +20,8 @@ def creature_types(card, state=None) -> set[str]:
     if state is not None:
         from rules_engine.land_types import effective_type_line
         type_line = effective_type_line(state, card)
-    subtypes = {part.lower() for part in type_line.split("—", 1)[1].split()} if "—" in type_line else set()
+    parts = re.split(r'\s+[\u2014\u2013-]\s+', type_line, maxsplit=1)
+    subtypes = {part.lower() for part in parts[1].split()} if len(parts) == 2 else set()
     subtypes.update(kind for kind in CREATURE_SUBTYPES if ' ' in kind
                     and re.search(r'\b' + re.escape(kind) + r'\b', type_line.lower()))
     oracle = without_reminder_text(getattr(card, "oracle_text", "") or "")

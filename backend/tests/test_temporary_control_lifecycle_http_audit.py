@@ -71,11 +71,27 @@ def test_actual_paid_http_control_cold_restore_then_natural_end_of_turn(
     assert card.summoning_sick and has_keyword(state, target, 'haste')
     assert state.cards[spell].zone == Zone.GRAVEYARD
     assert_private(state)
+    if family == 'ray-of-command':
+        retained_delay = deepcopy(state.delayed_triggers[-1])
     state = advance(restore(repo, state),
                     send=lambda root, actor, action: send(client, path, actor, action))
     assert state.cards[target].owner == owner and state.cards[target].controller == 3-seat
     assert target in state.players[3-seat].battlefield
     assert state.cards[target].summoning_sick and not has_keyword(state, target, 'haste')
+    if family == 'ray-of-command':
+        from game_state.state import Step
+        from rules_engine.targeting import spell_cant_be_countered
+        assert state.step == Step.CLEANUP and state.cleanup_repeat_required
+        assert not state.cards[target].tapped
+        trigger = state.stack[-1]
+        assert trigger.effect_key == 'control_loss_tap' and trigger.controller == seat
+        assert trigger.source_card_id == spell == retained_delay['source_card_id']
+        assert trigger.payload['card_id'] == target
+        for key in ('incarnation', 'zone_change_sequence', '__delayed_source_reference'):
+            assert trigger.payload[key] == retained_delay['payload'][key]
+        assert trigger.targets == [] and 'target_card_id' not in trigger.payload
+        assert not spell_cant_be_countered(state, trigger)
+        state = resolve(client, path, restore(repo, state))
     assert state.cards[target].tapped == (family == 'ray-of-command')
     assert not state.temporary_control_changes
     assert_private(restore(repo, state))

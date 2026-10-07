@@ -780,9 +780,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/library_permissions.py": {
-    "mtime": 1791328054.2432995,
-    "seen": 1791328526.1676812,
-    "ast_hash": "e3288c2c07e7cbf628f27fc2db7e2055",
+    "mtime": 1791340820.2303112,
+    "seen": 1791340940.5070174,
+    "ast_hash": "417879129194537b156f52a3e1cb88de",
     "semantic_hash": ""
   },
   "backend/rules_engine/linked_discard.py": {
@@ -11766,15 +11766,15 @@
     "semantic_hash": ""
   },
   "backend/tests/test_temporary_control_lifecycle_audit.py": {
-    "mtime": 1791330145.6712332,
-    "seen": 1791330319.1553028,
-    "ast_hash": "b00f80b7a39be6355987be70c7dd8853",
+    "mtime": 1791340820.2563107,
+    "seen": 1791340940.5094779,
+    "ast_hash": "83343d3d37aa7d00407d8b85c51d21bd",
     "semantic_hash": ""
   },
   "backend/tests/test_temporary_control_lifecycle_http_audit.py": {
-    "mtime": 1791330145.6712332,
-    "seen": 1791330319.1553047,
-    "ast_hash": "59b22bc03680bc92aa7af33266949043",
+    "mtime": 1791340820.2563107,
+    "seen": 1791340940.5094798,
+    "ast_hash": "5c2308a8425863da8bb812925d8259af",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/announced_target_references/intake.txt": {
@@ -12189,6 +12189,18 @@
     "mtime": 1791340563.929452,
     "seen": 1791340670.7450244,
     "ast_hash": "9ef9e8852a9eabc20ddeefa4fb67c32e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_creature_type_separators.py": {
+    "mtime": 1791340820.2303112,
+    "seen": 1791340940.5086994,
+    "ast_hash": "bc4b540bb8f46a58da61de9354f76e3e",
+    "semantic_hash": ""
+  },
+  "docs/testing/subtype-ray-current-composition.md": {
+    "mtime": 1791340872.9284594,
+    "seen": 1791340940.5106435,
+    "ast_hash": "28fc969d12f240d166c1f54c2a24050e",
     "semantic_hash": ""
   }
 }

@@ -93,12 +93,28 @@ def test_real_paid_control_untap_haste_and_natural_cleanup_restore_prior_control
     assert has_keyword(state, target, 'haste')
     assert state.cards[spell].zone == Zone.GRAVEYARD
     assert_private(state)
+    if family == 'ray-of-command':
+        retained_delay = deepcopy(state.delayed_triggers[-1])
     state = advance(restart(state, tmp_path, 'control-active-source-already-graveyard'))
     assert state.cards[target].controller == 3-seat
     assert state.cards[target].owner == owner and target in state.players[3-seat].battlefield
     assert not has_keyword(state, target, 'haste')
     assert state.cards[target].summoning_sick
     assert not state.temporary_control_changes
+    if family == 'ray-of-command':
+        from game_state.state import Step
+        from rules_engine.targeting import spell_cant_be_countered
+        assert state.step == Step.CLEANUP and state.cleanup_repeat_required
+        assert not state.cards[target].tapped
+        trigger = state.stack[-1]
+        assert trigger.effect_key == 'control_loss_tap' and trigger.controller == seat
+        assert trigger.source_card_id == spell == retained_delay['source_card_id']
+        assert trigger.payload['card_id'] == target
+        for key in ('incarnation', 'zone_change_sequence', '__delayed_source_reference'):
+            assert trigger.payload[key] == retained_delay['payload'][key]
+        assert trigger.targets == [] and 'target_card_id' not in trigger.payload
+        assert not spell_cant_be_countered(state, trigger)
+        state = passes(restart(state, tmp_path, 'cleanup-delayed-before-native-passes'))
     assert state.cards[target].tapped == (family == 'ray-of-command')
     assert_private(restart(state, tmp_path, 'control-cleanup'))
 
