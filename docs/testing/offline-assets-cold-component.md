@@ -1,7 +1,9 @@
 # Offline Assets: Cold Component Evidence
 
-This is qualification of application source `6f9e29ec2e8ea7f1ebb880a4f553960b887edafb`,
-not the newer current composition or completion of Gate 1.7.
+This document preserves the historical qualification of application source
+`6f9e29ec2e8ea7f1ebb880a4f553960b887edafb` and the separately executed
+current-source backend qualification below. Neither proves the browser,
+production proxy or full release acceptance.
 
 ## Actual Results
 
@@ -92,11 +94,49 @@ owned resource lists were empty. Independent acceptance evidence is under
 Worker final closed-byte archival is a separate handoff. No cold rerun, database
 reset, source/test change or prior-ledger mutation occurred.
 
+## Current441 Cold And Warm Qualification
+
+One authorized sealed-v2 execution on immutable application source
+`441201cee29dd527ba394b086e80accbf43bfc43` began at 09:22:06 UTC on
+2026-10-07. Cold execution qualified all 155 shipped cards and served their
+fallback assets without network access. The initially empty cache became
+156 files. Warm execution used the same closed database and warmed cache;
+it was not relabeled as cold or reset between phases.
+
+All eight whole warm modules completed: 73 ordinary passes, 42 warnings,
+exit zero in 25.39 seconds. JUnit contains exactly 73 tests with no failures,
+errors or skips. The original ordered node identities and all four strict
+stub node/route pairs were verified. All 23 startup/shutdown pairs completed;
+runtime media grew from 156 to 169 files. Stubbed sync routes do not establish
+external-service operation.
+
+Source integrity covered all 1,574 pinned files, and the sealed harness
+remained unchanged. Isolation passed; resource descriptors, threads,
+children and jobs were empty at closure. Actual default and migration
+database fuser checks returned one with empty output and journals absent.
+Unrelated process visibility limitations remain recorded. The exclusive SQL
+slot was released at 09:24:43.959 UTC.
+
+The immutable evidence archive is
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/release-gate-1-7-current-gate/441201c-v2/`:
+
+- `REPORT.md`: `8e588250838e4b2273649efab9445351f1204dee530b7f38d50aaf01c3b5a282`
+- `SHA256SUMS`: `84ad5ef4fc20d21bccd99124b0b26347feadd4ab9cadaa450e98372132b7c8c0`
+- Runtime tar: `b1c478b1328daa10b55d39ed7ea01511ea2e70af9796d4bdba33444779a2f89c`
+
+Parent verification independently checked all twelve manifest entries and
+compared all 1,823 regular tar members and three symlink targets against the
+quiet local source, harness and evidence. No test rerun, source edit, cleanup
+or SQLite execution on NFS was used for acceptance. Two metadata-only
+postprocessor errors are preserved separately; neither changed gameplay or
+reran the gate.
+
 ## Remaining Work
 
 Preserve the cold result and both failed warm ledgers; do not reset the database
 or relabel warmed state as a fresh cold run. The v6 result qualifies the pinned
 `6f9e29e` backend warm component, not the newer composed application.
-Current-source offline qualification, canonical artwork, browser fallback,
-production routing and broader release acceptance remain unproven. No application
-fix or deployment resulted from this gate.
+The separately executed current441 cold/warm backend component is now
+qualified; later compositions require their own evidence. Canonical artwork,
+browser fallback, production routing and broader release acceptance remain
+unproven. No application fix or deployment resulted from this gate.
