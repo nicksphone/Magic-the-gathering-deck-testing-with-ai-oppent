@@ -285,6 +285,10 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.temporary_characteristics import temporary_characteristics_candidate, compile_temporary_characteristics
+    if temporary_characteristics_candidate(oracle):
+        compiled = compile_temporary_characteristics(oracle, action_targets)
+        return compiled if compiled is not None else ('noop', {'__unsupported_instruction': oracle})
     from rules_engine.land_animation import animation_candidate, compile_self_land_animation
     if animation_candidate(card, oracle):
         compiled = compile_self_land_animation(state, card, oracle)

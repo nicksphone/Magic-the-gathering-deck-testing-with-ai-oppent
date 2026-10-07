@@ -23,6 +23,11 @@ version running on the live servers. Scoped acceptance and remaining work are
 recorded in [the finish plan](plan.md) and `docs/testing/`. Full-suite, browser,
 LAN deployment and broader AI-quality qualification remain open.
 
+Strict preflight currently flags cards in the built-in Mono Red Aggro and Burn
+decks, including suspend, damage-to-counter replacement and linked conditional
+damage. A natural UI game with those decks has not passed acceptance; warnings
+are not bypassed to claim support.
+
 ## Current Features
 
 - Supported battlefield/hand `activate_ability` frames capture the announced
@@ -54,6 +59,11 @@ LAN deployment and broader AI-quality qualification remain open.
 - Static color predicates and convoke resource queries receive the current
   state rather than relying only on printed colors. The bounded color/resource
   composition passes 85 checks; this is not full color-mechanics certification.
+- Admitted complete temporary-creature instructions compose native ability
+  loss, color, creature subtype and base-stat records without overwriting printed
+  data or counters. Subtype-sensitive cost readers and cleanup/reentry pass pure
+  qualification; HTTP acceptance is pending. See
+  [temporary characteristics](docs/testing/temporary-characteristics-current-composition.md).
 
 - Generic supported nontoken-creature entry observers distinguish tokens and
   preserve controller predicates and ability suppression. Unconditional global

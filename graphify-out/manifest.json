@@ -390,9 +390,9 @@
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1791328054.2432995,
-    "seen": 1791328526.1675372,
-    "ast_hash": "573b8adde8fa1189a10f8bd7577d6f62",
+    "mtime": 1791335878.3905485,
+    "seen": 1791336552.4794376,
+    "ast_hash": "5e009f71dfe39b5757ba7f46d06f36aa",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -528,9 +528,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/basic_land_layer.py": {
-    "mtime": 1791328054.2432995,
-    "seen": 1791328526.1675901,
-    "ast_hash": "78f1586dcd746a653e95ffe07903a709",
+    "mtime": 1791335878.3985484,
+    "seen": 1791336552.479481,
+    "ast_hash": "d3c6b94ba27f424d9f905de6b2332267",
     "semantic_hash": ""
   },
   "backend/rules_engine/bestow.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791330481.0108683,
-    "seen": 1791330942.4023075,
-    "ast_hash": "89554801b105ac091d75d8872898bed6",
+    "mtime": 1791335878.3905485,
+    "seen": 1791336552.4796014,
+    "ast_hash": "d33fb7965510f03e2344ea0422b340a2",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -6774,15 +6774,15 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791333997.0389779,
-    "seen": 1791334082.5503216,
-    "ast_hash": "e92ab54bfe3f8e9d17d9322e94f4347f",
+    "mtime": 1791336484.2530773,
+    "seen": 1791336552.4823976,
+    "ast_hash": "089612cc3adb35c6a33daff287c63c2e",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791334016.9196458,
-    "seen": 1791334082.5503235,
-    "ast_hash": "e3ee5f8781e2b781267b80b79ad32937",
+    "mtime": 1791336484.2500772,
+    "seen": 1791336552.4823995,
+    "ast_hash": "870688a4fe6af104d4ee12f01452f11e",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791333997.0399778,
-    "seen": 1791334082.5510871,
-    "ast_hash": "ea9978116f759dca45f8b88ecbfd47fb",
+    "mtime": 1791336484.2540772,
+    "seen": 1791336552.4831743,
+    "ast_hash": "fbd58b0907de6cf87ca15f4b6ba3548b",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -11937,6 +11937,90 @@
     "mtime": 1791333377.705528,
     "seen": 1791334082.5508838,
     "ast_hash": "b53247b38ef02a2eaf9cc6030508f1e2",
+    "semantic_hash": ""
+  },
+  "docs/testing/natural-main-app-preflight-20261007.md": {
+    "mtime": 1791334988.968598,
+    "seen": 1791335054.6890438,
+    "ast_hash": "d0a2cdc2da18eec0b60e742dd0630692",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/temporary_characteristics.py": {
+    "mtime": 1791335878.3905485,
+    "seen": 1791336552.479644,
+    "ast_hash": "092928e9091d37f6e148c7a404ae62dc",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/multicharacteristic_audit/battlegrowth.json": {
+    "mtime": 1791335878.3845487,
+    "seen": 1791336552.4803119,
+    "ast_hash": "91d3c08b1207bd417cc019701ab7d44c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/multicharacteristic_audit/birds-of-paradise.json": {
+    "mtime": 1791335878.3845487,
+    "seen": 1791336552.4803138,
+    "ast_hash": "730a669cf601d74156dd3469cdf2edbd",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/multicharacteristic_audit/provenance.json": {
+    "mtime": 1791335878.3845487,
+    "seen": 1791336552.4803154,
+    "ast_hash": "a37e405e6b9eff6c412fa5f89ad85f49",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/multicharacteristic_audit/snakeform.json": {
+    "mtime": 1791335878.3845487,
+    "seen": 1791336552.4803169,
+    "ast_hash": "94e75030709f66a13dadd4ee14ae7d1e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/multicharacteristic_audit/turn-to-frog.json": {
+    "mtime": 1791335878.3845487,
+    "seen": 1791336552.4803188,
+    "ast_hash": "da907e4f6bbac196aeb2e16dd768cd07",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_canonical_multicharacteristic_audit.py": {
+    "mtime": 1791335878.3845487,
+    "seen": 1791336552.4810526,
+    "ast_hash": "02645cc100d98316be5ab215d679aae0",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_temporary_characteristics_layer_readers.py": {
+    "mtime": 1791335878.4025483,
+    "seen": 1791336552.481924,
+    "ast_hash": "e4346dfe9c7d29e94ee3dc46a431b5f7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_temporary_characteristics_product.py": {
+    "mtime": 1791335909.9940617,
+    "seen": 1791336552.481926,
+    "ast_hash": "22fbec0743225f8d0fd1f800361ea09c",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-multicharacteristic-audit.md": {
+    "mtime": 1791335878.3845487,
+    "seen": 1791336552.4825974,
+    "ast_hash": "02868d79b639c502727af981e2571153",
+    "semantic_hash": ""
+  },
+  "docs/testing/temporary-characteristics-current-composition.md": {
+    "mtime": 1791336484.2540772,
+    "seen": 1791336552.4830763,
+    "ast_hash": "bb88642c3eb6348e5fca837ba5d73b7a",
+    "semantic_hash": ""
+  },
+  "docs/testing/temporary-creature-characteristics-product.md": {
+    "mtime": 1791336484.2540772,
+    "seen": 1791336552.48308,
+    "ast_hash": "8befb3e74486645c8b137035c50dcebe",
+    "semantic_hash": ""
+  },
+  "docs/testing/temporary-creature-line-publication.md": {
+    "mtime": 1791335878.4025483,
+    "seen": 1791336552.483082,
+    "ast_hash": "f2248a355a55904f4197de4023852d29",
     "semantic_hash": ""
   }
 }

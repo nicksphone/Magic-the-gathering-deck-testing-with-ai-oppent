@@ -134,6 +134,12 @@ features or claims based on helpers alone.
    mulligans, ordered bottoms, phases/priority, target/face/mode/resource choices,
    activated/crew/equip/zone plays, combat, cleanup and game completion. Every
    supported action must be reachable; unsupported controls must warn explicitly.
+   One normal actual-App attempt with Mono Red Aggro versus Burn stopped at
+   support preflight: Soul-Scar Mage counter replacement, Rift Bolt suspend,
+   and Searing Blaze linked targets/conditional land-entry damage were flagged.
+   There was one preflight POST and no match/action POST; no warning bypass or
+   complete-game claim. Trace coverage classification against engine semantics
+   and close the real gaps before repeating that acceptance path.
 4. [ ] Requalify malformed/stale/wrong-actor requests across new actions with
    full state/controller/SQLite equality on rejection, including failed writes.
 5. [ ] Complete refresh, backend restart, ambiguous timeout and manual/autoplay
@@ -160,6 +166,14 @@ UI redesign is later; functional access to backend choices is not optional.
    Verify static/triggered/activated abilities, replacements and prevention,
    continuous layer/timestamp/dependency fidelity, can't overrides, ownership,
    incarnation/LKI, simultaneous events and durable choice continuations.
+   Admitted temporary creature-characteristic bodies and effective subtype
+   readers now pass 232 pure checks on the current composition. Printed data,
+   counters, real paid spell/response outcomes and cleanup/reentry are covered;
+   actual HTTP/cold SQLite qualification remains outstanding.
+   Next observed corpus seams: noncombat damage-to-counter replacement,
+   suspend/free-cast continuations, and controller-linked conditional damage.
+   Preflight flags are evidence of admission gaps, not by themselves proof of
+   failed effect execution; canonical action goldens must establish each cause.
 3. [ ] Expand canonical fixtures for combat/protection/landwalk/multiple blockers,
    damage/deathtouch/trample/first strike, bands, mana and restricted costs,
    legendary/planeswalker rules, tokens, graveyard/exile/library interactions,

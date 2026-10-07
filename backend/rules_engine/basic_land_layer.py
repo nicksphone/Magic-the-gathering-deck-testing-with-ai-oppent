@@ -161,7 +161,8 @@ def _resolve(rows):
             prefix = ' '.join([*supertypes, *(kind for kind in types[cid] if kind in CARD_TYPES)])
         else:
             prefix = _split_line(row[1])[0] or 'Land'
-        if cid in replaced or 'Land' in types[cid] and subtypes[cid] != _split_line(row[1])[1]:
+        if (cid in replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8])
+                or 'Land' in types[cid] and subtypes[cid] != _split_line(row[1])[1]):
             lines[cid] = prefix + ' \u2014 ' + ' '.join(subtypes[cid])
     changed_types = {cid: tuple(values) for cid, values in types.items() if tuple(values) != by_id[cid][4]}
     return MappingProxyType(lines), frozenset(lost), MappingProxyType(changed_types), frozenset(colorless)

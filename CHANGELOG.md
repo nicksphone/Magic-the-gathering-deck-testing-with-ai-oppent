@@ -2,6 +2,14 @@
 
 ## Backend Composition - 2026-10-07
 
+- Compose complete temporary creature-characteristic instructions and the
+  effective nonland subtype-publication seam. Seven whole current modules pass
+  232 checks in 39.71s; original 42 desired cases are unchanged. HTTP remains
+  unqualified. A trailing blank in a new test was removed with AST equality;
+  frozen artifacts and canonical data stay unchanged.
+- One normal actual-App game attempt stops at support preflight before match
+  creation. Soul-Scar Mage, Rift Bolt and Searing Blaze identify the next corpus
+  audits; no bypass, forced game or natural full-game success is claimed.
 - Admit canonical intrinsic-mana dual lands in the conservative combat leaf
   without changing weights, search depth or private-information access.
   Current pure cohorts: 225 passes; then 276 passes / 40 retained graveyard
