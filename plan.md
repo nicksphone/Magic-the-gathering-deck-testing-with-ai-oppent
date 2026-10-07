@@ -202,6 +202,11 @@ features or claims based on helpers alone.
    or label it unavailable, never silently substitute an untested policy.
 7. [ ] Run clean-checkout offline assets, API/runtime contracts, frontend tests,
    lint/build and the configured browser flow without developer-only cache files.
+   Pinned `6f9e29e` cold ASGI offline fallback passed with 155 shipped card
+   names hydrated and served without network access. The subsequent warm suite
+   stopped before collection on a harness logging-path denial; it executed zero
+   tests. See `docs/testing/offline-assets-cold-component.md`. Current-source,
+   warm-suite and actual browser qualification remain open.
 
 Exit: reliable supported-card local human games and BO3/recovery work through
 actual UI/API, with no silent legal-action gaps or unexplained internal errors.
