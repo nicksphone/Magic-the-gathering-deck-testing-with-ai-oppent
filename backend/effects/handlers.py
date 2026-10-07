@@ -297,6 +297,37 @@ def _gain_lifelink_from_damage(state: MatchState, source_id: str | None, amount:
             gain_life(state, source_controller, payload)
 
 
+def put_hand_on_library(state: MatchState, controller: int, payload: dict) -> None:
+    player = state.players[controller]
+    available = list(player.hand)
+    count = min(max(0, int(payload['amount'])), len(available))
+    selected = payload.get('selected_card_ids')
+    if selected is None and count and controller in state.mechanic_choice_players:
+        state.pending_mechanic_choice = {
+            'kind': 'hand_top_order', 'player_id': controller,
+            'options': available, 'count': count,
+            'label': f'Choose {count} hand cards for your library, topmost first',
+            'effect_payload': dict(payload),
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    if selected is None:
+        selected = available[:count]
+    if (not isinstance(selected, list) or len(selected) != count
+            or any(not isinstance(cid, str) for cid in selected)
+            or len(set(selected)) != count
+            or any(cid not in available or state.cards[cid].zone != Zone.HAND
+                   or state.cards[cid].owner != controller for cid in selected)):
+        raise ValueError('Unavailable ordered hand selection')
+    # Library top is the final element; the first explicit selection is topmost.
+    for cid in reversed(selected):
+        player.hand.remove(cid)
+        state.cards[cid].move_to_zone(Zone.LIBRARY)
+        player.library.append(cid)
+    state.log.append(f'{player.name} puts {count} hand cards on top of their library.')
+
+
 def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
     from game_state.state import draw_card
     from rules_engine.draw_restrictions import can_draw_card

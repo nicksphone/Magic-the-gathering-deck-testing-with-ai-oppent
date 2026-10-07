@@ -357,6 +357,21 @@ def compile_complete_x_bounded_exile_instruction(oracle_text: str, card_name: st
     return {'allowed_types': ['Artifact', 'Creature', 'Enchantment']}
 
 
+def compile_draw_then_put_hand_instruction(oracle_text: str):
+    count = r'(a|one|two|three|four|five|six|seven|eight|nine|ten|\d+)'
+    text = without_reminder_text(oracle_text).strip().lower()
+    if not re.match(r'^draw ' + count + r' cards?, then put ', text):
+        return None
+    match = re.fullmatch(r'draw ' + count + r' cards?, then put ' + count
+                        + r' cards? from your hand on top of your library in any order\.?', text)
+    if match is None:
+        return 'noop', {'__unsupported_instruction': oracle_text}
+    return 'effect_sequence', {'effects': [
+        {'effect_key': 'draw_cards', 'payload': {'amount': _parse_count_token(match[1])}},
+        {'effect_key': 'put_hand_on_library', 'payload': {'amount': _parse_count_token(match[2])}},
+    ]}
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,
@@ -368,6 +383,9 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    draw_put = compile_draw_then_put_hand_instruction(card.oracle_text)
+    if draw_put is not None:
+        return draw_put
     bounded_exile = compile_complete_x_bounded_exile_instruction(card.oracle_text, card.name)
     if bounded_exile is not None:
         x_value = action_targets.get('x_value')

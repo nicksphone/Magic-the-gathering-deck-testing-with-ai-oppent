@@ -397,6 +397,22 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         resolve_effect(state, pending["effect_controller"], "each_player_discard", payload)
         resume_paused_resolution(state, pending)
         return True
+    if pending and pending['kind'] == 'hand_top_order':
+        ids = action.get('card_ids')
+        if (pending['player_id'] != player_id or not isinstance(ids, list)
+                or len(ids) != pending['count']
+                or any(not isinstance(cid, str) for cid in ids)
+                or len(set(ids)) != len(ids)
+                or any(cid not in pending['options'] or cid not in state.players[player_id].hand
+                       or state.cards[cid].zone != Zone.HAND
+                       or state.cards[cid].owner != player_id for cid in ids)):
+            return False
+        from effects.handlers import put_hand_on_library
+        from rules_engine.stack_engine import resume_paused_resolution
+        put_hand_on_library(state, player_id, {**pending['effect_payload'], 'selected_card_ids': ids})
+        state.pending_mechanic_choice = None
+        resume_paused_resolution(state, pending)
+        return True
     if pending and pending["kind"] == "discard":
         from rules_engine.zone_actions import discard_selected
         from rules_engine.stack_engine import resume_paused_resolution

@@ -384,15 +384,15 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1791407690.568891,
-    "seen": 1791407813.5603104,
-    "ast_hash": "81932bfe73a9c307b33aefa0e83e089c",
+    "mtime": 1791416828.273843,
+    "seen": 1791416904.3272047,
+    "ast_hash": "3f8026799f28790db930ed7160ebe782",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1791407690.570891,
-    "seen": 1791407813.5603125,
-    "ast_hash": "53968da4c4728a60e41ce2a972a4449e",
+    "mtime": 1791416828.273843,
+    "seen": 1791416904.3272064,
+    "ast_hash": "0663ddd814f12b30aba7f8397de318e2",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -732,9 +732,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_actions.py": {
-    "mtime": 1791359491.7805445,
-    "seen": 1791359579.1634958,
-    "ast_hash": "303dfe38d673a08939f989d92f395cbe",
+    "mtime": 1791416828.273843,
+    "seen": 1791416904.327318,
+    "ast_hash": "567b7d54626238e3a38ce9aa07fad7db",
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_effects.py": {
@@ -828,9 +828,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/move_generator.py": {
-    "mtime": 1791359491.7805445,
-    "seen": 1791359579.1635299,
-    "ast_hash": "c55271446712f08eccdde5879138fe68",
+    "mtime": 1791416828.273843,
+    "seen": 1791416904.327353,
+    "ast_hash": "adaf65eed1dc87ef38bf7be624b544fb",
     "semantic_hash": ""
   },
   "backend/rules_engine/named_counters.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791413773.4568746,
-    "seen": 1791414020.6836,
-    "ast_hash": "058c638de57743429362506e01c5545d",
+    "mtime": 1791416828.273843,
+    "seen": 1791416904.3273654,
+    "ast_hash": "7685437e1fbc98f24172b4337d2b9bd6",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791415663.1598666,
-    "seen": 1791415879.1148107,
-    "ast_hash": "f9316f51c359140c0f35165cb1a60c1c",
+    "mtime": 1791416872.0170538,
+    "seen": 1791416904.3313818,
+    "ast_hash": "d68e7fd1bcae6024b0452a5218028361",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13800,9 +13800,81 @@
     "semantic_hash": ""
   },
   "docs/testing/paired-kicker-count-acceptance.md": {
-    "mtime": 1791415724.740168,
-    "seen": 1791415879.1147568,
-    "ast_hash": "355c6648cefb9ac948cbf0a684541afd",
+    "mtime": 1791416047.127346,
+    "seen": 1791416904.3313403,
+    "ast_hash": "bd08344d7fe6001b938fcb66ff6d5573",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/brainstorm.json": {
+    "mtime": 1791416203.2154992,
+    "seen": 1791416904.3269753,
+    "ast_hash": "e182a7371e15051f9fa582c1e70d75e5",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/counterspell.json": {
+    "mtime": 1791416203.2164993,
+    "seen": 1791416904.3269813,
+    "ast_hash": "7cc8295e33e006fc70106cfb0aae6d96",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/forest.json": {
+    "mtime": 1791416203.2164993,
+    "seen": 1791416904.3269844,
+    "ast_hash": "d660b7874e329c1289c34f5f45d53511",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/island.json": {
+    "mtime": 1791416203.2164993,
+    "seen": 1791416904.3269873,
+    "ast_hash": "7a93bc92336960c408e919ceb47e3abf",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/leyline-of-anticipation.json": {
+    "mtime": 1791416203.2164993,
+    "seen": 1791416904.32699,
+    "ast_hash": "5988c29308cd9ad0ebf60112b948eaba",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/regrowth.json": {
+    "mtime": 1791416203.2164993,
+    "seen": 1791416904.326992,
+    "ast_hash": "72ba67f10cc098674d1bea56f9e433ae",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/stinkweed-imp.json": {
+    "mtime": 1791416481.4604142,
+    "seen": 1791416904.3269944,
+    "ast_hash": "1377f595b817e065b6309d8dd32296a2",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/thought-reflection.json": {
+    "mtime": 1791416481.4604142,
+    "seen": 1791416904.3269966,
+    "ast_hash": "389210e3d54e1378c9785b2929760772",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/fixtures/twinshot-sniper.json": {
+    "mtime": 1791416203.2164993,
+    "seen": 1791416904.3269982,
+    "ast_hash": "915bb6c568561898cdb60d68b38ccc0a",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/test_brainstorm_continuation_goldens.py": {
+    "mtime": 1791416595.0617492,
+    "seen": 1791416904.3270004,
+    "ast_hash": "c6d5aa393e5523a4ad4cd698f98534b4",
+    "semantic_hash": ""
+  },
+  "audit/brainstorm/test_brainstorm_desired.py": {
+    "mtime": 1791416287.5797446,
+    "seen": 1791416904.327002,
+    "ast_hash": "90ed9b94a8b9c0cd425fa495a7be60df",
+    "semantic_hash": ""
+  },
+  "docs/testing/brainstorm-complete-instruction.md": {
+    "mtime": 1791416828.2798429,
+    "seen": 1791416904.3309164,
+    "ast_hash": "8f343c711eaad3cdbb26ccf185a6e05a",
     "semantic_hash": ""
   }
 }

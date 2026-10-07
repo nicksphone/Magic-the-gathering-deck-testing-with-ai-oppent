@@ -30,6 +30,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "damage_each_creature": handlers.damage_each_creature,
     "damage_each_creature_and_player": handlers.damage_each_creature_and_player,
     "draw_cards": handlers.draw_cards,
+    "put_hand_on_library": handlers.put_hand_on_library,
     "cycle_draw": handlers.cycle_draw,
     "cycle_search": handlers.cycle_search,
     "gain_life": handlers.gain_life,

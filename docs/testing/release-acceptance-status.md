@@ -25,6 +25,7 @@ substitute for qualification of the final combined source.
 | Simulation byte measurement | Immutable `8cfcb4f`: two real bounded batch cases pass, 305.27s; each 500-tick game retains 929,767 bytes of log text while result JSON is 8,683/15,939 bytes | Measurement, not enforced resource bounds, exclusive memory/performance attribution, completed games or AI strength |
 | March targeting partial repair | Exact generic Oracle delta: donor 64 target controls pass; fresh parent two-whole-module targeting/inventory gate 72 passes, 9.91s | Payment remains unsupported: unchanged desired module retains 30 cost failures; warning stays; not paid March or full semantics |
 | Paired kicker and current targeting union | Exact seven-file paired-kicker patch plus parent March Oracle: 16 whole pure modules / 475 passes, 69.75s; real payments, independent triggers, copies, LKI and strict snapshot metadata | Pure component only; mixed HTTP/SQL, admission warning review and AI policy remain separate |
+| Complete draw/hand-to-library continuation | Exact `2d64af3` plus five additive modules: 20 whole pure modules / 530 passes, 71.99s; unchanged canonical Brainstorm24, explicit topmost-first selection, Channel/Regrowth chain, dredge/draw replacement and public intent | Same-interpreter restoration and legal AI selection only; mixed HTTP/SQLite, current browser ordering and expert policy remain separate |
 | Private HTTPS operator | Pinned `0e57baf` plus exact four new Caddy files: TLS/auth, 26 atomic Origin rejections, incomplete-upload 403, lock and real restart/recovery passed | Native loopback single-user component only; not current combined engine, browser, LAN/public or clean-machine acceptance |
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
@@ -45,6 +46,8 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `parent-integration/combined905-and-simulation-bytes-current-8cf-20261007/`
 - `parent-integration/march-target-current-d40-20261007/`
 - `parent-integration/archangel-march-current475-1ee-20261007/`
+- `brainstorm-complete-instruction/baseline-2d64-x8Ly2A/`
+- `brainstorm-complete-instruction/product-2d64-skAwCE/`
 - `diagnostics/operator-packaging/caddy-0e57-full-duplex-qualified-20261007-wVfKHc/`
 
 Read each report's source pin, failure history, isolation limits and raw evidence
