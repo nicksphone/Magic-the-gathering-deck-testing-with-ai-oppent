@@ -15,19 +15,28 @@ _UNSUPPORTED_RESOLUTION_PATTERNS = (
 )
 
 
-def unsupported_resolution_clauses(text: str) -> list[str]:
+def unsupported_resolution_clauses(text: str, *, card_name: str = '') -> list[str]:
     """Bounded observed gaps, not proof that other clauses are executable."""
+    from rules_engine.oracle_effects import _extract_modes, _infer_closed_damage_instruction
+    body = text or ''
+    previews = [{'mode_text': mode} for mode in _extract_modes(body)] or [{}]
+    out = []
+    for preview in previews:
+        compiled = _infer_closed_damage_instruction(body, card_name, preview)
+        if compiled is not None and '__unsupported_instruction' in compiled[1]:
+            out.append('unsupported closed damage instruction')
+            break
     from rules_engine.oracle_text import without_reminder_text
-    text = without_reminder_text(text or '')
+    text = without_reminder_text(body)
     from rules_engine.turn_scheduler import instruction
     if instruction(text):
-        return []
+        return out
     # A whole activated schema may follow its printed cost on a permanent.
     text = '\n'.join(line for line in text.splitlines()
                      if not (':' in line and instruction(line.split(':', 1)[1])))
     from rules_engine.library_reorder import reorder_clause
-    return [name for name, pattern in _UNSUPPORTED_RESOLUTION_PATTERNS if pattern.search(text)
-            and not (name.startswith('top-library reorder') and reorder_clause(text))]
+    return out + [name for name, pattern in _UNSUPPORTED_RESOLUTION_PATTERNS if pattern.search(text)
+                  and not (name.startswith('top-library reorder') and reorder_clause(text))]
 
 
 _UNSUPPORTED_PATTERNS = (
@@ -99,7 +108,10 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
         from rules_engine.suspend import diagnostic_surface_admitted
         if diagnostic_surface_admitted(oracle_text, canonical_context, card_name=card_name, card_faces=card_faces):
             out.remove('suspend')
-    out.extend(gap for value in texts for gap in unsupported_resolution_clauses(value))
+    out.extend(gap for name, value in [(card_name, oracle_text or ''),
+               *((str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
+                 for face in card_faces or [] if isinstance(face, dict))]
+               for gap in unsupported_resolution_clauses(value, card_name=name))
     from rules_engine.affinity import affinity_clauses
     if any(affinity_clauses(text)[2] for text in texts):
         out.append('unsupported affinity clause')
@@ -217,8 +229,10 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     if any(re.search(r'\bif .+counters?.+(?:player|yourself|you (?:would )?get)\b', text, re.I) for text in texts):
         out.append('player-counter replacement fidelity')
     from rules_engine.counter_replacements import counter_modifier
+    from rules_engine.replacement import noncombat_damage_counter_clause
     replacement_lines = [line for text in texts for line in without_reminder_text(text).splitlines()
-                         if re.match(r'if\b', line, re.I) and re.search(r'\bcounters?\b.*instead', line, re.I)]
+                         if re.match(r'if\b', line, re.I) and re.search(r'\bcounters?\b.*instead', line, re.I)
+                         and noncombat_damage_counter_clause(line) is None]
     if replacement_lines:
         out.append('counter replacement route fidelity')
         if any(counter_modifier(line) is None for line in replacement_lines):

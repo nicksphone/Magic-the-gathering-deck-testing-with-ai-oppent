@@ -110,12 +110,77 @@ def _legal_divided_damage_targets(state: MatchState, item: StackItem, card, anno
     return legal
 
 
+def _damage_replacement_source_context(state: MatchState, item: StackItem, selected_payload: dict):
+    """Project query inputs without conflating ability control with source control."""
+    from rules_engine.targeting import stack_object_kind
+    source_lki = selected_payload.get('__source_lki', (item.payload or {}).get('__source_lki'))
+    # A spell copy is a spell in its own right; its physical source may have departed.
+    source_controller = item.controller if stack_object_kind(state, item) == 'spell' else None
+    return source_lki, source_controller
+
+
+def _validate_damage_activation_source(state: MatchState, item: StackItem) -> None:
+    """Validate native battlefield damage provenance, not arbitrary storage authenticity."""
+    payload = item.payload or {}
+    if ('__activation_source_reference' not in payload or '__ability_target_text' not in payload
+            or payload.get('__trigger_event') or payload.get('__stack_copy_kind') in ('spell', 'triggered')):
+        return  # Legacy frames, spells and triggers have separate producer contracts.
+    pending = [(item.effect_key, payload)]
+    packets = []
+    damage = False
+    while pending:
+        key, data = pending.pop()
+        if not isinstance(data, dict):
+            continue
+        packets.append(data)
+        if key == 'conditional_instruction':
+            key = data.get('effect_key')
+        damage |= key in {'deal_damage', 'deal_damage_multi', 'deal_damage_batch',
+                         'deal_damage_to_controller', 'damage_each_creature',
+                         'damage_each_creature_and_player', 'linked_landfall_damage'}
+        if key == 'effect_sequence':
+            pending.extend((effect.get('effect_key'), effect.get('payload'))
+                           for effect in data.get('effects', []) if isinstance(effect, dict))
+    if not damage:
+        return
+    from rules_engine.action_validation import ActionRejected
+    from game_state.state import object_incarnation
+    reference = payload['__activation_source_reference']
+    if (not isinstance(reference, dict)
+            or set(reference) != {'incarnation', 'zone_change_sequence'}
+            or any(type(value) is not int or value < 0 for value in reference.values())):
+        raise ActionRejected('Malformed native damage activation source reference')
+    source = state.cards.get(item.source_card_id)
+    if source is not None:
+        from rules_engine.oracle_effects import extract_activated_abilities
+        if any(ability['activation_zone'] != 'battlefield'
+               and ability['text'] == payload['__ability_target_text']
+               for ability in extract_activated_abilities(source)):
+            return  # Explicit hand/discard origins do not claim battlefield LKI.
+    for packet in packets:
+        if '__source_lki' not in packet:
+            continue
+        lki = packet['__source_lki']
+        if (not isinstance(lki, dict)
+                or type(lki.get('controller')) is not int or lki['controller'] not in state.players
+                or type(lki.get('battlefield_incarnation')) is not int
+                or lki['battlefield_incarnation'] < 0
+                or lki['battlefield_incarnation'] != reference['incarnation']):
+            raise ActionRejected('Malformed retained damage activation battlefield LKI')
+    same_live_object = (source is not None and source.zone == Zone.BATTLEFIELD
+                        and object_incarnation(source) == reference['incarnation']
+                        and source.zone_change_sequence == reference['zone_change_sequence'])
+    if not same_live_object and '__source_lki' not in payload:
+        raise ActionRejected('Departed native damage activation source requires retained battlefield LKI')
+
+
 def resolve_top_of_stack(state: MatchState) -> bool:
     if state.pending_mechanic_choice:
         return False
     if not state.stack:
         return False
     item = state.stack[-1]
+    _validate_damage_activation_source(state, item)
     from rules_engine.prevention import has_numeric_prevention_instruction, validate_prevention_item
     prevention_frame_required = has_numeric_prevention_instruction(item.effect_key, item.payload or {})
     if prevention_frame_required:
@@ -373,6 +438,10 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         if item.effect_key == 'conditional_instruction':
             from rules_engine.conditional_instructions import selected_instruction
             _, selected_payload = selected_instruction(state, item.controller, selected_payload)
+        source_lki = selected_payload.get('__source_lki', (item.payload or {}).get('__source_lki'))
+        source_controller = item.controller
+        if event in {'damage_to_permanent', 'damage_to_player'}:
+            source_lki, source_controller = _damage_replacement_source_context(state, item, selected_payload)
         options = replacement_options(
             state,
             event,
@@ -380,8 +449,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             target_card_id=target_card_id,
             source_card_id=item.source_card_id,
             amount=selected_payload.get('amount') if event == 'damage_to_permanent' else None,
-            source_lki=selected_payload.get('__source_lki', (item.payload or {}).get('__source_lki')),
-            source_controller=item.controller, combat=False,
+            source_lki=source_lki,
+            source_controller=source_controller, combat=False,
         )
         used = {str(value) for value in ((item.payload or {}).get("__used_replacement_source_ids") or [])}
         options = [

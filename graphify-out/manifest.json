@@ -624,9 +624,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/coverage.py": {
-    "mtime": 1791338325.7715976,
-    "seen": 1791338576.072394,
-    "ast_hash": "1c95c64b4979afe44319310fdd648a8d",
+    "mtime": 1791352888.020513,
+    "seen": 1791352981.9487143,
+    "ast_hash": "997ee717a1d85fb7fffb13a5d62c8d4f",
     "semantic_hash": ""
   },
   "backend/rules_engine/creature_subtypes.json": {
@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791343450.644871,
-    "seen": 1791344043.0876665,
-    "ast_hash": "01ec641087ccb9aea07a7a4743781ae7",
+    "mtime": 1791352888.025513,
+    "seen": 1791352981.9487393,
+    "ast_hash": "94b3b62c68084220979b172f0f9da14e",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791351513.629427,
-    "seen": 1791351625.7561202,
-    "ast_hash": "8148c500ed6b3a79738b05ba1e050479",
+    "mtime": 1791352888.020513,
+    "seen": 1791352981.9488106,
+    "ast_hash": "ab4c78d5bcf47df5aebd73b8a1666809",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -900,9 +900,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/replacement.py": {
-    "mtime": 1791345791.5980735,
-    "seen": 1791346045.986083,
-    "ast_hash": "0afef06a9dc8ce3a8737270c96fe7054",
+    "mtime": 1791352888.0035133,
+    "seen": 1791352981.9488294,
+    "ast_hash": "49a6290f46cce64b9cef3be92b7d043b",
     "semantic_hash": ""
   },
   "backend/rules_engine/resource_events.py": {
@@ -936,9 +936,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
-    "mtime": 1791351513.6734262,
-    "seen": 1791351625.7561638,
-    "ast_hash": "bc3134ff6ec26aa6246ee9ba65f5f1cb",
+    "mtime": 1791352888.0155132,
+    "seen": 1791352981.9488435,
+    "ast_hash": "5226947f80d88f96745456b53c06b5c1",
     "semantic_hash": ""
   },
   "backend/rules_engine/state_based_actions.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791351552.9047341,
-    "seen": 1791351625.7610402,
-    "ast_hash": "d014558954173444f5e863db0e2efdc7",
+    "mtime": 1791352911.6021304,
+    "seen": 1791352981.9526756,
+    "ast_hash": "2aed31fc5f8ebfb16a9b4932b1e409c2",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -12873,6 +12873,156 @@
     "mtime": 1791351552.9037342,
     "seen": 1791351625.7606921,
     "ast_hash": "7ed2e88be88071ae4fac7a1ab6435f8b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/heroic_cast_target_contract/provenance.json": {
+    "mtime": 1791352888.025513,
+    "seen": 1791352981.949448,
+    "ast_hash": "fdd75523bf7e8a12cc7a9d0992eb4451",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_damage_activation_source_validation.py": {
+    "mtime": 1791352888.0155132,
+    "seen": 1791352981.9505324,
+    "ast_hash": "0f70e31ab2e31fa4bc80464c15a3e0b8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_damage_source_controller_audit.py": {
+    "mtime": 1791352887.9995134,
+    "seen": 1791352981.95054,
+    "ast_hash": "061f5cb441d7ab0078ba6ee99e4756fe",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_heroic_cast_target_contract.py": {
+    "mtime": 1791352888.025513,
+    "seen": 1791352981.9507082,
+    "ast_hash": "8748e2839dd68f92c0e8271287b6feab",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_noncombat_clause_source_boundaries.py": {
+    "mtime": 1791352888.0115132,
+    "seen": 1791352981.950982,
+    "ast_hash": "ec37ce127d97e75b605fdae78ed93d97",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_preflight_closed_damage_diagnostics.py": {
+    "mtime": 1791352888.020513,
+    "seen": 1791352981.9510577,
+    "ast_hash": "f5c01246095fffd98576068033d0e23d",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_supported_preflight_engine_parity.py": {
+    "mtime": 1791352887.9825137,
+    "seen": 1791352981.9512925,
+    "ast_hash": "a553261b81ddf639abc14d93bc523868",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/intake.json": {
+    "mtime": 1791352887.9995134,
+    "seen": 1791352981.951835,
+    "ast_hash": "98049f9b59a857bac07edb1596d70ed5",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/counterspell.json": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.9518363,
+    "ast_hash": "09ee5f5763e2ee567dbca71cda166229",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/healing-salve.json": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.9518383,
+    "ast_hash": "7da0b80bce76ee5be5f29a66b613afd6",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/lightning-bolt.json": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.9518397,
+    "ast_hash": "dadc58cd72fe165e4e1a72d46e801c75",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/prodigal-sorcerer.json": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.9518414,
+    "ast_hash": "075b5a0d422f8bdc54c9c879071b794a",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/ray-of-command.json": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.9518428,
+    "ast_hash": "c1a1dc9624113de6d00a5dabd2b3b832",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/soul-scar-mage.json": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.951844,
+    "ast_hash": "28ac001975d04c28521f749a92565f5d",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/torrential-gearhulk.json": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.951846,
+    "ast_hash": "5dfd1d2608529d54f80c546a75edac3c",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/twincast.json": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.9518473,
+    "ast_hash": "aab9f946428f244f4e8a786ba15790e9",
+    "semantic_hash": ""
+  },
+  "docs/testing/damage-activation-source-validation.md": {
+    "mtime": 1791352888.0155132,
+    "seen": 1791352981.9521408,
+    "ast_hash": "817905d9e39922202d52ed877be95eac",
+    "semantic_hash": ""
+  },
+  "docs/testing/damage-source-controller-audit.md": {
+    "mtime": 1791352887.9995134,
+    "seen": 1791352981.9521458,
+    "ast_hash": "f7c5bf2630a038450e918303d9c05be2",
+    "semantic_hash": ""
+  },
+  "docs/testing/heroic-cast-target-contract.md": {
+    "mtime": 1791352888.025513,
+    "seen": 1791352981.9522314,
+    "ast_hash": "85383c430878125f928331ab50315b85",
+    "semantic_hash": ""
+  },
+  "docs/testing/noncombat-clause-source-boundaries.md": {
+    "mtime": 1791352888.0115132,
+    "seen": 1791352981.9523747,
+    "ast_hash": "d17d5435b753bf7e2d46de5dde726888",
+    "semantic_hash": ""
+  },
+  "docs/testing/preflight-closed-damage-diagnostics.md": {
+    "mtime": 1791352888.020513,
+    "seen": 1791352981.952415,
+    "ast_hash": "7578287bb4a8a3f6b31c55b48658681d",
+    "semantic_hash": ""
+  },
+  "docs/testing/source-controller-heroic-current.md": {
+    "mtime": 1791352911.6011302,
+    "seen": 1791352981.9525084,
+    "ast_hash": "f0753e44ef2108b9f852c45f050a0487",
+    "semantic_hash": ""
+  },
+  "docs/testing/supported-preflight-engine-parity.md": {
+    "mtime": 1791352887.9825137,
+    "seen": 1791352981.952544,
+    "ast_hash": "deb712ff3695c578f7b9f1ab3208b679",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/comprehensive-rules.txt": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.9526827,
+    "ast_hash": "89cb0227aa6a4e0b2510e3b4c4e45cb2",
+    "semantic_hash": ""
+  },
+  "source-controller-audit/raw/intake-utc.txt": {
+    "mtime": 1791352887.9985135,
+    "seen": 1791352981.952686,
+    "ast_hash": "f087515e76f9db9a72f7787785feb5dc",
     "semantic_hash": ""
   }
 }

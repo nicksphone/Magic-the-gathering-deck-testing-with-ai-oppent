@@ -274,7 +274,7 @@ def _infer_closed_damage_instruction(oracle: str, source_name: str, action_targe
     prevention = r'prevent the next ([1-9]\d*) damage that would be dealt to any target this turn\.?'
     broadcast = re.escape(source_name) + r' deals ([1-9]\d*) damage to each creature\.?'
     candidate = (re.search(r'\bprevent(?:s)? the next \d+ damage that would be dealt to any target\b', body, re.I)
-                 or re.search(re.escape(source_name) + r' deals \d+ damage to each creature\b', body, re.I))
+                 or (source_name and re.search(re.escape(source_name) + r' deals \d+ damage to each creature\b', body, re.I)))
     if not candidate:
         return None
     unsupported = ('noop', {'__unsupported_instruction': oracle})
@@ -312,7 +312,7 @@ def _infer_closed_damage_instruction(oracle: str, source_name: str, action_targe
             payload['target_player'] = target_player
         # Targetless previews remain incomplete; checked casts require a declared target.
         return 'prevent_damage', payload
-    match = re.fullmatch(broadcast, body, re.I)
+    match = re.fullmatch(broadcast, body, re.I) if source_name else None
     if match:
         return 'damage_each_creature', {'amount': int(match[1])}
     return unsupported

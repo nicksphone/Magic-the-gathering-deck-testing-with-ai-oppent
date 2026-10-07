@@ -126,6 +126,26 @@ def replacement_source_used(used_source_ids, event: str, source_id: str) -> bool
     return source_id in used or f"{event}:{source_id}" in used
 
 
+@dataclass(frozen=True)
+class NoncombatDamageCounterClause:
+    noncombat: bool
+    source_controller: str
+    recipient: str
+    quantity: str
+    counter_type: str
+
+
+def noncombat_damage_counter_clause(text: str) -> NoncombatDamageCounterClause | None:
+    """Recognize one complete Oracle ability paragraph, never a substring."""
+    if not isinstance(text, str):
+        return None
+    body = ' '.join(text.casefold().split())
+    if body != ('if a source you control would deal noncombat damage to a creature '
+                'an opponent controls, put that many -1/-1 counters on that creature instead.'):
+        return None
+    return NoncombatDamageCounterClause(True, 'you', 'opposing_creature', 'that_many', '-1/-1')
+
+
 def _noncombat_damage_counter_candidates(state, source_card_id, target_card_id, *,
         amount=None, source_lki=None, source_controller=None, combat=False):
     if combat or (amount is not None and amount <= 0) or target_card_id not in state.cards:
@@ -144,9 +164,8 @@ def _noncombat_damage_counter_candidates(state, source_card_id, target_card_id, 
             or controller == target.controller):
         return []
     return [(card, text) for card, text in _battlefield_oracle_texts(state, controller=controller)
-            if ('would deal noncombat damage to a creature an opponent controls' in text
-                or 'would deal noncombat damage to a creature your opponent controls' in text
-                or 'would deal noncombat damage to target creature an opponent controls' in text)]
+            if any(noncombat_damage_counter_clause(paragraph) is not None
+                   for paragraph in text.splitlines())]
 
 
 def _permanent_damage_candidates(state, target_card_id, prevention_locked=False, *,

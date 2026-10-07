@@ -1,0 +1,46 @@
+{
+  "source_archive_sha256": "556820149df271618ee259bc6e15859914e4e068a414dc046a2d9c688e897b92",
+  "policy": "Unchanged existing complete printed compact/seed and full raw fixtures; no canonical text changed or fabricated. Runtime fixture resources explicit, not natural play.",
+  "sources": [
+    {
+      "path": "tests/fixtures/aura_costs.json",
+      "sha256": "c6861515e20337ec3c32763a6ca89332e0ed665aad54f8bb520261c4e5a9d17c",
+      "format": "compact_complete_printed_records"
+    },
+    {
+      "path": "tests/fixtures/soulscar_consumer_audit/cards.json",
+      "sha256": "8cdcf2f0f6ec3414b158978c960649d99c84fa604592f603fc691788c63965b8",
+      "format": "compact_complete_printed_records"
+    },
+    {
+      "path": "tests/fixtures/announced_target_references/pyrotechnics.json",
+      "sha256": "886ef57e0d05ec223e7a9b6b0de07f5b6ac282043f889fbf14e871d4b22a5286",
+      "format": "existing_full_raw"
+    },
+    {
+      "path": "tests/fixtures/announced_target_references/twincast.json",
+      "sha256": "12662d131d174e48af42758b9e8fd3b38ce6701d2de7d88217a527062786014f",
+      "format": "existing_full_raw"
+    },
+    {
+      "path": "tests/fixtures/trigger_instruction_product/counterspell.json",
+      "sha256": "ec5a66be537961755633aa3a100712f9f5e33ac4bc57225eaa14002530fdfb33",
+      "format": "existing_full_raw"
+    },
+    {
+      "path": "tests/fixtures/favor_target_lifecycle/unsummon.json",
+      "sha256": "9affc85f38bc98cec2218a89bbdbbc0dee444cb3151be63ecad6ee30fd0b66de",
+      "format": "existing_full_raw"
+    },
+    {
+      "path": "tests/fixtures/favor_target_lifecycle/cloudshift.json",
+      "sha256": "a6477d60b641d708f9447b8f53637a6701b02531fce76c6b04f9cb0fc6ded47b",
+      "format": "existing_full_raw"
+    },
+    {
+      "path": "tests/fixtures/soulscar_protection_boundaries/dress-down.json",
+      "sha256": "ce870da33fbfd601454cb5b7da3fcf4b5209d04941e6e555b2d5c1fc9ed7d3ab",
+      "format": "existing_full_raw"
+    }
+  ]
+}

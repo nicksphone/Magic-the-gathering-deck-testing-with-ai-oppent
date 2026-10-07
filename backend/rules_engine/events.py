@@ -1539,14 +1539,55 @@ def _matched_cast_trigger_clauses(state, source, oracle, event, payload):
     matches = []
     for line in oracle.splitlines():
         match = re.search(r'\b(?:when|whenever) you (cast or copy|cast|copy) ([^,]+),\s*(.+)', line)
-        if (match and subjects.get(match[2], False)
-                and (event == 'spell_cast' and match[1] != 'copy'
-                     or event == 'spell_copy' and match[1] != 'cast')):
+        if not (match and (event == 'spell_cast' and match[1] != 'copy'
+                           or event == 'spell_copy' and match[1] != 'cast')):
+            continue
+        applicable = subjects.get(match[2], False)
+        if match[2] == 'a spell that targets this creature':
+            from rules_engine.action_validation import ActionRejected
+            from rules_engine.targeting import (validate_announced_target_references,
+                                                announced_target_reference_matches)
+            announced = payload.get('stack_payload') or {}
+            references = announced.get('__announced_target_references')
+            if references is None:
+                raise ActionRejected('Missing native cast-target references')
+            validate_announced_target_references(announced.get('__announced_targets') or {}, references)
+
+            def paths(value, path=()):
+                if isinstance(value, dict):
+                    if set(value) == {'card_id', 'incarnation', 'zone_change_sequence'}:
+                        yield path, value['card_id']
+                    else:
+                        for key, child in value.items():
+                            yield from paths(child, (*path, key))
+                elif isinstance(value, list):
+                    for index, child in enumerate(value):
+                        yield from paths(child, (*path, index))
+
+            applicable = any(cid == source.id and announced_target_reference_matches(
+                state, references, path, cid) for path, cid in paths(references['targets']))
+        if applicable:
             matches.append((line.strip(), match[3]))
     return matches
 
 
 def _cast_clause_trigger(state, source, clause, instruction, event, payload):
+    if re.search(r'\b(?:when|whenever) you (?:cast or copy|cast|copy) '
+                 r'a spell that targets this creature,', clause, re.I):
+        data = {'__trigger_full_clause': clause}
+        full_clause = re.fullmatch(
+            r'(?:[a-z][a-z -]*\s*[\u2014\u2013-]\s*)?(?:when|whenever) you '
+            r'(?:cast or copy|cast|copy) a spell that targets this creature,\s*'
+            + re.escape(instruction), clause, re.I)
+        if full_clause and re.fullmatch(r'put a \+1/\+1 counter on this creature\.', instruction, re.I):
+            key = 'add_counters'
+            data.update(target_card_id=source.id, counter='+1/+1', amount=1,
+                        effect_timestamp=object_incarnation(source))
+        else:
+            key = 'noop'
+            data['__unsupported_trigger_instruction'] = instruction
+        return {'source_card_id': source.id, 'controller': source.controller,
+                'label': f'{source.name} cast trigger', 'effect_key': key, 'payload': data}
     self_pump = re.fullmatch(
         r'(?:this creature|' + re.escape(source.name) + r') gets ([+-]\d+)/([+-]\d+) until end of turn\.',
         instruction, re.I,

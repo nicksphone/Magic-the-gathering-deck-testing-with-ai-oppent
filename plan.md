@@ -288,3 +288,14 @@ owner replacement continuation. Same-source 26 whole modules: 524 passes; see
 `docs/testing/pull-mass-exile-current.md` for evidence and guard limits. Existing
 numeric-prevention transport is preserved. This is not a live deployment or a
 full backend/game/AI release gate; the completion checklist remains open.
+
+## 2026-10-07 Source-Controller and Heroic Checkpoint
+
+Current-base composition adds complete source-controller counter-conversion
+clauses, correct spell/ability replacement-query controller projection, early
+native damage-frame validation, closed-instruction preflight diagnostics and
+actual-reference heroic cast-target recognition. Same-source 46 whole modules:
+1,133 passes in 302.49 seconds; original assertions unchanged. See
+`docs/testing/source-controller-heroic-current.md` for the earlier harness-only
+failure ledger and isolation limits. No live deployment or broader release
+completion is claimed; the completion checklist remains open.
