@@ -100,6 +100,47 @@ def static_coverage_details(oracle_text: str, card_faces: list[dict] | None = No
             for index, name, text in variants for row in conditional_static_clause_coverage(text, name)]
 
 
+def _paid_body_admission(oracle_text, metadata, card_name, card_faces):
+    """Sourced complete bodies with paid goldens, not keyword-wide support."""
+    if not isinstance(metadata, dict):
+        return set()
+    sources = metadata.get('card_data_sources')
+    name = metadata.get('card_name') or metadata.get('name')
+    if (not isinstance(sources, list) or not sources
+            or any(source not in ('offline_seed', 'cache', 'local_knowledge') for source in sources)
+            or not isinstance(name, str) or not name or name != card_name
+            or metadata.get('oracle_text') != oracle_text
+            or metadata.get('layout') not in ('', 'normal')
+            or card_faces or metadata.get('card_faces')):
+        return set()
+    from card_data.hydration import ready_for_match
+    if not ready_for_match(metadata):
+        return set()
+    # Raw text is closed: an unknown parenthetical suffix is not reminder text.
+    body = re.sub(r'\s+', ' ', oracle_text).strip()
+    search = re.fullmatch(
+        r'Domain\s*[\u2014-]\s*Create a 3/3 green Beast creature token '
+        r'for each basic land type among lands you control\. '
+        r'\{1\}\{G\}, Discard this card: (Search your library for a basic land card, '
+        r'reveal it, put it into your hand, then shuffle\. You gain 3 life\.)', body, re.I)
+    if (search and metadata.get('type_line') == 'Sorcery'
+            and metadata.get('mana_cost') == '{6}{G}'):
+        from rules_engine.oracle_effects import compile_search_life_instruction
+        compiled = compile_search_life_instruction(search[1])
+        if (compiled is not None and compiled[0] == 'effect_sequence'
+                and [part['effect_key'] for part in compiled[1]['effects']] == ['search_library', 'gain_life']
+                and compiled[1]['effects'][1]['payload'] == {'amount': 3}):
+            return {'domain'}
+    if (metadata.get('type_line') == 'Enchantment'
+            and metadata.get('mana_cost') == '{5}{W}' and re.fullmatch(
+                r'Flash Domain\s*[\u2014-]\s*This spell costs \{1\} less to cast '
+                r'for each basic land type among lands you control\. '
+                r'When this enchantment enters, exile target nonland permanent an opponent controls '
+                r'until this enchantment leaves the battlefield\.', body, re.I)):
+        return {'domain'}
+    return set()
+
+
 def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '', canonical_context: dict | None = None) -> list[str]:
     """Known gaps only; an empty result is not rules certification."""
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
@@ -260,7 +301,8 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     from rules_engine.graveyard_permissions import permission_gaps
     for name, text in variants:
         out.extend(permission_gaps(text, name))
-    return list(dict.fromkeys(out))
+    admitted = _paid_body_admission(oracle_text, canonical_context, card_name, card_faces)
+    return list(dict.fromkeys(reason for reason in out if reason not in admitted))
 
 
 def deck_pair_coverage(deck_a: list[dict], deck_b: list[dict]) -> dict:

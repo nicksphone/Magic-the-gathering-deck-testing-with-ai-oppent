@@ -16,6 +16,7 @@ substitute for qualification of the final combined source.
 | Python installer maintenance | Qualified EnC3vJ runtime pip 24.0 -> 26.2.1; pip check passed; all non-pip file hashes and package versions equal | Installer-only change; no application gate inferred from pip check |
 | Pending-stack privacy | Current `db16186` composition: 22 whole pure modules / 950 passes; parent applied tested bytes | Mixed HTTP/SQL and complete private hand-to-library response remain separate |
 | Domain continuations | Fresh immutable `607a70b` plus the surgical compiler delta: two whole modules / 36 passes, 10.60s; paid Herd Migration search-then-life and Leyline Binding linked exile | Coverage warnings unchanged; no final-union, SQL or whole-card certificate |
+| Domain admission | Exact coverage `eaf84aa` -> `cd57f9b`: 102 passes plus eight independent complete-spell/Flash checks; 155 ready records, known-gap cards 12 -> 10 | Only complete sourced Herd Migration and Leyline Binding bodies; unrelated warnings retained; no universal semantics certificate |
 | Standalone storage recovery | Pinned `29e86e4`: three unchanged whole modules / 43 passes, 6.79s; retention rollback/protection, WAL backup and actual controller restore | Not online cache/tombstone coordination, quotas/cancellation, clean-machine or soak acceptance |
 | Private HTTPS operator | Pinned `0e57baf` plus exact four new Caddy files: TLS/auth, 26 atomic Origin rejections, incomplete-upload 403, lock and real restart/recovery passed | Native loopback single-user component only; not current combined engine, browser, LAN/public or clean-machine acceptance |
 
@@ -28,6 +29,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `parent-integration/pip-only-maintenance-20261007/`
 - `parent-integration/pending-source-privacy-current-db161-20261007/`
 - `parent-integration/domain-compilers-current-607a70-20261007/`
+- `gate2-domain-admission/mtg-gate2-domain-coverage-packet-Rnc4a7-parent-eaf84/`
 - `parent-integration/storage-acceptance-current-29e86-20261007/`
 - `diagnostics/operator-packaging/caddy-0e57-full-duplex-qualified-20261007-wVfKHc/`
 
@@ -40,8 +42,8 @@ inspection; never execute a database on NFS.
 1. Complete pending-source privacy mixed HTTP/SQL and final-union acceptance.
    The current pure qualification and exact parent integration are documented
    in `pending-stack-privacy-current.md`; they do not cover those other gates.
-2. Resolve or explicitly classify the 12 hydrated preflight gaps in the 155-card
-   inventory with genuine canonical cost/target/execution tests. The other 143
+2. Resolve or explicitly classify the 10 remaining hydrated preflight gaps in the 155-card
+   inventory with genuine canonical cost/target/execution tests. The other 145
    cards lacking a known admission gap are not fully semantics-certified.
 3. Requalify current built UI, offline assets, BO3 and recovery with the exact
    origin configuration and fresh locked dependencies. Test supported actions

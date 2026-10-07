@@ -1,0 +1,984 @@
+{
+  "actual_offline_preflight": {
+    "builtin_decks": 11,
+    "gap_cards": 9,
+    "metadata_ready_cards": 155,
+    "no_known_gap_not_certified_cards": 146,
+    "reason_card_counts": {
+      "bestow": 1,
+      "domain": 2,
+      "keyword counter variant fidelity": 2,
+      "kicker": 1,
+      "unsupported conditional static instruction": 2,
+      "unsupported conditional static predicate": 2,
+      "unsupported counter prohibition": 1,
+      "unsupported spell additional cost": 1
+    },
+    "runtime_positive_contract_lines": 11,
+    "runtime_printed_lines": 332,
+    "runtime_surfaces": 171,
+    "runtime_unsatisfied_positive_contract_lines": 321
+  },
+  "cards": [
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Abrupt Decay",
+      "raw_sha256": "bf530057d9f81737c4dd2c7078a7401c3cfd4f1de5515903cd7e1ebcf3b2ec1b",
+      "runtime_printing_id": "a8e328c6-3a84-49cf-a1a3-1d1e5373d274"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Adeline, Resplendent Cathar",
+      "raw_sha256": "de605ef3013194326ea59abcd3f1c9f2a000d68826009994c6726e864b858b3a",
+      "runtime_printing_id": "1de30c12-2011-495a-be25-f7a46b23e142"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Arboreal Grazer",
+      "raw_sha256": "78907d86f2b7316b66a118040efce2b6f50a9f720d17e234fa2c65bcbee21c6c",
+      "runtime_printing_id": "9eb7b2ae-a364-485b-ae75-10dbb0af5541"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "kicker"
+      ],
+      "name": "Archangel of Wrath",
+      "raw_sha256": "5bb4a5d6195f0c0af6ee61b1f173e5999d817e8a30aa0a70e22dd4dc740faf79",
+      "runtime_printing_id": "2d00bab2-e95d-4296-a805-2a05e7640efb"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Atraxa, Grand Unifier",
+      "raw_sha256": "817a0336b410ec15fd6850048d75ffb65ec162a0adee29959d1f74a3fb461a31",
+      "runtime_printing_id": "4a1f905f-1d55-4d02-9d24-e58070793d3f"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Badlands",
+      "raw_sha256": "c5e2f07dbe73333b7d97767c8579cef6912964f20c04f59f2ea2438c5d665ea8",
+      "runtime_printing_id": "73403d04-fe97-4830-8b80-16dd1a1a6cc1"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Bayou",
+      "raw_sha256": "aef0d79baa4839e4e361744c549d528b06460476459258fb0602d07fa90a3556",
+      "runtime_printing_id": "bd7567df-b4d8-41a8-8eac-c05afa784bfe"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Blood Artist",
+      "raw_sha256": "8b5e784efc00c19439bfd4a1d98fcd2cf2b24bfafbc53811dc9508922f8005c2",
+      "runtime_printing_id": "b5275d76-2947-4219-be21-614c7421614a"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Bloodtithe Harvester",
+      "raw_sha256": "deaaf41c443c81cc1148052a21d1b1ab7f8c70f3b4073688aab588c03c867176",
+      "runtime_printing_id": "ae4aec0d-c853-44e6-9f51-cbecf413ea14"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Bonecrusher Giant",
+      "raw_sha256": "f5be59aca7304e7e67a173788dd0737e2ef1426f4acd8f2647d8c1e7f86937bc",
+      "runtime_printing_id": "b5b71cd2-de35-451f-b16e-2e3936169407"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Boros Charm",
+      "raw_sha256": "87c414158939036e9def93f876e6cd2ca975b35f12f222825335a79d68b79a4f",
+      "runtime_printing_id": "e0d8c9f6-cbbd-4694-b100-01cfb81036cc"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Boseiju, Who Endures",
+      "raw_sha256": "927f7268876dd72b7623f137ac5215f1f32507737e525cd95f0774759aeee03b",
+      "runtime_printing_id": "2135ac5a-187b-4dc9-8f82-34e8d1603416"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Brazen Borrower",
+      "raw_sha256": "d623ff0371b1fd0943d407120e3875d7310e28d4739ea73f784397968bff3663",
+      "runtime_printing_id": "25d309d6-9e56-441e-bd29-5c903d5221bf"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Breeding Pool",
+      "raw_sha256": "b0754b569bb6b3bc755f0d298d128ed9e133486662843a30bc0a3939508fba1f",
+      "runtime_printing_id": "63e4dc07-c742-41bd-8301-861637908fd1"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Bristly Bill, Spine Sower",
+      "raw_sha256": "a63a7fcff5cea7c0bbd99c9f9d549d1b0c38c6072fac378f4383850436d2602a",
+      "runtime_printing_id": "52eef0d6-24b7-40b7-8403-e8e863d0cd55"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Brutal Cathar",
+      "raw_sha256": "682b57916c1851cdf81e07a85e9de3cb13eab6258104f6577d768e46bf82eb8f",
+      "runtime_printing_id": "0dbac7ce-a6fa-466e-b6ba-173cf2dec98e"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Burrenton Forge-Tender",
+      "raw_sha256": "af0357f0b645b5028aa43c3651ad9f9f033e6f6a58331b13b2c6615f2eeb7b86",
+      "runtime_printing_id": "40dd31ae-f252-449b-9d79-749a9a255763"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Cartographer's Survey",
+      "raw_sha256": "9d3bde9cf11ccd40bcbb623e7ecef775b160f8e1688b7bd5132f7cf92469f7b1",
+      "runtime_printing_id": "b9a41cfc-f329-4e69-a785-835f69c7d2ba"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Cauldron Familiar",
+      "raw_sha256": "6cb59334e18d5fa2f805ba2c0785cc2d08b27d8f0f04ce0b75ea2c8847494fc5",
+      "runtime_printing_id": "32cf273e-b8f7-434b-9d5d-883dfd6f7423"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Cavern of Souls",
+      "raw_sha256": "2665a16ca450d0aa92dff81fb3b30b009ae06b2eba47d3b7be30c168469ef792",
+      "runtime_printing_id": "3aad15a2-8a1b-4460-9b06-e85863081878"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Chord of Calling",
+      "raw_sha256": "93dc0230cb40288d6b996484e05cda3cac4e7fe6544ad39e82224b40785038fe",
+      "runtime_printing_id": "b18fe7e0-8344-40cc-b242-83f01c6be7a6"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Chrome Host Seedshark",
+      "raw_sha256": "689b0bda041abf69e81253070102acdd33e1dfc4e1910dffa422c01c2f0e53fd",
+      "runtime_printing_id": "04e02176-16ee-4676-8b33-cedebdb18cbc"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Claim the Firstborn",
+      "raw_sha256": "b9c8ac8c360760578746bd9eba49adcdc83a438351b286265e84139caa565736",
+      "runtime_printing_id": "feaf1e6c-c7d9-4ac7-9aeb-c4b5d61548ec"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Clarion Spirit",
+      "raw_sha256": "6dc3c3233ebf48b37e969dd3c968686b5a1a1329bf8f33368fe1dd3a4bc302cc",
+      "runtime_printing_id": "86a4c348-1012-4339-960a-c7bc7fd84fbb"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Collected Company",
+      "raw_sha256": "2809237bf68d1577b7623d580d03c7ec888aa03fb8b5e7288130f1d369e07743",
+      "runtime_printing_id": "cfa7b456-7e83-4587-a875-9b35fde318c2"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Consider",
+      "raw_sha256": "fa61a8089d2ddeeab42c083a519c65a622fd6683f69bb13de87a442562d7b54b",
+      "runtime_printing_id": "ff6f3824-3670-46e1-af43-0db405726084"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Counterspell",
+      "raw_sha256": "fe9513a8443f2f78ceb48e835c4e81d5b6d6eb995581683c73dfff9acecdb6b9",
+      "runtime_printing_id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Cultivate",
+      "raw_sha256": "8c31a0cba5e454055957d22a9298e9a59959948ae899f662b439782895102747",
+      "runtime_printing_id": "f1cc00f9-ae7b-4f7b-95f2-bc5c00e4bd72"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Deadly Dispute",
+      "raw_sha256": "33fda296d4cd7b824edc69b229bdc62c6d9d608e035dc9ce2222315df92fe6bb",
+      "runtime_printing_id": "b22ef77b-67a3-45d3-9d18-12b7b124cbf4"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Delighted Halfling",
+      "raw_sha256": "1cacdd85953102a3191d84d08d021703fb6073716e03d18a466ec9615c69bd5b",
+      "runtime_printing_id": "71384418-173a-4f77-adab-56e52fa23692"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Delver of Secrets",
+      "raw_sha256": "02337252fb75ff69deb6425524869cd181fbe38ba73c9c14e105a471f3a387c3",
+      "runtime_printing_id": "6904ea20-e504-47da-95a0-08739fdde260"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Depopulate",
+      "raw_sha256": "123e77af122daba649ceb26820ea84cab23bfbcb64e6b78ec4e866aecc0971bf",
+      "runtime_printing_id": "c53c1898-9107-4bf8-b249-d0502fb9596d"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Dismember",
+      "raw_sha256": "15890bfd4d634da1c87cae9ec391d46d5179ccd47ccb3871b927c61432b06cf8",
+      "runtime_printing_id": "3d286cf6-3e16-4941-9326-1818b1e06d69"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Drannith Magistrate",
+      "raw_sha256": "3646f2a1b68e801cdb838df922f7ff1d6a8026715ea1ff8137caf4bf7f58e8b9",
+      "runtime_printing_id": "98b0a4a8-9319-451b-9b79-b0bca7a41e91"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Dreadhorde Butcher",
+      "raw_sha256": "88b48e75a731b34b512157c8e3659fb5363f9a07a671eaaa04703212b042ba6f",
+      "runtime_printing_id": "457bc402-4c31-465c-95e1-694f686e257e"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Drown in the Loch",
+      "raw_sha256": "313d3e25ff5270c196bb0d87ae0cbb94d24ca6d63f4637ad537780bba5875105",
+      "runtime_printing_id": "eb7b9762-740b-4c1c-a411-20dbf023aea5"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Dryad Arbor",
+      "raw_sha256": "f31abb1e38aeedc3e9dfc2b4a91c9d564734fb977249b7d7cd9feff8a8c1066b",
+      "runtime_printing_id": "e3ddbebf-72cd-4d1b-ba0d-d94934654ab7"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Eidolon of the Great Revel",
+      "raw_sha256": "6ca4ecd73190582791140fecd83cc4d7d42805b1d5173d3e85d63846e1939f8d",
+      "runtime_printing_id": "183ef738-0559-49ca-85b4-e6836521f203"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Elvish Archdruid",
+      "raw_sha256": "b1b20c7cf762e5e782f03e2755fc65958a39bb6db4dcb56833832fbd47272d2e",
+      "runtime_printing_id": "341da856-7414-403b-b2e3-4bebd58a5aa4"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Elvish Clancaller",
+      "raw_sha256": "7010fd013f97b0bad4820741ec0c0b7ed458771b2b5b8c9ecbbe7d32c8aa037e",
+      "runtime_printing_id": "4da3b0bc-84da-4b85-992b-d0700c97157c"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Elvish Mystic",
+      "raw_sha256": "a6020bf8a05f836eede64dc6a2dca033916dde0fd7762626ec31c37d64f2f71a",
+      "runtime_printing_id": "eb654a76-62ee-4fd8-83d4-cb912211a9a0"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Elvish Warmaster",
+      "raw_sha256": "c37fd0f64ce3e3afc5f1f8159b3a089f0561180ebdfa2b0d542cea34b816dd87",
+      "runtime_printing_id": "58da074a-a776-4e3f-be04-9e7f18320ae1"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Endurance",
+      "raw_sha256": "f142c49cddcfa6a56bffd6c6ee1d76b0570dccbbb74992a6af9682882bcb595f",
+      "runtime_printing_id": "b770471c-1bf7-4179-8418-dcd790ca5405"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Expressive Iteration",
+      "raw_sha256": "a869afb0549cac7ccba419c90ffea3a79c5b843889277edc0816a4687494d10e",
+      "runtime_printing_id": "db54cb6f-25e0-4d5f-876e-a6aa66042d63"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Fable of the Mirror-Breaker",
+      "raw_sha256": "e551220e6a90bb8a89952b25b4fcb0008c7dc06460998712ab3b54b6c36eebee",
+      "runtime_printing_id": "24c0d87b-0049-4beb-b9cb-6f813b7aa7dc"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Farewell",
+      "raw_sha256": "4abd3ec0f3022cad589ab9ab738381437e938749a5dabe1e186fccfb4ca4c94a",
+      "runtime_printing_id": "114d2180-093b-4838-97ad-badbc8ee50b0"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Fatal Push",
+      "raw_sha256": "efcd9615cd2a90e942729fb2c4fb12461f228cfb6565799a9ec4eb5d241f9d17",
+      "runtime_printing_id": "6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Force of Vigor",
+      "raw_sha256": "92d9e0c952fc1b70acb4cd23cd507c738453421252d932f9c49e1cdcace92166",
+      "runtime_printing_id": "017c415b-d635-43c6-92b8-8c95d1c4ff8d"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Forest",
+      "raw_sha256": "4725c52c2d81cb23e6a4f969ff8653eb81e32cc49d988d4b76a3fb17bcb50c24",
+      "runtime_printing_id": "f169dfb2-e4c8-46e9-8591-e51bb82da082"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Glimpse the Core",
+      "raw_sha256": "726efc0ac2a89e24e70bb681f6199a323493dcb9c1d737646d4622b9d66eec1d",
+      "runtime_printing_id": "de7d6aed-3dc8-417d-a190-1660cfc8ee4a"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Go for the Throat",
+      "raw_sha256": "f172a2fdc1d549a8d76bd03a83eb3f4956c3320a7f08ab877c3eac930e14b91f",
+      "runtime_printing_id": "5446e1ba-c745-45b2-ad05-b22abf04daec"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Goblin Guide",
+      "raw_sha256": "4b81329e185ee1b772fc19dc8da3e4a693459d8fadffe8716abee6a83d7a578d",
+      "runtime_printing_id": "3c0f5411-1940-410f-96ce-6f92513f753a"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Growth Spiral",
+      "raw_sha256": "bc0c15431b51230dd70adf999d7abbb03d43780c17d6d28082afd3190fe34c87",
+      "runtime_printing_id": "1e10e2b4-9639-41ae-8b8e-253224d3d513"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Hallowed Fountain",
+      "raw_sha256": "9d0eb990b3f356c4615f0b6addba517499d1b35829a7e6c7452587f86012ed28",
+      "runtime_printing_id": "e056b55f-82ed-4fe0-ab0c-bb20fa4a218a"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Haywire Mite",
+      "raw_sha256": "25a35840f2d16f5c868dfa7d3403cc9154ca5c08fd70bf65ce4686d4e5c4af23",
+      "runtime_printing_id": "6f813bc3-6d81-4555-8e4b-6ecd9a6757b7"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Hedge Maze",
+      "raw_sha256": "e7f57c445b444dff5eb6f57f5bba3472db581333131abe98a89f9e9af5440c6c",
+      "runtime_printing_id": "5260f8ae-805b-4eae-badf-62de0f768867"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "domain"
+      ],
+      "name": "Herd Migration",
+      "raw_sha256": "f7a74e0d7c6e058392270cccc771cb10968cd193ce1b1c02ccb7fdcba774af5b",
+      "runtime_printing_id": "b0244a1f-e696-4223-9c14-22c2ca3cb738"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Hopeful Initiate",
+      "raw_sha256": "75115b52d21e19981e3776a358628406f163e77bef59b29c5f8e3957ed70545d",
+      "runtime_printing_id": "c655f9e8-ff99-48d0-83a9-ea6a853f17c6"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Hydroid Krasis",
+      "raw_sha256": "6759e6a75f58175cc113a550ff4be4f4937b7a3557da43e1054383a952825126",
+      "runtime_printing_id": "52e5d3fe-46bc-4014-9819-5aa7c7e64838"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Imodane's Recruiter",
+      "raw_sha256": "6cf6f7a3d3a638a0d16b910d4608f35d44ba66e4a1f6943eb2b7a2c433fdbecd",
+      "runtime_printing_id": "4dbaa855-3f8e-42e6-8ec8-5ffbc5c8acf0"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Intangible Virtue",
+      "raw_sha256": "a542d41bfa505ed84867e843d1facd315fd46c33356e5341d7d6f564328f2296",
+      "runtime_printing_id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Island",
+      "raw_sha256": "d748be7ca3497689c356bd7d41fea708f6883aa88affe8985813540337135769",
+      "runtime_printing_id": "77b88bb8-6bd9-4632-b937-89468fcb5e6a"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Jetmir's Garden",
+      "raw_sha256": "1054e48a277c86bf9120c63498dc7d66b85ea5863e04f7936f65d958be32d204",
+      "runtime_printing_id": "26d40e03-6de4-4373-9fbf-04c1dd79e995"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Kumano Faces Kakkazan",
+      "raw_sha256": "8f9546a699fc6b8d2a2119189d46cc608fb2f154d78bbe24f60a28c057d49064",
+      "runtime_printing_id": "28d92cad-45b0-479d-97fc-c175f3a3f259"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Lava Spike",
+      "raw_sha256": "e7b38a2301045ef65918d3b9776d5b203b026276b53f6edd3ae285df939e983c",
+      "runtime_printing_id": "79c21c1f-eaa4-454d-a1c7-b41466d0a428"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Lay Down Arms",
+      "raw_sha256": "f61613d6545fad479ab8879d7c18838ca2480dd600fae65c7ad1e23ece5e65d0",
+      "runtime_printing_id": "5649ee5a-4485-40a2-96d1-2e061905a71e"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "domain"
+      ],
+      "name": "Leyline Binding",
+      "raw_sha256": "900c4d84c9fd1445a0ccb1a9e71505002eaa5abb2e37b876a5cf62d6b4088696",
+      "runtime_printing_id": "3c3ac3dd-35db-447f-8674-37b4680a1ef7"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Light Up the Stage",
+      "raw_sha256": "c01621996a0c276de7c0388f799f8ab5a0a5016f43500ab5517ed215685fb2c5",
+      "runtime_printing_id": "912b94c9-7200-452d-940f-df0a7cceb377"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Lightning Bolt",
+      "raw_sha256": "dda8d1932134be44819433afe4fa360294201b7bd5d73cfae95579f1d571a4e4",
+      "runtime_printing_id": "77c6fa74-5543-42ac-9ead-0e890b188e99"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Llanowar Elves",
+      "raw_sha256": "e8ea63177f8307ea47239b97a5a9e56f306d503bfa03439370db18b6505bfaa9",
+      "runtime_printing_id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Long Goodbye",
+      "raw_sha256": "d7e12af9104a5711d9c2d2b247078d68461a20b3403102cbd5ea373a7fef4740",
+      "runtime_printing_id": "c3896705-bbd2-4ffb-a590-ee78e0eabdc5"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Lush Portico",
+      "raw_sha256": "9e8196866915d6695f10eca46d431f618d6baf2630c417d7d1c5a46caed0942a",
+      "runtime_printing_id": "c17816e8-28b1-4295-a637-efb0e5c18873"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "unsupported spell additional cost"
+      ],
+      "name": "March of Otherworldly Light",
+      "raw_sha256": "f329c44c8c93b9b4421ff7d3a7e04fc231d86986df0eb63824b636406c714608",
+      "runtime_printing_id": "553fb946-2706-475b-89f9-e4355ec9ea2b"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "March of the Multitudes",
+      "raw_sha256": "70e77b9e0dda60e1984f6ea26ecfe916082d0bb23530926c8538f2db895d6691",
+      "runtime_printing_id": "65c7067d-61ec-4558-b0d4-0048d2d86743"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Memory Deluge",
+      "raw_sha256": "a41b48506845e1d7e2e8528a76a477ba03e8f85a4d4fc65c83415aeb79746f8a",
+      "runtime_printing_id": "edcd3802-ddb3-4eb6-9b6e-a26d76557662"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Migration Path",
+      "raw_sha256": "7ec3798c042f669bcb362c8e8045f31f4fc0c51d367b1f1ef058b972a4ffbcca",
+      "runtime_printing_id": "21e3dfad-69b6-416c-966b-0d9c876d22fe"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Misty Rainforest",
+      "raw_sha256": "173cf8048d3eb0691760177f091ebffea1601e249c783e904c78a0194a25bd8d",
+      "runtime_printing_id": "88231c0d-0cc8-44ec-bf95-81d1710ac141"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Monastery Swiftspear",
+      "raw_sha256": "6717fcbf0962facc5a486d84ea724554637f99818e8e693f351c93e2db1edbe6",
+      "runtime_printing_id": "d6bfa227-4309-40ed-952c-279595eab17e"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Mountain",
+      "raw_sha256": "02252691aab55f8d309dc66ce39d1381b1e8cda18c68a6ac2b4f695030ea816c",
+      "runtime_printing_id": "a642c7b1-d4d1-4125-a66d-560438e5ee51"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Nadu, Winged Wisdom",
+      "raw_sha256": "d581c2290f536eb060084975ea5d9d66e2a290ae8981ffb5300f119f1c7e28cd",
+      "runtime_printing_id": "94b67489-5eb0-4406-9bf3-27e50dc632eb"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Negate",
+      "raw_sha256": "90d37bb8ead523ea99cf40dff8eeb4187dd55f400a32ce4769c1001dc943b92c",
+      "runtime_printing_id": "52d58fe4-6070-4022-9cd7-c35a11b44525"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Nissa, Ascended Animist",
+      "raw_sha256": "323e33d8f22291d7dd13def3124d5350528f39c313cb3eb94db8e874efb3aa9e",
+      "runtime_printing_id": "1dd64b1d-bcef-476c-bf0b-3ac7df7cbed3"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Nissa, Who Shakes the World",
+      "raw_sha256": "08b0cb9c36c42dcdc310a7fa786c897095360171a5d45c337978d345bb1a5f1e",
+      "runtime_printing_id": "f857bbe4-5619-4733-a0c7-69700f2ef4f3"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Noble Hierarch",
+      "raw_sha256": "eee218a804619c9e563c4bacd6015e4ed6cd1e73293963063fa5440ed31e259c",
+      "runtime_printing_id": "400382a4-aea2-4827-b06a-1b0b3745908b"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Ossification",
+      "raw_sha256": "cb0499670e4865ea23270dedc71ac92fb5a53fb34cf77a6652e91c54fd728ec7",
+      "runtime_printing_id": "0da03224-c1af-438f-96c2-b0e41e1070b7"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Otawara, Soaring City",
+      "raw_sha256": "956a8697f186f132a328394fd71aafc034204ba5fbf181362e289daece467f44",
+      "runtime_printing_id": "486d7edc-d983-41f0-8b78-c99aecd72996"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Outrider en-Kor",
+      "raw_sha256": "b93da075a5b79b6252603f77ab651434c6016dcdf988f0e1e1f9b2d2739a0952",
+      "runtime_printing_id": "de9b2506-ead4-49ff-a733-66f3f13dbe17"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Plains",
+      "raw_sha256": "3a5c634071874a823e635256370e4f80b41cc3c77d2d456a4d78689fab9aa3bd",
+      "runtime_printing_id": "24dc369c-020a-4115-a4bb-d60a44de64e3"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Plateau",
+      "raw_sha256": "9a2350b67db86d5d1006a8e01260c33c46eed2a5b9e53bfd0da9e863e764a741",
+      "runtime_printing_id": "bb979a96-a57d-4fb5-8ebe-0bd398272abe"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Priest of Forgotten Gods",
+      "raw_sha256": "15a89b975349e76d0b9fc2a0f104896113d4717c7932e643210e80579f136c80",
+      "runtime_printing_id": "363f8761-91a7-47e8-9e15-3b73d59bc020"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Raffine's Tower",
+      "raw_sha256": "50c99751a78879c74e52c58adf5c623adf21dc1f29a1e72991f3ac9af893c8be",
+      "runtime_printing_id": "a2c56479-4bee-4edb-80d7-4af010b7c793"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Raise the Alarm",
+      "raw_sha256": "afbfefef8df33819b260275b218031c21007862f0acd4419d56117a39bb9a931",
+      "runtime_printing_id": "6c7c8527-55f6-494d-b4f7-c427a5735053"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Realmwalker",
+      "raw_sha256": "400ef6c1aa9161a1e9ce33997b8fdabe2abc7621c4cc4eac015ec01db6532216",
+      "runtime_printing_id": "52733829-27b7-40ec-a897-cabab35b3729"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Recruitment Officer",
+      "raw_sha256": "8335987120ead0265cb66ce374faed32126b2455b20de081660a89ed6d1e275f",
+      "runtime_printing_id": "c226656b-68d5-4df2-b313-a323a728c520"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Rest in Peace",
+      "raw_sha256": "c645d23b51a82f54bc5f3d10dd21dd75130670e631a1f0331b4aa3161e2d4dd9",
+      "runtime_printing_id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Rift Bolt",
+      "raw_sha256": "86ac58d06d285c00371dcf0d10b5097157f350ee561b89be0d506e8b144d15df",
+      "runtime_printing_id": "4ccd0ada-92b2-48f3-b5ae-96346fc138b6"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Sacred Foundry",
+      "raw_sha256": "551bd280dca621d1638ee6c30817610e030e1617b274e9e643d2ea78de506714",
+      "runtime_printing_id": "8b4e2642-3c87-4708-b9b4-2e7f7359ac7d"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Savannah",
+      "raw_sha256": "f51f954c989f265fbfcb5d7871f207e3d7845bab0b601d4d5850fec181b01b9d",
+      "runtime_printing_id": "b0d161fc-4a2a-4f1d-82b4-a746552552df"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Searing Blaze",
+      "raw_sha256": "71e923da8278307657501c3f5724f35358ea34fcb51d2b99ff3c961fb6814a5c",
+      "runtime_printing_id": "f659d464-13dd-49e2-a842-098dcba49659"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Secure the Wastes",
+      "raw_sha256": "9d2516037ffa39763c273fda091696a2b4518e05c0ed8213cad34a9f3cca7fe9",
+      "runtime_printing_id": "bca35012-ecfa-475f-b405-d3143ce99eef"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Shadowspear",
+      "raw_sha256": "e68803cea4a99722e2b2746343d90642c494af9b3d1f419d48c7beb4f9f8dd17",
+      "runtime_printing_id": "939c6e19-4b27-4023-bb9c-ae440f91e21c"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Shaman of the Pack",
+      "raw_sha256": "0018f29b7b881394eb06557280b6d6d6e1a286be0ec86c0a9f66dcebd58427ea",
+      "runtime_printing_id": "da9705e2-40e5-4ec9-8aef-2eab28d5a66f"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Shark Typhoon",
+      "raw_sha256": "661e3183f88b6c8293ea792e84c0f7084fb8247c8719dafeb60fb50736811a16",
+      "runtime_printing_id": "2b2accb1-d77b-4633-9d0c-b972d9c014bb"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Sheoldred, the Apocalypse",
+      "raw_sha256": "3710e8e09a201cea444a893da859a671811f0c2e0f9ebbf1de463e1f7bff2c42",
+      "runtime_printing_id": "d67be074-cdd4-41d9-ac89-0a0456c4e4b2"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Shifting Woodland",
+      "raw_sha256": "38cd03ab26f1525da97c29038819c0f3c8b088c18ede65fffedbadf761179c6c",
+      "runtime_printing_id": "059164e1-894d-4586-9800-e60d6fbd6eb6"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Shuko",
+      "raw_sha256": "4ea23a059eb2859c937d232ce19f9be47fe106c661785a494cf72c487dc8c18a",
+      "runtime_printing_id": "a47456b8-cef8-4085-90b1-92788e16fd27"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Skewer the Critics",
+      "raw_sha256": "a55d7b38e2778dacb6bb96ae984c420763ae7f39de1fdf432fc2252c7290b17f",
+      "runtime_printing_id": "43ca8f80-e9ed-483f-a8a7-ad6149811df9"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Skullcrack",
+      "raw_sha256": "d10cd9c16e1f828e2118dc6e08fe851abfa7c27cf90ae920c59af8b6467ecfd1",
+      "runtime_printing_id": "7f399983-d70a-4cf3-b76e-bb0c472e7c69"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Soul-Scar Mage",
+      "raw_sha256": "0671a4cbde468d46bb6213d9eb3ee4ddc9424fe54a12f9d05a6ff7c91dc38737",
+      "runtime_printing_id": "a8003786-6e2a-4e2d-a915-f23293c7273a"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Soulless Jailer",
+      "raw_sha256": "366850b9d3c59bb46fa4510e8edb01e8b68875f88edb17f3cc36eca191c93a99",
+      "runtime_printing_id": "bf9991fd-ea6a-4ed7-b5f1-46a95f8d0634"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Spara's Headquarters",
+      "raw_sha256": "4e4fa976fcf4e22505a5e192a031a7db8f46ff6876fe325e556c87486d9c2e15",
+      "runtime_printing_id": "7363f1fb-9af3-4212-921f-d59533faf0e5"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Spectral Procession",
+      "raw_sha256": "0e83901547a68f02518b29e43a6c5fa47e7fd1a6e8ae6c598faed241e05f0a3c",
+      "runtime_printing_id": "9964629e-d79e-46e4-b3fd-e7d1759cbc60"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Spell Pierce",
+      "raw_sha256": "ca07e889cb4b40d255d843a5c20f9882bb6391bc0b9fe24f7ecab903d4a0db9d",
+      "runtime_printing_id": "8dd4374f-0301-4b2e-bc99-2cd19568cb3b"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Spelunking",
+      "raw_sha256": "8cdb135d3cfef913d56b78c3ba9dc325453519c8947d893792b322c5c34450e0",
+      "runtime_printing_id": "d3be4257-2316-4a2e-b347-f71c0368a947"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "bestow"
+      ],
+      "name": "Springheart Nantuko",
+      "raw_sha256": "88d35c8cd2811017f1b0571b2b1a1763ebcaa83b56dc3830e45887689bfdc083",
+      "runtime_printing_id": "54a3ea87-005e-4985-b2a5-21711d0b71c0"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Sprite Dragon",
+      "raw_sha256": "629c6d12a1cd5cb1153628bd319783d908eb277a87beca62ba1995b69ae2c0a1",
+      "runtime_printing_id": "361385d8-d9c7-4de8-a5c8-683e682779f4"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Storm the Festival",
+      "raw_sha256": "1fbd0a66eaadd68b0281579fda64b5c3147d6e6e4dea79bf2c71dbfafc063674",
+      "runtime_printing_id": "b4f1f69c-122d-472a-b82d-fed7c253a4cd"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Summoner's Pact",
+      "raw_sha256": "462c1e3982b772f3cdc933ce92e9c24cbdf0fadf926fb649e2fbe028d2403dfc",
+      "runtime_printing_id": "ee0f88ac-8a90-4057-b0e6-c15fbd02da38"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "unsupported conditional static instruction",
+        "unsupported conditional static predicate",
+        "unsupported counter prohibition"
+      ],
+      "name": "Suncleanser",
+      "raw_sha256": "4a77a47383ddd54a64f30ac12072f88880772fd548df43cd9b1bb73789a46357",
+      "runtime_printing_id": "3644df41-b690-4581-ac7d-c85cec75411f"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Sunfall",
+      "raw_sha256": "e6f72660ab9a6071cc41ed3d38e8b4528f210d5d36ab07cd569e741440e533e0",
+      "runtime_printing_id": "a560b9a7-4c00-4c0c-b63d-774d3f6b9aa9"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Supreme Verdict",
+      "raw_sha256": "e1817939f92b2bfc9f35e1c48efbac61904b5925094b147a8a619ebf5473da9f",
+      "runtime_printing_id": "3892f1c5-937e-4ef4-b6f9-e0c0ded070d0"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Swamp",
+      "raw_sha256": "874e5641f11908455a0e9924b8abc85d330db3524aa3166e183d7eb9ffbc1d70",
+      "runtime_printing_id": "51fe930f-2b5a-4b1e-9007-6ee74fb44715"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Sylvan Safekeeper",
+      "raw_sha256": "baf7c9ae8cfcd2260ce286d7e57c0b2dfa9ac73bea5d83b2e0e9ff6286ab761c",
+      "runtime_printing_id": "83036e21-21ea-4324-aa07-11757f80c417"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Taiga",
+      "raw_sha256": "0f70d67265b62210ea9ffbb8006f2864580ec670123281d04bcd01e1e2917a12",
+      "runtime_printing_id": "0c2c39fc-b564-4ab5-833c-ff029760b7a7"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Tarmogoyf",
+      "raw_sha256": "404aac93d9151cf6943d8e26c19a5cc61eea889e602e5355624a4cec2b423ceb",
+      "runtime_printing_id": "69daba76-96e8-4bcc-ab79-2f00189ad8fb"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Teferi, Hero of Dominaria",
+      "raw_sha256": "3cb35c63914675c35e7f96123e1f7ca2d5f519d10e9b697b25c1658df9835de9",
+      "runtime_printing_id": "5d10b752-d9cb-419d-a5c4-d4ee1acb655e"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Teferi, Time Raveler",
+      "raw_sha256": "b25307a30f10a9a8ad61ccb78b11ce581e4f9b296cb496c006071570273b1244",
+      "runtime_printing_id": "662fe50f-d75c-422c-8c6c-1f9b5c4ba21f"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Temple Garden",
+      "raw_sha256": "bddda5eb1ca58f4234ae6afbf4bc0bb36d963f637bf7ee17fc7c2116afe5032b",
+      "runtime_printing_id": "b9b0589d-f327-46a7-8bac-06b7654c547a"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Temporary Lockdown",
+      "raw_sha256": "e31769334619fa798750fee703e147a752dc71e13f51dc45b63b5e0963b5229c",
+      "runtime_printing_id": "82b3088f-7b49-45e9-b447-129a597ceb75"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Thalia, Guardian of Thraben",
+      "raw_sha256": "861d7f882df0a0d437059a57e21606e4d86ea4bffaf1b5351ea9adaf5fdb074d",
+      "runtime_printing_id": "c9f8b8fb-1cd8-450e-a1fe-892e7a323479"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "The Meathook Massacre",
+      "raw_sha256": "03d4e7adf218bf9a32364d3d62fe5e074e6a3945a2c4feed21b48009c9a7d3d5",
+      "runtime_printing_id": "70d0540f-93c6-4af5-ab2d-65e6c03001c7"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "The One Ring",
+      "raw_sha256": "d3cfb6c721d06c86b0f76b123823bea3b45d3c9e35b00cf5aa953571b4976ccc",
+      "runtime_printing_id": "d5806e68-1054-458e-866d-1f2470f682b2"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "unsupported conditional static instruction",
+        "unsupported conditional static predicate"
+      ],
+      "name": "The Wandering Emperor",
+      "raw_sha256": "573b9f98b911ccfe1732aacd31a1f002760cc05ab3b5d292c6ba2d353285e344",
+      "runtime_printing_id": "fab2d8a9-ab4c-4225-a570-22636293c17d"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Thoughtseize",
+      "raw_sha256": "32ec2bd736607e3936cca345045a6ae30c5b35961cb3d6137240055c2dd835bc",
+      "runtime_printing_id": "b281a308-ab6b-47b6-bec7-632c9aaecede"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Topiary Stomper",
+      "raw_sha256": "78a9b4939c8c7b6cddde6c7340bce4ada4e4ce8ec2cb8ebad38269e94547f3be",
+      "runtime_printing_id": "e8b92271-4412-4165-a4a6-e8653e755107"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Torrential Gearhulk",
+      "raw_sha256": "36e32b34f32c1c4c8e029501fa758eb2aeb5b9472f559fa34713ce7bf5e8f283",
+      "runtime_printing_id": "92872fea-2fb4-4154-815e-cad9d966e60f"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Tranquil Frillback",
+      "raw_sha256": "9aab761d3abab7be572784b2b3b88bd519dd88b19dc97f854a26c9214dea0fdb",
+      "runtime_printing_id": "5b647377-d47e-4630-8ccc-933ef6127880"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Tropical Island",
+      "raw_sha256": "1ea027a4d24901097c8bd911c7dfc0d00b4dda31cdee2a9e683f9708d0e42dcd",
+      "runtime_printing_id": "47033ba4-8f26-4a6b-97bd-5b366327325e"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Ugin, the Spirit Dragon",
+      "raw_sha256": "1c0880db15b5746b90f2ea4ef5599fcebecd02ae25c6a7b3108bc487634ef07b",
+      "runtime_printing_id": "9c017fa9-7021-417a-9c2e-3df409644fcf"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Underground Sea",
+      "raw_sha256": "daf2ddf255bfe961b9e3a2177a40872244048ef99da6f19795e91db1daf37593",
+      "runtime_printing_id": "26cee543-6eab-494e-a803-33a5d48d7d74"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Unholy Heat",
+      "raw_sha256": "33749151b112b476355553923980692ba29ca55e1be640f486ee946e06ba3d83",
+      "runtime_printing_id": "4e879386-b1f8-4f2a-9820-6e1291746f88"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Up the Beanstalk",
+      "raw_sha256": "f234da22658f6adb156d6d9d474ec33fd0addde1d21cbb3a2feae33d127d7c26",
+      "runtime_printing_id": "2d5e991f-23b2-4db0-a452-7755125b1fd2"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Urza's Saga",
+      "raw_sha256": "0555791aa99f643011aaf70fde680718e0b43ee503106fc508f4d2c3e644ccd9",
+      "runtime_printing_id": "c1e0f201-42cb-46a1-901a-65bb4fc18f6c"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "keyword counter variant fidelity"
+      ],
+      "name": "Veil of Summer",
+      "raw_sha256": "5030bffebf1eded98808f63bae59c330d8135f86d36660e8d95b8e8781781b70",
+      "runtime_printing_id": "aa686c34-1c11-469f-93c2-f9891aea521f"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Village Rites",
+      "raw_sha256": "c4df062ae82dd9cc26bab3b187d945493d8e72bf46d0bfb66e1e747ed6ab3642",
+      "runtime_printing_id": "42ed35e9-51cd-468a-86a9-9412553cf50d"
+    },
+    {
+      "hydrated_known_admission_gaps": [
+        "keyword counter variant fidelity"
+      ],
+      "name": "Volatile Stormdrake",
+      "raw_sha256": "77c8b7d7568c43e0f3a2f828799b8793cda79e146650ad904e3a83a7d52cf4b2",
+      "runtime_printing_id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Volcanic Island",
+      "raw_sha256": "70810d9aaa7e25b91fb1fd4b814d476e4eea97cf11dbe9ef1fa11ac0d15e2d17",
+      "runtime_printing_id": "2f607e7e-30c0-45e9-8f61-bf6e9fe63f2b"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Wall of Roots",
+      "raw_sha256": "767f5c4f612b4728f3dce0a3f556e753577c5f8d142acbf7566c9e79e2f31121",
+      "runtime_printing_id": "e4e7d3b7-9b0c-463d-975c-ef81d7fd8dad"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Waterlogged Grove",
+      "raw_sha256": "235c349e2c577423fb1bad21bfa7df4b6d62f3d871f6c0b102bece37427771bd",
+      "runtime_printing_id": "0ab6bfbd-d2e1-4c4c-9f91-6f69c5b8e3bb"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Wedding Announcement",
+      "raw_sha256": "72e857f7030239616f1c015e69008b43ad2cbb309aec58e9da41d8317d9d15a0",
+      "runtime_printing_id": "4e6f365d-c5c4-4fd6-94cb-833b89239d73"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Windswept Heath",
+      "raw_sha256": "af42f474ac0873a0ed626c8aed9232922ba9d50df11a1caaf94516d1cfe58635",
+      "runtime_printing_id": "bd1d13f7-fd38-4f0b-a8e0-1eac78668117"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Witch's Oven",
+      "raw_sha256": "8689b06365fddef9b1d9d8196c9e5f03f4455464a5e7d3550439c4f569ab8b4c",
+      "runtime_printing_id": "04ef8493-d986-45f8-a718-617b028f7ad4"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Yavimaya, Cradle of Growth",
+      "raw_sha256": "80452e4d3de6043ccf66284408bff990442abec804ca3af377a2783cea8713f2",
+      "runtime_printing_id": "4e4b6e22-93b2-4896-bba5-0ceaa5d8ea3c"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Ziatora's Proving Ground",
+      "raw_sha256": "e165dfacdc35246629bfcea96f93cb028b1c728d401afd6def4059c065e986b1",
+      "runtime_printing_id": "75fdce80-e338-4a50-bdc6-786511feaeef"
+    },
+    {
+      "hydrated_known_admission_gaps": [],
+      "name": "Zulaport Cutthroat",
+      "raw_sha256": "40b68ec8d79a336032d938c110f278c4d24fc9cd53fd3a8a9db7c7b83f88ff6f",
+      "runtime_printing_id": "c43609fb-3cee-44e0-98d0-3ecaba1d5767"
+    }
+  ],
+  "source_data": {
+    "bulk_expanded_bytes": 203114006,
+    "bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+    "bulk_records": 38690,
+    "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "provenance_sha256": "db002c797f4ae1cdb68fd113483db4ae11563e32cbf9f9b0f66b40df2d44618f",
+    "representative_join_policy": "unique exact root name, playable English; never a same-printing claim",
+    "seed_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037"
+  }
+}

@@ -624,9 +624,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/coverage.py": {
-    "mtime": 1791352888.020513,
-    "seen": 1791352981.9487143,
-    "ast_hash": "997ee717a1d85fb7fffb13a5d62c8d4f",
+    "mtime": 1791407249.6436663,
+    "seen": 1791407340.6501746,
+    "ast_hash": "1813218f410efa00eb0bbf15fb231552",
     "semantic_hash": ""
   },
   "backend/rules_engine/creature_subtypes.json": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791406298.2946408,
-    "seen": 1791406375.911515,
-    "ast_hash": "3760f97e5e59d4747229a4e6c30178c5",
+    "mtime": 1791407266.5542705,
+    "seen": 1791407340.6540833,
+    "ast_hash": "3ac3eed3dcc6bd7a26cc79e425bbbc29",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13545,6 +13545,36 @@
     "mtime": 1791406128.645564,
     "seen": 1791406375.91176,
     "ast_hash": "86970ee205bbbca5392740f40a140857",
+    "semantic_hash": ""
+  },
+  "audit/gate2-domain-compiler/fixtures/domain-composition-baseline.json": {
+    "mtime": 1791407249.6446662,
+    "seen": 1791407340.649921,
+    "ast_hash": "d45d74cd2f649204087901809efca5af",
+    "semantic_hash": ""
+  },
+  "audit/gate2-domain-compiler/fixtures/domain-parent-baseline.json": {
+    "mtime": 1791407249.6446662,
+    "seen": 1791407340.6499252,
+    "ast_hash": "0b46fc3d4633fe78559d9cb702ff2f1f",
+    "semantic_hash": ""
+  },
+  "audit/gate2-domain-compiler/test_domain_admission.py": {
+    "mtime": 1791407249.6446662,
+    "seen": 1791407340.649933,
+    "ast_hash": "cbfc366a1bfef8a4bd1d99d8a8852233",
+    "semantic_hash": ""
+  },
+  "audit/gate2-domain-compiler/test_domain_spell_flash.py": {
+    "mtime": 1791407249.6446662,
+    "seen": 1791407340.6499405,
+    "ast_hash": "91335efb0f6aa63e2de0e208c97fb998",
+    "semantic_hash": ""
+  },
+  "docs/gate2-domain-admission.md": {
+    "mtime": 1791407249.6446662,
+    "seen": 1791407340.653499,
+    "ast_hash": "6b8ce3187baa933d23d3b73795e82fd1",
     "semantic_hash": ""
   }
 }
