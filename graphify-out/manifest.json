@@ -13613,10 +13613,10 @@
     "ast_hash": "f90132245141fa25e8daea67e208b4cf",
     "semantic_hash": ""
   },
-  "docs/testing/hand-source-current-composition.md": {
-    "mtime": 1791407690.5798907,
-    "seen": 1791407813.5640957,
-    "ast_hash": "112ec767fd896a87e377f0154f1fca40",
+  "audit/gate2-domain-compiler/test_inventory.py": {
+    "mtime": 1791408021.4196315,
+    "seen": 1791408095.9165645,
+    "ast_hash": "7762cd3eb2484e882644d6863f8ee7d2",
     "semantic_hash": ""
   }
 }
