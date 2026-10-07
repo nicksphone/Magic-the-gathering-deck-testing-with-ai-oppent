@@ -1077,6 +1077,12 @@ def _graveyard_card_matches_selector(card, selector: str) -> bool:
     s = selector.strip().lower()
     if s in {"", "card"}:
         return True
+    if match := re.fullmatch(r'(basic|nonbasic) lands?', s):
+        if "Land" not in (getattr(card, "types", []) or []):
+            return False
+        front = re.split(r'\s[\u2014-]\s', (getattr(card, "type_line", "") or "").split("//", 1)[0], maxsplit=1)[0]
+        basic = "Basic" in front.split()
+        return basic if match[1] == "basic" else not basic
     type_map = {kind.lower(): kind for kind in CARD_TYPES}
     if s in type_map:
         return type_map[s] in (getattr(card, "types", []) or [])

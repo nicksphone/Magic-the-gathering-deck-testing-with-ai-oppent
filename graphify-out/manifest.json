@@ -600,9 +600,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/continuous.py": {
-    "mtime": 1791328054.2432995,
-    "seen": 1791328526.167617,
-    "ast_hash": "b55b0be50dbc975ec9cfea269fc039f6",
+    "mtime": 1791340563.929452,
+    "seen": 1791340670.7417076,
+    "ast_hash": "2116b79d5bcffdaeca1611c2b1c4bb81",
     "semantic_hash": ""
   },
   "backend/rules_engine/costs.py": {
@@ -12147,6 +12147,48 @@
     "mtime": 1791339019.5572848,
     "seen": 1791339197.6694992,
     "ast_hash": "eccb87a7a1419415c5091774d1b8a9a7",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/graveyard_stat_selector/detritivore.json": {
+    "mtime": 1791340563.9264522,
+    "seen": 1791340670.742379,
+    "ast_hash": "4874de02012b734fa81ef44aac3d67de",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/graveyard_stat_selector/provenance.json": {
+    "mtime": 1791340563.9264522,
+    "seen": 1791340670.742381,
+    "ast_hash": "72099d249ac8b12281e6c25db462a1be",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/graveyard_stat_selector/terravore.json": {
+    "mtime": 1791340563.9264522,
+    "seen": 1791340670.742383,
+    "ast_hash": "8afc1fdee3c8c108cf9c81cf7ac4a023",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_graveyard_stat_selector_audit.py": {
+    "mtime": 1791340563.9264522,
+    "seen": 1791340670.7435555,
+    "ast_hash": "a4291a77c9bee7eefe2717e1b4a4897b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_graveyard_stat_selector_product.py": {
+    "mtime": 1791340563.929452,
+    "seen": 1791340670.7435575,
+    "ast_hash": "76c49390a3068eab3989d30471094712",
+    "semantic_hash": ""
+  },
+  "docs/testing/graveyard-stat-selector-audit.md": {
+    "mtime": 1791340563.9264522,
+    "seen": 1791340670.7450228,
+    "ast_hash": "c479222b04f98e076e6a9be9c4c56d16",
+    "semantic_hash": ""
+  },
+  "docs/testing/graveyard-stat-selector-product.md": {
+    "mtime": 1791340563.929452,
+    "seen": 1791340670.7450244,
+    "ast_hash": "9ef9e8852a9eabc20ddeefa4fb67c32e",
     "semantic_hash": ""
   }
 }
