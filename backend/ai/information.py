@@ -32,8 +32,6 @@ def decision_view(state, player_id, legal_moves):
     visible = {cid for player in state.players.values()
                for cid in player.battlefield + getattr(player, 'graveyard', [])}
     visible.update(state.players[player_id].hand)
-    visible.update(getattr(item, 'source_card_id', getattr(item, 'card_id', None))
-                   for item in getattr(state, 'stack', []))
     # A resolving spell leaves the stack queue while an owned choice is pending,
     # but its source remains a public stack-zone card until resolution completes.
     visible.update(cid for cid, card in state.cards.items() if getattr(card, 'zone', None) == Zone.STACK)

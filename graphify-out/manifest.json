@@ -90,9 +90,9 @@
     "semantic_hash": ""
   },
   "backend/ai/information.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2176332,
-    "ast_hash": "3d07bcc3017a60aa31cab5773c18efbe",
+    "mtime": 1791401589.4487493,
+    "seen": 1791401743.4180217,
+    "ast_hash": "09bb5d41a2887a68d494c042c83c5619",
     "semantic_hash": ""
   },
   "backend/ai/life_targets.py": {
@@ -402,9 +402,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/observations.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2177444,
-    "ast_hash": "8d40136bff0e741faf0587dc2b147395",
+    "mtime": 1791401589.4487493,
+    "seen": 1791401743.4181573,
+    "ast_hash": "364498ae7191120b0bf11fc313215e1b",
     "semantic_hash": ""
   },
   "backend/game_state/serializers.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791400835.1165419,
-    "seen": 1791400939.229885,
-    "ast_hash": "d469e316d95aaf2f075240c0400f4216",
+    "mtime": 1791401670.49905,
+    "seen": 1791401743.4224257,
+    "ast_hash": "552e8b450146b55943dc5fe174043692",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,21 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791400835.1155417,
-    "seen": 1791400939.229635,
-    "ast_hash": "b32f71a74e6d787a8f5a4c06c33a87da",
+    "mtime": 1791401670.49805,
+    "seen": 1791401743.4221945,
+    "ast_hash": "121f6230aee4a7ece82a74ee17432f32",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_pending_stack_privacy_goldens.py": {
+    "mtime": 1791401589.4517493,
+    "seen": 1791401743.4206674,
+    "ast_hash": "a88119df9b4eb0f31087f1da60582abb",
+    "semantic_hash": ""
+  },
+  "docs/testing/pending-stack-privacy-current.md": {
+    "mtime": 1791401670.49805,
+    "seen": 1791401743.4221563,
+    "ast_hash": "2aca5063920917b620abe63580708587",
     "semantic_hash": ""
   }
 }

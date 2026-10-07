@@ -296,6 +296,11 @@ Current component evidence and remaining acceptance work are reconciled in
 browser-origin security component have passed on their documented source pins;
 neither result qualifies the final combined source or closes all three gates.
 
+The current pending-stack privacy integration has an exact 22-whole-module pure
+qualification of 950 passes on the `db16186` composition, with applied-byte
+equality. See `docs/testing/pending-stack-privacy-current.md`; mixed HTTP/SQL,
+complete private hand-to-library responses and final release remain open.
+
 Current native next-cast and entry-counter integration has one 36-whole-module
 834-pass qualification on the composed `91c40e2` application baseline. Parent
 applied bytes match the actual tested archive. See

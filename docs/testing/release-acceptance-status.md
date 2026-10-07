@@ -14,6 +14,7 @@ substitute for qualification of the final combined source.
 | Browser-origin boundary | Exact five applied product/test/doc postimages: nine whole modules / 235 passes; parent pure policy 101 passes | Origin rejection, not authentication, LAN trust or whole-current browser qualification |
 | Frontend dependencies | Fresh locked install, typecheck, lint, configured test chain and build passed; full/production advisory scans reported zero | Clean frontend component, not a clean-machine end-to-end installation |
 | Python installer maintenance | Qualified EnC3vJ runtime pip 24.0 -> 26.2.1; pip check passed; all non-pip file hashes and package versions equal | Installer-only change; no application gate inferred from pip check |
+| Pending-stack privacy | Current `db16186` composition: 22 whole pure modules / 950 passes; parent applied tested bytes | Mixed HTTP/SQL and complete private hand-to-library response remain separate |
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 
@@ -22,6 +23,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `diagnostics/api-security/retained2331-origin-20261007-ExTz1I/`
 - `diagnostics/dependency-audit/retained2331-fresh-20261007-v8A4Tj/`
 - `parent-integration/pip-only-maintenance-20261007/`
+- `parent-integration/pending-source-privacy-current-db161-20261007/`
 
 Read each report's source pin, failure history, isolation limits and raw evidence
 before transferring a result. Closed SQLite evidence must be copied locally for
@@ -29,8 +31,9 @@ inspection; never execute a database on NFS.
 
 ## Required Before Completion
 
-1. Integrate and qualify pending-source privacy changes on the actual combined
-   source. Sidecar green tests do not prove parent integration.
+1. Complete pending-source privacy mixed HTTP/SQL and final-union acceptance.
+   The current pure qualification and exact parent integration are documented
+   in `pending-stack-privacy-current.md`; they do not cover those other gates.
 2. Resolve or explicitly classify the 12 hydrated preflight gaps in the 155-card
    inventory with genuine canonical cost/target/execution tests. The other 143
    cards lacking a known admission gap are not fully semantics-certified.
