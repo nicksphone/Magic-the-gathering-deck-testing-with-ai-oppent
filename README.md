@@ -1,8 +1,10 @@
 # MTG Deck Testing Lab
 
-Latest scoped backend qualification: sourced fixed-cost Suspend readiness and
-temporary-characteristic HTTP/persistence checks. See
-[current acceptance](docs/testing/suspend-and-characteristics-http-current.md).
+Latest scoped backend qualification: retained Ray copied-spell frames and
+counterable control-loss taps, alongside sourced fixed-cost Suspend readiness
+and temporary-characteristic HTTP/persistence checks. See
+[control acceptance](docs/testing/control-source-frame-current-composition.md)
+and [prior acceptance](docs/testing/suspend-and-characteristics-http-current.md).
 This remains an unfinished playtesting app, not unrestricted rules certification.
 
 A desktop-first React/TypeScript and Python/FastAPI application for two-player
@@ -50,7 +52,8 @@ are not bypassed to claim support.
   Search/counter children use independent target clauses. Announced card targets
   retain object identity through resolution and supported copy/retarget choices.
   The original four Favor blink and two Act of Treason blink failures now pass;
-  Ray of Command remains unsupported. Thirty whole affected modules execute
+  Ray of Command subsequently has bounded control-loss/copy/HTTP qualification
+  in the linked current control acceptance. The prior thirty affected modules executed
   730 cases: 692 passes and 38 retained failures, not an all-green release. See
   [current target acceptance](docs/testing/announced-target-current-composition.md).
 

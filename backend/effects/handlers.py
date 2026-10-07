@@ -510,11 +510,36 @@ def change_control(state: MatchState, controller: int, payload: dict) -> None:
         card.summoning_sick = True
         card.entered_turn = state.turn
     if payload.get("until_end_of_turn"):
+        previous = state.temporary_control_changes.get(target_id, {})
+        # Same-cleanup duration effects expire together, revealing the controller
+        # underneath the whole batch rather than another already-expired effect.
+        underlying_controller = (previous['controller']
+                                 if previous.get('expires_turn') == state.turn else old_controller)
         state.temporary_control_changes[target_id] = {
-            "controller": old_controller,
+            "controller": underlying_controller,
             "expires_turn": int(state.turn),
         }
+    else:
+        state.temporary_control_changes.pop(target_id, None)
     state.log.append(f"{state.players[new_controller].name} gains control of {card.name}.")
+    if old_controller != new_controller:
+        emit_event(state, 'control_changed', {
+            'card_id': target_id, 'previous_controller': old_controller,
+            'controller': new_controller,
+        })
+
+
+def temporary_control_instruction(state: MatchState, controller: int, payload: dict) -> None:
+    card = state.cards.get(payload.get('target_card_id'))
+    if card is None or card.zone != Zone.BATTLEFIELD:
+        return
+    untap_card(state, controller, payload)
+    change_control(state, controller, {**payload, 'new_controller': controller})
+    grant_keyword(state, controller, {**payload, 'keywords': ['haste']})
+    from rules_engine.keyword_triggers import schedule_control_loss_tap
+    schedule_control_loss_tap(state, controller, payload)
+
+
 def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
     del controller, payload
     _destroy_all_permanents_of_types(state, {"Creature"}, "All creatures are destroyed.")

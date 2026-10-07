@@ -116,6 +116,34 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if not state.stack:
         return False
     item = state.stack[-1]
+    control_frame_required = (
+        item.effect_key == 'temporary_control_instruction'
+        or item.effect_key == 'effect_sequence' and any(
+            isinstance(effect, dict) and effect.get('effect_key') == 'temporary_control_instruction'
+            for effect in (item.payload or {}).get('effects', [])))
+    if control_frame_required:
+        from rules_engine.action_validation import ActionRejected
+        receipt = (item.payload or {}).get('__control_source_frame')
+        if (not isinstance(receipt, dict)
+                or set(receipt) != {'stack_id', 'source_card_id', 'cast_controller', 'label', 'source_reference'}
+                or not isinstance(receipt['stack_id'], str) or not receipt['stack_id']
+                or receipt['source_card_id'] != item.source_card_id
+                or not isinstance(receipt['source_card_id'], str) or not receipt['source_card_id']
+                or type(receipt['cast_controller']) is not int or receipt['cast_controller'] not in state.players
+                or not isinstance(receipt['label'], str) or not receipt['label']):
+            raise ActionRejected('Malformed retained control source frame')
+        reference = receipt['source_reference']
+        if (not isinstance(reference, dict)
+                or set(reference) != {'incarnation', 'zone_change_sequence'}
+                or any(type(value) is not int or value < 0 for value in reference.values())):
+            raise ActionRejected('Malformed retained control source reference')
+        copy_kind = (item.payload or {}).get('__stack_copy_kind')
+        if copy_kind is not None and copy_kind != 'spell':
+            raise ActionRejected('Unknown control source copy kind')
+        # Copies retain announcing provenance, not their new resolving identity.
+        if not (item.payload or {}).get('__stack_copy_kind') and (
+                receipt['stack_id'] != item.id or receipt['cast_controller'] != item.controller):
+            raise ActionRejected('Control source frame does not match announced item')
     from rules_engine.targeting import validate_announced_target_references, announced_target_reference_matches
     references = (item.payload or {}).get('__announced_target_references')
     if '__announced_target_references' in (item.payload or {}):
@@ -408,7 +436,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
-        if (effect_key in {'shuffle_graveyard_into_library', 'search_library'}
+        if (control_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library'}
                 or effect_key == 'effect_sequence' and any(
                     effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library'}
                     for effect in payload.get('effects', []))):

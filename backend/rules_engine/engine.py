@@ -279,6 +279,7 @@ class RulesEngine:
             card = state.cards.get(cid)
             original = int(data.get("controller", 0) or 0)
             if card and card.zone == Zone.BATTLEFIELD and original in state.players and card.controller != original:
+                previous_controller = card.controller
                 current = state.players[card.controller].battlefield
                 if cid in current:
                     current.remove(cid)
@@ -287,6 +288,10 @@ class RulesEngine:
                 card.summoning_sick = True
                 card.entered_turn = state.turn
                 state.log.append(f"Control of {card.name} returns to {state.players[original].name}.")
+                emit_event(state, 'control_changed', {
+                    'card_id': cid, 'previous_controller': previous_controller,
+                    'controller': original,
+                })
             state.temporary_control_changes.pop(cid, None)
 
     def _update_day_night(self, state: MatchState) -> None:
@@ -1156,6 +1161,15 @@ class RulesEngine:
                     (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.move_to_zone(Zone.STACK)
+                control_source_reference = None
+                if (effect_key == 'temporary_control_instruction'
+                        or effect_key == 'effect_sequence' and any(
+                            effect.get('effect_key') == 'temporary_control_instruction'
+                            for effect in payload.get('effects', []))):
+                    control_source_reference = {
+                        'incarnation': object_incarnation(card),
+                        'zone_change_sequence': card.zone_change_sequence,
+                    }
                 if chosen.graveyard_permission_key:
                     from rules_engine.graveyard_permissions import record_graveyard_permission
                     record_graveyard_permission(state, chosen.graveyard_permission_key)
@@ -1169,7 +1183,15 @@ class RulesEngine:
                 state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
                 if chosen.kicked:
                     state.kicked_spells_cast_this_turn[player_id] = state.kicked_spells_cast_this_turn.get(player_id, 0) + 1
-                add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
+                announced_item = add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
+                if control_source_reference is not None:
+                    announced_item.payload['__control_source_frame'] = {
+                        'stack_id': announced_item.id,
+                        'source_card_id': announced_item.source_card_id,
+                        'cast_controller': announced_item.controller,
+                        'label': announced_item.label,
+                        'source_reference': control_source_reference,
+                    }
 
         elif kind == "cycle_card":
             cid = action.get("card_id")

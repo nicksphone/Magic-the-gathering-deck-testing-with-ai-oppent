@@ -28,6 +28,25 @@ def schedule_next_turn_draw(state, controller, payload):
 
 
 def collect_keyword_triggers(state, event, payload):
+    if event in {'control_changed', 'leaves_battlefield'}:
+        due, remaining = [], []
+        for record in state.delayed_triggers:
+            data = record.get('payload', {})
+            card = state.cards.get(data.get('card_id'))
+            matches = (record.get('condition') == 'lose_control'
+                       and payload.get('card_id') == data.get('card_id')
+                       and card is not None and card.zone == Zone.BATTLEFIELD
+                       and object_incarnation(card) == data['incarnation']
+                       and card.zone_change_sequence == data['zone_change_sequence'])
+            lost = (event == 'leaves_battlefield' and card is not None
+                    and card.controller == record.get('controller')
+                    or event == 'control_changed'
+                    and payload.get('previous_controller') == record.get('controller')
+                    and payload.get('controller') != record.get('controller'))
+            (due if matches and lost else remaining).append(record)
+        state.delayed_triggers = remaining
+        return [{key: value for key, value in record.items() if key != 'condition'}
+                for record in due]
     if event == 'creature_dies':
         card = state.cards.get(payload.get('card_id'))
         if card is None or card.zone != Zone.GRAVEYARD:
@@ -48,7 +67,7 @@ def collect_keyword_triggers(state, event, payload):
     if event == 'begin_step':
         due, remaining = [], []
         for record in state.delayed_triggers:
-            (due if record['step'] == payload.get('step')
+            (due if record.get('step') == payload.get('step')
              and state.turn >= record.get('earliest_turn', state.turn) else remaining).append(record)
         state.delayed_triggers = remaining
         return [{key: value for key, value in record.items() if key not in {'step', 'earliest_turn'}}
@@ -111,6 +130,50 @@ def _block_keyword_triggers(state, payload):
     return triggers
 
 
+def schedule_control_loss_tap(state, controller, payload):
+    from copy import deepcopy
+    from rules_engine.action_validation import ActionRejected
+    frame = payload.get('__resolving_item')
+    frame_payload = frame.get('payload') if isinstance(frame, dict) else None
+    receipt = frame_payload.get('__control_source_frame') if isinstance(frame_payload, dict) else None
+    if (not isinstance(frame, dict) or not isinstance(receipt, dict)
+            or set(receipt) != {'stack_id', 'source_card_id', 'cast_controller', 'label', 'source_reference'}
+            or not isinstance(receipt.get('stack_id'), str) or not receipt['stack_id']
+            or not isinstance(receipt.get('source_card_id'), str) or not receipt['source_card_id']
+            or type(receipt.get('cast_controller')) is not int
+            or receipt['cast_controller'] not in state.players
+            or not isinstance(receipt.get('label'), str) or not receipt['label']
+            or type(frame.get('controller')) is not int
+            or frame.get('controller') != controller
+            or frame.get('source_card_id') != receipt.get('source_card_id')
+            or not isinstance(frame.get('id'), str) or not frame['id']
+            or not isinstance(frame.get('label'), str) or not frame['label']
+            or '__resolving_item' in frame_payload
+            or ('__control_source_frame' in payload
+                and payload['__control_source_frame'] != receipt)):
+        raise ActionRejected('Missing or inconsistent retained control resolution frame')
+    reference = receipt.get('source_reference')
+    if (not isinstance(reference, dict)
+            or set(reference) != {'incarnation', 'zone_change_sequence'}
+            or any(type(value) is not int or value < 0 for value in reference.values())):
+        raise ActionRejected('Malformed retained control source reference')
+    card = state.cards[payload['target_card_id']]
+    source_id = receipt['source_card_id']
+    state.delayed_triggers.append({
+        'condition': 'lose_control', 'source_card_id': source_id,
+        'controller': controller, 'label': f"{frame['label']} delayed tap",
+        'effect_key': 'control_loss_tap',
+        'payload': {
+            'card_id': card.id, 'incarnation': object_incarnation(card),
+            'zone_change_sequence': card.zone_change_sequence,
+            '__source_lki': deepcopy(payload.get('__source_lki') or {}),
+            '__delayed_source_reference': deepcopy(reference),
+            '__control_source_frame': deepcopy(receipt),
+            '__resolving_item': deepcopy(frame),
+        },
+    })
+
+
 def resolve_keyword_trigger(state, controller, key, payload):
     cid = payload['card_id']
     card = state.cards.get(cid)
@@ -138,6 +201,11 @@ def resolve_keyword_trigger(state, controller, key, payload):
         })
         return
     if card is None or card.zone != Zone.BATTLEFIELD or object_incarnation(card) != payload['incarnation']:
+        return
+    if key == 'control_loss_tap':
+        if card.zone_change_sequence == payload['zone_change_sequence']:
+            from effects.handlers import tap_card
+            tap_card(state, controller, {'target_card_id': cid})
         return
     if key == 'referenced_pt_buff':
         if card.zone_change_sequence != payload['zone_change_sequence']:

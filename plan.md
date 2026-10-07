@@ -89,15 +89,14 @@ Full corpus, lifecycle and release acceptance remain unfinished.
 
 ### Current Evidence-Driven Priorities
 
-- [ ] Repair Ray's independent actual-resolution-controller and superseded
-  temporary-control cache bugs. Eight paid copy episodes reproduce two defects;
-  two separate paid Dominate episodes expose persistent-control reversion.
-  Keep the immutable witnesses and distinguish delayed-trigger priority from
-  obsolete first-cleanup expectations. No current HTTP qualification follows.
-- [ ] Retain genuine physical source provenance and deliver the actual popped
-  resolving frame for Ray copies. A normal-cast receipt alone is insufficient;
-  a copied spell remains independent when its original is countered. Shared
-  resolver changes require producer/consumer qualification before Ray149.
+- [x] Repair Ray's actual-resolution-controller and superseded temporary-control
+  cache bugs; retain physical announcing provenance separately from the actual
+  popped copied-spell frame. Current composition passes 199 pure checks, then
+  322 checks across 17 whole isolated-SQL modules and 12 dedicated HTTP cases.
+  The eight actual desired copy cases pass unchanged. Preserve delayed-trigger
+  priority, counterability and immutable historical ledgers; original Ray149
+  remains unstarted/HOLD. General control layers and full browser games remain
+  open. [Current acceptance](docs/testing/control-source-frame-current-composition.md).
 - [x] Qualify bounded temporary characteristics through checked HTTP actions and cold
   SQLite restore. Published `7dfbd51` passes seven whole pure modules / 232 checks;
   the exact parent source-only HTTP copy passes all 40 checks, including eight

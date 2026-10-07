@@ -252,6 +252,22 @@ def compile_optional_land_instruction(instruction: str) -> tuple[str, dict[str, 
     ]}
 
 
+def _infer_temporary_control_instruction(oracle, controller, action_targets):
+    prefix = r'untap target creature an opponent controls and gain control of it until end of turn'
+    if not re.match(prefix, oracle, re.I):
+        return None
+    if not re.fullmatch(
+        prefix + r'\.\s*that creature gains haste until end of turn\.\s*'
+        r'when you lose control of the creature, tap it\.', oracle.strip(), re.I,
+    ):
+        return 'noop', {'__unsupported_instruction': oracle}
+    return 'temporary_control_instruction', {
+        'target_card_id': action_targets.get('target_card_id'),
+        'new_controller': controller, 'until_end_of_turn': True,
+        'untap': True, 'haste': True, 'tap_on_control_loss': True,
+    }
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,
@@ -285,6 +301,9 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    temporary_control = _infer_temporary_control_instruction(oracle, controller, action_targets)
+    if temporary_control is not None:
+        return temporary_control
     from rules_engine.temporary_characteristics import temporary_characteristics_candidate, compile_temporary_characteristics
     if temporary_characteristics_candidate(oracle):
         compiled = compile_temporary_characteristics(oracle, action_targets)

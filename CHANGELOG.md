@@ -2,6 +2,13 @@
 
 ## Backend Composition - 2026-10-07
 
+- Compose retained Ray announcing/resolving frames, copied-spell controller
+  fidelity and counterable control-loss taps. Current gates: 199 pure passes;
+  17 whole isolated-SQL modules / 322 passes; 12 dedicated HTTP passes. Preserve
+  earlier IO-guard/setup ledgers and first-cleanup timing witnesses. Explicitly
+  close shared test snapshot readers; no gameplay assertion changes. Original
+  Ray149 remains on hold; no full browser/server-restart/control-layer claim.
+
 - Align sourced, complete fixed-cost Suspend surfaces with bounded runtime
   admission. Four whole current modules pass 136 checks in 10.01s; unknown/variable
   bodies, legacy context-free callers and independent warnings remain conservative.

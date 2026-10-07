@@ -2,6 +2,7 @@
 import json
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from copy import deepcopy
 
 import pytest
@@ -39,7 +40,7 @@ def persist(controller):
 
 
 def snapshot(controller):
-    with sqlite3.connect(DATABASE_PATH) as connection:
+    with closing(sqlite3.connect(DATABASE_PATH)) as connection:
         database = list(connection.iterdump())
     return json.dumps(serialize_match_snapshot(controller.state), sort_keys=True), deepcopy(main._controller_snapshot(controller)), database
 

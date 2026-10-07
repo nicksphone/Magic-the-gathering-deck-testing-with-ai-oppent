@@ -39,6 +39,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "shuffle_graveyard_into_library": handlers.shuffle_graveyard_into_library,
     "choose_graveyard_return": handlers.choose_graveyard_return,
     "change_control": handlers.change_control,
+    "temporary_control_instruction": handlers.temporary_control_instruction,
     "destroy_all_creatures": handlers.destroy_all_creatures,
     "exile_all_creatures": handlers.exile_all_creatures,
     "exile_nonland_until_source_leaves": handlers.exile_nonland_until_source_leaves,
@@ -152,7 +153,7 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
         from rules_engine.keyword_triggers import schedule_next_turn_draw
         schedule_next_turn_draw(state, controller, payload)
         return
-    if effect_key in {'undying_return', 'exalted_buff', 'decayed_attack', 'decayed_sacrifice', 'bushido_buff', 'rampage_buff', 'flanking_buff', 'referenced_pt_buff'}:
+    if effect_key in {'undying_return', 'exalted_buff', 'decayed_attack', 'decayed_sacrifice', 'bushido_buff', 'rampage_buff', 'flanking_buff', 'referenced_pt_buff', 'control_loss_tap'}:
         from rules_engine.keyword_triggers import resolve_keyword_trigger
         resolve_keyword_trigger(state, controller, effect_key, payload)
         return
