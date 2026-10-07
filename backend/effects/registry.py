@@ -90,6 +90,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "bind_creature_spell_entry_counter": handlers.bind_creature_spell_entry_counter,
     "put_green_creature_from_hand": handlers.put_green_creature_from_hand,
     "temporary_pt_buff": handlers.temporary_pt_buff,
+    "resource_scaled_temporary_pt_buff": handlers.resource_scaled_temporary_pt_buff,
     "temporary_pt_buff_all": handlers.temporary_pt_buff_all,
     "sacrifice": handlers.sacrifice,
     "tap": handlers.tap_card,

@@ -318,6 +318,28 @@ def _infer_closed_damage_instruction(oracle: str, source_name: str, action_targe
     return unsupported
 
 
+def _infer_resource_scaled_target_pt(oracle, action_targets):
+    body = oracle.strip()
+    if not re.match(r'target creature gets [+-]x/[+-]x\b', body, re.I):
+        return None
+    unsupported = ('noop', {'__unsupported_instruction': oracle})
+    match = re.fullmatch(
+        r'target creature gets -x/-x until end of turn, where x is twice the number of '
+        r'([a-z][a-z-]*) tokens you control\.?(?:\s+activate only as a sorcery\.?)?', body, re.I)
+    token = named_artifact_token(match[1]) if match else None
+    if token is None:
+        return unsupported
+    from rules_engine.card_types import printed_card_types
+    line = re.split(r'\s+[\u2014\u2013-]\s+', token['type_line'], maxsplit=1)
+    if ('Artifact' not in printed_card_types(token['type_line']) or len(line) != 2
+            or match[1].casefold() not in {word.casefold() for word in line[1].split()}):
+        return unsupported
+    return 'resource_scaled_temporary_pt_buff', {
+        'target_card_id': action_targets.get('target_card_id'),
+        'token_subtype': match[1].casefold(), 'power_per_token': -2, 'toughness_per_token': -2,
+    }
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,
@@ -351,6 +373,9 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    resource_scaled_pt = _infer_resource_scaled_target_pt(oracle, action_targets)
+    if resource_scaled_pt is not None:
+        return resource_scaled_pt
     from rules_engine.next_creature_entry_trigger import compile_instruction
     next_entry = compile_instruction(oracle, getattr(card, 'source_oracle_text', None))
     if next_entry is not None:

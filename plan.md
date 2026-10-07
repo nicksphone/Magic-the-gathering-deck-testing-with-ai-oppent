@@ -366,3 +366,12 @@ lifespans, strict runtime stub provenance and quiet resource closure. Earlier
 cold and failed warm ledgers remain distinct. See
 `docs/testing/offline-assets-cold-component.md`. This does not close current-
 source offline/browser fallback, full Gate 1.7 or overall release acceptance.
+
+## 2026-10-07 Resource-Scaled P/T Checkpoint
+
+Current native-backend composition now admits the complete named-artifact-token
+resource-scaled debuff and resolves its count after actual responses. Five whole
+pure modules passed all 103 cases in 81.81 seconds; applied product/dependency
+bytes match the tested source and native bindings remain intact. See
+`docs/testing/resource-scaled-pt-current.md`. The mixed HTTP neighbor cohort,
+broader variable P/T families, browser and full release remain unqualified.

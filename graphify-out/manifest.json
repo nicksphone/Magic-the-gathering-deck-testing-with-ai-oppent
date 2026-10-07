@@ -384,15 +384,15 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1791359491.7805445,
-    "seen": 1791359579.1633782,
-    "ast_hash": "df3bd8bdbc9af301c4b6884238e13bf4",
+    "mtime": 1791361562.2194679,
+    "seen": 1791361675.6224523,
+    "ast_hash": "12be5e82c28a6b18e932216800161cd5",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1791359491.7815447,
-    "seen": 1791359579.1633801,
-    "ast_hash": "0623ba79a4f535aada4f2eb204e71ee8",
+    "mtime": 1791361562.2194679,
+    "seen": 1791361675.622455,
+    "ast_hash": "6497784906f0a54461e7f160bb2ee71b",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791359491.7805445,
-    "seen": 1791359579.1635427,
-    "ast_hash": "19fd9fc674306e9e69b3a4da790aa7c7",
+    "mtime": 1791361562.2194679,
+    "seen": 1791361675.6226156,
+    "ast_hash": "ad9eecf6919eb30d6d015bfa8506ce27",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791359624.556362,
-    "seen": 1791360307.6778085,
-    "ast_hash": "dc496affc9a36e45cfb3d3fe1a62b7c5",
+    "mtime": 1791361603.2608192,
+    "seen": 1791361675.6266983,
+    "ast_hash": "5c129886ec8344d976ac4293eddfd440",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13092,9 +13092,9 @@
     "semantic_hash": ""
   },
   "docs/testing/offline-assets-cold-component.md": {
-    "mtime": 1791358909.695159,
-    "seen": 1791359579.1674066,
-    "ast_hash": "7bcd27b6b15b804d86e128feacb8b601",
+    "mtime": 1791361255.1593091,
+    "seen": 1791361675.626406,
+    "ast_hash": "4c6857fd64f5bca774cd65a04b050487",
     "semantic_hash": ""
   },
   "audit/exile-counter-body/body-goldens/test_full_body_cda.py": {
@@ -13233,6 +13233,72 @@
     "mtime": 1791359624.555362,
     "seen": 1791360307.6774843,
     "ast_hash": "f0b220bab124fb3a8b4bb516d5054445",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/bloodtithe_resource_debuff/bloodtithe-harvester.json": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.6229038,
+    "ast_hash": "6893c25d23c8224b09714216089079b8",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/bloodtithe_resource_debuff/bloodtithe-rulings.json": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.622906,
+    "ast_hash": "98fec80c8fc7ed4e09a7caa2ce9a628a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/bloodtithe_resource_debuff/colossal-dreadmaw.json": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.622908,
+    "ast_hash": "d46172f6396c42ff1c202eda1cb1a70a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/bloodtithe_resource_debuff/giant-growth.json": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.6229105,
+    "ast_hash": "31353109a4347a08aab0782daa157d23",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/bloodtithe_resource_debuff/provenance.json": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.6229122,
+    "ast_hash": "b90fe145205dcdcd3dbad00660d27996",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_bloodtithe_resource_debuff_audit.py": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.6242554,
+    "ast_hash": "55c356ec251da097f24abb1ecdbd3791",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_resource_scaled_pt_boundaries.py": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.6250508,
+    "ast_hash": "35ee616d52d833720b0214a07b971155",
+    "semantic_hash": ""
+  },
+  "docs/testing/bloodtithe-resource-debuff-audit.md": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.6260097,
+    "ast_hash": "66061dd7d549da1abe018d45b67bf17f",
+    "semantic_hash": ""
+  },
+  "docs/testing/native-type-note-controls.md": {
+    "mtime": 1791360690.4251127,
+    "seen": 1791361675.6263766,
+    "ast_hash": "2737fc7407e1433db42232bfe0eaff1c",
+    "semantic_hash": ""
+  },
+  "docs/testing/resource-scaled-pt-current.md": {
+    "mtime": 1791361603.2598193,
+    "seen": 1791361675.626474,
+    "ast_hash": "1e55525982fcc021ddc89e3a2469d5b0",
+    "semantic_hash": ""
+  },
+  "docs/testing/resource-scaled-pt-product-stage.md": {
+    "mtime": 1791361562.2214677,
+    "seen": 1791361675.6264758,
+    "ast_hash": "e73268aa5ca33a39afb9c10cd0c7613d",
     "semantic_hash": ""
   }
 }

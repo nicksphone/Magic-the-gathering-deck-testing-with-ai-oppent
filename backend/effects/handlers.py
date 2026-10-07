@@ -2627,6 +2627,25 @@ def put_green_creature_from_hand(state: MatchState, controller: int, payload: di
     state.log.append(f"{player.name} puts {card.name} from hand onto the battlefield.")
 
 
+def resource_scaled_temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.land_types import effective_type_line
+    subtype = payload['token_subtype'].casefold()
+    count = 0
+    for cid in state.players[controller].battlefield:
+        card = state.cards.get(cid)
+        if (card is None or card.zone != Zone.BATTLEFIELD or card.controller != controller
+                or not card.is_token or 'Artifact' not in effective_types(state, card)):
+            continue
+        line = re.split(r'\s+[\u2014\u2013-]\s+', effective_type_line(state, card), maxsplit=1)
+        if len(line) == 2 and subtype in {word.casefold() for word in line[1].split()}:
+            count += 1
+    # Responses have finished; resolve once using the retained ability controller.
+    temporary_pt_buff(state, controller, {
+        **payload, 'power': count * payload['power_per_token'],
+        'toughness': count * payload['toughness_per_token'],
+    })
+
+
 def temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if '__self_buff_reference' in payload:

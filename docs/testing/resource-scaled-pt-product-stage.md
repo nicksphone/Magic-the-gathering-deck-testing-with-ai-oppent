@@ -1,0 +1,9 @@
+# Resource-scaled targeted P/T: blocked product stage
+
+Immutable9437 + unchanged original e922 audit. Approved NEW closed compiler/helper + ONE early infer call, NEW resolver handler + ONE registry entry only. Scope byte proof proves removing the authorized additions reconstructs every byte of each old file. No hints/costs/AI/schema/events/stack changes.
+
+Current whole cohort103:85PASS18FAIL77.80s, exit1. Original30:16PASS14FAIL. Old whole44:44PASS. ONE NEW boundary module29:25PASS4FAIL. No exclusions/xfails/errors/skips, all pre-import native/public SQL/socket canaries pass. All failures are audit activate() accessing nonexistent StackItem.is_spell AFTER successful admitted paid activation, not new runtime count defects. Original assertions untouched; further qualification STOPPED. Declared pure continuous/type/targeting neighbor cohort UNEXECUTED after first red.
+
+Closed helper carries only captured known artifact-token subtype and signed per-token coefficients; no compile-time count, named-card dispatch, announcementX/defaulttarget/controller guess. Candidate anchored before clause splitting/loose rewards, negative tails diagnose full original instruction. Real full creature ETB unaffected. Resolver counts current BF actualcontroller+is_token+Artifact+exact subtype once and delegates numeric temporary_pt_buff with ALL existing payload fields retained. No descriptor authenticity or new serialization/schema certification.
+
+Compiler probes for alternate canonical token subtypes and typed structural mocks are unit interfaces, not invented playable Oracle. Paid count/departure/response/sourceGY/private/restart claims remain unqualified behind fixture assertion. Narrow separate test-only correction proposed in evidence/FIXTURE-BLOCKER.md, NOT applied. Historical58/16 audit remains immutable in separate NFS archive.

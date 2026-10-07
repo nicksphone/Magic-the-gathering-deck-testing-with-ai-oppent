@@ -1,0 +1,74 @@
+{
+  "sources": [
+    {
+      "path": "tests/fixtures/bloodtithe_resource_debuff/bloodtithe-harvester.json",
+      "sha256": "72c160fdaf14546cf6b6fc5edc026c52c5215d42b1ad8c49e975d663bd05493b",
+      "provider": "Scryfall",
+      "uri": "https://api.scryfall.com/cards/ae4aec0d-c853-44e6-9f51-cbecf413ea14",
+      "intake_utc": "2026-10-07T06:52:52.354267+00:00",
+      "full_raw_unmodified": true
+    },
+    {
+      "path": "tests/fixtures/bloodtithe_resource_debuff/bloodtithe-rulings.json",
+      "sha256": "d2542393f83ac6dacfcd4c254812058fbb3e35339cf8bda00e850c9478cd8abc",
+      "provider": "Scryfall",
+      "uri": "https://api.scryfall.com/cards/ae4aec0d-c853-44e6-9f51-cbecf413ea14/rulings",
+      "intake_utc": "2026-10-07T06:52:52.354491+00:00",
+      "full_raw_unmodified": true
+    },
+    {
+      "path": "tests/fixtures/bloodtithe_resource_debuff/giant-growth.json",
+      "sha256": "215621f582dde88013d5065eedf856e1e0f53098fb21076f75e6b094346b5195",
+      "provider": "Scryfall",
+      "uri": "https://api.scryfall.com/cards/fd1f95bf-48ea-455a-8a6c-0249b11c8900",
+      "intake_utc": "2026-10-07T06:52:52.354681+00:00",
+      "full_raw_unmodified": true
+    },
+    {
+      "path": "card_data/builtin_oracle_seed.json",
+      "sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+      "origin": "immutable9437 committed canonical dependency",
+      "bytes_unmodified": true
+    },
+    {
+      "path": "card_data/builtin_token_seed.json",
+      "sha256": "9a42fddd41167cccc0e931f49bfbe437a03032670ee819c6277408f83d0b7200",
+      "origin": "immutable9437 committed canonical dependency",
+      "bytes_unmodified": true
+    },
+    {
+      "path": "tests/fixtures/soulscar_protection_boundaries/naturalize.json",
+      "sha256": "15b8dfe1ff13351ba7f0f8f42457498685a162e68c064bd73b7d5fc893f7fc7b",
+      "origin": "immutable9437 committed canonical dependency",
+      "bytes_unmodified": true
+    },
+    {
+      "path": "tests/fixtures/favor_target_lifecycle/cloudshift.json",
+      "sha256": "a6477d60b641d708f9447b8f53637a6701b02531fce76c6b04f9cb0fc6ded47b",
+      "origin": "immutable9437 committed canonical dependency",
+      "bytes_unmodified": true
+    },
+    {
+      "path": "tests/fixtures/favor_target_lifecycle/unsummon.json",
+      "sha256": "9affc85f38bc98cec2218a89bbdbbc0dee444cb3151be63ecad6ee30fd0b66de",
+      "origin": "immutable9437 committed canonical dependency",
+      "bytes_unmodified": true
+    },
+    {
+      "path": "tests/fixtures/soulscar_protection_boundaries/dress-down.json",
+      "sha256": "ce870da33fbfd601454cb5b7da3fcf4b5209d04941e6e555b2d5c1fc9ed7d3ab",
+      "origin": "immutable9437 committed canonical dependency",
+      "bytes_unmodified": true
+    },
+    {
+      "path": "tests/fixtures/bloodtithe_resource_debuff/colossal-dreadmaw.json",
+      "sha256": "a0522225c98f2ddc0685342e9ee7bfafbfd854c597572098ceeabcfd88cd60ac",
+      "uri": "https://api.scryfall.com/cards/8059c52b-5d25-4052-b48a-e9e219a7a546",
+      "provider": "Scryfall",
+      "intake_utc": "2026-10-07T06:53:28.712733+00:00",
+      "full_raw_unmodified": true
+    }
+  ],
+  "source_git": "9437de9549898961e5d29f3eab89741fc511913a",
+  "no_oracle_edits": true
+}
