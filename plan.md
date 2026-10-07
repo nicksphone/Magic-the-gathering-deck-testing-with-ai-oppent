@@ -348,3 +348,12 @@ qualification: five whole pure modules, 92 passes in 96.18 seconds, with source
 hashes unchanged during execution. See
 `docs/testing/fable-optional-linked-discard-current.md`. HTTP/SQLite/browser,
 Reflection's copy ability and broader release gates remain unverified here.
+
+## 2026-10-07 Native Type-Note Control Checkpoint
+
+The existing mechanic button route now exposes explicit offered creature-type
+choices for both seats. Actual backend public views and React-rendered callbacks
+pass the configured frontend test chain, typecheck, lint and production build.
+See `docs/testing/native-type-note-controls.md` for the fixture failure ledger
+and scope. This closes the identified control-routing gap, not manual browser,
+full-game, BO3, copied-bind/APNAP or overall release acceptance.
