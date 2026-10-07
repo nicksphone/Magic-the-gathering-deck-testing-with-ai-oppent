@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791359491.7805445,
-    "seen": 1791359579.1634836,
-    "ast_hash": "003697016e9aad5e0470e86f60c583af",
+    "mtime": 1791404585.4812791,
+    "seen": 1791404693.5350554,
+    "ast_hash": "e1dc63b5bbeafcd783f7cecf00655306",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791361562.2194679,
-    "seen": 1791361675.6226156,
-    "ast_hash": "ad9eecf6919eb30d6d015bfa8506ce27",
+    "mtime": 1791404585.4812791,
+    "seen": 1791404693.5351155,
+    "ast_hash": "c3a081a6f54b65afe99b0f3d8ffd888d",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791401670.49805,
-    "seen": 1791401743.4221945,
-    "ast_hash": "121f6230aee4a7ece82a74ee17432f32",
+    "mtime": 1791404616.8058646,
+    "seen": 1791404693.53925,
+    "ast_hash": "843e14b5375936fa5b8c6b81598d0388",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13485,6 +13485,36 @@
     "mtime": 1791401782.3837378,
     "seen": 1791403029.0625415,
     "ast_hash": "4e4aceb87bba7e8500fd99cfb7570d1c",
+    "semantic_hash": ""
+  },
+  "audit/gate2-domain-compiler/domain_paid_support.py": {
+    "mtime": 1791404585.484279,
+    "seen": 1791404693.5347466,
+    "ast_hash": "e4bbda85c1dc7fbfb2da86e1e788ca99",
+    "semantic_hash": ""
+  },
+  "audit/gate2-domain-compiler/inventory.py": {
+    "mtime": 1791404585.484279,
+    "seen": 1791404693.534751,
+    "ast_hash": "06195f780815e90dc9e8262167bebee3",
+    "semantic_hash": ""
+  },
+  "audit/gate2-domain-compiler/test_domain_original_paid_goldens.py": {
+    "mtime": 1791404585.484279,
+    "seen": 1791404693.5347545,
+    "ast_hash": "e44cca5ac5470bafa2d6a0175ddd50f1",
+    "semantic_hash": ""
+  },
+  "audit/gate2-domain-compiler/test_domain_paid_continuations.py": {
+    "mtime": 1791404585.484279,
+    "seen": 1791404693.5347571,
+    "ast_hash": "845c8bd0d784219ab730a5ebffbc2b92",
+    "semantic_hash": ""
+  },
+  "docs/gate2-domain-compiler-handoff.md": {
+    "mtime": 1791404585.485279,
+    "seen": 1791404693.5386102,
+    "ast_hash": "b8b3df735567c3d06b1da1c40a96b7d4",
     "semantic_hash": ""
   }
 }

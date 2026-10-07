@@ -15,6 +15,7 @@ substitute for qualification of the final combined source.
 | Frontend dependencies | Fresh locked install, typecheck, lint, configured test chain and build passed; full/production advisory scans reported zero | Clean frontend component, not a clean-machine end-to-end installation |
 | Python installer maintenance | Qualified EnC3vJ runtime pip 24.0 -> 26.2.1; pip check passed; all non-pip file hashes and package versions equal | Installer-only change; no application gate inferred from pip check |
 | Pending-stack privacy | Current `db16186` composition: 22 whole pure modules / 950 passes; parent applied tested bytes | Mixed HTTP/SQL and complete private hand-to-library response remain separate |
+| Domain continuations | Fresh immutable `607a70b` plus the surgical compiler delta: two whole modules / 36 passes, 10.60s; paid Herd Migration search-then-life and Leyline Binding linked exile | Coverage warnings unchanged; no final-union, SQL or whole-card certificate |
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 
@@ -24,6 +25,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `diagnostics/dependency-audit/retained2331-fresh-20261007-v8A4Tj/`
 - `parent-integration/pip-only-maintenance-20261007/`
 - `parent-integration/pending-source-privacy-current-db161-20261007/`
+- `parent-integration/domain-compilers-current-607a70-20261007/`
 
 Read each report's source pin, failure history, isolation limits and raw evidence
 before transferring a result. Closed SQLite evidence must be copied locally for

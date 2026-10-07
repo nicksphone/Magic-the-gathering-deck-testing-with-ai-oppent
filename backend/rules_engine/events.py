@@ -2070,6 +2070,26 @@ def _trigger_from_oracle(
             if entry:
                 self_instructions.append((line.strip(), entry[1]))
     if self_instructions:
+        linked = [body for _, body in self_instructions if re.match(
+            r'exile target (?:creature|permanent|nonland permanent|artifact|enchantment)'
+            r'(?: an opponent controls| you control)? until\b', body, re.I)]
+        if linked:
+            from rules_engine.oracle_effects import infer_effect_from_oracle
+            compiled = None
+            if len(self_instructions) == 1 and oracle.strip() == self_instructions[0][0]:
+                clause, instruction = self_instructions[0]
+                proxy = copy(source)
+                proxy.oracle_text, proxy.card_faces, proxy.selected_face_index = instruction, [], None
+                key, data = infer_effect_from_oracle(state, proxy, controller, report_unsupported=False)
+                if key == 'exile_until_source_leaves':
+                    compiled = key, data
+            key, data = compiled if compiled is not None else ('noop', {
+                '__unsupported_trigger_instruction': '\n'.join(linked)})
+            data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
+            if compiled is not None:
+                data['__trigger_resolution_text'] = instruction
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
         from rules_engine.oracle_effects import (compile_optional_land_instruction,
                                                  optional_land_instruction_candidate)
         if any(optional_land_instruction_candidate(body) for _, body in self_instructions):

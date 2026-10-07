@@ -735,6 +735,9 @@ def infer_effect_from_oracle(
         return 'destroy_with_controller_search', {'target_card_id': action_targets.get('target_card_id'),
             'search_payload': {'contains': 'land_with_basic_type', 'destination': 'battlefield',
                                'count': 1, 'shuffle': True, 'optional': True}}
+    search_life = compile_search_life_instruction(oracle)
+    if search_life is not None:
+        return search_life
     search_effect = _infer_search_effect(oracle, action_targets)
     if search_effect is not None:
         if search_effect[1].get('__unsupported_targeted_search') and report_unsupported:
@@ -985,6 +988,24 @@ def _infer_immediate_return_effect(state, oracle, action_targets):
     if match['domain'] == 'nontoken permanent':
         payload['requires_nontoken'] = True
     return 'exile_return_immediate', payload
+
+
+def compile_search_life_instruction(text):
+    """Keep the complete post-search reward in the existing ordered continuation."""
+    body = re.sub(r'\s+', ' ', without_reminder_text(text)).strip()
+    search = re.match(r'search your library for (?:a|an|one) basic land card, reveal it, '
+                      r'put it into your hand, then shuffle\.\s+(.+)', body, re.I)
+    if search is None:
+        return None
+    reward = re.fullmatch(r'you gain (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) life\.',
+                          search[1], re.I)
+    if reward is None:
+        return 'noop', {'__unsupported_instruction': text}
+    key, payload = _infer_search_effect(body[:search.start(1)].strip().lower(), {})
+    return 'effect_sequence', {'effects': [
+        {'effect_key': key, 'payload': payload},
+        {'effect_key': 'gain_life', 'payload': {'amount': _parse_count_token(reward[1])}},
+    ]}
 
 
 def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
