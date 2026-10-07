@@ -18,6 +18,7 @@ substitute for qualification of the final combined source.
 | HAND source and entry damage | Exact ten-file production union: 21 whole modules / 673 passes, 255.17s; original assertions and 36 serializer children verified | Pure component only; final coverage union, mixed HTTP/SQL and browser remain separate |
 | Domain continuations | Fresh immutable `607a70b` plus the surgical compiler delta: two whole modules / 36 passes, 10.60s; paid Herd Migration search-then-life and Leyline Binding linked exile | Coverage warnings unchanged; no final-union, SQL or whole-card certificate |
 | Domain admission | Exact coverage `eaf84aa` -> `cd57f9b`: 102 passes plus eight independent complete-spell/Flash checks; 155 ready records, known-gap cards 12 -> 10 | Only complete sourced Herd Migration and Leyline Binding bodies; unrelated warnings retained; no universal semantics certificate |
+| Three complete-body admissions | Exact coverage `cd57f9b` -> `2b1217d`: same 133-case cohort passes; canonical linked Landfall damage, paid mass exile/Incubator and paid Flying/observer/transform checks; actual 155-card gaps 10 -> 7 | Only the qualified complete sourced bodies; all unrelated diagnostics retained; final HAND/Domain/admission union remains separate |
 | Standalone storage recovery | Pinned `29e86e4`: three unchanged whole modules / 43 passes, 6.79s; retention rollback/protection, WAL backup and actual controller restore | Not online cache/tombstone coordination, quotas/cancellation, clean-machine or soak acceptance |
 | Private HTTPS operator | Pinned `0e57baf` plus exact four new Caddy files: TLS/auth, 26 atomic Origin rejections, incomplete-upload 403, lock and real restart/recovery passed | Native loopback single-user component only; not current combined engine, browser, LAN/public or clean-machine acceptance |
 
@@ -33,6 +34,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `parent-integration/hand-domain-applied-current-6e0b420-20261007/`
 - `parent-integration/domain-compilers-current-607a70-20261007/`
 - `gate2-domain-admission/mtg-gate2-domain-coverage-packet-Rnc4a7-parent-eaf84/`
+- `gate2-three-admission/mtg-gate2-three-packet-2af920-YGLnwn-2af920/`
 - `parent-integration/storage-acceptance-current-29e86-20261007/`
 - `diagnostics/operator-packaging/caddy-0e57-full-duplex-qualified-20261007-wVfKHc/`
 
@@ -45,8 +47,8 @@ inspection; never execute a database on NFS.
 1. Complete pending-source privacy mixed HTTP/SQL and final-union acceptance.
    The current pure qualification and exact parent integration are documented
    in `pending-stack-privacy-current.md`; they do not cover those other gates.
-2. Resolve or explicitly classify the 10 remaining hydrated preflight gaps in the 155-card
-   inventory with genuine canonical cost/target/execution tests. The other 145
+2. Resolve or explicitly classify the seven remaining hydrated preflight gaps in the 155-card
+   inventory with genuine canonical cost/target/execution tests. The other 148
    cards lacking a known admission gap are not fully semantics-certified.
 3. Requalify current built UI, offline assets, BO3 and recovery with the exact
    origin configuration and fresh locked dependencies. Test supported actions

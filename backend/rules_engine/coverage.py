@@ -138,6 +138,24 @@ def _paid_body_admission(oracle_text, metadata, card_name, card_faces):
                 r'When this enchantment enters, exile target nonland permanent an opponent controls '
                 r'until this enchantment leaves the battlefield\.', body, re.I)):
         return {'domain'}
+    if (metadata.get('type_line') == 'Instant'
+            and metadata.get('mana_cost') == '{R}{R}'):
+        from rules_engine.linked_targets import linked_damage_instruction
+        if linked_damage_instruction(body, name) == {'ordinary_amount': 1, 'landfall_amount': 3}:
+            return {'controller-linked damage targets', 'conditional land-entry damage'}
+    reminder = (
+        r' \(Create an Incubator token with X \+1/\+1 counters on it and '
+        r'"\{2\}: Transform this token\." It transforms into a 0/0 Phyrexian artifact creature\.\)')
+    if (metadata.get('type_line') == 'Sorcery'
+            and metadata.get('mana_cost') == '{3}{W}{W}' and re.fullmatch(
+                r'Exile all creatures\. Incubate X, where X is the number of creatures '
+                r'exiled this way\.' + reminder, body, re.I)):
+        return {'incubate'}
+    if (re.fullmatch(r'Creature [\u2014-] Phyrexian Shark', str(metadata.get('type_line') or ''))
+            and metadata.get('mana_cost') == '{2}{U}' and re.fullmatch(
+                r'Flying Whenever you cast a noncreature spell, incubate X, '
+                r"where X is that spell's mana value\." + reminder, body, re.I)):
+        return {'incubate'}
     return set()
 
 

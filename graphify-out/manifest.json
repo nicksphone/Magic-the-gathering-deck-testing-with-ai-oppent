@@ -624,9 +624,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/coverage.py": {
-    "mtime": 1791407249.6436663,
-    "seen": 1791407340.6501746,
-    "ast_hash": "1813218f410efa00eb0bbf15fb231552",
+    "mtime": 1791409929.3206859,
+    "seen": 1791410051.5774062,
+    "ast_hash": "cb023611a61689764d0a940ae8bb143d",
     "semantic_hash": ""
   },
   "backend/rules_engine/creature_subtypes.json": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791409558.923322,
-    "seen": 1791409660.2154691,
-    "ast_hash": "4d8006ef6fd0ced557b2674e12fd91e9",
+    "mtime": 1791409969.6441824,
+    "seen": 1791410051.5828974,
+    "ast_hash": "de2667f5f7eb9878a4ce8aedf3fadd86",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13617,6 +13617,42 @@
     "mtime": 1791408021.4196315,
     "seen": 1791408095.9165645,
     "ast_hash": "7762cd3eb2484e882644d6863f8ee7d2",
+    "semantic_hash": ""
+  },
+  "audit/gate2-three-admission/fixtures/three-parent-baseline.json": {
+    "mtime": 1791409929.323686,
+    "seen": 1791410051.5770378,
+    "ast_hash": "f73de026158afae49aacd1e4eb34b814",
+    "semantic_hash": ""
+  },
+  "audit/gate2-three-admission/test_seedshark_paid_flying.py": {
+    "mtime": 1791409929.3246858,
+    "seen": 1791410051.5770419,
+    "ast_hash": "b1e5dc2a4b8041776c80fc46628ccb46",
+    "semantic_hash": ""
+  },
+  "audit/gate2-three-admission/test_three_admission.py": {
+    "mtime": 1791409929.3246858,
+    "seen": 1791410051.5770452,
+    "ast_hash": "9ecd9d0bbffeac30537739ba383d5c29",
+    "semantic_hash": ""
+  },
+  "audit/gate2-three-admission/test_three_paid_originals.py": {
+    "mtime": 1791409929.3246858,
+    "seen": 1791410051.5770488,
+    "ast_hash": "327c70dd300c2ea5d1db08f98f5d64a0",
+    "semantic_hash": ""
+  },
+  "docs/gate2-three-admission-handoff.md": {
+    "mtime": 1791409929.325686,
+    "seen": 1791410051.5820737,
+    "ast_hash": "98bc868e85b25a16739e70d5c1dbcef9",
+    "semantic_hash": ""
+  },
+  "docs/testing/three-admission-current.md": {
+    "mtime": 1791409969.6451824,
+    "seen": 1791410051.5830936,
+    "ast_hash": "309f784371817d63705d4e7689513cf8",
     "semantic_hash": ""
   }
 }
