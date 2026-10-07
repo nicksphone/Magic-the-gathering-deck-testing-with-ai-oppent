@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791404616.8058646,
-    "seen": 1791404693.53925,
-    "ast_hash": "843e14b5375936fa5b8c6b81598d0388",
+    "mtime": 1791405591.1808987,
+    "seen": 1791405681.12098,
+    "ast_hash": "e6b3d7e2cd17759164091c2a3f2a3281",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13515,6 +13515,12 @@
     "mtime": 1791404585.485279,
     "seen": 1791404693.5386102,
     "ast_hash": "b8b3df735567c3d06b1da1c40a96b7d4",
+    "semantic_hash": ""
+  },
+  "docs/testing/storage-current-acceptance.md": {
+    "mtime": 1791405591.1808987,
+    "seen": 1791405681.1210868,
+    "ast_hash": "0b363d7332b52d602d98d6415163bd24",
     "semantic_hash": ""
   }
 }
