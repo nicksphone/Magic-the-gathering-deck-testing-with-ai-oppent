@@ -313,3 +313,13 @@ preserved separately, not treated as an application failure. See
 `docs/testing/frontend-locked-current.md`. Backend offline assets, actual browser
 games, BO3/recovery and deployment remain open; this does not close Gate 1.7 or
 Gate 3 in full.
+
+## 2026-10-07 Fable Linked-Discard Checkpoint
+
+Complete optional self-discard/up-to-N/If-you-do draw-that-many instructions now
+reuse the existing private selected-count continuation, including the full Saga
+chapter envelope used by admission checks. Parent isolated published-source
+qualification: five whole pure modules, 92 passes in 96.18 seconds, with source
+hashes unchanged during execution. See
+`docs/testing/fable-optional-linked-discard-current.md`. HTTP/SQLite/browser,
+Reflection's copy ability and broader release gates remain unverified here.

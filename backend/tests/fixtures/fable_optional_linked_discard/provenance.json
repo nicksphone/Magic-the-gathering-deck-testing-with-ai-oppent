@@ -1,0 +1,23 @@
+{
+  "source_git": "6f9e29ec2e8ea7f1ebb880a4f553960b887edafb",
+  "intake": "https://api.scryfall.com/cards/named?exact=Fable%20of%20the%20Mirror-Breaker",
+  "retrieved_utc": "2026-10-07",
+  "sources": [
+    {
+      "path": "tests/fixtures/fable_optional_linked_discard/fable.json",
+      "sha256": "eaeb03b1cfd89e81a584427d22022ef4025df34946237bbfcd022f434db52f61"
+    },
+    {
+      "path": "card_data/builtin_oracle_seed.json",
+      "sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037"
+    },
+    {
+      "path": "tests/fixtures/linked_discard.json",
+      "sha256": "425703559598cec4fe4bde5b1473854f39eba340e444ef48c544dd0a6dc91fc8"
+    },
+    {
+      "path": "tests/fixtures/soulscar_protection_boundaries/naturalize.json",
+      "sha256": "15b8dfe1ff13351ba7f0f8f42457498685a162e68c064bd73b7d5fc893f7fc7b"
+    }
+  ]
+}

@@ -18,6 +18,15 @@ def linked_discard_gaps(text):
 
 def linked_discard_effect(text):
     text = text.strip().lower()
+    # Coverage checks full chapter lines; resolution compiles the extracted body.
+    match = re.fullmatch(
+        r'(?:[ivx]+(?:\s*,\s*[ivx]+)*\s*[\u2014-]\s*)?you may discard up to '
+        r'(one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.\s*'
+        r'if you do, draw that many cards\.?', text)
+    if match:
+        from rules_engine.oracle_effects import _parse_count_token
+        return {'up_to': True, 'amount': _parse_count_token(match[1]),
+                'followup_effect': {'effect_key': 'draw_cards', 'payload': {}, 'count_field': 'amount'}}
     if not text.startswith('discard '):
         return None
     match = re.fullmatch(r'discard up to (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?, then draw that many cards\.?', text)

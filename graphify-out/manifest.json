@@ -786,9 +786,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/linked_discard.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2178953,
-    "ast_hash": "f605868647108ba089d394d44d099f59",
+    "mtime": 1791354721.6749144,
+    "seen": 1791354798.5015442,
+    "ast_hash": "1a533afa2a90a09e2fd61e3f7a2a369d",
     "semantic_hash": ""
   },
   "backend/rules_engine/linked_exile.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791352911.6021304,
-    "seen": 1791352981.9526756,
-    "ast_hash": "2aed31fc5f8ebfb16a9b4932b1e409c2",
+    "mtime": 1791354721.6769145,
+    "seen": 1791354798.5059514,
+    "ast_hash": "739ec8f0c7d8db0c24370f4f1a1e9f49",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13023,6 +13023,42 @@
     "mtime": 1791352887.9985135,
     "seen": 1791352981.952686,
     "ast_hash": "f087515e76f9db9a72f7787785feb5dc",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/fable_optional_linked_discard/fable.json": {
+    "mtime": 1791354721.6759145,
+    "seen": 1791354798.5021083,
+    "ast_hash": "765e6ab2cbf3286ae3e53145540e33c1",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/fable_optional_linked_discard/provenance.json": {
+    "mtime": 1791354721.6759145,
+    "seen": 1791354798.502111,
+    "ast_hash": "bcd0450e2befc2765d6211026d0d2a9b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_fable_optional_linked_discard.py": {
+    "mtime": 1791354721.6749144,
+    "seen": 1791354798.5035696,
+    "ast_hash": "10f093d577bc367511bbd6422835d978",
+    "semantic_hash": ""
+  },
+  "docs/testing/fable-optional-linked-discard-current.md": {
+    "mtime": 1791354721.6779144,
+    "seen": 1791354798.5053315,
+    "ast_hash": "d7d742d4c296bdf6d32befc4c4fed020",
+    "semantic_hash": ""
+  },
+  "docs/testing/fable-optional-linked-discard.md": {
+    "mtime": 1791354721.6759145,
+    "seen": 1791354798.505334,
+    "ast_hash": "0db9015cc4677d6752ac4ebdb90a12f7",
+    "semantic_hash": ""
+  },
+  "docs/testing/frontend-locked-current.md": {
+    "mtime": 1791353920.0443845,
+    "seen": 1791354798.5053513,
+    "ast_hash": "6f44f8463f0cce61ee673f28807c4161",
     "semantic_hash": ""
   }
 }
