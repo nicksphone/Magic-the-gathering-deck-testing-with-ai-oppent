@@ -980,8 +980,14 @@ class AIAgent:
                 or state.pending_trigger_order):
             return None
         opponent = state.players[3 - player_id]
-        if opponent.hand or opponent.graveyard or opponent.exile:
+        if opponent.hand or opponent.exile:
             return None
+        if opponent.graveyard:
+            from ai.information import decision_view
+            from rules_engine.graveyard_inventory import public_graveyard_inventory
+            public, _ = decision_view(state, player_id, [])
+            if public_graveyard_inventory(public, player_id)['status'] != 'inert':
+                return None
 
         from rules_engine.land_types import BASIC_TYPES, effective_type_line, has_land_type
         from rules_engine.mana_abilities import tap_only_outputs

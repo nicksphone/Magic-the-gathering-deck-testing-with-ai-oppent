@@ -313,6 +313,14 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         if chosen != "keep":
             key, raw_value = chosen.split(":", 1)
             value = int(raw_value) if key == "target_player" else raw_value
+            selected_graveyard_trigger = (copied.effect_key == 'cast_from_graveyard'
+                                          and copied.payload.get('__trigger_target_choice') is True)
+            if selected_graveyard_trigger:
+                from rules_engine.events import trigger_target_options
+                if key != 'target_card_id' or not any(
+                        option.get('target_card_id') == value
+                        for option in trigger_target_options(state, copied)):
+                    return False
             announced = copied.payload.setdefault("__announced_targets", {})
             for old_key in ("target_player", "target_card_id", "target_stack_id"):
                 announced.pop(old_key, None)
@@ -320,6 +328,9 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             announced[key] = value
             copied.payload[key] = value
             refresh([(key,)])
+            if selected_graveyard_trigger:
+                from rules_engine.events import _remember_trigger_target
+                _remember_trigger_target(state, copied)
             if copied.effect_key == 'conditional_instruction':
                 from rules_engine.conditional_instructions import capture_target
                 capture_target(state, copied.payload)

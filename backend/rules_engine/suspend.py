@@ -1,6 +1,7 @@
 """Bounded printed mana-cost Suspend; CR 116.2f and 702.62."""
 from copy import deepcopy
 from collections.abc import Mapping
+from dataclasses import dataclass
 import re
 from types import SimpleNamespace
 
@@ -54,8 +55,96 @@ def diagnostic_surface_admitted(oracle_text, metadata, *, card_name='', card_fac
                 and all(re.fullmatch(r'\d+', str(metadata.get(key))) for key in ('power', 'toughness')))
 
 
+@dataclass(frozen=True)
+class _PrintedSuspend:
+    mana_cost: str
+    fixed_count: int | None = None
+    minimum_x: int | None = None
+
+
+def _printed_suspend(card):
+    fixed = instruction(card)
+    if fixed:
+        return _PrintedSuspend(fixed[1], fixed_count=fixed[0])
+    if (getattr(card, 'layout', '') not in {'', 'normal'}
+            or getattr(card, 'card_faces', None) or 'Creature' not in getattr(card, 'types', [])):
+        return None
+    lines = [line.strip() for line in without_reminder_text(card.oracle_text or '').splitlines() if line.strip()]
+    printed = [line for line in lines if re.match(r'^suspend\b', line, re.I)]
+    match = re.fullmatch(r"Suspend X[\u2014\u2013-](\{X\}(?:\{(?:\d+|[WUBRGCS])\})+)\. X can't be 0\.",
+                         printed[0], re.I) if len(printed) == 1 else None
+    if not match:
+        return None
+    for line in lines:
+        if line == printed[0]:
+            continue
+        if re.search(r'\bsuspend\b|\btime counters?\b', line, re.I) and not re.fullmatch(
+                r"Whenever a time counter is removed from this card while it's exiled, [^\n]+\.", line):
+            return None
+    # Recognition of the keyword does not admit the separately printed abilities.
+    return _PrintedSuspend(match[1].upper(), minimum_x=1)
+
+
+def _finite_x_bound(state, player_id):
+    from rules_engine.costs import ActivatedCost, parse_activated_cost
+    from rules_engine.mana_abilities import free_mana_options, needs_mana_bundles, paid_candidates
+    from rules_engine.mana_restrictions import COLORS, available_pool
+    player = state.players[player_id]
+    context = ('suspend', set())
+    for pool in (player.mana_pool, player.snow_mana_pool):
+        if any(color not in COLORS or type(amount) is not int or amount < 0 for color, amount in pool.items()):
+            return None
+    for lot in player.restricted_mana_pool:
+        if (not isinstance(lot, dict) or lot.get('color') not in COLORS
+                or type(lot.get('amount')) is not int or lot['amount'] < 0
+                or type(lot.get('snow')) is not bool
+                or not isinstance(lot.get('rule'), (dict, type(None)))):
+            return None
+    # These planners can change resources/outputs during payment; no finite
+    # certificate is claimed for them by this keyword-only implementation.
+    if needs_mana_bundles(state) or next(paid_candidates(state, player_id, payment_context=context), None):
+        return None
+    bound = sum(available_pool(player, context)[0].values())
+    for cid in set(player.battlefield):
+        card = state.cards[cid]
+        options = free_mana_options(state, card, payment_context=context)
+        totals = []
+        for spec, _, bundle, _, _ in options:
+            if parse_activated_cost(spec[1]) != ActivatedCost(tap_source=True):
+                return None
+            if any(color not in COLORS or type(amount) is not int or amount < 0 for color, amount in bundle.items()):
+                return None
+            totals.append(sum(bundle.values()))
+        bound += max(totals, default=0)
+    return bound
+
+
+def _maximum_x(state, player_id, parsed):
+    from rules_engine.mana import can_pay_with_pool_and_lands
+    bound = _finite_x_bound(state, player_id)
+    if bound is None or bound < parsed.minimum_x:
+        return None
+
+    def payable(x):
+        return can_pay_with_pool_and_lands(state, player_id, parsed.mana_cost, x_value=x,
+                                          payment_kind='suspend', apply_modifiers=False)
+
+    # A successful out-of-certificate probe is an unsupported resource model,
+    # never permission to keep searching exponentially or return a capped X.
+    if payable(bound + 1) or not payable(parsed.minimum_x):
+        return None
+    low, high = parsed.minimum_x, bound
+    while low < high:
+        middle = (low + high + 1) // 2
+        if payable(middle):
+            low = middle
+        else:
+            high = middle - 1
+    return low
+
+
 def suspended(card):
-    return card.zone == Zone.EXILE and instruction(card) is not None and card.counters.get('time', 0) > 0
+    return card.zone == Zone.EXILE and _printed_suspend(card) is not None and card.counters.get('time', 0) > 0
 
 
 def current(state, payload):
@@ -64,31 +153,45 @@ def current(state, payload):
                     and card.zone_change_sequence == payload.get('sequence')) else None
 
 
-def action_options(state, player_id, card):
+def action_options(state, player_id, card, *, x_value=None):
     if (card.zone != Zone.HAND or card.id not in state.players[player_id].hand
             or state.winner is not None or state.pregame_pending or state.priority_player != player_id
             or state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order
             or state.step == Step.UNTAP or state.step == Step.CLEANUP and not state.cleanup_repeat_required):
         return None
-    parsed = instruction(card)
+    parsed = _printed_suspend(card)
     if parsed is None:
         return None
     from rules_engine.restrictions import can_cast_in_current_timing
     from rules_engine.mana import can_pay_with_pool_and_lands
-    if (not can_cast_in_current_timing(state, card, player_id)[0]
-            or not can_pay_with_pool_and_lands(state, player_id, parsed[1], payment_kind='suspend', apply_modifiers=False)):
+    if not can_cast_in_current_timing(state, card, player_id)[0]:
         return None
-    return {'time_counters': parsed[0], 'mana_cost': parsed[1]}
+    if parsed.minimum_x is not None:
+        if card.owner != player_id or x_value is not None and (type(x_value) is not int or x_value < parsed.minimum_x):
+            return None
+        maximum = _maximum_x(state, player_id, parsed)
+        if maximum is None or x_value is not None and x_value > maximum:
+            return None
+        if x_value is None:
+            return {'mana_cost': parsed.mana_cost, 'time_counters_variable': True,
+                    'choice_schema': {'x_value': {'type': 'integer', 'required': True,
+                                                 'minimum': parsed.minimum_x, 'maximum': maximum}}}
+        return {'time_counters': x_value, 'mana_cost': parsed.mana_cost}
+    if x_value is not None or not can_pay_with_pool_and_lands(
+            state, player_id, parsed.mana_cost, payment_kind='suspend', apply_modifiers=False):
+        return None
+    return {'time_counters': parsed.fixed_count, 'mana_cost': parsed.mana_cost}
 
 
-def take_special_action(state, player_id, card_id):
+def take_special_action(state, player_id, card_id, *, x_value=None):
     card = state.cards.get(card_id)
-    options = action_options(state, player_id, card) if card else None
-    if options is None:
+    options = action_options(state, player_id, card, x_value=x_value) if card else None
+    if options is None or 'time_counters' not in options:
         return False
     from rules_engine.mana import auto_pay_cost
     from game_state.state import allocate_effect_timestamp
-    if not auto_pay_cost(state, player_id, options['mana_cost'], payment_kind='suspend', apply_modifiers=False):
+    if not auto_pay_cost(state, player_id, options['mana_cost'], x_value=x_value if x_value is not None else 0,
+                         payment_kind='suspend', apply_modifiers=False):
         return False
     state.players[player_id].hand.remove(card_id)
     card.move_to_zone(Zone.EXILE)
@@ -109,7 +212,7 @@ def collect_triggers(state, event, payload):
         key = 'suspend_upkeep'
     elif event == 'time_counters_removed' and payload.get('before', 0) > 0 and payload.get('after') == 0:
         card = state.cards.get(payload.get('card_id'))
-        cards = [card] if card is not None and card.zone == Zone.EXILE and instruction(card) else []
+        cards = [card] if card is not None and card.zone == Zone.EXILE and _printed_suspend(card) else []
         key = 'suspend_cast_trigger'
     else:
         return []

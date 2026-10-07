@@ -1,0 +1,83 @@
+[
+  {
+    "file": "kor-firewalker.json",
+    "origin": "backend/tests/fixtures/trigger_context/canonical.jsonl",
+    "source_sha256": "399e57fcbb8616b4a9b2f0e21e0d5c83972cdee1e3d6e4366aa3bd5749f64b5b",
+    "sha256": "8b28ec6beb9cfdc9b24d0bffdc89ee85f63332f87a7c266773899f73e0c11b17",
+    "id": "8dcd4a52-0c8f-4fca-b7dc-c2503794e5a4",
+    "oracle_id": "fb37ff1c-7461-4a16-b27f-6eef0db937fe",
+    "scryfall_uri": "https://scryfall.com/card/a25/21/kor-firewalker?utm_source=api"
+  },
+  {
+    "file": "dress-down.json",
+    "origin": "backend/tests/fixtures/ability_suppression.json",
+    "source_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+    "sha256": "ce870da33fbfd601454cb5b7da3fcf4b5209d04941e6e555b2d5c1fc9ed7d3ab",
+    "id": "04f9f061-67b8-4427-9fcb-b3ccfee8fc5d",
+    "oracle_id": "c1cbbda0-e02b-4b9c-8669-ea87ca629520",
+    "scryfall_uri": "https://scryfall.com/card/mh2/39/dress-down?utm_source=api"
+  },
+  {
+    "file": "black-knight.json",
+    "origin": "backend/tests/fixtures/graveyard_permissions/black-knight.json",
+    "source_sha256": "4adb912c3ee45216caf68ba8ce8ffc4ef579ac06d6971fb104570b30f2c532f5",
+    "sha256": "5e6ce1c70cd62cad1c22de1a3f3df9733cc17fb4342da5fe7093d8a2185b4f02",
+    "id": "db593d4f-d3c1-48ae-a55d-4b61d2cb5cc2",
+    "oracle_id": "9456c5b6-946d-403a-8ed0-dff9f921d98c",
+    "scryfall_uri": "https://scryfall.com/card/me4/71/black-knight?utm_source=api"
+  },
+  {
+    "file": "naturalize.json",
+    "origin": "backend/tests/fixtures/linked_group_untap/canonical.jsonl",
+    "source_sha256": "834ceaee478daccd50ad001746c44b2a83a10eb982a7fe6c3b50ddcb6969f08e",
+    "sha256": "15b8dfe1ff13351ba7f0f8f42457498685a162e68c064bd73b7d5fc893f7fc7b",
+    "id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+    "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+    "scryfall_uri": "https://scryfall.com/card/m19/190/naturalize?utm_source=api"
+  },
+  {
+    "file": "healing-salve.json",
+    "origin": "https://api.scryfall.com/cards/named?exact=Healing%20Salve",
+    "retrieved_utc": "2026-10-07T02:03:29.266Z",
+    "sha256": "bbb9f8e419f944cdab82ddf9eec451ad0b24d138d3d80554128ddbbfdc0d0325",
+    "id": "0ff82aba-9022-4eff-a6dc-67365360d646",
+    "oracle_id": "8da8644c-75a1-4fe9-8e94-900d948d631c",
+    "scryfall_uri": "https://scryfall.com/card/dvd/14/healing-salve?utm_source=api"
+  },
+  {
+    "file": "hornet-sting.json",
+    "origin": "https://api.scryfall.com/cards/named?exact=Hornet%20Sting",
+    "retrieved_utc": "2026-10-07T02:03:29.266Z",
+    "sha256": "fb7b5615edf3fce1bf1171e339b6e9939d41670d8db18d17af0fdd7bb5ba0fbb",
+    "id": "af6b3bf7-bd09-4f0d-a670-2efc1c6d416f",
+    "oracle_id": "25edeff3-7727-4b80-9459-2bb6b8587fb9",
+    "scryfall_uri": "https://scryfall.com/card/m11/181/hornet-sting?utm_source=api"
+  },
+  {
+    "file": "prodigal-sorcerer.json",
+    "origin": "https://api.scryfall.com/cards/named?exact=Prodigal%20Sorcerer",
+    "retrieved_utc": "2026-10-07T02:03:29.267Z",
+    "sha256": "b436e8f1feb53240736805e3c7d23a8a3f22b83efed6a6aa182e4a33df5b2ef5",
+    "id": "50aef269-55f9-4d84-8bc5-29e794297f11",
+    "oracle_id": "5e961d15-5972-4e4b-9385-1cd7cd7c6bbe",
+    "scryfall_uri": "https://scryfall.com/card/ema/67/prodigal-sorcerer?utm_source=api"
+  },
+  {
+    "file": "pyroclasm.json",
+    "origin": "https://api.scryfall.com/cards/named?exact=Pyroclasm",
+    "retrieved_utc": "2026-10-07T02:03:29.267Z",
+    "sha256": "fac4c5237ed8611d5d0a57d2ec349b80d300a25e755ee286f7b3143d0cd1ddba",
+    "id": "4391b0af-2f26-4a45-9e2a-5bd8e9838107",
+    "oracle_id": "e4bcd4ea-e7cd-4471-8f3b-18bb51d3d70c",
+    "scryfall_uri": "https://scryfall.com/card/dsk/149/pyroclasm?utm_source=api"
+  },
+  {
+    "file": "mending-hands.json",
+    "origin": "https://api.scryfall.com/cards/named?exact=Mending%20Hands",
+    "retrieved_utc": "2026-10-07T02:05:43.491Z",
+    "sha256": "31d38e94194cb637921c4c3b2cecfa37923b832812226616e59c6d4caa1d4980",
+    "id": "53709642-9d61-425f-9bcf-0c579404b521",
+    "oracle_id": "a612f30d-cd55-438b-a7de-8c80509183aa",
+    "scryfall_uri": "https://scryfall.com/card/9ed/29/mending-hands?utm_source=api"
+  }
+]

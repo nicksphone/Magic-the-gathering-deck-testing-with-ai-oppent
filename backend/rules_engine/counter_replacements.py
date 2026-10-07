@@ -34,8 +34,15 @@ def counter_options(state, controller, payload, used=()):
     player = payload.get('target_player')
     card = state.cards.get(payload.get('target_card_id'))
     kind = payload['counter']
+    context = payload.get('__counter_entry_context')
+    if context is not None:
+        from rules_engine.entry_counters import entry_counter_context_matches
+        if not entry_counter_context_matches(state, payload):
+            return []
     out = [dict(option) for option in payload.get('__counter_entry_modifiers', [])
            if option['source_id'] not in used]
+    if context is not None and not payload.get('amount', 0):
+        return [option for option in out if option.get('entry_producer')]
     for pid in sorted(state.players):
         for cid in state.players[pid].battlefield:
             source = state.cards.get(cid)
@@ -62,7 +69,8 @@ def counter_options(state, controller, payload, used=()):
                     or (scope == 'plus_creature' and card is not None and 'Creature' in effective_types(state, card) and kind == '+1/+1')
                     or (scope == 'controlled_plus_permanent' and controlled and kind == '+1/+1')
                 )
-                if applies:
+                if applies and (context is None or ability_id in {
+                        receipt['source_id'] for receipt in context['source_references']}):
                     out.append({'source_id': ability_id, 'source_card_id': cid,
                                 'name': source.name, 'operation': op, 'clause': line})
     return out
@@ -86,7 +94,8 @@ def counter_effect_amount(state, controller, effect_key, payload):
     card = state.cards.get(payload.get('target_card_id'))
     kind = payload['counter']
     amount = max(0, int(payload.get('amount', 1)))
-    if not amount:
+    entry_event = payload.get('__counter_entry_context') is not None
+    if not amount and not entry_event:
         return 0
     if counter_placement_forbidden(state, kind, target_player=player, target_card_id=payload.get('target_card_id')):
         target = state.players[player] if player is not None else card
@@ -94,7 +103,9 @@ def counter_effect_amount(state, controller, effect_key, payload):
         return 0
     used = list(payload.get('__counter_used') or [])
     selected = payload.get('__counter_choice')
-    while amount:
+    while amount or entry_event:
+        if entry_event:
+            payload = {**payload, 'amount': amount}
         options = counter_options(state, controller, payload, used)
         if not options:
             break

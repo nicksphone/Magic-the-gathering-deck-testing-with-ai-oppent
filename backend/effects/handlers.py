@@ -50,6 +50,8 @@ def _queue_human_damage_replacement_choice(
     """Pause a human damage chain when the modified event remains replaceable."""
     if remaining_amount <= 0 or not selected_source_id:
         return False
+    if state.pending_replacement_choice or state.pending_mechanic_choice:
+        return False
     if not getattr(state, "replacement_choice_required", False):
         return False
     target_player = payload.get("target_player")
@@ -67,11 +69,15 @@ def _queue_human_damage_replacement_choice(
         target_player=affected_player if target_player is not None else None,
         target_card_id=str(target_card_id) if target_card_id else None,
         source_card_id=payload.get('__source_card_id'),
+        amount=remaining_amount, source_lki=payload.get('__source_lki'),
+        combat=False,
     )
     used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
     if str(selected_source_id) not in used_source_ids:
         used_source_ids.append(str(selected_source_id))
-    options = [option for option in options if str(option.get("source_id")) not in set(used_source_ids)]
+    from rules_engine.replacement import replacement_source_used
+    options = [option for option in options
+               if not replacement_source_used(used_source_ids, event, str(option.get("source_id")))]
     if not options:
         return False
     state.pending_replacement_choice = {
@@ -183,6 +189,14 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
     amount = int(payload.get("amount", 0))
     source_card_id = payload.get("__source_card_id")
     source_lki = payload.get("__source_lki")
+    if payload.get('__stack_copy_kind') == 'spell':
+        if source_lki is None and payload.get('__copied_card'):
+            from types import SimpleNamespace
+            from rules_engine.colors import card_color_names
+            source_lki = {**payload['__copied_card'], 'color_names': sorted(card_color_names(
+                SimpleNamespace(**payload['__copied_card'])))}
+        source_lki = {**(source_lki or payload.get('__copied_card') or {}), 'controller': controller}
+        payload['__source_lki'] = source_lki
     selected_source_id = payload.get("__replacement_source_id")
     human_chain = bool(selected_source_id and getattr(state, "replacement_choice_required", False))
     prevention_locked = damage_cant_be_prevented(
@@ -193,18 +207,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
     )
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
-        source = state.cards.get(source_card_id)
-        if not prevention_locked:
-            from rules_engine.protection import protection_match_reason
-            reason = protection_match_reason(state, target_card_id, source, source_lki=source_lki)
-            if reason is not None and (source is not None or source_lki is not None or reason == "everything"):
-                state.log.append(f"{card.name} prevents damage from {reason} source due to protection.")
-                return 0
         if card.zone == Zone.BATTLEFIELD and amount > 0:
-            if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount, source_lki=source_lki) is not None:
-                if not state.trigger_staging and not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in effective_types(state, card) and _creature_is_lethally_damaged(state, target_card_id):
-                    _move_creature_to_graveyard(state, target_card_id)
-                return 0
             replaced_amount = apply_permanent_damage_replacements(
                 state,
                 target_card_id,
@@ -213,13 +216,20 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 max_replacements=1 if human_chain else None,
                 used_source_ids=payload.get('__used_replacement_source_ids'),
                 prevention_locked=prevention_locked,
+                source_card_id=source_card_id, source_lki=source_lki,
+                combat=False,
             )
             if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
                 return 0
-            post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount)
+            post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount, state=state)
             if prevented > 0:
                 state.log.append(f"{card.name} prevents {prevented} damage.")
             if post <= 0:
+                if (not state.trigger_staging and not state.pending_replacement_choice
+                        and not state.pending_mechanic_choice and not payload.get('__defer_lethal')
+                        and 'Creature' in effective_types(state, card)
+                        and _creature_is_lethally_damaged(state, target_card_id)):
+                    _move_creature_to_graveyard(state, target_card_id)
                 return 0
             from rules_engine.damage_results import apply_creature_damage
             if "Creature" in effective_types(state, card):
@@ -1580,7 +1590,7 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
     battlefield_owner.battlefield.append(target)
     card.move_to_zone(Zone.BATTLEFIELD)
     card.controller = controller
-    card.tapped = False
+    card.tapped = payload.get('tapped') is True
     card.summoning_sick = True
     card.entered_turn = state.turn
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
@@ -2485,6 +2495,18 @@ def deal_damage_multi(state: MatchState, controller: int, payload: dict) -> None
                                           "__source_lki": payload.get("__source_lki")})
 
 
+def damage_each_creature(state: MatchState, controller: int, payload: dict) -> None:
+    amount = max(0, int(payload.get("amount", 0)))
+    if not amount:
+        return
+    recipients = [
+        {"target_card_id": cid, "amount": amount}
+        for player in state.players.values() for cid in list(player.battlefield)
+        if "Creature" in effective_types(state, state.cards[cid])
+    ]
+    deal_damage_batch(state, controller, {**payload, "recipients": recipients})
+
+
 def damage_each_creature_and_player(state: MatchState, controller: int, payload: dict) -> None:
     amount = max(0, int(payload.get("amount", 0)))
     if not amount:
@@ -2502,6 +2524,13 @@ def damage_each_creature_and_player(state: MatchState, controller: int, payload:
 def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None:
     source_id = payload.get("__source_card_id")
     source_lki = payload.get("__source_lki")
+    if payload.get('__stack_copy_kind') == 'spell':
+        if source_lki is None and payload.get('__copied_card'):
+            from types import SimpleNamespace
+            from rules_engine.colors import card_color_names
+            source_lki = {**payload['__copied_card'], 'color_names': sorted(card_color_names(
+                SimpleNamespace(**payload['__copied_card'])))}
+        source_lki = {**(source_lki or payload.get('__copied_card') or {}), 'controller': controller}
     lifelink_total = max(0, int(payload.get("lifelink_total", 0)))
     recipients = []
     grouped = {}
@@ -2532,6 +2561,8 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
             options = replacement_options(
                 state, event, target_player=affected if not target_id else None,
                 target_card_id=target_id, source_card_id=source_id,
+                amount=recipient['amount'], source_lki=source_lki,
+                combat=False,
             )
             if len(options) > 1:
                 state.pending_replacement_choice = {
@@ -2685,6 +2716,10 @@ def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
 
 
 def prevent_damage(state: MatchState, controller: int, payload: dict) -> None:
+    if payload.get('__resolving_item') is not None:
+        from rules_engine.prevention import create_numeric_prevention_shield
+        create_numeric_prevention_shield(state, controller, payload)
+        return
     amount = int(payload.get("amount", 0))
     target_player = payload.get("target_player")
     target_card_id = payload.get("target_card_id")

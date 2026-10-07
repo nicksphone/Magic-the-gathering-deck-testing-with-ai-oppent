@@ -116,6 +116,10 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if not state.stack:
         return False
     item = state.stack[-1]
+    from rules_engine.prevention import has_numeric_prevention_instruction, validate_prevention_item
+    prevention_frame_required = has_numeric_prevention_instruction(item.effect_key, item.payload or {})
+    if prevention_frame_required:
+        validate_prevention_item(state, item)
     control_frame_required = (
         item.effect_key == 'temporary_control_instruction'
         or item.effect_key == 'effect_sequence' and any(
@@ -334,6 +338,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if item.effect_key in {'landfall_alternative', 'linked_landfall_damage'}:
         from rules_engine.landfall import require_known_history
         require_known_history(state, item.controller)
+    from rules_engine.prevention import validate_legacy_damage_boundary
+    validate_legacy_damage_boundary(state, item)
     if (item.payload or {}).get("__may"):
         is_trigger = bool(item.payload.get("__trigger_event"))
         choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
@@ -363,12 +369,19 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         and context is not None
     ):
         event, target_player, target_card_id = context
+        selected_payload = item.payload or {}
+        if item.effect_key == 'conditional_instruction':
+            from rules_engine.conditional_instructions import selected_instruction
+            _, selected_payload = selected_instruction(state, item.controller, selected_payload)
         options = replacement_options(
             state,
             event,
             target_player=target_player,
             target_card_id=target_card_id,
             source_card_id=item.source_card_id,
+            amount=selected_payload.get('amount') if event == 'damage_to_permanent' else None,
+            source_lki=selected_payload.get('__source_lki', (item.payload or {}).get('__source_lki')),
+            source_controller=item.controller, combat=False,
         )
         used = {str(value) for value in ((item.payload or {}).get("__used_replacement_source_ids") or [])}
         options = [
@@ -436,7 +449,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
-        if (control_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library'}
+        if (control_frame_required or prevention_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library'}
                 or effect_key == 'effect_sequence' and any(
                     effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library'}
                     for effect in payload.get('effects', []))):

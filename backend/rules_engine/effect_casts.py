@@ -2,6 +2,28 @@
 from game_state.state import Zone
 
 
+def _selected_trigger_target_is_current(state, controller, payload):
+    """Generic permissions stay unsealed; selected trigger objects cannot rebind."""
+    markers = ('__trigger_target_choice', '__trigger_target_clause', '__trigger_event')
+    selected = any(key in payload for key in markers)
+    if not selected and '__trigger_target_reference' not in payload:
+        return True
+    if selected and not (payload.get('__trigger_target_choice') is True
+            and all(isinstance(payload.get(key), str) and payload[key].strip()
+                    for key in markers[1:])):
+        return False
+    reference = payload.get('__trigger_target_reference')
+    if not (type(reference) is list and len(reference) == 2
+            and all(type(value) is int and value >= 0 for value in reference)):
+        return False
+    target = payload.get('target_card_id')
+    card = state.cards.get(target) if isinstance(target, str) else None
+    from game_state.state import object_incarnation
+    return (card is not None and target in state.players[controller].graveyard
+            and card.zone == Zone.GRAVEYARD
+            and reference == [object_incarnation(card), card.zone_change_sequence])
+
+
 def materialize_cast(state, controller, card_id, targets=None):
     from ai.agent import AIAgent
     from rules_engine.cast_choice import build_cast_hints
@@ -23,6 +45,8 @@ def admit_cast(state, controller, action, payload):
     from ai.pending_effects import planning_copy
     from rules_engine.engine import RulesEngine
     from rules_engine.action_validation import require
+    require(_selected_trigger_target_is_current(state, controller, payload),
+            'The selected graveyard object is no longer available')
     target = payload['target_card_id']
     require(action.get('type') == 'cast_spell' and action.get('card_id') == target,
             'This permission authorizes only the selected spell')
@@ -50,6 +74,8 @@ def cast_moves(state, player_id):
         return []
     moves = [{'type': 'choose_mechanic', **pending,
               'option_labels': {'decline': 'Decline casting'}}]
+    if not _selected_trigger_target_is_current(state, player_id, pending['effect_payload']):
+        return moves
     target = pending['effect_payload']['target_card_id']
     if target not in state.players[player_id].graveyard:
         return moves
@@ -80,6 +106,9 @@ def finish_cast_choice(state, player_id, action):
         state.pending_mechanic_choice = None
         state.log.append(f'{state.players[player_id].name} declines casting from the graveyard.')
     elif action.get('type') == 'cast_spell':
+        from rules_engine.action_validation import require
+        require(_selected_trigger_target_is_current(state, player_id, pending['effect_payload']),
+                'The selected graveyard object is no longer available')
         state.pending_mechanic_choice = None
         try:
             admit_cast(state, player_id, action, pending['effect_payload'])

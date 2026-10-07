@@ -185,6 +185,23 @@ class PlayerState:
 
 
 @dataclass
+class NumericPreventionShield:
+    version: int
+    receipt_id: str
+    resolving_stack_id: str
+    source_card_id: str
+    source_controller: int
+    source_label: str
+    source_reference: dict[str, int]
+    target_player: int | None
+    target_reference: dict | None
+    remaining: int
+    created_turn: int
+    expires_at_cleanup: bool
+    effect_timestamp: int
+
+
+@dataclass
 class MatchState:
     id: str
     players: dict[int, PlayerState]
@@ -279,6 +296,8 @@ class MatchState:
     staged_triggers: list[dict] = field(default_factory=list)
     pending_trigger_order: dict | None = None
     pending_mechanic_choice: dict | None = None
+
+    numeric_prevention_shields: list[NumericPreventionShield] = field(default_factory=list)
 
     def allocate_object_id(self) -> str:
         """Stable gameplay identities without consuming the shuffle RNG."""

@@ -3,6 +3,7 @@ from rules_engine.type_effects import effective_types
 
 import random
 from copy import deepcopy
+from dataclasses import asdict
 
 from game_state.state import CardInstance, MatchState, PlayerState, StackItem, Step, TURN_STEPS, Zone
 from rules_engine.player_counters import public_counters
@@ -73,6 +74,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
     from rules_engine.turn_scheduler import snapshot
     return {
         "id": state.id,
+        "numeric_prevention_shields": [asdict(receipt) for receipt in state.numeric_prevention_shields],
         "starting_decks": {str(pid): deepcopy(rows) for pid, rows in state.starting_decks.items()},
         "card_observations": {str(pid): deepcopy(rows) for pid, rows in state.card_observations.items()},
         "turn": state.turn,
@@ -242,6 +244,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
 
 
 def deserialize_match_snapshot(payload: dict) -> MatchState:
+    from rules_engine.prevention import restore_numeric_prevention_shields
+    numeric_shields = restore_numeric_prevention_shields(payload)
     players = {}
     for raw in payload["players"].values():
         player = PlayerState(id=int(raw["id"]), name=str(raw["name"]), life=int(raw["life"]))
@@ -300,6 +304,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
 
     state = MatchState(
         id=str(payload["id"]), players=players, cards=cards,
+        numeric_prevention_shields=numeric_shields,
         stack=[StackItem(
             id=str(item["id"]), source_card_id=str(item["source_card_id"]),
             controller=int(item["controller"]), label=str(item["label"]),

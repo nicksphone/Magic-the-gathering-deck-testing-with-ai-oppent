@@ -92,10 +92,7 @@ def test_response_safe_resource_candidates_take_profitable_damage(seat, family, 
             assert attacked.cards[cid].tapped == state.cards[cid].tapped
     agent = BoundaryAgent(style)
     leaf = agent._complete_strategic_combat_leaf(announced, seat)
-    if boundary == 'inert-graveyard':
-        assert leaf is None
-    else:
-        assert leaf is not None
+    assert leaf is not None
     decision = agent.choose_action(state, legal, seat)
     chosen = finish_combat(checked_action(state, engine, seat, decision.action))
     actor, visible = decision_view(state, seat, legal)

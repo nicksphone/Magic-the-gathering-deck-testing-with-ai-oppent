@@ -1,0 +1,11 @@
+# Numeric Receipt Inventory Coverage Adapter
+
+This independent increment changes only the exact reviewed MatchState field-name pin and adds `numeric_prevention_shields` to the existing public inventory context veto. It does not alter numeric production, inventory classification algorithms, other schema pins, AI policy, engine execution or snapshot behavior.
+
+The 82-field MatchState equals the prior locked 81 names plus exactly one reviewed field. Its declaration is `list[NumericPreventionShield]` with independent `list` defaults. Missing, null or non-list fields remain unknown under the existing metadata checker. Any nonempty list remains unknown, including spent receipts and malformed entries; inventory never filters receipts, mutates them or invents provenance. Exact empty/default values allow the existing source/context checks to proceed, not automatic certification. Unknown future dataclass or runtime fields remain vetoed.
+
+Original B positives and assertions are reused unchanged from the immutable public-graveyard-combat-inventory B archive. Actual paid Salve, genuine Bolt consumption and checked priority continuation through cleanup are tested both seats. Cleanup removes the new list and compatibility balances but does not certify Salve's unsupported graveyard body. Cold snapshot, hidden identity and complete root pickle-byte purity controls are explicit. Malformed/future metadata probes are component controls, not invented card episodes.
+
+The NEW legacy player-scalar probe is deliberately strict and outside this product fix: canonical fixtures call `add_player_prevention_shield`, omit receipts in an old snapshot and restore a nonzero `PlayerState.prevent_damage_shield`. An empty typed list must not certify this unknown original ordering context. See the frozen ordinary-red ledger and separate one-hunk proposal; no legacy-player fix is included.
+
+Use the pinned shared interpreter and strong runner denying every SQLite/socket event before pytest imports. No SQL/HTTP permission or live promotion is implied. This isolated source composes immutable B caller/coverage dependencies with the already frozen numeric source; its reproducible recipe and exact source hashes are in the REPORT, not a claim that unrelated current parent features were qualified here.

@@ -1,0 +1,55 @@
+{
+  "cards": [
+    {
+      "file": "67b5e3dc625291fc.json",
+      "id": "f2c4f80e-84a0-463b-82c3-5c6503809351",
+      "name": "Doubling Season",
+      "oracle_id": "01546b7d-a233-4176-8843-d732074dc5b6",
+      "sha256": "484db73932bc28d8147797f48647e0508f75f2c0117efeec73d87d27e1e46f1d",
+      "source_line_1based": 216
+    },
+    {
+      "file": "6cac4a748d89c0b0.json",
+      "id": "2b27e6b2-13ad-42b2-a121-70935913723d",
+      "name": "Renata, Called to the Hunt",
+      "oracle_id": "6761b077-7a89-42c9-93ab-675fe4231564",
+      "sha256": "11ef202deeeb8306967be8dd9e2a8c2feb543204ddd3b85023ddd4d0a8884f5e",
+      "source_line_1based": 15514
+    },
+    {
+      "file": "66b1b4a11a49f2b4.json",
+      "id": "0a135e09-b534-4836-9a10-3a9a4a9f8c53",
+      "name": "Grafdigger's Cage",
+      "oracle_id": "753cb2b2-24ce-484f-a2d0-be6fd2c67ebd",
+      "sha256": "bda0105bccab7cf0f1024e906fce2917b42d18983c118e83869d410db5b8cf2c",
+      "source_line_1based": 17629
+    },
+    {
+      "file": "f76a0f770801de00.json",
+      "id": "616d1b20-61c1-4d39-a9b5-ad9fd61699e4",
+      "name": "Stifle",
+      "oracle_id": "b3b00911-ece7-4484-bc36-f211ce72b6cc",
+      "sha256": "23c323dda6c3101c5cf596fb5dfd0aaa848fb9939aa692a84a3ef0c203829cd6",
+      "source_line_1based": 27043
+    },
+    {
+      "file": "08a82c4e98e33438.json",
+      "id": "1a93f587-ab72-42da-88c4-31af1c9cdf1b",
+      "name": "Lae'zel, Vlaakith's Champion",
+      "oracle_id": "c066f921-e349-45d1-8ec3-0955d10bbf19",
+      "sha256": "261c4d671b4ff9d36296de3eca2759fe45033e461f4fc43fb521d402c98da238",
+      "source_line_1based": 28968
+    },
+    {
+      "file": "14ab46a1e52672a0.json",
+      "id": "013d5260-f906-4f6a-97ed-725197743b60",
+      "name": "Cremate",
+      "oracle_id": "c6a2e410-b182-48d1-aeb2-bc8de27e9cd2",
+      "sha256": "4d1c718f07e965ab4baaf41274816b31183601c80ac4533e5e74e4626406c4f0",
+      "source_line_1based": 29903
+    }
+  ],
+  "full_original_lines": true,
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

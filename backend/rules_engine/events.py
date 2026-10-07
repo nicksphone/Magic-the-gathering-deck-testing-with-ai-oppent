@@ -1148,7 +1148,7 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 def _remember_trigger_target(state, item):
     from rules_engine.flashback_grants import remember_target
     remember_target(state, item)
-    if item.effect_key == 'exile_until_source_leaves':
+    if item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard'}:
         target = state.cards[item.payload['target_card_id']]
         item.payload['__trigger_target_reference'] = [object_incarnation(target), target.zone_change_sequence]
 
@@ -2168,3 +2168,36 @@ def _maybe_payload(oracle: str, payload: dict[str, Any]) -> dict[str, Any]:
     else:
         out["__may_choose"] = True
     return out
+
+
+def public_trigger_clause_coverage(card, clause):
+    """Structural whole-clause domains, not runtime success or readiness proof."""
+    if not isinstance(clause, str) or not isinstance(card.name, str):
+        return None
+    body = without_reminder_text(clause).strip().lower()
+    reference = {'id': card.id, 'incarnation': object_incarnation(card),
+                 'zone_change_sequence': card.zone_change_sequence}
+    draw = re.fullmatch(
+        r'whenever (you draw|an opponent draws) a card, '
+        r'(you gain|they lose) ([1-9]\d*) life\.', body)
+    if draw and (draw[1], draw[2]) in {
+            ('you draw', 'you gain'), ('an opponent draws', 'they lose')}:
+        return {'clause': clause, 'source_zone': 'battlefield', 'events': ['draw_card'],
+                'subject': 'controller' if draw[1] == 'you draw' else 'opponent',
+                'instruction': body.split(', ', 1)[1], 'source_reference': reference,
+                'effect_key': 'gain_life' if draw[2] == 'you gain' else 'lose_life',
+                'amount': int(draw[3]), 'dependent_context': None}
+    self_reference = r'(?:this creature|' + re.escape(card.name.lower()) + r')'
+    entry = re.fullmatch(
+        r'when ' + self_reference + r' enters(?: the battlefield)?, '
+        r'(you may cast target instant card from your graveyard without paying its mana cost\. '
+        r'if that spell would be put into your graveyard, exile it instead\.)', body)
+    if entry:
+        return {'clause': clause, 'source_zone': 'battlefield',
+                'events': ['enters_battlefield'], 'subject': 'source_exact_object',
+                'instruction': entry[1], 'source_reference': reference,
+                'effect_key': 'cast_from_graveyard',
+                'dependent_context': {'target_zone': 'graveyard', 'target_owner': 'controller',
+                    'target_types': ['Instant'], 'optional': True,
+                    'mana_payment': 'without_mana_cost', 'replacement': 'exile_after_cast'}}
+    return None

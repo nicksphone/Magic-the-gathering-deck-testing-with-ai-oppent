@@ -268,6 +268,55 @@ def _infer_temporary_control_instruction(oracle, controller, action_targets):
     }
 
 
+def _infer_closed_damage_instruction(oracle: str, source_name: str, action_targets: dict) -> tuple[str, dict] | None:
+    body = oracle.strip()
+    prevention = r'prevent the next ([1-9]\d*) damage that would be dealt to any target this turn\.?'
+    broadcast = re.escape(source_name) + r' deals ([1-9]\d*) damage to each creature\.?'
+    candidate = (re.search(r'\bprevent(?:s)? the next \d+ damage that would be dealt to any target\b', body, re.I)
+                 or re.search(re.escape(source_name) + r' deals \d+ damage to each creature\b', body, re.I))
+    if not candidate:
+        return None
+    unsupported = ('noop', {'__unsupported_instruction': oracle})
+    modes = _extract_modes(body)
+    if modes:
+        # Validate the complete envelope before honoring an actual selected mode.
+        if (not re.match(r'^choose one\s*[\u2014-]', body, re.I) or len(modes) != 2
+                or not all(re.fullmatch(prevention, mode, re.I)
+                           or re.fullmatch(r'target player gains [1-9]\d* life\.?', mode, re.I)
+                           for mode in modes)):
+            return unsupported
+        selected = action_targets.get('mode_text')
+        if (not isinstance(selected, str) or selected.casefold() not in {mode.casefold() for mode in modes}
+                or action_targets.get('mode_texts')):
+            return unsupported
+        body = selected
+        if re.fullmatch(r'target player gains [1-9]\d* life\.?', body, re.I):
+            return None
+    elif action_targets.get('mode_text') or action_targets.get('mode_texts'):
+        return unsupported
+    match = re.fullmatch(prevention, body, re.I)
+    if match:
+        target_card = action_targets.get('target_card_id')
+        target_player = action_targets.get('target_player')
+        if target_card is not None and target_player is not None:
+            return unsupported
+        payload = {'amount': int(match[1])}
+        if target_card is not None:
+            if not isinstance(target_card, str) or not target_card:
+                return unsupported
+            payload['target_card_id'] = target_card
+        elif target_player is not None:
+            if type(target_player) is not int or target_player not in (1, 2):
+                return unsupported
+            payload['target_player'] = target_player
+        # Targetless previews remain incomplete; checked casts require a declared target.
+        return 'prevent_damage', payload
+    match = re.fullmatch(broadcast, body, re.I)
+    if match:
+        return 'damage_each_creature', {'amount': int(match[1])}
+    return unsupported
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,
@@ -301,6 +350,9 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    closed_damage = _infer_closed_damage_instruction(oracle, name, action_targets)
+    if closed_damage is not None:
+        return closed_damage
     temporary_control = _infer_temporary_control_instruction(oracle, controller, action_targets)
     if temporary_control is not None:
         return temporary_control
@@ -1627,12 +1679,34 @@ def extract_saga_chapters(oracle_text: str) -> list[dict[str, Any]]:
     return sorted(chapters, key=lambda item: int(item["number"]))
 
 
+def _pure_self_graveyard_return_instruction(card, instruction):
+    """Recognize a complete self return, not a prefix of a compound ability."""
+    text = re.sub(r'\s+', ' ', instruction or '').strip()
+    match = re.fullmatch(
+        r'return this card from your graveyard to '
+        r'(?:(the battlefield)( tapped)?|(your hand))\.?', text, re.I)
+    if match is None:
+        return None
+    return {'destination': 'battlefield' if match[1] else 'hand',
+            'tapped': bool(match[2])}
+
+
 def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
     """Extract simple mana-cost activated abilities from a card surface."""
     out: list[dict[str, Any]] = []
+    raw_matches = list(ACTIVATED_ABILITY_RE.finditer(card.oracle_text or ''))
     for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(without_reminder_text(card.oracle_text or ""))):
         cost = match.group(1).strip().upper()
         text = match.group(2).strip()
+        self_return = _pure_self_graveyard_return_instruction(card, text)
+        if re.search(r'return\s+this\s+card\s+from\s+your\s+graveyard\b', text, re.I):
+            originals = [raw for raw in raw_matches
+                         if raw[1].strip().upper() == cost
+                         and without_reminder_text(raw[2]).strip() == text]
+            if (self_return is None or not originals
+                    or any(_pure_self_graveyard_return_instruction(card, raw[2]) != self_return
+                           for raw in originals)):
+                continue
         # Mana abilities are handled by the mana source model and should not
         # be duplicated as stack actions here.
         if "add " in text.lower() and "target" not in text.lower() and not re.search(
@@ -1643,7 +1717,7 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
         from rules_engine.costs import parse_activated_cost
         out.append({"index": index, "mana_cost": cost,
                     "text": modifier['effect_text'] if modifier else text,
-                    "activation_zone": 'hand' if parse_activated_cost(cost).discard_source else 'battlefield',
+                    "activation_zone": 'graveyard' if self_return else 'hand' if parse_activated_cost(cost).discard_source else 'battlefield',
                     "cost_modifier": modifier, "label": f"{cost}: {text}"})
     return out
 
@@ -1653,7 +1727,8 @@ def activation_source_eligible(state, player_id, card_id, ability):
     zone = ability.get('activation_zone', 'battlefield')
     return (card is not None and card.zone.value == zone
             and card_id in getattr(state.players[player_id], zone)
-            and (zone == 'hand' or card.controller == player_id))
+            and (card.owner == player_id if zone == 'graveyard'
+                 else zone == 'hand' or card.controller == player_id))
 
 
 def crew_value(card: CardInstance) -> int | None:
@@ -1704,6 +1779,14 @@ def _infer_clause_effect(
     action_targets: dict[str, Any],
     x_value: int,
 ) -> tuple[str, dict[str, Any]] | None:
+    self_return = _pure_self_graveyard_return_instruction(card, oracle)
+    if self_return and _pure_self_graveyard_return_instruction(card, card.oracle_text) == self_return:
+        payload = {'target_card_id': card.id, 'target_player': controller,
+                   '__self_graveyard_return': self_return['destination']}
+        if self_return['destination'] == 'hand':
+            return 'return_from_graveyard', payload
+        return 'return_creature_from_graveyard_to_battlefield', {
+            **payload, 'tapped': self_return['tapped']}
     mill = re.fullmatch(r'mill (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?,?', oracle.strip())
     if mill:
         return 'mill_cards', {'amount': _parse_count_token(mill[1])}
@@ -2381,3 +2464,25 @@ def _extract_keywords_from_text(text: str) -> list[str]:
         if kw in lower:
             found.append(kw)
     return found
+
+
+def complete_stack_instruction_coverage(card):
+    """Positive complete stack-only bodies; unknown/residual text is not covered."""
+    if not isinstance(card.oracle_text, str) or not isinstance(card.name, str):
+        return None
+    body = without_reminder_text(card.oracle_text).strip()
+    if not body:
+        return None
+    draw = compile_draw_life_instruction(body)
+    if draw:
+        return {'instruction': body, 'source_zone': 'stack', 'effect_key': draw[0],
+                'payload': draw[1], 'target_domain': None, 'residual': ''}
+    damage = re.fullmatch(
+        r'(?:' + re.escape(card.name) + r'|this spell) deals ([1-9]\d*) damage to '
+        r'(any target|target creature|target player|target opponent|target planeswalker)\.',
+        body, re.I)
+    if damage:
+        return {'instruction': body, 'source_zone': 'stack', 'effect_key': 'deal_damage',
+                'payload': {'amount': int(damage[1])},
+                'target_domain': damage[2].lower(), 'residual': ''}
+    return None

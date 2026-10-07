@@ -438,9 +438,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     }
                 )
 
-    # Source-bound discard abilities activate from hand; other supported forms from battlefield.
+    # Explicit self returns activate from the owner's graveyard.
     from rules_engine.oracle_effects import activation_source_eligible
-    for cid in [*player.battlefield, *player.hand]:
+    for cid in [*player.battlefield, *player.hand, *player.graveyard]:
         card = state.cards[cid]
         if printed_abilities_suppressed(state, cid):
             continue

@@ -97,6 +97,7 @@ class ForetellAction(CardAction):
 
 class SuspendAction(CardAction):
     type: Literal['suspend']
+    x_value: Annotated[StrictInt, Field(ge=0)] | None = None
 
 
 class PaymentCards(InputModel):

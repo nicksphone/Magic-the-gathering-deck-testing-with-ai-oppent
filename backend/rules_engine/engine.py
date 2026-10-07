@@ -369,6 +369,7 @@ class RulesEngine:
                     card.counters.pop(counter, None)
 
     def _clear_prevention_shields(self, state: MatchState) -> None:
+        state.numeric_prevention_shields.clear()
         for player in state.players.values():
             player.prevent_damage_shield = 0
         for card in state.cards.values():
@@ -543,6 +544,10 @@ class RulesEngine:
                 return
             if pending.get('resume_kind') == 'counter_event':
                 from rules_engine.stack_engine import resume_paused_resolution
+                from rules_engine.entry_counters import entry_counter_context_matches
+                if not entry_counter_context_matches(state, pending['counter_payload']):
+                    reject('Entry counter replacement context changed')
+                    return
                 state.pending_replacement_choice = None
                 resolve_effect(state, int(pending['controller']), pending['counter_effect'],
                                {**pending['counter_payload'], '__counter_choice': chosen_id})
@@ -728,7 +733,7 @@ class RulesEngine:
         player = state.players[player_id]
         if kind == 'suspend':
             from rules_engine.suspend import take_special_action
-            if not take_special_action(state, player_id, action.get('card_id')):
+            if not take_special_action(state, player_id, action.get('card_id'), x_value=action.get('x_value')):
                 reject('Cannot suspend this card or pay its special-action cost')
                 return
         elif kind == 'foretell':
@@ -1161,6 +1166,12 @@ class RulesEngine:
                     (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
                 player.exile_play_until.pop(cid, None)
                 card.move_to_zone(Zone.STACK)
+                from rules_engine.prevention import has_numeric_prevention_instruction
+                if has_numeric_prevention_instruction(effect_key, payload):
+                    payload['__prevention_source_reference'] = {
+                        'incarnation': object_incarnation(card),
+                        'zone_change_sequence': card.zone_change_sequence,
+                    }
                 control_source_reference = None
                 if (effect_key == 'temporary_control_instruction'
                         or effect_key == 'effect_sequence' and any(
@@ -1276,7 +1287,12 @@ class RulesEngine:
             proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
             action_targets = enrich_divide_total(proxy, action_targets)
             proxy.source_oracle_text = state.cards[cid].oracle_text
-            if build_ability_spec(state, proxy, player_id, action_targets=action_targets, report_unsupported=False).effect.key == "noop":
+            announcement_spec = build_ability_spec(state, proxy, player_id, action_targets=action_targets, report_unsupported=False)
+            self_return_destination = announcement_spec.effect.payload.get('__self_graveyard_return')
+            if self_return_destination and action_targets:
+                reject("Self-return abilities do not select a target")
+                return
+            if announcement_spec.effect.key == "noop":
                 reject("Unsupported activated ability effect")
                 state.log.append(f"Unsupported activated ability effect for {state.cards[cid].name}.")
                 return
@@ -1334,13 +1350,19 @@ class RulesEngine:
                 return
             proxy.source_oracle_text = state.cards[cid].oracle_text
             proxy.sacrificed_toughness = cost_context.get("__sacrificed_toughness")
-            resolved = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
+            resolved = announcement_spec if self_return_destination else build_ability_spec(state, proxy, player_id, action_targets=action_targets)
             resolved_payload = {**resolved.effect.payload,
                                 "__announced_targets": dict(action_targets),
                                 "__ward_trigger_specs": ward_specs,
                                 "__ability_target_text": ability["text"],
                                 "__activation_source_reference": activation_source_reference,
                                 "__announced_target_references": target_references}
+            if self_return_destination:
+                sequence_key = 'zone_sequence' if self_return_destination == 'hand' else 'zone_change_sequence'
+                resolved_payload['__graveyard_reference'] = {
+                    'incarnation': activation_source_reference['incarnation'],
+                    sequence_key: activation_source_reference['zone_change_sequence'],
+                }
             if (activation_source_zone == Zone.BATTLEFIELD and state.cards[cid].zone != Zone.BATTLEFIELD
                     and state.cards[cid].last_known_battlefield):
                 resolved_payload["__source_lki"] = dict(state.cards[cid].last_known_battlefield)

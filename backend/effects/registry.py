@@ -27,6 +27,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "deal_damage_to_controller": handlers.deal_damage_to_controller,
     "deal_damage_multi": handlers.deal_damage_multi,
     "deal_damage_batch": handlers.deal_damage_batch,
+    "damage_each_creature": handlers.damage_each_creature,
     "damage_each_creature_and_player": handlers.damage_each_creature_and_player,
     "draw_cards": handlers.draw_cards,
     "cycle_draw": handlers.cycle_draw,
