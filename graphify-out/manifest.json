@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1791398785.3994594,
-    "seen": 1791398931.3017635,
-    "ast_hash": "57dad7aabe6fbbcb973b57721fa85c46",
+    "mtime": 1791410356.0073652,
+    "seen": 1791410507.5162385,
+    "ast_hash": "66bfb5751d29b16288f8c510d66ea59f",
     "semantic_hash": ""
   },
   "backend/persistence/__init__.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791409969.6441824,
-    "seen": 1791410051.5828974,
-    "ast_hash": "de2667f5f7eb9878a4ce8aedf3fadd86",
+    "mtime": 1791410421.5425491,
+    "seen": 1791410507.5208595,
+    "ast_hash": "dc6259753e7849cd0bfe2bbfba80db35",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13506,9 +13506,9 @@
     "semantic_hash": ""
   },
   "audit/gate2-domain-compiler/test_domain_paid_continuations.py": {
-    "mtime": 1791404585.484279,
-    "seen": 1791404693.5347571,
-    "ast_hash": "845c8bd0d784219ab730a5ebffbc2b92",
+    "mtime": 1791410356.2023628,
+    "seen": 1791410507.5160222,
+    "ast_hash": "02a03a146fa473cc7a044934d0707ec0",
     "semantic_hash": ""
   },
   "docs/gate2-domain-compiler-handoff.md": {
@@ -13653,6 +13653,36 @@
     "mtime": 1791409969.6451824,
     "seen": 1791410051.5830936,
     "ast_hash": "309f784371817d63705d4e7689513cf8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_simulation_engine_shutdown.py": {
+    "mtime": 1791410356.109364,
+    "seen": 1791410507.519184,
+    "ast_hash": "324165521c68476ff66edf3a48bccdcc",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_simulation_shutdown.py": {
+    "mtime": 1791410356.0883644,
+    "seen": 1791410507.5191982,
+    "ast_hash": "db4f3f95d4b98d640069be04301bd6cc",
+    "semantic_hash": ""
+  },
+  "docs/testing/hand-continuation-witness-current.md": {
+    "mtime": 1791410421.544549,
+    "seen": 1791410507.5205898,
+    "ast_hash": "417d64ad01868b4988a14dccf7e7746b",
+    "semantic_hash": ""
+  },
+  "docs/testing/job-lifecycle-current.md": {
+    "mtime": 1791410421.5425491,
+    "seen": 1791410507.52064,
+    "ast_hash": "a47d6428b3c0e00f6ac2a67f01fe15b5",
+    "semantic_hash": ""
+  },
+  "docs/testing/simulation-worker-shutdown.md": {
+    "mtime": 1791410356.195363,
+    "seen": 1791410507.5209281,
+    "ast_hash": "4e34d2a5e8fddc3b05ba17264f35448f",
     "semantic_hash": ""
   }
 }

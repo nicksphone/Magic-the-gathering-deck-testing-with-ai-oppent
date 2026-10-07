@@ -57,13 +57,21 @@ from rules_engine.replacement import replacement_options
 
 @asynccontextmanager
 async def lifespan(app_instance: FastAPI):
+    global SIM_SHUTTING_DOWN
+    _prepare_simulation_admission()
     init_db()
     with Session(engine) as session:
         repo = Repository(session)
         _ensure_builtin_decks(repo)
         _ensure_expansion_top_decks(repo)
         _restore_simulation_jobs(repo)
-    yield
+    with SIM_START_LOCK:
+        SIM_SHUTTING_DOWN = False
+    try:
+        yield
+    finally:
+        _shutdown_simulation_workers()
+        engine.dispose()
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
 TRUSTED_BROWSER_ORIGINS = trusted_origins(os.environ.get("MTG_TRUSTED_ORIGINS"))
@@ -112,6 +120,9 @@ SIM_JOB_CANCEL_EVENTS: dict[str, threading.Event] = {}
 SIM_JOBS_LOCK = threading.Lock()
 SIM_START_LOCK = threading.Lock()
 SIM_WORK_SLOT = threading.BoundedSemaphore(1)
+SIM_JOB_WORKERS: dict[str, tuple[threading.Thread, threading.Event]] = {}
+SIM_SHUTTING_DOWN = False
+SIM_JOB_SHUTDOWN_TIMEOUT = 20.0
 SIM_JOBS_CACHE_LIMIT = 20
 # Single-process new-job row quota; preserves existing results and retry keys.
 SIM_JOBS_ROW_LIMIT = 10000
@@ -409,6 +420,50 @@ def _prune_simulation_jobs() -> None:
 def _persist_job(job: dict) -> None:
     with Session(engine) as session:
         Repository(session).save_simulation_job(job)
+
+
+def _reap_simulation_workers() -> None:
+    """Caller holds SIM_START_LOCK; retain each thread until it actually exits."""
+    for job_id, (thread, _event) in list(SIM_JOB_WORKERS.items()):
+        if not thread.is_alive():
+            SIM_JOB_WORKERS.pop(job_id, None)
+
+
+def _prepare_simulation_admission() -> None:
+    global SIM_SHUTTING_DOWN
+    with SIM_START_LOCK:
+        _reap_simulation_workers()
+        if SIM_JOB_WORKERS:
+            raise RuntimeError("Cannot start while simulation workers are still running")
+        SIM_SHUTTING_DOWN = True
+
+
+def _shutdown_simulation_workers() -> None:
+    global SIM_SHUTTING_DOWN
+    deadline = time.monotonic() + SIM_JOB_SHUTDOWN_TIMEOUT
+    if not SIM_START_LOCK.acquire(timeout=max(0.0, deadline - time.monotonic())):
+        raise RuntimeError("Timed out fencing simulation admission")
+    try:
+        SIM_SHUTTING_DOWN = True
+        workers = list(SIM_JOB_WORKERS.items())
+        for _job_id, (_thread, event) in workers:
+            event.set()
+    finally:
+        SIM_START_LOCK.release()
+
+    # Never hold admission/job locks while a runner persists or releases its slot.
+    for _job_id, (thread, _event) in workers:
+        if thread is threading.current_thread():
+            raise RuntimeError("A simulation worker cannot join itself during shutdown")
+        thread.join(timeout=max(0.0, deadline - time.monotonic()))
+    if not SIM_START_LOCK.acquire(timeout=max(0.0, deadline - time.monotonic())):
+        raise RuntimeError("Timed out finalizing simulation shutdown")
+    try:
+        _reap_simulation_workers()
+        if SIM_JOB_WORKERS:
+            raise RuntimeError("Timed out waiting for simulation workers to stop")
+    finally:
+        SIM_START_LOCK.release()
 
 
 
@@ -1058,6 +1113,7 @@ def simulate_batch_start(
 
 
 def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str | None) -> dict:
+    _reap_simulation_workers()
     requested = payload.model_dump(mode="json")
     if key is not None:
         row = repo.get_simulation_job(key)
@@ -1068,6 +1124,10 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
             if original != requested:
                 raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This start key already identifies a different simulation request"})
             return {"job_id": key, "status": row.status if row is not None else existing["status"]}
+    if SIM_SHUTTING_DOWN:
+        raise HTTPException(status_code=503, detail={
+            "code": "simulation_shutting_down", "message": "Simulation admission is closed during shutdown",
+        })
     if repo.count_simulation_jobs() >= SIM_JOBS_ROW_LIMIT:
         raise HTTPException(status_code=429, detail={
             "code": "simulation_job_quota_exceeded",
@@ -1144,6 +1204,7 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
             with SIM_JOBS_LOCK:
                 SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
             SIM_WORK_SLOT.release()
+            # Admission/shutdown reaps the thread only after its real return.
 
     persisted = False
     try:
@@ -1153,8 +1214,10 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
         _persist_job(job)
         persisted = True
         t = threading.Thread(target=_runner, daemon=True)
+        SIM_JOB_WORKERS[job_id] = (t, cancel_event)
         t.start()
     except Exception:
+        SIM_JOB_WORKERS.pop(job_id, None)
         with SIM_JOBS_LOCK:
             SIM_JOBS.pop(job_id, None)
             SIM_JOB_CANCEL_EVENTS.pop(job_id, None)

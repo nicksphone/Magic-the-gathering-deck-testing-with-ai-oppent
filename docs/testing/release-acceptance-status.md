@@ -20,6 +20,7 @@ substitute for qualification of the final combined source.
 | Domain admission | Exact coverage `eaf84aa` -> `cd57f9b`: 102 passes plus eight independent complete-spell/Flash checks; 155 ready records, known-gap cards 12 -> 10 | Only complete sourced Herd Migration and Leyline Binding bodies; unrelated warnings retained; no universal semantics certificate |
 | Three complete-body admissions | Exact coverage `cd57f9b` -> `2b1217d`: same 133-case cohort passes; canonical linked Landfall damage, paid mass exile/Incubator and paid Flying/observer/transform checks; actual 155-card gaps 10 -> 7 | Only the qualified complete sourced bodies; all unrelated diagnostics retained; final HAND/Domain/admission union remains separate |
 | Standalone storage recovery | Pinned `29e86e4`: three unchanged whole modules / 43 passes, 6.79s; retention rollback/protection, WAL backup and actual controller restore | Not online cache/tombstone coordination, quotas/cancellation, clean-machine or soak acceptance |
+| Native job shutdown | Tested main `2109f88`: 44 passes, genuine midgame cancellation, actual worker join and database-pool closure before external cleanup; real next-lifespan restart | Single-process background-worker component; synchronous drain, byte limits, load/crash and final-source operations remain open |
 | Private HTTPS operator | Pinned `0e57baf` plus exact four new Caddy files: TLS/auth, 26 atomic Origin rejections, incomplete-upload 403, lock and real restart/recovery passed | Native loopback single-user component only; not current combined engine, browser, LAN/public or clean-machine acceptance |
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
@@ -36,6 +37,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `gate2-domain-admission/mtg-gate2-domain-coverage-packet-Rnc4a7-parent-eaf84/`
 - `gate2-three-admission/mtg-gate2-three-packet-2af920-YGLnwn-2af920/`
 - `parent-integration/storage-acceptance-current-29e86-20261007/`
+- `diagnostics/job-resource-contract/becc866-engine44-qualified-20261007-L6DFnr/`
 - `diagnostics/operator-packaging/caddy-0e57-full-duplex-qualified-20261007-wVfKHc/`
 
 Read each report's source pin, failure history, isolation limits and raw evidence

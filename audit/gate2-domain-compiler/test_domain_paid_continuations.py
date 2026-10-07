@@ -77,16 +77,42 @@ def test_paid_search_private_choice_cold_restart_and_exactly_once_life(facts, se
     g.add(state, facts, 'Lightning Bolt', 3-seat, Zone.HAND)
     g.add(state, facts, 'Sunfall', 3-seat, Zone.LIBRARY)
     private = hidden(state, seat)
+    pre_hand = state.cards[source]
+    assert pre_hand.zone == Zone.HAND and pre_hand.owner == seat
+    assert pre_hand.colors == facts['Herd Migration']['colors'] == ['G']
+    assert pre_hand.types == ['Sorcery']
+    source_reference = {'incarnation': object_incarnation(pre_hand),
+                        'zone_change_sequence': pre_hand.zone_change_sequence}
+    ability_lines = [line for line in facts['Herd Migration']['oracle_text'].splitlines()
+                     if line.startswith('{1}{G}, Discard this card: ')]
+    assert len(ability_lines) == 1
+    ability_cost, ability_text = ability_lines[0].split(': ', 1)
+    assert ability_cost == '{1}{G}, Discard this card'
+    source_context = {'version': 1, 'source_card_id': source, 'origin_zone': 'hand',
+        'source_reference': source_reference, 'owner': pre_hand.owner, 'controller': None,
+        'colors': sorted(pre_hand.colors), 'types': sorted(pre_hand.types),
+        'keyword_counts': {},
+        'ability': {'index': 0, 'cost': ability_cost.upper(), 'text': ability_text}}
+    retained = {'__activation_source_context': source_context,
+                '__activation_source_origin': 'hand',
+                '__activation_source_reference': source_reference,
+                '__ability_target_text': ability_text}
     state.players[seat].mana_pool = {'C': 1, 'G': 1}
     state = g.act(state, seat, 'activate_ability', card_id=source, ability_index=0)
+    assert len(state.stack) == 1
+    for key, value in retained.items():
+        assert state.stack[0].payload[key] == value
     assert state.cards[source].zone == Zone.GRAVEYARD
     assert sum(state.players[seat].mana_pool.values()) == 0
     state = cold(state, tmp_path, 'paid-stack')
+    for key, value in retained.items():
+        assert state.stack[0].payload[key] == value
     assert not resolve_top_of_stack(state)
     pending = state.pending_mechanic_choice
     assert pending['kind'] == 'search_library' and nonbasic not in pending['options']
     assert pending['continuation_effects'] == [{'effect_key': 'gain_life', 'payload': {
-        'amount': 3, '__source_card_id': source, '__resolving_item': pending['resolving_item']}}]
+        **retained, 'amount': 3, '__source_card_id': source,
+        '__resolving_item': pending['resolving_item']}}]
     assert state.players[seat].life == 20
     state = cold(state, tmp_path, 'pending-search')
     privacy_probe(state, seat)
