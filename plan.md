@@ -291,6 +291,11 @@ the supported-corpus exit does not redefine that larger goal as achieved.
 
 ## Completion Checklist
 
+Current component evidence and remaining acceptance work are reconciled in
+`docs/testing/release-acceptance-status.md`. Natural native browser BO3 and the
+browser-origin security component have passed on their documented source pins;
+neither result qualifies the final combined source or closes all three gates.
+
 Current native next-cast and entry-counter integration has one 36-whole-module
 834-pass qualification on the composed `91c40e2` application baseline. Parent
 applied bytes match the actual tested archive. See

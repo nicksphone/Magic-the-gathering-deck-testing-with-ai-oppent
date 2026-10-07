@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791365391.2133985,
-    "seen": 1791365465.1227925,
-    "ast_hash": "e9967b6b06724c95e0cd2a2be15be271",
+    "mtime": 1791400835.1165419,
+    "seen": 1791400939.229885,
+    "ast_hash": "d469e316d95aaf2f075240c0400f4216",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13365,6 +13365,12 @@
     "mtime": 1791398785.4224591,
     "seen": 1791398931.3053734,
     "ast_hash": "d21395f6bab20e7dd0bcfc8de47b2efd",
+    "semantic_hash": ""
+  },
+  "docs/testing/release-acceptance-status.md": {
+    "mtime": 1791400835.1155417,
+    "seen": 1791400939.229635,
+    "ast_hash": "b32f71a74e6d787a8f5a4c06c33a87da",
     "semantic_hash": ""
   }
 }
