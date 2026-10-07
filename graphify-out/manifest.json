@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1791365391.1493995,
-    "seen": 1791365465.1186647,
-    "ast_hash": "17b223e1edde259bbad3df12b274ae50",
+    "mtime": 1791398785.3994594,
+    "seen": 1791398931.3017635,
+    "ast_hash": "57dad7aabe6fbbcb973b57721fa85c46",
     "semantic_hash": ""
   },
   "backend/persistence/__init__.py": {
@@ -13341,6 +13341,30 @@
     "mtime": 1791365391.2123985,
     "seen": 1791365465.1219594,
     "ast_hash": "3c89918e361a3b092b6d29aa5be4a497",
+    "semantic_hash": ""
+  },
+  "backend/browser_origin.py": {
+    "mtime": 1791398785.4074593,
+    "seen": 1791398931.3016684,
+    "ast_hash": "13298181e5b411628307698ab561e951",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_browser_origin_http.py": {
+    "mtime": 1791398785.417459,
+    "seen": 1791398931.3035772,
+    "ast_hash": "510ec4151990fec705d7b9eee935b97a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_browser_origin_policy.py": {
+    "mtime": 1791398785.4124591,
+    "seen": 1791398931.3035796,
+    "ast_hash": "30bca0d6c402ed5be96271a9d14dca68",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-origin-security.md": {
+    "mtime": 1791398785.4224591,
+    "seen": 1791398931.3053734,
+    "ast_hash": "d21395f6bab20e7dd0bcfc8de47b2efd",
     "semantic_hash": ""
   }
 }

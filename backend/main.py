@@ -29,6 +29,7 @@ from ai.deck_analysis import analyze_deck, guess_archetype
 from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_priors
 from ai.sideboarding import plan_sideboard
 from api_contracts import ActionRequest, DeckEntry, DeckPairInput, InputModel, PlayerID
+from browser_origin import BrowserOriginMiddleware, trusted_origins
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from analytics.service import AnalyticsService, SimulationCancelled
@@ -65,13 +66,16 @@ async def lifespan(app_instance: FastAPI):
     yield
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
+TRUSTED_BROWSER_ORIGINS = trusted_origins(os.environ.get("MTG_TRUSTED_ORIGINS"))
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=list(TRUSTED_BROWSER_ORIGINS),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Idempotency-Key", "X-Match-Revision"],
 )
+# Added last so mutation rejection runs outside CORS, routes and dependencies.
+app.add_middleware(BrowserOriginMiddleware, origins=TRUSTED_BROWSER_ORIGINS)
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 ensure_generic_token_image()
 app.mount("/card-images", StaticFiles(directory=str(CACHE_DIR)), name="card-images")
