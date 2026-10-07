@@ -279,3 +279,12 @@ Alpha, bounded card semantics and heuristic AI. Full rules coverage, arbitrary-
 card correctness and seasoned-player strength are not established. Current
 backend work takes priority over cosmetic UI changes. Full-suite, browser/LAN,
 long-session, dependency/security and statistical AI acceptance remain open.
+
+## 2026-10-07 Pull and Mass-Exile Checkpoint
+
+Scoped current-base composition repairs mass-exile incarnation/PRE-leave lifecycle
+and admits complete Pull from Eternity with retained native frames and explicit
+owner replacement continuation. Same-source 26 whole modules: 524 passes; see
+`docs/testing/pull-mass-exile-current.md` for evidence and guard limits. Existing
+numeric-prevention transport is preserved. This is not a live deployment or a
+full backend/game/AI release gate; the completion checklist remains open.

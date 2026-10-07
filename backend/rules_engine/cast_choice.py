@@ -16,6 +16,7 @@ TARGET_KEYS = (
     "graveyard_spell_targets", "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
     "aura_targets", "permanent_targets", "artifact_targets", "enchantment_targets",
     "land_targets", "noncreature_permanent_targets",
+    "exile_card_targets",
 )
 
 

@@ -212,6 +212,12 @@ def single_player_permanent_alternative(text: str) -> str | None:
 
 def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str, Any]) -> tuple[bool, str]:
     action_targets = action_targets or {}
+    if 'exile_card_targets' in target_hints:
+        target = action_targets.get('target_card_id')
+        if (not isinstance(target, str) or not target or any(
+                key in action_targets for key in ('target_card_ids', 'target_distribution',
+                    'target_player', 'target_stack_id', 'mode_targets'))):
+            return False, 'Exactly one face-up exiled card target is required.'
     if 'linked_target_pairs' in target_hints:
         from rules_engine.linked_targets import validate_linked_choice
         return validate_linked_choice(target_hints, action_targets)
@@ -342,12 +348,14 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
             "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
             "artifact_targets", "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
             "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+            "exile_card_targets",
         ):
             candidate_ids.update(str(item.get("id")) for item in (target_hints.get(key) or []) if item.get("id") is not None)
         candidate_surface_present = bool(candidate_ids) or any(key in target_hints for key in (
             "creature_targets", "permanent_targets", "land_targets", "artifact_targets",
             "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
             "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+            "exile_card_targets",
         )) or "planeswalker_targets" in target_hints
         if candidate_surface_present and any(str(cid) not in candidate_ids for cid in selected_card_ids):
             return False, "The selected card is not a legal target for this effect."

@@ -449,7 +449,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
-        if (control_frame_required or prevention_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library'}
+        if (control_frame_required or prevention_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library', 'put_exiled_card_into_graveyard'}
                 or effect_key == 'effect_sequence' and any(
                     effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library'}
                     for effect in payload.get('effects', []))):

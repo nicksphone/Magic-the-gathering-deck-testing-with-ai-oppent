@@ -533,6 +533,13 @@ class RulesEngine:
                 reject("Invalid replacement choice")
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return
+            if pending.get('resume_kind') == 'exile_graveyard_entry':
+                from effects.handlers import finish_exiled_graveyard_replacement
+                from rules_engine.stack_engine import resume_paused_resolution
+                finish_exiled_graveyard_replacement(state, player_id, chosen_id)
+                resume_paused_resolution(state, pending)
+                apply_state_based_actions(state)
+                return
             if pending.get('resume_kind') == 'legend_keeper_die':
                 from rules_engine.state_based_actions import finish_legend_keeper_replacement
                 from rules_engine.stack_engine import resume_paused_resolution

@@ -62,6 +62,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "exile_from_graveyard": handlers.exile_from_graveyard,
     "return_permanent_to_hand": handlers.return_permanent_to_hand,
     "return_from_graveyard": handlers.return_from_graveyard,
+    'put_exiled_card_into_graveyard': handlers.put_exiled_card_into_graveyard,
     'grant_flashback': resolve_grant,
     "put_land_from_hand": handlers.put_land_from_hand,
     "cast_from_graveyard": handlers.cast_from_graveyard,

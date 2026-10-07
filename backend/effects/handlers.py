@@ -617,26 +617,37 @@ def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> N
 
 def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> int:
     """Exile every creature, preserving ownership and leave events."""
-    moved = 0
-    leaves: list[dict] = []
+    from rules_engine.events import flush_staged_triggers
+
+    cohort = []
     for player in state.players.values():
         for cid in player.battlefield:
-            if "Creature" in effective_types(state, state.cards[cid]):
-                capture_last_known_battlefield(state, cid)
-    for cid, card in list(state.cards.items()):
-        if card.zone != Zone.BATTLEFIELD or "Creature" not in effective_types(state, card):
-            continue
-        battlefield = state.players[card.controller]
-        owner = state.players[getattr(card, "owner", card.controller)]
-        if cid not in battlefield.battlefield:
-            continue
-        leaves.append({"card_id": cid, "controller": card.controller})
-        battlefield.battlefield.remove(cid)
-        owner.exile.append(cid)
-        card.zone = Zone.EXILE
-        moved += 1
+            card = state.cards[cid]
+            if (card.zone == Zone.BATTLEFIELD and card.controller == player.id
+                    and "Creature" in effective_types(state, card)):
+                cohort.append((card, card.controller, card.owner, {
+                    "incarnation": object_incarnation(card),
+                    "zone_change_sequence": card.zone_change_sequence,
+                }))
+    for card, _, _, _ in cohort:
+        capture_last_known_battlefield(state, card.id)
+    started_staging = not state.trigger_staging
+    if started_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "leaves_battlefield"
+    leaves = [{"card_id": card.id, "controller": previous_controller,
+               "previous_reference": reference}
+              for card, previous_controller, _, reference in cohort]
+    # Collect all genuine PRE departure observers before any zone/list transition.
     emit_event_batch(state, "leaves_battlefield", leaves)
+    for card, previous_controller, owner, _ in cohort:
+        state.players[previous_controller].battlefield.remove(card.id)
+        state.players[owner].exile.append(card.id)
+        card.move_to_zone(Zone.EXILE)
+    moved = len(cohort)
     state.log.append(f"Exile all creatures resolves: {moved} creature(s) exiled.")
+    if started_staging and not state.pending_mechanic_choice:
+        flush_staged_triggers(state)
     return moved
 
 
@@ -1003,6 +1014,7 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         "land_targets": "target_card_id", "artifact_targets": "target_card_id",
         "enchantment_targets": "target_card_id", "noncreature_permanent_targets": "target_card_id",
         "graveyard_creature_targets": "target_card_id", "graveyard_permanent_targets": "target_card_id",
+        'exile_card_targets': 'target_card_id',
         "stack_targets": "target_stack_id",
     }
     if trigger_clause:
@@ -1349,6 +1361,161 @@ def exile_return_immediate(state: MatchState, controller: int, payload: dict) ->
     commit_entry_counters(state, card, data)
     state.log.append(f'{card.name} returns to the battlefield under {state.players[recipient].name}\'s control.')
     emit_event(state, 'enters_battlefield', {'card_id': target, 'controller': recipient})
+
+
+def _exile_entry_json(value):
+    import json
+    from rules_engine.action_validation import ActionRejected
+    try:
+        return json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False)
+    except (TypeError, ValueError) as error:
+        raise ActionRejected('Malformed exile-entry JSON context') from error
+
+
+def _exile_entry_plan_data(plan):
+    from dataclasses import asdict
+    data = asdict(plan)
+    data['origin'] = plan.origin.value
+    data['destination'] = plan.destination.value
+    return data
+
+
+def _exile_entry_source_reference(state, frame, controller):
+    from dataclasses import fields
+    from game_state.state import StackItem
+    from rules_engine.action_validation import ActionRejected
+    if (type(frame) is not dict or set(frame) != {field.name for field in fields(StackItem)}
+            or type(frame.get('id')) is not str or not frame['id']
+            or type(frame.get('source_card_id')) is not str or not frame['source_card_id']
+            or type(frame.get('controller')) is not int or frame['controller'] != controller
+            or controller not in state.players
+            or type(frame.get('label')) is not str or not frame['label']
+            or type(frame.get('targets')) is not list
+            or any(type(target) is not str for target in frame['targets'])
+            or frame.get('effect_key') != 'put_exiled_card_into_graveyard'
+            or type(frame.get('payload')) is not dict):
+        raise ActionRejected('Invalid retained exile-entry source frame')
+    data = frame['payload']
+    if '__stack_copy_kind' in data:
+        snapshot = data.get('__copied_card')
+        snapshot_keys = {'name', 'types', 'type_line', 'mana_cost', 'oracle_text', 'power',
+            'toughness', 'printed_power', 'printed_toughness', 'loyalty', 'keywords', 'colors',
+            'image_uri', 'layout', 'card_faces', 'selected_face_index', 'bestow_characteristics'}
+        if (data['__stack_copy_kind'] != 'spell' or type(data.get('__copied_card')) is not dict
+                or set(snapshot) != snapshot_keys or type(snapshot.get('name')) is not str
+                or type(snapshot.get('types')) is not list
+                or any(type(kind) is not str for kind in snapshot['types'])
+                or not {'Instant', 'Sorcery'}.intersection(snapshot['types'])
+                or type(data.get('__copied_from_stack_id')) is not str):
+            raise ActionRejected('Invalid retained exile-entry copied source')
+        return 'copied_spell', None
+    source = state.cards.get(frame['source_card_id'])
+    if source is None or source.zone != Zone.STACK:
+        raise ActionRejected('Exile-entry physical source is no longer on the stack')
+    reference = {'incarnation': object_incarnation(source),
+                 'zone_change_sequence': source.zone_change_sequence}
+    if any(type(value) is not int or value < 0 for value in reference.values()):
+        raise ActionRejected('Invalid exile-entry physical source reference')
+    return 'physical_spell', reference
+
+
+def _exile_entry_target(state, frame, references):
+    from rules_engine.action_validation import ActionRejected
+    from rules_engine.targeting import validate_announced_target_references, announced_target_reference_matches
+    data = frame['payload']
+    announced = data.get('__announced_targets')
+    if (type(announced) is not dict or type(announced.get('target_card_id')) is not str
+            or data.get('target_card_id') != announced['target_card_id']
+            or _exile_entry_json(references) != _exile_entry_json(data.get('__announced_target_references'))):
+        raise ActionRejected('Exile-entry announced target changed')
+    validate_announced_target_references(announced, references)
+    cid = announced['target_card_id']
+    card = state.cards.get(cid)
+    if (card is None or card.owner not in state.players or card.zone != Zone.EXILE
+            or cid not in state.players[card.owner].exile or card.exile_face_down is not False
+            or is_departed_token(card)
+            or not announced_target_reference_matches(state, references, ('target_card_id',), cid)):
+        raise ActionRejected('Exile-entry selected object is no longer available')
+    return card
+
+
+def put_exiled_card_into_graveyard(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.replacement import graveyard_entry_plans
+    from rules_engine.action_validation import ActionRejected
+    frame = payload.get('__resolving_item')
+    kind, source_reference = _exile_entry_source_reference(state, frame, controller)
+    if payload.get('__source_card_id') != frame['source_card_id']:
+        raise ActionRejected('Exile-entry frame has a different source')
+    references = payload.get('__announced_target_references')
+    card = _exile_entry_target(state, frame, references)
+    plans = graveyard_entry_plans(state, card.id)
+    if len(plans) == 1:
+        plan = plans[0]
+        cause = prepare_graveyard_entry_causes(state, [plan])[card.id]
+        execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
+        return
+    candidates = {plan.replacement_source_id: _exile_entry_plan_data(plan) for plan in plans}
+    if (not plans or len(candidates) != len(plans)
+            or any(type(source) is not str or source not in state.cards for source in candidates)
+            or state.pending_replacement_choice):
+        raise ActionRejected('Invalid exile-entry replacement candidates')
+    state.pending_replacement_choice = {
+        'resume_kind': 'exile_graveyard_entry', 'player_id': card.owner,
+        'event': 'graveyard_entry', 'target_card_id': card.id, 'stack_id': frame['id'],
+        'continuation_controller': controller,
+        'options': [{'source_id': plan.replacement_source_id,
+                     'name': state.cards[plan.replacement_source_id].name,
+                     'destination': plan.destination.value} for plan in plans],
+        'exile_graveyard_context': {
+            'version': 1, 'resolving_frame': copy.deepcopy(frame),
+            'source_kind': kind, 'physical_source_reference': source_reference,
+            'target_references': copy.deepcopy(references), 'candidates': candidates,
+        },
+    }
+    state.priority_player = card.owner
+    state.passed_priority = set()
+
+
+def finish_exiled_graveyard_replacement(state: MatchState, player_id: int, source_id: str) -> None:
+    from rules_engine.action_validation import ActionRejected
+    from rules_engine.replacement import graveyard_entry_plans
+    pending = state.pending_replacement_choice
+    context = pending.get('exile_graveyard_context') if type(pending) is dict else None
+    keys = {'version', 'resolving_frame', 'source_kind', 'physical_source_reference',
+            'target_references', 'candidates'}
+    if (type(pending) is not dict or pending.get('resume_kind') != 'exile_graveyard_entry'
+            or type(pending.get('player_id')) is not int
+            or type(player_id) is not int or pending.get('player_id') != player_id
+            or pending.get('event') != 'graveyard_entry'
+            or type(context) is not dict or set(context) != keys
+            or type(context.get('version')) is not int or context['version'] != 1
+            or type(pending.get('continuation_controller')) is not int
+            or type(source_id) is not str or not source_id):
+        raise ActionRejected('Invalid retained exile-entry choice context')
+    frame = context['resolving_frame']
+    kind, reference = _exile_entry_source_reference(state, frame, pending['continuation_controller'])
+    if (_exile_entry_json(frame) != _exile_entry_json(pending.get('resolving_item'))
+            or pending.get('stack_id') != frame['id']
+            or kind != context['source_kind']
+            or _exile_entry_json(reference) != _exile_entry_json(context['physical_source_reference'])):
+        raise ActionRejected('Exile-entry resolving source changed')
+    card = _exile_entry_target(state, frame, context['target_references'])
+    if card.owner != player_id or pending.get('target_card_id') != card.id:
+        raise ActionRejected('Exile-entry affected owner changed')
+    plans = graveyard_entry_plans(state, card.id)
+    candidates = {plan.replacement_source_id: _exile_entry_plan_data(plan) for plan in plans}
+    options = [{'source_id': plan.replacement_source_id,
+                'name': state.cards[plan.replacement_source_id].name,
+                'destination': plan.destination.value} for plan in plans]
+    if (len(candidates) != len(plans) or len(plans) < 2
+            or _exile_entry_json(candidates) != _exile_entry_json(context['candidates'])
+            or _exile_entry_json(options) != _exile_entry_json(pending.get('options'))
+            or source_id not in candidates):
+        raise ActionRejected('Exile-entry replacement candidates changed')
+    chosen = next(plan for plan in plans if plan.replacement_source_id == source_id)
+    cause = prepare_graveyard_entry_causes(state, [chosen])[card.id]
+    state.pending_replacement_choice = None
+    execute_graveyard_entry(state, chosen, prevalidated=True, _prepared_cause=cause)
 
 
 def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) -> None:

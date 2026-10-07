@@ -384,15 +384,15 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1791345791.5980735,
-    "seen": 1791346045.9859014,
-    "ast_hash": "0db478fb86f6c230828994c846fbd90b",
+    "mtime": 1791351513.6444266,
+    "seen": 1791351625.7559423,
+    "ast_hash": "f7dc17f021b03f1d6c5d16009ba2879b",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1791341409.8153145,
-    "seen": 1791342233.266977,
-    "ast_hash": "3a2159ae2de9ef209cf7a7cb654f866a",
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7559452,
+    "ast_hash": "e8338237d145b71221b41a89f4dff500",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -552,9 +552,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/cast_choice.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2178192,
-    "ast_hash": "aacedaf2a6836ef4f53e9448e3bd65f4",
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7560031,
+    "ast_hash": "b47bee9d46be199a75c27c0d9a3e7a48",
     "semantic_hash": ""
   },
   "backend/rules_engine/casting_resources.py": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791345791.5980735,
-    "seen": 1791346045.986,
-    "ast_hash": "9a64eb5a3f5a2e643b5a5f2f6b2f0592",
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7560558,
+    "ast_hash": "79624623ac06673de55407fa1b4b990b",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791343450.637871,
-    "seen": 1791344043.0877306,
-    "ast_hash": "f04ca3ee7d8cc1212503765cf99739b1",
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7561202,
+    "ast_hash": "8148c500ed6b3a79738b05ba1e050479",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -936,9 +936,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
-    "mtime": 1791345791.5980735,
-    "seen": 1791346045.9860964,
-    "ast_hash": "c5acfbad6174fcfddc9d8ccfee0fb647",
+    "mtime": 1791351513.6734262,
+    "seen": 1791351625.7561638,
+    "ast_hash": "bc3134ff6ec26aa6246ee9ba65f5f1cb",
     "semantic_hash": ""
   },
   "backend/rules_engine/state_based_actions.py": {
@@ -960,9 +960,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/targeting.py": {
-    "mtime": 1791331263.4982135,
-    "seen": 1791331447.7871222,
-    "ast_hash": "8986a7a4940eb6e566398dd75766c76e",
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7561717,
+    "ast_hash": "b92af52459d153e5ad510cbe576e75b4",
     "semantic_hash": ""
   },
   "backend/rules_engine/token_descriptors.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791350027.5268385,
-    "seen": 1791350099.0634046,
-    "ast_hash": "762f31f2b702297bd73704c0f145f643",
+    "mtime": 1791351552.9047341,
+    "seen": 1791351625.7610402,
+    "ast_hash": "d014558954173444f5e863db0e2efdc7",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -12681,6 +12681,198 @@
     "mtime": 1791350027.5268385,
     "seen": 1791350099.0632305,
     "ast_hash": "1ac762f23e2cd5778b8a6ec439c876b8",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/causal_graveyard_return/cremate.json": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7565703,
+    "ast_hash": "22e91a656c8e694293f077d2dd201c2c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/causal_graveyard_return/provenance.json": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7565734,
+    "ast_hash": "8275c7114f57d90e0cf78f457977d572",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/causal_graveyard_return/pull-from-eternity.json": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7565763,
+    "ast_hash": "a1a195d205c7f3cc2cafd0bb80fe09be",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/blood-artist.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7570815,
+    "ast_hash": "b48c362e4c912831645f36bb69ed2b23",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/darksteel-colossus.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7570844,
+    "ast_hash": "31aa1aa4215381e7ce90aaf48cb5358d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/descend-upon-the-sinful.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.757087,
+    "ast_hash": "da3e843d24f602fe4b2c27a236e6d09e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/final-judgment.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7570891,
+    "ast_hash": "e83ff54f9a14f622c6e520f8d0b65a4c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/glorious-anthem.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7570908,
+    "ast_hash": "a5d98a3fd8f77a47b0b3912894d91bf2",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/humility.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7570922,
+    "ast_hash": "87ba4d82c93e68221231b596aefe704b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/island.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7570944,
+    "ast_hash": "8f3105944fb15a42fe2b62607cab9f26",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/llanowar-elves.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7570972,
+    "ast_hash": "4ee1118058a2adaf24e78777ffd588f0",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/plains.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7570992,
+    "ast_hash": "6488f8308f1039ce4011b6f380a5ad5d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/provenance.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7571008,
+    "ast_hash": "ed980bacb297991f9d87b347564e1463",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/raise-the-alarm.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7571025,
+    "ast_hash": "290da0a57ccb5ecfa7f83d8cbbec5012",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/ray-of-command.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7571044,
+    "ast_hash": "c1a1dc9624113de6d00a5dabd2b3b832",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_audit/sunfall.json": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7571065,
+    "ast_hash": "d1a9aac2006366ff7be90e83f619f5fb",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_product/avacyn.json": {
+    "mtime": 1791351513.6444266,
+    "seen": 1791351625.7571082,
+    "ast_hash": "e83c542c2cdffacb37e9dc1232fc8c65",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_product/progenitus.json": {
+    "mtime": 1791351513.6444266,
+    "seen": 1791351625.7571094,
+    "ast_hash": "925e55a8f5eb69561ebbbaa743aa96b9",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_product/provenance.json": {
+    "mtime": 1791351513.6444266,
+    "seen": 1791351625.757111,
+    "ast_hash": "42b5d4042a099a712cafe2b7839d770c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/mass_exile_product/rest-in-peace.json": {
+    "mtime": 1791351513.6444266,
+    "seen": 1791351625.7571127,
+    "ast_hash": "33b8ebbe5509841680f665606419b892",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/pull_competing_replacement/final-judgment.json": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7572389,
+    "ast_hash": "e83ff54f9a14f622c6e520f8d0b65a4c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/pull_competing_replacement/saw-it-coming.json": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7572405,
+    "ast_hash": "71aa03201d2f54a163d3913952bcaafd",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/pull_competing_replacement/unmake.json": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7572422,
+    "ast_hash": "d3d229480b04d1972bb77dc67203b204",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_causal_graveyard_return.py": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7580872,
+    "ast_hash": "78c396c20f0245b2918e259be2250028",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_mass_exile_committed_lifecycle.py": {
+    "mtime": 1791351513.6444266,
+    "seen": 1791351625.7586167,
+    "ast_hash": "284419befb5aabc775eef1fa08027a9e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_mass_exile_complete_body_audit.py": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7586186,
+    "ast_hash": "b7fbd39bee47ea5b3c2b8992cbcca685",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_mass_exile_lifecycle_audit.py": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7586198,
+    "ast_hash": "3dd5b8e865783b5b726e48fef75d5d17",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_pull_competing_replacement.py": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.7588468,
+    "ast_hash": "7bd72f99e8b7e2487127ed7fc61f6761",
+    "semantic_hash": ""
+  },
+  "docs/testing/mass-exile-committed-lifecycle.md": {
+    "mtime": 1791351513.6444266,
+    "seen": 1791351625.7605543,
+    "ast_hash": "35cc2dc61adc68c6cbafa67fdfe00cb4",
+    "semantic_hash": ""
+  },
+  "docs/testing/mass-exile-lifecycle-audit.md": {
+    "mtime": 1791351513.6364267,
+    "seen": 1791351625.7605567,
+    "ast_hash": "e83f11c2eb7ef97ede144d5a364bea46",
+    "semantic_hash": ""
+  },
+  "docs/testing/pull-exile-graveyard-continuation.md": {
+    "mtime": 1791351513.629427,
+    "seen": 1791351625.76069,
+    "ast_hash": "fd140a2dee3b25aafa9319cf63aade72",
+    "semantic_hash": ""
+  },
+  "docs/testing/pull-mass-exile-current.md": {
+    "mtime": 1791351552.9037342,
+    "seen": 1791351625.7606921,
+    "ast_hash": "7ed2e88be88071ae4fac7a1ab6435f8b",
     "semantic_hash": ""
   }
 }

@@ -14,6 +14,7 @@ from rules_engine.targeting import single_player_permanent_alternative, stack_ob
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
 X_DAMAGE_RE = re.compile(r"deals?\s+x\s+damage")
 DRAW_RE = re.compile(r"draw\s+(a|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
+FACE_UP_EXILE_GRAVEYARD_RE = re.compile(r"put target face-up exiled card into its owner's graveyard\.", re.I)
 EACH_PLAYER_DRAW_RE = re.compile(r"each player draws? (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+|x) cards?\.?", re.IGNORECASE)
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gains?\s+(\d+)\s+life")
@@ -350,6 +351,10 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    if re.search(r'\bput target face-up exiled card\b', oracle.strip(), re.I):
+        if FACE_UP_EXILE_GRAVEYARD_RE.fullmatch(oracle.strip()):
+            return 'put_exiled_card_into_graveyard', {'target_card_id': action_targets.get('target_card_id')}
+        return 'noop', {'__unsupported_instruction': oracle}
     closed_damage = _infer_closed_damage_instruction(oracle, name, action_targets)
     if closed_damage is not None:
         return closed_damage
@@ -1096,6 +1101,15 @@ def inspect_target_hints(
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
     oracle = without_reminder_text(str(" ".join(selected_modes) if selected_modes else selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
+    if FACE_UP_EXILE_GRAVEYARD_RE.fullmatch(oracle.strip()):
+        from rules_engine.zone_actions import is_departed_token
+        return {'exile_card_targets': [
+            {'id': cid, 'name': card.name, 'owner': card.owner, 'controller': card.controller}
+            for player in state.players.values() for cid in player.exile
+            if (card := state.cards.get(cid)) is not None
+            and card.zone == Zone.EXILE and cid in state.players[card.owner].exile
+            and card.exile_face_down is False and not is_departed_token(card)
+        ]}
     from rules_engine.linked_targets import linked_damage_instruction, linked_target_hints
     if linked_damage_instruction(oracle, card.name):
         return linked_target_hints(state, card, controller)

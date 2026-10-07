@@ -1,0 +1,27 @@
+{
+  "source_tar_sha256": "e992f918e97ec9c05afea69ffc0defd44c2dc68bb0e92f21b02a4b9b5340f003",
+  "intake_complete_utc": "2026-10-07T04:19:23Z",
+  "provider": "Scryfall official API",
+  "cards": [
+    {
+      "file": "pull-from-eternity.json",
+      "request": "https://api.scryfall.com/cards/named?exact=Pull%20from%20Eternity",
+      "sha256": "80667247e72c531637fd69411716fa905fc3085627511033dde3e5fc3ef21a07",
+      "name": "Pull from Eternity",
+      "id": "3d218091-d218-41ad-b666-c8ab3de7160a",
+      "oracle_id": "2903bd66-6948-445b-a18a-12e2ce1a86c3",
+      "uri": "https://api.scryfall.com/cards/3d218091-d218-41ad-b666-c8ab3de7160a",
+      "oracle_text": "Put target face-up exiled card into its owner's graveyard."
+    },
+    {
+      "file": "cremate.json",
+      "request": "https://api.scryfall.com/cards/named?exact=Cremate",
+      "sha256": "ee297088c46cb15196fa27c4b6aa16599300ac8621fdd3cdd0ca37879f54405b",
+      "name": "Cremate",
+      "id": "013d5260-f906-4f6a-97ed-725197743b60",
+      "oracle_id": "c6a2e410-b182-48d1-aeb2-bc8de27e9cd2",
+      "uri": "https://api.scryfall.com/cards/013d5260-f906-4f6a-97ed-725197743b60",
+      "oracle_text": "Exile target card from a graveyard.\nDraw a card."
+    }
+  ]
+}
