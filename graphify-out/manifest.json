@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791407690.572891,
-    "seen": 1791407813.5604777,
-    "ast_hash": "768b336f3465376bdc59bca2a3cf1775",
+    "mtime": 1791413773.4568746,
+    "seen": 1791414020.6836,
+    "ast_hash": "058c638de57743429362506e01c5545d",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791413493.1533587,
-    "seen": 1791413570.2750943,
-    "ast_hash": "c434040f71944d2fb08623c5c1bc6160",
+    "mtime": 1791413908.99219,
+    "seen": 1791414020.687884,
+    "ast_hash": "7aa6f92b2cd9807a18d420603c27009b",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13695,6 +13695,36 @@
     "mtime": 1791412057.9831977,
     "seen": 1791413570.275153,
     "ast_hash": "6d5d6b2dfea0e4044484ea497be2d8e5",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-proposal/test_march_current_baseline.py": {
+    "mtime": 1791413534.9378393,
+    "seen": 1791414020.6832325,
+    "ast_hash": "eb71b63281842cfda8eb001801ab91f3",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-proposal/test_march_desired_paid.py": {
+    "mtime": 1791413534.9378393,
+    "seen": 1791414020.683236,
+    "ast_hash": "b4c1811567040fe24545d984cf6c543b",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-proposal/test_march_target_controls.py": {
+    "mtime": 1791413534.9388392,
+    "seen": 1791414020.683238,
+    "ast_hash": "2b8aa11d2fac3174a69d7fc98b40b023",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-proposal/README.md": {
+    "mtime": 1791413534.9408393,
+    "seen": 1791414020.6871827,
+    "ast_hash": "30feaa2d7ba78b9a9aaa21462aee14bc",
+    "semantic_hash": ""
+  },
+  "docs/testing/march-target-current.md": {
+    "mtime": 1791413969.0594022,
+    "seen": 1791414020.687742,
+    "ast_hash": "9c7f2a59761bcd5a0c36d5584e42be1f",
     "semantic_hash": ""
   }
 }

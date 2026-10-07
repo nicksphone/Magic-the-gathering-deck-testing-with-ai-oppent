@@ -340,6 +340,23 @@ def _infer_resource_scaled_target_pt(oracle, action_targets):
     }
 
 
+def compile_complete_x_bounded_exile_instruction(oracle_text: str, card_name: str = '') -> dict | None:
+    """Closed target contract; recognizing its header does not pay its cost."""
+    body = re.sub(r'\s+', ' ', oracle_text or '').strip()
+    if not (re.search(r'\bas an additional cost to cast\b', body, re.I)
+            and re.search(r'\bexile\b[^.]*\bcards from your hand\b', body, re.I)
+            and re.search(r'\bexile target\b[^.]*\bwith mana value x\b', body, re.I)):
+        return None
+    reference = r'this spell' + ('|' + re.escape(card_name) if card_name else '')
+    if not re.fullmatch(
+            r'As an additional cost to cast (?:' + reference + r'), you may exile any number of '
+            r'(?:white|blue|black|red|green) cards from your hand\. '
+            r'This spell costs \{\d+\} less to cast for each card exiled this way\. '
+            r'Exile target artifact, creature, or enchantment with mana value X or less\.', body, re.I):
+        return {'__unsupported_instruction': oracle_text}
+    return {'allowed_types': ['Artifact', 'Creature', 'Enchantment']}
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,
@@ -351,6 +368,19 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    bounded_exile = compile_complete_x_bounded_exile_instruction(card.oracle_text, card.name)
+    if bounded_exile is not None:
+        x_value = action_targets.get('x_value')
+        if ('__unsupported_instruction' in bounded_exile
+                or type(x_value) is not int or x_value < 0):
+            return 'noop', {'__unsupported_instruction': card.oracle_text}
+        target = action_targets.get('target_card_id')
+        restrictions = {**bounded_exile, 'mana_value_max': x_value}
+        if (not isinstance(target, str) or target not in state.cards
+                or state.cards[target].zone != Zone.BATTLEFIELD
+                or not _target_id_matches_restrictions(state, target, restrictions, controller)):
+            return 'noop', {'__unsupported_instruction': card.oracle_text}
+        return 'exile', {'target_card_id': target}
     if set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
         from rules_engine.foretell import spell_variants, record
         variants = spell_variants(card.oracle_text)
@@ -1150,6 +1180,11 @@ def inspect_target_hints(
 ) -> dict[str, Any]:
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
+    bounded_exile = compile_complete_x_bounded_exile_instruction(card.oracle_text, card.name)
+    if bounded_exile is not None and ('__unsupported_instruction' in bounded_exile
+            or (action_targets and 'x_value' in action_targets
+                and (type(action_targets['x_value']) is not int or action_targets['x_value'] < 0))):
+        return {'requires_x_value': True, 'unsupported_resolution': ['unsupported complete X-bounded exile instruction']}
     raw_oracle = spell_resolution_text(card, card.oracle_text or "")
     action_targets = action_targets or {}
     selected_modes = _printed_mode_order(raw_oracle, action_targets.get("mode_texts") or [])
@@ -1457,6 +1492,11 @@ def inspect_target_hints(
                 {'Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'})
         ]
     restrictions = infer_target_restrictions(state, oracle, controller)
+    if bounded_exile is not None:
+        hints['requires_x_value'] = True
+        restrictions.update(bounded_exile)
+        if 'x_value' in action_targets:
+            restrictions['mana_value_max'] = action_targets['x_value']
     if TARGET_TYPE_UNION_RE.search(oracle) or 'combat_status' in restrictions:
         hints['permanent_targets'] = [
             {'id': cid, 'name': state.cards[cid].name}
