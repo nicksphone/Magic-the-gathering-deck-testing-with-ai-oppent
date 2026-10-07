@@ -19,6 +19,25 @@ _PLAYER_PERMANENT_ALTERNATIVE_RE = re.compile(
 
 
 def _target_reference_shape(announced, make_reference):
+    from rules_engine.action_validation import ActionRejected
+
+    if not isinstance(announced, dict):
+        raise ActionRejected('Malformed announced target references')
+    for key, expected in (('target_card_ids', list), ('target_distribution', dict), ('mode_targets', dict)):
+        if key in announced and not isinstance(announced[key], expected):
+            raise ActionRejected('Malformed announced target references')
+
+    def card_id(value):
+        return isinstance(value, str) and bool(value)
+
+    scalar = announced.get('target_card_id')
+    if ((scalar is not None and not card_id(scalar))
+            or any(not card_id(cid) for cid in announced.get('target_card_ids', []))
+            or any(not (card_id(cid) or type(cid) is int and cid in (1, 2))
+                   for cid in announced.get('target_distribution', {}))
+            or any(not isinstance(selected, dict) for selected in announced.get('mode_targets', {}).values())):
+        raise ActionRejected('Malformed announced target references')
+
     result = {}
     if announced.get('target_card_id') is not None:
         result['target_card_id'] = make_reference(announced['target_card_id'])

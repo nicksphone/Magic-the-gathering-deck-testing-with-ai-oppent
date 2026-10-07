@@ -2,6 +2,17 @@
 
 ## Unreleased Backend Composition - 2026-10-06
 
+- Subsequent 2026-10-07 shape-validation increment rejects malformed recognized
+  announcement containers/card-ID leaves through the shared reference helper.
+  Seven whole pure modules pass 166 checks in 45.11s; original 40 desired
+  rejection cases pass unchanged. The original 12 HTTP rejection cases also
+  pass in 8.38s with full root/controller/SQLite equality and cold restores.
+
+- On the prior frozen published checkpoint, existing browser human-action
+  flows pass 81 checkpoints; App recovery passes four and actual backend
+  stop/restart verification passes one. These are fixture/consumer flows,
+  not complete natural human games or expert-AI certification.
+
 - Compose complete nontoken-permanent Flicker admission with announced-target
   identity, animation, entry choices and color queries. Current whole30 gate:
   692 passed / 38 failed, 194 warnings, 201.38s; no errors/skips. All 78 new

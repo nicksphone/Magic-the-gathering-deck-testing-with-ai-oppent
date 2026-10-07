@@ -960,9 +960,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/targeting.py": {
-    "mtime": 1791330145.6572335,
-    "seen": 1791330319.1520848,
-    "ast_hash": "3bb1524e3371e6a97dce390d71521dc3",
+    "mtime": 1791331263.4982135,
+    "seen": 1791331447.7871222,
+    "ast_hash": "8986a7a4940eb6e566398dd75766c76e",
     "semantic_hash": ""
   },
   "backend/rules_engine/token_descriptors.py": {
@@ -6774,9 +6774,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791330875.3055992,
-    "seen": 1791330942.4050732,
-    "ast_hash": "e03c777f48cca03d01917811f1d8ec76",
+    "mtime": 1791332986.0065222,
+    "seen": 1791333309.306331,
+    "ast_hash": "695cd5da195c8c8ce6e4656f6bc571e6",
     "semantic_hash": ""
   },
   "README.md": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791330875.3065991,
-    "seen": 1791330942.4058268,
-    "ast_hash": "62d08bf777898e60c5b4f47492d34a5d",
+    "mtime": 1791332986.008522,
+    "seen": 1791333309.3070939,
+    "ast_hash": "0d3da5461af60a0c459ed9b506b71be4",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -11790,9 +11790,9 @@
     "semantic_hash": ""
   },
   "docs/testing/announced-target-current-composition.md": {
-    "mtime": 1791330875.307599,
-    "seen": 1791330942.4052207,
-    "ast_hash": "c9f449d023a22520ffd2f77872570d5e",
+    "mtime": 1791332986.007522,
+    "seen": 1791333309.306481,
+    "ast_hash": "39d2e1acb8b0aa7e0a55a6f19d56646a",
     "semantic_hash": ""
   },
   "docs/testing/announced-target-object-references.md": {
@@ -11823,6 +11823,36 @@
     "mtime": 1791330481.0108683,
     "seen": 1791330942.4054093,
     "ast_hash": "49782137797a83a009b7831c574cb440",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_announced_target_shape_audit.py": {
+    "mtime": 1791331263.4912136,
+    "seen": 1791331447.7884638,
+    "ast_hash": "b9086ed19e6dd9fe4055f536593069b1",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_announced_target_shape_controls.py": {
+    "mtime": 1791331263.4982135,
+    "seen": 1791331447.788466,
+    "ast_hash": "02076cafe4e06f31e47b094fd8363d90",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_announced_target_shape_http_audit.py": {
+    "mtime": 1791331263.4912136,
+    "seen": 1791331447.7884676,
+    "ast_hash": "594fc6132bebbcae59d6850a6a0af5b0",
+    "semantic_hash": ""
+  },
+  "docs/testing/announced-target-shape-validation.md": {
+    "mtime": 1791331263.4982135,
+    "seen": 1791331447.7900245,
+    "ast_hash": "09fa9f9d76226cb35207619e2dd5a4af",
+    "semantic_hash": ""
+  },
+  "docs/testing/malformed-announced-target-shapes.md": {
+    "mtime": 1791331263.4912136,
+    "seen": 1791331447.790331,
+    "ast_hash": "29fb8a54ccd06a3cc80b14664d0cb3e6",
     "semantic_hash": ""
   }
 }

@@ -138,6 +138,9 @@ features or claims based on helpers alone.
    full state/controller/SQLite equality on rejection, including failed writes.
 5. [ ] Complete refresh, backend restart, ambiguous timeout and manual/autoplay
    overlap acceptance. Reconcile before retry; preserve revisions/idempotency.
+   Published checkpoint browser evidence covers refresh, a lost accepted HTTP
+   response, duplicate land intent and real backend restart. Manual/autoplay,
+   full natural human games and broader restart paths remain acceptance work.
 6. [ ] Verify seeded interactive BO3 transitions, loser play/draw selection,
    sideboard inventory and restart parity. Implement deliberate AI sideboarding
    or label it unavailable, never silently substitute an untested policy.

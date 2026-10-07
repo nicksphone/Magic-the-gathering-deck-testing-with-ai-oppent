@@ -59,8 +59,33 @@ qualification; the later whole30 gate uses the correct isolated-SQLite guard.
 
 Current frontend `test:unit`, lint and build all exit 0. These are not browser
 or full frontend-suite results. A separate malformed-announcement audit shows
-structured-rejection gaps (HTTP 500 with root/SQL preserved); the bounded shared
-shape-validation fix is assigned and has not yet been composed here.
+structured-rejection gaps (HTTP 500 with root/SQL preserved). On 2026-10-07 the
+bounded shared shape-validation fix was composed after published `db32226`.
+Only `_target_reference_shape` changes; known container types and nonempty card-ID
+leaves validate before access/iteration. Player distribution keys, valid empty
+shapes, metadata/amount noninterference and legacy behavior remain unchanged.
+Current seven-whole pure gate: 166 passed, 2 warnings, 45.11s, exit 0, with all
+SQLite/network denied. The original 40 desired rejection tests are unchanged
+and pass. The original whole 12-case HTTP module then passes unchanged on the
+current composition: 12 passed, 26 warnings, 8.38s, exit 0. Real structured 422
+rejections preserve full root/controller/SQLite state and cold before/after
+restores; targeting SHA `60029fa1` matches before/after. Pure and HTTP gates are
+separate, not a repeated full730 result. This closes the bounded container/leaf
+500 gap, not every malformed frame or legacy missing-receipt behavior.
+
+## Browser And Recovery Evidence
+
+Before the later shape increment, the immutable source archive `6c35136a`
+(published checkpoint `db32226`) passed three unchanged actual browser scripts:
+81 human-action console checkpoints, four actual-App recovery checkpoints, and
+one verification after a real owned-backend stop/restart against the same local
+SQLite database. All scripts exit 0. Checkpoints are not independent pytest cases.
+Production Controls/Battlefield are mounted in their existing fixture page;
+recovery uses App. Own loopback services and runtime API/media proxies avoid the
+live backend. Source hashes match before/after and owned services stop afterward.
+Verified NFS report: `browser-functional-current/mtg-functional-browser-P1lYf0`.
+No natural complete human game, all BO3 inventory paths or newer-shape browser
+qualification is inferred from this earlier-source result.
 
 ## Remaining Acceptance
 
