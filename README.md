@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+Latest scoped backend qualification: sourced fixed-cost Suspend readiness and
+temporary-characteristic HTTP/persistence checks. See
+[current acceptance](docs/testing/suspend-and-characteristics-http-current.md).
+This remains an unfinished playtesting app, not unrestricted rules certification.
+
 A desktop-first React/TypeScript and Python/FastAPI application for two-player
 Magic deck testing, human play, AI matches and reproducible gameplay diagnostics.
 

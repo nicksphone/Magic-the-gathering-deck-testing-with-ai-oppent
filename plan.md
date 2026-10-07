@@ -98,13 +98,16 @@ Full corpus, lifecycle and release acceptance remain unfinished.
   resolving frame for Ray copies. A normal-cast receipt alone is insufficient;
   a copied spell remains independent when its original is countered. Shared
   resolver changes require producer/consumer qualification before Ray149.
-- [ ] Qualify temporary characteristics through checked HTTP actions and cold
+- [x] Qualify bounded temporary characteristics through checked HTTP actions and cold
   SQLite restore. Published `7dfbd51` passes seven whole pure modules / 232 checks;
-  the separately scoped 40-case HTTP gate remains pending actual execution.
-- [ ] Align fixed-cost Suspend readiness with bounded runtime admission and
+  the exact parent source-only HTTP copy passes all 40 checks, including eight
+  cold-process continuations and actual native-turn mana activation. Broader
+  layers/copies remain open. [Current acceptance](docs/testing/suspend-and-characteristics-http-current.md).
+- [x] Align bounded fixed-cost Suspend readiness with runtime admission and
   canonical context, not a name allowlist. Frozen7f audit: 61 passes / six
   blanket-warning failures; variable costs, unknown layouts/clauses and legacy
-  context-free callers remain conservative. Do not declare whole decks ready.
+  context-free callers remain conservative. Current composition passes four whole
+  modules / 136 checks. Do not declare whole decks ready or general Suspend complete.
 - [ ] Integrate Soul-Scar conversion into affected-player replacement ordering,
   prevention and re-evaluation. Canonical audit: 43 passes / six desired failures.
   Clearing the misrouted warning alone would conceal a real rules defect.

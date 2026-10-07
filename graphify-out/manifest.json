@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "backend/card_data/service.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.217705,
-    "ast_hash": "d986c998451380ee7b547b40c9455db7",
+    "mtime": 1791338325.7715976,
+    "seen": 1791338576.0722675,
+    "ast_hash": "ee2f821d0c2ffba4c274b559a4e7a331",
     "semantic_hash": ""
   },
   "backend/card_data/sync.py": {
@@ -624,9 +624,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/coverage.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2178423,
-    "ast_hash": "8bf4275ce6510a1384832fb4cbd73289",
+    "mtime": 1791338325.7715976,
+    "seen": 1791338576.072394,
+    "ast_hash": "1c95c64b4979afe44319310fdd648a8d",
     "semantic_hash": ""
   },
   "backend/rules_engine/creature_subtypes.json": {
@@ -954,9 +954,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/suspend.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2179527,
-    "ast_hash": "99449c2c3c96f06c4f96c58e42bd5544",
+    "mtime": 1791338325.7715976,
+    "seen": 1791338576.0725129,
+    "ast_hash": "8a135441e714534320ba9d97aa609995",
     "semantic_hash": ""
   },
   "backend/rules_engine/targeting.py": {
@@ -6774,15 +6774,15 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1791336484.2530773,
-    "seen": 1791336552.4823976,
-    "ast_hash": "089612cc3adb35c6a33daff287c63c2e",
+    "mtime": 1791338494.3368404,
+    "seen": 1791338576.0752714,
+    "ast_hash": "570fe9fd5533461c4ef00eb1450fb03b",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791336484.2500772,
-    "seen": 1791336552.4823995,
-    "ast_hash": "870688a4fe6af104d4ee12f01452f11e",
+    "mtime": 1791338494.3348405,
+    "seen": 1791338576.0752733,
+    "ast_hash": "c16e66b6cbd951b6db0ec49d23b00324",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791337452.7401423,
-    "seen": 1791337957.2743921,
-    "ast_hash": "92ce205f865d51449ce16ff4133f30f6",
+    "mtime": 1791338494.3368404,
+    "seen": 1791338576.076084,
+    "ast_hash": "45d799bf2c8b2ee9bc0890baacecdaf1",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -12006,9 +12006,9 @@
     "semantic_hash": ""
   },
   "docs/testing/temporary-characteristics-current-composition.md": {
-    "mtime": 1791336484.2540772,
-    "seen": 1791336552.4830763,
-    "ast_hash": "bb88642c3eb6348e5fca837ba5d73b7a",
+    "mtime": 1791338494.3378403,
+    "seen": 1791338576.0759912,
+    "ast_hash": "6874db3981d84194d722179323b885bf",
     "semantic_hash": ""
   },
   "docs/testing/temporary-creature-characteristics-product.md": {
@@ -12027,6 +12027,48 @@
     "mtime": 1791337725.444524,
     "seen": 1791337957.2726123,
     "ast_hash": "a704b35a7c09aca61e277525185f4390",
+    "semantic_hash": ""
+  },
+  "backend/tests/suspend_readiness_fixtures.py": {
+    "mtime": 1791338325.7755976,
+    "seen": 1791338576.0735657,
+    "ast_hash": "f344c6b57eef86ff896ad1ab06465218",
+    "semantic_hash": ""
+  },
+  "backend/tests/temporary_characteristics_http_probe.py": {
+    "mtime": 1791338130.5938025,
+    "seen": 1791338576.0735676,
+    "ast_hash": "17b90f608a83d028d4e3b5be35ff2aeb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_suspend_context_coverage.py": {
+    "mtime": 1791338325.7755976,
+    "seen": 1791338576.0747454,
+    "ast_hash": "55ad993a8ab321938072412974ccc831",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_temporary_characteristics_http.py": {
+    "mtime": 1791338130.5938025,
+    "seen": 1791338576.0747814,
+    "ast_hash": "f0e5e440b396fe05bfa6786459b5684b",
+    "semantic_hash": ""
+  },
+  "docs/testing/linked-damage-real-land-entry.md": {
+    "mtime": 1791338083.0535855,
+    "seen": 1791338576.075723,
+    "ast_hash": "db89da95366a001842bc0f249a742334",
+    "semantic_hash": ""
+  },
+  "docs/testing/suspend-and-characteristics-http-current.md": {
+    "mtime": 1791338494.3338404,
+    "seen": 1791338576.075968,
+    "ast_hash": "b317c8e6f1db907d65424fe590e0b841",
+    "semantic_hash": ""
+  },
+  "docs/testing/suspend-context-coverage.md": {
+    "mtime": 1791338325.7755976,
+    "seen": 1791338576.0759697,
+    "ast_hash": "a4385f4b35a8835919bc67d26f2fc14c",
     "semantic_hash": ""
   }
 }

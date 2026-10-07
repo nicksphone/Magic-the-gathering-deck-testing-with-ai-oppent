@@ -1,6 +1,8 @@
 """Bounded printed mana-cost Suspend; CR 116.2f and 702.62."""
 from copy import deepcopy
+from collections.abc import Mapping
 import re
+from types import SimpleNamespace
 
 from game_state.state import Step, Zone
 from rules_engine.oracle_text import without_reminder_text
@@ -17,6 +19,39 @@ def instruction(card):
     if match and int(match[1]) > 0:
         return int(match[1]), match[2].upper()
     return None
+
+
+def diagnostic_surface_admitted(oracle_text, metadata, *, card_name='', card_faces=None):
+    """Bounded sourced diagnostic, not certification of arbitrary Suspend bodies."""
+    if not isinstance(metadata, Mapping):
+        return False
+    sources = metadata.get('card_data_sources')
+    name = metadata.get('card_name') or metadata.get('name')
+    if (not isinstance(sources, list) or not sources
+            or any(not isinstance(source, str) or source not in {'cache', 'local_knowledge', 'offline_seed'} for source in sources)
+            or not isinstance(name, str) or not name or card_name and card_name != name
+            or metadata.get('oracle_text') != oracle_text
+            or not isinstance(metadata.get('layout'), str) or metadata['layout'] not in {'', 'normal'}
+            or card_faces or metadata.get('card_faces')
+            or metadata.get('mana_cost') is not None and not isinstance(metadata['mana_cost'], str)
+            or not isinstance(metadata.get('type_line'), str)):
+        return False
+    from card_data.hydration import ready_for_match
+    if not ready_for_match(metadata):
+        return False
+    card = SimpleNamespace(layout=metadata['layout'], oracle_text=oracle_text)
+    if instruction(card) is None:
+        return False
+    lines = [line.strip() for line in without_reminder_text(oracle_text).splitlines() if line.strip()]
+    body = '\n'.join(line for line in lines if not PRINTED.fullmatch(line))
+    # Whole-body shapes only: recognizing a first clause must not hide later text.
+    if metadata['type_line'] in {'Instant', 'Sorcery'}:
+        damage = re.fullmatch(re.escape(name) + r' deals ([1-9]\d*) damage to any target\.', body)
+        draw = re.fullmatch(r'Target player draws (a|one|two|three|four|five|six|seven|eight|nine|ten|[1-9]\d*) cards?\.', body)
+        return bool(damage or draw)
+    return bool(re.fullmatch(r'Creature(?: \u2014 [^\n]+)?', metadata['type_line'])
+                and body in {'', 'Flying'}
+                and all(re.fullmatch(r'\d+', str(metadata.get(key))) for key in ('power', 'toughness')))
 
 
 def suspended(card):

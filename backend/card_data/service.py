@@ -65,7 +65,7 @@ class CardService:
                 oracle_source = "fallback"
             else:
                 oracle_source = "cache" if card and card.type_line else "missing"
-            unsupported_mechanics = known_unsupported_mechanics(oracle_text, faces, card_name=name)
+            unsupported_mechanics = known_unsupported_mechanics(oracle_text, faces, card_name=name, canonical_context=metadata)
             image_uri = metadata['image_uri']
             has_placeholder = "placeholder-" in image_uri or "generic-token" in image_uri
             cards.append(

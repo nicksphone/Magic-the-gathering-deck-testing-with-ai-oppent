@@ -1,5 +1,9 @@
 # Temporary Characteristics Current Composition
 
+Subsequent scoped HTTP qualification is recorded in
+[current acceptance](suspend-and-characteristics-http-current.md); the pure
+ledger below remains unchanged, with its original source and scope.
+
 The canonical audit, complete-body compiler/native-record handler, and one-condition
 effective subtype-publication fix are composed over published `7f1fa9c`.
 Seven whole modules pass 232 checks, 2 warnings, 39.71s, exit 0 on the current source.

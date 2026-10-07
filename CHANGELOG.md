@@ -2,6 +2,14 @@
 
 ## Backend Composition - 2026-10-07
 
+- Align sourced, complete fixed-cost Suspend surfaces with bounded runtime
+  admission. Four whole current modules pass 136 checks in 10.01s; unknown/variable
+  bodies, legacy context-free callers and independent warnings remain conservative.
+- Qualify temporary characteristics on an exact current source-only HTTP copy:
+  40 passes in 76.59s, including eight cold-process continuations and actual
+  native-turn mana activation. Preserve the earlier readiness-expectation failures;
+  no production serializer change or forced readiness flags.
+
 - Add actual paid Growth Spiral responses to Searing Blaze, both seats with
   deliberate own/opponent land selection or decline. Four complete current
   modules pass 146 checks with isolated local SQLite. No production or preflight

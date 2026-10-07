@@ -91,10 +91,14 @@ def static_coverage_details(oracle_text: str, card_faces: list[dict] | None = No
             for index, name, text in variants for row in conditional_static_clause_coverage(text, name)]
 
 
-def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '') -> list[str]:
+def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '', canonical_context: dict | None = None) -> list[str]:
     """Known gaps only; an empty result is not rules certification."""
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
+    if 'suspend' in out:
+        from rules_engine.suspend import diagnostic_surface_admitted
+        if diagnostic_surface_admitted(oracle_text, canonical_context, card_name=card_name, card_faces=card_faces):
+            out.remove('suspend')
     out.extend(gap for value in texts for gap in unsupported_resolution_clauses(value))
     from rules_engine.affinity import affinity_clauses
     if any(affinity_clauses(text)[2] for text in texts):
@@ -257,6 +261,6 @@ def deck_pair_coverage(deck_a: list[dict], deck_b: list[dict]) -> dict:
                  str(item.get('oracle_text') or ''), item.get('card_faces'), card_name=str(item.get('card_name') or ''))) else {})}
             for label, deck in (("A", deck_a), ("B", deck_b))
             for item in deck
-            if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or ""), item.get("card_faces"), card_name=str(item.get('card_name') or '')))
+            if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or ""), item.get("card_faces"), card_name=str(item.get('card_name') or ''), canonical_context=item))
         ],
     }
