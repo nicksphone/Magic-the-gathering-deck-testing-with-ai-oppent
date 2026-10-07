@@ -13380,9 +13380,111 @@
     "semantic_hash": ""
   },
   "docs/testing/pending-stack-privacy-current.md": {
-    "mtime": 1791401670.49805,
-    "seen": 1791401743.4221563,
-    "ast_hash": "2aca5063920917b620abe63580708587",
+    "mtime": 1791402955.7202032,
+    "seen": 1791403029.0625443,
+    "ast_hash": "d6a295e7f76cd9b360d3e1a931b4b25c",
+    "semantic_hash": ""
+  },
+  "backend/tests/pending_source_privacy_support.py": {
+    "mtime": 1791401723.0319598,
+    "seen": 1791403029.0598302,
+    "ast_hash": "9853359bfb5e5f86a7433e7e5cf44d5c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_pending_source_privacy_goldens.py": {
+    "mtime": 1791401723.0319598,
+    "seen": 1791403029.0608506,
+    "ast_hash": "7d4675250277c43ff2e4bbd630e4feca",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/boomerang.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.061737,
+    "ast_hash": "c12fc5028bca5d0f2ad91f79dcc413be",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/eiganjo-seat-of-the-empire.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617392,
+    "ast_hash": "f727db76d498cb6ec0393a6e00b1b4b5",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/growth-spiral.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617416,
+    "ast_hash": "27cd67a8485dc81c931f617c1db6f163",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/humility.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617435,
+    "ast_hash": "87ba4d82c93e68221231b596aefe704b",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/intake.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617454,
+    "ast_hash": "fe0b93fd64296ff28da01588cc4670b4",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/leyline-of-anticipation.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617468,
+    "ast_hash": "3f361726fc84cddfd02d0b41b2e11d75",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/ray-of-command.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617487,
+    "ast_hash": "c1a1dc9624113de6d00a5dabd2b3b832",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/regrowth.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617511,
+    "ast_hash": "776881b5e7c4130f7492745eb340275e",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/soul-scar-mage.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617523,
+    "ast_hash": "28ac001975d04c28521f749a92565f5d",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/torrential-gearhulk.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617537,
+    "ast_hash": "5dfd1d2608529d54f80c546a75edac3c",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/twinshot-sniper.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617554,
+    "ast_hash": "8bb1a484c5dd279f2ae122f1cfd68ae7",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/unsummon.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617573,
+    "ast_hash": "2cc44f765c466d5847d2f8dadc682967",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/whip-of-erebos.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.061759,
+    "ast_hash": "8496c030fcfa754b5f08b78f412e6d56",
+    "semantic_hash": ""
+  },
+  "hand-source-causal/raw/zombify.json": {
+    "mtime": 1791366643.0,
+    "seen": 1791403029.0617604,
+    "ast_hash": "78d41c2e8f095d17b4abe66178aad7b9",
+    "semantic_hash": ""
+  },
+  "docs/testing/pending-source-privacy.md": {
+    "mtime": 1791401782.3837378,
+    "seen": 1791403029.0625415,
+    "ast_hash": "4e4aceb87bba7e8500fd99cfb7570d1c",
     "semantic_hash": ""
   }
 }

@@ -40,3 +40,23 @@ Mixed HTTP/SQL neighbors, a complete causal Brainstorm hand-to-library response,
 fresh-current browser/BO3 and the full release are not certified by this cohort.
 Brainstorm's complete private put-two instruction remains an upstream gap; no
 fake state transition or partial instruction was used to manufacture proof.
+
+## Additional Source Golden Packet
+
+The additive source-hidden packet supplies two both-seat paid Channel/Zombify/
+Unsummon episodes, restored public-return observation memory and private-input
+permutations. Its extracted support functions and complete canonical fixture
+bytes are copied exactly; no existing test suite is replaced. The existing
+pending-STACK test is byte-identical and was not reinstalled.
+
+Its independent four-whole-module qualification on `f5833b5` plus the exact
+privacy postimages passed all 91 tests in 14.47 seconds under the declared pure
+guard. This is a separate result, not another execution of the current 950-case
+cohort. Evidence: `parent-integration/privacy-final-receipt-SsN7H9/v2/` under
+the same NFS project archive. Parent new-file bytes match that qualified payload.
+
+The historical full 35-case hand-source audit remains immutable at 17 passes /
+18 failures: later battlefield LKI is incorrectly attached to an older hand-
+origin frame. That broader lifecycle defect is not fixed or certified by these
+privacy-only tests. The metadata counterfactual is an internal information-flow
+probe, not a lawful private change to a printed card identity.
