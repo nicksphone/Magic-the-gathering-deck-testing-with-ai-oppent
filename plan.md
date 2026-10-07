@@ -209,9 +209,12 @@ features or claims based on helpers alone.
 7. [ ] Run clean-checkout offline assets, API/runtime contracts, frontend tests,
    lint/build and the configured browser flow without developer-only cache files.
    Pinned `6f9e29e` cold ASGI offline fallback passed with 155 shipped card
-   names hydrated and served without network access. The subsequent warm suite
-   stopped before collection on a harness logging-path denial; it executed zero
-   tests. See `docs/testing/offline-assets-cold-component.md`. Current-source,
+   names hydrated and served without network access. The first warm attempt
+   stopped before collection on a harness logging-path denial. A separately
+   authorized warm-only continuation collected all 73 tests: 71 passed, while
+   two explicit-refresh sync tests were blocked by the endpoint guard before
+   application routing. This is not a complete passing warm gate. Both failed
+   ledgers remain immutable. See `docs/testing/offline-assets-cold-component.md`. Current-source,
    warm-suite and actual browser qualification remain open.
 
 Exit: reliable supported-card local human games and BO3/recovery work through

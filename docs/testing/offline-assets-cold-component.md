@@ -36,11 +36,42 @@ visibility limits remain recorded in the archive. The SQL slot was released at
 06:58:54 UTC. Closed database bytes were archived only after closure; no SQLite
 database was executed on NFS. Source, harness and prior evidence were not reset.
 
+## Warm-Only Continuation
+
+The separately authorized sealed v5 warm-only run began at 07:28:49 UTC. It
+collected all 73 tests across the eight whole modules: 71 passed and two failed
+in 27.31 seconds, with 42 warnings, zero errors and zero skips. All 23 startup
+and shutdown pairs completed. Both failures were the False/True explicit-refresh
+sync-route tests: the endpoint guard rejected `POST /cards/sync` before the
+application handler. Isolation failed on those two denied requests; this does
+not prove two application regressions or a passing complete warm gate.
+
+The guard's test-stub namespace assumption is a source-grounded candidate cause.
+Runtime function identity operands were not recorded, so the exact failed
+predicate is not proven. No retry, application edit or permission widening was
+performed. All 1,560 source hashes and original phase ledgers remained equal.
+
+The immutable continuation archive is
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/release-gate-1-7-warm-terminal/6f9e29-v5/`.
+Its complete manifest was independently checked by the parent:
+
+- `REPORT.md`: `85b70f50e05447b9328198fa02029894d12e4666e7d9e98af057f13d4a70187b`
+- `SHA256SUMS`: `8aeaf88e6b78f8ebc087686e4428d0078f2cb753134a07857ac604d83a7a0fd1`
+
+The supervisor and worker ended; owned resource lists and jobs were empty.
+External checks of the actual default and migration databases found no handles;
+journals were absent. The SQL slot was released at 07:31:37 UTC. The new closed
+default database SHA is
+`ce070441fd365f6a5423f235085a61249e79f8c44de3522973dac96557a2ee05`;
+runtime media increased to 169 files. Any future continuation must pin these
+actual warm-end bytes, not reuse the earlier database hash or 156-file inventory.
+
 ## Remaining Work
 
-Review an explicit owned pytest log-file path and other implicit output paths
-before a separately authorized warm-only continuation. Preserve the cold result
-and failed warm ledger; do not relabel a warmed database as a fresh cold run.
+Review the narrow exact-stub provenance guard correction and complete runtime
+path contract before any separately authorized continuation. Preserve the cold
+result and both failed warm ledgers; do not reset the database or relabel warmed
+state as a fresh cold run.
 Current-source offline qualification, canonical artwork, browser fallback,
 production routing and broader release acceptance remain unproven. No application
 fix or deployment resulted from this gate.
