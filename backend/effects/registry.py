@@ -202,13 +202,16 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
         })
         return
     if effect_key == "effect_sequence":
+        from rules_engine.damage_results import validate_hand_payload, HAND_CONTEXT_KEYS
+        validate_hand_payload(state, payload)
+        retained = {key: payload[key] for key in HAND_CONTEXT_KEYS if key in payload}
         source_card_id = payload.get("__source_card_id")
         source_lki = payload.get("__source_lki")
         snow_mana_spent = payload.get("snow_mana_spent")
         effects = payload.get("effects", [])
         for index, item in enumerate(effects):
             key = item.get("effect_key")
-            data = dict(item.get("payload", {}) or {})
+            data = {**retained, **dict(item.get("payload", {}) or {})}
             if key == "lose_life" and payload.get("__targeted_life_loss"):
                 data["target_player"] = payload.get("target_player")
             if source_card_id and "__source_card_id" not in data:
@@ -227,7 +230,7 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
                 pending.setdefault('continuation_controller', controller)
                 remaining = []
                 for next_effect in effects[index + 1:]:
-                    next_data = dict(next_effect.get("payload", {}))
+                    next_data = {**retained, **dict(next_effect.get("payload", {}))}
                     if source_card_id:
                         next_data.setdefault("__source_card_id", source_card_id)
                     if source_lki is not None:

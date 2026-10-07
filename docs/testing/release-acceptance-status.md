@@ -15,6 +15,7 @@ substitute for qualification of the final combined source.
 | Frontend dependencies | Fresh locked install, typecheck, lint, configured test chain and build passed; full/production advisory scans reported zero | Clean frontend component, not a clean-machine end-to-end installation |
 | Python installer maintenance | Qualified EnC3vJ runtime pip 24.0 -> 26.2.1; pip check passed; all non-pip file hashes and package versions equal | Installer-only change; no application gate inferred from pip check |
 | Pending-stack privacy | Current `db16186` composition: 22 whole pure modules / 950 passes; parent applied tested bytes | Mixed HTTP/SQL and complete private hand-to-library response remain separate |
+| HAND source and entry damage | Exact ten-file production union: 21 whole modules / 673 passes, 255.17s; original assertions and 36 serializer children verified | Pure component only; final coverage union, mixed HTTP/SQL and browser remain separate |
 | Domain continuations | Fresh immutable `607a70b` plus the surgical compiler delta: two whole modules / 36 passes, 10.60s; paid Herd Migration search-then-life and Leyline Binding linked exile | Coverage warnings unchanged; no final-union, SQL or whole-card certificate |
 | Domain admission | Exact coverage `eaf84aa` -> `cd57f9b`: 102 passes plus eight independent complete-spell/Flash checks; 155 ready records, known-gap cards 12 -> 10 | Only complete sourced Herd Migration and Leyline Binding bodies; unrelated warnings retained; no universal semantics certificate |
 | Standalone storage recovery | Pinned `29e86e4`: three unchanged whole modules / 43 passes, 6.79s; retention rollback/protection, WAL backup and actual controller restore | Not online cache/tombstone coordination, quotas/cancellation, clean-machine or soak acceptance |
@@ -28,6 +29,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `diagnostics/dependency-audit/retained2331-fresh-20261007-v8A4Tj/`
 - `parent-integration/pip-only-maintenance-20261007/`
 - `parent-integration/pending-source-privacy-current-db161-20261007/`
+- `parent-integration/hand-domain-applied-current-6e0b420-20261007/`
 - `parent-integration/domain-compilers-current-607a70-20261007/`
 - `gate2-domain-admission/mtg-gate2-domain-coverage-packet-Rnc4a7-parent-eaf84/`
 - `parent-integration/storage-acceptance-current-29e86-20261007/`

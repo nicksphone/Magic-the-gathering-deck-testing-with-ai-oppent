@@ -2564,3 +2564,25 @@ def complete_stack_instruction_coverage(card):
                 'payload': {'amount': int(damage[1])},
                 'target_domain': damage[2].lower(), 'residual': ''}
     return None
+
+
+def compile_self_entry_damage_clause(clause: str, source_name: str) -> tuple[str, dict[str, Any]] | None:
+    """One complete self-entry damage paragraph; related unknown bodies fail closed."""
+    if not isinstance(clause, str) or not isinstance(source_name, str) or not source_name:
+        return None
+    reference = r'(?:' + re.escape(source_name) + r'|this (?:creature|permanent|artifact|enchantment))'
+    prefix = r'(?:when|whenever) ' + reference + r' enters\b'
+    text = clause.strip()
+    if not re.match(prefix, text, re.I) or not re.search(r'\bdeals?\b.*\bdamage\b', text, re.I | re.S):
+        return None
+    entry = re.fullmatch(prefix + r'(?: the battlefield)?, (.+)', text, re.I)
+    instruction = entry[1] if entry else text
+    body = re.fullmatch(r'(?:it|' + reference + r') deals ([1-9]\d*) damage to any target\.',
+                        instruction, re.I) if entry else None
+    amount = _parse_count_token(body[1]) if body else None
+    if body is None or type(amount) is not int or str(amount) != body[1]:
+        return 'noop', {'__trigger_full_clause': text,
+                        '__unsupported_trigger_instruction': instruction}
+    return 'deal_damage', {'amount': amount,
+                           '__trigger_full_clause': text,
+                           '__trigger_resolution_text': instruction}

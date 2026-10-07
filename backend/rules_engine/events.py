@@ -101,6 +101,16 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
     }
     for item in state.stack:
         if item.source_card_id == card_id:
+            payload = item.payload or {}
+            if payload.get('__activation_source_origin') == 'hand' or '__activation_source_context' in payload:
+                continue
+            if '__activation_source_reference' in payload and '__ability_target_text' in payload:
+                reference = payload['__activation_source_reference']
+                if (type(reference) is not dict or set(reference) != {'incarnation', 'zone_change_sequence'}
+                        or any(type(value) is not int or value < 0 for value in reference.values())
+                        or reference != {'incarnation': object_incarnation(card),
+                                         'zone_change_sequence': card.zone_change_sequence}):
+                    continue
             item.payload.setdefault("__source_lki", dict(card.last_known_battlefield))
 
 
@@ -1655,6 +1665,7 @@ def _trigger_from_oracle(
     event: str,
     payload: dict[str, Any],
 ) -> dict[str, Any]:
+    entry_oracle = oracle if event == 'enters_battlefield' else None
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
     cast_instruction = None
@@ -1755,6 +1766,22 @@ def _trigger_from_oracle(
                             __trigger_full_clause=kicker['clause'])
             return {'source_card_id': source_card_id, 'controller': controller,
                     'label': default_label, 'effect_key': key, 'payload': data}
+        if payload.get('card_id') == source_card_id:
+            from rules_engine.oracle_effects import compile_self_entry_damage_clause
+            entry_clauses = [line.strip() for line in entry_oracle.splitlines()
+                             if _matches_enters_battlefield_trigger(state, source, line, payload)]
+            damage_entries = [compiled for line in entry_clauses
+                              if (compiled := compile_self_entry_damage_clause(line, source.name)) is not None]
+            if damage_entries:
+                if len(entry_clauses) == 1:
+                    key, data = damage_entries[0]
+                else:
+                    key, data = 'noop', {
+                        '__trigger_full_clause': '\n'.join(entry_clauses),
+                        '__unsupported_trigger_instruction': '\n'.join(entry_clauses),
+                    }
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': key, 'payload': data}
         entries = [clause for line in oracle.splitlines()
                    if (clause := _entry_observer_clause(line)) is not None
                    and _matches_enters_battlefield_trigger(state, source, line, payload)]

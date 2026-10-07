@@ -641,6 +641,8 @@ class RulesEngine:
                     state.passed_priority = set()
                 return
             if pending.get("resume_kind") in {"damage_chain", "damage_batch"}:
+                from rules_engine.damage_results import validate_hand_damage_continuation
+                hand_retained = validate_hand_damage_continuation(state, pending)
                 state.pending_replacement_choice = None
                 state.log.append(
                     f"{state.players[player_id].name} chooses replacement source {chosen_id}."
@@ -650,6 +652,7 @@ class RulesEngine:
                     state,
                     int(pending.get("controller", player_id)),
                     {
+                        **hand_retained,
                         "target_player": pending.get("target_player"),
                         "target_card_id": pending.get("target_card_id"),
                         "amount": int(pending.get("amount", 0) or 0),
@@ -665,7 +668,8 @@ class RulesEngine:
                 if pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch":
                     from rules_engine.damage_results import source_has_keyword
                     source_id = pending.get("source_card_id")
-                    if dealt and source_has_keyword(state, source_id, "lifelink", pending.get("source_lki")):
+                    if dealt and source_has_keyword(state, source_id, "lifelink", pending.get("source_lki"),
+                                                   source_context=hand_retained.get("__activation_source_context")):
                         for item in pending.get("continuation_effects", []):
                             if item.get("effect_key") == "deal_damage_batch":
                                 item["payload"]["lifelink_total"] = int(item["payload"].get("lifelink_total", 0)) + dealt
@@ -682,6 +686,10 @@ class RulesEngine:
                 reject("Replacement continuation is no longer available")
                 state.log.append("Invalid replacement choice; resolution remains paused.")
                 return
+            if pending.get('event') in {'damage_to_player', 'damage_to_permanent'}:
+                from rules_engine.damage_results import validate_hand_payload
+                validate_hand_payload(state, state.stack[-1].payload,
+                                      source_card_id=state.stack[-1].source_card_id)
             state.stack[-1].payload["__replacement_source_id"] = chosen_id
             state.pending_replacement_choice = None
             state.log.append(
@@ -1341,6 +1349,9 @@ class RulesEngine:
             if any(type(value) is not int or value < 0 for value in activation_source_reference.values()):
                 reject("Invalid activation source reference")
                 return
+            from rules_engine.damage_results import capture_hand_source_context
+            hand_context = (capture_hand_source_context(state, cid, player_id=player_id, ability=ability)
+                            if activation_source_zone == Zone.HAND else None)
             ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
             cost_context: dict = {}
             cost_staging = not state.trigger_staging
@@ -1363,7 +1374,10 @@ class RulesEngine:
                                 "__ward_trigger_specs": ward_specs,
                                 "__ability_target_text": ability["text"],
                                 "__activation_source_reference": activation_source_reference,
+                                "__activation_source_origin": activation_source_zone.value,
                                 "__announced_target_references": target_references}
+            if hand_context is not None:
+                resolved_payload['__activation_source_context'] = hand_context
             if self_return_destination:
                 sequence_key = 'zone_sequence' if self_return_destination == 'hand' else 'zone_change_sequence'
                 resolved_payload['__graveyard_reference'] = {

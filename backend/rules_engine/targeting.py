@@ -144,6 +144,12 @@ def stack_object_kind(state: Any, item: Any) -> str:
         return str(copied_kind)
     if payload.get("__trigger_event"):
         return "triggered"
+    if (payload.get('__activation_source_origin') == 'hand'
+            and '__activation_source_context' in payload
+            and '__activation_source_reference' in payload and '__ability_target_text' in payload):
+        from rules_engine.damage_results import validate_hand_payload
+        validate_hand_payload(state, payload, source_card_id=item.source_card_id)
+        return 'activated'
     source = state.cards.get(item.source_card_id)
     return "spell" if source is not None and getattr(source, 'zone', None) == Zone.STACK else "activated"
 
@@ -152,6 +158,14 @@ def stack_source_card(state: Any, item: Any):
     """Read saved copy characteristics and casting choices without mutation."""
     source = state.cards.get(getattr(item, "source_card_id", None))
     payload = getattr(item, "payload", None) or {}
+    if '__activation_source_context' in payload:
+        from rules_engine.damage_results import validate_hand_payload
+        from rules_engine.action_validation import ActionRejected
+        context = validate_hand_payload(state, payload, source_card_id=item.source_card_id)
+        if source is None:
+            raise ActionRejected('HAND target hints require a real source instance')
+        source = copy(source)
+        source._retained_hand_source_context = context
     if source is None:
         return source
     if payload.get('__stack_copy_kind') == 'spell':

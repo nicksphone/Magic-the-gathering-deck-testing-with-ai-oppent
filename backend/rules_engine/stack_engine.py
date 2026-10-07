@@ -123,6 +123,18 @@ def _damage_replacement_source_context(state: MatchState, item: StackItem, selec
 def _validate_damage_activation_source(state: MatchState, item: StackItem) -> None:
     """Validate native battlefield damage provenance, not arbitrary storage authenticity."""
     payload = item.payload or {}
+    from rules_engine.damage_results import validate_hand_payload
+    context = validate_hand_payload(state, payload, source_card_id=item.source_card_id)
+    if '__activation_source_origin' in payload and (
+            type(payload['__activation_source_origin']) is not str
+            or payload['__activation_source_origin'] not in {'hand', 'battlefield', 'graveyard'}):
+        from rules_engine.action_validation import ActionRejected
+        raise ActionRejected('Unknown native activation origin')
+    if context is not None:
+        if item.source_card_id not in state.cards:
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('HAND activation target hints require a real source instance')
+        return
     if ('__activation_source_reference' not in payload or '__ability_target_text' not in payload
             or payload.get('__trigger_event') or payload.get('__stack_copy_kind') in ('spell', 'triggered')):
         return  # Legacy frames, spells and triggers have separate producer contracts.
@@ -152,12 +164,8 @@ def _validate_damage_activation_source(state: MatchState, item: StackItem) -> No
             or any(type(value) is not int or value < 0 for value in reference.values())):
         raise ActionRejected('Malformed native damage activation source reference')
     source = state.cards.get(item.source_card_id)
-    if source is not None:
-        from rules_engine.oracle_effects import extract_activated_abilities
-        if any(ability['activation_zone'] != 'battlefield'
-               and ability['text'] == payload['__ability_target_text']
-               for ability in extract_activated_abilities(source)):
-            return  # Explicit hand/discard origins do not claim battlefield LKI.
+    if payload.get('__activation_source_origin') == 'graveyard':
+        return  # Existing graveyard producer has a separate source contract.
     for packet in packets:
         if '__source_lki' not in packet:
             continue
@@ -452,6 +460,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             amount=selected_payload.get('amount') if event == 'damage_to_permanent' else None,
             source_lki=source_lki,
             source_controller=source_controller, combat=False,
+            source_context=selected_payload.get('__activation_source_context', (item.payload or {}).get('__activation_source_context')),
         )
         used = {str(value) for value in ((item.payload or {}).get("__used_replacement_source_ids") or [])}
         options = [
