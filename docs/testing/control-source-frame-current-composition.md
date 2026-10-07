@@ -26,7 +26,16 @@ is withdrawn. The strict unchanged 250-case worker attempt had 242 passes and
 eight database-denied fixture setup errors, not gameplay failures or a green
 250-case gate. The subsequent isolated worker gate passed all 250 cases, 74
 warnings, 93.85 seconds, exit 0, with eight matched lifespan startups/shutdowns.
-The original 149-case declaration remains unstarted and on hold.
+The later corrected Ray149 v6 gate executed the exact nine-module/149-case
+declaration: 149 passes, 123 warnings, 157.17 seconds, exit 0, with isolation and
+resource closure verified. Its immutable archive is
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/temporary-control-ray149-v6-qualified/JpLW0T/`.
+Parent review independently checks the full archive manifest and JUnit's exact
+nine modules, 149 ordinary cases and zero failures/errors/skips. This is a
+separately pinned component, not a rerun or qualification of the current full
+backend. Earlier failed gates and guard corrections remain immutable. The v6
+ledger explicitly records final closed cold-file hashes, not per-invocation
+before/after hashes, and overwritten per-parent launch/end receipt filenames.
 
 Three additional whole Frog/Snakeform/ability-loss modules produced 62 passes
 and two database-denied HTTP fixture setup errors, two warnings, 15.00 seconds,

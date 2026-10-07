@@ -99,9 +99,11 @@ Full corpus, lifecycle and release acceptance remain unfinished.
   popped copied-spell frame. Current composition passes 199 pure checks, then
   322 checks across 17 whole isolated-SQL modules and 12 dedicated HTTP cases.
   The eight actual desired copy cases pass unchanged. Preserve delayed-trigger
-  priority, counterability and immutable historical ledgers; original Ray149
-  remains unstarted/HOLD. General control layers and full browser games remain
-  open. [Current acceptance](docs/testing/control-source-frame-current-composition.md).
+  priority, counterability and immutable historical ledgers. The later corrected
+  Ray149 v6 gate passes all 149 checks on its separately pinned component; it is
+  not a qualification of the current full backend. General control layers and
+  full browser games remain open.
+  [Current acceptance](docs/testing/control-source-frame-current-composition.md).
 - [x] Qualify bounded temporary characteristics through checked HTTP actions and cold
   SQLite restore. Published `7dfbd51` passes seven whole pure modules / 232 checks;
   the exact parent source-only HTTP copy passes all 40 checks, including eight
