@@ -206,14 +206,59 @@ def take_special_action(state, player_id, card_id, *, x_value=None):
     return True
 
 
+def _exiled_counter_triggers(state, card, removed):
+    if card.exile_face_down:
+        return []
+    from game_state.state import object_incarnation
+    from rules_engine.colors import card_color_names
+    clauses = without_reminder_text(card.oracle_text or '').splitlines()
+    triggers = []
+    for index, clause in enumerate(clauses):
+        clause = clause.strip()
+        match = re.fullmatch(
+            r"Whenever a time counter is removed from this card while it's exiled, (.+)", clause, re.I)
+        if not match:
+            continue
+        if removed != 1:
+            state.log.append(f'Unsupported multiple time-counter removal body for {card.name}.')
+            continue
+        body = match[1]
+        draw = re.fullmatch(r'Draw (a|one|two|three|four|five|six|seven|eight|nine|ten|[1-9]\d*) cards?\.', body, re.I)
+        destroy = re.fullmatch(r'Destroy target (?:nonbasic )?land\.', body, re.I)
+        if card.layout not in {'', 'normal'} or card.card_faces or not (draw or destroy):
+            state.log.append(f'Unsupported exile time-counter trigger instruction for {card.name}: {body}')
+            continue
+        if draw:
+            from rules_engine.oracle_effects import _parse_count_token
+            key, data = 'draw_cards', {'amount': _parse_count_token(draw[1].lower())}
+        else:
+            key, data = 'destroy_permanent', {}
+        reference = {'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
+        triggers.append({'source_card_id': card.id, 'controller': card.owner,
+                         'label': f'{card.name} exile time-counter trigger', 'effect_key': key,
+                         'payload': {**data, '__trigger_full_clause': clause,
+                                     '__trigger_ability_index': index,
+                                     '__trigger_source_reference': reference,
+                                     '__source_lki': {'controller': card.owner, 'types': list(card.types),
+                                                      'colors': list(card.colors),
+                                                      'color_names': sorted(card_color_names(card))}}})
+    return triggers
+
+
 def collect_triggers(state, event, payload):
     if event == 'begin_step' and payload.get('step') == 'upkeep':
         cards = [card for card in state.cards.values() if card.owner == payload.get('active_player') and suspended(card)]
         key = 'suspend_upkeep'
-    elif event == 'time_counters_removed' and payload.get('before', 0) > 0 and payload.get('after') == 0:
+    elif (event == 'time_counters_removed' and type(payload.get('before')) is int
+          and type(payload.get('after')) is int and payload['before'] > payload['after'] >= 0):
         card = state.cards.get(payload.get('card_id'))
-        cards = [card] if card is not None and card.zone == Zone.EXILE and _printed_suspend(card) else []
-        key = 'suspend_cast_trigger'
+        if card is None or card.zone != Zone.EXILE or card.owner not in state.players:
+            return []
+        keyword = ([{'source_card_id': card.id, 'controller': card.owner,
+                     'label': f'{card.name} suspend cast', 'effect_key': 'suspend_cast_trigger',
+                     'payload': {'card_id': card.id, 'sequence': card.zone_change_sequence}}]
+                   if payload['after'] == 0 and _printed_suspend(card) else [])
+        return keyword + _exiled_counter_triggers(state, card, payload['before'] - payload['after'])
     else:
         return []
     return [{'source_card_id': card.id, 'controller': card.owner,

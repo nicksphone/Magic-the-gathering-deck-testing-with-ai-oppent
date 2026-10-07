@@ -114,6 +114,12 @@ Full corpus, lifecycle and release acceptance remain unfinished.
   blanket-warning failures; variable costs, unknown layouts/clauses and legacy
   context-free callers remain conservative. Current composition passes four whole
   modules / 136 checks. Do not declare whole decks ready or general Suspend complete.
+- [x] Execute bounded printed exile time-counter bodies independently of the
+  Suspend keyword: canonical Aeon draw and Detritivore land destruction use real
+  trigger priority, targeting and retained object references. Parent current-source
+  acceptance passes 403 cases across 17 whole modules, preserving graveyard-cast
+  receipts. Multi-counter removal, unknown clauses/layouts, HTTP and whole-card
+  readiness remain open. [Acceptance](docs/testing/exile-counter-current.md).
 - [x] Integrate bounded canonical Soul-Scar conversion into affected-player
   replacement ordering, prevention and re-evaluation. Current source-controller,
   numeric-prevention and heroic union passes 1,133 checks across 46 whole modules,

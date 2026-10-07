@@ -390,6 +390,13 @@ def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
     if item.payload.get('__trigger_resolution_text'):
         return item.payload['__trigger_full_clause']
     event = item.payload.get("__trigger_event")
+    if event == 'time_counters_removed':
+        clause = item.payload.get('__trigger_full_clause', '')
+        if item.effect_key == 'destroy_permanent' and re.fullmatch(
+                r"Whenever a time counter is removed from this card while it's exiled, destroy target (?:nonbasic )?land\.",
+                clause, re.I):
+            return clause
+        return None
     if event == 'saga_lore_added':
         clause = item.payload.get('__chapter_clause', '')
         if (item.effect_key == 'deal_damage' and 'any target' in clause.lower()
@@ -477,6 +484,8 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         key = "permanent_targets"
     elif "target creature" in low:
         key = "creature_targets"
+    elif re.search(r'\btarget (?:(?:basic|nonbasic) )?land\b', low):
+        key = "land_targets"
     elif "target artifact" in low:
         key = "artifact_targets"
     else:
@@ -1148,7 +1157,9 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 def _remember_trigger_target(state, item):
     from rules_engine.flashback_grants import remember_target
     remember_target(state, item)
-    if item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard'}:
+    if (item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard'}
+            or item.effect_key == 'destroy_permanent'
+            and item.payload.get('__trigger_event') == 'time_counters_removed'):
         target = state.cards[item.payload['target_card_id']]
         item.payload['__trigger_target_reference'] = [object_incarnation(target), target.zone_change_sequence]
 

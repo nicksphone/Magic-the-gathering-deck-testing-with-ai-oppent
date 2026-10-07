@@ -267,9 +267,16 @@ def test_paid_counter_resume_owner_upkeep_free_cast_no_reselected_x(name, seat):
     emit_event(state, 'begin_step', {'step': 'upkeep', 'active_player': seat})
     assert state.stack[-1].effect_key == 'suspend_upkeep'
     state = resume(one(state))
+    if name == 'Aeon Chronicler':
+        assert state.cards[cid].counters['time'] == 1
+        state = _resolve_independent_owner_draw(state, seat, cid)
     assert state.cards[cid].counters['time'] == 1 and not state.stack
     assert suspended(state.cards[cid])
+    if name == 'Aeon Chronicler':
+        state.trigger_order_choice_required = True
     remove_time_counters(state, cid)
+    if name == 'Aeon Chronicler':
+        state = _order_keyword_above_draw(state, seat, cid)
     assert state.stack[-1].effect_key == 'suspend_cast_trigger'
     state = resume(one(state))
     moves = RulesEngine().legal_moves(state, seat)
@@ -284,18 +291,36 @@ def test_paid_counter_resume_owner_upkeep_free_cast_no_reselected_x(name, seat):
     # This qualifies casting permission, NOT either card's entire resolution.
     resolve_effect(successor, 3-seat, 'counter_spell', {'target_stack_id': successor.stack[-1].id})
     assert successor.cards[cid].zone == Zone.GRAVEYARD
+    if name == 'Aeon Chronicler':
+        successor = _resolve_independent_owner_draw(successor, seat, cid)
+        assert not successor.stack
 
 
 @pytest.mark.parametrize('name', NAMES)
 @pytest.mark.parametrize('seat', [1, 2])
 def test_countered_keyword_triggers_do_not_reask_paid_x(name, seat):
     state, cid = position(name, seat)
+    if name == 'Aeon Chronicler':
+        reference_cid = cid
+        reference = act(state, seat, cid, 1)
+        state, cid = live_position(name, seat)
     state = act(state, seat, cid, 1)
+    if name == 'Aeon Chronicler':
+        assert state.players[seat].mana_pool == reference.players[seat].mana_pool
+        assert state.cards[cid].counters == reference.cards[reference_cid].counters
     emit_event(state, 'begin_step', {'step': 'upkeep', 'active_player': seat})
     resolve_effect(state, 3-seat, 'counter_ability', {'target_stack_id': state.stack[-1].id})
     assert state.cards[cid].counters['time'] == 1 and not state.stack
+    if name == 'Aeon Chronicler':
+        state.trigger_order_choice_required = True
     remove_time_counters(state, cid)
+    if name == 'Aeon Chronicler':
+        state = _order_keyword_above_draw(state, seat, cid)
+        assert state.stack[-1].effect_key == 'suspend_cast_trigger'
     resolve_effect(state, 3-seat, 'counter_ability', {'target_stack_id': state.stack[-1].id})
+    if name == 'Aeon Chronicler':
+        assert not state.pending_mechanic_choice
+        state = _resolve_independent_owner_draw(state, seat, cid)
     assert not state.pending_mechanic_choice and not state.stack
     assert not suspended(state.cards[cid])
     assert_rejected(state, seat, {'type': 'cast_spell', 'card_id': cid, 'from_exile': True})
@@ -307,7 +332,12 @@ def test_real_stifle_cast_counters_last_counter_permission(name, seat):
     from tests.test_counterability_scope import add_card
     state, cid = live_position(name, seat)
     state = act(state, seat, cid, 1)
+    if name == 'Aeon Chronicler':
+        state.trigger_order_choice_required = True
     remove_time_counters(state, cid)
+    if name == 'Aeon Chronicler':
+        state = _order_keyword_above_draw(state, seat, cid)
+        assert state.stack[-1].effect_key == 'suspend_cast_trigger'
     target = state.stack[-1].id
     stifle = add_card(state, 'Stifle', Zone.HAND, 3-seat)
     state.players[3-seat].mana_pool = {'U': 1}
@@ -315,6 +345,9 @@ def test_real_stifle_cast_counters_last_counter_permission(name, seat):
     state = checked_action(state, RulesEngine(), 3-seat, {'type': 'cast_spell', 'card_id': stifle.id,
                                                       'targets': {'target_stack_id': target}})
     state = one(resume(state))
+    if name == 'Aeon Chronicler':
+        assert not state.pending_mechanic_choice
+        state = _resolve_independent_owner_draw(state, seat, cid)
     assert not state.stack and not state.pending_mechanic_choice
     assert state.cards[cid].zone == Zone.EXILE and not suspended(state.cards[cid])
     assert_rejected(state, seat, {'type': 'cast_spell', 'card_id': cid, 'from_exile': True})
@@ -325,7 +358,12 @@ def test_real_stifle_cast_counters_last_counter_permission(name, seat):
 def test_decline_and_stale_incarnation_keep_existing_sequence_guards(name, seat):
     state, cid = live_position(name, seat)
     state = act(state, seat, cid, 1)
+    if name == 'Aeon Chronicler':
+        state.trigger_order_choice_required = True
     remove_time_counters(state, cid)
+    if name == 'Aeon Chronicler':
+        state = _order_keyword_above_draw(state, seat, cid)
+        assert state.stack[-1].effect_key == 'suspend_cast_trigger'
     stale = resume(state)
     stale.players[seat].exile.remove(cid)
     stale.cards[cid].move_to_zone(Zone.HAND)
@@ -334,20 +372,71 @@ def test_decline_and_stale_incarnation_keep_existing_sequence_guards(name, seat)
     stale.cards[cid].move_to_zone(Zone.EXILE)
     stale.players[seat].exile.append(cid)
     stale = one(resume(stale))
+    if name == 'Aeon Chronicler':
+        assert not stale.pending_mechanic_choice
+        stale = _resolve_independent_owner_draw(stale, seat, cid)
     assert not stale.stack and not stale.pending_mechanic_choice
     state = one(resume(state))
     assert_rejected(state, seat, {'type': 'cast_spell', 'card_id': 'not-the-source', 'from_exile': True})
     state = checked_action(state, RulesEngine(), seat, {'type': 'choose_mechanic', 'card_ids': ['decline']})
     assert state.cards[cid].zone == Zone.EXILE and not state.pending_mechanic_choice
     assert_rejected(state, seat, {'type': 'cast_spell', 'card_id': cid, 'from_exile': True})
+    if name == 'Aeon Chronicler':
+        state = _resolve_independent_owner_draw(state, seat, cid)
+        assert not state.stack
 
 
 @pytest.mark.parametrize('name', NAMES)
 def test_fullcard_warning_and_unresolved_exile_trigger_remain_explicit(name):
     state, cid = position(name)
+    if name == 'Aeon Chronicler':
+        reference_cid = cid
+        reference = act(state, 1, cid, 2)
+        state, cid = live_position(name, 1)
     metadata = {**RAW[name], 'card_name': name, 'card_data_sources': ['cache']}
     assert 'suspend' in known_unsupported_mechanics(RAW[name]['oracle_text'], card_name=name, canonical_context=metadata)
     state = act(state, 1, cid, 2)
+    if name == 'Aeon Chronicler':
+        assert state.players[1].mana_pool == reference.players[1].mana_pool
+        assert state.cards[cid].counters == reference.cards[reference_cid].counters
     remove_time_counters(state, cid)
+    if name == 'Aeon Chronicler':
+        assert state.cards[cid].counters['time'] == 1
+        state = _resolve_independent_owner_draw(state, 1, cid)
     assert state.cards[cid].counters['time'] == 1 and not state.stack
     assert state.cards[cid].oracle_text == RAW[name]['oracle_text']
+
+
+def _order_keyword_above_draw(state, seat, cid):
+    pending = state.pending_trigger_order
+    assert pending and pending.get('phase') != 'targets'
+    rows = list(pending['groups'][str(seat)])
+    assert sorted(row['effect_key'] for row in rows) == ['draw_cards', 'suspend_cast_trigger']
+    assert all(row['source_card_id'] == cid and row['controller'] == seat for row in rows)
+    rows.sort(key=lambda row: row['effect_key'] == 'suspend_cast_trigger')
+    before = serialize_match_snapshot(state)
+    RulesEngine().legal_moves(state, seat)
+    assert serialize_match_snapshot(state) == before
+    state = checked_action(state, RulesEngine(), seat,
+                           {'type': 'choose_trigger_order', 'trigger_order': [row['_choice_id'] for row in rows]})
+    assert state.stack[-1].effect_key == 'suspend_cast_trigger'
+    assert serialize_match_snapshot(resume(state)) == serialize_match_snapshot(state)
+    return state
+
+
+def _resolve_independent_owner_draw(state, seat, cid):
+    assert len(state.stack) == 1 and not state.pending_mechanic_choice
+    item = state.stack[-1]
+    assert item.effect_key == 'draw_cards' and item.controller == seat and item.source_card_id == cid
+    assert item.payload['__trigger_full_clause'] in RAW['Aeon Chronicler']['oracle_text'].splitlines()
+    assert item.payload['amount'] == 1
+    hands = {owner: len(player.hand) for owner, player in state.players.items()}
+    before = serialize_match_snapshot(state)
+    RulesEngine().legal_moves(state, state.priority_player)
+    assert serialize_match_snapshot(state) == before
+    state = one(resume(state))
+    assert len(state.players[seat].hand) == hands[seat] + 1
+    assert len(state.players[3-seat].hand) == hands[3-seat]
+    assert not state.stack
+    assert serialize_match_snapshot(resume(state)) == serialize_match_snapshot(state)
+    return state

@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791352888.025513,
-    "seen": 1791352981.9487393,
-    "ast_hash": "94b3b62c68084220979b172f0f9da14e",
+    "mtime": 1791357324.9414508,
+    "seen": 1791357395.534438,
+    "ast_hash": "e7fa39d8f24786195a60ef738c2fe781",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791352888.020513,
-    "seen": 1791352981.9488106,
-    "ast_hash": "ab4c78d5bcf47df5aebd73b8a1666809",
+    "mtime": 1791357324.9414508,
+    "seen": 1791357395.5344946,
+    "ast_hash": "05dd63e0973bc8bf2fbde2ce958687d0",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -954,9 +954,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/suspend.py": {
-    "mtime": 1791341658.207782,
-    "seen": 1791342233.2671766,
-    "ast_hash": "d0efd72dec66a607d7879a99bb5f1389",
+    "mtime": 1791357324.9414508,
+    "seen": 1791357395.534531,
+    "ast_hash": "7b4fa20b21c868c247fe4825cfbd7631",
     "semantic_hash": ""
   },
   "backend/rules_engine/targeting.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791354721.6769145,
-    "seen": 1791354798.5059514,
-    "ast_hash": "739ec8f0c7d8db0c24370f4f1a1e9f49",
+    "mtime": 1791356771.6641312,
+    "seen": 1791357395.5383673,
+    "ast_hash": "7d96156d574dd46be23b2aa27cc655c4",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -12126,9 +12126,9 @@
     "semantic_hash": ""
   },
   "docs/testing/control-source-frame-current-composition.md": {
-    "mtime": 1791339864.7977276,
-    "seen": 1791339933.6721506,
-    "ast_hash": "2e8bb839bfee1b7dd51b630df1f03f48",
+    "mtime": 1791355158.489004,
+    "seen": 1791357395.5377975,
+    "ast_hash": "430832e7b8049d94b5fab4cb90fe9b5c",
     "semantic_hash": ""
   },
   "docs/testing/control-source-frame-producer.md": {
@@ -12402,9 +12402,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_variable_suspend_keyword.py": {
-    "mtime": 1791341658.2097821,
-    "seen": 1791342233.2697294,
-    "ast_hash": "f28a681ea1d708fc541811354b0e3922",
+    "mtime": 1791357324.943451,
+    "seen": 1791357395.5371323,
+    "ast_hash": "d4b8567cb974a0edca9a2da8149f052d",
     "semantic_hash": ""
   },
   "backend/tests/test_variable_suspend_paid_contracts.py": {
@@ -13059,6 +13059,42 @@
     "mtime": 1791353920.0443845,
     "seen": 1791354798.5053513,
     "ast_hash": "6f44f8463f0cce61ee673f28807c4161",
+    "semantic_hash": ""
+  },
+  "backend/audit/exile-counter-body/body-goldens/test_full_body_cda.py": {
+    "mtime": 1791357324.9474509,
+    "seen": 1791357395.5342658,
+    "ast_hash": "864fe7024471bccd3b0bcebc8add19ca",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_exiled_time_counter_bodies.py": {
+    "mtime": 1791357324.942451,
+    "seen": 1791357395.5363119,
+    "ast_hash": "88ca0d4a3d4e7535d4e163afbc265faf",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_exiled_time_counter_controls.py": {
+    "mtime": 1791357324.942451,
+    "seen": 1791357395.5363135,
+    "ast_hash": "db3f2611501e1ed54d12735aef418ee1",
+    "semantic_hash": ""
+  },
+  "docs/testing/exiled-time-counter-bodies.md": {
+    "mtime": 1791357324.942451,
+    "seen": 1791357395.5378747,
+    "ast_hash": "05941fec95082193e0f1945bcd76536a",
+    "semantic_hash": ""
+  },
+  "docs/testing/graveyard-combat-current.md": {
+    "mtime": 1791356156.4546866,
+    "seen": 1791357395.5379138,
+    "ast_hash": "782e36c0ed2330c4149935827d2f93e0",
+    "semantic_hash": ""
+  },
+  "docs/testing/offline-assets-cold-component.md": {
+    "mtime": 1791356771.6641312,
+    "seen": 1791357395.5380874,
+    "ast_hash": "8348bae90cd2a57d81c59d1fff268028",
     "semantic_hash": ""
   }
 }

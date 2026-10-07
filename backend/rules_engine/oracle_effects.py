@@ -1249,6 +1249,8 @@ def inspect_target_hints(
             for pid in land_players
             for cid in state.players[pid].battlefield
             if "Land" in effective_types(state, state.cards[cid])
+            and ("target nonbasic land" not in oracle or 'Basic' not in (state.cards[cid].type_line or '').split())
+            and ("target basic land" not in oracle or 'Basic' in (state.cards[cid].type_line or '').split())
         ]
     if re.search(r"^enchant ", oracle, re.M):
         from rules_engine.attachments import attachment_target_is_legal
@@ -1516,8 +1518,10 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
         restrictions["allowed_types"] = ["Instant"]
     elif "target sorcery" in oracle:
         restrictions["allowed_types"] = ["Sorcery"]
-    elif "target land" in oracle or "target noncreature land" in oracle:
+    elif re.search(r'\btarget (?:(?:basic|nonbasic|noncreature) )?land\b', oracle):
         restrictions["allowed_types"] = ["Land"]
+        if "target nonbasic land" in oracle:
+            restrictions['nonbasic_land_only'] = True
     combat = re.search(r'\btarget (attacking or blocking|attacking|blocking) creature\b', oracle)
     if combat:
         restrictions['allowed_types'] = ['Creature']
