@@ -2,6 +2,11 @@
 
 ## Backend Composition - 2026-10-07
 
+- Add actual paid Growth Spiral responses to Searing Blaze, both seats with
+  deliberate own/opponent land selection or decline. Four complete current
+  modules pass 146 checks with isolated local SQLite. No production or preflight
+  flags changed; early resolver-pause and database-guard harness ledgers remain.
+
 - Compose complete temporary creature-characteristic instructions and the
   effective nonland subtype-publication seam. Seven whole current modules pass
   232 checks in 39.71s; original 42 desired cases are unchanged. HTTP remains

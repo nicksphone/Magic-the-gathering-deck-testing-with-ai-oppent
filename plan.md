@@ -115,8 +115,10 @@ Full corpus, lifecycle and release acceptance remain unfinished.
 
 These are distinct frozen audit and current-composition ledgers, not a summed
 suite. Soul-Scar and Suspend audits used no SQLite/network; the natural App still
-stops at preflight with zero match-start/action requests. Searing Blaze remains
-under investigation. No unsupported-warning bypass or natural-game retry is
+  stops at preflight with zero match-start/action requests. Searing Blaze has
+  [actual paid-entry witnesses](docs/testing/linked-damage-real-land-entry.md):
+  four whole current modules / 146 passes; broader admission/copy/target coverage
+  remains under investigation. No unsupported-warning bypass or natural-game retry is
 authorized by these scoped repairs.
 
 1. [x] Qualify phase-aware tactical combat scoring against actual checked
