@@ -112,9 +112,13 @@ Full corpus, lifecycle and release acceptance remain unfinished.
   blanket-warning failures; variable costs, unknown layouts/clauses and legacy
   context-free callers remain conservative. Current composition passes four whole
   modules / 136 checks. Do not declare whole decks ready or general Suspend complete.
-- [ ] Integrate Soul-Scar conversion into affected-player replacement ordering,
-  prevention and re-evaluation. Canonical audit: 43 passes / six desired failures.
-  Clearing the misrouted warning alone would conceal a real rules defect.
+- [x] Integrate bounded canonical Soul-Scar conversion into affected-player
+  replacement ordering, prevention and re-evaluation. Current source-controller,
+  numeric-prevention and heroic union passes 1,133 checks across 46 whole modules,
+  including original replacement/query and hydrated preflight action witnesses.
+  Complete-clause diagnostics and native damage-source validation are included;
+  this is not arbitrary replacement-clause or browser-game certification.
+  [Current acceptance](docs/testing/source-controller-heroic-current.md).
 - [ ] Establish complete graveyard clause/zone/permission inventory before
   relaxing conservative combat leaves. Inventory audit: 22 passes / two explicit
   graveyard-activation zone failures; current AI cohort retains 40 strict failures.
@@ -299,3 +303,13 @@ actual-reference heroic cast-target recognition. Same-source 46 whole modules:
 `docs/testing/source-controller-heroic-current.md` for the earlier harness-only
 failure ledger and isolation limits. No live deployment or broader release
 completion is claimed; the completion checklist remains open.
+
+## 2026-10-07 Locked Frontend Checkpoint
+
+Fresh isolated locked install, complete configured npm test chain, lint and build
+pass on application source `6f9e29e`; full and production-only advisory scans
+report zero findings. The missing Python prerequisite on the first attempt is
+preserved separately, not treated as an application failure. See
+`docs/testing/frontend-locked-current.md`. Backend offline assets, actual browser
+games, BO3/recovery and deployment remain open; this does not close Gate 1.7 or
+Gate 3 in full.
