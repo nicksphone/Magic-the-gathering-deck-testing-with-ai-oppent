@@ -28,5 +28,6 @@ Immutable evidence:
 `hand-crossunion-adapted783-2af-Wi1alF/`.
 
 The qualified 783 composition predates the three additional admissions. The
-expanded 905-case composition is still pending; neither this test adaptation
+expanded current composition now passes all 905 cases; see
+[current union](hand-domain-admission-current.md). Neither this test adaptation
 nor these pure gates imply HTTP/browser or overall release completion.

@@ -1,7 +1,7 @@
 # Release Acceptance Status
 
 Checkpoint: 2026-10-07. Application baseline before this documentation update:
-`f5833b542c7d2a08c745df25f49ca35cddcf149c`. Overall release remains unfinished.
+`8cfcb4f4dbc06a96b59c2b992cc629131b18d275`. Overall release remains unfinished.
 The requirements in `plan.md` are unchanged; component passes below are not a
 substitute for qualification of the final combined source.
 
@@ -16,11 +16,13 @@ substitute for qualification of the final combined source.
 | Python installer maintenance | Qualified EnC3vJ runtime pip 24.0 -> 26.2.1; pip check passed; all non-pip file hashes and package versions equal | Installer-only change; no application gate inferred from pip check |
 | Pending-stack privacy | Current `db16186` composition: 22 whole pure modules / 950 passes; parent applied tested bytes | Mixed HTTP/SQL and complete private hand-to-library response remain separate |
 | HAND source and entry damage | Exact ten-file production union: 21 whole modules / 673 passes, 255.17s; original assertions and 36 serializer children verified | Pure component only; final coverage union, mixed HTTP/SQL and browser remain separate |
+| Current HAND/Domain/admission union | Immutable `8cfcb4f`: 30 whole modules / 905 passes, 276.96s; exact ordered cases, 36 serializer receipts/kernel PIDs and bounded-output closure pass | Closes the pending pure union only; seven admission gaps, mixed HTTP/SQL, browser and universal semantics remain open |
 | Domain continuations | Fresh immutable `607a70b` plus the surgical compiler delta: two whole modules / 36 passes, 10.60s; paid Herd Migration search-then-life and Leyline Binding linked exile | Coverage warnings unchanged; no final-union, SQL or whole-card certificate |
 | Domain admission | Exact coverage `eaf84aa` -> `cd57f9b`: 102 passes plus eight independent complete-spell/Flash checks; 155 ready records, known-gap cards 12 -> 10 | Only complete sourced Herd Migration and Leyline Binding bodies; unrelated warnings retained; no universal semantics certificate |
 | Three complete-body admissions | Exact coverage `cd57f9b` -> `2b1217d`: same 133-case cohort passes; canonical linked Landfall damage, paid mass exile/Incubator and paid Flying/observer/transform checks; actual 155-card gaps 10 -> 7 | Only the qualified complete sourced bodies; all unrelated diagnostics retained; final HAND/Domain/admission union remains separate |
 | Standalone storage recovery | Pinned `29e86e4`: three unchanged whole modules / 43 passes, 6.79s; retention rollback/protection, WAL backup and actual controller restore | Not online cache/tombstone coordination, quotas/cancellation, clean-machine or soak acceptance |
 | Native job shutdown | Tested main `2109f88`: 44 passes, genuine midgame cancellation, actual worker join and database-pool closure before external cleanup; real next-lifespan restart | Single-process background-worker component; synchronous drain, byte limits, load/crash and final-source operations remain open |
+| Simulation byte measurement | Immutable `8cfcb4f`: two real bounded batch cases pass, 305.27s; each 500-tick game retains 929,767 bytes of log text while result JSON is 8,683/15,939 bytes | Measurement, not enforced resource bounds, exclusive memory/performance attribution, completed games or AI strength |
 | Private HTTPS operator | Pinned `0e57baf` plus exact four new Caddy files: TLS/auth, 26 atomic Origin rejections, incomplete-upload 403, lock and real restart/recovery passed | Native loopback single-user component only; not current combined engine, browser, LAN/public or clean-machine acceptance |
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
@@ -38,6 +40,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `gate2-three-admission/mtg-gate2-three-packet-2af920-YGLnwn-2af920/`
 - `parent-integration/storage-acceptance-current-29e86-20261007/`
 - `diagnostics/job-resource-contract/becc866-engine44-qualified-20261007-L6DFnr/`
+- `parent-integration/combined905-and-simulation-bytes-current-8cf-20261007/`
 - `diagnostics/operator-packaging/caddy-0e57-full-duplex-qualified-20261007-wVfKHc/`
 
 Read each report's source pin, failure history, isolation limits and raw evidence
@@ -46,9 +49,10 @@ inspection; never execute a database on NFS.
 
 ## Required Before Completion
 
-1. Complete pending-source privacy mixed HTTP/SQL and final-union acceptance.
+1. Complete pending-source privacy mixed HTTP/SQL and final release-source acceptance.
    The current pure qualification and exact parent integration are documented
-   in `pending-stack-privacy-current.md`; they do not cover those other gates.
+   in `pending-stack-privacy-current.md` and `hand-domain-admission-current.md`;
+   they do not cover those other gates.
 2. Resolve or explicitly classify the seven remaining hydrated preflight gaps in the 155-card
    inventory with genuine canonical cost/target/execution tests. The other 148
    cards lacking a known admission gap are not fully semantics-certified.

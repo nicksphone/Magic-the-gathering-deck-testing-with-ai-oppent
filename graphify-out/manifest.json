@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791410421.5425491,
-    "seen": 1791410507.5208595,
-    "ast_hash": "dc6259753e7849cd0bfe2bbfba80db35",
+    "mtime": 1791411950.730531,
+    "seen": 1791412045.4861438,
+    "ast_hash": "cb31bd14b0e1c25e16dd148da37d1802",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13668,9 +13668,9 @@
     "semantic_hash": ""
   },
   "docs/testing/hand-continuation-witness-current.md": {
-    "mtime": 1791410421.544549,
-    "seen": 1791410507.5205898,
-    "ast_hash": "417d64ad01868b4988a14dccf7e7746b",
+    "mtime": 1791411950.7295308,
+    "seen": 1791412045.4858663,
+    "ast_hash": "1adac6589d92fd40bc15fa550c7940d2",
     "semantic_hash": ""
   },
   "docs/testing/job-lifecycle-current.md": {
@@ -13683,6 +13683,18 @@
     "mtime": 1791410356.195363,
     "seen": 1791410507.5209281,
     "ast_hash": "4e34d2a5e8fddc3b05ba17264f35448f",
+    "semantic_hash": ""
+  },
+  "docs/testing/hand-domain-admission-current.md": {
+    "mtime": 1791411950.7295308,
+    "seen": 1791412045.48587,
+    "ast_hash": "25506de49053af57b77a4775af1cacc9",
+    "semantic_hash": ""
+  },
+  "docs/testing/simulation-byte-measurement-current.md": {
+    "mtime": 1791411950.7295308,
+    "seen": 1791412045.486206,
+    "ast_hash": "6d65d1ec74f23173bf88d2b519856ef2",
     "semantic_hash": ""
   }
 }
