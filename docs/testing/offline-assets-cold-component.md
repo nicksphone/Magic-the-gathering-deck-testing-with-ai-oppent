@@ -5,7 +5,42 @@ This document preserves the historical qualification of application source
 current-source backend qualification below. Neither proves the browser,
 production proxy or full release acceptance.
 
-## Actual Results
+## Current A42 Cold And Warm Qualification
+
+One fresh source-only execution on immutable application
+`a42e0f65348720f4686b813bc85cc5ff00d8876f` verified all 1,592 backend Git
+blobs before and after the gate. The cold probe passed: 155 shipped names
+hydrated and served, no real network, snapshot restoration and one paired
+lifespan. The original eight whole warm modules then passed all 73 ordered
+cases, with 42 warnings, in 26.31 seconds. JUnit reports no failures, errors
+or skips; all four exact node/route stub provenance and code checks passed.
+
+The warm phase retained the cold database and 156-file cache, ending with
+169 media files and 23 paired lifespans. Native guard permissions and original
+tests were unchanged; preparation repinned only owned paths, source metadata,
+the approved interpreter and the expected stub filename. A preceding actual
+preflight passed 27 expected denials with zero admitted SQL or lifespans.
+
+Both workers ended. Independent closure found no known owned handles, database
+descriptors, new threads, children or jobs. Actual default/migration database
+and owned-directory fuser checks returned one with empty output. Scoped process
+visibility limits remain recorded. The SQL lease was released at
+2026-10-07T22:43:32Z. Closed database bytes were archived, never run on NFS.
+
+Verified immutable evidence:
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/release-gate-1-7-current-qualified/a42e0f6-1kapIf/`.
+
+- `REPORT.md`: `a7502b4665b1fd6187a43faeb856dbfdecdd42b2609a0d11aa0095c466d6c710`
+- `SHA256SUMS`: `15858d5f2882c85019527fe64af1a7715472625faeeddbcd08fc0c812aefee6a`
+
+All 3,401 regular tar members and three pytest link targets matched local
+closed evidence. The separate preflight metadata-parser error and post-gate
+administrative harness bytecode file are explicitly preserved in the reports;
+neither changed application bytes or caused a test rerun. This qualifies the
+current offline backend component, not browser/BO3, proxy, clean-machine,
+AI strength or complete release acceptance. Earlier ledgers below remain intact.
+
+## Historical Actual Results
 
 One authorized execution began on 2026-10-07 at 06:57:58 UTC using the sealed
 v3 harness and a source-only checkout with no initial database or image cache.

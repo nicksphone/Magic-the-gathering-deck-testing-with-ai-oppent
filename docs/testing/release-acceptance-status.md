@@ -9,7 +9,7 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
-| Offline backend | Pinned `441201c`: cold 155 hydrated/served, then eight whole modules / 73 passes, 23 paired lifespans | Not the later hardened source, browser or proxy |
+| Offline backend | Current immutable `a42e0f6`: fresh cold 155 hydrated/served, then original eight whole modules / 73 passes, 26.31s, 23 paired lifespans; exact source, four stub checks and closure verified | Current offline backend component only; not browser, proxy or full release |
 | Native browser BO3 | Pinned `2331bb2`: HH three natural games, 2-1, 787 writes; human/Master two natural games, 2-0, 818 writes including 399 AI beats; cold restore and closure passed | Encountered UI branches only; reused declared dependency cache; not AI strength |
 | Browser-origin boundary | Exact five applied product/test/doc postimages: nine whole modules / 235 passes; parent pure policy 101 passes | Origin rejection, not authentication, LAN trust or whole-current browser qualification |
 | Frontend dependencies | Current `2af9200`: fresh offline locked install, typecheck, lint, full configured test chain and build passed; full/production registry advisory scans reported zero | Current frontend component; cached package intake, not clean-machine/browser end-to-end acceptance |
@@ -27,7 +27,7 @@ substitute for qualification of the final combined source.
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 
-- `release-gate-1-7-current-gate/441201c-v2/`
+- `release-gate-1-7-current-qualified/a42e0f6-1kapIf/`
 - `parent-integration/native-browser-r9-qualified-20261007/`
 - `diagnostics/api-security/retained2331-origin-20261007-ExTz1I/`
 - `diagnostics/dependency-audit/retained2331-fresh-20261007-v8A4Tj/`
@@ -56,7 +56,7 @@ inspection; never execute a database on NFS.
 2. Resolve or explicitly classify the seven remaining hydrated preflight gaps in the 155-card
    inventory with genuine canonical cost/target/execution tests. The other 148
    cards lacking a known admission gap are not fully semantics-certified.
-3. Requalify current built UI, offline assets, BO3 and recovery with the exact
+3. Requalify current built UI, browser-served offline assets, BO3 and recovery with the exact
    origin configuration and fresh locked dependencies. Test supported actions
    not encountered in the successful browser episodes.
 4. Requalify the integrated private HTTPS/auth proxy with the final combined
