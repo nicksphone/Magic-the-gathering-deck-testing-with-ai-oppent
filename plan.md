@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-06 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-07 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -86,6 +86,38 @@ provenance and canonical seed now have current scoped acceptance in
 Full corpus, lifecycle and release acceptance remain unfinished.
 
 ## Next Backend Batch
+
+### Current Evidence-Driven Priorities
+
+- [ ] Repair Ray's independent actual-resolution-controller and superseded
+  temporary-control cache bugs. Eight paid copy episodes reproduce two defects;
+  two separate paid Dominate episodes expose persistent-control reversion.
+  Keep the immutable witnesses and distinguish delayed-trigger priority from
+  obsolete first-cleanup expectations. No current HTTP qualification follows.
+- [ ] Retain genuine physical source provenance and deliver the actual popped
+  resolving frame for Ray copies. A normal-cast receipt alone is insufficient;
+  a copied spell remains independent when its original is countered. Shared
+  resolver changes require producer/consumer qualification before Ray149.
+- [ ] Qualify temporary characteristics through checked HTTP actions and cold
+  SQLite restore. Published `7dfbd51` passes seven whole pure modules / 232 checks;
+  the separately scoped 40-case HTTP gate remains pending actual execution.
+- [ ] Align fixed-cost Suspend readiness with bounded runtime admission and
+  canonical context, not a name allowlist. Frozen7f audit: 61 passes / six
+  blanket-warning failures; variable costs, unknown layouts/clauses and legacy
+  context-free callers remain conservative. Do not declare whole decks ready.
+- [ ] Integrate Soul-Scar conversion into affected-player replacement ordering,
+  prevention and re-evaluation. Canonical audit: 43 passes / six desired failures.
+  Clearing the misrouted warning alone would conceal a real rules defect.
+- [ ] Establish complete graveyard clause/zone/permission inventory before
+  relaxing conservative combat leaves. Inventory audit: 22 passes / two explicit
+  graveyard-activation zone failures; current AI cohort retains 40 strict failures.
+  Absence of offered moves is not proof of inertness. Preserve hidden information.
+
+These are distinct frozen audit and current-composition ledgers, not a summed
+suite. Soul-Scar and Suspend audits used no SQLite/network; the natural App still
+stops at preflight with zero match-start/action requests. Searing Blaze remains
+under investigation. No unsupported-warning bypass or natural-game retry is
+authorized by these scoped repairs.
 
 1. [x] Qualify phase-aware tactical combat scoring against actual checked
    damage/winners, preserving response and crackback uncertainty. Tactical
