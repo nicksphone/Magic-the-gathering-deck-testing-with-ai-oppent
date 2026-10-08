@@ -53,7 +53,23 @@ Its 44 real lifespans and native resource closure are documented under
 not include the newer parent Veil/Emperor composition; its native result cannot
 be transferred to this parent as final-union acceptance.
 
-The NEW 40-case paid HTTP packet is prepared but not executed. Current combined
-native HTTP/SQLite, built-browser choices, inventory-warning/admission review,
-the two escape defects and final release-source acceptance remain open.
+The separate current `352f3b8` HTTP packet completed all 40 ordinary cases:
+**40 passed, 106 warnings, 60.14 seconds, exit 0**. It includes 12 deliberate
+empty/one/reversed hand-exile selections with real public legal views and paid
+HTTP resolution, 26 invalid/unauthorized atomic rejections, and two unrelated
+finite-cost controls. All 40 real lifespans completed; source/import/runtime
+pins matched and pools, threads, children and database handles closed without
+emergency cleanup. Cold reload here means same-process SQL/controller restore,
+not an operating-system process restart. The 150 generated SVG outputs are
+recorded, not treated as source edits or card-semantics certification.
+
+The unchanged module is `audit/gate2-march-http/test_march_http_paid.py`.
+Evidence and the exact isolated wrapper/guard are archived under
+`gate2-march-cost/mtg-march-http40-352f-53lxuq-COMPLETED40/`. Its module docstring
+is an unchanged historical proposal label; the terminal receipts above establish
+the actual execution. The runner supplies the inventory and March audit-helper
+paths and owned evidence directory; it is not an unguarded default-database run.
+
+Final combined native acceptance, built-browser choices, inventory-warning
+review, the two escape defects and final release-source acceptance remain open.
 Neither component proves all costs, arbitrary cards or expert AI gameplay.

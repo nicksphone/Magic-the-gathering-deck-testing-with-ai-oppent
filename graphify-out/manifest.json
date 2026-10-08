@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791421215.995334,
-    "seen": 1791421298.8421288,
-    "ast_hash": "0b70134ff60b77b4e6f80230ed19800c",
+    "mtime": 1791434445.6435132,
+    "seen": 1791434580.0344949,
+    "ast_hash": "1c2b5b5a1c57ff0567858e23edc032d2",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791418538.3062105,
-    "seen": 1791418753.275318,
-    "ast_hash": "77a1db9cd6ba0bdea8e733d46c6c70df",
+    "mtime": 1791434430.781766,
+    "seen": 1791434580.0345204,
+    "ast_hash": "644528e20a883967401d6e9df05e7c77",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -6042,9 +6042,9 @@
     "semantic_hash": ""
   },
   "frontend/src/types/index.ts": {
-    "mtime": 1791420500.7883427,
-    "seen": 1791420658.5288022,
-    "ast_hash": "fc3988de6539f6036937fb8a2bf4fa48",
+    "mtime": 1791434430.8007655,
+    "seen": 1791434580.0345387,
+    "ast_hash": "e3b37ca421260ad4259b555a02cd8467",
     "semantic_hash": ""
   },
   "frontend/src/vite-env.d.ts": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791430267.2911117,
-    "seen": 1791430360.174635,
-    "ast_hash": "f0a7b8617069cefd3653cf06bca70b15",
+    "mtime": 1791434655.8849452,
+    "seen": 1791434736.6765616,
+    "ast_hash": "3576aa6c8763516860ca52a99fa1e1f8",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14112,9 +14112,33 @@
     "semantic_hash": ""
   },
   "docs/testing/march-paid-current.md": {
-    "mtime": 1791430267.2901118,
-    "seen": 1791430360.1745067,
-    "ast_hash": "b7ed96589c024ce1fe0d0e4f29c741bd",
+    "mtime": 1791434629.7623878,
+    "seen": 1791434736.6764398,
+    "ast_hash": "7d8e66ef7ce01881b05fec924253faf3",
+    "semantic_hash": ""
+  },
+  "frontend/tests/entry-mode-controls.mjs": {
+    "mtime": 1791434430.829765,
+    "seen": 1791434580.034706,
+    "ast_hash": "513510e680af91795572f130c294b1b3",
+    "semantic_hash": ""
+  },
+  "docs/testing/inventory-current352f.md": {
+    "mtime": 1791431935.7478309,
+    "seen": 1791434580.0353456,
+    "ast_hash": "6837763d06cb0ae5f96ff5f1d85dd0c4",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-http/test_march_http_paid.py": {
+    "mtime": 1791434629.5503914,
+    "seen": 1791434736.6722226,
+    "ast_hash": "68580953035002382cf0558a05664c79",
+    "semantic_hash": ""
+  },
+  "docs/testing/entry-mode-controls.md": {
+    "mtime": 1791434629.9623845,
+    "seen": 1791434736.6762543,
+    "ast_hash": "25aedbf1e7f0c837d2de39fdfa5f7777",
     "semantic_hash": ""
   }
 }
