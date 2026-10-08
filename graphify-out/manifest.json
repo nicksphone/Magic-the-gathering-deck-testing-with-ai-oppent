@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791343450.637871,
-    "seen": 1791344043.0874255,
-    "ast_hash": "d6ec6614cfc81a644d986e63a4942330",
+    "mtime": 1791445323.8432329,
+    "seen": 1791445731.5768957,
+    "ast_hash": "f813de128b15f899ed3e1915a99d582d",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -3036,9 +3036,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_decisions.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.218921,
-    "ast_hash": "75a7a1b37f2f669773bf3069ffc81966",
+    "mtime": 1791445323.8432329,
+    "seen": 1791445731.579416,
+    "ast_hash": "b21fe4de82e4421bcadb724ed37487ad",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_defensive_responses.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791442678.3226368,
-    "seen": 1791442755.5913477,
-    "ast_hash": "b067b2702b3672b20e98ec0d1d6f2a84",
+    "mtime": 1791445625.1451821,
+    "seen": 1791445731.582908,
+    "ast_hash": "a991b8c68a07893bbd8721adf0f4df7e",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14499,6 +14499,30 @@
     "mtime": 1791442678.3226368,
     "seen": 1791442755.5909874,
     "ast_hash": "ad4af577b6afed7e4bd076ce94d8cc88",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_late_progress_safety.json": {
+    "mtime": 1791445323.8432329,
+    "seen": 1791445731.5776093,
+    "ast_hash": "fbfec39768a8ee4d4fe73d51a0b25bcb",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_late_progress_safety.provenance.json": {
+    "mtime": 1791445323.8432329,
+    "seen": 1791445731.5776124,
+    "ast_hash": "e91a21a9c4d1396eb50fe73378ec9a87",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_late_progress_safety.py": {
+    "mtime": 1791445323.8432329,
+    "seen": 1791445731.5794494,
+    "ast_hash": "2564167ec34dc8cc053313efd1380782",
+    "semantic_hash": ""
+  },
+  "docs/testing/late-progress-ai-safety-current.md": {
+    "mtime": 1791445323.8442328,
+    "seen": 1791445731.5826519,
+    "ast_hash": "2c9b91b643a2aae876ad73129486342c",
     "semantic_hash": ""
   }
 }

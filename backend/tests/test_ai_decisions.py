@@ -642,7 +642,7 @@ def test_aggro_ai_avoids_suicide_attack_into_larger_blocker() -> None:
     assert decision.action["type"] == "pass_priority"
 
 
-def test_late_game_forced_progress_attack_avoids_empty_attack_stall() -> None:
+def test_late_game_progress_does_not_force_a_losing_attack() -> None:
     ai = AIAgent(difficulty="master", archetype="Control")
     moves = [
         {"type": "attack", "options": ["atk-1"]},
@@ -671,9 +671,19 @@ def test_late_game_forced_progress_attack_avoids_empty_attack_stall() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
-    assert decision.action["type"] == "attack"
-    assert decision.action.get("attackers") == ["atk-1"]
+    stub = complete_card_bookkeeping(FakeState())
+    state = MatchState(**{field.name: deepcopy(getattr(stub, field.name))
+                          for field in fields(MatchState)})
+    state.step = Step(stub.step)
+    state.players = {seat: PlayerState(**{field.name: deepcopy(getattr(player, field.name))
+                                          for field in fields(PlayerState)})
+                     for seat, player in stub.players.items()}
+    state.cards = {cid: CardInstance(**{field.name: deepcopy(getattr(card, field.name))
+                                        for field in fields(CardInstance)})
+                   for cid, card in stub.cards.items()}
+    decision = ai.choose_action(state, moves, 1)
+    assert decision.action["type"] == "pass_priority"
+    assert decision.action.get("attackers", []) == []
 
 
 def test_control_ai_holds_small_attacker_back_into_larger_blocker_when_not_pressing() -> None:

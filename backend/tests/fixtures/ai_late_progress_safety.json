@@ -1,0 +1,446 @@
+{
+  "Forest": {
+    "all_parts": [
+      {
+        "component": "combo_piece",
+        "id": "4fae200d-5757-4924-8cf4-ab2a5ef2ccc0",
+        "name": "Forest",
+        "object": "related_card",
+        "type_line": "Basic Land \u2014 Forest",
+        "uri": "https://api.scryfall.com/cards/4fae200d-5757-4924-8cf4-ab2a5ef2ccc0"
+      },
+      {
+        "component": "combo_piece",
+        "id": "aed8ae06-ae54-4a16-8830-6547164ce6ae",
+        "name": "Gilt-Leaf Alchemist",
+        "object": "related_card",
+        "type_line": "Creature \u2014 Elf Druid",
+        "uri": "https://api.scryfall.com/cards/aed8ae06-ae54-4a16-8830-6547164ce6ae"
+      }
+    ],
+    "artist": "Bastien Grivet",
+    "artist_ids": [
+      "434a6cf6-c6bf-4f87-84db-d0a902393b9e"
+    ],
+    "booster": false,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cmc": 0.0,
+    "collector_number": "325",
+    "color_identity": [
+      "G"
+    ],
+    "colors": [],
+    "digital": false,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "foil": true,
+    "frame": "2015",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo",
+      "arena"
+    ],
+    "highres_image": true,
+    "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+    "illustration_id": "5a6bbfa9-4075-48e4-b06a-78e31477bd3f",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-08-06T02:01:15Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.webp?1785981675",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.jpg?1785981675",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.jpg?1785981675",
+      "crop": "https://cards.scryfall.io/crop/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.webp?1785981675",
+      "display": "https://cards.scryfall.io/display/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.webp?1785981675",
+      "grid": "https://cards.scryfall.io/grid/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.webp?1785981675",
+      "large": "https://cards.scryfall.io/large/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.jpg?1785981675",
+      "normal": "https://cards.scryfall.io/normal/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.jpg?1785981675",
+      "png": "https://cards.scryfall.io/png/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.png?1785981675",
+      "small": "https://cards.scryfall.io/small/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.jpg?1785981675",
+      "thumb": "https://cards.scryfall.io/thumb/front/d/c/dce15387-4114-4b3e-91aa-5b42b45c44ac.webp?1785981675"
+    },
+    "keywords": [],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "legal",
+      "brawl": "legal",
+      "commander": "legal",
+      "competitivebrawl": "legal",
+      "duel": "legal",
+      "future": "legal",
+      "gladiator": "legal",
+      "historic": "legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "legal",
+      "paupercommander": "legal",
+      "penny": "legal",
+      "pioneer": "legal",
+      "predh": "legal",
+      "premodern": "legal",
+      "standard": "legal",
+      "standardbrawl": "legal",
+      "timeless": "legal",
+      "tlr": "legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "",
+    "multiverse_ids": [],
+    "name": "Forest",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "oracle_text": "({T}: Add {G}.)",
+    "oversized": false,
+    "prices": {
+      "eur": null,
+      "eur_foil": null,
+      "tix": null,
+      "usd": null,
+      "usd_etched": null,
+      "usd_foil": null
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Ab34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6&unique=prints",
+    "produced_mana": [
+      "G"
+    ],
+    "promo": false,
+    "promo_types": [
+      "universesbeyond"
+    ],
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards?affiliate_id=scryfall&data%5Bsearch%5D=Forest&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products/Search?referrer=scryfall&searchString=Forest&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fmagic%2Fproduct%3FproductLineName%3Dmagic%26q%3DForest%26view%3Dgrid"
+    },
+    "rarity": "common",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Forest",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DForest",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DForest"
+    },
+    "released_at": "2026-11-13",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/dce15387-4114-4b3e-91aa-5b42b45c44ac/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/trk?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/trk/325/forest?utm_source=api",
+    "set": "trk",
+    "set_id": "b47039dc-da5a-448c-8feb-e77d458108a6",
+    "set_name": "Star Trek",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Atrk&unique=prints",
+    "set_type": "expansion",
+    "set_uri": "https://api.scryfall.com/sets/b47039dc-da5a-448c-8feb-e77d458108a6",
+    "story_spotlight": false,
+    "textless": false,
+    "type_line": "Basic Land \u2014 Forest",
+    "uri": "https://api.scryfall.com/cards/dce15387-4114-4b3e-91aa-5b42b45c44ac",
+    "variation": false
+  },
+  "Archangel of Wrath": {
+    "arena_id": 82055,
+    "artist": "Miguel Mercado",
+    "artist_ids": [
+      "085f314d-cd61-48e0-89d1-048e9891e4a1"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 671315,
+    "cmc": 4.0,
+    "collector_number": "3",
+    "color_identity": [
+      "B",
+      "R",
+      "W"
+    ],
+    "colors": [
+      "W"
+    ],
+    "digital": false,
+    "edhrec_rank": 22411,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "foil": true,
+    "frame": "2015",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "arena",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+    "illustration_id": "30c90d96-ee9c-46bb-b1ee-bbc1d8097de5",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T05:42:52Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+      "crop": "https://cards.scryfall.io/crop/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372",
+      "display": "https://cards.scryfall.io/display/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372",
+      "grid": "https://cards.scryfall.io/grid/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372",
+      "large": "https://cards.scryfall.io/large/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+      "normal": "https://cards.scryfall.io/normal/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+      "png": "https://cards.scryfall.io/png/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.png?1783921372",
+      "small": "https://cards.scryfall.io/small/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+      "thumb": "https://cards.scryfall.io/thumb/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372"
+    },
+    "keywords": [
+      "Kicker",
+      "Flying",
+      "Lifelink"
+    ],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "legal",
+      "commander": "legal",
+      "competitivebrawl": "legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "legal",
+      "historic": "legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "not_legal",
+      "paupercommander": "not_legal",
+      "penny": "legal",
+      "pioneer": "legal",
+      "predh": "not_legal",
+      "premodern": "not_legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "legal",
+      "tlr": "not_legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{2}{W}{W}",
+    "mtgo_id": 102482,
+    "multiverse_ids": [
+      574483
+    ],
+    "name": "Archangel of Wrath",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "022e97af-2a3a-4e13-9b6b-d34fcc8cf168",
+    "oracle_text": "Kicker {B} and/or {R} (You may pay an additional {B} and/or {R} as you cast this spell.)\nFlying, lifelink\nWhen this creature enters, if it was kicked, it deals 2 damage to any target.\nWhen this creature enters, if it was kicked twice, it deals 2 damage to any target.",
+    "oversized": false,
+    "penny_rank": 3239,
+    "power": "3",
+    "preview": {
+      "previewed_at": "2022-08-18",
+      "source": "Wizards of the Coast",
+      "source_uri": "https://www.twitch.tv/videos/1565562937"
+    },
+    "prices": {
+      "eur": "0.24",
+      "eur_foil": "0.34",
+      "tix": "0.02",
+      "usd": "0.28",
+      "usd_etched": null,
+      "usd_foil": "0.32"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A022e97af-2a3a-4e13-9b6b-d34fcc8cf168&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/102482?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=671315&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F282765%3Fpage%3D1"
+    },
+    "rarity": "rare",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Archangel+of+Wrath",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=574483&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DArchangel%2Bof%2BWrath",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DArchangel%2Bof%2BWrath"
+    },
+    "released_at": "2022-09-09",
+    "reprint": false,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/2d00bab2-e95d-4296-a805-2a05e7640efb/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/dmu?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/dmu/3/archangel-of-wrath?utm_source=api",
+    "security_stamp": "oval",
+    "set": "dmu",
+    "set_id": "4e47a6cd-cdeb-4b0f-8f24-cfe1a0127cb3",
+    "set_name": "Dominaria United",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admu&unique=prints",
+    "set_type": "expansion",
+    "set_uri": "https://api.scryfall.com/sets/4e47a6cd-cdeb-4b0f-8f24-cfe1a0127cb3",
+    "story_spotlight": false,
+    "tcgplayer_id": 282765,
+    "textless": false,
+    "toughness": "4",
+    "type_line": "Creature \u2014 Angel",
+    "uri": "https://api.scryfall.com/cards/2d00bab2-e95d-4296-a805-2a05e7640efb",
+    "variation": false
+  },
+  "Atraxa, Grand Unifier": {
+    "arena_id": 83896,
+    "artist": "Marta Nael",
+    "artist_ids": [
+      "266ab861-ed64-4ba5-865c-f18758421cc3"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 692868,
+    "cmc": 7.0,
+    "collector_number": "196",
+    "color_identity": [
+      "B",
+      "G",
+      "U",
+      "W"
+    ],
+    "colors": [
+      "B",
+      "G",
+      "U",
+      "W"
+    ],
+    "digital": false,
+    "edhrec_rank": 3543,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "foil": true,
+    "frame": "2015",
+    "frame_effects": [
+      "legendary"
+    ],
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo",
+      "arena"
+    ],
+    "highres_image": true,
+    "id": "4a1f905f-1d55-4d02-9d24-e58070793d3f",
+    "illustration_id": "1174ae63-1bb5-48f5-a4ce-79b2862c257c",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T04:46:43Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.webp?1783918003",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg?1783918003",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg?1783918003",
+      "crop": "https://cards.scryfall.io/crop/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.webp?1783918003",
+      "display": "https://cards.scryfall.io/display/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.webp?1783918003",
+      "grid": "https://cards.scryfall.io/grid/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.webp?1783918003",
+      "large": "https://cards.scryfall.io/large/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg?1783918003",
+      "normal": "https://cards.scryfall.io/normal/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg?1783918003",
+      "png": "https://cards.scryfall.io/png/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.png?1783918003",
+      "small": "https://cards.scryfall.io/small/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.jpg?1783918003",
+      "thumb": "https://cards.scryfall.io/thumb/front/4/a/4a1f905f-1d55-4d02-9d24-e58070793d3f.webp?1783918003"
+    },
+    "keywords": [
+      "Deathtouch",
+      "Flying",
+      "Lifelink",
+      "Vigilance"
+    ],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "legal",
+      "commander": "legal",
+      "competitivebrawl": "legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "legal",
+      "historic": "legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "not_legal",
+      "paupercommander": "not_legal",
+      "penny": "not_legal",
+      "pioneer": "legal",
+      "predh": "not_legal",
+      "premodern": "not_legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "legal",
+      "tlr": "not_legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{3}{G}{W}{U}{B}",
+    "mtgo_id": 106607,
+    "multiverse_ids": [
+      602726
+    ],
+    "name": "Atraxa, Grand Unifier",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "abbcb153-0763-44c6-964f-b4ff0eb64257",
+    "oracle_text": "Flying, vigilance, deathtouch, lifelink\nWhen Atraxa enters, reveal the top ten cards of your library. For each card type, you may put a card of that type from among the revealed cards into your hand. Put the rest on the bottom of your library in a random order. (Artifact, battle, creature, enchantment, instant, land, planeswalker, and sorcery are card types.)",
+    "oversized": false,
+    "power": "7",
+    "preview": {
+      "previewed_at": "2023-01-18",
+      "source": "Wizards of the Coast",
+      "source_uri": ""
+    },
+    "prices": {
+      "eur": "23.29",
+      "eur_foil": "24.60",
+      "tix": "8.43",
+      "usd": "18.39",
+      "usd_etched": null,
+      "usd_foil": "19.37"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Aabbcb153-0763-44c6-964f-b4ff0eb64257&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/106607?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=692868&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F478532%3Fpage%3D1"
+    },
+    "rarity": "mythic",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Atraxa%2C+Grand+Unifier",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=602726&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DAtraxa%252C%2BGrand%2BUnifier",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DAtraxa%252C%2BGrand%2BUnifier"
+    },
+    "released_at": "2023-02-10",
+    "reprint": false,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/4a1f905f-1d55-4d02-9d24-e58070793d3f/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/one?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/one/196/atraxa-grand-unifier?utm_source=api",
+    "security_stamp": "oval",
+    "set": "one",
+    "set_id": "04bef644-343f-4230-95ee-255f29aa67a2",
+    "set_name": "Phyrexia: All Will Be One",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aone&unique=prints",
+    "set_type": "expansion",
+    "set_uri": "https://api.scryfall.com/sets/04bef644-343f-4230-95ee-255f29aa67a2",
+    "story_spotlight": false,
+    "tcgplayer_id": 478532,
+    "textless": false,
+    "toughness": "7",
+    "type_line": "Legendary Creature \u2014 Phyrexian Angel",
+    "uri": "https://api.scryfall.com/cards/4a1f905f-1d55-4d02-9d24-e58070793d3f",
+    "variation": false
+  }
+}

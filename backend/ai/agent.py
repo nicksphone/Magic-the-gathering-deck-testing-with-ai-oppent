@@ -1203,41 +1203,9 @@ class AIAgent:
             return None
         chosen = self._choose_attackers(state, options, player_id)
         if not chosen:
-            chosen = self._fallback_progress_attackers(state, options, player_id)
-            if not any("Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
-                       for cid in state.players[3 - player_id].battlefield):
-                chosen = self._reserve_postcombat_mana(state, chosen, player_id)
-        if not chosen:
             return None
         move["attackers"] = chosen
         return move
-
-    def _fallback_progress_attackers(self, state: MatchState, candidates: list[str], player_id: int) -> list[str]:
-        opp_id = 1 if player_id == 2 else 2
-        from rules_engine.continuous import effective_power as _eff_pow
-        from rules_engine.continuous import effective_toughness as _eff_tgh
-
-        opp_blockers = [
-            cid
-            for cid in state.players[opp_id].battlefield
-            if cid in state.cards and "Creature" in effective_types(state, state.cards[cid]) and not state.cards[cid].tapped
-        ]
-        out: list[str] = []
-        for cid in candidates:
-            card = state.cards.get(cid)
-            if not card:
-                continue
-            p = _eff_pow(state, cid)
-            t = _eff_tgh(state, cid)
-            if p <= 0:
-                continue
-            kws = set(effective_keywords(state, cid))
-            evasive = bool(kws.intersection({"flying", "trample", "deathtouch", "menace"}))
-            dies_to_any = any(_eff_pow(state, b) >= t for b in opp_blockers)
-            trades_up = any(_eff_tgh(state, b) <= p for b in opp_blockers)
-            if evasive or not dies_to_any or trades_up or p >= 3:
-                out.append(cid)
-        return out
 
     def _choose_forced_closure_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if getattr(state, "active_player", player_id) != player_id:
