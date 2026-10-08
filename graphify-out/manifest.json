@@ -13524,9 +13524,9 @@
     "semantic_hash": ""
   },
   "ops/caddy/run.py": {
-    "mtime": 1791406128.643567,
-    "seen": 1791406375.9107924,
-    "ast_hash": "4eb770961bda3ca5b2dc2fcee210b8e1",
+    "mtime": 1791487395.4586725,
+    "seen": 1791487513.4452026,
+    "ast_hash": "a4aee54de15f133f69b8058cda46ec30",
     "semantic_hash": ""
   },
   "ops/caddy/verify-config.py": {
@@ -15075,6 +15075,24 @@
     "mtime": 1791481600.032821,
     "seen": 1791481681.6505737,
     "ast_hash": "fd15b63b331833dd75b7ed26bb73c578",
+    "semantic_hash": ""
+  },
+  "ops/caddy/test_runtime_inventory.py": {
+    "mtime": 1791487395.4586725,
+    "seen": 1791487513.4452057,
+    "ast_hash": "58c41272227c2e71999213760ed3f382",
+    "semantic_hash": ""
+  },
+  "docs/testing/current349-ai-entry-combined.md": {
+    "mtime": 1791487424.009259,
+    "seen": 1791487513.4456074,
+    "ast_hash": "2ea1fcce04807d62099a897f56d93a9b",
+    "semantic_hash": ""
+  },
+  "docs/testing/operator-current349-https.md": {
+    "mtime": 1791487424.009259,
+    "seen": 1791487513.445926,
+    "ast_hash": "252aed88c5125663c95fa01d54f3c8bc",
     "semantic_hash": ""
   }
 }
