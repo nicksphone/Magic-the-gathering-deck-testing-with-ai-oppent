@@ -35,6 +35,8 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
         state.trigger_staging = True
         state.trigger_staging_event = "cast_or_activate"
     if is_spell:
+        from rules_engine.turn_spell_protection import record_spell_colors
+        record_spell_colors(state, source, controller)
         emit_event(
             state,
             "spell_cast",

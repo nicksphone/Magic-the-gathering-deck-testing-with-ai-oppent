@@ -189,6 +189,8 @@ _SPELL_COUNTER_PROTECTION_RE = re.compile(
 
 def spell_cant_be_countered(state: Any, item: Any) -> bool:
     """Evaluate supported self and battlefield spell protection at resolution."""
+    if stack_object_kind(state, item) == 'spell' and item.controller in getattr(state, 'turn_spell_protection', ()):
+        return True
     source = stack_source_card(state, item)
     if source is None:
         return False
@@ -409,6 +411,10 @@ def validate_hexproof_shroud_targets(
         player_ids.append(int(action_targets["target_player"]))
     player_ids.extend(int(pid) for pid in (action_targets.get("target_distribution") or {}) if str(pid) in {"1", "2"})
     for player_id in set(player_ids):
+        if source_controller != player_id:
+            for color in getattr(state, 'turn_player_hexproof', {}).get(player_id, ()):
+                if source_matches_quality(source_card, color, state=state, source_lki=source_lki):
+                    return False, f'Target player has hexproof from {color}.'
         immunity = player_target_immunity(state, player_id, source_controller)
         if immunity:
             return False, f"Target {state.players[player_id].name} has {immunity}."

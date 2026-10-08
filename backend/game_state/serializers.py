@@ -130,6 +130,10 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "next_object_id": state.next_object_id,
         "day_night": state.day_night,
         "spells_cast_this_turn": {str(key): value for key, value in state.spells_cast_this_turn.items()},
+        "spell_color_history": {str(key): sorted(value) for key, value in state.spell_color_history.items()},
+        "spell_color_history_known": state.spell_color_history_known,
+        "turn_spell_protection": sorted(state.turn_spell_protection),
+        "turn_player_hexproof": {str(key): sorted(value) for key, value in state.turn_player_hexproof.items()},
         "kicked_spells_cast_this_turn": {str(key): value for key, value in state.kicked_spells_cast_this_turn.items()},
         "declared_attackers_this_turn": {str(key): value for key, value in state.declared_attackers_this_turn.items()},
         "spells_cast_last_turn": state.spells_cast_last_turn,
@@ -383,6 +387,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.kicked_spells_cast_this_turn = {
         int(key): int(value) for key, value in payload.get('kicked_spells_cast_this_turn', {'1': 0, '2': 0}).items()
     }
+    from rules_engine.turn_spell_protection import restore_history
+    restore_history(state, payload)
     state.declared_attackers_this_turn = {
         int(key): int(value) for key, value in payload.get("declared_attackers_this_turn", {"1": 0, "2": 0}).items()
     }

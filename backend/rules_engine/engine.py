@@ -78,6 +78,8 @@ class RulesEngine:
             state.spells_cast_last_turn = outgoing_count
             state.turn += 1
             state.spells_cast_this_turn = {1: 0, 2: 0}
+            state.spell_color_history = {1: set(), 2: set()}
+            state.spell_color_history_known = True
             state.kicked_spells_cast_this_turn = {1: 0, 2: 0}
             state.foretells_this_turn = {1: 0, 2: 0}
             state.declared_attackers_this_turn = {1: 0, 2: 0}
@@ -206,6 +208,8 @@ class RulesEngine:
             if int(entry.get("expires_turn", state.turn)) > int(state.turn)
         ]
         state.turn_cant_gain_life = set()
+        state.turn_spell_protection = set()
+        state.turn_player_hexproof = {}
         state.combat_cost_effects = [row for row in state.combat_cost_effects if row['expires_turn'] > state.turn]
         state.turn_damage_cant_be_prevented = False
         performed_sba = False

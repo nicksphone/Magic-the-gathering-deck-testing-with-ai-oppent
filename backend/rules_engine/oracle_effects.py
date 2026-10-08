@@ -421,6 +421,10 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    from rules_engine.turn_spell_protection import compile_instruction as compile_turn_protection
+    turn_protection = compile_turn_protection(oracle)
+    if turn_protection is not None:
+        return turn_protection
     resource_scaled_pt = _infer_resource_scaled_target_pt(oracle, action_targets)
     if resource_scaled_pt is not None:
         return resource_scaled_pt

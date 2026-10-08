@@ -264,6 +264,10 @@ class MatchState:
     # the upkeep transition is deterministic and survives snapshot restore.
     day_night: str = "none"
     spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
+    spell_color_history: dict[int, set[str]] = field(default_factory=lambda: {1: set(), 2: set()})
+    spell_color_history_known: bool = True
+    turn_spell_protection: set[int] = field(default_factory=set)
+    turn_player_hexproof: dict[int, set[str]] = field(default_factory=dict)
     kicked_spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     declared_attackers_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     spells_cast_last_turn: int = 0
