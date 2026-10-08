@@ -47,6 +47,7 @@ application-lifespan, SQLite, browser, physical-resource or operator acceptance.
 Evidence: `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ai-late-progress-safety-product-20261008-qDCbHC/`.
 The independent baseline audit is also retained under
 `diagnostics/ai-progress-attack-baseline-20261008-qDCbHC/`.
-The active six-game archetype probe uses the old immutable policy; it is not
+The separate six-game archetype probe used the old immutable policy; five games
+completed and the sixth hit its declared wall bound (exit 124). It is not
 retroactively relabeled as a post-repair run. Full-game policy comparison,
 broader decision benchmarks and current mixed/browser acceptance remain open.

@@ -82,10 +82,34 @@ as a single acceptance gate. Mono Red and Tokens started in both seat orders;
 play/draw balance, repeated determinism, counterfactual privacy/root purity,
 other deck families, complete semantics and expert strength remain unverified.
 
+### Remaining Built-In Families: Incomplete Cohort
+
+Immutable `602e9c8` used the same pre-repair AI policy. The declared six-game
+schedule used White Weenie/Tribal, Tempo/Dimir Control and Burn/Blue Control,
+then reversed each seat order with the same paired seed and player 1 starting.
+Five games completed naturally; the sixth reached the external 2,700-second
+wall bound. Wrapper exit 124, not a complete-cohort pass. The last actual record
+was Blue Control/Burn, tick 602, turn 22, DRAW, choose-action started; no completed
+decision or game outcome is inferred beyond that record.
+
+All 2,560 original source hashes and the 2,772-file runtime manifest remained
+equal. The 23,025-row journal and five completed outputs are archived. SIGTERM
+did not publish the runner's finally/terminal JSON, so no complete internal I/O
+or resource-closure receipt is claimed. External process PIDs were absent,
+owned-directory fuser output was empty and no default SQLite database existed.
+All 2,636 archive members read back byte-equal. No gameplay retry occurred.
+
+Evidence: `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ai-natural-current602-remaining-incomplete-20261008-7sYdmA/`.
+
+This old-policy cohort does not qualify the later combat-safety repair in
+`late-progress-ai-safety-current.md`. Post-repair full-game comparison, broader
+deck styles and measured decision quality remain open. No performance cause is
+inferred from the timeout.
+
 ### Outstanding Acceptance
 
 The full storage/resource-contract composition and current integration remain
 open. Canonical inventory diagnostics, final built UI/BO3/offline recovery,
 combined HTTPS/operator acceptance, clean-machine/soak tests and broader
 hidden-information AI quality must still be qualified against the final source.
-Neither result above changes the original all-rules/arbitrary-deck objective.
+None of these scoped results changes the original all-rules/arbitrary-deck objective.
