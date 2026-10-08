@@ -1176,9 +1176,9 @@
     "semantic_hash": ""
   },
   "backend/tests/conftest.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2180235,
-    "ast_hash": "39bed28bdc36abc66da20d7f22047eee",
+    "mtime": 1791478747.9715812,
+    "seen": 1791478832.5446622,
+    "ast_hash": "344315056ef3b32fffbae623d2fc6103",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/ability_cost_discounts.json": {
@@ -14919,6 +14919,12 @@
     "mtime": 1791477708.793326,
     "seen": 1791477789.6124187,
     "ast_hash": "1a8655d913c058407dfaa8e3dd2c1222",
+    "semantic_hash": ""
+  },
+  "docs/testing/backend-discovery-fixtures.md": {
+    "mtime": 1791478747.9745812,
+    "seen": 1791478832.5481088,
+    "ast_hash": "239b4e3bbd791827ece45cb805e6ff5d",
     "semantic_hash": ""
   }
 }
