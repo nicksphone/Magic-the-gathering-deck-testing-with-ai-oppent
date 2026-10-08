@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791420532.8839202,
-    "seen": 1791420658.528742,
-    "ast_hash": "8cbf3274bf843027ca923819f1cac6ae",
+    "mtime": 1791421215.995334,
+    "seen": 1791421298.8421288,
+    "ast_hash": "0b70134ff60b77b4e6f80230ed19800c",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791420581.7942696,
-    "seen": 1791420658.529831,
-    "ast_hash": "f87b6dd8ac97cb8e3ea552ca9965e1d1",
+    "mtime": 1791421215.9473345,
+    "seen": 1791421298.843151,
+    "ast_hash": "3015fc9b53e6cbe9d2491c02ba71f07e",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13908,9 +13908,9 @@
     "semantic_hash": ""
   },
   "docs/testing/brainstorm-human-ordering-current.md": {
-    "mtime": 1791418676.1893466,
-    "seen": 1791418753.2758567,
-    "ast_hash": "393a86bdb009f481455c09b0bae278ad",
+    "mtime": 1791421215.9473345,
+    "seen": 1791421298.8426871,
+    "ast_hash": "d4b8b5d78afcdb3b3ef67b3b45c6171b",
     "semantic_hash": ""
   },
   "docs/testing/simulation-resource-forward-current.md": {
@@ -13959,6 +13959,12 @@
     "mtime": 1791420532.829921,
     "seen": 1791420658.5300677,
     "ast_hash": "da9d2c71f26c0f30c263d4f5d4429946",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-hand-top-order.mjs": {
+    "mtime": 1791420970.9958673,
+    "seen": 1791421298.8422523,
+    "ast_hash": "b74e6fa8dd33b8653b13a2d2868c812c",
     "semantic_hash": ""
   }
 }
