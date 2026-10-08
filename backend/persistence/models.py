@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
+from sqlalchemy import CheckConstraint
 
 
 class CardCache(SQLModel, table=True):
@@ -83,6 +84,38 @@ class StatsSnapshot(SQLModel, table=True):
     label: str = Field(index=True)
     stats_json: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    job_id: Optional[str] = Field(default=None, foreign_key="simulationjobrecord.id", index=True)
+
+
+class ResourceCapacity(SQLModel, table=True):
+    __table_args__ = (
+        CheckConstraint("id = 1 AND version = 1"),
+        CheckConstraint("durable_bytes >= 0 AND reserved_bytes >= 0 AND durable_bytes + reserved_bytes <= 1073741824"),
+        CheckConstraint("snapshot_rows >= 0 AND reserved_snapshot_rows >= 0 AND snapshot_rows + reserved_snapshot_rows <= 10000"),
+    )
+    id: int = Field(default=1, primary_key=True)
+    version: int = 1
+    durable_bytes: int = 0
+    snapshot_rows: int = 0
+    reserved_bytes: int = 0
+    reserved_snapshot_rows: int = 0
+    owner_epoch: str
+
+
+class ResourceReservation(SQLModel, table=True):
+    __table_args__ = (
+        CheckConstraint("snapshot_bytes >= 0 AND result_bytes >= 0 AND error_bytes >= 0 AND snapshot_rows >= 0"),
+        CheckConstraint("kind IN ('background', 'snapshot')"),
+        CheckConstraint("snapshot_rows <= 1"),
+    )
+    token: str = Field(primary_key=True)
+    job_id: Optional[str] = Field(default=None, foreign_key="simulationjobrecord.id", unique=True)
+    kind: str
+    snapshot_bytes: int
+    result_bytes: int
+    error_bytes: int
+    snapshot_rows: int
+    owner_epoch: str
 
 
 class TournamentEvent(SQLModel, table=True):

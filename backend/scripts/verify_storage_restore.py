@@ -59,6 +59,12 @@ def backup_database(source, destination, *, timeout=5.0):
     _number(timeout, "timeout", positive=True)
     source = local_path(source)
     destination = local_path(destination, existing=False)
+    return _backup_validated_database(source, destination, timeout=timeout)
+
+
+def _backup_validated_database(source, destination, *, timeout=5.0):
+    """Private IO core; offline paths or registered application owner validate first."""
+    _number(timeout, "timeout", positive=True)
     if source == destination:
         raise ValueError("source and destination must differ")
     _vacant(destination)

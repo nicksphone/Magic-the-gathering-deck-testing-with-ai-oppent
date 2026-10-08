@@ -8,6 +8,11 @@ from typing import Any, Iterable
 from sqlmodel import Session, func, select
 from sqlalchemy import or_
 from analytics.resource_budget import RESOURCE_LIMITS, checked_json, checked_text
+from persistence.capacity import (
+    JOB_LIMIT, TERMINAL, CapacityExceeded, CapacityIntegrityError, background_escrow,
+    capacity_transaction, counters_from, encoded_bytes, snapshot_escrow,
+    capacity_write, owner_for,
+)
 
 from knowledge.models import CardKnowledge
 from persistence.models import (
@@ -17,6 +22,7 @@ from persistence.models import (
     MatchRecord,
     MatchStartReceipt,
     SimulationJobRecord,
+    ResourceReservation,
     StatsSnapshot,
     TournamentDeck,
     TournamentEvent,
@@ -298,19 +304,98 @@ class Repository:
             "result_json": result_json,
             "request_json": request_json,
         }
-        row = self.session.get(SimulationJobRecord, str(payload["job_id"]))
-        if row is None:
-            row = SimulationJobRecord(id=str(payload["job_id"]), **values)
-        else:
-            for key, value in values.items():
-                setattr(row, key, value)
-        self.session.add(row)
-        self.session.commit()
-        self.session.refresh(row)
-        return row
+        with capacity_write(self.session):
+            with capacity_transaction(self.session) as tx:
+                row = self.session.get(SimulationJobRecord, str(payload["job_id"]), populate_existing=True)
+                from persistence.capacity import validate_job_transition
+                validate_job_transition(row, values)
+                old_size = encoded_bytes(row.request_json, row.result_json, row.error) if row is not None else 0
+                new_size = encoded_bytes(request_json, result_json, error)
+                active = values["status"] in {"queued", "running"}
+                if not active and values["status"] not in TERMINAL:
+                    raise CapacityIntegrityError("Unknown simulation job status")
+                reservation = tx.reservation(job_id=str(payload["job_id"]))
+                if row is None:
+                    if self.count_simulation_jobs() >= JOB_LIMIT:
+                        raise CapacityExceeded("job_rows")
+                    tx.counters(counters_from(tx.ledger).shifted(durable_bytes=new_size))
+                    row = SimulationJobRecord(id=str(payload["job_id"]), **values)
+                    self.session.add(row)
+                    if active:
+                        if result_json is not None or error is not None:
+                            raise CapacityIntegrityError("New active job has terminal fields")
+                        # Flush the parent inside this transaction before its FK escrow.
+                        self.session.flush()
+                        tx.add_reservation(background_escrow(), kind="background", job_id=row.id)
+                else:
+                    if request_json != row.request_json:
+                        raise CapacityIntegrityError("Stored job request is immutable")
+                    if active:
+                        if reservation is None or result_json != row.result_json or error != row.error:
+                            raise CapacityIntegrityError("Active job reservation/fields mismatch")
+                    elif reservation is not None:
+                        tx.finish_job(reservation, old_size, new_size)
+                    else:
+                        tx.counters(counters_from(tx.ledger).shifted(durable_bytes=new_size - old_size))
+                    for key, value in values.items():
+                        setattr(row, key, value)
+                    self.session.add(row)
+            self.session.refresh(row)
+            return row
 
     def get_simulation_job(self, job_id: str) -> SimulationJobRecord | None:
         return self.session.get(SimulationJobRecord, job_id)
+
+    def background_snapshot_token(self, job_id: str) -> str:
+        owner = owner_for(self.session)
+        row = self.session.exec(select(ResourceReservation).where(ResourceReservation.job_id == job_id)).one()
+        if row.kind != 'background' or row.owner_epoch != owner.epoch or row.snapshot_rows != 1:
+            raise CapacityIntegrityError('Background snapshot reservation missing')
+        return row.token
+
+    def validate_snapshot_reservation(self, token):
+        owner = owner_for(self.session)
+        row = self.session.get(ResourceReservation, token, populate_existing=True)
+        if row is None or row.owner_epoch != owner.epoch or row.snapshot_rows != 1:
+            raise CapacityIntegrityError('Live snapshot reservation required before work')
+
+    def retire_simulations(self, job_ids, snapshot_ids):
+        """Explicit offline owned retirement; retain retry identity and request bytes."""
+        jobs, snapshots = tuple(job_ids), tuple(snapshot_ids)
+        if (len(set(jobs)) != len(jobs) or any(not isinstance(x, str) or not x for x in jobs)
+                or len(set(snapshots)) != len(snapshots)
+                or any(type(x) is not int or x <= 0 for x in snapshots)):
+            raise ValueError('Explicit unique job/snapshot selections required')
+        owner = owner_for(self.session)
+        with owner.mutex:
+            owner.require()
+            if owner.admissions_open or owner.producers:
+                raise CapacityIntegrityError('Retirement requires fenced, drained ownership')
+            with capacity_transaction(self.session) as tx:
+                if self.session.exec(select(ResourceReservation)).first() is not None:
+                    raise CapacityIntegrityError('Outstanding escrow requires restart reconciliation')
+                reclaimed = 0
+                for job_id in jobs:
+                    row = self.session.get(SimulationJobRecord, job_id, populate_existing=True)
+                    if row is None or row.status not in TERMINAL:
+                        raise CapacityIntegrityError('Only existing terminal jobs may retire')
+                    reclaimed += encoded_bytes(row.result_json, row.error)
+                    row.status, row.result_json, row.error = 'retired', None, None
+                    self.session.add(row)
+                for snapshot_id in snapshots:
+                    row = self.session.get(StatsSnapshot, snapshot_id, populate_existing=True)
+                    if row is None:
+                        raise CapacityIntegrityError('Selected snapshot missing')
+                    if row.job_id is not None:
+                        job = self.session.get(SimulationJobRecord, row.job_id)
+                        if job is None or job.status not in TERMINAL:
+                            raise CapacityIntegrityError('Snapshot belongs to unfinished work')
+                    reclaimed += encoded_bytes(row.stats_json)
+                    self.session.delete(row)
+                tx.counters(counters_from(tx.ledger).shifted(
+                    durable_bytes=-reclaimed, snapshot_rows=-len(snapshots)))
+        return {'retired_jobs': list(jobs), 'deleted_snapshots': list(snapshots),
+                'reclaimed_logical_bytes': reclaimed, 'job_rows_reclaimed': 0}
 
     def count_simulation_jobs(self) -> int:
         return self.session.exec(select(func.count()).select_from(SimulationJobRecord)).one()
@@ -321,14 +406,39 @@ class Repository:
     def list_unfinished_simulation_jobs(self) -> list[SimulationJobRecord]:
         return list(self.session.exec(select(SimulationJobRecord).where(SimulationJobRecord.status.in_(["queued", "running"]))).all())
 
-    def save_snapshot(self, label: str, stats: dict[str, Any]) -> StatsSnapshot:
+    def reserve_snapshot(self) -> str:
+        """Producer must reserve before work; service wiring is a separate slice."""
+        with capacity_write(self.session):
+            with capacity_transaction(self.session) as tx:
+                reservation = tx.add_reservation(snapshot_escrow(), kind="snapshot")
+                token = reservation.token
+            return token
+
+    def release_snapshot_reservation(self, token: str) -> None:
+        """Release only after this producer stops; failed commit leaves outcome unknown."""
+        with capacity_write(self.session):
+            with capacity_transaction(self.session) as tx:
+                row = tx.reservation(token=token)
+                if row is None or row.kind != "snapshot":
+                    raise CapacityIntegrityError("Snapshot reservation missing")
+                tx.finish_job(row, 0, 0)
+
+    def save_snapshot(self, label: str, stats: dict[str, Any], *, reservation_token: str | None = None) -> StatsSnapshot:
         encoded = checked_json(stats, RESOURCE_LIMITS["snapshot_json_bytes"], "snapshot_json",
                                encoder=lambda: json.dumps(stats))
-        record = StatsSnapshot(label=label, stats_json=encoded)
-        self.session.add(record)
-        self.session.commit()
-        self.session.refresh(record)
-        return record
+        with capacity_write(self.session):
+            with capacity_transaction(self.session) as tx:
+                size = encoded_bytes(encoded)
+                if reservation_token is None:
+                    # Direct writers still charge the shared ledger atomically.
+                    tx.counters(counters_from(tx.ledger).shifted(durable_bytes=size, snapshot_rows=1))
+                    job_id = None
+                else:
+                    job_id = tx.snapshot(size, reservation_token)
+                record = StatsSnapshot(label=label, stats_json=encoded, job_id=job_id)
+                self.session.add(record)
+            self.session.refresh(record)
+            return record
 
     def upsert_tournament_event(
         self,

@@ -216,9 +216,9 @@
     "semantic_hash": ""
   },
   "backend/analytics/service.py": {
-    "mtime": 1791417527.8960073,
-    "seen": 1791418753.2722802,
-    "ast_hash": "d9d0dcb314c3f58f3296480805b03141",
+    "mtime": 1791455442.8991876,
+    "seen": 1791455565.0928771,
+    "ast_hash": "f4bdbc9b4ff85c9f597867b7824f60a2",
     "semantic_hash": ""
   },
   "backend/api_contracts.py": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1791449129.4037623,
-    "seen": 1791449168.5895789,
-    "ast_hash": "63b0efb27db2a0d4506e9f9a36f40da1",
+    "mtime": 1791455442.8981876,
+    "seen": 1791455565.092963,
+    "ast_hash": "19cd94a2c1d18268fa20c678faadc163",
     "semantic_hash": ""
   },
   "backend/persistence/__init__.py": {
@@ -462,27 +462,27 @@
     "semantic_hash": ""
   },
   "backend/persistence/db.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2177622,
-    "ast_hash": "1c10ff69e332317b889215f0014e74b0",
+    "mtime": 1791455442.8991876,
+    "seen": 1791455565.092969,
+    "ast_hash": "a77c8525fb93252b7482d0efb4f59836",
     "semantic_hash": ""
   },
   "backend/persistence/job_retention.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2177641,
-    "ast_hash": "5000b6b9d907f706531efd1e23469769",
+    "mtime": 1791455442.8991876,
+    "seen": 1791455565.0929708,
+    "ast_hash": "7dacbaaa7284fc4121be426f2658576f",
     "semantic_hash": ""
   },
   "backend/persistence/models.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2177658,
-    "ast_hash": "93ff934b985174b630005fab5dcf56bb",
+    "mtime": 1791455442.8991876,
+    "seen": 1791455565.0929728,
+    "ast_hash": "1022d07e34de0bb3be2ad5dde74f894e",
     "semantic_hash": ""
   },
   "backend/persistence/repository.py": {
-    "mtime": 1791417527.8960073,
-    "seen": 1791418753.2723713,
-    "ast_hash": "a60d1131397188be14b0d0386ff355f6",
+    "mtime": 1791455442.8991876,
+    "seen": 1791455565.0929744,
+    "ast_hash": "005d30bfb08e205f835737a8559779b0",
     "semantic_hash": ""
   },
   "backend/rules_engine/__init__.py": {
@@ -1152,9 +1152,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/verify_storage_restore.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2180123,
-    "ast_hash": "502b92d4b14fb9b58aa3da2a1bc5ebd6",
+    "mtime": 1791455442.8981876,
+    "seen": 1791455565.0932243,
+    "ast_hash": "ca0848237d478fc9a615cc16cbe0c0a1",
     "semantic_hash": ""
   },
   "backend/tests/activation_payment_browser_fixture.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791446810.9183054,
-    "seen": 1791446892.8009796,
-    "ast_hash": "fd84039892b004b1b40c05daee7ac384",
+    "mtime": 1791455484.1355267,
+    "seen": 1791455565.097077,
+    "ast_hash": "3a214f6feef637da7b305d72943605e8",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14547,6 +14547,54 @@
     "mtime": 1791449129.4047623,
     "seen": 1791449247.6751125,
     "ast_hash": "07d99fcfd9e0e9bc33f65f336dc532fd",
+    "semantic_hash": ""
+  },
+  "backend/persistence/capacity.py": {
+    "mtime": 1791455442.8981876,
+    "seen": 1791455565.0929673,
+    "ast_hash": "8f7767a9bd662a92a51db6c2541b4317",
+    "semantic_hash": ""
+  },
+  "backend/scripts/retire_simulations.py": {
+    "mtime": 1791455442.8981876,
+    "seen": 1791455565.0932186,
+    "ast_hash": "3f209f167a624a9fd9b14ae83c316426",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_capacity_bootstrap_policy.py": {
+    "mtime": 1791455442.927187,
+    "seen": 1791455565.0947976,
+    "ast_hash": "09576d130a8c8a088d3f961ac9591f1c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_capacity_lifecycle_policy.py": {
+    "mtime": 1791455442.927187,
+    "seen": 1791455565.0947995,
+    "ast_hash": "8fbb43249b39203959e7ba363b271e38",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_capacity_uncertainty_identity.py": {
+    "mtime": 1791455442.927187,
+    "seen": 1791455565.0948012,
+    "ast_hash": "f759b4010b65cef62c30082a52fa821e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_database_path_configuration.py": {
+    "mtime": 1791455442.927187,
+    "seen": 1791455565.094952,
+    "ast_hash": "4a224621806a4531bcf9891bfec85ecf",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_resource_capacity.py": {
+    "mtime": 1791455442.927187,
+    "seen": 1791455565.0955632,
+    "ast_hash": "849a3839e9d860fc46d3242863684878",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-storage-capacity-qualification.md": {
+    "mtime": 1791455467.768789,
+    "seen": 1791455565.0966847,
+    "ast_hash": "acf9372aacdcbbb4a2919f6bb8738bee",
     "semantic_hash": ""
   }
 }

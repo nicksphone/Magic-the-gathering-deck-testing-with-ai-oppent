@@ -5,6 +5,9 @@ import hashlib
 import random
 from itertools import combinations
 from collections import Counter
+from contextlib import contextmanager
+from sqlalchemy.exc import SQLAlchemyError
+from persistence.capacity import owner_for, CapacityIntegrityError
 
 from ai.agent import AIAgent
 from ai.action_contract import complete_action
@@ -34,6 +37,27 @@ class AnalyticsService:
         self.repo = repo
         self.engine = RulesEngine()
 
+    @contextmanager
+    def _snapshot_producer(self, token, should_cancel):
+        owner = owner_for(self.repo.session)
+        with owner.activity() as stop:
+            owns = token is None
+            if owns:
+                token = self.repo.reserve_snapshot()
+            self.repo.validate_snapshot_reservation(token)
+            cancelled = lambda: stop.is_set() or (should_cancel is not None and should_cancel())
+            try:
+                if cancelled():
+                    raise SimulationCancelled()
+                yield token, cancelled
+            except (SQLAlchemyError, CapacityIntegrityError):
+                # An uncertain persistence outcome is never retried or released.
+                raise
+            except BaseException:
+                if owns and not getattr(owner, 'uncertain', False):
+                    self.repo.release_snapshot_reservation(token)
+                raise
+
     def run_batch(
         self,
         deck_a: list[dict],
@@ -43,176 +67,179 @@ class AnalyticsService:
         max_ticks: int = 6000,
         progress_callback=None,
         should_cancel=None,
+        *,
+        reservation_token=None,
     ) -> dict:
-        budget = ResourceBudget(RESOURCE_LIMITS)
-        stats = Counter()
-        turn_counts = []
-        play_win = 0
-        resolved_play_games = 0
-        opener_quality_a: list[float] = []
-        opener_quality_b: list[float] = []
-        anomaly_counts: Counter = Counter()
-        top_errors: Counter = Counter()
-        oracle_fallback_cards: Counter = Counter()
-        replay_fingerprint_parts: list[str] = []
-        first_game_log: list[str] = []
-        second_game_log: list[str] = []
-        game_results: list[dict[str, object]] = []
-        decision_quality_games: list[dict[str, object]] = []
+        with self._snapshot_producer(reservation_token, should_cancel) as (reservation_token, should_cancel):
+            budget = ResourceBudget(RESOURCE_LIMITS)
+            stats = Counter()
+            turn_counts = []
+            play_win = 0
+            resolved_play_games = 0
+            opener_quality_a: list[float] = []
+            opener_quality_b: list[float] = []
+            anomaly_counts: Counter = Counter()
+            top_errors: Counter = Counter()
+            oracle_fallback_cards: Counter = Counter()
+            replay_fingerprint_parts: list[str] = []
+            first_game_log: list[str] = []
+            second_game_log: list[str] = []
+            game_results: list[dict[str, object]] = []
+            decision_quality_games: list[dict[str, object]] = []
 
-        for i in range(matches):
-            if should_cancel is not None and should_cancel():
-                raise SimulationCancelled()
-            budget.check_deadline()
-            seed = self._batch_seed(deck_a, deck_b, i, difficulty)
-            deck_a_on_play = i % 2 == 0
-            if deck_a_on_play:
-                state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B", seed=seed)
-            else:
-                state = MatchFactory.from_decks(deck_b, deck_a, player_a_name="Deck B", player_b_name="Deck A", seed=seed)
-            budget.begin_game(state.log)
-            state.mechanic_choice_players = {1, 2}
-            deck_a_player = 1 if deck_a_on_play else 2
-            deck_b_player = 3 - deck_a_player
-            opener_quality_a.append(self._opening_hand_quality(state, deck_a_player))
-            opener_quality_b.append(self._opening_hand_quality(state, deck_b_player))
-            a_archetype, b_archetype = guess_archetype(deck_a), guess_archetype(deck_b)
-            a_agent = AIAgent(difficulty=difficulty, archetype=a_archetype, opponent_archetype=b_archetype)
-            b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
-            ticks = 0
-            while state.winner is None and ticks < max_ticks:
-                if should_cancel is not None and should_cancel():
-                    raise SimulationCancelled()
-                budget.before_clone()
-                if state.pregame_pending:
-                    pid = pregame_actor(state)
-                else:
-                    pid = state.priority_player
-                legal = self.engine.legal_moves(state, pid)
-                if deck_a_on_play:
-                    agent = a_agent if pid == 1 else b_agent
-                else:
-                    agent = b_agent if pid == 1 else a_agent
-                decision = agent.choose_action(state, legal, pid)
+            for i in range(matches):
                 if should_cancel is not None and should_cancel():
                     raise SimulationCancelled()
                 budget.check_deadline()
-                action = complete_action(decision.action)
-                budget.trace_inputs(state, pid, action, decision.reasoning)
-                trace_payload = build_trace_payload(
-                    state,
-                    pid,
-                    legal,
-                    action,
-                    decision.reasoning,
-                )
-                trace_line = budget.trace_line(trace_payload)
-                if should_cancel is not None and should_cancel():
-                    raise SimulationCancelled()
-                candidate = checked_action(state, self.engine, pid, action)
-                budget.accept_candidate(state, candidate, trace_line)
-                state = candidate
-                ticks += 1
-
-            winner = state.winner
-            if winner in (1, 2):
-                deck_a_won = (winner == 1 and deck_a_on_play) or (winner == 2 and not deck_a_on_play)
-                if deck_a_won:
-                    stats["wins_1"] += 1
-                else:
-                    stats["wins_2"] += 1
+                seed = self._batch_seed(deck_a, deck_b, i, difficulty)
+                deck_a_on_play = i % 2 == 0
                 if deck_a_on_play:
-                    resolved_play_games += 1
-                    if deck_a_won:
-                        play_win += 1
-            else:
-                stats["timeouts"] += 1
-            self._scan_log_for_anomalies(state.log, anomaly_counts, top_errors, oracle_fallback_cards)
-            if i == 0:
-                first_game_log = list(state.log)
-            elif i == 1:
-                second_game_log = list(state.log)
-            game_results.append(
-                {
-                    "game_index": i,
-                    "seed": seed,
-                    "winner": winner,
-                    "turns": state.turn,
-                    "timeout": winner is None,
-                    "deck_a_on_play": deck_a_on_play,
-                }
-            )
-            decision_quality_games.append(
-                self._decision_quality_game_summary(state.log, deck_a_on_play)
-            )
-            replay_fingerprint_parts.append(f"{i}:{winner or 0}:{state.turn}")
-            turn_counts.append(state.turn)
-            if progress_callback is not None:
-                try:
-                    progress_callback(i + 1, matches)
-                except SimulationResourceLimit:
-                    raise
-                except Exception:
-                    pass
+                    state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B", seed=seed)
+                else:
+                    state = MatchFactory.from_decks(deck_b, deck_a, player_a_name="Deck B", player_b_name="Deck A", seed=seed)
+                budget.begin_game(state.log)
+                state.mechanic_choice_players = {1, 2}
+                deck_a_player = 1 if deck_a_on_play else 2
+                deck_b_player = 3 - deck_a_player
+                opener_quality_a.append(self._opening_hand_quality(state, deck_a_player))
+                opener_quality_b.append(self._opening_hand_quality(state, deck_b_player))
+                a_archetype, b_archetype = guess_archetype(deck_a), guess_archetype(deck_b)
+                a_agent = AIAgent(difficulty=difficulty, archetype=a_archetype, opponent_archetype=b_archetype)
+                b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
+                ticks = 0
+                while state.winner is None and ticks < max_ticks:
+                    if should_cancel is not None and should_cancel():
+                        raise SimulationCancelled()
+                    budget.before_clone()
+                    if state.pregame_pending:
+                        pid = pregame_actor(state)
+                    else:
+                        pid = state.priority_player
+                    legal = self.engine.legal_moves(state, pid)
+                    if deck_a_on_play:
+                        agent = a_agent if pid == 1 else b_agent
+                    else:
+                        agent = b_agent if pid == 1 else a_agent
+                    decision = agent.choose_action(state, legal, pid)
+                    if should_cancel is not None and should_cancel():
+                        raise SimulationCancelled()
+                    budget.check_deadline()
+                    action = complete_action(decision.action)
+                    budget.trace_inputs(state, pid, action, decision.reasoning)
+                    trace_payload = build_trace_payload(
+                        state,
+                        pid,
+                        legal,
+                        action,
+                        decision.reasoning,
+                    )
+                    trace_line = budget.trace_line(trace_payload)
+                    if should_cancel is not None and should_cancel():
+                        raise SimulationCancelled()
+                    candidate = checked_action(state, self.engine, pid, action)
+                    budget.accept_candidate(state, candidate, trace_line)
+                    state = candidate
+                    ticks += 1
 
-        total = matches
-        wins_a = stats["wins_1"]
-        wins_b = stats["wins_2"]
-        resolved_games = wins_a + wins_b
-        result = {
-            "matches": matches,
-            "rules_coverage": deck_pair_coverage(deck_a, deck_b),
-            "resolved_games": resolved_games,
-            "win_rate_deck_a": round((wins_a / max(1, resolved_games)) * 100, 2),
-            "win_rate_deck_b": round((wins_b / max(1, resolved_games)) * 100, 2),
-            "confidence_intervals": {
-                "deck_a": self._wilson_interval(wins_a, resolved_games),
-                "deck_b": self._wilson_interval(wins_b, resolved_games),
-            },
-            "balance_alerts": self._balance_alerts(wins_a, wins_b, resolved_games, total),
-            "timeouts": int(stats["timeouts"]),
-            "draw_play_advantage_deck_a": round((play_win / max(1, resolved_play_games)) * 100, 2),
-            "average_turns": round(sum(turn_counts) / max(1, len(turn_counts)), 2),
-            "mulligan_stats": {
-                "deck_a_avg_opening_hand_quality": round(sum(opener_quality_a) / max(1, len(opener_quality_a)), 2),
-                "deck_b_avg_opening_hand_quality": round(sum(opener_quality_b) / max(1, len(opener_quality_b)), 2),
-            },
-            "deck_consistency": {
-                "deck_a_curve_stability": round(self._curve_stability(deck_a), 3),
-                "deck_b_curve_stability": round(self._curve_stability(deck_b), 3),
-            },
-            "matchup": {
-                "deck_a_archetype": guess_archetype(deck_a),
-                "deck_b_archetype": guess_archetype(deck_b),
-            },
-            "anomalies": {
-                "timeouts": int(anomaly_counts["timeouts"]),
-                "invalid_targets": int(anomaly_counts["invalid_targets"]),
-                "cost_failures": int(anomaly_counts["cost_failures"]),
-                "additional_cost_failures": int(anomaly_counts["additional_cost_failures"]),
-                "repeated_error_bursts": int(anomaly_counts["repeated_error_bursts"]),
-                "stall_pass_streaks": int(anomaly_counts["stall_pass_streaks"]),
-                "missed_land_windows": int(anomaly_counts["missed_land_windows"]),
-                "main_phase_pass_loops": int(anomaly_counts["main_phase_pass_loops"]),
-                "x_spell_error_loops": int(anomaly_counts["x_spell_error_loops"]),
-                "oracle_fallbacks": int(anomaly_counts["oracle_fallbacks"]),
-            },
-            "decision_quality": self._decision_quality_summary(decision_quality_games),
-            "oracle_fallback_cards": [
-                {"card_name": name, "count": count}
-                for name, count in oracle_fallback_cards.most_common(20)
-            ],
-            "top_errors": [{"message": m, "count": n} for m, n in top_errors.most_common(10)],
-            "game_results": game_results,
-            "first_divergence": self.compare_replay_logs(first_game_log, second_game_log) if second_game_log else None,
-            "first_divergence_excerpt": self._first_divergence_excerpt(first_game_log, second_game_log),
-            "sample_turn_summaries": self._extract_turn_summaries(first_game_log),
-            "sample_log_excerpt": first_game_log[:12],
-            "deterministic_replay_fingerprint": hashlib.sha256("|".join(replay_fingerprint_parts).encode("utf-8")).hexdigest(),
-        }
-        budget.checked_result(result)
-        self.repo.save_snapshot("batch_simulation", result)
-        return result
+                winner = state.winner
+                if winner in (1, 2):
+                    deck_a_won = (winner == 1 and deck_a_on_play) or (winner == 2 and not deck_a_on_play)
+                    if deck_a_won:
+                        stats["wins_1"] += 1
+                    else:
+                        stats["wins_2"] += 1
+                    if deck_a_on_play:
+                        resolved_play_games += 1
+                        if deck_a_won:
+                            play_win += 1
+                else:
+                    stats["timeouts"] += 1
+                self._scan_log_for_anomalies(state.log, anomaly_counts, top_errors, oracle_fallback_cards)
+                if i == 0:
+                    first_game_log = list(state.log)
+                elif i == 1:
+                    second_game_log = list(state.log)
+                game_results.append(
+                    {
+                        "game_index": i,
+                        "seed": seed,
+                        "winner": winner,
+                        "turns": state.turn,
+                        "timeout": winner is None,
+                        "deck_a_on_play": deck_a_on_play,
+                    }
+                )
+                decision_quality_games.append(
+                    self._decision_quality_game_summary(state.log, deck_a_on_play)
+                )
+                replay_fingerprint_parts.append(f"{i}:{winner or 0}:{state.turn}")
+                turn_counts.append(state.turn)
+                if progress_callback is not None:
+                    try:
+                        progress_callback(i + 1, matches)
+                    except SimulationResourceLimit:
+                        raise
+                    except Exception:
+                        pass
+
+            total = matches
+            wins_a = stats["wins_1"]
+            wins_b = stats["wins_2"]
+            resolved_games = wins_a + wins_b
+            result = {
+                "matches": matches,
+                "rules_coverage": deck_pair_coverage(deck_a, deck_b),
+                "resolved_games": resolved_games,
+                "win_rate_deck_a": round((wins_a / max(1, resolved_games)) * 100, 2),
+                "win_rate_deck_b": round((wins_b / max(1, resolved_games)) * 100, 2),
+                "confidence_intervals": {
+                    "deck_a": self._wilson_interval(wins_a, resolved_games),
+                    "deck_b": self._wilson_interval(wins_b, resolved_games),
+                },
+                "balance_alerts": self._balance_alerts(wins_a, wins_b, resolved_games, total),
+                "timeouts": int(stats["timeouts"]),
+                "draw_play_advantage_deck_a": round((play_win / max(1, resolved_play_games)) * 100, 2),
+                "average_turns": round(sum(turn_counts) / max(1, len(turn_counts)), 2),
+                "mulligan_stats": {
+                    "deck_a_avg_opening_hand_quality": round(sum(opener_quality_a) / max(1, len(opener_quality_a)), 2),
+                    "deck_b_avg_opening_hand_quality": round(sum(opener_quality_b) / max(1, len(opener_quality_b)), 2),
+                },
+                "deck_consistency": {
+                    "deck_a_curve_stability": round(self._curve_stability(deck_a), 3),
+                    "deck_b_curve_stability": round(self._curve_stability(deck_b), 3),
+                },
+                "matchup": {
+                    "deck_a_archetype": guess_archetype(deck_a),
+                    "deck_b_archetype": guess_archetype(deck_b),
+                },
+                "anomalies": {
+                    "timeouts": int(anomaly_counts["timeouts"]),
+                    "invalid_targets": int(anomaly_counts["invalid_targets"]),
+                    "cost_failures": int(anomaly_counts["cost_failures"]),
+                    "additional_cost_failures": int(anomaly_counts["additional_cost_failures"]),
+                    "repeated_error_bursts": int(anomaly_counts["repeated_error_bursts"]),
+                    "stall_pass_streaks": int(anomaly_counts["stall_pass_streaks"]),
+                    "missed_land_windows": int(anomaly_counts["missed_land_windows"]),
+                    "main_phase_pass_loops": int(anomaly_counts["main_phase_pass_loops"]),
+                    "x_spell_error_loops": int(anomaly_counts["x_spell_error_loops"]),
+                    "oracle_fallbacks": int(anomaly_counts["oracle_fallbacks"]),
+                },
+                "decision_quality": self._decision_quality_summary(decision_quality_games),
+                "oracle_fallback_cards": [
+                    {"card_name": name, "count": count}
+                    for name, count in oracle_fallback_cards.most_common(20)
+                ],
+                "top_errors": [{"message": m, "count": n} for m, n in top_errors.most_common(10)],
+                "game_results": game_results,
+                "first_divergence": self.compare_replay_logs(first_game_log, second_game_log) if second_game_log else None,
+                "first_divergence_excerpt": self._first_divergence_excerpt(first_game_log, second_game_log),
+                "sample_turn_summaries": self._extract_turn_summaries(first_game_log),
+                "sample_log_excerpt": first_game_log[:12],
+                "deterministic_replay_fingerprint": hashlib.sha256("|".join(replay_fingerprint_parts).encode("utf-8")).hexdigest(),
+            }
+            budget.checked_result(result)
+            self.repo.save_snapshot("batch_simulation", result, reservation_token=reservation_token)
+            return result
 
     @staticmethod
     def _decision_quality_game_summary(log: list[str], deck_a_on_play: bool) -> dict[str, object]:
@@ -297,6 +324,9 @@ class AnalyticsService:
         matches_per_pair: int = 5,
         difficulty: str = "master",
         max_ticks: int = 6000,
+        *,
+        should_cancel=None,
+        reservation_token=None,
     ) -> dict:
         budget = ResourceBudget(RESOURCE_LIMITS)
         if len(deck_pool) < 2:
@@ -308,119 +338,126 @@ class AnalyticsService:
                 "top_errors": [],
                 "suspicious_matchups": [],
             }
+        with self._snapshot_producer(reservation_token, should_cancel) as (reservation_token, should_cancel):
 
-        global_counts: Counter = Counter()
-        top_errors: Counter = Counter()
-        oracle_fallback_cards: Counter = Counter()
-        suspicious: list[dict] = []
-        total_games = 0
+            global_counts: Counter = Counter()
+            top_errors: Counter = Counter()
+            oracle_fallback_cards: Counter = Counter()
+            suspicious: list[dict] = []
+            total_games = 0
 
-        for left, right in combinations(deck_pool, 2):
-            budget.check_deadline()
-            pair_counts: Counter = Counter()
-            pair_turns: list[int] = []
-            pair_games = 0
-            pair_first_player_wins = 0
-            first_game_log: list[str] = []
-            second_game_log: list[str] = []
-
-            for game_idx in range(matches_per_pair):
+            for left, right in combinations(deck_pool, 2):
+                if should_cancel():
+                    raise SimulationCancelled()
                 budget.check_deadline()
-                state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
-                budget.begin_game(state.log)
-                state.mechanic_choice_players = {1, 2}
-                a_archetype = guess_archetype(left["mainboard"])
-                b_archetype = guess_archetype(right["mainboard"])
-                a_agent = AIAgent(difficulty=difficulty, archetype=a_archetype, opponent_archetype=b_archetype)
-                b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
-                ticks = 0
-                while state.winner is None and ticks < max_ticks:
-                    budget.before_clone()
-                    pid = pregame_actor(state) if state.pregame_pending else state.priority_player
-                    legal = self.engine.legal_moves(state, pid)
-                    if not legal:
-                        pair_counts["no_legal_moves"] += 1
-                        candidate = checked_action(state, self.engine, pid, {"type": "pass_priority"})
-                    else:
-                        agent = a_agent if pid == 1 else b_agent
-                        decision = agent.choose_action(state, legal, pid)
-                        budget.check_deadline()
-                        candidate = checked_action(state, self.engine, pid, complete_action(decision.action))
-                    budget.accept_candidate(state, candidate)
-                    state = candidate
-                    ticks += 1
+                pair_counts: Counter = Counter()
+                pair_turns: list[int] = []
+                pair_games = 0
+                pair_first_player_wins = 0
+                first_game_log: list[str] = []
+                second_game_log: list[str] = []
 
-                if state.winner is None:
-                    pair_counts["timeouts"] += 1
-                elif state.winner == 1 and game_idx % 2 == 0:
-                    pair_first_player_wins += 1
+                for game_idx in range(matches_per_pair):
+                    if should_cancel():
+                        raise SimulationCancelled()
+                    budget.check_deadline()
+                    state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
+                    budget.begin_game(state.log)
+                    state.mechanic_choice_players = {1, 2}
+                    a_archetype = guess_archetype(left["mainboard"])
+                    b_archetype = guess_archetype(right["mainboard"])
+                    a_agent = AIAgent(difficulty=difficulty, archetype=a_archetype, opponent_archetype=b_archetype)
+                    b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
+                    ticks = 0
+                    while state.winner is None and ticks < max_ticks:
+                        budget.before_clone()
+                        pid = pregame_actor(state) if state.pregame_pending else state.priority_player
+                        legal = self.engine.legal_moves(state, pid)
+                        if not legal:
+                            pair_counts["no_legal_moves"] += 1
+                            candidate = checked_action(state, self.engine, pid, {"type": "pass_priority"})
+                        else:
+                            agent = a_agent if pid == 1 else b_agent
+                            decision = agent.choose_action(state, legal, pid)
+                            if should_cancel():
+                                raise SimulationCancelled()
+                            budget.check_deadline()
+                            candidate = checked_action(state, self.engine, pid, complete_action(decision.action))
+                        budget.accept_candidate(state, candidate)
+                        state = candidate
+                        ticks += 1
 
-                self._scan_log_for_anomalies(state.log, pair_counts, top_errors, oracle_fallback_cards)
-                if game_idx == 0:
-                    first_game_log = list(state.log)
-                elif game_idx == 1:
-                    second_game_log = list(state.log)
-                pair_turns.append(state.turn)
-                pair_games += 1
-                total_games += 1
+                    if state.winner is None:
+                        pair_counts["timeouts"] += 1
+                    elif state.winner == 1 and game_idx % 2 == 0:
+                        pair_first_player_wins += 1
 
-            global_counts.update(pair_counts)
-            avg_turns = round(sum(pair_turns) / max(1, len(pair_turns)), 2)
-            suspicious.append(
-                {
-                    "deck_a": left["name"],
-                    "deck_b": right["name"],
-                    "games": pair_games,
-                    "avg_turns": avg_turns,
-                    "timeouts": int(pair_counts["timeouts"]),
-                    "invalid_targets": int(pair_counts["invalid_targets"]),
-                    "cost_failures": int(pair_counts["cost_failures"]),
-                    "oracle_fallbacks": int(pair_counts["oracle_fallbacks"]),
-                    "repeated_error_bursts": int(pair_counts["repeated_error_bursts"]),
-                    "draw_play_advantage_deck_a": round((pair_first_player_wins / max(1, pair_games // 2 or 1)) * 100, 2),
-                    "turn_summaries": self._extract_turn_summaries(first_game_log),
-                    "first_divergence": self.compare_replay_logs(first_game_log, second_game_log) if second_game_log else None,
-                    "first_divergence_excerpt": self._first_divergence_excerpt(first_game_log, second_game_log),
-                }
+                    self._scan_log_for_anomalies(state.log, pair_counts, top_errors, oracle_fallback_cards)
+                    if game_idx == 0:
+                        first_game_log = list(state.log)
+                    elif game_idx == 1:
+                        second_game_log = list(state.log)
+                    pair_turns.append(state.turn)
+                    pair_games += 1
+                    total_games += 1
+
+                global_counts.update(pair_counts)
+                avg_turns = round(sum(pair_turns) / max(1, len(pair_turns)), 2)
+                suspicious.append(
+                    {
+                        "deck_a": left["name"],
+                        "deck_b": right["name"],
+                        "games": pair_games,
+                        "avg_turns": avg_turns,
+                        "timeouts": int(pair_counts["timeouts"]),
+                        "invalid_targets": int(pair_counts["invalid_targets"]),
+                        "cost_failures": int(pair_counts["cost_failures"]),
+                        "oracle_fallbacks": int(pair_counts["oracle_fallbacks"]),
+                        "repeated_error_bursts": int(pair_counts["repeated_error_bursts"]),
+                        "draw_play_advantage_deck_a": round((pair_first_player_wins / max(1, pair_games // 2 or 1)) * 100, 2),
+                        "turn_summaries": self._extract_turn_summaries(first_game_log),
+                        "first_divergence": self.compare_replay_logs(first_game_log, second_game_log) if second_game_log else None,
+                        "first_divergence_excerpt": self._first_divergence_excerpt(first_game_log, second_game_log),
+                    }
+                )
+
+            suspicious.sort(
+                key=lambda x: (
+                    x["timeouts"] * 5
+                    + x["invalid_targets"] * 3
+                    + x["cost_failures"] * 2
+                    + x["oracle_fallbacks"] * 2
+                    + x["repeated_error_bursts"]
+                ),
+                reverse=True,
             )
-
-        suspicious.sort(
-            key=lambda x: (
-                x["timeouts"] * 5
-                + x["invalid_targets"] * 3
-                + x["cost_failures"] * 2
-                + x["oracle_fallbacks"] * 2
-                + x["repeated_error_bursts"]
-            ),
-            reverse=True,
-        )
-        result = {
-            "deck_count": len(deck_pool),
-            "pairs_tested": len(suspicious),
-            "games": total_games,
-            "global_anomalies": {
-                "timeouts": int(global_counts["timeouts"]),
-                "invalid_targets": int(global_counts["invalid_targets"]),
-                "cost_failures": int(global_counts["cost_failures"]),
-                "additional_cost_failures": int(global_counts["additional_cost_failures"]),
-                "no_legal_moves": int(global_counts["no_legal_moves"]),
-                "repeated_error_bursts": int(global_counts["repeated_error_bursts"]),
-                "stall_pass_streaks": int(global_counts["stall_pass_streaks"]),
-                "missed_land_windows": int(global_counts["missed_land_windows"]),
-                "main_phase_pass_loops": int(global_counts["main_phase_pass_loops"]),
-                "x_spell_error_loops": int(global_counts["x_spell_error_loops"]),
-                "oracle_fallbacks": int(global_counts["oracle_fallbacks"]),
-            },
-            "oracle_fallback_cards": [
-                {"card_name": name, "count": count}
-                for name, count in oracle_fallback_cards.most_common(20)
-            ],
-            "top_errors": [{"message": msg, "count": count} for msg, count in top_errors.most_common(20)],
-            "suspicious_matchups": suspicious[:20],
-        }
-        budget.checked_result(result)
-        self.repo.save_snapshot("ai_diagnostics", result)
-        return result
+            result = {
+                "deck_count": len(deck_pool),
+                "pairs_tested": len(suspicious),
+                "games": total_games,
+                "global_anomalies": {
+                    "timeouts": int(global_counts["timeouts"]),
+                    "invalid_targets": int(global_counts["invalid_targets"]),
+                    "cost_failures": int(global_counts["cost_failures"]),
+                    "additional_cost_failures": int(global_counts["additional_cost_failures"]),
+                    "no_legal_moves": int(global_counts["no_legal_moves"]),
+                    "repeated_error_bursts": int(global_counts["repeated_error_bursts"]),
+                    "stall_pass_streaks": int(global_counts["stall_pass_streaks"]),
+                    "missed_land_windows": int(global_counts["missed_land_windows"]),
+                    "main_phase_pass_loops": int(global_counts["main_phase_pass_loops"]),
+                    "x_spell_error_loops": int(global_counts["x_spell_error_loops"]),
+                    "oracle_fallbacks": int(global_counts["oracle_fallbacks"]),
+                },
+                "oracle_fallback_cards": [
+                    {"card_name": name, "count": count}
+                    for name, count in oracle_fallback_cards.most_common(20)
+                ],
+                "top_errors": [{"message": msg, "count": count} for msg, count in top_errors.most_common(20)],
+                "suspicious_matchups": suspicious[:20],
+            }
+            budget.checked_result(result)
+            self.repo.save_snapshot("ai_diagnostics", result, reservation_token=reservation_token)
+            return result
 
     @staticmethod
     def decode_match_log(raw: str) -> list[str]:

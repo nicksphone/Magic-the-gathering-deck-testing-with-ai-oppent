@@ -19,6 +19,7 @@ from contextlib import asynccontextmanager, nullcontext
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -48,7 +49,9 @@ from data_ingest.service import TournamentIngestService
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot, serialize_card_view
 from game_state.state import MatchFactory, Step, pregame_actor
 from game_state.series_policy import game_seed, next_play_draw_chooser
-from persistence.db import engine, get_session, init_db
+from persistence.db import engine, get_session, init_db, initialize_resource_capacity
+from persistence.capacity import (DatabaseOwner, CapacityExceeded, CapacityIntegrityError,
+                                  CapacityAdmissionClosed, owner_for_engine, owner_uncertain)
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from rules_engine.coverage import deck_pair_coverage
@@ -60,21 +63,72 @@ from rules_engine.replacement import replacement_options
 async def lifespan(app_instance: FastAPI):
     global SIM_SHUTTING_DOWN
     _prepare_simulation_admission()
-    init_db()
-    with Session(engine) as session:
-        repo = Repository(session)
-        _ensure_builtin_decks(repo)
-        _ensure_expansion_top_decks(repo)
-        _restore_simulation_jobs(repo)
+    owner = DatabaseOwner(engine).acquire()
+    try:
+        backup = owner.path.with_name(owner.path.name + '.before-capacity-' + owner.epoch + '.db')
+        if owner.path.exists():
+            initialize_resource_capacity(owner, backup)
+            init_db()
+        else:
+            init_db()
+            initialize_resource_capacity(owner, backup)
+        with Session(engine) as session:
+            repo = Repository(session)
+            _ensure_builtin_decks(repo)
+            _ensure_expansion_top_decks(repo)
+            _restore_simulation_jobs(repo)
+        owner.open_admission()
+    except BaseException:
+        owner.close()
+        raise
     with SIM_START_LOCK:
         SIM_SHUTTING_DOWN = False
     try:
         yield
     finally:
-        _shutdown_simulation_workers()
-        engine.dispose()
+        try:
+            _shutdown_simulation_workers()
+        finally:
+            owner.fence_admission()
+        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)
+        owner.close()
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
+
+
+@app.exception_handler(SimulationResourceLimit)
+async def resource_limit_response(_request, exc):
+    return JSONResponse(status_code=413, content={'detail': {
+        'code': 'simulation_resource_limit', 'dimension': exc.dimension}})
+
+
+@app.exception_handler(CapacityExceeded)
+async def capacity_limit_response(_request, exc):
+    return JSONResponse(status_code=507, content={'detail': {
+        'code': 'simulation_capacity_exceeded', 'dimension': exc.dimension}})
+
+
+@app.exception_handler(CapacityAdmissionClosed)
+async def capacity_closed_response(_request, _exc):
+    return JSONResponse(status_code=503, content={'detail': {'code': 'simulation_shutting_down'}})
+
+
+@app.exception_handler(CapacityIntegrityError)
+@app.exception_handler(SQLAlchemyError)
+async def storage_unconfirmed_response(_request, _exc):
+    return JSONResponse(status_code=503, content={'detail': {'code': 'storage_state_unconfirmed'}})
+
+
+@app.exception_handler(Exception)
+async def unexpected_failure_response(_request, _exc):
+    if owner_uncertain(engine):
+        return JSONResponse(status_code=503, content={'detail': {'code': 'storage_state_unconfirmed'}})
+    return JSONResponse(status_code=500, content={'detail': 'Internal Server Error'})
+
+
+@app.exception_handler(SimulationCancelled)
+async def sync_cancelled_response(_request, _exc):
+    return JSONResponse(status_code=503, content={'detail': {'code': 'simulation_cancelled_during_shutdown'}})
 TRUSTED_BROWSER_ORIGINS = trusted_origins(os.environ.get("MTG_TRUSTED_ORIGINS"))
 app.add_middleware(
     CORSMiddleware,
@@ -421,6 +475,40 @@ def _prune_simulation_jobs() -> None:
 def _persist_job(job: dict) -> None:
     with Session(engine) as session:
         Repository(session).save_simulation_job(job)
+
+
+def _update_job(job_id, **changes):
+    """Publish only an acknowledged durable candidate; never retry uncertain writes."""
+    try:
+        with SIM_JOBS_LOCK:
+            if job_id not in SIM_JOBS:
+                return
+            candidate = {**SIM_JOBS[job_id], **changes}
+            _persist_job(candidate)
+            SIM_JOBS[job_id] = candidate
+            _prune_simulation_jobs()
+    except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):
+        _fence_uncertain_job(job_id)
+        raise
+
+
+def _fence_uncertain_job(job_id, *, start_locked=False):
+    global SIM_SHUTTING_DOWN
+    # Acquire in startup order, never while retaining SIM_JOBS_LOCK.
+    with (nullcontext() if start_locked else SIM_START_LOCK):
+        SIM_SHUTTING_DOWN = True
+    with SIM_JOBS_LOCK:
+        SIM_JOBS.pop(job_id, None)
+    try:
+        owner_for_engine(engine).fence_admission()
+    except (CapacityIntegrityError, CapacityAdmissionClosed):
+        # An invalid owner cannot admit work; do not attempt persistence recovery.
+        pass
+
+
+def _retired_job_response(row):
+    if row.status == 'retired':
+        raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': row.id})
 
 
 def _reap_simulation_workers() -> None:
@@ -1089,6 +1177,9 @@ def simulate_batch_preflight(payload: DeckPairInput, repo: Repository = Depends(
 
 @app.post("/simulate/batch")
 def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
+    with SIM_START_LOCK:
+        if SIM_SHUTTING_DOWN:
+            raise HTTPException(503, detail={'code': 'simulation_shutting_down'})
     deck_a = _validated_deck_cards(repo, payload.deck_a)
     deck_b = _validated_deck_cards(repo, payload.deck_b)
     if not SIM_WORK_SLOT.acquire(blocking=False):
@@ -1124,6 +1215,10 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
             original = json.loads(row.request_json or "{}") if row is not None else existing.get("request", {})
             if original != requested:
                 raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This start key already identifies a different simulation request"})
+            if row is not None:
+                _retired_job_response(row)
+            elif existing['status'] == 'retired':
+                raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': key})
             return {"job_id": key, "status": row.status if row is not None else existing["status"]}
     if SIM_SHUTTING_DOWN:
         raise HTTPException(status_code=503, detail={
@@ -1160,96 +1255,84 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
         "request": requested,
     }
     def _runner() -> None:
+        global SIM_SHUTTING_DOWN
+        producer = None
+        entered = False
         try:
+            producer = owner_for_engine(engine).activity()
+            producer.__enter__()
+            entered = True
             if cancel_event.is_set():
                 raise SimulationCancelled()
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "running"
-                    _persist_job(SIM_JOBS[job_id])
+            _update_job(job_id, status='running')
             with Session(engine) as session:
                 thread_repo = Repository(session)
                 def _progress(done: int, total: int) -> None:
-                    with SIM_JOBS_LOCK:
-                        if job_id in SIM_JOBS:
-                            SIM_JOBS[job_id]["completed_matches"] = int(done)
-                            SIM_JOBS[job_id]["total_matches"] = int(total)
-                            _persist_job(SIM_JOBS[job_id])
-
+                    _update_job(job_id, completed_matches=int(done), total_matches=int(total))
                 result = AnalyticsService(thread_repo).run_batch(
-                    deck_a,
-                    deck_b,
-                    payload.matches,
-                    payload.difficulty,
-                    max_ticks=payload.max_ticks,
-                    progress_callback=_progress,
-                    should_cancel=cancel_event.is_set,
-                )
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "completed"
-                    SIM_JOBS[job_id]["completed_matches"] = int(payload.matches)
-                    SIM_JOBS[job_id]["finished_at"] = time.time()
-                    SIM_JOBS[job_id]["result"] = result
-                    _persist_job(SIM_JOBS[job_id])
-                    _prune_simulation_jobs()
+                    deck_a, deck_b, payload.matches, payload.difficulty,
+                    max_ticks=payload.max_ticks, progress_callback=_progress,
+                    should_cancel=cancel_event.is_set, reservation_token=snapshot_token)
+            _update_job(job_id, status='completed', completed_matches=int(payload.matches),
+                        finished_at=time.time(), result=result)
         except SimulationCancelled:
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "canceled"
-                    SIM_JOBS[job_id]["finished_at"] = time.time()
-                    _persist_job(SIM_JOBS[job_id])
-                    _prune_simulation_jobs()
+            _update_job(job_id, status='canceled', finished_at=time.time())
         except SimulationResourceLimit as exc:
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "failed"
-                    SIM_JOBS[job_id]["finished_at"] = time.time()
-                    SIM_JOBS[job_id]["result"] = None
-                    SIM_JOBS[job_id]["error"] = str(exc)
-                    _persist_job(SIM_JOBS[job_id])
-                    _prune_simulation_jobs()
+            _update_job(job_id, status='failed', finished_at=time.time(), result=None, error=str(exc))
+        except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):
+            # No compensating write after an uncertain commit/integrity outcome.
+            _fence_uncertain_job(job_id)
         except Exception as exc:
-            error = str(exc)
-            try:
-                checked_text(error, RESOURCE_LIMITS["error_utf8_bytes"], "error")
-            except SimulationResourceLimit:
-                error = "resource_limit:error"
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "failed"
-                    SIM_JOBS[job_id]["finished_at"] = time.time()
-                    SIM_JOBS[job_id]["error"] = error
-                    _persist_job(SIM_JOBS[job_id])
-                    _prune_simulation_jobs()
+            if owner_uncertain(engine):
+                _fence_uncertain_job(job_id)
+            else:
+                error = str(exc)
+                try:
+                    checked_text(error, RESOURCE_LIMITS['error_utf8_bytes'], 'error')
+                except SimulationResourceLimit:
+                    error = 'resource_limit:error'
+                _update_job(job_id, status='failed', finished_at=time.time(), result=None, error=error)
         finally:
             with SIM_JOBS_LOCK:
                 SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
             SIM_WORK_SLOT.release()
-            # Admission/shutdown reaps the thread only after its real return.
+            if entered:
+                producer.__exit__(None, None, None)
 
     persisted = False
     try:
+        with Session(engine) as session:
+            admitted_repo = Repository(session)
+            admitted_repo.save_simulation_job(job)
+            persisted = True
+            snapshot_token = admitted_repo.background_snapshot_token(job_id)
         with SIM_JOBS_LOCK:
             SIM_JOBS[job_id] = job
             SIM_JOB_CANCEL_EVENTS[job_id] = cancel_event
-        _persist_job(job)
-        persisted = True
         t = threading.Thread(target=_runner, daemon=True)
         SIM_JOB_WORKERS[job_id] = (t, cancel_event)
         t.start()
-    except Exception:
+    except Exception as exc:
         SIM_JOB_WORKERS.pop(job_id, None)
         with SIM_JOBS_LOCK:
             SIM_JOBS.pop(job_id, None)
             SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
-        if persisted:
-            job.update(status="failed", finished_at=time.time(), error="Simulation worker could not start.")
-            try:
-                _persist_job(job)
-            except Exception:
-                pass
-        SIM_WORK_SLOT.release()
+        try:
+            if isinstance(exc, (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed)) or owner_uncertain(engine):
+                _fence_uncertain_job(job_id, start_locked=True)
+            elif persisted:
+                job.update(status="failed", finished_at=time.time(), error="Simulation worker could not start.")
+                try:
+                    _persist_job(job)
+                except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):
+                    _fence_uncertain_job(job_id, start_locked=True)
+                    raise
+                except Exception:
+                    if owner_uncertain(engine):
+                        _fence_uncertain_job(job_id, start_locked=True)
+                        raise
+        finally:
+            SIM_WORK_SLOT.release()
         raise
     return {"job_id": job_id, "status": "queued"}
 
@@ -1262,7 +1345,10 @@ def simulate_batch_cancel(job_id: str, repo: Repository = Depends(get_repo)) -> 
             row = repo.get_simulation_job(job_id)
             if row is None:
                 raise HTTPException(status_code=404, detail="Simulation job not found")
+            _retired_job_response(row)
             return _job_dict(row)
+        if job['status'] == 'retired':
+            raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': job_id})
         event = SIM_JOB_CANCEL_EVENTS.get(job_id)
         if event is not None:
             event.set()
@@ -1274,15 +1360,21 @@ def simulate_batch_status(job_id: str, repo: Repository = Depends(get_repo)) -> 
     with SIM_JOBS_LOCK:
         job = SIM_JOBS.get(job_id)
         if job is not None:
+            if job['status'] == 'retired':
+                raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': job_id})
             return {key: value for key, value in job.items() if key != "request"}
     row = repo.get_simulation_job(job_id)
     if row is None:
         raise HTTPException(status_code=404, detail="Simulation job not found")
+    _retired_job_response(row)
     return _job_dict(row)
 
 
 @app.post("/ai/diagnostics")
 def ai_diagnostics(payload: AIDiagnosticsRequest, repo: Repository = Depends(get_repo)) -> dict:
+    with SIM_START_LOCK:
+        if SIM_SHUTTING_DOWN:
+            raise HTTPException(503, detail={'code': 'simulation_shutting_down'})
     rows = repo.list_decks()
     by_id = {row.id: row for row in rows}
 
