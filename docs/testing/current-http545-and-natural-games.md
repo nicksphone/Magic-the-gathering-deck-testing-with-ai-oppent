@@ -62,6 +62,13 @@ excluded, so no exclusive CPU or performance-cause claim follows.
 
 ## Remaining Release Work
 
+The newer immutable `7455a9d` evidence completes Burn/Blue Control in both seat
+orientations through two separately executed games, with 1,277 exact completed
+decision/action pairs. The original interrupted pair remains failed. See
+`current-ai-natural-745.md` for the source pins, nested-observation separation,
+declared corpus, metric limits and immutable archives. This does not replace or
+retroactively qualify any older cohort below.
+
 ### Additional Archetype Diagnostic
 
 On immutable `72aabcc` (unchanged backend/audit rules), a separate four-game run

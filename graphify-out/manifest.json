@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791465453.5885026,
-    "seen": 1791465536.027419,
-    "ast_hash": "9a588f5524c75f1d6c0f8f5d3ebaf64b",
+    "mtime": 1791472426.906034,
+    "seen": 1791472517.1584375,
+    "ast_hash": "a41d26bcd09af8d5bfaa889531e4bc18",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14496,9 +14496,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-http545-and-natural-games.md": {
-    "mtime": 1791446810.9173055,
-    "seen": 1791446892.800535,
-    "ast_hash": "7970b85b8996426fec8340d89918a8a5",
+    "mtime": 1791472426.906034,
+    "seen": 1791472517.158032,
+    "ast_hash": "03b2ed0e3047567742ab19def63ef126",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/ai_late_progress_safety.json": {
@@ -14811,6 +14811,12 @@
     "mtime": 1791465453.5875027,
     "seen": 1791465536.027051,
     "ast_hash": "e449f293ffef363fa72331dffba9af59",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-ai-natural-745.md": {
+    "mtime": 1791472426.905034,
+    "seen": 1791472517.1580267,
+    "ast_hash": "d68ec5bfe1bc7da5eb7183787a5e23db",
     "semantic_hash": ""
   }
 }
