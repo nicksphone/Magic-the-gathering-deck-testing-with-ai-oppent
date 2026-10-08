@@ -13656,9 +13656,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_simulation_engine_shutdown.py": {
-    "mtime": 1791410356.109364,
-    "seen": 1791410507.519184,
-    "ast_hash": "324165521c68476ff66edf3a48bccdcc",
+    "mtime": 1791458191.583066,
+    "seen": 1791458274.778508,
+    "ast_hash": "713f97e233a29fab6f4ce2b8b3ff757f",
     "semantic_hash": ""
   },
   "backend/tests/test_simulation_shutdown.py": {
@@ -14595,6 +14595,12 @@
     "mtime": 1791455467.768789,
     "seen": 1791455565.0966847,
     "ast_hash": "acf9372aacdcbbb4a2919f6bb8738bee",
+    "semantic_hash": ""
+  },
+  "docs/testing/simulation-shutdown-fixture-current.md": {
+    "mtime": 1791458191.6100655,
+    "seen": 1791458274.7799618,
+    "ast_hash": "5a81a922ce43fe88906371a60ec3b858",
     "semantic_hash": ""
   }
 }

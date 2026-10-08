@@ -19,8 +19,23 @@ def lifecycle(shutdown_fails=False):
         if shutdown_fails:
             raise RuntimeError("live worker")
 
-    state = dict(asynccontextmanager=asynccontextmanager,
-                 engine=SimpleNamespace(dispose=lambda: calls.append("dispose")),
+    engine = SimpleNamespace(dispose=lambda: calls.append("dispose"))
+
+    class Owner:
+        path = SimpleNamespace(name="non-SQL-fixture", exists=lambda: False,
+                               with_name=lambda name: None)
+        epoch = "fake"
+
+        def acquire(self): return self
+        def open_admission(self): pass
+        def fence_admission(self): pass
+        def drain_producers(self, *, timeout): pass
+        def close(self): engine.dispose()
+
+    state = dict(asynccontextmanager=asynccontextmanager, engine=engine,
+                 DatabaseOwner=lambda engine: Owner(),
+                 initialize_resource_capacity=lambda owner, backup: None,
+                 SIM_JOB_SHUTDOWN_TIMEOUT=20,
                  _shutdown_simulation_workers=shutdown,
                  _prepare_simulation_admission=lambda: calls.append("prepare"),
                  init_db=lambda: calls.append("init"),
