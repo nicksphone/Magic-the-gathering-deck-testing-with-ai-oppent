@@ -47,7 +47,9 @@ def inventory(root, *, runtime=False):
             if path.is_file():
                 require(info.st_nlink == 1)
             relative = path.relative_to(root).as_posix()
-            mutable = relative in SQL_FILES or any(relative == p or relative.startswith(p + "/") for p in MUTABLE_DIRS)
+            owner_artifact = path.is_file() and (relative == "mtg_lab.db.capacity-owner.lock" or
+                re.fullmatch(r"mtg_lab\.db\.before-capacity-[0-9a-f]{32}\.db", relative) is not None)
+            mutable = relative in SQL_FILES or owner_artifact or any(relative == p or relative.startswith(p + "/") for p in MUTABLE_DIRS)
             if runtime and mutable:
                 continue
             if not runtime and (name in {"__pycache__", ".pytest_cache", "image_cache"} or name.endswith(".pyc")):
