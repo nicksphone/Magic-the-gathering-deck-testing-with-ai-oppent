@@ -984,6 +984,12 @@ class RulesEngine:
                     reject('The selected casting cost or permission is unavailable')
                     return
                 chosen = normalize_cost_choice(action, options)
+                if chosen.hand_exile_color and not choice_id:
+                    reject('Select the optional hand-exile casting cost explicitly')
+                    return
+                if 'exile_card_ids' in (action.get('cost_choice') or {}) and not chosen.hand_exile_color:
+                    reject('This casting cost does not permit hand exile')
+                    return
                 from rules_engine.alternative_casts import validate_escape_exiles
                 escape_ids = validate_escape_exiles(state, player_id, cid, chosen.exile_graveyard, action.get("escape_exile_ids")) if casting_method(chosen.id) == "escape" else []
                 if escape_ids is None:
@@ -993,6 +999,9 @@ class RulesEngine:
                 # Extract x_value early — needed for cost checking and payment
                 at_targets = action.get("targets", {}) if isinstance(action, dict) else {}
                 x_value = int(at_targets.get("x_value", 0) or 0)
+                if chosen.hand_exile_color and (type(at_targets.get('x_value')) is not int or at_targets['x_value'] < 0):
+                    reject('This casting cost requires an explicit nonnegative X')
+                    return
                 if choice_id and chosen.graveyard_permission_max_mana_value is not None:
                     from rules_engine.mana import mana_value
                     from rules_engine.alternative_casts import spell_cast_view
@@ -1003,7 +1012,7 @@ class RulesEngine:
                 if effect_cast and '{x}' in (face_card.mana_cost or '').lower() and x_value != 0:
                     reject('X must be zero when casting without paying its mana cost')
                     return
-                if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value, target_card_id=at_targets.get("target_card_id")):
+                if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value, target_card_id=at_targets.get("target_card_id"), cost_choice=action.get('cost_choice')):
                     explicit_choice = bool(((action.get("cost_choice") or {}).get("id")))
                     if not explicit_choice:
                         chosen = next(
@@ -1014,7 +1023,7 @@ class RulesEngine:
                             ),
                             chosen,
                         )
-                    if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value, target_card_id=at_targets.get("target_card_id")):
+                    if not check_cost_option_available(state, player_id, face_card, chosen, x_value=x_value, target_card_id=at_targets.get("target_card_id"), cost_choice=action.get('cost_choice')):
                         reject("Cannot satisfy chosen casting costs")
                         state.log.append(f"{player.name} cannot satisfy chosen costs for {card.name}.")
                         apply_state_based_actions(state)
@@ -1088,6 +1097,11 @@ class RulesEngine:
                 # Exhaustive costs still select all remaining cards after mana.
                 frozen_cost_choice = dict(action.get('cost_choice') or {})
                 reserved_cost_cards = {cid, *escape_ids}
+                if chosen.hand_exile_color:
+                    frozen_cost_choice['exile_card_ids'] = list(selected_cost_cards['exile_card_ids'])
+                    reserved_cost_cards.update(selected_cost_cards['exile_card_ids'])
+                exile_references = {selected: (object_incarnation(state.cards[selected]), state.cards[selected].zone_change_sequence)
+                                    for selected in selected_cost_cards.get('exile_card_ids', [])}
                 for key, exhaustive in (('discard_card_ids', chosen.discard_all),
                                         ('sacrifice_card_ids', chosen.sacrifice_all)):
                     if not exhaustive:
@@ -1111,6 +1125,7 @@ class RulesEngine:
                     source_card_id=cid, target_card_id=action_targets.get("target_card_id"),
                     cast_resource_card=face_card, resource_choices=action.get('resource_payment'),
                     reserved_card_ids=reserved_cost_cards,
+                    additional_generic_reduction=len(selected_cost_cards.get('exile_card_ids', [])) * chosen.hand_exile_generic_reduction,
                 )
                 if not paid:
                     if cost_staging:
@@ -1121,6 +1136,10 @@ class RulesEngine:
                     apply_state_based_actions(state)
                     return
                 spell_cost_context: dict = {}
+                if any((object_incarnation(state.cards[selected]), state.cards[selected].zone_change_sequence) != reference
+                       for selected, reference in exile_references.items()):
+                    reject('A selected hand-exile object changed before payment')
+                    return
                 if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value,
                                               choice=frozen_cost_choice, context=spell_cost_context):
                     if cost_staging:

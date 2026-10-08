@@ -57,6 +57,12 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
     if state is not None and (option.discard_cards or option.sacrifice_creatures or option.discard_x or option.discard_all or option.sacrifice_all):
         from rules_engine.costs import additional_cost_candidates
         view.update(additional_cost_candidates(state, player_id, card_id, option))
+    if option.hand_exile_color:
+        view['hand_exile_color'] = option.hand_exile_color
+        view['hand_exile_generic_reduction'] = option.hand_exile_generic_reduction
+        if state is not None:
+            from rules_engine.costs import additional_cost_candidates
+            view.update(additional_cost_candidates(state, player_id, card_id, option))
     if state is not None:
         from rules_engine.kicker import kicker_surfaces
         card = state.cards[card_id]

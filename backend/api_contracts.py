@@ -1,7 +1,7 @@
 """Public input contracts. Effect payload parameters are never client choices."""
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, model_validator
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, field_validator, model_validator
 
 CardID = Annotated[str, Field(min_length=1, max_length=100)]
 CardIDs = Annotated[list[CardID], Field(max_length=250)]
@@ -107,6 +107,14 @@ class PaymentCards(InputModel):
 
 class CostChoice(PaymentCards):
     id: Annotated[str, Field(min_length=1, max_length=100)]
+    exile_card_ids: CardIDs | None = None
+
+    @field_validator('exile_card_ids', mode='before')
+    @classmethod
+    def explicit_exile_selection(cls, value):
+        if value is None:
+            raise ValueError('An explicit hand-exile selection must be a list, not null')
+        return value
 
 
 HybridChoices = Annotated[list[Literal["W", "U", "B", "R", "G", "C", "2", "P"]], Field(min_length=1, max_length=20)]

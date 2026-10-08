@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "backend/api_contracts.py": {
-    "mtime": 1791341658.207782,
-    "seen": 1791342233.266913,
-    "ast_hash": "a27b837134e6ae3bb6354fb7f265a538",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.1702883,
+    "ast_hash": "ea4badd372604d7093c31f2dd91bbabe",
     "semantic_hash": ""
   },
   "backend/card_data/__init__.py": {
@@ -498,9 +498,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/action_validation.py": {
-    "mtime": 1791359491.7815447,
-    "seen": 1791359579.1634176,
-    "ast_hash": "17c46351b6ebfd1babdee62d7f719ee6",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.170399,
+    "ast_hash": "da7378d36b4a361757bc71f38ddcdbdd",
     "semantic_hash": ""
   },
   "backend/rules_engine/activation_modifiers.py": {
@@ -606,9 +606,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/costs.py": {
-    "mtime": 1791415358.4596493,
-    "seen": 1791415879.1107936,
-    "ast_hash": "b176cae1089ec99adb93946e5c9b1257",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.1704335,
+    "ast_hash": "a9359cd3b6aaee2c863cf87750bb2c7b",
     "semantic_hash": ""
   },
   "backend/rules_engine/counter_placement.py": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791428273.4386165,
-    "seen": 1791428573.2403586,
-    "ast_hash": "82b79fa1a5bda80bb7097265a8cd5109",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.170459,
+    "ast_hash": "60bf281a7efbe1b1525b9a37ca92b3b7",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/mana.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2179003,
-    "ast_hash": "abe6b0bf8a97e9eec934ee71e8291f92",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.1705124,
+    "ast_hash": "9e358e72326db11720e4bb7c49b790cb",
     "semantic_hash": ""
   },
   "backend/rules_engine/mana_abilities.py": {
@@ -828,9 +828,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/move_generator.py": {
-    "mtime": 1791428273.4386165,
-    "seen": 1791428573.2404125,
-    "ast_hash": "57bf9930ea1792b7f71e2cd1e7cb9650",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.17052,
+    "ast_hash": "4de207e4696a596908a586e80cdbeadd",
     "semantic_hash": ""
   },
   "backend/rules_engine/named_counters.py": {
@@ -924,15 +924,15 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/spell_cost_clauses.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2179441,
-    "ast_hash": "2fe8a780345ed05209fc0557d5a621ce",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.1705608,
+    "ast_hash": "c489d5f3cc6a3b7d0756c068a77e0f29",
     "semantic_hash": ""
   },
   "backend/rules_engine/spell_cost_witness.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2179456,
-    "ast_hash": "b8064a598606d0262a44e4a60577c15c",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.1705623,
+    "ast_hash": "b39b77e1ac6098b1342cb2a222799e7b",
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
@@ -5682,9 +5682,9 @@
     "semantic_hash": ""
   },
   "backend/training/environment.py": {
-    "mtime": 1791359491.7815447,
-    "seen": 1791359579.1663847,
-    "ast_hash": "df6729fac5550146f0120a910d6caa0a",
+    "mtime": 1791429363.7920325,
+    "seen": 1791430360.173458,
+    "ast_hash": "65a3010fb343c7e839c341f8c559d107",
     "semantic_hash": ""
   },
   "docs/audits/2026-09-27-api-validation-jev-provenance.json": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791428497.2077734,
-    "seen": 1791428573.2442734,
-    "ast_hash": "e58308e3f641ba3d35b1dce9f542f038",
+    "mtime": 1791430267.2911117,
+    "seen": 1791430360.174635,
+    "ast_hash": "f0a7b8617069cefd3653cf06bca70b15",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14079,6 +14079,42 @@
     "mtime": 1791428273.4386165,
     "seen": 1791428573.2439659,
     "ast_hash": "afa6b5690df77e75d42cc20b2951d5a2",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-cost/test_exhaustive_reservation_delta.py": {
+    "mtime": 1791430220.2089,
+    "seen": 1791430360.1701705,
+    "ast_hash": "aa87afc1469f51b619683a508db7799c",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-cost/test_march_joint_paid.py": {
+    "mtime": 1791430220.2109,
+    "seen": 1791430360.170173,
+    "ast_hash": "45bab7c10e5b09ef5b4af34679c4d625",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-cost/test_march_paid_v2.py": {
+    "mtime": 1791430220.2059002,
+    "seen": 1791430360.170175,
+    "ast_hash": "5fc4dd081d71214d8130263da299c2d3",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-cost/test_march_pitch_paid.py": {
+    "mtime": 1791430220.2039,
+    "seen": 1791430360.1701767,
+    "ast_hash": "35e9f3b3f9bc37b3cf61288d501a09a6",
+    "semantic_hash": ""
+  },
+  "audit/gate2-march-cost/test_march_pitch_responses.py": {
+    "mtime": 1791430220.2139,
+    "seen": 1791430360.1701784,
+    "ast_hash": "e870c34ec1f7f845a38f0301710161cc",
+    "semantic_hash": ""
+  },
+  "docs/testing/march-paid-current.md": {
+    "mtime": 1791430267.2901118,
+    "seen": 1791430360.1745067,
+    "ast_hash": "b7ed96589c024ce1fe0d0e4f29c741bd",
     "semantic_hash": ""
   }
 }

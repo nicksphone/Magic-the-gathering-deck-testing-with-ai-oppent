@@ -44,6 +44,8 @@ class CostOption:
     kicked: bool = False
     kicker_count: int | None = None
     kicker_base_id: str | None = None
+    hand_exile_color: str | None = None
+    hand_exile_generic_reduction: int = 0
     graveyard_permission_key: str | None = None
     graveyard_permission_max_mana_value: int | None = None
 
@@ -557,11 +559,13 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                 discard_all=bool(branch.get('discard_all')),
                 sacrifice_all=bool(branch.get('sacrifice_all')),
                 sacrifice_creatures=option.sacrifice_creatures + branch.get('sacrifice_creatures', 0),
-                sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind)))
+                sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind),
+                hand_exile_color=branch.get('hand_exile_color'),
+                hand_exile_generic_reduction=branch.get('hand_exile_generic_reduction', 0)))
     return compiled
 
 
-def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None) -> bool:
+def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None, cost_choice=None) -> bool:
     from rules_engine.attachments import is_aura
     from rules_engine.alternative_casts import spell_cast_view
     card = spell_cast_view(card, casting_method(option.id))
@@ -583,6 +587,17 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     if option.sacrifice_all and set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind, payment_kind='effect')) != set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)):
         return False
     from rules_engine.spell_cost_witness import fixed_cost_selections
+    if cost_choice is not None:
+        selected = additional_cost_selection(state, player_id, option, card.id, cost_choice, x_value=x_value)
+        if selected is not None:
+            # Exhaustive costs consume remaining resources after mana payment.
+            if option.discard_all:
+                selected['discard_card_ids'] = []
+            if option.sacrifice_all:
+                selected['sacrifice_card_ids'] = []
+        selections = [] if selected is None else [selected]
+    else:
+        selections = fixed_cost_selections(state, player_id, card.id, option, x_value)
     return any(can_pay_with_pool_and_lands(
         state, player_id, option.mana_cost, is_land=("Land" in effective_types(state, card)),
         card_name=card.name, x_value=x_value, spell_types=set(effective_types(state, card)),
@@ -592,8 +607,9 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
         source_card_id=card.id, target_card_id=target_card_id,
         cast_resource_card=card,
-        reserved_card_ids={card.id, *selected['discard_card_ids'], *selected['sacrifice_card_ids']},
-    ) for selected in fixed_cost_selections(state, player_id, card.id, option, x_value))
+        reserved_card_ids={card.id, *selected['discard_card_ids'], *selected['sacrifice_card_ids'], *selected.get('exile_card_ids', [])},
+        additional_generic_reduction=len(selected.get('exile_card_ids', [])) * option.hand_exile_generic_reduction,
+    ) for selected in selections)
 
 
 def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> CostOption:
@@ -606,11 +622,18 @@ def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> 
 
 
 def additional_cost_candidates(state, player_id, spell_card_id, option):
-    return {
+    candidates = {
         'discard_card_ids': [cid for cid in state.players[player_id].hand
                              if cid != spell_card_id and not is_departed_token(state.cards[cid])],
         'sacrifice_card_ids': _eligible_sacrifice_ids(state, player_id, option.sacrifice_kind),
     }
+    if option.hand_exile_color:
+        from rules_engine.colors import card_color_symbols
+        candidates['exile_card_ids'] = [cid for cid in state.players[player_id].hand
+            if cid != spell_card_id and cid in state.cards and not is_departed_token(state.cards[cid])
+            and state.cards[cid].zone == Zone.HAND and state.cards[cid].owner == player_id
+            and option.hand_exile_color in card_color_symbols(state.cards[cid], state)]
+    return candidates
 
 
 def additional_cost_selection(state, player_id, option, spell_card_id, choice=None, *, x_value=0):
@@ -618,6 +641,14 @@ def additional_cost_selection(state, player_id, option, spell_card_id, choice=No
     selected = {}
     if x_value < 0:
         return None
+    if 'exile_card_ids' in (choice or {}) and not option.hand_exile_color:
+        return None
+    if option.hand_exile_color:
+        ids = (choice or {}).get('exile_card_ids', [])
+        if (not isinstance(ids, list) or len(ids) > 250 or any(not isinstance(cid, str) for cid in ids)
+                or len(set(ids)) != len(ids) or any(cid not in candidates['exile_card_ids'] for cid in ids)):
+            return None
+        selected['exile_card_ids'] = list(ids)
     for key, count in [('discard_card_ids', option.discard_cards + (x_value if option.discard_x else 0)),
                        ('sacrifice_card_ids', option.sacrifice_creatures)]:
         ids = (choice or {}).get(key)
@@ -638,6 +669,8 @@ def additional_cost_selection(state, player_id, option, spell_card_id, choice=No
                 or any(cid not in candidates[key] for cid in ids)):
             return None
         selected[key] = list(ids)
+    if set(selected.get('exile_card_ids', [])) & (set(selected['discard_card_ids']) | set(selected['sacrifice_card_ids'])):
+        return None
     return selected
 
 
@@ -657,7 +690,9 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
             return False
         state.log.append(f"{player.name} pays {life_amount} life as an additional cost.")
 
-    from rules_engine.zone_actions import discard_selected, sacrifice_selected
+    from rules_engine.zone_actions import discard_selected, sacrifice_selected, exile_selected_from_hand
+    if selected.get('exile_card_ids') and not exile_selected_from_hand(state, player_id, selected['exile_card_ids']):
+        return False
     if selected['discard_card_ids'] and not discard_selected(state, player_id, selected['discard_card_ids']):
         return False
     sacrifices = selected['sacrifice_card_ids']

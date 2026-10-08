@@ -344,6 +344,23 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             without_mana=bool(state.pending_mechanic_choice and state.pending_mechanic_choice['kind'] in {'effect_cast', 'suspend_cast'}))
         choice = (action.get("cost_choice") or {}).get("id")
         require(not choice or any(option.id == choice for option in options), "Unknown casting cost option")
+        selected_option = next((option for option in options if option.id == choice), None)
+        pitch = action.get('cost_choice') or {}
+        if 'exile_card_ids' in pitch:
+            require(selected_option is not None and bool(selected_option.hand_exile_color),
+                    'This selected casting cost does not permit hand exile')
+        if selected_option is not None and selected_option.hand_exile_color:
+            from rules_engine.costs import additional_cost_selection, check_cost_option_available
+            require(type(targets.get('x_value')) is int and targets['x_value'] >= 0,
+                    'This casting cost requires an explicit nonnegative X')
+            require(additional_cost_selection(state, player_id, selected_option, face_card.id, pitch,
+                                              x_value=targets['x_value']) is not None,
+                    'Invalid optional hand-exile selection')
+            require(check_cost_option_available(state, player_id, face_card, selected_option,
+                    x_value=targets['x_value'], target_card_id=targets.get('target_card_id'), cost_choice=pitch),
+                    'Cannot pay the selected optional hand-exile casting cost')
+        elif any(option.hand_exile_color for option in options):
+            require(bool(choice), 'Select the optional hand-exile casting cost explicitly')
         hybrid_choices = action.get("hybrid_choices")
         if hybrid_choices is not None:
             from rules_engine.mana import hybrid_payment_symbols, can_pay_with_pool_and_lands
@@ -362,6 +379,9 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                 spell_kicked=option.kicked,
                 source_card_id=face_card.id, target_card_id=targets.get('target_card_id'),
                 hybrid_choices=hybrid_choices,
+                additional_generic_reduction=(len(pitch.get('exile_card_ids', [])) * selected_option.hand_exile_generic_reduction
+                                              if selected_option and selected_option.hand_exile_color else 0),
+                reserved_card_ids={face_card.id, *pitch.get('exile_card_ids', [])},
                 reserved_life=option.pay_life + (int(targets.get("x_value") or 0) if option.pay_life_x else 0),
             ), "Cannot pay the selected hybrid branches")
         if targets.get("x_value") is not None:

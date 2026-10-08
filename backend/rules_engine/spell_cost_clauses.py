@@ -87,8 +87,27 @@ def resource_x_effect_gaps(text):
     return gaps
 
 
+def compile_optional_hand_exile_discount(text, card_name=''):
+    """Price only a closed complete body already covered by the target compiler."""
+    if not re.search(r'\bas an additional cost to cast\b[^.]*\byou may exile\b', text or '', re.I):
+        return None
+    from rules_engine.oracle_effects import compile_complete_x_bounded_exile_instruction
+    contract = compile_complete_x_bounded_exile_instruction(text, card_name)
+    if not contract or '__unsupported_instruction' in contract:
+        return {'unsupported_hand_exile': True}
+    match = re.search(r'exile any number of (white|blue|black|red|green) cards from your hand\.\s*'
+                      r'This spell costs \{(\d+)\} less to cast for each card exiled this way\.', text, re.I)
+    if not match:
+        return {'unsupported_hand_exile': True}
+    return {'hand_exile_color': {'white': 'W', 'blue': 'U', 'black': 'B', 'red': 'R', 'green': 'G'}[match[1].lower()],
+            'hand_exile_generic_reduction': int(match[2])}
+
+
 def spell_additional_costs(text, card_name=''):
     """Return supported cost branches, or None for any unmodeled clause."""
+    hand_exile = compile_optional_hand_exile_discount(text, card_name)
+    if hand_exile is not None:
+        return None if hand_exile.get('unsupported_hand_exile') else [hand_exile]
     text = without_reminder_text(text or '').lower()
     sentences = re.findall(r'\bas an additional cost to cast\b[^.\n]*(?:\.|$)', text)
     if len(sentences) != len(re.findall(r'\bas an additional cost to cast\b', text)):

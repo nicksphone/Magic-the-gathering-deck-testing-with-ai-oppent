@@ -385,6 +385,9 @@ class TrainingEnvironment:
                    for option in move.get('cost_options', []) if option['id'] == choice['id']]
         require(bool(options), 'Casting cost choice is not in current engine hints')
         option = options[0]
+        if 'exile_card_ids' in choice:
+            require(bool(option.get('hand_exile_color')), 'This selected casting cost does not permit hand exile')
+            require(isinstance(choice['exile_card_ids'], list), 'An explicit hand-exile selection must be a list')
         require(not ('{X}' in option.get('mana_cost', '').upper() or option.get('pay_life_x')
                      or option.get('discard_x')) or action.get('targets', {}).get('x_value') is not None,
                 'Missing required choice: targets.x_value')

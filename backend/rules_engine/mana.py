@@ -159,7 +159,10 @@ def can_pay_with_pool_and_lands(
     protected_life=0,
     cast_resource_card=None,
     resource_choices=None,
+    additional_generic_reduction: int = 0,
 ) -> bool:
+    if type(additional_generic_reduction) is not int or additional_generic_reduction < 0:
+        return False
     context = CostContext(
         player_id=player_id, card_name=card_name, mana_cost=mana_cost,
         state=state, spell_types=spell_types, spell_is_aura=spell_is_aura,
@@ -171,6 +174,7 @@ def can_pay_with_pool_and_lands(
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)
+    context.generic_reduction += additional_generic_reduction
     from rules_engine.replacement import can_pay_life, cost_payment_is_prohibited
     return any(
         can_pay_life(state, player_id, req.get("life", 0) + reserved_life + protected_life)
@@ -672,7 +676,10 @@ def auto_pay_cost(
     protected_life=0,
     cast_resource_card=None,
     resource_choices=None,
+    additional_generic_reduction: int = 0,
 ) -> bool:
+    if type(additional_generic_reduction) is not int or additional_generic_reduction < 0:
+        return False
     payment_context = (payment_kind, payment_types if payment_types is not None else spell_types or set())
     # Replay reselects activation resources; protect the source there as in planning.
     reserved_card_ids = _consumption_reservations(payment_context, cast_resource_card,
@@ -688,6 +695,7 @@ def auto_pay_cost(
     )
     if apply_modifiers:
         context = apply_cost_modifiers(context)
+    context.generic_reduction += additional_generic_reduction
     from rules_engine.replacement import can_pay_life, pay_life, cost_payment_is_prohibited
     branches = []
     requirements = _payment_requirements(
