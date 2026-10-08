@@ -405,7 +405,9 @@ HTTPS, browser and clean-machine deployment are still separate acceptance work.
 
 Four predeclared White/Tempo natural games on immutable `349a5d2` completed with
 2,832 checked decisions and 8,496 verified checkpoints. All four rows use one
-correlated seed; one existing bad-block diagnostic remains under causal review.
+correlated seed; one existing bad-block diagnostic remains recorded. Its four
+checked immediate-combat alternatives do not establish strict domination; see
+`docs/testing/current349-block302-causal-review.md`.
 See `docs/testing/current349-white-tempo-natural-four.md`. These rows do not
 establish thirteen-style, multi-seed or expert-strength acceptance.
 
@@ -415,3 +417,13 @@ and candidate frontend checks pass. Live both-seat countdown/pause/pass behavior
 still needs affected browser qualification; see
 `docs/testing/human-response-controller-role.md`. None of these components closes
 the full release gates or the original full-rules/arbitrary-deck objective.
+
+## 2026-10-08 Fresh HTTPS Checkpoint
+
+Immutable `1c3fbbd` with the exact tested frontend build completed actual
+owned-CA loopback HTTPS/auth/Origin/API/media/lock/restart qualification on the
+restored fresh runtime. All 205 reported instances pass: the same 111 stable
+contract instances as the older gate plus 94 process-identity polls. Independent
+source, dependency and native resource closure verified the slot release. See
+`docs/testing/current1c-fresh-https-qualified.md`. Live browser, trusted LAN,
+clean-machine deployment and the full release gates remain open.

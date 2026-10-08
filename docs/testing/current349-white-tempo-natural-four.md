@@ -25,7 +25,8 @@ native Python audit controls, not an escaped-child OS sandbox.
 
 Existing diagnostics total zero missed land drops, unused-mana passes, lethal
 misses, stall streaks and redundant removal casts, with one bad-block report in
-row 0, seat 2. That report remains subject to causal review; metric counts are
+row 0, seat 2. The [causal review](current349-block302-causal-review.md) verifies
+four legal immediate-combat alternatives without establishing domination; metric counts are
 not optimality or expert-strength proof. White Weenie is classified as Tokens by
 the existing classifier.
 
