@@ -161,6 +161,8 @@ def resolve(state, controller, payload):
                             oracle_text=payload['text'], effect_timestamp=allocate_effect_timestamp(state))
         state.cards[cid] = card
         state.emblems.append(cid)
+        from game_state.observations import observe_cards
+        observe_cards(state, [cid])
     elif kind == 'source_token':
         ref = payload['source_reference']
         source = state.cards.get(ref['id'])
@@ -228,35 +230,106 @@ def resolve(state, controller, payload):
         handlers._destroy_all_permanents_of_types(state, {'Creature'}, 'Threshold creatures destroyed.', target_ids=targets)
 
 
+def card_reference(state, cid):
+    from game_state.state import object_incarnation
+    card = state.cards[cid]
+    return {'incarnation': object_incarnation(card), 'sequence': card.zone_change_sequence,
+            'zone': card.zone.value}
+
+
+def reference_matches(state, cid, reference):
+    return cid in state.cards and reference == card_reference(state, cid)
+
+
+def aura_entry_options(state, card, controller):
+    from rules_engine.attachments import attachment_target_is_legal
+    view = copy(card)
+    view.controller = controller
+    candidates = [cid for p in state.players.values() for cid in p.battlefield]
+    candidates += ['player:' + str(pid) for pid in state.players]
+    return [cid for cid in candidates if attachment_target_is_legal(state, view, cid)]
+
+
+def choice_view(pending, *, actor=False, state=None):
+    keys = ['kind', 'player_id', 'label', 'count', 'min_count']
+    if actor or pending['kind'] != 'loyalty_cards':
+        keys += ['options', 'option_labels']
+    view = {key: deepcopy(pending[key]) for key in keys if key in pending}
+    if actor and state is not None:
+        view['option_labels'] = {cid: state.cards[cid].name if cid in state.cards
+            else (pending.get('option_labels') or {}).get(cid, cid) for cid in view.get('options', [])}
+    return view
+
+
 def choose_cards(state, controller, payload, kind):
     from game_state.state import Zone
     from rules_engine.type_effects import effective_types
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     from rules_engine.graveyard_permissions import battlefield_entry_prohibited
+    from rules_engine.attachments import is_aura, attach_if_legal
+    from rules_engine.entry import pause_for_land_entries, apply_entry_choice
     player = state.players[controller]
     if kind == 'choose_untap':
         eligible = [cid for p in state.players.values() for cid in p.battlefield
                     if 'Land' in effective_types(state, state.cards[cid])]
     else:
-        eligible = [cid for cid in player.hand if set(effective_types(state, state.cards[cid])) &
-                    {'Creature', 'Land', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle'}]
+        eligible = [cid for cid in player.hand if state.cards[cid].zone == Zone.HAND
+                    and set(effective_types(state, state.cards[cid])) &
+                    {'Creature', 'Land', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle'}
+                    and (not is_aura(state.cards[cid], state)
+                         or aura_entry_options(state, state.cards[cid], controller))]
     if 'selected_card_ids' not in payload and controller in state.mechanic_choice_players and eligible:
         state.pending_mechanic_choice = {'kind': 'loyalty_cards', 'player_id': controller,
             'options': eligible, 'count': min(payload['count'], len(eligible)), 'min_count': 0,
             'label': 'Choose up to the permitted number of cards', 'effect_payload': deepcopy(payload),
-            'loyalty_operation': kind}
+            'loyalty_operation': kind,
+            'option_references': {cid: card_reference(state, cid) for cid in eligible}}
         state.priority_player = controller
         state.passed_priority = set()
         return
     chosen = payload.get('selected_card_ids', eligible[:payload['count']])
-    if len(set(chosen)) != len(chosen) or len(chosen) > payload['count'] or any(cid not in eligible for cid in chosen):
+    if len(set(chosen)) != len(chosen) or len(chosen) > payload['count']:
         raise ValueError('Invalid loyalty selection')
+    references = payload.get('__loyalty_selected_references')
+    if references is None:
+        if any(cid not in eligible for cid in chosen):
+            raise ValueError('Invalid loyalty selection')
+        references = {cid: card_reference(state, cid) for cid in chosen}
+    chosen = [cid for cid in chosen if cid in eligible and reference_matches(state, cid, references.get(cid))]
     if kind == 'choose_untap':
         from rules_engine.named_counters import untap_permanent
         for cid in chosen:
             untap_permanent(state, cid)
         return
     chosen = [cid for cid in chosen if not battlefield_entry_prohibited(state, cid)]
+    payload = {**payload, 'selected_card_ids': chosen, '__loyalty_selected_references': references}
+    attachments = deepcopy(payload.get('__loyalty_attachments') or {})
+    for cid in chosen:
+        card = state.cards[cid]
+        if not is_aura(card, state):
+            continue
+        targets = aura_entry_options(state, card, controller)
+        selected = attachments.get(cid)
+        if selected is not None:
+            target = selected['id']
+            if (target not in targets or (not target.startswith('player:')
+                    and not reference_matches(state, target, selected['reference']))):
+                chosen = [other for other in chosen if other != cid]
+            continue
+        if controller in state.mechanic_choice_players:
+            state.pending_mechanic_choice = {'kind': 'loyalty_attachment', 'player_id': controller,
+                'label': 'Choose a legal attachment for the entering Aura', 'options': targets,
+                'entry_card_id': cid, 'effect_payload': {**payload, '__loyalty_attachments': attachments},
+                'option_references': {target: card_reference(state, target) for target in targets
+                                      if not target.startswith('player:')}}
+            state.priority_player = controller
+            state.passed_priority = set()
+            return
+        target = targets[0]
+        attachments[cid] = {'id': target, 'reference': None if target.startswith('player:') else card_reference(state, target)}
+    payload = {**payload, 'selected_card_ids': chosen, '__loyalty_attachments': attachments}
+    if pause_for_land_entries(state, controller, chosen, 'loyalty_hand_entry', payload):
+        return
     if chosen and prepare_counter_entries(state, controller, [state.cards[cid] for cid in chosen],
                                          'loyalty_hand_entry', {**payload, 'selected_card_ids': chosen}):
         return
@@ -268,10 +341,18 @@ def choose_cards(state, controller, payload, kind):
         player.battlefield.append(cid)
         card.move_to_zone(Zone.BATTLEFIELD)
         card.controller = controller
+        apply_entry_choice(state, controller, card,
+                           choice=(payload.get('__entry_choices') or {}).get(cid, 'tapped'))
         card.entered_turn = state.turn
         card.summoning_sick = True
         assign_static_order_on_battlefield_entry(state, cid)
         commit_entry_counters(state, card, payload)
+        if cid in attachments:
+            target = attachments[cid]['id']
+            if target.startswith('player:'):
+                card.attached_to = target
+            elif not attach_if_legal(state, cid, target):
+                raise ValueError('Previously qualified Aura attachment became unavailable')
         events.append({'card_id': cid, 'controller': controller})
     from rules_engine.events import emit_event_batch
     emit_event_batch(state, 'enters_battlefield', events)
@@ -279,19 +360,52 @@ def choose_cards(state, controller, payload, kind):
 
 def finish_choice(state, controller, action):
     pending = state.pending_mechanic_choice
+    if action.get('type') != 'choose_mechanic' or pending['player_id'] != controller:
+        return False
+    if pending['kind'] == 'loyalty_attachment':
+        cid = pending['entry_card_id']
+        payload = pending['effect_payload']
+        target = action.get('choice_id')
+        if (not reference_matches(state, cid, payload['__loyalty_selected_references'].get(cid))
+                or cid not in state.players[controller].hand or target not in pending['options']
+                or target not in aura_entry_options(state, state.cards[cid], controller)
+                or (not target.startswith('player:') and not reference_matches(state, target,
+                    pending['option_references'].get(target)))):
+            return False
+        attachments = {**payload.get('__loyalty_attachments', {}), cid: {'id': target,
+            'reference': None if target.startswith('player:') else card_reference(state, target)}}
+        state.pending_mechanic_choice = None
+        from effects.registry import resolve_effect
+        resolve_effect(state, controller, 'loyalty_hand_entry', {**payload, '__loyalty_attachments': attachments})
+        from rules_engine.stack_engine import resume_paused_resolution
+        resume_paused_resolution(state, pending)
+        return True
     ids = action.get('card_ids')
     if (action.get('type') != 'choose_mechanic' or pending['player_id'] != controller
             or not isinstance(ids, list) or any(not isinstance(cid, str) for cid in ids)
             or len(set(ids)) != len(ids) or len(ids) > pending['count']
-            or any(cid not in pending['options'] for cid in ids)):
+            or any(cid not in pending['options'] or not reference_matches(state, cid,
+                (pending.get('option_references') or {}).get(cid)) for cid in ids)
+            or (pending['loyalty_operation'] == 'hand_entry'
+                and any(cid not in state.players[controller].hand for cid in ids))):
         return False
     state.pending_mechanic_choice = None
     from effects.registry import resolve_effect
     resolve_effect(state, controller, 'loyalty_' + pending['loyalty_operation'],
-                   {**pending['effect_payload'], 'selected_card_ids': ids})
+                   {**pending['effect_payload'], 'selected_card_ids': ids,
+                    '__loyalty_selected_references': {cid: pending['option_references'][cid] for cid in ids}})
     from rules_engine.stack_engine import resume_paused_resolution
     resume_paused_resolution(state, pending)
     return True
+
+
+def land_choice_valid(state, controller, action, pending):
+    from rules_engine.entry import land_entry_options
+    cid = pending['entry_card_id']
+    payload = pending['effect_payload']
+    return (pending['player_id'] == controller and cid in state.players[controller].hand
+            and reference_matches(state, cid, payload['__loyalty_selected_references'].get(cid))
+            and action.get('choice_id') in land_entry_options(state, controller, state.cards[cid]))
 
 
 def collect_emblem_triggers(state, event, payload):
@@ -304,7 +418,8 @@ def collect_emblem_triggers(state, event, payload):
         if parsed and parsed['kind'] == 'draw_exile' and payload.get('player_id') == card.controller:
             out.append({'source_card_id': cid, 'controller': card.controller,
                 'label': 'Emblem draw trigger', 'effect_key': 'exile',
-                'payload': {'__trigger_resolution_text': 'Exile target permanent an opponent controls.'}})
+                'payload': {'__trigger_full_clause': card.oracle_text,
+                            '__trigger_resolution_text': 'Exile target permanent an opponent controls.'}})
     return out
 
 

@@ -453,3 +453,17 @@ response cardinality and absent pagination were independently verified. See
 [the advisory scope and evidence](docs/testing/current-locked-dependency-advisories.md).
 This changes no dependency and does not replace final-source clean installs,
 runtime gates, application security review or deployment qualification.
+
+## 2026-10-08 Loyalty Entry And Public Emblems
+
+The current-source composition over `8b2078c` executes 31 whole backend modules:
+1,003 passes in 183.20s. Pytest exits zero; the wrapper's separate inventory
+assertion exits one for four generated SVG cache appends, with every original
+inventoried source path unchanged. Exact output hashes and the failed wrapper
+ledger remain preserved. Complete configured frontend test/lint/build exit zero.
+Actual paid Ugin land/Aura/planeswalker entry and public command-zone emblems
+now have existing-pattern human selection/display controls, strict response
+validation and both-seat component checks. See
+[the scope, ledgers and remaining work](docs/testing/loyalty-entry-emblems-current.md).
+No HTTP/browser, arbitrary entry rules, expert AI or final release gate is
+certified by this scoped composition.

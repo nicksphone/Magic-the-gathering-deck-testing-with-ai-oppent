@@ -78,6 +78,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     ? authoritativeMoves : [], [humanActor, suspendOwner, actingPlayerId, authoritativeMoves]);
   const p1 = match.players[String(viewerSeat)];
   const p2 = match.players[String(opponentSeat)];
+  const p1Emblems = (match.emblems ?? []).filter(emblem => emblem.controller === viewerSeat);
+  const p2Emblems = (match.emblems ?? []).filter(emblem => emblem.controller === opponentSeat);
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
   const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
   const p1ManaPool = useMemo(() => manaPoolPips(p1.mana_pool, p1.snow_mana_pool), [p1.mana_pool, p1.snow_mana_pool]);
@@ -246,9 +248,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     };
   }
 
-  function zoneTray(seat: number, zone: "graveyard" | "exile", cards: typeof p1.graveyard, count: number) {
+  function zoneTray(seat: number, zone: "graveyard" | "exile" | "emblems", cards: typeof p1.graveyard, count: number) {
     return <details className="graveyard-tray">
-      <summary aria-label={`Player ${seat} ${zone}`}>{zone === "graveyard" ? "GY" : "EX"} {count}</summary>
+      <summary aria-label={`Player ${seat} ${zone}`}>{zone === "graveyard" ? "GY" : zone === "exile" ? "EX" : "Emblems"} {count}</summary>
       <div className="graveyard-tray-list">
         {cards.length ? cards.map((card) => <button
           key={card.id}
@@ -260,6 +262,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           onClick={event => { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); }}
         >
           {card.name}{card.mana_cost ? <small>{card.mana_cost}</small> : null}
+          {zone === "emblems" ? <small>{card.oracle_text}</small> : null}
         </button>) : count === 0 ? <span>Empty</span> : null}
         {count > cards.length ? <span>{count - cards.length} face-down card(s)</span> : null}
       </div>
@@ -367,6 +370,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           <span>Library {p2.library_count}</span>
           {zoneTray(opponentSeat, "graveyard", p2.graveyard, p2.graveyard_count)}
           {zoneTray(opponentSeat, "exile", p2.exile, p2.exile_count)}
+          {p2Emblems.length ? zoneTray(opponentSeat, "emblems", p2Emblems, p2Emblems.length) : null}
           <span>Hand {p2.hand_count}</span>
           {Object.entries(p2.counters ?? {}).filter(([, amount]) => amount > 0).map(([kind, amount]) => (
             <span key={kind} data-player-counter={`${opponentSeat}-${kind}`}>{kind[0].toUpperCase() + kind.slice(1)} {amount}</span>
@@ -451,6 +455,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           <span>Library {p1.library_count}</span>
           {zoneTray(viewerSeat, "graveyard", p1.graveyard, p1.graveyard_count)}
           {zoneTray(viewerSeat, "exile", p1.exile, p1.exile_count)}
+          {p1Emblems.length ? zoneTray(viewerSeat, "emblems", p1Emblems, p1Emblems.length) : null}
           <span>Hand {p1.hand_count}</span>
           {Object.entries(p1.counters ?? {}).filter(([, amount]) => amount > 0).map(([kind, amount]) => (
             <span key={kind} data-player-counter={`${viewerSeat}-${kind}`}>{kind[0].toUpperCase() + kind.slice(1)} {amount}</span>

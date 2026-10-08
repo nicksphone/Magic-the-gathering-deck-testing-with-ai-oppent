@@ -1,10 +1,9 @@
 # MTG Deck Testing Lab
 
-Latest scoped backend qualification: retained Ray copied-spell frames and
-counterable control-loss taps, alongside sourced fixed-cost Suspend readiness
-and temporary-characteristic HTTP/persistence checks. See
-[control acceptance](docs/testing/control-source-frame-current-composition.md)
-and [prior acceptance](docs/testing/suspend-and-characteristics-http-current.md).
+Latest scoped qualification: complete printed-body admission and loyalty
+execution, followed by paid land/Aura entry and public emblem UI controls. See
+[entry/emblem acceptance](docs/testing/loyalty-entry-emblems-current.md) and
+[complete-body acceptance](docs/testing/complete-body-rules-composition.md).
 This remains an unfinished playtesting app, not unrestricted rules certification.
 
 A desktop-first React/TypeScript and Python/FastAPI application for two-player

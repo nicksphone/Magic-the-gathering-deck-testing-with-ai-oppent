@@ -82,6 +82,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         pending = state.pending_mechanic_choice
         if pending['player_id'] != player_id:
             return []
+        if pending['kind'] in {'loyalty_cards', 'loyalty_attachment'}:
+            from rules_engine.loyalty_instructions import choice_view
+            return [{'type': 'choose_mechanic', **choice_view(pending, actor=True, state=state)}]
         if pending['kind'] == 'note_creature_type':
             from rules_engine.next_creature_entry_trigger import note_view
             return [note_view(pending)]

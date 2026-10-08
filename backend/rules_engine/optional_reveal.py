@@ -81,6 +81,10 @@ def finish_reveal(state, player_id, action):
 
 
 def public_choice(pending):
+    if pending and (pending.get('kind') in {'loyalty_cards', 'loyalty_attachment'}
+                    or pending.get('effect_key') == 'loyalty_hand_entry'):
+        from rules_engine.loyalty_instructions import choice_view
+        return choice_view(pending)
     if pending and pending.get('kind') == 'exchange_energy_payment':
         from rules_engine.exchange_energy import public_choice as exchange_choice
         return exchange_choice(pending)

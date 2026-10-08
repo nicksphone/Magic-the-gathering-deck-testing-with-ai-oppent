@@ -460,6 +460,9 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
 
     return {
         "id": state.id,
+        "emblems": [{**serialize_card_view(state, cid), "controller": state.cards[cid].controller,
+                     "owner": state.cards[cid].owner, "zone": Zone.COMMAND.value} for cid in state.emblems
+                    if cid in state.cards and state.cards[cid].zone == Zone.COMMAND],
         "turn": state.turn,
         "active_player": state.active_player,
         "priority_player": state.priority_player,

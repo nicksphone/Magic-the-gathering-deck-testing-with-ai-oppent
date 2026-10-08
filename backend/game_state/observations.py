@@ -8,6 +8,8 @@ from game_state.state import CardInstance, Zone
 def public_card_ids(state):
     visible = {cid for player in state.players.values()
                for cid in player.battlefield + player.graveyard}
+    visible.update(cid for cid in state.emblems if cid in state.cards
+                   and state.cards[cid].zone == Zone.COMMAND)
     # Retained ability frames do not reveal a source's new hidden incarnation.
     visible.update(cid for cid, card in state.cards.items() if card.zone == Zone.STACK)
     visible.update(cid for player in state.players.values() for cid in player.exile

@@ -10,8 +10,10 @@ rejection as well as activation atomicity. See
 
 The current locked dependency advisory refresh returns no affected packages
 among 242 queried versions. This is a dated database result, not installation,
-deployment or application-security certification. General hand-entry/Aura/land
-choice interactions, public emblem visibility, full browser acceptance,
+deployment or application-security certification. The subsequent current-source
+loyalty entry/public-emblem composition passes 1,003 gameplay checks plus complete
+frontend test/lint/build; its generated-media wrapper diagnostic is retained
+explicitly. See `loyalty-entry-emblems-current.md`. Full browser acceptance,
 arbitrary-card semantics and expert AI remain open. Earlier component source
 pins remain individually recorded below; their passes do not automatically
 transfer to the latest combined source. Overall release remains unfinished.
@@ -22,6 +24,7 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Loyalty entry and public emblem UI | Current composition over `8b2078c`: 31 whole backend modules / 1,003 passes in 183.20s; full frontend test/lint/build exit zero; actual paid both-seat Ugin/Elspeth views drive reachable zero/subset/attachment controls and public emblem text | Pytest zero, outer wrapper one from four recorded generated SVG appends; all 1,978 original inventoried paths unchanged. Pure/component scope, not HTTP/browser or arbitrary entry rules. See `loyalty-entry-emblems-current.md` |
 | Complete printed-body rules composition | Published `bf6731c`: 22 whole modules / 823 passes in 153.98s; all original 400 corpus/consumer nodes pass. Separate seven whole resolution/entry modules / 179 passes in 34.93s; source hashes and native forbidden-I/O ledgers verified | Pure composed component, not HTTP/browser or complete-card certification. The ten explicit fixture strengthenings and unchanged historical ledgers are recorded separately; counts overlap. See `complete-body-rules-composition.md` |
 | Current locked dependency advisory refresh | Exact `bf6731c` locks: actual OSV HTTP 200 on 2026-10-08 at 23:24:27 UTC; all 28 PyPI and 214 npm unique locked versions queried, no affected package returned; exact inventory, response cardinality, input hashes and pagination independently checked | Dated advisory result only, including optional npm platform packages; not installation, undisclosed-vulnerability, application-security or release certification. See `current-locked-dependency-advisories.md` |
 | Effective battlefield decision-quality evidence | Canonical Song changes a printed creature into a land; corrected NEW baseline has 18 failures / 6 passes, candidate eight whole modules / 168 passes with exact source before/after hashes and empty native forbidden-I/O ledger | Measurement correction only, not AI policy improvement or completion of the 13-archetype matrix. See `effective-decision-quality.md` |
@@ -89,6 +92,7 @@ substitute for qualification of the final combined source.
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 
 - `parent-integration/complete-body-composition-20261008/`
+- `parent-integration/loyalty-entry-public-ui-20261008/`
 - `diagnostics/dependency-audit/current-bf6731c-20261008/`
 - `release-gate-1-7-current-qualified/a42e0f6-1kapIf/`
 - `parent-integration/native-browser-r9-qualified-20261007/`
@@ -132,7 +136,9 @@ inspection; never execute a database on NFS.
 2. Remeasure the complete 155-card inventory and deck readiness on the final
    source with genuine canonical cost/target/execution tests. All 400 original
    corpus/consumer cases pass on `bf6731c`, but absence of a preflight warning is
-   not full-card semantics certification. Entry follow-ups remain explicit.
+   not full-card semantics certification. Current paid loyalty entry, public
+   emblems and compiled UI choices have scoped follow-up qualification, not
+   arbitrary-permanent or final-browser certification.
    Older `13973bd` inventory counts are historical, not current-source counts.
 3. Requalify current built UI, browser-served offline assets, BO3 and recovery with the exact
    origin configuration and fresh locked dependencies. Test supported actions

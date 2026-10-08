@@ -65,6 +65,8 @@ export type CardView = {
   effect_warnings?: string[];
 };
 
+export type EmblemView = CardView & { controller: 1 | 2; owner: 1 | 2; zone: "command" };
+
 export type PlayerView = {
   id: number;
   name: string;
@@ -91,6 +93,7 @@ export type PlayerView = {
 
 export type MatchState = {
   id: string;
+  emblems?: EmblemView[];
   revision?: number;
   discards_this_turn?: Record<string, number>;
   mode?: "player_vs_ai" | "ai_vs_ai" | "human_vs_human";
@@ -125,7 +128,7 @@ export type MatchState = {
   sideboarding?: Record<string, { mainboard: DeckItem[]; sideboard: DeckItem[]; applied: boolean }>;
   log: string[];
   pending_mechanic_choice?: {
-    kind: "effect_cast" | "suspend_cast" | "scry" | "scry_top_order" | "surveil" | "surveil_top_order" | "hand_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "counter_payment" | "optional_search" | "optional_reveal" | "graveyard_return" | "discard" | "each_player_discard" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "land_from_hand" | "saga_entry" | "entry_mode" | "note_creature_type" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target" | "spree_target_change" | "legend_keeper" | "exchange_energy_payment";
+    kind: "effect_cast" | "suspend_cast" | "scry" | "scry_top_order" | "surveil" | "surveil_top_order" | "hand_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "counter_payment" | "optional_search" | "optional_reveal" | "graveyard_return" | "discard" | "each_player_discard" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "land_from_hand" | "saga_entry" | "entry_mode" | "note_creature_type" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target" | "spree_target_change" | "legend_keeper" | "exchange_energy_payment" | "loyalty_cards" | "loyalty_attachment";
     player_id: number;
     options?: string[];
     count?: number;
@@ -158,7 +161,7 @@ export type LegalMove = {
   cost_text?: string;
   cast_variant?: 'bestow';
   selected_face_index?: number;
-  kind?: "effect_cast" | "suspend_cast" | "scry" | "scry_top_order" | "surveil" | "surveil_top_order" | "hand_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "counter_payment" | "optional_search" | "optional_reveal" | "graveyard_return" | "discard" | "each_player_discard" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "land_from_hand" | "saga_entry" | "entry_mode" | "note_creature_type" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target" | "spree_target_change" | "legend_keeper" | "exchange_energy_payment";
+  kind?: "effect_cast" | "suspend_cast" | "scry" | "scry_top_order" | "surveil" | "surveil_top_order" | "hand_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "counter_payment" | "optional_search" | "optional_reveal" | "graveyard_return" | "discard" | "each_player_discard" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "land_from_hand" | "saga_entry" | "entry_mode" | "note_creature_type" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target" | "spree_target_change" | "legend_keeper" | "exchange_energy_payment" | "loyalty_cards" | "loyalty_attachment";
   entry_choice?: "tapped" | "pay_two_life";
   player_id?: number;
   count?: number;

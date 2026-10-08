@@ -73,6 +73,13 @@ export function parseMatchState(value: unknown): MatchState {
       && ((value.discards_this_turn as Record<string, number>)[seat] >= 0)))) {
     throw new Error("Invalid match response: discard history");
   }
+  if (value.emblems !== undefined && (!Array.isArray(value.emblems)
+    || !value.emblems.every(emblem => record(emblem) && card(emblem)
+      && [1, 2].includes(emblem.controller as number) && [1, 2].includes(emblem.owner as number)
+      && emblem.zone === 'command')
+    || new Set(value.emblems.map(emblem => emblem.id)).size !== value.emblems.length)) {
+    throw new Error('Invalid match response: emblems');
+  }
   for (const seat of ["1", "2"]) {
     const player = value.players[seat];
     if (!record(player) || typeof player.life !== "number" || !Array.isArray(player.hand)
