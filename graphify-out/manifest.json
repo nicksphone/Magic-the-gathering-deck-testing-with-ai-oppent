@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791494883.9478645,
-    "seen": 1791494965.5649922,
-    "ast_hash": "882a8f4c66fafd682a5a144af479c8da",
+    "mtime": 1791495984.0590475,
+    "seen": 1791496075.5391629,
+    "ast_hash": "4df190c43f3970cbe158e1ef78855beb",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791494883.9368649,
-    "seen": 1791494965.5650182,
-    "ast_hash": "fa61a2b0990ad8922ee7ab17f536b26a",
+    "mtime": 1791495984.0530477,
+    "seen": 1791496075.539188,
+    "ast_hash": "44c35ae4de00134aa0619ab623c2a1ee",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -6042,9 +6042,9 @@
     "semantic_hash": ""
   },
   "frontend/src/types/index.ts": {
-    "mtime": 1791476108.6066911,
-    "seen": 1791476243.4444962,
-    "ast_hash": "8e0eb11813434be8c63e53fea2e6d851",
+    "mtime": 1791495984.0560477,
+    "seen": 1791496075.5392094,
+    "ast_hash": "e77095c3adf1bf094702b7ddfa4af418",
     "semantic_hash": ""
   },
   "frontend/src/vite-env.d.ts": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791494884.0248635,
-    "seen": 1791494965.5661616,
-    "ast_hash": "67ce7ca12fa7c60ee1bbd66f74846ce6",
+    "mtime": 1791495984.150046,
+    "seen": 1791496075.5403047,
+    "ast_hash": "b91177ed201e9200c65de76524eb513d",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15195,6 +15195,24 @@
     "mtime": 1791494883.9508646,
     "seen": 1791494965.5659769,
     "ast_hash": "0ea4a2d84cd20deb0520f9b2caeb962d",
+    "semantic_hash": ""
+  },
+  "frontend/tests/keeper-energy-controls.mjs": {
+    "mtime": 1791495984.0640476,
+    "seen": 1791496075.5394247,
+    "ast_hash": "8a49840fbadba86907bd2a23f341d905",
+    "semantic_hash": ""
+  },
+  "frontend/tests/keeper-energy-engine.py": {
+    "mtime": 1791495984.0670474,
+    "seen": 1791496075.539427,
+    "ast_hash": "604fd0535fec03a160c456b2716f6cb1",
+    "semantic_hash": ""
+  },
+  "docs/testing/keeper-energy-human-controls.md": {
+    "mtime": 1791495984.0690475,
+    "seen": 1791496075.5401077,
+    "ast_hash": "9fe8b17034146ca14b4eeaf943f6f1e8",
     "semantic_hash": ""
   }
 }
