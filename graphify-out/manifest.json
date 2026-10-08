@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791441614.239885,
-    "seen": 1791441693.7692633,
-    "ast_hash": "3bbfb4f9ba35ce2144685c43895d9d80",
+    "mtime": 1791442678.3226368,
+    "seen": 1791442755.5913477,
+    "ast_hash": "b067b2702b3672b20e98ec0d1d6f2a84",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14496,9 +14496,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-http545-and-natural-games.md": {
-    "mtime": 1791441614.2388852,
-    "seen": 1791441693.7688956,
-    "ast_hash": "912ecb56fe06b10ca62dcf7be92e4a4c",
+    "mtime": 1791442678.3226368,
+    "seen": 1791442755.5909874,
+    "ast_hash": "ad4af577b6afed7e4bd076ce94d8cc88",
     "semantic_hash": ""
   }
 }

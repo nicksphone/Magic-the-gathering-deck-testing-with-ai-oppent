@@ -62,6 +62,28 @@ excluded, so no exclusive CPU or performance-cause claim follows.
 
 ## Remaining Release Work
 
+### Additional Archetype Diagnostic
+
+On immutable `72aabcc` (unchanged backend/audit rules), a separate four-game run
+completed naturally in 458.59 seconds: Mono Red Aggro/Midrange in both seat
+orders, then Tokens/Drain Deck in both seat orders. Midrange won at turns 18
+and 24; Tokens won at turns 13 and 23. All 2,192 checked actions have exactly
+one completed legal-generation, choose and application stage in the 13,152-row
+journal. Original 2,560 source hashes and runtime pre/post manifests remained
+equal; native I/O controls passed with no unexpected SQL/socket/child access.
+The process chain ended and directory closure was verified.
+
+Evidence: `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ai-natural-current72-archetypes-20261008-TVLHNu/`.
+Full source/runner/evidence tar member bytes and SHA256SUMS were checked. The
+administrative wrong-cwd checksum failure before gameplay remains in its ledger.
+
+This is a separate paired-seat regression cohort, not added to the prior games
+as a single acceptance gate. Mono Red and Tokens started in both seat orders;
+play/draw balance, repeated determinism, counterfactual privacy/root purity,
+other deck families, complete semantics and expert strength remain unverified.
+
+### Outstanding Acceptance
+
 The full storage/resource-contract composition and current integration remain
 open. Canonical inventory diagnostics, final built UI/BO3/offline recovery,
 combined HTTPS/operator acceptance, clean-machine/soak tests and broader
