@@ -104,14 +104,13 @@ inspection; never execute a database on NFS.
    remains separate. See `caddy-operator-current-acceptance.md`.
 5. Complete the declared job/cancellation/retention/backup/restore, clean-machine,
    soak, accessibility and supported-topology operator acceptance requirements.
-   The separate Stage2 candidate's first full 21-module / 257-case native gate
-   executed 252 passes and five failures, with no errors or skips, in 1,144.93s.
-   The original assertion/node ledger is preserved. The missing helper occurred
-   in an AST-only fixture, not the actual main module; restore CLI namespace,
-   caller/argv, owned-directory and Origin setup failures require corrected
-   harness contracts and requalification. No candidate integration or overall
-   storage acceptance is inferred. All 12 actual lifespans and independent
-   146-artifact closure checks completed; its SQL lease was released.
+   The first Stage2 257-case gate's historical 252 passes and five harness
+   failures remain archived. Corrected current-source qualification subsequently
+   passed all 257 cases in 1,219.33s, including 12 genuine lifespans and four CLI
+   runs, and was integrated in `2f7a555`. See
+   `current-storage-capacity-qualification.md` for exact scope and evidence.
+   Physical exhaustion, crash/soak, operator activation and final browser union
+   remain open; scoped logical-capacity acceptance is not overall storage release.
 6. Measure legal hidden-information decision quality and completed, seed/seat-
    balanced games across all declared archetypes. Short probes and a browser
    opponent result do not establish seasoned-player strength.

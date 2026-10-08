@@ -1,10 +1,11 @@
 # Private HTTPS Operator Qualification
 
-The four new `ops/caddy/` files are the exact postimages from the isolated
-`0e57baf1f3d48526d3a85e7a0eea45da0b3dee93` runtime qualification. The parent
-security entry points (`main.py`, `browser_origin.py`) and frontend source are
-unchanged since that baseline. Later compiler/privacy work is not certified by
-this operator run; final combined-source/browser acceptance remains required.
+The Caddyfile, launcher and configuration verifier retain the exact postimages
+from isolated `0e57baf1f3d48526d3a85e7a0eea45da0b3dee93` qualification.
+The operator README now records that scoped result; its original tested bytes
+remain archived. Later application, storage lifecycle, frontend and rules changes
+are not certified by this operator run. Final combined-source/browser acceptance
+remains required.
 
 One actual invocation passed the complete native loopback corpus:
 
@@ -41,5 +42,5 @@ Caddy 2.11.7 binary, manual certificate and explicit trusted origin. No binary,
 global trust, system service or live deployment is installed by this integration.
 LAN/public exposure, multi-user authorization, clean-machine/current-browser
 acceptance and arbitrary-process OS sandboxing remain unqualified. The original
-README's pending-gate wording is preserved as a tested postimage; this record
-provides its scoped runtime status rather than rewriting historical evidence.
+README's pending-gate wording remains in the immutable tested archive; updating
+current guidance does not rewrite or extend that historical qualification.

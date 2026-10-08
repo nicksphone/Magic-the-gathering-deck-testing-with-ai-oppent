@@ -1,10 +1,10 @@
 # Private HTTPS Operator Packaging
 
-Status: static configuration qualification only. Actual trusted-CA HTTPS,
-authenticated API/media, rejection atomicity and restart recovery must pass an
-explicitly leased isolated runtime gate before deployment. Old R9 browser runs
-do not qualify this packaging or the fresh frontend. No live activation occurs
-by adding these files.
+Status: the pinned `0e57baf` native loopback runtime passed trusted-CA HTTPS,
+authenticated API/media, rejection atomicity and restart recovery. See
+`../../docs/testing/caddy-operator-current-acceptance.md` for exact evidence and
+scope. Final combined-source/browser and user-selected LAN topology still need
+qualification before deployment. No live activation occurs by adding these files.
 
 ## Files and boundaries
 
@@ -151,9 +151,9 @@ native adaptation must contain `enable_full_duplex: true`.
 
 Caddy marks this option experimental. Older HTTP/1 clients may deadlock and
 require explicit compatibility qualification; HTTP/2 already permits concurrent
-reads/writes. This is not blanket client or exposure support. The actual
-incomplete-upload early-403 client gate remains required and is pending with
-this delta; no timeout extension, upload completion or rejection bypass.
+reads/writes. This is not blanket client or exposure support. The pinned native
+incomplete-upload early-403 gate passed without a timeout extension, upload
+completion or rejection bypass; final combined-source qualification remains open.
 https://caddyserver.com/docs/caddyfile/options#enable-full-duplex
 https://github.com/caddyserver/caddy/blob/v2.11.7/modules/caddyhttp/server.go
 https://github.com/golang/go/blob/go1.26.8/src/net/http/responsecontroller.go
@@ -166,14 +166,15 @@ Origin are compatible, NOT authenticated. Local processes remain trusted. This
 single-user/one-worker service shares game/job state; BasicAuth is not per-user
 authorization, isolation, quotas or a public-service security certificate.
 
-Queued gate: fresh local runtime, ephemeral private CA/leaf SAN and credentials;
+Final combined-source gate still required: fresh local runtime, ephemeral private CA/leaf SAN and credentials;
 real trusted-CA client (no `-k`/ignore-cert), real built HTML/assets, native 401 for
 missing/wrong credentials, authenticated API and unchanged media, supported start
 and legal action/recovery, trusted/denied CORS headers, malicious mutation 403
 with complete controller/root/SQL equality before body/dependencies, rejected
 direct exposure, restart recovery and complete child/socket/DB closure. Secret
 material stays local/private and is destroyed only after closure; evidence is
-sanitized assertions/statuses, not headers or key/auth dumps. This gate is pending.
+sanitized assertions/statuses, not headers or key/auth dumps. The pinned native
+component passed; this final combined-source gate is pending.
 
 Authoritative references:
 https://caddyserver.com/docs/signature-verification
