@@ -8,6 +8,8 @@ import { build } from 'esbuild';
 import { parseLegalMoves, parseMatchState } from '../src/api/match-contract.ts';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const types = await readFile(path.join(root, 'frontend/src/types/index.ts'), 'utf8');
+assert.match(types, /kind\?:[^;]*"hand_top_order"/, 'LegalMove must expose the ordered-hand kind');
 const python = process.env.MTG_TEST_PYTHON || path.join(root, 'backend/.venv/bin/python');
 const rows = JSON.parse(execFileSync(python, ['-c', `
 import sys,json

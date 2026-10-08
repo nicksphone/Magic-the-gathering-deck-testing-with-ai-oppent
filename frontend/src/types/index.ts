@@ -158,7 +158,7 @@ export type LegalMove = {
   cost_text?: string;
   cast_variant?: 'bestow';
   selected_face_index?: number;
-  kind?: "effect_cast" | "suspend_cast" | "scry" | "scry_top_order" | "surveil" | "surveil_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "counter_payment" | "optional_search" | "optional_reveal" | "graveyard_return" | "discard" | "each_player_discard" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "land_from_hand" | "saga_entry" | "note_creature_type" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
+  kind?: "effect_cast" | "suspend_cast" | "scry" | "scry_top_order" | "surveil" | "surveil_top_order" | "hand_top_order" | "proliferate" | "ward_payment" | "ward_cost_cards" | "counter_payment" | "optional_search" | "optional_reveal" | "graveyard_return" | "discard" | "each_player_discard" | "cleanup_discard" | "mulligan_bottom" | "opening_hand" | "opening_hand_exile" | "sacrifice" | "draw" | "land_entry" | "land_from_hand" | "saga_entry" | "note_creature_type" | "attacking_token_target" | "topdeck_reveal_creature" | "topdeck_put" | "topdeck_bottom_order" | "look_top_choose" | "look_top_select_hand" | "search_library" | "combat_damage" | "copy_target";
   entry_choice?: "tapped" | "pay_two_life";
   player_id?: number;
   count?: number;
