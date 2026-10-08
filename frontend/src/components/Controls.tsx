@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from
 import { selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { CardArt } from "./CardArt";
+import { TriggerOrderPicker } from "./TriggerOrderPicker";
 
 // Includes engine-supported generic selections not yet listed in LegalMove.kind.
 const supportedMechanicControls = new Set<string>([
@@ -376,7 +377,14 @@ export function Controls(props: Props) {
               ? ` (${props.match.pending_trigger_order.event.replace(/_/g, " ")})`
               : ""}.
           </p>
-          <div className="row">
+          {(triggerOrderMoves[0].trigger_order?.length ?? 0) > 6 ? (
+            <TriggerOrderPicker
+              key={JSON.stringify([props.match?.id, props.match?.revision, props.match?.pending_trigger_order?.current_controller, triggerOrderMoves[0].trigger_order])}
+              ids={triggerOrderMoves[0].trigger_order ?? []}
+              labels={triggerOrderMoves[0].trigger_labels}
+              onChoose={props.onChooseTriggerOrder}
+            />
+          ) : <div className="row">
             {triggerOrderMoves.map((move, index) => (
               <button
                 key={`trigger-order-${index}-${(move.trigger_order ?? []).join("-")}`}
@@ -385,7 +393,7 @@ export function Controls(props: Props) {
                 {(move.trigger_labels ?? move.trigger_order ?? []).join(" -> ") || "Use trigger order"}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
       ) : null}
       {triggerTargetMoves.length > 0 ? (

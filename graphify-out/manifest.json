@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791492903.8965657,
-    "seen": 1791492986.2443197,
-    "ast_hash": "fda0f3e8b21fd4f05ad3886b21f71ccd",
+    "mtime": 1791494883.9478645,
+    "seen": 1791494965.5649922,
+    "ast_hash": "882a8f4c66fafd682a5a144af479c8da",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791492903.8925657,
-    "seen": 1791492986.2443469,
-    "ast_hash": "c7ad4e6a12f8da98e89d5c44d1a1fad5",
+    "mtime": 1791494883.9368649,
+    "seen": 1791494965.5650182,
+    "ast_hash": "fa61a2b0990ad8922ee7ab17f536b26a",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -8286,8 +8286,8 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791491413.5696156,
-    "seen": 1791492504.1188252,
+    "mtime": 1791493960.82194,
+    "seen": 1791494965.5664232,
     "ast_hash": "6b6dc5cee852d99ae19b9fe8b3a71c54",
     "semantic_hash": ""
   },
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791493227.6371055,
-    "seen": 1791493312.485627,
-    "ast_hash": "5aa1bd1bd834dd87952b835a0a1284ea",
+    "mtime": 1791494884.0248635,
+    "seen": 1791494965.5661616,
+    "ast_hash": "67ce7ca12fa7c60ee1bbd66f74846ce6",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15159,6 +15159,42 @@
     "mtime": 1791493227.5641067,
     "seen": 1791493312.4856179,
     "ast_hash": "171910c9e9fc0b97c9b8e69ce6c3b0d4",
+    "semantic_hash": ""
+  },
+  "frontend/src/components/TriggerOrderPicker.tsx": {
+    "mtime": 1791494883.9388647,
+    "seen": 1791494965.5650272,
+    "ast_hash": "8bf675c906413bdca397f823b9ca5e85",
+    "semantic_hash": ""
+  },
+  "frontend/tests/trigger-order-engine.py": {
+    "mtime": 1791495003.4191442,
+    "seen": 1791495061.345402,
+    "ast_hash": "a6ea55899c2969a23068d71c9833873f",
+    "semantic_hash": ""
+  },
+  "frontend/tests/trigger-order-picker.mjs": {
+    "mtime": 1791494883.9428647,
+    "seen": 1791494965.565299,
+    "ast_hash": "eae930a9cef2019c249e5eb76e9716ae",
+    "semantic_hash": ""
+  },
+  "docs/testing/current7945-full-frontend-locked-runtime.md": {
+    "mtime": 1791493960.82094,
+    "seen": 1791494965.5657642,
+    "ast_hash": "7f4bc1a51cf0a0ed0238af908c347b6a",
+    "semantic_hash": ""
+  },
+  "docs/testing/hashlocked-runtime655-qualified.md": {
+    "mtime": 1791494883.9528646,
+    "seen": 1791494965.56591,
+    "ast_hash": "1f22bb80f70e2ce294c9ab2192f2861c",
+    "semantic_hash": ""
+  },
+  "docs/testing/large-trigger-order-ui.md": {
+    "mtime": 1791494883.9508646,
+    "seen": 1791494965.5659769,
+    "ast_hash": "0ea4a2d84cd20deb0520f9b2caeb962d",
     "semantic_hash": ""
   }
 }
