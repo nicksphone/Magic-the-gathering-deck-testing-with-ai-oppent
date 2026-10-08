@@ -8298,9 +8298,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/optional_reveal.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2179153,
-    "ast_hash": "fa1383e16c13fe6cd508cf5b540d04bd",
+    "mtime": 1791425097.8056567,
+    "seen": 1791425241.575034,
+    "ast_hash": "c1b744d08a28146a7e21b285853ce188",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/human_transform_audit/canonical.json": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791421215.9473345,
-    "seen": 1791421298.843151,
-    "ast_hash": "3015fc9b53e6cbe9d2491c02ba71f07e",
+    "mtime": 1791425142.172962,
+    "seen": 1791425241.5790691,
+    "ast_hash": "93debfa6a05244934bbe6fafa0ff9283",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13965,6 +13965,24 @@
     "mtime": 1791420970.9958673,
     "seen": 1791421298.8422523,
     "ast_hash": "b74e6fa8dd33b8653b13a2d2868c812c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_brainstorm_http_ordering_goldens.py": {
+    "mtime": 1791425097.9276547,
+    "seen": 1791425241.5767212,
+    "ast_hash": "abaa199949100323316267349bdce9e7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_brainstorm_public_projection_goldens.py": {
+    "mtime": 1791425098.048653,
+    "seen": 1791425241.5767233,
+    "ast_hash": "e526448376f99ec05a929e3c2faf8533",
+    "semantic_hash": ""
+  },
+  "docs/testing/brainstorm-public-projection-current.md": {
+    "mtime": 1791425192.3821719,
+    "seen": 1791425241.5785825,
+    "ast_hash": "bb83557f525d794bd897064b5aa831dd",
     "semantic_hash": ""
   }
 }

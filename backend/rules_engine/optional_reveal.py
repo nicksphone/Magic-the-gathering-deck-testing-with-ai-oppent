@@ -88,4 +88,8 @@ def public_choice(pending):
         return {key: pending[key] for key in ('kind', 'player_id', 'label', 'count', 'min_count')}
     if pending and pending.get('kind') == 'optional_reveal':
         return {key: pending[key] for key in ('kind', 'player_id', 'label', 'count')}
+    if pending and pending.get('kind') == 'hand_top_order':
+        return {key: pending[key] for key in
+                ('kind', 'player_id', 'options', 'count', 'min_count', 'label',
+                 'option_labels', 'option_type_lines') if key in pending}
     return pending
