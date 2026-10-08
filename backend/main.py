@@ -187,7 +187,7 @@ class StartMatchRequest(DeckPairInput):
     deck_b_id: int | None = None
     controller_a: Literal["human", "ai"] = "human"
     controller_b: Literal["human", "ai"] = "ai"
-    ai_difficulty: Literal["casual", "strong", "master"] = "master"
+    ai_difficulty: Literal["casual", "strong", "master", "master_plus"] = "master"
     mode: Literal["player_vs_ai", "ai_vs_ai", "human_vs_human"] = "player_vs_ai"
     best_of: int = Field(default=3, ge=3, le=15)
     seed: int | None = None
