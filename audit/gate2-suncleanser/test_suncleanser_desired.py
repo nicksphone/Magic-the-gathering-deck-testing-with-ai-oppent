@@ -139,10 +139,22 @@ def placement_before_etb_resolution(state, facts, seat, mode, target):
         state, _ = paid(state, facts, seat, 'Battlegrowth', {'G': 1}, target_card_id=target)
     else:
         land = g.add(state, facts, 'Forest', target, Zone.HAND)
-        state, _ = paid(state, facts, target, 'Growth Spiral', {'G': 1, 'U': 1})
+        state = g.respond(state, target)
+        spiral = g.add(state, facts, 'Growth Spiral', target, Zone.HAND)
+        state.players[target].mana_pool = {'G': 1, 'U': 1}
+        state = g.cast(state, target, spiral)
+        assert state.cards[spiral].zone == Zone.STACK
+        assert sum(state.players[target].mana_pool.values()) == 0
+        item = next(item for item in state.stack if item.source_card_id == spiral)
+        assert item.controller == target and stack_object_kind(state, item) == 'spell'
+        assert item.payload['mana_spent'] == 2
+        assert g.resolve_top_of_stack(state) is False
         pending = state.pending_mechanic_choice
         assert pending and pending['kind'] == 'land_from_hand' and land in pending['options']
+        assert pending['resolving_item']['source_card_id'] == spiral
         state = g.act(state, target, 'choose_mechanic', card_ids=[land])
+        assert state.cards[spiral].zone == Zone.GRAVEYARD
+        assert not state.pending_mechanic_choice
         for _ in range(8):
             if len(state.stack) == depth:
                 break

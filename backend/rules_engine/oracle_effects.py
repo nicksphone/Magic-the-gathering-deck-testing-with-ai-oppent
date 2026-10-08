@@ -1998,7 +1998,7 @@ def _infer_clause_effect(
         if keywords and all(keyword != 'ward' and not keyword.startswith('ward ') for keyword in keywords):
             subject = keyword_change[1]
             recipient = target_card_id if subject.startswith('target ') or subject == 'it' else card.id
-            if recipient is not None:
+            if recipient is not None or subject.startswith('target '):
                 payload = {'target_card_id': recipient, 'until_end_of_turn': True}
                 payload['keyword' if len(keywords) == 1 else 'keywords'] = keywords[0] if len(keywords) == 1 else keywords
                 if keyword_change[2] == 'loses':

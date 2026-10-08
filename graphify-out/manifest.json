@@ -606,9 +606,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/costs.py": {
-    "mtime": 1791429363.7920325,
-    "seen": 1791430360.1704335,
-    "ast_hash": "a9359cd3b6aaee2c863cf87750bb2c7b",
+    "mtime": 1791436903.4656324,
+    "seen": 1791437161.1263676,
+    "ast_hash": "6ccfa6e7d671199fa18c044bf43e30c2",
     "semantic_hash": ""
   },
   "backend/rules_engine/counter_placement.py": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791429363.7920325,
-    "seen": 1791430360.170459,
-    "ast_hash": "60bf281a7efbe1b1525b9a37ca92b3b7",
+    "mtime": 1791436903.4636323,
+    "seen": 1791437161.126392,
+    "ast_hash": "12c1adc12b0aa91dfa7c3b0149234725",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/entry_counters.py": {
-    "mtime": 1791435211.3175607,
-    "seen": 1791435593.362291,
-    "ast_hash": "08d8f11ec34144aa28f38b7653030588",
+    "mtime": 1791436903.4636323,
+    "seen": 1791437161.1263955,
+    "ast_hash": "6602f4940244ec317f597ba9f973a8a4",
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
@@ -804,15 +804,15 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/mana.py": {
-    "mtime": 1791429363.7920325,
-    "seen": 1791430360.1705124,
-    "ast_hash": "9e358e72326db11720e4bb7c49b790cb",
+    "mtime": 1791437814.5472064,
+    "seen": 1791437999.0733047,
+    "ast_hash": "d8867441b843df4f3ce37a46c3a30ffe",
     "semantic_hash": ""
   },
   "backend/rules_engine/mana_abilities.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2179015,
-    "ast_hash": "acc3414394641efae54d48b8bb437579",
+    "mtime": 1791436903.4636323,
+    "seen": 1791437161.1264381,
+    "ast_hash": "7b63b552e33f14d2370d2b89d12f8c68",
     "semantic_hash": ""
   },
   "backend/rules_engine/mana_restrictions.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791427824.5543792,
-    "seen": 1791427952.7038493,
-    "ast_hash": "72d32ed5ff01d3d8d1c7f9c284fa951e",
+    "mtime": 1791436903.4656324,
+    "seen": 1791437161.1264567,
+    "ast_hash": "3665e4c67f89c7c0070290794489d2c5",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -930,9 +930,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/spell_cost_witness.py": {
-    "mtime": 1791429363.7920325,
-    "seen": 1791430360.1705623,
-    "ast_hash": "b39b77e1ac6098b1342cb2a222799e7b",
+    "mtime": 1791436903.4636323,
+    "seen": 1791437161.1264868,
+    "ast_hash": "9d60d5d78c3f1a26f7bc1eccaec2686e",
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
@@ -5256,9 +5256,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_spell_cost_overlap_investigation.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2198963,
-    "ast_hash": "57d9cf44bd21b0f27ef552f5391f3cce",
+    "mtime": 1791436903.4686325,
+    "seen": 1791437161.1290107,
+    "ast_hash": "d567452c3be0d3648d8360a3e6b68f27",
     "semantic_hash": ""
   },
   "backend/tests/test_spell_damage_assignment.py": {
@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791434445.6435132,
-    "seen": 1791434580.0344949,
-    "ast_hash": "1c2b5b5a1c57ff0567858e23edc032d2",
+    "mtime": 1791436140.014901,
+    "seen": 1791436854.943677,
+    "ast_hash": "969bf0b415b711923d898b494bb2f128",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791435516.8292222,
-    "seen": 1791435593.3662388,
-    "ast_hash": "6a3d74f85ad9bc5309c796d2d99c9d7a",
+    "mtime": 1791438069.9729354,
+    "seen": 1791438185.4424467,
+    "ast_hash": "43224550197ddd3b9f84a7eb928644db",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14136,9 +14136,9 @@
     "semantic_hash": ""
   },
   "docs/testing/entry-mode-controls.md": {
-    "mtime": 1791435516.8292222,
-    "seen": 1791435593.3659327,
-    "ast_hash": "d84de62de526e1c369ea455e1f037aeb",
+    "mtime": 1791436761.5380788,
+    "seen": 1791436854.9444644,
+    "ast_hash": "2d95f5fb198458805029658606804109",
     "semantic_hash": ""
   },
   "audit/gate2-owned-proof/pure_gate.py": {
@@ -14316,9 +14316,9 @@
     "semantic_hash": ""
   },
   "audit/gate2-suncleanser/test_suncleanser_desired.py": {
-    "mtime": 1791435211.3255606,
-    "seen": 1791435593.3620462,
-    "ast_hash": "fe304c4a147784f0aaf6d69bae6c8f45",
+    "mtime": 1791436903.4716322,
+    "seen": 1791437161.1261513,
+    "ast_hash": "0d475ccb9f98c5569a09c03a836f2b74",
     "semantic_hash": ""
   },
   "backend/rules_engine/attached_characteristics.py": {
@@ -14427,6 +14427,66 @@
     "mtime": 1791435384.9066346,
     "seen": 1791435593.3664842,
     "ast_hash": "760d7af83775f6c6457e05842d8f0cd8",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-entry-mode.mjs": {
+    "mtime": 1791436139.964902,
+    "seen": 1791436854.9438052,
+    "ast_hash": "c8cb76db085ebe2e60ce3ad98a85d349",
+    "semantic_hash": ""
+  },
+  "audit/gate2-escape-witness/test_bounded_escape_witness.py": {
+    "mtime": 1791436423.0,
+    "seen": 1791437161.126055,
+    "ast_hash": "b52363c32c24ebbee29dc40bd0b75689",
+    "semantic_hash": ""
+  },
+  "audit/gate2-escape-witness/test_escape_count_tokens.py": {
+    "mtime": 1791436423.0,
+    "seen": 1791437161.1260576,
+    "ast_hash": "f6b50a6e9121de1943ae526f7283ccce",
+    "semantic_hash": ""
+  },
+  "audit/gate2-escape-witness/test_ordered_escape_paid.py": {
+    "mtime": 1791436423.0,
+    "seen": 1791437161.1260598,
+    "ast_hash": "76a706778eea430f793acb8d29cbf464",
+    "semantic_hash": ""
+  },
+  "audit/gate2-escape-witness/test_preexisting_escape_body.py": {
+    "mtime": 1791436423.0,
+    "seen": 1791437161.1260622,
+    "ast_hash": "2c89ccd36446e8003e1e6119bc76cc8b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_keyword_preflight_subjects.py": {
+    "mtime": 1791436903.4756322,
+    "seen": 1791437161.1284866,
+    "ast_hash": "d1b7372a2a10e103a981252074ff666a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_land_activation_paid.py": {
+    "mtime": 1791436903.4746323,
+    "seen": 1791437161.1285012,
+    "ast_hash": "477482fee7f12aa7405e2a6eb2a75abf",
+    "semantic_hash": ""
+  },
+  "docs/testing/escape-safekeeper-current.md": {
+    "mtime": 1791438069.9729354,
+    "seen": 1791438185.4421048,
+    "ast_hash": "166ca7052ff681bf32301ff04c92aa0a",
+    "semantic_hash": ""
+  },
+  "docs/testing/ordered-escape-witness.md": {
+    "mtime": 1791436903.476632,
+    "seen": 1791437161.1302965,
+    "ast_hash": "b1ce34b41ce05a6b26363b5abe82ce11",
+    "semantic_hash": ""
+  },
+  "audit/gate2-escape-witness/test_zero_requirement_protocol.py": {
+    "mtime": 1791437814.5492065,
+    "seen": 1791437999.0729375,
+    "ast_hash": "b0e39a4698ac7a59d3df7d71b9b1885e",
     "semantic_hash": ""
   }
 }

@@ -277,7 +277,7 @@ def tap_only_outputs(state, card, *, ignore_readiness=False):
     return outputs
 
 
-def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UNFILTERED):
+def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UNFILTERED, include_free=False):
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     from rules_engine.mana import mana_activation_is_free
     bundled = needs_mana_bundles(state)
@@ -297,7 +297,7 @@ def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UN
             changing_cost = cost.sacrifice_creatures or cost.discard_cards or cost.discard_source
             if not (tap_only or self_sacrifice or cost.supported and changing_cost):
                 continue
-            if mana_activation_is_free(state, cid, cost.mana_cost) and not (bundled and changing_cost):
+            if not include_free and mana_activation_is_free(state, cid, cost.mana_cost) and not (bundled and changing_cost):
                 continue
             for color, bundle, _ in _output_options(state, card, spec, payment_context):
                 if sum(bundle.values()) > 0:

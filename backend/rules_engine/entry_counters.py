@@ -596,9 +596,10 @@ def prepare_entry_counters(state, controller, data, card, resume_effect):
             counts['+1/+1'] = max(0, int(entry.get('x_value', 0)))
         if 'Creature' in effective_types(state, card):
             if entry.get('__escaped'):
-                match = re.search(r'escapes with (a|one|\d+) \+1/\+1 counters?', card.oracle_text, re.I)
+                from rules_engine.oracle_effects import _parse_count_token
+                match = re.search(r'escapes with (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) \+1/\+1 counters?', card.oracle_text, re.I)
                 if match:
-                    counts['+1/+1'] = counts.get('+1/+1', 0) + (1 if match[1].lower() in {'a', 'one'} else int(match[1]))
+                    counts['+1/+1'] = counts.get('+1/+1', 0) + _parse_count_token(match[1])
             for index, pending in enumerate(state.pending_entry_counters if data.get('entry_item') else []):
                 if '__native_next_cast' not in pending and pending.get('controller') == controller and pending.get('expires_turn', state.turn) == state.turn:
                     kind = pending.get('counter', '+1/+1')

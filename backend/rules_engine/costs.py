@@ -147,7 +147,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
         if upper in {"T", "TAP"}:
             tap_source = True
         elif "SACRIFICE" in upper and any(term in upper for term in ("CREATURE", "ARTIFACT", "ENCHANTMENT", "PERMANENT", "TOKEN")):
-            if sacrifice_kind.startswith('subtype_'):
+            if sacrifice_kind == 'land' or sacrifice_kind.startswith('subtype_'):
                 supported = False
                 continue
             match = ACTIVATED_SACRIFICE_RE.search(upper)
@@ -171,7 +171,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
             from rules_engine.spell_cost_clauses import fixed_cost_component
             component = fixed_cost_component(part)
             kind = (component or {}).get('sacrifice_kind', '')
-            if (not kind.startswith('subtype_')
+            if (not (kind == 'land' or kind.startswith('subtype_'))
                     or sacrifice_creatures and sacrifice_kind != kind):
                 supported = False
                 continue
@@ -565,7 +565,7 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     return compiled
 
 
-def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None, cost_choice=None) -> bool:
+def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None, cost_choice=None, escape_exile_ids=None) -> bool:
     from rules_engine.attachments import is_aura
     from rules_engine.alternative_casts import spell_cast_view
     card = spell_cast_view(card, casting_method(option.id))
@@ -576,7 +576,14 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     player = state.players[player_id]
     if x_value < 0:
         return False
-    if option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id and not is_departed_token(state.cards[cid])]) < option.exile_graveyard:
+    escape_condition = None
+    escape_reserved = set()
+    if casting_method(option.id) == 'escape':
+        from rules_engine.spell_cost_witness import escape_payment_condition
+        escape_condition = escape_payment_condition(player_id, card.id, option.exile_graveyard, escape_exile_ids)
+        if isinstance(escape_exile_ids, list):
+            escape_reserved = {cid for cid in escape_exile_ids if isinstance(cid, str) and cid in player.graveyard}
+    elif option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id and not is_departed_token(state.cards[cid])]) < option.exile_graveyard:
         return False
     if not can_pay_life(state, player_id, option.pay_life + (x_value if option.pay_life_x else 0)):
         return False
@@ -607,8 +614,9 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
         source_card_id=card.id, target_card_id=target_card_id,
         cast_resource_card=card,
-        reserved_card_ids={card.id, *selected['discard_card_ids'], *selected['sacrifice_card_ids'], *selected.get('exile_card_ids', [])},
+        reserved_card_ids={card.id, *escape_reserved, *selected['discard_card_ids'], *selected['sacrifice_card_ids'], *selected.get('exile_card_ids', [])},
         additional_generic_reduction=len(selected.get('exile_card_ids', [])) * option.hand_exile_generic_reduction,
+        post_payment_condition=escape_condition,
     ) for selected in selections)
 
 

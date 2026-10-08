@@ -1,8 +1,9 @@
 # Release Acceptance Status
 
 Checkpoint: 2026-10-08. Component source pins are recorded individually below;
-the latest rules baseline is `ce97fe1`, with frontend-only follow-ups recorded
-separately. Overall release remains unfinished.
+the latest rules integration is described in `escape-safekeeper-current.md`,
+with every component's source and evidence boundary recorded separately.
+Overall release remains unfinished.
 The requirements in `plan.md` are unchanged; component passes below are not a
 substitute for qualification of the final combined source.
 
@@ -30,6 +31,7 @@ substitute for qualification of the final combined source.
 | March paid costs in the current composition | Parent `49a6362` plus nine-file cost delta: 19 whole modules / 504 ordinary passes and two unchanged original escape xfails, 57.64s; separately current `352f3b8` HTTP40 ordinary passes, 60.14s, 40 paired lifespans and native closure | Separate cohorts, not summed; warning review, browser, final union and the two escape defects remain open; see `march-paid-current.md` |
 | Explicit entry-mode UI | Both-seat real React regression plus actual Chromium DOM checks on four captured paid views; exact offered-mode callbacks, no default submission and unknown warning pass; component/Chromium/wrapper exit zero | Browser component only, not full built-app/API/SQLite or end-to-end Suncleanser acceptance; see `entry-mode-controls.md` |
 | Suncleanser and attached characteristics | Exact `af33d5d` reconstruction: paid28, causal28, gold49 and Changeling4 phases pass; current19 remains 504 passes/two original escape xfails; original32 retains four known strict failures | Separate measured phases; Safekeeper correction and lawful Growth Spiral choice adaptation tracked independently, native/browser/final corpus acceptance remains open; see `suncleanser-attached-current.md` |
+| Escape/Safekeeper combined repair | Exact `8e8655a` plus surgical patches and zero-cost correction: the repeated four whole-module phases pass 567/32/40/4; separate protocol/resource module passes 69; XML, applied imports and raw closure independently verified | Scoped pure integration only; native HTTP, inventory, final built-app and release-wide acceptance remain open; see `escape-safekeeper-current.md` |
 | Published 155-card inventory | Exact `352f3b8`: unchanged whole inventory module / eight ordinary passes, 5.67s; 155 hydrated metadata-ready cards, six hydrated admission-gap cards | Raw-canonical view separately retains 12 diagnostic-gap cards; every complete-card semantics field remains unverified; see `inventory-current352f.md` |
 | Veil complete turn protection | Current parent: eight whole pure modules / 232 ordinary passes, 25.93s; real color-conditioned draw, counter/target protection, copies, cleanup and replacement continuations; source/database unchanged | Native HTTP/SQLite, browser acceptance, inventory-warning review and arbitrary effect-layer completeness remain open |
 | Entry-turn loyalty and new incarnations | Current Veil/Emperor union: 12 whole pure modules / 276 ordinary passes, 35.67s; paid timing/effects/blink, same-incarnation rejection and shallow-query copy-on-write purity | Overlaps the Veil cohort; native HTTP/SQLite, inventory-warning review, broader layers and browser acceptance remain open |

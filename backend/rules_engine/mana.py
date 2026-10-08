@@ -160,6 +160,7 @@ def can_pay_with_pool_and_lands(
     cast_resource_card=None,
     resource_choices=None,
     additional_generic_reduction: int = 0,
+    post_payment_condition=None,
 ) -> bool:
     if type(additional_generic_reduction) is not int or additional_generic_reduction < 0:
         return False
@@ -184,7 +185,8 @@ def can_pay_with_pool_and_lands(
             payment_context=(payment_kind, payment_types if payment_types is not None else spell_types or set()),
             oracle_text=oracle_text, source_card_id=source_card_id, card=cast_resource_card,
             resource_choices=resource_choices, excluded_sources=excluded_sources,
-            reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life) is not None
+            reserved_card_ids=reserved_card_ids, protected_life=reserved_life + protected_life,
+            post_payment_condition=post_payment_condition) is not None
         for req in _payment_requirements(context.mana_cost, is_land, x_value, context.generic_reduction, context.generic_increase, hybrid_choices, restricted_x_color, floored_reductions=context.floored_reductions)
     )
 
@@ -381,17 +383,26 @@ def _plan_mana_sources(
     return [(sources[i][0], color, sources[i][1][color], sources[i][2]) for i, color in choices] if choices is not None else None
 
 
-def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, optimize_paid=False, reserved_card_ids=(), protected_life=0):
+def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, optimize_paid=False, reserved_card_ids=(), protected_life=0, post_payment_condition=None):
+    if post_payment_condition is not None and not post_payment_condition.visit():
+        return None
     from rules_engine.mana_abilities import proven_missing_fixed_color
     if proven_missing_fixed_color(state, player_id, req, payment_context):
         return None
     held_life = protected_life + req.get('life', 0)
     plan = _plan_free_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=held_life)
+    if plan is not None and post_payment_condition is not None:
+        from copy import deepcopy
+        trial = deepcopy(state)
+        if not _produce_planned_mana(trial, player_id, plan[0], payment_context=payment_context,
+                                     reserved_card_ids=reserved_card_ids, protected_life=held_life) or not post_payment_condition(trial):
+            plan = None
     if plan is not None and (not optimize_paid or not plan[0]):
         return plan
     from copy import deepcopy
     from rules_engine.mana_abilities import paid_candidates, activate_planned_mana_ability, PaidManaStep
-    candidates = list(paid_candidates(state, player_id, excluded_sources or (), payment_context=payment_context))
+    candidates = list(paid_candidates(state, player_id, excluded_sources or (), payment_context=payment_context,
+                                     include_free=post_payment_condition is not None))
     pool, _ = available_pool(state.players[player_id], payment_context)
     needed = {color: max(0, req[color] - pool[color]) for color in MANA_COLORS}
     from rules_engine.mana_abilities import output_bundles
@@ -421,7 +432,7 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
         reusable = not cost.tap_source and not cost.sacrifice_source and (
             cost.sacrifice_creatures > 0 or cost.discard_cards > 0)
         tail_excluded = frozenset(excluded_sources or ()) if reusable else excluded
-        tail = _plan_payment(trial, player_id, req, payment_context=payment_context, excluded_sources=tail_excluded, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
+        tail = _plan_payment(trial, player_id, req, payment_context=payment_context, excluded_sources=tail_excluded, reserved_card_ids=reserved_card_ids, protected_life=protected_life, post_payment_condition=post_payment_condition)
         if tail is not None:
             steps, snow = tail
             candidate = [PaidManaStep(cid, spec[0], color, excluded), *steps], snow
@@ -624,7 +635,7 @@ def _consumption_reservations(payment_context, card, source_card_id, reserved_ca
 def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='',
                         source_card_id=None, card=None, resource_choices=None,
                         excluded_sources=None, reserved_card_ids=(), protected_life=0,
-                        optimize_paid=False):
+                        optimize_paid=False, post_payment_condition=None):
     from types import SimpleNamespace
     from rules_engine.casting_resources import resource_keywords, joint_resource_payment
     view = card or SimpleNamespace(id=source_card_id, oracle_text=oracle_text, keywords=[])
@@ -633,14 +644,16 @@ def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='
     cannot_spend = payment_context[0] == 'spell' and "you can't spend mana to cast this spell" in oracle_text.lower()
 
     def physical(remaining, tapped=(), held=()):
-        if not any(remaining.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S')):
+        if post_payment_condition is None and not any(remaining.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S')):
             return [], {}
         if cannot_spend:
             return None
         return _plan_payment(state, player_id, remaining, payment_context=payment_context,
                              excluded_sources=set(excluded_sources or ()) | set(tapped),
                              reserved_card_ids=set(reserved_card_ids) | set(held),
-                             protected_life=protected_life, optimize_paid=optimize_paid)
+                             protected_life=protected_life, optimize_paid=optimize_paid,
+                             post_payment_condition=post_payment_condition.with_pending(held)
+                                 if post_payment_condition is not None else None)
 
     if enabled or resource_choices is not None:
         return joint_resource_payment(state, player_id, view, req, resource_choices, physical,
@@ -677,6 +690,7 @@ def auto_pay_cost(
     cast_resource_card=None,
     resource_choices=None,
     additional_generic_reduction: int = 0,
+    post_payment_condition=None,
 ) -> bool:
     if type(additional_generic_reduction) is not int or additional_generic_reduction < 0:
         return False
@@ -710,7 +724,8 @@ def auto_pay_cost(
                     oracle_text=oracle_text, source_card_id=source_card_id, card=cast_resource_card,
                     resource_choices=resource_choices, excluded_sources=excluded_sources,
                     optimize_paid=ability_kind != 'mana', reserved_card_ids=reserved_card_ids,
-                    protected_life=reserved_life + protected_life)) is not None),
+                    protected_life=reserved_life + protected_life,
+                    post_payment_condition=post_payment_condition)) is not None),
         None,
     )
     if payment is None:
@@ -736,7 +751,7 @@ def auto_pay_cost(
         if not pay_life(state, player_id, req["life"]):
             return False
         state.log.append(f"{player.name} pays {req['life']} life for Phyrexian mana.")
-    if not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S')):
+    if not plan and not any(req.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S')):
         return pay_resources()
     for color in MANA_COLORS:
         player.mana_pool.setdefault(color, 0)
@@ -754,6 +769,8 @@ def auto_pay_cost(
             return False
         cost_kind = payment_kind
         state.log.append(f"{player.name} taps {state.cards[cid].name} for {amount} {color} to pay {cost_kind} cost.")
+    if post_payment_condition is not None and not post_payment_condition(state):
+        return False
     snow_by_color = dict(snow_spent)
     from types import SimpleNamespace
     totals, snow_totals = available_pool(player, payment_context)

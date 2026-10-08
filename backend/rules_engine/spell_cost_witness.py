@@ -30,3 +30,48 @@ def fixed_cost_selections(state, player_id, card_id, option, x_value=0):
                 if option.hand_exile_color:
                     witness['exile_card_ids'] = selected['exile_card_ids']
                 yield witness
+
+
+class _BoundedPaymentPostcondition:
+    def __init__(self, predicate, valid=True, max_nodes=4096, budget=None, pending=()):
+        self.predicate = predicate
+        self.valid = valid
+        self.max_nodes = max_nodes
+        self.budget = budget if budget is not None else {'nodes': 0, 'exhausted': False}
+        self.pending = tuple(pending)
+
+    def visit(self):
+        if not self.valid:
+            return False
+        if self.budget['nodes'] >= self.max_nodes:
+            self.budget['exhausted'] = True
+            return False
+        self.budget['nodes'] += 1
+        return True
+
+    def with_pending(self, ids):
+        return _BoundedPaymentPostcondition(self.predicate, self.valid, self.max_nodes,
+                                           self.budget, tuple(ids))
+
+    def __call__(self, state):
+        return self.valid and self.predicate(state, self.pending)
+
+
+def escape_payment_condition(player_id, card_id, count, selected=None, *, max_nodes=4096):
+    from rules_engine.alternative_casts import validate_escape_exiles
+    from rules_engine.zone_actions import is_departed_token
+
+    valid = type(count) is int and count >= 0 and (selected is None or (
+        isinstance(selected, list) and len(selected) == count
+        and all(isinstance(cid, str) for cid in selected)
+        and len(set(selected)) == count and card_id not in selected))
+    frozen = tuple(selected) if valid and selected is not None else None
+
+    def viable(state, pending):
+        ids = list(frozen) if frozen is not None else [
+            cid for cid in state.players[player_id].graveyard
+            if cid != card_id and cid not in pending and not is_departed_token(state.cards[cid])][:count]
+        return not set(ids).intersection(pending) and validate_escape_exiles(
+            state, player_id, card_id, count, ids) is not None
+
+    return _BoundedPaymentPostcondition(viable, valid, max_nodes)
