@@ -79,6 +79,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         if '__kicker_count' in item.payload:
             validate_kicker_count(item.payload['__kicker_count'], item.payload.get('__kicked', False))
     from rules_engine.turn_scheduler import snapshot
+    from rules_engine.retained_counter_prohibition import snapshot as counter_snapshot
     return {
         "id": state.id,
         "numeric_prevention_shields": [asdict(receipt) for receipt in state.numeric_prevention_shields],
@@ -149,6 +150,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
             for cid, data in state.temporary_control_changes.items()
         },
         "linked_exiles": [dict(item) for item in state.linked_exiles],
+        "retained_counter_prohibitions": counter_snapshot(state.retained_counter_prohibitions),
         "pending_entry_counters": [dict(item) for item in state.pending_entry_counters],
         "adventure_permissions": dict(state.adventure_permissions),
         "graveyard_permission_uses": dict(state.graveyard_permission_uses),
@@ -415,6 +417,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         for cid, data in payload.get("temporary_control_changes", {}).items()
     }
     state.linked_exiles = [dict(item) for item in payload.get("linked_exiles", [])]
+    from rules_engine.retained_counter_prohibition import snapshot as counter_snapshot
+    state.retained_counter_prohibitions = counter_snapshot(payload.get('retained_counter_prohibitions', []))
     state.pending_entry_counters = [dict(item) for item in payload.get("pending_entry_counters", [])]
     state.players_with_permanent_departure = {int(pid) for pid in payload.get("players_with_permanent_departure", [])}
     state.adventure_permissions = {str(cid): int(pid) for cid, pid in payload.get("adventure_permissions", {}).items()}

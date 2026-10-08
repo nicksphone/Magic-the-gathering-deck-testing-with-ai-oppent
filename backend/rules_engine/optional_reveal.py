@@ -81,6 +81,9 @@ def finish_reveal(state, player_id, action):
 
 
 def public_choice(pending):
+    if pending and pending.get('kind') == 'entry_mode':
+        from rules_engine.modal_entry import view
+        return view(pending)
     if pending and pending.get('kind') in {'search_library', 'optional_search'}:
         return {key: pending[key] for key in
                 ('kind', 'player_id', 'label', 'count', 'min_count') if key in pending}

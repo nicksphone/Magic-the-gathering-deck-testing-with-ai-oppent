@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { readFile } from 'node:fs/promises';
 import { build } from 'esbuild';
-import { parseLegalMoves } from '../src/api/match-contract.ts';
+import { parseLegalMoves, parseMatchState } from '../src/api/match-contract.ts';
+
+const rows = JSON.parse(await readFile(new URL('./fixtures/entry-mode-public/paid-views.json', import.meta.url)));
+assert.equal(rows.length, 4);
+assert.deepEqual(rows.map(row => [row.seat, row.mode]), [[1, 'creature'], [1, 'player'], [2, 'creature'], [2, 'player']]);
 
 const require = createRequire(import.meta.url);
 const { createElement } = require('react');
@@ -20,17 +25,17 @@ for (const key of ['jsx', 'jsxs']) runtime[key] = (type, props, ...args) => {
   return original[key](type, props, ...args);
 };
 try {
-  for (const seat of [1, 2]) for (const options of [['mode-1', 'mode-2'], ['mode-2']]) {
-    // Public protocol controls; backend paid execution is qualified separately.
-    const move = { type: 'choose_mechanic', kind: 'entry_mode', player_id: seat,
-      count: 1, label: 'Entry choice', options,
-      option_labels: { 'mode-1': 'Remove counters from a creature', 'mode-2': 'Remove counters from an opponent' } };
+  for (const row of rows) for (const options of [row.move.options, [row.chosen]]) {
+    const { seat } = row;
+    parseMatchState(row.state);
+    // Original paid views plus a protocol-only offered-single-mode boundary.
+    const move = { ...row.move, options };
     parseLegalMoves({ player_id: seat, revision: 0, moves: [move] });
     const before = JSON.stringify(move);
     const sent = [];
     const props = { decks: [], selectedA: null, selectedB: null, bestOf: 1,
       startMode: 'human_vs_human', difficulty: 'normal', autoplayDelayMs: 1000,
-      responseCountdown: null, autoResponsePaused: false, match: null,
+      responseCountdown: null, autoResponsePaused: false, match: row.state,
       legalMoves: [move], onChooseMechanic: (player, action) => sent.push({ player, action }) };
     buttons.length = 0;
     const html = renderToStaticMarkup(createElement(module.exports.Controls, props));
@@ -54,4 +59,4 @@ try {
 } finally {
   Object.assign(runtime, original);
 }
-console.log('PASS entry-mode controls: both seats, explicit symbolic choices, offered-only options, no inferred choice, unknown-kind warning');
+console.log('PASS paid entry-mode views: both seats and modes, explicit callbacks, offered-only options, no inferred choice, unknown-kind warning');

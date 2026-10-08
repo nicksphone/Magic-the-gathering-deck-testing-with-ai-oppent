@@ -280,6 +280,7 @@ class MatchState:
     players_with_permanent_departure: set[int] = field(default_factory=set)
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
     linked_exiles: list[dict] = field(default_factory=list)
+    retained_counter_prohibitions: list[dict] = field(default_factory=list)
     # Delayed entry modifications created by resolving effects such as Saga
     # chapters. Entries are consumed by the next matching spell this turn.
     pending_entry_counters: list[dict] = field(default_factory=list)

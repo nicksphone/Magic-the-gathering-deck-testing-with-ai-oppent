@@ -1,0 +1,63 @@
+{
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "records": 38690,
+  "expanded_bytes": 203114006,
+  "join": "unique-English-physical-card-name excluding token/emblem not legal deck spells",
+  "excluded_noncard_rows": [
+    {
+      "name": "Ornithopter",
+      "id": "a63d3174-75af-4dfa-b2f9-c4330c755af1",
+      "layout": "token"
+    }
+  ],
+  "cards": {
+    "Rancor": {
+      "file": "rancor.json",
+      "sha256": "44cb142c9d39c679da519460c6fd44cbafcac76ea6dd4e3c04b267dd14c5cd88",
+      "raw_id": "86d6b411-4a31-4bfc-8dd6-e19f553bb29b",
+      "oracle_id": "9d2d6479-531c-4ce1-b52b-00e36fa63b64"
+    },
+    "Ornithopter": {
+      "file": "ornithopter.json",
+      "sha256": "95f8fbf0378f3ee81838a6483669df62476253a530a96852e10784aa46ce001b",
+      "raw_id": "305078a5-ac18-4721-bba2-3434eba5b1cf",
+      "oracle_id": "a3a98bc9-caa0-49b7-951c-fe4e4f54e4ba"
+    },
+    "Ichthyomorphosis": {
+      "file": "ichthyomorphosis.json",
+      "sha256": "03f86874c1f30a767975780d4dd7adddda4095b143f16e255a20e8018db51543",
+      "raw_id": "e4763b6c-6471-41bd-b3e4-785564bcf06f",
+      "oracle_id": "816e13c6-79d8-431f-a04e-15c423baf7b3"
+    },
+    "Claim the Firstborn": {
+      "file": "claim-the-firstborn.json",
+      "sha256": "92ea842de087e7d3976ff81d6cf47e5af9fb47b22d36517d1ff7115355c41474",
+      "raw_id": "feaf1e6c-c7d9-4ac7-9aeb-c4b5d61548ec",
+      "oracle_id": "9bb82829-05e8-4cdd-91e4-b837a620bfc8"
+    },
+    "Flicker": {
+      "file": "flicker.json",
+      "sha256": "7255dc07ff74f2a9e1f0af214497807708a0a2cc7ae37ba736d11d3f0aebcc8a",
+      "raw_id": "f55e7ec5-6488-483f-8020-b48e1a951f09",
+      "oracle_id": "19ea326f-45ff-4bc0-a957-7d3f22dd8c6f"
+    },
+    "Unsummon": {
+      "file": "unsummon.json",
+      "sha256": "40c4c665773234f14ca2aa84f434d19ccbd990030f26a2a4292548ce298e96de",
+      "raw_id": "ddad9f16-52d5-49de-82b0-b1a5294a9c44",
+      "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561"
+    },
+    "Snakeskin Veil": {
+      "file": "snakeskin-veil.json",
+      "sha256": "992e9736a417a4385307ba81ca54337cace59c94d94cf3b8febfbf322f3adf61",
+      "raw_id": "a3d2c692-7566-468e-9c86-47a9f768fde2",
+      "oracle_id": "1e6a24be-8281-41c1-a5ba-b68f0ef1d7b8"
+    },
+    "Universal Automaton": {
+      "file": "universal-automaton.json",
+      "sha256": "998598dd2bddf69e88e1c1a98b1cc1cb65e3dabd87782af067ccb03fad5d3ab3",
+      "raw_id": "53c682e2-c90f-4f4b-9010-00b099e85518",
+      "oracle_id": "d50b1d2e-1825-432a-ab73-068fdc356f50"
+    }
+  }
+}

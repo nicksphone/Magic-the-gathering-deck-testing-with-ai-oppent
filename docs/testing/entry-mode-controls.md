@@ -11,6 +11,12 @@ The new regression checks both seats, two/one offered options, exact callbacks,
 offered-only buttons, input purity, and the unknown-kind boundary. It is part
 of `npm test`; full configured tests, `npm run build` and `npm run lint` pass.
 
-These checks exercise the real React component and handlers with public protocol
-inputs. They are not paid backend execution, browser DOM, SQLite, or final
-Suncleanser end-to-end qualification. Those remain separate integration work.
+The regression now reads four captured actor-visible views from real paid
+Suncleanser casts and actual selected-mode resolution, both seats and modes.
+It additionally checks an offered-single-mode protocol boundary. The original
+captured fixtures and generator provenance are in `tests/fixtures/entry-mode-public/`.
+An initial paid-helper zero-snow/missing-total mismatch was corrected in fixture
+setup, not by weakening the frontend contract.
+
+These checks exercise the real React component and handlers. They are not
+browser DOM, SQLite/HTTP, or final Suncleanser end-to-end qualification.

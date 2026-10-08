@@ -91,6 +91,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if pending['kind'] == 'suspend_cast':
             from rules_engine.suspend import cast_moves
             return cast_moves(state, player_id)
+        if pending['kind'] == 'entry_mode':
+            from rules_engine.modal_entry import view
+            return [{'type': 'choose_mechanic', **view(pending)}]
         labels = {cid: state.cards[cid].name if cid in state.cards else (pending.get("option_labels") or {}).get(cid, "Draw normally") for cid in pending.get("options", [])}
         type_lines = {cid: state.cards[cid].type_line or " ".join(effective_types(state, state.cards[cid]))
                       for cid in pending.get("options", []) if cid in state.cards}

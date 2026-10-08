@@ -16,9 +16,13 @@ def card_color_symbols(card, state=None) -> set[str]:
     from rules_engine.type_effects import active_type_effects
     overlays = [effect for effect in active_type_effects(card) if 'colors' in effect]
     overlay = max(overlays, key=lambda effect: effect['timestamp']) if overlays else None
+    attached_color = None
     if state is not None:
         from game_state.state import Zone
         from rules_engine.basic_land_layer import layer_four_view
+        from rules_engine.attached_characteristics import effects_on
+        compounds = effects_on(state, card.id)
+        attached_color = max(compounds, key=lambda effect: (effect.timestamp, effect.source_ref[0])) if compounds else None
         if getattr(card, 'zone', None) == Zone.BATTLEFIELD and card.id in layer_four_view(state)[3]:
             from rules_engine.basic_land_layer import permanent_land_replacement
             replacements = [source for source in state.cards.values()
@@ -26,8 +30,11 @@ def card_color_symbols(card, state=None) -> set[str]:
                             and permanent_land_replacement(source.oracle_text)]
             stamp = max((int(source.effect_timestamp or source.static_order or 0)
                          for source in replacements), default=0)
-            if overlay is None or overlay['timestamp'] <= stamp:
+            if (overlay is None or overlay['timestamp'] <= stamp) and (
+                    attached_color is None or attached_color.timestamp <= stamp):
                 return set()
+    if attached_color is not None and (overlay is None or overlay['timestamp'] <= attached_color.timestamp):
+        return set(attached_color.compound.colors)
     if overlay is not None:
         return set(overlay['colors'])
     faces = getattr(card, "card_faces", None) or []

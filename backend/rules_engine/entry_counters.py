@@ -371,6 +371,15 @@ def begin_spell_entry(state, item, payload):
         'entry_item': asdict(item), 'entry_payload': deepcopy(payload),
         'entry_prepared': {}, 'entry_index': 0,
     })
+    pending = state.pending_mechanic_choice
+    if pending and pending.get('kind') == 'entry_mode' and not state.pending_replacement_choice:
+        from rules_engine.retained_counter_prohibition import current
+        published = next((frame for frame in state.stack if frame.id == pending.get('__stack_id')), None)
+        if (published is not None and published.effect_key == 'modal_entry'
+                and published.source_card_id == item.source_card_id
+                and not any(frame.id == item.id for frame in state.stack)
+                and current(state, published.payload.get('__counter_source_ref'))):
+            return True
     return not (state.pending_mechanic_choice or state.pending_replacement_choice)
 
 

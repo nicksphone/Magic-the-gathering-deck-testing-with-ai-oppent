@@ -291,9 +291,22 @@ def _append_trigger_groups(
                 from ai.trigger_policy import preferred_trigger_order
                 group = preferred_trigger_order(group, controller)
         ordered.extend(group)
-    target_stack_ids: list[str] = []
-    targeted_items = []
-    for order_index, trig in enumerate(ordered):
+    _publish_ordered_triggers(state, event, ordered)
+
+
+def _publish_ordered_triggers(
+    state: MatchState,
+    event: str,
+    ordered: list[dict[str, Any]],
+    start_index: int = 0,
+    target_stack_ids: list[str] | None = None,
+    targeted_item_ids: list[str] | None = None,
+    selected_item: StackItem | None = None,
+) -> None:
+    target_stack_ids = list(target_stack_ids or [])
+    targeted_item_ids = list(targeted_item_ids or [])
+    targeted_items = [item for item in state.stack if item.id in targeted_item_ids]
+    for order_index, trig in enumerate(ordered[start_index:], start=start_index):
         payload = dict(trig["payload"])
         if trig["effect_key"] == "ward_payment":
             source = state.cards.get(trig["source_card_id"])
@@ -314,7 +327,7 @@ def _append_trigger_groups(
                     'oracle_text': source.oracle_text,
                     'clause': payload.get('__chapter_clause'),
                 }
-        item = StackItem(
+        item = selected_item if order_index == start_index and selected_item is not None else StackItem(
             id=state.allocate_object_id(),
             source_card_id=trig["source_card_id"],
             controller=trig["controller"],
@@ -325,6 +338,14 @@ def _append_trigger_groups(
         if item.effect_key == 'bind_creature_spell_entry_counter':
             from rules_engine.next_creature_entry_trigger import publication
             item.payload['__native_publication'] = publication(item)
+        if item.effect_key == 'modal_entry':
+            from rules_engine.modal_entry import begin
+            if begin(state, item, {'event': event, 'ordered': ordered,
+                                  'start_index': order_index,
+                                  'target_stack_ids': target_stack_ids,
+                                  'targeted_item_ids': [value.id for value in targeted_items]}):
+                return
+            continue
         clause = _targeted_trigger_clause(state, item)
         if clause:
             item.payload["__trigger_target_clause"] = clause
@@ -335,7 +356,8 @@ def _append_trigger_groups(
             item.payload.pop("target_player", None)
             item.payload.pop("target_card_id", None)
             choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
-            if getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players):
+            if (item.effect_key == 'retained_counter_prohibition'
+                    or getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players)):
                 target_stack_ids.append(item.id)
             else:
                 # Non-human controllers still need a legal target at stack entry.
@@ -354,7 +376,8 @@ def _append_trigger_groups(
                     choice = options[0]
                 item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
                 item.payload["__trigger_target_choice"] = True
-        state.stack.append(item)
+        if selected_item is not item:
+            state.stack.append(item)
         if item.payload.get("__trigger_target_choice"):
             _remember_trigger_target(state, item)
             targeted_items.append(item)
@@ -415,6 +438,8 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
 
 
 def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
+    if item.effect_key == 'retained_counter_prohibition':
+        return item.payload['__counter_mode_clause']
     if item.payload.get('__trigger_resolution_text'):
         return item.payload['__trigger_full_clause']
     event = item.payload.get("__trigger_event")
@@ -478,17 +503,21 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         proxy.types = list(lki['types'])
         proxy.colors = list(lki.get('colors', []))
         proxy.card_faces = []
+        if item.effect_key == 'retained_counter_prohibition':
+            from rules_engine.retained_counter_prohibition import current
+            if not current(state, item.payload.get('__counter_source_ref')):
+                proxy._retained_source_lki = lki
     proxy.oracle_text = clause
     hints = inspect_target_hints(state, proxy, item.controller)
     low = clause.lower()
     if item.effect_key in {'cast_from_graveyard', 'grant_flashback'}:
         return [{'target_card_id': target['id'], 'target_name': target['name']}
                 for target in hints.get('graveyard_spell_targets', [])]
-    if item.payload.get("__targeted_life_loss"):
+    if item.payload.get("__targeted_life_loss") or item.payload.get('__counter_target_kind') == 'player':
         return [
             {"target_player": pid, "target_name": player.name}
             for pid, player in state.players.items()
-            if (not item.payload.get("__target_opponent_only") or pid != item.controller)
+            if (not (item.payload.get("__target_opponent_only") or item.payload.get('__counter_target_kind') == 'player') or pid != item.controller)
             and validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
         ]
     if "any target" in low and item.effect_key == "deal_damage":
@@ -1208,6 +1237,7 @@ def _remember_trigger_target(state, item):
     from rules_engine.flashback_grants import remember_target
     remember_target(state, item)
     if (item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard'}
+            or item.effect_key == 'retained_counter_prohibition' and item.payload.get('__counter_target_kind') == 'card'
             or item.effect_key == 'destroy_permanent'
             and item.payload.get('__trigger_event') == 'time_counters_removed'):
         target = state.cards[item.payload['target_card_id']]
@@ -1687,6 +1717,26 @@ def _trigger_from_oracle(
     entry_oracle = oracle if event == 'enters_battlefield' else None
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
+    if (source is not None and event == 'enters_battlefield'
+            and payload.get('card_id') == source_card_id
+            and re.match(r'When this (?:creature|permanent) enters(?: the battlefield)?, choose one\b', entry_oracle, re.I)):
+        from rules_engine.modal_entry import compile_instruction
+        from rules_engine.retained_counter_prohibition import reference
+        printed = without_reminder_text(source.oracle_text)
+        modes = compile_instruction(printed) if printed.lower() == entry_oracle.lower() else None
+        data = {'__trigger_full_clause': entry_oracle}
+        if modes is None:
+            data['__unsupported_trigger_instruction'] = entry_oracle
+        else:
+            from rules_engine.colors import card_color_symbols, card_color_names
+            data.update(__modal_modes=modes, __counter_source_ref=reference(source),
+                        __source_lki={'types': list(effective_types(state, source)),
+                                      'colors': sorted(card_color_symbols(source, state)),
+                                      'color_names': sorted(card_color_names(source, state)),
+                                      'controller': controller})
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': 'modal_entry' if modes is not None else 'noop',
+                'payload': data}
     cast_instruction = None
     if source is not None and event in {'spell_cast', 'spell_copy'}:
         clauses = _matched_cast_trigger_clauses(state, source, oracle, event, payload)

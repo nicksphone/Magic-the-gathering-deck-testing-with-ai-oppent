@@ -501,11 +501,15 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     modifiers.extend({'timestamp': stamp, 'keyword': keyword, 'operation': 'grant', 'count': 1}
                      for stamp, keyword in counter_grants)
     modifiers.sort(key=lambda effect: effect['timestamp'])
+    from rules_engine.attached_characteristics import effects_on
+    attached_losses = {effect.source_ref[0] for effect in effects_on(state, card_id)}
     modifier_index = 0
     for src_id, src, source_active in _continuous_sources(state):
         while modifier_index < len(modifiers) and modifiers[modifier_index]['timestamp'] <= effect_timestamp(src):
             _apply_keyword_modifier(out,modifiers[modifier_index])
             modifier_index += 1
+        if src_id in attached_losses:
+            out.clear()
         if source_active:
             out.update(_attached_effects(state, src, card)[2])
             out.update(_conditional_static_effects(state, src, card)[2])
@@ -619,6 +623,9 @@ def printed_abilities_suppressed(state, card_id: str, *, losses=None, include_la
 
 
 def _printed_suppression_result(state, card_id, card, losses, include_land_types):
+    from rules_engine.attached_characteristics import effects_on
+    if effects_on(state, card_id):
+        return True
     if include_land_types:
         from rules_engine.land_types import printed_land_abilities_lost
         if printed_land_abilities_lost(state, card):
@@ -656,6 +663,9 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
         base_t = dynamic_t
     # Minimal layer support: base PT setters from static text.
     setters = []
+    from rules_engine.attached_characteristics import effects_on
+    setters.extend((effect.timestamp, effect.compound.power, effect.compound.toughness)
+                   for effect in effects_on(state, card_id))
     for src_id, src, source_active in _continuous_sources(state):
         setter_source = src if source_active else _ability_layer_continuation_source(state, src)
         if setter_source is None:
@@ -1281,6 +1291,11 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
     if not _is_battlefield(state.cards[target_card_id]):
         return entries
     target = state.cards[target_card_id]
+    from rules_engine.attached_characteristics import effects_on
+    for effect in effects_on(state, target_card_id):
+        if effect.source_ref[0] == source_card.id:
+            entries.extend([{'layer': 'type-subtype-replace'}, {'layer': 'color-set'},
+                            {'layer': 'keyword-remove:all-abilities'}, {'layer': 'pt-set'}])
     conditional_p, conditional_t, conditional_keywords, _ = _conditional_static_effects(state, source_card, target)
     if conditional_p or conditional_t:
         entries.append({'layer': f'pt-mod:{conditional_p}/{conditional_t}', 'conditional': True})

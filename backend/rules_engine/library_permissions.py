@@ -15,6 +15,7 @@ def creature_types(card, state=None) -> set[str]:
     from rules_engine.card_types import CREATURE_SUBTYPES
     from rules_engine.oracle_text import without_reminder_text
     from rules_engine.type_effects import active_type_effects
+    from rules_engine.attached_characteristics import effects_on
 
     type_line = str(getattr(card, "type_line", "") or "")
     if state is not None:
@@ -25,8 +26,8 @@ def creature_types(card, state=None) -> set[str]:
     subtypes.update(kind for kind in CREATURE_SUBTYPES if ' ' in kind
                     and re.search(r'\b' + re.escape(kind) + r'\b', type_line.lower()))
     oracle = without_reminder_text(getattr(card, "oracle_text", "") or "")
-    if (state is None or not any('creature_subtypes' in effect for effect in
-                                active_type_effects(card))) and (
+    if (state is None or (not any('creature_subtypes' in effect for effect in
+                                 active_type_effects(card)) and not effects_on(state, card.id))) and (
             {"Creature", "Kindred", "Tribal"}.intersection(getattr(card, "types", []) or [])
             and any(re.fullmatch(r"changeling\.?", line.strip(), re.I) for line in oracle.splitlines())):
         # CR 702.73a/613: the copied/printed CDA applies in layer four,

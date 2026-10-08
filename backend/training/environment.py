@@ -335,7 +335,7 @@ class TrainingEnvironment:
             pending = self._state.pending_mechanic_choice
             require(bool(pending), 'No pending mechanic choice')
             field = ('damage_assignment' if pending['kind'] == 'combat_damage' else
-                     'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry', 'note_creature_type'} else 'card_ids')
+                     'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry', 'note_creature_type', 'entry_mode'} else 'card_ids')
             require(action.get(field) is not None, 'Missing required choice: ' + field)
         if kind in {'tap_land_for_mana', 'tap_lands_bulk'}:
             require(action.get('color') is not None, 'Missing required choice: color')

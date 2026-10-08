@@ -18,9 +18,9 @@ def permanent_land_replacement(oracle_text):
     return None
 
 
-def layer_four_view(state, entering=None, controller=None):
+def layer_four_view(state, entering=None, controller=None, *, attached=False):
     cache = query_cache(state) if entering is None and controller is None else None
-    key = layer_four_view
+    key = (layer_four_view, 'attached') if attached else layer_four_view
     if cache is not None and key in cache:
         return cache[key]
     from rules_engine.land_types import land_type_instructions
@@ -29,11 +29,13 @@ def layer_four_view(state, entering=None, controller=None):
              if state.cards[cid].zone == Zone.BATTLEFIELD]
     if entering is not None:
         cards = [card for card in cards if card.id != entering.id] + [entering]
+    from rules_engine.attached_characteristics import attached_compound
     if not any(land_type_instructions(getattr(card, 'oracle_text', '')) or
                permanent_land_replacement(getattr(card, 'oracle_text', '')) or
+               attached_compound(getattr(card, 'oracle_text', '')) or
                any('creature_subtypes' in effect for effect in active_type_effects(card))
                for card in cards):
-        result = (MappingProxyType({}), frozenset(), MappingProxyType({}), frozenset())
+        result = () if attached else (MappingProxyType({}), frozenset(), MappingProxyType({}), frozenset())
     else:
         from rules_engine.type_effects import _base_effective_types, copiable_types
         rows = tuple((card.id, getattr(card, 'type_line', '') or '', getattr(card, 'oracle_text', '') or '',
@@ -43,8 +45,12 @@ def layer_four_view(state, entering=None, controller=None):
                       int(getattr(card, 'effect_timestamp', 0) or getattr(card, 'static_order', 0) or 0),
                       getattr(card, 'attached_to', None), card.name,
                       _type_operations(state, card),
-                      tuple(copiable_types(card))) for card in cards)
-        result = _resolve(rows)
+                      tuple(copiable_types(card)),
+                      int(getattr(card, 'battlefield_incarnation', None) if getattr(card, 'battlefield_incarnation', None) is not None
+                          else getattr(card, 'effect_timestamp', 0) or getattr(card, 'static_order', 0) or 0),
+                      int(getattr(card, 'zone_change_sequence', 0))) for card in cards)
+        resolved = _resolve(rows)
+        result = resolved[4] if attached else resolved[:4]
     if cache is not None:
         cache[key] = result
     return result
@@ -73,6 +79,7 @@ def _type_operations(state, card):
 def _resolve(rows):
     from rules_engine.card_types import CARD_TYPES, CREATURE_SUBTYPES
     from rules_engine.land_types import LAND_TYPES, BASIC_TYPES, land_type_instructions, _split_line
+    from rules_engine.attached_characteristics import attached_compound, AttachedEffect
     by_id = {row[0]: row for row in rows}
     types = {row[0]: list(row[4]) for row in rows}
     subtypes = {row[0]: _split_line(row[1])[1] for row in rows}
@@ -82,16 +89,21 @@ def _resolve(rows):
                 for line in without_reminder_text(row[2]).splitlines()):
             subtypes[row[0]] = list(dict.fromkeys([*subtypes[row[0]], *sorted(CREATURE_SUBTYPES)]))
     lost, colorless, replaced = set(), set(), set()
+    creature_replaced, started = set(), []
     effects = []
     replacement_targets = {row[6] for row in rows if permanent_land_replacement(row[2])}
+    compound_targets = {row[6] for row in rows if attached_compound(row[2])}
     for row in rows:
         effects.extend((row, 'subtypes', instruction, index, row[5])
                        for index, instruction in enumerate(land_type_instructions(row[2])))
         replacement = permanent_land_replacement(row[2])
         if replacement:
             effects.append((row, 'replace', replacement, -1, row[5]))
+        compound = attached_compound(row[2])
+        if compound:
+            effects.append((row, 'attached_replace', compound, -1, row[5]))
         # Resolved additions survive source loss and compete with replacement timestamps.
-        if row[0] in replacement_targets or any(operation == 'creature_subtypes' for _, operation, _ in row[8]):
+        if row[0] in replacement_targets | compound_targets or any(operation == 'creature_subtypes' for _, operation, _ in row[8]):
             effects.extend((row, operation, values, index, stamp)
                            for index, (stamp, operation, values) in enumerate(row[8]))
             types[row[0]] = list(row[9])
@@ -104,6 +116,11 @@ def _resolve(rows):
             return {source[0]}
         if operation == 'replace':
             return {source[6]} if source[6] in by_id else set()
+        if operation == 'attached_replace':
+            return ({source[6]} if source[6] in by_id
+                    and 'Enchantment' in current_types[source[0]]
+                    and 'Aura' in subtypes[source[0]]
+                    and 'Creature' in current_types[source[6]] else set())
         scope = instruction[0]
         return {cid for cid, row in by_id.items() if 'Land' in current_types[cid]
                 and (scope != 'nonbasic lands' or not (
@@ -121,8 +138,16 @@ def _resolve(rows):
         affected = targets(other)
         if removes_printed(other) and effect[1] not in {'add', 'creature_subtypes'} and effect[0][0] in affected:
             return True
-        if other[1] == 'replace':
-            changed = {cid: (['Land'] if cid in affected else values) for cid, values in types.items()}
+        if (other[1] in {'replace', 'attached_replace'} or
+                effect[1] == 'attached_replace' and other[1] in {'add', 'remove'}):
+            changed = {cid: list(values) for cid, values in types.items()}
+            for cid in affected:
+                if other[1] in {'replace', 'attached_replace'}:
+                    changed[cid] = ['Land'] if other[1] == 'replace' else ['Creature']
+                elif other[1] == 'add':
+                    changed[cid] = list(dict.fromkeys([*changed[cid], *other[2]]))
+                else:
+                    changed[cid] = [kind for kind in changed[cid] if kind not in other[2]]
             return targets(effect, changed) != targets(effect)
         return False
 
@@ -147,6 +172,12 @@ def _resolve(rows):
                 lost.add(cid)
                 colorless.add(cid)
                 replaced.add(cid)
+            elif operation == 'attached_replace':
+                types[cid], subtypes[cid] = ['Creature'], list(instruction.subtypes)
+                creature_replaced.add(cid)
+                target = by_id[cid]
+                started.append(AttachedEffect((source[0], source[10], source[11]),
+                                              (cid, target[10], target[11]), source[5], instruction))
             else:
                 _, values, addition = instruction
                 if not addition:
@@ -155,14 +186,15 @@ def _resolve(rows):
                 subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *values]))
     lines = {}
     for cid, row in by_id.items():
-        if cid in replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8]):
+        if cid in replaced | creature_replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8]):
             supertypes = [word for word in _split_line(row[1])[0].split()
                           if word in {'Basic', 'Legendary', 'Snow', 'World', 'Ongoing'}]
             prefix = ' '.join([*supertypes, *(kind for kind in types[cid] if kind in CARD_TYPES)])
         else:
             prefix = _split_line(row[1])[0] or 'Land'
-        if (cid in replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8])
+        if (cid in replaced | creature_replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8])
                 or 'Land' in types[cid] and subtypes[cid] != _split_line(row[1])[1]):
             lines[cid] = prefix + ' \u2014 ' + ' '.join(subtypes[cid])
     changed_types = {cid: tuple(values) for cid, values in types.items() if tuple(values) != by_id[cid][4]}
-    return MappingProxyType(lines), frozenset(lost), MappingProxyType(changed_types), frozenset(colorless)
+    return (MappingProxyType(lines), frozenset(lost), MappingProxyType(changed_types), frozenset(colorless),
+            tuple(started))

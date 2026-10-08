@@ -1,0 +1,132 @@
+{
+  "artist": "John Matson",
+  "artist_ids": [
+    "a1685587-4b55-446b-b420-c37b202ed3f1"
+  ],
+  "booster": true,
+  "border_color": "black",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "cardmarket_id": 113,
+  "cmc": 1.0,
+  "collector_number": "113",
+  "color_identity": [
+    "G"
+  ],
+  "colors": [
+    "G"
+  ],
+  "digital": false,
+  "edhrec_rank": 22437,
+  "finishes": [
+    "nonfoil",
+    "foil"
+  ],
+  "flavor_text": "\"I would gladly die for the forest, but I'm much better at killing for it.\"",
+  "foil": true,
+  "frame": "2003",
+  "full_art": false,
+  "game_changer": false,
+  "games": [
+    "paper",
+    "mtgo"
+  ],
+  "highres_image": true,
+  "id": "2b34e76b-86b3-464e-93e7-c3f2074028fb",
+  "illustration_id": "f1ab28c8-da4a-4cff-a008-ad17c632ddc8",
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T12:08:56Z",
+  "image_uris": {
+    "art": "https://cards.scryfall.io/art/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.webp?1783944536",
+    "art_crop": "https://cards.scryfall.io/art_crop/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.jpg?1783944536",
+    "border_crop": "https://cards.scryfall.io/border_crop/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.jpg?1783944536",
+    "crop": "https://cards.scryfall.io/crop/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.webp?1783944536",
+    "display": "https://cards.scryfall.io/display/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.webp?1783944536",
+    "grid": "https://cards.scryfall.io/grid/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.webp?1783944536",
+    "large": "https://cards.scryfall.io/large/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.jpg?1783944536",
+    "normal": "https://cards.scryfall.io/normal/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.jpg?1783944536",
+    "png": "https://cards.scryfall.io/png/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.png?1783944536",
+    "small": "https://cards.scryfall.io/small/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.jpg?1783944536",
+    "thumb": "https://cards.scryfall.io/thumb/front/2/b/2b34e76b-86b3-464e-93e7-c3f2074028fb.webp?1783944536"
+  },
+  "keywords": [],
+  "lang": "en",
+  "layout": "normal",
+  "legalities": {
+    "alchemy": "not_legal",
+    "brawl": "not_legal",
+    "commander": "legal",
+    "competitivebrawl": "not_legal",
+    "duel": "legal",
+    "future": "not_legal",
+    "gladiator": "not_legal",
+    "historic": "not_legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "oathbreaker": "legal",
+    "oldschool": "not_legal",
+    "pauper": "legal",
+    "paupercommander": "legal",
+    "penny": "not_legal",
+    "pioneer": "not_legal",
+    "predh": "legal",
+    "premodern": "not_legal",
+    "standard": "not_legal",
+    "standardbrawl": "not_legal",
+    "timeless": "not_legal",
+    "tlr": "legal",
+    "vintage": "legal"
+  },
+  "mana_cost": "{G}",
+  "mtgo_foil_id": 19876,
+  "mtgo_id": 19875,
+  "multiverse_ids": [
+    48116
+  ],
+  "name": "Battlegrowth",
+  "nonfoil": true,
+  "object": "card",
+  "oracle_id": "650bf82e-7f83-470c-bf4a-34281bfe9341",
+  "oracle_text": "Put a +1/+1 counter on target creature.",
+  "oversized": false,
+  "penny_rank": 13889,
+  "prices": {
+    "eur": "0.13",
+    "eur_foil": "0.20",
+    "tix": "0.03",
+    "usd": "0.05",
+    "usd_etched": null,
+    "usd_foil": "0.33"
+  },
+  "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A650bf82e-7f83-470c-bf4a-34281bfe9341&unique=prints",
+  "promo": false,
+  "purchase_uris": {
+    "cardhoarder": "https://www.cardhoarder.com/cards/19875?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+    "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=113&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+    "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F11432%3Fpage%3D1"
+  },
+  "rarity": "common",
+  "related_uris": {
+    "edhrec": "https://edhrec.com/route/?cc=Battlegrowth",
+    "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=48116&printed=false",
+    "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DBattlegrowth",
+    "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DBattlegrowth"
+  },
+  "released_at": "2003-10-02",
+  "reprint": false,
+  "reserved": false,
+  "rulings_uri": "https://api.scryfall.com/cards/2b34e76b-86b3-464e-93e7-c3f2074028fb/rulings",
+  "scryfall_set_uri": "https://scryfall.com/sets/mrd?utm_source=api",
+  "scryfall_uri": "https://scryfall.com/card/mrd/113/battlegrowth?utm_source=api",
+  "set": "mrd",
+  "set_id": "1d4f90ba-8d4a-4ee5-bc2f-e2d6bffe4955",
+  "set_name": "Mirrodin",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amrd&unique=prints",
+  "set_type": "expansion",
+  "set_uri": "https://api.scryfall.com/sets/1d4f90ba-8d4a-4ee5-bc2f-e2d6bffe4955",
+  "story_spotlight": false,
+  "tcgplayer_id": 11432,
+  "textless": false,
+  "type_line": "Instant",
+  "uri": "https://api.scryfall.com/cards/2b34e76b-86b3-464e-93e7-c3f2074028fb",
+  "variation": false
+}

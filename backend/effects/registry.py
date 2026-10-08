@@ -3,6 +3,7 @@ from rules_engine.flashback_grants import resolve_grant
 from rules_engine.land_animation import resolve_self_land_animation
 from rules_engine.temporary_characteristics import resolve_temporary_characteristics
 from rules_engine.turn_spell_protection import conditional_draw, grant_protection
+from rules_engine.retained_counter_prohibition import resolve as resolve_counter_prohibition
 
 from collections.abc import Callable
 
@@ -14,6 +15,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'retained_counter_prohibition': resolve_counter_prohibition,
     'conditional_color_draw': conditional_draw,
     'grant_turn_spell_protection': grant_protection,
     'temporary_creature_characteristics': resolve_temporary_characteristics,
