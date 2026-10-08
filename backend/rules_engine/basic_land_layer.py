@@ -18,24 +18,31 @@ def permanent_land_replacement(oracle_text):
     return None
 
 
+@lru_cache(maxsize=4096)
+def _printed_layer_four_effect(oracle_text):
+    from rules_engine.land_types import land_type_instructions
+    from rules_engine.attached_characteristics import attached_compound
+    return bool(land_type_instructions(oracle_text) or
+                permanent_land_replacement(oracle_text) or attached_compound(oracle_text))
+
+
 def layer_four_view(state, entering=None, controller=None, *, attached=False):
     cache = query_cache(state) if entering is None and controller is None else None
     key = (layer_four_view, 'attached') if attached else layer_four_view
     if cache is not None and key in cache:
         return cache[key]
-    from rules_engine.land_types import land_type_instructions
     from rules_engine.type_effects import active_type_effects
     cards = [state.cards[cid] for player in state.players.values() for cid in player.battlefield
              if state.cards[cid].zone == Zone.BATTLEFIELD]
     if entering is not None:
         cards = [card for card in cards if card.id != entering.id] + [entering]
-    from rules_engine.attached_characteristics import attached_compound
-    if not any(land_type_instructions(getattr(card, 'oracle_text', '')) or
-               permanent_land_replacement(getattr(card, 'oracle_text', '')) or
-               attached_compound(getattr(card, 'oracle_text', '')) or
+    if not any(_printed_layer_four_effect(getattr(card, 'oracle_text', '')) or
                any('creature_subtypes' in effect for effect in active_type_effects(card))
                for card in cards):
         result = () if attached else (MappingProxyType({}), frozenset(), MappingProxyType({}), frozenset())
+        if cache is not None:
+            cache[layer_four_view] = (MappingProxyType({}), frozenset(), MappingProxyType({}), frozenset())
+            cache[(layer_four_view, 'attached')] = ()
     else:
         from rules_engine.type_effects import _base_effective_types, copiable_types
         rows = tuple((card.id, getattr(card, 'type_line', '') or '', getattr(card, 'oracle_text', '') or '',

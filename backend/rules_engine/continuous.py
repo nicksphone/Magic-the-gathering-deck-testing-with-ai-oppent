@@ -4,7 +4,7 @@ from rules_engine.type_effects import effective_types
 import re
 from collections import Counter
 from functools import lru_cache, wraps
-from rules_engine.query_context import scoped_query, query_cache
+from rules_engine.query_context import scoped_query, query_cache, rule_query_scope
 from typing import Any
 
 from game_state.state import Zone
@@ -610,7 +610,11 @@ def printed_abilities_suppressed(state, card_id: str, *, losses=None, include_la
         return False
     cache = query_cache(state)
     if cache is None:
-        return _printed_suppression_result(state, card_id, card, losses, include_land_types)
+        if losses is not None and type(losses) not in (list, tuple):
+            return _printed_suppression_result(state, card_id, card, losses, include_land_types)
+        with rule_query_scope(state):
+            return printed_abilities_suppressed(state, card_id, losses=losses,
+                                                include_land_types=include_land_types)
     if losses is not None and type(losses) not in (list, tuple):
         return _printed_suppression_result(state, card_id, card, losses, include_land_types)
     loss_key = None if losses is None else tuple(

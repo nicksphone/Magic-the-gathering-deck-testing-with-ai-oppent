@@ -48,9 +48,12 @@ def effects_on(state, target_id):
     target = state.cards.get(target_id)
     if target is None or target.zone != Zone.BATTLEFIELD:
         return ()
+    effects = layer_four_view(state, attached=True)
+    if not effects:
+        return ()
     target_ref = (target_id, object_incarnation(target), target.zone_change_sequence)
     result = []
-    for effect in layer_four_view(state, attached=True):
+    for effect in effects:
         source = state.cards.get(effect.source_ref[0])
         if (effect.target_ref == target_ref and source is not None
                 and source.zone == Zone.BATTLEFIELD and source.attached_to == target_id

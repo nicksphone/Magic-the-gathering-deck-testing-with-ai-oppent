@@ -8,7 +8,7 @@ import pytest
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import Zone
-from rules_engine import bestow, land_types, state_based_actions as sba
+from rules_engine import bestow, basic_land_layer, state_based_actions as sba
 from rules_engine.attachments import is_aura, is_equipment, is_fortification
 from rules_engine.bestow import is_bestowed
 from rules_engine.query_context import query_cache, rule_query_scope
@@ -150,10 +150,10 @@ def test_three_classifiers_share_only_this_cards_layer_query(seat):
     state = position(seat)
     add(state, 'Bonesplitter', seat)
     before = serialize_match_snapshot(state)
-    with patch.object(land_types, 'land_type_instructions', wraps=land_types.land_type_instructions) as queries:
+    with patch.object(basic_land_layer, '_printed_layer_four_effect', wraps=basic_land_layer._printed_layer_four_effect) as queries:
         reference(deepcopy(state))
         baseline_calls = queries.call_count
-    with patch.object(land_types, 'land_type_instructions', wraps=land_types.land_type_instructions) as queries:
+    with patch.object(basic_land_layer, '_printed_layer_four_effect', wraps=basic_land_layer._printed_layer_four_effect) as queries:
         sba._apply_attachment_state_checks(state)
         assert queries.call_count < baseline_calls
     assert serialize_match_snapshot(state) == before

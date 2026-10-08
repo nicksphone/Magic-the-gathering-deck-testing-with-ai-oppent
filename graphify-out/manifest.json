@@ -528,9 +528,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/basic_land_layer.py": {
-    "mtime": 1791435211.3175607,
-    "seen": 1791435593.3622413,
-    "ast_hash": "5e973ea5ba5acdb4474ddca33f369ad2",
+    "mtime": 1791459523.114031,
+    "seen": 1791459616.2768636,
+    "ast_hash": "488caa8cabd1e1896cf5b52cbd52ecc5",
     "semantic_hash": ""
   },
   "backend/rules_engine/bestow.py": {
@@ -600,9 +600,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/continuous.py": {
-    "mtime": 1791435211.3175607,
-    "seen": 1791435593.3622632,
-    "ast_hash": "1f5f798ba2822b0d9f9a9f8f96396d60",
+    "mtime": 1791459523.114031,
+    "seen": 1791459616.2768855,
+    "ast_hash": "c1a298870937809bdf11ec06c7ce424e",
     "semantic_hash": ""
   },
   "backend/rules_engine/costs.py": {
@@ -5148,9 +5148,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_sba_classification_query_batches.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2198265,
-    "ast_hash": "e0b8dc29c2126ca1a5211e8951a82465",
+    "mtime": 1791459523.114031,
+    "seen": 1791459616.2794936,
+    "ast_hash": "bcbf7b34213507d075614b31b92e7967",
     "semantic_hash": ""
   },
   "backend/tests/test_scry.py": {
@@ -14322,9 +14322,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/attached_characteristics.py": {
-    "mtime": 1791435211.3175607,
-    "seen": 1791435593.3622377,
-    "ast_hash": "63313b78d5fcdd4b9b1ad74b64d83265",
+    "mtime": 1791459523.114031,
+    "seen": 1791459616.276859,
+    "ast_hash": "bc9bdda51ca387d27cf0d9f865c76e08",
     "semantic_hash": ""
   },
   "backend/rules_engine/modal_entry.py": {
@@ -14601,6 +14601,24 @@
     "mtime": 1791458191.6100655,
     "seen": 1791458274.7799618,
     "ast_hash": "5a81a922ce43fe88906371a60ec3b858",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_printed_layer_four_fastpath.py": {
+    "mtime": 1791459523.114031,
+    "seen": 1791459616.2793753,
+    "ast_hash": "406d7756cddd11efa3b4f76fb706eac8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_single_suppression_query_scope.py": {
+    "mtime": 1791459523.114031,
+    "seen": 1791459616.279567,
+    "ast_hash": "f3cfd3bf85fab5e9f44ae58200fea445",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-ai-query-cache-qualification.md": {
+    "mtime": 1791459537.2027912,
+    "seen": 1791459616.2805924,
+    "ast_hash": "2bdb0e7e0551cba3c6cb0ae6db03a137",
     "semantic_hash": ""
   }
 }
