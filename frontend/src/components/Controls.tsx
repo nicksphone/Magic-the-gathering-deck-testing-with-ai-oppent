@@ -202,7 +202,7 @@ export function Controls(props: Props) {
       <h2>{props.match ? "Command the turn" : "Choose your matchup"}</h2>
       <details className="match-setup" open={!props.match}><summary>Match setup</summary>
       <div className="row">
-        <label className="setup-seat"><span>Seat 01 <small>Your opening list</small></span><select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
+        <label className="setup-seat"><span>Seat 01 <small>Deck A</small></span><select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
           <option value="">Deck A</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -210,7 +210,7 @@ export function Controls(props: Props) {
             </option>
           ))}
         </select></label>
-        <label className="setup-seat"><span>Seat 02 <small>The other side of the table</small></span><select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
+        <label className="setup-seat"><span>Seat 02 <small>Deck B</small></span><select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
           <option value="">Deck B</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>

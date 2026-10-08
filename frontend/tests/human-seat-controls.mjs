@@ -27,6 +27,8 @@ try {
       responseCountdown: null, autoResponsePaused: false, match: null, legalMoves: [],
     }));
     const control = selects.find(props => props['aria-label'] === 'Human seat');
+    assert.ok(html.includes('<small>Deck A</small>'), 'Seat 1 must not always be described as the human deck');
+    assert.ok(html.includes('<small>Deck B</small>'), 'Seat 2 must not always be described as the opponent deck');
     assert.deepEqual(chosen, [], 'Rendering cannot choose a different seat');
     if (startMode !== 'player_vs_ai') {
       assert.equal(control, undefined);

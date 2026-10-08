@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791476108.6066911,
-    "seen": 1791476243.4444675,
-    "ast_hash": "a846c3b83eef7390847f7184641d6cde",
+    "mtime": 1791492423.2045543,
+    "seen": 1791492504.1174302,
+    "ast_hash": "d093c14db21bb7fb151ddee16df6d03e",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791490579.6609857,
-    "seen": 1791490607.2491386,
-    "ast_hash": "291075a43294ee613a76ffe247317999",
+    "mtime": 1791491413.5696156,
+    "seen": 1791492504.1188252,
+    "ast_hash": "6b6dc5cee852d99ae19b9fe8b3a71c54",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791490527.570809,
-    "seen": 1791490607.2488713,
-    "ast_hash": "8eeec582a8e3179471fc3e9aff669bd3",
+    "mtime": 1791491413.5686154,
+    "seen": 1791492504.1185522,
+    "ast_hash": "33d2928a967ddbf6112338dd7e2b9cab",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14526,9 +14526,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/human-seat-controls.mjs": {
-    "mtime": 1791448332.4416125,
-    "seen": 1791448423.8204656,
-    "ast_hash": "91add228fc563e0b21ee51fbff08e9c2",
+    "mtime": 1791492423.2055542,
+    "seen": 1791492504.1176467,
+    "ast_hash": "58ce92f6f20e4d0eb800859d60f3faf2",
     "semantic_hash": ""
   },
   "docs/testing/human-seat-setup-current.md": {
@@ -15108,21 +15108,33 @@
     "semantic_hash": ""
   },
   "docs/testing/human-response-controller-role.md": {
-    "mtime": 1791490171.9954422,
-    "seen": 1791490252.0754046,
-    "ast_hash": "d5d498d75eeea5d9ae37e45d14bc0fa0",
+    "mtime": 1791492423.2065544,
+    "seen": 1791492504.1183314,
+    "ast_hash": "a61a9bcedba0ad1f5ef0a58e81e9b0f4",
     "semantic_hash": ""
   },
   "docs/testing/current349-white-tempo-natural-four.md": {
-    "mtime": 1791490527.569809,
-    "seen": 1791490607.248479,
-    "ast_hash": "907f1c48083fa0ae6ae58a3e680cfe78",
+    "mtime": 1791491413.5686154,
+    "seen": 1791492504.1181595,
+    "ast_hash": "3e3fa2db05f0754710e5ae98867c9780",
     "semantic_hash": ""
   },
   "docs/testing/current9f-fresh-dependency-runtime.md": {
     "mtime": 1791490527.569809,
     "seen": 1791490607.248484,
     "ast_hash": "05a8297a98219f23fddbe0b9656dd3ed",
+    "semantic_hash": ""
+  },
+  "docs/testing/current1c-fresh-https-qualified.md": {
+    "mtime": 1791491413.5686154,
+    "seen": 1791492504.1181533,
+    "ast_hash": "b4b039455b7d031f312a7d3a2a89c01a",
+    "semantic_hash": ""
+  },
+  "docs/testing/current349-block302-causal-review.md": {
+    "mtime": 1791491413.5686154,
+    "seen": 1791492504.1181576,
+    "ast_hash": "6656cc57f2a97c159c87625d5cde8db2",
     "semantic_hash": ""
   }
 }

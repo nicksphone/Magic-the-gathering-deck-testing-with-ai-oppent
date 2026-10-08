@@ -35,3 +35,17 @@ product, timer semantics, dependencies or retained user database were changed.
 The successful full frontend test used the then-existing qualified Python
 runtime; its later disappearance does not establish qualification on a different
 runtime. Fresh-runtime backend and browser evidence remain separate.
+
+## Seat-Neutral Setup Labels
+
+The setup labels now say Deck A and Deck B, rather than assuming that seat 1
+is the human and seat 2 the opponent. The actual Controls rendering regression
+checks both labels for both seat selections across all three match modes.
+The old labels failed the first new assertion; the corrected candidate passed
+the rendering regression, all configured frontend unit checks, lint and build.
+The existing 36 App response-guard checks also passed unchanged.
+
+Evidence is archived at
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/parent-integration/seat-neutral-labels-qualified-20261008/`.
+These checks do not establish live browser countdown or priority behavior.
+No backend, role logic, callbacks, dependency pins or user database changed.
