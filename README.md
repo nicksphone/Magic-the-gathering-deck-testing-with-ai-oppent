@@ -253,6 +253,13 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 9999 --reload
 ```
 
+For the qualified CPython 3.12.3/Linux x86_64/glibc 2.39 environment, a complete
+wheel-hash lock is also available at `backend/requirements-py312-linux.lock`.
+Use it instead of the direct-pin requirements when reproducing the verified
+offline installation. See [hash-lock qualification](docs/testing/python-hash-lock-qualified.md)
+for the exact wheelhouse command and platform limits. Other platforms and
+clean-machine deployment remain separate qualification work.
+
 In another terminal, start the frontend:
 
 ```bash

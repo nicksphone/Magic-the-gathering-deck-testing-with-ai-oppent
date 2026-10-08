@@ -6780,9 +6780,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791339864.7987275,
-    "seen": 1791339933.6718833,
-    "ast_hash": "25023aeec6ade88a0a372f2b2c708362",
+    "mtime": 1791493227.6361055,
+    "seen": 1791493312.4849155,
+    "ast_hash": "59e07582890cfedc5b4420ae8b31cd3e",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791491413.5686154,
-    "seen": 1791492504.1185522,
-    "ast_hash": "33d2928a967ddbf6112338dd7e2b9cab",
+    "mtime": 1791493227.6371055,
+    "seen": 1791493312.485627,
+    "ast_hash": "5aa1bd1bd834dd87952b835a0a1284ea",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15141,6 +15141,24 @@
     "mtime": 1791492903.8945658,
     "seen": 1791492986.2445679,
     "ast_hash": "4485dc8cb433fcd84bcfc03ad43adc8d",
+    "semantic_hash": ""
+  },
+  "backend/verify_hash_lock.py": {
+    "mtime": 1791493227.490108,
+    "seen": 1791493312.484447,
+    "ast_hash": "38b2f2caeb9dee327bcbfdc9e5195c4e",
+    "semantic_hash": ""
+  },
+  "docs/python-hash-lock-proposal.md": {
+    "mtime": 1791493227.5101078,
+    "seen": 1791493312.484995,
+    "ast_hash": "6301b6281d27c51d13a4888c09975ffd",
+    "semantic_hash": ""
+  },
+  "docs/testing/python-hash-lock-qualified.md": {
+    "mtime": 1791493227.5641067,
+    "seen": 1791493312.4856179,
+    "ast_hash": "171910c9e9fc0b97c9b8e69ce6c3b0d4",
     "semantic_hash": ""
   }
 }
