@@ -5,7 +5,7 @@ import { CardArt } from "./CardArt";
 
 // Includes engine-supported generic selections not yet listed in LegalMove.kind.
 const supportedMechanicControls = new Set<string>([
-  "effect_cast", "suspend_cast", "scry", "scry_top_order", "surveil", "surveil_top_order",
+  "effect_cast", "suspend_cast", "scry", "scry_top_order", "surveil", "surveil_top_order", "hand_top_order",
   "proliferate", "ward_payment", "ward_cost_cards", "counter_payment", "optional_search",
   "graveyard_return", "optional_reveal", "discard", "each_player_discard", "cleanup_discard", "mulligan_bottom",
   "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "land_from_hand", "saga_entry", "note_creature_type",
@@ -315,12 +315,12 @@ export function Controls(props: Props) {
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>Attack {mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "draw" || mechanicMove.kind === "land_entry" || mechanicMove.kind === "saga_entry" || mechanicMove.kind === "note_creature_type" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
-          )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" || ["scry_top_order", "surveil_top_order"].includes(mechanicMove.kind ?? "") ? <>
-            <p>{mechanicMove.kind === "look_top_choose" ? "Pick a hand card, then an exile card, then the bottom cards in order." : ["scry_top_order", "surveil_top_order"].includes(mechanicMove.kind ?? "") ? "Pick the remaining cards in order, topmost first." : "Pick the bottom cards in order, bottommost first."}</p>
+          )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" || ["scry_top_order", "surveil_top_order", "hand_top_order"].includes(mechanicMove.kind ?? "") ? <>
+            <p>{mechanicMove.kind === "look_top_choose" ? "Pick a hand card, then an exile card, then the bottom cards in order." : ["scry_top_order", "surveil_top_order", "hand_top_order"].includes(mechanicMove.kind ?? "") ? "Pick the remaining cards in order, topmost first." : "Pick the bottom cards in order, bottommost first."}</p>
             {(mechanicMove.options ?? []).map((cid) => (
               <button key={cid} disabled={mechanicSelections.includes(cid)} onClick={() => setMechanicSelections((selected) => [...selected, cid])}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
             ))}
-            <p>{mechanicSelections.map((cid, index) => `${mechanicMove.kind === "look_top_choose" ? index === 0 ? "Hand" : index === 1 ? "Exile" : `Bottom ${index - 1}` : `${["scry_top_order", "surveil_top_order"].includes(mechanicMove.kind ?? "") ? "Top" : "Bottom"} ${index + 1}`}: ${mechanicMove.option_labels?.[cid] ?? cid}`).join(" | ")}</p>
+            <p>{mechanicSelections.map((cid, index) => `${mechanicMove.kind === "look_top_choose" ? index === 0 ? "Hand" : index === 1 ? "Exile" : `Bottom ${index - 1}` : `${["scry_top_order", "surveil_top_order", "hand_top_order"].includes(mechanicMove.kind ?? "") ? "Top" : "Bottom"} ${index + 1}`}: ${mechanicMove.option_labels?.[cid] ?? cid}`).join(" | ")}</p>
             <button onClick={() => setMechanicSelections([])}>Reset Order</button>
             <button disabled={mechanicSelections.length !== mechanicMove.count} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Order</button>
           </> : <>
