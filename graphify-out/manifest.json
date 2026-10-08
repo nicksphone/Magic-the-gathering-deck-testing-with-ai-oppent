@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791438069.9729354,
-    "seen": 1791438185.4424467,
-    "ast_hash": "43224550197ddd3b9f84a7eb928644db",
+    "mtime": 1791439635.5667446,
+    "seen": 1791439712.8782408,
+    "ast_hash": "a1a242e66341f2a8eebb7821e31c4087",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14124,9 +14124,9 @@
     "semantic_hash": ""
   },
   "docs/testing/inventory-current352f.md": {
-    "mtime": 1791431935.7478309,
-    "seen": 1791434580.0353456,
-    "ast_hash": "6837763d06cb0ae5f96ff5f1d85dd0c4",
+    "mtime": 1791439519.4904206,
+    "seen": 1791439597.3124132,
+    "ast_hash": "b9fa0ee7fbefdfe6488dd66dc6e4c149",
     "semantic_hash": ""
   },
   "audit/gate2-march-http/test_march_http_paid.py": {
@@ -14418,9 +14418,9 @@
     "semantic_hash": ""
   },
   "docs/testing/suncleanser-attached-current.md": {
-    "mtime": 1791435516.8292222,
-    "seen": 1791435593.366359,
-    "ast_hash": "987dd86ff5e08e7e2048c71f4ffae4f6",
+    "mtime": 1791439635.5667446,
+    "seen": 1791439712.8783512,
+    "ast_hash": "fd17af8669752492bef1e9ed6cea3daa",
     "semantic_hash": ""
   },
   "frontend/tests/fixtures/entry-mode-public/README.md": {
@@ -14487,6 +14487,12 @@
     "mtime": 1791437814.5492065,
     "seen": 1791437999.0729375,
     "ast_hash": "b0e39a4698ac7a59d3df7d71b9b1885e",
+    "semantic_hash": ""
+  },
+  "docs/testing/stage2-native13-component.md": {
+    "mtime": 1791439519.4904206,
+    "seen": 1791439597.3127112,
+    "ast_hash": "798acef29e011837e4ac57f06c283d56",
     "semantic_hash": ""
   }
 }

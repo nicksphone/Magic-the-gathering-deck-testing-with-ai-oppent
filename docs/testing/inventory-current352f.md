@@ -1,5 +1,28 @@
 # Current 155-Card Inventory
 
+## Final Published Rules Remeasurement
+
+The unchanged eight-case inventory module passed in 8.33 seconds on the final
+escape/payment composition. Every published backend/audit file at
+`13973bdb4e1876c5a214d0216169f47864799567` matches the measured source byte-for-byte;
+listed docs/frontend/graph differences are not transferred runtime evidence.
+The complete inventory report is exactly equal to the earlier report below.
+Hydrated counts remain 155 metadata-ready, six diagnostic-gap cards and 149
+without a known gap; all 155 complete-card semantics remain unverified.
+
+The final guard observed five native precollection canaries and the original
+three intentional module-denial tests, with no unexpected denials. All 118
+imported product hashes and 4,817 preexisting source files matched. Real
+hydration appended 154 bounded SVGs; that is not a browser or ASGI asset gate.
+Raw descriptor/thread/child closure matched and no database was created.
+
+Evidence: `gate2-ordered-escape/inventory-final-union13973-HabaU3-EIGHT/`.
+It retains the exact 305 raw-canonical and 321 hydrated residual printed lines.
+These are missing positive contract evidence, not 626 distinct unsupported
+instructions. No diagnostic was suppressed or promoted by this measurement.
+
+## Historical 352f Checkpoint
+
 Pinned source: `352f3b86579f216f7ce52f34070dffa9811c1063`. The unchanged whole
 inventory module ran eight ordinary passes in 5.67 seconds, exit 0. All 2,496
 recorded source-file hashes matched before/after, no database was created,
