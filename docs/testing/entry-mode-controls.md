@@ -18,5 +18,18 @@ captured fixtures and generator provenance are in `tests/fixtures/entry-mode-pub
 An initial paid-helper zero-snow/missing-total mismatch was corrected in fixture
 setup, not by weakening the frontend contract.
 
-These checks exercise the real React component and handlers. They are not
-browser DOM, SQLite/HTTP, or final Suncleanser end-to-end qualification.
+The separate `npm run test:browser:entry-mode` check now exercises the actual
+React component in Chromium with all four captured paid views. Both seats and
+modes expose enabled offered buttons, rendering submits nothing, clicks send
+the exact declared callback, and unknown kinds retain the warning. Four real
+screenshots and the local GET-only request ledger are preserved.
+
+The final component, Chromium process and wrapper all exited zero. An earlier
+wrapper exited one after the component passed because it incorrectly assumed
+the retained application database was absent. The corrected wrapper pins that
+existing database before and after instead; its bytes are unchanged. No
+application API or SQLite test was run by this browser component.
+
+Evidence: `parent-integration/entry-mode-chromium-20261008/` under the project
+NFS artifact store. This is browser DOM/callback qualification, not complete
+built-app, paid HTTP or final Suncleanser end-to-end acceptance.

@@ -18,7 +18,8 @@
     "test:browser:recovery": "node tests/browser-recovery.mjs",
     "lint": "eslint src",
     "test:browser:preflight": "node tests/browser-interactive-preflight.mjs",
-    "test:browser:hand-order": "node tests/browser-hand-top-order.mjs"
+    "test:browser:hand-order": "node tests/browser-hand-top-order.mjs",
+    "test:browser:entry-mode": "node tests/browser-entry-mode.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
