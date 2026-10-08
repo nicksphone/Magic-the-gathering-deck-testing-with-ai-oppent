@@ -437,6 +437,7 @@ def resume_entry_batch(state, controller, payload):
         data['entry_results'][card.id] = data['entry_payload']['__entry_counters_ready']
         data['entry_target_index'] += 1
         for key in ('entry_payload', 'entry_prepared', 'entry_index', 'entry_counts', 'consume_entry_counter',
+                    'target_card_id', 'counter',
                     '__counter_entry_context', '__counter_entry_producers',
                     '__intrinsic_entry_counter', '__entry_counter_event', '__next_entry_counter'):
             data.pop(key, None)

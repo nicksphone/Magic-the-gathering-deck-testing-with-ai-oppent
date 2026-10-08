@@ -1,6 +1,7 @@
 from __future__ import annotations
 from rules_engine.flashback_grants import resolve_grant
 from rules_engine.exchange_energy import resolve as resolve_exchange_energy
+from rules_engine.attached_token_payment import resolve as resolve_attached_token_payment
 from rules_engine.land_animation import resolve_self_land_animation
 from rules_engine.temporary_characteristics import resolve_temporary_characteristics
 from rules_engine.turn_spell_protection import conditional_draw, grant_protection
@@ -17,6 +18,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'attached_token_payment': resolve_attached_token_payment,
     'spree_copy': resolve_spree_copy,
     'spree_change_target': resolve_spree_target_change,
     'exchange_energy_payment': resolve_exchange_energy,

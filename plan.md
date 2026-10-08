@@ -251,9 +251,14 @@ UI redesign is later; functional access to backend choices is not optional.
 5. [ ] Improve combat/racing, blocking, resource reservations, removal/counter
    timing, threat assessment, mana efficiency, mulligans, dynamic faces and
    multi-turn planning. No blind attack, power-zero or named-card policy fixes.
-   Intrinsic-mana dual-land combat admission is composed: 225 pure checks pass;
-   the 316-case public combat cohort has 276 passes and 40 retained graveyard
-   decision failures. No weights/depth or hidden-information policy changes.
+   Intrinsic-mana dual-land combat admission is composed: 225 pure checks pass.
+   The historical 316-case cohort retained 40 graveyard decision failures.
+   Current schema drift was reproduced in four whole modules / 323 cases as
+   269 passes and 54 failures. Explicit reviewed metadata coverage now passes
+   all 323 unchanged cases plus 104 new boundary controls (427 total), without
+   weights/depth or hidden-information policy changes. Natural-game strength
+   and final composed-source qualification remain open; see
+   `docs/testing/public-graveyard-reviewed-context.md`.
 6. [ ] Define decision-quality benchmarks and before/after comparisons under
    hidden information. Training/data tooling needs legal-action traces, causal
    anomalies and evaluation; storage or a neural net alone does not prove skill.

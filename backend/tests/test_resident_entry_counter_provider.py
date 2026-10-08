@@ -248,9 +248,11 @@ def test_intrinsic_entry_observation_is_not_complete_order_certificate(seat, pre
                                     'targets': {'x_value': 2}}))
     pending = deepcopy(state.pending_replacement_choice)
     assert pending and state.cards[card.id].zone == Zone.STACK
-    # Observed native aggregation boundary, not a desired universal rules claim.
-    assert pending['counter_payload']['amount'] == 2
-    assert {option['name'] for option in pending['options']} == {RENATA, SEASON}
+    # Intrinsic and resident producers are selectable before positive counters exist.
+    assert pending['counter_payload']['amount'] == 0
+    assert pending['counter_payload']['__intrinsic_entry_counter']['locked_x'] == 2
+    assert {option['name'] for option in pending['options']} == {RENATA, BALLISTA['name']}
+    assert any(option.get('intrinsic_entry') for option in pending['options'])
     result, choices = finish_choices(state, preference)
     assert result.cards[card.id].zone == Zone.BATTLEFIELD
     assert not any(result.players[seat].mana_pool.values())
@@ -260,7 +262,8 @@ def test_intrinsic_entry_observation_is_not_complete_order_certificate(seat, pre
               'seat': seat, 'preference': preference, 'before': before,
               'pending': pending, 'after': snapshot(result), 'choices': choices,
               'observed_counters': result.cards[card.id].counters.get('+1/+1'),
-              'intrinsic_entry_replacement_option_exposed': False,
+              'intrinsic_entry_replacement_option_exposed': any(
+                  option.get('intrinsic_entry') for option in pending['options']),
               'source_provenance': BALLISTA_PROVENANCE}
     path = Path(os.environ['MTG_GY_SELF_EVIDENCE']) / f'intrinsic-{seat}-{preference}.json'
     with path.open('x') as stream:

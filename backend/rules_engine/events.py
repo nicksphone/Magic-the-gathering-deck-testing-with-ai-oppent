@@ -100,6 +100,11 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         **({'kicker_count': card.kicker_count} if card.kicker_count is not None else {}),
         "printed_abilities_suppressed": printed_abilities_suppressed(state, card_id),
     }
+    from rules_engine.attached_token_payment import attachment_lki, copiable_lki, retain_departed_host
+    card.last_known_battlefield['__copiable_lki'] = copiable_lki(state, card)
+    retain_departed_host(state, card, card.last_known_battlefield['__copiable_lki'])
+    if card.attached_to is not None:
+        card.last_known_battlefield['__attachment_lki'] = attachment_lki(state, card)
     for item in state.stack:
         if item.source_card_id == card_id:
             payload = item.payload or {}
@@ -1720,6 +1725,16 @@ def _trigger_from_oracle(
     entry_oracle = oracle if event == 'enters_battlefield' else None
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
+    entering = state.cards.get(payload.get('card_id')) if event == 'enters_battlefield' else None
+    if (source is not None and entering is not None
+            and 'Land' in effective_types(state, entering)
+            and entering.controller == controller):
+        from rules_engine.attached_token_payment import compile_instruction
+        attached_instruction = compile_instruction(source, oracle)
+        if attached_instruction is not None:
+            effect_key, effect_payload = attached_instruction
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': effect_key, 'payload': effect_payload}
     if (source is not None and event == 'enters_battlefield'
             and payload.get('card_id') == source_card_id
             and re.match(r'When this (?:creature|permanent) enters(?: the battlefield)?, choose one\b', entry_oracle, re.I)):

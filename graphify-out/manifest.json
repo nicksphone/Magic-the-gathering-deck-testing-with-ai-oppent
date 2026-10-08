@@ -384,15 +384,15 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1791476108.605691,
-    "seen": 1791476243.4401777,
-    "ast_hash": "e76094b0b2ee6242c63cd9930a91bef2",
+    "mtime": 1791481524.8009722,
+    "seen": 1791481681.6463585,
+    "ast_hash": "b7b86664a47d56d803a88f5606edb422",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1791476108.605691,
-    "seen": 1791476243.4401803,
-    "ast_hash": "87f50dad62c5464351bfbc939df39ed2",
+    "mtime": 1791481524.8009722,
+    "seen": 1791481681.64636,
+    "ast_hash": "d31618cfaa4010127d308ffb86dbfc2d",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -696,15 +696,15 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/entry_counters.py": {
-    "mtime": 1791436903.4636323,
-    "seen": 1791437161.1263955,
-    "ast_hash": "6602f4940244ec317f597ba9f973a8a4",
+    "mtime": 1791481524.8009722,
+    "seen": 1791481681.6464553,
+    "ast_hash": "d82c7dd0977583f65122b152a1fe724a",
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791462540.918018,
-    "seen": 1791462621.6695137,
-    "ast_hash": "3f6d20dfdc35fd34811f94cbbc838449",
+    "mtime": 1791481524.8009722,
+    "seen": 1791481681.6464567,
+    "ast_hash": "0793cfa786662b2d472842b7b55d8c2a",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -936,9 +936,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
-    "mtime": 1791462540.9470177,
-    "seen": 1791462621.6696103,
-    "ast_hash": "9e742b5eb940c605b1b90e3ece0005a0",
+    "mtime": 1791481524.8009722,
+    "seen": 1791481681.6465516,
+    "ast_hash": "18bfbdb0265a34168ff3f6518c8c5e3f",
     "semantic_hash": ""
   },
   "backend/rules_engine/state_based_actions.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791401670.49905,
-    "seen": 1791401743.4224257,
-    "ast_hash": "552e8b450146b55943dc5fe174043692",
+    "mtime": 1791481076.222748,
+    "seen": 1791481681.650736,
+    "ast_hash": "e3c48221db47a1e0302ac40d01254333",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -12582,9 +12582,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_resident_entry_counter_provider.py": {
-    "mtime": 1791342640.7838762,
-    "seen": 1791342884.890269,
-    "ast_hash": "203aad8faccec1bd68f716a2b9a3dff1",
+    "mtime": 1791481524.802972,
+    "seen": 1791481681.648961,
+    "ast_hash": "222e215ff601a3937e86ce3ee0520ab3",
     "semantic_hash": ""
   },
   "docs/testing/graveyard-self-activation.md": {
@@ -14937,6 +14937,144 @@
     "mtime": 1791480492.3030796,
     "seen": 1791480580.2959337,
     "ast_hash": "37b82c7b657aefc13c12a27c61b052e3",
+    "semantic_hash": ""
+  },
+  "audit/gate2-attached-boundary/test_complete_clause_boundaries.py": {
+    "mtime": 1791481428.4754415,
+    "seen": 1791481681.6459985,
+    "ast_hash": "9d837f2767405cf8d632aef22e70ce79",
+    "semantic_hash": ""
+  },
+  "audit/gate2-ballista-current-order/test_paid_ballista_terminal_orders.py": {
+    "mtime": 1791481031.5144114,
+    "seen": 1791481681.6460018,
+    "ast_hash": "c75d44289e43e4d98968709fccf30843",
+    "semantic_hash": ""
+  },
+  "audit/gate2-entry-batch-siblings/fixtures/canonical.json": {
+    "mtime": 1791481031.4954116,
+    "seen": 1791481681.6460273,
+    "ast_hash": "c9b4df4ea0bfb356aae7678d23aa8a2c",
+    "semantic_hash": ""
+  },
+  "audit/gate2-entry-batch-siblings/fixtures/provenance.json": {
+    "mtime": 1791481031.5004115,
+    "seen": 1791481681.6460292,
+    "ast_hash": "7281b9ed3eb0aabc14cd1b5ba2f87e51",
+    "semantic_hash": ""
+  },
+  "audit/gate2-entry-batch-siblings/test_native_entry_batch_siblings.py": {
+    "mtime": 1791481031.5064116,
+    "seen": 1791481681.6460314,
+    "ast_hash": "9b20f7e13f52a140d313a60fcabd0cc4",
+    "semantic_hash": ""
+  },
+  "audit/gate2-spree-http/fixtures/spree_http/canonical.json": {
+    "mtime": 1791467790.5300014,
+    "seen": 1791481681.6460779,
+    "ast_hash": "63887d34cbefccb43253e2fc74c67523",
+    "semantic_hash": ""
+  },
+  "audit/gate2-spree-http/fixtures/spree_http/provenance.json": {
+    "mtime": 1791467790.5330014,
+    "seen": 1791481681.6460798,
+    "ast_hash": "d4fcdad3182acd83048e22f8dcc88585",
+    "semantic_hash": ""
+  },
+  "audit/gate2-spree-http/spree_paid_http_support.py": {
+    "mtime": 1791475750.1201687,
+    "seen": 1791481681.6460822,
+    "ast_hash": "14545094dc8d57746ea20e59cfd03111",
+    "semantic_hash": ""
+  },
+  "audit/gate2-spree-http/test_spree_paid_http_goldens.py": {
+    "mtime": 1791476037.5127776,
+    "seen": 1791481681.6460838,
+    "ast_hash": "7b03ca04760f72096f90ee82f3f1406a",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart-edges/conftest.py": {
+    "mtime": 1791481031.4824119,
+    "seen": 1791481681.646086,
+    "ast_hash": "07ceea607803401af931b25986c46087",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart-edges/fixtures/canonical.json": {
+    "mtime": 1791481031.473412,
+    "seen": 1791481681.6460876,
+    "ast_hash": "b25b45084d621c5e86239a4d012c6f22",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart-edges/fixtures/provenance.json": {
+    "mtime": 1791481031.478412,
+    "seen": 1791481681.646089,
+    "ast_hash": "3a572071cfa171e55e10da57562d84b9",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart-edges/test_complete_copy_payment_roots.py": {
+    "mtime": 1791481031.4864118,
+    "seen": 1791481681.6460912,
+    "ast_hash": "c6e0cdeff3217d810c12b499c9b167d6",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart/fixtures/canonical.json": {
+    "mtime": 1791481031.4454124,
+    "seen": 1791481681.6460936,
+    "ast_hash": "73f24d5398060520782d56dc476501c3",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart/fixtures/edges/canonical.json": {
+    "mtime": 1791481031.4504123,
+    "seen": 1791481681.646095,
+    "ast_hash": "744910e7f060919c2aa6426691a25ab6",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart/fixtures/edges/provenance.json": {
+    "mtime": 1791481031.4534123,
+    "seen": 1791481681.6460972,
+    "ast_hash": "fd0e89fcbae89591cdbbe6dec86973af",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart/fixtures/provenance.json": {
+    "mtime": 1791481031.4584122,
+    "seen": 1791481681.6460989,
+    "ast_hash": "76f734bb8d51d0b33e4a128456dc8806",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart/test_springheart_departure_body.py": {
+    "mtime": 1791481031.462412,
+    "seen": 1791481681.6461008,
+    "ast_hash": "277d5caa69d71c23c814daafdafeef4c",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart/test_springheart_paid_body.py": {
+    "mtime": 1791481031.4414124,
+    "seen": 1791481681.6461024,
+    "ast_hash": "2f0a4304c21f2380f9e35281ac37411e",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/attached_token_payment.py": {
+    "mtime": 1791481524.8009722,
+    "seen": 1791481681.6464033,
+    "ast_hash": "92e7c2f91567ac205534d93f651a1105",
+    "semantic_hash": ""
+  },
+  "audit/gate2-spree-http/README.md": {
+    "mtime": 1791481299.8893924,
+    "seen": 1791481681.649758,
+    "ast_hash": "07ab8f1380e8960bf620563126fe3b9f",
+    "semantic_hash": ""
+  },
+  "audit/gate2-springheart/README.md": {
+    "mtime": 1791481031.466412,
+    "seen": 1791481681.6497598,
+    "ast_hash": "aaf12e21aef60e3cc99c10a53f0b8cb7",
+    "semantic_hash": ""
+  },
+  "docs/testing/springheart-attached-payment-current.md": {
+    "mtime": 1791481600.032821,
+    "seen": 1791481681.6505737,
+    "ast_hash": "fd15b63b331833dd75b7ed26bb73c578",
     "semantic_hash": ""
   }
 }

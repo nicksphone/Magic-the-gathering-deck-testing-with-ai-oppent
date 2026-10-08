@@ -2161,6 +2161,18 @@ def incubate(state: MatchState, controller: int, payload: dict) -> None:
     })
 
 
+def token_copy_descriptor(target) -> dict:
+    from rules_engine.type_effects import copiable_types
+    return {
+        "name": target.name, "types": list(dict.fromkeys([*copiable_types(target), "Token"])),
+        "mana_cost": target.mana_cost, "type_line": target.type_line,
+        "power": target.power, "toughness": target.toughness,
+        "printed_power": target.printed_power, "printed_toughness": target.printed_toughness,
+        "oracle_text": target.oracle_text, "keywords": list(target.keywords or []),
+        "colors": target.colors or [], "image_uri": target.image_uri,
+    }
+
+
 def create_token_copy(state: MatchState, controller: int, payload: dict) -> None:
     target_id = payload.get("target_card_id")
     source_id = payload.get("__source_card_id")
@@ -2173,14 +2185,8 @@ def create_token_copy(state: MatchState, controller: int, payload: dict) -> None
     keywords = list(target.keywords or [])
     if payload.get("grant_haste") and "haste" not in {value.lower() for value in keywords}:
         keywords.append("haste")
-    from rules_engine.type_effects import copiable_types
     create_token(state, controller, {
-        "name": target.name, "types": list(dict.fromkeys([*copiable_types(target), "Token"])),
-        "mana_cost": target.mana_cost, "type_line": target.type_line,
-        "power": target.power, "toughness": target.toughness,
-        "printed_power": target.printed_power, "printed_toughness": target.printed_toughness,
-        "oracle_text": target.oracle_text, "keywords": keywords,
-        "colors": target.colors or [], "image_uri": target.image_uri,
+        **token_copy_descriptor(target), "keywords": keywords,
         "sacrifice_next_end_step": bool(payload.get("sacrifice_next_end_step")),
     })
 

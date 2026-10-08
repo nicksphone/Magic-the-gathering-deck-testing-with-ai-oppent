@@ -420,6 +420,9 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         require_known_history(state, item.controller)
     from rules_engine.prevention import validate_legacy_damage_boundary
     validate_legacy_damage_boundary(state, item)
+    if item.effect_key == 'attached_token_payment':
+        from rules_engine.attached_token_payment import prepare
+        prepare(state, item)
     if (item.payload or {}).get("__may"):
         is_trigger = bool(item.payload.get("__trigger_event"))
         choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
