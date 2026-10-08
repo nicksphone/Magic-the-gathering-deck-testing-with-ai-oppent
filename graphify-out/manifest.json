@@ -5892,15 +5892,15 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791476108.6066911,
-    "seen": 1791476243.4444203,
-    "ast_hash": "0f72ca86f8712d99f67f45f71922cb2c",
+    "mtime": 1791490152.0887585,
+    "seen": 1791490252.0745177,
+    "ast_hash": "a9da97d96fa61c2cec5aa842b781ef01",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
-    "mtime": 1791448332.4416125,
-    "seen": 1791448423.8202243,
-    "ast_hash": "ade53f3b0919cd2723dcc88dac5937b4",
+    "mtime": 1791490152.0637589,
+    "seen": 1791490252.0745203,
+    "ast_hash": "f95a1bf8d2ee2fb607a83266e834e72a",
     "semantic_hash": ""
   },
   "frontend/src/api/client.ts": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791488215.4204576,
-    "seen": 1791488300.0617874,
-    "ast_hash": "3746c5bc6ee1dba32cd7c43cd7dbc0ab",
+    "mtime": 1791488323.4628181,
+    "seen": 1791490252.0756214,
+    "ast_hash": "c8ea3de456bcdd7cea76ccc9e3b1003a",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15099,6 +15099,18 @@
     "mtime": 1791488215.4204576,
     "seen": 1791488300.0614045,
     "ast_hash": "39c6fbdb3c146814d8ba384d8e6b1e73",
+    "semantic_hash": ""
+  },
+  "frontend/tests/human-response-window.mjs": {
+    "mtime": 1791490152.0897584,
+    "seen": 1791490252.0747612,
+    "ast_hash": "910bbe48b26a143a3cb0242a76a2aa4d",
+    "semantic_hash": ""
+  },
+  "docs/testing/human-response-controller-role.md": {
+    "mtime": 1791490171.9954422,
+    "seen": 1791490252.0754046,
+    "ast_hash": "d5d498d75eeea5d9ae37e45d14bc0fa0",
     "semantic_hash": ""
   }
 }

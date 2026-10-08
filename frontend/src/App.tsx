@@ -447,7 +447,7 @@ export function App() {
     && !match.pregame_pending
     && !match.match_complete
     && match.winner == null
-    && legalPlayerId === 1
+    && match.controllers?.[String(legalPlayerId)] === "human"
     && (match.stack?.length ?? 0) > 0
     && legalMoves.some((move) => move.type === "pass_priority")
     && !canAutoPass;

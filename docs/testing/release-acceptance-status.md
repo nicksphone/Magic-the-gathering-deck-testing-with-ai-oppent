@@ -1,7 +1,7 @@
 # Release Acceptance Status
 
-Checkpoint: 2026-10-08. Latest published integration at this review is `9f50190`
-(operator restart inventory plus AST graph); component source pins are recorded
+Checkpoint: 2026-10-08. This integration follows published `78a720d`
+(operator restart inventory, corpus evidence and AST graph); component source pins are recorded
 individually below. Current349 pure AI/entry union and corrected HTTPS acceptance
 are recorded in the table. Fresh-dependency runtime qualification and the full
 browser cohort are in progress, not inherited from cached or component results.
@@ -18,6 +18,7 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Human response-window controller role | One-line fix over `78a720d`; the same actual-App 36-check regression fails before correction and passes afterward, including both seats and restored public controller maps. Full candidate frontend test/lint/build exit 0; integrated source regression also passes | Prerequisite checks only, not live countdown, DOM, HTTP or final browser qualification. See `human-response-controller-role.md` |
 | Current AI/entry union | Exact `349a5d2`: thirteen whole modules / 655 passes in 235.23s, including all 427 AI cases and 228 entry cases; independent JUnit, source/runtime, native-denial, RNG and resource checks pass | Pure combined component, not natural-game strength, complete corpus semantics or a release gate. See `current349-ai-entry-combined.md` |
 | Corrected current operator HTTPS/restart | `349a5d2` plus the exact operator inventory fix: 181 checks pass, including TLS hostname verification, 27 auth cases, 26 atomic origin rejections, API/media, lock and actual restart; independent closure verified. The fix and 12-case file-only regression are integrated | Owned-CA localhost/single-user topology, not trusted LAN deployment, full browser, arbitrary child sandbox or fresh dependency installation. See `operator-current349-https.md` |
 | Current shipped corpus inventory | Exact `9f50190`: eight unchanged tests pass in 6.16s; all 155 names, 171 surfaces and every printed line retained. Hydrated preflight reports six warning cards; raw canonical inventory reports twelve | Warning counts and bounded recognition are not demonstrated effect failures or whole-card certification. Native I/O denied, placeholder media routed to owned evidence. See `current9f-corpus-inventory.md` |
