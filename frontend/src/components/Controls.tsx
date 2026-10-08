@@ -22,6 +22,8 @@ type Props = {
   setSelectedB: (id: number) => void;
   startMode: NonNullable<MatchState["mode"]>;
   setStartMode: (mode: NonNullable<MatchState["mode"]>) => void;
+  humanSeat: 1 | 2;
+  setHumanSeat: (seat: 1 | 2) => void;
   difficulty: string;
   setDifficulty: (d: string) => void;
   bestOf: number;
@@ -228,6 +230,13 @@ export function Controls(props: Props) {
           <option value="ai_vs_ai">AI vs AI</option>
           <option value="human_vs_human">Human vs Human</option>
         </select></label>
+        {props.startMode === "player_vs_ai" ? <label className="setup-setting">Human seat<select aria-label="Human seat" value={props.humanSeat ?? 1} onChange={(e) => {
+          const seat = e.currentTarget.value;
+          if (seat === "1" || seat === "2") props.setHumanSeat(Number(seat) as 1 | 2);
+        }}>
+          <option value={1}>Seat 1 (Deck A)</option>
+          <option value={2}>Seat 2 (Deck B)</option>
+        </select></label> : null}
         <label className="setup-setting">AI difficulty<select aria-label="AI difficulty" value={props.difficulty} onChange={(e) => props.setDifficulty(e.target.value)}>
           <option value="casual">Casual</option>
           <option value="strong">Strong</option>

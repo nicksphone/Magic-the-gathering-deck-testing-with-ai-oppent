@@ -5892,15 +5892,15 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791436140.014901,
-    "seen": 1791436854.943677,
-    "ast_hash": "969bf0b415b711923d898b494bb2f128",
+    "mtime": 1791448332.4416125,
+    "seen": 1791448423.8202212,
+    "ast_hash": "d2d82320b081425c6d862bea64be4e93",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2201278,
-    "ast_hash": "ff244794ff7f0b90c3b317560493d623",
+    "mtime": 1791448332.4416125,
+    "seen": 1791448423.8202243,
+    "ast_hash": "ade53f3b0919cd2723dcc88dac5937b4",
     "semantic_hash": ""
   },
   "frontend/src/api/client.ts": {
@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791434430.781766,
-    "seen": 1791434580.0345204,
-    "ast_hash": "644528e20a883967401d6e9df05e7c77",
+    "mtime": 1791448332.4416125,
+    "seen": 1791448423.820248,
+    "ast_hash": "e5d44e818ba068471ec0e0ffb4d51620",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -6030,9 +6030,9 @@
     "semantic_hash": ""
   },
   "frontend/src/lib/interactive-preflight.ts": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2201698,
-    "ast_hash": "1d7c6fe63d36bba72e566ead1ebdde54",
+    "mtime": 1791448332.4416125,
+    "seen": 1791448423.8202639,
+    "ast_hash": "b978c9f5ed3d7e368daf237db8a3cdf8",
     "semantic_hash": ""
   },
   "frontend/src/main.tsx": {
@@ -6570,9 +6570,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/human-actions.tsx": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2203276,
-    "ast_hash": "b4cebdc62e5575d54f45d0e8b96116cd",
+    "mtime": 1791448332.4416125,
+    "seen": 1791448423.8204598,
+    "ast_hash": "e4402e1862065a989ce524cd10f061a0",
     "semantic_hash": ""
   },
   "frontend/tests/human-flow-audit-probe.mjs": {
@@ -6594,9 +6594,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/interactive-preflight.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.220337,
-    "ast_hash": "97e555a1df4a566e765c47da95858e18",
+    "mtime": 1791448332.4416125,
+    "seen": 1791448423.8204753,
+    "ast_hash": "22066ac6f9802d474e2e528db8f63c14",
     "semantic_hash": ""
   },
   "frontend/tests/interactive-preflight.tsx": {
@@ -14523,6 +14523,18 @@
     "mtime": 1791446810.9183054,
     "seen": 1791446892.8007588,
     "ast_hash": "a27d52d0d45c2fc13bf083e847a49f76",
+    "semantic_hash": ""
+  },
+  "frontend/tests/human-seat-controls.mjs": {
+    "mtime": 1791448332.4416125,
+    "seen": 1791448423.8204656,
+    "ast_hash": "91add228fc563e0b21ee51fbff08e9c2",
+    "semantic_hash": ""
+  },
+  "docs/testing/human-seat-setup-current.md": {
+    "mtime": 1791448332.4416125,
+    "seen": 1791448423.8211236,
+    "ast_hash": "6a8356340985b7e17752dfc777cc4272",
     "semantic_hash": ""
   }
 }

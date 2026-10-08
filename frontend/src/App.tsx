@@ -10,7 +10,7 @@ import { DeckPanel } from "./components/DeckPanel";
 import { StackLog } from "./components/StackLog";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "./types";
 import { emptyCombatDraft } from "./components/combat-selection";
-import { canStartReviewed, parsePendingInteractiveStart, reviewMatchesPayload, startSignature,
+import { canStartReviewed, parsePendingInteractiveStart, reviewMatchesPayload, startSignature, startControllers,
   type InteractiveReview, type PendingInteractiveStart } from "./lib/interactive-preflight";
 
 const PENDING_START_KEY = "mtg.pendingStart";
@@ -39,6 +39,7 @@ export function App() {
   const [selectedA, setSelectedA] = useState<number | null>(null);
   const [selectedB, setSelectedB] = useState<number | null>(null);
   const [mode, setMode] = useState<"player_vs_ai" | "ai_vs_ai" | "human_vs_human">("player_vs_ai");
+  const [humanSeat, setHumanSeat] = useState<1 | 2>(1);
   const [difficulty, setDifficulty] = useState("master");
   const [bestOf, setBestOf] = useState<number>(3);
   const [match, setMatch] = useState<MatchState | null>(null);
@@ -78,8 +79,7 @@ export function App() {
     deck_a: deckA.mainboard, deck_b: deckB.mainboard,
     deck_a_sideboard: deckA.sideboard, deck_b_sideboard: deckB.sideboard,
     deck_a_id: deckA.id, deck_b_id: deckB.id,
-    controller_a: mode === "ai_vs_ai" ? "ai" : "human",
-    controller_b: mode === "human_vs_human" ? "human" : "ai",
+    ...startControllers(mode, humanSeat),
     ai_difficulty: difficulty, mode, best_of: bestOf,
   } : null;
   const reviewTarget = pendingStart?.payload ?? selectedStart;
@@ -131,6 +131,7 @@ export function App() {
     setLegalMoves(data.winner != null ? [] : legal.moves);
     setCanAutoPass(data.winner == null && legal.can_auto_pass === true);
     setMode(data.mode ?? "player_vs_ai");
+    if (data.mode === "player_vs_ai") setHumanSeat(data.controllers?.["2"] === "human" ? 2 : 1);
     try { localStorage.setItem("mtg.activeMatch", data.id); } catch { /* Storage may be disabled. */ }
   }, []);
 
@@ -188,6 +189,7 @@ export function App() {
           if (legal.revision !== undefined && legal.revision !== data.revision) throw new Error("Saved match changed during restore. Resume it again.");
           currentMatch.current = data;
           setMatch(data); setMode(data.mode ?? "player_vs_ai");
+          if (data.mode === "player_vs_ai") setHumanSeat(data.controllers?.["2"] === "human" ? 2 : 1);
           setLegalPlayerId(legal.player_id); setLegalMoves(data.winner != null ? [] : legal.moves);
           setCanAutoPass(data.winner == null && legal.can_auto_pass === true);
           setAutoProgressPaused(true);
@@ -578,6 +580,8 @@ export function App() {
           setSelectedB={value => { invalidateStartReview(); setSelectedB(value); }}
           startMode={mode}
           setStartMode={value => { invalidateStartReview(); setMode(value); }}
+          humanSeat={humanSeat}
+          setHumanSeat={value => { invalidateStartReview(); setHumanSeat(value); }}
           difficulty={difficulty}
           setDifficulty={value => { invalidateStartReview(); setDifficulty(value); }}
           bestOf={bestOf}
