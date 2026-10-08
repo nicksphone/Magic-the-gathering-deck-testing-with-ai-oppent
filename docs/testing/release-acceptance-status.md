@@ -1,7 +1,11 @@
 # Release Acceptance Status
 
-Checkpoint: 2026-10-08. Component source pins are recorded individually below;
-the latest integrated rules checkpoint is the Spree/Crypt increment described in
+Checkpoint: 2026-10-08. Latest published integration at this review is `9f50190`
+(operator restart inventory plus AST graph); component source pins are recorded
+individually below. Current349 pure AI/entry union and corrected HTTPS acceptance
+are recorded in the table. Fresh-dependency runtime qualification and the full
+browser cohort are in progress, not inherited from cached or component results.
+The latest integrated rules checkpoint is the Spree/Crypt increment described in
 `spree-current-qualified.md`. The preceding published `7455a9d` integration is
 described in `final518-storm-backend-qualification.md`. Earlier milestones remain in
 `escape-safekeeper-current.md`,
@@ -14,6 +18,9 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Current AI/entry union | Exact `349a5d2`: thirteen whole modules / 655 passes in 235.23s, including all 427 AI cases and 228 entry cases; independent JUnit, source/runtime, native-denial, RNG and resource checks pass | Pure combined component, not natural-game strength, complete corpus semantics or a release gate. See `current349-ai-entry-combined.md` |
+| Corrected current operator HTTPS/restart | `349a5d2` plus the exact operator inventory fix: 181 checks pass, including TLS hostname verification, 27 auth cases, 26 atomic origin rejections, API/media, lock and actual restart; independent closure verified. The fix and 12-case file-only regression are integrated | Owned-CA localhost/single-user topology, not trusted LAN deployment, full browser, arbitrary child sandbox or fresh dependency installation. See `operator-current349-https.md` |
+| Current shipped corpus inventory | Exact `9f50190`: eight unchanged tests pass in 6.16s; all 155 names, 171 surfaces and every printed line retained. Hydrated preflight reports six warning cards; raw canonical inventory reports twelve | Warning counts and bounded recognition are not demonstrated effect failures or whole-card certification. Native I/O denied, placeholder media routed to owned evidence. See `current9f-corpus-inventory.md` |
 | Spree/Crypt composed runtime and paid HTTP | Nine whole modules / 299 passes, 88 warnings, 154.58s; exact original node order, all 897 phase reports, 36 lifespans and 40 original restart children completed; source/dependency/native closure verified | Pinned composed component, not full release. NEW witness corrections use actual offered options and authoritative payload targets; historical failed runs remain archived. See `spree-current-qualified.md` |
 | Current Storm/backend composition | Published `7455a9d`: seven whole backend modules / 203 passes, 108.58s, forty original restart children and four actual HTTP lifespans; separate nine whole Storm modules / 168 passes, 25.68s, exact node order and source/native closure verified | Two separate executed cohorts, not a merged 371-test gate. Opposite-callback actor controls are internal protocol evidence, not a lawful opposite-copied-trigger certificate; Spree remains unsupported; see `final518-storm-backend-qualification.md` |
 | Current frontend test/build composition | Immutable published `7455a9d`: complete original npm test script, lint and TypeScript/Vite production build exit zero; matching backend/audit/qualification fixtures and original source hashes verified | Existing dependency cache; Python consumer native SQL/socket/process denial. Not a clean installation, actual browser, proxy/HTTPS or deployment certificate. Evidence: `diagnostics/current745-frontend-test-lint-build-20261008/` |
