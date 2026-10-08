@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791455484.1355267,
-    "seen": 1791455565.097077,
-    "ast_hash": "3a214f6feef637da7b305d72943605e8",
+    "mtime": 1791457728.3532264,
+    "seen": 1791457803.9483645,
+    "ast_hash": "d8dc85c2e070e0aa803d4885cd50d36e",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13536,15 +13536,15 @@
     "semantic_hash": ""
   },
   "docs/testing/caddy-operator-current-acceptance.md": {
-    "mtime": 1791406298.2946408,
-    "seen": 1791406375.911058,
-    "ast_hash": "344416328ee9137364b76430a9de3769",
+    "mtime": 1791457728.3532264,
+    "seen": 1791457803.9478755,
+    "ast_hash": "1654950574dc9b777054822bc580f4b3",
     "semantic_hash": ""
   },
   "ops/caddy/README.md": {
-    "mtime": 1791406128.645564,
-    "seen": 1791406375.91176,
-    "ast_hash": "86970ee205bbbca5392740f40a140857",
+    "mtime": 1791457728.3532264,
+    "seen": 1791457803.9486217,
+    "ast_hash": "47b181a1dcf8b34668077398c860b145",
     "semantic_hash": ""
   },
   "audit/gate2-domain-compiler/fixtures/domain-composition-baseline.json": {
