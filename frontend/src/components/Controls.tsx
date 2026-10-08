@@ -81,7 +81,7 @@ export function Controls(props: Props) {
   const variableDiscard = ["discard", "land_from_hand"].includes(mechanicMove?.kind ?? "") && mechanicMove?.min_count === 0;
   const [mechanicSelections, setMechanicSelections] = useState<string[]>([]);
   const [damageAmounts, setDamageAmounts] = useState<Record<string, number>>({});
-  const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.player_id}:${mechanicMove?.stage}:${mechanicMove?.source_id}:${mechanicMove?.target_slot_number}:${mechanicMove?.min_count}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}:${mechanicMove?.inspected_cards?.map(card => card.id).join(",")}`;
+  const mechanicKey = `${props.match?.id}:${props.match?.game_number}:${mechanicMove?.kind}:${mechanicMove?.player_id}:${mechanicMove?.stage}:${mechanicMove?.source_id}:${mechanicMove?.target_slot_number}:${mechanicMove?.min_count}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}:${mechanicMove?.inspected_cards?.map(card => card.id).join(",")}`;
   useEffect(() => setMechanicSelections([]), [mechanicKey]);
   useEffect(() => setDamageAmounts({}), [mechanicKey]);
   const mechanicPaused = Boolean(mechanicMove || props.match?.pending_mechanic_choice);

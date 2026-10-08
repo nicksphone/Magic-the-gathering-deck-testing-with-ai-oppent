@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791495984.0590475,
-    "seen": 1791496075.5391629,
-    "ast_hash": "4df190c43f3970cbe158e1ef78855beb",
+    "mtime": 1791496978.7559686,
+    "seen": 1791497061.4629087,
+    "ast_hash": "417217243368270ca2f44094b3e6f553",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791495984.0530477,
-    "seen": 1791496075.539188,
-    "ast_hash": "44c35ae4de00134aa0619ab623c2a1ee",
+    "mtime": 1791496978.7529688,
+    "seen": 1791497061.4629345,
+    "ast_hash": "eaf671ba386109d86cd706d490f1bd95",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791495984.150046,
-    "seen": 1791496075.5403047,
-    "ast_hash": "b91177ed201e9200c65de76524eb513d",
+    "mtime": 1791496978.7659686,
+    "seen": 1791497061.4640875,
+    "ast_hash": "4ccf01f92ee4b4cbaf44bc31ac388029",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15213,6 +15213,18 @@
     "mtime": 1791495984.0690475,
     "seen": 1791496075.5401077,
     "ast_hash": "9fe8b17034146ca14b4eeaf943f6f1e8",
+    "semantic_hash": ""
+  },
+  "frontend/tests/mechanic-match-reset.mjs": {
+    "mtime": 1791496978.7609687,
+    "seen": 1791497061.463185,
+    "ast_hash": "ac6979f0fd9a72e98bdffea1440fbca3",
+    "semantic_hash": ""
+  },
+  "docs/testing/mechanic-match-reset.md": {
+    "mtime": 1791496978.7639685,
+    "seen": 1791497061.463969,
+    "ast_hash": "e65ee0210dbeea9b523e40d2d7092209",
     "semantic_hash": ""
   }
 }
