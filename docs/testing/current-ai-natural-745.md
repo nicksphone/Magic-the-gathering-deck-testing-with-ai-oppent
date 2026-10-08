@@ -1,9 +1,12 @@
-# Current AI Natural-Game Evidence
+# Historical 745 AI Natural-Game Evidence
 
 Runtime source: immutable `7455a9db6a87c2b75e64cfbef2274ac5b0a6432c`.
-The current published checkpoint has identical backend/audit runtime bytes.
+This is historical runtime evidence, not current-source gameplay qualification.
+The subsequently published Spree/Crypt checkpoint changes backend runtime bytes.
 No policy weights, search depth, turn-clock fallback, winner or action was changed
-to obtain these results. This is not the unpublished Spree/Crypt candidate.
+to obtain these results. These games did not execute the Spree/Crypt increment.
+Separate first-main hidden-information observations on matching newer backend
+bytes are recorded in `ai-first-main-hidden-observations.md`; they are not games.
 
 ## Two Completed Orientations
 

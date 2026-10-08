@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791476144.792138,
-    "seen": 1791476243.4460735,
-    "ast_hash": "8b68c6d6eaeece909e2ce4a2380ab9e5",
+    "mtime": 1791477708.7943258,
+    "seen": 1791477789.6130047,
+    "ast_hash": "16843655839eff88dc4f42993f034160",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14814,9 +14814,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-ai-natural-745.md": {
-    "mtime": 1791472426.905034,
-    "seen": 1791472517.1580267,
-    "ast_hash": "d68ec5bfe1bc7da5eb7183787a5e23db",
+    "mtime": 1791477708.7923257,
+    "seen": 1791477789.6126263,
+    "ast_hash": "1c081d896ee85f68c2bdfdd79cacfa17",
     "semantic_hash": ""
   },
   "audit/gate2-free-owner/fixtures/native_free_owner/canonical.json": {
@@ -14913,6 +14913,12 @@
     "mtime": 1791472871.9327621,
     "seen": 1791476350.6238701,
     "ast_hash": "1a17b1e6367d465adb34b5d08092a660",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-first-main-hidden-observations.md": {
+    "mtime": 1791477708.793326,
+    "seen": 1791477789.6124187,
+    "ast_hash": "1a8655d913c058407dfaa8e3dd2c1222",
     "semantic_hash": ""
   }
 }
