@@ -1,7 +1,8 @@
 # Release Acceptance Status
 
-Checkpoint: 2026-10-07. Application baseline before this documentation update:
-`8cfcb4f4dbc06a96b59c2b992cc629131b18d275`. Overall release remains unfinished.
+Checkpoint: 2026-10-08. Component source pins are recorded individually below;
+the latest rules baseline is `ce97fe1`, with frontend-only follow-ups recorded
+separately. Overall release remains unfinished.
 The requirements in `plan.md` are unchanged; component passes below are not a
 substitute for qualification of the final combined source.
 
@@ -23,6 +24,7 @@ substitute for qualification of the final combined source.
 | Standalone storage recovery | Pinned `29e86e4`: three unchanged whole modules / 43 passes, 6.79s; retention rollback/protection, WAL backup and actual controller restore | Not online cache/tombstone coordination, quotas/cancellation, clean-machine or soak acceptance |
 | Native job shutdown | Tested main `2109f88`: 44 passes, genuine midgame cancellation, actual worker join and database-pool closure before external cleanup; real next-lifespan restart | Single-process background-worker component; synchronous drain, byte limits, load/crash and final-source operations remain open |
 | Simulation byte measurement | Immutable `8cfcb4f`: two real bounded batch cases pass, 305.27s; each 500-tick game retains 929,767 bytes of log text while result JSON is 8,683/15,939 bytes | Measurement, not enforced resource bounds, exclusive memory/performance attribution, completed games or AI strength |
+| Forward simulation resource limits | Exact `ce97fe1` plus finalized Stage1/HTTP413: unchanged 26 whole modules / 591 passes, 504.66s; source, native denial/self-pipe, imports and complete closure verified | Individual construction/write limits and cooperative deadline; actual SQLite durability, aggregate escrow, sync drain, peak RAM and full release remain separate |
 | March targeting partial repair | Exact generic Oracle delta: donor 64 target controls pass; fresh parent two-whole-module targeting/inventory gate 72 passes, 9.91s | Payment remains unsupported: unchanged desired module retains 30 cost failures; warning stays; not paid March or full semantics |
 | Paired kicker and current targeting union | Exact seven-file paired-kicker patch plus parent March Oracle: 16 whole pure modules / 475 passes, 69.75s; real payments, independent triggers, copies, LKI and strict snapshot metadata | Pure component only; mixed HTTP/SQL, admission warning review and AI policy remain separate |
 | Complete draw/hand-to-library continuation | Exact `2d64af3` plus five additive modules: 20 whole pure modules / 530 passes, 71.99s; unchanged canonical Brainstorm24, explicit topmost-first selection, Channel/Regrowth chain, dredge/draw replacement and public intent | Same-interpreter restoration and legal AI selection only; mixed HTTP/SQLite, current browser ordering and expert policy remain separate |

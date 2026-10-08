@@ -18,6 +18,7 @@ from analytics.decision_quality import (
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from rules_engine.mana import mana_value, parse_mana_cost
 from persistence.repository import Repository
+from analytics.resource_budget import RESOURCE_LIMITS, ResourceBudget, SimulationResourceLimit
 from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import checked_action
 from rules_engine.coverage import deck_pair_coverage
@@ -43,6 +44,7 @@ class AnalyticsService:
         progress_callback=None,
         should_cancel=None,
     ) -> dict:
+        budget = ResourceBudget(RESOURCE_LIMITS)
         stats = Counter()
         turn_counts = []
         play_win = 0
@@ -61,12 +63,14 @@ class AnalyticsService:
         for i in range(matches):
             if should_cancel is not None and should_cancel():
                 raise SimulationCancelled()
+            budget.check_deadline()
             seed = self._batch_seed(deck_a, deck_b, i, difficulty)
             deck_a_on_play = i % 2 == 0
             if deck_a_on_play:
                 state = MatchFactory.from_decks(deck_a, deck_b, player_a_name="Deck A", player_b_name="Deck B", seed=seed)
             else:
                 state = MatchFactory.from_decks(deck_b, deck_a, player_a_name="Deck B", player_b_name="Deck A", seed=seed)
+            budget.begin_game(state.log)
             state.mechanic_choice_players = {1, 2}
             deck_a_player = 1 if deck_a_on_play else 2
             deck_b_player = 3 - deck_a_player
@@ -79,6 +83,7 @@ class AnalyticsService:
             while state.winner is None and ticks < max_ticks:
                 if should_cancel is not None and should_cancel():
                     raise SimulationCancelled()
+                budget.before_clone()
                 if state.pregame_pending:
                     pid = pregame_actor(state)
                 else:
@@ -89,7 +94,11 @@ class AnalyticsService:
                 else:
                     agent = b_agent if pid == 1 else a_agent
                 decision = agent.choose_action(state, legal, pid)
+                if should_cancel is not None and should_cancel():
+                    raise SimulationCancelled()
+                budget.check_deadline()
                 action = complete_action(decision.action)
+                budget.trace_inputs(state, pid, action, decision.reasoning)
                 trace_payload = build_trace_payload(
                     state,
                     pid,
@@ -97,8 +106,11 @@ class AnalyticsService:
                     action,
                     decision.reasoning,
                 )
+                trace_line = budget.trace_line(trace_payload)
+                if should_cancel is not None and should_cancel():
+                    raise SimulationCancelled()
                 candidate = checked_action(state, self.engine, pid, action)
-                candidate.log.insert(len(state.log), f"AI TRACE {json.dumps(trace_payload, separators=(',', ':'))}")
+                budget.accept_candidate(state, candidate, trace_line)
                 state = candidate
                 ticks += 1
 
@@ -138,6 +150,8 @@ class AnalyticsService:
             if progress_callback is not None:
                 try:
                     progress_callback(i + 1, matches)
+                except SimulationResourceLimit:
+                    raise
                 except Exception:
                     pass
 
@@ -196,6 +210,7 @@ class AnalyticsService:
             "sample_log_excerpt": first_game_log[:12],
             "deterministic_replay_fingerprint": hashlib.sha256("|".join(replay_fingerprint_parts).encode("utf-8")).hexdigest(),
         }
+        budget.checked_result(result)
         self.repo.save_snapshot("batch_simulation", result)
         return result
 
@@ -283,6 +298,7 @@ class AnalyticsService:
         difficulty: str = "master",
         max_ticks: int = 6000,
     ) -> dict:
+        budget = ResourceBudget(RESOURCE_LIMITS)
         if len(deck_pool) < 2:
             return {
                 "deck_count": len(deck_pool),
@@ -300,6 +316,7 @@ class AnalyticsService:
         total_games = 0
 
         for left, right in combinations(deck_pool, 2):
+            budget.check_deadline()
             pair_counts: Counter = Counter()
             pair_turns: list[int] = []
             pair_games = 0
@@ -308,7 +325,9 @@ class AnalyticsService:
             second_game_log: list[str] = []
 
             for game_idx in range(matches_per_pair):
+                budget.check_deadline()
                 state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
+                budget.begin_game(state.log)
                 state.mechanic_choice_players = {1, 2}
                 a_archetype = guess_archetype(left["mainboard"])
                 b_archetype = guess_archetype(right["mainboard"])
@@ -316,15 +335,19 @@ class AnalyticsService:
                 b_agent = AIAgent(difficulty=difficulty, archetype=b_archetype, opponent_archetype=a_archetype)
                 ticks = 0
                 while state.winner is None and ticks < max_ticks:
+                    budget.before_clone()
                     pid = pregame_actor(state) if state.pregame_pending else state.priority_player
                     legal = self.engine.legal_moves(state, pid)
                     if not legal:
                         pair_counts["no_legal_moves"] += 1
-                        state = checked_action(state, self.engine, pid, {"type": "pass_priority"})
+                        candidate = checked_action(state, self.engine, pid, {"type": "pass_priority"})
                     else:
                         agent = a_agent if pid == 1 else b_agent
                         decision = agent.choose_action(state, legal, pid)
-                        state = checked_action(state, self.engine, pid, complete_action(decision.action))
+                        budget.check_deadline()
+                        candidate = checked_action(state, self.engine, pid, complete_action(decision.action))
+                    budget.accept_candidate(state, candidate)
+                    state = candidate
                     ticks += 1
 
                 if state.winner is None:
@@ -395,6 +418,7 @@ class AnalyticsService:
             "top_errors": [{"message": msg, "count": count} for msg, count in top_errors.most_common(20)],
             "suspicious_matchups": suspicious[:20],
         }
+        budget.checked_result(result)
         self.repo.save_snapshot("ai_diagnostics", result)
         return result
 

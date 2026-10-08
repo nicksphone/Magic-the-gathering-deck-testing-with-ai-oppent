@@ -7,6 +7,7 @@ from typing import Any, Iterable
 
 from sqlmodel import Session, func, select
 from sqlalchemy import or_
+from analytics.resource_budget import RESOURCE_LIMITS, checked_json, checked_text
 
 from knowledge.models import CardKnowledge
 from persistence.models import (
@@ -281,17 +282,23 @@ class Repository:
             self.session.commit()
 
     def save_simulation_job(self, payload: dict[str, Any]) -> SimulationJobRecord:
-        row = self.session.get(SimulationJobRecord, str(payload["job_id"]))
+        request_json = checked_json(payload.get("request", {}), RESOURCE_LIMITS["request_json_bytes"], "request_json",
+                                    encoder=lambda: json.dumps(payload.get("request", {})))
+        result_json = (checked_json(payload["result"], RESOURCE_LIMITS["result_json_bytes"], "result_json",
+                                   encoder=lambda: json.dumps(payload.get("result")))
+                       if payload.get("result") is not None else None)
+        error = checked_text(payload.get("error"), RESOURCE_LIMITS["error_utf8_bytes"], "error")
         values = {
             "status": str(payload.get("status", "queued")),
             "completed_matches": int(payload.get("completed_matches", 0)),
             "total_matches": int(payload.get("total_matches", 0)),
             "started_at": float(payload.get("started_at", 0.0)),
             "finished_at": payload.get("finished_at"),
-            "error": payload.get("error"),
-            "result_json": json.dumps(payload.get("result")) if payload.get("result") is not None else None,
-            "request_json": json.dumps(payload.get("request", {})),
+            "error": error,
+            "result_json": result_json,
+            "request_json": request_json,
         }
+        row = self.session.get(SimulationJobRecord, str(payload["job_id"]))
         if row is None:
             row = SimulationJobRecord(id=str(payload["job_id"]), **values)
         else:
@@ -315,7 +322,9 @@ class Repository:
         return list(self.session.exec(select(SimulationJobRecord).where(SimulationJobRecord.status.in_(["queued", "running"]))).all())
 
     def save_snapshot(self, label: str, stats: dict[str, Any]) -> StatsSnapshot:
-        record = StatsSnapshot(label=label, stats_json=json.dumps(stats))
+        encoded = checked_json(stats, RESOURCE_LIMITS["snapshot_json_bytes"], "snapshot_json",
+                               encoder=lambda: json.dumps(stats))
+        record = StatsSnapshot(label=label, stats_json=encoded)
         self.session.add(record)
         self.session.commit()
         self.session.refresh(record)

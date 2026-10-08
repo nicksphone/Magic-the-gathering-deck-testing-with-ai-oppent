@@ -33,6 +33,7 @@ from browser_origin import BrowserOriginMiddleware, trusted_origins
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from analytics.service import AnalyticsService, SimulationCancelled
+from analytics.resource_budget import RESOURCE_LIMITS, SimulationResourceLimit, checked_json, checked_text
 from card_data.fallback_cards import fallback_card_payload
 from card_data.display import select_display_image_uri
 from card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image
@@ -1128,6 +1129,13 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
         raise HTTPException(status_code=503, detail={
             "code": "simulation_shutting_down", "message": "Simulation admission is closed during shutdown",
         })
+    try:
+        checked_json(requested, RESOURCE_LIMITS["request_json_bytes"], "request_json")
+    except SimulationResourceLimit:
+        raise HTTPException(status_code=413, detail={
+            "code": "simulation_request_too_large", "limit": RESOURCE_LIMITS["request_json_bytes"],
+            "dimension": "request_json",
+        }) from None
     if repo.count_simulation_jobs() >= SIM_JOBS_ROW_LIMIT:
         raise HTTPException(status_code=429, detail={
             "code": "simulation_job_quota_exceeded",
@@ -1192,12 +1200,26 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
                     SIM_JOBS[job_id]["finished_at"] = time.time()
                     _persist_job(SIM_JOBS[job_id])
                     _prune_simulation_jobs()
-        except Exception as exc:
+        except SimulationResourceLimit as exc:
             with SIM_JOBS_LOCK:
                 if job_id in SIM_JOBS:
                     SIM_JOBS[job_id]["status"] = "failed"
                     SIM_JOBS[job_id]["finished_at"] = time.time()
+                    SIM_JOBS[job_id]["result"] = None
                     SIM_JOBS[job_id]["error"] = str(exc)
+                    _persist_job(SIM_JOBS[job_id])
+                    _prune_simulation_jobs()
+        except Exception as exc:
+            error = str(exc)
+            try:
+                checked_text(error, RESOURCE_LIMITS["error_utf8_bytes"], "error")
+            except SimulationResourceLimit:
+                error = "resource_limit:error"
+            with SIM_JOBS_LOCK:
+                if job_id in SIM_JOBS:
+                    SIM_JOBS[job_id]["status"] = "failed"
+                    SIM_JOBS[job_id]["finished_at"] = time.time()
+                    SIM_JOBS[job_id]["error"] = error
                     _persist_job(SIM_JOBS[job_id])
                     _prune_simulation_jobs()
         finally:

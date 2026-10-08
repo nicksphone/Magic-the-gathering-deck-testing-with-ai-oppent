@@ -216,9 +216,9 @@
     "semantic_hash": ""
   },
   "backend/analytics/service.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.217679,
-    "ast_hash": "5f69cf03eeeb55cf0f01cbcafe49fb04",
+    "mtime": 1791417527.8960073,
+    "seen": 1791418753.2722802,
+    "ast_hash": "d9d0dcb314c3f58f3296480805b03141",
     "semantic_hash": ""
   },
   "backend/api_contracts.py": {
@@ -450,9 +450,9 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1791410356.0073652,
-    "seen": 1791410507.5162385,
-    "ast_hash": "66bfb5751d29b16288f8c510d66ea59f",
+    "mtime": 1791417527.9030073,
+    "seen": 1791418753.272362,
+    "ast_hash": "2b631bec78664d0dc04a493fd9f195d9",
     "semantic_hash": ""
   },
   "backend/persistence/__init__.py": {
@@ -480,9 +480,9 @@
     "semantic_hash": ""
   },
   "backend/persistence/repository.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2177682,
-    "ast_hash": "c00e4bda580667299eadf9968e00aa42",
+    "mtime": 1791417527.8960073,
+    "seen": 1791418753.2723713,
+    "ast_hash": "a60d1131397188be14b0d0386ff355f6",
     "semantic_hash": ""
   },
   "backend/rules_engine/__init__.py": {
@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791360111.1267822,
-    "seen": 1791360307.6766107,
-    "ast_hash": "6116c29f621c2f496553315979b68d20",
+    "mtime": 1791418547.5192394,
+    "seen": 1791418753.2752936,
+    "ast_hash": "b80c2acb4a744385d30db22ba5aa0f2f",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791365391.1493995,
-    "seen": 1791365465.1216211,
-    "ast_hash": "b6295d289d2a13076fc83302ca076da9",
+    "mtime": 1791418538.3062105,
+    "seen": 1791418753.275318,
+    "ast_hash": "77a1db9cd6ba0bdea8e733d46c6c70df",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -6042,9 +6042,9 @@
     "semantic_hash": ""
   },
   "frontend/src/types/index.ts": {
-    "mtime": 1791360111.1487818,
-    "seen": 1791360307.6766543,
-    "ast_hash": "0bde8df44c9bea5c1117dc94c69d0b06",
+    "mtime": 1791419083.2330546,
+    "seen": 1791419403.83602,
+    "ast_hash": "2892499a4eb1ce9874345bf535fdd31f",
     "semantic_hash": ""
   },
   "frontend/src/vite-env.d.ts": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791416872.0170538,
-    "seen": 1791416904.3313818,
-    "ast_hash": "d68e7fd1bcae6024b0452a5218028361",
+    "mtime": 1791419660.4043107,
+    "seen": 1791419750.8745794,
+    "ast_hash": "bf227fce24347c9e6905ffaf248fc4eb",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13875,6 +13875,48 @@
     "mtime": 1791416828.2798429,
     "seen": 1791416904.3309164,
     "ast_hash": "8f343c711eaad3cdbb26ccf185a6e05a",
+    "semantic_hash": ""
+  },
+  "backend/analytics/resource_budget.py": {
+    "mtime": 1791417527.8960073,
+    "seen": 1791418753.2722757,
+    "ast_hash": "0dd2504942dc090bd06b9e8b63c0ecce",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_resource_budget.py": {
+    "mtime": 1791417527.9030073,
+    "seen": 1791418753.2748713,
+    "ast_hash": "f544e4ffee0298638fe9fd4ae40ffb49",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_resource_request_http.py": {
+    "mtime": 1791417527.9030073,
+    "seen": 1791418753.2748775,
+    "ast_hash": "f706a14dbec040e77ca245e173a865d4",
+    "semantic_hash": ""
+  },
+  "frontend/tests/hand-top-order-controls.mjs": {
+    "mtime": 1791419071.624159,
+    "seen": 1791419403.836189,
+    "ast_hash": "18b3df4e5431535dfcfd43870b67403c",
+    "semantic_hash": ""
+  },
+  "docs/release/STAGE1_RESOURCE_LIMITS.md": {
+    "mtime": 1791417527.8970072,
+    "seen": 1791418753.2757204,
+    "ast_hash": "b80dc0d467dbd800898c01ac7cf0917d",
+    "semantic_hash": ""
+  },
+  "docs/testing/brainstorm-human-ordering-current.md": {
+    "mtime": 1791418676.1893466,
+    "seen": 1791418753.2758567,
+    "ast_hash": "393a86bdb009f481455c09b0bae278ad",
+    "semantic_hash": ""
+  },
+  "docs/testing/simulation-resource-forward-current.md": {
+    "mtime": 1791419660.4033108,
+    "seen": 1791419750.874643,
+    "ast_hash": "5268e15f5fb582207cc8dead478511f9",
     "semantic_hash": ""
   }
 }
