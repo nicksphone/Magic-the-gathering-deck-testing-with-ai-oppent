@@ -28,6 +28,7 @@ substitute for qualification of the final combined source.
 | Stage1 native simulation durability | Frozen Stage1: 12 whole modules / 103 passes, 913.49s; eight completed lifespans, actual persisted worker outcomes/cold replay, 25 disposed engines and independently verified 22-file closure | Pinned durability component; completed batch contained a game timeout, not a natural winner or expert-AI result; aggregate escrow, ownership, soak and final current union remain open |
 | March targeting partial repair | Exact generic Oracle delta: donor 64 target controls pass; fresh parent two-whole-module targeting/inventory gate 72 passes, 9.91s | Payment remains unsupported: unchanged desired module retains 30 cost failures; warning stays; not paid March or full semantics |
 | March paid costs in the current composition | Parent `49a6362` plus nine-file cost delta: 19 whole modules / 504 ordinary passes and two unchanged original escape xfails, 57.64s; includes Veil/Emperor and real paid March/reservation regressions | Supersedes the earlier partial-payment state, not its historical evidence; current native HTTP/SQLite, warning review, browser and the two escape defects remain open; see `march-paid-current.md` |
+| Published 155-card inventory | Exact `352f3b8`: unchanged whole inventory module / eight ordinary passes, 5.67s; 155 hydrated metadata-ready cards, six hydrated admission-gap cards | Raw-canonical view separately retains 12 diagnostic-gap cards; every complete-card semantics field remains unverified; see `inventory-current352f.md` |
 | Veil complete turn protection | Current parent: eight whole pure modules / 232 ordinary passes, 25.93s; real color-conditioned draw, counter/target protection, copies, cleanup and replacement continuations; source/database unchanged | Native HTTP/SQLite, browser acceptance, inventory-warning review and arbitrary effect-layer completeness remain open |
 | Entry-turn loyalty and new incarnations | Current Veil/Emperor union: 12 whole pure modules / 276 ordinary passes, 35.67s; paid timing/effects/blink, same-incarnation rejection and shallow-query copy-on-write purity | Overlaps the Veil cohort; native HTTP/SQLite, inventory-warning review, broader layers and browser acceptance remain open |
 | Optional hand-exile human controls | Captured canonical both-seat public cost views: deliberate zero/reverse selection, stale/duplicate protection and strict metadata checks pass; full configured frontend tests, typecheck, lint and build pass | Frontend component only; the separately owned backend payment candidate still needs mixed qualification and integration; not browser or inventory admission |
@@ -56,6 +57,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 - `parent-integration/combined905-and-simulation-bytes-current-8cf-20261007/`
 - `parent-integration/march-target-current-d40-20261007/`
 - `parent-integration/march-veil-emperor-current506-20261008/`
+- `parent-integration/inventory-current352f-eight-20261008/`
 - `parent-integration/archangel-march-current475-1ee-20261007/`
 - `brainstorm-complete-instruction/baseline-2d64-x8Ly2A/`
 - `brainstorm-complete-instruction/product-2d64-skAwCE/`
@@ -71,9 +73,11 @@ inspection; never execute a database on NFS.
    The current pure qualification and exact parent integration are documented
    in `pending-stack-privacy-current.md` and `hand-domain-admission-current.md`;
    they do not cover those other gates.
-2. Resolve or explicitly classify the seven remaining hydrated preflight gaps in the 155-card
-   inventory with genuine canonical cost/target/execution tests. The other 148
-   cards lacking a known admission gap are not fully semantics-certified.
+2. Resolve or explicitly classify the remaining preflight diagnostics in the 155-card
+   inventory with genuine canonical cost/target/execution tests. The pinned
+   `352f3b8` inventory reports six hydrated gap cards and 149 without a known
+   gap, separately from 12 raw-canonical diagnostic-gap cards. None of these
+   counts is complete-card semantics certification; remeasure on the final source.
 3. Requalify current built UI, browser-served offline assets, BO3 and recovery with the exact
    origin configuration and fresh locked dependencies. Test supported actions
    not encountered in the successful browser episodes.
