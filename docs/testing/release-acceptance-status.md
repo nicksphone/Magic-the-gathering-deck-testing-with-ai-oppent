@@ -11,6 +11,8 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Either human seat in setup | Published `af75a81`: actual React controls and controller-payload regression pass; full configured frontend tests, lint, TypeScript and production Vite build exit zero | Player vs AI now offers either seat and restores the actual controller map. Full built-app/API/SQLite and natural both-seat BO3 remain separate; see `human-seat-setup-current.md` |
+| Master+ request admission | Published `eb53a01`: whole NEW model/policy module / 19 ordinary passes, 1.83s, with native SQLite and socket denial; original models reproduced three admission failures | Two request literals now admit the existing distinct policy; unknown difficulties still reject. Not actual HTTP match/diagnostics completion or expert gameplay quality; see `master-plus-admission-current.md` |
 | Late-game AI combat safety | Immutable `602e9c8` plus the minimal agent repair: five whole pure modules / 182 ordinary passes, 32.72s; canonical both-seat losing-attack and profitable-attack controls, source equality and native I/O denial verified | Deletes the turn-clock fallback that bypassed the combat evaluator; one explicit legacy expectation/actual-state fixture adaptation. Not expert strength, post-repair full-game or final mixed/browser acceptance; see `late-progress-ai-safety-current.md` |
 | Current mixed HTTP composition | Immutable `13973bd` rules, equal published `7b2b98f` backend/audit bytes: ten whole modules / 545 ordinary passes, 345.88s; exact ordered nodes, 117 completed original lifespans, 12 native controls and raw closure verified | Declared current mixed cohort only; no full built-app, storage candidate, arbitrary semantics or final release claim; see `current-http545-and-natural-games.md` |
 | Current natural AI endings | Immutable `7b2b98f`: Ramp/Blue Control reversed seats, two natural endings, 1,609 checked actions, 410.57s; full journal and native I/O denial evidence archived | Two games with Ramp starting both, not balanced samples, root-purity/counterfactual checks, expert strength or universal card semantics; see `current-http545-and-natural-games.md` |
@@ -101,6 +103,14 @@ inspection; never execute a database on NFS.
    remains separate. See `caddy-operator-current-acceptance.md`.
 5. Complete the declared job/cancellation/retention/backup/restore, clean-machine,
    soak, accessibility and supported-topology operator acceptance requirements.
+   The separate Stage2 candidate's first full 21-module / 257-case native gate
+   executed 252 passes and five failures, with no errors or skips, in 1,144.93s.
+   The original assertion/node ledger is preserved. The missing helper occurred
+   in an AST-only fixture, not the actual main module; restore CLI namespace,
+   caller/argv, owned-directory and Origin setup failures require corrected
+   harness contracts and requalification. No candidate integration or overall
+   storage acceptance is inferred. All 12 actual lifespans and independent
+   146-artifact closure checks completed; its SQL lease was released.
 6. Measure legal hidden-information decision quality and completed, seed/seat-
    balanced games across all declared archetypes. Short probes and a browser
    opponent result do not establish seasoned-player strength.
