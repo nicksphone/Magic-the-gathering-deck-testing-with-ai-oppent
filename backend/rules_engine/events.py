@@ -438,6 +438,8 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
 
 
 def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
+    if item.effect_key == 'exchange_energy_payment':
+        return item.payload['__trigger_full_clause']
     if item.effect_key == 'retained_counter_prohibition':
         return item.payload['__counter_mode_clause']
     if item.payload.get('__trigger_resolution_text'):
@@ -496,7 +498,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     if not clause or not source:
         return []
     from rules_engine.oracle_effects import inspect_target_hints
-    from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
+    from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets, stack_object_kind
     proxy = copy(source)
     lki = item.payload.get('__source_lki')
     if lki:
@@ -508,7 +510,8 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
             if not current(state, item.payload.get('__counter_source_ref')):
                 proxy._retained_source_lki = lki
     proxy.oracle_text = clause
-    hints = inspect_target_hints(state, proxy, item.controller)
+    source_kind = stack_object_kind(state, item)
+    hints = inspect_target_hints(state, proxy, item.controller, source_kind=source_kind)
     low = clause.lower()
     if item.effect_key in {'cast_from_graveyard', 'grant_flashback'}:
         return [{'target_card_id': target['id'], 'target_name': target['name']}
@@ -518,13 +521,13 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
             {"target_player": pid, "target_name": player.name}
             for pid, player in state.players.items()
             if (not (item.payload.get("__target_opponent_only") or item.payload.get('__counter_target_kind') == 'player') or pid != item.controller)
-            and validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
+            and validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid}, source_kind=source_kind)[0]
         ]
     if "any target" in low and item.effect_key == "deal_damage":
         options = [
             {"target_player": pid, "target_name": state.players[pid].name}
             for pid in state.players
-            if validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
+            if validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid}, source_kind=source_kind)[0]
         ]
         for player in state.players.values():
             for cid in player.battlefield:
@@ -532,7 +535,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
                 if not {"Creature", "Planeswalker"}.intersection(effective_types(state, target)):
                     continue
                 choice = {"target_card_id": cid}
-                if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy)[0]:
+                if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy, source_kind=source_kind)[0]:
                     options.append({**choice, "target_name": target.name})
         return options
     if "target artifact or enchantment" in low:
@@ -550,7 +553,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     options = []
     for target in hints.get(key, []):
         choice = {"target_card_id": target["id"]}
-        if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy)[0]:
+        if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy, source_kind=source_kind)[0]:
             options.append({**choice, "target_name": target["name"]})
     return options
 
@@ -1236,7 +1239,7 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 def _remember_trigger_target(state, item):
     from rules_engine.flashback_grants import remember_target
     remember_target(state, item)
-    if (item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard'}
+    if (item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard', 'exchange_energy_payment'}
             or item.effect_key == 'retained_counter_prohibition' and item.payload.get('__counter_target_kind') == 'card'
             or item.effect_key == 'destroy_permanent'
             and item.payload.get('__trigger_event') == 'time_counters_removed'):

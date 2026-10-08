@@ -81,6 +81,8 @@ def build_cast_hints(
     card: CardInstance,
     controller: int,
     action_targets: dict[str, Any] | None = None,
+    *,
+    source_kind: str | None = 'spell',
 ) -> dict[str, Any]:
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
@@ -97,7 +99,7 @@ def build_cast_hints(
             # This is a permanent spell, not one of its later abilities.
             # Preserve mana/face choices without borrowing ability targets.
             card.oracle_text = ""
-    hints = inspect_target_hints(state, card, controller, action_targets)
+    hints = inspect_target_hints(state, card, controller, action_targets, source_kind=source_kind)
     selected_modes = (action_targets or {}).get("mode_texts") or []
     selected_text = spell_resolution_text(card, " ".join(selected_modes) or (action_targets or {}).get("mode_text") or card.oracle_text or "")
     hints["action_has_target_text"] = _needs_target(selected_text)
@@ -107,7 +109,7 @@ def build_cast_hints(
             mode for mode in hints["modes"]
             if (not selected or mode in selected)
             and (not _needs_target(mode)
-                 or _has_target_options(inspect_target_hints(state, card, controller, {"mode_text": mode})))
+                 or _has_target_options(inspect_target_hints(state, card, controller, {"mode_text": mode}, source_kind=source_kind)))
         ]
     hints.setdefault("choice_schema", {})
     face_names = hints.get("face_names") or []
@@ -124,7 +126,7 @@ def build_cast_hints(
         if hints.get("choose_two_modes"):
             hints["choice_schema"]["mode_texts"] = {"type": "array", "required": True, "min_items": 2, "max_items": 2, "enum": hints["available_modes"]}
             hints["mode_target_hints"] = {
-                mode: inspect_target_hints(state, card, controller, {"mode_text": mode})
+                mode: inspect_target_hints(state, card, controller, {"mode_text": mode}, source_kind=source_kind)
                 for mode in hints["available_modes"]
             }
         else:

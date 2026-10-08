@@ -81,6 +81,9 @@ def finish_reveal(state, player_id, action):
 
 
 def public_choice(pending):
+    if pending and pending.get('kind') == 'exchange_energy_payment':
+        from rules_engine.exchange_energy import public_choice as exchange_choice
+        return exchange_choice(pending)
     if pending and pending.get('kind') == 'entry_mode':
         from rules_engine.modal_entry import view
         return view(pending)

@@ -1060,7 +1060,7 @@ class RulesEngine:
                     state.log.append(f"Invalid targets for {card.name}: {err_prot}")
                     apply_state_based_actions(state)
                     return
-                ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets, face_card)
+                ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets, face_card, source_kind="spell")
                 if not ok_hs:
                     reject(err_hs)
                     state.log.append(f"Invalid targets for {card.name}: {err_hs}")
@@ -1352,7 +1352,7 @@ class RulesEngine:
                 reject("Unsupported activated ability effect")
                 state.log.append(f"Unsupported activated ability effect for {state.cards[cid].name}.")
                 return
-            hints = build_cast_hints(state, proxy, player_id, action_targets)
+            hints = build_cast_hints(state, proxy, player_id, action_targets, source_kind="activated")
             if reject_invalid:
                 from rules_engine.action_validation import require_declared_targets
                 require_declared_targets(proxy, hints, action_targets, player_id)
@@ -1363,7 +1363,7 @@ class RulesEngine:
                 reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
                 return
-            valid, error = validate_hexproof_shroud_targets(state, player_id, action_targets, state.cards[cid])
+            valid, error = validate_hexproof_shroud_targets(state, player_id, action_targets, state.cards[cid], source_kind="activated")
             if not valid:
                 reject(error)
                 state.log.append(f"Invalid activation targets: {error}")
@@ -1490,7 +1490,7 @@ class RulesEngine:
                 action_targets = dict(action_targets)
                 action_targets["x_value"] = max(0, min(current_loyalty, int(action_targets.get("x_value", 0) or 0)))
             action_targets = enrich_divide_total(proxy, action_targets)
-            hints = build_cast_hints(state, proxy, player_id, action_targets)
+            hints = build_cast_hints(state, proxy, player_id, action_targets, source_kind="activated")
             if reject_invalid:
                 from rules_engine.action_validation import require_declared_targets
                 require_declared_targets(proxy, hints, action_targets, player_id)
@@ -1501,7 +1501,7 @@ class RulesEngine:
                 reject(error)
                 state.log.append(f"Invalid targets for {pw.name}: {error}")
                 return
-            ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets, pw)
+            ok_hs, err_hs = validate_hexproof_shroud_targets(state, player_id, action_targets, pw, source_kind="activated")
             if not ok_hs:
                 reject(err_hs)
                 state.log.append(f"Invalid targets for {pw.name}: {err_hs}")

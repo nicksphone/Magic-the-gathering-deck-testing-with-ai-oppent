@@ -1,5 +1,6 @@
 from __future__ import annotations
 from rules_engine.flashback_grants import resolve_grant
+from rules_engine.exchange_energy import resolve as resolve_exchange_energy
 from rules_engine.land_animation import resolve_self_land_animation
 from rules_engine.temporary_characteristics import resolve_temporary_characteristics
 from rules_engine.turn_spell_protection import conditional_draw, grant_protection
@@ -15,6 +16,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'exchange_energy_payment': resolve_exchange_energy,
     'retained_counter_prohibition': resolve_counter_prohibition,
     'conditional_color_draw': conditional_draw,
     'grant_turn_spell_protection': grant_protection,

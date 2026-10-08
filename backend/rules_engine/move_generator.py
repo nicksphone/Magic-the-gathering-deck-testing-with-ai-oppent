@@ -91,6 +91,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if pending['kind'] == 'suspend_cast':
             from rules_engine.suspend import cast_moves
             return cast_moves(state, player_id)
+        if pending['kind'] == 'exchange_energy_payment':
+            from rules_engine.exchange_energy import public_choice
+            return [{'type': 'choose_mechanic', **public_choice(pending)}]
         if pending['kind'] == 'entry_mode':
             from rules_engine.modal_entry import view
             return [{'type': 'choose_mechanic', **view(pending)}]
@@ -438,7 +441,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 if next_loyalty > (card.loyalty or 0) and counter_placement_forbidden(state, 'loyalty', target_card_id=cid):
                     continue
                 hints_card = type("LoyaltyOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
-                hints = build_cast_hints(state, hints_card, player_id)
+                hints = build_cast_hints(state, hints_card, player_id, source_kind="activated")
                 if not has_available_targets_for_action(hints):
                     continue
                 if ability.get("x_cost"):
@@ -477,7 +480,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
             if build_ability_spec(state, proxy, player_id, report_unsupported=False).effect.key == "noop":
                 continue
-            hints = build_cast_hints(state, proxy, player_id)
+            hints = build_cast_hints(state, proxy, player_id, source_kind="activated")
             if not has_available_targets_for_action(hints):
                 continue
             if "{X}" in parsed_cost.mana_cost:
@@ -513,7 +516,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if not is_equipment(card):
                 continue
             targets = [target for target in own_creatures if attachment_target_is_legal(state, card, target)
-                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target}, card)[0]
+                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target}, card, source_kind="activated")[0]
                        and can_pay_with_pool_and_lands(state, player_id, equip_cost,
                            payment_kind="activation", payment_types=set(effective_types(state, card)), ability_kind="equip",
                            source_card_id=cid, target_card_id=target)]

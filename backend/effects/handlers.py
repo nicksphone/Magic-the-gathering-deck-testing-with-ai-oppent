@@ -960,7 +960,7 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
 
 def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -> None:
     from rules_engine.cast_choice import build_cast_hints
-    from rules_engine.targeting import validate_cast_targets, announced_target_reference_matches
+    from rules_engine.targeting import validate_cast_targets, announced_target_reference_matches, stack_object_kind
 
     copied_payload = copied_item.payload
     trigger_clause = copied_payload.get("__trigger_target_clause") if copied_payload.get("__trigger_target_choice") else None
@@ -1037,10 +1037,10 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
     copied_card = copy.copy(copied_card)
     if not is_spell:
         copied_card.oracle_text = trigger_clause or ability_text
-    hints = build_cast_hints(state, copied_card, controller, announced) if is_spell else None
+    hints = build_cast_hints(state, copied_card, controller, announced, source_kind=stack_object_kind(state, copied_item)) if is_spell else None
     if not is_spell and not trigger_clause:
         from rules_engine.oracle_effects import inspect_target_hints
-        hints = inspect_target_hints(state, copied_card, controller, announced)
+        hints = inspect_target_hints(state, copied_card, controller, announced, source_kind=stack_object_kind(state, copied_item))
     options = ["keep"]
     labels = {"keep": "Keep original target"}
     candidate_keys = {

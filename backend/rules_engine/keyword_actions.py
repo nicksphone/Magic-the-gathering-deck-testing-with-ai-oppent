@@ -83,6 +83,9 @@ def resolve_annihilator(state, controller: int, payload: dict) -> None:
 
 
 def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'exchange_energy_payment':
+        from rules_engine.exchange_energy import finish
+        return finish(state, player_id, action)
     if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'entry_mode':
         from rules_engine.modal_entry import finish
         return finish(state, player_id, action)
@@ -334,7 +337,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             announced[key] = value
             copied.payload[key] = value
             refresh([(key,)])
-            if selected_graveyard_trigger:
+            if selected_graveyard_trigger or (key == 'target_card_id' and copied.payload.get('__trigger_target_choice') is True):
                 from rules_engine.events import _remember_trigger_target
                 _remember_trigger_target(state, copied)
             if copied.effect_key == 'conditional_instruction':

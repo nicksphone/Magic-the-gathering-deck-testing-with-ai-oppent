@@ -274,7 +274,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         if pending["kind"] == "combat_damage":
             from rules_engine.combat import valid_damage_assignment
             require(valid_damage_assignment(state, player_id, action), "Invalid combat damage assignment")
-        elif pending["kind"] in {"draw", "land_entry", "saga_entry", "note_creature_type", "entry_mode"}:
+        elif pending["kind"] in {"draw", "land_entry", "saga_entry", "note_creature_type", "entry_mode", "exchange_energy_payment"}:
             require(action.get("choice_id") in pending["options"], "Unavailable draw choice")
         elif pending["kind"] in {"topdeck_put", "search_library", "proliferate", "scry", "surveil", "land_from_hand"} or (pending['kind'] == 'discard' and pending.get('min_count') == 0):
             unique_ids(action.get("card_ids", []), pending["options"])

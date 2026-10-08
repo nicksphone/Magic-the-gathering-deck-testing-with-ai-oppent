@@ -383,6 +383,10 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    from rules_engine.exchange_energy import compile_instruction as compile_exchange_energy
+    exchange_energy = compile_exchange_energy(card, controller)
+    if exchange_energy is not None:
+        return exchange_energy
     draw_put = compile_draw_then_put_hand_instruction(card.oracle_text)
     if draw_put is not None:
         return draw_put
@@ -1199,6 +1203,8 @@ def inspect_target_hints(
     card: CardInstance,
     controller: int,
     action_targets: dict[str, Any] | None = None,
+    *,
+    source_kind: str | None = 'spell',
 ) -> dict[str, Any]:
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
@@ -1539,7 +1545,7 @@ def inspect_target_hints(
     if "player_targets" in hints:
         hints["player_targets"] = [
             target for target in hints["player_targets"]
-            if validate_hexproof_shroud_targets(state, controller, {"target_player": target["id"]})[0]
+            if validate_hexproof_shroud_targets(state, controller, {"target_player": target["id"]}, source_kind=source_kind)[0]
         ]
     source = card if isinstance(card, CardInstance) else state.cards.get(getattr(card, "id", None), card)
     for key in (
@@ -1549,7 +1555,7 @@ def inspect_target_hints(
         if key in hints:
             hints[key] = [
                 target for target in hints[key]
-                if (validate_hexproof_shroud_targets(state, controller, {"target_card_id": target["id"]}, source)[0]
+                if (validate_hexproof_shroud_targets(state, controller, {"target_card_id": target["id"]}, source, source_kind=source_kind)[0]
                     and validate_protection_targets(state, source, {"target_card_id": target["id"]})[0])
             ]
     return hints

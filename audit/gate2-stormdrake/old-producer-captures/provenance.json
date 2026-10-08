@@ -1,0 +1,91 @@
+{
+  "old_native_capture_gate": "2PASS1.33exit0",
+  "records": [
+    {
+      "actual_item_id": "00000000-0000-0000-0000-000000000004",
+      "actual_original_constructor_is_spell": false,
+      "file": "old-native-activation-1.json",
+      "kind": "activation",
+      "payload_python_types": {
+        "__ability_target_text": "str",
+        "__activation_source_origin": "str",
+        "__activation_source_reference": "dict",
+        "__announced_target_references": "dict",
+        "__announced_targets": "dict",
+        "__last_target_ids": "list",
+        "amount": "int",
+        "target_card_id": "str"
+      },
+      "sha256": "bf5e0770d651a321d9255f2a559876f9e7062910ee7908ced3c653bcda394963",
+      "snapshot_card_zone": "graveyard"
+    },
+    {
+      "actual_item_id": "00000000-0000-0000-0000-000000000004",
+      "actual_original_constructor_is_spell": false,
+      "file": "old-native-activation-2.json",
+      "kind": "activation",
+      "payload_python_types": {
+        "__ability_target_text": "str",
+        "__activation_source_origin": "str",
+        "__activation_source_reference": "dict",
+        "__announced_target_references": "dict",
+        "__announced_targets": "dict",
+        "__last_target_ids": "list",
+        "amount": "int",
+        "target_card_id": "str"
+      },
+      "sha256": "baf9fbb3f9575ccefc24bf8e31ba23d3d617ef8d004c4db5bf4dbcdf0b26d0ee",
+      "snapshot_card_zone": "graveyard"
+    },
+    {
+      "actual_item_id": "00000000-0000-0000-0000-000000000003",
+      "actual_original_constructor_is_spell": true,
+      "file": "old-native-spell-1.json",
+      "kind": "cast",
+      "payload_python_types": {
+        "__announced_target_references": "dict",
+        "__announced_targets": "dict",
+        "__kicked": "bool",
+        "__last_target_ids": "list",
+        "mana_spent": "int",
+        "snow_mana_colors": "dict",
+        "snow_mana_spent": "int",
+        "x_value": "int"
+      },
+      "sha256": "d2d4d7af5e7376b162d8bc62c2d7b0cf18a06afd7fe64dd9b2251337b7e622fc",
+      "snapshot_card_zone": "stack"
+    },
+    {
+      "actual_item_id": "00000000-0000-0000-0000-000000000003",
+      "actual_original_constructor_is_spell": true,
+      "file": "old-native-spell-2.json",
+      "kind": "cast",
+      "payload_python_types": {
+        "__announced_target_references": "dict",
+        "__announced_targets": "dict",
+        "__kicked": "bool",
+        "__last_target_ids": "list",
+        "mana_spent": "int",
+        "snow_mana_colors": "dict",
+        "snow_mana_spent": "int",
+        "x_value": "int"
+      },
+      "sha256": "16b4757f81bb9d25a30392585d5d91a2b1e5e2d09b9dbfd379959e833e164178",
+      "snapshot_card_zone": "stack"
+    }
+  ],
+  "source_bodies": {
+    "rules_engine/engine.py": {
+      "exact_immutable_old_producer_equal": true,
+      "function": "take_action",
+      "function_sha256": "7f217a1529cac0ef9cf8680b8568998f88816500ea5cd868dea1969cf3f3d735",
+      "wholefile_sha256": "e446d251a951b66a3ce565dd2b92798312cf70e647c9b0cd5fc60bb78c343883"
+    },
+    "rules_engine/stack_engine.py": {
+      "exact_immutable_old_producer_equal": true,
+      "function": "add_to_stack",
+      "function_sha256": "78ed6a217771a77e87631a85a0d91c51b5d26154dade721ce6aa173619d7cfb8",
+      "wholefile_sha256": "8ca9bf2d4631c592ca125625808d5cd61dd9bcd20fff1a699dba1de38553e203"
+    }
+  }
+}

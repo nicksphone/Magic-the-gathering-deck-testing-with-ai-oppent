@@ -13,6 +13,10 @@ from rules_engine.zone_actions import put_into_graveyard, move_spell_from_stack
 
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None, *, is_spell: bool = True) -> StackItem:
+    if type(is_spell) is not bool:
+        from rules_engine.action_validation import ActionRejected
+        raise ActionRejected('Stack publication requires a native boolean kind')
+    payload = {**payload, '__announced_stack_kind': 'spell' if is_spell else 'activated'}
     from rules_engine.bestow import is_bestowed
     from game_state.state import object_incarnation
     source = state.cards.get(source_card_id)
@@ -91,7 +95,7 @@ def _replacement_context(state: MatchState, item: StackItem) -> tuple[str, int |
 def _legal_divided_damage_targets(state: MatchState, item: StackItem, card, announced: dict, *, hint_card=None) -> dict:
     """Recheck each announced recipient without reallocating its fixed damage."""
     from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
-    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
+    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets, stack_object_kind
 
     hints = build_cast_hints(state, card if hint_card is None else hint_card, item.controller, announced)
     legal = {}
@@ -108,7 +112,7 @@ def _legal_divided_damage_targets(state: MatchState, item: StackItem, card, anno
         if (current and validate_cast_choice(hints, single)[0]
                 and validate_protection_targets(state, card, single, source_lki=(item.payload or {}).get('__source_lki'))[0]
                 and validate_hexproof_shroud_targets(state, item.controller, single, card,
-                    source_lki=(item.payload or {}).get('__source_lki'))[0]):
+                    source_lki=(item.payload or {}).get('__source_lki'), source_kind=stack_object_kind(state, item))[0]):
             legal[target_id] = amount
     return legal
 
@@ -269,7 +273,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         legal = (attachment_target_is_legal(state, card, target_id)
                  and (incarnation is None or target is not None
                       and [object_incarnation(target), target.zone_change_sequence] == incarnation)
-                 and validate_hexproof_shroud_targets(state, item.controller, {'target_card_id': target_id}, card)[0])
+                 and validate_hexproof_shroud_targets(state, item.controller, {'target_card_id': target_id}, card, source_kind=stack_object_kind(state, item))[0])
         if not legal:
             end_bestow(card)
             item.payload.pop('target_card_id', None)
@@ -299,11 +303,11 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if card and item.payload.get("__ability_target_text") and target_count == 1:
         from rules_engine.oracle_effects import inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_protection_targets, validate_hexproof_shroud_targets
-        hints = inspect_target_hints(state, target_source, item.controller, announced)
+        hints = inspect_target_hints(state, target_source, item.controller, announced, source_kind=stack_object_kind(state, item))
         # A captured source belongs to the old object, not a same-ID reentry.
         legal = (same_targets(announced) and validate_cast_targets(hints, announced)[0]
                  and validate_protection_targets(state, card, announced, source_lki=source_lki)[0]
-                 and validate_hexproof_shroud_targets(state, item.controller, announced, card, source_lki=source_lki)[0])
+                 and validate_hexproof_shroud_targets(state, item.controller, announced, card, source_lki=source_lki, source_kind=stack_object_kind(state, item))[0])
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
@@ -331,7 +335,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from game_state.state import object_incarnation
         from rules_engine.oracle_effects import inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
-        hints = inspect_target_hints(state, target_source, item.controller, announced)
+        hints = inspect_target_hints(state, target_source, item.controller, announced, source_kind=stack_object_kind(state, item))
         hints.pop('required_distinct_target_count', None)
         hints.pop('required_target_instance_count', None)
         legal_effects = []
@@ -346,7 +350,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                     and target.zone_change_sequence == packet['__target_zone_sequence']
                     and validate_cast_targets(hints, selected)[0]
                     and validate_protection_targets(state, card, selected, source_lki=source_lki)[0]
-                    and validate_hexproof_shroud_targets(state, item.controller, selected, card, source_lki=source_lki)[0]):
+                    and validate_hexproof_shroud_targets(state, item.controller, selected, card, source_lki=source_lki, source_kind=stack_object_kind(state, item))[0]):
                 legal_effects.append(effect)
         if not legal_effects:
             state.stack.pop()
@@ -365,11 +369,11 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                 legal_effects.append(effect)
                 continue
             targets = {"mode_text": mode_text, **selected}
-            hints = inspect_target_hints(state, target_source, item.controller, targets)
+            hints = inspect_target_hints(state, target_source, item.controller, targets, source_kind=stack_object_kind(state, item))
             prefix = ('mode_targets', mode_text) if announced.get('mode_targets') else ()
             legal = (same_targets(selected, prefix) and validate_cast_targets(hints, targets)[0]
                      and validate_protection_targets(state, card, targets, source_lki=source_lki)[0]
-                     and validate_hexproof_shroud_targets(state, item.controller, targets, card, source_lki=source_lki)[0])
+                     and validate_hexproof_shroud_targets(state, item.controller, targets, card, source_lki=source_lki, source_kind=stack_object_kind(state, item))[0])
             if legal:
                 any_legal_target = True
                 legal_effects.append(effect)
@@ -385,7 +389,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         effects = item.payload.get("effects", [])
         selections = clause_target_assignments(state, target_source, item.controller, announced, effects)
         if selections is not None and any(selections):
-            hints = inspect_target_hints(state, target_source, item.controller, announced)
+            hints = inspect_target_hints(state, target_source, item.controller, announced, source_kind=stack_object_kind(state, item))
             legal_effects = []
             any_legal_target = False
             for effect, selected in zip(effects, selections):
@@ -394,7 +398,7 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                     continue
                 legal = (same_targets(selected) and validate_cast_targets(hints, selected)[0]
                          and validate_protection_targets(state, card, selected, source_lki=source_lki)[0]
-                         and validate_hexproof_shroud_targets(state, item.controller, selected, card, source_lki=source_lki)[0])
+                         and validate_hexproof_shroud_targets(state, item.controller, selected, card, source_lki=source_lki, source_kind=stack_object_kind(state, item))[0])
                 if legal:
                     any_legal_target = True
                     legal_effects.append(effect)
@@ -405,9 +409,9 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
         from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
         legal = (same_targets(announced)
-                 and validate_cast_choice(build_cast_hints(state, card, item.controller, announced), announced)[0]
+                 and validate_cast_choice(build_cast_hints(state, card, item.controller, announced, source_kind=stack_object_kind(state, item)), announced)[0]
                  and validate_protection_targets(state, card, announced)[0]
-                 and validate_hexproof_shroud_targets(state, item.controller, announced, card)[0])
+                 and validate_hexproof_shroud_targets(state, item.controller, announced, card, source_kind=stack_object_kind(state, item))[0])
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})

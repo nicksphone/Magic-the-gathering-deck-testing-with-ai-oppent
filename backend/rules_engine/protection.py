@@ -69,6 +69,8 @@ def source_matches_quality(source_card, quality: str, *, state=None, source_lki=
 def hexproof_variants(text: str) -> list[str]:
     """A complete supported variant phrase; never promote a conditional clause."""
     text = text.strip().lower().rstrip('.')
+    if text == 'hexproof from activated and triggered abilities':
+        return [text]
     if not text.startswith('hexproof from '):
         return []
     qualities = text.removeprefix('hexproof from ').split(' and from ')

@@ -140,18 +140,63 @@ def replace_announced_target_reference(state, bundle, announced, changed_slots, 
 def stack_object_kind(state: Any, item: Any) -> str:
     payload = getattr(item, 'payload', None) or {}
     copied_kind = payload.get("__stack_copy_kind")
-    if copied_kind:
+    if '__stack_copy_kind' in payload:
+        if type(copied_kind) is not str or copied_kind not in {'spell', 'activated', 'triggered'}:
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Unknown copied stack kind')
         return str(copied_kind)
     if payload.get("__trigger_event"):
         return "triggered"
+    native_kind = None
+    if '__announced_stack_kind' in payload:
+        kind = payload['__announced_stack_kind']
+        if type(kind) is not str or kind not in {'spell', 'activated'}:
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Unknown announced stack kind')
+        native_kind = kind
     if (payload.get('__activation_source_origin') == 'hand'
             and '__activation_source_context' in payload
             and '__activation_source_reference' in payload and '__ability_target_text' in payload):
         from rules_engine.damage_results import validate_hand_payload
         validate_hand_payload(state, payload, source_card_id=item.source_card_id)
+        if native_kind not in {None, 'activated'}:
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Hand activation has inconsistent announced kind')
         return 'activated'
-    source = state.cards.get(item.source_card_id)
-    return "spell" if source is not None and getattr(source, 'zone', None) == Zone.STACK else "activated"
+    if native_kind is not None:
+        return native_kind
+    # Original native snapshots already retain distinct announcement shapes.
+    # Do not classify old frames using a source's later zone or controller.
+    activation_keys = {'__activation_source_origin', '__activation_source_reference', '__ability_target_text'}
+    spell_keys = {'mana_spent', '__kicked', 'snow_mana_spent', 'snow_mana_colors',
+                  '__announced_targets', '__announced_target_references'}
+    complete_activation = activation_keys | {'__announced_target_references'} <= payload.keys()
+    if activation_keys & payload.keys() and (spell_keys <= payload.keys() or not complete_activation):
+        return 'legacy_unknown'
+    if ('__activation_source_origin' in payload and '__activation_source_reference' in payload
+            and '__ability_target_text' in payload and '__announced_target_references' in payload):
+        reference = payload['__activation_source_reference']
+        if (type(payload['__activation_source_origin']) is not str
+                or payload['__activation_source_origin'] not in {'battlefield', 'graveyard'}
+                or type(reference) is not dict or set(reference) != {'incarnation', 'zone_change_sequence'}
+                or any(type(reference[key]) is not int or reference[key] < 0 for key in reference)
+                or type(payload['__ability_target_text']) is not str or not payload['__ability_target_text']):
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Malformed retained activation announcement')
+        validate_announced_target_references(payload.get('__announced_targets'), payload['__announced_target_references'])
+        return 'activated'
+    if spell_keys <= payload.keys():
+        if (type(payload['mana_spent']) is not int or payload['mana_spent'] < 0
+                or type(payload['snow_mana_spent']) is not int
+                or not 0 <= payload['snow_mana_spent'] <= payload['mana_spent']
+                or type(payload['__kicked']) is not bool or type(payload['snow_mana_colors']) is not dict
+                or any(type(key) is not str or type(value) is not int or value < 0
+                       for key, value in payload['snow_mana_colors'].items())):
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Malformed retained spell announcement')
+        validate_announced_target_references(payload['__announced_targets'], payload['__announced_target_references'])
+        return 'spell'
+    return 'legacy_unknown'
 
 
 def stack_source_card(state: Any, item: Any):
@@ -405,7 +450,12 @@ def validate_hexproof_shroud_targets(
     source_card=None,
     *,
     source_lki=None,
+    source_kind=None,
 ) -> tuple[bool, str]:
+    if source_kind is not None and (type(source_kind) is not str
+            or source_kind not in {'spell', 'activated', 'triggered', 'legacy_unknown'}):
+        from rules_engine.action_validation import ActionRejected
+        raise ActionRejected('Unknown targeting source kind')
     player_ids = []
     if action_targets.get("target_player") is not None:
         player_ids.append(int(action_targets["target_player"]))
@@ -442,6 +492,9 @@ def validate_hexproof_shroud_targets(
             if 'hexproof' in keywords:
                 return False, f"Target {target.name} has hexproof."
             for keyword in keywords:
+                if (keyword == 'hexproof from activated and triggered abilities'
+                        and source_kind in {'activated', 'triggered', 'legacy_unknown'}):
+                    return False, f'Target {target.name} has {keyword}.'
                 if keyword.startswith('hexproof from ') and source_matches_quality(
                         source_card, keyword.removeprefix('hexproof from '), state=state, source_lki=source_lki):
                     return False, f'Target {target.name} has {keyword}.'
