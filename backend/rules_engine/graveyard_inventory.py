@@ -10,8 +10,8 @@ from rules_engine.oracle_text import without_reminder_text
 
 
 _SCHEMA_PINS = {
-    MatchState: '7ac5cba4f3df13ec90eb6028cc54bfe118a896ea3690c615e21205fa64d2bf9b',
-    CardInstance: '0f8f750fd443df1e12bff0140af1d1336bb4fdfbc9bf8ea2f6a51ed8cdd55e3e',
+    MatchState: '267ad792255087305d0baea0fbfa3d57d93362c03526a99c2c44ea2b37ec617e',
+    CardInstance: '1b7bf44009e4e1c7bf43bd5dddae383493bca47dc3b9940fde0e93bdcbe58b6f',
     PlayerState: 'dd8f36bedf446625796592fe8045ce675eb471d167ffe68cedb2124ccae1e973',
 }
 
@@ -36,6 +36,18 @@ def _metadata_covered(value, schema):
     return True
 
 
+def _reviewed_context_covered(state):
+    history = state.spell_color_history
+    return (type(history) is dict and set(history) == {1, 2}
+            and all(type(seat) is int for seat in history)
+            and all(type(colors) is set and not colors for colors in history.values())
+            and state.spell_color_history_known is True
+            and type(state.turn_spell_protection) is set and not state.turn_spell_protection
+            and type(state.turn_player_hexproof) is dict and not state.turn_player_hexproof
+            and type(state.retained_counter_prohibitions) is list
+            and not state.retained_counter_prohibitions)
+
+
 def public_graveyard_inventory(state, actor_id):
     """Return JSON-safe structural receipts using only public source identities."""
     receipts = []
@@ -45,6 +57,8 @@ def public_graveyard_inventory(state, actor_id):
 
     if not _metadata_covered(state, MatchState) or set(state.players) != {1, 2}:
         return result('unknown', 'incomplete state metadata')
+    if not _reviewed_context_covered(state):
+        return result('unknown', 'uncovered reviewed permission/protection context')
     if actor_id not in state.players or type(actor_id) is not int:
         return result('unknown', 'invalid actor')
     if any(not isinstance(card, CardInstance) or not isinstance(card.zone, Zone)
@@ -121,6 +135,9 @@ def public_graveyard_inventory(state, actor_id):
                         or card.printed_characteristics or card.bestow_characteristics
                         or card.type_effects or card.type_effect_base is not None
                         or card.keyword_effects or card.base_stat_effects
+                        or card.was_kicked is not False
+                        or card.kicker_count is not None and (
+                            type(card.kicker_count) is not int or card.kicker_count != 0)
                         or card.granted_flashback or card.foretell_record or card.suspend_haste
                         or card.attached_to or card.chosen_creature_type or card.counters):
                     return result('unknown', 'uncovered source modification/metadata')

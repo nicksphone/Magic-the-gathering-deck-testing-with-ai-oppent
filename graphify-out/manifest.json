@@ -12594,9 +12594,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/graveyard_inventory.py": {
-    "mtime": 1791346311.4688952,
-    "seen": 1791346382.09138,
-    "ast_hash": "d5e2dc8a2ec75c5ff030365881bc78d8",
+    "mtime": 1791480433.076022,
+    "seen": 1791480580.2918136,
+    "ast_hash": "baa5d73a98031dbd56fc82d671cc2529",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/graveyard_inventory_audit/divination-provenance.json": {
@@ -14925,6 +14925,18 @@
     "mtime": 1791478747.9745812,
     "seen": 1791478832.5481088,
     "ast_hash": "239b4e3bbd791827ece45cb805e6ff5d",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_public_graveyard_reviewed_context.py": {
+    "mtime": 1791480433.078022,
+    "seen": 1791480580.2943344,
+    "ast_hash": "cfb41ddd18d8e37b7a0b1d34945879ec",
+    "semantic_hash": ""
+  },
+  "docs/testing/public-graveyard-reviewed-context.md": {
+    "mtime": 1791480492.3030796,
+    "seen": 1791480580.2959337,
+    "ast_hash": "37b82c7b657aefc13c12a27c61b052e3",
     "semantic_hash": ""
   }
 }
