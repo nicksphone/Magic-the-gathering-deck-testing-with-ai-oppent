@@ -5,7 +5,6 @@ try:  # pragma: no cover - import path bootstrap for CLI execution
 except ImportError:  # pragma: no cover - direct script execution
     import _bootstrap  # noqa: F401
 import argparse
-import copy
 import json
 import time
 from collections import Counter
@@ -18,6 +17,8 @@ from typing import TextIO
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
 from analytics.decision_quality import (
+    _battlefield_snapshot,
+    _lethal_attack_available,
     build_decision_quality_artifact,
     build_trace_payload,
     deck_artifact_entries,
@@ -32,7 +33,6 @@ from decks.selection import select_representative_decks, prepare_cohort, cohort_
 from game_state.state import MatchFactory, pregame_actor
 from persistence.db import engine, init_db
 from persistence.repository import Repository
-from rules_engine.continuous import effective_power
 from rules_engine.engine import RulesEngine
 from sqlmodel import Session
 
@@ -83,36 +83,20 @@ def life_snapshot(state, pid: int) -> dict[str, int]:
     }
 
 
-def lethal_attack_available(state, pid: int, legal_moves: list[dict]) -> bool:
-    """Return open-board lethal evidence from a validated attack declaration."""
-    opponent_pid = 1 if pid == 2 else 2
-    if any("Creature" in state.cards[cid].types for cid in state.players[opponent_pid].battlefield):
-        return False
-    attack_move = next((move for move in legal_moves if move.get("type") == "attack"), None)
-    if attack_move is None:
-        return False
-    declaration = dict(attack_move)
-    declaration["attackers"] = list(attack_move.get("attackers") or attack_move.get("options") or [])
-    simulated_state = copy.deepcopy(state)
-    RulesEngine().take_action(simulated_state, pid, declaration)
-    legal_power = sum(max(0, effective_power(simulated_state, cid)) for cid in simulated_state.attackers)
-    return legal_power >= state.players[opponent_pid].life
+def lethal_attack_available(state, pid: int, legal_moves: list[dict]) -> bool | None:
+    """Use the same engine-validated evidence as production decision traces."""
+    return _lethal_attack_available(state, pid, legal_moves)
 
 
 def battlefield_snapshot(state, pid: int) -> list[dict]:
     """Keep round-robin traces compact while retaining tactical board state."""
     out: list[dict] = []
-    for cid in state.players[pid].battlefield:
+    for row in _battlefield_snapshot(state, pid):
+        cid = row["id"]
         card = state.cards[cid]
         out.append(
             {
-                "id": cid,
-                "name": card.name,
-                "types": list(getattr(card, "types", []) or []),
-                "tapped": bool(getattr(card, "tapped", False)),
-                "power": getattr(card, "power", None),
-                "toughness": getattr(card, "toughness", None),
-                "keywords": list(getattr(card, "keywords", []) or []),
+                **row,
                 "loyalty": getattr(card, "loyalty", None),
                 "selected_face_index": getattr(card, "selected_face_index", None),
             }

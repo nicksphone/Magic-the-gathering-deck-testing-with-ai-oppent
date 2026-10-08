@@ -9,6 +9,7 @@ from typing import Any
 from analytics.decision_taxonomy import has_actionable_move, has_meaningful_move
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
+from rules_engine.type_effects import effective_types
 from game_state.state import MatchState, Zone
 
 
@@ -59,7 +60,7 @@ def _battlefield_snapshot(state: Any, pid: int) -> list[dict[str, Any]]:
         {
             "id": cid,
             "name": state.cards[cid].name,
-            "types": list(getattr(state.cards[cid], "types", []) or []),
+            "types": effective_types(state, cid),
             "tapped": bool(getattr(state.cards[cid], "tapped", False)),
             "power": effective_power(state, cid),
             "toughness": effective_toughness(state, cid),
@@ -92,7 +93,7 @@ def _lethal_attack_available(state: Any, pid: int, legal_moves: list[dict[str, A
     if _step_key(state.step) != "declare_attackers":
         return False
     opponent_pid = 1 if pid == 2 else 2
-    if any("Creature" in state.cards[cid].types for cid in state.players[opponent_pid].battlefield):
+    if any("Creature" in effective_types(state, cid) for cid in state.players[opponent_pid].battlefield):
         return False
     attack_move = next((move for move in legal_moves if move.get("type") == "attack"), None)
     if attack_move is None:
@@ -113,7 +114,7 @@ def _lethal_attack_available(state: Any, pid: int, legal_moves: list[dict[str, A
         if simulated_state.winner is not None:
             return simulated_state.winner == pid
         if any(
-            "Creature" in simulated_state.cards[cid].types
+            "Creature" in effective_types(simulated_state, cid)
             for cid in simulated_state.players[opponent_pid].battlefield
         ):
             return None
