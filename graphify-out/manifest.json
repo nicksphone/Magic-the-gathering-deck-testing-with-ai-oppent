@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791481076.222748,
-    "seen": 1791481681.650736,
-    "ast_hash": "e3c48221db47a1e0302ac40d01254333",
+    "mtime": 1791490579.6609857,
+    "seen": 1791490607.2491386,
+    "ast_hash": "291075a43294ee613a76ffe247317999",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791488323.4628181,
-    "seen": 1791490252.0756214,
-    "ast_hash": "c8ea3de456bcdd7cea76ccc9e3b1003a",
+    "mtime": 1791490527.570809,
+    "seen": 1791490607.2488713,
+    "ast_hash": "8eeec582a8e3179471fc3e9aff669bd3",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15111,6 +15111,18 @@
     "mtime": 1791490171.9954422,
     "seen": 1791490252.0754046,
     "ast_hash": "d5d498d75eeea5d9ae37e45d14bc0fa0",
+    "semantic_hash": ""
+  },
+  "docs/testing/current349-white-tempo-natural-four.md": {
+    "mtime": 1791490527.569809,
+    "seen": 1791490607.248479,
+    "ast_hash": "907f1c48083fa0ae6ae58a3e680cfe78",
+    "semantic_hash": ""
+  },
+  "docs/testing/current9f-fresh-dependency-runtime.md": {
+    "mtime": 1791490527.569809,
+    "seen": 1791490607.248484,
+    "ast_hash": "05a8297a98219f23fddbe0b9656dd3ed",
     "semantic_hash": ""
   }
 }

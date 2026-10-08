@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-07 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-08 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -393,3 +393,25 @@ pure modules passed all 103 cases in 81.81 seconds; applied product/dependency
 bytes match the tested source and native bindings remain intact. See
 `docs/testing/resource-scaled-pt-current.md`. The mixed HTTP neighbor cohort,
 broader variable P/T families, browser and full release remain unqualified.
+
+## 2026-10-08 Fresh Runtime And Natural-Game Checkpoint
+
+Fresh isolated installation on immutable `9f50190` completed the configured
+frontend checks and the unchanged thirteen-whole-module backend AI/entry cohort:
+655 passes in 234.43 seconds. Installation, exact wheel/lock provenance and
+native pure-gate closure are recorded in
+`docs/testing/current9f-fresh-dependency-runtime.md`. Fresh mixed SQL/ASGI,
+HTTPS, browser and clean-machine deployment are still separate acceptance work.
+
+Four predeclared White/Tempo natural games on immutable `349a5d2` completed with
+2,832 checked decisions and 8,496 verified checkpoints. All four rows use one
+correlated seed; one existing bad-block diagnostic remains under causal review.
+See `docs/testing/current349-white-tempo-natural-four.md`. These rows do not
+establish thirteen-style, multi-seed or expert-strength acceptance.
+
+Published `1c3fbbd` repairs the App response-window prerequisite to use the
+actual human controller rather than seat 1. The actual-source 36-check regression
+and candidate frontend checks pass. Live both-seat countdown/pause/pass behavior
+still needs affected browser qualification; see
+`docs/testing/human-response-controller-role.md`. None of these components closes
+the full release gates or the original full-rules/arbitrary-deck objective.
