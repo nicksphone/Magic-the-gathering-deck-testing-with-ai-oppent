@@ -1,7 +1,9 @@
 # Release Acceptance Status
 
 Checkpoint: 2026-10-08. Component source pins are recorded individually below;
-the latest rules integration is described in `escape-safekeeper-current.md`,
+the latest published rules integration is `7455a9d`, described in
+`final518-storm-backend-qualification.md`. Earlier rules milestones remain in
+`escape-safekeeper-current.md`,
 with every component's source and evidence boundary recorded separately.
 Overall release remains unfinished.
 The requirements in `plan.md` are unchanged; component passes below are not a
@@ -11,6 +13,8 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Current Storm/backend composition | Published `7455a9d`: seven whole backend modules / 203 passes, 108.58s, forty original restart children and four actual HTTP lifespans; separate nine whole Storm modules / 168 passes, 25.68s, exact node order and source/native closure verified | Two separate executed cohorts, not a merged 371-test gate. Opposite-callback actor controls are internal protocol evidence, not a lawful opposite-copied-trigger certificate; Spree remains unsupported; see `final518-storm-backend-qualification.md` |
+| Current frontend test/build composition | Immutable published `7455a9d`: complete original npm test script, lint and TypeScript/Vite production build exit zero; matching backend/audit/qualification fixtures and original source hashes verified | Existing dependency cache; Python consumer native SQL/socket/process denial. Not a clean installation, actual browser, proxy/HTTPS or deployment certificate. Evidence: `diagnostics/current745-frontend-test-lint-build-20261008/` |
 | Current storage capacity and lifecycle | Isolated current `da03c6bb` plus reviewed increment: 21 whole modules / 257 passes, 1,219.33s; 771 passing phase reports, 12 lifespans, four real CLI runs, source/runtime equality and native closure verified | Current component only; physical quota/exhaustion, crash/soak, operator/live activation and final browser union remain open; see `current-storage-capacity-qualification.md` |
 | Either human seat in setup | Published `af75a81`: actual React controls and controller-payload regression pass; full configured frontend tests, lint, TypeScript and production Vite build exit zero | Player vs AI now offers either seat and restores the actual controller map. Full built-app/API/SQLite and natural both-seat BO3 remain separate; see `human-seat-setup-current.md` |
 | Master+ request admission | Published `eb53a01`: whole NEW model/policy module / 19 ordinary passes, 1.83s, with native SQLite and socket denial; original models reproduced three admission failures | Two request literals now admit the existing distinct policy; unknown difficulties still reject. Not actual HTTP match/diagnostics completion or expert gameplay quality; see `master-plus-admission-current.md` |
@@ -84,6 +88,10 @@ inspection; never execute a database on NFS.
 ## Required Before Completion
 
 1. Complete pending-source privacy mixed HTTP/SQL and final release-source acceptance.
+   The published `7455a9d` Storm/backend union now passes the complete original
+   203-case backend cohort and separate original 168-case Storm cohort, with
+   unchanged assertions and independently verified source/closure evidence.
+   This closes those two declarations, not every final-release requirement.
    The current declared ten-module mixed cohort now passes 545 ordinary cases
    with 117 completed lifespans; see `current-http545-and-natural-games.md`.
    This does not close every privacy continuation or the final built-app gate.
@@ -98,6 +106,8 @@ inspection; never execute a database on NFS.
 3. Requalify current built UI, browser-served offline assets, BO3 and recovery with the exact
    origin configuration and fresh locked dependencies. Test supported actions
    not encountered in the successful browser episodes.
+   Current `7455a9d` frontend tests, lint and build pass on the existing cache;
+   the final real-browser/HTTPS and clean-install requirements remain open.
 4. Requalify the integrated private HTTPS/auth proxy with the final combined
    source and browser. Its pinned native TLS/auth/API/media/atomicity/restart
    component passed; wider user-approved hostname/trust/topology configuration

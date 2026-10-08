@@ -1,7 +1,7 @@
 # Graph Report - mtg-retained-current-1w4zUg  (2026-10-08)
 
 ## Corpus Check
-- 2448 files · ~2,182,086 words
+- 2448 files · ~2,182,269 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 53 file(s) not represented in the graph (top: .jsonl 27, (none) 15, .utc 4)
 
