@@ -298,6 +298,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           mode_targets: Object.fromEntries(selectedModes.map((mode) => [mode, modeTargets[mode] ?? {}])) }
       : t;
     const optionId = costChoice[cardId] || move?.cost_options?.[0]?.id;
+    const option = move?.cost_options?.find(candidate => candidate.id === optionId);
     const symbols = move?.cost_options?.find((option) => option.id === optionId)?.hybrid_symbols ?? [];
     const branches = symbols.map((_, index) => hybridChoice[`${cardId}:${selectedFaceIndex ?? 0}:${optionId}:${index}`] ?? "");
     onCardAction(viewerSeat, {
@@ -308,6 +309,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         id: optionId,
         discard_card_ids: costCards[`${cardId}:${optionId}:discard_card_ids`],
         sacrifice_card_ids: costCards[`${cardId}:${optionId}:sacrifice_card_ids`],
+        ...(option?.hand_exile_color ? { exile_card_ids: costCards[`${cardId}:${optionId}:exile_card_ids`] ?? [] } : {}),
       } : undefined,
       hybrid_choices: branches.length && branches.every(Boolean) ? branches : undefined,
       selected_face_index: selectedFaceIndex,
@@ -799,11 +801,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             ].map((target) => [target.id, target])).values()];
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             const payments = [
-              { key: 'discard_card_ids', count: (selectedCost?.discard_cards ?? 0) + (selectedCost?.discard_x ? Math.max(0, Number(targets[card.id]?.x_value ?? 0)) : 0), candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost' },
-              { key: 'sacrifice_card_ids', count: selectedCost?.sacrifice_creatures ?? 0, candidates: selectedCost?.sacrifice_card_ids ?? [], label: 'Sacrifice for cost' },
+              { key: 'discard_card_ids', count: (selectedCost?.discard_cards ?? 0) + (selectedCost?.discard_x ? Math.max(0, Number(targets[card.id]?.x_value ?? 0)) : 0), candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost', optional: false },
+              { key: 'sacrifice_card_ids', count: selectedCost?.sacrifice_creatures ?? 0, candidates: selectedCost?.sacrifice_card_ids ?? [], label: 'Sacrifice for cost', optional: false },
+              { key: 'exile_card_ids', count: 0, candidates: selectedCost?.exile_card_ids ?? [], label: 'Exile from hand for cost', optional: Boolean(selectedCost?.hand_exile_color) },
             ];
-            const incompleteCostCards = payments.some(payment => payment.count > 0 &&
-              ((costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.length ?? 0) !== payment.count ||
+            const incompleteCostCards = payments.some(payment => (payment.count > 0 || payment.optional) &&
+              ((!payment.optional && (costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.length ?? 0) !== payment.count) ||
+                new Set(costCards[`${card.id}:${selectedCostId}:${payment.key}`] ?? []).size !== (costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.length ?? 0) ||
                 costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.some(id => !payment.candidates.includes(id))));
             const selectedManaCost = move.cost_options?.find((option) => option.id === selectedCostId)?.mana_cost ?? move.mana_cost;
             const selectedAuraTarget = String(targets[card.id]?.target_card_id ?? "");
@@ -876,10 +880,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   onChange={choice => setResourceChoices(previous => ({...previous,
                     [`${card.id}:${selectedFaceIndex}:${selectedCostId}`]: choice}))} /> : null}
                 {selectedCost?.sacrifice_all ? <p>Additional cost: sacrifice all permanents you control.</p> : null}
-                {payments.filter(payment => payment.count > 0).map(payment => {
+                {payments.filter(payment => payment.count > 0 || payment.optional).map(payment => {
                   const key = `${card.id}:${selectedCostId}:${payment.key}`;
                   return <label key={key}>
-                    {payment.label}: choose {payment.count}
+                    {payment.label}: {payment.optional ? `choose any number (including zero); reduce generic cost by ${selectedCost?.hand_exile_generic_reduction} per card` : `choose ${payment.count}`}
                     <select multiple aria-label={`${payment.label} ${card.name}`}
                       value={costCards[key] ?? []}
                       onChange={event => setCostCards(previous => ({ ...previous,

@@ -213,6 +213,9 @@ export type LegalMove = {
     sacrifice_kind?: string;
     discard_card_ids?: string[];
     sacrifice_card_ids?: string[];
+    hand_exile_color?: string;
+    hand_exile_generic_reduction?: number;
+    exile_card_ids?: string[];
   }[];
   options?: string[];
   attackers?: { id: string; name: string }[];

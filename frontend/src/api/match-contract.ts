@@ -278,6 +278,12 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         && (option.kicker_base_id == null || typeof option.kicker_base_id === 'string')
         && (option.target_hints === undefined || targetHints(option.target_hints))
         && (option.resource_payment_candidates === undefined || resourceCandidates(option.resource_payment_candidates))
+        && (['hand_exile_color', 'hand_exile_generic_reduction', 'exile_card_ids'].every(key => option[key] === undefined)
+          || (typeof option.hand_exile_color === 'string' && /^[WUBRG]$/.test(option.hand_exile_color)
+            && Number.isSafeInteger(option.hand_exile_generic_reduction) && (option.hand_exile_generic_reduction as number) > 0
+            && Array.isArray(option.exile_card_ids) && option.exile_card_ids.length <= 250
+            && option.exile_card_ids.every(id => typeof id === 'string' && id.length > 0 && id.length <= 100)
+            && new Set(option.exile_card_ids).size === option.exile_card_ids.length))
         && ['discard_cards', 'sacrifice_creatures'].every(key => Number.isInteger(option[key]) && (option[key] as number) >= 0)
         && ['discard_card_ids', 'sacrifice_card_ids'].every(key => option[key] === undefined ||
           (Array.isArray(option[key]) && option[key].every(id => typeof id === 'string')

@@ -1,0 +1,485 @@
+{
+  "actor_hand_views": [
+    {
+      "attached_to": null,
+      "base_keywords": [],
+      "base_power": null,
+      "base_toughness": null,
+      "base_type_line": "Instant",
+      "bestowed": false,
+      "card_faces": [],
+      "chosen_creature_type": null,
+      "colors": [
+        "W"
+      ],
+      "counters": {},
+      "damage_marked": 0,
+      "effect_warnings": [],
+      "foretell_order": null,
+      "foretold_turn": null,
+      "id": "00000000-0000-0000-0000-000000000002",
+      "image_uri": null,
+      "is_token": false,
+      "keyword_counts": {},
+      "keywords": [],
+      "layout": "normal",
+      "loyalty": null,
+      "mana_cost": "{X}{W}",
+      "mana_source_amounts": {},
+      "mana_source_colors": [],
+      "name": "March of Otherworldly Light",
+      "oracle_text": "As an additional cost to cast this spell, you may exile any number of white cards from your hand. This spell costs {2} less to cast for each card exiled this way.\nExile target artifact, creature, or enchantment with mana value X or less.",
+      "power": null,
+      "printed_power": null,
+      "printed_toughness": null,
+      "selected_face_index": null,
+      "summoning_sick": false,
+      "suspended": false,
+      "tapped": false,
+      "toughness": null,
+      "type_line": "Instant",
+      "types": [
+        "Instant"
+      ],
+      "was_foretold": false
+    },
+    {
+      "attached_to": null,
+      "base_keywords": [
+        "flash"
+      ],
+      "base_power": null,
+      "base_toughness": null,
+      "base_type_line": "Enchantment",
+      "bestowed": false,
+      "card_faces": [],
+      "chosen_creature_type": null,
+      "colors": [
+        "W"
+      ],
+      "counters": {},
+      "damage_marked": 0,
+      "effect_warnings": [],
+      "foretell_order": null,
+      "foretold_turn": null,
+      "id": "00000000-0000-0000-0000-000000000003",
+      "image_uri": null,
+      "is_token": false,
+      "keyword_counts": {
+        "flash": 1
+      },
+      "keywords": [
+        "flash"
+      ],
+      "layout": "normal",
+      "loyalty": null,
+      "mana_cost": "{5}{W}",
+      "mana_source_amounts": {},
+      "mana_source_colors": [],
+      "name": "Leyline Binding",
+      "oracle_text": "Flash\nDomain \u2014 This spell costs {1} less to cast for each basic land type among lands you control.\nWhen this enchantment enters, exile target nonland permanent an opponent controls until this enchantment leaves the battlefield.",
+      "power": null,
+      "printed_power": null,
+      "printed_toughness": null,
+      "selected_face_index": null,
+      "summoning_sick": false,
+      "suspended": false,
+      "tapped": false,
+      "toughness": null,
+      "type_line": "Enchantment",
+      "types": [
+        "Enchantment"
+      ],
+      "was_foretold": false
+    },
+    {
+      "attached_to": null,
+      "base_keywords": [],
+      "base_power": null,
+      "base_toughness": null,
+      "base_type_line": "Instant",
+      "bestowed": false,
+      "card_faces": [],
+      "chosen_creature_type": null,
+      "colors": [
+        "R",
+        "W"
+      ],
+      "counters": {},
+      "damage_marked": 0,
+      "effect_warnings": [],
+      "foretell_order": null,
+      "foretold_turn": null,
+      "id": "00000000-0000-0000-0000-000000000004",
+      "image_uri": null,
+      "is_token": false,
+      "keyword_counts": {},
+      "keywords": [],
+      "layout": "normal",
+      "loyalty": null,
+      "mana_cost": "{R}{W}",
+      "mana_source_amounts": {},
+      "mana_source_colors": [],
+      "name": "Boros Charm",
+      "oracle_text": "Choose one \u2014\n\u2022 Boros Charm deals 4 damage to target player or planeswalker.\n\u2022 Permanents you control gain indestructible until end of turn.\n\u2022 Target creature gains double strike until end of turn.",
+      "power": null,
+      "printed_power": null,
+      "printed_toughness": null,
+      "selected_face_index": null,
+      "summoning_sick": false,
+      "suspended": false,
+      "tapped": false,
+      "toughness": null,
+      "type_line": "Instant",
+      "types": [
+        "Instant"
+      ],
+      "was_foretold": false
+    },
+    {
+      "attached_to": null,
+      "base_keywords": [],
+      "base_power": null,
+      "base_toughness": null,
+      "base_type_line": "Enchantment",
+      "bestowed": false,
+      "card_faces": [],
+      "chosen_creature_type": null,
+      "colors": [
+        "W"
+      ],
+      "counters": {},
+      "damage_marked": 0,
+      "effect_warnings": [],
+      "foretell_order": null,
+      "foretold_turn": null,
+      "id": "00000000-0000-0000-0000-000000000005",
+      "image_uri": null,
+      "is_token": false,
+      "keyword_counts": {},
+      "keywords": [],
+      "layout": "normal",
+      "loyalty": null,
+      "mana_cost": "{1}{W}",
+      "mana_source_amounts": {},
+      "mana_source_colors": [],
+      "name": "Intangible Virtue",
+      "oracle_text": "Creature tokens you control get +1/+1 and have vigilance.",
+      "power": null,
+      "printed_power": null,
+      "printed_toughness": null,
+      "selected_face_index": null,
+      "summoning_sick": false,
+      "suspended": false,
+      "tapped": false,
+      "toughness": null,
+      "type_line": "Enchantment",
+      "types": [
+        "Enchantment"
+      ],
+      "was_foretold": false
+    },
+    {
+      "attached_to": null,
+      "base_keywords": [],
+      "base_power": null,
+      "base_toughness": null,
+      "base_type_line": "Instant",
+      "bestowed": false,
+      "card_faces": [],
+      "chosen_creature_type": null,
+      "colors": [
+        "R"
+      ],
+      "counters": {},
+      "damage_marked": 0,
+      "effect_warnings": [],
+      "foretell_order": null,
+      "foretold_turn": null,
+      "id": "00000000-0000-0000-0000-000000000006",
+      "image_uri": null,
+      "is_token": false,
+      "keyword_counts": {},
+      "keywords": [],
+      "layout": "normal",
+      "loyalty": null,
+      "mana_cost": "{R}{R}",
+      "mana_source_amounts": {},
+      "mana_source_colors": [],
+      "name": "Searing Blaze",
+      "oracle_text": "Searing Blaze deals 1 damage to target player or planeswalker and 1 damage to target creature that player or that planeswalker's controller controls.\nLandfall \u2014 If you had a land enter the battlefield under your control this turn, Searing Blaze deals 3 damage to that player or planeswalker and 3 damage to that creature instead.",
+      "power": null,
+      "printed_power": null,
+      "printed_toughness": null,
+      "selected_face_index": null,
+      "summoning_sick": false,
+      "suspended": false,
+      "tapped": false,
+      "toughness": null,
+      "type_line": "Instant",
+      "types": [
+        "Instant"
+      ],
+      "was_foretold": false
+    }
+  ],
+  "actual_cast_move": {
+    "card_id": "00000000-0000-0000-0000-000000000002",
+    "card_name": "March of Otherworldly Light",
+    "cost_options": [
+      {
+        "additional_cost_group": null,
+        "discard_all": false,
+        "discard_card_ids": [
+          "00000000-0000-0000-0000-000000000003",
+          "00000000-0000-0000-0000-000000000004",
+          "00000000-0000-0000-0000-000000000005",
+          "00000000-0000-0000-0000-000000000006"
+        ],
+        "discard_cards": 0,
+        "discard_x": false,
+        "exile_card_ids": [
+          "00000000-0000-0000-0000-000000000003",
+          "00000000-0000-0000-0000-000000000004",
+          "00000000-0000-0000-0000-000000000005"
+        ],
+        "exile_graveyard": 0,
+        "graveyard_permission_key": null,
+        "graveyard_permission_max_mana_value": null,
+        "hand_exile_color": "W",
+        "hand_exile_generic_reduction": 2,
+        "hybrid_symbols": [],
+        "id": "base",
+        "kicked": false,
+        "kicker_base_id": null,
+        "label": "Base Cost",
+        "mana_cost": "{X}{W}",
+        "pay_life": 0,
+        "pay_life_x": false,
+        "sacrifice_all": false,
+        "sacrifice_card_ids": [],
+        "sacrifice_creatures": 0,
+        "sacrifice_kind": "creature",
+        "target_hints": {
+          "action_has_target_text": true,
+          "artifact_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "Witch's Oven"
+            }
+          ],
+          "choice_schema": {
+            "replacement_source_id": {
+              "description": "Optional replacement-effect source ID returned by the replacement-options API.",
+              "required": false,
+              "type": "string"
+            },
+            "target_card_id": {
+              "required": false,
+              "type": "string"
+            },
+            "x_value": {
+              "minimum": 0,
+              "required": true,
+              "type": "integer"
+            }
+          },
+          "creature_targets": [],
+          "enchantment_targets": [],
+          "noncreature_permanent_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "Witch's Oven"
+            }
+          ],
+          "permanent_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "Witch's Oven"
+            }
+          ],
+          "requires_x_value": true,
+          "target_restrictions": {
+            "allowed_types": [
+              "Artifact",
+              "Creature",
+              "Enchantment"
+            ]
+          }
+        }
+      }
+    ],
+    "from_graveyard": false,
+    "mana_cost": "{X}{W}",
+    "target_hints": {
+      "action_has_target_text": true,
+      "artifact_targets": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "Witch's Oven"
+        }
+      ],
+      "choice_schema": {
+        "replacement_source_id": {
+          "description": "Optional replacement-effect source ID returned by the replacement-options API.",
+          "required": false,
+          "type": "string"
+        },
+        "target_card_id": {
+          "required": false,
+          "type": "string"
+        },
+        "x_value": {
+          "minimum": 0,
+          "required": true,
+          "type": "integer"
+        }
+      },
+      "creature_targets": [],
+      "enchantment_targets": [],
+      "noncreature_permanent_targets": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "Witch's Oven"
+        }
+      ],
+      "permanent_targets": [
+        {
+          "id": "00000000-0000-0000-0000-000000000001",
+          "name": "Witch's Oven"
+        }
+      ],
+      "requires_x_value": true,
+      "target_restrictions": {
+        "allowed_types": [
+          "Artifact",
+          "Creature",
+          "Enchantment"
+        ]
+      }
+    },
+    "type": "cast_spell"
+  },
+  "browser_selection_proof": false,
+  "cost_choice_schema": {
+    "additionalProperties": false,
+    "properties": {
+      "discard_card_ids": {
+        "anyOf": [
+          {
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 250,
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Discard Card Ids"
+      },
+      "exile_card_ids": {
+        "anyOf": [
+          {
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 250,
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Exile Card Ids"
+      },
+      "id": {
+        "maxLength": 100,
+        "minLength": 1,
+        "title": "Id",
+        "type": "string"
+      },
+      "sacrifice_card_ids": {
+        "anyOf": [
+          {
+            "items": {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 250,
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "title": "Sacrifice Card Ids"
+      }
+    },
+    "required": [
+      "id"
+    ],
+    "title": "CostChoice",
+    "type": "object"
+  },
+  "explicit_null_validation_rejected": true,
+  "explicit_zero_action": {
+    "card_id": "00000000-0000-0000-0000-000000000002",
+    "cost_choice": {
+      "exile_card_ids": [],
+      "id": "base"
+    },
+    "from_exile": false,
+    "from_graveyard": false,
+    "from_library": false,
+    "targets": {
+      "target_card_id": "00000000-0000-0000-0000-000000000001",
+      "x_value": 4
+    },
+    "type": "cast_spell"
+  },
+  "observed_payment": {
+    "mana_spent": 1,
+    "remaining_pool": {
+      "B": 0,
+      "C": 0,
+      "G": 0,
+      "R": 0,
+      "U": 0,
+      "W": 0
+    },
+    "retained_white_id": "00000000-0000-0000-0000-000000000005",
+    "selected_exile_ids": [
+      "00000000-0000-0000-0000-000000000003",
+      "00000000-0000-0000-0000-000000000004"
+    ]
+  },
+  "seat": 2,
+  "typed_paid_action": {
+    "card_id": "00000000-0000-0000-0000-000000000002",
+    "cost_choice": {
+      "exile_card_ids": [
+        "00000000-0000-0000-0000-000000000003",
+        "00000000-0000-0000-0000-000000000004"
+      ],
+      "id": "base"
+    },
+    "from_exile": false,
+    "from_graveyard": false,
+    "from_library": false,
+    "targets": {
+      "target_card_id": "00000000-0000-0000-0000-000000000001",
+      "x_value": 4
+    },
+    "type": "cast_spell"
+  }
+}

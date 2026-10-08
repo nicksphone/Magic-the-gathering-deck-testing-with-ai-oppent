@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791418547.5192394,
-    "seen": 1791418753.2752936,
-    "ast_hash": "b80c2acb4a744385d30db22ba5aa0f2f",
+    "mtime": 1791420532.8839202,
+    "seen": 1791420658.528742,
+    "ast_hash": "8cbf3274bf843027ca923819f1cac6ae",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5916,9 +5916,9 @@
     "semantic_hash": ""
   },
   "frontend/src/api/match-contract.ts": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2201324,
-    "ast_hash": "b14af1d0939e79db3142274525e32564",
+    "mtime": 1791420500.7893429,
+    "seen": 1791420658.528751,
+    "ast_hash": "6f9ed3b36d933afd034db7b1726b0ea2",
     "semantic_hash": ""
   },
   "frontend/src/api/mutation-gate.ts": {
@@ -5952,9 +5952,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Battlefield.tsx": {
-    "mtime": 1791325499.0,
-    "seen": 1791326749.2201498,
-    "ast_hash": "5194f065ba8bf2e58c2bf25c68f598f8",
+    "mtime": 1791420500.7903428,
+    "seen": 1791420658.5287626,
+    "ast_hash": "d232c902e12092c71d11548d96979b0d",
     "semantic_hash": ""
   },
   "frontend/src/components/CardArt.tsx": {
@@ -6042,9 +6042,9 @@
     "semantic_hash": ""
   },
   "frontend/src/types/index.ts": {
-    "mtime": 1791419083.2330546,
-    "seen": 1791419403.83602,
-    "ast_hash": "2892499a4eb1ce9874345bf535fdd31f",
+    "mtime": 1791420500.7883427,
+    "seen": 1791420658.5288022,
+    "ast_hash": "fc3988de6539f6036937fb8a2bf4fa48",
     "semantic_hash": ""
   },
   "frontend/src/vite-env.d.ts": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791419660.4043107,
-    "seen": 1791419750.8745794,
-    "ast_hash": "bf227fce24347c9e6905ffaf248fc4eb",
+    "mtime": 1791420581.7942696,
+    "seen": 1791420658.529831,
+    "ast_hash": "f87b6dd8ac97cb8e3ea552ca9965e1d1",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13914,9 +13914,51 @@
     "semantic_hash": ""
   },
   "docs/testing/simulation-resource-forward-current.md": {
-    "mtime": 1791419660.4033108,
-    "seen": 1791419750.874643,
-    "ast_hash": "5268e15f5fb582207cc8dead478511f9",
+    "mtime": 1791419761.2209318,
+    "seen": 1791420439.5925474,
+    "ast_hash": "693822ada1e4ac211d2d91de0e93a1b7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_archangel_pair_http_goldens.py": {
+    "mtime": 1791420363.570102,
+    "seen": 1791420439.589413,
+    "ast_hash": "5ab367362e0ea5a32d83feabcd7ccd7a",
+    "semantic_hash": ""
+  },
+  "docs/testing/archangel-mixed-http-sql-current.md": {
+    "mtime": 1791420363.6011016,
+    "seen": 1791420439.5918183,
+    "ast_hash": "3876761d1c7df35b7e42a182a2f68a92",
+    "semantic_hash": ""
+  },
+  "frontend/tests/fixtures/march-public/march-public-view-v2-public-pitch-seat-1.json": {
+    "mtime": 1791420477.8566422,
+    "seen": 1791420658.5289779,
+    "ast_hash": "4d47a96eff616a8438a150d63da5f638",
+    "semantic_hash": ""
+  },
+  "frontend/tests/fixtures/march-public/march-public-view-v2-public-pitch-seat-2.json": {
+    "mtime": 1791420477.8566422,
+    "seen": 1791420658.52898,
+    "ast_hash": "8ead252e2e599c8a97fee3a3a02e4e2e",
+    "semantic_hash": ""
+  },
+  "frontend/tests/optional-hand-exile-controls.mjs": {
+    "mtime": 1791420532.828921,
+    "seen": 1791420658.5290184,
+    "ast_hash": "05ff87234fcdb1f5a899f61a359d2425",
+    "semantic_hash": ""
+  },
+  "docs/testing/optional-hand-exile-human-controls.md": {
+    "mtime": 1791420581.7942696,
+    "seen": 1791420658.5297673,
+    "ast_hash": "24725d1fcc1bd3208e4b83a90785b377",
+    "semantic_hash": ""
+  },
+  "frontend/tests/fixtures/march-public/PROVENANCE.md": {
+    "mtime": 1791420532.829921,
+    "seen": 1791420658.5300677,
+    "ast_hash": "da9d2c71f26c0f30c263d4f5d4429946",
     "semantic_hash": ""
   }
 }
