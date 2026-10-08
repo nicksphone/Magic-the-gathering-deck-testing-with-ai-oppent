@@ -55,6 +55,9 @@ def available_cast_options_and_hints(state: MatchState, card: CardInstance, cont
         variants = [(option, build_cost_cast_hints(state, card, controller, option))
                     for option in options if check_cost_option_available(state, controller, card, option)]
         variants = [(option, hints) for option, hints in variants if has_available_targets_for_action(hints)]
+        if variants and variants[0][1].get('choose_one_or_more_modes'):
+            variants[0][1]['mode_base_mana_costs'] = {
+                option.id: hints['mode_base_mana_costs'][option.id] for option, hints in variants}
         return [option for option, _ in variants], variants[0][1] if variants else {}
     hints = build_cast_hints(state, card, controller)
     targets = hints.get("aura_targets", [])
@@ -69,7 +72,14 @@ def available_cast_options_and_hints(state: MatchState, card: CardInstance, cont
 
 def build_cost_cast_hints(state, card, controller, option, action_targets=None):
     from rules_engine.kicker import spell_kicker_view
-    hints = build_cast_hints(state, spell_kicker_view(card, option.kicked), controller, action_targets)
+    hints = build_cast_hints(state, spell_kicker_view(card, option.kicked), controller, action_targets,
+                             cost_option=option)
+    if hints.get('choose_one_or_more_modes'):
+        from rules_engine.spree import parse, selected, unpriced_base
+        modes = parse(card.oracle_text)
+        chosen = (selected(modes, action_targets) if action_targets is not None
+                  else [min(modes, key=lambda mode: mode.generic)])
+        hints['mode_base_mana_costs'] = {option.id: unpriced_base(option, chosen)}
     if '{X}' in option.mana_cost.upper():
         hints['requires_x_value'] = True
         hints['choice_schema']['x_value'] = {'type': 'integer', 'required': True, 'minimum': 0}
@@ -83,6 +93,7 @@ def build_cast_hints(
     action_targets: dict[str, Any] | None = None,
     *,
     source_kind: str | None = 'spell',
+    cost_option=None,
 ) -> dict[str, Any]:
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
@@ -111,6 +122,21 @@ def build_cast_hints(
             and (not _needs_target(mode)
                  or _has_target_options(inspect_target_hints(state, card, controller, {"mode_text": mode}, source_kind=source_kind)))
         ]
+        if hints.get('choose_one_or_more_modes') and not selected:
+            from rules_engine.costs import collect_cost_options, check_cost_option_available
+            options_by_mode = {mode: collect_cost_options(state, controller, card,
+                                                          action_targets={'mode_text': mode})
+                               for mode in hints['available_modes']}
+            if cost_option is not None:
+                from dataclasses import replace
+                from rules_engine.spree import parse, priced, unpriced_base
+                modes = parse(card.oracle_text)
+                base = unpriced_base(cost_option, [min(modes, key=lambda mode: mode.generic)])
+                raw_option = replace(cost_option, mana_cost=base)
+                options_by_mode = {mode.text: [priced(raw_option, [mode])] for mode in modes}
+            hints['available_modes'] = [mode for mode in hints['available_modes'] if any(
+                check_cost_option_available(state, controller, card, option)
+                for option in options_by_mode[mode])]
     hints.setdefault("choice_schema", {})
     face_names = hints.get("face_names") or []
     if face_names:
@@ -123,7 +149,19 @@ def build_cast_hints(
     if CHOOSE_TWO_RE.search(card.oracle_text or ""):
         hints["choose_two_modes"] = True
     if hints.get("modes"):
-        if hints.get("choose_two_modes"):
+        if hints.get('choose_one_or_more_modes'):
+            hints['choice_schema']['mode_text'] = {'type': 'string', 'required': False,
+                                                   'enum': hints['available_modes']}
+            hints['choice_schema']['mode_texts'] = {'type': 'array', 'required': False,
+                'min_items': 1, 'max_items': len(hints['modes']), 'enum': hints['available_modes']}
+            from rules_engine.spree import parse
+            hints['mode_target_hints'] = {
+                mode: inspect_target_hints(state, card, controller, {'mode_text': mode}, source_kind=source_kind)
+                for mode in hints['available_modes']}
+            hints['mode_additional_mana_costs'] = {
+                mode.text: '{' + str(mode.generic) + '}' for mode in parse(card.oracle_text)
+                if mode.text in hints['available_modes']}
+        elif hints.get("choose_two_modes"):
             hints["choice_schema"]["mode_texts"] = {"type": "array", "required": True, "min_items": 2, "max_items": 2, "enum": hints["available_modes"]}
             hints["mode_target_hints"] = {
                 mode: inspect_target_hints(state, card, controller, {"mode_text": mode}, source_kind=source_kind)

@@ -1,0 +1,3969 @@
+{
+  "source": "/tmp/mtg-spree745-hint-adapter-UfLWai/source",
+  "rows": [
+    {
+      "fixture_seat": 1,
+      "casting_player": 2,
+      "selection": 0,
+      "actual_public_serialized_match": {
+        "id": "fb354286-f68b-48b9-8437-0fab775a9e4b",
+        "turn": 1,
+        "active_player": 1,
+        "priority_player": 2,
+        "step": "precombat_main",
+        "winner": null,
+        "score": {
+          "1": 0,
+          "2": 0
+        },
+        "pregame_pending": false,
+        "mulligan_count": {
+          "1": 0,
+          "2": 0
+        },
+        "mulligan_bottomed": {
+          "1": 0,
+          "2": 0
+        },
+        "kept_hands": [
+          1,
+          2
+        ],
+        "day_night": "none",
+        "spells_cast_this_turn": {
+          "1": 1,
+          "2": 0
+        },
+        "discards_this_turn": {
+          "1": 0,
+          "2": 0
+        },
+        "turn_cant_gain_life": [],
+        "turn_damage_cant_be_prevented": false,
+        "combat_damage_stage": "none",
+        "pending_replacement_choice": null,
+        "pending_trigger_order": null,
+        "priority_stops": {
+          "1": [
+            "upkeep",
+            "precombat_main",
+            "begin_combat",
+            "declare_attackers",
+            "postcombat_main",
+            "end_step"
+          ],
+          "2": [
+            "upkeep",
+            "begin_combat",
+            "declare_blockers",
+            "end_step"
+          ]
+        },
+        "players": {
+          "1": {
+            "id": 1,
+            "name": "Player A",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 0,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "name": "Volatile Stormdrake",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 3,
+                "toughness": 2,
+                "base_power": 3,
+                "base_toughness": 2,
+                "printed_power": "3",
+                "printed_toughness": "2",
+                "keywords": [
+                  "flying",
+                  "hexproof from activated and triggered abilities"
+                ],
+                "keyword_counts": {
+                  "flying": 1,
+                  "hexproof from activated and triggered abilities": 1
+                },
+                "base_keywords": [
+                  "flying"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{1}{U}",
+                "oracle_text": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Drake",
+                "base_type_line": "Creature — Drake",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "U"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          },
+          "2": {
+            "id": 2,
+            "name": "Player B",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 1,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000002",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [
+              {
+                "id": "00000000-0000-0000-0000-000000000007",
+                "name": "Return the Favor",
+                "tapped": false,
+                "summoning_sick": false,
+                "power": null,
+                "toughness": null,
+                "base_power": null,
+                "base_toughness": null,
+                "printed_power": null,
+                "printed_toughness": null,
+                "keywords": [],
+                "keyword_counts": {},
+                "base_keywords": [],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}{R}",
+                "oracle_text": "Spree (Choose one or more additional costs.)\n+ {1} — Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.\n+ {1} — Change the target of target spell or ability with a single target.",
+                "image_uri": null,
+                "types": [
+                  "Instant"
+                ],
+                "is_token": false,
+                "type_line": "Instant",
+                "base_type_line": "Instant",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 2,
+              "G": 0,
+              "C": 1
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          }
+        },
+        "stack": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB",
+            "controller": 1,
+            "effect_key": "exchange_energy_payment",
+            "targets": []
+          }
+        ],
+        "attackers": [],
+        "pending_mechanic_choice": null,
+        "attack_targets": {},
+        "attack_bands": [],
+        "blocks": {},
+        "log": [
+          "Game start. Both players draw 7 and decide on London mulligans.",
+          "Player A casts/activates Volatile Stormdrake.",
+          "Player A passes priority on precombat_main (stack=1).",
+          "Player B passes priority on precombat_main (stack=1).",
+          "Player A must choose a target for Volatile Stormdrake ETB.",
+          "1 triggered ability(s) added to stack (stack_resolution).",
+          "Volatile Stormdrake resolves.",
+          "Player A targets Raging Goblin with Volatile Stormdrake ETB.",
+          "Player A passes priority on precombat_main (stack=1)."
+        ]
+      },
+      "serialization_viewer_players": [
+        2
+      ],
+      "protocol_envelope": {
+        "revision": 0,
+        "controllers": {
+          "1": "human",
+          "2": "human"
+        },
+        "scope": "Explicit test client protocol metadata, not game-engine fields"
+      },
+      "pool_before": {
+        "W": 0,
+        "U": 0,
+        "B": 0,
+        "R": 2,
+        "G": 0,
+        "C": 1
+      },
+      "actual_offered_move": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "card_name": "Return the Favor",
+        "from_graveyard": false,
+        "mana_cost": "{R}{R}",
+        "cost_options": [
+          {
+            "id": "base",
+            "label": "Base Cost",
+            "mana_cost": "{R}{R}{1}",
+            "hybrid_symbols": [],
+            "pay_life": 0,
+            "pay_life_x": false,
+            "discard_cards": 0,
+            "discard_x": false,
+            "discard_all": false,
+            "sacrifice_all": false,
+            "sacrifice_creatures": 0,
+            "sacrifice_kind": "creature",
+            "exile_graveyard": 0,
+            "additional_cost_group": null,
+            "kicked": false,
+            "kicker_base_id": null,
+            "graveyard_permission_key": null,
+            "graveyard_permission_max_mana_value": null
+          }
+        ],
+        "target_hints": {
+          "modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choose_one_or_more_modes": true,
+          "stack_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000006",
+              "label": "Volatile Stormdrake ETB"
+            }
+          ],
+          "action_has_target_text": true,
+          "available_modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choice_schema": {
+            "mode_text": {
+              "type": "string",
+              "required": false,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "mode_texts": {
+              "type": "array",
+              "required": false,
+              "min_items": 1,
+              "max_items": 2,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "target_stack_id": {
+              "type": "string",
+              "required": false
+            },
+            "replacement_source_id": {
+              "type": "string",
+              "required": false,
+              "description": "Optional replacement-effect source ID returned by the replacement-options API."
+            }
+          },
+          "mode_target_hints": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            },
+            "Change the target of target spell or ability with a single target.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            }
+          },
+          "mode_additional_mana_costs": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}",
+            "Change the target of target spell or ability with a single target.": "{1}"
+          },
+          "mode_base_mana_costs": {
+            "base": "{R}{R}"
+          }
+        }
+      },
+      "actual_selected_target_hints": {
+        "modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choose_one_or_more_modes": true,
+        "stack_targets": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB"
+          }
+        ],
+        "action_has_target_text": true,
+        "available_modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy."
+        ],
+        "choice_schema": {
+          "mode_text": {
+            "type": "string",
+            "required": false,
+            "enum": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy."
+            ]
+          },
+          "mode_texts": {
+            "type": "array",
+            "required": false,
+            "min_items": 1,
+            "max_items": 2,
+            "enum": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy."
+            ]
+          },
+          "target_stack_id": {
+            "type": "string",
+            "required": false
+          },
+          "replacement_source_id": {
+            "type": "string",
+            "required": false,
+            "description": "Optional replacement-effect source ID returned by the replacement-options API."
+          }
+        },
+        "mode_target_hints": {
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+            "modes": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "choose_one_or_more_modes": true,
+            "stack_targets": [
+              {
+                "id": "00000000-0000-0000-0000-000000000006",
+                "label": "Volatile Stormdrake ETB"
+              }
+            ]
+          }
+        },
+        "mode_additional_mana_costs": {
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}"
+        }
+      },
+      "actual_checked_action": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "targets": {
+          "mode_text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "target_stack_id": "00000000-0000-0000-0000-000000000006"
+        }
+      },
+      "actual_mana_spent": 3,
+      "actual_paid_stack": {
+        "id": "00000000-0000-0000-0000-000000000008",
+        "source_card_id": "00000000-0000-0000-0000-000000000007",
+        "controller": 2,
+        "label": "Return the Favor",
+        "effect_key": "effect_sequence",
+        "payload": {
+          "effects": [
+            {
+              "effect_key": "spree_copy",
+              "mode_text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "payload": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            }
+          ],
+          "target_restrictions": {
+            "allowed_types": [
+              "Instant"
+            ]
+          },
+          "__announced_targets": {
+            "mode_text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "target_stack_id": "00000000-0000-0000-0000-000000000006"
+          },
+          "__announced_target_references": {
+            "version": 1,
+            "targets": {}
+          },
+          "mana_spent": 3,
+          "__kicked": false,
+          "snow_mana_spent": 0,
+          "snow_mana_colors": {},
+          "__announced_stack_kind": "spell",
+          "__last_target_ids": []
+        },
+        "targets": []
+      },
+      "parsed_printed_modes": [
+        {
+          "text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "additional_generic": 1
+        },
+        {
+          "text": "Change the target of target spell or ability with a single target.",
+          "additional_generic": 1
+        }
+      ]
+    },
+    {
+      "fixture_seat": 1,
+      "casting_player": 2,
+      "selection": 1,
+      "actual_public_serialized_match": {
+        "id": "828ee160-0e3a-4bf7-9d81-84ecce3cbf31",
+        "turn": 1,
+        "active_player": 1,
+        "priority_player": 2,
+        "step": "precombat_main",
+        "winner": null,
+        "score": {
+          "1": 0,
+          "2": 0
+        },
+        "pregame_pending": false,
+        "mulligan_count": {
+          "1": 0,
+          "2": 0
+        },
+        "mulligan_bottomed": {
+          "1": 0,
+          "2": 0
+        },
+        "kept_hands": [
+          1,
+          2
+        ],
+        "day_night": "none",
+        "spells_cast_this_turn": {
+          "1": 1,
+          "2": 0
+        },
+        "discards_this_turn": {
+          "1": 0,
+          "2": 0
+        },
+        "turn_cant_gain_life": [],
+        "turn_damage_cant_be_prevented": false,
+        "combat_damage_stage": "none",
+        "pending_replacement_choice": null,
+        "pending_trigger_order": null,
+        "priority_stops": {
+          "1": [
+            "upkeep",
+            "precombat_main",
+            "begin_combat",
+            "declare_attackers",
+            "postcombat_main",
+            "end_step"
+          ],
+          "2": [
+            "upkeep",
+            "begin_combat",
+            "declare_blockers",
+            "end_step"
+          ]
+        },
+        "players": {
+          "1": {
+            "id": 1,
+            "name": "Player A",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 0,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "name": "Volatile Stormdrake",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 3,
+                "toughness": 2,
+                "base_power": 3,
+                "base_toughness": 2,
+                "printed_power": "3",
+                "printed_toughness": "2",
+                "keywords": [
+                  "flying",
+                  "hexproof from activated and triggered abilities"
+                ],
+                "keyword_counts": {
+                  "flying": 1,
+                  "hexproof from activated and triggered abilities": 1
+                },
+                "base_keywords": [
+                  "flying"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{1}{U}",
+                "oracle_text": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Drake",
+                "base_type_line": "Creature — Drake",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "U"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          },
+          "2": {
+            "id": 2,
+            "name": "Player B",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 1,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000002",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [
+              {
+                "id": "00000000-0000-0000-0000-000000000007",
+                "name": "Return the Favor",
+                "tapped": false,
+                "summoning_sick": false,
+                "power": null,
+                "toughness": null,
+                "base_power": null,
+                "base_toughness": null,
+                "printed_power": null,
+                "printed_toughness": null,
+                "keywords": [],
+                "keyword_counts": {},
+                "base_keywords": [],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}{R}",
+                "oracle_text": "Spree (Choose one or more additional costs.)\n+ {1} — Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.\n+ {1} — Change the target of target spell or ability with a single target.",
+                "image_uri": null,
+                "types": [
+                  "Instant"
+                ],
+                "is_token": false,
+                "type_line": "Instant",
+                "base_type_line": "Instant",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 2,
+              "G": 0,
+              "C": 1
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          }
+        },
+        "stack": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB",
+            "controller": 1,
+            "effect_key": "exchange_energy_payment",
+            "targets": []
+          }
+        ],
+        "attackers": [],
+        "pending_mechanic_choice": null,
+        "attack_targets": {},
+        "attack_bands": [],
+        "blocks": {},
+        "log": [
+          "Game start. Both players draw 7 and decide on London mulligans.",
+          "Player A casts/activates Volatile Stormdrake.",
+          "Player A passes priority on precombat_main (stack=1).",
+          "Player B passes priority on precombat_main (stack=1).",
+          "Player A must choose a target for Volatile Stormdrake ETB.",
+          "1 triggered ability(s) added to stack (stack_resolution).",
+          "Volatile Stormdrake resolves.",
+          "Player A targets Raging Goblin with Volatile Stormdrake ETB.",
+          "Player A passes priority on precombat_main (stack=1)."
+        ]
+      },
+      "serialization_viewer_players": [
+        2
+      ],
+      "protocol_envelope": {
+        "revision": 0,
+        "controllers": {
+          "1": "human",
+          "2": "human"
+        },
+        "scope": "Explicit test client protocol metadata, not game-engine fields"
+      },
+      "pool_before": {
+        "W": 0,
+        "U": 0,
+        "B": 0,
+        "R": 2,
+        "G": 0,
+        "C": 1
+      },
+      "actual_offered_move": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "card_name": "Return the Favor",
+        "from_graveyard": false,
+        "mana_cost": "{R}{R}",
+        "cost_options": [
+          {
+            "id": "base",
+            "label": "Base Cost",
+            "mana_cost": "{R}{R}{1}",
+            "hybrid_symbols": [],
+            "pay_life": 0,
+            "pay_life_x": false,
+            "discard_cards": 0,
+            "discard_x": false,
+            "discard_all": false,
+            "sacrifice_all": false,
+            "sacrifice_creatures": 0,
+            "sacrifice_kind": "creature",
+            "exile_graveyard": 0,
+            "additional_cost_group": null,
+            "kicked": false,
+            "kicker_base_id": null,
+            "graveyard_permission_key": null,
+            "graveyard_permission_max_mana_value": null
+          }
+        ],
+        "target_hints": {
+          "modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choose_one_or_more_modes": true,
+          "stack_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000006",
+              "label": "Volatile Stormdrake ETB"
+            }
+          ],
+          "action_has_target_text": true,
+          "available_modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choice_schema": {
+            "mode_text": {
+              "type": "string",
+              "required": false,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "mode_texts": {
+              "type": "array",
+              "required": false,
+              "min_items": 1,
+              "max_items": 2,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "target_stack_id": {
+              "type": "string",
+              "required": false
+            },
+            "replacement_source_id": {
+              "type": "string",
+              "required": false,
+              "description": "Optional replacement-effect source ID returned by the replacement-options API."
+            }
+          },
+          "mode_target_hints": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            },
+            "Change the target of target spell or ability with a single target.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            }
+          },
+          "mode_additional_mana_costs": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}",
+            "Change the target of target spell or ability with a single target.": "{1}"
+          },
+          "mode_base_mana_costs": {
+            "base": "{R}{R}"
+          }
+        }
+      },
+      "actual_selected_target_hints": {
+        "modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choose_one_or_more_modes": true,
+        "stack_targets": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB"
+          }
+        ],
+        "action_has_target_text": true,
+        "available_modes": [
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choice_schema": {
+          "mode_text": {
+            "type": "string",
+            "required": false,
+            "enum": [
+              "Change the target of target spell or ability with a single target."
+            ]
+          },
+          "mode_texts": {
+            "type": "array",
+            "required": false,
+            "min_items": 1,
+            "max_items": 2,
+            "enum": [
+              "Change the target of target spell or ability with a single target."
+            ]
+          },
+          "target_stack_id": {
+            "type": "string",
+            "required": false
+          },
+          "replacement_source_id": {
+            "type": "string",
+            "required": false,
+            "description": "Optional replacement-effect source ID returned by the replacement-options API."
+          }
+        },
+        "mode_target_hints": {
+          "Change the target of target spell or ability with a single target.": {
+            "modes": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "choose_one_or_more_modes": true,
+            "stack_targets": [
+              {
+                "id": "00000000-0000-0000-0000-000000000006",
+                "label": "Volatile Stormdrake ETB"
+              }
+            ]
+          }
+        },
+        "mode_additional_mana_costs": {
+          "Change the target of target spell or ability with a single target.": "{1}"
+        }
+      },
+      "actual_checked_action": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "targets": {
+          "mode_text": "Change the target of target spell or ability with a single target.",
+          "target_stack_id": "00000000-0000-0000-0000-000000000006"
+        }
+      },
+      "actual_mana_spent": 3,
+      "actual_paid_stack": {
+        "id": "00000000-0000-0000-0000-000000000008",
+        "source_card_id": "00000000-0000-0000-0000-000000000007",
+        "controller": 2,
+        "label": "Return the Favor",
+        "effect_key": "effect_sequence",
+        "payload": {
+          "effects": [
+            {
+              "effect_key": "spree_change_target",
+              "mode_text": "Change the target of target spell or ability with a single target.",
+              "payload": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            }
+          ],
+          "__announced_targets": {
+            "mode_text": "Change the target of target spell or ability with a single target.",
+            "target_stack_id": "00000000-0000-0000-0000-000000000006"
+          },
+          "__announced_target_references": {
+            "version": 1,
+            "targets": {}
+          },
+          "mana_spent": 3,
+          "__kicked": false,
+          "snow_mana_spent": 0,
+          "snow_mana_colors": {},
+          "__announced_stack_kind": "spell",
+          "__last_target_ids": []
+        },
+        "targets": []
+      },
+      "parsed_printed_modes": [
+        {
+          "text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "additional_generic": 1
+        },
+        {
+          "text": "Change the target of target spell or ability with a single target.",
+          "additional_generic": 1
+        }
+      ]
+    },
+    {
+      "fixture_seat": 1,
+      "casting_player": 2,
+      "selection": 2,
+      "actual_public_serialized_match": {
+        "id": "d7011ee8-e682-4275-8c83-94537af1b329",
+        "turn": 1,
+        "active_player": 1,
+        "priority_player": 2,
+        "step": "precombat_main",
+        "winner": null,
+        "score": {
+          "1": 0,
+          "2": 0
+        },
+        "pregame_pending": false,
+        "mulligan_count": {
+          "1": 0,
+          "2": 0
+        },
+        "mulligan_bottomed": {
+          "1": 0,
+          "2": 0
+        },
+        "kept_hands": [
+          1,
+          2
+        ],
+        "day_night": "none",
+        "spells_cast_this_turn": {
+          "1": 1,
+          "2": 0
+        },
+        "discards_this_turn": {
+          "1": 0,
+          "2": 0
+        },
+        "turn_cant_gain_life": [],
+        "turn_damage_cant_be_prevented": false,
+        "combat_damage_stage": "none",
+        "pending_replacement_choice": null,
+        "pending_trigger_order": null,
+        "priority_stops": {
+          "1": [
+            "upkeep",
+            "precombat_main",
+            "begin_combat",
+            "declare_attackers",
+            "postcombat_main",
+            "end_step"
+          ],
+          "2": [
+            "upkeep",
+            "begin_combat",
+            "declare_blockers",
+            "end_step"
+          ]
+        },
+        "players": {
+          "1": {
+            "id": 1,
+            "name": "Player A",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 0,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "name": "Volatile Stormdrake",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 3,
+                "toughness": 2,
+                "base_power": 3,
+                "base_toughness": 2,
+                "printed_power": "3",
+                "printed_toughness": "2",
+                "keywords": [
+                  "flying",
+                  "hexproof from activated and triggered abilities"
+                ],
+                "keyword_counts": {
+                  "flying": 1,
+                  "hexproof from activated and triggered abilities": 1
+                },
+                "base_keywords": [
+                  "flying"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{1}{U}",
+                "oracle_text": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Drake",
+                "base_type_line": "Creature — Drake",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "U"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          },
+          "2": {
+            "id": 2,
+            "name": "Player B",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 1,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000002",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [
+              {
+                "id": "00000000-0000-0000-0000-000000000007",
+                "name": "Return the Favor",
+                "tapped": false,
+                "summoning_sick": false,
+                "power": null,
+                "toughness": null,
+                "base_power": null,
+                "base_toughness": null,
+                "printed_power": null,
+                "printed_toughness": null,
+                "keywords": [],
+                "keyword_counts": {},
+                "base_keywords": [],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}{R}",
+                "oracle_text": "Spree (Choose one or more additional costs.)\n+ {1} — Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.\n+ {1} — Change the target of target spell or ability with a single target.",
+                "image_uri": null,
+                "types": [
+                  "Instant"
+                ],
+                "is_token": false,
+                "type_line": "Instant",
+                "base_type_line": "Instant",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 2,
+              "G": 0,
+              "C": 2
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          }
+        },
+        "stack": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB",
+            "controller": 1,
+            "effect_key": "exchange_energy_payment",
+            "targets": []
+          }
+        ],
+        "attackers": [],
+        "pending_mechanic_choice": null,
+        "attack_targets": {},
+        "attack_bands": [],
+        "blocks": {},
+        "log": [
+          "Game start. Both players draw 7 and decide on London mulligans.",
+          "Player A casts/activates Volatile Stormdrake.",
+          "Player A passes priority on precombat_main (stack=1).",
+          "Player B passes priority on precombat_main (stack=1).",
+          "Player A must choose a target for Volatile Stormdrake ETB.",
+          "1 triggered ability(s) added to stack (stack_resolution).",
+          "Volatile Stormdrake resolves.",
+          "Player A targets Raging Goblin with Volatile Stormdrake ETB.",
+          "Player A passes priority on precombat_main (stack=1)."
+        ]
+      },
+      "serialization_viewer_players": [
+        2
+      ],
+      "protocol_envelope": {
+        "revision": 0,
+        "controllers": {
+          "1": "human",
+          "2": "human"
+        },
+        "scope": "Explicit test client protocol metadata, not game-engine fields"
+      },
+      "pool_before": {
+        "W": 0,
+        "U": 0,
+        "B": 0,
+        "R": 2,
+        "G": 0,
+        "C": 2
+      },
+      "actual_offered_move": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "card_name": "Return the Favor",
+        "from_graveyard": false,
+        "mana_cost": "{R}{R}",
+        "cost_options": [
+          {
+            "id": "base",
+            "label": "Base Cost",
+            "mana_cost": "{R}{R}{1}",
+            "hybrid_symbols": [],
+            "pay_life": 0,
+            "pay_life_x": false,
+            "discard_cards": 0,
+            "discard_x": false,
+            "discard_all": false,
+            "sacrifice_all": false,
+            "sacrifice_creatures": 0,
+            "sacrifice_kind": "creature",
+            "exile_graveyard": 0,
+            "additional_cost_group": null,
+            "kicked": false,
+            "kicker_base_id": null,
+            "graveyard_permission_key": null,
+            "graveyard_permission_max_mana_value": null
+          }
+        ],
+        "target_hints": {
+          "modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choose_one_or_more_modes": true,
+          "stack_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000006",
+              "label": "Volatile Stormdrake ETB"
+            }
+          ],
+          "action_has_target_text": true,
+          "available_modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choice_schema": {
+            "mode_text": {
+              "type": "string",
+              "required": false,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "mode_texts": {
+              "type": "array",
+              "required": false,
+              "min_items": 1,
+              "max_items": 2,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "target_stack_id": {
+              "type": "string",
+              "required": false
+            },
+            "replacement_source_id": {
+              "type": "string",
+              "required": false,
+              "description": "Optional replacement-effect source ID returned by the replacement-options API."
+            }
+          },
+          "mode_target_hints": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            },
+            "Change the target of target spell or ability with a single target.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            }
+          },
+          "mode_additional_mana_costs": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}",
+            "Change the target of target spell or ability with a single target.": "{1}"
+          },
+          "mode_base_mana_costs": {
+            "base": "{R}{R}"
+          }
+        }
+      },
+      "actual_selected_target_hints": {
+        "modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choose_one_or_more_modes": true,
+        "stack_targets": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB"
+          }
+        ],
+        "action_has_target_text": true,
+        "available_modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choice_schema": {
+          "mode_text": {
+            "type": "string",
+            "required": false,
+            "enum": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ]
+          },
+          "mode_texts": {
+            "type": "array",
+            "required": false,
+            "min_items": 1,
+            "max_items": 2,
+            "enum": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ]
+          },
+          "target_stack_id": {
+            "type": "string",
+            "required": false
+          },
+          "replacement_source_id": {
+            "type": "string",
+            "required": false,
+            "description": "Optional replacement-effect source ID returned by the replacement-options API."
+          }
+        },
+        "mode_target_hints": {
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+            "modes": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "choose_one_or_more_modes": true,
+            "stack_targets": [
+              {
+                "id": "00000000-0000-0000-0000-000000000006",
+                "label": "Volatile Stormdrake ETB"
+              }
+            ]
+          },
+          "Change the target of target spell or ability with a single target.": {
+            "modes": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "choose_one_or_more_modes": true,
+            "stack_targets": [
+              {
+                "id": "00000000-0000-0000-0000-000000000006",
+                "label": "Volatile Stormdrake ETB"
+              }
+            ]
+          }
+        },
+        "mode_additional_mana_costs": {
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}",
+          "Change the target of target spell or ability with a single target.": "{1}"
+        }
+      },
+      "actual_checked_action": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "targets": {
+          "mode_texts": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "mode_targets": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+              "target_stack_id": "00000000-0000-0000-0000-000000000006"
+            },
+            "Change the target of target spell or ability with a single target.": {
+              "target_stack_id": "00000000-0000-0000-0000-000000000006"
+            }
+          }
+        }
+      },
+      "actual_mana_spent": 4,
+      "actual_paid_stack": {
+        "id": "00000000-0000-0000-0000-000000000008",
+        "source_card_id": "00000000-0000-0000-0000-000000000007",
+        "controller": 2,
+        "label": "Return the Favor",
+        "effect_key": "effect_sequence",
+        "payload": {
+          "effects": [
+            {
+              "effect_key": "spree_copy",
+              "mode_text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "payload": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            },
+            {
+              "effect_key": "spree_change_target",
+              "mode_text": "Change the target of target spell or ability with a single target.",
+              "payload": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            }
+          ],
+          "target_restrictions": {
+            "allowed_types": [
+              "Instant"
+            ]
+          },
+          "__announced_targets": {
+            "mode_texts": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "mode_targets": {
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              },
+              "Change the target of target spell or ability with a single target.": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            }
+          },
+          "__announced_target_references": {
+            "version": 1,
+            "targets": {
+              "mode_targets": {
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {},
+                "Change the target of target spell or ability with a single target.": {}
+              }
+            }
+          },
+          "mana_spent": 4,
+          "__kicked": false,
+          "snow_mana_spent": 0,
+          "snow_mana_colors": {},
+          "__announced_stack_kind": "spell",
+          "__last_target_ids": []
+        },
+        "targets": []
+      },
+      "parsed_printed_modes": [
+        {
+          "text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "additional_generic": 1
+        },
+        {
+          "text": "Change the target of target spell or ability with a single target.",
+          "additional_generic": 1
+        }
+      ]
+    },
+    {
+      "fixture_seat": 2,
+      "casting_player": 1,
+      "selection": 0,
+      "actual_public_serialized_match": {
+        "id": "23ab6dd4-ad12-4881-86fd-d5269c6c95d2",
+        "turn": 1,
+        "active_player": 2,
+        "priority_player": 1,
+        "step": "precombat_main",
+        "winner": null,
+        "score": {
+          "1": 0,
+          "2": 0
+        },
+        "pregame_pending": false,
+        "mulligan_count": {
+          "1": 0,
+          "2": 0
+        },
+        "mulligan_bottomed": {
+          "1": 0,
+          "2": 0
+        },
+        "kept_hands": [
+          1,
+          2
+        ],
+        "day_night": "none",
+        "spells_cast_this_turn": {
+          "1": 0,
+          "2": 1
+        },
+        "discards_this_turn": {
+          "1": 0,
+          "2": 0
+        },
+        "turn_cant_gain_life": [],
+        "turn_damage_cant_be_prevented": false,
+        "combat_damage_stage": "none",
+        "pending_replacement_choice": null,
+        "pending_trigger_order": null,
+        "priority_stops": {
+          "1": [
+            "upkeep",
+            "precombat_main",
+            "begin_combat",
+            "declare_attackers",
+            "postcombat_main",
+            "end_step"
+          ],
+          "2": [
+            "upkeep",
+            "begin_combat",
+            "declare_blockers",
+            "end_step"
+          ]
+        },
+        "players": {
+          "1": {
+            "id": 1,
+            "name": "Player A",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 1,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000002",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [
+              {
+                "id": "00000000-0000-0000-0000-000000000007",
+                "name": "Return the Favor",
+                "tapped": false,
+                "summoning_sick": false,
+                "power": null,
+                "toughness": null,
+                "base_power": null,
+                "base_toughness": null,
+                "printed_power": null,
+                "printed_toughness": null,
+                "keywords": [],
+                "keyword_counts": {},
+                "base_keywords": [],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}{R}",
+                "oracle_text": "Spree (Choose one or more additional costs.)\n+ {1} — Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.\n+ {1} — Change the target of target spell or ability with a single target.",
+                "image_uri": null,
+                "types": [
+                  "Instant"
+                ],
+                "is_token": false,
+                "type_line": "Instant",
+                "base_type_line": "Instant",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 2,
+              "G": 0,
+              "C": 1
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          },
+          "2": {
+            "id": 2,
+            "name": "Player B",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 0,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "name": "Volatile Stormdrake",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 3,
+                "toughness": 2,
+                "base_power": 3,
+                "base_toughness": 2,
+                "printed_power": "3",
+                "printed_toughness": "2",
+                "keywords": [
+                  "flying",
+                  "hexproof from activated and triggered abilities"
+                ],
+                "keyword_counts": {
+                  "flying": 1,
+                  "hexproof from activated and triggered abilities": 1
+                },
+                "base_keywords": [
+                  "flying"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{1}{U}",
+                "oracle_text": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Drake",
+                "base_type_line": "Creature — Drake",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "U"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          }
+        },
+        "stack": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB",
+            "controller": 2,
+            "effect_key": "exchange_energy_payment",
+            "targets": []
+          }
+        ],
+        "attackers": [],
+        "pending_mechanic_choice": null,
+        "attack_targets": {},
+        "attack_bands": [],
+        "blocks": {},
+        "log": [
+          "Game start. Both players draw 7 and decide on London mulligans.",
+          "Player B casts/activates Volatile Stormdrake.",
+          "Player B passes priority on precombat_main (stack=1).",
+          "Player A passes priority on precombat_main (stack=1).",
+          "Player B must choose a target for Volatile Stormdrake ETB.",
+          "1 triggered ability(s) added to stack (stack_resolution).",
+          "Volatile Stormdrake resolves.",
+          "Player B targets Raging Goblin with Volatile Stormdrake ETB.",
+          "Player B passes priority on precombat_main (stack=1)."
+        ]
+      },
+      "serialization_viewer_players": [
+        1
+      ],
+      "protocol_envelope": {
+        "revision": 0,
+        "controllers": {
+          "1": "human",
+          "2": "human"
+        },
+        "scope": "Explicit test client protocol metadata, not game-engine fields"
+      },
+      "pool_before": {
+        "W": 0,
+        "U": 0,
+        "B": 0,
+        "R": 2,
+        "G": 0,
+        "C": 1
+      },
+      "actual_offered_move": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "card_name": "Return the Favor",
+        "from_graveyard": false,
+        "mana_cost": "{R}{R}",
+        "cost_options": [
+          {
+            "id": "base",
+            "label": "Base Cost",
+            "mana_cost": "{R}{R}{1}",
+            "hybrid_symbols": [],
+            "pay_life": 0,
+            "pay_life_x": false,
+            "discard_cards": 0,
+            "discard_x": false,
+            "discard_all": false,
+            "sacrifice_all": false,
+            "sacrifice_creatures": 0,
+            "sacrifice_kind": "creature",
+            "exile_graveyard": 0,
+            "additional_cost_group": null,
+            "kicked": false,
+            "kicker_base_id": null,
+            "graveyard_permission_key": null,
+            "graveyard_permission_max_mana_value": null
+          }
+        ],
+        "target_hints": {
+          "modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choose_one_or_more_modes": true,
+          "stack_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000006",
+              "label": "Volatile Stormdrake ETB"
+            }
+          ],
+          "action_has_target_text": true,
+          "available_modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choice_schema": {
+            "mode_text": {
+              "type": "string",
+              "required": false,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "mode_texts": {
+              "type": "array",
+              "required": false,
+              "min_items": 1,
+              "max_items": 2,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "target_stack_id": {
+              "type": "string",
+              "required": false
+            },
+            "replacement_source_id": {
+              "type": "string",
+              "required": false,
+              "description": "Optional replacement-effect source ID returned by the replacement-options API."
+            }
+          },
+          "mode_target_hints": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            },
+            "Change the target of target spell or ability with a single target.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            }
+          },
+          "mode_additional_mana_costs": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}",
+            "Change the target of target spell or ability with a single target.": "{1}"
+          },
+          "mode_base_mana_costs": {
+            "base": "{R}{R}"
+          }
+        }
+      },
+      "actual_selected_target_hints": {
+        "modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choose_one_or_more_modes": true,
+        "stack_targets": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB"
+          }
+        ],
+        "action_has_target_text": true,
+        "available_modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy."
+        ],
+        "choice_schema": {
+          "mode_text": {
+            "type": "string",
+            "required": false,
+            "enum": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy."
+            ]
+          },
+          "mode_texts": {
+            "type": "array",
+            "required": false,
+            "min_items": 1,
+            "max_items": 2,
+            "enum": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy."
+            ]
+          },
+          "target_stack_id": {
+            "type": "string",
+            "required": false
+          },
+          "replacement_source_id": {
+            "type": "string",
+            "required": false,
+            "description": "Optional replacement-effect source ID returned by the replacement-options API."
+          }
+        },
+        "mode_target_hints": {
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+            "modes": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "choose_one_or_more_modes": true,
+            "stack_targets": [
+              {
+                "id": "00000000-0000-0000-0000-000000000006",
+                "label": "Volatile Stormdrake ETB"
+              }
+            ]
+          }
+        },
+        "mode_additional_mana_costs": {
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}"
+        }
+      },
+      "actual_checked_action": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "targets": {
+          "mode_text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "target_stack_id": "00000000-0000-0000-0000-000000000006"
+        }
+      },
+      "actual_mana_spent": 3,
+      "actual_paid_stack": {
+        "id": "00000000-0000-0000-0000-000000000008",
+        "source_card_id": "00000000-0000-0000-0000-000000000007",
+        "controller": 1,
+        "label": "Return the Favor",
+        "effect_key": "effect_sequence",
+        "payload": {
+          "effects": [
+            {
+              "effect_key": "spree_copy",
+              "mode_text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "payload": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            }
+          ],
+          "target_restrictions": {
+            "allowed_types": [
+              "Instant"
+            ]
+          },
+          "__announced_targets": {
+            "mode_text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "target_stack_id": "00000000-0000-0000-0000-000000000006"
+          },
+          "__announced_target_references": {
+            "version": 1,
+            "targets": {}
+          },
+          "mana_spent": 3,
+          "__kicked": false,
+          "snow_mana_spent": 0,
+          "snow_mana_colors": {},
+          "__announced_stack_kind": "spell",
+          "__last_target_ids": []
+        },
+        "targets": []
+      },
+      "parsed_printed_modes": [
+        {
+          "text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "additional_generic": 1
+        },
+        {
+          "text": "Change the target of target spell or ability with a single target.",
+          "additional_generic": 1
+        }
+      ]
+    },
+    {
+      "fixture_seat": 2,
+      "casting_player": 1,
+      "selection": 1,
+      "actual_public_serialized_match": {
+        "id": "60e868af-5057-427a-a839-1b0b136907f5",
+        "turn": 1,
+        "active_player": 2,
+        "priority_player": 1,
+        "step": "precombat_main",
+        "winner": null,
+        "score": {
+          "1": 0,
+          "2": 0
+        },
+        "pregame_pending": false,
+        "mulligan_count": {
+          "1": 0,
+          "2": 0
+        },
+        "mulligan_bottomed": {
+          "1": 0,
+          "2": 0
+        },
+        "kept_hands": [
+          1,
+          2
+        ],
+        "day_night": "none",
+        "spells_cast_this_turn": {
+          "1": 0,
+          "2": 1
+        },
+        "discards_this_turn": {
+          "1": 0,
+          "2": 0
+        },
+        "turn_cant_gain_life": [],
+        "turn_damage_cant_be_prevented": false,
+        "combat_damage_stage": "none",
+        "pending_replacement_choice": null,
+        "pending_trigger_order": null,
+        "priority_stops": {
+          "1": [
+            "upkeep",
+            "precombat_main",
+            "begin_combat",
+            "declare_attackers",
+            "postcombat_main",
+            "end_step"
+          ],
+          "2": [
+            "upkeep",
+            "begin_combat",
+            "declare_blockers",
+            "end_step"
+          ]
+        },
+        "players": {
+          "1": {
+            "id": 1,
+            "name": "Player A",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 1,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000002",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [
+              {
+                "id": "00000000-0000-0000-0000-000000000007",
+                "name": "Return the Favor",
+                "tapped": false,
+                "summoning_sick": false,
+                "power": null,
+                "toughness": null,
+                "base_power": null,
+                "base_toughness": null,
+                "printed_power": null,
+                "printed_toughness": null,
+                "keywords": [],
+                "keyword_counts": {},
+                "base_keywords": [],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}{R}",
+                "oracle_text": "Spree (Choose one or more additional costs.)\n+ {1} — Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.\n+ {1} — Change the target of target spell or ability with a single target.",
+                "image_uri": null,
+                "types": [
+                  "Instant"
+                ],
+                "is_token": false,
+                "type_line": "Instant",
+                "base_type_line": "Instant",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 2,
+              "G": 0,
+              "C": 1
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          },
+          "2": {
+            "id": 2,
+            "name": "Player B",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 0,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "name": "Volatile Stormdrake",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 3,
+                "toughness": 2,
+                "base_power": 3,
+                "base_toughness": 2,
+                "printed_power": "3",
+                "printed_toughness": "2",
+                "keywords": [
+                  "flying",
+                  "hexproof from activated and triggered abilities"
+                ],
+                "keyword_counts": {
+                  "flying": 1,
+                  "hexproof from activated and triggered abilities": 1
+                },
+                "base_keywords": [
+                  "flying"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{1}{U}",
+                "oracle_text": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Drake",
+                "base_type_line": "Creature — Drake",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "U"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          }
+        },
+        "stack": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB",
+            "controller": 2,
+            "effect_key": "exchange_energy_payment",
+            "targets": []
+          }
+        ],
+        "attackers": [],
+        "pending_mechanic_choice": null,
+        "attack_targets": {},
+        "attack_bands": [],
+        "blocks": {},
+        "log": [
+          "Game start. Both players draw 7 and decide on London mulligans.",
+          "Player B casts/activates Volatile Stormdrake.",
+          "Player B passes priority on precombat_main (stack=1).",
+          "Player A passes priority on precombat_main (stack=1).",
+          "Player B must choose a target for Volatile Stormdrake ETB.",
+          "1 triggered ability(s) added to stack (stack_resolution).",
+          "Volatile Stormdrake resolves.",
+          "Player B targets Raging Goblin with Volatile Stormdrake ETB.",
+          "Player B passes priority on precombat_main (stack=1)."
+        ]
+      },
+      "serialization_viewer_players": [
+        1
+      ],
+      "protocol_envelope": {
+        "revision": 0,
+        "controllers": {
+          "1": "human",
+          "2": "human"
+        },
+        "scope": "Explicit test client protocol metadata, not game-engine fields"
+      },
+      "pool_before": {
+        "W": 0,
+        "U": 0,
+        "B": 0,
+        "R": 2,
+        "G": 0,
+        "C": 1
+      },
+      "actual_offered_move": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "card_name": "Return the Favor",
+        "from_graveyard": false,
+        "mana_cost": "{R}{R}",
+        "cost_options": [
+          {
+            "id": "base",
+            "label": "Base Cost",
+            "mana_cost": "{R}{R}{1}",
+            "hybrid_symbols": [],
+            "pay_life": 0,
+            "pay_life_x": false,
+            "discard_cards": 0,
+            "discard_x": false,
+            "discard_all": false,
+            "sacrifice_all": false,
+            "sacrifice_creatures": 0,
+            "sacrifice_kind": "creature",
+            "exile_graveyard": 0,
+            "additional_cost_group": null,
+            "kicked": false,
+            "kicker_base_id": null,
+            "graveyard_permission_key": null,
+            "graveyard_permission_max_mana_value": null
+          }
+        ],
+        "target_hints": {
+          "modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choose_one_or_more_modes": true,
+          "stack_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000006",
+              "label": "Volatile Stormdrake ETB"
+            }
+          ],
+          "action_has_target_text": true,
+          "available_modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choice_schema": {
+            "mode_text": {
+              "type": "string",
+              "required": false,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "mode_texts": {
+              "type": "array",
+              "required": false,
+              "min_items": 1,
+              "max_items": 2,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "target_stack_id": {
+              "type": "string",
+              "required": false
+            },
+            "replacement_source_id": {
+              "type": "string",
+              "required": false,
+              "description": "Optional replacement-effect source ID returned by the replacement-options API."
+            }
+          },
+          "mode_target_hints": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            },
+            "Change the target of target spell or ability with a single target.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            }
+          },
+          "mode_additional_mana_costs": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}",
+            "Change the target of target spell or ability with a single target.": "{1}"
+          },
+          "mode_base_mana_costs": {
+            "base": "{R}{R}"
+          }
+        }
+      },
+      "actual_selected_target_hints": {
+        "modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choose_one_or_more_modes": true,
+        "stack_targets": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB"
+          }
+        ],
+        "action_has_target_text": true,
+        "available_modes": [
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choice_schema": {
+          "mode_text": {
+            "type": "string",
+            "required": false,
+            "enum": [
+              "Change the target of target spell or ability with a single target."
+            ]
+          },
+          "mode_texts": {
+            "type": "array",
+            "required": false,
+            "min_items": 1,
+            "max_items": 2,
+            "enum": [
+              "Change the target of target spell or ability with a single target."
+            ]
+          },
+          "target_stack_id": {
+            "type": "string",
+            "required": false
+          },
+          "replacement_source_id": {
+            "type": "string",
+            "required": false,
+            "description": "Optional replacement-effect source ID returned by the replacement-options API."
+          }
+        },
+        "mode_target_hints": {
+          "Change the target of target spell or ability with a single target.": {
+            "modes": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "choose_one_or_more_modes": true,
+            "stack_targets": [
+              {
+                "id": "00000000-0000-0000-0000-000000000006",
+                "label": "Volatile Stormdrake ETB"
+              }
+            ]
+          }
+        },
+        "mode_additional_mana_costs": {
+          "Change the target of target spell or ability with a single target.": "{1}"
+        }
+      },
+      "actual_checked_action": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "targets": {
+          "mode_text": "Change the target of target spell or ability with a single target.",
+          "target_stack_id": "00000000-0000-0000-0000-000000000006"
+        }
+      },
+      "actual_mana_spent": 3,
+      "actual_paid_stack": {
+        "id": "00000000-0000-0000-0000-000000000008",
+        "source_card_id": "00000000-0000-0000-0000-000000000007",
+        "controller": 1,
+        "label": "Return the Favor",
+        "effect_key": "effect_sequence",
+        "payload": {
+          "effects": [
+            {
+              "effect_key": "spree_change_target",
+              "mode_text": "Change the target of target spell or ability with a single target.",
+              "payload": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            }
+          ],
+          "__announced_targets": {
+            "mode_text": "Change the target of target spell or ability with a single target.",
+            "target_stack_id": "00000000-0000-0000-0000-000000000006"
+          },
+          "__announced_target_references": {
+            "version": 1,
+            "targets": {}
+          },
+          "mana_spent": 3,
+          "__kicked": false,
+          "snow_mana_spent": 0,
+          "snow_mana_colors": {},
+          "__announced_stack_kind": "spell",
+          "__last_target_ids": []
+        },
+        "targets": []
+      },
+      "parsed_printed_modes": [
+        {
+          "text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "additional_generic": 1
+        },
+        {
+          "text": "Change the target of target spell or ability with a single target.",
+          "additional_generic": 1
+        }
+      ]
+    },
+    {
+      "fixture_seat": 2,
+      "casting_player": 1,
+      "selection": 2,
+      "actual_public_serialized_match": {
+        "id": "395876ec-4fb4-4e22-a12b-f768b8dfd925",
+        "turn": 1,
+        "active_player": 2,
+        "priority_player": 1,
+        "step": "precombat_main",
+        "winner": null,
+        "score": {
+          "1": 0,
+          "2": 0
+        },
+        "pregame_pending": false,
+        "mulligan_count": {
+          "1": 0,
+          "2": 0
+        },
+        "mulligan_bottomed": {
+          "1": 0,
+          "2": 0
+        },
+        "kept_hands": [
+          1,
+          2
+        ],
+        "day_night": "none",
+        "spells_cast_this_turn": {
+          "1": 0,
+          "2": 1
+        },
+        "discards_this_turn": {
+          "1": 0,
+          "2": 0
+        },
+        "turn_cant_gain_life": [],
+        "turn_damage_cant_be_prevented": false,
+        "combat_damage_stage": "none",
+        "pending_replacement_choice": null,
+        "pending_trigger_order": null,
+        "priority_stops": {
+          "1": [
+            "upkeep",
+            "precombat_main",
+            "begin_combat",
+            "declare_attackers",
+            "postcombat_main",
+            "end_step"
+          ],
+          "2": [
+            "upkeep",
+            "begin_combat",
+            "declare_blockers",
+            "end_step"
+          ]
+        },
+        "players": {
+          "1": {
+            "id": 1,
+            "name": "Player A",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 1,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000001",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000002",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [
+              {
+                "id": "00000000-0000-0000-0000-000000000007",
+                "name": "Return the Favor",
+                "tapped": false,
+                "summoning_sick": false,
+                "power": null,
+                "toughness": null,
+                "base_power": null,
+                "base_toughness": null,
+                "printed_power": null,
+                "printed_toughness": null,
+                "keywords": [],
+                "keyword_counts": {},
+                "base_keywords": [],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}{R}",
+                "oracle_text": "Spree (Choose one or more additional costs.)\n+ {1} — Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.\n+ {1} — Change the target of target spell or ability with a single target.",
+                "image_uri": null,
+                "types": [
+                  "Instant"
+                ],
+                "is_token": false,
+                "type_line": "Instant",
+                "base_type_line": "Instant",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 2,
+              "G": 0,
+              "C": 2
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          },
+          "2": {
+            "id": 2,
+            "name": "Player B",
+            "life": 20,
+            "poison": 0,
+            "counters": {},
+            "library_count": 30,
+            "hand_count": 0,
+            "land_plays_remaining": 1,
+            "battlefield": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "name": "Raging Goblin",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 1,
+                "toughness": 1,
+                "base_power": 1,
+                "base_toughness": 1,
+                "printed_power": "1",
+                "printed_toughness": "1",
+                "keywords": [
+                  "haste"
+                ],
+                "keyword_counts": {
+                  "haste": 1
+                },
+                "base_keywords": [
+                  "haste"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{R}",
+                "oracle_text": "Haste (This creature can attack and {T} as soon as it comes under your control.)",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Goblin Berserker",
+                "base_type_line": "Creature — Goblin Berserker",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "R"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "name": "Volatile Stormdrake",
+                "tapped": false,
+                "summoning_sick": true,
+                "power": 3,
+                "toughness": 2,
+                "base_power": 3,
+                "base_toughness": 2,
+                "printed_power": "3",
+                "printed_toughness": "2",
+                "keywords": [
+                  "flying",
+                  "hexproof from activated and triggered abilities"
+                ],
+                "keyword_counts": {
+                  "flying": 1,
+                  "hexproof from activated and triggered abilities": 1
+                },
+                "base_keywords": [
+                  "flying"
+                ],
+                "counters": {},
+                "damage_marked": 0,
+                "loyalty": null,
+                "mana_cost": "{1}{U}",
+                "oracle_text": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+                "image_uri": null,
+                "types": [
+                  "Creature"
+                ],
+                "is_token": false,
+                "type_line": "Creature — Drake",
+                "base_type_line": "Creature — Drake",
+                "attached_to": null,
+                "bestowed": false,
+                "effect_warnings": [],
+                "colors": [
+                  "U"
+                ],
+                "mana_source_colors": [],
+                "mana_source_amounts": {},
+                "chosen_creature_type": null,
+                "card_faces": [],
+                "selected_face_index": null,
+                "layout": "normal",
+                "was_foretold": false,
+                "foretell_order": null,
+                "foretold_turn": null,
+                "suspended": false
+              }
+            ],
+            "hand": [],
+            "graveyard": [],
+            "graveyard_count": 0,
+            "exile": [],
+            "exile_count": 0,
+            "mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "snow_mana_pool": {
+              "W": 0,
+              "U": 0,
+              "B": 0,
+              "R": 0,
+              "G": 0,
+              "C": 0
+            },
+            "restricted_mana_pool": []
+          }
+        },
+        "stack": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB",
+            "controller": 2,
+            "effect_key": "exchange_energy_payment",
+            "targets": []
+          }
+        ],
+        "attackers": [],
+        "pending_mechanic_choice": null,
+        "attack_targets": {},
+        "attack_bands": [],
+        "blocks": {},
+        "log": [
+          "Game start. Both players draw 7 and decide on London mulligans.",
+          "Player B casts/activates Volatile Stormdrake.",
+          "Player B passes priority on precombat_main (stack=1).",
+          "Player A passes priority on precombat_main (stack=1).",
+          "Player B must choose a target for Volatile Stormdrake ETB.",
+          "1 triggered ability(s) added to stack (stack_resolution).",
+          "Volatile Stormdrake resolves.",
+          "Player B targets Raging Goblin with Volatile Stormdrake ETB.",
+          "Player B passes priority on precombat_main (stack=1)."
+        ]
+      },
+      "serialization_viewer_players": [
+        1
+      ],
+      "protocol_envelope": {
+        "revision": 0,
+        "controllers": {
+          "1": "human",
+          "2": "human"
+        },
+        "scope": "Explicit test client protocol metadata, not game-engine fields"
+      },
+      "pool_before": {
+        "W": 0,
+        "U": 0,
+        "B": 0,
+        "R": 2,
+        "G": 0,
+        "C": 2
+      },
+      "actual_offered_move": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "card_name": "Return the Favor",
+        "from_graveyard": false,
+        "mana_cost": "{R}{R}",
+        "cost_options": [
+          {
+            "id": "base",
+            "label": "Base Cost",
+            "mana_cost": "{R}{R}{1}",
+            "hybrid_symbols": [],
+            "pay_life": 0,
+            "pay_life_x": false,
+            "discard_cards": 0,
+            "discard_x": false,
+            "discard_all": false,
+            "sacrifice_all": false,
+            "sacrifice_creatures": 0,
+            "sacrifice_kind": "creature",
+            "exile_graveyard": 0,
+            "additional_cost_group": null,
+            "kicked": false,
+            "kicker_base_id": null,
+            "graveyard_permission_key": null,
+            "graveyard_permission_max_mana_value": null
+          }
+        ],
+        "target_hints": {
+          "modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choose_one_or_more_modes": true,
+          "stack_targets": [
+            {
+              "id": "00000000-0000-0000-0000-000000000006",
+              "label": "Volatile Stormdrake ETB"
+            }
+          ],
+          "action_has_target_text": true,
+          "available_modes": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "choice_schema": {
+            "mode_text": {
+              "type": "string",
+              "required": false,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "mode_texts": {
+              "type": "array",
+              "required": false,
+              "min_items": 1,
+              "max_items": 2,
+              "enum": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ]
+            },
+            "target_stack_id": {
+              "type": "string",
+              "required": false
+            },
+            "replacement_source_id": {
+              "type": "string",
+              "required": false,
+              "description": "Optional replacement-effect source ID returned by the replacement-options API."
+            }
+          },
+          "mode_target_hints": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            },
+            "Change the target of target spell or ability with a single target.": {
+              "modes": [
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+                "Change the target of target spell or ability with a single target."
+              ],
+              "choose_one_or_more_modes": true,
+              "stack_targets": [
+                {
+                  "id": "00000000-0000-0000-0000-000000000006",
+                  "label": "Volatile Stormdrake ETB"
+                }
+              ]
+            }
+          },
+          "mode_additional_mana_costs": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}",
+            "Change the target of target spell or ability with a single target.": "{1}"
+          },
+          "mode_base_mana_costs": {
+            "base": "{R}{R}"
+          }
+        }
+      },
+      "actual_selected_target_hints": {
+        "modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choose_one_or_more_modes": true,
+        "stack_targets": [
+          {
+            "id": "00000000-0000-0000-0000-000000000006",
+            "label": "Volatile Stormdrake ETB"
+          }
+        ],
+        "action_has_target_text": true,
+        "available_modes": [
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "Change the target of target spell or ability with a single target."
+        ],
+        "choice_schema": {
+          "mode_text": {
+            "type": "string",
+            "required": false,
+            "enum": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ]
+          },
+          "mode_texts": {
+            "type": "array",
+            "required": false,
+            "min_items": 1,
+            "max_items": 2,
+            "enum": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ]
+          },
+          "target_stack_id": {
+            "type": "string",
+            "required": false
+          },
+          "replacement_source_id": {
+            "type": "string",
+            "required": false,
+            "description": "Optional replacement-effect source ID returned by the replacement-options API."
+          }
+        },
+        "mode_target_hints": {
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+            "modes": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "choose_one_or_more_modes": true,
+            "stack_targets": [
+              {
+                "id": "00000000-0000-0000-0000-000000000006",
+                "label": "Volatile Stormdrake ETB"
+              }
+            ]
+          },
+          "Change the target of target spell or ability with a single target.": {
+            "modes": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "choose_one_or_more_modes": true,
+            "stack_targets": [
+              {
+                "id": "00000000-0000-0000-0000-000000000006",
+                "label": "Volatile Stormdrake ETB"
+              }
+            ]
+          }
+        },
+        "mode_additional_mana_costs": {
+          "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": "{1}",
+          "Change the target of target spell or ability with a single target.": "{1}"
+        }
+      },
+      "actual_checked_action": {
+        "type": "cast_spell",
+        "card_id": "00000000-0000-0000-0000-000000000007",
+        "targets": {
+          "mode_texts": [
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+            "Change the target of target spell or ability with a single target."
+          ],
+          "mode_targets": {
+            "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+              "target_stack_id": "00000000-0000-0000-0000-000000000006"
+            },
+            "Change the target of target spell or ability with a single target.": {
+              "target_stack_id": "00000000-0000-0000-0000-000000000006"
+            }
+          }
+        }
+      },
+      "actual_mana_spent": 4,
+      "actual_paid_stack": {
+        "id": "00000000-0000-0000-0000-000000000008",
+        "source_card_id": "00000000-0000-0000-0000-000000000007",
+        "controller": 1,
+        "label": "Return the Favor",
+        "effect_key": "effect_sequence",
+        "payload": {
+          "effects": [
+            {
+              "effect_key": "spree_copy",
+              "mode_text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "payload": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            },
+            {
+              "effect_key": "spree_change_target",
+              "mode_text": "Change the target of target spell or ability with a single target.",
+              "payload": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            }
+          ],
+          "target_restrictions": {
+            "allowed_types": [
+              "Instant"
+            ]
+          },
+          "__announced_targets": {
+            "mode_texts": [
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+              "Change the target of target spell or ability with a single target."
+            ],
+            "mode_targets": {
+              "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              },
+              "Change the target of target spell or ability with a single target.": {
+                "target_stack_id": "00000000-0000-0000-0000-000000000006"
+              }
+            }
+          },
+          "__announced_target_references": {
+            "version": 1,
+            "targets": {
+              "mode_targets": {
+                "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.": {},
+                "Change the target of target spell or ability with a single target.": {}
+              }
+            }
+          },
+          "mana_spent": 4,
+          "__kicked": false,
+          "snow_mana_spent": 0,
+          "snow_mana_colors": {},
+          "__announced_stack_kind": "spell",
+          "__last_target_ids": []
+        },
+        "targets": []
+      },
+      "parsed_printed_modes": [
+        {
+          "text": "Copy target instant spell, sorcery spell, activated ability, or triggered ability. You may choose new targets for the copy.",
+          "additional_generic": 1
+        },
+        {
+          "text": "Change the target of target spell or ability with a single target.",
+          "additional_generic": 1
+        }
+      ]
+    }
+  ]
+}

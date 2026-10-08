@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from game_state.state import CardInstance, MatchFactory, StackItem, Zone
+from tests.counter_native_frames import paid as native_paid, respond as native_respond, act as native_act
+
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.oracle_effects import inspect_target_hints
 from rules_engine.targeting import validate_cast_targets
@@ -101,16 +103,24 @@ def test_modal_counter_mode_is_structured_before_stack_target_exists() -> None:
 
 def test_drown_counter_target_tracks_opponent_graveyard_at_cast_and_resolution() -> None:
     state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
     drown = CardInstance("drown", "Drown in the Loch", 1, 1, Zone.HAND, ["Instant"], mana_cost="{U}{B}", oracle_text=DROWN_ORACLE)
-    target = CardInstance("negate", "Negate", 2, 2, Zone.STACK, ["Instant"], mana_cost="{1}{U}", oracle_text="Counter target noncreature spell.")
     state.cards[drown.id] = drown
-    state.cards[target.id] = target
-    state.stack.append(StackItem("negate-stack", target.id, 2, target.name, "counter_spell", {}))
+    state.players[1].hand.append(drown.id)
+    state, _, bolt_stack_id = native_paid(state, "Lightning Bolt", 1, pool={"R": 1}, target_player=2)
+    state, target_id, target_stack_id = native_paid(
+        state, "Negate", 2, pool={"C": 1, "U": 1}, target_stack_id=bolt_stack_id)
+    state = native_respond(state, 1)
+    target = state.cards[target_id]
+    initial_stack_ids = [bolt_stack_id, target_stack_id]
     mode = build_ability_spec(state, drown, 1).modes[0]
-    selected = build_ability_spec(state, drown, 1, {"mode_text": mode, "target_stack_id": "negate-stack"})
+    selected = build_ability_spec(state, drown, 1, {"mode_text": mode, "target_stack_id": target_stack_id})
     assert selected.effect.payload["target_restrictions"] == {"mana_value_max_source": "controller_graveyard"}
     counter_spell(state, 1, selected.effect.payload)
-    assert [item.id for item in state.stack] == ["negate-stack"]
+    assert [item.id for item in state.stack] == initial_stack_ids
 
     def target_ids() -> list[str]:
         hints = inspect_target_hints(state, drown, 1, {"mode_text": mode})
@@ -121,26 +131,27 @@ def test_drown_counter_target_tracks_opponent_graveyard_at_cast_and_resolution()
         card = CardInstance(f"grave-{index}", "Island", 2, 2, Zone.GRAVEYARD, ["Land"])
         state.cards[card.id] = card
         state.players[2].graveyard.append(card.id)
-    assert target_ids() == ["negate-stack"]
+    assert target_ids() == [target_stack_id]
 
-    drown.zone = Zone.STACK
-    state.stack.append(StackItem(
-        "drown-stack", drown.id, 1, drown.name, "counter_spell",
-        {"target_stack_id": "negate-stack", "__announced_targets": {"mode_text": mode, "target_stack_id": "negate-stack"}},
-    ))
+    state.players[1].mana_pool.update(U=1, B=1)
+    state = native_act(state, 1, "cast_spell", card_id=drown.id,
+                       targets={"mode_text": mode, "target_stack_id": target_stack_id})
     state.players[2].graveyard.pop()
     assert resolve_top_of_stack(state)
-    assert [item.id for item in state.stack] == ["negate-stack"]
-    assert target.zone == Zone.STACK
+    assert [item.id for item in state.stack] == initial_stack_ids
+    assert state.cards[target.id].zone == Zone.STACK
 
 
 def test_drown_stack_target_counts_announced_x_in_mana_value() -> None:
     state = _state()
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 2
+    state.step = Step.PRECOMBAT_MAIN
     drown = CardInstance("drown", "Drown in the Loch", 1, 1, Zone.HAND, ["Instant"], mana_cost="{U}{B}", oracle_text=DROWN_ORACLE)
-    wastes = CardInstance("wastes", "Secure the Wastes", 2, 2, Zone.STACK, ["Instant"], mana_cost="{X}{W}", oracle_text="Create X 1/1 white Warrior creature tokens.")
     state.cards[drown.id] = drown
-    state.cards[wastes.id] = wastes
-    state.stack.append(StackItem("wastes-stack", wastes.id, 2, wastes.name, "create_token", {"x_value": 3}))
+    state, _, target_stack_id = native_paid(state, "Secure the Wastes", 2, pool={"W": 1, "C": 3}, x_value=3)
+    state = native_respond(state, 1)
     for index in range(2):
         card = CardInstance(f"grave-{index}", "Island", 2, 2, Zone.GRAVEYARD, ["Land"])
         state.cards[card.id] = card
@@ -153,4 +164,4 @@ def test_drown_stack_target_counts_announced_x_in_mana_value() -> None:
         state.cards[card.id] = card
         state.players[2].graveyard.append(card.id)
     hints = inspect_target_hints(state, drown, 1, {"mode_text": mode})
-    assert [item["id"] for item in hints["stack_targets"]] == ["wastes-stack"]
+    assert [item["id"] for item in hints["stack_targets"]] == [target_stack_id]

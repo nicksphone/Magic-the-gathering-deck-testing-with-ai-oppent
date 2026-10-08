@@ -293,7 +293,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       (!costChoice[cardId] || candidate.cost_options?.some((option) => option.id === costChoice[cardId])));
     const selectedModes = Array.isArray(t.mode_texts) ? t.mode_texts as string[] : [];
     const modeTargets = (t.mode_targets ?? {}) as Record<string, Record<string, unknown>>;
-    const announced = move?.target_hints?.choose_two_modes && selectedModes.length === 2
+    const perModeSelection = (move?.target_hints?.choose_two_modes && selectedModes.length === 2)
+      || (move?.target_hints?.choose_one_or_more_modes && selectedModes.length > 0);
+    const announced = perModeSelection
       ? { ...t, target_card_id: undefined, target_player: undefined, target_stack_id: undefined,
           mode_targets: Object.fromEntries(selectedModes.map((mode) => [mode, modeTargets[mode] ?? {}])) }
       : t;
@@ -788,7 +790,23 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const targetText = card.card_faces?.[selectedFaceIndex]?.oracle_text ?? card.oracle_text ?? "";
             const chosenModes = targets[card.id]?.mode_texts;
             const selectedModeTexts = Array.isArray(chosenModes) ? chosenModes as string[] : [];
-            const perModeSelected = Boolean(hints?.choose_two_modes && selectedModeTexts.length === 2);
+            const multipleModes = Boolean(hints?.choose_two_modes || hints?.choose_one_or_more_modes);
+            const offeredModes = hints?.available_modes ?? hints?.modes ?? [];
+            const incompleteModes = multipleModes && (
+              selectedModeTexts.length < (hints?.choose_two_modes ? 2 : 1)
+              || selectedModeTexts.length > (hints?.choose_two_modes ? 2 : offeredModes.length)
+              || new Set(selectedModeTexts).size !== selectedModeTexts.length
+              || selectedModeTexts.some(mode => !offeredModes.includes(mode))
+            );
+            const perModeSelected = multipleModes && !incompleteModes;
+            const selectedModeTargets = (targets[card.id]?.mode_targets ?? {}) as Record<string, Record<string, unknown>>;
+            const incompleteSpreeTargets = Boolean(hints?.choose_one_or_more_modes && perModeSelected
+              && selectedModeTexts.some(mode => !hints.mode_target_hints?.[mode]?.stack_targets?.some(
+                option => option.id === selectedModeTargets[mode]?.target_stack_id)));
+            const modeBaseCost = selectedCostId === undefined ? undefined : hints?.mode_base_mana_costs?.[selectedCostId];
+            const incompleteSpreeCosts = Boolean(hints?.choose_one_or_more_modes && perModeSelected
+              && (modeBaseCost === undefined || selectedModeTexts.some(
+                mode => hints.mode_additional_mana_costs?.[mode] === undefined)));
             const chosenMode = targets[card.id]?.mode_text;
             const targetingText = Array.isArray(chosenModes) && chosenModes.length
               ? chosenModes.join(" ") : typeof chosenMode === "string" && chosenMode ? chosenMode : targetText;
@@ -815,6 +833,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const hybridSymbols = move.cost_options?.find((option) => option.id === selectedCostId)?.hybrid_symbols ?? [];
             const chosenHybridBranches = hybridSymbols.map((_, index) => hybridChoice[`${card.id}:${selectedFaceIndex}:${selectedCostId}:${index}`] ?? "");
             const incompleteHybridChoice = chosenHybridBranches.some(Boolean) && !chosenHybridBranches.every(Boolean);
+            const displayedManaCost = hints?.choose_one_or_more_modes && perModeSelected && !incompleteSpreeCosts
+              ? modeBaseCost + selectedModeTexts.map(mode => hints.mode_additional_mana_costs?.[mode]).join('')
+              : selectedManaCost;
             return (
               <div
                 key={card.id}
@@ -831,10 +852,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {foretellControl}
                 {suspendControl}
                 <button
-                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteLinkedPair || duplicateResources}
+                  disabled={incompleteModes || incompleteSpreeTargets || incompleteSpreeCosts || incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteLinkedPair || duplicateResources}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
-                  Cast {move.card_name ?? card.name} {selectedManaCost ? `(${selectedManaCost})` : ""}
+                  Cast {move.card_name ?? card.name} {displayedManaCost ? `(${displayedManaCost})` : ""}
                 </button>
                 {cycleControl}
                 {faceNames.length > 1 ? (
@@ -957,10 +978,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   </select>
                 ) : null}
                 {hints?.modes?.length ? (
-                  hints.choose_two_modes ? (
+                  multipleModes ? (
                     <select
                       aria-label="Spell modes"
                       multiple
+                      value={selectedModeTexts}
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,

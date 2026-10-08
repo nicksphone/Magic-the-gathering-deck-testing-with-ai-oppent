@@ -1,8 +1,9 @@
 # Release Acceptance Status
 
 Checkpoint: 2026-10-08. Component source pins are recorded individually below;
-the latest published rules integration is `7455a9d`, described in
-`final518-storm-backend-qualification.md`. Earlier rules milestones remain in
+the latest integrated rules checkpoint is the Spree/Crypt increment described in
+`spree-current-qualified.md`. The preceding published `7455a9d` integration is
+described in `final518-storm-backend-qualification.md`. Earlier milestones remain in
 `escape-safekeeper-current.md`,
 with every component's source and evidence boundary recorded separately.
 Overall release remains unfinished.
@@ -13,6 +14,7 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Spree/Crypt composed runtime and paid HTTP | Nine whole modules / 299 passes, 88 warnings, 154.58s; exact original node order, all 897 phase reports, 36 lifespans and 40 original restart children completed; source/dependency/native closure verified | Pinned composed component, not full release. NEW witness corrections use actual offered options and authoritative payload targets; historical failed runs remain archived. See `spree-current-qualified.md` |
 | Current Storm/backend composition | Published `7455a9d`: seven whole backend modules / 203 passes, 108.58s, forty original restart children and four actual HTTP lifespans; separate nine whole Storm modules / 168 passes, 25.68s, exact node order and source/native closure verified | Two separate executed cohorts, not a merged 371-test gate. Opposite-callback actor controls are internal protocol evidence, not a lawful opposite-copied-trigger certificate; Spree remains unsupported; see `final518-storm-backend-qualification.md` |
 | Current frontend test/build composition | Immutable published `7455a9d`: complete original npm test script, lint and TypeScript/Vite production build exit zero; matching backend/audit/qualification fixtures and original source hashes verified | Existing dependency cache; Python consumer native SQL/socket/process denial. Not a clean installation, actual browser, proxy/HTTPS or deployment certificate. Evidence: `diagnostics/current745-frontend-test-lint-build-20261008/` |
 | Current storage capacity and lifecycle | Isolated current `da03c6bb` plus reviewed increment: 21 whole modules / 257 passes, 1,219.33s; 771 passing phase reports, 12 lifespans, four real CLI runs, source/runtime equality and native closure verified | Current component only; physical quota/exhaustion, crash/soak, operator/live activation and final browser union remain open; see `current-storage-capacity-qualification.md` |

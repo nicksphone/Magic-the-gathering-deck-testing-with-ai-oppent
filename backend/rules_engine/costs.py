@@ -438,7 +438,17 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
     return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color, payment_kind="activation", payment_types=source_types, source_card_id=source_id, ability_kind=ability_kind, excluded_sources=excluded_sources, ability_index=ability_index, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
 
 
-def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:
+def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False, action_targets=None) -> list[CostOption]:
+    from rules_engine.spree import is_spree, parse, selected, priced
+    spree_modes = parse(card.oracle_text) if is_spree(card.oracle_text) else None
+    if is_spree(card.oracle_text) and spree_modes is None:
+        return []
+    if spree_modes:
+        try:
+            chosen_modes = (selected(spree_modes, action_targets) if action_targets is not None
+                            else [min(spree_modes, key=lambda mode: mode.generic)])
+        except ValueError:
+            return []
     from rules_engine.graveyard_permissions import zone_cast_prohibited, graveyard_only_cast
     if zone_cast_prohibited(state, player_id, card.zone) or (card.zone != Zone.GRAVEYARD and graveyard_only_cast(card)):
         return []
@@ -562,7 +572,7 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                 sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind),
                 hand_exile_color=branch.get('hand_exile_color'),
                 hand_exile_generic_reduction=branch.get('hand_exile_generic_reduction', 0)))
-    return compiled
+    return [priced(option, chosen_modes) for option in compiled] if spree_modes else compiled
 
 
 def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None, cost_choice=None, escape_exile_ids=None) -> bool:

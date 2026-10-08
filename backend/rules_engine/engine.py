@@ -974,7 +974,8 @@ class RulesEngine:
                     state.log.append(f"{player.name} cannot cast land card {card.name} as a spell.")
                     apply_state_based_actions(state)
                     return
-                options = collect_cost_options(state, player_id, face_card, without_mana=effect_cast)
+                options = collect_cost_options(state, player_id, face_card, without_mana=effect_cast,
+                                               action_targets=action.get('targets') or {})
                 options = [option for option in options if (casting_method(option.id) == 'bestow') == bestowed]
                 if not options:
                     reject("No supported casting cost")

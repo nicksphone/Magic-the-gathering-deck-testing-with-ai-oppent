@@ -10,7 +10,7 @@ const supportedMechanicControls = new Set<string>([
   "graveyard_return", "optional_reveal", "discard", "each_player_discard", "cleanup_discard", "mulligan_bottom",
   "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "land_from_hand", "saga_entry", "entry_mode", "note_creature_type",
   "attacking_token_target", "topdeck_reveal_creature", "topdeck_put", "topdeck_bottom_order",
-  "look_top_choose", "look_top_select_hand", "search_library", "combat_damage", "copy_target",
+  "look_top_choose", "look_top_select_hand", "search_library", "combat_damage", "copy_target", "spree_target_change",
   "foretell_from_hand", "choose_revealed_discard", "choose_revealed_exile", "linked_exile_copy",
 ]);
 
@@ -322,6 +322,8 @@ export function Controls(props: Props) {
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "attacking_token_target" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>Attack {mechanicMove.option_labels?.[cid] ?? cid}</button>
+          )) : mechanicMove.kind === "copy_target" || mechanicMove.kind === "spree_target_change" ? (mechanicMove.options ?? []).map((cid) => (
+            <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "draw" || mechanicMove.kind === "land_entry" || mechanicMove.kind === "saga_entry" || mechanicMove.kind === "entry_mode" || mechanicMove.kind === "note_creature_type" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" || ["scry_top_order", "surveil_top_order", "hand_top_order"].includes(mechanicMove.kind ?? "") ? <>

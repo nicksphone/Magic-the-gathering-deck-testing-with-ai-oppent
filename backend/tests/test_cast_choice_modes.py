@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from tests.counter_native_frames import paid as native_paid, respond as native_respond
+
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.cast_choice import validate_cast_choice
 from rules_engine.ability_model import build_ability_spec
-from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import checked_action
 from rules_engine.stack_engine import resolve_top_of_stack
@@ -313,13 +315,11 @@ def test_cryptic_command_counter_then_draw_resolves_both_modes() -> None:
         "• Tap all creatures your opponents control.\n"
         "• Draw a card."
     )
-    target_id = state.players[2].hand.pop()
-    state.cards[target_id].name = "Lightning Bolt"
-    state.cards[target_id].zone = Zone.STACK
-    state.cards[target_id].types = ["Instant"]
-    state.stack.append(StackItem("bolt", target_id, 2, "Lightning Bolt", "deal_damage", {"target_player": 1, "amount": 3}))
+    state, target_id, target_stack_id = native_paid(
+        state, "Lightning Bolt", 2, pool={"R": 1}, target_player=1)
+    state = native_respond(state, 1)
     modes = ["Counter target spell", "Draw a card"]
-    action = {"type": "cast_spell", "card_id": card.id, "targets": {"mode_texts": modes, "target_stack_id": "bolt"}}
+    action = {"type": "cast_spell", "card_id": card.id, "targets": {"mode_texts": modes, "target_stack_id": target_stack_id}}
 
     after = checked_action(state, RulesEngine(), 1, action)
     assert [effect["effect_key"] for effect in after.stack[-1].payload["effects"]] == ["counter_spell", "draw_cards"]
@@ -351,17 +351,15 @@ def test_cryptic_command_draw_mode_fizzles_when_its_only_target_disappears() -> 
         "• Tap all creatures your opponents control.\n"
         "• Draw a card."
     )
-    target_id = state.players[2].hand.pop()
-    state.cards[target_id].name = "Lightning Bolt"
-    state.cards[target_id].zone = Zone.STACK
-    state.cards[target_id].types = ["Instant"]
-    state.stack.append(StackItem("bolt", target_id, 2, "Lightning Bolt", "deal_damage", {"target_player": 1, "amount": 3}))
+    state, target_id, target_stack_id = native_paid(
+        state, "Lightning Bolt", 2, pool={"R": 1}, target_player=1)
+    state = native_respond(state, 1)
     action = {"type": "cast_spell", "card_id": card.id, "targets": {
-        "mode_texts": ["Counter target spell", "Draw a card"], "target_stack_id": "bolt",
+        "mode_texts": ["Counter target spell", "Draw a card"], "target_stack_id": target_stack_id,
     }}
 
     after = checked_action(state, RulesEngine(), 1, action)
-    after.stack = [item for item in after.stack if item.id != "bolt"]
+    after.stack = [item for item in after.stack if item.id != target_stack_id]
     after.cards[target_id].zone = Zone.GRAVEYARD
     after.players[2].graveyard.append(target_id)
     hand_before = len(after.players[1].hand)

@@ -1,11 +1,12 @@
 """Canonical subtype/color payments and their actual downstream instructions."""
+from tests.counter_native_frames import respond as native_respond
 import json
 from pathlib import Path
 
 import pytest
 
 from ai.agent import AIAgent
-from game_state.state import Zone, StackItem
+from game_state.state import Zone
 from game_state.serializers import serialize_match_snapshot, deserialize_match_snapshot
 from rules_engine.action_validation import checked_action, ActionRejected
 from rules_engine.costs import collect_cost_options, additional_cost_candidates
@@ -36,10 +37,12 @@ def setup(name, seat=1):
         raw_add(state,'Baloth Gorger',seat,Zone.LIBRARY,cards=PERMANENTS)
     if name == 'Abjure':
         other = raw_add(state,'Burst Lightning',3-seat,Zone.HAND,cards=KICKER)
-        state.players[3-seat].hand.remove(other.id)
-        other.move_to_zone(Zone.STACK)
-        state.stack.append(StackItem(id=state.allocate_object_id(),controller=3-seat,label=other.name,
-            source_card_id=other.id,effect_key='deal_damage',payload={'amount':2,'target_player':seat}))
+        state = native_respond(state, 3-seat)
+        state.players[3-seat].mana_pool.update(R=1)
+        state = checked_action(state, RulesEngine(), 3-seat, {
+            'type':'cast_spell', 'card_id':other.id, 'targets':{'target_player':seat}})
+        state = native_respond(state, seat)
+        spell, payer, target = (state.cards[card.id] for card in (spell, payer, target))
     return state, spell, payer, target
 
 

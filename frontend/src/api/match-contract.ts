@@ -168,6 +168,12 @@ export type LegalMovesResponse = { player_id: number; moves: LegalMove[]; revisi
 
 function targetHints(value: unknown): boolean {
   if (!record(value)) return false;
+  if (value.choose_one_or_more_modes !== undefined && typeof value.choose_one_or_more_modes !== 'boolean') return false;
+  for (const key of ['mode_additional_mana_costs', 'mode_base_mana_costs']) {
+    const costs = value[key];
+    if (costs !== undefined && (!record(costs)
+      || !Object.values(costs).every(cost => typeof cost === 'string' && cost.length <= 200))) return false;
+  }
   if (value.linked_target_pairs !== undefined && (!Array.isArray(value.linked_target_pairs)
     || !value.linked_target_pairs.every(pair => record(pair) && typeof pair.primary_name === 'string'
       && typeof pair.creature_id === 'string' && typeof pair.creature_name === 'string'

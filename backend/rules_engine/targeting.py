@@ -284,8 +284,17 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
         return validate_linked_choice(target_hints, action_targets)
     modes = target_hints.get("modes") or []
     choose_two = bool(target_hints.get("choose_two_modes"))
-
-    if choose_two:
+    if target_hints.get('choose_one_or_more_modes'):
+        selected = action_targets.get('mode_texts')
+        one = action_targets.get('mode_text')
+        if one is not None and selected:
+            return False, 'Use one mode selection representation.'
+        selected = selected if selected is not None else ([one] if one is not None else [])
+        if (not isinstance(selected, list) or not selected or len(selected) > len(modes)
+                or any(not isinstance(mode, str) or mode not in modes for mode in selected)
+                or len(set(selected)) != len(selected)):
+            return False, 'Select one or more distinct printed modes.'
+    elif choose_two:
         selected = action_targets.get("mode_texts") or []
         if len(selected) != 2:
             return False, "Exactly two modes must be selected."

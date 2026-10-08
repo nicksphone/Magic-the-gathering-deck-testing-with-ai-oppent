@@ -383,6 +383,9 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    from rules_engine.spree import is_spree, compile_instruction
+    if is_spree(card.oracle_text):
+        return compile_instruction(card, action_targets)
     from rules_engine.exchange_energy import compile_instruction as compile_exchange_energy
     exchange_energy = compile_exchange_energy(card, controller)
     if exchange_energy is not None:
@@ -425,6 +428,13 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    # Whole permanent surfaces contain costs/abilities; activation proxies do not.
+    if (not set(getattr(card, 'types', []) or []).intersection(
+            {'Artifact', 'Creature', 'Enchantment', 'Land', 'Planeswalker', 'Battle'})
+            and re.search(r"\bexile target player's graveyard\b", oracle, re.I)):
+        if not re.fullmatch(r"exile target player's graveyard\.?", oracle.strip(), re.I):
+            return 'noop', {'__unsupported_instruction': oracle}
+        return 'exile_all_graveyards', {'target_player': action_targets.get('target_player')}
     from rules_engine.turn_spell_protection import compile_instruction as compile_turn_protection
     turn_protection = compile_turn_protection(oracle)
     if turn_protection is not None:
@@ -1208,6 +1218,9 @@ def inspect_target_hints(
 ) -> dict[str, Any]:
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
+    from rules_engine.spree import is_spree, hints as spree_hints
+    if is_spree(card.oracle_text):
+        return spree_hints(state, card, action_targets or {})
     bounded_exile = compile_complete_x_bounded_exile_instruction(card.oracle_text, card.name)
     if bounded_exile is not None and ('__unsupported_instruction' in bounded_exile
             or (action_targets and 'x_value' in action_targets
@@ -1735,6 +1748,10 @@ def _first_creature(state: MatchState, player_id: int) -> str | None:
 
 
 def _extract_modes(oracle: str) -> list[str]:
+    from rules_engine.spree import is_spree, parse
+    if is_spree(oracle):
+        modes = parse(oracle)
+        return [mode.text for mode in modes] if modes else []
     match = CHOOSE_ONE_RE.search(oracle) or CHOOSE_TWO_RE.search(oracle)
     if not match:
         return []

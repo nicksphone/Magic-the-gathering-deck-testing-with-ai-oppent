@@ -5,6 +5,7 @@ from rules_engine.land_animation import resolve_self_land_animation
 from rules_engine.temporary_characteristics import resolve_temporary_characteristics
 from rules_engine.turn_spell_protection import conditional_draw, grant_protection
 from rules_engine.retained_counter_prohibition import resolve as resolve_counter_prohibition
+from rules_engine.spree import resolve_copy as resolve_spree_copy, offer_change as resolve_spree_target_change
 
 from collections.abc import Callable
 
@@ -16,6 +17,8 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'spree_copy': resolve_spree_copy,
+    'spree_change_target': resolve_spree_target_change,
     'exchange_energy_payment': resolve_exchange_energy,
     'retained_counter_prohibition': resolve_counter_prohibition,
     'conditional_color_draw': conditional_draw,

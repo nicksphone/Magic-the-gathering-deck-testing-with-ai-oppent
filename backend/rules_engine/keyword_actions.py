@@ -195,7 +195,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         })
         resume_paused_resolution(state, pending)
         return True
-    if pending and pending["kind"] == "copy_target":
+    if pending and pending["kind"] in {'copy_target', 'spree_target_change'}:
         from rules_engine.stack_engine import resume_paused_resolution
         ids = action.get("card_ids")
         if (pending["player_id"] != player_id or not isinstance(ids, list)
@@ -215,6 +215,10 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                     state, references, copied.payload.get('__announced_targets') or {}, paths)
 
         chosen = ids[0]
+        if pending['kind'] == 'spree_target_change':
+            from rules_engine.spree import valid_change
+            if not valid_change(state, pending, chosen):
+                return False
         if pending.get('linked_target_index') is not None:
             from rules_engine.linked_targets import choose_linked_copy_target
             if not choose_linked_copy_target(state, copied, pending, chosen):

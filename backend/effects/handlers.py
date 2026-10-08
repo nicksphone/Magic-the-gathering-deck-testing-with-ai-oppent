@@ -636,17 +636,24 @@ def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str],
 
 
 def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> None:
-    del controller, payload
+    del controller
+    players = list(state.players.values())
+    if 'target_player' in payload:
+        target = payload['target_player']
+        if type(target) is not int or target not in state.players:
+            return
+        players = [state.players[target]]
     from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
-    departures = capture_graveyard_departures(state, [cid for player in state.players.values() for cid in player.graveyard])
-    for player in state.players.values():
+    departures = capture_graveyard_departures(state, [cid for player in players for cid in player.graveyard])
+    for player in players:
         for cid in list(player.graveyard):
             if is_departed_token(state.cards[cid]):
                 continue
             player.graveyard.remove(cid)
             state.players[state.cards[cid].owner].exile.append(cid)
             state.cards[cid].move_to_zone(Zone.EXILE)
-    state.log.append("All graveyards are exiled.")
+    state.log.append("All graveyards are exiled." if 'target_player' not in payload
+                     else f"Player {payload['target_player']}'s graveyard is exiled.")
     emit_graveyard_departures(state, departures)
 
 
@@ -958,14 +965,15 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     return copied_item
 
 
-def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -> None:
+def _offer_copy_target_choice(state: MatchState, controller: int, copied_item, *, original=False) -> None:
     from rules_engine.cast_choice import build_cast_hints
     from rules_engine.targeting import validate_cast_targets, announced_target_reference_matches, stack_object_kind
 
     copied_payload = copied_item.payload
     trigger_clause = copied_payload.get("__trigger_target_clause") if copied_payload.get("__trigger_target_choice") else None
     ability_text = copied_payload.get("__ability_target_text")
-    is_spell = copied_payload.get("__stack_copy_kind") == "spell"
+    is_spell = (copied_payload.get("__stack_copy_kind") == "spell"
+                or original and stack_object_kind(state, copied_item) == 'spell')
     if not is_spell and not (trigger_clause or ability_text):
         return
     announced = copied_payload.get("__announced_targets") or {
