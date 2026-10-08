@@ -11,6 +11,8 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Current mixed HTTP composition | Immutable `13973bd` rules, equal published `7b2b98f` backend/audit bytes: ten whole modules / 545 ordinary passes, 345.88s; exact ordered nodes, 117 completed original lifespans, 12 native controls and raw closure verified | Declared current mixed cohort only; no full built-app, storage candidate, arbitrary semantics or final release claim; see `current-http545-and-natural-games.md` |
+| Current natural AI endings | Immutable `7b2b98f`: Ramp/Blue Control reversed seats, two natural endings, 1,609 checked actions, 410.57s; full journal and native I/O denial evidence archived | Two games with Ramp starting both, not balanced samples, root-purity/counterfactual checks, expert strength or universal card semantics; see `current-http545-and-natural-games.md` |
 | Offline backend | Current immutable `a42e0f6`: fresh cold 155 hydrated/served, then original eight whole modules / 73 passes, 26.31s, 23 paired lifespans; exact source, four stub checks and closure verified | Current offline backend component only; not browser, proxy or full release |
 | Native browser BO3 | Pinned `2331bb2`: HH three natural games, 2-1, 787 writes; human/Master two natural games, 2-0, 818 writes including 399 AI beats; cold restore and closure passed | Encountered UI branches only; reused declared dependency cache; not AI strength |
 | Browser-origin boundary | Exact five applied product/test/doc postimages: nine whole modules / 235 passes; parent pure policy 101 passes | Origin rejection, not authentication, LAN trust or whole-current browser qualification |
@@ -76,6 +78,9 @@ inspection; never execute a database on NFS.
 ## Required Before Completion
 
 1. Complete pending-source privacy mixed HTTP/SQL and final release-source acceptance.
+   The current declared ten-module mixed cohort now passes 545 ordinary cases
+   with 117 completed lifespans; see `current-http545-and-natural-games.md`.
+   This does not close every privacy continuation or the final built-app gate.
    The current pure qualification and exact parent integration are documented
    in `pending-stack-privacy-current.md` and `hand-domain-admission-current.md`;
    they do not cover those other gates.
