@@ -1,5 +1,6 @@
 """Bounded, pure layer-four land setting; no later-layer suppression recursion."""
 import re
+from dataclasses import dataclass
 from functools import lru_cache
 from types import MappingProxyType
 
@@ -8,9 +9,34 @@ from rules_engine.oracle_text import without_reminder_text
 from rules_engine.query_context import query_cache
 
 
+@dataclass(frozen=True)
+class GrantedManaLandReplacement:
+    """A land without a basic subtype, with one explicit granted tap ability."""
+    granted_mana: str
+
+
 @lru_cache(maxsize=4096)
 def permanent_land_replacement(oracle_text):
     from rules_engine.land_types import BASIC_TYPES
+    raw_lines = [line.strip() for line in (oracle_text or '').splitlines() if line.strip()]
+    generic = re.compile(
+        r'enchanted permanent is a colorless land with "\{T\}: Add \{([WUBRGC])\}\.?" '
+        r'and loses all other card types and abilities\.', re.I)
+    matches = [generic.fullmatch(line) for line in raw_lines]
+    if any(matches):
+        # All raw lines must be accounted for; unknown parentheses are not reminders.
+        if sum(match is not None for match in matches) != 1:
+            return None
+        for line, match in zip(raw_lines, matches):
+            if match is not None:
+                continue
+            enchant = re.fullmatch(r'enchant (.+)', line, re.I)
+            subjects = re.split(r',? (?:or|and) |, ', enchant[1].lower()) if enchant else []
+            if not subjects or any(subject not in {
+                    'artifact', 'creature', 'enchantment', 'land', 'planeswalker', 'permanent'}
+                    for subject in subjects):
+                return None
+        return GrantedManaLandReplacement(next(match[1].upper() for match in matches if match))
     for line in without_reminder_text(oracle_text or '').lower().splitlines():
         match = re.fullmatch(r'enchanted permanent is a colorless (plains|island|swamp|mountain|forest) land\.', line.strip())
         if match:
@@ -175,7 +201,7 @@ def _resolve(rows):
                 subtypes[cid] = [word for word in subtypes[cid] if word.lower() not in CREATURE_SUBTYPES]
                 subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *(word.capitalize() for word in instruction)]))
             elif operation == 'replace':
-                types[cid], subtypes[cid] = ['Land'], [instruction]
+                types[cid], subtypes[cid] = ['Land'], [instruction] if isinstance(instruction, str) else []
                 lost.add(cid)
                 colorless.add(cid)
                 replaced.add(cid)
@@ -201,7 +227,7 @@ def _resolve(rows):
             prefix = _split_line(row[1])[0] or 'Land'
         if (cid in replaced | creature_replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8])
                 or 'Land' in types[cid] and subtypes[cid] != _split_line(row[1])[1]):
-            lines[cid] = prefix + ' \u2014 ' + ' '.join(subtypes[cid])
+            lines[cid] = prefix + (' \u2014 ' + ' '.join(subtypes[cid]) if subtypes[cid] else '')
     changed_types = {cid: tuple(values) for cid, values in types.items() if tuple(values) != by_id[cid][4]}
     return (MappingProxyType(lines), frozenset(lost), MappingProxyType(changed_types), frozenset(colorless),
             tuple(started))

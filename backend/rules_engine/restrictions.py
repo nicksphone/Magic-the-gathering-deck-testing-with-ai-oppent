@@ -137,6 +137,10 @@ def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution
     is_active = state.active_player == player_id
     opponent_turn = state.active_player != player_id
     types = {str(value) for value in (effective_types(state, card) or [])}
+    from rules_engine.loyalty_instructions import timing
+    loyalty_allowed, loyalty_flash = timing(state, card, player_id)
+    if not loyalty_allowed:
+        return False, 'An opponent restricts casting to sorcery timing.'
     from rules_engine.oracle_text import without_reminder_text
     has_flash = ("flash" in {str(value).lower() for value in (getattr(card, "keywords", []) or [])}
                  or any(part.strip().rstrip('.') == "flash"
@@ -157,7 +161,7 @@ def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution
     # every priority window.
     non_instant_spell = bool(types & {"Sorcery", "Creature", "Artifact", "Enchantment", "Planeswalker", "Battle"})
     if (non_instant_spell and "Instant" not in types and not has_flash
-            and not during_resolution and not has_global_flash_permission(state, player_id)):
+            and not during_resolution and not loyalty_flash and not has_global_flash_permission(state, player_id)):
         if not (is_active and step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack):
             return (False, "Cast only at sorcery speed.")
 

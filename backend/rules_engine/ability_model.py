@@ -51,6 +51,10 @@ def spell_resolution_gaps(card: CardInstance, action_targets: dict[str, Any] | N
         except (ValueError, TypeError):
             # Invalid choices belong to the existing face validation, not inference.
             return ()
+    from rules_engine.printed_body import printed_body_gaps
+    body_gaps = printed_body_gaps(card)
+    if body_gaps:
+        return body_gaps
     if not set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
         return ()
     text = spell_resolution_text(card, card.oracle_text or '')
@@ -96,6 +100,7 @@ def build_spell_spec(state: MatchState, card: CardInstance, controller: int, act
         controller=controller, oracle_text=card.oracle_text or "", mana_cost=card.mana_cost or "",
         target_hints=build_cast_hints(state, card, controller, action_targets), modes=[],
         choices=choices, effect=EffectSpec("noop", dict(choices)),
+        unsupported_resolution=spell_resolution_gaps(card, action_targets),
     )
 
 

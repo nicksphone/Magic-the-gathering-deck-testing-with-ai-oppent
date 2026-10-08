@@ -1,0 +1,1568 @@
+{
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "cards": {
+    "Archangel of Wrath": {
+      "canonical": {
+        "arena_id": 82055,
+        "artist": "Miguel Mercado",
+        "artist_ids": [
+          "085f314d-cd61-48e0-89d1-048e9891e4a1"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 671315,
+        "cmc": 4.0,
+        "collector_number": "3",
+        "color_identity": [
+          "B",
+          "R",
+          "W"
+        ],
+        "colors": [
+          "W"
+        ],
+        "digital": false,
+        "edhrec_rank": 22411,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "paper",
+          "arena",
+          "mtgo"
+        ],
+        "highres_image": true,
+        "id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+        "illustration_id": "30c90d96-ee9c-46bb-b1ee-bbc1d8097de5",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T05:42:52Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+          "crop": "https://cards.scryfall.io/crop/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372",
+          "display": "https://cards.scryfall.io/display/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372",
+          "grid": "https://cards.scryfall.io/grid/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372",
+          "large": "https://cards.scryfall.io/large/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+          "normal": "https://cards.scryfall.io/normal/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+          "png": "https://cards.scryfall.io/png/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.png?1783921372",
+          "small": "https://cards.scryfall.io/small/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.jpg?1783921372",
+          "thumb": "https://cards.scryfall.io/thumb/front/2/d/2d00bab2-e95d-4296-a805-2a05e7640efb.webp?1783921372"
+        },
+        "keywords": [
+          "Kicker",
+          "Flying",
+          "Lifelink"
+        ],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "legal",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "legal",
+          "pioneer": "legal",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "not_legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{2}{W}{W}",
+        "mtgo_id": 102482,
+        "multiverse_ids": [
+          574483
+        ],
+        "name": "Archangel of Wrath",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "022e97af-2a3a-4e13-9b6b-d34fcc8cf168",
+        "oracle_text": "Kicker {B} and/or {R} (You may pay an additional {B} and/or {R} as you cast this spell.)\nFlying, lifelink\nWhen this creature enters, if it was kicked, it deals 2 damage to any target.\nWhen this creature enters, if it was kicked twice, it deals 2 damage to any target.",
+        "oversized": false,
+        "penny_rank": 3239,
+        "power": "3",
+        "preview": {
+          "previewed_at": "2022-08-18",
+          "source": "Wizards of the Coast",
+          "source_uri": "https://www.twitch.tv/videos/1565562937"
+        },
+        "prices": {
+          "eur": "0.24",
+          "eur_foil": "0.34",
+          "tix": "0.02",
+          "usd": "0.28",
+          "usd_etched": null,
+          "usd_foil": "0.32"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A022e97af-2a3a-4e13-9b6b-d34fcc8cf168&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/102482?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=671315&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F282765%3Fpage%3D1"
+        },
+        "rarity": "rare",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Archangel+of+Wrath",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=574483&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DArchangel%2Bof%2BWrath",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DArchangel%2Bof%2BWrath"
+        },
+        "released_at": "2022-09-09",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/2d00bab2-e95d-4296-a805-2a05e7640efb/rulings",
+        "scryfall_set_uri": "https://scryfall.com/sets/dmu?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/dmu/3/archangel-of-wrath?utm_source=api",
+        "security_stamp": "oval",
+        "set": "dmu",
+        "set_id": "4e47a6cd-cdeb-4b0f-8f24-cfe1a0127cb3",
+        "set_name": "Dominaria United",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admu&unique=prints",
+        "set_type": "expansion",
+        "set_uri": "https://api.scryfall.com/sets/4e47a6cd-cdeb-4b0f-8f24-cfe1a0127cb3",
+        "story_spotlight": false,
+        "tcgplayer_id": 282765,
+        "textless": false,
+        "toughness": "4",
+        "type_line": "Creature \u2014 Angel",
+        "uri": "https://api.scryfall.com/cards/2d00bab2-e95d-4296-a805-2a05e7640efb",
+        "variation": false
+      },
+      "join": "exact_printing",
+      "runtime": {
+        "colors": [
+          "W"
+        ],
+        "layout": "normal",
+        "mana_cost": "{2}{W}{W}",
+        "name": "Archangel of Wrath",
+        "oracle_text": "Kicker {B} and/or {R} (You may pay an additional {B} and/or {R} as you cast this spell.)\nFlying, lifelink\nWhen this creature enters, if it was kicked, it deals 2 damage to any target.\nWhen this creature enters, if it was kicked twice, it deals 2 damage to any target.",
+        "power": "3",
+        "scryfall_id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+        "toughness": "4",
+        "type_line": "Creature \u2014 Angel"
+      }
+    },
+    "Springheart Nantuko": {
+      "canonical": {
+        "all_parts": [
+          {
+            "component": "token",
+            "id": "8a016157-6f3f-4fb2-b962-1f548d378545",
+            "name": "Copy",
+            "object": "related_card",
+            "type_line": "Token",
+            "uri": "https://api.scryfall.com/cards/8a016157-6f3f-4fb2-b962-1f548d378545"
+          },
+          {
+            "component": "combo_piece",
+            "id": "cf723c91-e3ae-4a71-93b2-65d05bfa9b60",
+            "name": "Springheart Nantuko",
+            "object": "related_card",
+            "type_line": "Enchantment Creature \u2014 Insect Monk",
+            "uri": "https://api.scryfall.com/cards/cf723c91-e3ae-4a71-93b2-65d05bfa9b60"
+          },
+          {
+            "component": "token",
+            "id": "059e9d51-c7bf-41c0-a6f0-c0bbc6d3b434",
+            "name": "Insect",
+            "object": "related_card",
+            "type_line": "Token Creature \u2014 Insect",
+            "uri": "https://api.scryfall.com/cards/059e9d51-c7bf-41c0-a6f0-c0bbc6d3b434"
+          }
+        ],
+        "arena_id": 91021,
+        "artist": "Valera Lutfullina",
+        "artist_ids": [
+          "76bc57c7-47c6-40c5-8797-8ffcce430ac7"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 772226,
+        "cmc": 2.0,
+        "collector_number": "171",
+        "color_identity": [
+          "G"
+        ],
+        "colors": [
+          "G"
+        ],
+        "digital": false,
+        "edhrec_rank": 701,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "frame_effects": [
+          "enchantment"
+        ],
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "paper",
+          "mtgo",
+          "arena"
+        ],
+        "highres_image": true,
+        "id": "54a3ea87-005e-4985-b2a5-21711d0b71c0",
+        "illustration_id": "12a84ea9-c11a-4a8a-8a9c-ab3e62443e19",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T02:54:15Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "crop": "https://cards.scryfall.io/crop/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255",
+          "display": "https://cards.scryfall.io/display/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255",
+          "grid": "https://cards.scryfall.io/grid/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255",
+          "large": "https://cards.scryfall.io/large/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "normal": "https://cards.scryfall.io/normal/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "png": "https://cards.scryfall.io/png/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.png?1783911255",
+          "small": "https://cards.scryfall.io/small/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "thumb": "https://cards.scryfall.io/thumb/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255"
+        },
+        "keywords": [
+          "Bestow",
+          "Landfall"
+        ],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "legal",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "legal",
+          "pioneer": "not_legal",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{1}{G}",
+        "mtgo_id": 126359,
+        "multiverse_ids": [
+          662323
+        ],
+        "name": "Springheart Nantuko",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+        "oracle_text": "Bestow {1}{G}\nEnchanted creature gets +1/+1.\nLandfall \u2014 Whenever a land you control enters, you may pay {1}{G} if this permanent is attached to a creature you control. If you do, create a token that's a copy of that creature. If you didn't create a token this way, create a 1/1 green Insect creature token.",
+        "oversized": false,
+        "penny_rank": 303,
+        "power": "1",
+        "preview": {
+          "previewed_at": "2024-05-27",
+          "source": "AfterOfficeTTV",
+          "source_uri": "https://x.com/AfterTtv/status/1795221106913132646"
+        },
+        "prices": {
+          "eur": "4.46",
+          "eur_foil": "5.34",
+          "tix": "0.02",
+          "usd": "5.73",
+          "usd_etched": null,
+          "usd_foil": "6.66"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A8a3ad2ef-8bcb-40c0-85de-f03328c2b644&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/126359?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=772226&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F552859%3Fpage%3D1"
+        },
+        "rarity": "rare",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Springheart+Nantuko",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=662323&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DSpringheart%2BNantuko",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DSpringheart%2BNantuko"
+        },
+        "released_at": "2024-06-14",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/54a3ea87-005e-4985-b2a5-21711d0b71c0/rulings",
+        "scryfall_set_uri": "https://scryfall.com/sets/mh3?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/mh3/171/springheart-nantuko?utm_source=api",
+        "security_stamp": "oval",
+        "set": "mh3",
+        "set_id": "3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+        "set_name": "Modern Horizons 3",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amh3&unique=prints",
+        "set_type": "draft_innovation",
+        "set_uri": "https://api.scryfall.com/sets/3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+        "story_spotlight": false,
+        "tcgplayer_id": 552859,
+        "textless": false,
+        "toughness": "1",
+        "type_line": "Enchantment Creature \u2014 Insect Monk",
+        "uri": "https://api.scryfall.com/cards/54a3ea87-005e-4985-b2a5-21711d0b71c0",
+        "variation": false
+      },
+      "join": "exact_printing",
+      "runtime": {
+        "all_parts": [
+          {
+            "component": "token",
+            "id": "8a016157-6f3f-4fb2-b962-1f548d378545",
+            "name": "Copy",
+            "object": "related_card",
+            "type_line": "Token",
+            "uri": "https://api.scryfall.com/cards/8a016157-6f3f-4fb2-b962-1f548d378545"
+          },
+          {
+            "component": "combo_piece",
+            "id": "cf723c91-e3ae-4a71-93b2-65d05bfa9b60",
+            "name": "Springheart Nantuko",
+            "object": "related_card",
+            "type_line": "Enchantment Creature \u2014 Insect Monk",
+            "uri": "https://api.scryfall.com/cards/cf723c91-e3ae-4a71-93b2-65d05bfa9b60"
+          },
+          {
+            "component": "token",
+            "id": "059e9d51-c7bf-41c0-a6f0-c0bbc6d3b434",
+            "name": "Insect",
+            "object": "related_card",
+            "type_line": "Token Creature \u2014 Insect",
+            "uri": "https://api.scryfall.com/cards/059e9d51-c7bf-41c0-a6f0-c0bbc6d3b434"
+          }
+        ],
+        "arena_id": 91021,
+        "artist": "Valera Lutfullina",
+        "artist_ids": [
+          "76bc57c7-47c6-40c5-8797-8ffcce430ac7"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 772226,
+        "cmc": 2.0,
+        "collector_number": "171",
+        "color_identity": [
+          "G"
+        ],
+        "colors": [
+          "G"
+        ],
+        "digital": false,
+        "edhrec_rank": 701,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "frame_effects": [
+          "enchantment"
+        ],
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "paper",
+          "mtgo",
+          "arena"
+        ],
+        "highres_image": true,
+        "id": "54a3ea87-005e-4985-b2a5-21711d0b71c0",
+        "illustration_id": "12a84ea9-c11a-4a8a-8a9c-ab3e62443e19",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T02:54:15Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "crop": "https://cards.scryfall.io/crop/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255",
+          "display": "https://cards.scryfall.io/display/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255",
+          "grid": "https://cards.scryfall.io/grid/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255",
+          "large": "https://cards.scryfall.io/large/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "normal": "https://cards.scryfall.io/normal/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "png": "https://cards.scryfall.io/png/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.png?1783911255",
+          "small": "https://cards.scryfall.io/small/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.jpg?1783911255",
+          "thumb": "https://cards.scryfall.io/thumb/front/5/4/54a3ea87-005e-4985-b2a5-21711d0b71c0.webp?1783911255"
+        },
+        "keywords": [
+          "Bestow",
+          "Landfall"
+        ],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "legal",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "legal",
+          "pioneer": "not_legal",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{1}{G}",
+        "mtgo_id": 126359,
+        "multiverse_ids": [
+          662323
+        ],
+        "name": "Springheart Nantuko",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+        "oracle_text": "Bestow {1}{G}\nEnchanted creature gets +1/+1.\nLandfall \u2014 Whenever a land you control enters, you may pay {1}{G} if this permanent is attached to a creature you control. If you do, create a token that's a copy of that creature. If you didn't create a token this way, create a 1/1 green Insect creature token.",
+        "oversized": false,
+        "penny_rank": 303,
+        "power": "1",
+        "preview": {
+          "previewed_at": "2024-05-27",
+          "source": "AfterOfficeTTV",
+          "source_uri": "https://x.com/AfterTtv/status/1795221106913132646"
+        },
+        "prices": {
+          "eur": "4.46",
+          "eur_foil": "5.34",
+          "tix": "0.02",
+          "usd": "5.73",
+          "usd_etched": null,
+          "usd_foil": "6.66"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A8a3ad2ef-8bcb-40c0-85de-f03328c2b644&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/126359?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=772226&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F552859%3Fpage%3D1"
+        },
+        "rarity": "rare",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Springheart+Nantuko",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=662323&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DSpringheart%2BNantuko",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DSpringheart%2BNantuko"
+        },
+        "released_at": "2024-06-14",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/54a3ea87-005e-4985-b2a5-21711d0b71c0/rulings",
+        "scryfall_id": "54a3ea87-005e-4985-b2a5-21711d0b71c0",
+        "scryfall_set_uri": "https://scryfall.com/sets/mh3?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/mh3/171/springheart-nantuko?utm_source=api",
+        "security_stamp": "oval",
+        "set": "mh3",
+        "set_id": "3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+        "set_name": "Modern Horizons 3",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amh3&unique=prints",
+        "set_type": "draft_innovation",
+        "set_uri": "https://api.scryfall.com/sets/3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+        "story_spotlight": false,
+        "tcgplayer_id": 552859,
+        "textless": false,
+        "toughness": "1",
+        "type_line": "Enchantment Creature \u2014 Insect Monk",
+        "uri": "https://api.scryfall.com/cards/54a3ea87-005e-4985-b2a5-21711d0b71c0",
+        "variation": false
+      }
+    },
+    "Suncleanser": {
+      "canonical": {
+        "arena_id": 67758,
+        "artist": "Mark Zug",
+        "artist_ids": [
+          "48e2b98c-5467-4671-bd42-4c3746115117"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 360248,
+        "cmc": 2.0,
+        "collector_number": "39",
+        "color_identity": [
+          "W"
+        ],
+        "colors": [
+          "W"
+        ],
+        "digital": false,
+        "edhrec_rank": 20441,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "arena",
+          "paper",
+          "mtgo"
+        ],
+        "highres_image": true,
+        "id": "3644df41-b690-4581-ac7d-c85cec75411f",
+        "illustration_id": "3ba33525-2fbf-4d4f-b12d-2a2959524b0d",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T09:23:16Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "crop": "https://cards.scryfall.io/crop/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596",
+          "display": "https://cards.scryfall.io/display/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596",
+          "grid": "https://cards.scryfall.io/grid/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596",
+          "large": "https://cards.scryfall.io/large/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "normal": "https://cards.scryfall.io/normal/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "png": "https://cards.scryfall.io/png/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.png?1783934596",
+          "small": "https://cards.scryfall.io/small/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "thumb": "https://cards.scryfall.io/thumb/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596"
+        },
+        "keywords": [],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "legal",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "legal",
+          "pioneer": "legal",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{1}{W}",
+        "mtgo_id": 68239,
+        "multiverse_ids": [
+          447175
+        ],
+        "name": "Suncleanser",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "437661f7-a32f-45c9-a006-05a1e38ee8d9",
+        "oracle_text": "When this creature enters, choose one \u2014\n\u2022 Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.\n\u2022 Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield.",
+        "oversized": false,
+        "penny_rank": 15186,
+        "power": "1",
+        "prices": {
+          "eur": "0.38",
+          "eur_foil": "1.99",
+          "tix": "0.02",
+          "usd": "0.36",
+          "usd_etched": null,
+          "usd_foil": "2.87"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A437661f7-a32f-45c9-a006-05a1e38ee8d9&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/68239?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=360248&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F169352%3Fpage%3D1"
+        },
+        "rarity": "rare",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Suncleanser",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=447175&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DSuncleanser",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DSuncleanser"
+        },
+        "released_at": "2018-07-13",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/3644df41-b690-4581-ac7d-c85cec75411f/rulings",
+        "scryfall_set_uri": "https://scryfall.com/sets/m19?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/m19/39/suncleanser?utm_source=api",
+        "security_stamp": "oval",
+        "set": "m19",
+        "set_id": "2f5f2509-56db-414d-9a7e-6e312ec3760c",
+        "set_name": "Core Set 2019",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am19&unique=prints",
+        "set_type": "core",
+        "set_uri": "https://api.scryfall.com/sets/2f5f2509-56db-414d-9a7e-6e312ec3760c",
+        "story_spotlight": false,
+        "tcgplayer_id": 169352,
+        "textless": false,
+        "toughness": "4",
+        "type_line": "Creature \u2014 Human Cleric",
+        "uri": "https://api.scryfall.com/cards/3644df41-b690-4581-ac7d-c85cec75411f",
+        "variation": false
+      },
+      "join": "exact_printing",
+      "runtime": {
+        "arena_id": 67758,
+        "artist": "Mark Zug",
+        "artist_ids": [
+          "48e2b98c-5467-4671-bd42-4c3746115117"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 360248,
+        "cmc": 2.0,
+        "collector_number": "39",
+        "color_identity": [
+          "W"
+        ],
+        "colors": [
+          "W"
+        ],
+        "digital": false,
+        "edhrec_rank": 20441,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "arena",
+          "paper",
+          "mtgo"
+        ],
+        "highres_image": true,
+        "id": "3644df41-b690-4581-ac7d-c85cec75411f",
+        "illustration_id": "3ba33525-2fbf-4d4f-b12d-2a2959524b0d",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T09:23:16Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "crop": "https://cards.scryfall.io/crop/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596",
+          "display": "https://cards.scryfall.io/display/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596",
+          "grid": "https://cards.scryfall.io/grid/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596",
+          "large": "https://cards.scryfall.io/large/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "normal": "https://cards.scryfall.io/normal/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "png": "https://cards.scryfall.io/png/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.png?1783934596",
+          "small": "https://cards.scryfall.io/small/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.jpg?1783934596",
+          "thumb": "https://cards.scryfall.io/thumb/front/3/6/3644df41-b690-4581-ac7d-c85cec75411f.webp?1783934596"
+        },
+        "keywords": [],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "legal",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "legal",
+          "pioneer": "legal",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{1}{W}",
+        "mtgo_id": 68239,
+        "multiverse_ids": [
+          447175
+        ],
+        "name": "Suncleanser",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "437661f7-a32f-45c9-a006-05a1e38ee8d9",
+        "oracle_text": "When this creature enters, choose one \u2014\n\u2022 Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.\n\u2022 Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield.",
+        "oversized": false,
+        "penny_rank": 15186,
+        "power": "1",
+        "prices": {
+          "eur": "0.38",
+          "eur_foil": "1.99",
+          "tix": "0.02",
+          "usd": "0.36",
+          "usd_etched": null,
+          "usd_foil": "2.87"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A437661f7-a32f-45c9-a006-05a1e38ee8d9&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/68239?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=360248&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F169352%3Fpage%3D1"
+        },
+        "rarity": "rare",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Suncleanser",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=447175&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DSuncleanser",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DSuncleanser"
+        },
+        "released_at": "2018-07-13",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/3644df41-b690-4581-ac7d-c85cec75411f/rulings",
+        "scryfall_id": "3644df41-b690-4581-ac7d-c85cec75411f",
+        "scryfall_set_uri": "https://scryfall.com/sets/m19?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/m19/39/suncleanser?utm_source=api",
+        "security_stamp": "oval",
+        "set": "m19",
+        "set_id": "2f5f2509-56db-414d-9a7e-6e312ec3760c",
+        "set_name": "Core Set 2019",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am19&unique=prints",
+        "set_type": "core",
+        "set_uri": "https://api.scryfall.com/sets/2f5f2509-56db-414d-9a7e-6e312ec3760c",
+        "story_spotlight": false,
+        "tcgplayer_id": 169352,
+        "textless": false,
+        "toughness": "4",
+        "type_line": "Creature \u2014 Human Cleric",
+        "uri": "https://api.scryfall.com/cards/3644df41-b690-4581-ac7d-c85cec75411f",
+        "variation": false
+      }
+    },
+    "The Wandering Emperor": {
+      "canonical": {
+        "all_parts": [
+          {
+            "component": "combo_piece",
+            "id": "22edc832-993b-432a-8435-8d8a72799122",
+            "name": "The Wandering Emperor",
+            "object": "related_card",
+            "type_line": "Legendary Planeswalker",
+            "uri": "https://api.scryfall.com/cards/22edc832-993b-432a-8435-8d8a72799122"
+          },
+          {
+            "component": "token",
+            "id": "f68e5337-6e44-4f8f-a102-2f97b433beea",
+            "name": "Samurai",
+            "object": "related_card",
+            "type_line": "Token Creature \u2014 Samurai",
+            "uri": "https://api.scryfall.com/cards/f68e5337-6e44-4f8f-a102-2f97b433beea"
+          }
+        ],
+        "arena_id": 79464,
+        "artist": "Tommy Arnold",
+        "artist_ids": [
+          "1130bcd0-c8b1-48be-85d7-3ddb2abc6b1a"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 607030,
+        "cmc": 4.0,
+        "collector_number": "42",
+        "color_identity": [
+          "W"
+        ],
+        "colors": [
+          "W"
+        ],
+        "digital": false,
+        "edhrec_rank": 5596,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "paper",
+          "mtgo",
+          "arena"
+        ],
+        "highres_image": true,
+        "id": "fab2d8a9-ab4c-4225-a570-22636293c17d",
+        "illustration_id": "31645909-383b-48bd-b015-f14ea2679e04",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T06:25:09Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.webp?1783923909",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.jpg?1783923909",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.jpg?1783923909",
+          "crop": "https://cards.scryfall.io/crop/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.webp?1783923909",
+          "display": "https://cards.scryfall.io/display/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.webp?1783923909",
+          "grid": "https://cards.scryfall.io/grid/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.webp?1783923909",
+          "large": "https://cards.scryfall.io/large/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.jpg?1783923909",
+          "normal": "https://cards.scryfall.io/normal/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.jpg?1783923909",
+          "png": "https://cards.scryfall.io/png/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.png?1783923909",
+          "small": "https://cards.scryfall.io/small/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.jpg?1783923909",
+          "thumb": "https://cards.scryfall.io/thumb/front/f/a/fab2d8a9-ab4c-4225-a570-22636293c17d.webp?1783923909"
+        },
+        "keywords": [
+          "Flash"
+        ],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "legal",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "not_legal",
+          "pioneer": "legal",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "not_legal",
+          "vintage": "legal"
+        },
+        "loyalty": "3",
+        "mana_cost": "{2}{W}{W}",
+        "mtgo_id": 96998,
+        "multiverse_ids": [
+          548337
+        ],
+        "name": "The Wandering Emperor",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "0c7f18d5-36cb-4bc6-a358-443b97666215",
+        "oracle_text": "Flash\nAs long as The Wandering Emperor entered this turn, you may activate her loyalty abilities any time you could cast an instant.\n+1: Put a +1/+1 counter on up to one target creature. It gains first strike until end of turn.\n\u22121: Create a 2/2 white Samurai creature token with vigilance.\n\u22122: Exile target tapped creature. You gain 2 life.",
+        "oversized": false,
+        "preview": {
+          "previewed_at": "2022-01-27",
+          "source": "Wizards of the Coast",
+          "source_uri": "https://www.twitch.tv/videos/1277767538"
+        },
+        "prices": {
+          "eur": "6.16",
+          "eur_foil": "7.91",
+          "tix": "1.05",
+          "usd": "3.88",
+          "usd_etched": null,
+          "usd_foil": "5.23"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A0c7f18d5-36cb-4bc6-a358-443b97666215&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/96998?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=607030&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F262039%3Fpage%3D1"
+        },
+        "rarity": "mythic",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=The+Wandering+Emperor",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=548337&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DThe%2BWandering%2BEmperor",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DThe%2BWandering%2BEmperor"
+        },
+        "released_at": "2022-02-18",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/fab2d8a9-ab4c-4225-a570-22636293c17d/rulings",
+        "scryfall_set_uri": "https://scryfall.com/sets/neo?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/neo/42/the-wandering-emperor?utm_source=api",
+        "security_stamp": "oval",
+        "set": "neo",
+        "set_id": "59a2059f-5482-433f-8761-eb2e17859b71",
+        "set_name": "Kamigawa: Neon Dynasty",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aneo&unique=prints",
+        "set_type": "expansion",
+        "set_uri": "https://api.scryfall.com/sets/59a2059f-5482-433f-8761-eb2e17859b71",
+        "story_spotlight": false,
+        "tcgplayer_id": 262039,
+        "textless": false,
+        "type_line": "Legendary Planeswalker",
+        "uri": "https://api.scryfall.com/cards/fab2d8a9-ab4c-4225-a570-22636293c17d",
+        "variation": false
+      },
+      "join": "exact_printing",
+      "runtime": {
+        "colors": [
+          "W"
+        ],
+        "layout": "",
+        "loyalty": "3",
+        "mana_cost": "{2}{W}{W}",
+        "name": "The Wandering Emperor",
+        "oracle_text": "Flash\nAs long as The Wandering Emperor entered this turn, you may activate her loyalty abilities any time you could cast an instant.\n+1: Put a +1/+1 counter on up to one target creature. It gains first strike until end of turn.\n\u22121: Create a 2/2 white Samurai creature token with vigilance.\n\u22122: Exile target tapped creature. You gain 2 life.",
+        "scryfall_id": "fab2d8a9-ab4c-4225-a570-22636293c17d",
+        "type_line": "Legendary Planeswalker"
+      }
+    },
+    "Veil of Summer": {
+      "canonical": {
+        "arena_id": 69983,
+        "artist": "Lake Hurwitz",
+        "artist_ids": [
+          "3677c64b-55e6-4a0d-a952-bdbb05531220"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 378381,
+        "cmc": 1.0,
+        "collector_number": "198",
+        "color_identity": [
+          "G"
+        ],
+        "colors": [
+          "G"
+        ],
+        "digital": false,
+        "edhrec_rank": 525,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "arena",
+          "paper",
+          "mtgo"
+        ],
+        "highres_image": true,
+        "id": "aa686c34-1c11-469f-93c2-f9891aea521f",
+        "illustration_id": "ce69fc01-c621-487b-82ff-7571ce8bd4a9",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T08:55:55Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "crop": "https://cards.scryfall.io/crop/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955",
+          "display": "https://cards.scryfall.io/display/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955",
+          "grid": "https://cards.scryfall.io/grid/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955",
+          "large": "https://cards.scryfall.io/large/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "normal": "https://cards.scryfall.io/normal/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "png": "https://cards.scryfall.io/png/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.png?1783932955",
+          "small": "https://cards.scryfall.io/small/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "thumb": "https://cards.scryfall.io/thumb/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955"
+        },
+        "keywords": [],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "banned",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "not_legal",
+          "pioneer": "banned",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{G}",
+        "mtgo_id": 73295,
+        "multiverse_ids": [
+          466952
+        ],
+        "name": "Veil of Summer",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "002965be-a36f-4a09-9ce0-c6535bca1703",
+        "oracle_text": "Draw a card if an opponent has cast a blue or black spell this turn. Spells you control can't be countered this turn. You and permanents you control gain hexproof from blue and from black until end of turn. (You and they can't be the targets of blue or black spells or abilities your opponents control.)",
+        "oversized": false,
+        "preview": {
+          "previewed_at": "2019-06-17",
+          "source": "Bloody",
+          "source_uri": "https://twitter.com/Bloody/status/1140804013992173568"
+        },
+        "prices": {
+          "eur": "3.15",
+          "eur_foil": "14.35",
+          "tix": "1.55",
+          "usd": "5.13",
+          "usd_etched": null,
+          "usd_foil": "26.32"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A002965be-a36f-4a09-9ce0-c6535bca1703&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/73295?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=378381&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F192543%3Fpage%3D1"
+        },
+        "rarity": "uncommon",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Veil+of+Summer",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=466952&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DVeil%2Bof%2BSummer",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DVeil%2Bof%2BSummer"
+        },
+        "released_at": "2019-07-12",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/aa686c34-1c11-469f-93c2-f9891aea521f/rulings",
+        "scryfall_set_uri": "https://scryfall.com/sets/m20?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/m20/198/veil-of-summer?utm_source=api",
+        "set": "m20",
+        "set_id": "4a787360-9767-4f44-80b1-2405dc5e39c7",
+        "set_name": "Core Set 2020",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am20&unique=prints",
+        "set_type": "core",
+        "set_uri": "https://api.scryfall.com/sets/4a787360-9767-4f44-80b1-2405dc5e39c7",
+        "story_spotlight": false,
+        "tcgplayer_id": 192543,
+        "textless": false,
+        "type_line": "Instant",
+        "uri": "https://api.scryfall.com/cards/aa686c34-1c11-469f-93c2-f9891aea521f",
+        "variation": false
+      },
+      "join": "exact_printing",
+      "runtime": {
+        "arena_id": 69983,
+        "artist": "Lake Hurwitz",
+        "artist_ids": [
+          "3677c64b-55e6-4a0d-a952-bdbb05531220"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 378381,
+        "cmc": 1.0,
+        "collector_number": "198",
+        "color_identity": [
+          "G"
+        ],
+        "colors": [
+          "G"
+        ],
+        "digital": false,
+        "edhrec_rank": 525,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "arena",
+          "paper",
+          "mtgo"
+        ],
+        "highres_image": true,
+        "id": "aa686c34-1c11-469f-93c2-f9891aea521f",
+        "illustration_id": "ce69fc01-c621-487b-82ff-7571ce8bd4a9",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T08:55:55Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "crop": "https://cards.scryfall.io/crop/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955",
+          "display": "https://cards.scryfall.io/display/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955",
+          "grid": "https://cards.scryfall.io/grid/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955",
+          "large": "https://cards.scryfall.io/large/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "normal": "https://cards.scryfall.io/normal/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "png": "https://cards.scryfall.io/png/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.png?1783932955",
+          "small": "https://cards.scryfall.io/small/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.jpg?1783932955",
+          "thumb": "https://cards.scryfall.io/thumb/front/a/a/aa686c34-1c11-469f-93c2-f9891aea521f.webp?1783932955"
+        },
+        "keywords": [],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "banned",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "not_legal",
+          "pioneer": "banned",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{G}",
+        "mtgo_id": 73295,
+        "multiverse_ids": [
+          466952
+        ],
+        "name": "Veil of Summer",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "002965be-a36f-4a09-9ce0-c6535bca1703",
+        "oracle_text": "Draw a card if an opponent has cast a blue or black spell this turn. Spells you control can't be countered this turn. You and permanents you control gain hexproof from blue and from black until end of turn. (You and they can't be the targets of blue or black spells or abilities your opponents control.)",
+        "oversized": false,
+        "preview": {
+          "previewed_at": "2019-06-17",
+          "source": "Bloody",
+          "source_uri": "https://twitter.com/Bloody/status/1140804013992173568"
+        },
+        "prices": {
+          "eur": "3.15",
+          "eur_foil": "14.35",
+          "tix": "1.55",
+          "usd": "5.13",
+          "usd_etched": null,
+          "usd_foil": "26.32"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A002965be-a36f-4a09-9ce0-c6535bca1703&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/73295?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=378381&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F192543%3Fpage%3D1"
+        },
+        "rarity": "uncommon",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Veil+of+Summer",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=466952&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DVeil%2Bof%2BSummer",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DVeil%2Bof%2BSummer"
+        },
+        "released_at": "2019-07-12",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/aa686c34-1c11-469f-93c2-f9891aea521f/rulings",
+        "scryfall_id": "aa686c34-1c11-469f-93c2-f9891aea521f",
+        "scryfall_set_uri": "https://scryfall.com/sets/m20?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/m20/198/veil-of-summer?utm_source=api",
+        "set": "m20",
+        "set_id": "4a787360-9767-4f44-80b1-2405dc5e39c7",
+        "set_name": "Core Set 2020",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Am20&unique=prints",
+        "set_type": "core",
+        "set_uri": "https://api.scryfall.com/sets/4a787360-9767-4f44-80b1-2405dc5e39c7",
+        "story_spotlight": false,
+        "tcgplayer_id": 192543,
+        "textless": false,
+        "type_line": "Instant",
+        "uri": "https://api.scryfall.com/cards/aa686c34-1c11-469f-93c2-f9891aea521f",
+        "variation": false
+      }
+    },
+    "Volatile Stormdrake": {
+      "canonical": {
+        "all_parts": [
+          {
+            "component": "combo_piece",
+            "id": "ac5fb32c-6348-4d39-8d74-b345452b3875",
+            "name": "Volatile Stormdrake",
+            "object": "related_card",
+            "type_line": "Creature \u2014 Drake",
+            "uri": "https://api.scryfall.com/cards/ac5fb32c-6348-4d39-8d74-b345452b3875"
+          },
+          {
+            "component": "combo_piece",
+            "id": "1c516212-ad39-4396-8e05-ae57f100309f",
+            "name": "Energy Reserve",
+            "object": "related_card",
+            "type_line": "Card",
+            "uri": "https://api.scryfall.com/cards/1c516212-ad39-4396-8e05-ae57f100309f"
+          }
+        ],
+        "arena_id": 90928,
+        "artist": "Campbell White",
+        "artist_ids": [
+          "d281eab4-463a-4ba8-9039-8943737960a0"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 771187,
+        "cmc": 2.0,
+        "collector_number": "79",
+        "color_identity": [
+          "U"
+        ],
+        "colors": [
+          "U"
+        ],
+        "digital": false,
+        "edhrec_rank": 2044,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "paper",
+          "mtgo",
+          "arena"
+        ],
+        "highres_image": true,
+        "id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+        "illustration_id": "67ea2fb2-893e-4d7a-be09-d76d47e614d7",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T02:54:45Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "crop": "https://cards.scryfall.io/crop/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285",
+          "display": "https://cards.scryfall.io/display/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285",
+          "grid": "https://cards.scryfall.io/grid/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285",
+          "large": "https://cards.scryfall.io/large/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "normal": "https://cards.scryfall.io/normal/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "png": "https://cards.scryfall.io/png/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.png?1783911285",
+          "small": "https://cards.scryfall.io/small/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "thumb": "https://cards.scryfall.io/thumb/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285"
+        },
+        "keywords": [
+          "Flying",
+          "Hexproof from",
+          "Hexproof"
+        ],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "legal",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "legal",
+          "pioneer": "not_legal",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{1}{U}",
+        "mtgo_id": 126175,
+        "multiverse_ids": [
+          662231
+        ],
+        "name": "Volatile Stormdrake",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "08d64b16-9221-4532-890c-d5cdbf181e28",
+        "oracle_text": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+        "oversized": false,
+        "penny_rank": 1322,
+        "power": "3",
+        "preview": {
+          "previewed_at": "2024-05-21",
+          "source": "Wizards of the Coast",
+          "source_uri": ""
+        },
+        "prices": {
+          "eur": "0.70",
+          "eur_foil": "1.18",
+          "tix": "0.02",
+          "usd": "1.09",
+          "usd_etched": null,
+          "usd_foil": "1.18"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A08d64b16-9221-4532-890c-d5cdbf181e28&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/126175?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=771187&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F552327%3Fpage%3D1"
+        },
+        "rarity": "rare",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Volatile+Stormdrake",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=662231&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DVolatile%2BStormdrake",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DVolatile%2BStormdrake"
+        },
+        "released_at": "2024-06-14",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/2e6e3232-8bb8-4504-9597-dfdfc6d634bd/rulings",
+        "scryfall_set_uri": "https://scryfall.com/sets/mh3?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/mh3/79/volatile-stormdrake?utm_source=api",
+        "security_stamp": "oval",
+        "set": "mh3",
+        "set_id": "3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+        "set_name": "Modern Horizons 3",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amh3&unique=prints",
+        "set_type": "draft_innovation",
+        "set_uri": "https://api.scryfall.com/sets/3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+        "story_spotlight": false,
+        "tcgplayer_id": 552327,
+        "textless": false,
+        "toughness": "2",
+        "type_line": "Creature \u2014 Drake",
+        "uri": "https://api.scryfall.com/cards/2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+        "variation": false
+      },
+      "join": "exact_printing",
+      "runtime": {
+        "all_parts": [
+          {
+            "component": "combo_piece",
+            "id": "ac5fb32c-6348-4d39-8d74-b345452b3875",
+            "name": "Volatile Stormdrake",
+            "object": "related_card",
+            "type_line": "Creature \u2014 Drake",
+            "uri": "https://api.scryfall.com/cards/ac5fb32c-6348-4d39-8d74-b345452b3875"
+          },
+          {
+            "component": "combo_piece",
+            "id": "1c516212-ad39-4396-8e05-ae57f100309f",
+            "name": "Energy Reserve",
+            "object": "related_card",
+            "type_line": "Card",
+            "uri": "https://api.scryfall.com/cards/1c516212-ad39-4396-8e05-ae57f100309f"
+          }
+        ],
+        "arena_id": 90928,
+        "artist": "Campbell White",
+        "artist_ids": [
+          "d281eab4-463a-4ba8-9039-8943737960a0"
+        ],
+        "booster": true,
+        "border_color": "black",
+        "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+        "cardmarket_id": 771187,
+        "cmc": 2.0,
+        "collector_number": "79",
+        "color_identity": [
+          "U"
+        ],
+        "colors": [
+          "U"
+        ],
+        "digital": false,
+        "edhrec_rank": 2044,
+        "finishes": [
+          "nonfoil",
+          "foil"
+        ],
+        "foil": true,
+        "frame": "2015",
+        "full_art": false,
+        "game_changer": false,
+        "games": [
+          "paper",
+          "mtgo",
+          "arena"
+        ],
+        "highres_image": true,
+        "id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+        "illustration_id": "67ea2fb2-893e-4d7a-be09-d76d47e614d7",
+        "image_status": "highres_scan",
+        "image_updated_at": "2026-07-13T02:54:45Z",
+        "image_uris": {
+          "art": "https://cards.scryfall.io/art/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285",
+          "art_crop": "https://cards.scryfall.io/art_crop/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "border_crop": "https://cards.scryfall.io/border_crop/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "crop": "https://cards.scryfall.io/crop/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285",
+          "display": "https://cards.scryfall.io/display/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285",
+          "grid": "https://cards.scryfall.io/grid/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285",
+          "large": "https://cards.scryfall.io/large/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "normal": "https://cards.scryfall.io/normal/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "png": "https://cards.scryfall.io/png/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.png?1783911285",
+          "small": "https://cards.scryfall.io/small/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.jpg?1783911285",
+          "thumb": "https://cards.scryfall.io/thumb/front/2/e/2e6e3232-8bb8-4504-9597-dfdfc6d634bd.webp?1783911285"
+        },
+        "keywords": [
+          "Flying",
+          "Hexproof from",
+          "Hexproof"
+        ],
+        "lang": "en",
+        "layout": "normal",
+        "legalities": {
+          "alchemy": "not_legal",
+          "brawl": "legal",
+          "commander": "legal",
+          "competitivebrawl": "legal",
+          "duel": "legal",
+          "future": "not_legal",
+          "gladiator": "legal",
+          "historic": "legal",
+          "legacy": "legal",
+          "modern": "legal",
+          "oathbreaker": "legal",
+          "oldschool": "not_legal",
+          "pauper": "not_legal",
+          "paupercommander": "not_legal",
+          "penny": "legal",
+          "pioneer": "not_legal",
+          "predh": "not_legal",
+          "premodern": "not_legal",
+          "standard": "not_legal",
+          "standardbrawl": "not_legal",
+          "timeless": "legal",
+          "tlr": "legal",
+          "vintage": "legal"
+        },
+        "mana_cost": "{1}{U}",
+        "mtgo_id": 126175,
+        "multiverse_ids": [
+          662231
+        ],
+        "name": "Volatile Stormdrake",
+        "nonfoil": true,
+        "object": "card",
+        "oracle_id": "08d64b16-9221-4532-890c-d5cdbf181e28",
+        "oracle_text": "Flying, hexproof from activated and triggered abilities\nWhen this creature enters, exchange control of this creature and target creature an opponent controls. If you do, you get {E}{E}{E}{E}, then sacrifice that creature unless you pay an amount of {E} equal to its mana value.",
+        "oversized": false,
+        "penny_rank": 1322,
+        "power": "3",
+        "preview": {
+          "previewed_at": "2024-05-21",
+          "source": "Wizards of the Coast",
+          "source_uri": ""
+        },
+        "prices": {
+          "eur": "0.70",
+          "eur_foil": "1.18",
+          "tix": "0.02",
+          "usd": "1.09",
+          "usd_etched": null,
+          "usd_foil": "1.18"
+        },
+        "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A08d64b16-9221-4532-890c-d5cdbf181e28&unique=prints",
+        "promo": false,
+        "purchase_uris": {
+          "cardhoarder": "https://www.cardhoarder.com/cards/126175?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+          "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=771187&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+          "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F552327%3Fpage%3D1"
+        },
+        "rarity": "rare",
+        "related_uris": {
+          "edhrec": "https://edhrec.com/route/?cc=Volatile+Stormdrake",
+          "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=662231&printed=false",
+          "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DVolatile%2BStormdrake",
+          "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DVolatile%2BStormdrake"
+        },
+        "released_at": "2024-06-14",
+        "reprint": false,
+        "reserved": false,
+        "rulings_uri": "https://api.scryfall.com/cards/2e6e3232-8bb8-4504-9597-dfdfc6d634bd/rulings",
+        "scryfall_id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+        "scryfall_set_uri": "https://scryfall.com/sets/mh3?utm_source=api",
+        "scryfall_uri": "https://scryfall.com/card/mh3/79/volatile-stormdrake?utm_source=api",
+        "security_stamp": "oval",
+        "set": "mh3",
+        "set_id": "3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+        "set_name": "Modern Horizons 3",
+        "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Amh3&unique=prints",
+        "set_type": "draft_innovation",
+        "set_uri": "https://api.scryfall.com/sets/3ed80bb6-77e8-4aa7-8262-95377a38aba1",
+        "story_spotlight": false,
+        "tcgplayer_id": 552327,
+        "textless": false,
+        "toughness": "2",
+        "type_line": "Creature \u2014 Drake",
+        "uri": "https://api.scryfall.com/cards/2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+        "variation": false
+      }
+    }
+  },
+  "seed_names": 155,
+  "source_commit": "9f50190b597366e12cd1c6975844b7e868525a55"
+}

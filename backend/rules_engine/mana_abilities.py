@@ -56,10 +56,23 @@ def mana_ability_specs(card, state=None, *, entering=False):
     if not lost and current == line:
         return rows
     rows = [] if lost else list(rows)
-    for _, cost, effect in _printed_specs('', current, '', 'Land' in effective_types(state, card)):
-        if not any(existing_cost == cost and existing_effect == effect
-                   for _, existing_cost, existing_effect in rows):
-            rows.append((max((row[0] for row in rows), default=-1) + 1, cost, effect))
+    if lost or current != line:
+        for _, cost, effect in _printed_specs('', current, '', 'Land' in effective_types(state, card)):
+            if not any(existing_cost == cost and existing_effect == effect
+                       for _, existing_cost, existing_effect in rows):
+                rows.append((max((row[0] for row in rows), default=-1) + 1, cost, effect))
+    if state is not None and card.zone == Zone.BATTLEFIELD and lost:
+        from rules_engine.basic_land_layer import GrantedManaLandReplacement, permanent_land_replacement
+        from rules_engine.continuous import printed_abilities_suppressed
+        for source_id in (cid for player in state.players.values() for cid in player.battlefield):
+            source = state.cards[source_id]
+            if source.zone != Zone.BATTLEFIELD or source.attached_to != card.id:
+                continue
+            replacement = permanent_land_replacement(source.oracle_text)
+            if isinstance(replacement, GrantedManaLandReplacement) and not printed_abilities_suppressed(state, source.id):
+                effect = 'Add {' + replacement.granted_mana + '}.'
+                if not any(cost == '{T}' and existing == effect for _, cost, existing in rows):
+                    rows.append((max((row[0] for row in rows), default=-1) + 1, '{T}', effect))
     return tuple(rows)
 
 

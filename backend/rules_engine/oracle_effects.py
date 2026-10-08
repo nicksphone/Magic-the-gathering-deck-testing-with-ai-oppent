@@ -427,6 +427,11 @@ def infer_effect_from_oracle(
     if "Planeswalker" in (effective_types(state, card) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
+    # A complete target instruction has an effect even before a target is chosen.
+    if re.fullmatch(r'untap target (?:(?:nonland|noncreature|tapped) )?'
+                    r'(?:artifact|creature|land|permanent)'
+                    r'(?: you control| an opponent controls)?\.?', oracle.strip()):
+        return 'untap', {'target_card_id': action_targets.get('target_card_id')}
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
     # Whole permanent surfaces contain costs/abilities; activation proxies do not.
     if (not set(getattr(card, 'types', []) or []).intersection(
@@ -1662,6 +1667,15 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
     if combat:
         restrictions['allowed_types'] = ['Creature']
         restrictions['combat_status'] = combat[1]
+    noun = r'(?:artifact|battle|creature|enchantment|land|planeswalker|permanent)'
+    tap = re.search(r'\btarget (tapped|untapped) (' + noun
+                    + r'(?:(?:, (?:or )?| or )' + noun + r'){0,6})\b'
+                    + r'(?!\s+(?:card|spell|creature)\b)', oracle)
+    if tap:
+        restrictions['tap_status'] = tap[1]
+        kinds = re.findall(noun, tap[2])
+        if 'permanent' not in kinds:
+            restrictions['allowed_types'] = [kind.title() for kind in kinds]
 
     max_match = TARGET_MV_MAX_RE.search(oracle)
     min_match = TARGET_MV_MIN_RE.search(oracle)
@@ -1706,6 +1720,10 @@ def _target_card_matches_restrictions(state, card, restrictions, controller, x_v
     allowed = set(restrictions.get("allowed_types") or [])
     if allowed and not types.intersection(allowed):
         return False
+    if restrictions.get('tap_status'):
+        status = restrictions['tap_status']
+        if status not in {'tapped', 'untapped'} or bool(card.tapped) != (status == 'tapped'):
+            return False
     if (restrictions.get('nonbasic_land_only') and 'Land' in types
             and not types.intersection(allowed - {'Land'}) and 'Basic' in (card.type_line or '').split()):
         return False
@@ -1799,26 +1817,10 @@ def _split_clauses(oracle: str) -> list[str]:
 
 
 def extract_loyalty_abilities(card: CardInstance) -> list[dict[str, Any]]:
-    oracle = (card.oracle_text or "").replace("\u2212", "-")
-    out: list[dict[str, Any]] = []
-    for match in LOYALTY_ABILITY_RE.finditer(oracle):
-        raw_delta = match.group(1).strip()
-        text = match.group(2).strip()
-        if raw_delta.upper().endswith("X"):
-            x_sign = -1 if raw_delta.startswith("-") else 1
-            out.append(
-                {
-                    "delta": 0,
-                    "x_cost": True,
-                    "x_sign": x_sign,
-                    "text": text,
-                    "label": f"{raw_delta.upper()}: {text}",
-                }
-            )
-        else:
-            delta = int(raw_delta)
-            out.append({"delta": delta, "x_cost": False, "x_sign": 0, "text": text, "label": f"{delta:+d}: {text}"})
-    return out
+    from rules_engine.closed_loyalty import compile_body
+    compiled = compile_body(card.oracle_text or "", card.name)
+    return [{key: value for key, value in ability.items() if key != "instructions"}
+            for ability in compiled["abilities"]] if compiled is not None else []
 
 
 def extract_saga_chapters(oracle_text: str) -> list[dict[str, Any]]:

@@ -16,6 +16,7 @@ class Zone(str, Enum):
     EXILE = "exile"
     STACK = "stack"
     CEASED = "ceased"
+    COMMAND = "command"
 
 
 class Step(str, Enum):
@@ -238,6 +239,8 @@ class MatchState:
     cleanup_repeat_required: bool = False
     cleanup_deferred_triggers: list[dict] = field(default_factory=list)
     delayed_triggers: list[dict] = field(default_factory=list)
+    emblems: list[str] = field(default_factory=list)
+    loyalty_permissions: list[dict] = field(default_factory=list)
     foretells_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     winner: int | None = None
     failed_draw_players: set[int] = field(default_factory=set)

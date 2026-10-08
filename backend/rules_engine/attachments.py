@@ -10,10 +10,17 @@ from rules_engine.oracle_text import without_reminder_text
 
 def enchant_restriction(oracle_text: str):
     """Parse only the enchant instruction, never unrelated ability wording."""
-    match = re.search(r"^enchant ([^.\n]+)", without_reminder_text(oracle_text or "").lower(), re.M)
+    match = re.search(r"^enchant ([^\n]+)", (oracle_text or "").lower(), re.M)
     if not match:
         return None
-    return re.fullmatch(r"(?:(basic|nonbasic|nonland|noncreature) )?(artifact creature|creature|artifact|enchantment|land|planeswalker|permanent)(?: or (creature|artifact|enchantment|land|planeswalker|permanent))?(?: (you control|an opponent controls|your opponent controls))?", match.group(1).strip())
+    line = match[1].strip().removesuffix('.')
+    if len(line) > 512:
+        return None
+    kind = r'(?:artifact creature|creature|artifact|enchantment|land|planeswalker|permanent)'
+    return re.fullmatch(r'(?:(basic|nonbasic|nonland|noncreature) )?(' + kind
+                        + r')(?:(?:, (?:or )?| or )(' + kind
+                        + r'(?:(?:, (?:or )?| or )' + kind + r'){0,5}))?'
+                        + r'(?: (you control|an opponent controls|your opponent controls))?', line)
 
 
 def is_aura(card, state=None) -> bool:
@@ -64,7 +71,24 @@ def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool
     from rules_engine.bestow import is_bestowed
     if is_bestowed(attachment):
         return 'Creature' in effective_types(state, target)
-    restriction = enchant_restriction(attachment.oracle_text)
+    raw = attachment.oracle_text
+    source = state.cards.get(attachment.id)
+    # Same-surface compiler proxies may have stripped unknown parentheses.
+    # Do not substitute an unrelated selected face or ability surface.
+    if source is not None:
+        normalized = without_reminder_text(raw or '').strip().casefold()
+        if without_reminder_text(source.oracle_text or '').strip().casefold() == normalized:
+            raw = source.oracle_text
+        else:
+            # Permanent-cast proxies retain only the normalized enchant instruction.
+            lines = {line.strip() for line in (source.oracle_text or '').splitlines()
+                     if re.match(r'^enchant ', line, re.I)
+                     and without_reminder_text(line).strip().casefold() == normalized}
+            if len(lines) == 1:
+                raw = next(iter(lines))
+            elif len(lines) > 1:
+                return False
+    restriction = enchant_restriction(raw)
     if restriction is None:
         return False
     target_types = {str(value).lower() for value in (effective_types(state, target) or [])}
@@ -80,7 +104,8 @@ def attachment_target_is_legal(state, attachment, target_id: str | None) -> bool
         return False
     def matches(kind):
         return kind == "permanent" or (kind == "artifact creature" and {"artifact", "creature"} <= target_types) or kind in target_types
-    return matches(subject) or bool(alternative and matches(alternative))
+    return matches(subject) or bool(alternative and any(
+        matches(kind) for kind in re.split(r', (?:or )?| or ', alternative)))
 
 
 def attach_if_legal(state, attachment_id: str, target_id: str | None) -> bool:

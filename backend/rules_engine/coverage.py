@@ -91,13 +91,23 @@ def combat_coverage_details(oracle_text: str, card_faces: list[dict] | None = No
             for index, name, text in variants for row in combat_clause_coverage(text, name)]
 
 
-def static_coverage_details(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '') -> list[dict]:
+def static_coverage_details(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = "") -> list[dict]:
     from rules_engine.continuous import conditional_static_clause_coverage
-    variants = [(None, card_name, oracle_text or ''),
-                *((index, str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
+    from rules_engine.closed_loyalty import ABILITY, compile_body
+    variants = [(None, card_name, oracle_text or ""),
+                *((index, str(face.get("name") or card_name), str(face.get("oracle_text") or ""))
                   for index, face in enumerate(card_faces or []) if isinstance(face, dict))]
-    return [{**row, 'face_index': index, 'face_name': name}
-            for index, name, text in variants for row in conditional_static_clause_coverage(text, name)]
+    result = []
+    for index, name, text in variants:
+        compiled = compile_body(text, name)
+        companions = {line.lower().rstrip(".") for line in compiled["companions"]} if compiled else set()
+        rows = conditional_static_clause_coverage(text, name)
+        rows = [row for row in rows if row["clause"].lower().rstrip(".") not in companions]
+        if compiled is None and any(ABILITY.fullmatch(line.strip().replace("\u2212", "-"))
+                                    for line in text.splitlines()):
+            rows.append({"clause": text, "reasons": ["unsupported complete loyalty body"]})
+        result.extend({**row, "face_index": index, "face_name": name} for row in rows)
+    return result
 
 
 def _paid_body_admission(oracle_text, metadata, card_name, card_faces):
@@ -161,6 +171,37 @@ def _paid_body_admission(oracle_text, metadata, card_name, card_faces):
 
 def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '', canonical_context: dict | None = None) -> list[str]:
     """Known gaps only; an empty result is not rules certification."""
+    # Close the full typed printed surface before delegating a known-gap label.
+    # This binding supplies compiler identity fields, not an executable game object.
+    from types import SimpleNamespace
+    from rules_engine.card_types import printed_card_types
+    from card_data.hydration import ready_for_match
+    from rules_engine.oracle_text import without_reminder_text
+    from rules_engine.printed_body import normalized_body
+    from rules_engine.printed_body import complete_bestow_surface as bestow_surface
+    from rules_engine.printed_body import complete_keyword_surface as keyword_surface
+
+    def typed_surface(name, text, family):
+        context = canonical_context
+        if (not isinstance(context, dict) or card_faces or context.get('card_faces')
+                or context.get('layout') not in ('', 'normal')
+                or (context.get('card_name') or context.get('name')) != name
+                or context.get('oracle_text') != text or not ready_for_match(context)):
+            return None
+        types = printed_card_types(str(context.get('type_line') or ''))
+        normalized = normalized_body(text, family)
+        if normalized is None:
+            return None
+        return SimpleNamespace(name=name, oracle_text=normalized, types=types,
+                               id='coverage-binding', incarnation=0, zone_change_sequence=0)
+
+    def complete_bestow_surface(name, text):
+        return bestow_surface(typed_surface(name, text, 'bestow'))
+
+    def complete_keyword_surface(name, text):
+        return any(keyword_surface(typed_surface(name, text, family), family)
+                   for family in ('turn_protection', 'exchange'))
+
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
     if 'suspend' in out:
@@ -211,10 +252,22 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
             out.append('kicked-cast trigger fidelity')
             break
     if 'kicker' in out:
-        from rules_engine.kicker import kicker_surfaces, permanent_kicker
-        kicker_texts = [text for text in texts if re.search(r'\bkicker\b', text, re.I)]
-        if all(kicker_surfaces(text) is not None or permanent_kicker(text) is not None for text in kicker_texts):
+        from rules_engine.kicker import kicker_surfaces, permanent_kicker, paired_permanent_kicker
+        kicker_variants = [(name, text) for name, text in variants if re.search(r'\bkicker\b', text, re.I)]
+        if all(kicker_surfaces(text) is not None or permanent_kicker(text) is not None
+               or ((card := typed_surface(name, text, 'kicker')) is not None
+                   and paired_permanent_kicker(card) is not None)
+               for name, text in kicker_variants):
             out.remove('kicker')
+    if 'bestow' in out:
+        bestow_variants = [(name, text) for name, text in variants if re.search(r'\bbestow\b', text, re.I)]
+        if bestow_variants and all(complete_bestow_surface(name, text) for name, text in bestow_variants):
+            out.remove('bestow')
+    if 'keyword counter variant fidelity' in out:
+        keyword_variants = [(name, text) for name, text in variants
+                            if re.search(r'\bhexproof from\b|\btrample over planeswalkers\b', text, re.I)]
+        if keyword_variants and all(complete_keyword_surface(name, text) for name, text in keyword_variants):
+            out.remove('keyword counter variant fidelity')
     from rules_engine.activation_modifiers import activation_modifier_gaps
     from rules_engine.combat_constraints import static_clauses
     from rules_engine.hooks import spell_cost_modifier

@@ -77,6 +77,8 @@ class RulesEngine:
         if advance(state):
             state.spells_cast_last_turn = outgoing_count
             state.turn += 1
+            from rules_engine.loyalty_instructions import begin_turn
+            begin_turn(state)
             state.spells_cast_this_turn = {1: 0, 2: 0}
             state.spell_color_history = {1: set(), 2: set()}
             state.spell_color_history_known = True
@@ -1487,14 +1489,18 @@ class RulesEngine:
                 return
             action_targets = action.get("targets", {}) if isinstance(action, dict) else {}
             proxy = type("LoyaltyOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "name": pw.name, "mana_cost": ""})()
+            from rules_engine.loyalty_instructions import announcement_text
+            target_proxy = type("LoyaltyTargetProxy", (), {"id": cid,
+                "oracle_text": announcement_text(ability["text"], pw.name),
+                "name": pw.name, "mana_cost": ""})()
             if ability.get("x_cost") and "x_value" not in action_targets:
                 action_targets = dict(action_targets)
                 action_targets["x_value"] = max(0, min(current_loyalty, int(action_targets.get("x_value", 0) or 0)))
             action_targets = enrich_divide_total(proxy, action_targets)
-            hints = build_cast_hints(state, proxy, player_id, action_targets, source_kind="activated")
+            hints = build_cast_hints(state, target_proxy, player_id, action_targets, source_kind="activated")
             if reject_invalid:
                 from rules_engine.action_validation import require_declared_targets
-                require_declared_targets(proxy, hints, action_targets, player_id)
+                require_declared_targets(target_proxy, hints, action_targets, player_id)
             if hints.get("supports_divide") and "divide_total" not in action_targets:
                 reject("Cannot derive this allocation total from the supported ability")
             valid, error = validate_cast_choice(hints, action_targets)
@@ -1522,8 +1528,13 @@ class RulesEngine:
             if loyalty_added <= 0:
                 pw.loyalty = next_loyalty
             state.loyalty_activated_this_turn.add(cid)
-            ability = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
-            effect_key, payload = ability.effect.key, ability.effect.payload
+            from rules_engine.loyalty_instructions import compile_proxy
+            compiled_effect = compile_proxy(state, proxy, player_id, action_targets)
+            if compiled_effect is None:
+                ability = build_ability_spec(state, proxy, player_id, action_targets=action_targets)
+                effect_key, payload = ability.effect.key, ability.effect.payload
+            else:
+                effect_key, payload = compiled_effect
             payload["__announced_targets"] = dict(action_targets)
             payload["__ward_trigger_specs"] = ward_specs
             # Announce the ability before paying its cost, but do not put

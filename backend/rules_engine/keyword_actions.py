@@ -83,6 +83,9 @@ def resolve_annihilator(state, controller: int, payload: dict) -> None:
 
 
 def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'loyalty_cards':
+        from rules_engine.loyalty_instructions import finish_choice
+        return finish_choice(state, player_id, action)
     if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'exchange_energy_payment':
         from rules_engine.exchange_energy import finish
         return finish(state, player_id, action)

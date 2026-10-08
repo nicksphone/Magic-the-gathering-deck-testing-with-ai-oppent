@@ -216,6 +216,10 @@ def _static_text_from_oracle(oracle_text: str) -> str:
 @lru_cache(maxsize=4096)
 def _conditional_static_instructions(oracle_text, name):
     """Compile complete clauses; cache instructions, never predicate results."""
+    # A resolved modal duration is not an independently active static layer.
+    from rules_engine.modal_entry import compile_instruction as modal_instruction
+    if modal_instruction((oracle_text or '').strip()) is not None:
+        return ()
     subject = _self_stat_subject(name)
     from rules_engine.static_conditions import static_clause_components
     result = []
@@ -285,8 +289,15 @@ def _conditional_static_effects(state, source, target):
 def conditional_static_clause_coverage(oracle_text, name=''):
     """Use runtime instruction recognition, never a simulated predicate value."""
     from rules_engine.static_conditions import parse_static_condition
+    from rules_engine.closed_loyalty import compile_body
+    from rules_engine.loyalty_timing import ENTRY_TURN_PERMISSION
+    compiled = compile_body(oracle_text, name)
+    permissions = {line.casefold().rstrip('.') for line in compiled['companions']
+                   if ENTRY_TURN_PERMISSION.fullmatch(line)} if compiled is not None else set()
     rows = []
     for condition, scope, _, _, _, _, granted, raw in _conditional_static_instructions(oracle_text, name):
+        if raw.casefold().rstrip('.') in permissions:
+            continue
         reasons = []
         if parse_static_condition(condition, name) is None:
             reasons.append('unsupported conditional static predicate')
@@ -1132,10 +1143,25 @@ def _battlefield_card_matches_selector(card, selector: str, *, state=None) -> bo
 @scoped_query
 def _continuous_sources(state):
     """Reuse ordered source activity only inside immutable rules queries."""
+    from copy import copy
+    from rules_engine.loyalty_instructions import companion_text
+    def source_view(source):
+        if 'Planeswalker' not in source.types and source.zone != Zone.COMMAND:
+            return source
+        view = copy(source)
+        if 'Planeswalker' in source.types:
+            view.oracle_text = companion_text(source)
+        if source.zone == Zone.COMMAND:
+            # Active emblem source view only; no battlefield object or target is created.
+            view.zone = Zone.BATTLEFIELD
+        return view
     losses = _printed_ability_loss_sources(state)
-    return tuple((cid, source, not printed_abilities_suppressed(state, cid, losses=losses))
+    ordinary = tuple((cid, source_view(source), not printed_abilities_suppressed(state, cid, losses=losses))
                  for cid in _all_battlefield_ids(state)
                  if (source := state.cards.get(cid)))
+    emblems = tuple((cid, source_view(state.cards[cid]), True) for cid in state.emblems
+                    if cid in state.cards and state.cards[cid].zone == Zone.COMMAND)
+    return tuple(sorted((*ordinary, *emblems), key=lambda row: effect_timestamp(row[1])))
 
 
 @scoped_query

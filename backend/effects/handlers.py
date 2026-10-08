@@ -590,12 +590,13 @@ def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> 
     _destroy_all_permanents_of_types(state, {"Creature"}, "All creatures are destroyed.")
 
 
-def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str], log_label: str) -> None:
+def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str], log_label: str, *, target_ids=None) -> None:
     from rules_engine.named_counters import destruction_prevented
     from rules_engine.events import flush_staged_triggers
     targets = [cid for cid, card in state.cards.items()
                if allowed_types.intersection(set(effective_types(state, card) or []))
-               and cid in state.players[card.controller].battlefield]
+               and cid in state.players[card.controller].battlefield
+               and (target_ids is None or cid in target_ids)]
     # Shield consumption/logging is a mutation: preflight every actual death first.
     plans = {cid: select_graveyard_entry_plan(state, cid) for cid in targets
              if not has_keyword(state, cid, "indestructible")

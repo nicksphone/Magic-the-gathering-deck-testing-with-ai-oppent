@@ -427,3 +427,19 @@ contract instances as the older gate plus 94 process-identity polls. Independent
 source, dependency and native resource closure verified the slot release. See
 `docs/testing/current1c-fresh-https-qualified.md`. Live browser, trusted LAN,
 clean-machine deployment and the full release gates remain open.
+
+## 2026-10-08 Complete Printed-Body Composition
+
+The isolated composition over `6c5c62b` passes 823 checks across 22 whole modules;
+all 400 original corpus/consumer cases pass unchanged. Shared cast preflight now
+rejects unsupported complete bodies before payment, and shipped loyalty ability
+availability is restored through complete instruction compilation. Raw energy,
+Aura, land-setting, untap-preview and target-fizzle fixes compose together.
+Separate resolution/entry neighbors pass 179 checks across seven whole modules.
+See [scope and historical ledgers](docs/testing/complete-body-rules-composition.md).
+
+Ten historical loyalty fixtures assumed unsupported casts would succeed; their
+unchanged early-rejection ledger is preserved separately from the strengthened
+repository checks. General hand-entry/Aura/land-choice interactions and public
+emblem visibility are explicit follow-ups. Full browser acceptance, arbitrary
+cards, expert AI and all three original release gates remain open.

@@ -1,0 +1,45 @@
+{
+  "source_bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "expanded_bytes": 203114006,
+  "records": 38690,
+  "policy": "unique English Oracle representative, not retained printing",
+  "cards": {
+    "Asphyxiate": {
+      "id": "894f3f5f-586d-45e4-9af7-4de80e44dfae",
+      "oracle_id": "1c2ce0d0-8c3e-48e8-b1fd-54658bdb9af9",
+      "oracle_text": "Destroy target untapped creature.",
+      "mana_cost": "{1}{B}{B}"
+    },
+    "Icy Manipulator": {
+      "id": "ac5a54ca-f175-4005-895f-d76effd6178e",
+      "oracle_id": "3608f1f7-8dc5-4dd1-ae91-c830e1de9529",
+      "oracle_text": "{1}, {T}: Tap target artifact, creature, or land.",
+      "mana_cost": "{4}"
+    },
+    "Vitalize": {
+      "id": "435a4569-fa62-4e1a-b837-f68159cb270d",
+      "oracle_id": "cd3226c6-bd47-4246-8ab3-01316c5d1809",
+      "oracle_text": "Untap all creatures you control.",
+      "mana_cost": "{G}"
+    },
+    "Assassinate": {
+      "id": "ac0a1dc6-215f-4738-8ae4-7b6aa1c7d80b",
+      "oracle_id": "ce979f36-84f2-4419-b400-971263494cc6",
+      "oracle_text": "Destroy target tapped creature.",
+      "mana_cost": "{2}{B}"
+    },
+    "Seeker of Skybreak": {
+      "id": "d1f20175-8bfa-417a-912b-d6d472f091ab",
+      "oracle_id": "704723f3-0490-4d96-930a-aacc6d19ba8d",
+      "oracle_text": "{T}: Untap target creature.",
+      "mana_cost": "{1}{G}"
+    },
+    "Emerald Charm": {
+      "id": "b5862e38-b48b-45e1-b0f6-d1d0d1124e50",
+      "oracle_id": "904b3db5-70bc-4d49-9887-f504aff8666f",
+      "oracle_text": "Choose one \u2014\n\u2022 Untap target permanent.\n\u2022 Destroy target non-Aura enchantment.\n\u2022 Target creature loses flying until end of turn.",
+      "mana_cost": "{G}"
+    }
+  }
+}

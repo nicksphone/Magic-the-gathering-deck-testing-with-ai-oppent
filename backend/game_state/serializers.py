@@ -103,6 +103,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "combat_damage_assignments": {source: dict(amounts) for source, amounts in state.combat_damage_assignments.items()},
         "combat_assignment_queue": list(state.combat_assignment_queue),
         "delayed_triggers": deepcopy(state.delayed_triggers),
+        "emblems": list(state.emblems),
+        "loyalty_permissions": deepcopy(state.loyalty_permissions),
         "foretells_this_turn": dict(state.foretells_this_turn),
         "cleanup_pending": state.cleanup_pending,
         "cleanup_repeat_required": state.cleanup_repeat_required,
@@ -361,6 +363,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.combat_assignment_queue = [str(cid) for cid in payload.get("combat_assignment_queue", [])]
     state.delayed_triggers = deepcopy(payload.get('delayed_triggers', []))
+    state.emblems = list(payload.get('emblems', []))
+    state.loyalty_permissions = deepcopy(payload.get('loyalty_permissions', []))
     state.foretells_this_turn = {int(key): int(value) for key, value in
                                payload.get('foretells_this_turn', {'1': 0, '2': 0}).items()}
     state.cleanup_pending = bool(payload.get("cleanup_pending", False))

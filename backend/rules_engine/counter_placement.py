@@ -30,6 +30,10 @@ def parse_counter_prohibition(clause, name=''):
 
 
 def unsupported_counter_prohibitions(oracle_text):
+    # The existing full modal producer owns removal plus retained prohibition.
+    from rules_engine.modal_entry import compile_instruction
+    if compile_instruction((oracle_text or '').strip()) is not None:
+        return False
     static = {value.strip() for value in re.split(r'[.\n]', _static_text_from_oracle(oracle_text))}
     for clause in re.split(r'[.\n]', without_reminder_text(oracle_text).lower()):
         clause = clause.strip()

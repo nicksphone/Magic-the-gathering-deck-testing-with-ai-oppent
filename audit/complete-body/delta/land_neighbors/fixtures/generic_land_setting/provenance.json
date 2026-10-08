@@ -1,0 +1,22 @@
+{
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "join": "unique English name representative, NOT same retained printing",
+  "cards": {
+    "Boon of Safety": {
+      "id": "2069310a-9fb6-41b7-bbd5-849e3df05632",
+      "fullrow_sha256": "c7678b69fbe6aa24a6db5648cd47ef490c11f597208594f7b02f2772d98de7aa"
+    },
+    "Executioner's Capsule": {
+      "id": "032ea333-96e1-4ad8-8947-21d6bc3a9f91",
+      "fullrow_sha256": "cbeacd9c08a6e0d2e2b51951d0228dbc87c1151f872f6921a4b4aa2cf1443d21"
+    },
+    "Peek": {
+      "id": "869a6c06-eae5-418e-9a5c-26598a929416",
+      "fullrow_sha256": "aeba2ac4608331da55f5b87b029a63b4dd1ea6b3f5c54a0dd0460eb3f1e1c081"
+    },
+    "Imprisoned in the Moon": {
+      "id": "0d150547-09f5-45ce-a825-89944b066bd4",
+      "fullrow_sha256": "c9b72a149dbd3266f4c70b0a0d8790361bf35ff44fc7af40bcd182d92599d5ae"
+    }
+  }
+}

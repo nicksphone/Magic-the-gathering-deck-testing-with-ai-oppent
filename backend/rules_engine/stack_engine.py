@@ -262,6 +262,16 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                     + sum(bool(announced.get(key)) for key in ("target_card_id", "target_player", "target_stack_id")))
     target_count += sum(sum(choice.get(key) is not None for key in ("target_card_id", "target_player", "target_stack_id"))
                         for choice in (announced.get("mode_targets") or {}).values())
+    if (item.effect_key == 'effect_sequence' and target_count == 1
+            and announced.get('target_card_id') and item.payload.get('target_restrictions')):
+        from rules_engine.oracle_effects import _target_card_matches_restrictions
+        target = state.cards.get(announced['target_card_id'])
+        legal = (same_targets(announced) and target is not None and target.zone == Zone.BATTLEFIELD
+                 and _target_card_matches_restrictions(state, target, item.payload['target_restrictions'],
+                    item.controller, x_value=int(item.payload.get('x_value', 0) or 0)))
+        if not legal:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
     from rules_engine.bestow import is_bestowed, end_bestow
     if card is not None and is_bestowed(card) and stack_object_kind(state, item) == 'spell':
         from game_state.state import object_incarnation

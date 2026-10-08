@@ -88,6 +88,7 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "controller": card.controller,
         "power": effective_power(state, card_id) if 'Creature' in types else None,
         "toughness": effective_toughness(state, card_id) if 'Creature' in types else None,
+        "loyalty": card.loyalty,
         "keywords": list(keyword_counts),
         "keyword_counts": keyword_counts,
         "counters": dict(card.counters),
@@ -657,6 +658,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.keyword_triggers import collect_keyword_triggers
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
+    from rules_engine.loyalty_instructions import collect_emblem_triggers
+    out.extend(collect_emblem_triggers(state, event, payload))
     from rules_engine.foretell import collect_foretell_triggers
     out.extend(collect_foretell_triggers(state, event, payload))
     from rules_engine.suspend import collect_triggers as collect_suspend_triggers
@@ -775,7 +778,11 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             if (printed_abilities_suppressed(state, cid) if card.zone == Zone.BATTLEFIELD
                     else card.last_known_battlefield.get('printed_abilities_suppressed', False)):
                 continue
-            oracle = without_reminder_text((card.oracle_text or "").lower())
+            raw_oracle = card.oracle_text or ""
+            if 'Planeswalker' in card.types:
+                from rules_engine.loyalty_instructions import companion_text
+                raw_oracle = companion_text(card)
+            oracle = without_reminder_text(raw_oracle.lower())
             from rules_engine.foretell import without_created_clauses
             oracle = without_created_clauses(oracle, card.name.lower())
             from rules_engine.kicker import kicked_cast_clauses, paired_permanent_kicker, validate_kicker_count
