@@ -5892,15 +5892,15 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791490152.0887585,
-    "seen": 1791490252.0745177,
-    "ast_hash": "a9da97d96fa61c2cec5aa842b781ef01",
+    "mtime": 1791492903.8965657,
+    "seen": 1791492986.2443197,
+    "ast_hash": "fda0f3e8b21fd4f05ad3886b21f71ccd",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
-    "mtime": 1791490152.0637589,
-    "seen": 1791490252.0745203,
-    "ast_hash": "f95a1bf8d2ee2fb607a83266e834e72a",
+    "mtime": 1791492903.8905659,
+    "seen": 1791492986.2443225,
+    "ast_hash": "d960494fd07f4369be6165fd79f6cddf",
     "semantic_hash": ""
   },
   "frontend/src/api/client.ts": {
@@ -5976,9 +5976,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Controls.tsx": {
-    "mtime": 1791492423.2045543,
-    "seen": 1791492504.1174302,
-    "ast_hash": "d093c14db21bb7fb151ddee16df6d03e",
+    "mtime": 1791492903.8925657,
+    "seen": 1791492986.2443469,
+    "ast_hash": "c7ad4e6a12f8da98e89d5c44d1a1fad5",
     "semantic_hash": ""
   },
   "frontend/src/components/DeckPanel.tsx": {
@@ -15108,9 +15108,9 @@
     "semantic_hash": ""
   },
   "docs/testing/human-response-controller-role.md": {
-    "mtime": 1791492423.2065544,
-    "seen": 1791492504.1183314,
-    "ast_hash": "a61a9bcedba0ad1f5ef0a58e81e9b0f4",
+    "mtime": 1791492903.8975656,
+    "seen": 1791492986.2452886,
+    "ast_hash": "a31b862c90f176d5bd730f5e6569cf80",
     "semantic_hash": ""
   },
   "docs/testing/current349-white-tempo-natural-four.md": {
@@ -15135,6 +15135,12 @@
     "mtime": 1791491413.5686154,
     "seen": 1791492504.1181576,
     "ast_hash": "6656cc57f2a97c159c87625d5cde8db2",
+    "semantic_hash": ""
+  },
+  "frontend/tests/human-response-timer.mjs": {
+    "mtime": 1791492903.8945658,
+    "seen": 1791492986.2445679,
+    "ast_hash": "4485dc8cb433fcd84bcfc03ad43adc8d",
     "semantic_hash": ""
   }
 }

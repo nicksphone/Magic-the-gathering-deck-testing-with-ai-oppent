@@ -49,3 +49,25 @@ Evidence is archived at
 `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/parent-integration/seat-neutral-labels-qualified-20261008/`.
 These checks do not establish live browser countdown or priority behavior.
 No backend, role logic, callbacks, dependency pins or user database changed.
+
+## Pause And Resume Lifecycle
+
+A separate actual-effect regression exposed a pause/resume bug: pausing erased
+remaining time while retaining the response signature, so resuming the same
+window never scheduled another tick. Pausing now preserves remaining time and
+cancels ticking through the existing pause guard. Controls explicitly excludes
+paused countdowns from its live-window display. No pass policy or timer duration
+changed.
+
+The complete baseline regression failed seven expectations across the actual
+App effects and Controls display predicate. The corrected regression passes
+29 checks for both seats: frozen remaining time, resumed ticking, exactly one
+pass at zero, fresh stack windows and cleared-stack reset. It extracts the
+actual effect callbacks with TypeScript and uses a deterministic fake clock;
+it is not a duplicate timer implementation or live React/browser proof.
+All configured frontend unit checks, lint and build also exited zero, with
+existing unit scripts retained and package-lock unchanged.
+
+Evidence:
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/parent-integration/human-response-pause-qualified-20261008/`.
+Both-seat actual DOM/countdown/pause/priority-pass acceptance remains required.

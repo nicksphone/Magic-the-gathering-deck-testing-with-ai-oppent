@@ -460,7 +460,6 @@ export function App() {
       return;
     }
     if (autoResponsePaused) {
-      setResponseCountdown(null);
       return;
     }
     const sig = `${match?.id ?? ""}|${(match?.stack ?? []).map((s) => s.id).join(",")}|${legalPlayerId}`;

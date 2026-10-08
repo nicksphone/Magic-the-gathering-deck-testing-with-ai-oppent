@@ -170,7 +170,7 @@ export function Controls(props: Props) {
   const sideboardStatus = betweenGames ? (humanSeats.length ? "Sideboarding open" : "No human sideboarding") : matchComplete ? "Match complete" : "Sideboarding locked";
   const stackSize = props.match?.stack?.length ?? 0;
   const currentController = props.match?.controllers?.[String(props.actingPlayerId ?? props.match?.priority_player ?? 1)] ?? "human";
-  const interruptWindowLive = props.responseCountdown !== null;
+  const interruptWindowLive = !props.autoResponsePaused && props.responseCountdown !== null;
   const replacementPaused = replacementMoves.length > 0 || Boolean(props.match?.pending_replacement_choice);
   const triggerOrderPaused = triggerOrderMoves.length > 0 || Boolean(props.match?.pending_trigger_order);
   const aiSeries = props.match?.mode === 'ai_vs_ai'
