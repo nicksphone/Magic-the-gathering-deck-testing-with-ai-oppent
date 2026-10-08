@@ -443,3 +443,13 @@ unchanged early-rejection ledger is preserved separately from the strengthened
 repository checks. General hand-entry/Aura/land-choice interactions and public
 emblem visibility are explicit follow-ups. Full browser acceptance, arbitrary
 cards, expert AI and all three original release gates remain open.
+
+## 2026-10-08 Locked Dependency Advisory Refresh
+
+Exact published `bf6731c` Python/frontend locks were queried against OSV at
+23:24:27 UTC: all 28 PyPI and 214 npm unique locked versions, including optional
+platform packages, returned no affected package. Exact inventory, input hashes,
+response cardinality and absent pagination were independently verified. See
+[the advisory scope and evidence](docs/testing/current-locked-dependency-advisories.md).
+This changes no dependency and does not replace final-source clean installs,
+runtime gates, application security review or deployment qualification.

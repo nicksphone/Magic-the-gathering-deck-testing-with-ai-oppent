@@ -1,17 +1,20 @@
 # Release Acceptance Status
 
-Checkpoint: 2026-10-08. This integration follows published `440f368`
-(fresh pure runtime, natural-game evidence and preceding product); component source pins are recorded
-individually below. Current349 pure AI/entry union and corrected HTTPS acceptance
-are recorded in the table. Fresh-dependency pure runtime qualification is recorded
-separately; fresh owned-loopback HTTPS now has scoped qualification. The full
-browser cohort and release-wide acceptance remain unfinished.
-The latest integrated rules checkpoint is the Spree/Crypt increment described in
-`spree-current-qualified.md`. The preceding published `7455a9d` integration is
-described in `final518-storm-backend-qualification.md`. Earlier milestones remain in
-`escape-safekeeper-current.md`,
-with every component's source and evidence boundary recorded separately.
-Overall release remains unfinished.
+Checkpoint: 2026-10-08. The latest published rules integration is `bf6731c`:
+complete printed-body admission and loyalty execution, with 823 passing checks
+across 22 whole modules and a separate 179-pass resolution/entry cohort.
+All 400 original corpus/consumer cases pass unchanged; ten historical malformed
+loyalty fixtures were explicitly strengthened to verify the earlier cast
+rejection as well as activation atomicity. See
+`complete-body-rules-composition.md` for the exact source and historical ledgers.
+
+The current locked dependency advisory refresh returns no affected packages
+among 242 queried versions. This is a dated database result, not installation,
+deployment or application-security certification. General hand-entry/Aura/land
+choice interactions, public emblem visibility, full browser acceptance,
+arbitrary-card semantics and expert AI remain open. Earlier component source
+pins remain individually recorded below; their passes do not automatically
+transfer to the latest combined source. Overall release remains unfinished.
 The requirements in `plan.md` are unchanged; component passes below are not a
 substitute for qualification of the final combined source.
 
@@ -19,6 +22,8 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Complete printed-body rules composition | Published `bf6731c`: 22 whole modules / 823 passes in 153.98s; all original 400 corpus/consumer nodes pass. Separate seven whole resolution/entry modules / 179 passes in 34.93s; source hashes and native forbidden-I/O ledgers verified | Pure composed component, not HTTP/browser or complete-card certification. The ten explicit fixture strengthenings and unchanged historical ledgers are recorded separately; counts overlap. See `complete-body-rules-composition.md` |
+| Current locked dependency advisory refresh | Exact `bf6731c` locks: actual OSV HTTP 200 on 2026-10-08 at 23:24:27 UTC; all 28 PyPI and 214 npm unique locked versions queried, no affected package returned; exact inventory, response cardinality, input hashes and pagination independently checked | Dated advisory result only, including optional npm platform packages; not installation, undisclosed-vulnerability, application-security or release certification. See `current-locked-dependency-advisories.md` |
 | Effective battlefield decision-quality evidence | Canonical Song changes a printed creature into a land; corrected NEW baseline has 18 failures / 6 passes, candidate eight whole modules / 168 passes with exact source before/after hashes and empty native forbidden-I/O ledger | Measurement correction only, not AI policy improvement or completion of the 13-archetype matrix. See `effective-decision-quality.md` |
 | Mechanic drafts across match/game switches | Actual Controls regression fails on identical offered IDs before fix and passes afterward; same-game drafts remain, new-game drafts reset without submission; complete npm test/lint/build exit 0 | Deterministic compiled hook transitions only, not mounted browser or HTTP acceptance. See `mechanic-match-reset.md` |
 | Human legend keeper and exchange-energy choices | NEW actual-Controls baseline records six blocked views; both-seat paid legend and Stormdrake continuations, restored choices, invalid-root purity, existing public contracts and exact callbacks pass; complete npm test/lint/build exit 0 | Source-isolated component/backend episodes, not mounted DOM, HTTP, full-card or natural-game certification. Unknown choices still warn. See `keeper-energy-human-controls.md` |
@@ -83,6 +88,8 @@ substitute for qualification of the final combined source.
 
 Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 
+- `parent-integration/complete-body-composition-20261008/`
+- `diagnostics/dependency-audit/current-bf6731c-20261008/`
 - `release-gate-1-7-current-qualified/a42e0f6-1kapIf/`
 - `parent-integration/native-browser-r9-qualified-20261007/`
 - `diagnostics/api-security/retained2331-origin-20261007-ExTz1I/`
@@ -122,11 +129,11 @@ inspection; never execute a database on NFS.
    The current pure qualification and exact parent integration are documented
    in `pending-stack-privacy-current.md` and `hand-domain-admission-current.md`;
    they do not cover those other gates.
-2. Resolve or explicitly classify the remaining preflight diagnostics in the 155-card
-   inventory with genuine canonical cost/target/execution tests. The pinned
-   published `13973bd` backend/audit inventory reports six hydrated gap cards and 149 without a known
-   gap, separately from 12 raw-canonical diagnostic-gap cards. None of these
-   counts is complete-card semantics certification; remeasure on the final source.
+2. Remeasure the complete 155-card inventory and deck readiness on the final
+   source with genuine canonical cost/target/execution tests. All 400 original
+   corpus/consumer cases pass on `bf6731c`, but absence of a preflight warning is
+   not full-card semantics certification. Entry follow-ups remain explicit.
+   Older `13973bd` inventory counts are historical, not current-source counts.
 3. Requalify current built UI, browser-served offline assets, BO3 and recovery with the exact
    origin configuration and fresh locked dependencies. Test supported actions
    not encountered in the successful browser episodes.
