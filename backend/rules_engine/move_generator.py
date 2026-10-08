@@ -402,11 +402,14 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 }
             )
 
-    # Planeswalker loyalty abilities: sorcery speed, once per planeswalker each turn.
-    if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
+    # Timing grants do not change the once-per-planeswalker-per-turn limit.
+    from rules_engine.loyalty_timing import can_activate_loyalty_in_current_timing
+    if not split_second_active(state):
         for cid in player.battlefield:
             card = state.cards[cid]
             if "Planeswalker" not in effective_types(state, card):
+                continue
+            if not can_activate_loyalty_in_current_timing(state, card, player_id):
                 continue
             if printed_abilities_suppressed(state, cid):
                 continue

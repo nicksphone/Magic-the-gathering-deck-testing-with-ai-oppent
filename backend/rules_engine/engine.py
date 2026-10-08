@@ -1406,7 +1406,8 @@ class RulesEngine:
             )
 
         elif kind == "activate_loyalty":
-            if not (state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack):
+            from rules_engine.loyalty_timing import can_activate_loyalty_in_current_timing
+            if not can_activate_loyalty_in_current_timing(state, state.cards.get(action.get("card_id")), player_id):
                 state.log.append("Loyalty abilities can only be activated at sorcery speed on your turn.")
                 apply_state_based_actions(state)
                 return

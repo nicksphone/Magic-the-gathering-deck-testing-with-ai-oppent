@@ -437,6 +437,7 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
     card.reset_zone_counters(Zone.BATTLEFIELD)
     assign_effect_timestamp(state, card_id)
     card.battlefield_incarnation = card.effect_timestamp
+    state.loyalty_activated_this_turn = state.loyalty_activated_this_turn - {card_id}
 
 
 def object_incarnation(card) -> int:

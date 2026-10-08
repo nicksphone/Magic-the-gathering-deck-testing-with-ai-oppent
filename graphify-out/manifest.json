@@ -420,9 +420,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/state.py": {
-    "mtime": 1791427824.5543792,
-    "seen": 1791427952.7036805,
-    "ast_hash": "f0bd030b60ae91fe8b824fdab7582d35",
+    "mtime": 1791428273.4406166,
+    "seen": 1791428573.2402773,
+    "ast_hash": "f5274671b7aa32cbf1b63b8db3eba1fe",
     "semantic_hash": ""
   },
   "backend/knowledge/__init__.py": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791427824.5543792,
-    "seen": 1791427952.7037594,
-    "ast_hash": "63d79c83a624d097f6d19a7aa108cc87",
+    "mtime": 1791428273.4386165,
+    "seen": 1791428573.2403586,
+    "ast_hash": "82b79fa1a5bda80bb7097265a8cd5109",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -828,9 +828,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/move_generator.py": {
-    "mtime": 1791416828.273843,
-    "seen": 1791416904.327353,
-    "ast_hash": "adaf65eed1dc87ef38bf7be624b544fb",
+    "mtime": 1791428273.4386165,
+    "seen": 1791428573.2404125,
+    "ast_hash": "57bf9930ea1792b7f71e2cd1e7cb9650",
     "semantic_hash": ""
   },
   "backend/rules_engine/named_counters.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791427876.9734674,
-    "seen": 1791427952.7077556,
-    "ast_hash": "8dfcb59b23b58bd8d4e6d9fd731a3416",
+    "mtime": 1791428497.2077734,
+    "seen": 1791428573.2442734,
+    "ast_hash": "e58308e3f641ba3d35b1dce9f542f038",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14037,6 +14037,48 @@
     "mtime": 1791427876.9734674,
     "seen": 1791427952.7079985,
     "ast_hash": "ff29e4966ff4046b55505093dd09616a",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/loyalty_timing.py": {
+    "mtime": 1791428273.4386165,
+    "seen": 1791428573.240403,
+    "ast_hash": "24d191465432d0019a21c1f313258f01",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_emperor_effect_audit.py": {
+    "mtime": 1791428273.4386165,
+    "seen": 1791428573.2422836,
+    "ast_hash": "042b10dca9a69643ab6d2fbe6d99e710",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_emperor_entry_query_purity.py": {
+    "mtime": 1791428273.4436164,
+    "seen": 1791428573.242285,
+    "ast_hash": "0976695fe1a486d6e46886514d03d58a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_emperor_lifecycle_audit.py": {
+    "mtime": 1791428273.4416165,
+    "seen": 1791428573.242287,
+    "ast_hash": "bf16bf75b1c699d29349135667f02eba",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_emperor_timing_audit.py": {
+    "mtime": 1791428273.4366167,
+    "seen": 1791428573.2422884,
+    "ast_hash": "54c440ee72786c32ad24d75f4433ad5e",
+    "semantic_hash": ""
+  },
+  "docs/testing/emperor-entry-loyalty-current.md": {
+    "mtime": 1791428497.2077734,
+    "seen": 1791428573.2439642,
+    "ast_hash": "495acc583f0704eb13a170e7f175bd10",
+    "semantic_hash": ""
+  },
+  "docs/testing/emperor-loyalty-timing-stage.md": {
+    "mtime": 1791428273.4386165,
+    "seen": 1791428573.2439659,
+    "ast_hash": "afa6b5690df77e75d42cc20b2951d5a2",
     "semantic_hash": ""
   }
 }
