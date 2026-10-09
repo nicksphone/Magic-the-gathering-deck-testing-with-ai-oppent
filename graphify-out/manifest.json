@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791505400.2542505,
-    "seen": 1791511166.1179647,
-    "ast_hash": "47cc0884f71a272b8d17d09581ed2f13",
+    "mtime": 1791515976.2404065,
+    "seen": 1791516444.8930485,
+    "ast_hash": "ec2056cc80ecf7af98e1172e60f1ee7c",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791508788.4283245,
-    "seen": 1791508873.404634,
-    "ast_hash": "eeeee78456ec676e85036a54f8652dd7",
+    "mtime": 1791516132.9007406,
+    "seen": 1791516444.894224,
+    "ast_hash": "539073b78be13c1b9f4f9c886609f73b",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15552,15 +15552,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/browser-native-human-bo3-seat2.mjs": {
-    "mtime": 1791508253.158723,
-    "seen": 1791508873.4038641,
-    "ast_hash": "ce79ab3f6f4183bbb485e99fa2bcc8f1",
+    "mtime": 1791515954.1387837,
+    "seen": 1791516444.8933432,
+    "ast_hash": "0989eea70944cb2c56da586e74175097",
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/browser-native-human-bo3.mjs": {
-    "mtime": 1791508253.158723,
-    "seen": 1791508873.4038656,
-    "ast_hash": "3e6846002ccad0b8ce330c918d403934",
+    "mtime": 1791515954.1387837,
+    "seen": 1791516444.893345,
+    "ast_hash": "48a009fa9ac2e14e8a99cc32f7293985",
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/cdp-diagnostic-trace.mjs": {
@@ -15594,9 +15594,21 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-force-copy-choices-current.md": {
-    "mtime": 1791511079.0084553,
-    "seen": 1791511166.1184678,
-    "ast_hash": "38bc2164321fc64c198aabe500468f65",
+    "mtime": 1791511967.1336937,
+    "seen": 1791516444.893599,
+    "ast_hash": "0d206a810f23e8100b7de9dd60cb1186",
+    "semantic_hash": ""
+  },
+  "frontend/tests/native-empty-human-window-regression.mjs": {
+    "mtime": 1791515918.9463847,
+    "seen": 1791516444.89333,
+    "ast_hash": "f25c89f368bd57cee1a579f7ada33443",
+    "semantic_hash": ""
+  },
+  "docs/testing/native-browser-empty-human-windows.md": {
+    "mtime": 1791516356.9809437,
+    "seen": 1791516444.8941216,
+    "ast_hash": "957dc82e042d02b6039fceecd82e9e72",
     "semantic_hash": ""
   }
 }

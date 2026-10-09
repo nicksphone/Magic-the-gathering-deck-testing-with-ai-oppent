@@ -148,7 +148,7 @@ export async function runNativeHumanBo3({mode,api,frontend,out,restartBackend,ma
     await waitFor(`(() => { const e = document.querySelectorAll(${json(selector)})[${index}]; return e && !e.disabled && ${json(values)}.every(v => [...e.options].some(o => o.value === v && !o.disabled)); })()`);
     await evaluate(`(()=>{const e=document.querySelectorAll(${json(selector)})[${index}];if(!e||e.disabled)throw Error('Missing select');const wanted=${json(values)};if(wanted.some(v=>![...e.options].some(o=>o.value===v&&!o.disabled)))throw Error('Choice not offered');for(const o of e.options)o.selected=wanted.includes(o.value);e.dispatchEvent(new Event('change',{bubbles:true}));})()`);
     await evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))');
-    await waitFor(`JSON.stringify([...document.querySelectorAll(${json(selector)})[${index}].selectedOptions].map(o=>o.value))===${json(json(values))}`);
+    await waitFor(`(() => { const e = document.querySelectorAll(${json(selector)})[${index}]; return Boolean(e) && JSON.stringify([...e.selectedOptions].map(o=>o.value))===${json(json(values))}; })()`);
   }
   async function selections(selector) {return evaluate(`[...document.querySelectorAll(${json(selector)})].map((s,i)=>({i,label:s.getAttribute('aria-label'),multiple:s.multiple,disabled:s.disabled,options:[...s.options].filter(o=>o.value&&!o.disabled).map(o=>({value:o.value,text:o.textContent.trim()})),first:s.options[0]?.textContent.trim()}))`);}
   async function action(label,operation) {const revision=raw.revision;await operation();await changed(label,revision);}
@@ -370,6 +370,13 @@ export async function runNativeHumanBo3({mode,api,frontend,out,restartBackend,ma
       }
       assert.equal(raw.id,mid);
       if(raw.controllers[String(legal.player_id)]==='ai') {await changed('native-ai',raw.revision);continue;}
+      if(mode==='player_vs_ai' && legal.can_auto_pass===true) {
+        const before={utc:new Date().toISOString(),actor:legal.player_id,revision:raw.revision,step:raw.step,can_auto_pass:legal.can_auto_pass};
+        await appendFile(path.join(dir,'native-empty-human-windows.jsonl'),json({phase:'await-native-autoplay',...before})+'\n');
+        await changed('native-empty-human-window',before.revision);
+        await appendFile(path.join(dir,'native-empty-human-windows.jsonl'),json({phase:'observed-native-advance',before,revision:raw.revision,step:raw.step})+'\n');
+        continue;
+      }
       const pid=legal.player_id, publicView=actorView(raw,pid);
       assert.deepEqual(publicView.players[String(3-pid)].hand,[]);
       const visibleIds=await evaluate("[...document.querySelectorAll('[data-hand-card-id]')].map(e=>e.dataset.handCardId)");
