@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { openBrowser } from './browser-driver.mjs';
+import { openBrowser, waitForApiState } from './browser-driver.mjs';
 
 const backend = 'http://127.0.0.1:10199';
 for (const kind of ['domain', 'temporary']) for (const seat of [1, 2]) {
@@ -28,7 +28,8 @@ for (const kind of ['domain', 'temporary']) for (const seat of [1, 2]) {
         return state.revision > ${before.revision} && state.attackers.length === 1;
       })()`);
       await waitFor("!document.querySelector('[aria-label=\"Attack with Grizzly Bears\"]')");
-      const paid = await getState();
+      const paid = await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > before.revision);
+      await waitFor("!document.body.textContent.includes('Match operation pending')");
       assert.equal(paid.players[String(seat)].mana_pool.U, 0);
       assert.equal(paid.attackers.length, 1);
       console.log(`PASS seat ${seat}: domain counts nonbasic dual land types; unpaid declaration rejects; paid attack commits once through App/API`);
@@ -66,7 +67,8 @@ for (const kind of ['domain', 'temporary']) for (const seat of [1, 2]) {
       await select(['Llanowar Elves']);
       await click('Submit Blocks');
       await waitFor("[...document.querySelectorAll('h3')].every(node => node.textContent !== 'Declare Blockers')");
-      const paid = await getState();
+      const paid = await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > before.revision);
+      await waitFor("!document.body.textContent.includes('Match operation pending')");
       const elf = paid.players[String(3-seat)].battlefield.find(card => card.name === 'Llanowar Elves');
       assert.ok(elf.tapped);
       assert.deepEqual(Object.values(paid.blocks), [[elf.id]]);

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { openBrowser } from './browser-driver.mjs';
+import { openBrowser, waitForApiState } from './browser-driver.mjs';
 
 const backend = 'http://127.0.0.1:10199';
 for (const kind of ['attack', 'block']) for (const seat of [1, 2]) {
@@ -24,6 +24,8 @@ for (const kind of ['attack', 'block']) for (const seat of [1, 2]) {
       await evaluate("document.querySelector('[aria-label=\"Attack with Llanowar Elves\"]').click()");
       await click('Submit Attackers');
       await waitFor("!document.querySelector('[aria-label=\"Attack with Grizzly Bears\"]')");
+      await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > before.revision);
+      await waitFor("!document.body.textContent.includes('Match operation pending')");
       assert.equal((await state()).attackers.length, 1);
       assert.equal((await state()).players[String(seat)].mana_pool.U, 0);
     } else {
@@ -44,7 +46,8 @@ for (const kind of ['attack', 'block']) for (const seat of [1, 2]) {
       await select(['Llanowar Elves']);
       await click('Submit Blocks');
       await waitFor("[...document.querySelectorAll('h3')].every(node => node.textContent !== 'Declare Blockers')");
-      const paid = await state();
+      const paid = await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > before.revision);
+      await waitFor("!document.body.textContent.includes('Match operation pending')");
       const elf = paid.players[String(3-seat)].battlefield.find(card => card.name === 'Llanowar Elves');
       assert.ok(elf.tapped);
       assert.deepEqual(Object.values(paid.blocks), [[elf.id]]);

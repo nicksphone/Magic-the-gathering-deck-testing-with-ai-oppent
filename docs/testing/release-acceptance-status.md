@@ -24,6 +24,17 @@ substitute for qualification of the final combined source.
 
 ## Verified Components
 
+The `230c435c` workflow passes frontend and reaches the multiple-block browser
+episode after passing devotion. Its seat-2 browser failure exposed test
+readiness, not a demonstrated rejected block: `App.mutateMatch` clears legal
+controls before the HTTP commit. Five combat scripts now poll the existing
+API revision and wait for idle while retaining all 38 original assertions.
+The actual automation regression fails with empty blocks before the correction
+and passes afterward; full frontend tests, lint and build pass on the candidate.
+This is orchestration evidence only. Remote Chromium and the complete backend
+suite remain release requirements; the preceding component passes do not close
+the full-release checklist.
+
 The subsequent `f64ba88b` configured frontend job passes. Its browser copy
 continuation failure is traced to manual fixtures missing native stack-kind
 metadata, not permissive engine admission. Five fixture producers and their

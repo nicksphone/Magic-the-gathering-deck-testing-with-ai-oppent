@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { openBrowser } from './browser-driver.mjs';
+import { openBrowser, waitForApiState } from './browser-driver.mjs';
 
 const backend = 'http://127.0.0.1:10199';
 const response = await fetch(`${backend}/fixture?face_kind=combat_payments_requirements`, { method: 'POST' });
@@ -21,7 +21,8 @@ try {
   await evaluate("document.querySelector('[aria-label=\"Attack with Llanowar Elves\"]').click()");
   await click('Submit Attackers');
   await waitFor("!document.querySelector('[aria-label=\"Attack with Prized Unicorn\"]')");
-  const paid = await getState();
+  const paid = await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > before.revision);
+  await waitFor("!document.body.textContent.includes('Match operation pending')");
   assert.equal(paid.players['1'].mana_pool.U, 0);
   assert.equal(paid.attackers.length, 1);
   for (let i = 0; i < 4 && (await getState()).step !== 'declare_blockers'; i++) {
@@ -45,7 +46,8 @@ try {
   })()`);
   await click('Submit Blocks');
   await waitFor("[...document.querySelectorAll('h3')].every(node => node.textContent !== 'Declare Blockers')");
-  const blocked = await getState();
+  const blocked = await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > blocking.revision);
+  await waitFor("!document.body.textContent.includes('Match operation pending')");
   assert.equal(blocked.blocks[paid.attackers[0]].length, 1);
   assert.equal(blocked.revision, blocking.revision + 1);
   console.log('PASS actual App/API exercises paid attack and target-specific blocking, rejecting both invalid declarations atomically');

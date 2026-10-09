@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { openBrowser } from './browser-driver.mjs';
+import { openBrowser, waitForApiState } from './browser-driver.mjs';
 
 const backend = 'http://127.0.0.1:10199';
 for (const seat of [1, 2]) {
@@ -25,7 +25,8 @@ for (const seat of [1, 2]) {
     await waitFor("document.body.textContent.includes('Block cost for Wall of Glare: {1}')");
     await click('Submit Blocks');
     await waitFor("[...document.querySelectorAll('h3')].every(node => node.textContent !== 'Declare Blockers')");
-    const paid = await (await fetch(`${backend}/matches/${fixture.id}`)).json();
+    const paid = await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > fixture.revision);
+    await waitFor("!document.body.textContent.includes('Match operation pending')");
     const wall = paid.players[String(3-seat)].battlefield.find(card => card.name === 'Wall of Glare');
     const elf = paid.players[String(3-seat)].battlefield.find(card => card.name === 'Llanowar Elves');
     assert.equal(paid.attackers.length, 2);
