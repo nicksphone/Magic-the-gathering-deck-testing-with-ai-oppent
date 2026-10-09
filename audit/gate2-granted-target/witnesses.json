@@ -1,0 +1,132 @@
+{
+  "no_library_reordering": true,
+  "not_engine_executed": true,
+  "recipe": [
+    {
+      "card_name": "Nadu, Winged Wisdom",
+      "quantity": 4
+    },
+    {
+      "card_name": "Shuko",
+      "quantity": 4
+    },
+    {
+      "card_name": "Elvish Mystic",
+      "quantity": 4
+    },
+    {
+      "card_name": "Reanimate",
+      "quantity": 4
+    },
+    {
+      "card_name": "Lightning Bolt",
+      "quantity": 4
+    },
+    {
+      "card_name": "Forest",
+      "quantity": 12
+    },
+    {
+      "card_name": "Island",
+      "quantity": 16
+    },
+    {
+      "card_name": "Swamp",
+      "quantity": 4
+    },
+    {
+      "card_name": "Mountain",
+      "quantity": 4
+    },
+    {
+      "card_name": "Breeding Pool",
+      "quantity": 4
+    }
+  ],
+  "witnesses": {
+    "1-land": {
+      "expected_first_top": "Forest",
+      "expected_opening": [
+        "Forest",
+        "Elvish Mystic",
+        "Forest",
+        "Island",
+        "Nadu, Winged Wisdom",
+        "Shuko",
+        "Mountain"
+      ],
+      "first_top_position_from_tail": 10,
+      "seed": 7
+    },
+    "1-nonland": {
+      "expected_first_top": "Reanimate",
+      "expected_opening": [
+        "Nadu, Winged Wisdom",
+        "Elvish Mystic",
+        "Forest",
+        "Island",
+        "Forest",
+        "Shuko",
+        "Lightning Bolt"
+      ],
+      "first_top_position_from_tail": 10,
+      "seed": 1163
+    },
+    "1-shock": {
+      "expected_first_top": "Breeding Pool",
+      "expected_opening": [
+        "Island",
+        "Elvish Mystic",
+        "Nadu, Winged Wisdom",
+        "Island",
+        "Island",
+        "Forest",
+        "Shuko"
+      ],
+      "first_top_position_from_tail": 10,
+      "seed": 1968
+    },
+    "2-land": {
+      "expected_first_top": "Forest",
+      "expected_opening": [
+        "Forest",
+        "Nadu, Winged Wisdom",
+        "Island",
+        "Shuko",
+        "Elvish Mystic",
+        "Reanimate",
+        "Forest"
+      ],
+      "first_top_position_from_tail": 11,
+      "seed": 361
+    },
+    "2-nonland": {
+      "expected_first_top": "Reanimate",
+      "expected_opening": [
+        "Island",
+        "Island",
+        "Forest",
+        "Shuko",
+        "Nadu, Winged Wisdom",
+        "Nadu, Winged Wisdom",
+        "Elvish Mystic"
+      ],
+      "first_top_position_from_tail": 11,
+      "seed": 507
+    },
+    "2-shock": {
+      "expected_first_top": "Breeding Pool",
+      "expected_opening": [
+        "Elvish Mystic",
+        "Forest",
+        "Island",
+        "Forest",
+        "Shuko",
+        "Island",
+        "Nadu, Winged Wisdom"
+      ],
+      "first_top_position_from_tail": 11,
+      "seed": 567
+    }
+  }
+}

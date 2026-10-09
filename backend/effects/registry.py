@@ -18,6 +18,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'reveal_top_conditional': handlers.reveal_top_conditional,
     'attached_token_payment': resolve_attached_token_payment,
     'spree_copy': resolve_spree_copy,
     'spree_change_target': resolve_spree_target_change,

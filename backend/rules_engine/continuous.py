@@ -565,6 +565,62 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     return dict(sorted(out.items()))
 
 
+@scoped_query
+def effective_granted_target_abilities(state, card_id: str) -> tuple[dict, ...]:
+    """Closed quoted grants in layer 6, retaining each source/clause instance."""
+    from game_state.state import object_incarnation
+    from rules_engine.granted_target_triggers import compile_granted_target_clauses, execution_gaps
+    from rules_engine.attached_characteristics import effects_on
+    target = state.cards.get(card_id)
+    if target is None or not _is_battlefield(target) or 'Creature' not in effective_types(state, target):
+        return ()
+    attached_losses = {effect.source_ref[0] for effect in effects_on(state, card_id)}
+    modifiers = sorted(_resolved_keyword_modifiers(target), key=lambda effect: effect['timestamp'])
+    index, out = 0, []
+    for source_id, source, active in _continuous_sources(state):
+        while index < len(modifiers) and modifiers[index]['timestamp'] <= effect_timestamp(source):
+            effect = modifiers[index]
+            if effect['operation'] == 'remove' and effect['keyword'] == 'all abilities':
+                out.clear()
+            index += 1
+        if source_id in attached_losses:
+            out.clear()
+        # Source activity already accounts for dependency on effects removing its own ability.
+        if active:
+            clauses, _ = compile_granted_target_clauses(source.oracle_text or '', source.name)
+            if execution_gaps(clauses):
+                clauses = ()
+            for ordinal, scope, other, kind, limit, instruction in clauses:
+                if (not other or source_id != card_id) and _scope_controller(source.controller, scope, target.controller):
+                    out.append({'recipient_id': card_id, 'recipient_incarnation': object_incarnation(target),
+                                'grant_source_id': source_id, 'grant_source_incarnation': object_incarnation(source),
+                                'clause_index': ordinal, 'controller': target.controller,
+                                'event_kind': kind, 'limit': limit, 'instruction': instruction})
+        # A static all-ability removal remains applicable even if its source loses abilities.
+        from rules_engine.basic_land_layer import prior_layer_abilities_lost
+        if not prior_layer_abilities_lost(state, source):
+            for scope, other, subject, removed in _iter_keyword_removals(source):
+                if ('all abilities' in removed and (not other or source_id != card_id)
+                        and _scope_controller(source.controller, scope, target.controller)
+                        and _subject_matches(state, card_id, subject)):
+                    out.clear()
+    for effect in modifiers[index:]:
+        if effect['operation'] == 'remove' and effect['keyword'] == 'all abilities':
+            out.clear()
+    # A prior-layer land-type change removes printed abilities, not later layer-6 grants.
+    # Source activity handles this restriction on the granting source itself.
+    for _, source, active in _continuous_sources(state):
+        if not active:
+            continue
+        for match in KW_CANT_HAVE_RE.finditer(_static_oracle_text(source)):
+            other, subject, scope, removed = match.groups()
+            if ('all abilities' in removed and (not other or source.id != card_id)
+                    and _scope_controller(source.controller, scope, target.controller)
+                    and _subject_matches(state, card_id, subject)):
+                out.clear()
+    return tuple(out)
+
+
 def effective_keywords(state, card_id: str) -> list[str]:
     return list(effective_keyword_counts(state, card_id))
 

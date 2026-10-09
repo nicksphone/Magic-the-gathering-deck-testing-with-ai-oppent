@@ -225,6 +225,10 @@ def _finish_battlefield_exit(state: MatchState, card_id: str | None) -> None:
 def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
     if not triggers:
         return
+    # Automatic target selection occurs inside _append_trigger_groups, after APNAP.
+    # Arm its actual selection boundary, not a later resolution scan.
+    triggers = [{**trigger, 'payload': {**trigger['payload'], '__granted_target_selection_pending': True}}
+                for trigger in triggers]
     if state.trigger_staging:
         state.staged_triggers.extend(
             {**trigger, "payload": {**trigger["payload"], "__trigger_event": event}}
@@ -595,6 +599,9 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
     item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
     item.payload["__trigger_target_choice"] = True
     _remember_trigger_target(state, item)
+    from rules_engine.granted_target_triggers import _record_target_selection
+    _record_target_selection(state, item)
+    item.payload.pop('__granted_target_selection_pending', None)
     from rules_engine.ward import mark_stack_targets
     if not state.trigger_staging:
         state.trigger_staging = True

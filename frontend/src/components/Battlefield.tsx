@@ -598,20 +598,43 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               const hints = move.target_hints;
               const targetText = move.ability_label ?? "";
               const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
+              const permanentTargets = [...new Map([
+                ...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []),
+                ...(hints?.land_targets ?? []), ...(hints?.permanent_targets ?? []),
+              ].map((target) => [target.id, target])).values()];
+              const requiresX = Boolean(move.ability_x_cost || hints?.requires_x_value);
+              const xValue = Number(targets[key]?.x_value ?? 0);
+              const xMax = move.ability_x_cost && move.ability_x_sign === -1
+                ? Math.max(0, p1.battlefield.find(card => card.id === move.card_id)?.loyalty ?? 0)
+                : hints?.x_value_max;
               return (
                 <div key={key} className="cast-card-box">
                   <button
+                    disabled={requiresX && (!Number.isInteger(xValue) || xValue < 0 || (xMax !== undefined && xValue > xMax))}
                     onClick={() =>
                       onCardAction(viewerSeat, {
                         type: "activate_loyalty",
                         card_id: move.card_id,
                         ability_index: move.ability_index,
-                        targets: targets[key] ?? {},
+                        targets: { ...targets[key], ...(requiresX ? { x_value: xValue } : {}) },
                       })
                     }
                   >
                     {move.card_name}: {move.ability_label}
                   </button>
+                  {requiresX ? (
+                    <input
+                      type="number"
+                      min={0}
+                      max={xMax}
+                      aria-label={`${move.card_name} loyalty X value`}
+                      value={xValue}
+                      onChange={(e) => setTargets((prev) => ({
+                        ...prev,
+                        [key]: { ...prev[key], x_value: Number(e.target.value) || 0 },
+                      }))}
+                    />
+                  ) : null}
                   {hints?.player_targets?.length ? (
                     <select
                       onChange={(e) =>
@@ -630,7 +653,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       ))}
                     </select>
                   ) : null}
-                  {hints?.creature_targets?.length || hints?.planeswalker_targets?.length ? (
+                  {permanentTargets.length ? (
                     <select
                       onChange={(e) =>
                         setTargets((prev) => ({
@@ -641,13 +664,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       value={String(targets[key]?.target_card_id ?? "")}
                     >
                       <option value="">Target Permanent</option>
-                      {(hints.creature_targets ?? []).map((t) => (
-                        <option key={`${key}-c-${t.id}`} value={t.id}>
-                          {t.name}
-                        </option>
-                      ))}
-                      {(hints.planeswalker_targets ?? []).map((t) => (
-                        <option key={`${key}-pw-${t.id}`} value={t.id}>
+                      {permanentTargets.map((t) => (
+                        <option key={`${key}-target-${t.id}`} value={t.id}>
                           {t.name}
                         </option>
                       ))}

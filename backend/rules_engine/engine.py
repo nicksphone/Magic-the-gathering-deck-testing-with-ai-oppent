@@ -1094,6 +1094,8 @@ class RulesEngine:
                 from rules_engine.targeting import capture_announced_target_references
                 target_references = capture_announced_target_references(state, action_targets)
                 ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
+                from rules_engine.granted_target_triggers import _capture_grants
+                grant_capture = _capture_grants(state, action_targets, target_references, stack_kind='spell')
                 from rules_engine.costs import additional_cost_selection
                 selected_cost_cards = additional_cost_selection(
                     state, player_id, chosen, cid, action.get('cost_choice'), x_value=x_value)
@@ -1173,6 +1175,7 @@ class RulesEngine:
                 effect_key, payload = ability.effect.key, ability.effect.payload
                 payload["__announced_targets"] = dict(action_targets)
                 payload['__announced_target_references'] = target_references
+                payload['__granted_target_capture'] = grant_capture
                 payload['mana_spent'] = payment_details.get('mana_spent', 0)
                 if payment_details.get('resource_payment') is not None:
                     payload['__casting_resource_payment'] = payment_details['resource_payment']
@@ -1397,6 +1400,8 @@ class RulesEngine:
             hand_context = (capture_hand_source_context(state, cid, player_id=player_id, ability=ability)
                             if activation_source_zone == Zone.HAND else None)
             ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
+            from rules_engine.granted_target_triggers import _capture_grants
+            grant_capture = _capture_grants(state, action_targets, target_references, stack_kind='activated')
             cost_context: dict = {}
             cost_staging = not state.trigger_staging
             if cost_staging:
@@ -1420,6 +1425,7 @@ class RulesEngine:
                                 "__activation_source_reference": activation_source_reference,
                                 "__activation_source_origin": activation_source_zone.value,
                                 "__announced_target_references": target_references}
+            resolved_payload['__granted_target_capture'] = grant_capture
             if hand_context is not None:
                 resolved_payload['__activation_source_context'] = hand_context
             if self_return_destination:
@@ -1520,7 +1526,11 @@ class RulesEngine:
                 state.log.append(f"Invalid targets for {pw.name}: {err_prot}")
                 apply_state_based_actions(state)
                 return
+            from rules_engine.targeting import capture_announced_target_references
+            from rules_engine.granted_target_triggers import _capture_grants
+            target_references = capture_announced_target_references(state, action_targets)
             ward_specs = capture_ward_triggers(state, player_id, {"__announced_targets": action_targets})
+            grant_capture = _capture_grants(state, action_targets, target_references, stack_kind='activated')
             loyalty_added = next_loyalty - current_loyalty
             if not apply_activated_costs(state, player_id, cid, '', ability_kind='loyalty'):
                 reject('Cannot pay loyalty activation mana costs')
@@ -1537,6 +1547,8 @@ class RulesEngine:
                 effect_key, payload = compiled_effect
             payload["__announced_targets"] = dict(action_targets)
             payload["__ward_trigger_specs"] = ward_specs
+            payload['__announced_target_references'] = target_references
+            payload['__granted_target_capture'] = grant_capture
             # Announce the ability before paying its cost, but do not put
             # target/ward triggers on the stack until activation is complete.
             if not state.trigger_staging:
@@ -1629,6 +1641,11 @@ class RulesEngine:
             if not equip_cost:
                 apply_state_based_actions(state)
                 return
+            from rules_engine.targeting import capture_announced_target_references
+            from rules_engine.granted_target_triggers import _capture_grants
+            announced = {'target_card_id': target_id}
+            target_references = capture_announced_target_references(state, announced)
+            grant_capture = _capture_grants(state, announced, target_references, stack_kind='activated')
             if not auto_pay_cost(state, player_id, equip_cost, card_name=state.cards[cid].name,
                                  payment_kind="activation", payment_types=set(effective_types(state, state.cards[cid])),
                                  ability_kind="equip", source_card_id=cid, target_card_id=target_id):
@@ -1641,6 +1658,8 @@ class RulesEngine:
                 "source_timestamp": object_incarnation(state.cards[cid]),
                 "target_timestamp": object_incarnation(target),
                 "__announced_targets": {"target_card_id": target_id},
+                '__announced_target_references': target_references,
+                '__granted_target_capture': grant_capture,
                 "__ability_target_text": "Attach this Equipment to target creature you control.",
             }, is_spell=False)
 

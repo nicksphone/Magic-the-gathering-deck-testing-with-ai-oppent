@@ -132,6 +132,9 @@ def capture_ward_triggers(state, controller, payload):
 
 def mark_stack_targets(state, item):
     from rules_engine.events import _push_triggers
+    from rules_engine.granted_target_triggers import _record_target_selection, _publish_grants
+    if item.payload.pop('__granted_target_selection_pending', False):
+        _record_target_selection(state, item)
     ids = target_ids(item.payload)
     previous = set(item.payload.get('__last_target_ids') or [])
     specs = item.payload.pop('__ward_trigger_specs', None)
@@ -140,6 +143,7 @@ def mark_stack_targets(state, item):
                  if spec['source_card_id'] not in previous]
     item.payload['__last_target_ids'] = ids
     triggers = [{**spec, 'payload': {**spec['payload'], 'target_stack_id': item.id}} for spec in specs]
+    triggers.extend(_publish_grants(state, item))
     _push_triggers(state, 'becomes_target', triggers)
 
 

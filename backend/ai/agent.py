@@ -14,7 +14,7 @@ from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
 from game_state.state import CardInstance, MatchState, Step, Zone, object_incarnation
 from rules_engine.engine import RulesEngine
-from ai.pending_effects import planning_copy, prospective_creature_stats
+from ai.pending_effects import planning_copy, prospective_creature_stats, simulation_take_action, UncertainSimulation
 from rules_engine import combat
 from rules_engine.continuous import effective_combat_stats, effective_keywords, effective_power, effective_toughness, has_keyword
 from rules_engine.card_types import is_land_card as _card_looks_like_land, is_token_card
@@ -250,7 +250,7 @@ class AIAgent:
                         return self.choose_action(game, moves, actor).action
 
                     try:
-                        self.engine.take_action(projected, player_id, action, reject_invalid=True)
+                        simulation_take_action(self.engine, projected, player_id, action, reject_invalid=True)
                         if not _settle_announced_stack(projected, player_id=player_id,
                                                        own_choice_action=continuation):
                             return None
@@ -720,7 +720,7 @@ class AIAgent:
 
     def _ward_selection(self, state, player_id, choice):
         from rules_engine.ward import finish_ward_choice
-        from rules_engine.stack_engine import resolve_top_of_stack
+        from ai.pending_effects import simulation_resolve_top as resolve_top_of_stack
         from rules_engine.state_based_actions import apply_state_based_actions
 
         def cost_selection(game, pending):
@@ -758,7 +758,10 @@ class AIAgent:
                 # Bounded local projection, not an assertion that later responses
                 # or additional ward costs will be paid.
                 game.stack = [remaining]
-                resolve_top_of_stack(game)
+                try:
+                    resolve_top_of_stack(game)
+                except UncertainSimulation:
+                    continue
             apply_state_based_actions(game)
             scores[option] = -100000 if game.winner == 3 - player_id else evaluate_board(game, player_id)
         return ["pay" if scores.get("pay", -100000) > scores.get("decline", -100000) + 0.25 else "decline"]
@@ -891,7 +894,7 @@ class AIAgent:
     def _tactical_loyalty_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         from types import SimpleNamespace
         from rules_engine.oracle_effects import extract_loyalty_abilities, infer_effect_from_oracle
-        from rules_engine.stack_engine import resolve_top_of_stack
+        from ai.pending_effects import simulation_resolve_top as resolve_top_of_stack
         from rules_engine.state_based_actions import apply_state_based_actions
 
         x_moves = [
@@ -914,7 +917,7 @@ class AIAgent:
             action = {"type": "activate_loyalty", "card_id": move["card_id"], "ability_index": move["ability_index"], "targets": {"target_player": opponent}}
             try:
                 sim = planning_copy(state)
-                self.engine.take_action(sim, player_id, action, reject_invalid=True)
+                simulation_take_action(self.engine, sim, player_id, action, reject_invalid=True)
                 if sim.stack and resolve_top_of_stack(sim):
                     apply_state_based_actions(sim)
                     if sim.winner == player_id:
@@ -943,7 +946,7 @@ class AIAgent:
                 action = {"type": "activate_loyalty", "card_id": source.id, "ability_index": index, "targets": {"x_value": x_value}}
                 try:
                     sim = planning_copy(state)
-                    self.engine.take_action(sim, player_id, action, reject_invalid=True)
+                    simulation_take_action(self.engine, sim, player_id, action, reject_invalid=True)
                     if not sim.stack or not resolve_top_of_stack(sim):
                         continue
                     apply_state_based_actions(sim)
@@ -1032,7 +1035,7 @@ class AIAgent:
                                    lambda: self._uncached_strategic_position_score(state, player_id))
 
     def _uncached_strategic_position_score(self, state: MatchState, player_id: int) -> float:
-        from ai.pending_effects import settled_public_position
+        from ai.pending_effects import settled_public_position, pending_granted_acquisition_counts
         from ai.information import topdeck_deployment_value
         from rules_engine.query_context import rule_query_scope
         # Value a pending announcement at the horizon without removing responses
@@ -1042,12 +1045,16 @@ class AIAgent:
         with rule_query_scope(position):
             expectation = (topdeck_deployment_value(state, player_id) if projected is None else 0.0)
             expectation += (pending_selection_expectation(state, player_id) or 0.0) * 1.25 if projected is None else 0.0
+            if projected is None:
+                counts = pending_granted_acquisition_counts(state)
+                # Same count valuation as evaluate_board; no guessed hand/land settlement.
+                expectation += (counts[player_id] - counts[3-player_id]) * 0.9
             return evaluate_board(position, player_id) + self._strategic_features(position, player_id) + expectation
 
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
         try:
             sim = planning_copy(state)
-            self.engine.take_action(sim, player_id, move, reject_invalid=True)
+            simulation_take_action(self.engine, sim, player_id, move, reject_invalid=True)
         except Exception:
             return -9999.0
         combat_outcome = self._complete_strategic_combat_leaf(sim, player_id)
@@ -1138,7 +1145,7 @@ class AIAgent:
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                     continue
                 nxt = planning_copy(sim)
-                self.engine.take_action(nxt, pid, materialized, reject_invalid=True)
+                simulation_take_action(self.engine, nxt, pid, materialized, reject_invalid=True)
                 val = self._strategic_position_score(nxt, player_id)
                 val += self._stack_two_ply_value(nxt, player_id, val)
                 beam.append((val, nxt))
@@ -1169,7 +1176,7 @@ class AIAgent:
         for act in top_actions:
             try:
                 sim = planning_copy(state)
-                self.engine.take_action(sim, pid, act, reject_invalid=True)
+                simulation_take_action(self.engine, sim, pid, act, reject_invalid=True)
             except Exception:
                 continue
             if getattr(sim, "winner", None) is not None or not (getattr(sim, "stack", []) or []):
@@ -1185,7 +1192,7 @@ class AIAgent:
                     for rep in replies:
                         try:
                             nxt = planning_copy(sim)
-                            self.engine.take_action(nxt, reply_pid, rep, reject_invalid=True)
+                            simulation_take_action(self.engine, nxt, reply_pid, rep, reject_invalid=True)
                             reply_vals.append(self._strategic_position_score(nxt, player_id))
                         except Exception:
                             continue
@@ -1835,7 +1842,7 @@ class AIAgent:
             if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                 return 0.0
             sim_state = planning_copy(state)
-            self.engine.take_action(sim_state, player_id, materialized, reject_invalid=True)
+            simulation_take_action(self.engine, sim_state, player_id, materialized, reject_invalid=True)
             self._approximate_resolution_for_creature_cast(sim_state, materialized, player_id)
             self._approximate_resolution_for_ramp_spell(sim_state, materialized, player_id)
             self._approximate_resolution_for_activated_action(sim_state, materialized, player_id)
@@ -1859,7 +1866,7 @@ class AIAgent:
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                     continue
                 branch = planning_copy(sim_state)
-                self.engine.take_action(branch, opp_id, materialized, reject_invalid=True)
+                simulation_take_action(self.engine, branch, opp_id, materialized, reject_invalid=True)
                 delta = before - evaluate_board(branch, eval_for_player)
                 if delta > worst:
                     worst = delta
@@ -2204,7 +2211,7 @@ class AIAgent:
         from rules_engine.action_validation import ActionRejected
         projected = planning_copy(state)
         try:
-            self.engine.take_action(projected, player_id, action, reject_invalid=True)
+            simulation_take_action(self.engine, projected, player_id, action, reject_invalid=True)
         except ActionRejected:
             return 0.0
         for response_move in responses:
@@ -2595,8 +2602,8 @@ class AIAgent:
     def _approximate_resolution_for_creature_cast(self, sim_state: MatchState, move: dict, player_id: int) -> None:
         if move.get("type") == "equip":
             if sim_state.stack and sim_state.stack[-1].effect_key == "equip_attachment" and sim_state.priority_player == player_id:
-                self.engine.take_action(sim_state, player_id, {"type": "pass_priority"})
-                self.engine.take_action(sim_state, 3 - player_id, {"type": "pass_priority"})
+                simulation_take_action(self.engine, sim_state, player_id, {"type": "pass_priority"})
+                simulation_take_action(self.engine, sim_state, 3 - player_id, {"type": "pass_priority"})
             return
         if move.get("type") != "cast_spell":
             return
@@ -2614,8 +2621,8 @@ class AIAgent:
         if sim_state.priority_player != player_id:
             return
         opp_id = 1 if player_id == 2 else 2
-        self.engine.take_action(sim_state, player_id, {"type": "pass_priority"})
-        self.engine.take_action(sim_state, opp_id, {"type": "pass_priority"})
+        simulation_take_action(self.engine, sim_state, player_id, {"type": "pass_priority"})
+        simulation_take_action(self.engine, sim_state, opp_id, {"type": "pass_priority"})
 
     def _approximate_resolution_for_ramp_spell(self, sim_state: MatchState, move: dict, player_id: int) -> None:
         if move.get("type") != "cast_spell":
@@ -3026,7 +3033,8 @@ class AIAgent:
         return None
 
     def _attachment_projection(self, state: MatchState, move: dict, player_id: int) -> tuple[dict | None, float]:
-        from rules_engine.stack_engine import resolve_top_of_stack
+        from ai.pending_effects import granted_acquisition_forecast
+        from ai.pending_effects import simulation_resolve_top as resolve_top_of_stack
         from rules_engine.state_based_actions import apply_state_based_actions
         source = state.cards.get(move.get("card_id"))
         if source is None:
@@ -3036,8 +3044,6 @@ class AIAgent:
         before = evaluate_board(state, player_id)
         best = None
         for target in targets:
-            if not casting and source.attached_to == target["id"]:
-                continue
             action = {"type": "equip", "card_id": source.id, "target_card_id": target["id"]}
             if casting:
                 compatible = move["target_hints"].get("aura_cost_options", {}).get(target["id"], [])
@@ -3048,26 +3054,44 @@ class AIAgent:
                 if move.get("selected_face_index") is not None:
                     action["selected_face_index"] = move["selected_face_index"]
             projected = planning_copy(state)
+            acquisitions = {pid: 0 for pid in state.players}
             try:
-                self.engine.take_action(projected, player_id, action, reject_invalid=True)
-                if not projected.stack or not resolve_top_of_stack(projected):
+                old_stack_ids = {item.id for item in projected.stack}
+                simulation_take_action(self.engine, projected, player_id, action, reject_invalid=True)
+                attachment = next((item for item in projected.stack if item.id not in old_stack_ids
+                                   and item.source_card_id == source.id
+                                   and (casting or item.effect_key == 'equip_attachment')), None)
+                if attachment is None:
                     continue
-                if casting:
-                    # Immediate cast triggers (for example heroic) resolve above
-                    # the Aura. Do not value an unfinished paid spell as a buff.
-                    for _ in range(64):
-                        if projected.cards[source.id].zone != Zone.STACK:
+                for _ in range(64):
+                    if not any(item.id == attachment.id for item in projected.stack):
+                        break
+                    if (projected.pending_mechanic_choice or projected.pending_trigger_order
+                            or projected.pending_replacement_choice):
+                        break
+                    top = projected.stack[-1]
+                    if top.effect_key == 'reveal_top_conditional':
+                        controller = granted_acquisition_forecast(projected, top)
+                        if controller is None:
                             break
-                        if not resolve_top_of_stack(projected):
-                            break
-                    if projected.cards[source.id].zone == Zone.STACK:
-                        continue
+                        # Forecast only: no opaque reveal handler, zone or mana changes.
+                        acquisitions[controller] = min(acquisitions[controller] + 1,
+                                                       len(projected.players[controller].library))
+                        projected.stack.pop()
+                    elif not resolve_top_of_stack(projected):
+                        break
+                if any(item.id == attachment.id for item in projected.stack):
+                    continue
+                if casting and projected.cards[source.id].zone == Zone.STACK:
+                    continue
                 apply_state_based_actions(projected)
             except (ValueError, KeyError):
                 continue
             from ai.mana_resource_policy import resource_delta
             from rules_engine.land_types import land_type_instructions
             gain = (evaluate_board(projected, player_id) - before
+                    # Same count valuation as evaluate_board, not settled hand/land value.
+                    + (acquisitions[player_id] - acquisitions[3-player_id]) * 0.9
                     + (resource_delta(state, projected, player_id, excluded_card_ids={source.id})
                        if land_type_instructions(source.oracle_text) else 0.0))
             if gain <= 1e-9:
@@ -4090,7 +4114,7 @@ class AIAgent:
             try:
                 sim = planning_copy(state)
                 normalized = {aid: sorted(bids) for aid, bids in assignment.items()}
-                self.engine.take_action(sim, defender, {"type": "block", "blocks": normalized}, reject_invalid=True)
+                simulation_take_action(self.engine, sim, defender, {"type": "block", "blocks": normalized}, reject_invalid=True)
                 from ai.pending_effects import _settle_announced_stack
                 if not _settle_announced_stack(sim) or not self._finish_combat_projection(sim, state):
                     return None
@@ -4373,7 +4397,7 @@ class AIAgent:
                 choice = simulated.pending_mechanic_choice
                 if not choice or choice.get('kind') != 'combat_damage':
                     break
-                self.engine.take_action(simulated, choice['player_id'], {
+                simulation_take_action(self.engine, simulated, choice['player_id'], {
                     'type': 'choose_mechanic',
                     'damage_assignment': self._choose_combat_damage_allocation(simulated, choice),
                 }, reject_invalid=True)
@@ -4428,7 +4452,7 @@ class AIAgent:
         sim = planning_copy(state)
         opponent = 3 - player_id
         try:
-            self.engine.take_action(sim, player_id, {'type': 'attack', 'attackers': list(attackers)}, reject_invalid=True)
+            simulation_take_action(self.engine, sim, player_id, {'type': 'attack', 'attackers': list(attackers)}, reject_invalid=True)
             declared = list(sim.attackers or [])
             if not sim.attackers:
                 return sim, declared
@@ -4445,7 +4469,7 @@ class AIAgent:
                     **({} if consider_next_combat else {'consider_next_combat': False}))
                 if blocks is None:
                     return None
-            self.engine.take_action(sim, opponent, {'type': 'block', 'blocks': blocks}, reject_invalid=True)
+            simulation_take_action(self.engine, sim, opponent, {'type': 'block', 'blocks': blocks}, reject_invalid=True)
             if not _settle_announced_stack(sim):
                 return None
             self.engine.next_step(sim)
@@ -4479,7 +4503,7 @@ class AIAgent:
             for action in self._combat_target_actions(state, move, player_id):
                 sim = planning_copy(state)
                 try:
-                    self.engine.take_action(sim, player_id, action, reject_invalid=True)
+                    simulation_take_action(self.engine, sim, player_id, action, reject_invalid=True)
                     if self._setup_combat_forecast(sim, player_id) is True:
                         return action
                 except (ValueError, KeyError):
@@ -4847,7 +4871,7 @@ class AIAgent:
         # Lightweight rollout approximation for deeper tactical planning.
         try:
             sim = planning_copy(state)
-            self.engine.take_action(sim, player_id, move)
+            simulation_take_action(self.engine, sim, player_id, move)
         except Exception:
             return 0.0
         if sim.winner == player_id:
@@ -4874,7 +4898,7 @@ class AIAgent:
             non_pass = [m for m in legal if m.get("type") != "pass_priority"]
             if priority_pid != player_id and non_pass:
                 return
-            self.engine.take_action(state, priority_pid, {"type": "pass_priority"})
+            simulation_take_action(self.engine, state, priority_pid, {"type": "pass_priority"})
 
     def _rollout_playout(self, state: MatchState, eval_for_player: int, plies: int) -> float:
         for _ in range(max(0, plies)):
@@ -4886,7 +4910,7 @@ class AIAgent:
                 break
             chosen = self._pick_rollout_move(state, legal, pid)
             try:
-                self.engine.take_action(state, pid, chosen)
+                simulation_take_action(self.engine, state, pid, chosen)
             except Exception:
                 break
         if state.winner == eval_for_player:

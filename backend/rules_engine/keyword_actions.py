@@ -212,6 +212,14 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         copied = next((item for item in state.stack if item.id == pending["stack_id"]), None)
         if copied is None:
             return False
+
+        def publish_selected_targets():
+            if not state.pending_mechanic_choice:
+                from rules_engine.granted_target_triggers import _record_target_selection
+                from rules_engine.ward import mark_stack_targets
+                _record_target_selection(state, copied)
+                mark_stack_targets(state, copied)
+
         from rules_engine.targeting import validate_announced_target_references, replace_announced_target_reference
         references = copied.payload.get('__announced_target_references')
         if '__announced_target_references' in copied.payload:
@@ -231,18 +239,14 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             from rules_engine.linked_targets import choose_linked_copy_target
             if not choose_linked_copy_target(state, copied, pending, chosen):
                 return False
-            if not state.pending_mechanic_choice and not pending.get('resolving_item'):
-                from rules_engine.ward import mark_stack_targets
-                mark_stack_targets(state, copied)
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if pending.get('ordered_target_index') is not None:
             from rules_engine.ordered_targets import choose_ordered_copy_target
             if not choose_ordered_copy_target(state, copied, pending, chosen):
                 return False
-            if not state.pending_mechanic_choice and not pending.get('resolving_item'):
-                from rules_engine.ward import mark_stack_targets
-                mark_stack_targets(state, copied)
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if pending.get("clause_effect_index") is not None:
@@ -270,6 +274,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 state, player_id, copied, remaining_indices=pending["remaining_clause_indices"],
                 slot_number=pending["target_slot_number"] + 1,
             )
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if pending.get("mode_target_text") is not None:
@@ -302,6 +307,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 state, player_id, copied, remaining_modes=pending["remaining_modes"],
                 slot_number=pending["target_slot_number"] + 1,
             )
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if pending.get("distribution_target") is not None:
@@ -329,6 +335,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 slot_number=pending["target_slot_number"] + 1,
                 slot_total=pending["target_slot_total"],
             )
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if chosen != "keep":
@@ -367,6 +374,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             copied.targets = [str(value)]
             state.log.append(f"{state.players[player_id].name} changes {copied.label}'s target.")
         state.pending_mechanic_choice = None
+        publish_selected_targets()
         resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] in {"choose_revealed_discard", "choose_revealed_exile"}:

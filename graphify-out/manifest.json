@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791506077.5272608,
-    "seen": 1791511166.1150296,
-    "ast_hash": "8fe6d9084e87f47927ef8ead96deaf1d",
+    "mtime": 1791526893.0142508,
+    "seen": 1791527324.3651943,
+    "ast_hash": "b9019f1a449c4a9ec7705cdcb350d802",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "backend/ai/pending_effects.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1150653,
-    "ast_hash": "63f0594df137fa6175eff990ce3515da",
+    "mtime": 1791526893.0142508,
+    "seen": 1791527324.3652349,
+    "ast_hash": "9f276b9d65cbd775c026979e17cbe22d",
     "semantic_hash": ""
   },
   "backend/ai/proliferation_policy.py": {
@@ -384,15 +384,15 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1791501489.2650254,
-    "seen": 1791511166.115146,
-    "ast_hash": "487d6e5ebb21787ab209faf8f2678de2",
+    "mtime": 1791522169.6901956,
+    "seen": 1791524110.8206453,
+    "ast_hash": "7473b31504a35abcc4102847f2bd2830",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1791501489.2680254,
-    "seen": 1791511166.1151478,
-    "ast_hash": "d6d7b2616262e3c0c9e0e1411cd7523d",
+    "mtime": 1791522169.6901956,
+    "seen": 1791524110.820647,
+    "ast_hash": "17de9a91bcfb4f6f418a7cd098e33124",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -600,9 +600,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/continuous.py": {
-    "mtime": 1791501489.2720253,
-    "seen": 1791511166.1152165,
-    "ast_hash": "791f8fc95c89952c56620891ba462ce8",
+    "mtime": 1791522169.6911955,
+    "seen": 1791524110.820736,
+    "ast_hash": "51751ef8d5900532e37dbdb0ccceda1d",
     "semantic_hash": ""
   },
   "backend/rules_engine/costs.py": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791501489.409023,
-    "seen": 1791511166.1152384,
-    "ast_hash": "9dcd00971f40ce4c034610d72e23d583",
+    "mtime": 1791522169.6911955,
+    "seen": 1791524110.8207624,
+    "ast_hash": "89ac2bfe110eaa28d46e7961184be92a",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791501489.409023,
-    "seen": 1791511166.1152434,
-    "ast_hash": "a0d5f1e297f10b9102fe283479d6f1d9",
+    "mtime": 1791522169.6911955,
+    "seen": 1791524110.820768,
+    "ast_hash": "456500bbcbd4d073641905d204f85f97",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -732,9 +732,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_actions.py": {
-    "mtime": 1791502304.670282,
-    "seen": 1791511166.1152554,
-    "ast_hash": "edf0e693b0f3d05e803816ec2e9c3622",
+    "mtime": 1791522169.6911955,
+    "seen": 1791524110.8207955,
+    "ast_hash": "8fad7c03635d9d5c1b13540eb490b4e3",
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_effects.py": {
@@ -984,9 +984,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/ward.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.115361,
-    "ast_hash": "0a0d6c5d47644ce3227d0d2b38c9b656",
+    "mtime": 1791522169.6911955,
+    "seen": 1791524110.8209133,
+    "ast_hash": "303e39e71c1e5faf924190364cb261f6",
     "semantic_hash": ""
   },
   "backend/rules_engine/zone_actions.py": {
@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791515976.2404065,
-    "seen": 1791516444.8930485,
-    "ast_hash": "ec2056cc80ecf7af98e1172e60f1ee7c",
+    "mtime": 1791522390.7894886,
+    "seen": 1791524110.823741,
+    "ast_hash": "81ef33c69f378d7267bf369e75bb5944",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5952,9 +5952,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Battlefield.tsx": {
-    "mtime": 1791505399.4462636,
-    "seen": 1791511166.1179807,
-    "ast_hash": "dc963e39e8c9bde61a06588445b7aed3",
+    "mtime": 1791522390.7894886,
+    "seen": 1791524110.8237588,
+    "ast_hash": "773519db2043285d8b70316e3863fe56",
     "semantic_hash": ""
   },
   "frontend/src/components/CardArt.tsx": {
@@ -6042,9 +6042,9 @@
     "semantic_hash": ""
   },
   "frontend/src/types/index.ts": {
-    "mtime": 1791502547.7185018,
-    "seen": 1791511166.118005,
-    "ast_hash": "3677bea8aa188ec025512578065caa5c",
+    "mtime": 1791522390.7894886,
+    "seen": 1791524110.8238015,
+    "ast_hash": "f627e26936d7b11e3134dd84a59b59df",
     "semantic_hash": ""
   },
   "frontend/src/vite-env.d.ts": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791508788.402325,
-    "seen": 1791508873.4048755,
-    "ast_hash": "d415bdf4f1918662313812f9f6d80d67",
+    "mtime": 1791527240.4853852,
+    "seen": 1791527324.3699765,
+    "ast_hash": "515d8d0a0811c366507f6ea81199bdc9",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791516132.9007406,
-    "seen": 1791516444.894224,
-    "ast_hash": "539073b78be13c1b9f4f9c886609f73b",
+    "mtime": 1791527240.484385,
+    "seen": 1791527324.3696806,
+    "ast_hash": "7b813d5f6473a267548e9d3dc7047613",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15606,9 +15606,189 @@
     "semantic_hash": ""
   },
   "docs/testing/native-browser-empty-human-windows.md": {
-    "mtime": 1791516356.9809437,
-    "seen": 1791516444.8941216,
-    "ast_hash": "957dc82e042d02b6039fceecd82e9e72",
+    "mtime": 1791518827.34341,
+    "seen": 1791524110.824858,
+    "ast_hash": "e2d8c417cb27788ef7a7299da20faa14",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target-AI/DEPENDENCY.json": {
+    "mtime": 1791523578.1829312,
+    "seen": 1791524110.820314,
+    "ast_hash": "97b7ab5cfc13ff233bc81fd34abac851",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target-AI/aura_fixture_controls.py": {
+    "mtime": 1791523578.1809313,
+    "seen": 1791524110.8203166,
+    "ast_hash": "53cec94aa26439446e2770db77e0aae7",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target-AI/conftest.py": {
+    "mtime": 1791523578.1829312,
+    "seen": 1791524110.8203187,
+    "ast_hash": "8bd736381d0ed730a2d01f0ef1f92187",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target-AI/test_ai_granted_equip.py": {
+    "mtime": 1791523578.1809313,
+    "seen": 1791524110.8203206,
+    "ast_hash": "887a6b9617be7fed38500200aeb648b0",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target-AI/test_ai_granted_forecast.py": {
+    "mtime": 1791523578.1809313,
+    "seen": 1791524110.8203225,
+    "ast_hash": "d563d5c4c5f42fbbcda49444246fb411",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/canonical-raw.json": {
+    "mtime": 1791522267.6195548,
+    "seen": 1791524110.8203244,
+    "ast_hash": "71e9a554c498ac089f0b72d0f44e8f8c",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/incarnation-witnesses.json": {
+    "mtime": 1791522267.6195548,
+    "seen": 1791524110.8203259,
+    "ast_hash": "d46bd0b2c7270888960ba94b95c22a09",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/nadu-facts.json": {
+    "mtime": 1791522267.6185546,
+    "seen": 1791524110.8203278,
+    "ast_hash": "7a32fe2eca685cb7c53ecb334a7672a0",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/nadu_support.py": {
+    "mtime": 1791522267.6185546,
+    "seen": 1791524110.8203294,
+    "ast_hash": "5542e89132b4381ed3af60178536d9d0",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/paid24-reentry-inputs.json": {
+    "mtime": 1791522267.6195548,
+    "seen": 1791524110.820331,
+    "ast_hash": "f9b9d64abb8b62d7c80e54e6795c8b4e",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/paid24-reentry-node-seeds.json": {
+    "mtime": 1791522267.6195548,
+    "seen": 1791524110.8203323,
+    "ast_hash": "6584c742dc5ea9dc4cf92ccc6ece4dfa",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/raw-provenance.json": {
+    "mtime": 1791522267.6195548,
+    "seen": 1791524110.8203337,
+    "ast_hash": "3976df3276a6b32e675b4e25cf0e828a",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/run_native.py": {
+    "mtime": 1791526951.418261,
+    "seen": 1791527324.365003,
+    "ast_hash": "7a4ee8fea63e7aefa336b2949992639b",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/tests/test_granted_target_boundary.py": {
+    "mtime": 1791522267.6175547,
+    "seen": 1791524110.8203368,
+    "ast_hash": "d3b467e85a19b1f871e6e462ccebbcb5",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/tests/test_granted_target_diagnostics.py": {
+    "mtime": 1791522267.6175547,
+    "seen": 1791524110.8203385,
+    "ast_hash": "165c9d227c3a44f6b1c6e5b930106a9b",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/tests/test_granted_target_producers.py": {
+    "mtime": 1791522267.6175547,
+    "seen": 1791524110.8203397,
+    "ast_hash": "dc7c4ce6f6d049ca41a8b25b211faa13",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/tests/test_granted_target_publication.py": {
+    "mtime": 1791522267.6175547,
+    "seen": 1791524110.8203418,
+    "ast_hash": "d0845aa62589301a1db1d65c0e441c62",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/tests/test_paid_nadu.py": {
+    "mtime": 1791522267.6175547,
+    "seen": 1791524110.8203435,
+    "ast_hash": "874e0c4a8dce4a2660d65b29f76d3f06",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/tests/test_paid_nadu_incarnation_witnesses.py": {
+    "mtime": 1791522267.6175547,
+    "seen": 1791524110.8203452,
+    "ast_hash": "66f2b35f2d94fa701f3dd2a924956169",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/witnesses.json": {
+    "mtime": 1791522267.6195548,
+    "seen": 1791524110.8203464,
+    "ast_hash": "dd9b966a8eec63c86a87c60509ccb832",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/granted_target_triggers.py": {
+    "mtime": 1791522169.6911955,
+    "seen": 1791524110.8207872,
+    "ast_hash": "afaaead9e55664970b4eab6b28fa142f",
+    "semantic_hash": ""
+  },
+  "frontend/tests/loyalty-activation-controls.mjs": {
+    "mtime": 1791522390.7944884,
+    "seen": 1791524110.8240204,
+    "ast_hash": "4017564529ec593cbe74ef35962fe7a1",
+    "semantic_hash": ""
+  },
+  "frontend/tests/loyalty-activation-public-engine.py": {
+    "mtime": 1791522390.7994885,
+    "seen": 1791524110.824022,
+    "ast_hash": "824e1b8438a5a7cd303dbdecf8a76546",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target-AI/README.md": {
+    "mtime": 1791526951.418261,
+    "seen": 1791527324.368902,
+    "ast_hash": "6ca4d56c0be97c001ebb4930eef8d67a",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target/README.md": {
+    "mtime": 1791526951.418261,
+    "seen": 1791527324.3689036,
+    "ast_hash": "a622b05e0e21a1a42edb65cd1cfc5179",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-d657-native-browser50.md": {
+    "mtime": 1791518827.34341,
+    "seen": 1791524110.824546,
+    "ast_hash": "e683010e5b5a316515bc5743c2165a2c",
+    "semantic_hash": ""
+  },
+  "docs/testing/granted-target-ai-loyalty-current.md": {
+    "mtime": 1791527240.484385,
+    "seen": 1791527324.369361,
+    "ast_hash": "91f645cda731a2e06e4fabb681d2d2fe",
+    "semantic_hash": ""
+  },
+  "docs/testing/loyalty-activation-reachability.md": {
+    "mtime": 1791522390.8044884,
+    "seen": 1791524110.8248112,
+    "ast_hash": "9ff5d4443ed9a8d77fa15639f4b9ad82",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target-AI/test_ai_granted_rollout.py": {
+    "mtime": 1791526893.0222507,
+    "seen": 1791527324.3649824,
+    "ast_hash": "491aeb08c9e247bb1402239bdd583cca",
+    "semantic_hash": ""
+  },
+  "audit/gate2-granted-target-AI/test_ai_simulation_frontier.py": {
+    "mtime": 1791526893.0242505,
+    "seen": 1791527324.3649852,
+    "ast_hash": "6043110504a6535fe7ce09054a2622d2",
     "semantic_hash": ""
   }
 }

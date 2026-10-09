@@ -920,6 +920,9 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
         return
     copied_payload = copy.deepcopy(item.payload or {})
     copied_payload.pop("__last_target_ids", None)
+    for key in list(copied_payload):
+        if key.startswith('__granted_target_'):
+            copied_payload.pop(key)
     from game_state.state import StackItem
     from rules_engine.targeting import stack_object_kind
 
@@ -963,6 +966,11 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     state.log.append(f"{state.players[controller].name} copies {effect_label} {item.label}.")
     if payload.get("may_choose_new_targets"):
         _offer_copy_target_choice(state, controller, copied_item)
+    if not (state.pending_mechanic_choice and state.pending_mechanic_choice.get('stack_id') == copied_item.id):
+        from rules_engine.granted_target_triggers import _record_target_selection
+        _record_target_selection(state, copied_item)
+        from rules_engine.ward import mark_stack_targets
+        mark_stack_targets(state, copied_item)
     return copied_item
 
 
@@ -2460,6 +2468,55 @@ def exile_return_transformed(state: MatchState, controller: int, payload: dict) 
     commit_entry_counters(state, card, payload)
     state.log.append(f"{card.name} returns to the battlefield transformed.")
     emit_event(state, "enters_battlefield", {"card_id": target_id, "controller": controller})
+
+
+def reveal_top_conditional(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.granted_target_triggers import _reference
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.graveyard_permissions import battlefield_entry_prohibited
+    instruction = payload['instruction']
+    condition, destination, otherwise = instruction
+    if (otherwise != 'hand' or destination not in {'hand', 'battlefield'}
+            or destination == 'battlefield' and condition != 'Land'):
+        raise ValueError('Unqualified conditional reveal entry instruction')
+    player = state.players[controller]
+    data = copy.deepcopy(payload)
+    reference = data.get('__revealed_card_reference')
+    if reference is None:
+        if not player.library:
+            return
+        card = state.cards[player.library[-1]]
+        reference = _reference(card)
+        data['__revealed_card_reference'] = reference
+        data['__revealed_destination'] = destination if condition in effective_types(state, card) else otherwise
+        state.log.append(f'{player.name} reveals {card.name} from the top of their library.')
+    card = state.cards.get(reference['card_id'])
+    if (card is None or card.zone != Zone.LIBRARY or card.id not in player.library
+            or _reference(card) != reference):
+        return
+    if data['__revealed_destination'] == 'hand':
+        player.library.remove(card.id)
+        card.move_to_zone(Zone.HAND)
+        player.hand.append(card.id)
+        state.log.append(f'{player.name} puts {card.name} into their hand.')
+        return
+    if battlefield_entry_prohibited(state, card.id):
+        return
+    if pause_for_land_entries(state, controller, [card.id], 'reveal_top_conditional', data):
+        return
+    if prepare_counter_entries(state, controller, [card], 'reveal_top_conditional', data):
+        return
+    apply_entry_choice(state, controller, card, choice=(data.get('__entry_choices') or {}).get(card.id, 'tapped'))
+    player.library.remove(card.id)
+    card.move_to_zone(Zone.BATTLEFIELD)
+    card.controller = controller
+    card.summoning_sick = True
+    card.entered_turn = state.turn
+    player.battlefield.append(card.id)
+    assign_static_order_on_battlefield_entry(state, card.id)
+    commit_entry_counters(state, card, data)
+    emit_event(state, 'enters_battlefield', {'card_id': card.id, 'controller': controller})
+    state.log.append(f'{player.name} puts {card.name} onto the battlefield.')
 
 
 def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:

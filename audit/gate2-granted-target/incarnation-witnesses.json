@@ -1,0 +1,71 @@
+{
+  "source_commit": "a53e76a31c214e2f9b882d3496721bd27af1e7fc",
+  "same_canonical60_recipe": true,
+  "stdlib_shuffle_only_no_engine": true,
+  "not_library_reordering": true,
+  "witnesses": {
+    "1": {
+      "seed": 822173,
+      "expected_opening": [
+        "Elvish Mystic",
+        "Forest",
+        "Island",
+        "Nadu, Winged Wisdom",
+        "Island",
+        "Shuko",
+        "Reanimate"
+      ],
+      "expected_first_top": "Island",
+      "first_top_position_from_tail": 10,
+      "first15": [
+        "Elvish Mystic",
+        "Forest",
+        "Island",
+        "Nadu, Winged Wisdom",
+        "Island",
+        "Shuko",
+        "Reanimate",
+        "Swamp",
+        "Lightning Bolt",
+        "Island",
+        "Breeding Pool",
+        "Forest",
+        "Mountain",
+        "Mountain",
+        "Lightning Bolt"
+      ]
+    },
+    "2": {
+      "seed": 365764,
+      "expected_opening": [
+        "Shuko",
+        "Swamp",
+        "Elvish Mystic",
+        "Nadu, Winged Wisdom",
+        "Forest",
+        "Island",
+        "Forest"
+      ],
+      "expected_first_top": "Forest",
+      "first_top_position_from_tail": 11,
+      "first15": [
+        "Shuko",
+        "Swamp",
+        "Elvish Mystic",
+        "Nadu, Winged Wisdom",
+        "Forest",
+        "Island",
+        "Forest",
+        "Forest",
+        "Shuko",
+        "Mountain",
+        "Forest",
+        "Lightning Bolt",
+        "Reanimate",
+        "Lightning Bolt",
+        "Mountain"
+      ]
+    }
+  },
+  "search_seconds": 52.34188434993848
+}

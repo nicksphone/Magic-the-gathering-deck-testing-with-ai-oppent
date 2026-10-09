@@ -1,0 +1,340 @@
+{
+  "canonical_fact_sha256": "0294012420cdfe63ebb65de78f6d8b783d6f160103af1c7360923776de4bd742",
+  "no_library_reordering": true,
+  "not_engine_executed": true,
+  "only_overridden_nodes": [
+    "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[new_incarnation-1]",
+    "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[new_incarnation-2]"
+  ],
+  "original_witness_sha256": "65b0bc6724dc9f9e5dea8429d6adab5cd0cfd852707f6b41fdcdeb4d28d2560f",
+  "recipe": [
+    {
+      "card_name": "Nadu, Winged Wisdom",
+      "quantity": 4
+    },
+    {
+      "card_name": "Shuko",
+      "quantity": 4
+    },
+    {
+      "card_name": "Elvish Mystic",
+      "quantity": 4
+    },
+    {
+      "card_name": "Reanimate",
+      "quantity": 4
+    },
+    {
+      "card_name": "Lightning Bolt",
+      "quantity": 4
+    },
+    {
+      "card_name": "Forest",
+      "quantity": 12
+    },
+    {
+      "card_name": "Island",
+      "quantity": 16
+    },
+    {
+      "card_name": "Swamp",
+      "quantity": 4
+    },
+    {
+      "card_name": "Mountain",
+      "quantity": 4
+    },
+    {
+      "card_name": "Breeding Pool",
+      "quantity": 4
+    }
+  ],
+  "witnesses": {
+    "1": {
+      "expected_first_top": "Forest",
+      "expected_opening": [
+        "Island",
+        "Nadu, Winged Wisdom",
+        "Shuko",
+        "Elvish Mystic",
+        "Reanimate",
+        "Island",
+        "Forest"
+      ],
+      "needed_resource_headroom_at_ready": 0,
+      "no_undeclared_shock_reveal_in_prerequisite_model": true,
+      "preparation_not_engine_proof": true,
+      "prerequisite_trace": [
+        {
+          "hand": [
+            "Reanimate",
+            "Forest",
+            "Lightning Bolt"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Island",
+            "Forest",
+            "Swamp"
+          ],
+          "own_turn_advances": 0,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Reanimate",
+            "Forest",
+            "Lightning Bolt",
+            "Island"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Island",
+            "Forest",
+            "Swamp"
+          ],
+          "own_turn_advances": 1,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Reanimate",
+            "Forest",
+            "Lightning Bolt",
+            "Island"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Island",
+            "Forest",
+            "Swamp",
+            "Mountain"
+          ],
+          "own_turn_advances": 2,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Reanimate",
+            "Forest",
+            "Lightning Bolt",
+            "Island",
+            "Island"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Island",
+            "Forest",
+            "Swamp",
+            "Mountain"
+          ],
+          "own_turn_advances": 3,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Reanimate",
+            "Forest",
+            "Lightning Bolt",
+            "Island",
+            "Island",
+            "Lightning Bolt"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Island",
+            "Forest",
+            "Swamp",
+            "Mountain"
+          ],
+          "own_turn_advances": 4,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Reanimate",
+            "Forest",
+            "Lightning Bolt",
+            "Island",
+            "Island",
+            "Lightning Bolt",
+            "Lightning Bolt"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Island",
+            "Forest",
+            "Swamp",
+            "Mountain"
+          ],
+          "own_turn_advances": 5,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Reanimate",
+            "Forest",
+            "Lightning Bolt",
+            "Island",
+            "Island",
+            "Lightning Bolt",
+            "Lightning Bolt"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Island",
+            "Forest",
+            "Swamp",
+            "Mountain",
+            "Mountain"
+          ],
+          "own_turn_advances": 6,
+          "ready": true
+        }
+      ],
+      "seed": 20735
+    },
+    "2": {
+      "expected_first_top": "Island",
+      "expected_opening": [
+        "Nadu, Winged Wisdom",
+        "Island",
+        "Forest",
+        "Forest",
+        "Island",
+        "Elvish Mystic",
+        "Shuko"
+      ],
+      "needed_resource_headroom_at_ready": 0,
+      "no_undeclared_shock_reveal_in_prerequisite_model": true,
+      "preparation_not_engine_proof": true,
+      "prerequisite_trace": [
+        {
+          "hand": [
+            "Island",
+            "Mountain",
+            "Swamp",
+            "Shuko",
+            "Reanimate"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Forest",
+            "Island"
+          ],
+          "own_turn_advances": 0,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Island",
+            "Swamp",
+            "Shuko",
+            "Reanimate",
+            "Island"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Forest",
+            "Island",
+            "Mountain"
+          ],
+          "own_turn_advances": 1,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Island",
+            "Shuko",
+            "Reanimate",
+            "Island",
+            "Lightning Bolt"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Forest",
+            "Island",
+            "Mountain",
+            "Swamp"
+          ],
+          "own_turn_advances": 2,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Island",
+            "Shuko",
+            "Reanimate",
+            "Island",
+            "Lightning Bolt"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Forest",
+            "Island",
+            "Mountain",
+            "Swamp",
+            "Mountain"
+          ],
+          "own_turn_advances": 3,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Island",
+            "Shuko",
+            "Reanimate",
+            "Island",
+            "Lightning Bolt",
+            "Nadu, Winged Wisdom"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Forest",
+            "Island",
+            "Mountain",
+            "Swamp",
+            "Mountain"
+          ],
+          "own_turn_advances": 4,
+          "ready": false
+        },
+        {
+          "hand": [
+            "Island",
+            "Shuko",
+            "Reanimate",
+            "Island",
+            "Lightning Bolt",
+            "Nadu, Winged Wisdom",
+            "Lightning Bolt"
+          ],
+          "lands": [
+            "Forest",
+            "Island",
+            "Forest",
+            "Island",
+            "Mountain",
+            "Swamp",
+            "Mountain"
+          ],
+          "own_turn_advances": 5,
+          "ready": true
+        }
+      ],
+      "seed": 10551
+    }
+  }
+}

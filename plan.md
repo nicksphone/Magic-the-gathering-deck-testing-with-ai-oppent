@@ -527,3 +527,27 @@ and SQL release are verified. See
 Every supported action, broader rules/corpus semantics, measured seasoned AI,
 final HTTPS/LAN/clean-machine/soak acceptance and the original completion
 checklist remain open. This is not overall release completion.
+
+## 2026-10-09 Granted-Target, AI And Loyalty Checkpoint
+
+Surgical composition over `8b56b3a` adds bounded generic recipient-bound target
+triggers, publication-before-callback quota/receipt handling, count-only AI
+attachment forecasts and explicit public loyalty permanent/X choices. The
+repository runner executes fourteen complete modules: 265 passes in 154.86s,
+including unchanged original equip/attachment checks, exact actual copied
+StackItems/quota deltas and the shared opaque-conditional simulation frontier.
+Known-card resolution, first priority passes and real offered responses remain
+executable without fabricating unknown hand cards. The original productive-equip
+assertions are unchanged. Earlier whole140 and strict counterexample ledgers
+remain separately archived. All source/runtime/seed/RNG/resource checks pass.
+Twenty actual compiled loyalty handlers replay successfully on the integrated
+backend; the full configured frontend suite, lint, types and build pass.
+See [evidence and limits](docs/testing/granted-target-ai-loyalty-current.md).
+
+The original paid24 assertion/helper/recipe bytes are retained with their
+historical input failures; two explicit opt-in reentry seed inputs have a
+separate qualified ledger. Four original Tibalt admission failures remain open
+and strict. The 13-style ordinary-equip controls are not a statistical strength
+evaluation. New loyalty mounted-browser and current-composition natural-game
+qualification remain next work; old browser50 cannot be transferred. Full
+rules/corpus/arbitrary decks, expert AI and all three release gates remain open.

@@ -246,6 +246,8 @@ export type LegalMove = {
     fixed_sacrifice_card_ids: string[];
   };
   ability_delta?: number;
+  ability_x_cost?: boolean;
+  ability_x_sign?: number;
   reason?: string;
   event?: string;
   replacement_source_id?: string;
