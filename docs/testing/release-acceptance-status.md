@@ -271,3 +271,35 @@ choices and all original/copy resolution assertions. Both-seat compiled
 Controls and actual-helper callback checks pass, as do current typechecking,
 source lint and existing handoff/navigation checks. No product code changes;
 the full remote workflow remains required. See `browser-copy-choice-ci.md`.
+
+## Static Aura Control Layer (2026-10-09)
+
+The final integrated control layer passes 127 cases across seven whole modules
+in 276.35s. It fixes actual-change dependency admission, reevaluation after each
+effect, and timestamp ordering within loops with external prerequisites.
+Source before/after is equal and native gameplay I/O attempts are empty.
+The historical 73- and 619-case ledgers are preserved; both include an old
+three-Aura expectation later shown to mistake a no-op edge for a dependency.
+The corrected authored test retains all query-purity assertions. These ledgers
+are overlapping, not a summed full-suite run or proof of the old expectation.
+See `static-aura-control-layer-handoff.md` for the exact source and limits.
+
+Old temporary-control snapshots lacking the retained duration ledger are
+explicitly rejected rather than guessed from owner/controller. Deployment
+compatibility and user-data migration therefore remain separate acceptance
+work; no live data is changed. Pure cyclic Aura-query goldens do not certify
+paid cyclic attachments, mixed HTTP/SQLite, browser or natural-AI behavior.
+
+The workflow on `58c34d09` passes frontend and the actual ordinary, divided
+and modal copy browser episodes. It then stops because the complete canonical
+Tamiyo loyalty body is unsupported. That is a separate rules-support gap,
+not a reason to shorten the fixture or bypass complete-body admission. Its
+backend job was still running at the last observation. Current full CI and
+all original release requirements remain open.
+
+The separately pinned permission HTTP component now passes all 16 cases in
+93.77s after correcting its empty-attacker phase helper. All original assertions
+remain; native finite windows, database closure and process release are verified.
+This is not a current Aura composition or cold-process HTTP certificate. The
+older backend CI terminated with disk exhaustion while writing pytest cache;
+earlier failure markers remain unresolved, not silently counted as passes.

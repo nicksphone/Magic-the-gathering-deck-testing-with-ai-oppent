@@ -72,7 +72,9 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
 def serialize_match_snapshot(state: MatchState) -> dict:
     """Serialize all mutable rules state needed to resume a match."""
     from rules_engine.kicker import validate_kicker_count
+    from rules_engine.control_effects import validate_control_effects
     for card in state.cards.values():
+        validate_control_effects(card, state.players)
         if card.kicker_count is not None:
             validate_kicker_count(card.kicker_count, card.was_kicked)
     for item in state.stack:
@@ -199,6 +201,9 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "owner": card.owner,
                 "controller": card.controller,
                 "zone": card.zone.value,
+                **({'control_effect_base': card.control_effect_base,
+                    'control_effects': deepcopy(card.control_effects)}
+                   if card.control_effect_base is not None else {}),
                 "types": list(card.types),
                 "is_token": is_token_card(card),
                 "mana_cost": card.mana_cost,
@@ -327,6 +332,10 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             kicker_count=raw.get('kicker_count'),
         )
 
+    from rules_engine.control_effects import restore_control_effects
+    for cid, card in cards.items():
+        restore_control_effects(payload['cards'][cid], card, players)
+
     state = MatchState(
         id=str(payload["id"]), players=players, cards=cards,
         numeric_prevention_shields=numeric_shields,
@@ -416,6 +425,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.land_entry_history_known = ('land_entries_this_turn' in payload
                                      and payload.get('land_entry_history_known', True) is True)
+    from rules_engine.control_effects import validate_temporary_control_snapshot
+    validate_temporary_control_snapshot(payload.get('temporary_control_changes', {}), cards, players)
     state.temporary_control_changes = {
         str(cid): {str(key): int(value) for key, value in data.items()}
         for cid, data in payload.get("temporary_control_changes", {}).items()

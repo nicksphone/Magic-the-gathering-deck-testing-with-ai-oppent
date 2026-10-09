@@ -77,6 +77,8 @@ class CardInstance:
     base_stat_effects: list[dict] = field(default_factory=list)
     type_effects: list[dict] = field(default_factory=list)
     type_effect_base: list[str] | None = None
+    control_effect_base: int | None = None
+    control_effects: list[dict] = field(default_factory=list)
     oracle_text: str = ""
     type_line: str = ""
     image_uri: str | None = None
@@ -114,6 +116,8 @@ class CardInstance:
         object.__setattr__(self, name, value)
 
     def reset_zone_counters(self, zone: Zone) -> None:
+        from rules_engine.control_effects import clear_control_effects
+        clear_control_effects(self)
         from rules_engine.type_effects import clear_type_effects
         clear_type_effects(self)
         self.keyword_effects.clear()
@@ -127,6 +131,8 @@ class CardInstance:
 
     def move_to_zone(self, zone: Zone) -> None:
         if zone != self.zone and self.zone == Zone.BATTLEFIELD:
+            from rules_engine.control_effects import clear_control_effects
+            clear_control_effects(self)
             from rules_engine.type_effects import clear_type_effects
             clear_type_effects(self)
         if zone != self.zone and not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):

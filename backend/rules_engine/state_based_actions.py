@@ -154,13 +154,15 @@ def apply_state_based_actions(state: MatchState) -> None:
     # lethal. No trigger gets a stack position until those waves stabilize.
     for _ in range(len(state.cards) + 1):
         with rule_query_scope(state):
-            before = tuple((cid, card.zone, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
+            before = tuple((cid, card.zone, card.controller, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
+        from rules_engine.control_effects import reconcile_control
+        reconcile_control(state)
         _apply_state_based_actions_once(state)
         flush_linked_exile_returns(state)
         if state.pending_mechanic_choice or state.pending_replacement_choice:
             return
         with rule_query_scope(state):
-            after = tuple((cid, card.zone, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
+            after = tuple((cid, card.zone, card.controller, card.attached_to, tuple(effective_types(state, card)), bool(card.bestow_characteristics)) for cid, card in state.cards.items())
         if after == before:
             break
     from rules_engine.events import flush_staged_triggers

@@ -545,33 +545,9 @@ def change_control(state: MatchState, controller: int, payload: dict) -> None:
     new_controller = int(payload.get("new_controller", controller) or controller)
     if new_controller not in state.players:
         return
-    old_controller = int(card.controller)
-    if old_controller != new_controller:
-        old_battlefield = state.players[old_controller].battlefield
-        if target_id in old_battlefield:
-            old_battlefield.remove(target_id)
-        state.players[new_controller].battlefield.append(target_id)
-        card.controller = new_controller
-        card.summoning_sick = True
-        card.entered_turn = state.turn
-    if payload.get("until_end_of_turn"):
-        previous = state.temporary_control_changes.get(target_id, {})
-        # Same-cleanup duration effects expire together, revealing the controller
-        # underneath the whole batch rather than another already-expired effect.
-        underlying_controller = (previous['controller']
-                                 if previous.get('expires_turn') == state.turn else old_controller)
-        state.temporary_control_changes[target_id] = {
-            "controller": underlying_controller,
-            "expires_turn": int(state.turn),
-        }
-    else:
-        state.temporary_control_changes.pop(target_id, None)
-    state.log.append(f"{state.players[new_controller].name} gains control of {card.name}.")
-    if old_controller != new_controller:
-        emit_event(state, 'control_changed', {
-            'card_id': target_id, 'previous_controller': old_controller,
-            'controller': new_controller,
-        })
+    from rules_engine.control_effects import record_control_effect
+    record_control_effect(state, card, new_controller,
+                          temporary=bool(payload.get('until_end_of_turn')))
 
 
 def temporary_control_instruction(state: MatchState, controller: int, payload: dict) -> None:

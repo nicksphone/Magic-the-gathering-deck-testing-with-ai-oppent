@@ -625,3 +625,23 @@ cold restart, mounted-browser acceptance, natural games and measured expert AI
 remain open. The separate original 509-case HTTP-neighbor attempt executed 506
 ordinary passes and three pytest-symlink setup errors, not a complete green gate.
 All three release gates and the original full project objective remain open.
+
+## 2026-10-09 Static Aura Control-Layer Integration
+
+The aggregate prepared over `bf9f268e` applies once over `58c34d09`, whose
+complete backend tree is independently identical. Subsequent independent review
+corrects actual-change dependency admission, per-effect reevaluation and external
+prerequisite ordering inside loops. Final isolated verification passes seven
+whole modules /127 cases in 276.35s, with source equality and no native gameplay
+I/O attempts. Historical 73/619 ledgers retain an incorrect authored three-Aura
+golden; its corrected expectation and the new 54 regressions are explicit.
+No preexisting committed test was replaced; no exclusions or xfails were used.
+See [scope, evidence and snapshot compatibility](docs/testing/static-aura-control-layer-handoff.md).
+
+Current copy-choice browser episodes now execute successfully, while complete
+Tamiyo body support blocks the subsequent browser checkpoint. The permission
+HTTP component separately passes all 16 cases after its phase-helper correction,
+with actual closure/lease release. The older backend CI ends in disk exhaustion
+and retains earlier unresolved failure markers. Final whole CI, current mixed-I/O/browser,
+snapshot migration, full corpus, measured expert AI and every original release
+gate remain open; no live deployment or release-complete status is claimed.

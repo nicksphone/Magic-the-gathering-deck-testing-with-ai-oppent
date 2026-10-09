@@ -384,9 +384,9 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1791522169.6901956,
-    "seen": 1791524110.8206453,
-    "ast_hash": "7473b31504a35abcc4102847f2bd2830",
+    "mtime": 1791551951.6112275,
+    "seen": 1791553929.687511,
+    "ast_hash": "c797582437abb53644b815eb83a2fcd4",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
@@ -408,9 +408,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/serializers.py": {
-    "mtime": 1791502304.670282,
-    "seen": 1791511166.115153,
-    "ast_hash": "3e236e913af8176f6fbe62aea3b7bd69",
+    "mtime": 1791551951.6112275,
+    "seen": 1791553929.6875193,
+    "ast_hash": "e4b75130f5f4d525b6db7e2544c52dc4",
     "semantic_hash": ""
   },
   "backend/game_state/series_policy.py": {
@@ -420,9 +420,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/state.py": {
-    "mtime": 1791501489.2700253,
-    "seen": 1791511166.1151564,
-    "ast_hash": "b2469780a9338633ea6aec41017cfcf4",
+    "mtime": 1791551951.6112275,
+    "seen": 1791553929.687523,
+    "ast_hash": "3be8a4ec38418fff3b18269935eda631",
     "semantic_hash": ""
   },
   "backend/knowledge/__init__.py": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791533660.9874768,
-    "seen": 1791533979.5107238,
-    "ast_hash": "e51bb6c46ddea3aa2cb398f342a478ae",
+    "mtime": 1791551951.6122274,
+    "seen": 1791553929.68763,
+    "ast_hash": "036ace1e45e1c592a1b264bda9089b60",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -942,9 +942,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/state_based_actions.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1153421,
-    "ast_hash": "6ba82d3b971ce0583936ef53a2d2f340",
+    "mtime": 1791551951.6122274,
+    "seen": 1791553929.6877468,
+    "ast_hash": "dfc1a1f0aded31834b68a692b7ad4fc3",
     "semantic_hash": ""
   },
   "backend/rules_engine/static_conditions.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791550637.5848334,
-    "seen": 1791550723.988118,
-    "ast_hash": "db813e72ea58f7bef8f067188cb93d37",
+    "mtime": 1791556025.033586,
+    "seen": 1791556140.5756693,
+    "ast_hash": "e0c1ce417444b853049d93982e5e14d4",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791550637.5848334,
-    "seen": 1791550723.9878502,
-    "ast_hash": "bc562f2ab1e985ad39dffa71d0dfc13d",
+    "mtime": 1791556025.0255861,
+    "seen": 1791556140.5753925,
+    "ast_hash": "ae4e49a1ba63b7291d0048baf24bb550",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -16005,6 +16005,66 @@
     "mtime": 1791550637.5838335,
     "seen": 1791550723.9872918,
     "ast_hash": "13a457d20d3536cb7e2f240d0dedc809",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/control_effects.py": {
+    "mtime": 1791555880.7789428,
+    "seen": 1791556140.5709317,
+    "ast_hash": "8448cf40e9f5c19468b3a425a050c947",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/static_aura_control_desired/facts.json": {
+    "mtime": 1791551951.6122274,
+    "seen": 1791553929.6889446,
+    "ast_hash": "69772aed81e090421f7bd868273032eb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_control_dependency_cycles.py": {
+    "mtime": 1791555880.7789428,
+    "seen": 1791556140.5729513,
+    "ast_hash": "ec3485528404022c987236bedfe35503",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_control_dependency_paid.py": {
+    "mtime": 1791551951.6122274,
+    "seen": 1791553929.6895378,
+    "ast_hash": "2f1e1ea59315f3dfd16c5a2ffee9ef40",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_control_expiry_atomicity.py": {
+    "mtime": 1791551951.6122274,
+    "seen": 1791553929.6895394,
+    "ast_hash": "bc406922ee0a2f86fd1ae760be54fa34",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_control_layer_contract.py": {
+    "mtime": 1791551951.6122274,
+    "seen": 1791553929.6895409,
+    "ast_hash": "45cd49e60ecb28feb17adfcc41cdc288",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_control_lifecycle_exact.py": {
+    "mtime": 1791551951.6122274,
+    "seen": 1791553929.6895423,
+    "ast_hash": "db97b796451670f3b6753bb651461fce",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_static_aura_control_desired.py": {
+    "mtime": 1791551951.6122274,
+    "seen": 1791553929.690404,
+    "ast_hash": "36d117699567841bc6f2cc92b884a8b6",
+    "semantic_hash": ""
+  },
+  "docs/testing/static-aura-control-layer-handoff.md": {
+    "mtime": 1791556025.0145862,
+    "seen": 1791556140.5755057,
+    "ast_hash": "6c39caa28120fedd06769496fe40665b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_control_dependency_noop.py": {
+    "mtime": 1791555880.7789428,
+    "seen": 1791556140.572954,
+    "ast_hash": "a5ef7afc7116b4dc1b8b3193fabab1bf",
     "semantic_hash": ""
   }
 }

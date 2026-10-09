@@ -279,26 +279,8 @@ class RulesEngine:
             flush_staged_triggers(state)
 
     def _revert_expired_control_changes(self, state: MatchState) -> None:
-        for cid, data in list(state.temporary_control_changes.items()):
-            if int(data.get("expires_turn", state.turn)) != int(state.turn):
-                continue
-            card = state.cards.get(cid)
-            original = int(data.get("controller", 0) or 0)
-            if card and card.zone == Zone.BATTLEFIELD and original in state.players and card.controller != original:
-                previous_controller = card.controller
-                current = state.players[card.controller].battlefield
-                if cid in current:
-                    current.remove(cid)
-                state.players[original].battlefield.append(cid)
-                card.controller = original
-                card.summoning_sick = True
-                card.entered_turn = state.turn
-                state.log.append(f"Control of {card.name} returns to {state.players[original].name}.")
-                emit_event(state, 'control_changed', {
-                    'card_id': cid, 'previous_controller': previous_controller,
-                    'controller': original,
-                })
-            state.temporary_control_changes.pop(cid, None)
+        from rules_engine.control_effects import expire_control_effects
+        expire_control_effects(state)
 
     def _update_day_night(self, state: MatchState) -> None:
         """Check an established designation before the active player's untapping."""
