@@ -16,10 +16,11 @@ from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.prevention import add_player_prevention_shield
 from scripts import overnight_verbose_round_robin
+from tests.pure_snapshot_support import PureSnapshotRepository, pure_snapshot_storage
 
 
-class _DummyRepo:
-    def save_snapshot(self, label: str, stats: dict) -> None:
+class _DummyRepo(PureSnapshotRepository):
+    def record_snapshot(self, label: str, stats: dict) -> None:
         self.last = (label, stats)
 
 

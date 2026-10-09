@@ -3060,9 +3060,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_diagnostics.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.116672,
-    "ast_hash": "19ddb80a670d4c4c5b9d184fe3f6bdef",
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.5262117,
+    "ast_hash": "fab987b9fbfd978744e21caa2e5915c1",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_exact_score_reuse.py": {
@@ -3312,9 +3312,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_analytics_batch.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1167502,
-    "ast_hash": "aa4f00f7f3af675609cdb87bd85fcc55",
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.5262997,
+    "ast_hash": "f21157bddcf45767ec430152146b52e0",
     "semantic_hash": ""
   },
   "backend/tests/test_announced_source_availability.py": {
@@ -5202,9 +5202,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_simulation_admission.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1176388,
-    "ast_hash": "f0f538205a5fe32322385d90ac75227c",
+    "mtime": 1791589238.2983813,
+    "seen": 1791589408.7924383,
+    "ast_hash": "af90f57c3db043584fb2513a2a0d9934",
     "semantic_hash": ""
   },
   "backend/tests/test_simulation_job_cache.py": {
@@ -5220,9 +5220,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_simulator_action_safety.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1176472,
-    "ast_hash": "f58bc99b5f1ecf7e195f04f1dd28d15c",
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.5274158,
+    "ast_hash": "0e976097d5bc7295d2e611d705cb1941",
     "semantic_hash": ""
   },
   "backend/tests/test_simultaneous_entry_batch.py": {
@@ -10128,9 +10128,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_activated_hint_copy.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.116622,
-    "ast_hash": "69b6293994bda0f341bd4d72646979aa",
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.5261478,
+    "ast_hash": "bd85a433140982b595feb5cbe84f61f6",
     "semantic_hash": ""
   },
   "backend/tests/test_builtin_face_color_consumers.py": {
@@ -10884,9 +10884,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_batch_opening_quality_seats.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.116824,
-    "ast_hash": "7e9684dc8d568c6b0bddf95663f73f93",
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.526374,
+    "ast_hash": "a79f5f32fc5c7bd793f7ce31dcd796b4",
     "semantic_hash": ""
   },
   "backend/tests/test_canonical_global_flash_audit.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791587222.1925447,
-    "seen": 1791587337.3503757,
-    "ast_hash": "a85b3a43938f9738fb9286262062cf6d",
+    "mtime": 1791588854.1445236,
+    "seen": 1791588943.5291069,
+    "ast_hash": "e191a4a127b846f3164b40782ddb4d0c",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13884,9 +13884,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_resource_budget.py": {
-    "mtime": 1791417527.9030073,
-    "seen": 1791511166.1175554,
-    "ast_hash": "f544e4ffee0298638fe9fd4ae40ffb49",
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.5273015,
+    "ast_hash": "9811927dc82b0974727721a0c82b1aec",
     "semantic_hash": ""
   },
   "backend/tests/test_resource_request_http.py": {
@@ -16245,6 +16245,30 @@
     "mtime": 1791587222.1925447,
     "seen": 1791587337.3498535,
     "ast_hash": "35faa7e7566815202798c728847a4967",
+    "semantic_hash": ""
+  },
+  "backend/tests/pure_snapshot_support.py": {
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.526082,
+    "ast_hash": "7bcc1cad6f190afad1079d9d453a11cd",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_admission_fixture_composition.py": {
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.526174,
+    "ast_hash": "8e02e170ea070aea81ac4c9ef7bc7e0f",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_pure_snapshot_harness_contract.py": {
+    "mtime": 1791588818.9911308,
+    "seen": 1791588943.527255,
+    "ast_hash": "ee70db24e6b620fe7e4ee004d535de8b",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-pure-native-admission-current.md": {
+    "mtime": 1791589367.5884798,
+    "seen": 1791589408.7935202,
+    "ast_hash": "94ef705d4d4357ba75cb76d025b37927",
     "semantic_hash": ""
   }
 }

@@ -12,6 +12,7 @@ from analytics.resource_budget import (
     RESOURCE_LIMITS, ResourceBudget, SimulationResourceLimit, checked_json, checked_text,
 )
 from analytics.service import AnalyticsService
+from tests.pure_snapshot_support import PureSession, PureSnapshotRepository, pure_snapshot_storage
 
 
 @pytest.mark.parametrize("value", [None, True, False, 0, -12, 1.25, float("inf"),
@@ -127,7 +128,8 @@ def test_invalid_policy_rejected():
 
 def test_resource_error_is_not_swallowed_by_progress_callback():
     snapshots = []
-    repo = SimpleNamespace(save_snapshot=lambda *args: snapshots.append(args))
+    repo = PureSnapshotRepository()
+    repo.record_snapshot = lambda *args: snapshots.append(args)
 
     def fail_progress(done, total):
         raise SimulationResourceLimit("result_json")
@@ -204,21 +206,29 @@ def test_actual_worker_failure_envelope_uses_bounded_persistence(case, expected)
     from contextlib import nullcontext
     import time
     from persistence.repository import Repository
+    from persistence.models import ResourceReservation, SimulationJobRecord
+    from persistence.capacity import CapacityAdmissionClosed, CapacityIntegrityError
+    from sqlalchemy.exc import SQLAlchemyError
+    from analytics.service import SimulationCancelled
 
-    class SessionSpy:
-        def get(self, *args):
-            return None
+    class SessionSpy(PureSession):
         def add(self, row):
-            rows.append(row)
-        def commit(self):
-            pass
-        def refresh(self, row):
-            pass
+            super().add(row)
+            if isinstance(row, SimulationJobRecord):
+                rows.append(row)
 
     class Service:
-        def __init__(self, repo):
-            pass
-        def run_batch(self, *args, **kwargs):
+        def __init__(self, thread_repo):
+            assert thread_repo is repo
+        def run_batch(self, deck_a, deck_b, matches, difficulty, *, max_ticks,
+                      progress_callback, should_cancel, reservation_token):
+            assert deck_a == deck_b == []
+            assert (matches, difficulty, max_ticks) == (1, 'casual', 500)
+            assert should_cancel.__self__ is cancel_event and not should_cancel()
+            assert reservation_token == snapshot_token
+            assert session.get(ResourceReservation, reservation_token).job_id == 'j'
+            progress_callback(0, matches)
+            assert state['SIM_JOBS']['j']['total_matches'] == matches
             if case == "oversized_error":
                 raise ValueError("x" * 1025)
             return {"padding": "x" * 1048577} if case == "oversized_result" else {"ok": True}
@@ -226,23 +236,54 @@ def test_actual_worker_failure_envelope_uses_bounded_persistence(case, expected)
     tree = ast.parse((Path(__file__).resolve().parents[1] / "main.py").read_text())
     start = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_start_batch_job")
     runner = next(n for n in start.body if isinstance(n, ast.FunctionDef) and n.name == "_runner")
+    helpers = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name in
+               {'_persist_job', '_update_job', '_prune_simulation_jobs', '_fence_uncertain_job'}]
+    assert len(helpers) == 4
     rows = []
-    repo = Repository(SessionSpy())
-    job = dict(job_id="j", status="queued", request={}, result=None)
+    session = SessionSpy()
+    repo = Repository(session)
+    job = dict(job_id="j", status="queued", request={}, result=None,
+               completed_matches=0, total_matches=1, started_at=time.time(),
+               finished_at=None, error=None)
+    repo.save_simulation_job(job)
+    snapshot_token = repo.background_snapshot_token('j')
+    cancel_event = threading.Event()
+
+    def session_scope(engine):
+        assert engine is session.binding
+        return nullcontext(session)
+
+    def thread_repository(thread_session):
+        assert thread_session is session
+        return repo
+
+    def owner_for_engine(engine):
+        assert engine is session.binding
+        session.owner.require()
+        return session.owner
+
+    def owner_uncertain(engine):
+        assert engine is session.binding
+        return session.owner.uncertain
+
     slot = threading.BoundedSemaphore(1)
     assert slot.acquire(blocking=False)
     state = dict(SIM_JOBS={"j": job}, SIM_JOBS_LOCK=threading.Lock(),
-                 SIM_JOB_CANCEL_EVENTS={"j": threading.Event()}, SIM_WORK_SLOT=slot,
-                 job_id="j", cancel_event=threading.Event(), deck_a=[], deck_b=[],
+                 SIM_JOB_CANCEL_EVENTS={"j": cancel_event}, SIM_WORK_SLOT=slot,
+                 SIM_START_LOCK=threading.Lock(), SIM_SHUTTING_DOWN=False, SIM_JOBS_CACHE_LIMIT=10,
+                 job_id="j", cancel_event=cancel_event, deck_a=[], deck_b=[],
                  payload=SimpleNamespace(matches=1, difficulty="casual", max_ticks=500),
-                 Session=lambda engine: nullcontext(None), engine=None,
-                 Repository=lambda session: repo, AnalyticsService=Service,
-                 _persist_job=repo.save_simulation_job, _prune_simulation_jobs=lambda: None,
-                 SimulationCancelled=type("SimulationCancelled", (Exception,), {}),
+                 Session=session_scope, engine=session.binding,
+                 Repository=thread_repository, AnalyticsService=Service,
+                 owner_for_engine=owner_for_engine, owner_uncertain=owner_uncertain,
+                 snapshot_token=snapshot_token, nullcontext=nullcontext,
+                 SQLAlchemyError=SQLAlchemyError, CapacityIntegrityError=CapacityIntegrityError,
+                 CapacityAdmissionClosed=CapacityAdmissionClosed, SimulationCancelled=SimulationCancelled,
                  SimulationResourceLimit=SimulationResourceLimit, checked_text=checked_text,
                  RESOURCE_LIMITS=RESOURCE_LIMITS, time=time)
-    exec(compile(ast.Module(body=[runner], type_ignores=[]), "actual-worker-envelope", "exec"), state)
+    exec(compile(ast.Module(body=helpers + [runner], type_ignores=[]), "actual-worker-envelope", "exec"), state)
     state["_runner"]()
+    job = state['SIM_JOBS']['j']
     assert job["status"] == ("failed" if expected else "completed")
     assert job.get("error") == expected
     assert job["result"] == (None if expected else {"ok": True})
@@ -250,13 +291,19 @@ def test_actual_worker_failure_envelope_uses_bounded_persistence(case, expected)
     assert state["SIM_JOB_CANCEL_EVENTS"] == {}
     assert slot.acquire(blocking=False)
     slot.release()
+    assert not session.owner.producers
+    assert session.rows[ResourceReservation] == {}
+    assert session.ledger.reserved_bytes == session.ledger.reserved_snapshot_rows == 0
+    assert len(session.rows[SimulationJobRecord]) == 1
+    assert not session.owner.uncertain
 
 
 def test_diagnostics_deadline_before_first_pair_and_snapshot(monkeypatch):
     import analytics.service as service
     monkeypatch.setattr(service, "RESOURCE_LIMITS", dict(RESOURCE_LIMITS, deadline_seconds=0))
     snapshots = []
-    repo = SimpleNamespace(save_snapshot=lambda *args: snapshots.append(args))
+    repo = PureSnapshotRepository()
+    repo.record_snapshot = lambda *args: snapshots.append(args)
     with pytest.raises(SimulationResourceLimit, match="resource_limit:deadline"):
         AnalyticsService(repo).run_ai_diagnostics([{}, {}])
     assert snapshots == []

@@ -2,10 +2,11 @@
 import pytest
 
 from analytics.service import AnalyticsService
+from tests.pure_snapshot_support import PureSnapshotRepository, pure_snapshot_storage
 
 
-class SnapshotRepo:
-    def save_snapshot(self, label, result):
+class SnapshotRepo(PureSnapshotRepository):
+    def record_snapshot(self, label, result):
         self.saved = (label, result)
 
 

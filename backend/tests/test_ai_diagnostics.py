@@ -9,6 +9,7 @@ from scripts.debug_head_to_head import build_debug_trace_payload
 from analytics.decision_quality import DecisionQualityAccumulator
 from game_state.state import MatchFactory, Step
 from rules_engine.engine import RulesEngine
+from tests.pure_snapshot_support import PureSnapshotRepository, pure_snapshot_storage
 
 
 def test_head_to_head_trace_provides_all_decision_quality_evidence() -> None:
@@ -28,11 +29,12 @@ def test_head_to_head_trace_provides_all_decision_quality_evidence() -> None:
     assert all(all(available for available in metrics.values()) for metrics in accumulator.finish()["availability"].values())
 
 
-class FakeRepo:
+class FakeRepo(PureSnapshotRepository):
     def __init__(self) -> None:
+        super().__init__()
         self.saved: list[tuple[str, dict]] = []
 
-    def save_snapshot(self, label: str, stats: dict) -> None:
+    def record_snapshot(self, label: str, stats: dict) -> None:
         self.saved.append((label, stats))
 
 

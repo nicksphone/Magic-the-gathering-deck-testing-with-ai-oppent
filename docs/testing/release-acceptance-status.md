@@ -24,6 +24,16 @@ substitute for qualification of the final combined source.
 
 ## Verified Components
 
+The subsequent test-only diagnostics/admission increment over `9f7c7c13` passes
+163 checks in nine whole modules. Its separate seven-module pure cohort passes
+147 checks with parent/child SQL and sockets denied; native ambient-state
+composition passes sixteen cases with an existing unopened source sentinel.
+All 291 original assertions and decorators remain intact. Native ownership and
+production guards are unchanged, and failed teardown retains fenced bindings
+until quiescence rather than redirecting work to ambient state. This is bounded
+fixture qualification, not complete backend or release acceptance. See
+`ci-pure-native-admission-current.md`.
+
 The bounded loyalty/HTTP/search composition over `d4d6b475` executes all 1,069
 cases in 28 whole modules: 1,063 pass and the same six pre-existing Oracle
 copy/loyalty cases remain strict failures, with no setup errors or skips.

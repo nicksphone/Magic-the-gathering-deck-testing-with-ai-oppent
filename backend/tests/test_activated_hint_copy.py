@@ -36,9 +36,10 @@ def test_actual_hint_copy_is_pure_and_distinct_from_real_protection_source(seat,
     original_hint = oracle_effects.inspect_target_hints
     original_protection = targeting.validate_protection_targets
 
-    def inspect(candidate, surface, controller, announced=None):
+    def inspect(candidate, surface, controller, announced=None, *, source_kind='spell'):
         if surface.id != source_id:
-            return original_hint(candidate, surface, controller, announced)
+            return original_hint(candidate, surface, controller, announced, source_kind=source_kind)
+        assert source_kind == 'activated'
         before = snap(candidate)
         assert surface is not candidate.cards[source_id]
         assert surface.mana_cost == ''
@@ -47,7 +48,7 @@ def test_actual_hint_copy_is_pure_and_distinct_from_real_protection_source(seat,
         assert announced == action['targets'] and 'x_value' not in announced
         phase['in_hint'] = True
         try:
-            result = original_hint(candidate, surface, controller, announced)
+            result = original_hint(candidate, surface, controller, announced, source_kind=source_kind)
         finally:
             phase['in_hint'] = False
         assert not result.get('requires_x_value')

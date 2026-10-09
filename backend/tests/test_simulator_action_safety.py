@@ -9,17 +9,19 @@ from game_state.serializers import serialize_match_snapshot
 from game_state.state import MatchFactory
 from rules_engine.action_validation import ActionRejected
 from scripts import regression_matrix_replay as replay
+from tests.pure_snapshot_support import PureSnapshotRepository, pure_snapshot_storage
 
 
 DECK = [{'card_name': 'Island', 'quantity': 60}]
 
 
-class Repository:
+class Repository(PureSnapshotRepository):
     def __init__(self):
+        super().__init__()
         self.saved = []
 
-    def save_snapshot(self, *args):
-        self.saved.append(args)
+    def record_snapshot(self, label, stats):
+        self.saved.append((label, stats))
 
 
 @pytest.mark.parametrize('entry', ['batch', 'round_robin', 'replay'])
