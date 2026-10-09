@@ -467,3 +467,16 @@ validation and both-seat component checks. See
 [the scope, ledgers and remaining work](docs/testing/loyalty-entry-emblems-current.md).
 No HTTP/browser, arbitrary entry rules, expert AI or final release gate is
 certified by this scoped composition.
+
+## 2026-10-09 AI Loyalty And Replay Input Safety
+
+Composition over `9d519b5` passes the same 13 declared whole modules: 392 passes
+in 62.19s. Actual AI uses live offered loyalty card/Aura references and the
+correct distinct choice fields. Replay artifact paths reject equal, symbolic
+and hard-linked aliases before simulation or evidence creation. The corrected
+baseline reproduced 15 unsafe alias cases; the first combined run's 26 denied
+repository-fixture setups remain archived separately. Only declared owned SQL
+fixtures were subsequently admitted, with source equality and physical closure.
+See [scope and evidence](docs/testing/ai-loyalty-replay-artifact-safety.md).
+This is conservative legality and artifact protection, not optimal AI,
+13-archetype natural-match evidence or completion of any original release gate.

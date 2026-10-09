@@ -4,6 +4,8 @@ Latest scoped qualification: complete printed-body admission and loyalty
 execution, followed by paid land/Aura entry and public emblem UI controls. See
 [entry/emblem acceptance](docs/testing/loyalty-entry-emblems-current.md) and
 [complete-body acceptance](docs/testing/complete-body-rules-composition.md).
+Actual-AI loyalty choices and replay input/output alias protection now have
+[combined 392-case qualification](docs/testing/ai-loyalty-replay-artifact-safety.md).
 This remains an unfinished playtesting app, not unrestricted rules certification.
 
 A desktop-first React/TypeScript and Python/FastAPI application for two-player

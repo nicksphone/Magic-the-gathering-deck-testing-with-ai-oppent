@@ -235,6 +235,34 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] == 'loyalty_cards':
+                from rules_engine.loyalty_instructions import reference_matches
+                pending = state.pending_mechanic_choice or {}
+                references = pending.get('option_references') or {}
+                selected = [cid for cid in dict.fromkeys(options)
+                            if reference_matches(state, cid, references.get(cid))
+                            and (pending.get('loyalty_operation') != 'hand_entry'
+                                 or cid in state.players[player_id].hand)]
+                # Free entry is not a mandatory cheapest-card discard choice.
+                return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected[:choice['count']]},
+                                  reasoning='Use live offered loyalty cards within the optional limit')
+            if choice['kind'] == 'loyalty_attachment':
+                from rules_engine.loyalty_instructions import reference_matches, aura_entry_options
+                pending = state.pending_mechanic_choice or {}
+                source_id = pending.get('entry_card_id')
+                payload = pending.get('effect_payload') or {}
+                references = pending.get('option_references') or {}
+                if (source_id not in state.players[player_id].hand
+                        or not reference_matches(state, source_id,
+                            (payload.get('__loyalty_selected_references') or {}).get(source_id))):
+                    raise ValueError('No live offered loyalty Aura source')
+                legal = aura_entry_options(state, state.cards[source_id], player_id)
+                selected = next((cid for cid in options if cid in legal and
+                    (cid.startswith('player:') or reference_matches(state, cid, references.get(cid)))), None)
+                if selected is None:
+                    raise ValueError('No live offered loyalty attachment')
+                return AIDecision(action={'type': 'choose_mechanic', 'choice_id': selected},
+                                  reasoning='Attach to a live legally offered object without inventing a target')
             if choice['kind'] in {'library_top_order', 'library_order_shuffle'}:
                 selected = self._choose_library_search(state, options, len(options), player_id)
                 return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},

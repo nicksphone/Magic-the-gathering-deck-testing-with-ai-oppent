@@ -1,9 +1,9 @@
 # Release Acceptance Status
 
-Checkpoint: 2026-10-08. The latest published rules integration is `bf6731c`:
+Checkpoint: 2026-10-09. Published `bf6731c` established
 complete printed-body admission and loyalty execution, with 823 passing checks
 across 22 whole modules and a separate 179-pass resolution/entry cohort.
-All 400 original corpus/consumer cases pass unchanged; ten historical malformed
+Its 400 original corpus/consumer cases pass unchanged; ten historical malformed
 loyalty fixtures were explicitly strengthened to verify the earlier cast
 rejection as well as activation atomicity. See
 `complete-body-rules-composition.md` for the exact source and historical ledgers.
@@ -12,7 +12,7 @@ The current locked dependency advisory refresh returns no affected packages
 among 242 queried versions. This is a dated database result, not installation,
 deployment or application-security certification. The subsequent current-source
 loyalty entry/public-emblem composition passes 1,003 gameplay checks plus complete
-frontend test/lint/build; its generated-media wrapper diagnostic is retained
+frontend test/lint/build in published `9d519b5`; its generated-media wrapper diagnostic is retained
 explicitly. See `loyalty-entry-emblems-current.md`. Full browser acceptance,
 arbitrary-card semantics and expert AI remain open. Earlier component source
 pins remain individually recorded below; their passes do not automatically
@@ -24,6 +24,7 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
+| Actual-AI loyalty menus and replay artifact safety | Composition over `9d519b5`: same 13 whole modules / 392 passes in 62.19s, exact source and SQLite closure; original 32 agent assertions plus 16 new alias/roundtrip checks | Offered-order legality, not optimal policy or 13-archetype strength. Prior 366-pass / 26 denied SQL setups and corrected 15-red baseline preserved. See `ai-loyalty-replay-artifact-safety.md` |
 | Loyalty entry and public emblem UI | Current composition over `8b2078c`: 31 whole backend modules / 1,003 passes in 183.20s; full frontend test/lint/build exit zero; actual paid both-seat Ugin/Elspeth views drive reachable zero/subset/attachment controls and public emblem text | Pytest zero, outer wrapper one from four recorded generated SVG appends; all 1,978 original inventoried paths unchanged. Pure/component scope, not HTTP/browser or arbitrary entry rules. See `loyalty-entry-emblems-current.md` |
 | Complete printed-body rules composition | Published `bf6731c`: 22 whole modules / 823 passes in 153.98s; all original 400 corpus/consumer nodes pass. Separate seven whole resolution/entry modules / 179 passes in 34.93s; source hashes and native forbidden-I/O ledgers verified | Pure composed component, not HTTP/browser or complete-card certification. The ten explicit fixture strengthenings and unchanged historical ledgers are recorded separately; counts overlap. See `complete-body-rules-composition.md` |
 | Current locked dependency advisory refresh | Exact `bf6731c` locks: actual OSV HTTP 200 on 2026-10-08 at 23:24:27 UTC; all 28 PyPI and 214 npm unique locked versions queried, no affected package returned; exact inventory, response cardinality, input hashes and pagination independently checked | Dated advisory result only, including optional npm platform packages; not installation, undisclosed-vulnerability, application-security or release certification. See `current-locked-dependency-advisories.md` |
@@ -93,6 +94,7 @@ Immutable evidence under `/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/`:
 
 - `parent-integration/complete-body-composition-20261008/`
 - `parent-integration/loyalty-entry-public-ui-20261008/`
+- `parent-integration/ai-loyalty-replay-safety-20261009/`
 - `diagnostics/dependency-audit/current-bf6731c-20261008/`
 - `release-gate-1-7-current-qualified/a42e0f6-1kapIf/`
 - `parent-integration/native-browser-r9-qualified-20261007/`

@@ -357,13 +357,18 @@ def main() -> None:
     trace_path = Path(args.trace_output) if args.trace_output else None
     metrics_path = Path(args.decision_metrics) if args.decision_metrics else None
     diagnostic_paths = [path for path in (trace_path, metrics_path) if path is not None]
-    protected_paths = [args.output, str(args.output) + '.progress.json',
-                       args.deck_manifest, args.write_deck_manifest]
-    if len({path.resolve() for path in diagnostic_paths}) != len(diagnostic_paths):
-        p.error('Trace and metrics outputs must differ')
-    for path in diagnostic_paths:
-        if any(path.resolve() == Path(value).resolve() for value in protected_paths if value):
-            p.error('Diagnostic outputs must differ from summary, progress and deck manifest paths')
+    artifacts = {'summary': args.output, 'progress': str(args.output) + '.progress.json',
+                 'deck input': args.deck_manifest, 'deck export': args.write_deck_manifest,
+                 'trace': args.trace_output, 'decision metrics': args.decision_metrics}
+    paths = [(name, Path(value)) for name, value in artifacts.items() if value is not None]
+    try:
+        for (left_name, left), (right_name, right) in combinations(paths, 2):
+            # resolve catches symbolic aliases; samefile also catches hard links.
+            if (left.resolve() == right.resolve()
+                    or (left.exists() and right.exists() and left.samefile(right))):
+                p.error(f'{left_name} and {right_name} paths must differ')
+    except (OSError, RuntimeError) as exc:
+        p.error(f'Cannot validate artifact paths: {exc}')
     for path in diagnostic_paths:
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
