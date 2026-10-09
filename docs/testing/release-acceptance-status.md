@@ -261,3 +261,13 @@ confirmation. The test now enforces the implemented disabled-before/available-
 after contract; product rules/UI are unchanged. Eight actual Controls readiness
 renders and syntax checking pass. Full corrected browser CI remains required.
 See `browser-bo3-readiness-ci.md`; the full backend workflow is still outstanding.
+
+## Browser Copy Choice Contract (2026-10-09)
+
+The later `bf9f268e` frontend job passes. Its browser run passes the scry repair,
+then fails because old copy tests search for checkboxes while current Controls
+offers direct buttons. The corrected tests retain selected IDs, exact submitted
+choices and all original/copy resolution assertions. Both-seat compiled
+Controls and actual-helper callback checks pass, as do current typechecking,
+source lint and existing handoff/navigation checks. No product code changes;
+the full remote workflow remains required. See `browser-copy-choice-ci.md`.

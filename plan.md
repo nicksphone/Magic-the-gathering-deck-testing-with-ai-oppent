@@ -357,6 +357,15 @@ actual native scry continuation, current typecheck and full source lint pass.
 The full corrected remote workflow is still required; see
 `docs/testing/browser-fixture-handoff-ci.md`.
 
+The `bf9f268e` frontend job passes and its browser flow passes the corrected
+scry continuation. It then exposes obsolete checkbox interactions for copy
+choices, which the actual UI renders as one-click buttons. Ordinary, divided,
+modal, Adventure, ordered, linked and conditional copy tests now use those
+buttons while retaining their selected-target and gameplay assertions. Actual
+compiled Controls/helper callback regressions pass for both seats; complete
+corrected remote browser/backend qualification is still required. See
+`docs/testing/browser-copy-choice-ci.md`.
+
 Current native next-cast and entry-counter integration has one 36-whole-module
 834-pass qualification on the composed `91c40e2` application baseline. Parent
 applied bytes match the actual tested archive. See

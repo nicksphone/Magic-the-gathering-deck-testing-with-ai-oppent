@@ -14,12 +14,7 @@ for (const seat of [1, 2]) {
         await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(id)})`);
         await reload();
         await waitFor(`document.body.innerText.includes(${JSON.stringify(fixture.match.pending_mechanic_choice.label)})`);
-        await evaluate(`(() => {
-          const label = [...document.querySelectorAll('.block-panel label')].find(label => label.textContent.trim() === ${JSON.stringify(fixture.recipient_name)});
-          if (!label) throw new Error('Missing conditional copy recipient');
-          label.querySelector('input[type=checkbox]').click();
-        })()`);
-        await click('Confirm Selection');
+        await click(fixture.recipient_name);
         await waitFor(`(async () => !(await (await fetch('${api}/matches/${id}')).json()).pending_mechanic_choice)()`);
         await reload();
         let state = await (await fetch(`${api}/matches/${id}`)).json();

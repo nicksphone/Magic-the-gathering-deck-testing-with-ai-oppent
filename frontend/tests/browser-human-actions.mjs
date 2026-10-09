@@ -7,6 +7,12 @@ async function reset() {
   await click("Reset Fixture");
   await waitFor("window.fixtureActions?.length === 0 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
 }
+async function chooseCopyOption(optionId) {
+  const choice = await evaluate('window.fixtureState.pending_mechanic_choice');
+  assert.equal(choice?.kind, 'copy_target');
+  assert.ok(choice.options.includes(optionId), `Copy option is not offered: ${optionId}`);
+  await click(choice.option_labels?.[optionId] ?? optionId);
+}
 async function assignDamage(amounts) {
   for (const [label, value] of Object.entries(amounts)) {
     await evaluate(`(() => { const input = document.querySelector(${JSON.stringify(`[aria-label="Damage to ${label}"]`)}); if (!input) throw new Error('Missing damage input: ${label}'); Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, ${JSON.stringify(String(value))}); input.dispatchEvent(new Event('input', { bubbles: true })); })()`);
@@ -241,8 +247,7 @@ try {
   await click("Copy Target Fixture");
   await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'copy_target'");
   assert.deepEqual(await evaluate("window.fixtureState.pending_mechanic_choice.options"), ["keep", "target_player:1"]);
-  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Player A')); if (!label) throw new Error('Missing copy target option'); label.querySelector('input').click(); })()");
-  await click("Confirm Selection");
+  await chooseCopyOption('target_player:1');
   await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.at(-1).targets[0] === '1'");
   assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["target_player:1"]);
   await click("Resolve Stack");
@@ -254,12 +259,10 @@ try {
 
   await click("Divided Copy Fixture");
   await waitFor("window.fixtureState.pending_mechanic_choice?.target_slot_number === 1");
-  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Grizzly Bears')); if (!label) throw new Error('Missing divided copy target'); label.querySelector('input').click(); })()");
-  await click("Confirm Selection");
+  await chooseCopyOption('target_card_id:divided-bear');
   await waitFor("window.fixtureState.pending_mechanic_choice?.target_slot_number === 2");
   assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["target_card_id:divided-bear"]);
-  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Keep 3 damage on Player B')); if (!label) throw new Error('Missing keep-target choice'); label.querySelector('input').click(); })()");
-  await click("Confirm Selection");
+  await chooseCopyOption('keep');
   await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.at(-1).targets.includes('divided-bear')");
   assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["keep"]);
   await click("Resolve Stack");
@@ -271,12 +274,10 @@ try {
 
   await click("Modal Copy Fixture");
   await waitFor("window.fixtureState.pending_mechanic_choice?.target_slot_number === 1");
-  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Sol Ring')); if (!label) throw new Error('Missing spare artifact target'); label.querySelector('input').click(); })()");
-  await click("Confirm Selection");
+  await chooseCopyOption('target_card_id:modal-spare');
   await waitFor("window.fixtureState.pending_mechanic_choice?.target_slot_number === 2");
   assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["target_card_id:modal-spare"]);
-  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Player B')); if (!label) throw new Error('Missing modal player target'); label.querySelector('input').click(); })()");
-  await click("Confirm Selection");
+  await chooseCopyOption('target_player:2');
   await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.at(-1).targets.includes('modal-spare')");
   assert.deepEqual(await evaluate("window.fixtureActions.at(-1).action.card_ids"), ["target_player:2"]);
   await click("Resolve Stack");
@@ -837,11 +838,9 @@ try {
   await waitFor("window.fixtureState.pending_mechanic_choice?.clause_effect_index === 0");
   const ownMealTarget = await evaluate("window.fixtureState.players['2'].battlefield[0].id");
   assert.ok((await evaluate("window.fixtureState.pending_mechanic_choice.options")).includes("target_card_id:" + ownMealTarget));
-  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Gollum, Silent Slinker')); if (!label) throw new Error('Missing own creature copy target'); label.querySelector('input').click(); })()");
-  await click("Confirm Selection");
+  await chooseCopyOption('target_card_id:' + ownMealTarget);
   await waitFor("window.fixtureState.pending_mechanic_choice?.clause_effect_index === 1");
-  await evaluate("(() => { const label = [...document.querySelectorAll('.block-panel label')].find(l => l.textContent.includes('Player B')); if (!label) throw new Error('Missing own player copy target'); label.querySelector('input').click(); })()");
-  await click("Confirm Selection");
+  await chooseCopyOption('target_player:2');
   await waitFor("window.fixtureState.pending_mechanic_choice === null");
   await click("Resolve Stack");
   await waitFor(`window.fixtureState.players['2'].life === 22 && window.fixtureState.players['2'].battlefield.some(c => c.id === ${JSON.stringify(ownMealTarget)} && c.counters['+1/+1'] === 1) && window.fixtureState.players['2'].exile_count === 0`);

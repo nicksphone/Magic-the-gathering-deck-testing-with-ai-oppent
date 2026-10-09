@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791545334.7989411,
-    "seen": 1791545889.3941925,
-    "ast_hash": "e66a21989484aadc5ef7a049a315c5db",
+    "mtime": 1791550464.1036792,
+    "seen": 1791550723.9865975,
+    "ast_hash": "682f561cd8341a31594fdab31ea9871a",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -6192,9 +6192,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-conditional-copy.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1180482,
-    "ast_hash": "ab975ed6f60afc43eb4f824f65e724fc",
+    "mtime": 1791550539.6404405,
+    "seen": 1791550723.986694,
+    "ast_hash": "38fb059c5ac8fe1a7470ba8c9cc2b092",
     "semantic_hash": ""
   },
   "frontend/tests/browser-conditional-creature-types.mjs": {
@@ -6306,9 +6306,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-human-actions.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.118083,
-    "ast_hash": "9de5b5e0b4487a75c04974b60ff0eb70",
+    "mtime": 1791550464.0716798,
+    "seen": 1791550723.9867349,
+    "ast_hash": "6ce0c12971d86a3b0cc911b22e91f95d",
     "semantic_hash": ""
   },
   "frontend/tests/browser-human-bo3.mjs": {
@@ -6384,9 +6384,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-linked-copy.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.118106,
-    "ast_hash": "c87d07c024c6c07d5e247b34927e7fa1",
+    "mtime": 1791550539.6394405,
+    "seen": 1791550723.9867604,
+    "ast_hash": "1fe215e3d8233a23fc1e3a6081b2b094",
     "semantic_hash": ""
   },
   "frontend/tests/browser-linked-damage.mjs": {
@@ -6438,9 +6438,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ordered-copy.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1181214,
-    "ast_hash": "3caf00c2eb01279846336bce21f874ac",
+    "mtime": 1791550539.6394405,
+    "seen": 1791550723.9867895,
+    "ast_hash": "b894d4e65565afed699136ac092f2c4d",
     "semantic_hash": ""
   },
   "frontend/tests/browser-ordered-modifiers.mjs": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791545803.3180969,
-    "seen": 1791545889.396398,
-    "ast_hash": "b189e55688918c403e8d8d9fb08a30f2",
+    "mtime": 1791550637.5848334,
+    "seen": 1791550723.988118,
+    "ast_hash": "db813e72ea58f7bef8f067188cb93d37",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791545803.3180969,
-    "seen": 1791545889.3960712,
-    "ast_hash": "efa0ff1f48c295ec2ded29eab66b6f5b",
+    "mtime": 1791550637.5848334,
+    "seen": 1791550723.9878502,
+    "ast_hash": "bc562f2ab1e985ad39dffa71d0dfc13d",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15993,6 +15993,18 @@
     "mtime": 1791545803.317097,
     "seen": 1791545889.3952343,
     "ast_hash": "d25a1de79242cb14b890884eddbf1cfe",
+    "semantic_hash": ""
+  },
+  "frontend/tests/copy-choice-browser-contract.mjs": {
+    "mtime": 1791550491.0532374,
+    "seen": 1791550723.9868329,
+    "ast_hash": "5de31ebf4bb442a246bc5b9ac535fc3f",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-copy-choice-ci.md": {
+    "mtime": 1791550637.5838335,
+    "seen": 1791550723.9872918,
+    "ast_hash": "13a457d20d3536cb7e2f240d0dedc809",
     "semantic_hash": ""
   }
 }
