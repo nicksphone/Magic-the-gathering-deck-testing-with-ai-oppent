@@ -33,7 +33,7 @@ def _land_moves(state: MatchState, player_id: int, card, move: dict) -> list[dic
     return moves
 
 
-def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
+def _cost_option_view(option, state=None, player_id=None, card_id=None, *, cast_card=None) -> dict:
     view = {
         "id": option.id,
         "label": option.label,
@@ -65,7 +65,7 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
             view.update(additional_cost_candidates(state, player_id, card_id, option))
     if state is not None:
         from rules_engine.kicker import kicker_surfaces
-        card = state.cards[card_id]
+        card = cast_card if cast_card is not None else state.cards[card_id]
         from rules_engine.casting_resources import resource_keywords, resource_candidates
         if resource_keywords(card):
             view['resource_payment_candidates'] = resource_candidates(state, player_id, card)
@@ -599,7 +599,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                           "selected_face_index": index, "mana_cost": face.mana_cost,
                           "from_exile": original.zone == Zone.EXILE,
                           "from_graveyard": original.zone == Zone.GRAVEYARD,
-                          "cost_options": [vars(option) for option in options], "target_hints": hints})
+                          "cost_options": [_cost_option_view(option, state, player_id, cid, cast_card=face) for option in options], "target_hints": hints})
     from rules_engine.bestow import bestow_cost, bestow_cast_view
     for cid in list(player.hand) + list(player.graveyard) + exile_candidates(state, player_id):
         original = state.cards[cid]

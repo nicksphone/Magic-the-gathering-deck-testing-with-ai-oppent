@@ -207,3 +207,31 @@ collection succeeds for 23,431 tests. Full configured frontend tests/lint/build
 pass on the immutable fixture repair. Collection and component gates do not
 establish a full-suite or browser pass. The remote workflow must qualify the
 published composition. See `clean-ci-fixtures-current.md`.
+
+## Self-Entry Control Trigger (2026-10-09)
+
+The exact current-parent composition passes 365 ordinary checks across nineteen
+whole pure modules in 165.10s. Complete self-entry gain-control instructions,
+deliberate targets, real copied-trigger controllers and retained target identity
+are covered; existing trigger routing is preserved. Native gameplay I/O attempts
+are empty. See `self-entry-control-current.md`. Static Aura/timestamp layers,
+Agent's end-step draw, HTTP/browser and full-release acceptance remain open.
+
+The observed workflow on `00b8c8d4` passed frontend and reached seven browser
+checkpoints before a strict legal-moves contract failure. These observations
+supersede the old origin/import fixture failures, not the green-workflow requirement.
+
+## Modal Cost View Contract (2026-10-09)
+
+The modal/adventure/split branch now uses the existing public cost serializer
+instead of raw dataclass fields. Selected-face resource/kicker/X-hint readers
+receive the face, while physical spell exclusion and default callers retain
+their original behavior. No frontend parser exception or payment change is added.
+
+One actual combined 22-whole-module cohort passes all 441 checks in 169.59s,
+with source before/after equal and no gameplay SQL/socket/subprocess attempts.
+The actual Node parser separately accepts the full canonical packet and all
+seven casts. See `modal-cost-view-current.md`. The owner's lint/build passed;
+its initial npm-test run stopped on a guard-denied unused Vite WebSocket
+listener. Full configured frontend, browser and backend CI qualification on
+the published composition remains required, as do the broader release gates.

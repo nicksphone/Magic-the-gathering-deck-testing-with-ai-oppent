@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791522169.6911955,
-    "seen": 1791524110.820768,
-    "ast_hash": "456500bbcbd4d073641905d204f85f97",
+    "mtime": 1791538938.0305698,
+    "seen": 1791539037.8731327,
+    "ast_hash": "7c02989bbb9ec8a191961529b79f27d5",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -828,9 +828,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/move_generator.py": {
-    "mtime": 1791502304.670282,
-    "seen": 1791511166.1152937,
-    "ast_hash": "6a892f1282ed56c10dff8b8f5f051ba8",
+    "mtime": 1791541839.5356812,
+    "seen": 1791542151.2075336,
+    "ast_hash": "118d7752eb81175b183502dfa5fdd8d6",
     "semantic_hash": ""
   },
   "backend/rules_engine/named_counters.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791537728.0062237,
-    "seen": 1791537832.8848755,
-    "ast_hash": "354c1ab2cba2084f5cf81fb8789d4801",
+    "mtime": 1791542066.1839316,
+    "seen": 1791542151.2121212,
+    "ast_hash": "c1b5282cf5b900938ca24a8fda994643",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791537728.0062237,
-    "seen": 1791537832.884596,
-    "ast_hash": "ed45eea65204574ed364f788d8a007ba",
+    "mtime": 1791542066.1839316,
+    "seen": 1791542151.2118485,
+    "ast_hash": "50f40659ecd9fce92c1390d3618ce758",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15873,6 +15873,96 @@
     "mtime": 1791537728.0052238,
     "seen": 1791537832.884094,
     "ast_hash": "4d4685fdf06b8c69eb567040f1e55c32",
+    "semantic_hash": ""
+  },
+  "backend/tests/agent_control_facts.py": {
+    "mtime": 1791535282.6243296,
+    "seen": 1791539037.8733296,
+    "ast_hash": "90d69aa4f83b01e649937b1f864d4fbf",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/agent_self_entry/facts.json": {
+    "mtime": 1791535282.525331,
+    "seen": 1791539037.8734186,
+    "ast_hash": "69772aed81e090421f7bd868273032eb",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/agent_self_entry/provenance.json": {
+    "mtime": 1791535658.733577,
+    "seen": 1791539037.8734207,
+    "ast_hash": "63211fee39eda3811ed89e4ec57f80e4",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/agent_self_entry/stifle.json": {
+    "mtime": 1791535282.527331,
+    "seen": 1791539037.8734229,
+    "ast_hash": "dd18c7ce0c46a76b86bda04d08dcc71a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_self_entry_control_boundaries.py": {
+    "mtime": 1791535282.5893302,
+    "seen": 1791539037.8757992,
+    "ast_hash": "1b5ab90d820bdf2c2cf073137f24ad16",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_self_entry_control_copy_paid.py": {
+    "mtime": 1791535282.5783303,
+    "seen": 1791539037.875801,
+    "ast_hash": "dbfc086f7f5a7d5b795568f5d5363c27",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_self_entry_control_grammar.py": {
+    "mtime": 1791535282.5713303,
+    "seen": 1791539037.8758023,
+    "ast_hash": "7f3ed6ff50bbb0704542e8f153e44024",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_self_entry_control_paid.py": {
+    "mtime": 1791535282.5663304,
+    "seen": 1791539037.875804,
+    "ast_hash": "3f649653f7e6ebe3841b61b7f261476a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_self_entry_control_protocol.py": {
+    "mtime": 1791536143.7774172,
+    "seen": 1791539037.8758051,
+    "ast_hash": "825c6aa04107fd7b8cd714de3a329f9d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/agent_self_entry/targeted_trigger_clause_preimage.py.txt": {
+    "mtime": 1791535553.524203,
+    "seen": 1791539037.8766294,
+    "ast_hash": "4bbfed8ab83aaff08deb8652765dd1f0",
+    "semantic_hash": ""
+  },
+  "docs/testing/self-entry-control-current.md": {
+    "mtime": 1791538938.093569,
+    "seen": 1791539037.8774261,
+    "ast_hash": "4159f456541f7269585931dd91e8b5b5",
+    "semantic_hash": ""
+  },
+  "backend/tests/modal_contract_support.py": {
+    "mtime": 1791541839.5586808,
+    "seen": 1791542151.2090154,
+    "ast_hash": "f51698e42f606bc2fc427d40e135bcc7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_modal_cost_option_contract.py": {
+    "mtime": 1791541839.5626807,
+    "seen": 1791542151.2099264,
+    "ast_hash": "33d016a2be96008fdf4564631ca78c6e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_modal_cost_view_boundaries.py": {
+    "mtime": 1791541839.5656805,
+    "seen": 1791542151.2099283,
+    "ast_hash": "24cfd4875bc6daf4a3f3035750f735a6",
+    "semantic_hash": ""
+  },
+  "docs/testing/modal-cost-view-current.md": {
+    "mtime": 1791542066.1829317,
+    "seen": 1791542151.2117126,
+    "ast_hash": "2c302d82b8238c385611d55ef1bf15f7",
     "semantic_hash": ""
   }
 }

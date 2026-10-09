@@ -321,6 +321,19 @@ default backend collection succeeds for 23,431 cases, not a full-suite pass.
 The full remote workflow remains required. See
 `docs/testing/clean-ci-fixtures-current.md`.
 
+The complete self-entry gain-control trigger now has one nineteen-whole-module
+pure composition: 365 ordinary passes, 165.10s, with deliberate public targeting,
+actual copied-trigger controller and retained object identity. Static Aura
+control remains separate work. See `docs/testing/self-entry-control-current.md`.
+The modal legal-moves producer now uses the existing public cost serializer
+with selected-face characteristics. One actual twenty-two-whole-module combined
+control/modal declaration passes 441 checks in 169.59s with unchanged source
+before/after; the unchanged frontend parser accepts the actual canonical packet.
+See `docs/testing/modal-cost-view-current.md`. The observed remote workflow on
+`00b8c8d4` passed frontend and reached seven browser checkpoints before this
+contract defect. A complete workflow on the corrected published composition
+remains required; component passes do not establish release readiness.
+
 Current native next-cast and entry-counter integration has one 36-whole-module
 834-pass qualification on the composed `91c40e2` application baseline. Parent
 applied bytes match the actual tested archive. See

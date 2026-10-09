@@ -448,6 +448,16 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
 
 
 def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
+    if item.effect_key == 'change_control':
+        source = _departed_card_view(state, item.source_card_id)
+        clause = item.payload.get('__trigger_full_clause', '')
+        if (source is not None and item.payload.get('__trigger_event') == 'enters_battlefield'
+                and re.fullmatch(
+                    r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
+                    r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+                    + r') enters(?: the battlefield)?, gain control of target permanent\.',
+                    clause, re.I)):
+            return clause
     if item.effect_key == 'exchange_energy_payment':
         return item.payload['__trigger_full_clause']
     if item.effect_key == 'retained_counter_prohibition':
@@ -1258,7 +1268,7 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 def _remember_trigger_target(state, item):
     from rules_engine.flashback_grants import remember_target
     remember_target(state, item)
-    if (item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard', 'exchange_energy_payment'}
+    if (item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard', 'exchange_energy_payment', 'change_control'}
             or item.effect_key == 'retained_counter_prohibition' and item.payload.get('__counter_target_kind') == 'card'
             or item.effect_key == 'destroy_permanent'
             and item.payload.get('__trigger_event') == 'time_counters_removed'):
@@ -1737,6 +1747,31 @@ def _trigger_from_oracle(
     payload: dict[str, Any],
 ) -> dict[str, Any]:
     entry_oracle = oracle if event == 'enters_battlefield' else None
+    source = state.cards.get(source_card_id)
+    if (entry_oracle is not None and source is not None
+            and payload.get('card_id') == source_card_id):
+        entries = []
+        for line in entry_oracle.splitlines():
+            match = re.fullmatch(
+                r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
+                r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+                + r') enters(?: the battlefield)?, (gain control\b.*)', line.strip(), re.I)
+            if match:
+                entries.append((line.strip(), match[1]))
+        if entries:
+            clause, instruction = entries[0]
+            key, data = 'noop', {'__unsupported_trigger_instruction': '\n'.join(line for line, _ in entries)}
+            if len(entries) == 1 and re.fullmatch(r'gain control of target permanent\.', instruction, re.I):
+                from rules_engine.oracle_effects import infer_effect_from_oracle
+                proxy = copy(source)
+                proxy.oracle_text, proxy.card_faces, proxy.types = instruction, [], []
+                proxy.selected_face_index = None
+                key, data = infer_effect_from_oracle(state, proxy, controller)
+                data.pop('target_card_id', None)
+                data.pop('new_controller', None)
+            data['__trigger_full_clause'] = clause
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
     entering = state.cards.get(payload.get('card_id')) if event == 'enters_battlefield' else None
