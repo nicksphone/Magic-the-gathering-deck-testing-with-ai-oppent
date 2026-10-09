@@ -1428,6 +1428,11 @@ def inspect_target_hints(
             for pid in target_players for cid in state.players[pid].battlefield
             if "Artifact" in effective_types(state, state.cards[cid])
         ]
+    if re.fullmatch(r'exile target artifact or creature\.?', oracle.strip()):
+        hints['creature_targets'] = [
+            {'id': cid, 'name': state.cards[cid].name}
+            for pid in target_players for cid in state.players[pid].battlefield
+            if {'Artifact', 'Creature'}.intersection(effective_types(state, state.cards[cid]))]
     if "enchantment" in oracle:
         hints["enchantment_targets"] = [
             {"id": cid, "name": state.cards[cid].name}

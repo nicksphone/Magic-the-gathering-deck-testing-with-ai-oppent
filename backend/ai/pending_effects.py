@@ -108,7 +108,7 @@ def pending_granted_acquisition_counts(state):
 
 
 class UncertainSimulation(ValueError):
-    """AI-only boundary: a concrete conditional destination is not observable."""
+    """AI-only boundary: a concrete hidden-zone outcome is not observable."""
 
 
 def _opaque_conditional_card(state, controller, payload):
@@ -126,6 +126,20 @@ def _opaque_conditional_card(state, controller, payload):
             return False
         card = state.cards.get(player.library[-1])
     return is_unknown(card)
+
+
+def _opaque_source_linked_exile(state, effect_key, payload):
+    from ai.information import is_unknown
+    if effect_key == 'effect_sequence':
+        return any(_opaque_source_linked_exile(state, step['effect_key'], step['payload'])
+                   for step in payload.get('effects', []))
+    if effect_key != 'loyalty_source_exile' or payload.get('selection') != 'libraries':
+        return False
+    amount = payload.get('amount')
+    if type(amount) is not int or amount <= 0:
+        return False
+    return any(is_unknown(state.cards.get(cid)) for player in state.players.values()
+               for cid in player.library[-amount:])
 
 
 def simulation_frontier(state, player_id=None, action=None):
@@ -153,6 +167,8 @@ def simulation_frontier(state, player_id=None, action=None):
         if (item.effect_key == 'reveal_top_conditional'
                 and _opaque_conditional_card(state, item.controller, item.payload)):
             return 'opaque_conditional_acquisition'
+        if _opaque_source_linked_exile(state, item.effect_key, item.payload):
+            return 'opaque_source_linked_exile'
     return None
 
 

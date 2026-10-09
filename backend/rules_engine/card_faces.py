@@ -86,17 +86,19 @@ def exile_permission(state, player_id, card_id, face_index=0):
 
 
 def ordinary_exile_permission(state, player_id, card_id, face_index=0):
+    from rules_engine.source_linked_exile import permissions
     player = state.players[player_id]
     temporary = card_id in player.exile and player.exile_play_until.get(card_id, 0) >= state.turn
-    return temporary or (state.adventure_permissions.get(card_id) == player_id and face_index == 0)
+    return temporary or (state.adventure_permissions.get(card_id) == player_id and face_index == 0) or bool(permissions(state, player_id, card_id))
 
 
 def exile_candidates(state, player_id):
+    from rules_engine.source_linked_exile import candidates
     return list(dict.fromkeys(state.players[player_id].exile + [
         cid for cid, pid in state.adventure_permissions.items()
         if pid == player_id and cid in state.cards and state.cards[cid].zone == Zone.EXILE
     ] + [cid for cid, card in state.cards.items() if card.zone == Zone.EXILE
-         and card.foretell_record.get('player_id') == player_id]))
+         and card.foretell_record.get('player_id') == player_id] + candidates(state, player_id)))
 
 
 def leave_exile(state, card_id):

@@ -551,3 +551,25 @@ and strict. The 13-style ordinary-equip controls are not a statistical strength
 evaluation. New loyalty mounted-browser and current-composition natural-game
 qualification remain next work; old browser50 cannot be transferred. Full
 rules/corpus/arbitrary decks, expert AI and all three release gates remain open.
+
+## 2026-10-09 Source-Linked Exile And Opaque Acquisition
+
+The composed source-linked loyalty/emblem permission, physical colored-mana
+substitution and foreign-owned land-control implementation passes 398 checks
+across 21 whole modules on the `c7fc760` baseline. The AI stops before opaque
+library acquisition inside the actual effect sequence, rather than creating
+placeholder exile permissions. Its unchanged eight regressions first produced
+six failures and two passes, then all eight passed after the AI-only correction.
+Repository-native packaging separately passes 133 checks across seven whole
+modules; all original assertion ASTs and canonical fixture bytes are retained.
+Parent production/test postimages match those tested bytes. These overlapping
+counts are not a summed full-suite run.
+See [component evidence and limits](docs/testing/source-linked-exile-current.md).
+
+The four original Tibalt admission cases now pass in this composed native cohort;
+the previous checkpoint remains their historical ledger. Aura control,
+self-entry control, dependent artifact/type layers, current permission HTTP and
+cold restart, mounted-browser acceptance, natural games and measured expert AI
+remain open. The separate original 509-case HTTP-neighbor attempt executed 506
+ordinary passes and three pytest-symlink setup errors, not a complete green gate.
+All three release gates and the original full project objective remain open.

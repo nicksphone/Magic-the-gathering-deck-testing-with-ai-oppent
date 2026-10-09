@@ -461,6 +461,8 @@ def commit_entry_counters(state, card, payload):
         card.loyalty = 0
     for kind, amount in payload['__entry_counters_by_id'].get(card.id, {}).items():
         put_counters(state, kind, amount, target_card_id=card.id, placement_checked=True)
+    from rules_engine.source_linked_exile import commit_entry
+    commit_entry(state, card)
 
 
 def prepare_entry_counters(state, controller, data, card, resume_effect):

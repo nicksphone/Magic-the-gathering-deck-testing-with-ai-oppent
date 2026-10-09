@@ -830,6 +830,7 @@ class RulesEngine:
                     state.trigger_staging = True
                     state.trigger_staging_event = "land_play"
                 apply_cast_face(card, face)
+                card.controller = player_id
                 apply_entry_choice(state, player_id, card, choice=entry_choice or "tapped")
                 player.battlefield.append(cid)
                 player.lands_played_this_turn = used_land_plays + 1

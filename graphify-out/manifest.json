@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "backend/ai/pending_effects.py": {
-    "mtime": 1791526893.0142508,
-    "seen": 1791527324.3652349,
-    "ast_hash": "9f276b9d65cbd775c026979e17cbe22d",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.5105267,
+    "ast_hash": "aa5c968773f24b088e749da298f95aab",
     "semantic_hash": ""
   },
   "backend/ai/proliferation_policy.py": {
@@ -540,9 +540,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/card_faces.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1151981,
-    "ast_hash": "178ffb4fecb15daf86d3f01dea684c49",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.5106788,
+    "ast_hash": "a1207ee8ade4a1692167bded13133c07",
     "semantic_hash": ""
   },
   "backend/rules_engine/card_types.py": {
@@ -684,9 +684,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1791522169.6911955,
-    "seen": 1791524110.8207624,
-    "ast_hash": "89ac2bfe110eaa28d46e7961184be92a",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.5107238,
+    "ast_hash": "e51bb6c46ddea3aa2cb398f342a478ae",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/entry_counters.py": {
-    "mtime": 1791481524.8009722,
-    "seen": 1791511166.1152418,
-    "ast_hash": "d82c7dd0977583f65122b152a1fe724a",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.510728,
+    "ast_hash": "8a0492739173bea35e28783755267085",
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
@@ -804,9 +804,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/mana.py": {
-    "mtime": 1791437814.5472064,
-    "seen": 1791511166.1152852,
-    "ast_hash": "d8867441b843df4f3ce37a46c3a30ffe",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.5107946,
+    "ast_hash": "bcbec4150d2dc894b4c50e42db612953",
     "semantic_hash": ""
   },
   "backend/rules_engine/mana_abilities.py": {
@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791505866.103683,
-    "seen": 1791511166.1153047,
-    "ast_hash": "3c01485aea004d487522078de0e693e7",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.5108166,
+    "ast_hash": "b2b3354a7306da59f207f2ca19520f67",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -936,9 +936,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
-    "mtime": 1791501489.419023,
-    "seen": 1791511166.1153402,
-    "ast_hash": "0ab25cb2647f82d3536c66c55cb8d4ee",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.510858,
+    "ast_hash": "59e7e8cac7ba02687096232d9cc65073",
     "semantic_hash": ""
   },
   "backend/rules_engine/state_based_actions.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791527240.4853852,
-    "seen": 1791527324.3699765,
-    "ast_hash": "515d8d0a0811c366507f6ea81199bdc9",
+    "mtime": 1791533799.393901,
+    "seen": 1791533979.5151896,
+    "ast_hash": "62237059ae94e9d242e89fa654e72ec4",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791527240.484385,
-    "seen": 1791527324.3696806,
-    "ast_hash": "7b813d5f6473a267548e9d3dc7047613",
+    "mtime": 1791533799.3949013,
+    "seen": 1791533979.514928,
+    "ast_hash": "533e98381bc2bd5a317880df38a31780",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15366,15 +15366,15 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/closed_loyalty.py": {
-    "mtime": 1791501489.2720253,
-    "seen": 1791511166.115205,
-    "ast_hash": "565cc51b40f0064386294aca6fec49b3",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.510686,
+    "ast_hash": "f2bbdfb4456e2ac529939420967364c9",
     "semantic_hash": ""
   },
   "backend/rules_engine/loyalty_instructions.py": {
-    "mtime": 1791502304.670282,
-    "seen": 1791511166.1152813,
-    "ast_hash": "e92c186ac1dbb8d21186a32770f3fceb",
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.5107908,
+    "ast_hash": "52318262aaed0f93288738c5d141060a",
     "semantic_hash": ""
   },
   "backend/rules_engine/printed_body.py": {
@@ -15789,6 +15789,72 @@
     "mtime": 1791526893.0242505,
     "seen": 1791527324.3649852,
     "ast_hash": "6043110504a6535fe7ce09054a2622d2",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/source_linked_exile.py": {
+    "mtime": 1791533660.9874768,
+    "seen": 1791533979.5108497,
+    "ast_hash": "7b22f85bf54948139248f90f0c6fb58a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/source_linked_exile/boomerang.json": {
+    "mtime": 1791533660.9884768,
+    "seen": 1791533979.512004,
+    "ast_hash": "2aed72659a21147ec5ec1a8fec84468a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/source_linked_exile/nadu-facts.json": {
+    "mtime": 1791533660.9884768,
+    "seen": 1791533979.5120056,
+    "ast_hash": "7a32fe2eca685cb7c53ecb334a7672a0",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/source_linked_exile/payment-facts.json": {
+    "mtime": 1791533660.9884768,
+    "seen": 1791533979.5120075,
+    "ast_hash": "407c5bf99e7ca5eaaacd6334d45d6f7d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/source_linked_exile/provenance.json": {
+    "mtime": 1791533660.9884768,
+    "seen": 1791533979.5120091,
+    "ast_hash": "b0cb910d90aed8863ef5feb8780aa361",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_source_linked_frontier.py": {
+    "mtime": 1791533660.9884768,
+    "seen": 1791533979.5123825,
+    "ast_hash": "e55add430484bdc5322f138c1a543d63",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_source_linked_exile.py": {
+    "mtime": 1791533660.9884768,
+    "seen": 1791533979.5134287,
+    "ast_hash": "090046dc17c11546aa61ebdf1acacac4",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_source_linked_paid_copy.py": {
+    "mtime": 1791533660.9894767,
+    "seen": 1791533979.51343,
+    "ast_hash": "87a0f538cf7a6647d774b97a51ebf198",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_source_linked_paid_edges.py": {
+    "mtime": 1791533660.9894767,
+    "seen": 1791533979.5134315,
+    "ast_hash": "4140c95d2088bbc744e965656f8df1b7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_source_linked_payment_matrix.py": {
+    "mtime": 1791533660.9894767,
+    "seen": 1791533979.513433,
+    "ast_hash": "063f070a7ccdf8d2f36c6ef684a9342d",
+    "semantic_hash": ""
+  },
+  "docs/testing/source-linked-exile-current.md": {
+    "mtime": 1791533799.393901,
+    "seen": 1791533979.5150108,
+    "ast_hash": "84a9a8787fa148a52bd27d749b5f18ac",
     "semantic_hash": ""
   }
 }

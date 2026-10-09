@@ -92,7 +92,7 @@ def compile_body(text, name=''):
     for line in lines:
         from rules_engine.loyalty_instructions import companion
         permission = ENTRY_TURN_PERMISSION.fullmatch(line)
-        if companion(line) or line.casefold() == 'flash' or (permission and permission['source'].casefold()
+        if companion(line, name) or line.casefold() == 'flash' or (permission and permission['source'].casefold()
                 in {name.casefold(), 'this planeswalker', 'this permanent'}):
             if line.casefold() in {old.casefold() for old in companions}:
                 return None

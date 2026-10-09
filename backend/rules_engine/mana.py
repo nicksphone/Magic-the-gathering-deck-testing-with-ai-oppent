@@ -638,12 +638,16 @@ def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='
                         optimize_paid=False, post_payment_condition=None):
     from types import SimpleNamespace
     from rules_engine.casting_resources import resource_keywords, joint_resource_payment
+    from rules_engine.source_linked_exile import mana_requirements
+    def spending(remaining):
+        return mana_requirements(state, player_id, source_card_id, remaining, payment_context[0])
     view = card or SimpleNamespace(id=source_card_id, oracle_text=oracle_text, keywords=[])
     reserved_card_ids = _consumption_reservations(payment_context, view, source_card_id, reserved_card_ids)
     enabled = payment_context[0] == 'spell' and resource_keywords(view)
     cannot_spend = payment_context[0] == 'spell' and "you can't spend mana to cast this spell" in oracle_text.lower()
 
     def physical(remaining, tapped=(), held=()):
+        remaining = spending(remaining)
         if post_payment_condition is None and not any(remaining.get(key, 0) for key in ('generic', 'W', 'U', 'B', 'R', 'G', 'C', 'S')):
             return [], {}
         if cannot_spend:
@@ -656,8 +660,10 @@ def _spell_payment_plan(state, player_id, req, *, payment_context, oracle_text='
                                  if post_payment_condition is not None else None)
 
     if enabled or resource_choices is not None:
-        return joint_resource_payment(state, player_id, view, req, resource_choices, physical,
-                                      reserved_consumption_ids=reserved_card_ids)
+        result = joint_resource_payment(state, player_id, view, req, resource_choices, physical,
+                                        reserved_consumption_ids=reserved_card_ids)
+        return (spending(result[0]), result[1], result[2]) if result is not None else None
+    req = spending(req)
     mana = physical(req)
     return (req, None, mana) if mana is not None else None
 

@@ -648,6 +648,8 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                         from rules_engine.state_based_actions import apply_state_based_actions
                         apply_state_based_actions(state)
                     return True
+            from rules_engine.source_linked_exile import commit_entry
+            commit_entry(state, card)
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller, "x_value": max(0, int(payload.get("x_value", 0) or 0))})
     if entry_staged_here or payload.get('__resolution_stage_owned'):
         from rules_engine.state_based_actions import apply_state_based_actions

@@ -31,7 +31,10 @@ def emblem_body(text):
     return None
 
 
-def companion(line):
+def companion(line, name=''):
+    from rules_engine.source_linked_exile import entry_instruction
+    if entry_instruction(line, name):
+        return 'source_linked_exile_entry'
     if re.fullmatch(r'Each opponent can cast spells only any time they could cast a sorcery\.', line, re.I):
         return 'opponent_sorcery_only'
     if re.fullmatch(r'Whenever you tap a ' + LAND + r' for mana, add an additional \{[WUBRG]\}\.', line, re.I):
@@ -49,6 +52,19 @@ def compile_extended(text, name):
     from rules_engine.continuous import _attached_keywords
     if any(c in text for c in '()\n;'):
         return None
+    top = re.fullmatch(r"Exile the top (card|("+COUNT+r") cards) of each player's library\.", text, re.I)
+    if top:
+        amount = 1 if top[1].lower() == 'card' else number(top[2])
+        if 1 <= amount <= 20:
+            return [node('source_exile', selection='libraries', amount=amount)]
+        return None
+    if re.fullmatch(r'Exile target (?:artifact|creature|artifact or creature)\.', text, re.I):
+        return [node('source_exile', selection='target')]
+    mass = re.fullmatch(r'Exile all (?:cards from all )?graveyards\. Add ((?:\{[WUBRGC]\})+)\.', text, re.I)
+    if mass and len(mass[1]) <= 60:
+        return [node('source_exile', selection='graveyards'),
+                *[node('mana', color=color.upper(), amount=1)
+                  for color in re.findall(r'\{([WUBRGC])\}', mass[1], re.I)]]
     combo = re.fullmatch(r'You gain (\d+) life, draw ('+COUNT+r') cards?, then put up to ('+COUNT+r') permanent cards from your hand onto the battlefield\.', text, re.I)
     if combo:
         return [node('gain', amount=int(combo[1])), node('draw', amount=number(combo[2])),
@@ -105,7 +121,11 @@ def announcement_text(text, name):
     steps = compile_instruction(text, name)
     targetless = {'loyalty_emblem', 'loyalty_search', 'loyalty_gain', 'loyalty_draw',
                   'loyalty_hand_entry', 'loyalty_delay_untap', 'loyalty_flash',
-                  'loyalty_source_token', 'loyalty_scaled_buff', 'loyalty_destroy_threshold'}
+                  'loyalty_source_token', 'loyalty_scaled_buff', 'loyalty_destroy_threshold', 'loyalty_mana'}
+    if steps and all(step['effect_key'] == 'loyalty_mana' or
+                     (step['effect_key'] == 'loyalty_source_exile' and step['data']['selection'] != 'target')
+                     for step in steps):
+        return ''
     if steps and all(step['effect_key'] in targetless for step in steps):
         return ''
     return text
@@ -132,7 +152,7 @@ def compile_proxy(state, card, controller, targets):
     for step in steps:
         key = step['effect_key']
         if key.startswith('loyalty_'):
-            payload = {**step['data'], 'source_reference': reference}
+            payload = {**step['data'], 'source_reference': reference, 'loyalty_clause': card.oracle_text}
             if targets.get('target_card_id'):
                 payload['target_card_id'] = targets['target_card_id']
         else:
@@ -152,7 +172,12 @@ def resolve(state, controller, payload):
     from rules_engine.events import emit_event, emit_event_batch
     kind = payload['loyalty_operation']
     target = state.cards.get(payload.get('target_card_id'))
-    if kind in {'gain', 'draw'}:
+    if kind == 'source_exile':
+        from rules_engine.source_linked_exile import execute
+        execute(state, controller, payload)
+    elif kind == 'mana':
+        handlers.add_mana(state, controller, payload)
+    elif kind in {'gain', 'draw'}:
         resolve_effect(state, controller, 'gain_life' if kind == 'gain' else 'draw_cards', payload)
     elif kind == 'emblem':
         cid = state.allocate_object_id()
@@ -425,7 +450,8 @@ def collect_emblem_triggers(state, event, payload):
 
 def begin_turn(state):
     state.loyalty_permissions = [p for p in state.loyalty_permissions
-        if p['controller'] != state.active_player or p['created_turn'] == state.turn]
+        if p.get('kind') == 'source_linked_exile'
+        or p['controller'] != state.active_player or p['created_turn'] == state.turn]
 
 
 def timing(state, card, player):
@@ -443,5 +469,6 @@ def timing(state, card, player):
                     and any(companion(line) == 'opponent_sorcery_only' for line in compiled['companions'])
                     and not normal):
                 return False, False
-    flash = 'Sorcery' in effective_types(state, card) and any(p['controller'] == player for p in state.loyalty_permissions)
+    flash = 'Sorcery' in effective_types(state, card) and any(
+        p.get('kind') != 'source_linked_exile' and p['controller'] == player for p in state.loyalty_permissions)
     return True, flash

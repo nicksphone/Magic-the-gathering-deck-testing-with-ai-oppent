@@ -179,3 +179,19 @@ inspection; never execute a database on NFS.
 
 No live server, user database, global trust store or service configuration was
 changed by these qualifications. A Git push is not a live deployment.
+
+## Source-Linked Exile Component (2026-10-09)
+
+Current production/test postimages match the isolated source-linked exile and AI
+composition: 398 ordinary passes across 21 whole modules, plus a separate
+repository-native seven-module /133-pass packaging gate with unchanged assertion
+ASTs and canonical input bytes. The AI correction prevents executing opaque
+library acquisition before permission creation. These are overlapping component
+gates, not a full-suite total or expert-strength result.
+
+The original HTTP-neighbor cohort executed 506 passes and three setup failures
+from pytest-owned convenience-symlink handling. Its four actual HTTP cases pass,
+but it does not certify current permission HTTP/restart episodes or a green
+509-case cohort. Control/type dependency diagnostics and mounted-browser work
+remain open. See `source-linked-exile-current.md`; no overall release gate or
+live deployment is closed by this milestone.
