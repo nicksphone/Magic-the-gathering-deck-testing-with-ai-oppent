@@ -6,6 +6,10 @@ execution, followed by paid land/Aura entry and public emblem UI controls. See
 [complete-body acceptance](docs/testing/complete-body-rules-composition.md).
 Actual-AI loyalty choices and replay input/output alias protection now have
 [combined 392-case qualification](docs/testing/ai-loyalty-replay-artifact-safety.md).
+Bounded removal, complete-X/linked-body rejection, human target drafts and
+completed-outcome AI Aura choices now have
+[current 981-case qualification](docs/testing/bounded-spells-and-entry-strategy.md)
+plus complete frontend test/lint/build.
 This remains an unfinished playtesting app, not unrestricted rules certification.
 
 A desktop-first React/TypeScript and Python/FastAPI application for two-player
@@ -31,10 +35,10 @@ version running on the live servers. Scoped acceptance and remaining work are
 recorded in [the finish plan](plan.md) and `docs/testing/`. Full-suite, browser,
 LAN deployment and broader AI-quality qualification remain open.
 
-Strict preflight currently flags cards in the built-in Mono Red Aggro and Burn
-decks, including suspend, damage-to-counter replacement and linked conditional
-damage. A natural UI game with those decks has not passed acceptance; warnings
-are not bypassed to claim support.
+Historical preflight flagged cards in the built-in Mono Red Aggro and Burn
+decks. Refreshed metadata readiness is not a whole-card execution certificate.
+Natural UI games with those decks remain unqualified; warnings are not bypassed
+to claim support.
 
 ## Current Features
 

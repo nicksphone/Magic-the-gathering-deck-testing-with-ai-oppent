@@ -235,6 +235,51 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] in {'loyalty_cards', 'loyalty_attachment'}:
+                def entry_score(action, *, aura_source=None):
+                    from ai.pending_effects import _settle_announced_stack
+                    from rules_engine.action_validation import ActionRejected
+                    projected = planning_copy(state)
+
+                    def continuation(game, moves, actor):
+                        pending = game.pending_mechanic_choice or {}
+                        if (pending.get('kind') == 'loyalty_cards'
+                                or pending.get('kind') == 'loyalty_attachment'
+                                and pending.get('entry_card_id') != aura_source):
+                            return {'type': 'pass_priority'}
+                        return self.choose_action(game, moves, actor).action
+
+                    try:
+                        self.engine.take_action(projected, player_id, action, reject_invalid=True)
+                        if not _settle_announced_stack(projected, player_id=player_id,
+                                                       own_choice_action=continuation):
+                            return None
+                    except (ActionRejected, ValueError, KeyError):
+                        return None
+                    # No forecast based on an unseen draw, search, or new reply.
+                    if any(projected.players[pid].library != state.players[pid].library
+                           or projected.players[pid].hand != state.players[pid].hand
+                           for pid in state.players if pid != player_id):
+                        return None
+                    if projected.players[player_id].library != state.players[player_id].library:
+                        return None
+                    from rules_engine.restrictions import card_cant_attack, card_cant_block
+                    combat_delta = 0.0
+                    # Board value alone misses lost combat permissions on surviving creatures.
+                    for pid, player in state.players.items():
+                        for cid in set(player.battlefield) & set(projected.players[pid].battlefield):
+                            if ("Creature" not in effective_types(state, state.cards[cid])
+                                    or "Creature" not in effective_types(projected, projected.cards[cid])):
+                                continue
+                            attack_delta = (int(card_cant_attack(state, cid))
+                                            - int(card_cant_attack(projected, cid)))
+                            block_delta = (int(card_cant_block(state, cid))
+                                           - int(card_cant_block(projected, cid)))
+                            value = (attack_delta * max(0, effective_power(projected, cid)) * 1.35
+                                     + block_delta * max(0, effective_toughness(projected, cid)) * 0.55)
+                            combat_delta += value if pid == player_id else -value
+                    return evaluate_board(projected, player_id) + combat_delta * 0.95
+
             if choice['kind'] == 'loyalty_cards':
                 from rules_engine.loyalty_instructions import reference_matches
                 pending = state.pending_mechanic_choice or {}
@@ -243,6 +288,16 @@ class AIAgent:
                             if reference_matches(state, cid, references.get(cid))
                             and (pending.get('loyalty_operation') != 'hand_entry'
                                  or cid in state.players[player_id].hand)]
+                if pending.get('loyalty_operation') == 'hand_entry' and len(selected) <= 16:
+                    from rules_engine.attachments import is_aura
+                    before = entry_score({'type': 'choose_mechanic', 'card_ids': []})
+                    retained = []
+                    for cid in selected:
+                        score = entry_score({'type': 'choose_mechanic', 'card_ids': [cid]},
+                                            aura_source=cid) if is_aura(state.cards[cid], state) else None
+                        if before is None or score is None or score >= before:
+                            retained.append(cid)
+                    selected = retained
                 # Free entry is not a mandatory cheapest-card discard choice.
                 return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected[:choice['count']]},
                                   reasoning='Use live offered loyalty cards within the optional limit')
@@ -257,12 +312,18 @@ class AIAgent:
                             (payload.get('__loyalty_selected_references') or {}).get(source_id))):
                     raise ValueError('No live offered loyalty Aura source')
                 legal = aura_entry_options(state, state.cards[source_id], player_id)
-                selected = next((cid for cid in options if cid in legal and
-                    (cid.startswith('player:') or reference_matches(state, cid, references.get(cid)))), None)
-                if selected is None:
+                candidates = [cid for cid in dict.fromkeys(options) if cid in legal and
+                    (cid.startswith('player:') or reference_matches(state, cid, references.get(cid)))]
+                if not candidates:
                     raise ValueError('No live offered loyalty attachment')
+                selected = candidates[0]
+                if len(candidates) <= 16:
+                    scored = [(entry_score({'type': 'choose_mechanic', 'choice_id': cid}), cid)
+                              for cid in candidates]
+                    if all(score is not None for score, cid in scored):
+                        selected = max(scored, key=lambda value: value[0])[1]
                 return AIDecision(action={'type': 'choose_mechanic', 'choice_id': selected},
-                                  reasoning='Attach to a live legally offered object without inventing a target')
+                                  reasoning='Compare completed known attachment outcomes; otherwise retain a live offered option')
             if choice['kind'] in {'library_top_order', 'library_order_shuffle'}:
                 selected = self._choose_library_search(state, options, len(options), player_id)
                 return AIDecision(action={'type': 'choose_mechanic', 'card_ids': selected},

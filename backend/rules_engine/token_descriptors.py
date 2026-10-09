@@ -9,6 +9,34 @@ DESCRIPTOR = re.compile(
 COLORS = {'white': 'W', 'blue': 'U', 'black': 'B', 'red': 'R', 'green': 'G'}
 
 
+def complete_x_creature_token_body(text):
+    """Receipt for one complete announced-X token body, not a prefix match."""
+    from rules_engine.oracle_effects import _extract_keywords_from_text
+    from rules_engine.casting_resources import KEYWORDS
+    lines = [line.strip() for line in (text or '').strip().splitlines()]
+    while lines and lines[0].split(' (', 1)[0].lower() in KEYWORDS:
+        header = lines.pop(0)
+        if '(' in header or ')' in header:
+            # This is the complete printed resource-reminder contract, not
+            # permission to erase arbitrary parentheses.
+            if header.casefold() != ('Convoke (Your creatures can help cast this spell. Each creature you tap '
+                          "while casting this spell pays for {1} or one mana of that creature's color.)").casefold():
+                return None
+    body = '\n'.join(lines)
+    match = DESCRIPTOR.match(body)
+    if match is None or not re.match(r'create x\b', body, re.I):
+        return None
+    tail = body[match.end():]
+    keywords = []
+    if tail != '.':
+        if not tail.startswith(' with ') or not tail.endswith('.'):
+            return None
+        keywords = re.split(r',? and |, ', tail[6:-1].lower())
+        if not keywords or any(_extract_keywords_from_text(word) != [word] for word in keywords):
+            return None
+    return {'descriptor': creature_token_descriptor(body), 'keywords': keywords, 'residual': ''}
+
+
 def creature_token_descriptor(text: str) -> dict | None:
     match = DESCRIPTOR.search(text)
     if match is None:

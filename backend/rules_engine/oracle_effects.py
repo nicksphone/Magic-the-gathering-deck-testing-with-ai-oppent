@@ -427,6 +427,23 @@ def infer_effect_from_oracle(
     if "Planeswalker" in (effective_types(state, card) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
+    from rules_engine.linked_targets import linked_damage_instruction
+    # Broaden only candidate detection; admission still checks the complete raw body.
+    candidate_oracle = without_reminder_text(oracle)
+    if (re.search(r'damage\s+to\s+target\s+(?:player(?:\s+or\s+planeswalker)?|planeswalker)[^.]*'
+                  r"target\s+creature\s+that\s+(?:player|planeswalker|player\s+or\s+that\s+planeswalker's\s+controller)\s+controls",
+                  candidate_oracle, re.I)
+            and linked_damage_instruction(oracle, card.name) is None):
+        return 'noop', {'__unsupported_instruction': oracle}
+    if (set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'})
+            and re.search(r'(?:^|\n)\s*create\s+x\s+(?:tapped(?: and attacking)?\s+)?\d+/\d+', candidate_oracle, re.I)):
+        from rules_engine.token_descriptors import complete_x_creature_token_body
+        if complete_x_creature_token_body(oracle) is None:
+            return 'noop', {'__unsupported_instruction': oracle}
+    from rules_engine.bounded_removal import instruction as bounded_instruction, effect as bounded_effect
+    bounded = bounded_instruction(oracle)
+    if bounded is not None:
+        return bounded_effect(state, bounded, action_targets)
     # A complete target instruction has an effect even before a target is chosen.
     if re.fullmatch(r'untap target (?:(?:nonland|noncreature|tapped) )?'
                     r'(?:artifact|creature|land|permanent)'
@@ -1237,6 +1254,10 @@ def inspect_target_hints(
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
     oracle = without_reminder_text(str(" ".join(selected_modes) if selected_modes else selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
+    from rules_engine.bounded_removal import instruction as bounded_instruction
+    bounded = bounded_instruction(oracle)
+    if bounded is not None:
+        hints['up_to_target_count'] = bounded['count']
     if FACE_UP_EXILE_GRAVEYARD_RE.fullmatch(oracle.strip()):
         from rules_engine.zone_actions import is_departed_token
         return {'exile_card_targets': [
@@ -1543,7 +1564,7 @@ def inspect_target_hints(
         restrictions.update(bounded_exile)
         if 'x_value' in action_targets:
             restrictions['mana_value_max'] = action_targets['x_value']
-    if TARGET_TYPE_UNION_RE.search(oracle) or 'combat_status' in restrictions:
+    if bounded is not None or TARGET_TYPE_UNION_RE.search(oracle) or 'combat_status' in restrictions:
         hints['permanent_targets'] = [
             {'id': cid, 'name': state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
@@ -1619,6 +1640,10 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
     future stack-resolution rechecks.
     """
     oracle = without_reminder_text((oracle_text or "").lower())
+    from rules_engine.bounded_removal import instruction as bounded_instruction
+    bounded = bounded_instruction(oracle)
+    if bounded is not None:
+        return {'allowed_types': bounded['allowed_types']}
     from rules_engine.conditional_instructions import parse_instruction
     conditional = parse_instruction(oracle)
     if conditional and conditional['effect_key'] == 'destroy_permanent':

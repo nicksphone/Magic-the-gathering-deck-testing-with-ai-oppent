@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-08 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-09 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -480,3 +480,17 @@ fixtures were subsequently admitted, with source equality and physical closure.
 See [scope and evidence](docs/testing/ai-loyalty-replay-artifact-safety.md).
 This is conservative legality and artifact protection, not optimal AI,
 13-archetype natural-match evidence or completion of any original release gate.
+
+## 2026-10-09 Bounded Spells And Entry Strategy
+
+Current composition over `9b86ca2` passes 30 whole modules / 981 cases in
+177.82s, retaining the original 400 corpus/consumer nodes and assertions.
+Full frontend test/lint/build passes. Complete bounded removal uses retained
+target references; malformed linked/X-token bodies reject before payment even
+with embedded unknown parentheses or leading whitespace. Human target drafts
+respect the offered maximum and clear stale scalar fields. Actual AI compares
+known Aura-entry and decline outcomes at the same completed stack boundary.
+See [scope and preserved baselines](docs/testing/bounded-spells-and-entry-strategy.md).
+This does not certify alternative pitch costs, noncreature copy/retarget paths,
+full browser acceptance, maximum-width planner latency or seasoned-player AI.
+All original release-gate requirements remain unchanged and open.

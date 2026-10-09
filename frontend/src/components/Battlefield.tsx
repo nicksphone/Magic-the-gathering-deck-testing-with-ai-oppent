@@ -822,6 +822,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
               ...(hints?.graveyard_card_targets ?? []), ...(hints?.graveyard_creature_targets ?? []), ...(hints?.graveyard_permanent_targets ?? []),
             ].map((target) => [target.id, target])).values()];
+            const boundedTargets = Array.isArray(targets[card.id]?.target_card_ids)
+              ? targets[card.id].target_card_ids as string[] : [];
+            const incompleteBoundedTargets = Boolean(hints?.up_to_target_count && hints.up_to_target_count > 1 && (
+              targets[card.id]?.target_card_id || boundedTargets.length > hints.up_to_target_count
+              || new Set(boundedTargets).size !== boundedTargets.length
+              || boundedTargets.some(id => !alternativeTargets.some(target => target.id === id))
+            ));
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             const payments = [
               { key: 'discard_card_ids', count: (selectedCost?.discard_cards ?? 0) + (selectedCost?.discard_x ? Math.max(0, Number(targets[card.id]?.x_value ?? 0)) : 0), candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost', optional: false },
@@ -857,7 +864,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {foretellControl}
                 {suspendControl}
                 <button
-                  disabled={incompleteModes || incompleteSpreeTargets || incompleteSpreeCosts || incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteLinkedPair || duplicateResources}
+                  disabled={incompleteModes || incompleteSpreeTargets || incompleteSpreeCosts || incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteBoundedTargets || incompleteLinkedPair || duplicateResources}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {move.card_name ?? card.name} {displayedManaCost ? `(${displayedManaCost})` : ""}
@@ -1103,11 +1110,14 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   hints?.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select
                       multiple
+                      aria-label={`Choose up to ${hints.up_to_target_count} targets for ${card.name}`}
+                      value={boundedTargets}
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
                           [card.id]: {
                             ...prev[card.id],
+                            target_card_id: undefined,
                             target_card_ids: Array.from(e.target.selectedOptions).map((o) => o.value),
                           },
                         }))
