@@ -235,3 +235,13 @@ seven casts. See `modal-cost-view-current.md`. The owner's lint/build passed;
 its initial npm-test run stopped on a guard-denied unused Vite WebSocket
 listener. Full configured frontend, browser and backend CI qualification on
 the published composition remains required, as do the broader release gates.
+
+## Browser BO3 Readiness Expectation (2026-10-09)
+
+The new workflow on `3b99b96d` passed frontend and logged 76 successful browser
+checkpoints, including the previously failing modal view. It then stopped on
+an old game-over assertion requiring next-game controls before human sideboard
+confirmation. The test now enforces the implemented disabled-before/available-
+after contract; product rules/UI are unchanged. Eight actual Controls readiness
+renders and syntax checking pass. Full corrected browser CI remains required.
+See `browser-bo3-readiness-ci.md`; the full backend workflow is still outstanding.

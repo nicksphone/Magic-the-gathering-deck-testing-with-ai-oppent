@@ -334,6 +334,13 @@ See `docs/testing/modal-cost-view-current.md`. The observed remote workflow on
 contract defect. A complete workflow on the corrected published composition
 remains required; component passes do not establish release readiness.
 
+The published `3b99b96d` workflow passed frontend and 76 browser checkpoints
+before a stale game-over test expected play/draw before human sideboard
+confirmation. The corrected test requires confirmation, then asserts both
+controls remain available. Eight actual readiness renders pass; remote full
+browser/backend qualification remains required. See
+`docs/testing/browser-bo3-readiness-ci.md`.
+
 Current native next-cast and entry-counter integration has one 36-whole-module
 834-pass qualification on the composed `91c40e2` application baseline. Parent
 applied bytes match the actual tested archive. See

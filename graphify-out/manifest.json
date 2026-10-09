@@ -6282,9 +6282,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-game-over.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1180754,
-    "ast_hash": "9e32b5cb7e13cfc0ea1fd75f60effccc",
+    "mtime": 1791542687.2948198,
+    "seen": 1791542856.1448712,
+    "ast_hash": "ffa22b8057678ea18b239b3ab1f20458",
     "semantic_hash": ""
   },
   "frontend/tests/browser-graveyard-cast-methods.mjs": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791542066.1839316,
-    "seen": 1791542151.2121212,
-    "ast_hash": "c1b5282cf5b900938ca24a8fda994643",
+    "mtime": 1791542770.6944203,
+    "seen": 1791542856.1462028,
+    "ast_hash": "55ba52ef93913fe491289f848b446b35",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791542066.1839316,
-    "seen": 1791542151.2118485,
-    "ast_hash": "50f40659ecd9fce92c1390d3618ce758",
+    "mtime": 1791542770.6944203,
+    "seen": 1791542856.1459439,
+    "ast_hash": "04a3da82a54f81c6987459e92ddeb8fa",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15963,6 +15963,12 @@
     "mtime": 1791542066.1829317,
     "seen": 1791542151.2117126,
     "ast_hash": "2c302d82b8238c385611d55ef1bf15f7",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-bo3-readiness-ci.md": {
+    "mtime": 1791542770.6934204,
+    "seen": 1791542856.1454124,
+    "ast_hash": "7cfd2889be2fef737a3d65622cd28340",
     "semantic_hash": ""
   }
 }
