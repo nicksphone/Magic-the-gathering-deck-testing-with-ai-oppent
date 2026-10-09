@@ -25,7 +25,8 @@ def prepare(name="Carnage Tyrant", counter="Counterspell"):
         state.priority_player = 1
         source = state.cards[state.players[2].hand.pop()]
         source.zone = Zone.STACK
-        state.stack.append(StackItem("target", source.id, 2, name, "noop", {}))
+        state.stack.append(StackItem("target", source.id, 2, name, "noop",
+                                     {"__announced_stack_kind": "spell"}))
     else:
         state, _ = state_with_card(name)
     card = add_card(state, counter, Zone.HAND, 1) if counter == "Counterspell" else add_counter(state, counter)
@@ -58,7 +59,8 @@ def test_ai_holds_counter_against_battlefield_protected_spell(name):
 def test_ai_selects_counterable_spell_before_higher_scoring_protected_spell():
     state, counter = prepare()
     bolt = add_card(state, "Lightning Bolt", Zone.STACK, 2)
-    state.stack.append(StackItem("bolt", bolt.id, 2, bolt.name, "deal_damage", {"amount": 3, "target_player": 1}))
+    state.stack.append(StackItem("bolt", bolt.id, 2, bolt.name, "deal_damage",
+                                 {"amount": 3, "target_player": 1, "__announced_stack_kind": "spell"}))
     ai = AIAgent(archetype="Control", difficulty="master")
     assert ai._stack_item_threat_score(state, "target", 1) > ai._stack_item_threat_score(state, "bolt", 1)
     decision = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)

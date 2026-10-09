@@ -326,3 +326,9 @@ still qualify this exact composition; reporter/component passes do not close it.
 
 Current mixed-I/O/browser, duration-ledger migration, expert AI, clean-machine,
 proxy/operator, soak and every original release requirement remain open.
+
+The `7b9549ae` remote frontend passes and its browser advances beyond all
+canonical Tamiyo episodes before an untyped Stifle fixture stops it. The narrow
+fixture correction passes ten whole pure modules / 154 cases in 17.84s without
+changing production targeting or original assertions; remote browser acceptance
+is still required. See `backend-ci-inputs-and-diagnostics.md`.

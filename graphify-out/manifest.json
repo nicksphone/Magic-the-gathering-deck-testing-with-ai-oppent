@@ -3030,9 +3030,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_counterability.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1166646,
-    "ast_hash": "27261dec7b3bc6ac3d5abfc128626556",
+    "mtime": 1791563028.9743657,
+    "seen": 1791563124.951618,
+    "ast_hash": "56e1d06d9277489876fe774d0ff048bd",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_decisions.py": {
@@ -3828,9 +3828,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_counterability_scope.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1169717,
-    "ast_hash": "a552f3d14a93cd109336a5c102b0ddae",
+    "mtime": 1791563028.9743657,
+    "seen": 1791563124.9519787,
+    "ast_hash": "1234f973dc3cf7a48888aa171f4440a9",
     "semantic_hash": ""
   },
   "backend/tests/test_coupled_target_coverage.py": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791561607.4249165,
-    "seen": 1791561749.7189863,
-    "ast_hash": "4294a24374a7fe41e0952e4af713961d",
+    "mtime": 1791563029.0293653,
+    "seen": 1791563124.954334,
+    "ast_hash": "5db9e8122dcf89f7c6fd3171b1ec6efa",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -16158,9 +16158,9 @@
     "semantic_hash": ""
   },
   "docs/testing/backend-ci-inputs-and-diagnostics.md": {
-    "mtime": 1791561607.4239166,
-    "seen": 1791561749.7181053,
-    "ast_hash": "89ff0b8dd5a526c22fdc3e5465aea2d1",
+    "mtime": 1791563029.0283654,
+    "seen": 1791563124.9537303,
+    "ast_hash": "d799c690b9de08d79b1619de6c90396a",
     "semantic_hash": ""
   },
   "docs/testing/compleated-loyalty-full.md": {
@@ -16173,6 +16173,12 @@
     "mtime": 1791561607.4269166,
     "seen": 1791561749.7192032,
     "ast_hash": "f9df4e25eff19024cf9d47b12c52284b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_browser_stifle_frame_contract.py": {
+    "mtime": 1791563028.9743657,
+    "seen": 1791563124.951811,
+    "ast_hash": "fe6b2bfc1715ea5208ba4d271979736e",
     "semantic_hash": ""
   }
 }

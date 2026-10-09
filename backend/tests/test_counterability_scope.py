@@ -24,7 +24,10 @@ def state_with_card(name, zone=Zone.STACK, controller=2):
     state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     card = add_card(state, name, zone, controller)
-    state.stack.append(StackItem("target", card.id, controller, name, "noop", {}))
+    # Declare the fixture's kind now; targeting must not infer it from later source zones.
+    kind = "spell" if zone == Zone.STACK else "activated"
+    state.stack.append(StackItem("target", card.id, controller, name, "noop",
+                                 {"__announced_stack_kind": kind}))
     return state, card
 
 

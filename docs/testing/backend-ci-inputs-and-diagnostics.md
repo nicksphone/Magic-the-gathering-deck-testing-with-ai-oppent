@@ -77,3 +77,23 @@ portable-input packet; the final parent/public postimages have byte equality.
 
 The full configured remote backend, frontend and browser jobs remain release
 prerequisites. Generic reporter and input-component passes do not close them.
+
+## Native Counter Fixture Correction
+
+The `7b9549ae` frontend job passes. Its browser job completes the canonical
+Tamiyo episodes, then stops because the synthetic Shepherd ability has no
+native stack-kind announcement and Stifle is therefore not offered. Strict
+targeting correctly treats that old empty payload as unknown; it is not a
+spell-protection or mana defect.
+
+The shared counterability factory now declares its intended kind at fixture
+construction, and two AI fixture spell frames declare their spell kind. All
+43 original assertion ASTs and test parametrizations remain unchanged. Neither
+production classification nor browser predicates are relaxed. Unknown frames
+still reject atomically; declared kinds survive source departure and snapshots.
+
+Actual baseline: five whole modules, 44 passes and 19 failures, 9.64s. Corrected
+qualification: ten whole pure modules, 154 passes, two dependency warnings,
+17.84s, unchanged source and no attempted Python SQL/network I/O. This is not a
+native OS sandbox or a remote browser pass. The full remote backend run remains
+in progress, and the next complete browser workflow must qualify this correction.
