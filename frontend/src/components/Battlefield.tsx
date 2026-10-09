@@ -333,7 +333,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   }
 
   return (
-    <section className={`panel battlefield ${battlefieldDensityClass}`} data-match-revision={match.revision}>
+    <section className={`panel battlefield ${battlefieldDensityClass}`} data-match-id={match.id} data-match-revision={match.revision}>
       {manaMoves.length > 0 ? <details className="zone-tray">
         <summary>Mana abilities ({manaMoves.length})</summary>
         {manaMoves.map(move => <ManualManaOutput key={`${match.revision}:${move.card_id}-mana-${move.ability_index}`}

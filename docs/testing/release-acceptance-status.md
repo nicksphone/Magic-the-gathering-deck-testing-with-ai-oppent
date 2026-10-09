@@ -33,6 +33,13 @@ Six fixture-contract checks fail before correction and pass afterward. The
 full corrected remote workflow remains pending; see
 `browser-native-frame-fixtures.md`.
 
+The `c0528c8e` frontend job passes; its earlier table-v2 browser flow retains a
+legitimate second scry choice after the old readiness predicate reports success.
+The corrected test completes that choice and gates fixture switching on idle,
+committed, exact rendered identity. Current helper/navigation checks, native
+scry continuation, typecheck and full configured source lint pass. Full remote
+browser/backend acceptance remains pending; see `browser-fixture-handoff-ci.md`.
+
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
 | Granted-target, attachment AI and loyalty announcement composition | Surgical composition over `8b56b3a`: fourteen whole backend modules / 265 passes in 154.86s with native closure, including the shared opaque-conditional simulation frontier and unchanged productive-equip assertions; actual loyalty handler20/backend replay20 and full configured npm test pass; unchanged frontend lint, types and build pass | Controlled pure/component evidence, not mounted browser, natural-match, generic full-card or expert-AI certification. Original Tibalt4 and historical resource/setup/AI-counterexample ledgers remain strict and visible. See `granted-target-ai-loyalty-current.md` |

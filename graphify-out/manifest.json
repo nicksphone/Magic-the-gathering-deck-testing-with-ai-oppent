@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791522390.7894886,
-    "seen": 1791524110.823741,
-    "ast_hash": "81ef33c69f378d7267bf369e75bb5944",
+    "mtime": 1791545334.7989411,
+    "seen": 1791545889.3941925,
+    "ast_hash": "e66a21989484aadc5ef7a049a315c5db",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5952,9 +5952,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Battlefield.tsx": {
-    "mtime": 1791522390.7894886,
-    "seen": 1791524110.8237588,
-    "ast_hash": "773519db2043285d8b70316e3863fe56",
+    "mtime": 1791545590.4806654,
+    "seen": 1791545889.3942204,
+    "ast_hash": "8631ac8427350ce7da982d79bc4ab512",
     "semantic_hash": ""
   },
   "frontend/src/components/CardArt.tsx": {
@@ -6066,9 +6066,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/api-request-deadlines.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1180112,
-    "ast_hash": "03d9427563745d3d418af45897b7f18c",
+    "mtime": 1791545334.7359421,
+    "seen": 1791545889.3942733,
+    "ast_hash": "972f4ef6648549258004615963413cfa",
     "semantic_hash": ""
   },
   "frontend/tests/api-routing.mjs": {
@@ -6534,9 +6534,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1181495,
-    "ast_hash": "f8c5d52a012ff7eb92b92244028f556a",
+    "mtime": 1791545590.4806654,
+    "seen": 1791545889.3945036,
+    "ast_hash": "5e18b25f2918b9b21beec4e99a92621e",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791544464.12926,
-    "seen": 1791544549.4039037,
-    "ast_hash": "ba9799643fd9a13f86671459ccc1c0c2",
+    "mtime": 1791545803.3180969,
+    "seen": 1791545889.396398,
+    "ast_hash": "b189e55688918c403e8d8d9fb08a30f2",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791544464.1302602,
-    "seen": 1791544549.4036212,
-    "ast_hash": "b1d374138701849d1a45743836d9bd25",
+    "mtime": 1791545803.3180969,
+    "seen": 1791545889.3960712,
+    "ast_hash": "efa0ff1f48c295ec2ded29eab66b6f5b",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15981,6 +15981,18 @@
     "mtime": 1791544464.12926,
     "seen": 1791544549.4030972,
     "ast_hash": "8fec32f71b967376cf853d102f9f1f18",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-fixture-handoff.mjs": {
+    "mtime": 1791545590.4816654,
+    "seen": 1791545889.3943703,
+    "ast_hash": "c5b57abe78837a442d99c6a13bc50874",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-fixture-handoff-ci.md": {
+    "mtime": 1791545803.317097,
+    "seen": 1791545889.3952343,
+    "ast_hash": "d25a1de79242cb14b890884eddbf1cfe",
     "semantic_hash": ""
   }
 }

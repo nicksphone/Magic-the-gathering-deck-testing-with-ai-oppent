@@ -25,10 +25,11 @@ async function shot(name, selector) {
   await writeFile(`${evidence}/${name}.png`,Buffer.from(image.data,'base64'));
 }
 async function setup(path) {
+  await waitFor("!document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Restoring saved session')");
   const response=await fetch(api+path,{method:'POST'});assert.equal(response.status,200);
   const state=await response.json();
   await evaluate(`localStorage.setItem('mtg.activeMatch',${JSON.stringify(state.id)})`);await reload();
-  await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Restoring saved session') && [...document.querySelectorAll('button')].some(e=>e.textContent==='Resume automatic play')");
+  await waitFor(`localStorage.getItem('mtg.activeMatch') === ${JSON.stringify(state.id)} && document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(state.id)} && document.querySelector('.battlefield')?.dataset.matchRevision === ${JSON.stringify(String(state.revision))} && !document.body.innerText.includes('Restoring saved session') && !document.body.innerText.includes('Match operation pending') && [...document.querySelectorAll('button')].some(e=>e.textContent==='Resume automatic play')`);
   return state;
 }
 async function select(selector,value) {
@@ -119,11 +120,19 @@ try {
   assert.ok(await evaluate("document.querySelector('.inspection-faces details').open"));
   const faceShot=await command('Page.captureScreenshot',{format:'png'});await writeFile(`${evidence}/after-face-inspection.png`,Buffer.from(faceShot.data,'base64'));await key('Escape');
   await record('Available multi-face metadata inspectable by keyboard without changing the chosen legal cast');
-  await setup('/fixture?face_kind=scry');
+  const scryState = await setup('/fixture?face_kind=scry');
   assert.ok(await evaluate("document.querySelector('.choice-notice').textContent.includes('Choice required')"));
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(e=>e.textContent==='Pass Priority').disabled"),true);
+  const scryRevision = await evaluate("document.querySelector('.battlefield').dataset.matchRevision");
   await shot('after-pending-choice','#match-controls');await click('Confirm Selection');
-  await waitFor("!document.querySelector('.choice-notice') || !document.body.innerText.includes('Confirm Selection')");
+  await waitFor(`document.querySelector('.battlefield')?.dataset.matchRevision !== ${JSON.stringify(scryRevision)} && !document.body.innerText.includes('Match operation pending') && document.body.innerText.includes('Order the remaining cards')`);
+  for (const name of ['Twiddle', 'Impede Momentum', 'Grizzly Bears']) await click(name);
+  const orderRevision = await evaluate("document.querySelector('.battlefield').dataset.matchRevision");
+  await click('Confirm Order');
+  await waitFor(`document.querySelector('.battlefield')?.dataset.matchRevision !== ${JSON.stringify(orderRevision)} && !document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Confirm Selection') && !document.body.innerText.includes('Confirm Order')`);
+  const scryFinal = await (await fetch(`${api}/matches/${scryState.id}`)).json();
+  assert.equal(scryFinal.pending_mechanic_choice, null);
+  assert.ok(scryFinal.players['2'].hand.some(card => card.name === 'Twiddle'));
   await record('Pending canonical scry prevents pass and remains actionable in command surface');
   const cast=await setup('/fixture');await click('Cast Llanowar Elves');await waitFor("document.querySelector('.stack-item')?.textContent.includes('Llanowar Elves')");
   assert.ok((await(await fetch(`${api}/matches/${cast.id}`)).json()).stack.length>0);await shot('after-stack-response','#match-controls');

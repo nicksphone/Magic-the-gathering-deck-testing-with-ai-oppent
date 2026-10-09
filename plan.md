@@ -349,6 +349,14 @@ including six red-before/green-after fixture-contract cases. The complete
 corrected remote workflow remains required. See
 `docs/testing/browser-native-frame-fixtures.md`.
 
+The subsequent `c0528c8e` frontend job passes; its browser table scenario
+exposes an incomplete scry continuation and an unsafe fixture-switch readiness
+predicate. The test now completes deliberate ordering and checks committed,
+idle, exact rendered match identity. Helper red/green, unchanged navigation,
+actual native scry continuation, current typecheck and full source lint pass.
+The full corrected remote workflow is still required; see
+`docs/testing/browser-fixture-handoff-ci.md`.
+
 Current native next-cast and entry-counter integration has one 36-whole-module
 834-pass qualification on the composed `91c40e2` application baseline. Parent
 applied bytes match the actual tested archive. See
