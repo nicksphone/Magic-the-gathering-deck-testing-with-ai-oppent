@@ -13,7 +13,9 @@ among 242 queried versions. This is a dated database result, not installation,
 deployment or application-security certification. The subsequent current-source
 loyalty entry/public-emblem composition passes 1,003 gameplay checks plus complete
 frontend test/lint/build in published `9d519b5`; its generated-media wrapper diagnostic is retained
-explicitly. See `loyalty-entry-emblems-current.md`. Full browser acceptance,
+explicitly. See `loyalty-entry-emblems-current.md`. The original 50-episode built
+browser cohort now passes on `d65791a`, including three natural BO3 series;
+see `current-d657-native-browser50.md`. Every supported browser action,
 arbitrary-card semantics and expert AI remain open. Earlier component source
 pins remain individually recorded below; their passes do not automatically
 transfer to the latest combined source. Overall release remains unfinished.
@@ -24,7 +26,8 @@ substitute for qualification of the final combined source.
 
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
-| Native browser empty human windows | Two acceptance helpers corrected over `0483ef0`; lasting actual-source 50 checks reproduce eight baseline mismatches and pass after correction. Separate built-App boundary4 passes both-seat empty/actionable cases in 16.675s with actual HTTP/revision evidence and physical closure | Automation correction only; boundary manually exercises App, not natural helper loops. Original full50 retains its seat2 failure and still needs complete unchanged-cohort execution. App/backend/driver unchanged. See `native-browser-empty-human-windows.md` |
+| Original built browser full50 | Immutable `d65791a`: all 50 original ordered episodes complete in 1,149.532s with wrapper zero, raw success/closure and independent owned-resource closure. Paid40, recovery3, origin4 and three natural BO3 series include both human seats versus AI | Declared component only, not every supported action, expert AI, fresh install, later engine changes or deployment. The original assertion count is not a separately logged node count; old failures remain immutable. See `current-d657-native-browser50.md` |
+| Native browser empty human windows | Two acceptance helpers corrected over `0483ef0`; lasting actual-source 50 checks reproduce eight baseline mismatches and pass after correction. Separate built-App boundary4 passes both-seat empty/actionable cases in 16.675s with actual HTTP/revision evidence and physical closure | Automation correction only; the later original full50 supplies actual natural actor-loop evidence. The earlier full50 seat2 failure remains historical. App/backend/driver unchanged. See `native-browser-empty-human-windows.md` |
 | Actual AI copy choices | Exact `a53e76a` plus one NEW test: three whole repository modules / 52 passes in 28.50s, wrapper zero, unchanged paid24/boundary16 and complete native closure | Controlled public choices, counterfactuals and hidden-identity swaps only; no policy change, natural-game strength, all-copy or release claim. First disk-floor wrapper failure remains archived. See `ai-force-copy-choices-current.md` |
 | Ordered noncreature copy choices | Composition over `1a73e6b`: same 35 whole modules / 1,129 passes, 247.46s; original 400 nodes and 981-case modules retained; six owned-SQL HTTP fixtures; full frontend test/lint/build | Actual paid Force/Twincast and blink identity, not all copy families or alternative pitch costs. NEW browser harness is syntax-only until its own current gate. Width 2/16/17 AI controls are trusted seams, not expert strategy. See `ordered-copy-current.md` |
 | Bounded spells, target drafts and Aura-entry strategy | Current composition over `9b86ca2`: 30 whole modules / 981 passes in 177.82s, original 400 nodes/bytes unchanged; full frontend test/lint/build; eight UI-submitted actions resolve on the real engine | Pure/component, not browser or whole-card/expert-AI proof. Ten paid fail-open regressions and original mutable test-record/count-observer errors are preserved. Same-boundary AI seam is explicitly constructed. See `bounded-spells-and-entry-strategy.md` |

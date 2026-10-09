@@ -50,8 +50,11 @@ pacing, strategy and the original acceptance assertions are unchanged.
   `2026-10-09T03:09:46.428917Z`.
 
 The boundary run manually exercises the App, not the corrected actor loop.
-Natural runtime evidence for that loop still requires the original complete
-50-episode/94-assertion acceptance run, including both human seats and BO3.
+The subsequent original full run on published `d65791a` completes all 50
+declared episodes in 1,149.532s with wrapper exit zero and independent physical
+closure. Both natural human-seat AI loops record actual native advances.
+See [the complete browser checkpoint](current-d657-native-browser50.md) for
+the original assertion declaration, source/runtime proof and remaining limits.
 
 ## Preserved Histories And Limits
 
@@ -70,5 +73,6 @@ Frozen boundary: `parent-integration/browser-boundary4-0483-qualified-m6MYmw-202
 Original failure: `parent-integration/browser50-a53-terminal-failure-20261009-ycNo7v/`.
 Parent regression/checks: `parent-integration/native-browser-empty-window-integration-20261009/`.
 
-This does not certify full browser acceptance, competitive AI, arbitrary cards,
-LAN deployment, clean-machine operation or overall release completion.
+The helper-only evidence does not certify a browser run by itself. The later
+full50 checkpoint closes that declared component, not competitive AI, arbitrary
+cards, LAN deployment, clean-machine operation or overall release completion.

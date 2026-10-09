@@ -30,7 +30,8 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
   conservation: three whole modules / 49 passes on fresh isolated SQLite.
   Public quantities were already strict; internal coercion is now rejected.
   Seeded native interactive BO3 is qualified in the checkpoint below;
-  complete browser games remain open.
+  the original full50 browser cohort now also completes natural series on
+  `d65791a`. Other actions and policy-strength acceptance remain open.
   [Scoped acceptance](docs/testing/sideboard-quantity-current.md).
 - [x] Shared creature self-tap readiness and effective haste query guard:
   eight whole modules / 277 passes. Separate unchanged canonical Scout/Atlas
@@ -137,8 +138,10 @@ Full corpus, lifecycle and release acceptance remain unfinished.
   [Current acceptance](docs/testing/graveyard-combat-current.md).
 
 These are distinct frozen audit and current-composition ledgers, not a summed
-suite. Soul-Scar and Suspend audits used no SQLite/network; the natural App still
-  stops at preflight with zero match-start/action requests. Searing Blaze has
+suite. Soul-Scar and Suspend audits used no SQLite/network; an earlier natural
+App attempt stopped at preflight with zero match-start/action requests. The
+later original full50 browser cohort completes on `d65791a`; this does not
+qualify arbitrary decks or later engine compositions. Searing Blaze has
   [actual paid-entry witnesses](docs/testing/linked-damage-real-land-entry.md):
   four whole current modules / 146 passes; broader admission/copy/target coverage
   remains under investigation. No unsupported-warning bypass or natural-game retry is
@@ -191,27 +194,32 @@ features or claims based on helpers alone.
    mulligans, ordered bottoms, phases/priority, target/face/mode/resource choices,
    activated/crew/equip/zone plays, combat, cleanup and game completion. Every
    supported action must be reachable; unsupported controls must warn explicitly.
-   One normal actual-App attempt with Mono Red Aggro versus Burn stopped at
+   One historical actual-App attempt with Mono Red Aggro versus Burn stopped at
    support preflight: Soul-Scar Mage counter replacement, Rift Bolt suspend,
    and Searing Blaze linked targets/conditional land-entry damage were flagged.
    There was one preflight POST and no match/action POST; no warning bypass or
-   complete-game claim. Trace coverage classification against engine semantics
-   and close the real gaps before repeating that acceptance path.
+   complete-game claim for that attempt. The later original full50 cohort on
+   `d65791a` completes all declared episodes, including natural human-vs-human
+   and both human-seat AI BO3. Every supported action and remaining rules gaps
+   still need acceptance; see `docs/testing/current-d657-native-browser50.md`.
 4. [ ] Requalify malformed/stale/wrong-actor requests across new actions with
    full state/controller/SQLite equality on rejection, including failed writes.
 5. [ ] Complete refresh, backend restart, ambiguous timeout and manual/autoplay
    overlap acceptance. Reconcile before retry; preserve revisions/idempotency.
    Published checkpoint browser evidence covers refresh, a lost accepted HTTP
-   response, duplicate land intent and real backend restart. Manual/autoplay,
-   full natural human games and broader restart paths remain acceptance work.
+   response, duplicate land intent and real backend restart. The original
+   full50 now also completes its declared recovery and natural series.
+   Broader overlap and restart paths remain acceptance work.
 6. [ ] Verify seeded interactive BO3 transitions, loser play/draw selection,
    sideboard inventory and restart parity. Implement deliberate AI sideboarding
    or label it unavailable, never silently substitute an untested policy.
    Current441 native/API acceptance now passes eleven whole modules / 100
    cases, including real three-game human series, deliberate different-card
    swaps, play/draw readiness and cold restoration. Controls callbacks and
-   frontend checks pass; actual browser series and broader policy strength
-   remain open. See `backend/docs/testing/human-bo3-readiness.md`.
+   frontend checks pass. The later original full50 completes three actual
+   browser BO3 series; broader sideboard policy strength remains open.
+   See `backend/docs/testing/human-bo3-readiness.md` and
+   `docs/testing/current-d657-native-browser50.md`.
 7. [ ] Run clean-checkout offline assets, API/runtime contracts, frontend tests,
    lint/build and the configured browser flow without developer-only cache files.
    Current441 cold ASGI fallback qualified all 155 shipped names without
@@ -506,3 +514,16 @@ Full configured frontend test/lint/build passes.
 See [scope and preserved ledgers](docs/testing/ordered-copy-current.md).
 The NEW reusable browser harness is syntax-checked, not runtime-qualified here.
 Current full browser, 13-style strategy and all original release gates remain open.
+
+## 2026-10-09 Original Full50 Browser Checkpoint
+
+Published `d65791a` completes the unchanged original 50-episode browser cohort
+in 1,149.532s: paid40, recovery3, origin4 and three natural BO3 series, including
+both human seats versus AI. The reviewed helper correction follows genuine
+native revision advances rather than fabricating pass actions. All tracked
+source and pinned runtime inputs remain equal; independent resource closure
+and SQL release are verified. See
+[scope, preserved failures and evidence](docs/testing/current-d657-native-browser50.md).
+Every supported action, broader rules/corpus semantics, measured seasoned AI,
+final HTTPS/LAN/clean-machine/soak acceptance and the original completion
+checklist remain open. This is not overall release completion.
