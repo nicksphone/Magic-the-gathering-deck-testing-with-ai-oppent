@@ -1,5 +1,4 @@
 """Forty canonical HTTP/persistence cases on an explicitly isolated source."""
-from contextlib import contextmanager
 from copy import deepcopy
 import hashlib
 import json
@@ -7,7 +6,6 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-from types import SimpleNamespace
 
 import pytest
 
@@ -18,6 +16,7 @@ from tests.test_canonical_land_animation_audit import db_dump, snapshot
 from tests.test_canonical_multicharacteristic_audit import FAMILIES, ROWS, position
 from tests.test_land_animation_cloudshift_composition import CLOUDSHIFT
 from tests.test_linked_damage_targets import raw_card
+from tests.temporary_characteristics_http_fixture import api_context
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -33,60 +32,7 @@ def receipt(request, **data):
         json.dump({'node': request.node.nodeid, **data}, stream, sort_keys=True, indent=2)
 
 
-@contextmanager
-def api_context(monkeypatch, request, storage):
-    from fastapi.testclient import TestClient
-    from sqlalchemy.pool import StaticPool
-    from sqlmodel import Session, SQLModel, create_engine
-    import main
-    import persistence.db as db
-    from persistence.repository import Repository
-    assert Path(os.environ['MTG_ISOLATED_TEST_ROOT']).resolve() == ROOT
-    assert (ROOT / '.private').read_text() == str(ROOT) and not (ROOT / '.git').exists()
-    assert not ROOT.is_symlink() and Path(main.__file__).resolve().parent == ROOT / 'backend'
-    default = ROOT / 'backend/mtg_lab.db'
-    assert not default.exists() and not default.is_symlink()
-    directory = ROOT / 'http-cases' / digest(request.node.nodeid)
-    directory.mkdir(parents=True, exist_ok=False)
-    path = directory / 'state.sqlite3' if storage == 'file' else None
-    engine = create_engine('sqlite:///' + str(path) if path else 'sqlite://',
-                           connect_args={'check_same_thread': False},
-                           **({} if path else {'poolclass': StaticPool}))
-    client = None
-    override = False
-    def repository():
-        with Session(engine) as session:
-            yield Repository(session)
-    api = SimpleNamespace(main=main, engine=engine, client=None, path=path,
-                          storage=storage, directory=directory, closed=False)
-    def close():
-        if not api.closed:
-            if api.client is not None:
-                api.client.close()
-            if hasattr(engine.pool, 'checkedout'):
-                assert engine.pool.checkedout() == 0
-            engine.dispose()
-            api.closed = True
-    api.close = close
-    try:
-        SQLModel.metadata.create_all(engine)
-        monkeypatch.setattr(main, 'engine', engine)
-        monkeypatch.setattr(db, 'engine', engine)
-        monkeypatch.setattr(main, 'ACTIVE_MATCHES', {})
-        assert main.get_repo not in main.app.dependency_overrides
-        main.app.dependency_overrides[main.get_repo] = repository
-        override = True
-        client = TestClient(main.app)  # Deliberately no application lifespan.
-        api.client = client
-        yield api
-    finally:
-        close()
-        if override:
-            del main.app.dependency_overrides[main.get_repo]
-        assert not default.exists() and not default.is_symlink()
-
-
-@pytest.fixture(params=['memory', 'file'])
+@pytest.fixture(params=['owned-file', 'file'])
 def family_api(monkeypatch, request):
     with api_context(monkeypatch, request, request.param) as api:
         yield api
@@ -316,11 +262,13 @@ def test_real_invalid_target_or_wrong_card_actor_422_is_fully_atomic(family_api,
     else:
         action['card_id'] = hidden.id
     before = snapshot(state), controller_view(api, controller), db_dump(api.engine)
+    database_hash_before = hashlib.sha256(api.path.read_bytes()).hexdigest()
     response = api.client.post('/matches/' + state.id + '/action',
                                json={'player_id': seat, 'action': action})
     assert response.status_code == 422, response.text
     assert response.json()['detail']['code'] == 'illegal_action'
     assert (snapshot(controller.state), controller_view(api, controller), db_dump(api.engine)) == before
+    assert hashlib.sha256(api.path.read_bytes()).hexdigest() == database_hash_before
     assert snapshot(state) == before[0]
     public(api, controller, hidden.id)
     receipt(request, storage=api.storage, invalid=invalid, before=before[0],
@@ -343,6 +291,8 @@ def test_fresh_process_local_file_restore_and_actual_http_continuation(file_api,
     payload = {'database': str(api.path), 'match_id': state.id, 'seat': seat, 'name': name,
                'target_id': target.id, 'hidden_id': hidden.id, 'stage': stage,
                'state': expected, 'controller': controller_view(api, controller), 'public': value,
+               'persistent_sql': db_dump(api.engine),
+               'database_sha256': hashlib.sha256(api.path.read_bytes()).hexdigest(),
                'parent_pid': os.getpid(), 'root': str(ROOT)}
     evidence = Path(os.environ['MTG_FROG_HTTP_EVIDENCE'])
     config = evidence / (digest(request.node.nodeid) + '-cold-input.json')

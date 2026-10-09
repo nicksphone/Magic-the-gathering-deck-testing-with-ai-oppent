@@ -1,5 +1,6 @@
 """Opt-in ASGI boundary reproducers, memory-only DB, never a live API call."""
 import json
+import hashlib
 import os
 from pathlib import Path
 
@@ -73,12 +74,16 @@ def test_http_source_overlap_is_controlled_rejection_with_atomic_root_and_db(iso
     before = serialize_match_snapshot(state)
     controller_before = main._controller_snapshot(controller)
     database_before = database_dump(memory)
+    database_file = Path(memory.url.database) if memory.url.database not in {None, ':memory:'} else None
+    database_hash_before = hashlib.sha256(database_file.read_bytes()).hexdigest() if database_file else None
     response = client.post(f'/matches/{state.id}/action',
                            json={'player_id': seat, 'action': action})
     root_equal = serialize_match_snapshot(controller.state) == before
     controller_equal = main._controller_snapshot(controller) == controller_before
     db_equal = database_dump(memory) == database_before
     assert root_equal and controller_equal and db_equal
+    if database_file:
+        assert hashlib.sha256(database_file.read_bytes()).hexdigest() == database_hash_before
     evidence = os.environ.get('MTG_COST_OVERLAP_EVIDENCE')
     if evidence:
         path = Path(evidence) / f'http-{state.id}.json'

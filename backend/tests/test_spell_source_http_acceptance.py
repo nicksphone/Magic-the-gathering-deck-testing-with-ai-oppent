@@ -1,7 +1,7 @@
-"""Unmarked source-overlap HTTP acceptance; memory SQLite and local ASGI only."""
+"""Unmarked source-overlap HTTP acceptance; owned local SQLite and ASGI only."""
 import pytest
 
-from tests.test_spell_cost_overlap_http_investigation import isolated_api
+from tests.spell_source_http_fixture import isolated_api
 from tests import test_spell_cost_overlap_http_investigation as repro
 
 

@@ -12,7 +12,10 @@ COUNT = r'(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)'
 
 def compile_instruction(text, name=''):
     """Account for every sentence and its single shared target, without erasure."""
-    from rules_engine.oracle_effects import COUNTER_RE, DRAW_RE, _extract_keywords_from_text
+    from rules_engine.oracle_effects import (
+        COUNTER_RE, DRAW_RE, EACH_PLAYER_DRAW_RE, TARGETED_DRAW_RE,
+        RECIPIENT_MILL_RE, _extract_keywords_from_text,
+    )
     from rules_engine.continuous import _attached_keywords
     from rules_engine.loyalty_instructions import compile_extended
 
@@ -35,8 +38,12 @@ def compile_instruction(text, name=''):
         has_target = bool(re.search(r'\btarget\b', clause))
         if has_target and target_seen:
             return None
-        if DRAW_RE.fullmatch(clause):
+        if DRAW_RE.fullmatch(clause) or TARGETED_DRAW_RE.fullmatch(clause):
             key = 'draw_cards'
+        elif EACH_PLAYER_DRAW_RE.fullmatch(clause):
+            key = 'effect_sequence'
+        elif RECIPIENT_MILL_RE.fullmatch(clause):
+            key = 'mill_cards'
         elif re.fullmatch(r'you gain \d+ life', clause):
             key = 'gain_life'
         elif re.fullmatch(r'target player loses \d+ life', clause):

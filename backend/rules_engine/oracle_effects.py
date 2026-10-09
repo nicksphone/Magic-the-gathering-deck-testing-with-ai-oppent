@@ -16,6 +16,8 @@ X_DAMAGE_RE = re.compile(r"deals?\s+x\s+damage")
 DRAW_RE = re.compile(r"draw\s+(a|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
 FACE_UP_EXILE_GRAVEYARD_RE = re.compile(r"put target face-up exiled card into its owner's graveyard\.", re.I)
 EACH_PLAYER_DRAW_RE = re.compile(r"each player draws? (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+|x) cards?\.?", re.IGNORECASE)
+TARGETED_DRAW_RE = re.compile(r'target (?:player|opponent) draws (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.?', re.I)
+RECIPIENT_MILL_RE = re.compile(r'(target player|each opponent|you) mills? (one|two|three|four|five|six|seven|eight|nine|ten|twenty|\d+) cards?', re.I)
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gains?\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
@@ -1984,9 +1986,9 @@ def _infer_clause_effect(
     mill = re.fullmatch(r'mill (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?,?', oracle.strip())
     if mill:
         return 'mill_cards', {'amount': _parse_count_token(mill[1])}
-    recipient_mill = re.fullmatch(r'(target player|each opponent|you) mills? (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?', oracle.strip())
+    recipient_mill = RECIPIENT_MILL_RE.fullmatch(oracle.strip())
     if recipient_mill:
-        recipient = 3-controller if recipient_mill[1] == 'each opponent' else action_targets.get('target_player', 3-controller) if recipient_mill[1] == 'target player' else controller
+        recipient = 3-controller if recipient_mill[1] == 'each opponent' else action_targets.get('target_player') if recipient_mill[1] == 'target player' else controller
         return 'mill_cards', {'target_player': recipient, 'amount': _parse_count_token(recipient_mill[2])}
     graveyard_return = UNTARGETED_GRAVEYARD_RETURN_RE.fullmatch(oracle.strip(' .'))
     if graveyard_return:
@@ -2167,7 +2169,7 @@ def _infer_clause_effect(
             target_player = opponent
         return "deal_damage", {"target_player": target_player, "amount": amount}
 
-    targeted_draw = re.fullmatch(r'target (?:player|opponent) draws (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.?', oracle.strip(), re.I)
+    targeted_draw = TARGETED_DRAW_RE.fullmatch(oracle.strip())
     if targeted_draw and target_player is not None:
         return 'draw_cards', {'target_player': target_player, 'amount': _parse_count_token(targeted_draw[1])}
     each_draw = EACH_PLAYER_DRAW_RE.fullmatch(oracle.strip())
@@ -2646,6 +2648,7 @@ def _parse_count_token(token: str) -> int:
         "eight": 8,
         "nine": 9,
         "ten": 10,
+        "twenty": 20,
     }
     t = (token or "").strip().lower()
     if t in mapping:

@@ -24,6 +24,17 @@ substitute for qualification of the final combined source.
 
 ## Verified Components
 
+The bounded loyalty/HTTP/search composition over `d4d6b475` executes all 1,069
+cases in 28 whole modules: 1,063 pass and the same six pre-existing Oracle
+copy/loyalty cases remain strict failures, with no setup errors or skips.
+The forty new Jace and eighty HTTP cases pass, as do full frontend test/lint/build.
+The browser search assertion now preserves redacted match-state options and
+checks the actor's existing legal-move view instead. Actual-script mock-CDP
+regression evidence is not a mounted Chromium pass. Native resources close and
+source hashes remain unchanged; current full CI and release qualification are
+still open. See `ci-loyalty-http-search-current.md` for the exact scope,
+owned-file limitation and preserved histories.
+
 The current public inventory guard explicitly reviews the added emblem,
 loyalty-permission and retained-control fields instead of only refreshing schema
 hashes. Empty defaults and legacy omissions are covered; nonempty or unknown

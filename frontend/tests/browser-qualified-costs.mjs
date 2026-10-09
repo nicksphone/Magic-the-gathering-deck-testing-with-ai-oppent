@@ -49,7 +49,17 @@ for (const seat of [1, 2]) for (const [index, name] of names.entries()) {
       await command('Page.reload');
       await waitFor("document.body.innerText.includes('Search your library (you may fail to find a matching card)')");
       const pending = await (await fetch(`${api}/matches/${fixture.id}`)).json();
-      assert.equal(pending.pending_mechanic_choice.options.length, 1);
+      assert.equal(pending.pending_mechanic_choice.kind, 'search_library');
+      assert.equal(pending.pending_mechanic_choice.player_id, seat);
+      assert.equal(Object.hasOwn(pending.pending_mechanic_choice, 'options'), false);
+      const legalResponse = await fetch(`${api}/matches/${fixture.id}/legal-moves?player_id=${seat}`);
+      assert.equal(legalResponse.status, 200);
+      const legal = await legalResponse.json();
+      assert.equal(legal.player_id, seat);
+      const choice = legal.moves.find(move => move.type === 'choose_mechanic' && move.kind === 'search_library');
+      assert.ok(choice);
+      assert.equal(choice.player_id, seat);
+      assert.equal(choice.options.length, 1);
       await evaluate(`(() => {
         const panel = [...document.querySelectorAll('.block-panel')].find(panel => panel.textContent.includes('Search your library'));
         const boxes = [...panel.querySelectorAll('input[type="checkbox"]')];

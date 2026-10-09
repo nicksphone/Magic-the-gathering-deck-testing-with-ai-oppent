@@ -12,7 +12,8 @@ def install_guard():
     root = Path(os.environ['MTG_ISOLATED_TEST_ROOT']).absolute()
     assert root.resolve() == root and not root.is_symlink()
     assert (root / '.private').read_text() == str(root) and not (root / '.git').exists()
-    assert not (root / 'backend/mtg_lab.db').exists()
+    case = Path(sys.argv[1]).resolve()
+    assert case.is_relative_to(Path(os.environ['MTG_FROG_HTTP_EVIDENCE']).resolve())
     allowed = set()
     def guard(event, args):
         if event == 'socket.connect':
@@ -70,18 +71,36 @@ def run(config, output):
         public, snapshot, db_dump, digest, controller_view, resolve_http, cleanup_http,
         assert_changed, card_view,
     )
+    from tests.temporary_characteristics_http_fixture import owned_database, source_default_identity
     import main
     import persistence.db as db
     engine = create_engine('sqlite:///' + str(path), connect_args={'check_same_thread': False})
     main.engine = db.engine = engine
     main.ACTIVE_MATCHES = {}
-    def repository():
-        with Session(engine) as session:
-            yield Repository(session)
-    main.app.dependency_overrides[main.get_repo] = repository
-    client = TestClient(main.app)
+    assert not (path.parent / 'mtg_lab.db').exists()
+    original_default = source_default_identity()
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == config['database_sha256']
+    before_bootstrap = db_dump(engine)
+    assert before_bootstrap == tuple(config['persistent_sql'])
+    with Session(engine) as session:
+        from persistence.models import ResourceCapacity
+        old_ledger = session.get(ResourceCapacity, 1).model_dump()
+    old_epoch = old_ledger['owner_epoch']
+    ownership = owned_database(engine)
+    owner = ownership.__enter__()
+    client = None
     result = None
     try:
+        after_bootstrap = db_dump(engine)
+        without_epoch = lambda rows: tuple(row for row in rows
+                                          if not row.startswith('INSERT INTO "resourcecapacity"'))
+        assert without_epoch(after_bootstrap) == without_epoch(before_bootstrap)
+        with Session(engine) as session:
+            new_ledger = session.get(ResourceCapacity, 1).model_dump()
+        assert new_ledger == {**old_ledger, 'owner_epoch': owner.epoch}
+        assert owner.epoch != old_epoch
+        readonly_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+        client = TestClient(main.app)
         api = SimpleNamespace(main=main, engine=engine, client=client)
         sql_before = db_dump(engine)
         with Session(engine) as session:
@@ -92,10 +111,17 @@ def run(config, output):
         assert restored == config['state'] and restored_config == config['controller']
         value = public(api, controller, config['hidden_id'])
         assert value == config['public'] and db_dump(engine) == sql_before
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == readonly_hash
         result = {'pid': os.getpid(), 'parent_pid': config['parent_pid'],
                   'parent_handles_closed': True, 'restored_state': restored,
                   'restored_controller': restored_config, 'restored_public': value,
-                  'initial_sql_sha256': digest(sql_before)}
+                  'initial_sql_sha256': digest(sql_before),
+                  'previous_owner_epoch': old_epoch, 'owner_epoch': owner.epoch,
+                  'bootstrap_only_capacity_ledger_changed': True,
+                  'persistent_sql_before_bootstrap': before_bootstrap,
+                  'persistent_sql_after_bootstrap': after_bootstrap,
+                  'previous_capacity_ledger': old_ledger, 'capacity_ledger': new_ledger,
+                  'readonly_database_sha256': readonly_hash}
         if config['stage'] == 'pending':
             assert len(controller.state.stack) == 1
             assert '__announced_target_references' in controller.state.stack[-1].payload
@@ -114,11 +140,12 @@ def run(config, output):
                       final_controller=controller_view(api, controller),
                       final_sql_sha256=digest(db_dump(engine)))
     finally:
-        client.close()
-        main.app.dependency_overrides.clear()
+        if client is not None:
+            client.close()
         assert engine.pool.checkedout() == 0
-        engine.dispose()
-        assert not (root / 'backend/mtg_lab.db').exists()
+        ownership.__exit__(None, None, None)
+        assert not (path.parent / 'mtg_lab.db').exists()
+        assert source_default_identity() == original_default
     result.update(connections_closed=True, modules=import_proof(root),
                   sql_paths=sorted(allowed), executable=sys.executable)
     with Path(output).open('x') as stream:

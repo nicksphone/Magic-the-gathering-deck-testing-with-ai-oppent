@@ -1,6 +1,12 @@
 """QUEUED SQL lease: run only in a new full source root, never the live checkout."""
 from copy import deepcopy
+from contextlib import closing
+import importlib.util
+import hashlib
 import json
+from pathlib import Path
+import sqlite3
+import sys
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
@@ -10,11 +16,19 @@ from sqlalchemy import event
 import main
 from game_state.state import pregame_actor
 from persistence.db import engine
-from tests.test_api_input_contracts import snapshot
+from game_state.serializers import serialize_match_snapshot
+from tests.temporary_characteristics_http_fixture import source_lease, source_default_identity
 
 PRODUCTION = "https://lab.example"
 DEVELOPMENT = "http://127.0.0.1:12345"
 LOOPBACK = "http://127.0.0.1:5173"
+
+
+def snapshot(controller):
+    with closing(sqlite3.connect(engine.url.database)) as connection:
+        database = list(connection.iterdump())
+    return (json.dumps(serialize_match_snapshot(controller.state), sort_keys=True),
+            deepcopy(main._controller_snapshot(controller)), database)
 
 
 def start_payload():
@@ -24,8 +38,24 @@ def start_payload():
 
 
 @pytest.fixture
-def supported_match():
-    # Injected BEFORE main import by the leased runner, not modified after import.
+def supported_match(monkeypatch, tmp_path):
+    from sqlmodel import create_engine
+    import persistence.db as db
+    root = source_lease()
+    assert Path(main.__file__).resolve().parent == root / 'backend'
+    original_default = source_default_identity()
+    spec = importlib.util.spec_from_file_location('tests._browser_origin_main', main.__file__)
+    application = importlib.util.module_from_spec(spec)
+    monkeypatch.setitem(sys.modules, spec.name, application)
+    # The explicit tuple configures only this independently imported test app.
+    with monkeypatch.context() as environment:
+        environment.setenv('MTG_TRUSTED_ORIGINS', ','.join((PRODUCTION, DEVELOPMENT, LOOPBACK)))
+        spec.loader.exec_module(application)
+    owned_engine = create_engine('sqlite:///' + str(tmp_path / 'browser.sqlite3'))
+    monkeypatch.setattr(sys.modules[__name__], 'main', application)
+    monkeypatch.setattr(sys.modules[__name__], 'engine', owned_engine)
+    monkeypatch.setattr(application, 'engine', owned_engine)
+    monkeypatch.setattr(db, 'engine', owned_engine)
     assert main.TRUSTED_BROWSER_ORIGINS == (PRODUCTION, DEVELOPMENT, LOOPBACK)
     original = dict(main.ACTIVE_MATCHES)
     try:
@@ -38,6 +68,8 @@ def supported_match():
     finally:
         main.ACTIVE_MATCHES.clear()
         main.ACTIVE_MATCHES.update(original)
+        assert owned_engine.pool.checkedout() == 0
+        assert source_default_identity() == original_default
 
 
 def complete_root_snapshot():
@@ -115,8 +147,10 @@ def test_real_supported_start_then_rejection_preserves_complete_root_and_sql(
              "sync": "/cards/sync", "sync-bulk": "/cards/sync-bulk",
              "preflight": "/simulate/batch/preflight"}
     before = complete_root_snapshot()
+    database_hash_before = hashlib.sha256(Path(engine.url.database).read_bytes()).hexdigest()
     raw_rejection(paths[target], origins, monkeypatch)
     assert complete_root_snapshot() == before
+    assert hashlib.sha256(Path(engine.url.database).read_bytes()).hexdigest() == database_hash_before
 
 
 @pytest.mark.parametrize("origin", [PRODUCTION, DEVELOPMENT, LOOPBACK, None])
