@@ -494,3 +494,15 @@ See [scope and preserved baselines](docs/testing/bounded-spells-and-entry-strate
 This does not certify alternative pitch costs, noncreature copy/retarget paths,
 full browser acceptance, maximum-width planner latency or seasoned-player AI.
 All original release-gate requirements remain unchanged and open.
+
+## 2026-10-09 Ordered Copy Targets And Acceptance Harness
+
+Composition over `1a73e6b` passes the same declared 35 whole modules / 1,129
+cases in 247.46s, including six existing owned-SQL HTTP fixtures. All original
+400 ordered corpus nodes and 981-case modules remain unchanged. Public ordered
+copy candidates include authoritative noncreature card surfaces; actual paid
+Force/Twincast and blink responses preserve keep/refresh identity in both seats.
+Full configured frontend test/lint/build passes.
+See [scope and preserved ledgers](docs/testing/ordered-copy-current.md).
+The NEW reusable browser harness is syntax-checked, not runtime-qualified here.
+Current full browser, 13-style strategy and all original release gates remain open.

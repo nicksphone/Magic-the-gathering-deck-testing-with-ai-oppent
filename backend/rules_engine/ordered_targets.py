@@ -56,8 +56,14 @@ def _copy_candidates(state, copied, index):
     hints.pop('required_target_instance_count', None)
     packet = copied.payload['effects'][index]['payload']
     candidates = {}
-    for candidate in hints.get('creature_targets', []):
-        cid = candidate['id']
+    card_targets = {candidate['id']: candidate
+                    for key in ('creature_targets', 'planeswalker_targets', 'permanent_targets',
+                                'land_targets', 'artifact_targets', 'enchantment_targets',
+                                'noncreature_permanent_targets', 'aura_targets',
+                                'graveyard_card_targets', 'graveyard_creature_targets',
+                                'graveyard_permanent_targets', 'exile_card_targets')
+                    for candidate in hints.get(key, [])}
+    for cid, candidate in card_targets.items():
         selected = {'target_card_id': cid}
         if (validate_cast_targets(hints, selected)[0]
                 and validate_hexproof_shroud_targets(state, copied.controller, selected, card)[0]

@@ -1,5 +1,10 @@
 # MTG Deck Testing Lab
 
+Ordered noncreature copy choices now have
+[current 1,129-case qualification](docs/testing/ordered-copy-current.md), with
+the original corpus retained and both-seat paid copy/blink regressions. The new
+owned browser harness still requires its separate current-source execution.
+
 Latest scoped qualification: complete printed-body admission and loyalty
 execution, followed by paid land/Aura entry and public emblem UI controls. See
 [entry/emblem acceptance](docs/testing/loyalty-entry-emblems-current.md) and
