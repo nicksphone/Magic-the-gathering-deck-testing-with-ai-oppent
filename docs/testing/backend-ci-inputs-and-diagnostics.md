@@ -97,3 +97,17 @@ qualification: ten whole pure modules, 154 passes, two dependency warnings,
 17.84s, unchanged source and no attempted Python SQL/network I/O. This is not a
 native OS sandbox or a remote browser pass. The full remote backend run remains
 in progress, and the next complete browser workflow must qualify this correction.
+
+The `bd3e0832` remote browser passes Stifle and the subsequent trigger/library/
+draw episodes. It then stops at the first BO3 draw choice: both human sideboards
+are unapplied, so next-game is correctly disabled. The test harness had a no-op
+sideboard callback and the old flow never confirmed either seat.
+
+The harness now submits the real sideboard request and refreshes its response.
+Three human play/draw flows deliberately confirm no swaps for both seats; the
+separate production-App swap/reload flow also confirms the other seat. Original
+play/draw, seed, score and deck-pool assertions remain. A callback regression
+fails before the fix and passes for both seats with accepted/rejected responses.
+Full frontend `npm test`, lint and build pass on the corrected source. No
+production sideboard gate is weakened and no precompleted flags are injected.
+The next native browser workflow must still execute the full corrected flows.

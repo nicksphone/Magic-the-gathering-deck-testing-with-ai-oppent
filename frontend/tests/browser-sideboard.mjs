@@ -47,6 +47,16 @@ try {
 
   await command('Page.reload');
   await waitFor("[...document.querySelectorAll('button')].some(b => b.textContent === 'Sideboard Applied' && b.disabled)");
+  await evaluate(`(() => {
+    const select = document.querySelector('select[aria-label="Sideboarding player"]');
+    select.value = '2';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+  })()`);
+  await click('Confirm No Swaps');
+  await waitFor("[...document.querySelectorAll('button')].some(b => b.textContent === 'Sideboard Applied' && b.disabled)");
+  state = await (await fetch(`${backend}/matches/${fixture.id}`)).json();
+  assert.equal(state.sideboarding['1'].applied, true);
+  assert.equal(state.sideboarding['2'].applied, true);
   await click('P1 Play First');
   await waitFor("document.querySelector('.match-status-grid')?.innerText.includes('2 / 3') && !document.querySelector('.sideboard-panel')");
   state = await (await fetch(`${backend}/matches/${fixture.id}`)).json();

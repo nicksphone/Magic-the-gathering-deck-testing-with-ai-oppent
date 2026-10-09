@@ -3,7 +3,7 @@ import "../src/styles/app.css";
 import { createRoot } from "react-dom/client";
 import { Battlefield } from "../src/components/Battlefield";
 import { Controls } from "../src/components/Controls";
-import type { LegalMove, MatchState } from "../src/types";
+import type { DeckItem, LegalMove, MatchState } from "../src/types";
 
 const BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:10199";
 declare global { interface Window { fixtureState?: MatchState; fixtureActions?: unknown[] } }
@@ -37,6 +37,16 @@ function Harness() {
     const next = await response.json();
     await load(next);
     return next as MatchState;
+  }
+  async function applySideboard(playerId: number, outCards: DeckItem[], inCards: DeckItem[]) {
+    if (!match) throw new Error("Missing fixture match");
+    setReady(false);
+    const response = await fetch(`${BASE}/matches/${match.id}/sideboard`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ player_id: playerId, cards_out: outCards, cards_in: inCards }),
+    });
+    if (!response.ok) throw new Error(`Sideboard HTTP ${response.status}`);
+    await load(await response.json());
   }
   async function nextGame(playFirst: boolean) {
     if (!match?.next_play_draw_chooser) throw new Error("No play/draw chooser");
@@ -150,7 +160,7 @@ function Harness() {
       autoplayDelayMs={1800} setAutoplayDelayMs={() => {}}
       onSubmitBlocks={(blocks) => { act(actor, { type: "block", blocks }).catch((failure) => setError(String(failure))); }}
       onSubmitAttack={(attackers, attackTargets, bands) => { act(actor, { type: "attack", attackers, attack_targets: attackTargets, bands }).catch((failure) => setError(String(failure))); }}
-      onApplySideboard={() => {}} onNextGame={(playFirst) => { nextGame(Boolean(playFirst)).catch((failure) => setError(String(failure))); }} onSetPriorityStops={() => {}}
+      onApplySideboard={(playerId, outCards, inCards) => applySideboard(playerId, outCards, inCards).catch((failure) => setError(String(failure)))} onNextGame={(playFirst) => { nextGame(Boolean(playFirst)).catch((failure) => setError(String(failure))); }} onSetPriorityStops={() => {}}
       onChooseReplacement={(sourceId) => { act(actor, { type: "choose_replacement", replacement_source_id: sourceId }).catch((failure) => setError(String(failure))); }}
       onChooseTriggerOrder={(order) => { act(actor, { type: "choose_trigger_order", trigger_order: order }).catch((failure) => setError(String(failure))); }}
       onChooseTriggerTarget={(stackId, targetCardId, targetPlayer) => { act(actor, { type: "choose_trigger_target", stack_id: stackId, ...(targetCardId ? { target_card_id: targetCardId } : { target_player: targetPlayer }) }).catch((failure) => setError(String(failure))); }}

@@ -7,6 +7,13 @@ async function reset() {
   await click("Reset Fixture");
   await waitFor("window.fixtureActions?.length === 0 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
 }
+async function confirmBothSideboards() {
+  for (const playerId of [1, 2]) {
+    await evaluate(`(() => { const select = document.querySelector('select[aria-label="Sideboarding player"]'); select.value = '${playerId}'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+    await click('Confirm No Swaps');
+    await waitFor(`window.fixtureState.sideboarding['${playerId}'].applied === true && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'`);
+  }
+}
 async function chooseCopyOption(optionId) {
   const choice = await evaluate('window.fixtureState.pending_mechanic_choice');
   assert.equal(choice?.kind, 'copy_target');
@@ -1042,6 +1049,7 @@ try {
 
   await click("BO3 Fixture");
   await waitFor("window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Draw First')");
+  await confirmBothSideboards();
   await click("P2 Draw First");
   await waitFor("window.fixtureState?.game_number === 2 && window.fixtureState?.active_player === 1 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
   assert.equal(await evaluate("window.fixtureState.root_seed"), null);
@@ -1049,6 +1057,7 @@ try {
 
   await click("BO3 Fixture");
   await waitFor("window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Play First')");
+  await confirmBothSideboards();
   await click("P2 Play First");
   await waitFor("window.fixtureState?.game_number === 2 && window.fixtureState?.active_player === 2 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
   assert.equal(await evaluate("window.fixtureState.root_seed"), null);
@@ -1056,6 +1065,7 @@ try {
 
   await click("BO3 Draw Fixture");
   await waitFor("window.fixtureState?.winner === 0 && window.fixtureState?.next_play_draw_chooser === 2 && [...document.querySelectorAll('button')].some(b => b.textContent === 'P2 Draw First')");
+  await confirmBothSideboards();
   await click("P2 Draw First");
   await waitFor("window.fixtureState?.game_number === 2 && window.fixtureState?.active_player === 1 && document.querySelector('[data-testid=ready]')?.textContent === 'Ready'");
   assert.deepEqual(await evaluate("window.fixtureState.score"), { 1: 1, 2: 0 });

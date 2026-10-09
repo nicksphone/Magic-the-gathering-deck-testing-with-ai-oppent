@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791550464.1036792,
-    "seen": 1791550723.9865975,
-    "ast_hash": "682f561cd8341a31594fdab31ea9871a",
+    "mtime": 1791564093.9266982,
+    "seen": 1791564195.4463658,
+    "ast_hash": "1ff082eb42085b9e09009feafb14e104",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -6306,9 +6306,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-human-actions.mjs": {
-    "mtime": 1791550464.0716798,
-    "seen": 1791550723.9867349,
-    "ast_hash": "6ce0c12971d86a3b0cc911b22e91f95d",
+    "mtime": 1791564093.9266982,
+    "seen": 1791564195.446511,
+    "ast_hash": "3a5cf0bf7f90bd2171b4b1b47f49009a",
     "semantic_hash": ""
   },
   "frontend/tests/browser-human-bo3.mjs": {
@@ -6480,9 +6480,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-sideboard.mjs": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1181326,
-    "ast_hash": "c828a0e063c9e96d02663a7892e97756",
+    "mtime": 1791564093.9266982,
+    "seen": 1791564195.4465685,
+    "ast_hash": "7477d8440cc0d909399dedd1d6e793d2",
     "semantic_hash": ""
   },
   "frontend/tests/browser-simulation-preflight.mjs": {
@@ -6570,9 +6570,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/human-actions.tsx": {
-    "mtime": 1791448332.4416125,
-    "seen": 1791511166.1181777,
-    "ast_hash": "e4402e1862065a989ce524cd10f061a0",
+    "mtime": 1791564093.9266982,
+    "seen": 1791564195.4466212,
+    "ast_hash": "3925940b150043bb2f1e4bf667380c53",
     "semantic_hash": ""
   },
   "frontend/tests/human-flow-audit-probe.mjs": {
@@ -16158,9 +16158,9 @@
     "semantic_hash": ""
   },
   "docs/testing/backend-ci-inputs-and-diagnostics.md": {
-    "mtime": 1791563029.0283654,
-    "seen": 1791563124.9537303,
-    "ast_hash": "d799c690b9de08d79b1619de6c90396a",
+    "mtime": 1791564094.035697,
+    "seen": 1791564195.447065,
+    "ast_hash": "f9fc2beb20975f0adf035ab82bc4151a",
     "semantic_hash": ""
   },
   "docs/testing/compleated-loyalty-full.md": {
@@ -16179,6 +16179,12 @@
     "mtime": 1791563028.9743657,
     "seen": 1791563124.951811,
     "ast_hash": "fe6b2bfc1715ea5208ba4d271979736e",
+    "semantic_hash": ""
+  },
+  "frontend/tests/human-sideboard-fixture-contract.mjs": {
+    "mtime": 1791564093.9266982,
+    "seen": 1791564195.4466336,
+    "ast_hash": "9520ccef9b553ebb06742fdef0fda6ca",
     "semantic_hash": ""
   }
 }
