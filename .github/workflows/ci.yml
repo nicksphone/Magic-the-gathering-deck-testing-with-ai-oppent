@@ -18,12 +18,31 @@ jobs:
       - name: Install backend dependencies
         run: python -m pip install -r backend/requirements.txt
       - name: Backend tests
+        id: backend_tests
+        env:
+          MTG_HEAT_WITNESS_01: ${{ secrets.MTG_HEAT_WITNESS_01 }}
+          MTG_HEAT_WITNESS_02: ${{ secrets.MTG_HEAT_WITNESS_02 }}
+          MTG_HEAT_WITNESS_03: ${{ secrets.MTG_HEAT_WITNESS_03 }}
+          MTG_HEAT_WITNESS_04: ${{ secrets.MTG_HEAT_WITNESS_04 }}
+          MTG_HEAT_WITNESS_05: ${{ secrets.MTG_HEAT_WITNESS_05 }}
+          MTG_HEAT_WITNESS_06: ${{ secrets.MTG_HEAT_WITNESS_06 }}
+          MTG_HEAT_WITNESS_07: ${{ secrets.MTG_HEAT_WITNESS_07 }}
+          MTG_HEAT_WITNESS_08: ${{ secrets.MTG_HEAT_WITNESS_08 }}
+          MTG_HEAT_WITNESS_09: ${{ secrets.MTG_HEAT_WITNESS_09 }}
+          MTG_HEAT_WITNESS_10: ${{ secrets.MTG_HEAT_WITNESS_10 }}
+          MTG_HEAT_WITNESS_11: ${{ secrets.MTG_HEAT_WITNESS_11 }}
+          MTG_HEAT_WITNESS_12: ${{ secrets.MTG_HEAT_WITNESS_12 }}
+          MTG_HEAT_WITNESS_13: ${{ secrets.MTG_HEAT_WITNESS_13 }}
         run: |
-          scratch=$(mktemp -d "$RUNNER_TEMP/mtg-backend-tests-XXXXXX")
-          git archive HEAD | tar -xf - -C "$scratch"
-          printf '%s' "$scratch" > "$scratch/.private-choice-audit-source"
-          cd "$scratch/backend"
-          PYTHONPATH="$scratch/backend" MTG_ISOLATED_TEST_ROOT="$scratch" python -m pytest -q
+          bash .github/scripts/run-backend-ci.sh
+      - name: Upload backend diagnostic evidence
+        if: ${{ always() && steps.backend_tests.outputs.evidence != '' }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backend-${{ github.sha }}-${{ github.run_attempt }}
+          path: ${{ steps.backend_tests.outputs.evidence }}
+          if-no-files-found: error
+          retention-days: 7
 
   frontend:
     runs-on: ubuntu-latest

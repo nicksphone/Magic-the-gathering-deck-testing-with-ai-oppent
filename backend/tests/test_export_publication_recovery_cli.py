@@ -19,7 +19,11 @@ SCRIPT = Path(exporter.__file__)
 
 @pytest.fixture(scope='module')
 def one_root():
-    if os.environ.get('MTG_EXPORT_RECOVERY_SQL_SLOT') != 'parent-approved':
+    slot = os.environ.get('MTG_EXPORT_RECOVERY_SQL_SLOT')
+    if slot == 'github-actions-isolated':
+        from tests.ci_input_contracts import assert_github_owned_source
+        assert_github_owned_source()
+    elif slot != 'parent-approved':
         pytest.fail('Real CLI SQL gate requires a new explicit shared-slot grant')
     root = Path(os.environ['MTG_EXPORT_RECOVERY_EVIDENCE_ROOT']).resolve()
     assert root.parent == Path('/tmp') and root.name.startswith('mtg-export-recovery-CLI-')

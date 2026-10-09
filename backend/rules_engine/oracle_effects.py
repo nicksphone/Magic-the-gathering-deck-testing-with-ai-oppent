@@ -1238,6 +1238,10 @@ def inspect_target_hints(
     *,
     source_kind: str | None = 'spell',
 ) -> dict[str, Any]:
+    from rules_engine.loyalty_instructions import target_hints as loyalty_target_hints
+    loyalty_hints = loyalty_target_hints(state, card, controller, action_targets, source_kind=source_kind)
+    if loyalty_hints is not None:
+        return loyalty_hints
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     from rules_engine.spree import is_spree, hints as spree_hints

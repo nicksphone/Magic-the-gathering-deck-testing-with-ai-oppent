@@ -1019,6 +1019,10 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item, *
     if is_spell and copied_item.effect_key == "effect_sequence" and not announced.get("mode_texts"):
         _offer_clause_copy_target_choice(state, controller, copied_item)
         return
+    if not is_spell and copied_item.effect_key == "effect_sequence":
+        from rules_engine.loyalty_instructions import offer_copy_target_choice
+        if offer_copy_target_choice(state, controller, copied_item):
+            return
     target_keys = [key for key in ("target_player", "target_card_id", "target_stack_id") if announced.get(key) is not None]
     if (len(target_keys) != 1 or any(key in announced for key in ("mode_targets", "target_card_ids", "target_distribution"))
             or copied_item.effect_key == "effect_sequence"):

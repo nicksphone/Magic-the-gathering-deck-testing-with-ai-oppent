@@ -1,4 +1,7 @@
-"""Public conditional damage, canonical sibling damage and opaque consumer controls."""
+"""Conditional damage and opaque consumer controls. PYTEST_DONT_REWRITE
+
+Keep assertions active without rendering the private source receipt in CI failures.
+"""
 from copy import deepcopy
 import json
 from pathlib import Path

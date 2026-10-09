@@ -22,7 +22,9 @@ from tests.test_death_cycle_ordering_http_audit import act, frozen, install, off
 def own_local_source():
     root = Path(os.environ['MTG_ISOLATED_TEST_ROOT']).resolve()
     assert root == Path(__file__).resolve().parents[2]
-    assert str(root).startswith('/home/nick/.hermes/cache/scratch/mtg-paid-view-audit-')
+    if not str(root).startswith('/home/nick/.hermes/cache/scratch/mtg-paid-view-audit-'):
+        from tests.ci_input_contracts import assert_github_owned_source
+        assert_github_owned_source()
     assert not (root / 'backend/mtg_lab.db').is_symlink()
 
 

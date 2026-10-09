@@ -294,7 +294,9 @@ The workflow on `58c34d09` passes frontend and the actual ordinary, divided
 and modal copy browser episodes. It then stops because the complete canonical
 Tamiyo loyalty body is unsupported. That is a separate rules-support gap,
 not a reason to shorten the fixture or bypass complete-body admission. Its
-backend job was still running at the last observation. Current full CI and
+backend subsequently terminated with `OSError 28` writing pytest cache/nodeids.
+Earlier anonymous failure markers are unclassified, not presumed resource-only.
+Current full CI and
 all original release requirements remain open.
 
 The separately pinned permission HTTP component now passes all 16 cases in
@@ -303,3 +305,24 @@ remain; native finite windows, database closure and process release are verified
 This is not a current Aura composition or cold-process HTTP certificate. The
 older backend CI terminated with disk exhaustion while writing pytest cache;
 earlier failure markers remain unresolved, not silently counted as passes.
+
+## Complete Loyalty And CI Composition (2026-10-09)
+
+Complete canonical Tamiyo support now composes with the corrected Aura layer.
+One actual 38-whole-module union passes all 1,001 cases in 501.55s, including
+four paid cross-family copied-Aura/underlying-controller episodes. Source hashes
+are equal and bounded native gameplay I/O attempts are empty. The earlier worker
+870 and separate cross4 gates overlap this union; they are not extra passes.
+See `tamiyo-aura-current-composition.md` for immutable input and source limits.
+
+The CI runner now retains named phases, collection coverage and storage samples
+without filtering the full suite. Generic observer parity and failure-path
+controls pass. Three whole input/private-damage modules separately pass 86 cases
+in 28.06s. Authentic deck-only inputs, strict hosted ownership, tracked cold
+restore and protected private trace delivery remove known local-path assumptions.
+The trace remains private by explicit user choice; no raw fixture is published.
+See `backend-ci-inputs-and-diagnostics.md`. The new full remote workflow must
+still qualify this exact composition; reporter/component passes do not close it.
+
+Current mixed-I/O/browser, duration-ledger migration, expert AI, clean-machine,
+proxy/operator, soak and every original release requirement remain open.

@@ -1,0 +1,9 @@
+{
+  "source_archive": "training-groundwork/human-bo3-current-441-actual-w8HjPk/qualified-source-evidence-closed-sqlite.tar.gz",
+  "archive_sha256": "8e72664e9791c9fb7fe3399b2b9e65b385681f46e2ab96cc289433504927b515",
+  "member": "./evidence/selected-preflight.json",
+  "member_sha256": "5f015748b3dd305689f8e6a7d0e916baaee071631d890c9437e4022cb22b91d6",
+  "fixture_sha256": "4733876b4a5abe40be2ea19cd9f9f5d8c8d7b5b9163a2f7d67bd6c74abdb951b",
+  "projection": "decks only; no coverage or preflight success claim",
+  "deck_values_modified": false
+}

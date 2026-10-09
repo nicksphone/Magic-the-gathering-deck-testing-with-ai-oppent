@@ -638,10 +638,33 @@ golden; its corrected expectation and the new 54 regressions are explicit.
 No preexisting committed test was replaced; no exclusions or xfails were used.
 See [scope, evidence and snapshot compatibility](docs/testing/static-aura-control-layer-handoff.md).
 
-Current copy-choice browser episodes now execute successfully, while complete
-Tamiyo body support blocks the subsequent browser checkpoint. The permission
+Current copy-choice browser episodes execute successfully; complete Tamiyo
+body support blocked the subsequent browser checkpoint on `58c34d09`. The permission
 HTTP component separately passes all 16 cases after its phase-helper correction,
 with actual closure/lease release. The older backend CI ends in disk exhaustion
 and retains earlier unresolved failure markers. Final whole CI, current mixed-I/O/browser,
 snapshot migration, full corpus, measured expert AI and every original release
 gate remain open; no live deployment or release-complete status is claimed.
+
+## 2026-10-09 Complete Loyalty And CI Publication
+
+- [x] Implement the full canonical loyalty bodies without card-name shortcuts,
+  preserving native costs, references, entry/legend and explicit copy choices.
+- [x] Qualify copied-Aura/underlying-control interactions with the final static
+  layer: one actual 38-whole-module union /1,001 passes, 501.55s, source equality
+  and no bounded native gameplay I/O attempts. Worker870 and cross4 overlap.
+- [x] Preserve the private sealed regression through protected CI input rather
+  than publish it. Qualify strict ownership, decoder, cold-worker boundaries,
+  assertion privacy and all49 existing private-damage cases: three whole modules
+  /86 passes, 28.06s, including six independently corrupted protocol controls.
+  Full BO3/CLI/packaging episodes remain remote prerequisites.
+- [x] Qualify named unfiltered CI reporter parity and real failure/interrupt/
+  evidence-write/ENOSPC handling. Keep all old workflow failures visible.
+- [ ] Publish this composition and verify the complete configured remote
+  backend/frontend/browser jobs. Do not infer a full-suite result from collection,
+  anonymous progress, generic canaries or component passes.
+
+See [rules composition](docs/testing/tamiyo-aura-current-composition.md) and
+[CI inputs/diagnostics](docs/testing/backend-ci-inputs-and-diagnostics.md).
+Broader final-source migration, mixed I/O, AI quality, operator/proxy,
+clean-machine and soak requirements above remain unchanged.

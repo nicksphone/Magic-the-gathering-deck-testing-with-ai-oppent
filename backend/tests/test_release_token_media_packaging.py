@@ -10,8 +10,10 @@ import tarfile
 import pytest
 from tests.test_api_input_contracts import game
 
-ARCHIVE = Path('/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/parent-integration/entry-current-20261006/published-source.tar')
-ARCHIVE_SHA = '05d5d42fb89efce8c7dd2c77ab6cfc51c78861b3ee1484de8236131bc71bd7f1'
+ARCHIVE = Path(os.environ.get('MTG_RELEASE_MEDIA_ARCHIVE', '/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/parent-integration/entry-current-20261006/published-source.tar'))
+ARCHIVE_SHA = os.environ.get('MTG_RELEASE_MEDIA_ARCHIVE_SHA256', '05d5d42fb89efce8c7dd2c77ab6cfc51c78861b3ee1484de8236131bc71bd7f1')
+assert ('MTG_RELEASE_MEDIA_ARCHIVE' in os.environ) == ('MTG_RELEASE_MEDIA_ARCHIVE_SHA256' in os.environ)
+assert len(ARCHIVE_SHA) == 64 and all(c in '0123456789abcdef' for c in ARCHIVE_SHA)
 
 
 @pytest.mark.parametrize('mode', ['import_only', 'startup', 'evicted_after_import'])

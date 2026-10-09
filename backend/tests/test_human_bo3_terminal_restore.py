@@ -12,13 +12,14 @@ from tests.test_api_input_contracts import snapshot
 
 def test_native_completed_series_survives_cold_read_without_sql_mutation():
     root = Path(__file__).resolve().parents[2]
-    evidence = root / 'evidence/interactive-canonical/states'
+    evidence = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE']) / 'interactive'
     native = json.loads((evidence / 'terminal.json').read_text())
     mid = native['view']['id']
     assert native['view']['match_complete'] and max(native['view']['score'].values()) == 2
-    child = subprocess.run([sys.executable, str(root / 'gate.py'), '--cold', mid], cwd=root / 'backend',
+    child = subprocess.run([sys.executable, str(Path(__file__).with_name('human_bo3_cold_worker.py')), mid], cwd=root / 'backend',
         env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'}, capture_output=True, text=True, timeout=60)
-    out = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE'])
+    out = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE']) / 'terminal-restore'
+    out.mkdir(parents=True, exist_ok=True)
     (out / 'completed-cold.stderr').write_text(child.stderr)
     assert child.returncode == 0, child.stderr
     read = json.loads(child.stdout)

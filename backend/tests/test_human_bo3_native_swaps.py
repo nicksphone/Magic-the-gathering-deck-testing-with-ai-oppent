@@ -18,6 +18,7 @@ import main
 from persistence.db import engine
 from persistence.repository import Repository
 from tests.test_api_input_contracts import snapshot
+from tests.ci_input_contracts import human_bo3_decks
 
 
 def canonical(value):
@@ -38,9 +39,9 @@ def inventory(controller):
 
 def test_native_swaps_between_checked_human_games():
     root = Path(__file__).resolve().parents[2]
-    out = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE'])
+    out = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE']) / 'native-swaps'
     out.mkdir(parents=True, exist_ok=True)
-    decks = list(json.loads((root / 'evidence/selected-preflight.json').read_text())['decks'].values())
+    decks = human_bo3_decks()
     families = {1: ('Soul-Scar Mage', 'Goblin Guide'), 2: ('Goblin Guide', 'Soul-Scar Mage')}
     sideboards = {pid: [{'quantity': 4, 'card_name': families[pid][1]}] for pid in (1, 2)}
     swapped = []
@@ -100,7 +101,7 @@ def test_native_swaps_between_checked_human_games():
             before = snapshot(current)
             expected = canonical(serialize_match_snapshot(current.state))
             expected_controller = canonical(main._controller_snapshot(current))
-            child = subprocess.run([sys.executable, str(root / 'gate.py'), '--cold', mid],
+            child = subprocess.run([sys.executable, str(Path(__file__).with_name('human_bo3_cold_worker.py')), mid],
                 cwd=root / 'backend', env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'},
                 capture_output=True, text=True, timeout=60)
             (out / (label + '.stderr')).write_text(child.stderr)

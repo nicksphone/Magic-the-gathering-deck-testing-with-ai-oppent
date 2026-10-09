@@ -24,7 +24,9 @@ def isolated_source():
     assert not (root / '.git').exists()
     assert (root / '.private-choice-audit-source').read_text() == str(root)
     assert os.environ['MTG_ISOLATED_TEST_ROOT'] == str(root)
-    assert str(root).startswith('/tmp/')
+    if not str(root).startswith('/tmp/'):
+        from tests.ci_input_contracts import assert_github_owned_source
+        assert_github_owned_source()
 
 
 def suspend_position(seat, name='Rift Bolt'):

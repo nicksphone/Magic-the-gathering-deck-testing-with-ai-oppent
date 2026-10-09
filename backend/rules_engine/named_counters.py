@@ -71,7 +71,13 @@ def destruction_prevented(state, card_id):
 
 def untap_permanent(state, card_id, *, turn_based=False):
     card = state.cards.get(card_id)
-    if card is None or card.zone != Zone.BATTLEFIELD or not card.tapped:
+    if card is None or card.zone != Zone.BATTLEFIELD:
+        return False
+    if turn_based:
+        from rules_engine.loyalty_instructions import consume_untap_lock
+        if consume_untap_lock(state, card_id):
+            return False
+    if not card.tapped:
         return False
     if turn_based:
         import re

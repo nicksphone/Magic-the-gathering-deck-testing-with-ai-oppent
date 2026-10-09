@@ -231,6 +231,13 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                     state, references, copied.payload.get('__announced_targets') or {}, paths)
 
         chosen = ids[0]
+        if pending['kind'] == 'copy_target' and pending.get('loyalty_target_slot') is not None:
+            from rules_engine.loyalty_instructions import choose_copy_target
+            if not choose_copy_target(state, copied, pending, chosen):
+                return False
+            publish_selected_targets()
+            resume_paused_resolution(state, pending)
+            return True
         if pending['kind'] == 'spree_target_change':
             from rules_engine.spree import valid_change
             if not valid_change(state, pending, chosen):

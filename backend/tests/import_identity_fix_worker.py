@@ -23,7 +23,10 @@ def semantic_rows(inventory):
 
 def run(phase, mode, root):
     root = root.resolve()
-    assert str(root).startswith('/home/nick/') or str(root).startswith('/tmp/')
+    if not (str(root).startswith('/home/nick/') or str(root).startswith('/tmp/')):
+        from tests.ci_input_contracts import assert_github_owned_source
+        assert_github_owned_source()
+        assert root.is_relative_to(Path(os.environ['RUNNER_TEMP']).resolve())
     import persistence.db as db
     from sqlmodel import Session, create_engine
     db.DATABASE_PATH = root / 'owned.sqlite'

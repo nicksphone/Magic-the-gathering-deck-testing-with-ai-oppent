@@ -324,6 +324,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             payment_choices=action.get('payment_choices'),
         ), "Cannot pay activation costs")
     elif kind == "activate_loyalty" and targets.get("x_value") is not None:
+        require(type(targets["x_value"]) is int and targets["x_value"] >= 0, "X value must be a non-negative integer")
         from rules_engine.oracle_effects import extract_loyalty_abilities
         require(extract_loyalty_abilities(state.cards[action["card_id"]])[action["ability_index"]].get("x_cost"), "This ability does not have a chosen X")
     elif kind == "cast_spell":

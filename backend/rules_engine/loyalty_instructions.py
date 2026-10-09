@@ -44,6 +44,11 @@ def companion(line, name=''):
         symbol = re.search(r'\{([WUBRG])/P\}', line, re.I)[1]
         if re.search(r'can be paid with \{'+symbol+r'\}', line, re.I):
             return 'compleated_entry'
+    hybrid = re.fullmatch(r'Compleated \(\{([WUBRG])/([WUBRG])/P\} can be paid with '
+                          r'\{\1\}, \{\2\}, or 2 life\. If life was paid, this planeswalker '
+                          r'enters with two fewer loyalty counters\.\)', line, re.I)
+    if hybrid and hybrid[1].upper() != hybrid[2].upper():
+        return 'compleated_entry'
     return None
 
 
@@ -52,6 +57,17 @@ def compile_extended(text, name):
     from rules_engine.continuous import _attached_keywords
     if any(c in text for c in '()\n;'):
         return None
+    if re.fullmatch(r'Tap up to (?:one|1) target artifact or creature\. '
+                    r'It doesn\x27t untap during its controller\x27s next untap step\.', text, re.I):
+        return [node('tap_freeze')]
+    if re.fullmatch(r'Exile target nonland permanent card with mana value X from your graveyard\. '
+                    r'Create a token that\x27s a copy of that card\.', text, re.I):
+        return [node('graveyard_exile_copy')]
+    artifact = re.fullmatch(r'Create ([^"\n,]+), a legendary colorless (?:(Book) )?artifact token with '
+                           r'"Spells you cast cost \{(\d+)\} less to cast" and "\{T\}: Draw ('+COUNT+r') cards?\."', text, re.I)
+    if artifact and len(artifact[1]) <= 128 and len(artifact[3]) <= 10:
+        return [node('named_artifact_token', name=artifact[1], subtype=artifact[2],
+                     generic_reduction=int(artifact[3]), draw_amount=number(artifact[4]))]
     top = re.fullmatch(r"Exile the top (card|("+COUNT+r") cards) of each player's library\.", text, re.I)
     if top:
         amount = 1 if top[1].lower() == 'card' else number(top[2])
@@ -122,6 +138,7 @@ def announcement_text(text, name):
     targetless = {'loyalty_emblem', 'loyalty_search', 'loyalty_gain', 'loyalty_draw',
                   'loyalty_hand_entry', 'loyalty_delay_untap', 'loyalty_flash',
                   'loyalty_source_token', 'loyalty_scaled_buff', 'loyalty_destroy_threshold', 'loyalty_mana'}
+    targetless.add('loyalty_named_artifact_token')
     if steps and all(step['effect_key'] == 'loyalty_mana' or
                      (step['effect_key'] == 'loyalty_source_exile' and step['data']['selection'] != 'target')
                      for step in steps):
@@ -143,6 +160,7 @@ def compile_proxy(state, card, controller, targets):
     steps = compile_instruction(card.oracle_text, card.name)
     if steps is None or not any(s['effect_key'].startswith('loyalty_') for s in steps):
         return None
+    target_hints(state, card, controller, targets, source_kind='activated')
     from rules_engine.oracle_effects import infer_effect_from_oracle
     from game_state.state import object_incarnation
     source = state.cards.get(card.id)
@@ -155,12 +173,23 @@ def compile_proxy(state, card, controller, targets):
             payload = {**step['data'], 'source_reference': reference, 'loyalty_clause': card.oracle_text}
             if targets.get('target_card_id'):
                 payload['target_card_id'] = targets['target_card_id']
+            elif key == 'loyalty_tap_freeze' and targets.get('target_card_ids'):
+                payload['target_card_id'] = targets['target_card_ids'][0]
+            if key == 'loyalty_tap_freeze' and payload.get('target_card_id'):
+                payload['target_reference'] = card_reference(state, payload['target_card_id'])
+            if key == 'loyalty_graveyard_exile_copy':
+                payload['x_value'] = targets.get('x_value', 0)
         else:
             proxy = copy(card)
             proxy.loyalty_program = False
             proxy.oracle_text = step['instruction'] + '.'
             key, payload = infer_effect_from_oracle(state, proxy, controller, targets)
         effects.append({'effect_key': key, 'payload': payload})
+    if any(step['effect_key'] in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy',
+                                  'loyalty_named_artifact_token'} for step in steps):
+        # The native outer receipt validates singular and list slots, including copies.
+        return 'effect_sequence', {'effects': effects, '__ability_target_text': card.oracle_text,
+                                   'x_value': targets.get('x_value', 0)}
     return 'effect_sequence', {'effects': effects}
 
 
@@ -172,7 +201,45 @@ def resolve(state, controller, payload):
     from rules_engine.events import emit_event, emit_event_batch
     kind = payload['loyalty_operation']
     target = state.cards.get(payload.get('target_card_id'))
-    if kind == 'source_exile':
+    if kind == 'tap_freeze':
+        if payload.get('target_reference') is not None and not reference_matches(state,
+                payload.get('target_card_id'), payload['target_reference']):
+            return
+        if target is not None and target.zone == Zone.BATTLEFIELD and set(effective_types(state, target)) & {'Artifact', 'Creature'}:
+            handlers.tap_card(state, controller, payload)
+            state.loyalty_permissions.append({'kind': 'next_untap_lock', 'controller': controller,
+                'created_turn': state.turn, 'target_card_id': target.id,
+                'target_reference': card_reference(state, target.id)})
+    elif kind == 'graveyard_exile_copy':
+        from rules_engine.mana import mana_value
+        from rules_engine.zone_actions import is_departed_token
+        x = payload.get('x_value')
+        if (type(x) is not int or x < 0 or target is None or target.zone != Zone.GRAVEYARD
+                or target.id not in state.players[controller].graveyard or target.owner != controller
+                or is_departed_token(target) or 'Land' in effective_types(state, target)
+                or not set(effective_types(state, target)) & {'Creature', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle'}
+                or mana_value(target.mana_cost) != x):
+            return
+        descriptor = {**handlers.token_copy_descriptor(target), 'loyalty': target.loyalty,
+                      'card_faces': deepcopy(target.card_faces), 'layout': target.layout,
+                      'selected_face_index': target.selected_face_index, 'amount': 1}
+        handlers.exile_from_graveyard(state, controller, {'target_card_id': target.id})
+        if target.zone == Zone.EXILE:
+            # This uncast copy has no Phyrexian-life payment from the source spell.
+            from rules_engine.attachments import is_aura
+            if is_aura(target):
+                prepare_aura_copy(state, controller, descriptor)
+            else:
+                handlers.create_token(state, controller, descriptor)
+    elif kind == 'named_artifact_token':
+        amount = payload['draw_amount']
+        draw = 'a card' if amount == 1 else f'{amount} cards'
+        handlers.create_token(state, controller, {'name': payload['name'], 'amount': 1,
+            'types': ['Legendary', 'Artifact', 'Token'], 'colors': [], 'keywords': [],
+            'power': None, 'toughness': None,
+            'type_line': 'Token Legendary Artifact' + (' - ' + payload['subtype'] if payload['subtype'] else ''),
+            'oracle_text': f'Spells you cast cost {{{payload["generic_reduction"]}}} less to cast.\n{{T}}: Draw {draw}.'})
+    elif kind == 'source_exile':
         from rules_engine.source_linked_exile import execute
         execute(state, controller, payload)
     elif kind == 'mana':
@@ -388,6 +455,8 @@ def finish_choice(state, controller, action):
     if action.get('type') != 'choose_mechanic' or pending['player_id'] != controller:
         return False
     if pending['kind'] == 'loyalty_attachment':
+        if pending.get('aura_copy'):
+            return finish_aura_copy_choice(state, controller, action)
         cid = pending['entry_card_id']
         payload = pending['effect_payload']
         target = action.get('choice_id')
@@ -451,7 +520,247 @@ def collect_emblem_triggers(state, event, payload):
 def begin_turn(state):
     state.loyalty_permissions = [p for p in state.loyalty_permissions
         if p.get('kind') == 'source_linked_exile'
-        or p['controller'] != state.active_player or p['created_turn'] == state.turn]
+        or (p.get('kind') == 'next_untap_lock' and reference_matches(state, p['target_card_id'], p['target_reference']))
+        or (p.get('kind') != 'next_untap_lock' and
+            (p['controller'] != state.active_player or p['created_turn'] == state.turn))]
+
+
+def consume_untap_lock(state, card_id):
+    """All live next-step prohibitions expire even when the permanent is untapped."""
+    card = state.cards[card_id]
+    matching = [p for p in state.loyalty_permissions if p.get('kind') == 'next_untap_lock'
+                and p['target_card_id'] == card_id
+                and reference_matches(state, card_id, p['target_reference'])
+                and card.controller == state.active_player]
+    state.loyalty_permissions = [p for p in state.loyalty_permissions if p not in matching]
+    return bool(matching)
+
+
+def target_hints(state, card, controller, action_targets=None, *, source_kind='spell'):
+    """Delegate only whole new instruction families; existing hint ABI is unchanged."""
+    text = card.oracle_text
+    if not isinstance(text, str) or not re.match(
+            r'(?:Tap up to (?:one|1) target artifact or creature\.|'
+            r'Exile target nonland permanent card with mana value X from your graveyard\.|'
+            r'Create [^"\n,]+, a legendary colorless (?:(?:Book) )?artifact token with ")', text, re.I):
+        return None
+    from rules_engine.closed_loyalty import compile_instruction
+    from rules_engine.action_validation import ActionRejected
+    from rules_engine.type_effects import effective_types
+    from rules_engine.mana import mana_value
+    from rules_engine.zone_actions import is_departed_token
+    from game_state.state import Zone
+    steps = compile_instruction(card.oracle_text, card.name)
+    if steps is None or len(steps) != 1:
+        return None
+    key = steps[0]['effect_key']
+    if key not in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy', 'loyalty_named_artifact_token'}:
+        return None
+    targets = action_targets or {}
+    ids = targets.get('target_card_ids') or []
+    singular = targets.get('target_card_id')
+    if (targets.get('target_player') is not None or targets.get('target_stack_id') is not None
+            or targets.get('target_distribution') or targets.get('mode_targets')
+            or singular and ids or len(ids) > 1
+            or key == 'loyalty_named_artifact_token' and singular
+            or key != 'loyalty_tap_freeze' and ids):
+        raise ActionRejected('Invalid target shape for this complete loyalty instruction')
+    def view(cid):
+        target = state.cards[cid]
+        return {'id': cid, 'name': target.name, 'owner': target.owner, 'controller': target.controller}
+    if key == 'loyalty_tap_freeze':
+        return {'up_to_target_count': 1, 'player_targets': [], 'stack_targets': [],
+            'permanent_targets': [view(cid) for player in state.players.values() for cid in player.battlefield
+                if state.cards[cid].zone == Zone.BATTLEFIELD
+                and set(effective_types(state, state.cards[cid])) & {'Artifact', 'Creature'}]}
+    if key == 'loyalty_graveyard_exile_copy':
+        x = targets.get('x_value')
+        if x is not None and (type(x) is not int or x < 0):
+            raise ActionRejected('X must be an announced nonnegative integer')
+        return {'requires_x_value': True, 'player_targets': [], 'stack_targets': [],
+            'graveyard_card_targets': [view(cid) for cid in state.players[controller].graveyard
+                if (target := state.cards[cid]).zone == Zone.GRAVEYARD and target.owner == controller
+                and not is_departed_token(target) and 'Land' not in effective_types(state, target)
+                and set(effective_types(state, target)) & {'Creature', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle'}
+                and (x is None or mana_value(target.mana_cost) == x)]}
+    return {'player_targets': [], 'stack_targets': [], 'permanent_targets': []}
+
+
+def offer_copy_target_choice(state, controller, copied_item, *, preview=False):
+    """Only complete single-node targeted loyalty frames enter this adapter."""
+    from rules_engine.closed_loyalty import compile_instruction
+    from rules_engine.targeting import (stack_source_card, stack_object_kind,
+        validate_cast_targets, validate_protection_targets, validate_hexproof_shroud_targets,
+        announced_target_reference_matches, validate_announced_target_references)
+    payload = copied_item.payload
+    text = payload.get('__ability_target_text')
+    if not isinstance(text, str) or copied_item.effect_key != 'effect_sequence' or stack_object_kind(state, copied_item) == 'spell':
+        return False
+    source = stack_source_card(state, copied_item)
+    if source is None:
+        return False
+    steps = compile_instruction(text, source.name)
+    effects = payload.get('effects') or []
+    if (steps is None or len(steps) != 1 or len(effects) != 1
+            or steps[0]['effect_key'] not in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy'}
+            or effects[0].get('effect_key') != steps[0]['effect_key']):
+        return False
+    child = effects[0].get('payload') or {}
+    announced = payload.get('__announced_targets') or {}
+    if '__announced_target_references' in payload:
+        validate_announced_target_references(announced, payload['__announced_target_references'])
+    if child.get('loyalty_clause') != text:
+        return False
+    if announced.get('target_card_id') is not None and 'target_card_ids' not in announced:
+        slot = ['target_card_id']
+        old = announced['target_card_id']
+    elif 'target_card_ids' in announced and announced.get('target_card_id') is None:
+        ids = announced['target_card_ids']
+        if not isinstance(ids, list) or len(ids) > 1:
+            return False
+        if not ids:
+            return True if not preview else None
+        slot, old = ['target_card_ids', 0], ids[0]
+    else:
+        return True if not preview and not child.get('target_card_id') else False
+    if child.get('target_card_id') != old:
+        return False
+    if steps[0]['effect_key'] == 'loyalty_graveyard_exile_copy':
+        x = announced.get('x_value')
+        if type(x) is not int or x < 0 or child.get('x_value') != x or payload.get('x_value') != x:
+            return False
+    proxy = copy(source)
+    proxy.oracle_text = text
+    hints = target_hints(state, proxy, controller, announced, source_kind=stack_object_kind(state, copied_item))
+    if hints is None:
+        return False
+    options, labels = ['keep'], {'keep': 'Keep original target'}
+    lki = payload.get('__source_lki')
+    for candidate in hints.get('permanent_targets', []) + hints.get('graveyard_card_targets', []):
+        cid = candidate['id']
+        if cid == old and announced_target_reference_matches(state,
+                payload.get('__announced_target_references'), tuple(slot), cid):
+            continue
+        proposed = deepcopy(announced)
+        if len(slot) == 1:
+            proposed[slot[0]] = cid
+        else:
+            proposed[slot[0]][slot[1]] = cid
+        if not (validate_cast_targets(hints, proposed)[0]
+                and validate_protection_targets(state, source, proposed, source_lki=lki)[0]
+                and validate_hexproof_shroud_targets(state, controller, proposed, source,
+                    source_lki=lki, source_kind=stack_object_kind(state, copied_item))[0]):
+            continue
+        option = 'target_card_id:' + cid
+        options.append(option)
+        labels[option] = candidate['name']
+    pending = {'kind': 'copy_target', 'player_id': controller, 'count': 1,
+        'options': options, 'option_labels': labels, 'stack_id': copied_item.id,
+        'loyalty_target_slot': slot, 'label': 'Choose a new target or keep the original target'}
+    if preview:
+        return pending
+    if len(options) > 1:
+        state.pending_mechanic_choice = pending
+    return True
+
+
+def choose_copy_target(state, copied, pending, chosen):
+    from rules_engine.targeting import replace_announced_target_reference
+    current = offer_copy_target_choice(state, pending['player_id'], copied, preview=True)
+    if (not isinstance(current, dict) or current['loyalty_target_slot'] != pending['loyalty_target_slot']
+            or chosen not in current['options']):
+        return False
+    if chosen != 'keep':
+        cid = chosen.split(':', 1)[1]
+        slot = pending['loyalty_target_slot']
+        announced = deepcopy(copied.payload['__announced_targets'])
+        if len(slot) == 1:
+            announced[slot[0]] = cid
+        else:
+            announced[slot[0]][slot[1]] = cid
+        references = replace_announced_target_reference(state,
+            copied.payload.get('__announced_target_references'), announced, [tuple(slot)])
+        copied.payload['__announced_targets'] = announced
+        copied.payload['effects'][0]['payload']['target_card_id'] = cid
+        if copied.payload['effects'][0]['effect_key'] == 'loyalty_tap_freeze':
+            copied.payload['effects'][0]['payload']['target_reference'] = card_reference(state, cid)
+        if '__announced_target_references' in copied.payload:
+            copied.payload['__announced_target_references'] = references
+        copied.targets = [cid]
+    state.pending_mechanic_choice = None
+    return True
+
+
+def prepare_aura_copy(state, controller, payload):
+    """Stage fresh native token candidates, then attach before the entry batch."""
+    from dataclasses import asdict
+    from game_state.state import CardInstance, Zone
+    from rules_engine.token_replacements import token_creation_amount
+    from effects.handlers import create_token
+    data = deepcopy(payload)
+    if '__entry_candidates' not in data:
+        amount = token_creation_amount(state, controller, data.get('amount', 1))
+        candidates = []
+        for _ in range(amount):
+            token = CardInstance(id=state.allocate_object_id(), name=data['name'],
+                owner=controller, controller=controller, zone=Zone.BATTLEFIELD,
+                types=list(data['types']), is_token=True, mana_cost=data['mana_cost'],
+                power=data['power'], toughness=data['toughness'],
+                printed_power=data['printed_power'], printed_toughness=data['printed_toughness'],
+                loyalty=data['loyalty'], type_line=data['type_line'], oracle_text=data['oracle_text'],
+                summoning_sick=True, entered_turn=state.turn, card_faces=deepcopy(data['card_faces']),
+                layout=data['layout'], selected_face_index=data['selected_face_index'],
+                keywords=list(data['keywords']), colors=list(data['colors']), image_uri=data['image_uri'])
+            candidates.append(asdict(token))
+        data.update({'amount': amount, '__token_creation_modified': True, '__entry_candidates': candidates})
+    attachments = data.get('__aura_copy_attachments', {})
+    ready = []
+    for raw in data['__entry_candidates']:
+        token = CardInstance(**{**raw, 'zone': Zone(raw['zone'])})
+        options = aura_entry_options(state, token, controller)
+        if not options:
+            continue
+        selected = attachments.get(token.id)
+        if selected is None:
+            state.pending_mechanic_choice = {'kind': 'loyalty_attachment', 'aura_copy': True,
+                'player_id': controller, 'count': 1, 'min_count': 1,
+                'label': 'Choose a legal attachment for the copied Aura', 'options': options,
+                'entry_card_id': token.id, 'effect_payload': data,
+                'option_references': {cid: card_reference(state, cid) for cid in options
+                                      if not cid.startswith('player:')}}
+            state.priority_player = controller
+            state.passed_priority = set()
+            return
+        target = selected['id']
+        if target not in options or (not target.startswith('player:')
+                and not reference_matches(state, target, selected['reference'])):
+            continue
+        raw['attached_to'] = target
+        ready.append(raw)
+    if ready:
+        create_token(state, controller, {**data, 'amount': len(ready), '__entry_candidates': ready})
+
+
+def finish_aura_copy_choice(state, controller, action):
+    from game_state.state import CardInstance, Zone
+    from rules_engine.stack_engine import resume_paused_resolution
+    pending = state.pending_mechanic_choice
+    payload = pending['effect_payload']
+    cid, target = pending['entry_card_id'], action.get('choice_id')
+    raw = next((row for row in payload['__entry_candidates'] if row['id'] == cid), None)
+    if raw is None or cid in state.cards or raw['controller'] != controller or target not in pending['options']:
+        return False
+    token = CardInstance(**{**raw, 'zone': Zone(raw['zone'])})
+    if (target not in aura_entry_options(state, token, controller)
+            or (not target.startswith('player:') and not reference_matches(state, target,
+                pending['option_references'].get(target)))):
+        return False
+    data = {**payload, '__aura_copy_attachments': {**payload.get('__aura_copy_attachments', {}),
+        cid: {'id': target, 'reference': None if target.startswith('player:') else card_reference(state, target)}}}
+    state.pending_mechanic_choice = None
+    prepare_aura_copy(state, controller, data)
+    resume_paused_resolution(state, pending)
+    return True
 
 
 def timing(state, card, player):
@@ -470,5 +779,5 @@ def timing(state, card, player):
                     and not normal):
                 return False, False
     flash = 'Sorcery' in effective_types(state, card) and any(
-        p.get('kind') != 'source_linked_exile' and p['controller'] == player for p in state.loyalty_permissions)
+        p.get('kind') not in {'source_linked_exile', 'next_untap_lock'} and p['controller'] == player for p in state.loyalty_permissions)
     return True, flash

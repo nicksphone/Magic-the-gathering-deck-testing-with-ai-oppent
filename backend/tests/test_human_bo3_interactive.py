@@ -16,14 +16,14 @@ from persistence.db import engine
 from persistence.repository import Repository
 from card_data.sync import ScryfallSyncService
 from tests.test_api_input_contracts import snapshot
+from tests.ci_input_contracts import human_bo3_decks
 
 
 def test_seeded_human_bo3_checked_http_cold_restart():
     root = Path(__file__).resolve().parents[2]
-    out = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE'])
+    out = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE']) / 'interactive'
     out.mkdir(parents=True, exist_ok=True)
-    preflight = json.loads((root / 'evidence/selected-preflight.json').read_text())
-    decks = list(preflight['decks'].values())
+    decks = human_bo3_decks()
     pilots = {pid: AIAgent(difficulty='strong', archetype='Aggro') for pid in (1, 2)}
     payload = {'deck_a': decks[0], 'deck_b': decks[1], 'controller_a': 'human',
                'controller_b': 'human', 'mode': 'human_vs_human', 'best_of': 3, 'seed': 1972639901}
@@ -62,7 +62,7 @@ def test_seeded_human_bo3_checked_http_cold_restart():
                         reply = client.post(url + '/sideboard', json={'player_id': pid, 'cards_out': [], 'cards_in': []})
                         assert reply.status_code == 200, reply.text
                     before = snapshot(controller)
-                    child = subprocess.run([sys.executable, str(root / 'gate.py'), '--cold', mid],
+                    child = subprocess.run([sys.executable, str(Path(__file__).with_name('human_bo3_cold_worker.py')), mid],
                         cwd=root / 'backend', env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'},
                         capture_output=True, text=True, timeout=60)
                     (out / f'cold-{view["game_number"]}.stderr').write_text(child.stderr)
