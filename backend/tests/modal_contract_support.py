@@ -9,7 +9,7 @@ def canonical_fixture(face_kind=''):
     path = Path(__file__).with_name('browser_fixture_server.py')
     tree = ast.parse(path.read_text())
     node = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == 'fixture')
-    assert hashlib.sha256(ast.get_source_segment(path.read_text(), node).encode()).hexdigest() == '4a5f59f073fec8958da4f57ef4a9f83ead9c94e110f9e383a75c83262da2a2bd'
+    assert hashlib.sha256(ast.get_source_segment(path.read_text(), node).encode()).hexdigest() == 'ee900ef5e0c56e2f6428065a26ef3f47195e3486878c8fed99749bea2ef09c91'
     node.decorator_list = []
     namespace = {'__file__': str(path), 'Path': Path, 'MatchFactory': MatchFactory,
                  'Step': Step, 'Zone': Zone, 'CardInstance': CardInstance, 'StackItem': StackItem,

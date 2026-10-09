@@ -24,6 +24,15 @@ substitute for qualification of the final combined source.
 
 ## Verified Components
 
+The subsequent `f64ba88b` configured frontend job passes. Its browser copy
+continuation failure is traced to manual fixtures missing native stack-kind
+metadata, not permissive engine admission. Five fixture producers and their
+explicit helper hash pin are corrected; a fresh 23-whole-module pure union
+passes 447 checks in 171.09s with unchanged source and no gameplay I/O.
+Six fixture-contract checks fail before correction and pass afterward. The
+full corrected remote workflow remains pending; see
+`browser-native-frame-fixtures.md`.
+
 | Component | Observed evidence | Qualification boundary |
 | --- | --- | --- |
 | Granted-target, attachment AI and loyalty announcement composition | Surgical composition over `8b56b3a`: fourteen whole backend modules / 265 passes in 154.86s with native closure, including the shared opaque-conditional simulation frontier and unchanged productive-equip assertions; actual loyalty handler20/backend replay20 and full configured npm test pass; unchanged frontend lint, types and build pass | Controlled pure/component evidence, not mounted browser, natural-match, generic full-card or expert-AI certification. Original Tibalt4 and historical resource/setup/AI-counterexample ledgers remain strict and visible. See `granted-target-ai-loyalty-current.md` |

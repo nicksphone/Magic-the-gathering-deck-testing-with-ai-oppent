@@ -318,7 +318,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             hand_card(state, 'Mirrorshell Crab', seat)
             source = add(state, 'Azure Mage', 3-seat)
             state.stack.append(StackItem(state.allocate_object_id(), source.id, 3-seat,
-                                         'Azure Mage ability', 'draw_cards', {'count': 1}))
+                                         'Azure Mage ability', 'draw_cards', {'count': 1, '__announced_stack_kind': 'activated'}))
             state.players[seat].mana_pool.update(C=2, U=1)
             state.players[3-seat].mana_pool['C'] = 3
         return publish(state, [{'quantity': 60, 'card_name': 'Swamp'}])
@@ -744,6 +744,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             id="original-command", source_card_id=spell.id, controller=1,
             label=spell.name, effect_key="effect_sequence",
             payload={
+                "__announced_stack_kind": "spell",
                 "effects": [
                     {"effect_key": "destroy_permanent", "payload": {"target_card_id": "modal-ring"}, "mode_text": destroy},
                     {"effect_key": "deal_damage", "payload": {"target_card_id": "modal-bear", "amount": 2}, "mode_text": damage},
@@ -781,7 +782,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.stack.append(StackItem(
             id="original-pyrotechnics", source_card_id=spell.id, controller=1,
             label=spell.name, effect_key="deal_damage_multi",
-            payload={"target_distribution": dict(distribution),
+            payload={"__announced_stack_kind": "spell", "target_distribution": dict(distribution),
                      "__announced_targets": {"target_distribution": dict(distribution), "divide_total": 4}},
         ))
         copy_spell(state, 2, {"target_stack_id": "original-pyrotechnics", "may_choose_new_targets": True})
@@ -804,7 +805,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.stack.append(StackItem(
             id="original-bolt", source_card_id=bolt.id, controller=1,
             label=bolt.name, effect_key="deal_damage",
-            payload={"target_player": 2, "amount": 3,
+            payload={"__announced_stack_kind": "spell", "target_player": 2, "amount": 3,
                      "__announced_targets": {"target_player": 2}},
         ))
         copy_spell(state, 2, {"target_stack_id": "original-bolt", "may_choose_new_targets": True})
@@ -1040,7 +1041,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             state.cards[card.id] = card
             if card.zone != Zone.STACK:
                 getattr(state.players[card.owner], card.zone.value).append(card.id)
-        state.stack.append(StackItem("bolt-stack", "bolt", 1, "Lightning Bolt", "deal_damage", {"target_player": 2, "amount": 3}))
+        state.stack.append(StackItem("bolt-stack", "bolt", 1, "Lightning Bolt", "deal_damage", {"target_player": 2, "amount": 3, '__announced_stack_kind': 'spell'}))
         return publish(state, deck)
     if face_kind == "modal_targetless":
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]

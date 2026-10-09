@@ -341,6 +341,14 @@ controls remain available. Eight actual readiness renders pass; remote full
 browser/backend qualification remains required. See
 `docs/testing/browser-bo3-readiness-ci.md`.
 
+The `f64ba88b` frontend workflow also passes; its browser flow then exposed
+manual copy fixtures missing native spell/ability-kind metadata. Five fixture
+producers now declare that metadata without weakening engine validation.
+One fresh 23-whole-module pure declaration passes all 447 checks in 171.09s,
+including six red-before/green-after fixture-contract cases. The complete
+corrected remote workflow remains required. See
+`docs/testing/browser-native-frame-fixtures.md`.
+
 Current native next-cast and entry-counter integration has one 36-whole-module
 834-pass qualification on the composed `91c40e2` application baseline. Parent
 applied bytes match the actual tested archive. See

@@ -1164,9 +1164,9 @@
     "semantic_hash": ""
   },
   "backend/tests/browser_fixture_server.py": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1154184,
-    "ast_hash": "fed388a69eb0e17ded2ec249b2fee224",
+    "mtime": 1791544464.1642597,
+    "seen": 1791544549.39957,
+    "ast_hash": "88cfb113f731765914bff7f90e5c5cfc",
     "semantic_hash": ""
   },
   "backend/tests/casting_trigger_browser_fixture.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791542770.6944203,
-    "seen": 1791542856.1462028,
-    "ast_hash": "55ba52ef93913fe491289f848b446b35",
+    "mtime": 1791544464.12926,
+    "seen": 1791544549.4039037,
+    "ast_hash": "ba9799643fd9a13f86671459ccc1c0c2",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791542770.6944203,
-    "seen": 1791542856.1459439,
-    "ast_hash": "04a3da82a54f81c6987459e92ddeb8fa",
+    "mtime": 1791544464.1302602,
+    "seen": 1791544549.4036212,
+    "ast_hash": "b1d374138701849d1a45743836d9bd25",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -15942,9 +15942,9 @@
     "semantic_hash": ""
   },
   "backend/tests/modal_contract_support.py": {
-    "mtime": 1791541839.5586808,
-    "seen": 1791542151.2090154,
-    "ast_hash": "f51698e42f606bc2fc427d40e135bcc7",
+    "mtime": 1791544464.1662595,
+    "seen": 1791544549.4008715,
+    "ast_hash": "e1a4d95820d60d9256bef06ba0eb3238",
     "semantic_hash": ""
   },
   "backend/tests/test_modal_cost_option_contract.py": {
@@ -15969,6 +15969,18 @@
     "mtime": 1791542770.6934204,
     "seen": 1791542856.1454124,
     "ast_hash": "7cfd2889be2fef737a3d65622cd28340",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_browser_copy_frame_contract.py": {
+    "mtime": 1791544464.1672595,
+    "seen": 1791544549.4011657,
+    "ast_hash": "9b4a2096e414092063cfad5535d7c4a5",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-native-frame-fixtures.md": {
+    "mtime": 1791544464.12926,
+    "seen": 1791544549.4030972,
+    "ast_hash": "8fec32f71b967376cf853d102f9f1f18",
     "semantic_hash": ""
   }
 }
