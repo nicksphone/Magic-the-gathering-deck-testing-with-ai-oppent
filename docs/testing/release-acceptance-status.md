@@ -195,3 +195,15 @@ but it does not certify current permission HTTP/restart episodes or a green
 509-case cohort. Control/type dependency diagnostics and mounted-browser work
 remain open. See `source-linked-exile-current.md`; no overall release gate or
 live deployment is closed by this milestone.
+
+## Clean CI Fixture Repair (2026-10-09)
+
+The workflow on `22971a2e` failed at shared audit-phase import, NFS-only frontend
+fixture input and browser-test origin configuration. The audit import failure
+and real ASGI origin denial were independently reproduced. Scoped fixture and
+harness repairs preserve every existing gameplay assertion and default security
+policy. Eight whole pure modules pass 231 checks in 33.11 seconds; full backend
+collection succeeds for 23,431 tests. Full configured frontend tests/lint/build
+pass on the immutable fixture repair. Collection and component gates do not
+establish a full-suite or browser pass. The remote workflow must qualify the
+published composition. See `clean-ci-fixtures-current.md`.

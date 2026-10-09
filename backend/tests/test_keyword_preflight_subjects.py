@@ -25,9 +25,11 @@ def test_complete_keyword_subject_binding_preserves_orphan_boundary(facts, case)
     before = s.serialize_match_snapshot(state)
     spec = build_ability_spec(state, proxy, 1, targets, report_unsupported=False)
     assert s.serialize_match_snapshot(state) == before
-    with (s.OUT / (os.environ['ADMISSION_PHASE'] + '-' + case + '.json')).open('x') as stream:
-        json.dump({'compiler_only': True, 'body': body, 'targets': targets,
-                   'spec': asdict(spec), 'source': source, 'target': target}, stream, indent=2, sort_keys=True)
+    phase = os.environ.get('ADMISSION_PHASE')
+    if phase:
+        with (s.OUT / (phase + '-' + case + '.json')).open('x') as stream:
+            json.dump({'compiler_only': True, 'body': body, 'targets': targets,
+                       'spec': asdict(spec), 'source': source, 'target': target}, stream, indent=2, sort_keys=True)
     if case == 'orphan-it':
         assert spec.effect.key == 'noop'
         assert spec.used_fallback

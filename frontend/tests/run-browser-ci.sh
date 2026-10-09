@@ -93,7 +93,7 @@ VITE
 cd "$scratch"
 
 start_backend() {
-  (cd "$scratch/backend" && exec setsid "$python_bin" -m uvicorn tests.ui_v2_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
+  (cd "$scratch/backend" && exec setsid env MTG_TRUSTED_ORIGINS=http://127.0.0.1:15173 "$python_bin" -m uvicorn tests.ui_v2_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
   backend_pid=$!
 }
 

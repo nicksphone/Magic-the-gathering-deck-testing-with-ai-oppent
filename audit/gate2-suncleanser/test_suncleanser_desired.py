@@ -16,7 +16,7 @@ from rules_engine.targeting import stack_object_kind
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE.parents[2] / 'evidence'
-PHASE = os.environ['ADMISSION_PHASE']
+PHASE = os.environ.get('ADMISSION_PHASE')
 SOURCE = 'Suncleanser'
 MODES = {
     'creature': "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
@@ -39,12 +39,15 @@ def facts():
         raws[name] = raw
     assert raws[SOURCE]['id'] == '3644df41-b690-4581-ac7d-c85cec75411f'
     assert digest(raws[SOURCE]) == '85411b480f87089ea55e466d60b00d05575f1dd07ad67c9ff73790d614e431df'
-    with (OUT / (PHASE + '-facts.json')).open('x') as stream:
-        json.dump(proof, stream, indent=2, sort_keys=True)
+    if PHASE:
+        with (OUT / (PHASE + '-facts.json')).open('x') as stream:
+            json.dump(proof, stream, indent=2, sort_keys=True)
     return raws
 
 
 def record(label, state, **observed):
+    if not PHASE:
+        return
     with (OUT / (PHASE + '-' + label + '.json')).open('x') as stream:
         json.dump({'snapshot': serialize_match_snapshot(state), 'observed': observed}, stream, indent=2, sort_keys=True)
 

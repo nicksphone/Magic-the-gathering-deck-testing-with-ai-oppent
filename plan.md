@@ -314,6 +314,13 @@ qualification of 950 passes on the `db16186` composition, with applied-byte
 equality. See `docs/testing/pending-stack-privacy-current.md`; mixed HTTP/SQL,
 complete private hand-to-library responses and final release remain open.
 
+Current clean-CI fixture repairs preserve canonical/gameplay assertions while
+removing an import-time audit-phase requirement, an NFS-only frontend test input
+and an undeclared browser-test origin. Eight whole pure modules pass 231 checks;
+default backend collection succeeds for 23,431 cases, not a full-suite pass.
+The full remote workflow remains required. See
+`docs/testing/clean-ci-fixtures-current.md`.
+
 Current native next-cast and entry-counter integration has one 36-whole-module
 834-pass qualification on the composed `91c40e2` application baseline. Parent
 applied bytes match the actual tested archive. See

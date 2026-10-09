@@ -61,7 +61,10 @@ def paid_bounce(state, facts, actor, target):
 
 
 def record(label, state, **extra):
-    out = s.OUT / (os.environ['ADMISSION_PHASE'] + '-' + label + '.json')
+    phase = os.environ.get('ADMISSION_PHASE')
+    if not phase:
+        return
+    out = s.OUT / (phase + '-' + label + '.json')
     with out.open('x') as stream:
         json.dump({'snapshot': s.serialize_match_snapshot(state), **extra}, stream, indent=2, sort_keys=True)
 

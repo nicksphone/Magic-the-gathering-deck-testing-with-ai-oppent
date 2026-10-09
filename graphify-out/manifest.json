@@ -6678,9 +6678,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/run-browser-ci.sh": {
-    "mtime": 1791325499.0,
-    "seen": 1791511166.1182446,
-    "ast_hash": "78eb096e7f8b47f3246f8143dee12417",
+    "mtime": 1791537434.4971907,
+    "seen": 1791537832.8836684,
+    "ast_hash": "b1306c86906377c916ce18082283c882",
     "semantic_hash": ""
   },
   "frontend/tests/run-ui-action-diagnostics.sh": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791533799.393901,
-    "seen": 1791533979.5151896,
-    "ast_hash": "62237059ae94e9d242e89fa654e72ec4",
+    "mtime": 1791537728.0062237,
+    "seen": 1791537832.8848755,
+    "ast_hash": "354c1ab2cba2084f5cf81fb8789d4801",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791533799.3949013,
-    "seen": 1791533979.514928,
-    "ast_hash": "533e98381bc2bd5a317880df38a31780",
+    "mtime": 1791537728.0062237,
+    "seen": 1791537832.884596,
+    "ast_hash": "ed45eea65204574ed364f788d8a007ba",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -14316,9 +14316,9 @@
     "semantic_hash": ""
   },
   "audit/gate2-suncleanser/test_suncleanser_desired.py": {
-    "mtime": 1791436903.4716322,
-    "seen": 1791511166.115016,
-    "ast_hash": "0d475ccb9f98c5569a09c03a836f2b74",
+    "mtime": 1791537434.484191,
+    "seen": 1791537832.8801045,
+    "ast_hash": "fc5491c504cdba892de183ecc6c7638b",
     "semantic_hash": ""
   },
   "backend/rules_engine/attached_characteristics.py": {
@@ -14460,15 +14460,15 @@
     "semantic_hash": ""
   },
   "backend/tests/test_keyword_preflight_subjects.py": {
-    "mtime": 1791436903.4756322,
-    "seen": 1791511166.1172128,
-    "ast_hash": "d1b7372a2a10e103a981252074ff666a",
+    "mtime": 1791537434.4891908,
+    "seen": 1791537832.8825347,
+    "ast_hash": "86452a428c85c6ab503c79ba07854e98",
     "semantic_hash": ""
   },
   "backend/tests/test_land_activation_paid.py": {
-    "mtime": 1791436903.4746323,
-    "seen": 1791511166.117226,
-    "ast_hash": "477482fee7f12aa7405e2a6eb2a75abf",
+    "mtime": 1791537434.4921908,
+    "seen": 1791537832.882549,
+    "ast_hash": "90bd0f8a1a513b00e4ac269c340b7767",
     "semantic_hash": ""
   },
   "docs/testing/escape-safekeeper-current.md": {
@@ -15504,9 +15504,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/bounded-target-engine.py": {
-    "mtime": 1791505433.724705,
-    "seen": 1791511166.118019,
-    "ast_hash": "9655651b21842f4a63497d7aa2dbc8de",
+    "mtime": 1791537693.3436952,
+    "seen": 1791537832.8834107,
+    "ast_hash": "d9c8ef7342c05bed11b570f5b7f21acd",
     "semantic_hash": ""
   },
   "docs/testing/bounded-spells-and-entry-strategy.md": {
@@ -15855,6 +15855,24 @@
     "mtime": 1791533799.393901,
     "seen": 1791533979.5150108,
     "ast_hash": "84a9a8787fa148a52bd27d749b5f18ac",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_browser_ci_origin.py": {
+    "mtime": 1791537434.5051906,
+    "seen": 1791537832.8821063,
+    "ast_hash": "98d5df6b9426f3120cf70daa815b8788",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ci_fixture_portability.py": {
+    "mtime": 1791537434.5011907,
+    "seen": 1791537832.882172,
+    "ast_hash": "79ab697f534a6481bae33ec9034da52e",
+    "semantic_hash": ""
+  },
+  "docs/testing/clean-ci-fixtures-current.md": {
+    "mtime": 1791537728.0052238,
+    "seen": 1791537832.884094,
+    "ast_hash": "4d4685fdf06b8c69eb567040f1e55c32",
     "semantic_hash": ""
   }
 }
