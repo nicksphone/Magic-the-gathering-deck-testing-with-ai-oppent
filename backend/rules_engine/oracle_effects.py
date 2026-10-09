@@ -461,6 +461,11 @@ def infer_effect_from_oracle(
     turn_protection = compile_turn_protection(oracle)
     if turn_protection is not None:
         return turn_protection
+    from rules_engine.devotion import devotion_instruction
+    devotion = devotion_instruction(oracle, card.name)
+    if devotion is not None:
+        return 'devotion_effect', {**action_targets, 'devotion': devotion,
+                                   'source_incarnation': object_incarnation(card)}
     resource_scaled_pt = _infer_resource_scaled_target_pt(oracle, action_targets)
     if resource_scaled_pt is not None:
         return resource_scaled_pt
@@ -602,11 +607,6 @@ def infer_effect_from_oracle(
                         'payload': {**instruction, 'source_card_id': card.id}}
                        for _, instruction in delayed_lines if instruction is not None)
         return 'effect_sequence', {'effects': effects}
-    from rules_engine.devotion import devotion_instruction
-    devotion = devotion_instruction(oracle, card.name)
-    if devotion is not None:
-        return 'devotion_effect', {**action_targets, 'devotion': devotion,
-                                   'source_incarnation': object_incarnation(card)}
     if re.search(r"choose a creature card exiled with .+? with (?:mana value|converted mana cost) x\.\s*.+? becomes a copy of that card", oracle):
         return "copy_linked_exiled_card", {
             "source_card_id": card.id, "x_value": int(action_targets.get("x_value", 0) or 0),

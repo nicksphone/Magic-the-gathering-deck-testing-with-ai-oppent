@@ -846,9 +846,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1791559987.4649246,
-    "seen": 1791561063.4550502,
-    "ast_hash": "b6ca0d78afcc83d514214e1f45beacdd",
+    "mtime": 1791582367.1516786,
+    "seen": 1791582455.4431922,
+    "ast_hash": "7cae91929413bf760ea9d3d82b359d6c",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -13314,9 +13314,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_human_bo3_native_swaps.py": {
-    "mtime": 1791560914.5256858,
-    "seen": 1791561063.4572878,
-    "ast_hash": "050d3533bc41bbcc34d003535749e162",
+    "mtime": 1791582877.4962852,
+    "seen": 1791582971.998762,
+    "ast_hash": "f7658b79cc83e70885af644640ec5b72",
     "semantic_hash": ""
   },
   "backend/tests/test_human_bo3_readiness.py": {
@@ -16185,6 +16185,18 @@
     "mtime": 1791564093.9266982,
     "seen": 1791564195.4466336,
     "ast_hash": "9520ccef9b553ebb06742fdef0fda6ca",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_devotion_compiler_precedence.py": {
+    "mtime": 1791582367.1516786,
+    "seen": 1791582455.445863,
+    "ast_hash": "618e7578a0b280333ebc6333edbb1749",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_human_bo3_fixture_owner_release.py": {
+    "mtime": 1791582877.4962852,
+    "seen": 1791582971.998756,
+    "ast_hash": "2252812fcd1dee694de59ab649d568ab",
     "semantic_hash": ""
   }
 }

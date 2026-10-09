@@ -247,4 +247,3 @@ def test_native_swaps_between_checked_human_games():
                 'inventory': fixed_inventory, 'snapshot': serialize_match_snapshot(main.ACTIVE_MATCHES[mid].state)})
         finally:
             main.ACTIVE_MATCHES.pop(mid, None)
-            engine.dispose()
