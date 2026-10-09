@@ -12594,9 +12594,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/graveyard_inventory.py": {
-    "mtime": 1791480433.076022,
-    "seen": 1791511166.1152503,
-    "ast_hash": "baa5d73a98031dbd56fc82d671cc2529",
+    "mtime": 1791585548.053815,
+    "seen": 1791585645.21241,
+    "ast_hash": "18b8afadfbe41f68e873696bd762b40d",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/graveyard_inventory_audit/divination-provenance.json": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791584923.3556848,
-    "seen": 1791585019.3100827,
-    "ast_hash": "62ecd49c687398666c828e9c04be40b4",
+    "mtime": 1791585548.0778146,
+    "seen": 1791585645.2194858,
+    "ast_hash": "4d43a07e08679d36fb6e49a32f4291e2",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -16203,6 +16203,12 @@
     "mtime": 1791584923.3556848,
     "seen": 1791585019.3088589,
     "ast_hash": "cc3c9dcb7747d0b55d256723f07b9526",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_public_inventory_schema_review.py": {
+    "mtime": 1791585548.053815,
+    "seen": 1791585645.2174642,
+    "ast_hash": "d99a8f813309b33aed9368dddb74ccda",
     "semantic_hash": ""
   }
 }

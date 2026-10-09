@@ -10,8 +10,9 @@ from rules_engine.oracle_text import without_reminder_text
 
 
 _SCHEMA_PINS = {
-    MatchState: '267ad792255087305d0baea0fbfa3d57d93362c03526a99c2c44ea2b37ec617e',
-    CardInstance: '1b7bf44009e4e1c7bf43bd5dddae383493bca47dc3b9940fde0e93bdcbe58b6f',
+    # Emblems, loyalty permissions and control ledgers require empty defaults below.
+    MatchState: '28b90ac3db8b3ab590e70fd78e820b93a54b8279a77e56b02b0056281a76d488',
+    CardInstance: 'aca805857c113a54aa13e0b379201d693b1ffe304727af79ca4a36c289d4530e',
     PlayerState: 'dd8f36bedf446625796592fe8045ce675eb471d167ffe68cedb2124ccae1e973',
 }
 
@@ -57,8 +58,6 @@ def public_graveyard_inventory(state, actor_id):
 
     if not _metadata_covered(state, MatchState) or set(state.players) != {1, 2}:
         return result('unknown', 'incomplete state metadata')
-    if not _reviewed_context_covered(state):
-        return result('unknown', 'uncovered reviewed permission/protection context')
     if actor_id not in state.players or type(actor_id) is not int:
         return result('unknown', 'invalid actor')
     if any(not isinstance(card, CardInstance) or not isinstance(card.zone, Zone)
@@ -73,7 +72,8 @@ def public_graveyard_inventory(state, actor_id):
     context_fields = (
         'stack', 'pending_mechanic_choice', 'pending_replacement_choice',
         'pending_trigger_order', 'staged_triggers', 'trigger_staging',
-        'cleanup_deferred_triggers', 'delayed_triggers', 'pending_entry_counters',
+        'cleanup_deferred_triggers', 'delayed_triggers', 'emblems', 'loyalty_permissions',
+        'pending_entry_counters',
         'temporary_control_changes', 'linked_exiles', 'adventure_permissions',
         'graveyard_permission_uses', 'combat_cost_effects', 'phase_plan',
         'extra_turns', 'turn_cant_gain_life', 'turn_damage_cant_be_prevented',
@@ -82,6 +82,8 @@ def public_graveyard_inventory(state, actor_id):
     )
     if any(getattr(state, key, None) for key in context_fields):
         return result('unknown', 'uncovered continuation/effect context')
+    if not _reviewed_context_covered(state):
+        return result('unknown', 'uncovered reviewed permission/protection context')
     card_fields = {f.name for f in fields(CardInstance)}
     from rules_engine.land_types import BASIC_TYPES, effective_type_line, has_land_type
     from rules_engine.mana_abilities import tap_only_outputs
@@ -134,6 +136,7 @@ def public_graveyard_inventory(state, actor_id):
                         or card.layout != 'normal' or card.is_token
                         or card.printed_characteristics or card.bestow_characteristics
                         or card.type_effects or card.type_effect_base is not None
+                        or card.control_effects or card.control_effect_base is not None
                         or card.keyword_effects or card.base_stat_effects
                         or card.was_kicked is not False
                         or card.kicker_count is not None and (

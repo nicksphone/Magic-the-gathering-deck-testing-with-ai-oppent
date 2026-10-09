@@ -24,6 +24,15 @@ substitute for qualification of the final combined source.
 
 ## Verified Components
 
+The current public inventory guard explicitly reviews the added emblem,
+loyalty-permission and retained-control fields instead of only refreshing schema
+hashes. Empty defaults and legacy omissions are covered; nonempty or unknown
+context stays fail-closed. Three whole modules pass 332 checks in 124.03s on
+`512630af` plus the exact inventory patch, with all source hashes unchanged and
+no SQL/socket attempts. Both original modules and their assertions are unchanged.
+This is bounded pure inventory/combat qualification, not full CI, browser,
+arbitrary-context coverage or expert-player strength.
+
 The `230c435c` workflow passes frontend and reaches the multiple-block browser
 episode after passing devotion. Its seat-2 browser failure exposed test
 readiness, not a demonstrated rejected block: `App.mutateMatch` clears legal
