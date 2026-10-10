@@ -1,15 +1,39 @@
 # Release Acceptance Status
 
-Current update: 2026-10-10. Published `71099923` passes 2,029 checks in 51 whole
-backend component modules, preserving the original 1,995-case ordered prefix.
-The remote browser run subsequently passes recovery, sideboard swapping and
-natural AI BO3 before its human driver omits required sideboard confirmations.
-The narrow driver correction passes all configured frontend tests, lint and
-build, with four actual-script regressions and no production UI changes. See
+Current update: 2026-10-10. Published `eb8d8805` passes the remote frontend job.
+Its browser run passes recovery, copied Helix/Drain controls and natural AI,
+human-vs-AI and human-vs-human BO3, then fails during Chromium profile cleanup
+in the separate interactive-preflight program. That program has no passing
+checkpoint before the error, so an obscured primary failure remains possible.
+The complete browser and protected backend CI are not yet qualified.
+
+The reviewed preflight cleanup patch passes eleven actual-driver VM regressions
+and the parent's complete 43-entrypoint frontend chain, lint and build, retaining
+the entire original gameplay body and 42-entrypoint prefix. No browser deadline
+or assertion changes. Actual native preflight remains pending; see
+`interactive-preflight-cleanup-current.md` for the correction and preserved
+failed/setup ledgers.
+
+The current isolated H1/strict-H2 operator gate passes all 547 observed check
+instances with verified CA/hostname rejection, authentication/media routing,
+real restart and production-first disposal followed by external native closure.
+These are repeated check instances, not 547 independent tests. Its complete
+captured public source matches `eb8d8805`; the retained built assets and cached
+dependencies are separately pinned, not a new clean-install/build certificate.
+See `caddy-operator-current-acceptance.md` for source, evidence and limits.
+
+The 13-style benchmark remains incomplete. The first attempt accepts 134 of
+135 executed rows before a root cap; the second accepts 233 of 234 executed
+rows before the cumulative global quota, leaving 26 rows unexecuted. The full
+2,048 native entries and 369 chooser events preserve prior prefixes. Neither
+partial run establishes independently measured AI strength. The original
+three release gates, expert-AI and LAN/deployment/manual acceptance remain open.
+
+Earlier `71099923` passes 2,029 checks in 51 whole backend component modules,
+preserving the original 1,995-case ordered prefix. The BO3 driver repair retains
+every gameplay assertion and clock, and its four actual-script regressions and
+configured frontend test/lint/build chain pass. See
 `human-bo3-readiness-current.md` and `devotion-entry-precedence-current.md`.
-The complete corrected browser and protected backend CI remain open; these
-component results do not close the original three release gates, 13-style
-decision-quality requirements, expert AI or deployment/manual acceptance.
 
 Earlier checkpoint: 2026-10-09. Published `bf6731c` established
 complete printed-body admission and loyalty execution, with 823 passing checks

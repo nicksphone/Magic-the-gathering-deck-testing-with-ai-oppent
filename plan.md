@@ -26,17 +26,38 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-10
 
-The `71099923` remote browser passes recovery, sideboard swapping and natural AI
-BO3 before the human-series driver omits required sideboard confirmations.
-The narrow correction retains all original game assertions and clocks; four
-actual-script regressions and the complete 42-entry frontend test/lint/build
-chain pass. [Exact scope](docs/testing/human-bo3-readiness-current.md).
-Current full browser, protected backend CI and strict HTTPS remain open.
+Published `eb8d8805` passes the remote frontend job. Its browser run passes
+recovery, sideboard swapping, copied Helix/Drain controls and natural AI,
+human-vs-AI and human-vs-human BO3 before the independent interactive-preflight
+program fails during Chromium profile cleanup. No checkpoint inside that
+program passes before the cleanup error; an earlier primary error is not yet
+ruled out. The driver correction retains all original game assertions and
+clocks. [BO3 scope](docs/testing/human-bo3-readiness-current.md).
+The complete browser and protected backend CI remain open.
+
+The independently reviewed interactive-preflight cleanup correction preserves
+the entire original gameplay body and all clocks. Its eleven regressions and
+the parent's complete 43-entrypoint frontend chain, lint and build pass; all 42
+original entrypoints remain the ordered prefix. Actual native preflight and
+complete browser acceptance are still pending, not inferred from mock boundaries.
+[Cleanup scope](docs/testing/interactive-preflight-cleanup-current.md).
+
+The exact current combined-source HTTPS/authentication/media/restart invocation
+passes all 547 observed check instances, including strict native H2 certificate
+negatives, without changing the original deadlines. Source/dependency equality
+and actual native closure are independently verified. This is loopback operator
+qualification, not LAN deployment or complete browser/release acceptance.
+[Current HTTPS scope](docs/testing/caddy-operator-current-acceptance.md).
+
 The first bounded 13-style benchmark stops after 135 of 260 chooser calls at
-the declared 64-native-evaluation root cap, with 134 accepted rows and one
-incomplete restore check. Its full accounting remains intact; this is neither
-global quota exhaustion nor measured seasoned-player strength. Completing the
-original matrix and scoring independent decision quality remain required.
+the declared 64-native-evaluation root cap: 134 accepted rows and one incomplete
+restore check. The separate second whole-matrix attempt executes 234 calls:
+233 accepted rows, one incomplete row and 26 unexecuted rows, stopping at the
+declared cumulative 2,048-native-action global quota, not its 256 root cap.
+All 2,048 native entries and 369 cumulative chooser events retain exact earlier
+prefixes and the same source epoch. These are separate partial attempts, not
+one complete matrix or measured seasoned-player strength. Completing the
+original matrix and independently scoring decision quality remain required.
 
 The latest complete-devotion precedence correction passes 2,029 cases in 51
 whole pure modules, 282.17s, preserving every previous 1,995 ordered identity
@@ -354,6 +375,10 @@ the supported-corpus exit does not redefine that larger goal as achieved.
 
 1. [ ] Requalify actual built HTTPS API/media routing and explicit cross-origin
    configuration, then trusted-certificate LAN deployment on supported topology.
+   The isolated `eb8d8805` loopback H1/H2/auth/media/restart component now passes
+   all 547 observed check instances with actual native closure. LAN deployment,
+   final browser and clean-machine trust acceptance remain outstanding; see
+   `docs/testing/caddy-operator-current-acceptance.md`.
 2. [ ] Document/enforce local single-user/single-worker limits. Before broader
    exposure, add authorization, restricted origins and measured resource limits.
 3. [ ] Complete bounded job admission/queues, cancellation, byte/row retention,

@@ -4,6 +4,7 @@ import { createWriteStream } from 'node:fs';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
+import { finished } from 'node:stream/promises';
 import { createServer } from 'vite';
 import react from '@vitejs/plugin-react';
 import { openBrowser } from './browser-driver.mjs';
@@ -25,10 +26,12 @@ const chromium = spawn(process.env.CHROMIUM_BINARY ?? '/snap/bin/chromium', [
   '--headless', '--no-sandbox', '--disable-gpu', '--no-first-run', '--disable-background-networking', '--enable-automation',
   `--remote-debugging-port=${browserPort}`, `--user-data-dir=${profile}`, 'about:blank',
 ], { stdio: ['ignore', 'pipe', 'pipe'] });
-chromium.stdout.pipe(chromeLog); chromium.stderr.pipe(chromeLog);
+const chromiumClosed = new Promise(resolve => chromium.once('close', resolve));
+chromium.stdout.pipe(chromeLog, { end: false }); chromium.stderr.pipe(chromeLog, { end: false });
 console.log(`Test PID ${process.pid}; Chromium PID ${chromium.pid}; frontend ${process.env.MTG_FRONTEND_ORIGIN}; isolated profile ${profile}`);
 let browser;
 const results = [];
+const failures = [];
 try {
   await server.listen();
   let ready = false;
@@ -230,11 +233,23 @@ try {
   passed('unavailable persistence is explicit; in-memory recovery retains same key and avoids duplicate creation');
   assert.equal(await evaluate('window.interactiveFixture.blockedFetches'), 0);
   await writeFile(`${evidence}/browser-results.json`, JSON.stringify({ results, liveBackendAccess: false, fixtureOnly: true }, null, 2));
+} catch (error) {
+  failures.push(error);
 } finally {
-  if (browser) await browser.close();
-  await server.close();
-  chromium.kill('SIGTERM');
-  if (chromium.exitCode === null) await new Promise(resolve => chromium.once('exit', resolve));
-  chromeLog.end();
-  await rm(profile, { recursive: true });
+  for (const cleanup of [
+    async () => { if (browser) await browser.close(); },
+    () => server.close(),
+    async () => {
+      chromium.kill('SIGTERM');
+      await chromiumClosed;
+      const logFinished = finished(chromeLog, { cleanup: true });
+      chromeLog.end();
+      await logFinished;
+      await rm(profile, { recursive: true });
+    },
+  ]) {
+    try { await cleanup(); } catch (error) { failures.push(error); }
+  }
 }
+if (failures.length === 1) throw failures[0];
+if (failures.length > 1) throw new AggregateError(failures, 'Interactive preflight and cleanup failures', { cause: failures[0] });

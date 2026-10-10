@@ -1,5 +1,58 @@
 # Private HTTPS Operator Qualification
 
+## Current Combined Source: 2026-10-10
+
+One complete invocation on isolated published
+`eb8d8805f6ce74711508db0c7346ae3ca0921cab` passes the original H1 corpus and
+strict native H2/media/authentication/restart checks. All 547 observed check
+instances pass in 49.680s; these include repeated route and transport assertions,
+not 547 independent cases. No scenario, gameplay check or deadline was removed.
+
+All 2,819 captured public source files, including 1,982 backend/frontend files,
+match that commit. The served three retained build assets and declared cached
+dependencies are byte-pinned and unchanged; this was not a separate rebuild of
+the parent frontend output. The Caddy binary and operator product files remain
+unchanged. The harness leaf uses CN `wrong.invalid` and sole DNS SAN `localhost`
+to exercise the actual certificate-verification boundary without CertMagic's
+hostname certificate-selection ambiguity. The strict native rejection is not
+relaxed to accept a generic TLS handshake failure.
+
+- All 46 positive H2 requests use HTTP/2, native exit zero and successful CA and
+  hostname verification, with no insecure transport or H1 fallback.
+- Unknown CA and wrong hostname both return native curl 60, HTTP status zero
+  and version zero; their verification results are respectively 20 and 1.
+- The 26 original H1 and two additional H2 hostile-Origin requests preserve
+  complete root/controller/SQL state. The incomplete-upload/full Origin matrix
+  remains H1-only, not an exhaustive H2 claim.
+- Three real H2 restart requests recover the match, duplicate action receipt
+  and unchanged media bytes. Authentication, SPA/assets/API routing and the
+  original H1 persistence/restart checks also pass.
+- Both real backend epochs dispose the exact live pool and close native owner
+  descriptors before observer assistance. Subsequent external closure verifies
+  all 134 traced process/thread identities absent, both ports empty and all
+  four actual SQL/backup/owner-lock files unused.
+
+The observer saw one non-main thread during each lifespan observation; this is
+not reported as zero. Those process/thread identities are covered by the later
+external closure. Lease release is actual `2026-10-10T11:59:28.906517963Z`.
+There are no unexpected native guard denials. The parent separately verifies
+the outer 267 payloads and all nested 2,819 source bytes against current source.
+
+Immutable current packet:
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ci/caddy-eb8d-full-H1-H2-native-PASS-20261010-1NIB2o/`.
+`REPORT.md` SHA256:
+`0d18860dc70c6fe878cdad37d94c2ed00c3c203cffc207ba712f75595d97ab5a`;
+`OUTER_SHA256SUMS`:
+`fdf1888588c8e12fc309707ee5a9d28f9674a2539fd0b55dd2582314aae31813`.
+Public proof excludes keys, auth headers, request bodies, SQLite databases and
+the protected CI trace. NFS is archive-only.
+
+This qualifies the pinned loopback operator component, not browser gameplay,
+protected backend CI, LAN trust/deployment, clean-machine installation or the
+complete release. Earlier failed hostname/harness results remain immutable.
+
+## Historical Operator Qualification
+
 The Caddyfile, launcher and configuration verifier retain the exact postimages
 from isolated `0e57baf1f3d48526d3a85e7a0eea45da0b3dee93` qualification.
 The operator README now records that scoped result; its original tested bytes
