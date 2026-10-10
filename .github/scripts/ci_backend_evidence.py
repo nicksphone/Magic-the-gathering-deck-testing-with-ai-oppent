@@ -8,6 +8,26 @@ import sys
 
 
 _degraded = False
+_progress_degraded = False
+
+
+def pytest_runtest_logstart(nodeid, location):
+    global _progress_degraded
+    if os.environ.get('MTG_CI_PROGRESS') != '1' or _progress_degraded:
+        return
+    try:
+        root = Path(os.environ['MTG_CI_EVIDENCE'])
+        path = root / 'started.jsonl'
+        if any(component.is_symlink() for component in (*path.absolute().parents, path)) or not root.is_dir():
+            raise OSError
+        if path.exists() and not path.is_file():
+            raise OSError
+        with path.open('a') as stream:
+            stream.write(json.dumps({'nodeid': nodeid}, sort_keys=True) + '\n')
+    except (OSError, KeyError):
+        # Diagnostic failure must never suppress the original completeness ledger.
+        _progress_degraded = True
+        print('CI_PROGRESS_START_DEGRADED', file=sys.stderr, flush=True)
 
 
 def emit(filename, value):

@@ -26,6 +26,18 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-10
 
+The `71099923` remote browser passes recovery, sideboard swapping and natural AI
+BO3 before the human-series driver omits required sideboard confirmations.
+The narrow correction retains all original game assertions and clocks; four
+actual-script regressions and the complete 42-entry frontend test/lint/build
+chain pass. [Exact scope](docs/testing/human-bo3-readiness-current.md).
+Current full browser, protected backend CI and strict HTTPS remain open.
+The first bounded 13-style benchmark stops after 135 of 260 chooser calls at
+the declared 64-native-evaluation root cap, with 134 accepted rows and one
+incomplete restore check. Its full accounting remains intact; this is neither
+global quota exhaustion nor measured seasoned-player strength. Completing the
+original matrix and scoring independent decision quality remain required.
+
 The latest complete-devotion precedence correction passes 2,029 cases in 51
 whole pure modules, 282.17s, preserving every previous 1,995 ordered identity
 and adding 34 regressions. All 1,941 declared source hashes remain unchanged.

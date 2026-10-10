@@ -22,6 +22,7 @@ jobs:
       - name: Backend tests
         id: backend_tests
         env:
+          MTG_CI_PROGRESS: '1'
           MTG_HEAT_WITNESS_01: ${{ secrets.MTG_HEAT_WITNESS_01 }}
           MTG_HEAT_WITNESS_02: ${{ secrets.MTG_HEAT_WITNESS_02 }}
           MTG_HEAT_WITNESS_03: ${{ secrets.MTG_HEAT_WITNESS_03 }}
@@ -36,7 +37,7 @@ jobs:
           MTG_HEAT_WITNESS_12: ${{ secrets.MTG_HEAT_WITNESS_12 }}
           MTG_HEAT_WITNESS_13: ${{ secrets.MTG_HEAT_WITNESS_13 }}
         run: |
-          bash .github/scripts/run-backend-ci.sh
+          bash .github/scripts/run-backend-ci.sh 5>&1
       - name: Generate backend metadata
         id: backend_metadata
         if: ${{ always() }}

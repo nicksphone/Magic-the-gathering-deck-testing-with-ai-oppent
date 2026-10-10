@@ -1,6 +1,17 @@
 # Release Acceptance Status
 
-Checkpoint: 2026-10-09. Published `bf6731c` established
+Current update: 2026-10-10. Published `71099923` passes 2,029 checks in 51 whole
+backend component modules, preserving the original 1,995-case ordered prefix.
+The remote browser run subsequently passes recovery, sideboard swapping and
+natural AI BO3 before its human driver omits required sideboard confirmations.
+The narrow driver correction passes all configured frontend tests, lint and
+build, with four actual-script regressions and no production UI changes. See
+`human-bo3-readiness-current.md` and `devotion-entry-precedence-current.md`.
+The complete corrected browser and protected backend CI remain open; these
+component results do not close the original three release gates, 13-style
+decision-quality requirements, expert AI or deployment/manual acceptance.
+
+Earlier checkpoint: 2026-10-09. Published `bf6731c` established
 complete printed-body admission and loyalty execution, with 823 passing checks
 across 22 whole modules and a separate 179-pass resolution/entry cohort.
 Its 400 original corpus/consumer cases pass unchanged; ten historical malformed

@@ -1,5 +1,32 @@
 # Portable Backend CI Inputs And Diagnostics
 
+## Passive Public Progress (2026-10-10)
+
+The backend step opts into a separate, isolated publisher for live progress.
+Every record remains explicitly nonfinal: observed collection/start/completion
+and phase counts, a committed public test name or null, the full node digest,
+numeric free-space observations and fixed degradation codes. The public Git
+commit, ordered observation sequence and monotonic elapsed seconds identify
+the observation; they do not provide an ETA or certify total coverage.
+An initial observation and 60-second checkpoints continue through collection
+and session-state changes. Partial, missing or malformed ledgers degrade rather
+than become successful completion evidence.
+
+The publisher receives no inherited private environment or backend PYTHONPATH.
+Its public descriptor is closed in bootstrap children and in the parent before
+private preparation, pytest, tee or the storage sampler. Its isolated process
+group is bounded and reaped on normal and failure exits, so a blocked output
+sink cannot block pytest. The raw stdout/stderr fence, protected trace consumer,
+unfiltered pytest command, original exit precedence and sole safe metadata
+upload remain unchanged. No extra upload, artifact or permission is added.
+
+The original 61 CI unit checks remain unchanged, with 30 synthetic progress
+controls added. These controls cover privacy sentinels, descriptor inheritance,
+malformed/partial ledgers and cleanup; they are not a protected full-backend
+execution or an operating-system sandbox certificate. Earlier component
+results and review findings retain their immutable ledgers. The full remote
+workflow must still qualify the combined source.
+
 The full backend runner archives current Git HEAD into an owned local source,
 sets both exact source markers and runs unfiltered verbose pytest. It does not
 select modules, shard, fail fast or add skips/xfails. Existing opt-in tests and

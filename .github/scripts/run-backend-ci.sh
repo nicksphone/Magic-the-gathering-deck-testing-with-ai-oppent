@@ -5,7 +5,7 @@ if [[ -z "${RUNNER_TEMP:-}" || -z "${GITHUB_OUTPUT:-}" ]]; then
   printf 'CI_BACKEND_EVIDENCE_SETUP_ERROR\n' >&2
   exit 1
 fi
-evidence=$(mktemp -d "$RUNNER_TEMP/mtg-backend-evidence-XXXXXX" 2>/dev/null) || {
+evidence=$(mktemp -d "$RUNNER_TEMP/mtg-backend-evidence-XXXXXX" 5>&- 2>/dev/null) || {
   printf 'CI_BACKEND_EVIDENCE_SETUP_ERROR\n' >&2
   exit 1
 }
@@ -15,6 +15,47 @@ if ! { exec 4>"$evidence/runner.log"; } 2>/dev/null; then
   exit 1
 fi
 exec 1>&4 2>&4 4>&-
+progress_pid=
+sampler=
+cleanup_owned() {
+  status=$?
+  trap - EXIT
+  if [[ -n "$progress_pid" ]]; then
+    # A blocked public sink can stall only this isolated group, never pytest.
+    kill -TERM -- "-$progress_pid" 2>/dev/null || true
+    for ((attempt=0; attempt<20; attempt++)); do
+      if ! kill -0 "$progress_pid" 2>/dev/null; then break; fi
+      sleep 0.1
+    done
+    kill -KILL -- "-$progress_pid" 2>/dev/null || true
+    wait "$progress_pid" || true
+  fi
+  if [[ -n "$sampler" ]]; then
+    printf 'stop\n' >&3 || true
+    wait "$sampler" || true
+  fi
+  return "$status"
+}
+trap cleanup_owned EXIT
+if [[ "${MTG_CI_PROGRESS:-}" == 1 ]]; then
+  # No inherited private environment, backend PYTHONPATH, or private preparation.
+  progress_python=$(command -v python 5>&-)
+  /usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 "$progress_python" -I -B - \
+    "$PWD/.github/scripts/ci_backend_progress.py" "$evidence" 5>&- <<'PY'
+from pathlib import Path
+import sys
+
+for value in sys.argv[1:]:
+    path = Path(value).absolute()
+    if any(component.is_symlink() for component in (*path.parents, path)):
+        raise SystemExit('CI_PROGRESS_PATH_REJECTED')
+PY
+  /usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 /usr/bin/setsid "$progress_python" -I -B \
+    "$PWD/.github/scripts/ci_backend_progress.py" "$evidence" "$PWD" </dev/null 1>&5 5>&- &
+  progress_pid=$!
+  printf '%s\n' "$progress_pid" > "$evidence/progress-owner.pid"
+fi
+exec 5>&-
 printf 'evidence=%s\n' "$evidence" >> "$GITHUB_OUTPUT"
 work=$(mktemp -d "$RUNNER_TEMP/mtg-backend-work-XXXXXX")
 scratch="$work/source"
@@ -79,7 +120,6 @@ exec 3<>"$work/sampling-control"
   done
 ) >> "$evidence/disk-samples.log" 2>&1 &
 sampler=$!
-trap 'printf "stop\n" >&3; wait "$sampler" || true' EXIT
 
 cd "$scratch/backend"
 export PYTHONPATH="$scratch/.github/scripts:$scratch/backend"
@@ -93,8 +133,8 @@ printf '%s\n' "${statuses[0]}" > "$evidence/pytest-exit-code.txt" || evidence_st
 printf '%s\n' "${statuses[1]}" > "$evidence/tee-exit-code.txt" || evidence_status=1
 printf 'stop\n' >&3
 wait "$sampler" || evidence_status=1
+sampler=
 exec 3>&-
-trap - EXIT
 sample_disk >> "$evidence/disk-samples.log" 2>&1 || evidence_status=1
 audit_status=0
 python "$scratch/.github/scripts/ci_backend_evidence.py" "$evidence" "${statuses[0]}" \
