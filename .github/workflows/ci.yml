@@ -17,6 +17,10 @@ jobs:
           python-version: '3.12'
       - name: Install backend dependencies
         run: python -m pip install -r backend/requirements.txt
+      - name: Backend runner capacity admission
+        env:
+          MTG_CI_CAPACITY_SCOPE: backend-sdk-cleanup
+        run: python .github/scripts/ci_backend_capacity.py
       - name: Backend metadata reporter tests
         run: python -m unittest discover -s .github/scripts/tests -v
       - name: Backend tests

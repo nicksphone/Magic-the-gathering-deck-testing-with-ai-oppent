@@ -26,6 +26,13 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-10
 
+Published `dfdd121e` now passes the original whole remote frontend and browser
+jobs. Its protected backend job remains live. The previous `58ab2881` backend
+job failed with a platform disk-exhaustion annotation and no sanitized result
+artifact; no gameplay failure count is inferred. Runner-capacity remediation,
+final combined built/HTTPS acceptance and measured AI quality remain separate
+unfinished work. [Current CI scope](docs/testing/ci-dfdd-current-status.md).
+
 Published `58ab2881` now passes the original whole zero-argument remote browser
 job and frontend CI. All 45 ordered stage banners and 67 invocations complete,
 with 497 passed checkpoints, not pytest tests. Both-seat cost branches,

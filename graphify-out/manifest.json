@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791668631.4508634,
-    "seen": 1791671014.2868695,
-    "ast_hash": "a2a92c09f65c6777734925888e6cb73e",
+    "mtime": 1791673897.4043756,
+    "seen": 1791674985.6317718,
+    "ast_hash": "eec6263127515c1ae6c79771fe3d0918",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -10194,9 +10194,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1791667789.7539334,
-    "seen": 1791671014.28593,
-    "ast_hash": "aa42ef2e95e51e44a5112d7355d258b3",
+    "mtime": 1791674768.9487126,
+    "seen": 1791674985.6307173,
+    "ast_hash": "45c665f0c0ac8025afa4b29b711658a4",
     "semantic_hash": ""
   },
   "ai-performance-plan.md": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791668586.5555425,
-    "seen": 1791671014.2866266,
-    "ast_hash": "df0f0e6235bf672faeba450fcf232087",
+    "mtime": 1791673897.4033756,
+    "seen": 1791674985.6314948,
+    "ast_hash": "828b98ad86b8f421ca0f15b47027cc44",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -16650,15 +16650,15 @@
     "semantic_hash": ""
   },
   "docs/testing/browser-58ab-current-acceptance.md": {
-    "mtime": 1791669479.8612387,
-    "seen": 1791671014.2861316,
-    "ast_hash": "2c112f11505bd2acc3645f5f3d485889",
+    "mtime": 1791671309.609989,
+    "seen": 1791674985.6309469,
+    "ast_hash": "e38852b42b4b114e7887351edef25097",
     "semantic_hash": ""
   },
   "docs/testing/browser-cost-handoff-current.md": {
-    "mtime": 1791668586.5555425,
-    "seen": 1791671014.2861366,
-    "ast_hash": "19b7896e88a894b9921e37a317539f96",
+    "mtime": 1791671309.6109889,
+    "seen": 1791674985.6309521,
+    "ast_hash": "58a528f16bf45bcd0941a866772a0882",
     "semantic_hash": ""
   },
   "docs/testing/decision-quality13-legality-current.md": {
@@ -16713,6 +16713,30 @@
     "mtime": 1791667790.4919233,
     "seen": 1791671014.2868643,
     "ast_hash": "cf264c2204eb7d10c3e72a568bdf0dfb",
+    "semantic_hash": ""
+  },
+  ".github/scripts/ci_backend_capacity.py": {
+    "mtime": 1791675154.96416,
+    "seen": 1791675319.5023017,
+    "ast_hash": "02b72be4df0f17a7b2480e842e24f714",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_backend_capacity.py": {
+    "mtime": 1791675126.87363,
+    "seen": 1791675319.502333,
+    "ast_hash": "040d99a676e3fcefcda5da659e51691b",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-dfdd-current-status.md": {
+    "mtime": 1791675154.96416,
+    "seen": 1791675319.5068634,
+    "ast_hash": "054c14640340196c3280d23715a35511",
+    "semantic_hash": ""
+  },
+  "docs/testing/suspend-native-http-current-acceptance.md": {
+    "mtime": 1791671309.608989,
+    "seen": 1791674985.6316473,
+    "ast_hash": "97705c2e33bd8326dba6f38569d7c72d",
     "semantic_hash": ""
   }
 }

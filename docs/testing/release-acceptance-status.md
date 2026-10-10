@@ -1,5 +1,13 @@
 # Release Acceptance Status
 
+Current CI update: 2026-10-10. Published `dfdd121e` passes the original whole
+remote frontend and browser jobs. Its protected backend job is still live.
+The previous `58ab2881` backend job is terminal failure with a platform disk
+exhaustion annotation and no sanitized result artifact. This is not evidence
+of a particular gameplay failure or an inferred backend pass. Runner-capacity
+work is separate, and all unproved original requirements remain open. See
+`ci-dfdd-current-status.md`.
+
 Current native Suspend update: 2026-10-10. The original whole opt-in HTTP module
 passes all ten cases in 52.25s, including both seats and two real cold restarts.
 Its scoped source is published `58ab2881` plus the two-line test-fixture reload
