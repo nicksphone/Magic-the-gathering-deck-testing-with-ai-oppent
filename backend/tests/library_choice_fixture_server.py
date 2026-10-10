@@ -4,7 +4,7 @@ from uuid import uuid4
 from fastapi import HTTPException, Request
 from sqlmodel import Session
 
-from tests.private_choice_boundary_fixture_server import (
+from tests.cold_restart_http_fixture import (
     app, authorize, main, engine, Repository, LABEL, AIAgent, RulesEngine,
 )
 from tests.test_library_choice_intent_audit import CARDS, ORDER_CARDS, position

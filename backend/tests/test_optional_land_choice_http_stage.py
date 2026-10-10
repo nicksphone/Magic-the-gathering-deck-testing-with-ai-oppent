@@ -12,12 +12,13 @@ from urllib.parse import quote
 
 import pytest
 
-from tests.test_private_choice_http_restart import Server, stable
+from tests.test_private_choice_http_restart import stable
+from tests.cold_restart_http_support import Server
 
 
 class LandServer(Server):
     def start(self):
-        env = {**os.environ, 'MTG_PRIVATE_CHOICE_ROOT': str(self.root), 'MTG_PRIVATE_CHOICE_TOKEN': self.token}
+        env = self.environment()
         with (self.root / 'backend-process.log').open('a') as log:
             self.proc = subprocess.Popen([sys.executable, '-m', 'uvicorn',
                 'tests.optional_land_choice_http_fixture_server:app', '--host', '127.0.0.1',
@@ -78,7 +79,7 @@ def test_actual_api_slice_private_selected_cold_restore_reject_root_db(server, s
                               (seat, {'type': 'choose_mechanic', 'choice_id': data['land_id']})]:
         status, _ = server.call(base + '/action', {'player_id': actor_id, 'action': payload})
         assert status in (403, 422) and stable(server.audit(data['id'])) == stable(before)
-    server.restart()
+    before = server.restart(data['id'], before)
     assert stable(server.audit(data['id'])) == stable(before)
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': choice})
     assert status == 200
@@ -87,7 +88,7 @@ def test_actual_api_slice_private_selected_cold_restore_reject_root_db(server, s
     assert after['state']['players'][str(seat)]['lands_played_this_turn'] == 1
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': choice})
     assert status == 422 and stable(server.audit(data['id'])) == stable(after)
-    server.restart()
+    after = server.restart(data['id'], after)
     assert stable(server.audit(data['id'])) == stable(after)
 
 
@@ -102,7 +103,7 @@ def test_real_paid_http_family_has_optional_continuation_desired(server, seat, f
     assert status == 200
     announced = server.audit(data['id'])
     assert announced['state']['stack'][-1]['payload']['mana_spent'] == (2 if family == 'Growth Spiral' else 1)
-    server.restart()
+    announced = server.restart(data['id'], announced)
     assert stable(server.audit(data['id'])) == stable(announced)
     for _ in range(8):
         row = server.audit(data['id'])

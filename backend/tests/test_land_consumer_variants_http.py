@@ -13,13 +13,14 @@ from uuid import uuid4
 import pytest
 
 from tests.land_consumer_variant_support import VARIANTS
-from tests.test_private_choice_http_restart import Server, stable
+from tests.test_private_choice_http_restart import stable
+from tests.cold_restart_http_support import Server
 from game_state.serializers import deserialize_match_snapshot
 
 
 class VariantServer(Server):
     def start(self):
-        env = {**os.environ, 'MTG_PRIVATE_CHOICE_ROOT': str(self.root), 'MTG_PRIVATE_CHOICE_TOKEN': self.token}
+        env = self.environment()
         with (self.root / 'backend-process.log').open('a') as log:
             self.proc = subprocess.Popen([sys.executable, '-m', 'uvicorn',
                 'tests.land_consumer_variant_fixture_server:app', '--host', '127.0.0.1',
@@ -89,7 +90,7 @@ def test_actual_http_whole_views_explicit_controls_private_root_rejection_restar
     for raw in ({**view, **action}, {**action, 'card_id': data['foreign_hand']}):
         status, _ = server.call(base + '/action', {'player_id': seat, 'action': raw})
         assert status == 422 and stable(server.audit(identifier)) == stable(before)
-    server.restart()
+    before = server.restart(identifier, before)
     assert stable(server.audit(identifier)) == stable(before)
     status, result = server.call(endpoint, {**view, **action})
     assert status == 200 and result['action'] == action
@@ -110,5 +111,5 @@ def test_actual_http_whole_views_explicit_controls_private_root_rejection_restar
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': action},
         {'X-Match-Revision': str(before['revision']), 'Idempotency-Key': str(uuid4())})
     assert status == 409 and stable(server.audit(identifier)) == stable(after)
-    server.restart()
+    after = server.restart(identifier, after)
     assert stable(server.audit(identifier)) == stable(after)

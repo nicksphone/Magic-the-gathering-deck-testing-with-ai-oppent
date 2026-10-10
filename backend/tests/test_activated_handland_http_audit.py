@@ -11,14 +11,14 @@ import time
 from urllib.parse import quote
 
 import pytest
-from tests.test_private_choice_http_restart import Server, stable
+from tests.test_private_choice_http_restart import stable
+from tests.cold_restart_http_support import Server
 from tests.test_activated_handland_instruction_audit import FAMILIES
 
 
 class ActivatedServer(Server):
     def start(self):
-        env = {**os.environ, 'MTG_PRIVATE_CHOICE_ROOT': str(self.root),
-               'MTG_PRIVATE_CHOICE_TOKEN': self.token}
+        env = self.environment()
         with (self.root / 'backend-process.log').open('a') as log:
             self.proc = subprocess.Popen([sys.executable, '-m', 'uvicorn',
                 'tests.activated_handland_http_fixture_server:app', '--host', '127.0.0.1',
@@ -79,7 +79,7 @@ def test_real_http_tap_selected_second_or_decline_private_root_sql_cold_restart(
     paid = server.audit(data['id'])
     assert paid['state']['cards'][data['source_id']]['tapped']
     assert not before['state']['cards'][data['source_id']]['tapped']
-    server.restart()
+    paid = server.restart(data['id'], paid)
     assert stable(server.audit(data['id'])) == stable(paid)
     for _ in range(8):
         current = server.audit(data['id'])
@@ -103,7 +103,7 @@ def test_real_http_tap_selected_second_or_decline_private_root_sql_cold_restart(
         (seat, {**choice, 'unknown': None})]:
         status, _ = server.call(base + '/action', {'player_id': actor, 'action': payload})
         assert status in (403, 422) and stable(server.audit(data['id'])) == stable(pending)
-    server.restart()
+    pending = server.restart(data['id'], pending)
     assert stable(server.audit(data['id'])) == stable(pending)
     status, response = server.call(base + '/action', {'player_id': seat, 'action': choice})
     assert status == 200, response
@@ -114,7 +114,7 @@ def test_real_http_tap_selected_second_or_decline_private_root_sql_cold_restart(
     assert player['lands_played_this_turn'] == 1
     if select:
         assert not after['state']['cards'][data['land_ids'][1]]['tapped']
-    server.restart()
+    after = server.restart(data['id'], after)
     assert stable(server.audit(data['id'])) == stable(after)
 
 

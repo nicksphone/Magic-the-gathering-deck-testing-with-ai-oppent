@@ -119,14 +119,11 @@ def _legacy_snapshot_with_committed_death(snapshot, card_id, previous_sequence):
     return expected
 
 
-def test_exact_captured_resolution_preserves_original_trace_and_proves_loss():
-    row, state = exact_state()
-    before = canonical(serialize_match_snapshot(state))
-    assert canonical(RulesEngine().legal_moves(state, row['pid'])) == canonical(row['legal_moves'])
+def _legacy_replay_context(row, state):
+    """Derive the five expectations solely from the independent PRE position."""
     source_id = row['action']['card_id']
     victim_id = row['action']['targets']['target_card_id']
     victim = state.cards[victim_id]
-    assert not effective_granted_target_abilities(state, victim_id)
     target_ref = {'card_id': victim_id, 'incarnation': object_incarnation(victim),
                   'zone_change_sequence': victim.zone_change_sequence}
     capture = {'status': 'captured', 'captured': True,
@@ -142,51 +139,77 @@ def test_exact_captured_resolution_preserves_original_trace_and_proves_loss():
     history_known = False
     assert state.spell_color_history == {1: set(), 2: set()}
     assert state.spell_color_history_known is False
-    departed_lki = {}
-    for receipt in receipts():
+    return {'history': history, 'history_known': history_known, 'source_id': source_id,
+            'binding': binding, 'departed_lki': {}}
+
+
+def _capture_legacy_pre_step(state, receipt, victim_id, context):
+    """Copy cast colors and victim LKI before checked_action can change either."""
+    source_id = context['source_id']
+    history = context['history']
+    source_before = state.cards[source_id]
+    victim_before = state.cards[victim_id]
+    if receipt['action']['type'] == 'cast_spell':
+        assert receipt['action']['card_id'] == source_id
+        assert isinstance(source_before.colors, list) and source_before.colors
+        assert not source_before.card_faces and not source_before.type_effects
+        assert source_before.type_effect_base is None
+        assert set(source_before.colors) <= set('WUBRG')
+        history[str(receipt['pid'])] = sorted(set(history[str(receipt['pid'])])
+                                              | set(source_before.colors))
+    if victim_before.zone == Zone.BATTLEFIELD:
+        assert victim_before.type_effect_base is None and not victim_before.type_effects
+        assert not any(victim_before.counters.get('__crew_added_' + kind.lower())
+                       for kind in victim_before.types)
+        assert list(effective_types(state, victim_before)) == victim_before.types
+        descriptor = {key: deepcopy(getattr(victim_before, key)) for key in (
+            'name', 'mana_cost', 'type_line', 'power', 'toughness', 'printed_power',
+            'printed_toughness', 'oracle_text', 'keywords', 'colors', 'image_uri', 'loyalty')}
+        descriptor['types'] = list(dict.fromkeys([*victim_before.types, 'Token']))
+        descriptor['colors'] = deepcopy(victim_before.colors or [])
+        if victim_before.layout in {'transform', 'modal_dfc', 'double_faced_token'}:
+            face = victim_before.selected_face_index if victim_before.selected_face_index is not None else 0
+            assert len(victim_before.card_faces) == 2 and type(face) is int and face in (0, 1)
+            descriptor.update(card_faces=deepcopy(victim_before.card_faces),
+                              layout='double_faced_token', selected_face_index=face)
+        return {'reference': [object_incarnation(victim_before), victim_before.zone_change_sequence],
+                'controller': victim_before.controller, 'types': list(victim_before.types),
+                'descriptor': descriptor}
+    return None
+
+
+def _replay_legacy_receipts(row, state, replay_receipts):
+    context = _legacy_replay_context(row, state)
+    source_id = context['source_id']
+    victim_id = row['action']['targets']['target_card_id']
+    for receipt in replay_receipts:
         if receipt['event'] != 'applied' or not 303 <= receipt['tick'] <= 305:
             continue
         source_before = state.cards[source_id]
         victim_before = state.cards[victim_id]
-        if receipt['action']['type'] == 'cast_spell':
-            assert receipt['action']['card_id'] == source_id
-            assert isinstance(source_before.colors, list) and source_before.colors
-            assert not source_before.card_faces and not source_before.type_effects
-            assert source_before.type_effect_base is None
-            assert set(source_before.colors) <= set('WUBRG')
-            history[str(receipt['pid'])] = sorted(set(history[str(receipt['pid'])])
-                                                  | set(source_before.colors))
-        if victim_before.zone == Zone.BATTLEFIELD:
-            assert victim_before.type_effect_base is None and not victim_before.type_effects
-            assert not any(victim_before.counters.get('__crew_added_' + kind.lower())
-                           for kind in victim_before.types)
-            assert list(effective_types(state, victim_before)) == victim_before.types
-            descriptor = {key: deepcopy(getattr(victim_before, key)) for key in (
-                'name', 'mana_cost', 'type_line', 'power', 'toughness', 'printed_power',
-                'printed_toughness', 'oracle_text', 'keywords', 'colors', 'image_uri', 'loyalty')}
-            descriptor['types'] = list(dict.fromkeys([*victim_before.types, 'Token']))
-            descriptor['colors'] = deepcopy(victim_before.colors or [])
-            if victim_before.layout in {'transform', 'modal_dfc', 'double_faced_token'}:
-                face = victim_before.selected_face_index if victim_before.selected_face_index is not None else 0
-                assert len(victim_before.card_faces) == 2 and type(face) is int and face in (0, 1)
-                descriptor.update(card_faces=deepcopy(victim_before.card_faces),
-                                  layout='double_faced_token', selected_face_index=face)
-            lki = {'reference': [object_incarnation(victim_before), victim_before.zone_change_sequence],
-                   'controller': victim_before.controller, 'types': list(victim_before.types),
-                   'descriptor': descriptor}
+        lki = _capture_legacy_pre_step(state, receipt, victim_id, context)
         state = checked_action(state, RulesEngine(), receipt['pid'], receipt['action'])
         actual = serialize_match_snapshot(state)
         expected = receipt['snapshot']
         if victim_before.zone == Zone.BATTLEFIELD and state.cards[victim_id].zone == Zone.GRAVEYARD:
-            departed_lki[victim_id] = lki
+            context['departed_lki'][victim_id] = lki
             assert state.cards[victim_id].zone_change_sequence == victim_before.zone_change_sequence + 1
             expected = _legacy_snapshot_with_committed_death(
                 expected, victim_id, victim_before.zone_change_sequence)
         if source_before.zone == Zone.STACK and state.cards[source_id].zone == Zone.GRAVEYARD:
             assert state.cards[source_id].zone_change_sequence == source_before.zone_change_sequence + 1
             expected = _legacy_snapshot_with_public_entry(expected, source_id)
-        _assert_legacy_snapshot_parity(actual, expected, receipt['snapshot'], history, history_known,
-                                       source_id, binding, departed_lki)
+        _assert_legacy_snapshot_parity(actual, expected, receipt['snapshot'], **context)
+    return state, context
+
+
+def test_exact_captured_resolution_preserves_original_trace_and_proves_loss():
+    row, state = exact_state()
+    before = canonical(serialize_match_snapshot(state))
+    assert canonical(RulesEngine().legal_moves(state, row['pid'])) == canonical(row['legal_moves'])
+    victim_id = row['action']['targets']['target_card_id']
+    assert not effective_granted_target_abilities(state, victim_id)
+    state, _ = _replay_legacy_receipts(row, state, receipts())
     victim = row['action']['targets']['target_card_id']
     assert state.cards[victim].zone == Zone.GRAVEYARD
     assert row['action']['card_id'] in state.players[row['pid']].graveyard

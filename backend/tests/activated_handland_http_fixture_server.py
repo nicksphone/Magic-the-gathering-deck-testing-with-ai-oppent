@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from fastapi import HTTPException, Request
 from sqlmodel import Session
-from tests import optional_land_choice_http_fixture_server as base
+from tests import cold_restart_http_fixture as base
 from tests.test_activated_handland_instruction_audit import setup, FAMILIES
 
 app = base.app
@@ -16,7 +16,7 @@ def fixture(request: Request, family: str, seat: int, sick: bool = False):
         raise HTTPException(422, 'Declared canonical family and seat required')
     state, source, lands, enemy = setup(family, seat, sick=sick)
     state.id = str(uuid4())
-    state.log.append(base.LABEL)
+    state.log.append(base.LAND_LABEL)
     controller = base.main.MatchController(state=state, rules=base.RulesEngine(),
         controllers={1: 'human', 2: 'human'}, ai={1: base.AIAgent(), 2: base.AIAgent()},
         mode='human_vs_human', deck_ids=(None, None), mainboards={1: [], 2: []},
@@ -45,7 +45,7 @@ def paid_cast_fixture(request: Request, family: str, seat: int):
     take(state, 'Tropical Island', seat, Zone.BATTLEFIELD)
     land = take(state, 'Forest', seat, Zone.HAND)
     state.id = str(uuid4())
-    state.log.append(base.LABEL)
+    state.log.append(base.LAND_LABEL)
     controller = base.main.MatchController(state=state, rules=base.RulesEngine(),
         controllers={1: 'human', 2: 'human'}, ai={1: base.AIAgent(), 2: base.AIAgent()},
         mode='human_vs_human', deck_ids=(None, None), mainboards={1: [], 2: []},

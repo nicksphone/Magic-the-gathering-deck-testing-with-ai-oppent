@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-09 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-10 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -25,6 +25,19 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
   expected failures or weakened assertions to make a release gate look green.
 
 ## Latest Verified Milestones
+
+- [x] Native cold-restart fixture portability: seven whole modules / 704 passes,
+  702.88s, unchanged original node identities/assertions and actual complete
+  SQL/ledger checks. All observed native/read-only children and database handles
+  close; exact source and fourteen fixture postimages are verified. Active-job,
+  protected-trace and full-release acceptance remain separate.
+  [Scope and histories](docs/testing/ci-cold-native-restart-current.md).
+
+- [x] Current copy/loyalty execution and public replay-context corrections:
+  39 whole modules / 1,061 passes, 683.18s, original assertions and inputs
+  preserved, source hashes and native resource closure verified. Protected
+  trace delivery, complete remote CI, canonical Daretti and all original release
+  requirements remain separate. [Scope and histories](docs/testing/ci-copy-public-parity-current.md).
 
 - [x] Strict sideboard core entry/quantity validation and per-card inventory
   conservation: three whole modules / 49 passes on fresh isolated SQLite.

@@ -21,6 +21,15 @@ def compile_instruction(text, name=''):
 
     extended = compile_extended(text, name)
     if extended is not None:
+        if [step['effect_key'] for step in extended] == ['loyalty_counter', 'loyalty_animate']:
+            animation = extended[1]['data']
+            if (animation['power'] == animation['toughness'] == 0
+                    and animation['subtype'].casefold() == 'elemental'
+                    and set(animation['keywords']) <= {'vigilance', 'haste'}
+                    and 'becomes a 0/0' in text.lower()
+                    and COUNTER_RE.match(text.lower())):
+                # The full-match grammar proves the body; reuse the native resumable handler.
+                return [{'effect_key': 'add_counters', 'instruction': text[:-1]}]
         return extended
 
     if not text.endswith('.') or any(char in text for char in '()\n;"'):

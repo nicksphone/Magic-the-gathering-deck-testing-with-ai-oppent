@@ -114,7 +114,7 @@ def test_real_http_full_context_tampering_rejects_root_db_and_restore(server, na
             assert status == 422 and stable(server.audit(identifier)) == stable(before)
     status, _ = server.call(f'/fixture/private-choice/{identifier}/intent?seat={3-seat}', request)
     assert status == 422 and stable(server.audit(identifier)) == stable(before)
-    server.restart()
+    before = server.restart(identifier, before)
     assert stable(server.audit(identifier)) == stable(before)
     status, result = server.call(intent, request)
     assert status == 200 and result['action'] == chosen

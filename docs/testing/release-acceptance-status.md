@@ -24,6 +24,26 @@ substitute for qualification of the final combined source.
 
 ## Verified Components
 
+The separate current cold-restart fixture increment passes all 704 cases in
+seven whole modules, 702.88s, with native and read-only child closure verified.
+All 700 original node identities and 131 assertions remain, all fourteen
+integrated postimages match the executed source, and no production ownership
+code changes. Actual bootstrap is constrained to the native owner-epoch change
+in this job-free cohort, rather than pretending the persisted raw bytes stay
+unchanged across startup. Historical setup failures remain visible. See
+`ci-cold-native-restart-current.md`. This is not a summed union with the
+1,061-case gate or a protected-trace/full-release certificate.
+
+The current copy/loyalty and public replay-parity increment over `44b07b45`
+passes all 1,061 cases in 39 whole modules, with no failures, errors or skips.
+It preserves all 43 original Oracle tests, 172 assertions and 53 explicit
+Oracle inputs, and all 75 assertions in the four public parity modules.
+The corrected native lowering retains extended programs for non-native numeric
+spellings. Source hashes and native closure are verified. Historical setup
+failures remain archived; the protected private trace is not locally read or
+publicly committed. This bounded gate does not close full backend/browser or
+Daretti support. See `ci-copy-public-parity-current.md`.
+
 The subsequent test-only diagnostics/admission increment over `9f7c7c13` passes
 163 checks in nine whole modules. Its separate seven-module pure cohort passes
 147 checks with parent/child SQL and sockets denied; native ambient-state

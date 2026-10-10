@@ -11,6 +11,28 @@ from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_effects import inspect_target_hints
 
 
+def _published_fixture_frame(state, frame_id, source, label, effect_key, payload,
+                             *, is_spell, ability_text=''):
+    """Declared parser fixtures use native publication, not guessed source zones."""
+    from game_state.state import object_incarnation
+    from rules_engine.stack_engine import add_to_stack
+    from rules_engine.targeting import capture_announced_target_references
+
+    targets = {key: payload[key] for key in ('target_player', 'target_card_id') if key in payload}
+    packet = {**payload, '__announced_targets': targets,
+              '__announced_target_references': capture_announced_target_references(state, targets)}
+    if is_spell:
+        packet.update(mana_spent=0, snow_mana_spent=0, snow_mana_colors={}, __kicked=False)
+    else:
+        packet.update(__activation_source_origin=source.zone.value,
+                      __activation_source_reference={'incarnation': object_incarnation(source),
+                                                     'zone_change_sequence': source.zone_change_sequence},
+                      __ability_target_text=ability_text)
+    item = add_to_stack(state, source.id, source.controller, label, effect_key, packet, is_spell=is_spell)
+    item.id = frame_id
+    return item
+
+
 def test_oracle_damage_parsing() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
@@ -78,7 +100,7 @@ def test_twincast_can_copy_instant_or_sorcery_but_not_creature_spell() -> None:
         state.cards[cid] = CardInstance(
             id=cid, name=name, owner=2, controller=2, zone=Zone.STACK, types=types,
         )
-        state.stack.append(StackItem(cid, cid, 2, name, "noop", {}))
+        _published_fixture_frame(state, cid, state.cards[cid], name, "noop", {}, is_spell=True)
     twincast = CardInstance(
         id="twincast", name="Twincast", owner=1, controller=1, zone=Zone.HAND,
         types=["Instant"], mana_cost="{U}{U}",
@@ -125,11 +147,9 @@ def test_lithoform_ability_copy_targets_only_controlled_abilities() -> None:
             types=["Creature"],
         )
         state.cards[source.id] = source
-        state.stack.append(StackItem(
-            id=f"ability-{player_id}", source_card_id=source.id,
-            controller=player_id, label="Prodigal Pyromancer ability",
-            effect_key="deal_damage", payload={"amount": 1},
-        ))
+        _published_fixture_frame(state, f"ability-{player_id}", source,
+                                 "Prodigal Pyromancer ability", "deal_damage", {"amount": 1},
+                                 is_spell=False, ability_text="This creature deals 1 damage to any target.")
     copier = CardInstance(
         id="lithoform", name="Lithoform Engine", owner=1, controller=1,
         zone=Zone.BATTLEFIELD, types=["Artifact"],
@@ -158,7 +178,7 @@ def test_copy_target_permanent_spell_excludes_instants_and_sorceries() -> None:
         card = CardInstance(id=cid, name=cid, owner=controller, controller=controller,
                             zone=Zone.STACK, types=types)
         state.cards[cid] = card
-        state.stack.append(StackItem(cid, cid, controller, cid, "noop", {}))
+        _published_fixture_frame(state, cid, card, cid, "noop", {}, is_spell=True)
     copier = CardInstance(
         id="lithoform", name="Lithoform Engine", owner=1, controller=1,
         zone=Zone.BATTLEFIELD, types=["Artifact"],
@@ -353,7 +373,6 @@ def test_copy_spell_handler_replays_target_effect() -> None:
     state = MatchFactory.from_decks(deck, deck)
     state.players[1].life = 10
     state.players[2].life = 10
-    state.stack.append(type("SI", (), {"id": "stack-dmg", "label": "Lightning Bolt", "source_card_id": "bolt-1", "effect_key": "deal_damage", "payload": {"target_player": 2, "amount": 3}})())
     state.cards["bolt-1"] = CardInstance(
         id="bolt-1",
         name="Lightning Bolt",
@@ -363,6 +382,8 @@ def test_copy_spell_handler_replays_target_effect() -> None:
         types=["Instant"],
         oracle_text="Lightning Bolt deals 3 damage to any target.",
     )
+    _published_fixture_frame(state, "stack-dmg", state.cards["bolt-1"], "Lightning Bolt",
+                             "deal_damage", {"target_player": 2, "amount": 3}, is_spell=True)
     resolve_effect(state, 1, "copy_spell", {"target_stack_id": "stack-dmg"})
     assert state.players[2].life == 10
     assert len(state.stack) == 2
@@ -374,20 +395,6 @@ def test_copy_ability_handler_replays_target_ability() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
     state.players[1].life = 10
-    state.stack.append(
-        type(
-            "SI",
-            (),
-            {
-                "id": "stack-ability",
-                "label": "Soul Warden trigger",
-                "source_card_id": "warden-1",
-                "effect_key": "gain_life",
-                "payload": {"target_player": 1, "amount": 1},
-                "targets": ["player:1"],
-            },
-        )()
-    )
     state.cards["warden-1"] = CardInstance(
         id="warden-1",
         name="Soul Warden",
@@ -397,6 +404,14 @@ def test_copy_ability_handler_replays_target_ability() -> None:
         types=["Creature"],
         oracle_text="Whenever another creature enters the battlefield, you gain 1 life.",
     )
+    from rules_engine.events import emit_event
+    state.players[1].battlefield.append("warden-1")
+    entering = CardInstance("entering", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD, ["Creature"],
+                            power=2, toughness=2)
+    state.cards[entering.id] = entering
+    state.players[1].battlefield.append(entering.id)
+    emit_event(state, "enters_battlefield", {"card_id": entering.id, "controller": 1})
+    state.stack[-1].id = "stack-ability"
     resolve_effect(state, 1, "copy_ability", {"target_stack_id": "stack-ability"})
     assert state.players[1].life == 10
     assert len(state.stack) == 2

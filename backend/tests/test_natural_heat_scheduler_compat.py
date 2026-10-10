@@ -1,4 +1,4 @@
-"""Legacy receipt compatibility must never erase a real queued schedule."""
+"""Legacy receipt compatibility must never erase a real queued schedule. PYTEST_DONT_REWRITE"""
 from copy import deepcopy
 
 import pytest
@@ -8,17 +8,18 @@ from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.turn_scheduler import ensure_plan
 from tests.natural_heat_diagnostic_support import canonical, exact_state
 from tests.queued_sequence_support import cast, position
-from tests.test_natural_heat_target_audit import _assert_legacy_snapshot_parity
+from tests.test_natural_heat_target_audit import _assert_legacy_snapshot_parity, _legacy_replay_context
 
 
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('queued_side', ['actual', 'expected'])
 def test_nondefault_canonical_queued_schedule_cannot_pass_legacy_parity(seat, queued_side):
     row, state = exact_state()
+    context = _legacy_replay_context(row, state)
     actual = serialize_match_snapshot(state)
     historical = deepcopy(row['snapshot'])
     before = canonical(historical)
-    _assert_legacy_snapshot_parity(actual, historical)
+    _assert_legacy_snapshot_parity(actual, historical, row['snapshot'], **context)
     assert canonical(historical) == before
 
     queued, _ = cast(position(seat), 'Time Warp', seat, {'target_player': seat})
@@ -36,6 +37,6 @@ def test_nondefault_canonical_queued_schedule_cannot_pass_legacy_parity(seat, qu
     deserialize_match_snapshot(historical)
     actual_before, historical_before = canonical(actual), canonical(historical)
     with pytest.raises(AssertionError):
-        _assert_legacy_snapshot_parity(actual, historical)
+        _assert_legacy_snapshot_parity(actual, historical, row['snapshot'], **context)
     assert canonical(actual) == actual_before
     assert canonical(historical) == historical_before

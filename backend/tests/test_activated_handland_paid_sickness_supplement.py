@@ -43,7 +43,7 @@ def test_actual_paid_http_cast_then_sick_tap_rejects_full_root_sql_after_restart
     card = before['state']['cards'][data['source_id']]
     assert card['summoning_sick'] and not card['tapped']
     assert data['source_id'] in before['state']['players'][str(seat)]['battlefield']
-    server.restart()
+    before = server.restart(data['id'], before)
     assert stable(server.audit(data['id'])) == stable(before)
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': {
         'type': 'activate_ability', 'card_id': data['source_id'], 'ability_index': 0, 'targets': {}}})

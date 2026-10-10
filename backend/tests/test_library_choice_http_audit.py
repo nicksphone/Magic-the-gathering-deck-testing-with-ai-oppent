@@ -15,13 +15,14 @@ from uuid import uuid4
 import pytest
 
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from tests.test_private_choice_http_restart import Server, stable
+from tests.test_private_choice_http_restart import stable
+from tests.cold_restart_http_support import Server
 from tests.test_library_choice_intent_audit import PHASES, explicit, expected_transition
 
 
 class LibraryServer(Server):
     def start(self):
-        env = {**os.environ, 'MTG_PRIVATE_CHOICE_ROOT': str(self.root), 'MTG_PRIVATE_CHOICE_TOKEN': self.token}
+        env = self.environment()
         with (self.root / 'backend-process.log').open('a') as log:
             self.proc = subprocess.Popen([sys.executable, '-m', 'uvicorn', 'tests.library_choice_fixture_server:app',
                                           '--host', '127.0.0.1', '--port', str(self.port)],
@@ -102,7 +103,7 @@ def test_http_policy_minimal_actions_private_roots_and_restart(server, name, ord
                 assert status == 422 and stable(server.audit(identifier)) == stable(before)
         status, _ = server.call(base + '/action', {'player_id': seat, 'action': {**view, **chosen}})
         assert status == 422 and stable(server.audit(identifier)) == stable(before)
-        server.restart()
+        before = server.restart(identifier, before)
         assert stable(server.audit(identifier)) == stable(before)
         for request in (chosen, {**hint, **chosen}, {**chosen, 'choice_id': None, 'damage_assignment': None}):
             status, normalized = server.call(intent, request)
@@ -119,7 +120,7 @@ def test_http_policy_minimal_actions_private_roots_and_restart(server, name, ord
         assert status == 409 and stable(server.audit(identifier)) == stable(after)
         status, _ = server.call(intent, {**hint, **chosen})
         assert status == 422 and stable(server.audit(identifier)) == stable(after)
-        server.restart()
+        after = server.restart(identifier, after)
         assert stable(server.audit(identifier)) == stable(after)
         if not after['state']['pending_mechanic_choice']:
             break
