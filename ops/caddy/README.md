@@ -187,7 +187,7 @@ uncommitted changes and closed user data explicitly. Archive only verified close
 data/evidence to mounted NFS, excluding all credentials, keys, operator JSON,
 Caddy storage and process environments. Never run SQLite directly on NFS.
 
-## Exposure limits and pending runtime gate
+## Exposure Limits And Runtime Qualification
 
 HTTP/1 early rejection requires `servers { enable_full_duplex }`. The default
 Go HTTP server consumes unread request body before publishing a response; an
@@ -202,8 +202,14 @@ Caddy marks this option experimental. Older HTTP/1 clients may deadlock and
 require explicit compatibility qualification; HTTP/2 already permits concurrent
 reads/writes. This is not blanket client or exposure support. The historical native
 incomplete-upload early-403 gate with the former official binary passed without a
-timeout extension, upload completion or rejection bypass; that runtime result does
-not qualify this custom binary. Final combined-source qualification remains open.
+timeout extension, upload completion or rejection bypass. A later exact
+`eb8d8805` combined-source invocation qualifies the custom binary with all 547
+observed H1/strict-H2 check instances, including authentication, media, restart,
+certificate rejection and verified native closure. These are repeated check
+instances, not 547 independent tests. See
+[exact current component evidence](../../docs/testing/caddy-operator-current-acceptance.md).
+This loopback result does not certify later source, LAN exposure, a clean
+machine installation or complete browser/release acceptance.
 https://caddyserver.com/docs/caddyfile/options#enable-full-duplex
 https://github.com/caddyserver/caddy/blob/v2.11.7/modules/caddyhttp/server.go
 https://github.com/golang/go/blob/go1.26.9/src/net/http/responsecontroller.go
@@ -216,16 +222,17 @@ Origin are compatible, NOT authenticated. Local processes remain trusted. This
 single-user/one-worker service shares game/job state; BasicAuth is not per-user
 authorization, isolation, quotas or a public-service security certificate.
 
-Final combined-source gate still required: fresh local runtime, ephemeral private CA/leaf SAN and credentials;
+Any later source/runtime or approved exposure configuration needs its own gate:
+fresh local runtime, ephemeral private CA/leaf SAN and credentials;
 real trusted-CA client (no `-k`/ignore-cert), real built HTML/assets, native 401 for
 missing/wrong credentials, authenticated API and unchanged media, supported start
 and legal action/recovery, trusted/denied CORS headers, malicious mutation 403
 with complete controller/root/SQL equality before body/dependencies, rejected
 direct exposure, restart recovery and complete child/socket/DB closure. Secret
 material stays local/private and is destroyed only after closure; evidence is
-sanitized assertions/statuses, not headers or key/auth dumps. The historical native
-component passed with the former official binary; this custom binary's final
-combined-source/runtime gate is pending.
+sanitized assertions/statuses, not headers or key/auth dumps. The historical
+official-binary and current custom-binary component results retain their exact
+source/dependency bounds; neither substitutes for full deployment acceptance.
 
 Authoritative references:
 https://caddyserver.com/docs/signature-verification

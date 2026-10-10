@@ -26,14 +26,21 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-10
 
-Published `eb8d8805` passes the remote frontend job. Its browser run passes
+Published `38e43cd5` passes the remote frontend job. Its browser run passes
 recovery, sideboard swapping, copied Helix/Drain controls and natural AI,
-human-vs-AI and human-vs-human BO3 before the independent interactive-preflight
-program fails during Chromium profile cleanup. No checkpoint inside that
-program passes before the cleanup error; an earlier primary error is not yet
-ruled out. The driver correction retains all original game assertions and
-clocks. [BO3 scope](docs/testing/human-bo3-readiness-current.md).
-The complete browser and protected backend CI remain open.
+human-vs-AI and human-vs-human BO3, then times out waiting for
+`window.interactiveFixture` in the independent interactive-preflight program.
+The complete fixture module is tracked, but its HTML entrypoint is absent;
+Vite renders the normal app instead. No checkpoint inside that program passes.
+The preceding `eb8d8805` cleanup failure remains a separate historical ledger;
+the corrected cleanup now exposes the primary error without changing gameplay
+assertions or clocks. [BO3 scope](docs/testing/human-bo3-readiness-current.md).
+The independently reviewed entrypoint repair now passes the complete parent
+44-entrypoint frontend chain, lint and build. It adds only a minimal wrapper
+for the unchanged fixture plus packaging regressions; the original 43 entries
+remain the ordered prefix. Actual native preflight, complete browser and
+protected backend CI remain open.
+[Entrypoint scope](docs/testing/interactive-preflight-entry-current.md).
 
 The independently reviewed interactive-preflight cleanup correction preserves
 the entire original gameplay body and all clocks. Its eleven regressions and
@@ -55,9 +62,14 @@ restore check. The separate second whole-matrix attempt executes 234 calls:
 233 accepted rows, one incomplete row and 26 unexecuted rows, stopping at the
 declared cumulative 2,048-native-action global quota, not its 256 root cap.
 All 2,048 native entries and 369 cumulative chooser events retain exact earlier
-prefixes and the same source epoch. These are separate partial attempts, not
-one complete matrix or measured seasoned-player strength. Completing the
-original matrix and independently scoring decision quality remain required.
+prefixes and the same source epoch. A separately authorized third whole-matrix
+attempt now accepts every original ordered row: 260/260 across all thirteen
+styles, both seats and five declared variants. It charges 824 additional native
+entries, bringing the retained ledger to 2,872 and chooser history to 629; no
+counter resets or partial-row substitutions occur. This completes the mechanical
+legality baseline, not objective horizons or measured seasoned-player strength.
+Independent quality scoring and meaningful hidden-identity controls remain open.
+[AI legality scope](docs/testing/decision-quality13-legality-current.md).
 
 The latest complete-devotion precedence correction passes 2,029 cases in 51
 whole pure modules, 282.17s, preserving every previous 1,995 ordered identity

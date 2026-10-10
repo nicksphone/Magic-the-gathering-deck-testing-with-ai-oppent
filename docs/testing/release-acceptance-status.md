@@ -1,11 +1,18 @@
 # Release Acceptance Status
 
-Current update: 2026-10-10. Published `eb8d8805` passes the remote frontend job.
+Current update: 2026-10-10. Published `38e43cd5` passes the remote frontend job.
 Its browser run passes recovery, copied Helix/Drain controls and natural AI,
-human-vs-AI and human-vs-human BO3, then fails during Chromium profile cleanup
-in the separate interactive-preflight program. That program has no passing
-checkpoint before the error, so an obscured primary failure remains possible.
-The complete browser and protected backend CI are not yet qualified.
+human-vs-AI and human-vs-human BO3, then times out waiting for
+`window.interactiveFixture` in the separate interactive-preflight program.
+Its existing fixture module is tracked, but its HTML entrypoint is absent;
+Vite falls back to the normal app. No checkpoint in that program passes.
+The corrected cleanup exposes this primary error rather than masking it.
+The old `eb8d8805` cleanup failure remains a separate historical ledger.
+The entrypoint repair now passes independent parent execution of the complete
+44-entrypoint frontend chain, lint and build, with its original fixture and
+browser clocks unchanged. Actual native preflight, complete browser and
+protected backend CI are not yet qualified. See
+`interactive-preflight-entry-current.md`.
 
 The reviewed preflight cleanup patch passes eleven actual-driver VM regressions
 and the parent's complete 43-entrypoint frontend chain, lint and build, retaining
@@ -22,12 +29,19 @@ captured public source matches `eb8d8805`; the retained built assets and cached
 dependencies are separately pinned, not a new clean-install/build certificate.
 See `caddy-operator-current-acceptance.md` for source, evidence and limits.
 
-The 13-style benchmark remains incomplete. The first attempt accepts 134 of
+The 13-style benchmark's quality evaluation remains incomplete. Its first
+mechanical attempt accepts 134 of
 135 executed rows before a root cap; the second accepts 233 of 234 executed
 rows before the cumulative global quota, leaving 26 rows unexecuted. The full
 2,048 native entries and 369 chooser events preserve prior prefixes. Neither
-partial run establishes independently measured AI strength. The original
-three release gates, expert-AI and LAN/deployment/manual acceptance remain open.
+partial run establishes independently measured AI strength. The separately
+authorized third whole-matrix attempt now accepts all 260 original ordered
+rows, with twenty rows per style and 130 per seat. It preserves the original
+ledger and charges 824 native entries, taking the cumulative total to 2,872
+with 629 chooser events. All quality labels remain unscored; the two hidden
+variants currently use degenerate inputs rather than meaningful identity swaps.
+See `decision-quality13-legality-current.md`. The original three release gates,
+expert-AI and LAN/deployment/manual acceptance remain open.
 
 Earlier `71099923` passes 2,029 checks in 51 whole backend component modules,
 preserving the original 1,995-case ordered prefix. The BO3 driver repair retains
