@@ -273,51 +273,122 @@ def _infer_temporary_control_instruction(oracle, controller, action_targets):
 
 def _infer_closed_damage_instruction(oracle: str, source_name: str, action_targets: dict) -> tuple[str, dict] | None:
     body = oracle.strip()
-    prevention = r'prevent the next ([1-9]\d*) damage that would be dealt to any target this turn\.?'
-    broadcast = re.escape(source_name) + r' deals ([1-9]\d*) damage to each creature\.?'
     candidate = (re.search(r'\bprevent(?:s)? the next \d+ damage that would be dealt to any target\b', body, re.I)
                  or (source_name and re.search(re.escape(source_name) + r' deals \d+ damage to each creature\b', body, re.I)))
     if not candidate:
         return None
     unsupported = ('noop', {'__unsupported_instruction': oracle})
-    modes = _extract_modes(body)
-    if modes:
-        # Validate the complete envelope before honoring an actual selected mode.
-        if (not re.match(r'^choose one\s*[\u2014-]', body, re.I) or len(modes) != 2
-                or not all(re.fullmatch(prevention, mode, re.I)
-                           or re.fullmatch(r'target player gains [1-9]\d* life\.?', mode, re.I)
-                           for mode in modes)):
+    envelope = re.fullmatch(r'choose (one|two)\s*[\u2014-]\s*(.+)', body, re.I | re.S)
+    if envelope:
+        # Validate raw offered branches, not the extractor's punctuation-stripped previews.
+        offered = envelope[2].replace('\r', '')
+        if '\u2022' in offered:
+            parts = re.split(r'\s*\u2022\s*', offered)
+            if parts.pop(0).strip():
+                return unsupported
+        else:
+            parts = re.split(r'\n+|\s*;\s*', offered)
+        offered_effects = [_infer_closed_damage_mode(part.strip(), source_name, {}) for part in parts]
+        if len(parts) < 2 or any(effect is None for effect in offered_effects):
             return unsupported
-        selected = action_targets.get('mode_text')
-        if (not isinstance(selected, str) or selected.casefold() not in {mode.casefold() for mode in modes}
-                or action_targets.get('mode_texts')):
+        if envelope[1].lower() == 'one':
+            if len(parts) != 2 or any(effect[0] not in {'prevent_damage', 'gain_life'} for effect in offered_effects):
+                return unsupported
+        elif not any(effect[0] == 'damage_each_creature' for effect in offered_effects):
             return unsupported
-        body = selected
-        if re.fullmatch(r'target player gains [1-9]\d* life\.?', body, re.I):
-            return None
-    elif action_targets.get('mode_text') or action_targets.get('mode_texts'):
+        modes = _extract_modes(body)
+        if len(modes) != len(parts) or len(set(mode.casefold() for mode in modes)) != len(modes):
+            return unsupported
+        single = action_targets.get('mode_text')
+        multiple = action_targets.get('mode_texts')
+        if single is not None:
+            if not isinstance(single, str) or multiple:
+                return unsupported
+            selected = [single]
+        else:
+            if not isinstance(multiple, list) or len(multiple) != (2 if envelope[1].lower() == 'two' else 1):
+                return unsupported
+            selected = multiple
+        printed = {mode.casefold(): index for index, mode in enumerate(modes)}
+        if (any(not isinstance(mode, str) or mode.casefold() not in printed for mode in selected)
+                or len(set(mode.casefold() for mode in selected)) != len(selected)):
+            return unsupported
+        choices = action_targets.get('mode_targets', {})
+        if not isinstance(choices, dict) or any(
+                not isinstance(mode, str) or mode.casefold() not in printed or not isinstance(targets, dict)
+                or {'mode_text', 'mode_texts', 'mode_targets', 'selected_face_index'}.intersection(targets)
+                for mode, targets in choices.items()):
+            return unsupported
+        if single is None and choices and set(choices) != set(selected):
+            return unsupported
+        target_fields = ('target_player', 'target_card_id', 'target_stack_id')
+        targetless_keys = {'damage_each_creature', 'each_player_discard'}
+        # Native single-branch probes retain a shared sibling target. The full
+        # envelope owns that packet; native cardinality still fences real casts.
+        shared_probe = single is not None and multiple == [] and not choices and envelope[1].lower() == 'two'
+        if not shared_probe and all(offered_effects[printed[mode.casefold()]][0] in targetless_keys for mode in selected) and (
+                any(action_targets.get(key) is not None for key in target_fields)
+                or action_targets.get('target_card_ids') or action_targets.get('target_distribution')):
+            return unsupported
+        effects = []
+        for mode in sorted(selected, key=lambda value: printed[value.casefold()]):
+            targets = action_targets if single is not None or not choices else choices[mode]
+            index = printed[mode.casefold()]
+            if (choices or (single is not None and not shared_probe)) and offered_effects[index][0] in targetless_keys and (
+                    any(targets.get(key) is not None for key in target_fields)
+                    or targets.get('target_card_ids') or targets.get('target_distribution')):
+                return unsupported
+            compiled = _infer_closed_damage_mode(parts[index].strip(), source_name, targets)
+            if compiled is None:
+                return unsupported
+            key, payload = compiled
+            effects.append({'effect_key': key, 'payload': payload, 'mode_text': mode})
+        # Single-mode probes still validate every offered branch. External mode
+        # cardinality remains the native announcement contract before payment.
+        if single is not None:
+            if envelope[1].lower() == 'one' and effects[0]['effect_key'] == 'gain_life':
+                return None  # Preserve the validated legacy life-mode dispatch contract.
+            return effects[0]['effect_key'], effects[0]['payload']
+        return 'effect_sequence', {'effects': effects}
+    if _extract_modes(body) or action_targets.get('mode_text') or action_targets.get('mode_texts'):
         return unsupported
+    # Candidate ownership limits standalone support to prevention/broadcast.
+    compiled = _infer_closed_damage_mode(body, source_name, action_targets)
+    return compiled if compiled is not None else unsupported
+
+
+def _infer_closed_damage_mode(body: str, source_name: str, action_targets: dict) -> tuple[str, dict] | None:
+    prevention = r'prevent the next ([1-9]\d*) damage that would be dealt to any target this turn\.?'
+    targeted = re.escape(source_name) + r' deals ([1-9]\d*) damage to target player or planeswalker\.?'
     match = re.fullmatch(prevention, body, re.I)
-    if match:
+    damage = re.fullmatch(targeted, body, re.I) if source_name else None
+    gain = re.fullmatch(r'target player gains ([1-9]\d*) life\.?', body, re.I)
+    destroy = re.fullmatch(r'destroy target nonbasic land\.?', body, re.I)
+    if match or damage or gain or destroy:
         target_card = action_targets.get('target_card_id')
         target_player = action_targets.get('target_player')
-        if target_card is not None and target_player is not None:
-            return unsupported
-        payload = {'amount': int(match[1])}
+        if ((target_card is not None and target_player is not None)
+                or any(action_targets.get(key) for key in ('target_card_ids', 'target_distribution', 'target_stack_id'))
+                or gain and target_card is not None or destroy and target_player is not None):
+            return None
+        payload = {} if destroy else {'amount': int((match or damage or gain)[1])}
         if target_card is not None:
             if not isinstance(target_card, str) or not target_card:
-                return unsupported
+                return None
             payload['target_card_id'] = target_card
         elif target_player is not None:
             if type(target_player) is not int or target_player not in (1, 2):
-                return unsupported
+                return None
             payload['target_player'] = target_player
         # Targetless previews remain incomplete; checked casts require a declared target.
-        return 'prevent_damage', payload
-    match = re.fullmatch(broadcast, body, re.I) if source_name else None
+        return ('prevent_damage' if match else 'deal_damage' if damage else
+                'gain_life' if gain else 'destroy_permanent'), payload
+    match = re.fullmatch(re.escape(source_name) + r' deals ([1-9]\d*) damage to each creature\.?', body, re.I) if source_name else None
     if match:
         return 'damage_each_creature', {'amount': int(match[1])}
-    return unsupported
+    from rules_engine.linked_discard import simultaneous_discard_draw_effect
+    wheel = simultaneous_discard_draw_effect(body)
+    return ('each_player_discard', wheel) if wheel is not None else None
 
 
 def _infer_resource_scaled_target_pt(oracle, action_targets):
@@ -372,6 +443,56 @@ def compile_draw_then_put_hand_instruction(oracle_text: str):
         {'effect_key': 'draw_cards', 'payload': {'amount': _parse_count_token(match[1])}},
         {'effect_key': 'put_hand_on_library', 'payload': {'amount': _parse_count_token(match[2])}},
     ]}
+
+
+def compile_additional_cost_draw_instruction(oracle_text: str, card_name: str):
+    """Separate parsed cost declarations from complete raw draw instructions."""
+    if not isinstance(oracle_text, str) or not isinstance(card_name, str):
+        return None
+    declaration = r'as an additional cost to cast\b'
+    if (not re.search(r'(?:^|[.\n])\s*' + declaration, oracle_text, re.I)
+            or not re.search(r'(?:^|[.\n])\s*[\"\']?draw\b', oracle_text, re.I)):
+        return None
+    unsupported = 'noop', {'__unsupported_instruction': oracle_text}
+    matched = re.fullmatch(r'\s*((?:' + declaration + r'[^.\n]*\.\s*)+)(.+)',
+                           oracle_text, re.I | re.S)
+    if matched is None or any(character in matched[1] for character in '()'):
+        return unsupported
+    from rules_engine.spell_cost_clauses import spell_additional_costs
+    if spell_additional_costs(oracle_text, card_name) is None:
+        return unsupported
+    body = matched[2].strip()
+    compound = re.fullmatch(r'(draw [^().]+) and (create [^().]+)\.(?: (\([^()]*\)))?',
+                            ' '.join(body.split()), re.I)
+    if compound:
+        draw = DRAW_RE.fullmatch(compound[1])
+        token = NAMED_ARTIFACT_TOKEN_RE.fullmatch(compound[2])
+        template = named_artifact_token(token[2]) if token else None
+        if draw is None or template is None:
+            return unsupported
+        from rules_engine.card_types import printed_card_types
+        types = printed_card_types(template['type_line'])
+        amount = _parse_count_token(token[1])
+        # Validate the raw reminder against the native template before stripping.
+        reminder = '(It\'s an artifact with "' + template['oracle_text'] + '")'
+        if types != ['Artifact'] or compound[3] and (
+                amount != 1 or compound[3].casefold() != reminder.casefold()):
+            return unsupported
+        return 'effect_sequence', {'effects': [
+            {'effect_key': 'draw_cards', 'payload': {'amount': _parse_count_token(draw[1])}},
+            {'effect_key': 'create_token', 'payload': {
+                'name': template['name'], 'amount': amount, 'types': types,
+                'type_line': template['type_line'], 'oracle_text': template['oracle_text'],
+                'power': None, 'toughness': None}},
+        ]}
+    instructions = [compile_draw_life_instruction(clause)
+                    for clause in re.split(r'\.\s*', body.removesuffix('.'))]
+    if not instructions or any(item is None or item[0] != 'draw_cards' for item in instructions):
+        return unsupported
+    if len(instructions) == 1:
+        return instructions[0]
+    return 'effect_sequence', {'effects': [
+        {'effect_key': key, 'payload': payload} for key, payload in instructions]}
 
 
 def infer_effect_from_oracle(
@@ -429,6 +550,12 @@ def infer_effect_from_oracle(
     if "Planeswalker" in (effective_types(state, card) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
+    if set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
+        cost_draw = compile_additional_cost_draw_instruction(oracle, name)
+        if cost_draw is not None:
+            if '__unsupported_instruction' in cost_draw[1]:
+                return 'noop', {'__unsupported_instruction': card.oracle_text}
+            return cost_draw
     from rules_engine.linked_targets import linked_damage_instruction
     # Broaden only candidate detection; admission still checks the complete raw body.
     candidate_oracle = without_reminder_text(oracle)

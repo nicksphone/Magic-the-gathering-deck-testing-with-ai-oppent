@@ -488,7 +488,7 @@ try {
   await waitFor("window.fixtureState.stack.some(item => item.label === \"Kolaghan's Command\")");
   await click("Resolve Stack");
   await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'discard' && window.fixtureState.pending_mechanic_choice.player_id === 1");
-  const discardedId = await evaluate("window.fixtureState.pending_mechanic_choice.options.at(-1)");
+  const discardedId = await evaluate("window.fixtureMoves.find(move => move.type === 'choose_mechanic' && move.kind === 'discard' && move.player_id === window.fixtureState.pending_mechanic_choice.player_id).options.at(-1)");
   await evaluate(`(() => {
     const panel = [...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose cards to discard'));
     const choices = panel?.querySelectorAll('input[type="checkbox"]');

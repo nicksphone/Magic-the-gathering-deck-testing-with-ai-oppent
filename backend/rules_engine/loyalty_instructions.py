@@ -28,11 +28,16 @@ def emblem_body(text):
     trigger = re.fullmatch(r'Whenever you draw a card, exile target permanent an opponent controls\.', text, re.I)
     if trigger:
         return {'kind': 'draw_exile', 'text': text}
+    if re.fullmatch(r'Whenever an artifact is put into your graveyard from the battlefield, '
+                    r'return that card to the battlefield at the beginning of the next end step\.', text, re.I):
+        return {'kind': 'artifact_return', 'text': text}
     return None
 
 
 def companion(line, name=''):
     from rules_engine.source_linked_exile import entry_instruction
+    if name and re.fullmatch(re.escape(name) + r' can be your commander\.', line, re.I):
+        return 'commander_declaration'
     if entry_instruction(line, name):
         return 'source_linked_exile_entry'
     if re.fullmatch(r'Each opponent can cast spells only any time they could cast a sorcery\.', line, re.I):
@@ -57,6 +62,13 @@ def compile_extended(text, name):
     from rules_engine.continuous import _attached_keywords
     if any(c in text for c in '()\n;'):
         return None
+    from rules_engine.linked_discard import linked_discard_effect
+    discard = linked_discard_effect(text)
+    if discard and discard.get('up_to') and discard.get('followup_effect', {}).get('count_field') == 'amount':
+        return [node('discard', **discard)]
+    if re.fullmatch(r'Sacrifice an artifact\. If you do, return target artifact card '
+                    r'from your graveyard to the battlefield\.', text, re.I):
+        return [node('sacrifice_return')]
     if re.fullmatch(r'Tap up to (?:one|1) target artifact or creature\. '
                     r'It doesn\x27t untap during its controller\x27s next untap step\.', text, re.I):
         return [node('tap_freeze')]
@@ -139,6 +151,7 @@ def announcement_text(text, name):
                   'loyalty_hand_entry', 'loyalty_delay_untap', 'loyalty_flash',
                   'loyalty_source_token', 'loyalty_scaled_buff', 'loyalty_destroy_threshold', 'loyalty_mana'}
     targetless.add('loyalty_named_artifact_token')
+    targetless.add('loyalty_discard')
     if steps and all(step['effect_key'] == 'loyalty_mana' or
                      (step['effect_key'] == 'loyalty_source_exile' and step['data']['selection'] != 'target')
                      for step in steps):
@@ -175,7 +188,7 @@ def compile_proxy(state, card, controller, targets):
                 payload['target_card_id'] = targets['target_card_id']
             elif key == 'loyalty_tap_freeze' and targets.get('target_card_ids'):
                 payload['target_card_id'] = targets['target_card_ids'][0]
-            if key == 'loyalty_tap_freeze' and payload.get('target_card_id'):
+            if key in {'loyalty_tap_freeze', 'loyalty_sacrifice_return'} and payload.get('target_card_id'):
                 payload['target_reference'] = card_reference(state, payload['target_card_id'])
             if key == 'loyalty_graveyard_exile_copy':
                 payload['x_value'] = targets.get('x_value', 0)
@@ -186,7 +199,7 @@ def compile_proxy(state, card, controller, targets):
             key, payload = infer_effect_from_oracle(state, proxy, controller, targets)
         effects.append({'effect_key': key, 'payload': payload})
     if any(step['effect_key'] in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy',
-                                  'loyalty_named_artifact_token'} for step in steps):
+                                  'loyalty_named_artifact_token', 'loyalty_sacrifice_return'} for step in steps):
         # The native outer receipt validates singular and list slots, including copies.
         return 'effect_sequence', {'effects': effects, '__ability_target_text': card.oracle_text,
                                    'x_value': targets.get('x_value', 0)}
@@ -201,7 +214,32 @@ def resolve(state, controller, payload):
     from rules_engine.events import emit_event, emit_event_batch
     kind = payload['loyalty_operation']
     target = state.cards.get(payload.get('target_card_id'))
-    if kind == 'tap_freeze':
+    if kind == 'discard':
+        handlers.discard_cards(state, controller, {**payload, 'self_discard': True})
+    elif kind == 'sacrifice_return':
+        sacrifice_return(state, controller, payload)
+    elif kind == 'delay_return':
+        frame = payload.get('__resolving_item')
+        if not trigger_return_frame_matches(frame, controller, payload, 'loyalty_delay_return'):
+            raise ValueError('Invalid retained emblem trigger')
+        state.delayed_triggers.append({'step': 'end_step',
+            'earliest_turn': state.turn,
+            'source_card_id': frame['source_card_id'], 'controller': controller,
+            'label': 'Emblem delayed graveyard return', 'effect_key': 'loyalty_return',
+            'payload': {'target_card_id': payload['target_card_id'],
+                        'target_reference': deepcopy(payload['target_reference'])}})
+    elif kind == 'return':
+        frame = payload.get('__resolving_item')
+        if not trigger_return_frame_matches(frame, controller, payload, 'loyalty_return'):
+            raise ValueError('Invalid retained delayed return')
+        ref = payload['target_reference']
+        reference = {'incarnation': ref['incarnation'], 'zone_change_sequence': ref['sequence']}
+        context = {'kind': 'delayed', 'controller': controller,
+            'target_card_id': payload['target_card_id'], 'reference': reference,
+            'frame': deepcopy(frame)}
+        handlers.return_permanent_from_graveyard_to_battlefield(state, controller,
+            {**payload, '__graveyard_reference': reference, '__loyalty_return_context': context})
+    elif kind == 'tap_freeze':
         if payload.get('target_reference') is not None and not reference_matches(state,
                 payload.get('target_card_id'), payload['target_reference']):
             return
@@ -330,7 +368,283 @@ def card_reference(state, cid):
 
 
 def reference_matches(state, cid, reference):
-    return cid in state.cards and reference == card_reference(state, cid)
+    return valid_card_reference(reference) and cid in state.cards and reference == card_reference(state, cid)
+
+
+def valid_card_reference(reference):
+    from game_state.state import Zone
+    return (isinstance(reference, dict) and set(reference) == {'incarnation', 'sequence', 'zone'}
+        and type(reference['zone']) is str and reference['zone'] in {zone.value for zone in Zone}
+        and all(type(reference[key]) is int and reference[key] >= 0 for key in ('incarnation', 'sequence')))
+
+
+def native_frame_matches(frame, controller):
+    from dataclasses import fields
+    from game_state.state import StackItem
+    return (isinstance(frame, dict) and set(frame) == {field.name for field in fields(StackItem)}
+        and type(controller) is int and type(frame['controller']) is int and frame['controller'] == controller
+        and all(isinstance(frame[key], str) and frame[key] for key in ('id', 'source_card_id', 'effect_key'))
+        and isinstance(frame['label'], str) and isinstance(frame['payload'], dict)
+        and isinstance(frame['targets'], list) and all(isinstance(cid, str) for cid in frame['targets']))
+
+
+def trigger_return_frame_matches(frame, controller, payload, key):
+    reference = payload.get('target_reference')
+    return (native_frame_matches(frame, controller) and frame.get('effect_key') == key
+        and frame['payload'].get('target_card_id') == payload.get('target_card_id')
+        and frame['payload'].get('target_reference') == reference
+        and isinstance(reference, dict) and set(reference) == {'incarnation', 'sequence', 'zone'}
+        and reference['zone'] == 'graveyard'
+        and all(type(reference[key]) is int and reference[key] >= 0 for key in ('incarnation', 'sequence')))
+
+
+def sacrifice_frame_matches(controller, payload):
+    """Use the popped native frame, including a copy's actual controller."""
+    frame = payload.get('__resolving_item')
+    if not native_frame_matches(frame, controller) or frame.get('effect_key') != 'effect_sequence':
+        return False
+    effects = frame['payload'].get('effects')
+    if not isinstance(effects, list) or len(effects) != 1 or not isinstance(effects[0], dict):
+        return False
+    child = effects[0].get('payload')
+    if not isinstance(child, dict) or effects[0].get('effect_key') != 'loyalty_sacrifice_return':
+        return False
+    text = child.get('loyalty_clause')
+    steps = compile_extended(text, '') if isinstance(text, str) else None
+    announced = frame['payload'].get('__announced_targets')
+    return (steps == [node('sacrifice_return')]
+        and isinstance(announced, dict) and valid_card_reference(payload.get('target_reference'))
+        and frame['payload'].get('__ability_target_text') == text
+        and child.get('target_card_id') == payload.get('target_card_id')
+        and child.get('target_reference') == payload.get('target_reference')
+        and announced.get('target_card_id') == payload.get('target_card_id'))
+
+
+def sacrifice_return(state, controller, payload):
+    from dataclasses import asdict
+    from game_state.state import Zone
+    from rules_engine.type_effects import effective_types
+    from rules_engine.replacement import graveyard_entry_plans, select_graveyard_entry_plan
+    from rules_engine.zone_actions import sacrifice_selected
+    if not sacrifice_frame_matches(controller, payload):
+        raise ValueError('Resolution cost requires its genuine loyalty frame')
+    target = payload['target_card_id']
+    if (not reference_matches(state, target, payload.get('target_reference'))
+            or target not in state.players[controller].graveyard
+            or state.cards[target].owner != controller
+            or 'Artifact' not in effective_types(state, state.cards[target])):
+        return
+    eligible = [cid for cid in state.players[controller].battlefield
+        if state.cards[cid].zone == Zone.BATTLEFIELD and state.cards[cid].controller == controller
+        and 'Artifact' in effective_types(state, state.cards[cid])]
+    selected = payload.get('selected_card_ids')
+    if selected is None:
+        if eligible:
+            state.pending_mechanic_choice = {'kind': 'loyalty_cards', 'player_id': controller,
+                'options': eligible, 'count': 1, 'min_count': 1,
+                'label': 'Sacrifice an artifact to pay the resolution cost',
+                'loyalty_operation': 'sacrifice_return', 'effect_payload': deepcopy(payload),
+                'option_references': {cid: card_reference(state, cid) for cid in eligible}}
+            state.priority_player = controller
+            state.passed_priority = set()
+        return
+    if (not isinstance(selected, list) or len(selected) != 1 or selected[0] not in eligible
+            or not reference_matches(state, selected[0], payload.get('__loyalty_cost_reference'))):
+        raise ValueError('Invalid retained artifact resolution cost')
+    cid = selected[0]
+    plans = graveyard_entry_plans(state, cid)
+    replacement = payload.get('__loyalty_cost_replacement')
+    if replacement is None and len({plan.destination for plan in plans}) > 1:
+        options = [plan.replacement_source_id for plan in plans]
+        state.pending_mechanic_choice = {'kind': 'loyalty_cards', 'player_id': controller,
+            'options': options, 'count': 1, 'min_count': 1,
+            'label': 'Choose the graveyard replacement for the artifact sacrifice',
+            'loyalty_operation': 'sacrifice_replacement', 'effect_payload': deepcopy(payload),
+            'option_references': {source: card_reference(state, source) for source in options}}
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    plan = select_graveyard_entry_plan(state, cid, replacement)
+    receipt = {'card_id': cid, 'reference': deepcopy(payload['__loyalty_cost_reference']),
+               'plan': asdict(plan), 'paid': True}
+    # Payment is the validated native action, not its possibly replaced destination.
+    if not sacrifice_selected(state, controller, [cid],
+            replacement_choices={cid: replacement} if replacement is not None else None):
+        raise ValueError('Artifact resolution cost was not paid')
+    ref = payload['target_reference']
+    reference = {'incarnation': ref['incarnation'], 'zone_change_sequence': ref['sequence']}
+    context = {'kind': 'sacrifice', 'controller': controller, 'target_card_id': target,
+        'reference': reference, 'frame': deepcopy(payload['__resolving_item']), 'paid_cost': receipt}
+    from effects.handlers import return_permanent_from_graveyard_to_battlefield
+    return_permanent_from_graveyard_to_battlefield(state, controller,
+        {**payload, '__graveyard_reference': reference, '__loyalty_return_context': context})
+
+
+def finish_sacrifice_return_choice(state, controller, action, pending):
+    from rules_engine.type_effects import effective_types
+    ids = action.get('card_ids')
+    payload = pending.get('effect_payload')
+    if (not isinstance(ids, list) or len(ids) != 1 or not isinstance(ids[0], str)
+            or ids[0] not in pending['options'] or not isinstance(payload, dict)
+            or not sacrifice_frame_matches(controller, payload)
+            or pending.get('resolving_item') != payload.get('__resolving_item')
+            or not reference_matches(state, ids[0], pending.get('option_references', {}).get(ids[0]))):
+        return False
+    if pending['loyalty_operation'] == 'sacrifice_return':
+        if (ids[0] not in state.players[controller].battlefield
+                or state.cards[ids[0]].controller != controller
+                or 'Artifact' not in effective_types(state, state.cards[ids[0]])):
+            return False
+        payload = {**payload, 'selected_card_ids': ids,
+                   '__loyalty_cost_reference': deepcopy(pending['option_references'][ids[0]])}
+    else:
+        payload = {**payload, '__loyalty_cost_replacement': ids[0]}
+    state.pending_mechanic_choice = None
+    sacrifice_return(state, controller, payload)
+    from rules_engine.stack_engine import resume_paused_resolution
+    resume_paused_resolution(state, pending)
+    return True
+
+
+def return_context_matches(state, controller, payload):
+    """Validate a new loyalty return receipt without looking up a fresh source."""
+    from game_state.state import Zone, object_incarnation
+    if '__loyalty_return_context' not in payload:
+        frame = payload.get('__resolving_item')
+        new_frame = isinstance(frame, dict) and (
+            frame.get('effect_key') == 'loyalty_return'
+            or isinstance(frame.get('payload'), dict)
+            and isinstance(frame['payload'].get('effects'), list) and any(
+                isinstance(child, dict) and child.get('effect_key') == 'loyalty_sacrifice_return'
+                for child in frame['payload']['effects']))
+        return not new_frame and payload.get('loyalty_operation') not in {'sacrifice_return', 'return'}
+    context = payload['__loyalty_return_context']
+    if not isinstance(context, dict):
+        return False
+    kind = context.get('kind')
+    keys = {'kind', 'controller', 'target_card_id', 'reference', 'frame'}
+    if kind == 'sacrifice':
+        keys.add('paid_cost')
+    elif kind != 'delayed':
+        return False
+    if payload.get('loyalty_operation') != ('sacrifice_return' if kind == 'sacrifice' else 'return'):
+        return False
+    reference = context.get('reference')
+    card = state.cards.get(payload.get('target_card_id'))
+    if (set(context) != keys or type(controller) is not int
+            or type(context.get('controller')) is not int or context['controller'] != controller
+            or context.get('target_card_id') != payload.get('target_card_id')
+            or not isinstance(reference, dict) or set(reference) != {'incarnation', 'zone_change_sequence'}
+            or any(type(value) is not int or value < 0 for value in reference.values())
+            or payload.get('__graveyard_reference') != reference
+            or card is None or card.zone != Zone.GRAVEYARD
+            or card.id not in state.players[card.owner].graveyard
+            or reference != {'incarnation': object_incarnation(card),
+                             'zone_change_sequence': card.zone_change_sequence}):
+        return False
+    frame = context['frame']
+    if frame != payload.get('__resolving_item'):
+        return False
+    pending = state.pending_replacement_choice
+    if (pending and pending.get('resume_kind') == 'counter_event'
+            and pending.get('resolving_item') != frame):
+        return False
+    ref = payload.get('target_reference')
+    if ref != {'incarnation': reference['incarnation'], 'sequence': reference['zone_change_sequence'],
+               'zone': 'graveyard'}:
+        return False
+    if kind == 'delayed':
+        return trigger_return_frame_matches(frame, controller, payload, 'loyalty_return')
+    receipt = context['paid_cost']
+    if (not sacrifice_frame_matches(controller, payload) or card.owner != controller
+            or not isinstance(receipt, dict) or set(receipt) != {'card_id', 'reference', 'plan', 'paid'}
+            or receipt.get('paid') is not True or not isinstance(receipt.get('plan'), dict)):
+        return False
+    from dataclasses import fields
+    from rules_engine.replacement import GraveyardEntryPlan
+    plan = receipt['plan']
+    return (set(plan) == {field.name for field in fields(GraveyardEntryPlan)}
+        and plan['card_id'] == receipt['card_id'] and plan['card_id'] != card.id
+        and type(plan['controller']) is int and plan['controller'] == controller
+        and plan['origin'] == Zone.BATTLEFIELD
+        and plan['destination'] in {Zone.GRAVEYARD, Zone.LIBRARY, Zone.EXILE}
+        and valid_card_reference(receipt['reference'])
+        and all(type(plan[key]) is int and plan[key] >= 0 for key in ('incarnation', 'sequence', 'owner'))
+        and receipt['reference'] == {'incarnation': plan['incarnation'], 'sequence': plan['sequence'],
+                                    'zone': 'battlefield'})
+
+
+def prepare_return_entry(state, controller, card, payload):
+    """Compose native Aura/land choices before the shared entry commit."""
+    from rules_engine.attachments import is_aura
+    from rules_engine.entry import pause_for_land_entries
+    if is_aura(card, state):
+        options = aura_entry_options(state, card, controller)
+        if not options:
+            return False
+        attachment = payload.get('__graveyard_attachment')
+        if attachment is not None:
+            if (not isinstance(attachment, dict) or set(attachment) != {'id', 'reference'}
+                    or attachment['id'] not in options
+                    or (not attachment['id'].startswith('player:')
+                        and not reference_matches(state, attachment['id'], attachment['reference']))):
+                return False
+        else:
+            state.pending_mechanic_choice = {'kind': 'loyalty_attachment', 'player_id': controller,
+                'label': 'Choose a legal attachment for the returning Aura', 'options': options,
+                'entry_card_id': card.id, 'graveyard_entry': True, 'return_choice': 'attachment',
+                'effect_payload': deepcopy(payload),
+                'option_references': {cid: card_reference(state, cid) for cid in options
+                                      if not cid.startswith('player:')}}
+            state.priority_player = controller
+            state.passed_priority = set()
+            return False
+    if pause_for_land_entries(state, controller, [card.id],
+                             'return_permanent_from_graveyard_to_battlefield', payload):
+        # Reuse the already payload-private loyalty choice view, not a new UI schema.
+        if '__loyalty_return_context' in payload:
+            state.pending_mechanic_choice.update(kind='loyalty_attachment', graveyard_entry=True,
+                                                 return_choice='land')
+        return False
+    return True
+
+
+def finish_return_entry_choice(state, controller, action, pending):
+    from game_state.state import object_incarnation
+    from rules_engine.entry import land_entry_options
+    from rules_engine.graveyard_permissions import battlefield_entry_prohibited
+    payload = pending.get('effect_payload')
+    cid = pending.get('entry_card_id')
+    card = state.cards.get(cid)
+    choice = action.get('choice_id')
+    if (pending.get('graveyard_entry') is not True or not isinstance(payload, dict)
+            or payload.get('target_card_id') != cid or card is None
+            or not return_context_matches(state, controller, payload)
+            or payload.get('__graveyard_reference') != {'incarnation': object_incarnation(card),
+                                                       'zone_change_sequence': card.zone_change_sequence}
+            or battlefield_entry_prohibited(state, cid) or choice not in pending['options']
+            or ('__loyalty_return_context' in payload
+                and pending.get('resolving_item') != payload.get('__resolving_item'))):
+        return False
+    if pending.get('return_choice') == 'attachment':
+        if (choice not in aura_entry_options(state, card, controller)
+                or (not choice.startswith('player:')
+                    and not reference_matches(state, choice, pending['option_references'].get(choice)))):
+            return False
+        payload = {**payload, '__graveyard_attachment': {'id': choice,
+            'reference': None if choice.startswith('player:') else card_reference(state, choice)}}
+    elif pending.get('return_choice') == 'land':
+        if choice not in land_entry_options(state, controller, card):
+            return False
+        payload = {**payload, '__entry_choices': {**payload.get('__entry_choices', {}), cid: choice}}
+    else:
+        return False
+    state.pending_mechanic_choice = None
+    from effects.handlers import return_permanent_from_graveyard_to_battlefield
+    return_permanent_from_graveyard_to_battlefield(state, controller, payload)
+    from rules_engine.stack_engine import resume_paused_resolution
+    resume_paused_resolution(state, pending)
+    return True
 
 
 def aura_entry_options(state, card, controller):
@@ -454,6 +768,13 @@ def finish_choice(state, controller, action):
     pending = state.pending_mechanic_choice
     if action.get('type') != 'choose_mechanic' or pending['player_id'] != controller:
         return False
+    if pending['kind'] == 'loyalty_cards' and pending.get('loyalty_operation') not in {
+            'hand_entry', 'choose_untap', 'sacrifice_return', 'sacrifice_replacement'}:
+        return False
+    if pending.get('graveyard_entry'):
+        return finish_return_entry_choice(state, controller, action, pending)
+    if pending.get('loyalty_operation') in {'sacrifice_return', 'sacrifice_replacement'}:
+        return finish_sacrifice_return_choice(state, controller, action, pending)
     if pending['kind'] == 'loyalty_attachment':
         if pending.get('aura_copy'):
             return finish_aura_copy_choice(state, controller, action)
@@ -503,17 +824,28 @@ def land_choice_valid(state, controller, action, pending):
 
 
 def collect_emblem_triggers(state, event, payload):
-    if event != 'draw_card':
+    if event not in {'draw_card', 'permanent_dies'}:
         return []
     out = []
     for cid in state.emblems:
         card = state.cards[cid]
         parsed = emblem_body(card.oracle_text)
-        if parsed and parsed['kind'] == 'draw_exile' and payload.get('player_id') == card.controller:
+        if parsed and parsed['kind'] == 'draw_exile' and event == 'draw_card' and payload.get('player_id') == card.controller:
             out.append({'source_card_id': cid, 'controller': card.controller,
                 'label': 'Emblem draw trigger', 'effect_key': 'exile',
                 'payload': {'__trigger_full_clause': card.oracle_text,
                             '__trigger_resolution_text': 'Exile target permanent an opponent controls.'}})
+        elif parsed and parsed['kind'] == 'artifact_return' and event == 'permanent_dies':
+            from game_state.state import Zone
+            departed = state.cards.get(payload.get('card_id'))
+            if (departed is not None and departed.zone == Zone.GRAVEYARD
+                    and departed.owner == card.controller
+                    and departed.id in state.players[card.controller].graveyard
+                    and 'Artifact' in departed.last_known_battlefield.get('types', [])):
+                out.append({'source_card_id': cid, 'controller': card.controller,
+                    'label': 'Emblem artifact graveyard trigger', 'effect_key': 'loyalty_delay_return',
+                    'payload': {'target_card_id': departed.id,
+                                'target_reference': card_reference(state, departed.id)}})
     return out
 
 
@@ -542,6 +874,7 @@ def target_hints(state, card, controller, action_targets=None, *, source_kind='s
     if not isinstance(text, str) or not re.match(
             r'(?:Tap up to (?:one|1) target artifact or creature\.|'
             r'Exile target nonland permanent card with mana value X from your graveyard\.|'
+            r'Sacrifice an artifact\. If you do, return target artifact card from your graveyard to the battlefield\.|'
             r'Create [^"\n,]+, a legendary colorless (?:(?:Book) )?artifact token with ")', text, re.I):
         return None
     from rules_engine.closed_loyalty import compile_instruction
@@ -554,7 +887,7 @@ def target_hints(state, card, controller, action_targets=None, *, source_kind='s
     if steps is None or len(steps) != 1:
         return None
     key = steps[0]['effect_key']
-    if key not in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy', 'loyalty_named_artifact_token'}:
+    if key not in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy', 'loyalty_named_artifact_token', 'loyalty_sacrifice_return'}:
         return None
     targets = action_targets or {}
     ids = targets.get('target_card_ids') or []
@@ -583,6 +916,11 @@ def target_hints(state, card, controller, action_targets=None, *, source_kind='s
                 and not is_departed_token(target) and 'Land' not in effective_types(state, target)
                 and set(effective_types(state, target)) & {'Creature', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle'}
                 and (x is None or mana_value(target.mana_cost) == x)]}
+    if key == 'loyalty_sacrifice_return':
+        return {'player_targets': [], 'stack_targets': [],
+            'graveyard_card_targets': [view(cid) for cid in state.players[controller].graveyard
+                if (target := state.cards[cid]).zone == Zone.GRAVEYARD and target.owner == controller
+                and not is_departed_token(target) and 'Artifact' in effective_types(state, target)]}
     return {'player_targets': [], 'stack_targets': [], 'permanent_targets': []}
 
 
@@ -602,7 +940,7 @@ def offer_copy_target_choice(state, controller, copied_item, *, preview=False):
     steps = compile_instruction(text, source.name)
     effects = payload.get('effects') or []
     if (steps is None or len(steps) != 1 or len(effects) != 1
-            or steps[0]['effect_key'] not in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy'}
+            or steps[0]['effect_key'] not in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy', 'loyalty_sacrifice_return'}
             or effects[0].get('effect_key') != steps[0]['effect_key']):
         return False
     child = effects[0].get('payload') or {}
@@ -682,7 +1020,7 @@ def choose_copy_target(state, copied, pending, chosen):
             copied.payload.get('__announced_target_references'), announced, [tuple(slot)])
         copied.payload['__announced_targets'] = announced
         copied.payload['effects'][0]['payload']['target_card_id'] = cid
-        if copied.payload['effects'][0]['effect_key'] == 'loyalty_tap_freeze':
+        if copied.payload['effects'][0]['effect_key'] in {'loyalty_tap_freeze', 'loyalty_sacrifice_return'}:
             copied.payload['effects'][0]['payload']['target_reference'] = card_reference(state, cid)
         if '__announced_target_references' in copied.payload:
             copied.payload['__announced_target_references'] = references

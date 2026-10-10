@@ -98,15 +98,19 @@ def receipt(label, state, target, **data):
 
 
 def test_preflight_is_generic_counter_parser_classification_not_missing_damage_route():
+    from dataclasses import asdict
+    from rules_engine.replacement import noncombat_damage_counter_clause
+
     row = CARDS['Soul-Scar Mage']
     line = row['oracle_text'].splitlines()[1]
     assert counter_modifier(line) is None
-    assert known_unsupported_mechanics(row['oracle_text'], card_name=row['name']) == [
-        'counter replacement route fidelity', 'unsupported counter replacement clause']
+    assert asdict(noncombat_damage_counter_clause(line)) == {
+        'noncombat': True, 'source_controller': 'you', 'recipient': 'opposing_creature',
+        'quantity': 'that_many', 'counter_type': '-1/-1'}
+    assert noncombat_damage_counter_clause(line + ' Then draw a card.') is None
+    assert known_unsupported_mechanics(row['oracle_text'], card_name=row['name']) == []
     report = deck_pair_coverage([{**row, 'card_name': row['name']}], [])
-    assert report == {'status': 'exploratory', 'known_unsupported_cards': [
-        {'deck': 'A', 'card_name': row['name'], 'mechanics': [
-            'counter replacement route fidelity', 'unsupported counter replacement clause']}]}
+    assert report == {'status': 'exploratory', 'known_unsupported_cards': []}
 
 
 @pytest.mark.parametrize('seat', [1, 2])

@@ -24,6 +24,35 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## Current Candidate Qualification: 2026-10-10
+
+The combined cost/Daretti, complete-modal, private discard and strict metadata
+candidate passes 1,882 cases in 47 whole pure modules, 263.49s, retaining all
+1,815 previous union identities plus 67 new cached-face-container checks. The
+container correction first reproduces 42 failures and 25 passes, then passes the
+same tests and the complete declared union. Source hashes and pre-import native
+I/O-denial receipts remain stable. These are overlapping component scopes, not
+the unfiltered backend suite.
+
+The frontend snapshot passes all 40 original configured test entrypoints, lint
+and build, with source/dependency byte continuity and native closure. The full
+browser run fails at a stale private-discard metadata read after 146 passing log
+checkpoints; later stages are unreached. A fixture-only correction now reads the
+affected actor's offered legal move, retaining every original assertion, wait
+and click. Six regression checks reproduce the failure and then pass. The normal
+test chain retains its original 40-entrypoint prefix and adds this regression;
+all 41 entrypoints, lint and build pass. The same 47-module backend union then
+passes all 1,882 cases again in 253.70s with 1,932 source hashes unchanged.
+Fresh complete browser, native HTTPS and current protected-input CI remain required.
+Published `a24d3329` CI failed, with no backend metadata artifact available; its
+backend failure cause remains under safe-metadata investigation. No raw private
+trace or backend logs are published or downloaded for diagnosis.
+
+See [exact scope and remaining gates](docs/testing/current-modal-daretti-release-candidate.md).
+The original three gates, all thirteen AI styles, arbitrary-card rules and
+independently measured seasoned-player strength remain unfinished. A scoped
+playtesting milestone does not redefine the final objective.
+
 ## Latest Verified Milestones
 
 - [x] Native cold-restart fixture portability: seven whole modules / 704 passes,

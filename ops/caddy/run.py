@@ -14,7 +14,7 @@ import sys
 import time
 from urllib.parse import urlsplit
 
-CADDY_SHA256 = "678ade3bfc088749c81a681adc603333ee0bb023b6a6cfe3c0f58bef8ff854e9"
+CADDY_SHA256 = "e8d6545c8485f7bd723fc3a6a2fb5662e89a235ae0d32ccde3f43d81577b0db0"
 SOURCE = Path(__file__).resolve().parents[2]
 
 

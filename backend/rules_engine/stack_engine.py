@@ -547,9 +547,9 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
-        if (control_frame_required or prevention_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library', 'put_exiled_card_into_graveyard', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter'}
+        if (control_frame_required or prevention_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library', 'put_exiled_card_into_graveyard', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter', 'loyalty_delay_return', 'loyalty_return'}
                 or effect_key == 'effect_sequence' and any(
-                    effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter'}
+                    effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter', 'loyalty_sacrifice_return'}
                     for effect in payload.get('effects', []))):
             from dataclasses import asdict
             # Transport the real popped item only where shuffle attribution needs it.

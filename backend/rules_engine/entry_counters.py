@@ -222,6 +222,19 @@ def next_entry_commit_matches(state, item, payload):
 
 def entry_counter_context_matches(state, payload):
     """Validate retained objects before a pending entry is allowed to resume."""
+    completion = payload.get('entry_completion_payload')
+    options = payload.get('entry_options')
+    if (payload.get('entry_effect') == 'return_permanent_from_graveyard_to_battlefield'
+            or isinstance(completion, dict) and ('__loyalty_return_context' in completion
+            or completion.get('loyalty_operation') in {'sacrifice_return', 'return'})
+            or isinstance(options, dict) and '__loyalty_return_context' in options
+            ):
+        from rules_engine.loyalty_instructions import return_context_matches
+        if (payload.get('entry_effect') != 'return_permanent_from_graveyard_to_battlefield'
+                or not isinstance(completion, dict) or not isinstance(options, dict)
+                or options.get('__loyalty_return_context') != completion.get('__loyalty_return_context')
+                or not return_context_matches(state, payload.get('entry_completion_controller'), completion)):
+            return False
     from game_state.state import object_incarnation
     from rules_engine.continuous import printed_abilities_suppressed
     context = payload.get('__counter_entry_context')

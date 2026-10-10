@@ -241,12 +241,32 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
 
 
 def validate_mode_targets(state: MatchState, card: CardInstance, controller: int, action_targets: dict[str, Any]) -> tuple[bool, str]:
+    from api_contracts import ModeTarget
+    from pydantic import ValidationError
+    from rules_engine.targeting import single_player_permanent_alternative
+
     selected = action_targets.get("mode_texts") or ([action_targets["mode_text"]] if action_targets.get("mode_text") else [])
     choices = action_targets.get("mode_targets") or {}
-    if set(choices) != set(selected) or len(choices) != len(selected):
+    if not isinstance(choices, dict) or set(choices) != set(selected) or len(choices) != len(selected):
         return False, "Mode targets must match the selected modes."
+    targetless_modes = []
     for mode in selected:
-        targets = {"mode_text": mode, **choices[mode]}
+        if not isinstance(choices[mode], dict):
+            return False, "Invalid per-mode target packet."
+        try:
+            packet = ModeTarget.model_validate(choices[mode]).model_dump(exclude_none=True)
+        except ValidationError:
+            return False, "Invalid per-mode target packet."
+        targetless = not re.search(r'\btargets?\b', without_reminder_text(mode), re.I)
+        targetless_modes.append(targetless)
+        if targetless and packet:
+            return False, "This selected mode has no targets."
+        targets = {**packet, "mode_text": mode}
+        if single_player_permanent_alternative(mode):
+            player = targets.get("target_player") is not None
+            permanent = targets.get("target_card_id") is not None
+            if player == permanent:
+                return False, "Announce exactly one player or permanent target."
         hints = inspect_target_hints(state, card, controller, targets)
         for check in (
             validate_cast_targets(hints, targets),
@@ -255,6 +275,10 @@ def validate_mode_targets(state: MatchState, card: CardInstance, controller: int
         ):
             if not check[0]:
                 return check
+    if selected and all(targetless_modes) and (
+            any(action_targets.get(key) is not None for key in ModeTarget.model_fields)
+            or action_targets.get('target_card_ids') or action_targets.get('target_distribution')):
+        return False, "Selected modes have no targets."
     return True, ""
 
 

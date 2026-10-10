@@ -1803,33 +1803,53 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
 
 def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.loyalty_instructions import prepare_return_entry, return_context_matches
     target = payload.get("target_card_id")
-    if not target or target not in state.cards:
+    if not target or target not in state.cards or type(controller) is not int or controller not in state.players:
         return
     card = state.cards[target]
+    if not return_context_matches(state, controller, payload):
+        return
+    reference = {'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
+    if '__graveyard_reference' in payload and (type(payload['__graveyard_reference']) is not dict
+            or any(type(value) is not int for value in payload['__graveyard_reference'].values())
+            or payload['__graveyard_reference'] != reference):
+        return
+    payload = {**payload, '__graveyard_reference': reference}
     source_graveyard = None
     for player in state.players.values():
         if target in player.graveyard:
             source_graveyard = player
             break
-    if source_graveyard is None or is_departed_token(card) or battlefield_entry_prohibited(state, target):
+    if (source_graveyard is None or card.zone != Zone.GRAVEYARD or is_departed_token(card)
+            or battlefield_entry_prohibited(state, target)
+            or not set(effective_types(state, card)) & {'Creature', 'Land', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle'}
+            or set(effective_types(state, card)) & {'Instant', 'Sorcery'}):
         return
-    if pause_for_land_entries(state, controller, [target], "return_permanent_from_graveyard_to_battlefield", payload):
+    if not prepare_return_entry(state, controller, card, payload):
         return
     if prepare_counter_entries(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield', payload):
         return
     from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
     departures = capture_graveyard_departures(state, [target])
-    apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(target, "tapped"))
+    apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(target, "tapped"),
+                       effect_tapped=payload.get('tapped') is True)
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
     battlefield_owner.battlefield.append(target)
-    card.zone = Zone.BATTLEFIELD
+    card.move_to_zone(Zone.BATTLEFIELD)
     card.controller = controller
     card.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, target)
     commit_entry_counters(state, card, payload)
     card.summoning_sick = True
+    attachment = payload.get('__graveyard_attachment')
+    if attachment is not None:
+        from rules_engine.attachments import attach_if_legal
+        if attachment['id'].startswith('player:'):
+            card.attached_to = attachment['id']
+        elif not attach_if_legal(state, target, attachment['id']):
+            raise ValueError('Previously qualified graveyard Aura attachment became unavailable')
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
     emit_graveyard_departures(state, departures)
     emit_event(state, "enters_battlefield", {"card_id": target, "controller": controller})

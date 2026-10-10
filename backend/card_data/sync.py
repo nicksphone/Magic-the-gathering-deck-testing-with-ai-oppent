@@ -18,6 +18,15 @@ CACHE_DIR = Path(__file__).resolve().parent / "image_cache"
 CACHE_ROUTE_PREFIX = "/card-images"
 
 
+def oracle_fields_valid(metadata: dict) -> bool:
+    """Absent text can use face/seed fallback; other non-strings are malformed."""
+    faces = metadata.get('card_faces')
+    if faces is not None and (not isinstance(faces, list) or any(not isinstance(face, dict) for face in faces)):
+        return False
+    return all(surface.get('oracle_text') is None or isinstance(surface['oracle_text'], str)
+               for surface in [metadata, *(faces or [])])
+
+
 def needs_split_color_sync(card) -> bool:
     """Older cache writers mistook absent Scryfall face colors for colorless."""
     if (card.get('layout') if isinstance(card, dict) else getattr(card, "layout", "")) != "split":
@@ -41,6 +50,8 @@ class ScryfallSyncService:
 
     @classmethod
     def _normalize_payload(cls, raw: dict[str, Any], image_uri: str | None, rulings: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        if not oracle_fields_valid(raw):
+            raise ValueError('Oracle text fields must be strings or absent.')
         face = None
         if raw.get("card_faces"):
             face = raw["card_faces"][0]
@@ -66,6 +77,8 @@ class ScryfallSyncService:
 
     @classmethod
     def _normalize_faces(cls, faces: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if not oracle_fields_valid({'card_faces': faces}):
+            raise ValueError('Oracle text fields must be strings or absent.')
         out: list[dict[str, Any]] = []
         for face in faces:
             out.append(
@@ -136,7 +149,8 @@ class ScryfallSyncService:
 
     def sync_card_by_name(self, name: str, force: bool = False) -> dict[str, Any]:
         cached = self.repository.get_cached_card_by_name(name)
-        if cached and not force and self._cached_image_available(cached.image_uri):
+        if (cached and not force and self._cached_image_available(cached.image_uri)
+                and self._cached_oracle_fields_valid(cached)):
             from card_data.hydration import ready_for_match
             metadata = self._serialize_card(cached)
             if ready_for_match(metadata):
@@ -151,7 +165,7 @@ class ScryfallSyncService:
                 image_uri = self._cache_image(raw["id"], remote_image_uri, client) if remote_image_uri else None
                 rulings = self._fetch_rulings(raw.get("rulings_uri"), client)
         except httpx.HTTPError:
-            if cached is not None:
+            if cached is not None and self._cached_oracle_fields_valid(cached):
                 return self._serialize_card(cached)
             raise
         payload = self._normalize_payload(raw, image_uri=image_uri or remote_image_uri, rulings=rulings)
@@ -210,7 +224,15 @@ class ScryfallSyncService:
         image_name = image_uri.split("/", 2)[-1]
         return (CACHE_DIR / image_name).exists()
 
+    def _cached_oracle_fields_valid(self, card) -> bool:
+        return oracle_fields_valid({
+            'oracle_text': self._card_attr(card, 'oracle_text'),
+            'card_faces': json.loads(self._card_attr(card, 'card_faces_json', '[]') or '[]'),
+        })
+
     def _serialize_card(self, card) -> dict[str, Any]:
+        if not self._cached_oracle_fields_valid(card):
+            raise ValueError('Oracle text fields must be strings or absent.')
         card_name = self._card_attr(card, "name", "")
         fallback = fallback_card_payload(card_name)
         return {

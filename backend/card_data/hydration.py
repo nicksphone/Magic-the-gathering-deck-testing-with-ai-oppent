@@ -4,7 +4,7 @@ import json
 
 from card_data.display import select_display_image_uri
 from card_data.fallback_cards import fallback_card_payload
-from card_data.sync import ScryfallSyncService, needs_split_color_sync
+from card_data.sync import ScryfallSyncService, needs_split_color_sync, oracle_fields_valid
 
 
 def cached_json(value, expected_type):
@@ -35,7 +35,7 @@ def _required_characteristics_available(metadata):
 
 
 def ready_for_match(metadata):
-    if not metadata.get('type_line') or not is_playable_deck_card(metadata) or not _required_characteristics_available(metadata):
+    if not oracle_fields_valid(metadata) or not metadata.get('type_line') or not is_playable_deck_card(metadata) or not _required_characteristics_available(metadata):
         return False
     if metadata.get('card_faces') and not metadata.get('layout'):
         return False
@@ -66,6 +66,20 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
         row = cached.get(name.lower())
         fallback = fallback_card_payload(name) or {}
         profile = ScryfallSyncService.canonical_local_profile(knowledge.get(name.casefold()), name)
+        try:
+            raw_cached_faces = getattr(row, 'card_faces_json', None)
+            cached_faces = json.loads(raw_cached_faces) if raw_cached_faces not in (None, '') else []
+        except (TypeError, ValueError):
+            cached_faces = {}
+        cached_surface = {'oracle_text': getattr(row, 'oracle_text', None),
+                          'card_faces': cached_faces}
+        if (not oracle_fields_valid(out) or not oracle_fields_valid(cached_surface)
+                or profile is not None and not oracle_fields_valid(profile['card_data'])):
+            # Do not hide malformed stored facts behind otherwise valid seed data.
+            out.update(oracle_text='', type_line='', card_faces=[], card_data_sources=[],
+                       image_uri=select_display_image_uri({}, name=name))
+            hydrated.append(out)
+            continue
         sources = []
         if fallback:
             sources.append('offline_seed')

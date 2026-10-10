@@ -81,6 +81,9 @@ def finish_reveal(state, player_id, action):
 
 
 def public_choice(pending):
+    if pending and pending.get('kind') in {'discard', 'each_player_discard'}:
+        return {key: pending[key] for key in
+                ('kind', 'player_id', 'label', 'count', 'min_count') if key in pending}
     if pending and (pending.get('kind') in {'loyalty_cards', 'loyalty_attachment'}
                     or pending.get('effect_key') == 'loyalty_hand_entry'):
         from rules_engine.loyalty_instructions import choice_view

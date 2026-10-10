@@ -103,6 +103,11 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         labels = {cid: state.cards[cid].name if cid in state.cards else (pending.get("option_labels") or {}).get(cid, "Draw normally") for cid in pending.get("options", [])}
         type_lines = {cid: state.cards[cid].type_line or " ".join(effective_types(state, state.cards[cid]))
                       for cid in pending.get("options", []) if cid in state.cards}
+        if pending['kind'] == 'discard':
+            from rules_engine.optional_reveal import public_choice
+            return [{'type': 'choose_mechanic', **public_choice(pending),
+                     'options': list(pending['options']), 'option_labels': labels,
+                     'option_type_lines': type_lines}]
         if pending['kind'] == 'hand_top_order':
             return [{'type': 'choose_mechanic', 'kind': pending['kind'],
                      'player_id': player_id, 'options': list(pending['options']),

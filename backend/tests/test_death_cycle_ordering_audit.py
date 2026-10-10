@@ -215,7 +215,9 @@ def test_cycle_self_trigger_survives_discard_replacement_not_death(request, monk
                       'resolved': serialize_match_snapshot(restart(paid)),
                       'baseline': 'Composed parent includes generic self-cycling matcher'})
     assert paid.cards[source.id].zone == expected
-    assert [row['event'] for row in events] == ['discard', 'cycle']
+    assert [row['event'] for row in events] == (
+        ['enters_graveyard', 'discard', 'cycle'] if expected == Zone.GRAVEYARD
+        else ['discard', 'cycle'])
     assert events[-1]['payloads'][0]['x_value'] == action.get('x_value', 0)
     assert not any(row['event'] in {'creature_dies', 'permanent_dies'} for row in events)
     assert len(queued) == 2

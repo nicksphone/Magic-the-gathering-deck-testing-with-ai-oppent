@@ -86,6 +86,12 @@ def printed_body_gaps(card):
         from rules_engine.closed_loyalty import compile_body
         return (() if compile_body(text, card.name) is not None
                 else ('unsupported complete loyalty body',))
+    if types.intersection({'Instant', 'Sorcery'}):
+        from rules_engine.oracle_effects import compile_additional_cost_draw_instruction
+        cost_draw = compile_additional_cost_draw_instruction(text, card.name)
+        if cost_draw is not None:
+            return (() if cost_draw[0] != 'noop'
+                    else ('unsupported complete additional-cost draw body',))
     from rules_engine.turn_spell_protection import CANDIDATE
     if types.intersection({'Instant', 'Sorcery'}) and CANDIDATE.match(text.strip()):
         from rules_engine.turn_spell_protection import compile_instruction

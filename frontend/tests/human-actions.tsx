@@ -6,7 +6,7 @@ import { Controls } from "../src/components/Controls";
 import type { DeckItem, LegalMove, MatchState } from "../src/types";
 
 const BASE = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:10199";
-declare global { interface Window { fixtureState?: MatchState; fixtureActions?: unknown[] } }
+declare global { interface Window { fixtureState?: MatchState; fixtureActions?: unknown[]; fixtureMoves?: LegalMove[] } }
 
 function Harness() {
   const [match, setMatch] = useState<MatchState | null>(null);
@@ -19,7 +19,7 @@ function Harness() {
     if (!response.ok) throw new Error(`Legal moves HTTP ${response.status}`);
     const legal = await response.json();
     setMatch(next); setMoves(legal.moves); setActor(legal.player_id);
-    window.fixtureState = next; setReady(true);
+    window.fixtureMoves = legal.moves; window.fixtureState = next; setReady(true);
   }
   async function reset(pregame = false, modal = false, modalMana = 3, faceKind = "") {
     setReady(false); setError(""); window.fixtureActions = [];

@@ -1,10 +1,12 @@
 # Private HTTPS Operator Packaging
 
-Status: the pinned `0e57baf` native loopback runtime passed trusted-CA HTTPS,
-authenticated API/media, rejection atomicity and restart recovery. See
+Historical status: the `0e57baf` native loopback runtime with the former official
+binary passed trusted-CA HTTPS, authenticated API/media, rejection atomicity and
+restart recovery. That acceptance does not transfer to the custom binary below. See
 `../../docs/testing/caddy-operator-current-acceptance.md` for exact evidence and
 scope. Final combined-source/browser and user-selected LAN topology still need
-qualification before deployment. No live activation occurs by adding these files.
+qualification before deployment, including native runtime integration of this
+custom build. No live activation occurs by adding these files.
 
 ## Files and boundaries
 
@@ -28,34 +30,81 @@ Do not enable tracing, dump subprocess environments or archive operator material
 
 ## Local binary provenance (Linux amd64 only)
 
-Pinned official release: https://github.com/caddyserver/caddy/releases/tag/v2.11.7
+Pinned **custom source build**, not an official signed Caddy distribution:
 
-- `caddy_2.11.7_linux_amd64.tar.gz` SHA256:
-  `727b91701a392de6ebc5027509f548bf39979e5216340d0faed8fa5e69c84f8b`
-- Extracted `caddy` SHA256 (enforced by launcher):
-  `678ade3bfc088749c81a681adc603333ee0bb023b6a6cfe3c0f58bef8ff854e9`
-- Verification tool: official Sigstore cosign v3.1.3 `cosign-linux-amd64`, SHA256
-  `4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71`.
-  Bootstrap trust is official HTTPS release/API digest, not an independently
-  installed verifier or a claim that cosign was independently code audited.
+- Caddy `v2.11.7`, tag commit `72dd0fb067f6d7826c7f79907670ba4a713bfe37`;
+  authenticated module sum `h1:yj0Y4fYZGPkSvibBJ1sTWE33xC0fxztVyXEW5iIdUT4=`.
+- Official Go `1.26.9` SDK, `go1.26.9.linux-amd64.tar.gz`, 66,935,201 bytes;
+  SHA256 `42d158b4d8f7b61ac0a830567c940a86098fb7aac52e467a5ebec03ef5cc2f8d`.
+  Exact download: https://go.dev/dl/go1.26.9.linux-amd64.tar.gz
+  Metadata: https://go.dev/dl/?mode=json&include=all
+- `golang.org/x/net v0.60.0`, tag commit
+  `18ece0ce30bc35fa81fe72028bf309bb3ff3f4a5`;
+  authenticated module sum `h1:79p50tfZlm0J9YfoDsSi639qSXNGVwEzOPLCxM2FsYU=`.
+- Actual static stripped Linux-amd64 binary, 51,974,306 bytes; SHA256 enforced
+  by the unchanged launcher checksum check:
+  `e8d6545c8485f7bd723fc3a6a2fb5662e89a235ae0d32ccde3f43d81577b0db0`.
 
-Download into a private local tools directory, not `/usr/bin`. Fetch the tar,
-companion `.sig` and `.pem` from that exact official release. Verify the pinned
-SHA256 before extraction and verify the signature before executing Caddy:
+The previous official binary hash
+`678ade3bfc088749c81a681adc603333ee0bb023b6a6cfe3c0f58bef8ff854e9`
+is historical and is no longer accepted by this pin. Its release signatures,
+certificates, transparency proofs and earlier runtime acceptance **do not cover
+this custom executable**. A `v2.11.7` CLI version string is not official-binary
+authentication. Verify the exact candidate hash before executing it; keep it in
+an owned local tools directory, not `/usr/bin`. This documentation does not
+install, deploy, change global trust or qualify a live proxy.
+
+### Reproduce the verified source build
+
+Use the completed public build packet at:
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ci/caddy2117-security-build-20261010-bwDTVP/`.
+Its `caddy2117-go1269-xnet060-build-only.tar.gz` SHA256 is
+`f57a91816b4aee1217128eeca9e97d6a934782eb7061d47f9e2581f7ef80e201`.
+Read `BUILD_RECIPE.md` and `REPORT.md`; verify `OUTER_SHA256SUMS` and the
+`PAYLOAD_SHA256SUMS` identities **inside the tar**, not nonexistent expanded NFS
+paths. Extract only into fresh owned local source/cache directories. The packet
+retains the exact SDK archive, public module zip/mod/info and signed sumdb cache,
+unchanged official wrapper main, exact wrapper module files, graphs and build log.
+
+Follow that existing recipe, not a new installer: verify SDK size/hash before
+execution; authenticate Caddy source through public `proxy.golang.org` and
+`sum.golang.org`; copy only unchanged `cmd/caddy/main.go` into the release-style
+module named `caddy`, requiring `v2.11.7`. Baseline/postfix selected graphs have
+597 identities and must differ **only** by x/net `v0.59.0` to `v0.60.0`, without
+added/removed modules or replacements. Preserve the exact final wrapper files:
+`go.mod` SHA256 `d173eceee6ce678584bf2f5d2e219aade323ccfb93e578c0b48bc83295e8a59a`,
+`go.sum` SHA256 `6af3a164233778b8a67386362356bfb312d26888ccee645b7180f07fc27e8574`.
+No Caddy source or other selected dependency version is changed.
+
+Use clean `env -i` with owned HOME/GOPATH/GOMODCACHE/GOCACHE/TMPDIR/GOTMPDIR,
+explicit verified Go1.26.9 GOROOT/PATH, `GOENV=off`, `GOWORK=off`,
+`GOTOOLCHAIN=local`, `GOTELEMETRY=off`, `GOVCS=*:off`, canonical public proxy and
+sumdb with no private/direct fallback. After native `go mod verify` and exact
+graph comparison, build offline (`GOPROXY=off`) with `CGO_ENABLED=0`,
+`GOOS=linux`, `GOARCH=amd64`, `GOMAXPROCS=2`:
 
 ```sh
-./cosign-linux-amd64 verify-blob \
-  --certificate caddy_2.11.7_linux_amd64.pem \
-  --signature caddy_2.11.7_linux_amd64.tar.gz.sig \
-  --certificate-identity 'https://github.com/caddyserver/caddy/.github/workflows/release.yml@refs/tags/v2.11.7' \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  caddy_2.11.7_linux_amd64.tar.gz
+go build -p 2 -trimpath -mod=readonly -tags nobadger,nomysql,nopgx \
+  -ldflags '-s -w' -o OWN/output/caddy-security-candidate .
 ```
 
-Failure blocks use: do not bypass log/expiry/issuer/identity checks. The current
-verification returned `Verified OK`; flags are deprecated in cosign 3 but still
-verify signatures and transparency log. Preserve public provenance separately
-from private TLS/auth material. No global installation is necessary.
+Inspect actual `go version -m` for Go1.26.9/Caddy2.11.7/x/net0.60.0 and all
+147 embedded dependencies against the frozen graph/go.sum. Reject unexpected
+churn or output hash mismatch; never refresh the launcher pin to unknown bytes.
+Native operator runtime remains a separately leased Main-owned gate.
+
+Primary constraints and authentication:
+https://github.com/caddyserver/caddy/blob/v2.11.7/.goreleaser.yml
+https://github.com/caddyserver/caddy/blob/v2.11.7/go.mod
+https://proxy.golang.org/golang.org/x/net/@v/v0.60.0.mod
+https://go.dev/ref/mod#authenticating
+https://go.dev/doc/devel/release#go1.26.9
+
+Go alone does not patch Caddy's selected x/net HTTP/2 implementation; both pins
+are required. The public report records primary advisory matches and reachability
+limits, including the retained OpenPGP advisory whose affected packages are absent
+from this build. Integrity checks and absent indexed advisory matches are not
+proof of complete security, runtime behavior, exposure or deployability.
 
 ## Operator configuration and launch
 
@@ -146,17 +195,18 @@ authenticated hostile Origin with an incomplete upload can therefore reach the
 backend's atomic 403 guard while the client waits for response headers. This
 flag permits concurrent request reads and response writes, without changing
 authentication ordering, trusted Origins, body validation or backend handlers.
-The pinned Caddy 2.11.7 binary reports Go 1.26.8 (feature requires Go 1.21+);
+The custom Caddy 2.11.7 binary reports Go 1.26.9 (feature requires Go 1.21+);
 native adaptation must contain `enable_full_duplex: true`.
 
 Caddy marks this option experimental. Older HTTP/1 clients may deadlock and
 require explicit compatibility qualification; HTTP/2 already permits concurrent
-reads/writes. This is not blanket client or exposure support. The pinned native
-incomplete-upload early-403 gate passed without a timeout extension, upload
-completion or rejection bypass; final combined-source qualification remains open.
+reads/writes. This is not blanket client or exposure support. The historical native
+incomplete-upload early-403 gate with the former official binary passed without a
+timeout extension, upload completion or rejection bypass; that runtime result does
+not qualify this custom binary. Final combined-source qualification remains open.
 https://caddyserver.com/docs/caddyfile/options#enable-full-duplex
 https://github.com/caddyserver/caddy/blob/v2.11.7/modules/caddyhttp/server.go
-https://github.com/golang/go/blob/go1.26.8/src/net/http/responsecontroller.go
+https://github.com/golang/go/blob/go1.26.9/src/net/http/responsecontroller.go
 
 No LAN/public binding is implemented. User-selected hostname, user-approved
 certificate trust, firewall and authenticated TLS exposure require future explicit
@@ -173,8 +223,9 @@ and legal action/recovery, trusted/denied CORS headers, malicious mutation 403
 with complete controller/root/SQL equality before body/dependencies, rejected
 direct exposure, restart recovery and complete child/socket/DB closure. Secret
 material stays local/private and is destroyed only after closure; evidence is
-sanitized assertions/statuses, not headers or key/auth dumps. The pinned native
-component passed; this final combined-source gate is pending.
+sanitized assertions/statuses, not headers or key/auth dumps. The historical native
+component passed with the former official binary; this custom binary's final
+combined-source/runtime gate is pending.
 
 Authoritative references:
 https://caddyserver.com/docs/signature-verification
