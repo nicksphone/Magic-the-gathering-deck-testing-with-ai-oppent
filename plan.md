@@ -792,3 +792,21 @@ startup, Officer gameplay/restart, resource closure and full browser acceptance
 remain required. See [scope and evidence](docs/testing/officer-fixture-lifecycle-current.md).
 All original gates, measured AI quality and the broader full-project objective
 remain unchanged and unfinished.
+
+## 2026-10-10 Officer Browser Origin And Passive Diagnostics
+
+The completed `d89e18a3` browser reaches Officer's eight HTTP/privacy passes,
+then the mounted App cannot fetch because the dedicated port 15237 is absent
+from its launcher origin configuration. A one-line exact-origin export retains
+production policy and passes three whole pure modules / 108 cases (0.26s),
+after four new regression failures. A subsequent unchanged native Officer cohort
+passes all eight HTTP/privacy and four mounted-browser scenarios, including
+actual backend restart. All1988 source hashes match and scoped owned resource
+closure is verified. This is Officer acceptance, not the entire browser gate.
+
+The private opt-in CDP observer passes 31 independent protocol controls and
+both original navigation checks. Default driver bytes, package/cohort/actions
+and clocks are preserved; coverage completeness is not gameplay completion.
+See [scope and evidence](docs/testing/officer-origin-and-passive-browser-current.md).
+All original release gates and the full-rules/arbitrary-deck/expert-AI objective
+remain intact.

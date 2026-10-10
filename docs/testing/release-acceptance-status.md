@@ -456,3 +456,24 @@ use synthetic SQL/server/FD boundaries, so actual native startup, gameplay,
 cold process restoration, drain/disposal and full browser acceptance are still
 open. The separate old shutdown test-helper binding repair retains every
 original assertion. See `officer-fixture-lifecycle-current.md`.
+
+## Officer Browser Origin And Passive Diagnostics (2026-10-10)
+
+The `d89e18a3` remote browser passes all eight Officer HTTP/privacy checks,
+then the mounted App reports failed fetches. The dedicated launcher now trusts
+only its actual frontend origin; the backend's default policy is unchanged.
+Three whole pure policy modules pass 108 cases after four new red regressions.
+The subsequent unchanged native Officer cohort passes eight HTTP/privacy and
+four mounted-browser scenarios, including actual backend restart. Source1988
+hashes match, SQL stays owned and scoped resource closure is verified. This is
+native Officer acceptance, not whole-browser or release acceptance.
+
+The reviewed opt-in private CDP observer independently passes all 31 synthetic
+protocol cases and the two original navigation checks. Redirect correlation,
+lost-transport incompleteness and private projection are covered; default
+driver bytes, actions, package/cohort and deadlines remain unchanged. Native
+coverage is measured separately: one of four native closures is complete and
+three remain explicitly incomplete. Current whole-browser/backend CI still
+requires execution.
+See `officer-origin-and-passive-browser-current.md`; broader release gates,
+measured expert AI, arbitrary-deck support and deployment remain open.
