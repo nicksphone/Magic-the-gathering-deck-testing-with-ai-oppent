@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-evidence=$(mktemp -d "$RUNNER_TEMP/mtg-backend-evidence-XXXXXX")
+if [[ -z "${RUNNER_TEMP:-}" || -z "${GITHUB_OUTPUT:-}" ]]; then
+  printf 'CI_BACKEND_EVIDENCE_SETUP_ERROR\n' >&2
+  exit 1
+fi
+evidence=$(mktemp -d "$RUNNER_TEMP/mtg-backend-evidence-XXXXXX" 2>/dev/null) || {
+  printf 'CI_BACKEND_EVIDENCE_SETUP_ERROR\n' >&2
+  exit 1
+}
+# Open before private decoding; even shell/observer errors stay runner-local.
+if ! { exec 4>"$evidence/runner.log"; } 2>/dev/null; then
+  printf 'CI_BACKEND_EVIDENCE_SETUP_ERROR\n' >&2
+  exit 1
+fi
+exec 1>&4 2>&4 4>&-
 printf 'evidence=%s\n' "$evidence" >> "$GITHUB_OUTPUT"
 work=$(mktemp -d "$RUNNER_TEMP/mtg-backend-work-XXXXXX")
 scratch="$work/source"
