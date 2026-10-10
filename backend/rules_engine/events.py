@@ -1791,6 +1791,25 @@ def _trigger_from_oracle(
         if entries:
             if payload.get('card_id') != source_card_id:
                 return None
+            from rules_engine.devotion import COLORS, devotion_instruction
+            instruction = entries[0][1] if len(entries) == 1 else None
+            if instruction is not None:
+                # Accept only the matching printed devotion reminder, never arbitrary parentheses.
+                for color, symbol in COLORS.items():
+                    reminder = (f' (Each {{{symbol}}} in the mana costs of permanents you control '
+                                f'counts toward your devotion to {color}.)')
+                    if (instruction.endswith(reminder)
+                            and re.search(r'\bwhere x is your devotion to ' + color + r'\.',
+                                          instruction[:-len(reminder)], re.I)):
+                        instruction = instruction[:-len(reminder)]
+                        break
+                devotion = (devotion_instruction(instruction, source.name)
+                            if not re.search(r'[()]', instruction) else None)
+                if devotion is not None:
+                    return {'source_card_id': source_card_id, 'controller': controller,
+                            'label': default_label, 'effect_key': 'devotion_effect',
+                            'payload': {'devotion': devotion,
+                                        'source_incarnation': object_incarnation(source)}}
             from rules_engine.spell_cost_clauses import COUNT
             from rules_engine.oracle_effects import _parse_count_token
             clause = '\n'.join(line for line, _ in entries)

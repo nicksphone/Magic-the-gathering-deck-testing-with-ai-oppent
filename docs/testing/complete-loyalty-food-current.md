@@ -85,3 +85,13 @@ The public fixtures contain full canonical API responses, not private game trace
 The protected synthetic CI trace remains private input; raw protected backend
 logs are not downloaded or published. All three original release gates and the
 arbitrary-card/full-rules ambition in `plan.md` remain intact.
+
+## Subsequent Devotion Correction
+
+The actual `371a5ba2` browser run exposes an interaction between the fixed-count
+entry-drain guard and the existing variable-devotion entry compiler. A separate
+events-only correction restores complete raw devotion dispatch without accepting
+unknown suffixes or arbitrary parentheses. Its composed declaration passes
+2,029 cases in 51 whole pure modules, retaining every original 1,995 ordered
+identity. The original 1,995-case checkpoint above remains historical rather
+than being relabeled. [Exact correction and open gates](devotion-entry-precedence-current.md).

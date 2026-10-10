@@ -26,6 +26,14 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-10
 
+The latest complete-devotion precedence correction passes 2,029 cases in 51
+whole pure modules, 282.17s, preserving every previous 1,995 ordered identity
+and adding 34 regressions. All 1,941 declared source hashes remain unchanged.
+The separate seven-whole-module declaration passes 206 cases, including all
+original devotion tests and four actual HTTP/SQLite restore cases. The actual
+browser defect, strict raw-body correction, initial harness failures and open
+release gates are recorded in [exact scope](docs/testing/devotion-entry-precedence-current.md).
+
 The latest reviewed complete-loyalty/typed-resource composition passes 1,995
 cases across 50 whole pure modules, 276.49s, retaining the full ordered 1,882-case
 prefix and adding 113 cases. Seven production files change; all old tests and

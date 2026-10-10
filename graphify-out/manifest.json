@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791618366.2062085,
-    "seen": 1791619141.1836934,
-    "ast_hash": "8175d9c909e649317e8b1ab9c3f88054",
+    "mtime": 1791624266.2241576,
+    "seen": 1791625238.1480777,
+    "ast_hash": "92be3e318ee683fb167ebf7f378d15bb",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791618917.5464401,
-    "seen": 1791619141.1883216,
-    "ast_hash": "5a89b71a2618cdabfe2df0fef3f54927",
+    "mtime": 1791625083.9887207,
+    "seen": 1791625238.1526845,
+    "ast_hash": "6233a545cb0dbe5db81fef70921b4927",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -16524,9 +16524,21 @@
     "semantic_hash": ""
   },
   "docs/testing/complete-loyalty-food-current.md": {
-    "mtime": 1791618917.4534414,
-    "seen": 1791619141.187584,
-    "ast_hash": "5699d39e50b2147ea3d907473397f890",
+    "mtime": 1791625084.0127203,
+    "seen": 1791625238.1519835,
+    "ast_hash": "2e276fd8474f968d5a5995f3a629c172",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_self_entry_devotion_priority.py": {
+    "mtime": 1791624266.2241576,
+    "seen": 1791625238.1508222,
+    "ast_hash": "d7dbb26fd4c65cc45491d24f0a83783c",
+    "semantic_hash": ""
+  },
+  "docs/testing/devotion-entry-precedence-current.md": {
+    "mtime": 1791625083.9857206,
+    "seen": 1791625238.152074,
+    "ast_hash": "38418a1a89aa6f15ec9cab6010ad70b7",
     "semantic_hash": ""
   }
 }
