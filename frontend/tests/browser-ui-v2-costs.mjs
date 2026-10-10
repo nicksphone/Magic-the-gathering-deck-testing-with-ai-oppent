@@ -4,10 +4,14 @@ const api=process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
 const ui=process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15174';
 assert.ok(process.env.MTG_BROWSER_ORIGIN,'Set owned Chromium endpoint');
 const b=await openBrowser(ui);
+async function humanIdle() {
+ await b.waitFor("!document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Restoring saved session')");
+}
 async function setup(path) {
+ await humanIdle();
  const response=await fetch(api+path,{method:'POST'});assert.equal(response.status,200);const state=await response.json();
  await b.evaluate(`localStorage.setItem('mtg.activeMatch',${JSON.stringify(state.id)})`);await b.reload();
- await b.waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Restoring saved session')");return state;
+ await b.waitFor(`localStorage.getItem('mtg.activeMatch') === ${JSON.stringify(state.id)} && document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(state.id)} && document.querySelector('.battlefield')?.dataset.matchRevision === ${JSON.stringify(String(state.revision))} && !document.body.innerText.includes('Restoring saved session') && !document.body.innerText.includes('Match operation pending') && [...document.querySelectorAll('button')].some(e=>e.textContent==='Resume automatic play')`);return state;
 }
 try {
  for(const seat of [1,2]) for(const payment of ['discard','sacrifice']) {
@@ -21,7 +25,7 @@ try {
   assert.equal(await b.evaluate("[...document.querySelectorAll('button')].find(e=>e.textContent.startsWith('Cast Bone Shards')).disabled"),true);
   await b.evaluate(`(()=>{const e=document.querySelector('select[aria-label="${label}"]');for(const o of e.options)o.selected=o.value===${JSON.stringify(paid.id)};e.dispatchEvent(new Event('change',{bubbles:true}));const t=[...e.closest('.hand-card').querySelectorAll('select')].find(e=>[...e.options].some(o=>o.textContent.startsWith('Target ')));t.value=${JSON.stringify(target.id)};t.dispatchEvent(new Event('change',{bubbles:true}));})()`);
   await b.click('Cast Bone Shards');await waitForApiState(`${api}/matches/${s.id}`,state=>state.stack.length===1);
-  for(let i=0;i<2;i++){const rev=await b.evaluate("document.querySelector('[data-match-revision]').dataset.matchRevision");await b.click('Pass Priority');await b.waitFor(`document.querySelector('[data-match-revision]').dataset.matchRevision!==${JSON.stringify(rev)}`);}
+  for(let i=0;i<2;i++){await humanIdle();const rev=await b.evaluate("document.querySelector('[data-match-revision]').dataset.matchRevision");await b.click('Pass Priority');await b.waitFor(`document.querySelector('[data-match-revision]').dataset.matchRevision!==${JSON.stringify(rev)}`);await humanIdle();}
   const final=await waitForApiState(`${api}/matches/${s.id}`,state=>state.stack.length===0);
   assert.ok(final.players[String(seat)].graveyard.some(c=>c.id===paid.id));
   assert.ok(final.players[String(3-seat)].graveyard.some(c=>c.id===target.id));

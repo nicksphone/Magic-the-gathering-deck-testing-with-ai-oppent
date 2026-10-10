@@ -117,6 +117,15 @@ playtesting milestone does not redefine the final objective.
 
 ## Latest Verified Milestones
 
+2026-10-10 browser-harness follow-up over `9ce7e1fc`: the actual remote browser
+job stops before seat two's discard-payment cast with a stale prior fixture.
+Existing v2 identity/revision/idle checks now guard that program's fixture and
+action handoffs. Eleven actual-script regressions reproduce eight failures and
+then pass; the independent parent complete 46-entrypoint frontend chain, lint
+and build exit zero. Every original action, assertion and clock remains intact.
+Full native browser, protected backend CI, opt-in HTTP and AI-quality acceptance
+remain required. See `docs/testing/browser-cost-handoff-current.md`.
+
 2026-10-10 follow-up over `b7067d70`: the full browser reproduces a Tamiyo
 cast-offer regression caused by legacy supertypes entering the strict typed
 query. Three caller projections now preserve the actual selected-method view

@@ -1,5 +1,16 @@
 # Release Acceptance Status
 
+Current browser-harness follow-up: 2026-10-10, over `9ce7e1fc`. Its actual remote
+browser job stops before seat two's Bone Shards cast with a stale seat-one view.
+The independently reviewed correction reuses existing v2 fixture identity,
+revision and idle checks, without changing any original action, assertion or
+clock. Eleven actual-script regressions reproduce eight failures, then all pass;
+the parent complete 46-entrypoint frontend chain, lint and build exit zero on
+an owned existing dependency copy. Exact remote callback ordering remains
+unobserved. Full current browser and protected backend CI are not inferred from
+these checks. See `browser-cost-handoff-current.md`; all original release gates
+and unscored AI-quality requirements remain open.
+
 Current caller follow-up: 2026-10-10, over published `b7067d70`. Its actual
 whole-browser run stops before Tamiyo's cast offer because three callers pass
 legacy supertype labels to the strict card-type query. The minimal caller
