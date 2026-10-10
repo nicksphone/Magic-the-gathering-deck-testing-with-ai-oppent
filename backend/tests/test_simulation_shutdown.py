@@ -27,7 +27,8 @@ class Request:
 def policy():
     tree = ast.parse((Path(__file__).resolve().parents[1] / "main.py").read_text())
     names = {"_reap_simulation_workers", "_prepare_simulation_admission",
-             "_shutdown_simulation_workers", "_start_batch_job", "simulate_batch_start"}
+             "_shutdown_simulation_workers", "_start_batch_job", "simulate_batch_start",
+             "_retired_job_response"}
     nodes = [node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name in names]
     for node in nodes:
         node.decorator_list = []

@@ -442,3 +442,17 @@ canonical Tamiyo episodes before an untyped Stifle fixture stops it. The narrow
 fixture correction passes ten whole pure modules / 154 cases in 17.84s without
 changing production targeting or original assertions; remote browser acceptance
 is still required. See `backend-ci-inputs-and-diagnostics.md`.
+
+## Officer Fixture Admission (2026-10-10)
+
+The `daa644c7` browser now passes three natural BO3 component checks and all 12
+original interactive-preflight checks, then fails Officer's first action with
+503 because that fixture disables the native owner/admission lifespan. Its
+scoped repair enables the real lifespan and exact owned database configuration,
+without changing production guards, original actions, assertions or deadlines.
+
+Worker and independent-parent whole pure checks both pass all 42 cases. They
+use synthetic SQL/server/FD boundaries, so actual native startup, gameplay,
+cold process restoration, drain/disposal and full browser acceptance are still
+open. The separate old shutdown test-helper binding repair retains every
+original assertion. See `officer-fixture-lifecycle-current.md`.

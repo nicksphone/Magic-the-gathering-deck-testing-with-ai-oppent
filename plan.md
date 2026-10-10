@@ -776,3 +776,19 @@ See [rules composition](docs/testing/tamiyo-aura-current-composition.md) and
 [CI inputs/diagnostics](docs/testing/backend-ci-inputs-and-diagnostics.md).
 Broader final-source migration, mixed I/O, AI quality, operator/proxy,
 clean-machine and soak requirements above remain unchanged.
+
+## 2026-10-10 Officer Fixture Admission
+
+The `daa644c7` browser executes three natural BO3 component checks and all 12
+original interactive-preflight checks, then stops at Officer's first action:
+HTTP 503 from the absent database owner. The fixture now enables the native
+lifespan and configures its exact owned database before persistence imports;
+production admission and shutdown rules are not bypassed.
+
+Two whole pure source-protocol modules pass 42 checks in the worker (0.76s) and
+independent parent (0.74s). A separate shutdown test-helper correction includes
+the actual retired-job helper without changing original assertions. Real native
+startup, Officer gameplay/restart, resource closure and full browser acceptance
+remain required. See [scope and evidence](docs/testing/officer-fixture-lifecycle-current.md).
+All original gates, measured AI quality and the broader full-project objective
+remain unchanged and unfinished.

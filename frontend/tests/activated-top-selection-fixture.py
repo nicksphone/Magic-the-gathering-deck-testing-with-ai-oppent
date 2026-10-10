@@ -13,23 +13,23 @@ if RUNTIME.parent != Path(tempfile.gettempdir()).resolve() or not RUNTIME.name.s
     raise RuntimeError('Requires a new, local Officer test runtime')
 RUNTIME.mkdir(parents=True, exist_ok=True)
 DATABASE = RUNTIME / 'officer-test.sqlite'
+os.environ['MTG_DATABASE_PATH'] = str(DATABASE)
 sys.path.insert(0, str(ROOT / 'backend'))
+BOOTSTRAP_DATABASES = frozenset()
 
 
 def guard(event, args):
-    if event == 'sqlite3.connect' and Path(args[0]).resolve() != DATABASE:
+    if event == 'sqlite3.connect' and os.fspath(args[0]) not in (
+            {str(DATABASE), DATABASE.as_uri() + '?mode=ro'} | BOOTSTRAP_DATABASES):
         raise RuntimeError('Attempt to access a foreign database')
     if event == 'socket.connect' and isinstance(args[1], tuple) and args[1][0] not in {'127.0.0.1', '::1', 'localhost'}:
         raise RuntimeError('Non-loopback network access is forbidden')
 
 
 sys.addaudithook(guard)
-from sqlmodel import Session, create_engine
+from sqlmodel import Session
 from persistence import db
 
-db.DATABASE_PATH = DATABASE
-db.DATABASE_URL = f'sqlite:///{DATABASE}'
-db.engine = create_engine(db.DATABASE_URL, echo=False)
 from card_data import placeholders, sync
 
 placeholders.CACHE_DIR = sync.CACHE_DIR = RUNTIME / 'card-images'
@@ -40,9 +40,24 @@ from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from tests.test_activated_top_selection import position
 
-db.init_db()
-with Session(db.engine) as session:
-    main._restore_active_matches(Repository(session))
+NATIVE_INITIALIZE_CAPACITY = main.initialize_resource_capacity
+
+
+def initialize_owned_capacity(owner, backup):
+    """Authorize only the native owner's exact bootstrap backup, for its call lifetime."""
+    global BOOTSTRAP_DATABASES
+    owner.require(ready=False)
+    expected = DATABASE.with_name(DATABASE.name + '.before-capacity-' + owner.epoch + '.db')
+    if owner.engine is not db.engine or owner.path != DATABASE or backup != expected:
+        raise RuntimeError('Foreign capacity bootstrap')
+    BOOTSTRAP_DATABASES = frozenset({str(backup), backup.as_uri() + '?mode=ro'})
+    try:
+        return NATIVE_INITIALIZE_CAPACITY(owner, backup)
+    finally:
+        BOOTSTRAP_DATABASES = frozenset()
+
+
+main.initialize_resource_capacity = initialize_owned_capacity
 app = main.app
 
 
@@ -88,6 +103,5 @@ def status(match_id: str):
 
 if __name__ == '__main__':
     import uvicorn
-    # Avoid unrelated deck-cache bootstrap; fixture schema and real persisted
-    # match restore above use the same production helpers without changing them.
-    uvicorn.run(app, host='127.0.0.1', port=int(os.environ.get('MTG_OFFICER_PORT', '10237')), lifespan='off')
+    # Require native ownership/bootstrap/admission and fenced drain/close on exit.
+    uvicorn.run(app, host='127.0.0.1', port=int(os.environ.get('MTG_OFFICER_PORT', '10237')), lifespan='on')
