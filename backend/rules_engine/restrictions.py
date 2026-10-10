@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.card_types import CARD_TYPES
 from rules_engine.type_effects import effective_types
 
 import re
@@ -124,7 +125,7 @@ def has_global_flash_permission(state, player_id: int) -> bool:
 def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution: bool = False) -> tuple[bool, str]:
     from rules_engine.graveyard_permissions import spell_cast_prohibited, graveyard_only_cast
     if spell_cast_prohibited(state, player_id, getattr(card, 'zone', None),
-                             spell_types=tuple(sorted(set(effective_types(state, card))))):
+                             spell_types=tuple(sorted(set(effective_types(state, card)) & CARD_TYPES))):
         return False, 'A battlefield ability prohibits casting from this zone.'
     if getattr(card, 'zone', None) != Zone.GRAVEYARD and graveyard_only_cast(card):
         return False, 'This card may be cast only from its graveyard.'

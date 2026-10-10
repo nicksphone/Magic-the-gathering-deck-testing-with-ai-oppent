@@ -1,5 +1,31 @@
 # Release Acceptance Status
 
+Current caller follow-up: 2026-10-10, over published `b7067d70`. Its actual
+whole-browser run stops before Tamiyo's cast offer because three callers pass
+legacy supertype labels to the strict card-type query. The minimal caller
+projection preserves that strict API and passes all 254 focused cases, including
+34 new regressions and the original 102 Jailer cases. The independent native
+34-module union completes 805 passes and ten unchanged opt-in skips, retaining
+the entire original 781-case ordered prefix. Source/dependency equality and
+actual native closure are verified. Whole-browser, protected-CI and those opt-in
+HTTP cases are not inferred from these components.
+Later browser programs are unreached in the failed run. See
+`spell-type-caller-current.md`. Original Gates 1--3 and AI-quality requirements
+remain unchanged.
+
+Current candidate update: 2026-10-10, over `c1057647`. Reviewed typed graveyard
+queries and Reanimate continuation, two explicit historical fixture corrections,
+call-scoped audit canaries and the Cathar launcher-origin correction are applied.
+The complete frontend chain, lint/build and bounded canonical component checks
+pass. The same 33-module native union now passes 771 cases with ten unchanged
+declared opt-in HTTP skips under a backup-call-only diagnostic observer. Exact
+781 nodes, source/dependency equality and native closure are independently
+verified. The earlier 770-pass/one-backup-error attempt remains historical and
+its cause is unknown. Final whole-browser/protected-CI and opt-in child HTTP
+qualification remain pending. See
+`jailer-reanimate-and-cathar-current.md`. No quality labels or benchmark quotas
+were reset, and every original release requirement remains open where unproved.
+
 Current update: 2026-10-10. Published `38e43cd5` passes the remote frontend job.
 Its browser run passes recovery, copied Helix/Drain controls and natural AI,
 human-vs-AI and human-vs-human BO3, then times out waiting for

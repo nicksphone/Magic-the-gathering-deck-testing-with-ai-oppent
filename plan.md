@@ -117,6 +117,28 @@ playtesting milestone does not redefine the final objective.
 
 ## Latest Verified Milestones
 
+2026-10-10 follow-up over `b7067d70`: the full browser reproduces a Tamiyo
+cast-offer regression caused by legacy supertypes entering the strict typed
+query. Three caller projections now preserve the actual selected-method view
+and pass all 254 focused cases, including 34 new regressions. The independent
+815-case native union now completes 805 ordinary passes and ten unchanged opt-in
+HTTP skips, with exact original prefix, source/dependency equality and native
+closure verified. Full browser, opt-in HTTP and protected CI remain separate
+acceptance boundaries. See
+`docs/testing/spell-type-caller-current.md`. No original gate, AI-quality label
+or benchmark counter is reset.
+
+2026-10-10 candidate over `c1057647`: typed Soulless Jailer selected-cost guards,
+independent Reanimate life loss, scoped legacy audit canaries and Cathar's exact
+frontend-origin launcher are applied. Whole frontend test/lint/build and bounded
+canonical checks pass. The current 781-case native union finishes with 771
+passes and ten original opt-in skips under a backup-call-only diagnostic
+observer. Exact ordered nodes, source/dependency equality and native closure
+are verified. Its preceding backup setup timeout remains unexplained;
+whole-browser, opt-in child HTTP and protected backend qualification are pending. This does not
+close Gates 1--3 or the unscored AI-quality corpus. See
+`docs/testing/jailer-reanimate-and-cathar-current.md`.
+
 - [x] Native cold-restart fixture portability: seven whole modules / 704 passes,
   702.88s, unchanged original node identities/assertions and actual complete
   SQL/ledger checks. All observed native/read-only children and database handles

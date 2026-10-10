@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.card_types import CARD_TYPES
 from rules_engine.type_effects import effective_types
 
 import re
@@ -576,7 +577,7 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     from rules_engine.graveyard_permissions import spell_cast_prohibited
     compiled = [option for option in compiled if not spell_cast_prohibited(
         state, player_id, card.zone,
-        spell_types=tuple(sorted(set(effective_types(state, spell_cast_view(card, casting_method(option.id)))))))]
+        spell_types=tuple(sorted(set(effective_types(state, spell_cast_view(card, casting_method(option.id)))) & CARD_TYPES)))]
     return [priced(option, chosen_modes) for option in compiled] if spree_modes else compiled
 
 
@@ -586,7 +587,7 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     card = spell_cast_view(card, casting_method(option.id))
     from rules_engine.graveyard_permissions import spell_cast_prohibited
     if spell_cast_prohibited(state, player_id, card.zone,
-                             spell_types=tuple(sorted(set(effective_types(state, card))))):
+                             spell_types=tuple(sorted(set(effective_types(state, card)) & CARD_TYPES))):
         return False
     if option.graveyard_permission_max_mana_value is not None:
         from rules_engine.mana import mana_value
