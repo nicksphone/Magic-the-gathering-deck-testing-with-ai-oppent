@@ -176,6 +176,8 @@ def test_rest_in_peace_exiles_simultaneously_destroyed_enchantments() -> None:
 
 
 def test_rest_in_peace_exiles_a_resolved_or_countered_spell() -> None:
+    from rules_engine.stack_engine import add_to_stack
+
     state = _rest_in_peace_state()
     for card_id, countered in (("resolved", False), ("countered", True)):
         card = CardInstance(
@@ -184,15 +186,13 @@ def test_rest_in_peace_exiles_a_resolved_or_countered_spell() -> None:
             oracle_text="Lightning Bolt deals 3 damage to any target.",
         )
         state.cards[card_id] = card
-        item = StackItem(
-            id=f"item-{card_id}", source_card_id=card_id, controller=2,
-            label="Lightning Bolt", effect_key="deal_damage", payload={},
+        item = add_to_stack(
+            state, card_id, 2, "Lightning Bolt", "deal_damage", {},
         )
         if countered:
-            state.stack.append(item)
             counter_spell(state, 1, {"target_stack_id": item.id})
         else:
-            finish_stack_resolution(state, item, {})
+            finish_stack_resolution(state, state.stack.pop(), {})
         assert card.zone == Zone.EXILE
         assert card_id in state.players[2].exile
         assert card_id not in state.players[2].graveyard

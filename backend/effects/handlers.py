@@ -1775,11 +1775,15 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
         if target in player.graveyard:
             source_graveyard = player
             break
-    if source_graveyard is None or is_departed_token(card) or battlefield_entry_prohibited(state, target):
+    if source_graveyard is None or is_departed_token(card):
         return
     # Lock the graveyard characteristics before any resumable entry choice.
     if payload.get('lose_life_equal_to_mana_value'):
         payload.setdefault('__return_life_loss', mana_value(card.mana_cost or ''))
+    if battlefield_entry_prohibited(state, target):
+        if payload.get('lose_life_equal_to_mana_value'):
+            lose_life(state, controller, {'target_player': controller, 'amount': payload['__return_life_loss']})
+        return
     if prepare_counter_entries(state, controller, [card], 'return_creature_from_graveyard_to_battlefield', payload):
         return
     from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures

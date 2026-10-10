@@ -572,6 +572,11 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                 sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind),
                 hand_exile_color=branch.get('hand_exile_color'),
                 hand_exile_generic_reduction=branch.get('hand_exile_generic_reduction', 0)))
+    from rules_engine.alternative_casts import spell_cast_view
+    from rules_engine.graveyard_permissions import spell_cast_prohibited
+    compiled = [option for option in compiled if not spell_cast_prohibited(
+        state, player_id, card.zone,
+        spell_types=tuple(sorted(set(effective_types(state, spell_cast_view(card, casting_method(option.id)))))))]
     return [priced(option, chosen_modes) for option in compiled] if spree_modes else compiled
 
 
@@ -579,6 +584,10 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     from rules_engine.attachments import is_aura
     from rules_engine.alternative_casts import spell_cast_view
     card = spell_cast_view(card, casting_method(option.id))
+    from rules_engine.graveyard_permissions import spell_cast_prohibited
+    if spell_cast_prohibited(state, player_id, card.zone,
+                             spell_types=tuple(sorted(set(effective_types(state, card))))):
+        return False
     if option.graveyard_permission_max_mana_value is not None:
         from rules_engine.mana import mana_value
         if mana_value(card.mana_cost or '', x_value=x_value) > option.graveyard_permission_max_mana_value:

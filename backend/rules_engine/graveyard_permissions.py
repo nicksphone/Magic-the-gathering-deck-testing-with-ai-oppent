@@ -12,6 +12,10 @@ def _clauses(card):
     return [line.strip().lower() for line in without_reminder_text(card.oracle_text or '').splitlines()]
 
 
+def _raw_clauses(text):
+    return [line.strip().lower() for line in (text or '').splitlines()]
+
+
 def _self_names(name):
     return '|'.join(re.escape(value) for value in dict.fromkeys(('this card', name.lower(), name.split(',')[0].lower())) if value)
 
@@ -199,6 +203,32 @@ def zone_cast_prohibited(state, player_id, zone):
     return False
 
 
+def spell_cast_prohibited(state, player_id, zone, *, spell_types):
+    """Require actual face/method characteristics before forming a cache key."""
+    from rules_engine.card_types import CARD_TYPES
+    if (type(spell_types) is not tuple or not spell_types
+            or any(type(kind) is not str or kind not in CARD_TYPES for kind in spell_types)):
+        return True
+    return _spell_cast_prohibited(state, player_id, zone, tuple(sorted(set(spell_types))))
+
+
+@scoped_query
+def _spell_cast_prohibited(state, player_id, zone, spell_types):
+    if zone_cast_prohibited(state, player_id, zone):
+        return True
+    if zone not in {Zone.GRAVEYARD, Zone.EXILE} or 'Creature' in spell_types:
+        return False
+    from rules_engine.continuous import printed_abilities_suppressed
+    for player in state.players.values():
+        for cid in player.battlefield:
+            source = state.cards[cid]
+            if (source.zone == Zone.BATTLEFIELD
+                    and "players can't cast noncreature spells from graveyards or exile." in _raw_clauses(source.oracle_text)
+                    and not printed_abilities_suppressed(state, cid)):
+                return True
+    return False
+
+
 @scoped_query
 def battlefield_entry_prohibited(state, card_id, selected_face_index=0):
     card = state.cards[card_id]
@@ -210,6 +240,11 @@ def battlefield_entry_prohibited(state, card_id, selected_face_index=0):
     for player in state.players.values():
         for cid in player.battlefield:
             source = state.cards[cid]
+            if (card.zone == Zone.GRAVEYARD and source.zone == Zone.BATTLEFIELD
+                    and types & {'Creature', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle', 'Land'}
+                    and "permanent cards in graveyards can't enter the battlefield." in _raw_clauses(source.oracle_text)
+                    and not printed_abilities_suppressed(state, cid)):
+                return True
             for clause in _clauses(source):
                 block = re.fullmatch(r'(creature|nonland permanent) cards in graveyards and libraries '
                                      r"(?:can't|cannot) enter the battlefield\.", clause)

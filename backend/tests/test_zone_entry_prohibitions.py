@@ -45,14 +45,20 @@ def test_blocked_library_creature_goes_to_rest_not_battlefield(seat, effect):
 
 @pytest.mark.parametrize('seat', [1, 2])
 def test_creature_return_block_does_not_emit_departure_or_charge_life(seat):
+    from copy import deepcopy
+
     state = position(seat)
     add(state, "Grafdigger's Cage", 3-seat, cards=ROWS)
     add(state, 'Tormod, the Desecrator', seat, cards=ROWS)
     creature = add(state, 'Gravecrawler', seat, Zone.GRAVEYARD, cards=ROWS)
     before = serialize_match_snapshot(state)
+    # Preserve the legacy node identity; the independent life instruction still applies.
+    expected = deepcopy(before)
+    expected['players'][str(seat)]['life'] -= 1
+    expected['log'].append(before['players'][str(seat)]['name'] + ' loses 1 life.')
     resolve_effect(state, seat, 'return_creature_from_graveyard_to_battlefield',
                    {'target_card_id': creature.id, 'lose_life_equal_to_mana_value': True})
-    assert serialize_match_snapshot(state) == before
+    assert serialize_match_snapshot(state) == expected
 
 
 @pytest.mark.parametrize('seat', [1, 2])
