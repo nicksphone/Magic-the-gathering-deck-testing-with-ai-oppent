@@ -10194,9 +10194,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1791589442.1048496,
-    "seen": 1791594512.3693032,
-    "ast_hash": "b49da6aeed983ee4fdd23b5b29ae0e09",
+    "mtime": 1791602416.6317315,
+    "seen": 1791602515.4520123,
+    "ast_hash": "8710279ff2345e4d0b4cdedb799485a4",
     "semantic_hash": ""
   },
   "ai-performance-plan.md": {
@@ -16080,9 +16080,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/run-backend-ci.sh": {
-    "mtime": 1791560914.5186858,
-    "seen": 1791561063.4542928,
-    "ast_hash": "d4059ce1dac9143bdc9dd42d3473b899",
+    "mtime": 1791602416.6317315,
+    "seen": 1791602515.4472306,
+    "ast_hash": "4fb021e8ed00a855faeb1690a62a4d99",
     "semantic_hash": ""
   },
   "backend/tests/ci_input_contracts.py": {
@@ -16329,6 +16329,30 @@
     "mtime": 1791593702.256076,
     "seen": 1791594512.3695855,
     "ast_hash": "51fdcd8160875a6d3be30592fb39b154",
+    "semantic_hash": ""
+  },
+  ".github/scripts/ci_backend_metadata.py": {
+    "mtime": 1791602416.6367314,
+    "seen": 1791602515.4472215,
+    "ast_hash": "fc7d902f7b51268a05f48a9b22e400c2",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_backend_ci_privacy.py": {
+    "mtime": 1791602416.6317315,
+    "seen": 1791602515.4472337,
+    "ast_hash": "0345f439f521bd64ba678ea94de9549d",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_backend_metadata.py": {
+    "mtime": 1791602416.6317315,
+    "seen": 1791602515.4472365,
+    "ast_hash": "91a50ed3955b75140c9c40d291d202dd",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_backend_metadata_symlink_ancestors.py": {
+    "mtime": 1791602416.6367314,
+    "seen": 1791602515.447239,
+    "ast_hash": "dc94578b581fffbeb060ccb54ee6dde5",
     "semantic_hash": ""
   }
 }
