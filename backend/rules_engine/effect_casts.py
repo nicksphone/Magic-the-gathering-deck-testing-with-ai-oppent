@@ -68,31 +68,47 @@ def admit_cast(state, controller, action, payload):
     state.log.append(f'{state.players[controller].name} casts {state.cards[target].name} from the graveyard without paying its mana cost.')
 
 
+def _cast_candidates(state, controller, payload):
+    if 'card_references' not in payload:
+        return ([payload['target_card_id']]
+                if _selected_trigger_target_is_current(state, controller, payload) else [])
+    from game_state.state import object_incarnation
+    from rules_engine.colors import card_color_names
+    from rules_engine.type_effects import effective_types
+    from rules_engine.zone_actions import is_departed_token
+    return [cid for cid, reference in payload['card_references'].items()
+            if cid in state.players[controller].graveyard and cid in state.cards
+            and state.cards[cid].zone == Zone.GRAVEYARD
+            and not is_departed_token(state.cards[cid])
+            and reference == [object_incarnation(state.cards[cid]), state.cards[cid].zone_change_sequence]
+            and {'Instant', 'Sorcery'} & set(effective_types(state, state.cards[cid]))
+            and (payload['color'] in card_color_names(state.cards[cid], state)
+                 or payload['color'] == 'colorless' and not card_color_names(state.cards[cid], state))]
+
+
 def cast_moves(state, player_id):
     pending = state.pending_mechanic_choice
     if pending['player_id'] != player_id:
         return []
     moves = [{'type': 'choose_mechanic', **pending,
               'option_labels': {'decline': 'Decline casting'}}]
-    if not _selected_trigger_target_is_current(state, player_id, pending['effect_payload']):
-        return moves
-    target = pending['effect_payload']['target_card_id']
-    if target not in state.players[player_id].graveyard:
-        return moves
     from rules_engine.cast_choice import build_cast_hints, has_available_targets_for_action
     from rules_engine.cast_choice import available_cast_options_and_hints
     from rules_engine.restrictions import can_cast_in_current_timing
     from rules_engine.move_generator import _cost_option_view
     from game_state.serializers import serialize_card_view
-    card = state.cards[target]
-    costs, hints = available_cast_options_and_hints(state, card, player_id, without_mana=True)
-    if '{x}' in (card.mana_cost or '').lower():
-        hints['x_value_max'] = 0
-    if costs and has_available_targets_for_action(hints) and can_cast_in_current_timing(state, card, player_id, during_resolution=True)[0]:
-        moves.append({'type': 'cast_spell', 'card_id': target, 'card_name': card.name,
-                      'from_graveyard': True, 'card_view': serialize_card_view(state, target),
-                      'mana_cost': '', 'cost_options': [_cost_option_view(option, state, player_id, target) for option in costs],
-                      'target_hints': hints})
+    for target in _cast_candidates(state, player_id, pending['effect_payload']):
+        if target not in state.players[player_id].graveyard:
+            continue
+        card = state.cards[target]
+        costs, hints = available_cast_options_and_hints(state, card, player_id, without_mana=True)
+        if '{x}' in (card.mana_cost or '').lower():
+            hints['x_value_max'] = 0
+        if costs and has_available_targets_for_action(hints) and can_cast_in_current_timing(state, card, player_id, during_resolution=True)[0]:
+            moves.append({'type': 'cast_spell', 'card_id': target, 'card_name': card.name,
+                          'from_graveyard': True, 'card_view': serialize_card_view(state, target),
+                          'mana_cost': '', 'cost_options': [_cost_option_view(option, state, player_id, target) for option in costs],
+                          'target_hints': hints})
     return moves
 
 
@@ -111,10 +127,25 @@ def finish_cast_choice(state, player_id, action):
                 'The selected graveyard object is no longer available')
         state.pending_mechanic_choice = None
         try:
-            admit_cast(state, player_id, action, pending['effect_payload'])
+            payload = pending['effect_payload']
+            if 'card_references' in payload:
+                require(action.get('card_id') in _cast_candidates(state, player_id, payload),
+                        'The selected graveyard object is no longer permitted')
+                payload = {**payload, 'target_card_id': action['card_id']}
+            admit_cast(state, player_id, action, payload)
         except (ValueError, KeyError):
             state.pending_mechanic_choice = pending
             raise
+        if 'card_references' in payload:
+            remaining = {**pending['effect_payload'], 'card_references': {
+                cid: reference for cid, reference in payload['card_references'].items()
+                if cid != action['card_id']
+            }}
+            if _cast_candidates(state, player_id, remaining):
+                state.pending_mechanic_choice = {**pending, 'effect_payload': remaining}
+                state.priority_player = player_id
+                state.passed_priority = set()
+                return True
     else:
         return False
     from rules_engine.stack_engine import resume_paused_resolution

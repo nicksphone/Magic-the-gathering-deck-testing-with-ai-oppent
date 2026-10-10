@@ -3116,11 +3116,14 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
     discard_selected(state, target_player, selected)
     discarded = len(selected)
     state.log.append(f"{player.name} discards {discarded}.")
-    resolve_discard_followup(state, controller, payload.get('followup_effect'), discarded)
+    resolve_discard_followup(state, controller, payload.get('followup_effect'), discarded, selected)
 
 
-def resolve_discard_followup(state, controller, followup, discarded):
+def resolve_discard_followup(state, controller, followup, discarded, discarded_ids=()):
     if not followup:
+        return
+    if ('matching_discard_ids' in followup
+            and not set(discarded_ids).intersection(followup['matching_discard_ids'])):
         return
     from effects.registry import resolve_effect
     data = dict(followup.get('payload') or {})

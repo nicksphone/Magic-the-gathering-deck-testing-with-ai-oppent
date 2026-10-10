@@ -958,7 +958,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                                                 '__trigger_resolution_text': clause['instruction'],
                                                 '__trigger_full_clause': clause['clause']}})
             elif event == "enters_battlefield" and _matches_enters_battlefield_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload, raw_entry_oracle=raw_oracle))
             elif event == "transformed" and payload.get("card_id") in state.cards:
                 for clause, _ in _self_entry_transform_clauses(card, oracle):
                     if payload['card_id'] == cid:
@@ -1745,6 +1745,8 @@ def _trigger_from_oracle(
     default_label: str,
     event: str,
     payload: dict[str, Any],
+    *,
+    raw_entry_oracle: str | None = None,
 ) -> dict[str, Any]:
     entry_oracle = oracle if event == 'enters_battlefield' else None
     source = state.cards.get(source_card_id)
@@ -1770,6 +1772,44 @@ def _trigger_from_oracle(
                 data.pop('target_card_id', None)
                 data.pop('new_controller', None)
             data['__trigger_full_clause'] = clause
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
+    raw_entry = raw_entry_oracle if raw_entry_oracle is not None else entry_oracle
+    if raw_entry is not None and source is not None:
+        self_entry_pattern = (
+            r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
+            r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+            + r') enters(?: the battlefield)?, (.+)')
+        entries = []
+        for line in raw_entry.splitlines():
+            raw_match = re.fullmatch(self_entry_pattern, line.strip(), re.I)
+            # Normalization discovers the family; only the complete raw body may execute.
+            candidate = re.fullmatch(self_entry_pattern,
+                re.sub(r'\s+', ' ', without_reminder_text(line)).strip(), re.I)
+            if candidate and re.match(r'each opponent loses\b', candidate[1], re.I):
+                entries.append((line.strip(), raw_match[1] if raw_match else None))
+        if entries:
+            if payload.get('card_id') != source_card_id:
+                return None
+            from rules_engine.spell_cost_clauses import COUNT
+            from rules_engine.oracle_effects import _parse_count_token
+            clause = '\n'.join(line for line, _ in entries)
+            drain = (re.fullmatch(
+                r'each opponent loses (?P<loss>' + COUNT + r'|twenty) life and you gain '
+                r'(?P<gain>' + COUNT + r'|twenty) life\.', entries[0][1], re.I)
+                if len(entries) == 1 and entries[0][1] is not None else None)
+            data = {'__trigger_full_clause': clause}
+            key = 'noop'
+            if drain:
+                key = 'effect_sequence'
+                data['effects'] = [
+                    {'effect_key': 'lose_life', 'payload': {
+                        'target_player': pid, 'amount': _parse_count_token(drain['loss'])}}
+                    for pid in sorted(state.players) if pid != controller
+                ] + [{'effect_key': 'gain_life', 'payload': {
+                    'target_player': controller, 'amount': _parse_count_token(drain['gain'])}}]
+            else:
+                data['__unsupported_trigger_instruction'] = clause
             return {'source_card_id': source_card_id, 'controller': controller,
                     'label': default_label, 'effect_key': key, 'payload': data}
     oracle = without_reminder_text(oracle)

@@ -3,6 +3,9 @@ import re
 
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.card_types import CREATURE_SUBTYPES, creature_subtype_candidates
+from rules_engine.affinity import SUBTYPES
+
+RESOURCE_SUBTYPES = {subtype: kind for kind, subtype in SUBTYPES.values()}
 
 NUMBERS = {'a': 1, 'an': 1, **dict(zip(
     ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'], range(1, 11)))}
@@ -62,7 +65,14 @@ def _component(text):
                 'sacrifice_kind': match[2] + '_' + match[3].removesuffix('s')}
     match = re.fullmatch(r'sacrifice ' + COUNT + r' ([a-z][a-z -]*)', text)
     if match:
-        subtypes = creature_subtype_candidates(match[2]) & CREATURE_SUBTYPES
+        candidates = creature_subtype_candidates(match[2])
+        resources = candidates & RESOURCE_SUBTYPES.keys()
+        if len(resources) == 1:
+            subtype = next(iter(resources))
+            value = match[1]
+            return {'sacrifice_creatures': int(value) if value.isdigit() else NUMBERS[value],
+                    'sacrifice_kind': 'subtype_' + RESOURCE_SUBTYPES[subtype].lower() + '_' + subtype}
+        subtypes = candidates & CREATURE_SUBTYPES
         if len(subtypes) == 1:
             value = match[1]
             return {'sacrifice_creatures': int(value) if value.isdigit() else NUMBERS[value],

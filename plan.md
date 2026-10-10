@@ -26,6 +26,15 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-10
 
+The latest reviewed complete-loyalty/typed-resource composition passes 1,995
+cases across 50 whole pure modules, 276.49s, retaining the full ordered 1,882-case
+prefix and adding 113 cases. Seven production files change; all old tests and
+browser assertions remain unchanged. All 1,940 declared source hashes remain
+stable during execution, and native I/O canaries, empty owners and empty threads
+pass. This closes the observed native Chandra/Food defects, not all three release
+gates. Complete current browser, strict HTTPS, protected-input CI and AI-strength
+results remain required. [Exact scope](docs/testing/complete-loyalty-food-current.md).
+
 The combined cost/Daretti, complete-modal, private discard and strict metadata
 candidate passes 1,882 cases in 47 whole pure modules, 263.49s, retaining all
 1,815 previous union identities plus 67 new cached-face-container checks. The

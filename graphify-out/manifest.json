@@ -384,9 +384,9 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1791611582.813172,
-    "seen": 1791611681.7770426,
-    "ast_hash": "d4cbf5617cf2025751880d7fb19f3f20",
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1835768,
+    "ast_hash": "856d5651dc2d13d48af4acdb6f94c7e1",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
@@ -606,9 +606,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/costs.py": {
-    "mtime": 1791476108.6066911,
-    "seen": 1791511166.1152182,
-    "ast_hash": "e503e4294b50ef45b6fbff65fe370024",
+    "mtime": 1791618366.2062085,
+    "seen": 1791619141.1836648,
+    "ast_hash": "453e0ecfdea5174c0f675eb084c98e56",
     "semantic_hash": ""
   },
   "backend/rules_engine/counter_placement.py": {
@@ -678,9 +678,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/effect_casts.py": {
-    "mtime": 1791343450.644871,
-    "seen": 1791511166.1152368,
-    "ast_hash": "0e1423d14cd5f93deceff54693783259",
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1836863,
+    "ast_hash": "1cf8ab3afeab7ddeca0bc516f9afa4d4",
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791538938.0305698,
-    "seen": 1791539037.8731327,
-    "ast_hash": "7c02989bbb9ec8a191961529b79f27d5",
+    "mtime": 1791618366.2062085,
+    "seen": 1791619141.1836934,
+    "ast_hash": "8175d9c909e649317e8b1ab9c3f88054",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -732,9 +732,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_actions.py": {
-    "mtime": 1791559987.4649246,
-    "seen": 1791561063.4549952,
-    "ast_hash": "a0f0416b3384cf1286b9de3e70bc268f",
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1837082,
+    "ast_hash": "d9b741003598bfcdd628134d29939a12",
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_effects.py": {
@@ -924,9 +924,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/spell_cost_clauses.py": {
-    "mtime": 1791429363.7920325,
-    "seen": 1791511166.115335,
-    "ast_hash": "c489d5f3cc6a3b7d0756c068a77e0f29",
+    "mtime": 1791618366.2062085,
+    "seen": 1791619141.1838038,
+    "ast_hash": "6c510fbd4cc25d9c4cd36e3c8fc00d4c",
     "semantic_hash": ""
   },
   "backend/rules_engine/spell_cost_witness.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791611582.9651697,
-    "seen": 1791611681.7819479,
-    "ast_hash": "07506f9e6d9699afef4841dcd1be34c1",
+    "mtime": 1791618917.5464401,
+    "seen": 1791619141.1883216,
+    "ast_hash": "5a89b71a2618cdabfe2df0fef3f54927",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -15372,9 +15372,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/loyalty_instructions.py": {
-    "mtime": 1791611582.825172,
-    "seen": 1791611681.7771983,
-    "ast_hash": "9cf8c7796cb44ff5b81afd254f9b958f",
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1837354,
+    "ast_hash": "3bfab56ac960ab16612f0a43e66fc241",
     "semantic_hash": ""
   },
   "backend/rules_engine/printed_body.py": {
@@ -16464,9 +16464,69 @@
     "semantic_hash": ""
   },
   "docs/testing/current-modal-daretti-release-candidate.md": {
-    "mtime": 1791611582.9391701,
-    "seen": 1791611681.7812579,
-    "ast_hash": "6eda98a24261ca7c0c8c4b4b5647c48a",
+    "mtime": 1791618917.5194407,
+    "seen": 1791619141.1876483,
+    "ast_hash": "8553e893a67eee991619e624ca78ee5c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/chandra_complete/chandra-ablaze.raw.json": {
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.18419,
+    "ast_hash": "5bef7f218a311420e9ca34ed40eef657",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/chandra_complete/dragon-fodder.raw.json": {
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.184192,
+    "ast_hash": "6dccf7cc59d2d8c6021e316145a35eae",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/chandra_complete/lightning-bolt.raw.json": {
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1841938,
+    "ast_hash": "55e9cb08bf2bf58e7841e985c0963350",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/chandra_complete/stifle.raw.json": {
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1841958,
+    "ast_hash": "e34937db8897852e8b7b1abde9688074",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/chandra_complete/thalia.raw.json": {
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1841974,
+    "ast_hash": "657f7382149b27ce5e975c0a6d4adc1c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_chandra_complete_native_surface.py": {
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1855729,
+    "ast_hash": "6d17179ca32287937f346dd11b0077b0",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_chandra_native_copy_targets.py": {
+    "mtime": 1791618366.1992085,
+    "seen": 1791619141.1855743,
+    "ast_hash": "088928c29a92ce5d870f85bb54f61e2c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_typed_resource_sacrifice_costs.py": {
+    "mtime": 1791618366.2062085,
+    "seen": 1791619141.1867259,
+    "ast_hash": "ad3b05096db5271edd67c3fe4f0ad660",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/chandra_complete/README.md": {
+    "mtime": 1791618917.5184405,
+    "seen": 1791619141.1872983,
+    "ast_hash": "535523c10f87e4318f10a5a24868bd3f",
+    "semantic_hash": ""
+  },
+  "docs/testing/complete-loyalty-food-current.md": {
+    "mtime": 1791618917.4534414,
+    "seen": 1791619141.187584,
+    "ast_hash": "5699d39e50b2147ea3d907473397f890",
     "semantic_hash": ""
   }
 }

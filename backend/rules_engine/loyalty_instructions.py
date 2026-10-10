@@ -62,6 +62,21 @@ def compile_extended(text, name):
     from rules_engine.continuous import _attached_keywords
     if any(c in text for c in '()\n;'):
         return None
+    from rules_engine.linked_discard import simultaneous_discard_draw_effect
+    shared_draw = simultaneous_discard_draw_effect(text)
+    if shared_draw is not None:
+        return [node('shared_discard_draw', **shared_draw)]
+    conditional = re.fullmatch(r'Discard a card\. If a (white|blue|black|red|green|colorless) '
+        r'card is discarded this way, (.+?) deals (\d+) damage to any target\.', text, re.I)
+    # Printed planeswalker text can use the object's shortened first name.
+    if conditional and (source_matches(conditional[2], name)
+                        or name and conditional[2].casefold() == name.split()[0].casefold()):
+        return [node('conditional_discard_damage', color=conditional[1].lower(),
+                     amount=int(conditional[3]))]
+    graveyard_cast = re.fullmatch(r'Cast any number of (white|blue|black|red|green|colorless) '
+        r'instant and/or sorcery cards from your graveyard without paying their mana costs\.', text, re.I)
+    if graveyard_cast:
+        return [node('graveyard_cast_many', color=graveyard_cast[1].lower())]
     from rules_engine.linked_discard import linked_discard_effect
     discard = linked_discard_effect(text)
     if discard and discard.get('up_to') and discard.get('followup_effect', {}).get('count_field') == 'amount':
@@ -152,6 +167,7 @@ def announcement_text(text, name):
                   'loyalty_source_token', 'loyalty_scaled_buff', 'loyalty_destroy_threshold', 'loyalty_mana'}
     targetless.add('loyalty_named_artifact_token')
     targetless.add('loyalty_discard')
+    targetless.update({'loyalty_shared_discard_draw', 'loyalty_graveyard_cast_many'})
     if steps and all(step['effect_key'] == 'loyalty_mana' or
                      (step['effect_key'] == 'loyalty_source_exile' and step['data']['selection'] != 'target')
                      for step in steps):
@@ -192,14 +208,19 @@ def compile_proxy(state, card, controller, targets):
                 payload['target_reference'] = card_reference(state, payload['target_card_id'])
             if key == 'loyalty_graveyard_exile_copy':
                 payload['x_value'] = targets.get('x_value', 0)
+            if key == 'loyalty_conditional_discard_damage' and targets.get('target_player'):
+                payload['target_player'] = targets['target_player']
         else:
             proxy = copy(card)
             proxy.loyalty_program = False
             proxy.oracle_text = step['instruction'] + '.'
             key, payload = infer_effect_from_oracle(state, proxy, controller, targets)
         effects.append({'effect_key': key, 'payload': payload})
+    if len(effects) == 1 and effects[0]['effect_key'] == 'loyalty_conditional_discard_damage':
+        return effects[0]['effect_key'], {**effects[0]['payload'], '__ability_target_text': card.oracle_text}
     if any(step['effect_key'] in {'loyalty_tap_freeze', 'loyalty_graveyard_exile_copy',
-                                  'loyalty_named_artifact_token', 'loyalty_sacrifice_return'} for step in steps):
+                                  'loyalty_named_artifact_token', 'loyalty_sacrifice_return',
+                                  'loyalty_conditional_discard_damage'} for step in steps):
         # The native outer receipt validates singular and list slots, including copies.
         return 'effect_sequence', {'effects': effects, '__ability_target_text': card.oracle_text,
                                    'x_value': targets.get('x_value', 0)}
@@ -216,6 +237,41 @@ def resolve(state, controller, payload):
     target = state.cards.get(payload.get('target_card_id'))
     if kind == 'discard':
         handlers.discard_cards(state, controller, {**payload, 'self_discard': True})
+    elif kind == 'shared_discard_draw':
+        handlers.each_player_discard(state, controller, payload)
+    elif kind == 'conditional_discard_damage':
+        from rules_engine.colors import card_color_names
+        matching = [cid for cid in state.players[controller].hand
+                    if (payload['color'] in card_color_names(state.cards[cid], state)
+                        or payload['color'] == 'colorless'
+                        and not card_color_names(state.cards[cid], state))]
+        handlers.discard_cards(state, controller, {
+            'amount': 1, 'self_discard': True, 'followup_effect': {
+                'effect_key': 'deal_damage', 'payload': dict(payload),
+                'matching_discard_ids': matching,
+            },
+        })
+    elif kind == 'graveyard_cast_many':
+        from rules_engine.colors import card_color_names
+        from rules_engine.zone_actions import is_departed_token
+        from rules_engine.type_effects import effective_types
+        references = {
+            cid: [object_incarnation(state.cards[cid]), state.cards[cid].zone_change_sequence]
+            for cid in state.players[controller].graveyard
+            if not is_departed_token(state.cards[cid])
+            and {'Instant', 'Sorcery'} & set(effective_types(state, state.cards[cid]))
+            and (payload['color'] in card_color_names(state.cards[cid], state)
+                 or payload['color'] == 'colorless'
+                 and not card_color_names(state.cards[cid], state))
+        }
+        if references:
+            state.pending_mechanic_choice = {
+                'kind': 'effect_cast', 'player_id': controller, 'options': ['decline'], 'count': 1,
+                'label': 'Cast permitted graveyard spells using their card controls, or finish',
+                'effect_payload': {'card_references': references, 'color': payload['color']},
+            }
+            state.priority_player = controller
+            state.passed_priority = set()
     elif kind == 'sacrifice_return':
         sacrifice_return(state, controller, payload)
     elif kind == 'delay_return':

@@ -757,6 +757,14 @@ def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "crea
             continue
         if kind.startswith('subtype_'):
             subtype = kind.removeprefix('subtype_')
+            resource_type, separator, resource_subtype = subtype.partition('_')
+            if separator:
+                from rules_engine.spell_cost_clauses import RESOURCE_SUBTYPES
+                if (RESOURCE_SUBTYPES.get(resource_subtype) == resource_type.title()
+                        and resource_type.title() in types
+                        and resource_subtype in creature_types(card, state)):
+                    eligible.append(cid)
+                continue
             if types.intersection({'Creature', 'Kindred'}) and (
                     subtype in creature_types(card, state)
                     or 'changeling' in {str(k).lower() for k in card.keywords or []}):

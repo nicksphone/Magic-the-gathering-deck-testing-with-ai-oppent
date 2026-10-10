@@ -460,7 +460,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             return False
         state.log.append(f"{state.players[player_id].name} discards {len(ids)}.")
         from effects.handlers import resolve_discard_followup
-        resolve_discard_followup(state, pending.get('effect_controller', player_id), pending.get('followup_effect'), len(ids))
+        resolve_discard_followup(state, pending.get('effect_controller', player_id), pending.get('followup_effect'), len(ids), ids)
         resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] == "draw":

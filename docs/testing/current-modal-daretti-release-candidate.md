@@ -50,6 +50,17 @@ After the browser fixture correction below, the same 47 whole modules pass all
 source hashes remain unchanged, the exact collected identities are retained,
 and the original I/O canaries and empty owner/thread checks pass.
 
+## Complete Loyalty And Typed Resources
+
+The subsequent reviewed composition adds full-body loyalty instructions, native
+copy target preservation, typed Food costs and complete raw self-entry drain.
+All 1,882 earlier cases remain unchanged in the 50-whole-module declaration;
+three new modules add 113 cases. The actual combined result is 1,995 passes,
+two warnings, 276.49 seconds, exit zero, with all 1,940 source hashes unchanged
+and no unexpected I/O attempts, owners or residual threads. Actual current
+browser, HTTPS, protected-input CI and AI-strength acceptance remain separate.
+See [exact scope and histories](complete-loyalty-food-current.md).
+
 ## Preserved Test Changes
 
 Two existing-test corrections remain explicit and separate from production:
@@ -105,6 +116,11 @@ published `a24d3329` CI run terminates with backend and browser failures, and no
 backend metadata artifact is available. Its backend failure cause is not yet
 established from safe provider metadata; raw protected backend logs are not
 downloaded. Historical or scoped passes do not substitute for these gates.
+
+The subsequent actual full browser run and browser CI on `82cd5e9` both stop at
+the disabled Chandra minus-two control, not at the repaired private-discard
+fixture. Complete native instruction admission now passes in the composition
+above, but this is not a complete current browser or later-stage qualification.
 
 The original requirements in `plan.md` remain unchanged. Arbitrary-card rules,
 all 13 required AI styles, independently grounded expert-quality decisions,
