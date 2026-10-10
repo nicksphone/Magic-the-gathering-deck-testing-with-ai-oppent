@@ -1,5 +1,25 @@
 # Release Acceptance Status
 
+Current native Suspend update: 2026-10-10. The original whole opt-in HTTP module
+passes all ten cases in 52.25s, including both seats and two real cold restarts.
+Its scoped source is published `58ab2881` plus the two-line test-fixture reload
+correction; original assertions and clocks remain unchanged. Source/dependency
+equality and actual production-first closure are verified. Seven new pure helper
+regressions pass separately. This closes that bounded native cohort, not full
+backend CI, strategic AI or release Gates 1--3. See
+`suspend-native-http-current-acceptance.md`.
+
+Current verified browser update: 2026-10-10. Published `58ab2881` passes its
+original whole zero-argument remote browser job and frontend CI. All 45 ordered
+stage banners and 67 invocations complete, with 497 passed checkpoints, not
+497 pytest tests. Both-seat cost payments, recovery/restart, three natural BO3
+modes and the original later interactive/Officer/Cathar programs pass. The
+local run interrupted by the host reboot has no terminal certificate and is
+not relabeled as this remote result. Tamiyo P/G is player-one-only; human BO3
+uses 60-Island opponents; interactive APIs are substituted. Protected backend
+CI, other unproved native acceptance, unscored AI quality and original release
+Gates 1--3 remain separate. See `browser-58ab-current-acceptance.md`.
+
 Current browser-harness follow-up: 2026-10-10, over `9ce7e1fc`. Its actual remote
 browser job stops before seat two's Bone Shards cast with a stale seat-one view.
 The independently reviewed correction reuses existing v2 fixture identity,

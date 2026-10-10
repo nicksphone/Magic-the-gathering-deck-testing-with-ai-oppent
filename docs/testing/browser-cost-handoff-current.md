@@ -44,11 +44,15 @@ record none. This is not an OS-wide sandbox or a zero-write claim.
 
 ## Remaining Acceptance
 
-Actual whole-browser execution must still run all original programs, both
-seats, payment branches, recovery, natural BO3 and later interactive/Cathar
-checks. The VM and frontend passes do not certify native gameplay or reconstruct
-the remote race. Protected backend CI, opt-in child HTTP cases, measured AI
-quality and original release Gates 1--3 remain separate requirements.
+The original whole remote browser program subsequently passes on `58ab2881`,
+including both seats' cost payments, recovery, natural BO3 and later
+interactive/Cathar programs. See `browser-58ab-current-acceptance.md` for the
+497-checkpoint result and exact coverage limits. This native result is separate
+from the VM/frontend checks and does not reconstruct the earlier remote race.
+The separate original ten-case Suspend HTTP cohort now passes with verified
+cold-restart/closure; see `suspend-native-http-current-acceptance.md`.
+Protected backend CI, other unproved native acceptance, measured AI quality and original
+release Gates 1--3 remain separate requirements.
 
 Reviewed patch: `087269a1ab7614fc9530101c6fe2dd6b34b13377cc94b67086ea501a13e9685f`.
 Cost program: `8c7d2d382b73dc6e1061f4d066957b7eae747e458c91ae7093baa3ccaaa50470`.

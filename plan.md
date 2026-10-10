@@ -26,7 +26,26 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-10
 
-Published `38e43cd5` passes the remote frontend job. Its browser run passes
+Published `58ab2881` now passes the original whole zero-argument remote browser
+job and frontend CI. All 45 ordered stage banners and 67 invocations complete,
+with 497 passed checkpoints, not pytest tests. Both-seat cost branches,
+recovery/restart, three natural BO3 modes and the original later
+interactive/Officer/Cathar programs pass. Tamiyo P/G remains player-one-only,
+human BO3 opponents use 60 Islands, and interactive API responses are
+substituted. The host-reboot-interrupted local run has no terminal certificate
+and is not relabeled as this remote result. Protected backend CI, other unproved opt-in native
+acceptance, measured AI quality and all unproved original requirements remain
+open. [Exact browser scope](docs/testing/browser-58ab-current-acceptance.md).
+
+The original ten-case native Suspend HTTP module separately passes in 52.25s,
+with both seats and two real cold restarts, unchanged assertions/clocks and
+verified production-first closure. Its scoped source is `58ab2881` plus the
+two-line fixture saved-match reload; seven new pure helper regressions also
+pass. This closes that native cohort, not the full backend suite, strategic AI
+or any unproved release requirement.
+[Exact native scope](docs/testing/suspend-native-http-current-acceptance.md).
+
+Earlier published `38e43cd5` passes the remote frontend job. Its browser run passes
 recovery, sideboard swapping, copied Helix/Drain controls and natural AI,
 human-vs-AI and human-vs-human BO3, then times out waiting for
 `window.interactiveFixture` in the independent interactive-preflight program.
@@ -116,6 +135,18 @@ independently measured seasoned-player strength remain unfinished. A scoped
 playtesting milestone does not redefine the final objective.
 
 ## Latest Verified Milestones
+
+2026-10-10 original native Suspend HTTP qualification: ten passes in 52.25s,
+zero failures/errors/skips, three actual server processes and two cold restarts.
+Source/dependencies and actual owned closure verify before fixture cleanup;
+seven independent pure reload regressions pass. See
+`docs/testing/suspend-native-http-current-acceptance.md` for scope and histories.
+
+2026-10-10 remote whole browser qualification on `58ab2881`: original zero-arg
+program, all 45 stage banners/67 invocations, 497 passed checkpoints and
+successful job `114300811126`. This closes that previously failing original
+browser cohort, not arbitrary-card, strategic-AI or overall release acceptance.
+See `docs/testing/browser-58ab-current-acceptance.md` for explicit coverage limits.
 
 2026-10-10 browser-harness follow-up over `9ce7e1fc`: the actual remote browser
 job stops before seat two's discard-payment cast with a stale prior fixture.
