@@ -15,6 +15,7 @@ from urllib.request import Request, urlopen
 from uuid import uuid4
 
 import pytest
+from tests.closed_http_runtime import archive_closed_http_runtime
 
 
 class Server:
@@ -82,7 +83,7 @@ class Server:
 
 
 @pytest.fixture(scope='module')
-def server():
+def server(tmp_path_factory):
     runtime = Path(tempfile.mkdtemp(prefix='mtg-private-choice-http-')).resolve()
     assert not subprocess.check_output(['stat', '-f', '-c', '%T', str(runtime)], text=True).strip().startswith('nfs')
     source = Path(__file__).resolve().parents[1]
@@ -92,14 +93,19 @@ def server():
         sock.bind(('127.0.0.1', 0))
         port = sock.getsockname()[1]
     owned = Server(runtime, port)
-    owned.start()
     try:
+        owned.start()
         yield owned
     finally:
         owned.stop()
-        (runtime / 'process-receipt.json').write_text(json.dumps({'port': port, 'pids': owned.starts, 'stopped': owned.proc.poll() is not None}))
+        (runtime / 'process-receipt.json').write_text(json.dumps({'port': port, 'pids': owned.starts, 'stopped': owned.proc is not None and owned.proc.poll() is not None}))
         # Caller archives/verifies this local evidence before cleanup, even REDs.
         print(f'OWN_HTTP_RUNTIME={runtime}')
+        if owned.proc is not None:
+            evidence = (Path(os.environ['MTG_CI_EVIDENCE']) if 'MTG_CI_EVIDENCE' in os.environ
+                        else tmp_path_factory.getbasetemp() / 'closed-http-evidence')
+            evidence.mkdir(parents=True, exist_ok=True)
+            archive_closed_http_runtime(owned, runtime=runtime, data=None, evidence_root=evidence)
 
 
 def stable(row):

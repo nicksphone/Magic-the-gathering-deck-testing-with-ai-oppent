@@ -323,7 +323,25 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
     legal_distribution = None
     legal_effects = None
-    if targeted_frame and item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
+    legal_return_targets = None
+    if targeted_frame and item.effect_key == 'exile_return_batch':
+        from rules_engine.oracle_effects import inspect_target_hints
+        from rules_engine.targeting import validate_cast_targets, validate_protection_targets, validate_hexproof_shroud_targets
+        hints = inspect_target_hints(state, target_source, item.controller, announced, source_kind=stack_object_kind(state, item))
+        hints.pop('required_distinct_target_count', None)
+        legal_return_targets = []
+        for index, cid in enumerate(announced.get('target_card_ids') or []):
+            selected = {'target_card_id': cid}
+            if (announced_target_reference_matches(state, references, ('target_card_ids', index), cid)
+                    and validate_cast_targets(hints, selected)[0]
+                    and validate_protection_targets(state, card, selected, source_lki=source_lki)[0]
+                    and validate_hexproof_shroud_targets(state, item.controller, selected, card,
+                        source_lki=source_lki, source_kind=stack_object_kind(state, item))[0]):
+                legal_return_targets.append(cid)
+        if not legal_return_targets:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
+    elif targeted_frame and item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
         legal_distribution = _legal_divided_damage_targets(state, item, card, announced, hint_card=target_source)
         if not legal_distribution:
             state.stack.pop()
@@ -503,6 +521,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             return False
     state.stack.pop()
     payload = dict(item.payload or {})
+    if legal_return_targets is not None:
+        payload['target_card_ids'] = legal_return_targets
     if item.effect_key == 'linked_landfall_damage':
         payload['legal_recipients'] = legal_recipients
     if legal_effects is not None:

@@ -1,13 +1,23 @@
 # Release Acceptance Status
 
-Latest published `a3694abc` passes frontend and the whole browser job in
-run38130914210. Its backend job fails with a runner `No space left on device`
-annotation and no uploaded result artifact; no backend count or pass is
-inferred. The next one-option scratch-retention correction passes two new real
-pytest regressions and the complete128-check CI-script suite. It does not
-change gameplay assertions, test selection or private-input handling. Hosted
-qualification and all original release gates remain open; see
-`ci-backend-scratch-current.md` for the exact scope and retention limitations.
+Published `6df6811b` passes frontend and the whole browser job in run38171288236.
+Its protected backend job remains active at this checkpoint; no backend pass
+or failure count is inferred. The earlier `a3694abc` backend fails with a runner
+disk-exhaustion annotation and no uploaded result artifact. The one-option
+scratch-retention correction passes the complete128-check CI-script suite.
+See `ci-backend-scratch-current.md` for its bounded retention limitations.
+
+The next reviewed two-target blink/copy/entry-counter/AI composition passes all
+363 cases in 14 whole modules, 81.29 seconds, exit 0. It includes true paid API
+actions, both-seat public AI materialization, partial/all-illegal target resolution,
+copy identity, private entry choices, incoming land-type effects and post-batch
+Saga collection. See `ghostly-flicker-batch-current.md`.
+Separate test-only HTTP runtime archiving passes 21 independent parent pure
+checks. Its real worker whole78 retains eight preexisting strict legacy restart
+failures; unchanged original16 independently reproduces those same eight.
+See `terminal-http-fixture-lifecycle-current.md`. These component counts are not
+a summed backend result. Hosted qualification, expert-AI quality and all original
+release gates remain open; protected input and assertion policy are unchanged.
 
 Current infrastructure follow-up: published `1f08a6ca` passes hosted capacity
 admission, metadata-reporter checks and frontend CI in run `38128147774`.

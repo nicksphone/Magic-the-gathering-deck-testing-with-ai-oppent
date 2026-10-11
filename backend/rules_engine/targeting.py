@@ -328,8 +328,9 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     if required is not None:
         ids = action_targets.get('target_card_ids') or []
         if (len(ids) != required or len(set(ids)) != required
-                or action_targets.get('target_card_id') is not None):
-            return False, f'Exactly {required} different creature targets are required.'
+                or any(action_targets.get(key) is not None for key in (
+                    'target_card_id', 'target_player', 'target_stack_id', 'target_distribution'))):
+            return False, f'Exactly {required} different card targets are required.'
     if up_to > 0:
         target_ids = action_targets.get("target_card_ids") or []
         if len(target_ids) > up_to:

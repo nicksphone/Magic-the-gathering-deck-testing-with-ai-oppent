@@ -86,7 +86,7 @@ def counter_placement_forbidden(state, kind, *, target_player=None, target_card_
     return False
 
 
-def put_counters(state, kind, amount, *, target_player=None, target_card_id=None, placement_checked=False, emit_events=True):
+def put_counters(state, kind, amount, *, target_player=None, target_card_id=None, placement_checked=False, emit_events=True, _event_receipts=None):
     """Return actual counters placed; internal damage/buff markers are not counters.
 
     Scalar replacements and replacement ordering are supplied by callers.
@@ -122,8 +122,12 @@ def put_counters(state, kind, amount, *, target_player=None, target_card_id=None
         before = int(target.counters.get(key, 0))
         target.counters[key] = before + amount
         if key == '__lore' and emit_events:
-            from rules_engine.events import emit_event
-            emit_event(state, 'saga_lore_added', {
+            packet = {
                 'card_id': target.id, 'old_lore': before, 'new_lore': before + amount,
-            })
+            }
+            if _event_receipts is None:
+                from rules_engine.events import emit_event
+                emit_event(state, 'saga_lore_added', packet)
+            else:
+                _event_receipts.append(packet)
     return amount

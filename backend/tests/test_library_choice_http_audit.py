@@ -13,6 +13,7 @@ from urllib.parse import urlencode
 from uuid import uuid4
 
 import pytest
+from tests.closed_http_runtime import archive_closed_http_runtime
 
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from tests.test_private_choice_http_restart import stable
@@ -41,7 +42,7 @@ class LibraryServer(Server):
 
 
 @pytest.fixture(scope='module')
-def server():
+def server(tmp_path_factory):
     runtime = Path(tempfile.mkdtemp(prefix='mtg-library-choice-http-')).resolve()
     assert not subprocess.check_output(['stat', '-f', '-c', '%T', str(runtime)], text=True).strip().startswith('nfs')
     source = Path(__file__).resolve().parents[1]
@@ -59,6 +60,10 @@ def server():
         (runtime / 'process-receipt.json').write_text(json.dumps({'port': port, 'pids': owned.starts,
                                                                'stopped': owned.proc.poll() is not None}))
         print(f'OWN_HTTP_RUNTIME={runtime}')
+        evidence = (Path(os.environ['MTG_CI_EVIDENCE']) if 'MTG_CI_EVIDENCE' in os.environ
+                    else tmp_path_factory.getbasetemp() / 'closed-http-evidence')
+        evidence.mkdir(parents=True, exist_ok=True)
+        archive_closed_http_runtime(owned, runtime=runtime, data=owned.data, evidence_root=evidence)
 
 
 def fixture(server, name, seat, order):

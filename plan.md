@@ -931,3 +931,17 @@ and clocks are preserved; coverage completeness is not gameplay completion.
 See [scope and evidence](docs/testing/officer-origin-and-passive-browser-current.md).
 All original release gates and the full-rules/arbitrary-deck/expert-AI objective
 remain intact.
+
+## 2026-10-11 Two-Target Blink And Terminal Fixture Evidence
+
+The reviewed Ghostly-compatible batch retains real target/copy object identity,
+commits simultaneous entries and counters before collectors, and materializes
+the advertised two-permanent AI choice. Its current 14-whole-module component
+passes 363 cases in 81.29 seconds; all original neighbor tests remain unchanged.
+Test-only terminal HTTP fixture archiving passes a separate parent 21-case pure
+gate. Eight old strict legacy restart-hash failures are retained and independently
+reproduced on their unchanged preimage, not hidden by cleanup or counted as green.
+See the current blink and terminal-fixture evidence documents in `docs/testing`.
+Protected CI input, full backend qualification and all original release gates
+remain required. These are bounded correctness/retention changes, not a measured
+expert-AI or arbitrary-card support certificate.

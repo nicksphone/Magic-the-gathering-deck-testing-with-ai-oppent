@@ -406,7 +406,7 @@ def resume_spell_entry(state, controller, payload):
         finish_stack_resolution(state, StackItem(**data['entry_item']), data['entry_payload'])
 
 
-def prepare_counter_entries(state, controller, cards, effect_key, payload, *, entry_payload=None, controllers=None, projections=None):
+def prepare_counter_entries(state, controller, cards, effect_key, payload, *, entry_payload=None, controllers=None, projections=None, entry_payloads=None):
     """Reenter the route with a ready packet; True means caller must stop here."""
     if '__entry_counters_by_id' in payload:
         return False
@@ -422,6 +422,7 @@ def prepare_counter_entries(state, controller, cards, effect_key, payload, *, en
         'entry_target_index': 0, 'entry_results': {},
         'entry_effect': effect_key, 'entry_completion_payload': deepcopy(payload),
         'entry_options': options, 'entry_completion_controller': controller,
+        **({'entry_options_by_id': deepcopy(entry_payloads)} if entry_payloads is not None else {}),
     })
     return True
 
@@ -442,7 +443,7 @@ def resume_entry_batch(state, controller, payload):
             if 'projection' in target:
                 raw = target['projection']
                 card = CardInstance(**{**raw, 'zone': Zone(raw['zone'])})
-        data.setdefault('entry_payload', deepcopy(data['entry_options']))
+        data.setdefault('entry_payload', deepcopy(data.get('entry_options_by_id', {}).get(card.id, data['entry_options'])))
         data.setdefault('entry_prepared', {})
         data.setdefault('entry_index', 0)
         if not prepare_entry_counters(state, target.get('controller', controller), data, card, 'permanent_entry_counters'):
@@ -467,13 +468,14 @@ def resume_entry_batch(state, controller, payload):
         flush_staged_triggers(state)
 
 
-def commit_entry_counters(state, card, payload):
+def commit_entry_counters(state, card, payload, *, _event_receipts=None):
     from rules_engine.counter_placement import put_counters
     if 'Planeswalker' in effective_types(state, card):
         card.printed_characteristics.setdefault('loyalty', card.loyalty)
         card.loyalty = 0
     for kind, amount in payload['__entry_counters_by_id'].get(card.id, {}).items():
-        put_counters(state, kind, amount, target_card_id=card.id, placement_checked=True)
+        put_counters(state, kind, amount, target_card_id=card.id, placement_checked=True,
+                     _event_receipts=_event_receipts)
     from rules_engine.source_linked_exile import commit_entry
     commit_entry(state, card)
 

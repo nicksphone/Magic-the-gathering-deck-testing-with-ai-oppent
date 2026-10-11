@@ -3627,15 +3627,26 @@ class AIAgent:
             targets.pop('target_card_id', None)
             targets['target_card_ids'] = assignments
         if required and not targets.get('target_card_ids'):
-            beneficiary = player_id if hints.get('ordered_counter_type', '').startswith('+') else opponent
-            candidates = [target for target in creature_targets if state.cards[target['id']].controller == beneficiary]
-            if len({target['id'] for target in candidates}) < required:
-                out['_invalid_ai_choice'] = True
-                return out
-            candidates.sort(key=lambda target: (self._creature_threat_score(state, target['id'], player_id), target['id']), reverse=True)
-            assignments = [None] * required
-            for index, target in zip(sorted(range(required), key=lambda index: hints['ordered_counter_amounts'][index], reverse=True), candidates):
-                assignments[index] = target['id']
+            if hints.get('ordered_counter_amounts') is not None:
+                beneficiary = player_id if hints.get('ordered_counter_type', '').startswith('+') else opponent
+                candidates = [target for target in creature_targets if state.cards[target['id']].controller == beneficiary]
+                if len({target['id'] for target in candidates}) < required:
+                    out['_invalid_ai_choice'] = True
+                    return out
+                candidates.sort(key=lambda target: (self._creature_threat_score(state, target['id'], player_id), target['id']), reverse=True)
+                assignments = [None] * required
+                for index, target in zip(sorted(range(required), key=lambda index: hints['ordered_counter_amounts'][index], reverse=True), candidates):
+                    assignments[index] = target['id']
+            else:
+                candidates = {target['id'] for target in hints.get('permanent_targets', [])}
+                if len(candidates) < required:
+                    out['_invalid_ai_choice'] = True
+                    return out
+                assignments = sorted(candidates, key=lambda cid: (
+                    self._creature_threat_score(state, cid, player_id)
+                    if 'Creature' in effective_types(state, state.cards[cid])
+                    else self._noncreature_permanent_threat_score(state, cid, player_id), cid),
+                    reverse=True)[:required]
             targets.pop('target_card_id', None)
             targets['target_card_ids'] = assignments
         if creature_targets and not targets.get("target_card_id") and not (targets.get("target_card_ids") or []):

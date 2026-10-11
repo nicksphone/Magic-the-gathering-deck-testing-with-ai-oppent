@@ -11,6 +11,7 @@ import time
 from urllib.parse import quote
 
 import pytest
+from tests.closed_http_runtime import archive_closed_http_runtime
 from tests.test_private_choice_http_restart import stable
 from tests.cold_restart_http_support import Server
 from tests.test_activated_handland_instruction_audit import FAMILIES
@@ -39,7 +40,7 @@ class ActivatedServer(Server):
 
 
 @pytest.fixture(scope='module')
-def server():
+def server(tmp_path_factory):
     parent = Path(os.environ['MTG_LAND_CHOICE_STAGE_EVIDENCE']).resolve()
     runtime = Path(tempfile.mkdtemp(prefix='http-local-', dir=parent))
     assert not subprocess.check_output(['stat', '-f', '-c', '%T', str(runtime)], text=True).strip().startswith('nfs')
@@ -57,6 +58,10 @@ def server():
         owned.stop()
         (runtime / 'process-receipt.json').write_text(json.dumps(
             {'port': port, 'pids': owned.starts, 'stopped': owned.proc.poll() is not None}))
+        evidence = (Path(os.environ['MTG_CI_EVIDENCE']) if 'MTG_CI_EVIDENCE' in os.environ
+                    else tmp_path_factory.getbasetemp() / 'closed-http-evidence')
+        evidence.mkdir(parents=True, exist_ok=True)
+        archive_closed_http_runtime(owned, runtime=runtime, data=owned.data, evidence_root=evidence)
 
 
 def position(server, family, seat, sick=False):

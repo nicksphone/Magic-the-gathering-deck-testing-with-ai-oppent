@@ -970,7 +970,7 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item, *
         from rules_engine.linked_targets import offer_linked_copy_target_choice
         offer_linked_copy_target_choice(state, copied_item)
         return
-    if is_spell and (copied_payload.get('__ordered_target_instances')
+    if is_spell and (copied_item.effect_key == 'exile_return_batch' or copied_payload.get('__ordered_target_instances')
                      or copied_payload.get('__ordered_distinct_targets')):
         from rules_engine.ordered_targets import offer_ordered_copy_target_choice
         offer_ordered_copy_target_choice(state, copied_item)
@@ -1393,6 +1393,93 @@ def exile_return_immediate(state: MatchState, controller: int, payload: dict) ->
     commit_entry_counters(state, card, data)
     state.log.append(f'{card.name} returns to the battlefield under {state.players[recipient].name}\'s control.')
     emit_event(state, 'enters_battlefield', {'card_id': target, 'controller': recipient})
+
+
+def exile_return_batch(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.events import flush_staged_triggers
+    from rules_engine.oracle_effects import _parse_count_token
+    from rules_engine.continuous import printed_abilities_suppressed
+
+    data = dict(payload)
+    if '__exiled_references' not in data:
+        cohort = []
+        for cid in dict.fromkeys(data.get('target_card_ids') or []):
+            card = state.cards.get(cid)
+            if (card is not None and card.zone == Zone.BATTLEFIELD and card.controller == controller
+                    and cid in state.players[controller].battlefield
+                    and set(effective_types(state, card)).intersection({'Artifact', 'Creature', 'Land'})
+                    and data.get('__announced_references', {}).get(cid) == {
+                        'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}):
+                cohort.append(card)
+        if not cohort:
+            return
+        leaves = [{'card_id': card.id, 'controller': card.controller, 'previous_reference': {
+            'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}}
+            for card in cohort]
+        for card in cohort:
+            capture_last_known_battlefield(state, card.id)
+        data['__return_batch_staging'] = not state.trigger_staging
+        if data['__return_batch_staging']:
+            state.trigger_staging = True
+            state.trigger_staging_event = 'immediate_return_batch'
+        # Every leave observer sees the complete PRE battlefield, not a partial departure.
+        emit_event_batch(state, 'leaves_battlefield', leaves)
+        for card in cohort:
+            state.players[card.controller].battlefield.remove(card.id)
+            state.players[card.owner].exile.append(card.id)
+            card.move_to_zone(Zone.EXILE)
+        data['__exiled_references'] = {card.id: {
+            'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
+            for card in cohort}
+    cards = [state.cards[cid] for cid, reference in data['__exiled_references'].items()
+             if cid in state.cards and state.cards[cid].zone == Zone.EXILE
+             and cid in state.players[state.cards[cid].owner].exile
+             and reference == {'incarnation': object_incarnation(state.cards[cid]),
+                               'zone_change_sequence': state.cards[cid].zone_change_sequence}
+             and not is_departed_token(state.cards[cid]) and not battlefield_entry_prohibited(state, cid)]
+    recipients = {card.id: controller for card in cards}
+    if pause_for_land_entries(state, controller, [card.id for card in cards], 'exile_return_batch', data,
+                              controllers=recipients):
+        return
+    seeds = {}
+    for card in cards:
+        projected = copy.copy(card)
+        projected.zone, projected.controller = Zone.BATTLEFIELD, controller
+        projection = copy.copy(state)
+        projection.cards = {**state.cards, card.id: projected}
+        clauses = '' if printed_abilities_suppressed(projection, card.id) else card.oracle_text
+        counts = {}
+        for amount, kind in re.findall(
+                r'^This (?:creature|artifact|enchantment|permanent) enters with '
+                r'(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
+                r'([+-]\d+/[+-]\d+|[a-z][a-z -]*) counters? on it\.$', clauses, re.I | re.M):
+            counts[kind.lower()] = counts.get(kind.lower(), 0) + _parse_count_token(amount.lower())
+        seeds[card.id] = {'counters': counts}
+    if cards and prepare_counter_entries(state, controller, cards, 'exile_return_batch', data,
+                                         controllers=recipients, entry_payloads=seeds):
+        return
+    # Incoming static abilities are not residents when simultaneous entry choices apply.
+    for card in cards:
+        apply_entry_choice(state, controller, card,
+                           choice=(data.get('__entry_choices') or {}).get(card.id, 'tapped'))
+    counter_events = []
+    for card in cards:
+        state.players[card.owner].exile.remove(card.id)
+        card.move_to_zone(Zone.BATTLEFIELD)
+        card.controller = controller
+        card.summoning_sick = True
+        card.entered_turn = state.turn
+        state.players[controller].battlefield.append(card.id)
+        assign_static_order_on_battlefield_entry(state, card.id)
+        commit_entry_counters(state, card, data, _event_receipts=counter_events)
+        state.log.append(f'{card.name} returns to the battlefield under {state.players[controller].name}\'s control.')
+    # Entry counter observers see the complete board and all committed counters.
+    emit_event_batch(state, 'saga_lore_added', counter_events)
+    emit_event_batch(state, 'enters_battlefield', [
+        {'card_id': card.id, 'controller': controller} for card in cards])
+    if data.get('__return_batch_staging') and not (state.pending_mechanic_choice or state.pending_replacement_choice):
+        flush_staged_triggers(state)
 
 
 def _exile_entry_json(value):

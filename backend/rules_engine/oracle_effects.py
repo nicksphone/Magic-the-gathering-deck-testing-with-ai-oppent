@@ -1186,6 +1186,18 @@ def _infer_targeted_search_effect(oracle: str, action_targets: dict[str, Any]) -
 
 def _infer_immediate_return_effect(state, oracle, action_targets):
     body = re.sub(r'\s+', ' ', oracle.strip()).lower()
+    if re.match(r'^exile (?:two|2) target artifacts, creatures, and/or lands you control, then return\b', body):
+        if not re.fullmatch(r'exile (?:two|2) target artifacts, creatures, and/or lands you control, '
+                            r'then return those cards to the battlefield under your control\.?', body):
+            return 'noop', {'__unsupported_immediate_return': oracle}
+        targets = list(action_targets.get('target_card_ids') or [])
+        return 'exile_return_batch', {
+            'target_card_ids': targets,
+            '__announced_references': {
+                cid: {'incarnation': object_incarnation(state.cards[cid]),
+                      'zone_change_sequence': state.cards[cid].zone_change_sequence}
+                for cid in targets if cid in state.cards},
+        }
     if not re.match(r'^exile target (?:creature(?: or enchantment)?|nontoken permanent)(?: you control)?, then return\b', body):
         return None
     match = re.fullmatch(
@@ -1686,6 +1698,16 @@ def inspect_target_hints(
             if "Planeswalker" in effective_types(state, state.cards[cid])
         ]
     immediate_return = _infer_immediate_return_effect(state, oracle, action_targets)
+    if immediate_return and immediate_return[0] == 'exile_return_batch':
+        for key in ('creature_targets', 'land_targets', 'artifact_targets', 'permanent_targets'):
+            hints.pop(key, None)
+        hints['required_distinct_target_count'] = 2
+        hints['permanent_targets'] = [
+            {'id': cid, 'name': state.cards[cid].name}
+            for cid in state.players[controller].battlefield
+            if state.cards[cid].zone == Zone.BATTLEFIELD and state.cards[cid].controller == controller
+            and set(effective_types(state, state.cards[cid])).intersection({'Artifact', 'Creature', 'Land'})
+        ]
     if (immediate_return and immediate_return[0] == 'exile_return_immediate'
             and immediate_return[1].get('requires_nontoken')):
         hints.pop('creature_targets', None)
@@ -1778,6 +1800,9 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
     future stack-resolution rechecks.
     """
     oracle = without_reminder_text((oracle_text or "").lower())
+    immediate_return = _infer_immediate_return_effect(state, oracle, {})
+    if immediate_return and immediate_return[0] == 'exile_return_batch':
+        return {'allowed_types': ['Artifact', 'Creature', 'Land']}
     from rules_engine.bounded_removal import instruction as bounded_instruction
     bounded = bounded_instruction(oracle)
     if bounded is not None:

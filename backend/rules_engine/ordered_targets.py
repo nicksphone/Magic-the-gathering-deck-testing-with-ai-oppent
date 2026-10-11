@@ -54,7 +54,13 @@ def _copy_candidates(state, copied, index):
     hints = inspect_target_hints(state, card, copied.controller, copied.payload.get('__announced_targets') or {})
     hints.pop('required_distinct_target_count', None)
     hints.pop('required_target_instance_count', None)
-    packet = copied.payload['effects'][index]['payload']
+    if copied.effect_key == 'exile_return_batch':
+        cid = copied.payload['__announced_targets']['target_card_ids'][index]
+        reference = copied.payload['__announced_references'].get(cid) or {}
+        packet = {'target_card_id': cid, '__target_incarnation': reference.get('incarnation'),
+                  '__target_zone_sequence': reference.get('zone_change_sequence')}
+    else:
+        packet = copied.payload['effects'][index]['payload']
     candidates = {}
     card_targets = {candidate['id']: candidate
                     for key in ('creature_targets', 'planeswalker_targets', 'permanent_targets',
@@ -79,7 +85,7 @@ def _copy_candidates(state, copied, index):
 
 def _distinct_copy_can_finish(state, copied, index, cid):
     """Allow swaps, but never offer a prefix with no legal completion."""
-    if not copied.payload.get('__ordered_distinct_targets'):
+    if not (copied.payload.get('__ordered_distinct_targets') or copied.effect_key == 'exile_return_batch'):
         return True
     ids = copied.payload['__announced_targets']['target_card_ids']
     prefix = set(ids[:index])
@@ -105,7 +111,7 @@ def _distinct_copy_can_finish(state, copied, index, cid):
 def offer_ordered_copy_target_choice(state, copied, index=0):
     ids = (copied.payload.get('__announced_targets') or {}).get('target_card_ids') or []
     effects = copied.payload.get('effects') or []
-    if not ids or len(ids) != len(effects):
+    if not ids or (len(ids) != 2 if copied.effect_key == 'exile_return_batch' else len(ids) != len(effects)):
         return
     for slot in range(index, len(ids)):
         options = ['keep'] if _distinct_copy_can_finish(state, copied, slot, ids[slot]) else []
@@ -137,10 +143,16 @@ def choose_ordered_copy_target(state, copied, pending, chosen):
         return False
     if chosen != 'keep':
         target = state.cards[cid]
-        packet = copied.payload['effects'][index]['payload']
-        packet.update(target_card_id=cid, __target_incarnation=object_incarnation(target),
-                      __target_zone_sequence=target.zone_change_sequence)
+        if copied.effect_key == 'exile_return_batch':
+            copied.payload['__announced_references'][cid] = {
+                'incarnation': object_incarnation(target), 'zone_change_sequence': target.zone_change_sequence}
+        else:
+            packet = copied.payload['effects'][index]['payload']
+            packet.update(target_card_id=cid, __target_incarnation=object_incarnation(target),
+                          __target_zone_sequence=target.zone_change_sequence)
         ids[index] = cid
+        if copied.effect_key == 'exile_return_batch':
+            copied.payload['target_card_ids'] = list(ids)
         if '__announced_target_references' in copied.payload:
             from rules_engine.targeting import replace_announced_target_reference
             copied.payload['__announced_target_references'] = replace_announced_target_reference(

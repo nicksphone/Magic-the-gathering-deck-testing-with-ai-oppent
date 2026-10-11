@@ -73,6 +73,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "copy_ability": handlers.copy_ability,
     "exile": handlers.exile_permanent,
     "exile_return_immediate": handlers.exile_return_immediate,
+    "exile_return_batch": handlers.exile_return_batch,
     "exile_from_graveyard": handlers.exile_from_graveyard,
     "return_permanent_to_hand": handlers.return_permanent_to_hand,
     "return_from_graveyard": handlers.return_from_graveyard,

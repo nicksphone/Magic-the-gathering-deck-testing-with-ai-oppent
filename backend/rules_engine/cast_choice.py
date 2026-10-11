@@ -36,7 +36,11 @@ def has_available_targets_for_action(hints: dict[str, Any]) -> bool:
     if hints.get('required_target_instance_count') and not hints.get('creature_targets'):
         return False
     required = hints.get('required_distinct_target_count')
-    if required and len({target['id'] for target in hints.get('creature_targets', [])}) < required:
+    candidates = {target['id'] for key in (
+        'creature_targets', 'permanent_targets', 'land_targets', 'artifact_targets',
+        'enchantment_targets', 'planeswalker_targets', 'noncreature_permanent_targets', 'aura_targets')
+        for target in hints.get(key, [])}
+    if required and len(candidates) < required:
         return False
     if hints.get("modes"):
         required = 2 if hints.get("choose_two_modes") else 1
