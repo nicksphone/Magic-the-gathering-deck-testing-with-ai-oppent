@@ -16758,9 +16758,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_source_counter_worker_owned_paths.py": {
-    "mtime": 1791707547.670596,
-    "seen": 1791707675.6683805,
-    "ast_hash": "f02be60fbfdc8912da86ef661d996165",
+    "mtime": 1791708136.1229804,
+    "seen": 1791708241.431983,
+    "ast_hash": "6d43863a733618c9b888ede672b12824",
     "semantic_hash": ""
   },
   "backend/tests/test_unknown_stack_admission.py": {
