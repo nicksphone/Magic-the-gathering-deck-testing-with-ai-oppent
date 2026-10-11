@@ -43,6 +43,12 @@ Combined hosted qualification and all unproved
 release requirements remain open.
 [Fixture and evidence scope](docs/testing/ci-training-combat-fixture-current.md).
 
+The next Fable test-only increment corrects two fixture KeyErrors by explicitly
+injecting a forged private continuation, without restoring public disclosure.
+All original assertions remain. Its distinct known-deck/Fable/linked-discard
+whole group plus four new privacy controls passes 152 checks; no production or
+duplicate AI change is made. Full combined CI remains open.
+
 Published `b0880389` passes remote frontend and whole browser CI. Its protected
 backend in run `38125893436` remains active, not qualified by component results.
 The next reviewed accounting/declared-stack fixture batch has separate 217-pass

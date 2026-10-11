@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791711813.88607,
-    "seen": 1791711918.9993527,
-    "ast_hash": "d21618c9ee1296948af4992db307be4e",
+    "mtime": 1791713129.3493633,
+    "seen": 1791713233.6408062,
+    "ast_hash": "786d07eeb1e073da58e365374fd0be55",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13038,9 +13038,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_fable_optional_linked_discard.py": {
-    "mtime": 1791667790.1639278,
-    "seen": 1791671014.2846735,
-    "ast_hash": "10f093d577bc367511bbd6422835d978",
+    "mtime": 1791713030.7089136,
+    "seen": 1791713233.6383579,
+    "ast_hash": "c52eca54e01d930a105b96b151a46cd3",
     "semantic_hash": ""
   },
   "docs/testing/fable-optional-linked-discard-current.md": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791711813.8850698,
-    "seen": 1791711918.9990814,
-    "ast_hash": "b53b17e7322d47c4d653f7418442f40b",
+    "mtime": 1791713129.3483634,
+    "seen": 1791713233.6405303,
+    "ast_hash": "cfc9730b277f77420406c178c21e0c40",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -16800,15 +16800,21 @@
     "semantic_hash": ""
   },
   "docs/testing/ci-training-combat-fixture-current.md": {
-    "mtime": 1791711813.8100712,
-    "seen": 1791711918.9985547,
-    "ast_hash": "17d4d50613e08c9b20934a46fa881347",
+    "mtime": 1791713129.3473635,
+    "seen": 1791713233.6400373,
+    "ast_hash": "6257bdf0e6571fb1304088d28ab244f5",
     "semantic_hash": ""
   },
   "backend/tests/test_compilation_trace_entry_forwarding.py": {
     "mtime": 1791711784.588543,
     "seen": 1791711918.9966242,
     "ast_hash": "84ebb0b027879a360dea282d6f30759e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_fable_private_followup_boundary.py": {
+    "mtime": 1791713030.7099137,
+    "seen": 1791713233.6383603,
+    "ast_hash": "f45ed0ac11806b7f04479c98fd23d2ee",
     "semantic_hash": ""
   }
 }

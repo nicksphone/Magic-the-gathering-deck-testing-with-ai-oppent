@@ -320,7 +320,7 @@ def test_full_choice_view_tampering_fails_before_mutation(seat, field):
     elif field == 'effect_controller':
         view[field] = 3-seat
     elif field == 'followup_effect':
-        view[field]['payload']['amount'] = 99
+        view[field] = {'effect_key': 'draw_cards', 'payload': {'amount': 99}, 'count_field': 'amount'}
     else:
         view[field] = {'card_ids': []}
     view['card_ids'] = []

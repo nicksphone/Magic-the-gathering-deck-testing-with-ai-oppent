@@ -59,6 +59,27 @@ owned pending draw continuation is intentionally absent from the public legal
 view; the existing fix validates the owned pending context before using it.
 There is no additional production branch or discard-test patch in this packet.
 
+## Fable Private-Continuation Fixture
+
+The unchanged known-deck, Fable and linked-discard modules reproduce 146 passes
+and two fixture failures across 148 cases on `1f08a6ca`. Both failures index
+`followup_effect` before the consumer call, although public legal moves now
+deliberately omit that private continuation. No gameplay rejection is reached.
+
+One test assignment now supplies an independently declared forged draw-99 body
+instead of indexing the absent field. Every original rejection and atomicity
+assertion remains; all 69 assertion nodes and the remaining AST are unchanged.
+No production, public disclosure or duplicate AI consumer change is made.
+
+Four new controls check both seats and explicit null/forged-body requests:
+public views and observations omit the continuation, the wrong actor receives
+no legal choice, and the actual intent consumer rejects the forged context
+without changing state. These controls already pass on unchanged production;
+they are privacy/guard qualification, not invented application RED evidence.
+The fresh whole original 148 cases plus four controls pass all 152 in 137.01s,
+without failures, errors or skips. Final 1,934-file source maps remain equal.
+This 152-case group is distinct from, and not summed with, the combat cohort.
+
 Both baseline imports generate 150 owned placeholder SVGs. Every original
 source hash remains equal; generated files are explicitly recorded rather than
 described as whole-baseline equality. Final gate source maps remain equal.
@@ -73,6 +94,8 @@ Frozen packets under RCHFiles `diagnostics/ci/`:
   SHA256 `cead8918a00e802229fac5bb62576b16b1fb81f73d5ed01c905fe40b38e7975e`.
 - `decision-quality13-ci-trigger-qualification-20261011-m92T3z8b`, tar SHA256
   `f9f8d6f9e164b58b5d372fe5b730f77b043ad2445a0e8f029c8e5db7c6e73ae3`.
+- `decision-quality13-ci-known-linked-discard-fixture-20261011-CXimVJus`, tar
+  SHA256 `e0c8c64c01ba4e84646bacc8a1cae2dc68f57a08860f432cce100e7af55531b5`.
 
 These are separate, overlapping component qualifications, not a summed full
 backend result. The 92-case packet qualifies its exact older source plus the

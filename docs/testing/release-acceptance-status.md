@@ -16,6 +16,13 @@ cases, with two new focused paid-entry forwarding regressions qualified separate
 See `ci-training-combat-fixture-current.md`. These counts are not a summed
 backend or measured expert-AI result.
 
+A separate Fable fixture follow-up explicitly injects a forged continuation
+instead of indexing a deliberately private field absent from public views.
+All original assertions and production privacy guards remain unchanged. The
+known-deck/Fable/linked-discard whole group plus four new controls passes all
+152 cases. This is a different cohort from the combat checks, not an aggregate
+backend result; full hosted qualification remains required.
+
 Current follow-up: published `b0880389` passes remote frontend and whole browser
 CI. Its run `38125893436` is still executing the protected backend job;
 no backend pass is inferred. The next reviewed batch preserves accounting and
