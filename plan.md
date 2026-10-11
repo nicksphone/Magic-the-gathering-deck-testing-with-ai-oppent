@@ -26,7 +26,15 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-11
 
-Latest published `a3694abc` passes frontend and whole browser CI. Its backend
+Latest published `25ef55ea` passes frontend and the whole browser job in
+run38175740307; protected backend qualification remains active. The reviewed
+legacy restart follow-up now passes 113 pure controls and a distinct current-source
+20-case whole HTTP cohort. It retains raw database comparisons, verifies the
+actual owner-epoch transition and preserves the historical failed ledgers.
+There are no production ownership/capacity changes or full-release claims.
+See [restart evidence](docs/testing/legacy-restart-epoch-current.md).
+
+Earlier `a3694abc` passes frontend and whole browser CI. Its backend
 run38130914210 fails with an explicit runner disk-exhaustion annotation and no
 result artifact, so no backend test count or pass is inferred. The next runner
 correction uses built-in passed-test scratch reclamation without changing test

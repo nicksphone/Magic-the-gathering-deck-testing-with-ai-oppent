@@ -29,6 +29,14 @@ An independently executed unchanged `a3694abc` 16-case baseline also records
 proofs remain private. A rotated capacity owner epoch is observed, not erased
 from the legacy assertion or represented as whole-suite success.
 
+A separate reviewed follow-up now keeps that raw hash while explicitly proving
+the legitimate owner-epoch transition at restart. Its final parent current-source
+two-whole-module cohort passes 20 cases, including the original 16 and both
+authorization/404 cases. Default same-epoch comparisons remain raw and strict.
+The original 78-case failure and unchanged 8/8 baseline above remain historical;
+neither is rewritten as a pass. See `legacy-restart-epoch-current.md` for the
+exact comparison changes, 113 pure controls and process-only closure limits.
+
 The startup/local-env follow-up passes 21 pure checks in 1.30 seconds after two
 expected regressions. Independent parent execution of both whole pure modules
 passes 21 in 1.01 seconds, with SQL, sockets and subprocess launch denied before
@@ -36,8 +44,10 @@ collection. The new caller controls compile actual fixture function bodies into
 explicit inert public fake environments and invoke the real archive helper.
 They do not claim actual native startup or replace the 78-case HTTP ledger.
 
-All 129 original assertion ASTs, original test bodies and server methods remain
-unchanged. The production engine, ownership/capacity guards, CI reporter and
+The lifecycle slice preserves all 129 original assertion ASTs, original test
+bodies and server methods. The separate restart follow-up explicitly maps only
+its declared comparisons and adds stronger pair proofs. The production engine,
+ownership/capacity guards, CI reporter and
 public upload allowlist are untouched. Independent bounded lifecycle review
 clears the original helper/finalizers; the separate caller follow-up adds strict
 startup and environment regressions. No hosted ENOSPC causal or full RC claim.

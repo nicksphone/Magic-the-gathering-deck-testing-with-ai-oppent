@@ -1,0 +1,53 @@
+{
+  "base_commit": "25ef55eab50c587ee71c34f0609b324d943693f0",
+  "sources": {
+    "main.py": {
+      "historical_sha256": "5276bf212fc4769d2a60e69ae9e8234e86438c83def59d22bcaa5d4c063aa9ef",
+      "git_25ef_sha256": "e3991b16412c5d476a571368a02ca9804f78cb031a947e798052ede3d81ef418",
+      "approved_sha256": "e3991b16412c5d476a571368a02ca9804f78cb031a947e798052ede3d81ef418",
+      "authority": "public Git25ef"
+    },
+    "persistence/repository.py": {
+      "historical_sha256": "a1da2eb6fa3ee5eadd01ad619aa223a271f9c3add65c29ac09e9f27d5d7b5202",
+      "git_25ef_sha256": "a177b4fd46bc67ea43cabd83759093745fe319f6012c276adf625cb4abfc1eee",
+      "approved_sha256": "a177b4fd46bc67ea43cabd83759093745fe319f6012c276adf625cb4abfc1eee",
+      "authority": "public Git25ef"
+    },
+    "rules_engine/costs.py": {
+      "historical_sha256": "9f5ed2bb8a76768f02df9becf818bf8e501b2f22b60e5950283c037e6f37e3eb",
+      "git_25ef_sha256": "9294bde1dc08d5cf78df988ae7efeea53ab20d0e65152c94b855a428fb0cca6c",
+      "approved_sha256": "9294bde1dc08d5cf78df988ae7efeea53ab20d0e65152c94b855a428fb0cca6c",
+      "authority": "public Git25ef"
+    },
+    "tests/land_consumer_variant_fixture_server.py": {
+      "historical_sha256": "540e885e4b08524b006f7c29a051860b55c317bd48d8fe4cc5b1a4282e44c7e5",
+      "git_25ef_sha256": "b223d8dd97e465d80dec77ff64ac7ae1dd1bc70160ecd068b06ef61dedda294c",
+      "approved_sha256": "b223d8dd97e465d80dec77ff64ac7ae1dd1bc70160ecd068b06ef61dedda294c",
+      "authority": "public Git25ef"
+    },
+    "tests/library_choice_fixture_server.py": {
+      "historical_sha256": "2953e697e7fab2b586b9234d43279213ef76bbd5aaaca2bb57fd77d631b5556f",
+      "git_25ef_sha256": "836f88a94df3701f8cb692880fade4daffc3bb95f13c77bf041e4a86dbcd9af3",
+      "approved_sha256": "836f88a94df3701f8cb692880fade4daffc3bb95f13c77bf041e4a86dbcd9af3",
+      "authority": "public Git25ef"
+    },
+    "tests/private_choice_boundary_fixture_server.py": {
+      "historical_sha256": "7babe0352fe20539480d7a8b3f46f2c5255e9860eacbbc1361aacb3e737d17c9",
+      "git_25ef_sha256": "7babe0352fe20539480d7a8b3f46f2c5255e9860eacbbc1361aacb3e737d17c9",
+      "approved_sha256": "711e6fd8cf528a5f032d852eb4cfd5805d97a5d37c54c9832a46d49ef27d7abb",
+      "authority": "Epoch20 tar56f0 / Kepler review df7f"
+    },
+    "tests/test_land_consumer_variants_http.py": {
+      "historical_sha256": "20307e6bef5e9098ddae9bbc21efcdb56b3900e0278ecc9f9be28842574c1325",
+      "git_25ef_sha256": "8ffec8f2e633df446b6b6cc621627577bdbee22265b4a20b02ecda733cbad0f2",
+      "approved_sha256": "8ffec8f2e633df446b6b6cc621627577bdbee22265b4a20b02ecda733cbad0f2",
+      "authority": "public Git25ef"
+    },
+    "tests/test_library_choice_http_audit.py": {
+      "historical_sha256": "fe4b4cf4eff752d87aa314ee6378a97af0017aca5bec93bf1115de5e3292948c",
+      "git_25ef_sha256": "e329e179bb7236db01626ff0579f7e9dd21af442bf1d70adc0fedf1ac98bdee6",
+      "approved_sha256": "e329e179bb7236db01626ff0579f7e9dd21af442bf1d70adc0fedf1ac98bdee6",
+      "authority": "public Git25ef"
+    }
+  }
+}

@@ -1,8 +1,9 @@
 # Release Acceptance Status
 
-Published `6df6811b` passes frontend and the whole browser job in run38171288236.
+Published `25ef55ea` passes frontend and the whole browser job in run38175740307.
 Its protected backend job remains active at this checkpoint; no backend pass
-or failure count is inferred. The earlier `a3694abc` backend fails with a runner
+or failure count is inferred. The preceding `6df6811b` also passes frontend and
+browser in its own run38171288236. The earlier `a3694abc` backend fails with a runner
 disk-exhaustion annotation and no uploaded result artifact. The one-option
 scratch-retention correction passes the complete128-check CI-script suite.
 See `ci-backend-scratch-current.md` for its bounded retention limitations.
@@ -15,7 +16,12 @@ Saga collection. See `ghostly-flicker-batch-current.md`.
 Separate test-only HTTP runtime archiving passes 21 independent parent pure
 checks. Its real worker whole78 retains eight preexisting strict legacy restart
 failures; unchanged original16 independently reproduces those same eight.
-See `terminal-http-fixture-lifecycle-current.md`. These component counts are not
+The separate reviewed restart follow-up preserves raw comparisons and explicitly
+proves owner-epoch rotation. Its final current-source parent cohort passes all
+20 cases in both whole HTTP modules; all 113 pure contract/cleanup controls pass
+separately. The old failed ledgers remain immutable. See
+`legacy-restart-epoch-current.md` and `terminal-http-fixture-lifecycle-current.md`.
+These component counts are not
 a summed backend result. Hosted qualification, expert-AI quality and all original
 release gates remain open; protected input and assertion policy are unchanged.
 

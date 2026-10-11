@@ -108,8 +108,61 @@ def server(tmp_path_factory):
             archive_closed_http_runtime(owned, runtime=runtime, data=None, evidence_root=evidence)
 
 
-def stable(row):
-    return {key: value for key, value in row.items() if key != 'pid'}
+def _audit_json(value):
+    try:
+        return json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
+    except (TypeError, ValueError) as error:
+        raise AssertionError('Audit must contain finite JSON values') from error
+
+
+def _validate_restart_audit(row):
+    assert type(row) is dict
+    assert set(row) == {'pid', 'state', 'revision', 'controller', 'database_sha256',
+                        'restart_stable_database_sha256', 'capacity_owner_epoch', 'capacity_ledger'}
+    assert type(row['pid']) is int and row['pid'] > 0
+    assert type(row['revision']) is int and row['revision'] >= 0
+    assert type(row['state']) is dict and type(row['controller']) is dict
+    for key, length in (('database_sha256', 64), ('restart_stable_database_sha256', 64),
+                        ('capacity_owner_epoch', 32)):
+        value = row[key]
+        assert type(value) is str and len(value) == length and set(value) <= set('0123456789abcdef')
+    ledger = row['capacity_ledger']
+    numbers = {'id', 'version', 'durable_bytes', 'snapshot_rows', 'reserved_bytes', 'reserved_snapshot_rows'}
+    assert type(ledger) is dict and set(ledger) == numbers | {'owner_epoch'}
+    assert all(type(ledger[key]) is int and ledger[key] >= 0 for key in numbers)
+    assert ledger['id'] == ledger['version'] == 1
+    assert type(ledger['owner_epoch']) is str and ledger['owner_epoch'] == row['capacity_owner_epoch']
+    _audit_json(row)
+
+
+def stable(row, *, restart=False):
+    """Default remains raw identity; only explicit restart comparison omits epoch operands."""
+    assert type(row) is dict and type(restart) is bool
+    new_schema = 'restart_stable_database_sha256' in row or 'capacity_owner_epoch' in row
+    if new_schema:
+        _validate_restart_audit(row)
+    if not restart:
+        return {key: value for key, value in row.items() if key != 'pid'}
+    assert new_schema, 'Restart proof requires the complete epoch audit contract'
+    projected = {key: value for key, value in row.items()
+                 if key not in {'pid', 'database_sha256', 'capacity_owner_epoch'}}
+    projected['capacity_ledger'] = {key: value for key, value in row['capacity_ledger'].items()
+                                    if key != 'owner_epoch'}
+    return projected
+
+
+def assert_restart_audit(before, after, *, previous_pid, current_pid, previous_returncode):
+    """Bind the typed SQL/epoch proof to the actual stopped and current child processes."""
+    _validate_restart_audit(before)
+    _validate_restart_audit(after)
+    assert type(previous_pid) is int and type(current_pid) is int
+    assert previous_pid > 0 and current_pid > 0 and previous_pid != current_pid
+    assert before['pid'] == previous_pid and after['pid'] == current_pid
+    assert type(previous_returncode) is int and previous_returncode in (0, -signal.SIGTERM)
+    assert before['capacity_owner_epoch'] != after['capacity_owner_epoch']
+    assert before['database_sha256'] != after['database_sha256']
+    assert before['restart_stable_database_sha256'] == after['restart_stable_database_sha256']
+    assert _audit_json(stable(before, restart=True)) == _audit_json(stable(after, restart=True))
 
 
 def fixture(server, family, seat):
@@ -150,12 +203,15 @@ def test_real_http_explicit_choice_privacy_stale_database_and_two_restarts(serve
         assert status == 422 and stable(server.audit(identifier)) == stable(before)
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': {**view, **action}})
     assert status == 422 and stable(server.audit(identifier)) == stable(before)
+    previous_process = server.proc
     server.restart()
     restored = server.audit(identifier)
-    assert restored['pid'] != before['pid'] and stable(restored) == stable(before)
+    assert_restart_audit(before, restored, previous_pid=previous_process.pid,
+                         current_pid=server.proc.pid, previous_returncode=previous_process.poll())
+    assert restored['pid'] != before['pid'] and stable(restored, restart=True) == stable(before, restart=True)
     status, normalized = server.call(f'/fixture/private-choice/{identifier}/intent?seat={seat}', action)
     assert status == 200 and normalized['action'] == action
-    assert stable(server.audit(identifier)) == stable(before)
+    assert stable(server.audit(identifier)) == stable(restored)
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': normalized['action']},
                             {'X-Match-Revision': str(before['revision']), 'Idempotency-Key': str(uuid4())})
     assert status == 200
@@ -173,9 +229,12 @@ def test_real_http_explicit_choice_privacy_stale_database_and_two_restarts(serve
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': action},
                             {'X-Match-Revision': str(before['revision']), 'Idempotency-Key': str(uuid4())})
     assert status == 409 and stable(server.audit(identifier)) == stable(after)
+    previous_process = server.proc
     server.restart()
     final = server.audit(identifier)
-    assert final['pid'] != after['pid'] and stable(final) == stable(after)
+    assert_restart_audit(after, final, previous_pid=previous_process.pid,
+                         current_pid=server.proc.pid, previous_returncode=previous_process.poll())
+    assert final['pid'] != after['pid'] and stable(final, restart=True) == stable(after, restart=True)
 
 
 @pytest.mark.parametrize('seat', [1, 2])
