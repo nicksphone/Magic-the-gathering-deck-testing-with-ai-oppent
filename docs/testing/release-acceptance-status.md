@@ -1,11 +1,20 @@
 # Release Acceptance Status
 
-Current infrastructure follow-up: published `ed3bf11f` passes frontend CI but
-its backend job `114434373306` stops at SDK-cleanup admission before any tests
-run. The uploaded metadata reports missing evidence, not gameplay failures.
-The finite cleanup-budget correction passes all 126 CI script tests and retains
-all path/context/capacity guards; actual hosted admission is still required.
+Current infrastructure follow-up: published `1f08a6ca` passes hosted capacity
+admission, metadata-reporter checks and frontend CI in run `38128147774`.
+Full backend and browser jobs are still running. The prior `ed3bf11f` admission
+stop occurs before any backend tests and is not a gameplay-failure result.
 See `ci-backend-sdk-timeout-current.md`. Full release is not complete.
+
+The next test-only combat fixture correction preserves every original assertion
+and strict runtime restore guard. Its whole 152-case component cohort passes;
+the parent's fresh current-source whole 152-case cohort also passes.
+Separate qualification verifies all 92 unchanged discard-history cases pass
+with the existing AI consumer patch; there is no new production branch.
+The current trigger compilation/self-trigger family passes all 119 unchanged
+cases, with two new focused paid-entry forwarding regressions qualified separately.
+See `ci-training-combat-fixture-current.md`. These counts are not a summed
+backend or measured expert-AI result.
 
 Current follow-up: published `b0880389` passes remote frontend and whole browser
 CI. Its run `38125893436` is still executing the protected backend job;

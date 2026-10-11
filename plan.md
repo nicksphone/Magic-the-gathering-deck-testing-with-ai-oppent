@@ -26,11 +26,22 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-11
 
-Published `ed3bf11f` passes frontend CI, but backend job `114434373306` stops
-at SDK-cleanup admission before any backend tests run. A finite cleanup-budget
-correction passes 126 CI script tests without changing path/context/capacity
-guards; actual hosted admission remains required.
+Published `1f08a6ca` passes hosted runner-capacity admission, metadata-reporter
+checks and frontend CI in run `38128147774`; full backend and browser jobs are
+still running. The finite SDK cleanup-budget correction retains all safety
+guards and passes 126 script checks. The prior `ed3bf11f` pre-test admission stop
+remains preserved, not relabeled as a gameplay failure.
 [Infrastructure scope](docs/testing/ci-backend-sdk-timeout-current.md).
+
+The next test-only combat fixture increment preserves all original assertions
+and production restore guards. Its full component cohort passes 152 checks;
+the parent's independent current-source whole cohort also passes all 152. The existing AI
+consumer patch separately passes all 92 unchanged discard-history cases,
+without a new production branch. The current trigger family already passes all
+119 unchanged cases; two new paid-entry forwarding regressions pass separately.
+Combined hosted qualification and all unproved
+release requirements remain open.
+[Fixture and evidence scope](docs/testing/ci-training-combat-fixture-current.md).
 
 Published `b0880389` passes remote frontend and whole browser CI. Its protected
 backend in run `38125893436` remains active, not qualified by component results.

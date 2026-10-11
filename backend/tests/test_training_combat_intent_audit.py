@@ -13,6 +13,7 @@ from tests.test_combat_domain_temporary_costs import add, activate, zero_mana
 from tests.test_ai_combat_intents import ROWS, raw_add
 from tests.test_declaration_limits import add as limit_card, attack_step
 from tests.test_selected_mana_http import game, retain, restart, rejected, forbid_external_network
+from tests.scheduler_fixture_position import ordinary_position
 
 
 CASES = [('attack', 'ordinary'), ('attack', 'band'), ('attack', 'tax'),
@@ -65,6 +66,7 @@ def scenario(seat, kind, family):
         action = {'type': 'block', 'blocks': groups}
         info['guard'] = guard.id
     state.passed_priority = set()
+    ordinary_position(state)
     hint = next(m for m in env._rules.legal_moves(deepcopy(state), seat) if m['type'] == kind)
     return env, action, hint, info
 

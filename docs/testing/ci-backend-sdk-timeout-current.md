@@ -32,7 +32,11 @@ original checks remain. No privileged removal is executed locally.
 
 An independent static review verifies the exact two-file diff and unchanged
 safety checks. These tests prove policy behavior, not actual hosted cleanup or
-full backend success. The separate `b0880389` run38125893436 passes frontend
+full backend success. Published `1f08a6ca`, run38128147774, now actually passes
+hosted runner-capacity admission and metadata-reporter checks. Frontend CI
+passes; full backend and browser jobs are still running at this checkpoint.
+This closes the observed SDK admission failure, not whole-suite qualification.
+The separate `b0880389` run38125893436 passes frontend
 and its whole browser job, with its backend still active at this checkpoint.
 All original release requirements and measured AI quality remain open where
 unproved. No protected trace or raw private backend logs are published.
