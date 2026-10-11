@@ -35,7 +35,7 @@ def _state_with_stack(target_types: list[str], target_oracle: str = ""):
             controller=2,
             label="Target Spell",
             effect_key="noop",
-            payload={},
+            payload={"__announced_stack_kind": "spell"},
         )
     )
     return state

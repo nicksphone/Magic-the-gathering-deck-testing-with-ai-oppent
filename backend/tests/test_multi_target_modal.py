@@ -42,7 +42,7 @@ def _setup_counter_and_return():
     bolt.types = ["Instant"]
     bolt.type_line = "Instant"
     bolt.zone = Zone.STACK
-    state.stack.append(StackItem("bolt", bolt_id, 2, "Lightning Bolt", "deal_damage", {"target_player": 1, "amount": 3}))
+    state.stack.append(StackItem("bolt", bolt_id, 2, "Lightning Bolt", "deal_damage", {"__announced_stack_kind": "spell", "target_player": 1, "amount": 3}))
 
     forest_id = state.players[2].hand.pop()
     forest = state.cards[forest_id]

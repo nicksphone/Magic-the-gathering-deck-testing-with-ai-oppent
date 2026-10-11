@@ -59,6 +59,7 @@ def test_actual_cold_bo3_play_draw_choice_and_saved_next_game(store):
     mid = raw['id']
     raw.update(winner=1, score={'1': 1, '2': 0}, best_of=3)
     config['current_game_recorded'] = True
+    config['sideboarded_players'] = [1, 2]  # Both humans confirmed no swaps in this saved fixture.
     with Session(db) as session:
         Repository(session).save_active_match(mid, json.dumps(raw), json.dumps(config))
     with TestClient(main.app) as client:

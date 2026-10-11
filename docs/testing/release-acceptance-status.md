@@ -1,5 +1,14 @@
 # Release Acceptance Status
 
+Current follow-up: published `b0880389` passes remote frontend CI. Its run
+`38125893436` is still executing the whole protected backend and browser jobs;
+no terminal pass is inferred. The next reviewed batch preserves accounting and
+stack guards while repairing five accounting fixtures and three declared-stack
+fixtures, with separate 217-pass and 57-pass component gates. One private AI
+continuation consumer fix passes 107 checks with its original 82 tests unchanged.
+See `ci-accounting-stack-contracts-current.md`; these are not a summed backend
+or expert-AI result. All original release requirements remain unchanged.
+
 Current CI update: 2026-10-11. Published `1a8e0869` passes the original whole
 remote frontend and browser jobs. Its protected backend job `114341798370`
 in run `38095963507` completed with failure at `2026-10-11T03:06:33Z`.

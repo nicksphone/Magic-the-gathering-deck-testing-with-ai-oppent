@@ -26,6 +26,15 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-11
 
+Published `b0880389` passes remote frontend CI. Full protected backend and browser
+jobs in run `38125893436` remain active, not qualified by component results.
+The next reviewed accounting/declared-stack fixture batch has separate 217-pass
+and 57-pass gates, and the private AI continuation consumer fix passes 107 checks
+with all 82 original forecast tests unchanged. The combined source still needs
+its complete CI result; this does not close measured expert-AI quality or any
+unproved original release requirement.
+[Exact follow-up scope](docs/testing/ci-accounting-stack-contracts-current.md).
+
 Published `1a8e0869` passes the original whole remote frontend and browser jobs.
 Its protected backend job `114341798370` in run `38095963507` completed with
 failure. Complete sanitized metadata records 25,682 nodes: 24,733 passed test

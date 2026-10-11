@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 import pytest
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session, create_engine
 
 import main
 from ai.agent import AIAgent
@@ -16,6 +16,7 @@ from card_data.fallback_cards import fallback_card_payload
 from game_state.serializers import serialize_match_snapshot
 from game_state.state import MatchFactory, Step
 from persistence.repository import Repository
+from persistence import db as persistence_db
 
 
 def template():
@@ -48,11 +49,12 @@ def seed(repo, count=3):
 def store(tmp_path, monkeypatch):
     db = create_engine(f'sqlite:///{tmp_path / "saved.db"}',
                        connect_args={'check_same_thread': False})
-    SQLModel.metadata.create_all(db)
+    monkeypatch.setattr(persistence_db, 'engine', db)
+    persistence_db.init_db()
     old = dict(main.ACTIVE_MATCHES)
     main.ACTIVE_MATCHES.clear()
     monkeypatch.setattr(main, 'engine', db)
-    monkeypatch.setattr(main, 'init_db', lambda: SQLModel.metadata.create_all(db))
+    monkeypatch.setattr(main, 'init_db', persistence_db.init_db)
     for name in ('_ensure_builtin_decks', '_ensure_expansion_top_decks', '_restore_simulation_jobs'):
         monkeypatch.setattr(main, name, lambda _: None)
     def repository():

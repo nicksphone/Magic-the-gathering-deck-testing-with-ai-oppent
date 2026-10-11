@@ -3,10 +3,11 @@ import pytest
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy import text
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Session, create_engine, select
 
 import main
 import persistence.db as db
+from persistence.capacity import DatabaseOwner
 from persistence.models import DeckRecord
 
 
@@ -14,8 +15,8 @@ from persistence.models import DeckRecord
 def test_request_scoped_session_releases_pool_and_rolls_back_errors(tmp_path, monkeypatch, outcome):
     engine = create_engine(f'sqlite:///{tmp_path / "sessions.db"}', pool_size=1,
                            max_overflow=0, pool_timeout=0.1)
-    SQLModel.metadata.create_all(engine)
     monkeypatch.setattr(db, 'engine', engine)
+    owner = DatabaseOwner(engine).acquire()
     retained = []
     app = FastAPI()
 
@@ -36,6 +37,9 @@ def test_request_scoped_session_releases_pool_and_rolls_back_errors(tmp_path, mo
         return {'ok': True}
 
     try:
+        db.init_db()
+        db.initialize_resource_capacity(owner, tmp_path / 'before-capacity.db')
+        owner.open_admission()
         with TestClient(app, raise_server_exceptions=False) as client:
             for _ in range(20):
                 response = client.post('/exercise')
@@ -46,4 +50,6 @@ def test_request_scoped_session_releases_pool_and_rolls_back_errors(tmp_path, mo
     finally:
         for session in retained:
             session.close()
-        engine.dispose()
+        owner.fence_admission()
+        owner.drain_producers(timeout=2)
+        owner.close()

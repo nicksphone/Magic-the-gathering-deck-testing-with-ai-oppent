@@ -601,7 +601,23 @@ class AIAgent:
                 options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
                 if choice['kind'] == 'discard' and choice.get('min_count') == 0:
                     from ai.information import known_search_land_count
-                    followup = choice.get('followup_effect') or {}
+                    # Public discard moves omit their private continuation body.
+                    pending = state.pending_mechanic_choice or {}
+                    owned = (type(pending) is dict
+                             and type(player_id) is int
+                             and pending.get('kind') == choice['kind']
+                             and type(pending.get('player_id')) is int
+                             and type(choice.get('player_id')) is int
+                             and pending['player_id'] == choice['player_id'] == player_id
+                             and type(pending.get('count')) is int
+                             and type(choice.get('count')) is int
+                             and pending['count'] == choice['count']
+                             and type(pending.get('min_count')) is int
+                             and type(choice.get('min_count')) is int
+                             and pending['min_count'] == choice['min_count'] == 0
+                             and type(pending.get('options')) is list
+                             and pending['options'] == choice.get('options'))
+                    followup = (pending.get('followup_effect') or {}) if owned else {}
                     count = 0
                     if followup.get('effect_key') == 'search_library':
                         payload = followup.get('payload') or {}

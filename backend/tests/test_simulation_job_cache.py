@@ -1,15 +1,21 @@
 """Old simulator results remain in SQLite without unbounded process memory."""
 
-from sqlalchemy.pool import StaticPool
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import Session
+import pytest
 
 import main
 from persistence.repository import Repository
+from tests.test_simulation_admission import _owned_admission_engine
 
 
-def test_restore_keeps_recent_jobs_and_db_fallback_for_older_results():
-    engine = create_engine("sqlite://", connect_args={"check_same_thread": False}, poolclass=StaticPool)
-    SQLModel.metadata.create_all(engine)
+@pytest.fixture
+def storage(tmp_path_factory):
+    with _owned_admission_engine(tmp_path_factory, 'job-cache') as owner:
+        yield owner.engine
+
+
+def test_restore_keeps_recent_jobs_and_db_fallback_for_older_results(storage):
+    engine = storage
     original = dict(main.SIM_JOBS)
     try:
         with Session(engine) as session:
