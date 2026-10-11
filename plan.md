@@ -26,8 +26,14 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-11
 
-Published `b0880389` passes remote frontend CI. Full protected backend and browser
-jobs in run `38125893436` remain active, not qualified by component results.
+Published `ed3bf11f` passes frontend CI, but backend job `114434373306` stops
+at SDK-cleanup admission before any backend tests run. A finite cleanup-budget
+correction passes 126 CI script tests without changing path/context/capacity
+guards; actual hosted admission remains required.
+[Infrastructure scope](docs/testing/ci-backend-sdk-timeout-current.md).
+
+Published `b0880389` passes remote frontend and whole browser CI. Its protected
+backend in run `38125893436` remains active, not qualified by component results.
 The next reviewed accounting/declared-stack fixture batch has separate 217-pass
 and 57-pass gates, and the private AI continuation consumer fix passes 107 checks
 with all 82 original forecast tests unchanged. The combined source still needs

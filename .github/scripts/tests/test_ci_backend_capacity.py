@@ -66,7 +66,7 @@ class BackendCapacityTests(unittest.TestCase):
         self.assertEqual(argv[:6], ['/usr/bin/sudo', '-n', '/usr/bin/rm', '-rf', '--one-file-system', '--'])
         target = Path(argv[6])
         self.assertIn(target, self.sdk)
-        self.assertEqual(kwargs['timeout'], 120)
+        self.assertEqual(kwargs['timeout'], 300)
         self.assertTrue(kwargs['check'])
         shutil.rmtree(target)  # Only these owned temporary fixture directories.
 
@@ -150,6 +150,36 @@ class BackendCapacityTests(unittest.TestCase):
         with self.assertRaisesRegex(self.module.CapacityError, 'sdk-cleanup'):
             self.call([0, 0])
         self.assertEqual(self.run.call_count, 1)
+
+    def test_slow_fixed_sdk_cleanup_has_a_finite_five_minute_budget(self):
+        def slow_cleanup(argv, **kwargs):
+            if kwargs['timeout'] <= 160:
+                raise subprocess.TimeoutExpired(argv, kwargs['timeout'])
+            self.assertEqual(kwargs['timeout'], 300)
+            self.delete_command(argv, **kwargs)
+
+        self.run.side_effect = slow_cleanup
+        try:
+            output = self.call([0, 0, self.module.MIN_FREE_BYTES, self.module.MIN_FREE_BYTES])
+        except self.module.CapacityError as error:
+            self.fail(f'A fixed SDK cleanup slower than two minutes must be admitted: {error}')
+        self.assertEqual(self.run.call_count, 2)
+        self.assertIn('CI_BACKEND_CAPACITY_READY', output)
+
+    def test_cleanup_timeout_remains_fail_closed_with_a_fixed_private_safe_reason(self):
+        self.run.side_effect = subprocess.TimeoutExpired('PRIVATE_SENTINEL', 300,
+            output='PRIVATE_SENTINEL', stderr='PRIVATE_SENTINEL')
+        output = io.StringIO()
+        with patch.object(self.module.sys, 'argv', ['script']), \
+                patch.dict(self.module.os.environ, self.env, clear=True), \
+                patch.object(self.module, 'available_bytes', return_value=0), \
+                contextlib.redirect_stdout(output):
+            self.assertEqual(self.module.main(), 2)
+        self.assertEqual(self.run.call_count, 1)
+        self.assertEqual(output.getvalue().splitlines()[-1],
+            'CI_BACKEND_CAPACITY_REJECTED reason=sdk-cleanup-timeout')
+        self.assertNotIn('PRIVATE_SENTINEL', output.getvalue())
+        self.assertTrue(all(path.is_dir() for path in self.sdk))
 
     def test_cleanup_cannot_claim_success_if_root_remains(self):
         with self.assertRaisesRegex(self.module.CapacityError, 'sdk-remains'):

@@ -1,8 +1,15 @@
 # Release Acceptance Status
 
-Current follow-up: published `b0880389` passes remote frontend CI. Its run
-`38125893436` is still executing the whole protected backend and browser jobs;
-no terminal pass is inferred. The next reviewed batch preserves accounting and
+Current infrastructure follow-up: published `ed3bf11f` passes frontend CI but
+its backend job `114434373306` stops at SDK-cleanup admission before any tests
+run. The uploaded metadata reports missing evidence, not gameplay failures.
+The finite cleanup-budget correction passes all 126 CI script tests and retains
+all path/context/capacity guards; actual hosted admission is still required.
+See `ci-backend-sdk-timeout-current.md`. Full release is not complete.
+
+Current follow-up: published `b0880389` passes remote frontend and whole browser
+CI. Its run `38125893436` is still executing the protected backend job;
+no backend pass is inferred. The next reviewed batch preserves accounting and
 stack guards while repairing five accounting fixtures and three declared-stack
 fixtures, with separate 217-pass and 57-pass component gates. One private AI
 continuation consumer fix passes 107 checks with its original 82 tests unchanged.

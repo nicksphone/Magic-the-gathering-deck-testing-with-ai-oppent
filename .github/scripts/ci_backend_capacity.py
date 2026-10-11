@@ -90,8 +90,10 @@ def preflight(env):
         print('CI_BACKEND_CAPACITY_RECLAIM ' + str(path), flush=True)
         try:
             subprocess.run(['/usr/bin/sudo', '-n', '/usr/bin/rm', '-rf',
-                '--one-file-system', '--', str(path)], check=True, timeout=120,
+                '--one-file-system', '--', str(path)], check=True, timeout=300,
                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except subprocess.TimeoutExpired as error:
+            raise CapacityError('sdk-cleanup-timeout') from error
         except (OSError, subprocess.SubprocessError) as error:
             raise CapacityError('sdk-cleanup') from error
         if os.path.lexists(path):
