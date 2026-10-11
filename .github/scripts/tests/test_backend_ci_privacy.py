@@ -169,7 +169,8 @@ class RunnerPrivacyTests(unittest.TestCase):
         self.assertIn(SENTINEL, (evidence / 'failures.jsonl').read_text())
         self.assertEqual(json.loads((evidence / 'synthetic-invocation.json').read_text()),
                          ['-m', 'pytest', '-vv', '--tb=short', '-ra', '-p',
-                          'no:cacheprovider', '-p', 'ci_backend_evidence'])
+                          'no:cacheprovider', '-p', 'ci_backend_evidence', '-o',
+                          'tmp_path_retention_policy=failed'])
         document, status = self.metadata(evidence)
         self.assertEqual(status, 0)
         self.assertEqual(document['pytest_exit_code'], 1)

@@ -124,7 +124,7 @@ sampler=$!
 cd "$scratch/backend"
 export PYTHONPATH="$scratch/.github/scripts:$scratch/backend"
 set +e
-python -m pytest -vv --tb=short -ra -p no:cacheprovider -p ci_backend_evidence \
+python -m pytest -vv --tb=short -ra -p no:cacheprovider -p ci_backend_evidence -o tmp_path_retention_policy=failed \
   3>&- 2>&1 | tee "$evidence/pytest.log" 3>&-
 statuses=("${PIPESTATUS[@]}")
 set -e

@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791713129.3493633,
-    "seen": 1791713233.6408062,
-    "ast_hash": "786d07eeb1e073da58e365374fd0be55",
+    "mtime": 1791749424.6145594,
+    "seen": 1791749528.0422552,
+    "ast_hash": "dddb58af19528c01d553545dfcc61c98",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791713129.3483634,
-    "seen": 1791713233.6405303,
-    "ast_hash": "cfc9730b277f77420406c178c21e0c40",
+    "mtime": 1791749424.6155596,
+    "seen": 1791749528.0419888,
+    "ast_hash": "0148868c3e1727e49dad212af38bd2f8",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -16080,9 +16080,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/run-backend-ci.sh": {
-    "mtime": 1791667789.7469335,
-    "seen": 1791671014.2822251,
-    "ast_hash": "33e3aae7e85f58a0c80177b1d5ecb5f1",
+    "mtime": 1791749275.1762128,
+    "seen": 1791749528.0370274,
+    "ast_hash": "cb63ddd82e36d6dc86022416289e9182",
     "semantic_hash": ""
   },
   "backend/tests/ci_input_contracts.py": {
@@ -16338,9 +16338,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_privacy.py": {
-    "mtime": 1791667789.7479336,
-    "seen": 1791671014.2822278,
-    "ast_hash": "0345f439f521bd64ba678ea94de9549d",
+    "mtime": 1791749275.1762128,
+    "seen": 1791749528.037031,
+    "ast_hash": "efe322fe68e62a767f9f3550f8593e0e",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_ci_backend_metadata.py": {
@@ -16548,9 +16548,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_progress.py": {
-    "mtime": 1791667789.7489336,
-    "seen": 1791671014.2822306,
-    "ast_hash": "1dcd4373fb02b8911c3545cd374ef7c5",
+    "mtime": 1791749334.671155,
+    "seen": 1791749528.0370336,
+    "ast_hash": "aa5bc5893e0bb48cf928497f542c2dc4",
     "semantic_hash": ""
   },
   "backend/tests/test_guard_canary_scope.py": {
@@ -16815,6 +16815,18 @@
     "mtime": 1791713030.7099137,
     "seen": 1791713233.6383603,
     "ast_hash": "f45ed0ac11806b7f04479c98fd23d2ee",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_backend_ci_tmp_retention.py": {
+    "mtime": 1791749253.3235793,
+    "seen": 1791749528.0370362,
+    "ast_hash": "b3c62b3521b0a53934ade18696bbcac0",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-backend-scratch-current.md": {
+    "mtime": 1791749424.6135595,
+    "seen": 1791749528.0414717,
+    "ast_hash": "9c30a39ffe315ce72a2364708ae740e2",
     "semantic_hash": ""
   }
 }

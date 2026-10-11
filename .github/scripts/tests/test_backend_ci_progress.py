@@ -385,7 +385,8 @@ class PublisherBoundaryTests(unittest.TestCase):
         self.assertEqual([r['elapsed_seconds'] for r in rows], sorted(r['elapsed_seconds'] for r in rows))
         self.assertTrue((evidence / 'started.jsonl').is_file())
         self.assertEqual(json.loads((evidence / 'synthetic-invocation.json').read_text()),
-            ['-m', 'pytest', '-vv', '--tb=short', '-ra', '-p', 'no:cacheprovider', '-p', 'ci_backend_evidence'])
+            ['-m', 'pytest', '-vv', '--tb=short', '-ra', '-p', 'no:cacheprovider', '-p',
+             'ci_backend_evidence', '-o', 'tmp_path_retention_policy=failed'])
 
     def test_clean_environment_has_no_private_inputs_or_backend_pythonpath(self):
         self.fixture.environment['BASH_FUNC_mktemp%%'] = (

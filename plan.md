@@ -26,9 +26,17 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-11
 
+Latest published `a3694abc` passes frontend and whole browser CI. Its backend
+run38130914210 fails with an explicit runner disk-exhaustion annotation and no
+result artifact, so no backend test count or pass is inferred. The next runner
+correction uses built-in passed-test scratch reclamation without changing test
+selection or gameplay assertions. Two new real pytest regressions and all128
+CI-script checks pass; full hosted qualification remains required.
+[Scratch retention scope](docs/testing/ci-backend-scratch-current.md).
+
 Published `1f08a6ca` passes hosted runner-capacity admission, metadata-reporter
-checks and frontend CI in run `38128147774`; full backend and browser jobs are
-still running. The finite SDK cleanup-budget correction retains all safety
+checks and frontend CI in run `38128147774`; full backend and browser jobs were
+still running at that checkpoint. The finite SDK cleanup-budget correction retains all safety
 guards and passes 126 script checks. The prior `ed3bf11f` pre-test admission stop
 remains preserved, not relabeled as a gameplay failure.
 [Infrastructure scope](docs/testing/ci-backend-sdk-timeout-current.md).

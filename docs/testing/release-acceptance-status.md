@@ -1,8 +1,17 @@
 # Release Acceptance Status
 
+Latest published `a3694abc` passes frontend and the whole browser job in
+run38130914210. Its backend job fails with a runner `No space left on device`
+annotation and no uploaded result artifact; no backend count or pass is
+inferred. The next one-option scratch-retention correction passes two new real
+pytest regressions and the complete128-check CI-script suite. It does not
+change gameplay assertions, test selection or private-input handling. Hosted
+qualification and all original release gates remain open; see
+`ci-backend-scratch-current.md` for the exact scope and retention limitations.
+
 Current infrastructure follow-up: published `1f08a6ca` passes hosted capacity
 admission, metadata-reporter checks and frontend CI in run `38128147774`.
-Full backend and browser jobs are still running. The prior `ed3bf11f` admission
+Full backend and browser jobs were still running at that checkpoint. The prior `ed3bf11f` admission
 stop occurs before any backend tests and is not a gameplay-failure result.
 See `ci-backend-sdk-timeout-current.md`. Full release is not complete.
 
