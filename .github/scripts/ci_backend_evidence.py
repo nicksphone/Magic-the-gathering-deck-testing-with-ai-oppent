@@ -1,5 +1,6 @@
 """Observer-only pytest ledger and post-exit completeness audit."""
 from collections import Counter
+import builtins
 import hashlib
 import json
 import os
@@ -9,6 +10,47 @@ import sys
 
 _degraded = False
 _progress_degraded = False
+EXCEPTION_CATEGORIES = frozenset({
+    'AssertionError', 'AttributeError', 'FileNotFoundError', 'ImportError',
+    'IndexError', 'KeyError', 'ModuleNotFoundError', 'NotImplementedError',
+    'OSError', 'PermissionError', 'RuntimeError', 'TimeoutError', 'TypeError',
+    'ValueError', 'ZeroDivisionError',
+})
+
+
+def pytest_runtest_makereport(item, call):
+    """Observe identities and locations only; never inspect exception messages."""
+    if call.excinfo is None:
+        return
+    try:
+        root = Path(os.environ['MTG_ISOLATED_TEST_ROOT']).resolve(strict=True)
+        category = next((name for name in EXCEPTION_CATEGORIES
+                         if call.excinfo.type is getattr(builtins, name)), 'Other')
+        frames = []
+        for entry in call.excinfo.traceback:
+            path = Path(entry.path)
+            if not path.is_absolute() or path.is_symlink():
+                continue
+            path = path.resolve(strict=True)
+            if not path.is_relative_to(root) or path.suffix != '.py':
+                continue
+            relative = path.relative_to(root).as_posix()
+            if not relative.startswith(('backend/', '.github/scripts/')):
+                continue
+            frames.append({'path': relative, 'line': entry.lineno + 1,
+                           'source_sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
+        value = {
+            'nodeid': item.nodeid, 'phase': call.when,
+            'signature': {'exception': category, 'frames': frames[-8:]},
+        }
+        path = Path(os.environ['MTG_CI_EVIDENCE']) / 'failure-signatures.jsonl'
+        if any(component.is_symlink() for component in (*path.absolute().parents, path)):
+            return
+        with path.open('a') as stream:
+            stream.write(json.dumps(value, sort_keys=True) + '\n')
+    except Exception:
+        # Missing diagnostic data must not change test execution or coverage.
+        return
 
 
 def pytest_runtest_logstart(nodeid, location):

@@ -1,7 +1,7 @@
 # Current Locked Dependency Advisories
 
-Source: `710999231ee0b39f8e0498d584294c3629ee1120`.
-Actual OSV refresh: HTTP 200 on `2026-10-10`; curl exits zero.
+Source: `1a8e086964039605a8663a5f4e51d3e3902ffe14`.
+Actual OSV refresh: HTTP 200 on `2026-10-11` at `02:07:07 UTC`; curl exits zero.
 
 All **242 unique locked versions** were queried: 28 PyPI packages from
 `backend/requirements-py312-linux.lock` and 214 npm packages from
@@ -18,10 +18,15 @@ and compares every archived input against the published source.
 
 Raw requests/responses, HTTP headers, complete input locks, hashes and independent
 verification are preserved under:
-`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/dependency-audit/current-7109992-20261010-rJ0OCFeN/`.
-The independent parser verifies all query inputs and responses; pinned backend
-pip-check also reports no broken requirements. The older `bf6731c` scan retains
-its own differing frontend lock pin and immutable archive.
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/dependency-audit/current-1a8e086-20261011-a4PZmFIR/`.
+The request inventory was reconstructed from the current complete locks and
+compared with the previous full inventory. All inputs remained byte-identical
+to the published source before and after the request. Response cardinality is
+242, with no errors or continuation tokens. Only public package names,
+ecosystems and versions were transmitted; no private project trace was sent.
+The earlier `7109992` scan and pip-check retain their own immutable evidence;
+pip-check was not rerun as part of this advisory refresh. The older `bf6731c`
+scan retains its own differing frontend lock pin and immutable archive.
 The [OSV batch-query protocol](https://google.github.io/osv.dev/post-v1-querybatch/)
 describes the query interface; the archived response is the observed result.
 

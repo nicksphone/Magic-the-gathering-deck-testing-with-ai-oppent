@@ -10,6 +10,7 @@ from rules_engine.action_validation import ActionRejected
 from training.environment import TrainingEnvironment, encode_action, decode_action
 from training.dataset import EpisodeAliases, canonical
 from tests.test_training_environment import env as canonical_environment, keep
+from tests.scheduler_fixture_position import ordinary_position
 from tests.test_selected_mana_http import game, retain, restart, rejected, forbid_external_network
 
 
@@ -22,6 +23,7 @@ def scenario(family, seat):
     state = env._state
     state.active_player = state.priority_player = seat
     state.step = Step.PRECOMBAT_MAIN
+    ordinary_position(state)
     lands = sorted((card for card in state.cards.values()
                     if card.owner == seat and card.name in {'Mountain', 'Island'}), key=lambda card: card.id)[:2]
     assert len(lands) == 2

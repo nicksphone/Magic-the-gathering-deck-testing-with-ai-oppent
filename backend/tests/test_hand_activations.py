@@ -129,7 +129,8 @@ def test_counter_channel_can_respond_to_an_ability_not_only_a_spell(seat):
     state.players[seat].mana_pool.update(C=2, U=1)
     enemy = add(state, 'Azure Mage', 3-seat)
     item = StackItem(id=state.allocate_object_id(), source_card_id=enemy.id, controller=3-seat,
-                     label='Azure Mage ability', effect_key='draw_cards', payload={'count': 1})
+                     label='Azure Mage ability', effect_key='draw_cards',
+                     payload={'__announced_stack_kind': 'activated', 'count': 1})
     state.stack.append(item)
     assert channel_moves(state, seat, card.id)
     result = resolve(checked_action(state, RulesEngine(), seat, {'type': 'activate_ability', 'card_id': card.id,
@@ -164,7 +165,8 @@ def test_counter_payment_belongs_to_target_controller_and_survives_snapshot(seat
     state.players[3-seat].mana_pool['C'] = 3
     state.mechanic_choice_players = {3-seat}
     item = StackItem(id=state.allocate_object_id(), source_card_id=enemy.id, controller=3-seat,
-                     label='Azure Mage ability', effect_key='draw_cards', payload={'count': 1})
+                     label='Azure Mage ability', effect_key='draw_cards',
+                     payload={'__announced_stack_kind': 'activated', 'count': 1})
     state.stack.append(item)
     result = checked_action(state, RulesEngine(), seat, {'type': 'activate_ability', 'card_id': card.id,
         'ability_index': 0, 'targets': {'target_stack_id': item.id, 'pay_unless_counter': decision != 'pay'}})
@@ -231,7 +233,7 @@ def test_ai_channels_counter_to_answer_lethal_stack(seat, difficulty, style):
     source = hand_card(state, 'Mirrorshell Crab', seat)
     bolt = add_card(state, 'Lightning Bolt', Zone.STACK, 3-seat)
     state.stack.append(StackItem('bolt', bolt.id, 3-seat, bolt.name, 'deal_damage',
-                                {'amount': 3, 'target_player': seat}))
+                                {'__announced_stack_kind': 'spell', 'amount': 3, 'target_player': seat}))
     state.players[seat].life = 2
     state.players[seat].mana_pool.update(C=2, U=1)
     decision = AIAgent(archetype=style, difficulty=difficulty).choose_action(

@@ -41,8 +41,10 @@ def compilation_trace(monkeypatch, tmp_path):
     original = events._trigger_from_oracle
     build = ability_model.build_ability_spec
 
-    def observe(state, source_card_id, controller, oracle, default_label, event, payload):
-        result = original(state, source_card_id, controller, oracle, default_label, event, payload)
+    def observe(state, source_card_id, controller, oracle, default_label, event, payload,
+                *, raw_entry_oracle=None):
+        result = original(state, source_card_id, controller, oracle, default_label, event, payload,
+                          raw_entry_oracle=raw_entry_oracle)
         trace.append({'kind': 'trigger', 'source': source_card_id, 'controller': controller,
                       'oracle': oracle, 'event': event, 'event_payload': deepcopy(payload),
                       'compiled': deepcopy(result)})

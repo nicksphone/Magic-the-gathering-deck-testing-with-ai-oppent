@@ -948,15 +948,15 @@ class RulesEngine:
                         reject('This card has no bestow cost')
                         return
                     face_card = bestow_cast_view(face_card)
+                if _is_land_card(face_card):
+                    reject("Lands must be played, not cast")
+                    state.log.append(f"{player.name} cannot cast land card {card.name} as a spell.")
+                    apply_state_based_actions(state)
+                    return
                 timing_ok, timing_reason = can_cast_in_current_timing(state, face_card, player_id, during_resolution=effect_cast)
                 if not timing_ok:
                     reject(timing_reason)
                     state.log.append(f"{player.name} cannot cast {card.name}: {timing_reason}")
-                    apply_state_based_actions(state)
-                    return
-                if _is_land_card(face_card):
-                    reject("Lands must be played, not cast")
-                    state.log.append(f"{player.name} cannot cast land card {card.name} as a spell.")
                     apply_state_based_actions(state)
                     return
                 options = collect_cost_options(state, player_id, face_card, without_mana=effect_cast,

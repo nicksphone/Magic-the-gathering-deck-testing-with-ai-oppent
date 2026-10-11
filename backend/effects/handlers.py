@@ -877,7 +877,7 @@ def counter_ability(state: MatchState, controller: int, payload: dict) -> None:
     for i, item in enumerate(state.stack):
         if item.id == target_stack_id:
             kind = stack_object_kind(state, item)
-            if kind == "spell" or (payload.get("target_kind") in {"activated", "triggered"} and payload["target_kind"] != kind):
+            if kind not in {"activated", "triggered"} or (payload.get("target_kind") in {"activated", "triggered"} and payload["target_kind"] != kind):
                 return
             if payload.get("uncounterable") or (item.payload or {}).get("uncounterable"):
                 state.log.append(f"{item.label} can't be countered.")
@@ -903,7 +903,7 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     from rules_engine.targeting import stack_object_kind
 
     kind = stack_object_kind(state, item)
-    if (effect_label == "spell") != (kind == "spell"):
+    if kind not in {"spell", "activated", "triggered"} or (effect_label == "spell") != (kind == "spell"):
         return
     if effect_label == "spell":
         copied_payload["snow_mana_spent"] = 0

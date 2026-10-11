@@ -1,23 +1,46 @@
-"""Actual cold HTTP restore of a source-local database; no lifespan/default DB."""
+"""Actual cold HTTP restore of an owned database; no lifespan/default DB."""
 import json
 import os
 from pathlib import Path
 import sys
 
-root = Path(os.environ['MTG_ISOLATED_TEST_ROOT']).resolve()
+def canonical_path(value):
+    path = Path(value)
+    assert path.is_absolute()
+    assert not any(part.is_symlink() for part in (path, *path.parents))
+    assert path == path.resolve()
+    return path
+
+
+root = canonical_path(os.environ['MTG_ISOLATED_TEST_ROOT'])
 backend = Path(__file__).resolve().parents[1]
 assert backend.parent == root
 sys.path.insert(0, str(backend))
+owned_roots = [root]
+# CI keeps pytest databases beside, not inside, its immutable source tree.
+temp_value = os.environ.get('PYTEST_DEBUG_TEMPROOT') or os.environ.get('TMPDIR')
+if temp_value:
+    temp = canonical_path(temp_value)
+    assert temp.is_dir() and temp.parent == root.parent and temp != root
+    owned_roots.append(temp)
+
+
+def owned_path(value):
+    path = canonical_path(value)
+    assert any(path != base and path.is_relative_to(base) for base in owned_roots)
+    return path
+
+
 database, expected_path = map(Path, sys.argv[1:])
-assert database.resolve().is_relative_to(root)
-assert expected_path.resolve().is_relative_to(root)
+owned_path(database)
+owned_path(expected_path)
 
 
 def guard(event, args):
     if event == 'socket.connect':
         raise AssertionError('No remote connection in HTTP restore worker')
     if event == 'sqlite3.connect' and str(args[0]) != ':memory:':
-        assert Path(str(args[0])).resolve().is_relative_to(root)
+        owned_path(str(args[0]))
 
 
 sys.addaudithook(guard)

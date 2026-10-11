@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-10 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-11 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -24,14 +24,26 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
-## Current Candidate Qualification: 2026-10-10
+## Current Candidate Qualification: 2026-10-11
 
-Published `dfdd121e` now passes the original whole remote frontend and browser
-jobs. Its protected backend job remains live. The previous `58ab2881` backend
-job failed with a platform disk-exhaustion annotation and no sanitized result
-artifact; no gameplay failure count is inferred. Runner-capacity remediation,
-final combined built/HTTPS acceptance and measured AI quality remain separate
-unfinished work. [Current CI scope](docs/testing/ci-dfdd-current-status.md).
+Published `1a8e0869` passes the original whole remote frontend and browser jobs.
+Its protected backend job `114341798370` in run `38095963507` completed with
+failure. Complete sanitized metadata records 25,682 nodes: 24,733 passed test
+bodies, 327 failed test bodies, 540 setup failures and 82 skips; no missing phases
+or metadata-export errors. These are not independent bug counts. Capacity
+admission and metadata-reporter checks pass, but backend qualification does not.
+See [current CI diagnosis](docs/testing/ci-1a8-backend-terminal-current.md).
+Reviewed scoped fixture/guard repairs now have separate passing component
+cohorts; the privacy-safe diagnostic suite passes 124 checks. The next complete
+protected CI must qualify their combined source. Shared setup failures and
+unproved original release requirements are not marked complete by these runs.
+The preceding `dfdd121e` backend run
+failed with platform disk-exhaustion and runner-failure annotations and no
+sanitized result artifact; no gameplay failure count is inferred. Capacity
+remediation is not whole-suite qualification. Final combined built/HTTPS
+acceptance and measured AI quality remain unfinished.
+[Current acceptance](docs/testing/release-acceptance-status.md) and
+[prior CI history](docs/testing/ci-dfdd-current-status.md).
 
 Published `58ab2881` now passes the original whole zero-argument remote browser
 job and frontend CI. All 45 ordered stage banners and 67 invocations complete,

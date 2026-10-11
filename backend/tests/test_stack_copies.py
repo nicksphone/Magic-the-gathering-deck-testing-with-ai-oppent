@@ -27,7 +27,7 @@ def _bolt(state):
     state.cards[card.id] = card
     state.stack.append(StackItem(
         id="original", source_card_id=card.id, controller=1, label=card.name,
-        effect_key="deal_damage", payload={"target_player": 2, "amount": 3,
+        effect_key="deal_damage", payload={"__announced_stack_kind": "spell", "target_player": 2, "amount": 3,
             "__announced_targets": {"target_player": 2}},
     ))
     return card
@@ -97,7 +97,7 @@ def test_memory_deluge_copy_has_zero_mana_spent_to_cast() -> None:
     state.stack.append(StackItem(
         id="deluge-original", source_card_id=card.id, controller=1,
         label=card.name, effect_key="look_top_select_hand",
-        payload={"mana_spent_to_cast": 4, "hand_count": 2},
+        payload={"__announced_stack_kind": "spell", "mana_spent_to_cast": 4, "hand_count": 2},
     ))
     copy_spell(state, 1, {"target_stack_id": "deluge-original"})
     assert state.stack[-1].payload["mana_spent_to_cast"] == 0
@@ -182,7 +182,7 @@ def test_copied_spell_fizzles_when_its_only_target_becomes_illegal() -> None:
     )
     state.cards[target.id] = target
     state.players[2].battlefield.append(target.id)
-    state.stack[0].payload = {"target_card_id": target.id, "amount": 3,
+    state.stack[0].payload = {"__announced_stack_kind": "spell", "target_card_id": target.id, "amount": 3,
                               "__announced_targets": {"target_card_id": target.id}}
     copy_spell(state, 1, {"target_stack_id": "original"})
     state.players[2].battlefield.remove(target.id)
@@ -204,7 +204,7 @@ def test_copied_permanent_spell_enters_as_token_without_moving_card() -> None:
     state.cards[card.id] = card
     state.stack.append(StackItem(
         id="bear-original", source_card_id=card.id, controller=1,
-        label=card.name, effect_key="noop", payload={},
+        label=card.name, effect_key="noop", payload={"__announced_stack_kind": "spell"},
     ))
     copy_spell(state, 2, {"target_stack_id": "bear-original"})
     assert resolve_top_of_stack(state)
@@ -344,7 +344,7 @@ def test_copy_target_choice_rejects_unoffered_target_without_mutation() -> None:
 def test_copy_without_target_does_not_pause_for_retargeting() -> None:
     state = _state()
     _bolt(state)
-    state.stack[0].payload = {"amount": 3}
+    state.stack[0].payload = {"__announced_stack_kind": "spell", "amount": 3}
     copy_spell(state, 1, {"target_stack_id": "original", "may_choose_new_targets": True})
     assert state.pending_mechanic_choice is None
 
@@ -361,7 +361,7 @@ def test_counterspell_copy_cannot_target_itself() -> None:
     state.stack.append(StackItem(
         id="counter-original", source_card_id=counter.id, controller=2,
         label="Counterspell", effect_key="counter_spell",
-        payload={"target_stack_id": "original", "__announced_targets": {"target_stack_id": "original"}},
+        payload={"__announced_stack_kind": "spell", "target_stack_id": "original", "__announced_targets": {"target_stack_id": "original"}},
     ))
     copy_spell(state, 2, {"target_stack_id": "counter-original", "may_choose_new_targets": True})
     assert state.stack[-1].id != "counter-original"
@@ -383,6 +383,7 @@ def test_creature_spell_copy_offers_only_legal_new_creature_targets() -> None:
         state.cards[card_id] = card
         state.players[1].battlefield.append(card_id)
     state.stack[0].payload = {
+        "__announced_stack_kind": "spell",
         "target_card_id": "first", "__announced_targets": {"target_card_id": "first"},
     }
     copy_spell(state, 2, {"target_stack_id": "original", "may_choose_new_targets": True})
@@ -406,7 +407,7 @@ def test_activated_ability_copy_can_choose_a_new_target() -> None:
     state.stack.append(StackItem(
         id="pyromancer-ability", source_card_id=source.id, controller=1,
         label="Prodigal Pyromancer ability", effect_key="deal_damage",
-        payload={"target_player": 2, "amount": 1,
+        payload={"__announced_stack_kind": "activated", "target_player": 2, "amount": 1,
                  "__announced_targets": {"target_player": 2},
                  "__ability_target_text": source.oracle_text},
     ))
@@ -467,7 +468,7 @@ def test_activated_ability_copy_fizzles_when_new_target_becomes_illegal() -> Non
     state.stack.append(StackItem(
         id="ability", source_card_id=source.id, controller=1,
         label="Prodigal Pyromancer ability", effect_key="deal_damage",
-        payload={"target_player": 2, "amount": 1,
+        payload={"__announced_stack_kind": "activated", "target_player": 2, "amount": 1,
                  "__announced_targets": {"target_player": 2},
                  "__ability_target_text": source.oracle_text},
     ))
@@ -551,7 +552,7 @@ def test_lithoform_cannot_copy_an_opponents_ability() -> None:
     state.stack.append(StackItem(
         id="opponent-ability", source_card_id=source.id, controller=2,
         label="Prodigal Pyromancer ability", effect_key="deal_damage",
-        payload={"target_player": 1, "amount": 1},
+        payload={"__announced_stack_kind": "activated", "target_player": 1, "amount": 1},
     ))
     before = serialize_match_snapshot(state)
     with pytest.raises(Exception):
@@ -590,7 +591,7 @@ def test_lithoform_permanent_spell_copy_enters_as_token() -> None:
         state.cards[cid] = card
         state.stack.append(StackItem(
             id=f"{cid}-spell", source_card_id=cid, controller=1,
-            label=card.name, effect_key="noop", payload={},
+            label=card.name, effect_key="noop", payload={"__announced_stack_kind": "spell"},
         ))
     rules = RulesEngine()
     before = serialize_match_snapshot(state)
@@ -632,7 +633,7 @@ def _pyrotechnics(state):
     state.stack.append(StackItem(
         id="pyrotechnics-original", source_card_id=spell.id, controller=1,
         label=spell.name, effect_key="deal_damage_multi",
-        payload={"target_distribution": dict(distribution),
+        payload={"__announced_stack_kind": "spell", "target_distribution": dict(distribution),
                  "__announced_targets": {"target_distribution": dict(distribution), "divide_total": 4}},
     ))
 

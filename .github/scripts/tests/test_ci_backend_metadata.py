@@ -19,6 +19,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import textwrap
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -172,6 +173,110 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual(status, 0)
         self.assertTrue(document['coverage']['all_collected_completed'])
         self.assertEqual(document['failures'][0]['phase'], 'setup')
+
+    def signature(self, **changes):
+        path = 'backend/tests/test_public.py'
+        raw = self.git('show', f'{self.commit}:{path}').encode('utf-8')
+        result = {'exception': 'PermissionError', 'frames': [
+            {'path': path, 'line': 3, 'source_sha256': hashlib.sha256(raw).hexdigest()}]}
+        result.update(changes)
+        return result
+
+    def test_failure_signature_exports_only_committed_locations(self):
+        self.ledger()
+        signature = self.signature()
+        signature['message'] = SECRET
+        signature['frames'][0]['locals'] = SECRET
+        self.rows('failure-signatures.jsonl', [
+            {'nodeid': NODE, 'phase': 'call', 'signature': signature, 'private': SECRET}])
+        document, status = self.export()
+        self.assertEqual(status, 0)
+        self.assertEqual(document['failures'][0].get('diagnostic'), self.signature())
+
+    def test_failure_signature_rejects_nonpublic_stale_or_invalid_locations(self):
+        self.ledger()
+        for change in ({'path': SECRET}, {'source_sha256': '0' * 64},
+                       {'line': True}, {'line': 0}, {'line': 10000},
+                       {'path': '../backend/tests/test_public.py'}):
+            with self.subTest(change=change):
+                signature = self.signature()
+                signature['frames'][0].update(change)
+                self.rows('failure-signatures.jsonl', [
+                    {'nodeid': NODE, 'phase': 'call', 'signature': signature}])
+                document, status = self.export()
+                self.assertEqual(status, 0)
+                self.assertEqual(document['failures'][0].get('diagnostic'),
+                                 {'exception': 'PermissionError', 'frames': []})
+
+    def test_failure_signature_never_exports_dynamic_exception_names(self):
+        self.ledger()
+        self.rows('failure-signatures.jsonl', [
+            {'nodeid': NODE, 'phase': 'call', 'signature': self.signature(exception=SECRET)}])
+        document, status = self.export()
+        self.assertEqual(status, 0)
+        self.assertEqual(document['failures'][0].get('diagnostic', {}).get('exception'), 'Other')
+
+    def test_signature_does_not_create_an_unreported_failure(self):
+        self.ledger(nodes=[SECOND], exitcode=0)
+        self.rows('failure-signatures.jsonl', [
+            {'nodeid': NODE, 'phase': 'setup', 'signature': self.signature()}])
+        document, status = self.export()
+        self.assertEqual(status, 0)
+        self.assertEqual(document['failures'], [])
+
+    def test_broken_optional_signatures_preserve_complete_phase_metadata(self):
+        self.ledger()
+        for raw in ('not json', json.dumps({'nodeid': []}),
+                    json.dumps({'nodeid': NODE, 'phase': [], 'signature': self.signature()})):
+            with self.subTest(raw=raw):
+                (self.evidence / 'failure-signatures.jsonl').write_text(raw + '\n')
+                document, status = self.export()
+                self.assertEqual(status, 0)
+                self.assertTrue(document['coverage']['all_collected_completed'])
+                self.assertEqual(document.get('failure_diagnostics_status'), 'degraded')
+
+    def test_ambiguous_signature_never_selects_a_winner(self):
+        self.ledger()
+        row = {'nodeid': NODE, 'phase': 'call', 'signature': self.signature()}
+        self.rows('failure-signatures.jsonl', [row, row])
+        document, status = self.export()
+        self.assertEqual(status, 0)
+        self.assertTrue(document['coverage']['all_collected_completed'])
+        self.assertNotIn('diagnostic', document['failures'][0])
+        self.assertEqual(document.get('failure_diagnostics_status'), 'degraded')
+
+    def test_invalid_signature_type_degrades_without_changing_coverage(self):
+        self.ledger()
+        for signature in (None, [], SECRET):
+            with self.subTest(signature=signature):
+                self.rows('failure-signatures.jsonl', [
+                    {'nodeid': NODE, 'phase': 'call', 'signature': signature}])
+                document, status = self.export()
+                self.assertEqual(status, 0)
+                self.assertTrue(document['coverage']['all_collected_completed'])
+                self.assertNotIn('diagnostic', document['failures'][0])
+                self.assertEqual(document.get('failure_diagnostics_status'), 'degraded')
+
+    def test_failed_optional_write_cannot_disable_the_mandatory_ledger(self):
+        observer = load('ci_backend_evidence')
+        original = Path.open
+
+        def write_path(path, *args, **kwargs):
+            if path.name == 'failure-signatures.jsonl':
+                raise PermissionError(SECRET)
+            return original(path, *args, **kwargs)
+
+        call = SimpleNamespace(when='call', excinfo=SimpleNamespace(
+            type=PermissionError, traceback=[SimpleNamespace(
+                path=self.repo / 'backend/tests/test_public.py', lineno=2)]))
+        with patch.dict(os.environ, MTG_CI_EVIDENCE=str(self.evidence),
+                        MTG_ISOLATED_TEST_ROOT=str(self.repo)):
+            with patch.object(Path, 'open', write_path):
+                observer.pytest_runtest_makereport(SimpleNamespace(nodeid=NODE), call)
+            self.assertFalse(observer._degraded)
+            observer.pytest_runtest_logreport(SimpleNamespace(
+                nodeid=NODE, when='teardown', outcome='passed', duration=0, failed=False))
+        self.assertEqual(json.loads((self.evidence / 'phases.jsonl').read_text())['phase'], 'teardown')
 
     def test_skips_and_xfails_are_not_relabelled_passes(self):
         self.ledger(nodes=[NODE], exitcode=0, phases=[

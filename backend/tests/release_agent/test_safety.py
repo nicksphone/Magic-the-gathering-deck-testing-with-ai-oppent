@@ -33,6 +33,12 @@ def test_unrelated_application_records_are_unchanged(tmp_path):
     from scripts.verify_storage_restore import create_fixture, fingerprint
     db = tmp_path / "all-records.db"
     create_fixture(db)
+    # Keep the supported application records, but declare a legacy storage owner.
+    with closing(sqlite3.connect(db)) as c:
+        for table in ("resourcereservation", "resourcecapacity"):
+            assert c.execute(f"SELECT COUNT(*) FROM {table}").fetchone() == (0,)
+            c.execute(f"DROP TABLE {table}")
+        c.commit()
     with closing(sqlite3.connect(db)) as c:
         before = fingerprint(c)
     assert prune_jobs(db, keep=0, apply=True)["deleted_ids"] == ["fixture-job"]
@@ -84,3 +90,17 @@ def test_network_filesystem_refusal(db, monkeypatch):
     monkeypatch.setattr(Path, "read_text", mounts)
     with pytest.raises(ValueError, match="local filesystem"):
         prune_jobs(db, keep=0, apply=True)
+
+
+@pytest.mark.parametrize("table", ["resourcecapacity", "resourcereservation"])
+def test_accounted_storage_refuses_standalone_deletion_without_mutation(db, table):
+    add(db, "keep")
+    with closing(sqlite3.connect(db)) as connection:
+        connection.execute(f"CREATE TABLE {table} (id INTEGER PRIMARY KEY)")
+        connection.commit()
+    before = db.read_bytes()
+    with pytest.raises(ValueError, match="requires owned retirement"):
+        prune_jobs(db, keep=0, apply=True)
+    assert db.read_bytes() == before
+    assert ids(db) == ["keep"]
+    assert prune_jobs(db, keep=0)["candidate_ids"] == ["keep"]

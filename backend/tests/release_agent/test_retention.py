@@ -11,7 +11,10 @@ from persistence.job_retention import prune_jobs
 def db(tmp_path):
     path = tmp_path / "fixture.db"
     engine = create_engine(f"sqlite:///{path}")
-    SQLModel.metadata.create_all(engine)
+    # Standalone pruning is for legacy databases, never owner-accounted storage.
+    tables = [table for table in SQLModel.metadata.sorted_tables
+              if table.name not in {"resourcecapacity", "resourcereservation"}]
+    SQLModel.metadata.create_all(engine, tables=tables)
     engine.dispose()
     return path
 

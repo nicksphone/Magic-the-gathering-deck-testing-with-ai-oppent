@@ -25,6 +25,12 @@ ERROR_CODES = frozenset({
     'COVERAGE_INCOMPLETE', 'SUCCESS_INCONSISTENT', 'EVIDENCE_IO_ERROR',
     'METADATA_INTERNAL_ERROR',
 })
+EXCEPTION_CATEGORIES = frozenset({
+    'AssertionError', 'AttributeError', 'FileNotFoundError', 'ImportError',
+    'IndexError', 'KeyError', 'ModuleNotFoundError', 'NotImplementedError',
+    'OSError', 'PermissionError', 'RuntimeError', 'TimeoutError', 'TypeError',
+    'ValueError', 'ZeroDivisionError',
+})
 
 
 class MetadataError(Exception):
@@ -97,6 +103,33 @@ class PublicDefinitions:
         self.paths = set(git(source, 'ls-tree', '-rz', '--name-only', commit,
                              '--', 'backend/tests').split('\0'))
         self.cache = {}
+        self.source_paths = set(git(source, 'ls-tree', '-rz', '--name-only', commit,
+                                    '--', 'backend', '.github/scripts').split('\0'))
+        self.source_cache = {}
+
+    def diagnostic(self, value):
+        if type(value) is not dict:
+            return None
+        category = value.get('exception')
+        safe = {'exception': category if type(category) is str and
+                category in EXCEPTION_CATEGORIES else 'Other', 'frames': []}
+        frames = value.get('frames', [])
+        if type(frames) is not list or len(frames) > 8:
+            return safe
+        for frame in frames:
+            if type(frame) is not dict:
+                continue
+            path, line = frame.get('path'), frame.get('line')
+            if (type(path) is not str or path not in self.source_paths or
+                    not path.endswith('.py') or type(line) is not int or line < 1):
+                continue
+            if path not in self.source_cache:
+                raw = git(self.source, 'show', f'{self.commit}:{path}').encode('utf-8')
+                self.source_cache[path] = (hashlib.sha256(raw).hexdigest(), len(raw.splitlines()))
+            digest, count = self.source_cache[path]
+            if frame.get('source_sha256') == digest and line <= count:
+                safe['frames'].append({'path': path, 'line': line, 'source_sha256': digest})
+        return safe
 
     def resolve(self, nodeid):
         parts = nodeid.split('[', 1)[0].split('::')
@@ -212,6 +245,35 @@ def build_metadata(evidence, source):
         failures = [{'nodeid_sha256': node(row['nodeid']), 'phase': row['phase'],
                      'public_test': public.resolve(row['nodeid'])}
                     for row in phases if row['outcome'] == 'failed']
+        signatures = {}
+        document['failure_diagnostics_status'] = 'not_recorded'
+        try:
+            signature_rows = rows(evidence, 'failure-signatures.jsonl')
+            if signature_rows:
+                document['failure_diagnostics_status'] = 'complete'
+        except (MetadataError, OSError, UnicodeError):
+            signature_rows = []
+            document['failure_diagnostics_status'] = 'degraded'
+        for row in signature_rows:
+            try:
+                if row.get('phase') not in ('setup', 'call', 'teardown'):
+                    raise MetadataError('PHASE_INVALID')
+                key = (node(row['nodeid']), row['phase'])
+                if key in signatures:
+                    # Ambiguous optional observations have no selected winner.
+                    signatures[key] = None
+                    document['failure_diagnostics_status'] = 'degraded'
+                    continue
+                signatures[key] = None
+                signatures[key] = public.diagnostic(row.get('signature'))
+                if signatures[key] is None:
+                    document['failure_diagnostics_status'] = 'degraded'
+            except (MetadataError, OSError, UnicodeError, KeyError, TypeError, ValueError):
+                document['failure_diagnostics_status'] = 'degraded'
+        for row in failures:
+            signature = signatures.get((row['nodeid_sha256'], row['phase']))
+            if signature is not None:
+                row['diagnostic'] = signature
         errors = [{'nodeid_sha256': node(row['nodeid']), 'phase': 'collection',
                    'public_test': public.resolve(row['nodeid'])} for row in collection_errors]
         document.update(

@@ -1,12 +1,25 @@
 # Release Acceptance Status
 
-Current CI update: 2026-10-10. Published `dfdd121e` passes the original whole
-remote frontend and browser jobs. Its protected backend job is still live.
-The previous `58ab2881` backend job is terminal failure with a platform disk
-exhaustion annotation and no sanitized result artifact. This is not evidence
-of a particular gameplay failure or an inferred backend pass. Runner-capacity
-work is separate, and all unproved original requirements remain open. See
-`ci-dfdd-current-status.md`.
+Current CI update: 2026-10-11. Published `1a8e0869` passes the original whole
+remote frontend and browser jobs. Its protected backend job `114341798370`
+in run `38095963507` completed with failure at `2026-10-11T03:06:33Z`.
+Its sanitized artifact accounts for all 25,682 collected nodes: 24,733 passed
+test bodies, 327 failed test bodies, 540 setup failures and 82 setup skips.
+There are no missing or duplicate phases or metadata-export errors. These are
+phase outcomes, not independent bug counts. Runner-capacity admission and
+metadata-reporter checks pass; backend qualification remains incomplete.
+See `ci-1a8-backend-terminal-current.md` for observed failures and scoped repairs.
+The follow-up combines reviewed legacy-retention/compiler/stack/land fixture
+repairs, two unknown-stack guards, the existing land-rejection ordering and
+privacy-safe public failure locations. Separate component gates pass 119, 201,
+304, 142 and 289 cases; the final observer/exporter suite passes 124 checks.
+These are not a summed full-backend result. The final protected CI and all
+unproved original release requirements remain required.
+The preceding `dfdd121e` backend run failed with platform disk-exhaustion and
+runner-failure annotations and no sanitized result artifact. This does not
+establish a gameplay failure count or a backend pass. Capacity remediation is
+not whole-suite qualification. All unproved original requirements remain open;
+`ci-dfdd-current-status.md` records the earlier source-specific history.
 
 Current native Suspend update: 2026-10-10. The original whole opt-in HTTP module
 passes all ten cases in 52.25s, including both seats and two real cold restarts.
@@ -226,7 +239,7 @@ browser/backend acceptance remains pending; see `browser-fixture-handoff-ci.md`.
 | Actual-AI loyalty menus and replay artifact safety | Composition over `9d519b5`: same 13 whole modules / 392 passes in 62.19s, exact source and SQLite closure; original 32 agent assertions plus 16 new alias/roundtrip checks | Offered-order legality, not optimal policy or 13-archetype strength. Prior 366-pass / 26 denied SQL setups and corrected 15-red baseline preserved. See `ai-loyalty-replay-artifact-safety.md` |
 | Loyalty entry and public emblem UI | Current composition over `8b2078c`: 31 whole backend modules / 1,003 passes in 183.20s; full frontend test/lint/build exit zero; actual paid both-seat Ugin/Elspeth views drive reachable zero/subset/attachment controls and public emblem text | Pytest zero, outer wrapper one from four recorded generated SVG appends; all 1,978 original inventoried paths unchanged. Pure/component scope, not HTTP/browser or arbitrary entry rules. See `loyalty-entry-emblems-current.md` |
 | Complete printed-body rules composition | Published `bf6731c`: 22 whole modules / 823 passes in 153.98s; all original 400 corpus/consumer nodes pass. Separate seven whole resolution/entry modules / 179 passes in 34.93s; source hashes and native forbidden-I/O ledgers verified | Pure composed component, not HTTP/browser or complete-card certification. The ten explicit fixture strengthenings and unchanged historical ledgers are recorded separately; counts overlap. See `complete-body-rules-composition.md` |
-| Current locked dependency advisory refresh | Exact `bf6731c` locks: actual OSV HTTP 200 on 2026-10-08 at 23:24:27 UTC; all 28 PyPI and 214 npm unique locked versions queried, no affected package returned; exact inventory, response cardinality, input hashes and pagination independently checked | Dated advisory result only, including optional npm platform packages; not installation, undisclosed-vulnerability, application-security or release certification. See `current-locked-dependency-advisories.md` |
+| Current locked dependency advisory refresh | Exact `1a8e086` locks: actual OSV HTTP 200 on 2026-10-11 at 02:07:07 UTC; all 28 PyPI and 214 npm unique locked versions queried, no affected package returned; complete inventory, 242 response records, unchanged input hashes and absent pagination independently checked | Dated advisory result only, including optional npm platform packages; no private trace sent and no installation or pip-check performed in this refresh. Not undisclosed-vulnerability, application-security or release certification. See `current-locked-dependency-advisories.md` |
 | Effective battlefield decision-quality evidence | Canonical Song changes a printed creature into a land; corrected NEW baseline has 18 failures / 6 passes, candidate eight whole modules / 168 passes with exact source before/after hashes and empty native forbidden-I/O ledger | Measurement correction only, not AI policy improvement or completion of the 13-archetype matrix. See `effective-decision-quality.md` |
 | Mechanic drafts across match/game switches | Actual Controls regression fails on identical offered IDs before fix and passes afterward; same-game drafts remain, new-game drafts reset without submission; complete npm test/lint/build exit 0 | Deterministic compiled hook transitions only, not mounted browser or HTTP acceptance. See `mechanic-match-reset.md` |
 | Human legend keeper and exchange-energy choices | NEW actual-Controls baseline records six blocked views; both-seat paid legend and Stormdrake continuations, restored choices, invalid-root purity, existing public contracts and exact callbacks pass; complete npm test/lint/build exit 0 | Source-isolated component/backend episodes, not mounted DOM, HTTP, full-card or natural-game certification. Unknown choices still warn. See `keeper-energy-human-controls.md` |

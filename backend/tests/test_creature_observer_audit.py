@@ -42,9 +42,11 @@ def trace(monkeypatch, tmp_path):
     def observed_emit(state, event, payload):
         log.append({'kind': 'event', 'event': event, 'payload': deepcopy(payload)})
         return emit(state, event, payload)
-    def observed_compile(state, source_card_id, controller, oracle, default_label, event, payload):
+    def observed_compile(state, source_card_id, controller, oracle, default_label, event, payload,
+                         *, raw_entry_oracle=None):
         source = source_card_id
-        result = compiler(state, source, controller, oracle, default_label, event, payload)
+        result = compiler(state, source, controller, oracle, default_label, event, payload,
+                          raw_entry_oracle=raw_entry_oracle)
         log.append({'kind': 'compile', 'source': source, 'controller': controller,
                     'oracle': oracle, 'event': event, 'result': deepcopy(result)})
         return result

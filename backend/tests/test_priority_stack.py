@@ -83,7 +83,7 @@ def test_stack_resolution_puts_instant_into_owners_graveyard() -> None:
         oracle_text="Deal 3 damage to any target.",
     )
     state.stack.append(
-        type("S", (), {"id": "stack-1", "source_card_id": spell_id, "controller": 1, "label": "Borrowed Bolt", "effect_key": "deal_damage", "payload": {"target_player": 2, "amount": 3}})()
+        type("S", (), {"id": "stack-1", "source_card_id": spell_id, "controller": 1, "label": "Borrowed Bolt", "effect_key": "deal_damage", "payload": {"__announced_stack_kind": "spell", "target_player": 2, "amount": 3}})()
     )
 
     resolve_top_of_stack(state)
@@ -109,7 +109,7 @@ def test_counter_spell_respects_cannot_be_countered_and_keeps_target_on_stack() 
         oracle_text="Destroy all creatures. Supreme Verdict can't be countered.",
     )
     state.stack.append(
-        type("S", (), {"id": "verdict-item", "source_card_id": target_id, "controller": 1, "label": "Supreme Verdict", "effect_key": "destroy_all_creatures", "payload": {}})()
+        type("S", (), {"id": "verdict-item", "source_card_id": target_id, "controller": 1, "label": "Supreme Verdict", "effect_key": "destroy_all_creatures", "payload": {"__announced_stack_kind": "spell"}})()
     )
 
     counter_spell(state, 2, {"target_stack_id": "verdict-item"})
@@ -135,7 +135,7 @@ def test_counter_spell_uses_spell_owner_for_countered_stolen_spell() -> None:
         oracle_text="Draw a card.",
     )
     state.stack.append(
-        type("S", (), {"id": "stolen-item", "source_card_id": target_id, "controller": 1, "label": "Borrowed Draw", "effect_key": "draw_cards", "payload": {}})()
+        type("S", (), {"id": "stolen-item", "source_card_id": target_id, "controller": 1, "label": "Borrowed Draw", "effect_key": "draw_cards", "payload": {"__announced_stack_kind": "spell"}})()
     )
 
     counter_spell(state, 2, {"target_stack_id": "stolen-item"})
