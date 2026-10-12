@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791843932.8498964,
-    "seen": 1791844040.8590515,
-    "ast_hash": "80eeeae88df90ec1705965750df8a861",
+    "mtime": 1791847828.1399615,
+    "seen": 1791847935.6276395,
+    "ast_hash": "7901b0230d90eab3292d9ef58673edc0",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -6876,9 +6876,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1791843932.8508964,
-    "seen": 1791844040.8632,
-    "ast_hash": "be98d1b84d15b9135291a86c19651298",
+    "mtime": 1791847828.1399615,
+    "seen": 1791847935.631758,
+    "ast_hash": "63d7a1b254e8ac5510aac4a86eab2656",
     "semantic_hash": ""
   },
   "docs/plans/casting-trigger-repair-batch.md": {
@@ -17655,6 +17655,42 @@
     "mtime": 1791843932.8518963,
     "seen": 1791844040.864174,
     "ast_hash": "ad5fcd2cf751ba90a811f990aaa5ba68",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_friendly_priority_baseline.py": {
+    "mtime": 1791847828.1409616,
+    "seen": 1791847935.63094,
+    "ast_hash": "d4ea0392df136abf70eea37fe4c493a9",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_numeric_cast_inputs.py": {
+    "mtime": 1791847828.1409616,
+    "seen": 1791847935.6309426,
+    "ast_hash": "367a07d52c1148b4af78d1fa26f7c665",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_numeric_priority_baseline.py": {
+    "mtime": 1791847828.1409616,
+    "seen": 1791847935.6309443,
+    "ast_hash": "8af14b4772b35d5418715d4a875fa2e8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_premium_priority_boundaries.py": {
+    "mtime": 1791847828.1409616,
+    "seen": 1791847935.6309454,
+    "ast_hash": "c56ca0ee88c3e07c21a4abece913d3a9",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-profile-cast-inputs-composed.md": {
+    "mtime": 1791847828.1409616,
+    "seen": 1791847935.6318412,
+    "ast_hash": "254aa67b1b6fb83fb1f63174bcfd8038",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-profile-cast-inputs-current.md": {
+    "mtime": 1791847828.1409616,
+    "seen": 1791847935.631843,
+    "ast_hash": "110b94d020990f913d3f8d978ba54852",
     "semantic_hash": ""
   }
 }

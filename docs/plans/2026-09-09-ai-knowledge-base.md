@@ -2,12 +2,24 @@
 
 ## October 12 Data-Layer Checkpoint
 
+The subsequent cast-input migration now reads eligible persisted threat tiers
+in the existing deployment classifier and premium-removal priority slots.
+Current/prospective suppression, live pressure and engine target authority remain
+separate. Missing or context-unsafe advice preserves the original branch. One
+combined 31-whole-module declaration passes 607 ordinary cases, including the
+ordinary friendly-board regression; existing scoring coefficients are unchanged.
+This does not complete block-profile migration, final-choice improvement or the
+required seed/seat A/B benchmark. See
+[cast inputs](../testing/ai-profile-cast-inputs-current.md) and
+[combined evidence](../testing/ai-profile-cast-inputs-composed.md).
+
 The subsequent Task 2.3 component validates compact threat-estimate transport
 without making it a scoring or legality authority. Outcome-based combat goldens
 expose losing strong trample blocks and double-strike pruning in strong/master.
 The shared one-method correction and estimate transport pass one combined
-25-whole-module declaration of 487 ordinary cases. Numerical scoring inputs and
-the required before/after benchmark remain unfinished. See
+25-whole-module declaration of 487 ordinary cases. That checkpoint had not yet
+added numerical scoring inputs; the required before/after benchmark remains
+unfinished. See
 [blocking evidence](../testing/ai-outcome-based-trample-blocking.md) and
 [estimate transport](../testing/ai-profile-threat-transport-current.md).
 
@@ -25,7 +37,7 @@ Production AI now consumes validated match-frozen printed tags from persisted
 knowledge, with exact legacy fallback and anonymous per-decision trace usage.
 The composed15-whole-module component passes190 cases, including real repository
 hydration and the original seeded master head-to-head completing naturally.
-Numerical threat/play-value estimates are not yet scoring inputs. Full current
+That checkpoint used printed tags, not numerical threat/play-value inputs. Full current
 pytest/hosted qualification, threat-aware scoring, learned matchups, deliberate
 sideboarding and the specified A/B improvements remain required; this checkpoint
 does not complete the plan. See

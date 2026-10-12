@@ -2260,6 +2260,106 @@ class AIAgent:
                 return 0.0
         return -6.0
 
+    def _printed_major_threat(self, state, card):
+        """None preserves legacy scoring; printed advice is not live permission."""
+        from knowledge.service import estimate_for
+        from card_data.tactical import printed_card_types
+        from rules_engine.continuous import printed_abilities_suppressed
+        from rules_engine.entry_counters import prospective_entry_ability_view
+
+        if not isinstance(state, MatchState) or not isinstance(card, CardInstance):
+            return None
+        estimate = estimate_for(card)
+        if estimate is None:
+            return None
+        types = effective_types(state, card)
+        suppressed = printed_abilities_suppressed(state, card.id)
+        if card.zone != Zone.BATTLEFIELD and set(types) & {'Creature', 'Artifact', 'Enchantment', 'Planeswalker'}:
+            entry = prospective_entry_ability_view(state, card, card.controller)
+            types, suppressed = entry['types'], entry['printed_suppressed']
+        if suppressed or {kind.lower() for kind in types} != set(printed_card_types(card.type_line)):
+            return None
+        self._spell_tags(card)  # Use the existing private anonymous usage accounting.
+        return estimate.tier >= 2
+
+    def _premium_removal_priority(self, state, move, player_id):
+        """Classify only productive public targets; unresolved context stays legacy."""
+        if (not isinstance(state, MatchState) or state.stack
+                or state.pending_trigger_order or state.pending_mechanic_choice
+                or state.pending_replacement_choice or move.get('type') != 'cast_spell'
+                or move.get('cast_variant') or move.get('from_graveyard')):
+            return None
+        hints = move.get('target_hints') or {}
+        targets = move.get('targets') or {}
+        groups = {'creature_targets', 'artifact_targets', 'enchantment_targets',
+                  'planeswalker_targets', 'land_targets', 'permanent_targets'}
+        if (set(targets) - {'target_card_id'} or hints.get('modes') or hints.get('available_modes')
+                or hints.get('required_distinct_target_count')
+                or any(value for key, value in hints.items() if key.endswith('_targets') and key not in groups)):
+            return None
+        source = _card_for_move(state, move)
+        if source is None or source.zone != Zone.HAND:
+            return None
+        from rules_engine.costs import CostOption, collect_cost_options
+        from rules_engine.move_generator import _cost_option_view
+        from rules_engine.ability_model import unsupported_spell_reason
+        from rules_engine.oracle_effects import infer_effect_from_oracle
+        from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
+        from knowledge.service import tags_for
+
+        options = collect_cost_options(state, player_id, source)
+        if len(options) != 1:
+            return None
+        option = options[0]
+        if (option != CostOption('base', option.label, option.mana_cost)
+                or '{X}' in option.mana_cost.upper()
+                or move.get('cost_choice') not in (None, {'id': 'base'})
+                or move.get('cost_options') != [_cost_option_view(
+                    option, state, player_id, source.id, cast_card=source)]
+                or unsupported_spell_reason(source, targets)
+                or tags_for(source).source != 'persisted'):
+            return None
+        offered = {target['id']: target for key in groups for target in hints.get(key, [])
+                   if isinstance(target, dict) and target.get('id')}
+        opponent = state.players[3 - player_id]
+        candidates = {cid for cid in offered if cid in opponent.battlefield and cid in state.cards
+                      and state.cards[cid].zone == Zone.BATTLEFIELD
+                      and state.cards[cid].controller == 3 - player_id}
+        selected = targets.get('target_card_id')
+        if not candidates or targets and selected not in candidates:
+            return None
+
+        def rank(cid):
+            score = (self._creature_threat_score(state, cid, player_id)
+                     if 'Creature' in effective_types(state, state.cards[cid])
+                     else self._noncreature_permanent_threat_score(state, cid, player_id))
+            return score, str(offered[cid].get('name') or offered[cid].get('label') or cid)
+
+        cid = selected or max(candidates, key=rank)
+        effect, _ = infer_effect_from_oracle(state, source, player_id,
+                                            {**targets, 'target_card_id': cid}, report_unsupported=False)
+        if effect not in {'destroy_permanent', 'exile', 'return_permanent_to_hand'}:
+            return None
+        candidates -= unproductive_destroy_targets(state, source, player_id, targets,
+                                                    candidates=candidates, own_choice_action=None)
+        covered = covered_removal_targets(state, source, player_id, targets)
+        if covered is None:
+            return None
+        candidates -= covered
+        if not candidates or selected and selected not in candidates:
+            return None
+        cid = selected or max(candidates, key=rank)
+        effect, _ = infer_effect_from_oracle(state, source, player_id,
+                                            {**targets, 'target_card_id': cid}, report_unsupported=False)
+        if effect not in {'destroy_permanent', 'exile', 'return_permanent_to_hand'}:
+            return None
+        card = state.cards[cid]
+        major = self._printed_major_threat(state, card)
+        if major is None or recurring_engine_value(state, cid) or repeatable_mana_value(state, cid):
+            return None
+        power = max(0, effective_power(state, cid)) if 'Creature' in effective_types(state, card) else 0
+        return major or power >= 4 or power >= state.players[player_id].life
+
     def _cast_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         cid = move.get("card_id")
         card = state.cards.get(cid) if cid else None
@@ -2315,6 +2415,10 @@ class AIAgent:
         power = (prospective_creature_stats(state, card, player_id)[0] or 0
                  if is_creature else getattr(card, "power", 0) or 0)
         is_big_threat = power >= 4 or cmc >= 4
+        if is_creature:
+            printed_major = self._printed_major_threat(state, card)
+            if printed_major is not None:
+                is_big_threat = power >= 4 or printed_major
         if face_score:
             bonus_face = face_score * 0.45
             if own_main_sorcery_window and face_score <= 0.0 and state.turn <= 4:
@@ -2396,7 +2500,9 @@ class AIAgent:
             if "recursion" in tags:
                 bonus += self._graveyard_recursion_bonus(state, player_id)
             if "removal" in tags:
-                bonus += 2.0
+                premium = self._premium_removal_priority(state, move, player_id)
+                if premium is not False:
+                    bonus += 2.0
                 # Don't fire premium removal into empty/low-pressure board states.
                 if opp_creatures == 0:
                     bonus -= 2.5
@@ -2451,7 +2557,9 @@ class AIAgent:
                 if 2 <= cmc <= 4 and state.turn <= 6:
                     bonus += 1.2
             if "removal" in tags:
-                bonus += 2.0
+                premium = self._premium_removal_priority(state, move, player_id)
+                if premium is not False:
+                    bonus += 2.0
                 opp_id = 1 if player_id == 2 else 2
                 opp_creatures = sum(
                     1
