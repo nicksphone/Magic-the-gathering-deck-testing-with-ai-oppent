@@ -23857,7 +23857,7 @@
       "label": "_printed_color_symbols()",
       "file_type": "code",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L57",
+      "source_location": "L59",
       "_callable": true,
       "_origin": "ast"
     },
@@ -23866,7 +23866,7 @@
       "label": "card_color_names()",
       "file_type": "code",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L66",
+      "source_location": "L68",
       "_callable": true,
       "_origin": "ast"
     },
@@ -94060,6 +94060,39 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_test_locked_prevention_selection",
+      "label": "test_locked_prevention_selection.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_locked_prevention_selection_py_parametrize",
+      "label": "parametrize",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "label": "test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L13",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_locked_prevention_selection_rationale_1",
+      "label": "Trusted primitive controls; an unavailable explicit replacement stays invalid.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_test_log_priors",
       "label": "test_log_priors.py",
       "file_type": "code",
@@ -97079,6 +97112,39 @@
       "label": "Early/late real static replacements retain the original simultaneous set.",
       "file_type": "rationale",
       "source_file": "backend/tests/test_mill_annihilator_committed_batches.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_missing_source_colors",
+      "label": "test_missing_source_colors.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_missing_source_colors_py_parametrize",
+      "label": "parametrize",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_missing_source_colors_test_absent_source_color_queries_preserve_empty_result_and_state",
+      "label": "test_absent_source_color_queries_preserve_empty_result_and_state()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L10",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_missing_source_colors_rationale_1",
+      "label": "Absent primitive damage sources have no color, never an attached-card lookup.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_missing_source_colors.py",
       "source_location": "L1",
       "_origin": "ast"
     },
@@ -106914,11 +106980,62 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "label": "test_private_choice_consumer_epoch_diagnostic.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_private_choice_consumer_epoch_diagnostic_py_parametrize",
+      "label": "parametrize",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_private_choice_consumer_epoch_diagnostic_test_cold_epoch_preserves_saved_match_and_offered_explicit_selection",
+      "label": "test_cold_epoch_preserves_saved_match_and_offered_explicit_selection()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L16",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_private_choice_consumer_epoch_diagnostic_rationale_1",
+      "label": "Actual cold HTTP choice: only the owner epoch changes before explicit selection.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_test_private_choice_consumer_http",
       "label": "test_private_choice_consumer_http.py",
       "file_type": "code",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
       "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_private_choice_consumer_http_saved_match_bytes",
+      "label": "saved_match_bytes()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L11",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_private_choice_consumer_http_restart_without_gameplay_mutation",
+      "label": "restart_without_gameplay_mutation()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L27",
+      "_callable": true,
       "_origin": "ast"
     },
     {
@@ -106934,7 +107051,7 @@
       "label": "test_whole_views_checked_http_restart_and_stale_context()",
       "file_type": "code",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L13",
+      "source_location": "L43",
       "_callable": true,
       "_origin": "ast"
     },
@@ -106943,7 +107060,7 @@
       "label": "test_nonfirst_officer_selection_is_not_replaced_by_adapter()",
       "file_type": "code",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L69",
+      "source_location": "L99",
       "_callable": true,
       "_origin": "ast"
     },
@@ -156728,6 +156845,42 @@
       "_origin": "ast"
     },
     {
+      "id": "docs_testing_ci_missing_source_and_consumer_epochs",
+      "label": "ci-missing-source-and-consumer-epochs.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": "docs/testing/ci-missing-source-and-consumer-epochs.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_testing_ci_missing_source_and_consumer_epochs_missing_sources_and_consumer_restart_epochs",
+      "label": "Missing Sources And Consumer Restart Epochs",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/testing/ci-missing-source-and-consumer-epochs.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_testing_ci_missing_source_and_consumer_epochs_corrections",
+      "label": "Corrections",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/testing/ci-missing-source-and-consumer-epochs.md",
+      "source_location": "L3",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_testing_ci_missing_source_and_consumer_epochs_executed_evidence",
+      "label": "Executed Evidence",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/testing/ci-missing-source-and-consumer-epochs.md",
+      "source_location": "L21",
+      "_origin": "ast"
+    },
+    {
       "id": "docs_testing_ci_pure_native_admission_current",
       "label": "ci-pure-native-admission-current.md",
       "file_type": "document",
@@ -175430,6 +175583,15 @@
       "_origin": "ast"
     },
     {
+      "id": "plan_2026_10_12_missing_sources_and_consumer_restart_epochs",
+      "label": "2026-10-12 Missing Sources And Consumer Restart Epochs",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "plan.md",
+      "source_location": "L997",
+      "_origin": "ast"
+    },
+    {
       "id": "release_agent_plan",
       "label": "release-agent-plan.md",
       "file_type": "document",
@@ -177595,7 +177757,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "inventory",
@@ -177603,7 +177766,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_ai_recurring_engines",
@@ -177611,7 +177775,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_basic_land_layer_goldens",
@@ -177619,7 +177784,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_paid_context_goldens",
@@ -177627,7 +177793,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_suncleanser_desired",
@@ -177635,7 +177802,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_counter_replacements",
@@ -177643,7 +177811,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_counter_prohibitions",
@@ -177651,7 +177820,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_restricted_mana",
@@ -177659,7 +177829,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_linked_damage_targets",
@@ -177667,7 +177838,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_exiled_time_counter_bodies",
@@ -177675,7 +177847,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_graveyard_self_activation_product",
@@ -177683,7 +177856,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_intrinsic_entry_producer_audit",
@@ -177691,7 +177865,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "scripts_corpus_knowledge_readiness",
@@ -177699,7 +177874,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "scripts_knowledge_engine_coverage",
@@ -177707,7 +177883,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_springheart_paid_body",
@@ -177715,7 +177892,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_complete_copy_payment_roots",
@@ -177723,7 +177901,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "free_owner_support",
@@ -177731,7 +177910,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_spell_cost_overlap_investigation",
@@ -177739,7 +177919,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_fixed_spell_cost_witness",
@@ -177747,7 +177928,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_variable_mana",
@@ -177755,7 +177937,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "nadu_support",
@@ -177763,7 +177946,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_equip_context",
@@ -177771,7 +177955,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_ward_resolution",
@@ -177779,7 +177964,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_announced_target_reference_product",
@@ -177787,7 +177973,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_announced_target_reference_copy_seams",
@@ -177795,7 +177982,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_ordered_creature_modifiers",
@@ -177803,7 +177991,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_permanent_spell_context",
@@ -177811,7 +178000,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_march_current_baseline",
@@ -177819,7 +178009,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "api_contracts",
@@ -177827,7 +178018,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_api_input_contracts",
@@ -177835,7 +178027,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_march_pitch_paid",
@@ -177843,7 +178036,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_springheart_departure_body",
@@ -177851,7 +178045,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_paid_exchange_desired",
@@ -177859,7 +178054,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_brainstorm_desired",
@@ -177867,7 +178063,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_suspend_fixture_server",
@@ -177875,7 +178072,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_paid_modal",
@@ -177883,7 +178081,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_activated_top_selection",
@@ -177891,7 +178090,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_attack_bands",
@@ -177899,7 +178099,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "test_paid_preflight",
@@ -177907,7 +178108,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_cathar_day_night_linked_exile",
@@ -177915,7 +178117,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_mana_executor_choices",
@@ -177923,7 +178126,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_mandatory_base_vectors",
@@ -177931,7 +178135,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_multi_target_immediate_return",
@@ -177939,7 +178144,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_suspend_lifecycle",
@@ -177947,7 +178153,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_browser_fixture_server",
@@ -177955,7 +178162,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_casting_trigger_browser_fixture",
@@ -177963,7 +178171,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_activation_payment_browser_fixture",
@@ -177971,7 +178180,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_life_lock_browser_fixture",
@@ -177979,7 +178189,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     },
     {
       "id": "tests_test_resident_entry_counter_provider",
@@ -177987,7 +178198,8 @@
       "file_type": "concept",
       "type": "external",
       "external": true,
-      "source_file": ""
+      "source_file": "",
+      "_origin": "semantic"
     }
   ],
   "links": [
@@ -253238,7 +253450,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L57",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -253248,7 +253460,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L66",
+      "source_location": "L68",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -253259,7 +253471,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L46",
+      "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -253270,7 +253482,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L67",
+      "source_location": "L69",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -482527,6 +482739,114 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "pytest",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_effects_handlers",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_game_state_serializers",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_game_state_state",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_rules_engine_action_validation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_rules_engine_replacement",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_tests_test_cant_prevent_scopes",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "backend_tests_test_locked_prevention_selection_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection_rationale_1",
+      "target": "backend_tests_test_locked_prevention_selection",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_log_priors",
       "target": "backend_ai_log_priors",
       "relation": "imports_from",
@@ -491696,6 +492016,81 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_mill_annihilator_committed_batches.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "pytest",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "backend_game_state_serializers",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "backend_rules_engine_colors",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "backend_tests_test_variable_mana",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors_test_absent_source_color_queries_preserve_empty_result_and_state",
+      "target": "backend_tests_test_missing_source_colors_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "backend_tests_test_missing_source_colors_test_absent_source_color_queries_preserve_empty_result_and_state",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors_rationale_1",
+      "target": "backend_tests_test_missing_source_colors",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast"
@@ -523637,6 +524032,81 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "uuid",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "pytest",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "backend_tests_test_private_choice_http_restart",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "backend_tests_test_private_choice_consumer_http",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic_test_cold_epoch_preserves_saved_match_and_offered_explicit_selection",
+      "target": "backend_tests_test_private_choice_consumer_epoch_diagnostic_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "backend_tests_test_private_choice_consumer_epoch_diagnostic_test_cold_epoch_preserves_saved_match_and_offered_explicit_selection",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic_rationale_1",
+      "target": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_private_choice_consumer_http",
       "target": "copy",
       "relation": "imports_from",
@@ -523649,12 +524119,23 @@
     },
     {
       "source": "backend_tests_test_private_choice_consumer_http",
+      "target": "sqlite3",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http",
       "target": "uuid",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L3",
+      "source_location": "L4",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -523665,7 +524146,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L5",
+      "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -523676,7 +524157,27 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L7",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http",
+      "target": "backend_tests_test_private_choice_consumer_http_saved_match_bytes",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http",
+      "target": "backend_tests_test_private_choice_consumer_http_restart_without_gameplay_mutation",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -523686,7 +524187,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L10",
+      "source_location": "L40",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -523697,7 +524198,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L13",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -523707,7 +524208,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L68",
+      "source_location": "L98",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -523718,7 +524219,40 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L69",
+      "source_location": "L99",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http_restart_without_gameplay_mutation",
+      "target": "backend_tests_test_private_choice_consumer_http_saved_match_bytes",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http_test_whole_views_checked_http_restart_and_stale_context",
+      "target": "backend_tests_test_private_choice_consumer_http_restart_without_gameplay_mutation",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http_test_nonfirst_officer_selection_is_not_replaced_by_adapter",
+      "target": "backend_tests_test_private_choice_consumer_http_restart_without_gameplay_mutation",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -661743,6 +662277,36 @@
       "_origin": "ast"
     },
     {
+      "source": "docs_testing_ci_missing_source_and_consumer_epochs",
+      "target": "docs_testing_ci_missing_source_and_consumer_epochs_missing_sources_and_consumer_restart_epochs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/testing/ci-missing-source-and-consumer-epochs.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_testing_ci_missing_source_and_consumer_epochs_missing_sources_and_consumer_restart_epochs",
+      "target": "docs_testing_ci_missing_source_and_consumer_epochs_corrections",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/testing/ci-missing-source-and-consumer-epochs.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_testing_ci_missing_source_and_consumer_epochs_missing_sources_and_consumer_restart_epochs",
+      "target": "docs_testing_ci_missing_source_and_consumer_epochs_executed_evidence",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/testing/ci-missing-source-and-consumer-epochs.md",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "docs_testing_ci_pure_native_admission_current",
       "target": "docs_testing_ci_pure_native_admission_current_pure_diagnostics_and_native_admission_fixtures",
       "relation": "contains",
@@ -679563,6 +680127,26 @@
       "_origin": "ast"
     },
     {
+      "source": "plan_mtg_deck_testing_lab_finish_plan",
+      "target": "plan_2026_10_12_missing_sources_and_consumer_restart_epochs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plan.md",
+      "source_location": "L997",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "plan",
+      "target": "docs_testing_ci_missing_source_and_consumer_epochs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "plan.md",
+      "source_location": "L1005",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "release_agent_plan",
       "target": "release_agent_plan_release_and_storage_operations_agent_handoff",
       "relation": "contains",
@@ -691219,7 +691803,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L16",
+      "source_location": "L18",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -691230,7 +691814,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L21",
+      "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -691241,7 +691825,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L22",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -691252,7 +691836,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L23",
+      "source_location": "L25",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -691263,7 +691847,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L27",
+      "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -769203,6 +769787,83 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_effects_handlers_deal_damage",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_game_state_state_zone",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_rules_engine_replacement_replacement_options",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection",
+      "target": "backend_tests_test_cant_prevent_scopes_state",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_log_priors",
       "target": "backend_ai_log_priors_build_priors_from_examples",
       "relation": "imports",
@@ -772752,6 +773413,50 @@
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_mill_annihilator_committed_batches.py",
       "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "backend_rules_engine_colors_card_color_names",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "backend_rules_engine_colors_card_color_symbols",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors",
+      "target": "backend_tests_test_variable_mana_clean",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -784108,13 +784813,57 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "backend_tests_test_private_choice_http_restart_assert_restart_audit",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "backend_tests_test_private_choice_http_restart_fixture",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "backend_tests_test_private_choice_http_restart_stable",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic",
+      "target": "backend_tests_test_private_choice_consumer_http_saved_match_bytes",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_private_choice_consumer_http",
       "target": "backend_tests_test_private_choice_http_restart_fixture",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -784125,7 +784874,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L7",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -784136,7 +784885,18 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L7",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http",
+      "target": "backend_tests_test_private_choice_http_restart_assert_restart_audit",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -828444,7 +829204,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L17",
+      "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -828455,7 +829215,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L24",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -828466,7 +829226,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L26",
+      "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -828477,7 +829237,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L30",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -904800,6 +905560,28 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_private_choice_consumer_http_restart_without_gameplay_mutation",
+      "target": "backend_tests_test_private_choice_http_restart_stable",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http_restart_without_gameplay_mutation",
+      "target": "backend_tests_test_private_choice_http_restart_assert_restart_audit",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_private_choice_intent_boundary_position",
       "target": "backend_tests_test_optional_reveal_transform_pending",
       "relation": "calls",
@@ -935166,7 +935948,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L26",
+      "source_location": "L28",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -993577,6 +994359,39 @@
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_locked_activation_mana_plan.py",
       "source_location": "L124",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L15",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L29",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -1130636,6 +1131451,54 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "backend_tests_test_cant_prevent_scopes_state",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "backend_rules_engine_replacement_replacement_options",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L25",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "backend_effects_handlers_deal_damage",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_loyalty_animation_spelling_boundary_test_native_lowering_requires_compatible_stat_spelling_not_only_numeric_zero",
       "target": "backend_rules_engine_loyalty_instructions_compile_extended",
       "relation": "calls",
@@ -1135708,6 +1136571,54 @@
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_mill_annihilator_committed_batches.py",
       "source_location": "L198",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors_test_absent_source_color_queries_preserve_empty_result_and_state",
+      "target": "backend_tests_test_variable_mana_clean",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors_test_absent_source_color_queries_preserve_empty_result_and_state",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors_test_absent_source_color_queries_preserve_empty_result_and_state",
+      "target": "backend_rules_engine_colors_card_color_symbols",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_missing_source_colors_test_absent_source_color_queries_preserve_empty_result_and_state",
+      "target": "backend_rules_engine_colors_card_color_names",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_missing_source_colors.py",
+      "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1149272,6 +1150183,54 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic_test_cold_epoch_preserves_saved_match_and_offered_explicit_selection",
+      "target": "backend_tests_test_private_choice_http_restart_fixture",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic_test_cold_epoch_preserves_saved_match_and_offered_explicit_selection",
+      "target": "backend_tests_test_private_choice_consumer_http_saved_match_bytes",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic_test_cold_epoch_preserves_saved_match_and_offered_explicit_selection",
+      "target": "backend_tests_test_private_choice_http_restart_assert_restart_audit",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L39",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_epoch_diagnostic_test_cold_epoch_preserves_saved_match_and_offered_explicit_selection",
+      "target": "backend_tests_test_private_choice_http_restart_stable",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_private_choice_consumer_epoch_diagnostic.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_private_choice_consumer_http_test_whole_views_checked_http_restart_and_stale_context",
       "target": "backend_tests_test_private_choice_http_restart_fixture",
       "relation": "calls",
@@ -1149279,7 +1150238,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L14",
+      "source_location": "L44",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1149291,7 +1150250,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L22",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1149303,7 +1150262,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L29",
+      "source_location": "L59",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1149315,7 +1150274,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L70",
+      "source_location": "L100",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1149327,7 +1150286,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_private_choice_consumer_http.py",
-      "source_location": "L80",
+      "source_location": "L110",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1198887,7 +1199846,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/rules_engine/colors.py",
-      "source_location": "L63",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1224092,6 +1225051,18 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_locked_prevention_selection_test_locked_prevention_rejects_explicit_source_then_applies_unselected_damage",
+      "target": "pytest",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_locked_prevention_selection.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_look_top_select_hand_test_mana_spent_top_card_selection_is_not_a_draw",
       "target": "backend_game_state_state_matchfactory_from_decks",
       "relation": "calls",
@@ -1228600,6 +1229571,18 @@
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_priority_stops.py",
       "source_location": "L58",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_private_choice_consumer_http_saved_match_bytes",
+      "target": "sqlite3",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_private_choice_consumer_http.py",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },

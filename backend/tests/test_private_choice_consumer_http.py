@@ -1,10 +1,40 @@
 """Whole API/policy views normalize without dispatching their private metadata."""
 from copy import deepcopy
+import sqlite3
 from uuid import uuid4
 
 import pytest
 
-from tests.test_private_choice_http_restart import server, fixture, choice, stable
+from tests.test_private_choice_http_restart import server, fixture, choice, stable, assert_restart_audit
+
+
+def saved_match_bytes(server, identifier):
+    path = server.root / 'backend/mtg_lab.db'
+    connection = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)
+    try:
+        connection.execute('PRAGMA query_only=ON')
+        row = connection.execute(
+            'SELECT state_json, controller_json FROM activematchrecord WHERE id=?',
+            (identifier,),
+        ).fetchone()
+        assert row is not None
+        return tuple(value.encode() for value in row)
+    finally:
+        connection.close()
+
+
+
+def restart_without_gameplay_mutation(server, identifier, before):
+    assert (server.root / '.private-choice-owned').read_text() == server.token
+    assert stable(server.audit(identifier)) == stable(before)
+    saved = saved_match_bytes(server, identifier)
+    previous = server.proc
+    server.restart()
+    restored = server.audit(identifier)
+    assert_restart_audit(before, restored, previous_pid=previous.pid,
+                         current_pid=server.proc.pid, previous_returncode=previous.poll())
+    assert saved_match_bytes(server, identifier) == saved
+    return restored
 
 
 @pytest.mark.parametrize('seat', [1, 2])
@@ -40,7 +70,7 @@ def test_whole_views_checked_http_restart_and_stale_context(server, family, seat
     assert status == 200 and result['action'] == action
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': {**view, **action}})
     assert status == 422 and stable(server.audit(identifier)) == stable(before)
-    server.restart()
+    before = restart_without_gameplay_mutation(server, identifier, before)
     assert stable(server.audit(identifier)) == stable(before)
     status, result = server.call(endpoint, {**view, **action})
     assert status == 200 and result['action'] == action
@@ -61,7 +91,7 @@ def test_whole_views_checked_http_restart_and_stale_context(server, family, seat
     status, _ = server.call(base + '/action', {'player_id': seat, 'action': action},
                            {'X-Match-Revision': str(before['revision']), 'Idempotency-Key': str(uuid4())})
     assert status == 409 and stable(server.audit(identifier)) == stable(after)
-    server.restart()
+    after = restart_without_gameplay_mutation(server, identifier, after)
     assert stable(server.audit(identifier)) == stable(after)
 
 
@@ -84,5 +114,5 @@ def test_nonfirst_officer_selection_is_not_replaced_by_adapter(server, seat):
     after = server.audit(identifier)
     assert after['state']['players'][str(seat)]['hand'] == action['card_ids']
     assert eligible[0] in after['state']['players'][str(seat)]['library']
-    server.restart()
+    after = restart_without_gameplay_mutation(server, identifier, after)
     assert stable(server.audit(identifier)) == stable(after)

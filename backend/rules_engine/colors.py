@@ -13,6 +13,8 @@ _MANA_COLOR_MAP = {
 
 
 def card_color_symbols(card, state=None) -> set[str]:
+    if card is None:
+        return set()
     from rules_engine.type_effects import active_type_effects
     overlays = [effect for effect in active_type_effects(card) if 'colors' in effect]
     overlay = max(overlays, key=lambda effect: effect['timestamp']) if overlays else None

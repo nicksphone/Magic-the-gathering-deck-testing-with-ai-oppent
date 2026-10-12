@@ -993,3 +993,14 @@ See the current blink and terminal-fixture evidence documents in `docs/testing`.
 Protected CI input, full backend qualification and all original release gates
 remain required. These are bounded correctness/retention changes, not a measured
 expert-AI or arbitrary-card support certificate.
+
+## 2026-10-12 Missing Sources And Consumer Restart Epochs
+
+A two-line shared color guard restores missing primitive-source behavior without
+weakening protection or replacement selection. The corrected seven-whole-module
+component passes 212 cases (163.33s), retaining the earlier strict failures and
+subprocess-policy ledgers. Separately, consumer10/new HTTP4/restart-contract53
+pass 67 cases (95.85s): actual cold epoch changes are proved before a new raw SQL
+baseline, exact saved game/controller bytes and all 26 original assertions remain.
+See [scope and evidence](docs/testing/ci-missing-source-and-consumer-epochs.md).
+All original release gates and measured AI quality remain required and unfinished.

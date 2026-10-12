@@ -564,9 +564,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/colors.py": {
-    "mtime": 1791667789.8259325,
-    "seen": 1791671014.2827783,
-    "ast_hash": "c19f705223726ed2b3715ef1c0d06680",
+    "mtime": 1791783695.607071,
+    "seen": 1791783833.0897844,
+    "ast_hash": "d91f06ae732f1adf78792f746941895a",
     "semantic_hash": ""
   },
   "backend/rules_engine/combat.py": {
@@ -3498,9 +3498,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_cant_prevent_scopes.py": {
-    "mtime": 1791667790.1199284,
-    "seen": 1791671014.2843883,
-    "ast_hash": "f1000bfc4100c612fcd418539b0ebaef",
+    "mtime": 1791783695.607071,
+    "seen": 1791783833.0919616,
+    "ast_hash": "a161226ce251ae852fe69a27484027ac",
     "semantic_hash": ""
   },
   "backend/tests/test_card_hydration.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791781714.6911879,
-    "seen": 1791781789.7456622,
-    "ast_hash": "20d868af41908267e05359d1540cd353",
+    "mtime": 1791783735.9164715,
+    "seen": 1791783833.095237,
+    "ast_hash": "7c051033a47f1028e4a2fd32f9f61310",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -8478,9 +8478,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_private_choice_consumer_http.py": {
-    "mtime": 1791667790.221927,
-    "seen": 1791671014.2850678,
-    "ast_hash": "846056ab1f96028681deaf36a838dd37",
+    "mtime": 1791783695.6410704,
+    "seen": 1791783833.0928173,
+    "ast_hash": "8ae44ee7b01fadcf63cf236f13abb752",
     "semantic_hash": ""
   },
   "backend/tests/test_private_choice_http_restart.py": {
@@ -17037,6 +17037,30 @@
     "mtime": 1791781714.6901877,
     "seen": 1791781789.7448306,
     "ast_hash": "33590275fcac402a21d6f8e2ac26fb6c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_locked_prevention_selection.py": {
+    "mtime": 1791783695.6360705,
+    "seen": 1791783833.0925736,
+    "ast_hash": "128837eee96a1c3c8c3f2a9dfacc0e3f",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_missing_source_colors.py": {
+    "mtime": 1791783695.6350703,
+    "seen": 1791783833.0926368,
+    "ast_hash": "5f70f23f672e1c9b8444e2f41021f0eb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_private_choice_consumer_epoch_diagnostic.py": {
+    "mtime": 1791783695.6420703,
+    "seen": 1791783833.0928154,
+    "ast_hash": "7c86f0993015f0ae870421ed931ebba7",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-missing-source-and-consumer-epochs.md": {
+    "mtime": 1791783735.9154713,
+    "seen": 1791783833.0943573,
+    "ast_hash": "7f1ea246944d116b38c6aaac6b97af9e",
     "semantic_hash": ""
   }
 }
