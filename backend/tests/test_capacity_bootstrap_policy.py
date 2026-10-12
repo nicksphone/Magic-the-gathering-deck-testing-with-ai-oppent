@@ -1,4 +1,5 @@
 """Pure path/transition policy; no native lock, SQL, backup or bootstrap proof."""
+from hashlib import sha256
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -6,16 +7,25 @@ import pytest
 from sqlmodel import create_engine
 
 import persistence.capacity as capacity
+import persistence.job_retention as retention
 from persistence.job_retention import local_path
 
 
 DEFAULT = Path(capacity.__file__).resolve().parents[1] / 'mtg_lab.db'
 
 
+def default_file_state():
+    if not DEFAULT.exists():
+        return None
+    stat = DEFAULT.stat()
+    return (stat.st_dev, stat.st_ino, stat.st_size, stat.st_mtime_ns,
+            sha256(DEFAULT.read_bytes()).hexdigest())
+
+
 def test_exact_application_default_validates_without_creation():
-    assert not DEFAULT.exists()
+    before = default_file_state()
     assert capacity.application_database_path(DEFAULT, existing=False) == DEFAULT
-    assert not DEFAULT.exists()
+    assert default_file_state() == before
 
 
 def test_offline_default_rejection_is_unchanged():
@@ -23,7 +33,12 @@ def test_offline_default_rejection_is_unchanged():
         local_path(DEFAULT, existing=False)
 
 
-def test_application_seam_still_rejects_network_filesystem():
+def test_application_seam_still_rejects_network_filesystem(monkeypatch):
+    read_text = Path.read_text
+    mounts = ('1 0 0:1 / / rw - ext4 fixture rw\n'
+              '2 1 0:2 / /mnt/rchfiles rw - nfs fixture:/export rw\n')
+    monkeypatch.setattr(retention.Path, 'read_text', lambda path, *a, **kw:
+                        mounts if path == Path('/proc/self/mountinfo') else read_text(path, *a, **kw))
     with pytest.raises(ValueError, match='recognized local filesystem'):
         capacity.application_database_path(Path('/mnt/rchfiles/codex-storage/not-a-database.txt'), existing=False)
 
@@ -31,13 +46,14 @@ def test_application_seam_still_rejects_network_filesystem():
 def test_default_owner_backup_requires_actual_acquisition_before_io(tmp_path, monkeypatch):
     import scripts.verify_storage_restore as backup
     calls = []
+    before = default_file_state()
     monkeypatch.setattr(backup, '_backup_validated_database', lambda *a, **kw: calls.append(True))
     engine = create_engine('sqlite:///' + str(DEFAULT))
     try:
         owner = capacity.DatabaseOwner(engine)
         with pytest.raises(capacity.CapacityIntegrityError, match='Live initialized owner'):
             owner.backup(tmp_path / 'backup.txt')
-        assert calls == [] and not DEFAULT.exists()
+        assert calls == [] and default_file_state() == before
     finally:
         engine.dispose()
 

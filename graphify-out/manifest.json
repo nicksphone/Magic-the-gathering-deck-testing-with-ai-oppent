@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791784792.4742694,
-    "seen": 1791784870.5759976,
-    "ast_hash": "40e29098de23b45b338109227b450796",
+    "mtime": 1791787482.7787738,
+    "seen": 1791787565.6900036,
+    "ast_hash": "0a349794513c5e3e62fa77bddf9dce6e",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -14562,9 +14562,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_capacity_bootstrap_policy.py": {
-    "mtime": 1791667790.1209283,
-    "seen": 1791671014.2843902,
-    "ast_hash": "09576d130a8c8a088d3f961ac9591f1c",
+    "mtime": 1791787482.7427745,
+    "seen": 1791787565.6866825,
+    "ast_hash": "e7a4b08feefe4983a7b028612b745503",
     "semantic_hash": ""
   },
   "backend/tests/test_capacity_lifecycle_policy.py": {
@@ -17079,6 +17079,18 @@
     "mtime": 1791784792.4732695,
     "seen": 1791784870.5751824,
     "ast_hash": "24842965b63f8d4e04d54bb0a53c2fab",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_capacity_policy_environment.py": {
+    "mtime": 1791787482.7447743,
+    "seen": 1791787565.686688,
+    "ast_hash": "31356c0425bcfa0430c6e391c7e14894",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-capacity-policy-fixture-portability.md": {
+    "mtime": 1791787482.7777739,
+    "seen": 1791787565.6890638,
+    "ast_hash": "56a6697e5f096751ddf25716244a64fb",
     "semantic_hash": ""
   }
 }

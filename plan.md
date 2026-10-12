@@ -26,6 +26,14 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+Published `788e219a` retains the protected backend qualification requirement.
+Its predecessor's scoped missing-source and consumer-epoch cohorts pass 212
+and 67 checks; the explicit Favor worker-input cohort independently passes24.
+The next pure capacity-policy fixture correction passes the same93-case whole
+neighborhood with the disposable default file present and absent. Production
+storage/backup/capacity policy is unchanged; shared startup failures remain open.
+See [capacity fixture scope](docs/testing/ci-capacity-policy-fixture-portability.md).
+
 The next test-only trigger/query fixture correction passes all 44 cases across
 four directly affected whole modules independently. Exact trigger clauses and
 both query-scope paths remain covered; no production or full-ability-resolution
