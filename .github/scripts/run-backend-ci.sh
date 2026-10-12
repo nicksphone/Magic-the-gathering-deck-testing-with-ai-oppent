@@ -123,8 +123,10 @@ sampler=$!
 
 cd "$scratch/backend"
 export PYTHONPATH="$scratch/.github/scripts:$scratch/backend"
+# Only this fresh serial job workspace may reclaim fully passed startup snapshots.
+export MTG_CI_PASSED_SNAPSHOT_CLEANUP=1
 set +e
-python -m pytest -vv --tb=short -ra -p no:cacheprovider -p ci_backend_evidence -o tmp_path_retention_policy=failed \
+python -m pytest -vv --tb=short -ra -p no:cacheprovider -p ci_backend_evidence -p ci_backend_snapshot_cleanup -o tmp_path_retention_policy=failed \
   3>&- 2>&1 | tee "$evidence/pytest.log" 3>&-
 statuses=("${PIPESTATUS[@]}")
 set -e

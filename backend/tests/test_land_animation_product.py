@@ -223,8 +223,9 @@ def test_real_flash_flicker_response_departure_does_not_receive_pending_animatio
     before = snapshot(state)
     candidate = checked_action(state, RulesEngine(), seat, action(land))
     candidate = resolve(candidate)
-    # Actual first animation makes this a legal target for the baseline's
-    # creature-only Flicker hints. No types/events are injected for the response.
+    source_incarnation = object_incarnation(candidate.cards[land.id])
+    source_sequence = candidate.cards[land.id].zone_change_sequence
+    # Retain the original paid animation before the real exile-and-return response.
     candidate = checked_action(candidate, RulesEngine(), seat, action(candidate.cards[land.id]))
     animation_id = candidate.stack[-1].id
     candidate = checked_action(candidate, RulesEngine(), seat,
@@ -232,18 +233,22 @@ def test_real_flash_flicker_response_departure_does_not_receive_pending_animatio
     for _ in range(2):
         candidate = checked_action(candidate, RulesEngine(), candidate.priority_player, {'type': 'pass_priority'})
     assert len(candidate.stack) == 1 and candidate.stack[0].id == animation_id
-    assert candidate.cards[land.id].zone == Zone.EXILE
+    assert candidate.cards[land.id].zone == Zone.BATTLEFIELD
+    assert candidate.cards[land.id].owner == candidate.cards[land.id].controller == seat
+    assert object_incarnation(candidate.cards[land.id]) > source_incarnation
+    assert candidate.cards[land.id].zone_change_sequence == source_sequence + 2
     assert sum(candidate.players[seat].mana_pool.values()) == 0
-    # Baseline Flicker is known exile-only; this proves departure, not correct blink.
+    # The old activation references the departed incarnation, not the returned land.
     departed = snapshot(candidate)
     candidate = resolve(candidate)
-    assert candidate.cards[land.id].zone == Zone.EXILE
+    assert candidate.cards[land.id].zone == Zone.BATTLEFIELD
+    assert candidate.cards[land.id].owner == candidate.cards[land.id].controller == seat
     assert not candidate.cards[land.id].type_effects
     assert not candidate.cards[land.id].base_stat_effects
     assert not candidate.cards[land.id].keyword_effects
     assert snapshot(state) == before
     record(request, candidate, phase='pending_source_departed', departure=departed,
-           limit='Flicker return is a separately retained known failure; no reentry claim')
+           limit='Real paid Flicker reentry rejects the old pending animation; constructed position, not a natural game')
 
 
 @pytest.mark.parametrize('seat', [1, 2])

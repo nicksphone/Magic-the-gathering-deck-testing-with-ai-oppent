@@ -27,7 +27,7 @@ class ScratchRetentionTests(unittest.TestCase):
         options = runner_options()
         self.assertIn('tmp_path_retention_policy=failed', options)
         self.assertEqual(options, ['-vv', '--tb=short', '-ra', '-p',
-            'no:cacheprovider', '-p', 'ci_backend_evidence', '-o',
+            'no:cacheprovider', '-p', 'ci_backend_evidence', '-p', 'ci_backend_snapshot_cleanup', '-o',
             'tmp_path_retention_policy=failed'])
 
     def test_real_pytest_reclaims_passed_scratch_but_retains_failed_call_and_ledger(self):

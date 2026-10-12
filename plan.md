@@ -26,6 +26,11 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+The next conservative passed-startup-snapshot cleanup and animation-fixture
+batch passes independent whole cohorts of 141 CI-script checks and 114 animation
+tests. Gameplay, backup and capacity clocks remain unchanged; no hosted startup
+cause is inferred. [Snapshot and animation scope](docs/testing/ci-snapshots-and-animation-fixtures.md).
+
 The next reporting and explicit-keeper fixture increment passes 138 CI-script
 checks and an independent 30-case whole SBA cohort. It repairs the reproduced
 evidence-directory redirection without dropping records, and preserves real

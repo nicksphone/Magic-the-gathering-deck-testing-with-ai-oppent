@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791780014.7301903,
-    "seen": 1791780123.0506916,
-    "ast_hash": "bc3f3fae621e3f9f642422dcd8d5e124",
+    "mtime": 1791780910.8515263,
+    "seen": 1791781014.990468,
+    "ast_hash": "0b9ed3c774896a248f7ec64b7df8f806",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -11580,9 +11580,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_canonical_land_animation_audit.py": {
-    "mtime": 1791667790.1189284,
-    "seen": 1791671014.2843795,
-    "ast_hash": "35ebfae8b57c00b7e42bb4859ddd18ce",
+    "mtime": 1791780815.8575811,
+    "seen": 1791781014.9875948,
+    "ast_hash": "f6e6f9feff07a9ad994cbf8b0b6cf7e6",
     "semantic_hash": ""
   },
   "backend/tests/test_canonical_land_animation_mana_controls.py": {
@@ -11610,9 +11610,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_land_animation_product.py": {
-    "mtime": 1791667790.1829276,
-    "seen": 1791671014.2848036,
-    "ast_hash": "8c27b4f3e43c9cbd6f26a5ac16cc0ef1",
+    "mtime": 1791780815.8555813,
+    "seen": 1791781014.9880805,
+    "ast_hash": "01266b4cdb931dd64b8677f283f9c53a",
     "semantic_hash": ""
   },
   "backend/tests/test_strategic_combat_leaf.py": {
@@ -16080,9 +16080,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/run-backend-ci.sh": {
-    "mtime": 1791749275.1762128,
-    "seen": 1791749528.0370274,
-    "ast_hash": "cb63ddd82e36d6dc86022416289e9182",
+    "mtime": 1791780815.8385813,
+    "seen": 1791781014.9850721,
+    "ast_hash": "0c02f1e49dee33e8706fd03bfa00ab85",
     "semantic_hash": ""
   },
   "backend/tests/ci_input_contracts.py": {
@@ -16338,9 +16338,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_privacy.py": {
-    "mtime": 1791749275.1762128,
-    "seen": 1791749528.037031,
-    "ast_hash": "efe322fe68e62a767f9f3550f8593e0e",
+    "mtime": 1791780815.8385813,
+    "seen": 1791781014.9850752,
+    "ast_hash": "578caa0350a75d66588b64ce5b0572b9",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_ci_backend_metadata.py": {
@@ -16548,9 +16548,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_progress.py": {
-    "mtime": 1791749334.671155,
-    "seen": 1791749528.0370336,
-    "ast_hash": "aa5bc5893e0bb48cf928497f542c2dc4",
+    "mtime": 1791780815.8385813,
+    "seen": 1791781014.985078,
+    "ast_hash": "896f43254d518f1be3b634211497a532",
     "semantic_hash": ""
   },
   "backend/tests/test_guard_canary_scope.py": {
@@ -16818,9 +16818,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_tmp_retention.py": {
-    "mtime": 1791749253.3235793,
-    "seen": 1791749528.0370362,
-    "ast_hash": "b3c62b3521b0a53934ade18696bbcac0",
+    "mtime": 1791780815.8385813,
+    "seen": 1791781014.9850807,
+    "ast_hash": "48377fb694c1b05c430970660ed4c63e",
     "semantic_hash": ""
   },
   "docs/testing/ci-backend-scratch-current.md": {
@@ -16995,6 +16995,30 @@
     "mtime": 1791780014.7271903,
     "seen": 1791780123.0498548,
     "ast_hash": "1cac332d09f5adc7413323b69d9c2d5f",
+    "semantic_hash": ""
+  },
+  ".github/scripts/ci_backend_snapshot_cleanup.py": {
+    "mtime": 1791780815.8385813,
+    "seen": 1791781014.985066,
+    "ast_hash": "9ed79d2ce68bc83ef360c9fd9d30f1a9",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_snapshot_cleanup.py": {
+    "mtime": 1791780815.8395815,
+    "seen": 1791781014.9850957,
+    "ast_hash": "f13eed9199afbf91930e22d82eb33040",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_animation_flicker_reentry_diagnostic.py": {
+    "mtime": 1791780815.8575811,
+    "seen": 1791781014.9874794,
+    "ast_hash": "d99647d4cff1f26849606a93d69f23f7",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-snapshots-and-animation-fixtures.md": {
+    "mtime": 1791780910.8515263,
+    "seen": 1791781014.9896815,
+    "ast_hash": "72f0de9f18b9075704cd720ebc41b538",
     "semantic_hash": ""
   }
 }

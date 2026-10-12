@@ -107,6 +107,18 @@ def resolve(state):
     raise AssertionError('Eight native priority passes did not resolve the real stack')
 
 
+def genuinely_unfunded_animation_position(state, seat, land):
+    state.players[seat].mana_pool = {}
+    if land.name == 'Mutavault':
+        state = checked_action(state, RulesEngine(), seat,
+                               {'type': 'tap_land_for_mana', 'card_id': land.id, 'color': 'C'})
+        for _ in range(2):
+            state = checked_action(state, RulesEngine(), state.priority_player, {'type': 'pass_priority'})
+        assert state.cards[land.id].tapped
+        assert sum(state.players[seat].mana_pool.values()) == 0
+    return state
+
+
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('name', FAMILIES)
 def test_observed_extraction_cost_payability_and_metadata_are_separate(request, seat, name):
@@ -262,7 +274,7 @@ def test_actual_land_play_retains_tapped_entry_and_same_turn_tracking(request, s
 def test_atomic_safety_rejection_without_animation_or_mana_loss(request, seat, name, reason):
     state, land = position(seat, name)
     if reason == 'unfunded':
-        state.players[seat].mana_pool = {}
+        state = genuinely_unfunded_animation_position(state, seat, land)
     elif reason == 'wrong_priority':
         state.priority_player = 3-seat
     before = snapshot(state)
@@ -327,7 +339,7 @@ def test_desired_private_http_activation_atomic_sql_and_native_restore(isolated_
     state, land = position(seat, name)
     hidden = raw_card(state, ROWS['Flicker'], 3-seat, Zone.HAND)
     if not funded:
-        state.players[seat].mana_pool = {}
+        state = genuinely_unfunded_animation_position(state, seat, land)
     controller = main.MatchController(state=state, rules=RulesEngine(), controllers={seat: 'human', 3-seat: 'ai'},
         ai={}, mode='human_vs_ai', deck_ids=(None, None), mainboards={1: [], 2: []}, sideboards={1: [], 2: []},
         game_number=1, current_game_recorded=False, match_complete=False, best_of=1)
