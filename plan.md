@@ -26,6 +26,13 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+The isolated decision-quality loader now acquires all 48 declared interfaces,
+but no gameplay or quality scoring is inferred. The test audit-hook lifetime
+repair separately passes its 51-case whole component cohort and retains all
+seven original parametrized SQL/socket canaries. See
+[load boundary](docs/testing/decision-quality13-load-boundary.md) and
+[canary finalization](docs/testing/guard-canary-finalization.md).
+
 Published `8b1bffa2` passes frontend and browser CI. Its protected backend job
 completed with failure: sanitized metadata records 25,997 collected nodes,
 25,308 passed bodies, 73 failed bodies, 532 setup failures, 82 skips and two

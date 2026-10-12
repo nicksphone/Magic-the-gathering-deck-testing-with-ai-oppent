@@ -43,9 +43,9 @@ def _canary_error(item):
     return None
 
 
-def _deny_guard_canary_io(event, _args):
-    scope = _CANARY_SCOPE.get()
-    if scope and scope['active'] and scope['thread'] == get_ident() and event in {
+def _deny_guard_canary_io(event, _args, _scope=_CANARY_SCOPE, _get_ident=get_ident):
+    scope = _scope.get()
+    if scope and scope['active'] and scope['thread'] == _get_ident() and event in {
         'sqlite3.connect', 'socket.__new__', 'socket.connect', 'socket.getaddrinfo',
     }:
         raise scope['error']('SQL/socket denied')
