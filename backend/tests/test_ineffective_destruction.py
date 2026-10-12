@@ -78,8 +78,10 @@ def test_selected_modal_destroy_checks_remaining_targets_not_stale_modes():
 
 def test_loyalty_destroy_does_not_waste_loyalty_on_indestructible():
     state, _, _ = settled_state()
-    raw = CARDS["Vraska the Unseen"]
-    card = CardInstance("vraska", raw["name"], 1, 1, Zone.BATTLEFIELD, ["Planeswalker"],
+    # A complete trusted primitive, not partial admission of canonical Vraska.
+    from tests.loyalty_destruction_diagnostic_support import DIAGNOSTIC
+    raw = DIAGNOSTIC
+    card = CardInstance("loyalty-probe", raw["name"], 1, 1, Zone.BATTLEFIELD, ["Planeswalker"],
                         mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
                         type_line=raw["type_line"], colors=raw["colors"], loyalty=int(raw["loyalty"]))
     state.cards[card.id] = card

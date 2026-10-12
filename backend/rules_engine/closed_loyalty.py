@@ -67,7 +67,7 @@ def compile_instruction(text, name=''):
             if named_damage[1] not in source_names:
                 return None
             key = 'deal_damage'
-        elif re.fullmatch(r'destroy target (?:artifact|enchantment|artifact or enchantment)', clause):
+        elif re.fullmatch(r'destroy target (?:creature|artifact|enchantment|artifact or enchantment)', clause):
             key = 'destroy_permanent'
         elif clause == 'destroy all creatures':
             key = 'destroy_all_creatures'

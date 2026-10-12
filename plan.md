@@ -34,6 +34,12 @@ neighborhood with the disposable default file present and absent. Production
 storage/backup/capacity policy is unchanged; shared startup failures remain open.
 See [capacity fixture scope](docs/testing/ci-capacity-policy-fixture-portability.md).
 
+The next exact complete creature-destruction loyalty grammar and fixture batch
+passes an independent nine-whole-module /91-case check (21.28s), preserving all
+106 original assertions, legal competing casts and AI/winner policy. Full-card
+Vraska remains explicitly unsupported; no partial admission is substituted.
+See [loyalty/Boon scope](docs/testing/ci-closed-loyalty-creature-and-boon.md).
+
 The next test-only trigger/query fixture correction passes all 44 cases across
 four directly affected whole modules independently. Exact trigger clauses and
 both query-scope paths remain covered; no production or full-ability-resolution

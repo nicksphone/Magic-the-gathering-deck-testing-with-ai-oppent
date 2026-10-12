@@ -40740,6 +40740,40 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_loyalty_destruction_diagnostic_support",
+      "label": "loyalty_destruction_diagnostic_support.py",
+      "file_type": "code",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "label": "source()",
+      "file_type": "code",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L14",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_loyalty_destruction_diagnostic_support_artifact_creature",
+      "label": "artifact_creature()",
+      "file_type": "code",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L24",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_loyalty_destruction_diagnostic_support_rationale_1",
+      "label": "Trusted primitive fixtures, NOT admission of canonical Vraska's full card.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_modal_contract_support",
       "label": "modal_contract_support.py",
       "file_type": "code",
@@ -64444,6 +64478,75 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_test_closed_loyalty_creature_destruction",
+      "label": "test_closed_loyalty_creature_destruction.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_closed_loyalty_creature_destruction_test_exact_creature_destroy_compiles_to_existing_native_destroy_handler",
+      "label": "test_exact_creature_destroy_compiles_to_existing_native_destroy_handler()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L16",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_closed_loyalty_creature_destruction_py_parametrize",
+      "label": "parametrize",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_closed_loyalty_creature_destruction_test_creature_destroy_does_not_admit_an_unsupported_remainder",
+      "label": "test_creature_destroy_does_not_admit_an_unsupported_remainder()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L27",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_closed_loyalty_creature_destruction_position",
+      "label": "position()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L32",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "label": "test_checked_creature_target_pays_source_loyalty_and_settles_both_seats()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L42",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "label": "test_wrong_target_or_unpayable_loyalty_is_rejected_atomically()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L64",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_closed_loyalty_creature_destruction_rationale_1",
+      "label": "Exact generic creature clause; no partial admission of unknown card text.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_test_cloudshift_compound_audit",
       "label": "test_cloudshift_compound_audit.py",
       "file_type": "code",
@@ -86864,7 +86967,7 @@
       "label": "test_human_can_legally_cast_at_indestructible_and_it_survives()",
       "file_type": "code",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L92",
+      "source_location": "L94",
       "_callable": true,
       "_origin": "ast"
     },
@@ -86873,7 +86976,7 @@
       "label": "test_pure_activated_destroy_does_not_waste_its_sacrifice()",
       "file_type": "code",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L104",
+      "source_location": "L106",
       "_callable": true,
       "_origin": "ast"
     },
@@ -86882,7 +86985,7 @@
       "label": "test_secondary_draw_is_not_discarded_by_pure_destroy_guard()",
       "file_type": "code",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L114",
+      "source_location": "L116",
       "_callable": true,
       "_origin": "ast"
     },
@@ -86891,7 +86994,7 @@
       "label": "test_secondary_draw_still_resolves_when_indestructible_prevents_destruction()",
       "file_type": "code",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L120",
+      "source_location": "L122",
       "_callable": true,
       "_origin": "ast"
     },
@@ -92509,6 +92612,66 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "label": "test_life_lock_boon_stack_diagnostic.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "label": "paid_position()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L13",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_life_lock_boon_stack_diagnostic_py_parametrize",
+      "label": "parametrize",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_life_lock_boon_stack_diagnostic_test_paid_creature_counter_life_cost_font_and_snapshot_both_seats",
+      "label": "test_paid_creature_counter_life_cost_font_and_snapshot_both_seats()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L47",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "label": "test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L61",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "label": "test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L71",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_life_lock_boon_stack_diagnostic_rationale_1",
+      "label": "Genuine paid opponent spells, not empty legacy stack rows, test Boon costs.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_test_life_lock_suppression",
       "label": "test_life_lock_suppression.py",
       "file_type": "code",
@@ -92791,7 +92954,7 @@
       "label": "test_type_qualified_counterspell_rejects_noncreature_stack_target()",
       "file_type": "code",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L302",
+      "source_location": "L311",
       "_callable": true,
       "_origin": "ast"
     },
@@ -92800,7 +92963,7 @@
       "label": "test_additional_cost_uses_the_same_life_payment_legality()",
       "file_type": "code",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L326",
+      "source_location": "L335",
       "_callable": true,
       "_origin": "ast"
     },
@@ -94428,6 +94591,31 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_test_loyalty_candidate_competition_trace",
+      "label": "test_loyalty_candidate_competition_trace.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "label": "test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L18",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_loyalty_candidate_competition_trace_rationale_1",
+      "label": "Actual settlement of both wins; an artifact creates a competing Naturalize.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_test_loyalty_copy_boundaries",
       "label": "test_loyalty_copy_boundaries.py",
       "file_type": "code",
@@ -94670,6 +94858,58 @@
       "label": "Printed planeswalker costs use the same resumable counter event as effects.",
       "file_type": "rationale",
       "source_file": "backend/tests/test_loyalty_counter_costs.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "label": "test_loyalty_destruction_scope_diagnostic.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "label": "test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L16",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "label": "test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L34",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "label": "test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L50",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "label": "test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L70",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_loyalty_destruction_scope_diagnostic_rationale_1",
+      "label": "Full Vraska remains closed; the separate primitive exercises AI destroy guards.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
       "source_location": "L1",
       "_origin": "ast"
     },
@@ -156828,6 +157068,33 @@
       "_origin": "ast"
     },
     {
+      "id": "docs_testing_ci_closed_loyalty_creature_and_boon",
+      "label": "ci-closed-loyalty-creature-and-boon.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": "docs/testing/ci-closed-loyalty-creature-and-boon.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_testing_ci_closed_loyalty_creature_and_boon_closed_loyalty_creature_destruction_and_boon",
+      "label": "Closed Loyalty Creature Destruction And Boon",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/testing/ci-closed-loyalty-creature-and-boon.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_testing_ci_closed_loyalty_creature_and_boon_actual_evidence",
+      "label": "Actual Evidence",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/testing/ci-closed-loyalty-creature-and-boon.md",
+      "source_location": "L19",
+      "_origin": "ast"
+    },
+    {
       "id": "docs_testing_ci_cold_native_restart_current",
       "label": "ci-cold-native-restart-current.md",
       "file_type": "document",
@@ -175481,7 +175748,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L252",
+      "source_location": "L258",
       "_origin": "ast"
     },
     {
@@ -175490,7 +175757,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L341",
+      "source_location": "L347",
       "_origin": "ast"
     },
     {
@@ -175499,7 +175766,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L376",
+      "source_location": "L382",
       "_origin": "ast"
     },
     {
@@ -175508,7 +175775,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L378",
+      "source_location": "L384",
       "_origin": "ast"
     },
     {
@@ -175517,7 +175784,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L463",
+      "source_location": "L469",
       "_origin": "ast"
     },
     {
@@ -175526,7 +175793,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L516",
+      "source_location": "L522",
       "_origin": "ast"
     },
     {
@@ -175535,7 +175802,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L563",
+      "source_location": "L569",
       "_origin": "ast"
     },
     {
@@ -175544,7 +175811,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L590",
+      "source_location": "L596",
       "_origin": "ast"
     },
     {
@@ -175553,7 +175820,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L668",
+      "source_location": "L674",
       "_origin": "ast"
     },
     {
@@ -175562,7 +175829,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L675",
+      "source_location": "L681",
       "_origin": "ast"
     },
     {
@@ -175571,7 +175838,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L684",
+      "source_location": "L690",
       "_origin": "ast"
     },
     {
@@ -175580,7 +175847,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L695",
+      "source_location": "L701",
       "_origin": "ast"
     },
     {
@@ -175589,7 +175856,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L705",
+      "source_location": "L711",
       "_origin": "ast"
     },
     {
@@ -175598,7 +175865,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L715",
+      "source_location": "L721",
       "_origin": "ast"
     },
     {
@@ -175607,7 +175874,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L724",
+      "source_location": "L730",
       "_origin": "ast"
     },
     {
@@ -175616,7 +175883,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L733",
+      "source_location": "L739",
       "_origin": "ast"
     },
     {
@@ -175625,7 +175892,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L742",
+      "source_location": "L748",
       "_origin": "ast"
     },
     {
@@ -175634,7 +175901,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L766",
+      "source_location": "L772",
       "_origin": "ast"
     },
     {
@@ -175643,7 +175910,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L776",
+      "source_location": "L782",
       "_origin": "ast"
     },
     {
@@ -175652,7 +175919,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L792",
+      "source_location": "L798",
       "_origin": "ast"
     },
     {
@@ -175661,7 +175928,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L802",
+      "source_location": "L808",
       "_origin": "ast"
     },
     {
@@ -175670,7 +175937,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L816",
+      "source_location": "L822",
       "_origin": "ast"
     },
     {
@@ -175679,7 +175946,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L829",
+      "source_location": "L835",
       "_origin": "ast"
     },
     {
@@ -175688,7 +175955,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L843",
+      "source_location": "L849",
       "_origin": "ast"
     },
     {
@@ -175697,7 +175964,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L855",
+      "source_location": "L861",
       "_origin": "ast"
     },
     {
@@ -175706,7 +175973,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L868",
+      "source_location": "L874",
       "_origin": "ast"
     },
     {
@@ -175715,7 +175982,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L892",
+      "source_location": "L898",
       "_origin": "ast"
     },
     {
@@ -175724,7 +175991,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L914",
+      "source_location": "L920",
       "_origin": "ast"
     },
     {
@@ -175733,7 +176000,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L934",
+      "source_location": "L940",
       "_origin": "ast"
     },
     {
@@ -175742,7 +176009,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L957",
+      "source_location": "L963",
       "_origin": "ast"
     },
     {
@@ -175751,7 +176018,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L973",
+      "source_location": "L979",
       "_origin": "ast"
     },
     {
@@ -175760,7 +176027,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L991",
+      "source_location": "L997",
       "_origin": "ast"
     },
     {
@@ -175769,7 +176036,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L1005",
+      "source_location": "L1011",
       "_origin": "ast"
     },
     {
@@ -175778,7 +176045,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L1016",
+      "source_location": "L1022",
       "_origin": "ast"
     },
     {
@@ -303445,6 +303712,91 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "hashlib",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "json",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "backend_game_state_state",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "backend_tests_test_linked_damage_targets",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_artifact_creature",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support_rationale_1",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_modal_contract_support",
       "target": "ast",
       "relation": "imports",
@@ -381434,6 +381786,242 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "pytest",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_closed_loyalty",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_game_state_serializers",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_game_state_state",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_action_validation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_engine",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_targeting",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_ineffective_destruction",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_pending_removal",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_self_removal",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_test_exact_creature_destroy_compiles_to_existing_native_destroy_handler",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_creature_destroy_does_not_admit_an_unsupported_remainder",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_test_creature_destroy_does_not_admit_an_unsupported_remainder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_position",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L41",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_position",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction_position",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_rationale_1",
+      "target": "backend_tests_test_closed_loyalty_creature_destruction",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_cloudshift_compound_audit",
       "target": "copy",
       "relation": "imports_from",
@@ -458542,7 +459130,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L92",
+      "source_location": "L94",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -458552,7 +459140,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L104",
+      "source_location": "L106",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -458562,7 +459150,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L114",
+      "source_location": "L116",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -458572,7 +459160,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L120",
+      "source_location": "L122",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -458649,7 +459237,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L93",
+      "source_location": "L95",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -458660,7 +459248,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L105",
+      "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -458671,7 +459259,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L115",
+      "source_location": "L117",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -458682,7 +459270,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L121",
+      "source_location": "L123",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -476992,6 +477580,188 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "pytest",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_game_state_serializers",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_game_state_state",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_action_validation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_engine",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_stack_engine",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_targeting",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_tests_test_life_total_lock",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_paid_creature_counter_life_cost_font_and_snapshot_both_seats",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L46",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic_test_paid_creature_counter_life_cost_font_and_snapshot_both_seats",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L47",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L61",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_paid_creature_counter_life_cost_font_and_snapshot_both_seats",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L48",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_rationale_1",
+      "target": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_life_lock_suppression",
       "target": "json",
       "relation": "imports",
@@ -477797,7 +478567,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L302",
+      "source_location": "L311",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -477807,7 +478577,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L326",
+      "source_location": "L335",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -478005,7 +478775,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L303",
+      "source_location": "L312",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -478016,7 +478786,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L327",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -478027,7 +478797,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L342",
+      "source_location": "L351",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -484054,6 +484824,169 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "json",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_ai_agent",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_ai_pending_effects",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_game_state_serializers",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_rules_engine_action_validation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_rules_engine_engine",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_test_ineffective_destruction",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_test_pending_removal",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_test_self_removal",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_game_state_state",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_rationale_1",
+      "target": "backend_tests_test_loyalty_candidate_competition_trace",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_loyalty_copy_boundaries",
       "target": "json",
       "relation": "imports",
@@ -484885,6 +485818,177 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_loyalty_counter_costs.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "pytest",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_ai_agent",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_game_state_serializers",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_game_state_state",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_rules_engine_action_validation",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_rules_engine_closed_loyalty",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_rules_engine_engine",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_ineffective_destruction",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_pending_removal",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_self_removal",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L50",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_rationale_1",
+      "target": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast"
@@ -662702,6 +663806,26 @@
       "_origin": "ast"
     },
     {
+      "source": "docs_testing_ci_closed_loyalty_creature_and_boon",
+      "target": "docs_testing_ci_closed_loyalty_creature_and_boon_closed_loyalty_creature_destruction_and_boon",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/testing/ci-closed-loyalty-creature-and-boon.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_testing_ci_closed_loyalty_creature_and_boon_closed_loyalty_creature_destruction_and_boon",
+      "target": "docs_testing_ci_closed_loyalty_creature_and_boon_actual_evidence",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/testing/ci-closed-loyalty-creature-and-boon.md",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "docs_testing_ci_cold_native_restart_current",
       "target": "docs_testing_ci_cold_native_restart_current_current_native_cold_restart_fixtures",
       "relation": "contains",
@@ -679843,11 +680967,21 @@
     },
     {
       "source": "plan",
+      "target": "docs_testing_ci_closed_loyalty_creature_and_boon",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "plan.md",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "plan",
       "target": "docs_testing_ci_suspend_and_multiplier_fixtures",
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L40",
+      "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679857,7 +680991,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L45",
+      "source_location": "L51",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679867,7 +681001,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L51",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679877,7 +681011,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L57",
+      "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679887,7 +681021,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L58",
+      "source_location": "L64",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679897,7 +681031,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L66",
+      "source_location": "L72",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679907,7 +681041,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L75",
+      "source_location": "L81",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679917,7 +681051,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L83",
+      "source_location": "L89",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679927,7 +681061,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L91",
+      "source_location": "L97",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679937,7 +681071,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L98",
+      "source_location": "L104",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679947,7 +681081,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L108",
+      "source_location": "L114",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679957,7 +681091,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L123",
+      "source_location": "L129",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679967,7 +681101,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L131",
+      "source_location": "L137",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679977,7 +681111,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L141",
+      "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679987,7 +681121,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L142",
+      "source_location": "L148",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -679997,7 +681131,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L153",
+      "source_location": "L159",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680007,7 +681141,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L161",
+      "source_location": "L167",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680017,7 +681151,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L171",
+      "source_location": "L177",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680027,7 +681161,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L177",
+      "source_location": "L183",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680037,7 +681171,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L184",
+      "source_location": "L190",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680047,7 +681181,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L191",
+      "source_location": "L197",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680057,7 +681191,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L206",
+      "source_location": "L212",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680067,7 +681201,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L214",
+      "source_location": "L220",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680077,7 +681211,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L223",
+      "source_location": "L229",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680087,7 +681221,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L247",
+      "source_location": "L253",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680097,7 +681231,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L252",
+      "source_location": "L258",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680107,7 +681241,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L302",
+      "source_location": "L308",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680117,7 +681251,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L308",
+      "source_location": "L314",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680127,7 +681261,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L316",
+      "source_location": "L322",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680137,7 +681271,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L319",
+      "source_location": "L325",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680147,7 +681281,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L324",
+      "source_location": "L330",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680157,7 +681291,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L327",
+      "source_location": "L333",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680167,7 +681301,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L330",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680177,7 +681311,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L334",
+      "source_location": "L340",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680187,7 +681321,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L341",
+      "source_location": "L347",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680197,7 +681331,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L373",
+      "source_location": "L379",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680207,7 +681341,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L376",
+      "source_location": "L382",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680217,7 +681351,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L378",
+      "source_location": "L384",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680227,7 +681361,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L389",
+      "source_location": "L395",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680237,7 +681371,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L394",
+      "source_location": "L400",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680247,7 +681381,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L405",
+      "source_location": "L411",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680257,7 +681391,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L412",
+      "source_location": "L418",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680267,7 +681401,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L419",
+      "source_location": "L425",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680277,7 +681411,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L426",
+      "source_location": "L432",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680287,7 +681421,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L442",
+      "source_location": "L448",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680297,7 +681431,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L446",
+      "source_location": "L452",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680307,7 +681441,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L448",
+      "source_location": "L454",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680317,7 +681451,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L453",
+      "source_location": "L459",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680327,7 +681461,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L463",
+      "source_location": "L469",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680337,7 +681471,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L516",
+      "source_location": "L522",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680347,7 +681481,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L563",
+      "source_location": "L569",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680357,7 +681491,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L590",
+      "source_location": "L596",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680367,7 +681501,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L668",
+      "source_location": "L674",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680377,7 +681511,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L675",
+      "source_location": "L681",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680387,7 +681521,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L684",
+      "source_location": "L690",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680397,7 +681531,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L695",
+      "source_location": "L701",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680407,7 +681541,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L705",
+      "source_location": "L711",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680417,7 +681551,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L715",
+      "source_location": "L721",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680427,7 +681561,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L724",
+      "source_location": "L730",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680437,7 +681571,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L733",
+      "source_location": "L739",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680447,7 +681581,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L742",
+      "source_location": "L748",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680457,7 +681591,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L766",
+      "source_location": "L772",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680467,7 +681601,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L776",
+      "source_location": "L782",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680477,7 +681611,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L784",
+      "source_location": "L790",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680487,7 +681621,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L792",
+      "source_location": "L798",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680497,7 +681631,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L798",
+      "source_location": "L804",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680507,7 +681641,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L802",
+      "source_location": "L808",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680517,7 +681651,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L812",
+      "source_location": "L818",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680527,7 +681661,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L816",
+      "source_location": "L822",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680537,7 +681671,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L825",
+      "source_location": "L831",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680547,7 +681681,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L829",
+      "source_location": "L835",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680557,7 +681691,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L838",
+      "source_location": "L844",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680567,7 +681701,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L843",
+      "source_location": "L849",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680577,7 +681711,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L851",
+      "source_location": "L857",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680587,7 +681721,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L855",
+      "source_location": "L861",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680597,7 +681731,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L863",
+      "source_location": "L869",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680607,7 +681741,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L868",
+      "source_location": "L874",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680617,7 +681751,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L882",
+      "source_location": "L888",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680627,7 +681761,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L892",
+      "source_location": "L898",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680637,7 +681771,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L904",
+      "source_location": "L910",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680647,7 +681781,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L914",
+      "source_location": "L920",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680657,7 +681791,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L924",
+      "source_location": "L930",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680667,7 +681801,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L934",
+      "source_location": "L940",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680677,7 +681811,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L952",
+      "source_location": "L958",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680687,7 +681821,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L953",
+      "source_location": "L959",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680697,7 +681831,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L957",
+      "source_location": "L963",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680707,7 +681841,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L969",
+      "source_location": "L975",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680717,7 +681851,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L973",
+      "source_location": "L979",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680727,7 +681861,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L987",
+      "source_location": "L993",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680737,7 +681871,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L991",
+      "source_location": "L997",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680747,7 +681881,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1005",
+      "source_location": "L1011",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680757,7 +681891,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1013",
+      "source_location": "L1019",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680767,7 +681901,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1016",
+      "source_location": "L1022",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -680777,7 +681911,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1022",
+      "source_location": "L1028",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -712716,6 +713850,39 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "backend_game_state_state_zone",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support",
+      "target": "backend_tests_test_linked_damage_targets_raw_card",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_modal_contract_support",
       "target": "backend_game_state_state_matchfactory",
       "relation": "imports",
@@ -736186,6 +737353,138 @@
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_closed_damage_instruction_compiler.py",
       "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_closed_loyalty_compile_body",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_closed_loyalty_compile_instruction",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_game_state_state_zone",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_rules_engine_targeting_stack_object_kind",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_pending_removal_add_card",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction",
+      "target": "backend_tests_test_self_removal_canonical_cards",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -767859,6 +769158,127 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_game_state_serializers_deserialize_match_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_game_state_state_stackitem",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_game_state_state_zone",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_stack_engine_resolve_top_of_stack",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_rules_engine_targeting_stack_object_kind",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic",
+      "target": "backend_tests_test_life_total_lock_game",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_life_lock_suppression",
       "target": "backend_effects_registry_resolve_effect",
       "relation": "imports",
@@ -768383,6 +769803,17 @@
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
       "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_total_lock",
+      "target": "backend_rules_engine_targeting_stack_object_kind",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_total_lock.py",
+      "source_location": "L289",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -770928,6 +772359,127 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_ai_pending_effects_unanswered_action_wins",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_artifact_creature",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_test_pending_removal_add_card",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_tests_test_self_removal_canonical_cards",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace",
+      "target": "backend_game_state_state_zone",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_loyalty_copy_boundaries",
       "target": "backend_effects_registry_resolve_effect",
       "relation": "imports",
@@ -771232,6 +772784,138 @@
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_loyalty_counter_costs.py",
       "source_location": "L89",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_game_state_state_zone",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_rules_engine_closed_loyalty_compile_body",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L10",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_pending_removal_add_card",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic",
+      "target": "backend_tests_test_self_removal_canonical_cards",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -850579,6 +852263,28 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support_artifact_creature",
+      "target": "backend_tests_test_linked_damage_targets_raw_card",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_natural_heat_diagnostic_support_agent",
       "target": "backend_ai_agent_aiagent",
       "relation": "calls",
@@ -868263,6 +869969,61 @@
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_closed_damage_instruction_compiler.py",
       "source_location": "L39",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_exact_creature_destroy_compiles_to_existing_native_destroy_handler",
+      "target": "backend_rules_engine_closed_loyalty_compile_instruction",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_exact_creature_destroy_compiles_to_existing_native_destroy_handler",
+      "target": "backend_rules_engine_closed_loyalty_compile_body",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_position",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_position",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_position",
+      "target": "backend_tests_test_pending_removal_add_card",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L37",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886819,7 +888580,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L82",
+      "source_location": "L84",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886830,7 +888591,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L87",
+      "source_location": "L89",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886841,7 +888602,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L89",
+      "source_location": "L91",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886852,7 +888613,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L94",
+      "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886863,35 +888624,13 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L94",
+      "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "backend_tests_test_ineffective_destruction_test_pure_activated_destroy_does_not_waste_its_sacrifice",
       "target": "backend_tests_test_pending_removal_add_card",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L106",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "backend_tests_test_ineffective_destruction_test_pure_activated_destroy_does_not_waste_its_sacrifice",
-      "target": "backend_game_state_serializers_serialize_match_snapshot",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L107",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "backend_tests_test_ineffective_destruction_test_pure_activated_destroy_does_not_waste_its_sacrifice",
-      "target": "backend_rules_engine_engine_rulesengine",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
@@ -886902,12 +888641,34 @@
     },
     {
       "source": "backend_tests_test_ineffective_destruction_test_pure_activated_destroy_does_not_waste_its_sacrifice",
-      "target": "backend_ai_agent_aiagent",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_ineffective_destruction.py",
+      "source_location": "L109",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_ineffective_destruction_test_pure_activated_destroy_does_not_waste_its_sacrifice",
+      "target": "backend_rules_engine_engine_rulesengine",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
       "source_location": "L110",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_ineffective_destruction_test_pure_activated_destroy_does_not_waste_its_sacrifice",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_ineffective_destruction.py",
+      "source_location": "L112",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886918,7 +888679,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L116",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886929,7 +888690,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L117",
+      "source_location": "L119",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886940,7 +888701,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L122",
+      "source_location": "L124",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886951,7 +888712,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L124",
+      "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -886962,7 +888723,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L124",
+      "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891235,6 +892996,171 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_tests_test_life_total_lock_game",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_rules_engine_targeting_stack_object_kind",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_game_state_serializers_deserialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L63",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_game_state_state_stackitem",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L73",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_rules_engine_targeting_stack_object_kind",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L75",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L78",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_life_lock_suppression_restriction",
       "target": "backend_tests_test_linked_damage_targets_raw_card",
       "relation": "calls",
@@ -891643,17 +893569,6 @@
     },
     {
       "source": "backend_tests_test_life_total_lock_test_withering_boon_additional_life_cost_triggers_font_above_spell",
-      "target": "backend_game_state_state_stackitem",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L282",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
-      "source": "backend_tests_test_life_total_lock_test_withering_boon_additional_life_cost_triggers_font_above_spell",
       "target": "backend_rules_engine_engine_rulesengine",
       "relation": "calls",
       "context": "call",
@@ -891670,7 +893585,40 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
+      "source_location": "L287",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_total_lock_test_withering_boon_additional_life_cost_triggers_font_above_spell",
+      "target": "backend_rules_engine_targeting_stack_object_kind",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_total_lock.py",
       "source_location": "L291",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_total_lock_test_withering_boon_additional_life_cost_triggers_font_above_spell",
+      "target": "backend_game_state_serializers_deserialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_total_lock.py",
+      "source_location": "L292",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_total_lock_test_withering_boon_additional_life_cost_triggers_font_above_spell",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_life_total_lock.py",
+      "source_location": "L292",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891681,7 +893629,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L294",
+      "source_location": "L303",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891692,7 +893640,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L304",
+      "source_location": "L313",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891703,7 +893651,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L317",
+      "source_location": "L326",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891714,7 +893662,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L318",
+      "source_location": "L327",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891725,7 +893673,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L321",
+      "source_location": "L330",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891736,7 +893684,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L328",
+      "source_location": "L337",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891747,7 +893695,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L336",
+      "source_location": "L345",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891758,7 +893706,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L338",
+      "source_location": "L347",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -891769,7 +893717,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L339",
+      "source_location": "L348",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -893776,6 +895724,105 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_tests_test_pending_removal_add_card",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_artifact_creature",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_ai_pending_effects_unanswered_action_wins",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_loyalty_copy_boundaries_aura_position",
       "target": "backend_tests_test_compleated_loyalty_full_cast_walker",
       "relation": "calls",
@@ -894003,6 +896050,281 @@
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_loyalty_counter_costs.py",
       "source_location": "L106",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_rules_engine_closed_loyalty_compile_body",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L26",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L37",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L38",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L42",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_tests_test_pending_removal_add_card",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L52",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L56",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L57",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "backend_tests_test_ineffective_destruction_settled_state",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L71",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L74",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "backend_rules_engine_closed_loyalty_compile_body",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L75",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L76",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L78",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -913615,7 +915937,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_self_removal.py",
-      "source_location": "L155",
+      "source_location": "L157",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -913626,7 +915948,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_self_removal.py",
-      "source_location": "L161",
+      "source_location": "L163",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -913637,7 +915959,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_self_removal.py",
-      "source_location": "L161",
+      "source_location": "L163",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -913648,7 +915970,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_self_removal.py",
-      "source_location": "L164",
+      "source_location": "L166",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -942792,6 +945114,39 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L16",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support_source",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L17",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support_artifact_creature",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_modal_contract_support_canonical_fixture",
       "target": "backend_game_state_state_matchfactory",
       "relation": "uses",
@@ -965485,6 +967840,72 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_position",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L37",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L57",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L67",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L71",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L45",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L72",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_cloudshift_compound_audit_position",
       "target": "backend_game_state_state_zone",
       "relation": "uses",
@@ -986413,7 +988834,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L89",
+      "source_location": "L91",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986424,7 +988845,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L110",
+      "source_location": "L112",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986435,7 +988856,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L82",
+      "source_location": "L84",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986479,7 +988900,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L82",
+      "source_location": "L84",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986490,7 +988911,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L100",
+      "source_location": "L102",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986501,7 +988922,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L106",
+      "source_location": "L108",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986512,7 +988933,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L116",
+      "source_location": "L118",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986523,7 +988944,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L122",
+      "source_location": "L124",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986600,7 +989021,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L87",
+      "source_location": "L89",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986611,7 +989032,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L94",
+      "source_location": "L96",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986622,7 +989043,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L108",
+      "source_location": "L110",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -986633,7 +989054,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_ineffective_destruction.py",
-      "source_location": "L124",
+      "source_location": "L126",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -992622,6 +995043,105 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L16",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_game_state_state_stackitem",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L73",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L16",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L65",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L77",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_paid_position",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L34",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_paid_creature_counter_life_cost_font_and_snapshot_both_seats",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L49",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L64",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L76",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_life_lock_suppression_test_printed_gain_prohibition_returns_when_temporary_ability_loss_expires",
       "target": "backend_rules_engine_engine_rulesengine",
       "relation": "uses",
@@ -992804,7 +995324,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L304",
+      "source_location": "L313",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -992815,7 +995335,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L328",
+      "source_location": "L337",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -992831,24 +995351,13 @@
       "_origin": "ast"
     },
     {
-      "source": "backend_tests_test_life_total_lock_test_withering_boon_additional_life_cost_triggers_font_above_spell",
-      "target": "backend_game_state_state_stackitem",
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "confidence_score": 0.95,
-      "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L282",
-      "weight": 0.8,
-      "_origin": "ast"
-    },
-    {
       "source": "backend_tests_test_life_total_lock_test_type_qualified_counterspell_rejects_noncreature_stack_target",
       "target": "backend_game_state_state_stackitem",
       "relation": "uses",
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L317",
+      "source_location": "L326",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -992991,7 +995500,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L306",
+      "source_location": "L315",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -993002,7 +995511,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L330",
+      "source_location": "L339",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -993013,7 +995522,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L336",
+      "source_location": "L345",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -993035,7 +995544,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L320",
+      "source_location": "L329",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -993101,7 +995610,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L318",
+      "source_location": "L327",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -995394,6 +997903,39 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L26",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L20",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_loyalty_copy_boundaries_aura_position",
       "target": "backend_game_state_state_zone",
       "relation": "uses",
@@ -995566,6 +998108,138 @@
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_loyalty_counter_costs.py",
       "source_location": "L99",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L40",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_ai_agent_aiagent",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L57",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_game_state_state_cardinstance",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L19",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L47",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_game_state_state_zone",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L52",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L28",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "backend_rules_engine_action_validation_actionrejected",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L77",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L27",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_holds_indestructible_but_human_can_pay_loyalty",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L38",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_closed_diagnostic_ai_uses_original_canonical_creature_for_death_win",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L57",
+      "weight": 0.8,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "backend_rules_engine_engine_rulesengine",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "confidence_score": 0.95,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L76",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -1016982,7 +1019656,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_self_removal.py",
-      "source_location": "L161",
+      "source_location": "L163",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -1016993,7 +1019667,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_self_removal.py",
-      "source_location": "L155",
+      "source_location": "L157",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -1017158,7 +1019832,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_self_removal.py",
-      "source_location": "L161",
+      "source_location": "L163",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -1085907,6 +1088581,102 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_creature_destroy_does_not_admit_an_unsupported_remainder",
+      "target": "backend_rules_engine_closed_loyalty_compile_instruction",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_creature_destroy_does_not_admit_an_unsupported_remainder",
+      "target": "backend_rules_engine_closed_loyalty_compile_body",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L49",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_checked_creature_target_pays_source_loyalty_and_settles_both_seats",
+      "target": "backend_rules_engine_targeting_stack_object_kind",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L54",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "backend_tests_test_pending_removal_add_card",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L67",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L70",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L72",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_cloudshift_compound_audit_test_complete_body_cannot_compile_as_only_exile",
       "target": "backend_rules_engine_ability_model_build_ability_spec",
       "relation": "calls",
@@ -1128767,6 +1131537,30 @@
       "confidence_score": 0.85,
       "source_file": "backend/tests/test_life_conversion_http.py",
       "source_location": "L99",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_paid_creature_counter_life_cost_font_and_snapshot_both_seats",
+      "target": "backend_rules_engine_action_validation_checked_action",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L51",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_paid_creature_counter_life_cost_font_and_snapshot_both_seats",
+      "target": "backend_rules_engine_stack_engine_resolve_top_of_stack",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L55",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1205739,6 +1208533,30 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support_artifact_creature",
+      "target": "hashlib",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_loyalty_destruction_diagnostic_support_artifact_creature",
+      "target": "json",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/loyalty_destruction_diagnostic_support.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_natural_heat_diagnostic_support_canonical",
       "target": "json",
       "relation": "calls",
@@ -1212815,6 +1215633,18 @@
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_closed_damage_instruction_compiler.py",
       "source_location": "L165",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_closed_loyalty_creature_destruction_test_wrong_target_or_unpayable_loyalty_is_rejected_atomically",
+      "target": "pytest",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_closed_loyalty_creature_destruction.py",
+      "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1225227,6 +1228057,30 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_genuine_paid_noncreature_spell_remains_invalid_and_root_atomic",
+      "target": "pytest",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_life_lock_boon_stack_diagnostic_test_empty_legacy_row_is_not_inferred_to_be_a_creature_spell",
+      "target": "pytest",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_life_lock_boon_stack_diagnostic.py",
+      "source_location": "L77",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_life_lock_suppression_restriction",
       "target": "json",
       "relation": "calls",
@@ -1225294,7 +1228148,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_life_total_lock.py",
-      "source_location": "L320",
+      "source_location": "L329",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1225899,6 +1228753,18 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_loyalty_candidate_competition_trace_test_actual_competing_cast_and_loyalty_both_settle_a_win_without_policy_repair",
+      "target": "json",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_loyalty_candidate_competition_trace.py",
+      "source_location": "L61",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_loyalty_counter_costs_test_cost_choice_resume_announces_and_pays_exactly_once",
       "target": "pytest",
       "relation": "calls",
@@ -1225907,6 +1228773,30 @@
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_loyalty_counter_costs.py",
       "source_location": "L81",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_full_canonical_vraska_is_not_partially_admitted_and_rejection_is_atomic",
+      "target": "pytest",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L28",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_loyalty_destruction_scope_diagnostic_test_unknown_companion_still_blocks_the_entire_diagnostic_surface_atomically",
+      "target": "pytest",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_loyalty_destruction_scope_diagnostic.py",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast"
     },

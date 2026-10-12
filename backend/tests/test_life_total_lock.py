@@ -273,22 +273,31 @@ def test_withering_boon_additional_life_cost_triggers_font_above_spell():
     )
     creature = CardInstance(
         id="bear", name="Grizzly Bears", owner=2, controller=2,
-        zone=Zone.STACK, types=["Creature"], mana_cost="{1}{G}", power=2, toughness=2,
+        zone=Zone.HAND, types=["Creature"], mana_cost="{1}{G}", power=2, toughness=2,
     )
     state.cards.update({card.id: card for card in (font, boon, creature)})
     state.players[1].battlefield.append(font.id)
     state.players[1].hand.append(boon.id)
     state.players[1].mana_pool.update({"B": 1, "C": 1})
-    state.stack.append(StackItem(
-        id="bear-spell", source_card_id=creature.id, controller=2,
-        label=creature.name, effect_key="noop", payload={},
-    ))
+    # Announce a paid typed spell instead of an empty legacy stack row.
+    state.players[2].hand.append(creature.id)
+    state.players[2].mana_pool.update({"G": 1, "C": 1})
+    state.active_player = state.priority_player = 2
     engine = RulesEngine()
+    state = checked_action(state, engine, 2, {"type": "cast_spell", "card_id": creature.id})
+    bear_item = state.stack[-1]
+    from rules_engine.targeting import stack_object_kind
+    assert bear_item.payload["mana_spent"] == 2
+    assert stack_object_kind(state, bear_item) == "spell"
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.stack[-1].payload == bear_item.payload
+    assert stack_object_kind(restored, restored.stack[-1]) == "spell"
+    state = checked_action(restored, engine, 2, {"type": "pass_priority"})
     action = next(
         move for move in engine.legal_moves(state, 1)
         if move["type"] == "cast_spell" and move.get("card_id") == boon.id
     )
-    state = checked_action(state, engine, 1, {"type": "cast_spell", "card_id": boon.id, "targets": {"target_stack_id": "bear-spell"}})
+    state = checked_action(state, engine, 1, {"type": "cast_spell", "card_id": boon.id, "targets": {"target_stack_id": bear_item.id}})
     assert state.players[1].life == 17
     assert [item.source_card_id for item in state.stack] == [creature.id, boon.id, font.id]
     assert resolve_top_of_stack(state)

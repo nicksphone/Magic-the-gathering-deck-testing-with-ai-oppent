@@ -151,8 +151,10 @@ def test_loyalty_can_use_the_same_winning_self_removal_path():
     state, _, _ = settled_state()
     add_card(state, "Bastion of Remembrance", Zone.BATTLEFIELD)
     creature = add_card(state, "Sprite Dragon", Zone.BATTLEFIELD)
-    raw = CARDS["Vraska the Unseen"]
-    source = CardInstance("vraska", raw["name"], 1, 1, Zone.BATTLEFIELD, ["Planeswalker"],
+    # A complete trusted primitive, not partial admission of canonical Vraska.
+    from tests.loyalty_destruction_diagnostic_support import DIAGNOSTIC
+    raw = DIAGNOSTIC
+    source = CardInstance("loyalty-probe", raw["name"], 1, 1, Zone.BATTLEFIELD, ["Planeswalker"],
                           mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
                           type_line=raw["type_line"], colors=raw["colors"], loyalty=int(raw["loyalty"]))
     state.cards[source.id] = source

@@ -4284,9 +4284,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ineffective_destruction.py": {
-    "mtime": 1791667790.1779275,
-    "seen": 1791671014.2847729,
-    "ast_hash": "a9e4bc54457c0d4153fe6ade4858360e",
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.357594,
+    "ast_hash": "cab701c9f50daeb25d5c2c88b379eb31",
     "semantic_hash": ""
   },
   "backend/tests/test_interactions_expanded.py": {
@@ -4488,9 +4488,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_life_total_lock.py": {
-    "mtime": 1791667790.1929274,
-    "seen": 1791671014.2848701,
-    "ast_hash": "c7476c8f4a388e7c8c12ea4cab67ca14",
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.3577209,
+    "ast_hash": "7978eb46ccd0477fb07cd0ebc8fd33c6",
     "semantic_hash": ""
   },
   "backend/tests/test_lifelink_gain_events.py": {
@@ -5172,9 +5172,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_self_removal.py": {
-    "mtime": 1791667790.2379267,
-    "seen": 1791671014.2851956,
-    "ast_hash": "05a7db2bcc2909348b51d3c79c37a411",
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.3581514,
+    "ast_hash": "2d600b284aaf8d76c72cc4e79bc359f7",
     "semantic_hash": ""
   },
   "backend/tests/test_series_policy.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791787482.7787738,
-    "seen": 1791787565.6900036,
-    "ast_hash": "0a349794513c5e3e62fa77bddf9dce6e",
+    "mtime": 1791788772.3534224,
+    "seen": 1791788850.3601942,
+    "ast_hash": "6170a4fafe3d3ed4d78bed190aff13e1",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -15366,9 +15366,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/closed_loyalty.py": {
-    "mtime": 1791667789.8259325,
-    "seen": 1791671014.282777,
-    "ast_hash": "45fad095bd1dfd0e5be36382b0babaa6",
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.3549218,
+    "ast_hash": "7d1404719a2c27ea149c0bd715ed49eb",
     "semantic_hash": ""
   },
   "backend/rules_engine/loyalty_instructions.py": {
@@ -17088,9 +17088,45 @@
     "semantic_hash": ""
   },
   "docs/testing/ci-capacity-policy-fixture-portability.md": {
-    "mtime": 1791787482.7777739,
-    "seen": 1791787565.6890638,
-    "ast_hash": "56a6697e5f096751ddf25716244a64fb",
+    "mtime": 1791787733.8608687,
+    "seen": 1791788850.359325,
+    "ast_hash": "245a077d2eb06cb5a9f1914cc62659ab",
+    "semantic_hash": ""
+  },
+  "backend/tests/loyalty_destruction_diagnostic_support.py": {
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.3567758,
+    "ast_hash": "48dabe1a733b7cc9a66ba43776e178eb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_closed_loyalty_creature_destruction.py": {
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.3571954,
+    "ast_hash": "e47bd298cf0c02a51525e3ccf4100afb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_life_lock_boon_stack_diagnostic.py": {
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.357713,
+    "ast_hash": "38ad87a1e40f38ff5d35fa085abbc895",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_loyalty_candidate_competition_trace.py": {
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.357761,
+    "ast_hash": "f29c595e47bbd7500d55bc6458a5ffb8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_loyalty_destruction_scope_diagnostic.py": {
+    "mtime": 1791788772.3064232,
+    "seen": 1791788850.3577664,
+    "ast_hash": "14855cd55094c1cd92158dc25c13c0d4",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-closed-loyalty-creature-and-boon.md": {
+    "mtime": 1791788772.3524225,
+    "seen": 1791788850.3593266,
+    "ast_hash": "aa9bf3f46115bb520cf2fc0b4ece3e60",
     "semantic_hash": ""
   }
 }
