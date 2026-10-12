@@ -4156,13 +4156,23 @@ class AIAgent:
         *, consider_next_combat=True,
     ) -> dict[str, str | list[str]] | None:
         """Evaluate small-board blocker assignments by resolving cloned combat."""
-        if self.difficulty not in {"master", "master_plus"}:
+        if self.difficulty not in {"master", "master_plus"} and (
+                self.difficulty != 'strong' or not isinstance(state, MatchState)):
             return None
         attacker_ids = [item["id"] for item in attackers if item.get("id") in state.cards]
         blocker_ids = [item["id"] for item in blockers if item.get("id") in state.cards]
         if not attacker_ids or not blocker_ids or len(attacker_ids) > 4 or len(blocker_ids) > 5:
             return None
         defender = 3-state.active_player
+        if self.difficulty not in {"master", "master_plus"}:
+            if state.step != Step.DECLARE_BLOCKERS:
+                return None
+            face_attackers = [aid for aid in attacker_ids
+                              if state.attack_targets.get(aid, f'player:{defender}') == f'player:{defender}']
+            if not any('trample' in effective_keywords(state, aid) for aid in face_attackers):
+                return None
+            # Immediate survival only; retain the existing complete-menu bounds.
+            consider_next_combat = False
         from ai.block_search import block_intents
         assignments = block_intents(state, attacker_ids, blocker_ids)
         if not assignments:
@@ -4188,6 +4198,16 @@ class AIAgent:
                 return sim
             except Exception:
                 return None
+
+        if self.difficulty == 'strong' or any(
+                'double strike' in effective_keywords(state, aid) for aid in attacker_ids):
+            unblocked = project({})
+            lethal = unblocked is not None and unblocked.winner == opponent
+            if self.difficulty == 'strong' and not lethal:
+                return None
+            if lethal:
+                # A single power sum cannot classify multi-step combat as nonlethal.
+                incoming_power = max(incoming_power, initial_life)
 
         followups = []
         for assignment in assignments:

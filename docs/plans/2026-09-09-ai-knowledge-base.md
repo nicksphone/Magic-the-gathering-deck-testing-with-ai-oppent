@@ -2,6 +2,15 @@
 
 ## October 12 Data-Layer Checkpoint
 
+The subsequent Task 2.3 component validates compact threat-estimate transport
+without making it a scoring or legality authority. Outcome-based combat goldens
+expose losing strong trample blocks and double-strike pruning in strong/master.
+The shared one-method correction and estimate transport pass one combined
+25-whole-module declaration of 487 ordinary cases. Numerical scoring inputs and
+the required before/after benchmark remain unfinished. See
+[blocking evidence](../testing/ai-outcome-based-trample-blocking.md) and
+[estimate transport](../testing/ai-profile-threat-transport-current.md).
+
 The Task2.1 derivation and opt-in corpus-sync path now have an actual six-module
 85-pass component qualification, plus10 separately passed subtests. Complete
 official data for all155 shipped names round-trips through the real repository;
@@ -221,7 +230,7 @@ Expect: completes, 0 invalid targets.
 - Test: `backend/tests/test_ai_threat_blocking.py`
 
 **Step 1:** Failing tests:
-- Against a 7/7 with deathtouch, AI prefers blocking with its biggest creature even when a smaller creature "wins" on raw PT (threat_level 3 override).
+- Against a canonical 7/7 with deathtouch, compare legal checked combat outcomes rather than always prefer the biggest blocker. A legal surviving block must beat a losing line; effective first/double strike, trample and deathtouch removal determine which blocks survive or trade. The historical biggest-blocker criterion is superseded by independently checked canonical outcomes, not a blanket size override.
 - Removal spell scoring: with a threat_level 3 target in play, `destroy_target`-capable spells rank above value cards; with only threat_level 0/1 targets, they rank below.
 - A hexproof 4/4 is not targeted by `answerable_by`-destroy effects (existing target validation already enforces legality — this pins that AI *choosing* also avoids it pre-validation).
 **Step 2:** Implement using `knowledge.service.tags_for` + `threat_level`; keep existing search-based block logic, only change the *scoring inputs*.

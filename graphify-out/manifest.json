@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791841700.717624,
-    "seen": 1791841805.0600686,
-    "ast_hash": "ccf25ac6280748222ef54be52dea624a",
+    "mtime": 1791843932.8498964,
+    "seen": 1791844040.8590515,
+    "ast_hash": "80eeeae88df90ec1705965750df8a861",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -6876,9 +6876,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1791841700.7486234,
-    "seen": 1791841805.0640724,
-    "ast_hash": "e7cba1d6c3677752d59af299f6e30b1b",
+    "mtime": 1791843932.8508964,
+    "seen": 1791844040.8632,
+    "ast_hash": "be98d1b84d15b9135291a86c19651298",
     "semantic_hash": ""
   },
   "docs/plans/casting-trigger-repair-batch.md": {
@@ -17556,9 +17556,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/service.py": {
-    "mtime": 1791841700.7186239,
-    "seen": 1791841805.0602343,
-    "ast_hash": "447e9cf9097e0629c793ec1e8779c622",
+    "mtime": 1791843932.8508964,
+    "seen": 1791844040.8592012,
+    "ast_hash": "d400f71657a74c1a655fff5350626a60",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_knowledge_natural_smoke.py": {
@@ -17607,6 +17607,54 @@
     "mtime": 1791841700.7186239,
     "seen": 1791841805.064144,
     "ast_hash": "5f41e04ade5e5313afbb03c34629cbc5",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_canonical_block_outcomes.py": {
+    "mtime": 1791843932.8518963,
+    "seen": 1791844040.8623428,
+    "ast_hash": "e93c8d79242f10fdeebb3ee33c54b067",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_checked_block_policy_baseline.py": {
+    "mtime": 1791843932.8518963,
+    "seen": 1791844040.862345,
+    "ast_hash": "b7da05d4b62122410ddc92b7f2b36e92",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_checked_removal_baseline.py": {
+    "mtime": 1791843932.8518963,
+    "seen": 1791844040.8623466,
+    "ast_hash": "c066d62562cf9f449a4535c1bda4a307",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_double_strike_admission.py": {
+    "mtime": 1791843932.8518963,
+    "seen": 1791844040.8623483,
+    "ast_hash": "ce6b25c9852e2e73e0d45184b73ef504",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_profile_threat_transport.py": {
+    "mtime": 1791843932.8518963,
+    "seen": 1791844040.8623497,
+    "ast_hash": "6cf6660465ae4ab56c9b2aaacf5bf6e5",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-outcome-based-trample-blocking.md": {
+    "mtime": 1791843932.8518963,
+    "seen": 1791844040.8632786,
+    "ast_hash": "66260291d1781debc369e33e7eb7d708",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-profile-threat-transport-current.md": {
+    "mtime": 1791843932.8518963,
+    "seen": 1791844040.8632863,
+    "ast_hash": "cad8bfa63f79c04b40a9157c05a85448",
+    "semantic_hash": ""
+  },
+  "docs/testing/task23-canonical-block-outcome-proposal.md": {
+    "mtime": 1791843932.8518963,
+    "seen": 1791844040.864174,
+    "ast_hash": "ad5fcd2cf751ba90a811f990aaa5ba68",
     "semantic_hash": ""
   }
 }
