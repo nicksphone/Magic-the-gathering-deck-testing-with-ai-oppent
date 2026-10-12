@@ -8,6 +8,13 @@ from pathlib import Path
 import sqlite3
 import sys
 
+try:
+    from _pytest.subtests import SubtestReport
+except ImportError as error:
+    if error.name not in ('_pytest', '_pytest.subtests'):
+        raise
+    SubtestReport = None
+
 
 _degraded = False
 _progress_degraded = False
@@ -172,8 +179,13 @@ def pytest_collectreport(report):
 def pytest_runtest_logreport(report):
     row = {'nodeid': report.nodeid, 'phase': report.when,
            'outcome': report.outcome, 'duration_seconds': report.duration}
+    subtest = SubtestReport is not None and type(report) is SubtestReport
     if hasattr(report, 'wasxfail'):
-        row['wasxfail'] = str(report.wasxfail)
+        row['wasxfail'] = True if subtest else str(report.wasxfail)
+    if subtest:
+        # Preserve every subreport without reading its private context or repr.
+        emit('subtests.jsonl', row)
+        return
     emit('phases.jsonl', row)
     if report.failed:
         failure(report, report.when)
@@ -199,6 +211,12 @@ def audit(root, exitcode):
         collected = json.loads(collection.read_text())['nodeids']
         discovered = [row['nodeid'] for row in rows('discovered.jsonl')]
         reports = rows('phases.jsonl')
+        subtests = rows('subtests.jsonl')
+        for row in subtests:
+            if (type(row) is not dict or type(row.get('nodeid')) is not str
+                    or row['nodeid'] not in collected or row.get('phase') != 'call'
+                    or row.get('outcome') not in ('passed', 'failed', 'skipped')):
+                raise ValueError('SUBTEST_ROW_INVALID')
         phases = {}
         duplicates = []
         for row in reports:
@@ -222,13 +240,17 @@ def audit(root, exitcode):
             or sessions[-1].get('exitstatus') != exitcode
         )
         counts = Counter(f"{row['phase']}/{row['outcome']}" for row in reports)
-        eligible = complete and exitcode == 0 and not any(row['outcome'] == 'failed' for row in reports)
+        eligible = complete and exitcode == 0 and not any(
+            row['outcome'] == 'failed' for row in reports + subtests)
         result = {'pytest_exit_code': exitcode, 'all_collected_completed': complete,
                   'ci_success_consistent': eligible, 'collected_count': len(collected),
                   'unique_count': len(set(collected)), 'phase_counts': dict(counts),
                   'missing_phases': missing, 'duplicate_phases': duplicates,
                   'unexpected_nodes': unexpected, 'collection_errors': collection_errors,
                   'skips_and_xfails_are_not_passes': True}
+        if subtests:
+            result['subtest_report_count'] = len(subtests)
+            result['subtest_counts'] = dict(Counter(row['outcome'] for row in subtests))
     except (OSError, ValueError, KeyError, TypeError) as error:
         result = {'all_collected_completed': False, 'ci_success_consistent': False,
                   'pytest_exit_code': exitcode, 'evidence_error': str(error)}

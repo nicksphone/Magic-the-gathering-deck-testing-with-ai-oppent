@@ -1049,6 +1049,24 @@ cases (47.36s); two generated cache SVGs are separately recorded, not published.
 See [scope and evidence](docs/testing/ci-favor-cold-launch-inputs.md).
 Hosted backend qualification, all original gates and measured AI quality remain open.
 
+## 2026-10-12 Pytest Subreport Completeness
+
+The `7c711d23` hosted backend finishes with pytest exit zero and no failed test
+phases, but its evidence audit rejects 15 duplicate call records. Actual pytest 9
+reproduction establishes that these are `SubtestReport` observations from two
+collected unittest methods, not repeated executions. The prospective correction
+preserves every subreport in a separate ledger and public, context-free metadata
+array. Ordinary duplicate-phase checks remain strict; failed subreports still
+veto successful qualification.
+
+The complete 153-check script cohort passes on the isolated correction. Parent
+verification records 151 passes and two existing cleanup-control failures; both
+reproduce on the exact pre-correction source when the unchanged five-second
+`fuser` check times out. Backups remain safely retained. No cleanup timeout or
+assertion is weakened. See [subreport scope](.github/scripts/ci_backend_subtests.md).
+The next hosted composed-source qualification, original Gates 1–3, full rules and
+measured expert AI remain unfinished.
+
 ## 2026-10-12 Safe CI Timings And Current Fixture Contracts
 
 The safe metadata reporter adds bounded, public-definition-verified numeric

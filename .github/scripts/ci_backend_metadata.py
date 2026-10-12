@@ -208,7 +208,7 @@ def empty_metadata():
                      'unexpected_node_sha256': []},
         'collected_node_sha256': [], 'discovered_node_sha256': [],
         'deselected_node_sha256': [], 'deselection_row_count': None,
-        'phases': [], 'failures': [], 'collection_errors': [], 'sessions': [],
+        'phases': [], 'subtests': [], 'failures': [], 'collection_errors': [], 'sessions': [],
         'unresolved_failure_count': None, 'rows_exported': False,
         'skips_and_xfails_are_not_passes': True, 'metadata_error_codes': [],
         'timing': {'recorded_phase_count': 0, 'total_recorded_seconds': None,
@@ -283,6 +283,21 @@ def build_metadata(evidence, source):
                 raise MetadataError('OUTCOME_INVALID')
             safe_phases.append({'nodeid_sha256': identity, 'phase': row['phase'],
                                 'outcome': row['outcome'], 'xfail_marker': 'wasxfail' in row})
+        subtests = rows(evidence, 'subtests.jsonl')
+        safe_subtests = []
+        for index, row in enumerate(subtests):
+            identity = node(row['nodeid'])
+            if row['phase'] != 'call':
+                raise MetadataError('PHASE_INVALID')
+            if row['outcome'] not in ('passed', 'failed', 'skipped'):
+                raise MetadataError('OUTCOME_INVALID')
+            seconds = row.get('duration_seconds')
+            valid_seconds = (type(seconds) in (int, float) and 0 <= seconds <= 86400
+                             and math.isfinite(seconds))
+            safe_subtests.append({'nodeid_sha256': identity, 'subtest_index': index,
+                                  'phase': 'call', 'outcome': row['outcome'],
+                                  'xfail_marker': 'wasxfail' in row,
+                                  'duration_seconds': seconds if valid_seconds else None})
         collection_errors = rows(evidence, 'collection-errors.jsonl')
         for row in collection_errors:
             node(row['nodeid'])
@@ -307,6 +322,10 @@ def build_metadata(evidence, source):
         failures = [{'nodeid_sha256': node(row['nodeid']), 'phase': row['phase'],
                      'public_test': public.resolve(row['nodeid'])}
                     for row in phases if row['outcome'] == 'failed']
+        failures.extend({'nodeid_sha256': node(row['nodeid']), 'phase': 'call',
+                         'public_test': public.resolve(row['nodeid']),
+                         'report_kind': 'subtest', 'subtest_index': index}
+                        for index, row in enumerate(subtests) if row['outcome'] == 'failed')
         signatures = {}
         document['failure_diagnostics_status'] = 'not_recorded'
         try:
@@ -341,7 +360,8 @@ def build_metadata(evidence, source):
         document.update(
             collected_node_sha256=collected_hashes, discovered_node_sha256=discovered_hashes,
             deselected_node_sha256=deselected_hashes, deselection_row_count=len(deselected),
-            phases=safe_phases, failures=failures, collection_errors=errors, sessions=safe_sessions,
+            phases=safe_phases, subtests=safe_subtests, failures=failures,
+            collection_errors=errors, sessions=safe_sessions,
             unresolved_failure_count=sum(row['public_test'] is None for row in failures + errors),
             rows_exported=True)
         document['coverage'] = {
@@ -355,6 +375,9 @@ def build_metadata(evidence, source):
                                  for identity, phase in audited['duplicate_phases']],
             'unexpected_node_sha256': [node(identity) for identity in audited['unexpected_nodes']],
         }
+        if subtests:
+            document['coverage']['subtest_report_count'] = audited['subtest_report_count']
+            document['coverage']['subtest_counts'] = audited['subtest_counts']
         # Python equality alone treats true and 1 as equal; the ledger types matter.
         if json.dumps(recorded, sort_keys=True) != json.dumps(audited, sort_keys=True):
             document['metadata_error_codes'].append('COVERAGE_MISMATCH')
