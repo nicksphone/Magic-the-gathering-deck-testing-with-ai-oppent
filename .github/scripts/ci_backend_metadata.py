@@ -31,6 +31,44 @@ EXCEPTION_CATEGORIES = frozenset({
     'OSError', 'PermissionError', 'RuntimeError', 'TimeoutError', 'TypeError',
     'ValueError', 'ZeroDivisionError',
 })
+SQLITE_EXCEPTION_CATEGORIES = frozenset({
+    'SQLiteError', 'SQLiteDatabaseError', 'SQLiteOperationalError',
+    'SQLiteIntegrityError', 'SQLiteProgrammingError', 'SQLiteInterfaceError',
+    'SQLiteDataError', 'SQLiteInternalError', 'SQLiteNotSupportedError',
+})
+EXCEPTION_CATEGORIES |= SQLITE_EXCEPTION_CATEGORIES
+SQLITE_ERROR_CODES = {
+    1: 'SQLITE_ERROR', 2: 'SQLITE_INTERNAL', 3: 'SQLITE_PERM', 4: 'SQLITE_ABORT',
+    5: 'SQLITE_BUSY', 6: 'SQLITE_LOCKED', 7: 'SQLITE_NOMEM', 8: 'SQLITE_READONLY',
+    9: 'SQLITE_INTERRUPT', 10: 'SQLITE_IOERR', 11: 'SQLITE_CORRUPT',
+    12: 'SQLITE_NOTFOUND', 13: 'SQLITE_FULL', 14: 'SQLITE_CANTOPEN',
+    15: 'SQLITE_PROTOCOL', 16: 'SQLITE_EMPTY', 17: 'SQLITE_SCHEMA',
+    18: 'SQLITE_TOOBIG', 19: 'SQLITE_CONSTRAINT', 20: 'SQLITE_MISMATCH',
+    21: 'SQLITE_MISUSE', 22: 'SQLITE_NOLFS', 23: 'SQLITE_AUTH',
+    24: 'SQLITE_FORMAT', 25: 'SQLITE_RANGE', 26: 'SQLITE_NOTADB',
+    27: 'SQLITE_NOTICE', 28: 'SQLITE_WARNING',
+    517: 'SQLITE_BUSY_SNAPSHOT', 778: 'SQLITE_IOERR_WRITE',
+    1032: 'SQLITE_READONLY_DBMOVED', 2067: 'SQLITE_CONSTRAINT_UNIQUE',
+}
+
+
+def sqlite_error_fields(value):
+    code = value.get('sqlite_errorcode')
+    known = type(code) is int and code in SQLITE_ERROR_CODES
+    primary = code & 255 if known else None
+    # Unlisted extended codes carry only an explicitly labelled allowlisted primary.
+    if code is None and value.get('sqlite_code_status') == 'unlisted_extended':
+        candidate = value.get('sqlite_primary_errorcode')
+        if type(candidate) is int and candidate in SQLITE_ERROR_CODES and candidate <= 255:
+            primary = candidate
+    return {
+        'sqlite_errorcode': code if known else None,
+        'sqlite_errorname': SQLITE_ERROR_CODES[code] if known else None,
+        'sqlite_primary_errorcode': primary,
+        'sqlite_primary_errorname': SQLITE_ERROR_CODES.get(primary),
+        'sqlite_code_status': ('known' if known else 'unlisted_extended'
+                               if primary is not None else 'unavailable'),
+    }
 
 
 class MetadataError(Exception):
@@ -113,6 +151,8 @@ class PublicDefinitions:
         category = value.get('exception')
         safe = {'exception': category if type(category) is str and
                 category in EXCEPTION_CATEGORIES else 'Other', 'frames': []}
+        if safe['exception'] in SQLITE_EXCEPTION_CATEGORIES:
+            safe.update(sqlite_error_fields(value))
         frames = value.get('frames', [])
         if type(frames) is not list or len(frames) > 8:
             return safe

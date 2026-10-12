@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791778717.9189978,
-    "seen": 1791778823.1176982,
-    "ast_hash": "3511c26135406bdac12f85c70302124e",
+    "mtime": 1791780014.7301903,
+    "seen": 1791780123.0506916,
+    "ast_hash": "bc3f3fae621e3f9f642422dcd8d5e124",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -9780,9 +9780,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_sba_graveyard_entry_audit.py": {
-    "mtime": 1791667790.2339268,
-    "seen": 1791671014.285161,
-    "ast_hash": "b519296b1965ea426200bad0f5982eca",
+    "mtime": 1791779912.1116683,
+    "seen": 1791780123.0486188,
+    "ast_hash": "293006c555f00f38f5af690a78cc5fbd",
     "semantic_hash": ""
   },
   "backend/tests/test_sba_graveyard_entry_product.py": {
@@ -16068,9 +16068,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/ci_backend_evidence.py": {
-    "mtime": 1791707424.5705838,
-    "seen": 1791707675.6649725,
-    "ast_hash": "0950efa9dc8c35b018b33a6422d44220",
+    "mtime": 1791779912.1026685,
+    "seen": 1791780123.044939,
+    "ast_hash": "a3024316ba8c2f44ff47e94a3623927a",
     "semantic_hash": ""
   },
   ".github/scripts/prepare-backend-private-inputs.py": {
@@ -16332,9 +16332,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/ci_backend_metadata.py": {
-    "mtime": 1791707843.259783,
-    "seen": 1791708020.2344365,
-    "ast_hash": "60e860c122eb0ef7c1ff6a975e90ec41",
+    "mtime": 1791779912.0996685,
+    "seen": 1791780123.0449445,
+    "ast_hash": "887212b4abdd6147377f4ae511cf37e4",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_privacy.py": {
@@ -16968,9 +16968,33 @@
     "semantic_hash": ""
   },
   "docs/testing/guard-canary-finalization.md": {
-    "mtime": 1791778717.9179976,
-    "seen": 1791778823.1171196,
-    "ast_hash": "bbfb6e577147150726a7f8bf7383fc79",
+    "mtime": 1791778870.8493,
+    "seen": 1791780123.0501094,
+    "ast_hash": "157b8d1c5c58cbe13d18dfc9762cd3bb",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_evidence_root.py": {
+    "mtime": 1791779912.1046686,
+    "seen": 1791780123.0449758,
+    "ast_hash": "d794877753e53bf64900bbe5caf1616b",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_sqlite_diagnostics.py": {
+    "mtime": 1791779912.0996685,
+    "seen": 1791780123.0449815,
+    "ast_hash": "f03b09d6e38fa4c8160bc01d0bec40c1",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_sba_legend_keeper_continuation_diagnostic.py": {
+    "mtime": 1791779912.1126683,
+    "seen": 1791780123.0486236,
+    "ast_hash": "b5f4154dec8f554eef692704171d5107",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-session-evidence-and-keeper.md": {
+    "mtime": 1791780014.7271903,
+    "seen": 1791780123.0498548,
+    "ast_hash": "1cac332d09f5adc7413323b69d9c2d5f",
     "semantic_hash": ""
   }
 }

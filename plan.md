@@ -26,6 +26,12 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+The next reporting and explicit-keeper fixture increment passes 138 CI-script
+checks and an independent 30-case whole SBA cohort. It repairs the reproduced
+evidence-directory redirection without dropping records, and preserves real
+human choices rather than inferring them. The startup cluster remains open.
+See [current evidence and keeper scope](docs/testing/ci-session-evidence-and-keeper.md).
+
 The isolated decision-quality loader now acquires all 48 declared interfaces,
 but no gameplay or quality scoring is inferred. The test audit-hook lifetime
 repair separately passes its 51-case whole component cohort and retains all

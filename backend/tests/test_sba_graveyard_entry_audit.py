@@ -163,6 +163,12 @@ def paid_legend(seat, tmp_path, replacements=False):
     assert len(state.stack) == 1 and state.cards[cid].zone == Zone.STACK
     state = restart(state, tmp_path, 'paid-legend-before-entry')
     state = passes(state)  # Actual permanent resolution immediately reaches legend SBA.
+    pending = state.pending_mechanic_choice
+    assert pending and pending['kind'] == 'legend_keeper' and pending['player_id'] == seat
+    offer = next(action for action in RulesEngine().legal_moves(state, seat)
+                 if action['type'] == 'choose_mechanic' and action.get('kind') == 'legend_keeper')
+    assert offer['count'] == 1 and set(offer['options']) == {keeper, cid}
+    state = act(state, seat, {'type': offer['type'], 'card_ids': [keeper]})
     (tmp_path / 'actual-legend-checkpoint.json').write_text(json.dumps(snap(state), sort_keys=True))
     restart(state, tmp_path, 'actual-legend-restart')
     (tmp_path / 'actual-legend-offered-actions.json').write_text(json.dumps(
@@ -192,7 +198,7 @@ def test_actual_paid_second_kozilek_legend_departure_entry_and_owner_trigger(sea
 def test_actual_legend_replacement_choice_supported_no_false_grave_entry(seat, tmp_path, observed):
     state, _, cid, sources = paid_legend(seat, tmp_path, replacements=True)
     pending = state.pending_replacement_choice
-    assert pending and pending['resume_kind'] == 'legend_die' and pending['target_card_id'] == cid
+    assert pending and pending['resume_kind'] == 'legend_keeper_die' and pending['target_card_id'] == cid
     assert {row['source_id'] for row in pending['options']} == set(sources)
     chosen = next(action for action in RulesEngine().legal_moves(state, seat)
                   if action['type'] == 'choose_replacement' and action['replacement_source_id'] == sources[0])
