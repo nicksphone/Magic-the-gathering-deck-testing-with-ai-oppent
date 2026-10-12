@@ -285,27 +285,29 @@ def test_copying_a_spell_triggers_magecraft_style_pump() -> None:
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    state.active_player = 1
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
+    import json
+    from pathlib import Path
+    from tests.test_linked_damage_targets import raw_card
+    from rules_engine.action_validation import checked_action
+    from rules_engine.targeting import stack_object_kind
 
+    raw = json.loads((Path(__file__).parent / 'fixtures/global_flash_timing_audit/opt.json').read_text())
+    spell = raw_card(state, raw, 1, Zone.HAND)
+    state.players[1].mana_pool["U"] = 1
+    state = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell.id})
+    original = state.stack[-1]
+    assert original.payload["mana_spent"] == 1
+    assert stack_object_kind(state, original) == "spell"
+    # Copy-only primitive position: the watcher was not present for the paid cast.
     creature = _put_trigger_creature(state, 1, "Magecraft — Whenever you cast or copy an instant or sorcery spell, this creature gets +1/+1 until end of turn.")
     state.cards[creature].power = 1
     state.cards[creature].toughness = 1
 
-    spell_id = "spell-2"
-    state.cards[spell_id] = CardInstance(
-        id=spell_id,
-        name="Opt",
-        owner=1,
-        controller=1,
-        zone=Zone.STACK,
-        types=["Instant"],
-        oracle_text="Draw a card.",
-    )
-    state.stack.append(StackItem(id="stack-1", source_card_id=spell_id, controller=1, label="Opt", effect_key="draw_cards", payload={"amount": 1}))
-
     from effects.registry import resolve_effect
 
-    resolve_effect(state, 1, "copy_spell", {"target_stack_id": "stack-1"})
+    resolve_effect(state, 1, "copy_spell", {"target_stack_id": original.id})
     assert len(state.stack) == 3
     assert state.stack[-1].effect_key == "temporary_pt_buff"
     assert state.stack[-2].payload["__stack_copy_kind"] == "spell"

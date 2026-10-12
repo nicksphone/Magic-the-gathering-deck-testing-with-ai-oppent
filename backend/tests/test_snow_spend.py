@@ -89,14 +89,13 @@ def test_cast_cannot_override_search_filter_count_or_mana_limit() -> None:
 
 def test_copied_snow_spend_spell_has_zero_snow_mana_spent() -> None:
     state, spell_id, _ = _search_state({"C": 2})
-    spell = state.cards[spell_id]
-    state.players[1].hand.remove(spell_id)
-    spell.zone = Zone.STACK
-    state.stack.append(StackItem(
-        id="snow-spell", source_card_id=spell_id, controller=1, label=spell.name,
-        effect_key="gain_life", payload={"amount_source": "snow_mana_spent", "snow_mana_spent": 2},
-    ))
-    copy_spell(state, 1, {"target_stack_id": "snow-spell"})
+    # Retain the complete card body and explicit default automated optional search.
+    state.mechanic_choice_players = set()
+    state = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell_id})
+    original = state.stack[-1]
+    assert original.payload["mana_spent"] == 3
+    assert original.payload["snow_mana_spent"] == 2
+    copy_spell(state, 1, {"target_stack_id": original.id})
     assert len(state.stack) == 2
     assert state.players[1].life == 20
     assert resolve_top_of_stack(state)

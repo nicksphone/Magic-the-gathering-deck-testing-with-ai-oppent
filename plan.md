@@ -26,6 +26,16 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+The older `73458804` protected backend now has complete sanitized terminal
+phase records: 26,006 nodes, 25,324 passed calls, 66 failed calls, 534 setup
+failures and 82 skips. Every setup failure is native SQLITE_FULL13; source
+predates passed-snapshot cleanup. No newer-run success or physical-disk cause
+is inferred. [Current diagnosis](docs/testing/ci-734-sqlite-full-diagnosis.md).
+
+The next paid stack-provenance fixture batch independently passes all95 cases
+with 295 original assertions preserved. Rules/classification and AI policy are
+unchanged. [Fixture scope](docs/testing/ci-stack-provenance-fixtures.md).
+
 Published `788e219a` retains the protected backend qualification requirement.
 Its predecessor's scoped missing-source and consumer-epoch cohorts pass 212
 and 67 checks; the explicit Favor worker-input cohort independently passes24.

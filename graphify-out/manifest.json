@@ -4134,9 +4134,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_events_apnap.py": {
-    "mtime": 1791667790.1609278,
-    "seen": 1791671014.2846558,
-    "ast_hash": "5ee6b65742eafd0f777cbf16142e920b",
+    "mtime": 1791790526.4435294,
+    "seen": 1791790603.4191854,
+    "ast_hash": "cb6ccb12a01d66d0b7a8247792683c31",
     "semantic_hash": ""
   },
   "backend/tests/test_expanded_keyword_mechanics.py": {
@@ -4812,9 +4812,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_oracle_effects.py": {
-    "mtime": 1791667790.216927,
-    "seen": 1791671014.2850137,
-    "ast_hash": "ac3934fd70cfb1c85a2dd14995738aec",
+    "mtime": 1791790526.4435294,
+    "seen": 1791790603.4196987,
+    "ast_hash": "bf40f8983260c430e02389eabb1b1181",
     "semantic_hash": ""
   },
   "backend/tests/test_oracle_reminder_boundaries.py": {
@@ -5232,9 +5232,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_snow_spend.py": {
-    "mtime": 1791667790.2409267,
-    "seen": 1791671014.2852304,
-    "ast_hash": "ac0ca4d75151495f9733f59630953a18",
+    "mtime": 1791790526.4435294,
+    "seen": 1791790603.4200034,
+    "ast_hash": "2fb21cc5e4b89591cc8898fe9ae71ce3",
     "semantic_hash": ""
   },
   "backend/tests/test_spell_consumption_reservations.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791788772.3534224,
-    "seen": 1791788850.3601942,
-    "ast_hash": "6170a4fafe3d3ed4d78bed190aff13e1",
+    "mtime": 1791790526.4925284,
+    "seen": 1791790603.4221485,
+    "ast_hash": "5be507db82c8fb68ca294ffd23b01653",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -17124,9 +17124,27 @@
     "semantic_hash": ""
   },
   "docs/testing/ci-closed-loyalty-creature-and-boon.md": {
-    "mtime": 1791788772.3524225,
-    "seen": 1791788850.3593266,
-    "ast_hash": "aa9bf3f46115bb520cf2fc0b4ece3e60",
+    "mtime": 1791789011.9468637,
+    "seen": 1791790603.4212227,
+    "ast_hash": "315317a8eacfccaffc0dadaa2e13d417",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_stack_publication_provenance.py": {
+    "mtime": 1791790526.4435294,
+    "seen": 1791790603.4200633,
+    "ast_hash": "0737bbc074caa67a6cd702d4a99cd62a",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-734-sqlite-full-diagnosis.md": {
+    "mtime": 1791790526.4925284,
+    "seen": 1791790603.4212093,
+    "ast_hash": "babc19fde3d826aab573d0514b406c0c",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-stack-provenance-fixtures.md": {
+    "mtime": 1791790526.4915285,
+    "seen": 1791790603.421244,
+    "ast_hash": "a1fcb00cc3888014f8575ca4cf0129b0",
     "semantic_hash": ""
   }
 }

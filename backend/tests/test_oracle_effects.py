@@ -422,7 +422,10 @@ def test_copy_ability_handler_replays_target_ability() -> None:
 def test_counter_ability_handler_removes_stack_item() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck)
-    state.stack.append(type("SI", (), {"id": "stack-ability", "label": "Soul Warden trigger", "source_card_id": "warden-1", "effect_key": "gain_life", "payload": {"target_player": 1, "amount": 1}})())
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.PRECOMBAT_MAIN
     state.cards["warden-1"] = CardInstance(
         id="warden-1",
         name="Soul Warden",
@@ -432,7 +435,24 @@ def test_counter_ability_handler_removes_stack_item() -> None:
         types=["Creature"],
         oracle_text="Whenever another creature enters the battlefield, you gain 1 life.",
     )
-    resolve_effect(state, 1, "counter_ability", {"target_stack_id": "stack-ability"})
+    state.players[1].battlefield.append("warden-1")
+    import json
+    from pathlib import Path
+    from tests.test_linked_damage_targets import raw_card
+    from rules_engine.action_validation import checked_action
+    from rules_engine.targeting import stack_object_kind
+
+    # The trigger is emitted by actual paid creature resolution, not a synthetic SI.
+    raw = json.loads((Path(__file__).parent / 'fixtures/creature_observer_audit/grizzly-bears.json').read_text())
+    bear = raw_card(state, raw, 1, Zone.HAND)
+    state.players[1].mana_pool.update({"G": 1, "C": 1})
+    state = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": bear.id})
+    assert state.stack[-1].payload["mana_spent"] == 2
+    assert resolve_top_of_stack(state)
+    trigger = state.stack[-1]
+    assert trigger.source_card_id == "warden-1"
+    assert stack_object_kind(state, trigger) == "triggered"
+    resolve_effect(state, 1, "counter_ability", {"target_stack_id": trigger.id})
     assert state.stack == []
 
 
