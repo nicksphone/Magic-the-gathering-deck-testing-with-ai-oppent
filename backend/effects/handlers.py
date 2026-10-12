@@ -507,6 +507,14 @@ def _count_controlled_type(state: MatchState, controller: int, type_name: str) -
     return count
 
 
+def player_loses_game(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.replacement import player_cant_lose_game
+    player = payload.get('target_player')
+    if (type(player) is int and player in state.players and state.winner is None
+            and not player_cant_lose_game(state, player)):
+        state.winner = 3 - player
+
+
 def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if not target or target not in state.cards:

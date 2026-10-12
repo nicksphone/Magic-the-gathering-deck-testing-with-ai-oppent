@@ -1,0 +1,16 @@
+{
+  "colossal-dreadmaw": {
+    "raw_sha256": "bc3e4fa3bc1ede38ffde0b8c0dcb4795cbae5935558f75f9223dae309d3fd733",
+    "id": "8059c52b-5d25-4052-b48a-e9e219a7a546",
+    "oracle_id": "08c7db90-c0cf-4482-b7ee-bb033e5996d2",
+    "oracle_text": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "source": "official Scryfall exact-name card API; static intake outside all game gates"
+  },
+  "craw-wurm": {
+    "raw_sha256": "4ee2a42b0f3f871bb2ef9f0eb4b4c38a0567ed4085081901f97e3b52e5fc968b",
+    "id": "3875f73d-6108-488b-bd34-4cf2c23ce6b3",
+    "oracle_id": "6a462a69-3e42-41de-a3aa-a488d9f38d69",
+    "oracle_text": "",
+    "source": "official Scryfall exact-name card API; static intake outside all game gates"
+  }
+}

@@ -57,8 +57,9 @@ See [capacity fixture scope](docs/testing/ci-capacity-policy-fixture-portability
 
 The next exact complete creature-destruction loyalty grammar and fixture batch
 passes an independent nine-whole-module /91-case check (21.28s), preserving all
-106 original assertions, legal competing casts and AI/winner policy. Full-card
-Vraska remains explicitly unsupported; no partial admission is substituted.
+106 original assertions, legal competing casts and AI/winner policy. At that
+checkpoint, full-card Vraska remained explicitly unsupported; no partial
+admission was substituted.
 See [loyalty/Boon scope](docs/testing/ci-closed-loyalty-creature-and-boon.md).
 
 The next test-only trigger/query fixture correction passes all 44 cases across
@@ -1078,3 +1079,19 @@ See [scope and evidence](docs/testing/ci-timings-combat-and-media.md).
 The completed `8fff3117` backend cohort has zero setup failures but 58 call
 failures, so it is not green. Current whole-backend qualification, all original
 release gates and measured AI quality remain open.
+
+## 2026-10-12 Full Vraska Rules Acceptance
+
+The complete canonical three-ability body now uses generic loyalty, combat-trigger
+and player-loss handlers. The public package and fifteen whole pure neighbor
+modules pass376 (163.90s); the final source separately passes all119 persistence,
+ASGI and serializer cases (186.39s). A reviewed animated-recipient gap has a
+both-seat failing-before/passing-after regression. All original three-ability
+text is retained; no card-name AI branch or partial body admission is substituted.
+
+The old unsupported-card diagnostic receives an explicit admission/cost/atomicity
+adaptation, not an exclusion. Fixtures use declared initial boards and mana;
+selected animation/protection/blink seams are controlled rather than certified
+paid spell episodes. These component results do not close whole-backend CI,
+strategic AI quality or any remaining original release gate.
+See [exact scope](docs/testing/vraska-full-current-acceptance.md).

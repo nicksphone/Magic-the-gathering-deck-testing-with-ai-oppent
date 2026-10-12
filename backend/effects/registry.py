@@ -48,6 +48,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "cycle_search": handlers.cycle_search,
     "gain_life": handlers.gain_life,
     "lose_life": handlers.lose_life,
+    "player_loses_game": handlers.player_loses_game,
     "destroy_permanent": handlers.destroy_permanent,
     "destroy_with_controller_search": handlers.destroy_with_controller_search,
     "mill_cards": handlers.mill_cards,

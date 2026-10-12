@@ -60,6 +60,10 @@ def companion(line, name=''):
 def compile_extended(text, name):
     """Full-match parameterized grammars; never accept a recognized prefix."""
     from rules_engine.continuous import _attached_keywords
+    from rules_engine.loyalty_combat import compile_instruction as compile_combat
+    combat = compile_combat(text, name)
+    if combat is not None:
+        return combat
     if any(c in text for c in '()\n;'):
         return None
     from rules_engine.linked_discard import simultaneous_discard_draw_effect
@@ -166,6 +170,7 @@ def announcement_text(text, name):
                   'loyalty_hand_entry', 'loyalty_delay_untap', 'loyalty_flash',
                   'loyalty_source_token', 'loyalty_scaled_buff', 'loyalty_destroy_threshold', 'loyalty_mana'}
     targetless.add('loyalty_named_artifact_token')
+    targetless.update({'loyalty_combat_retaliation', 'loyalty_combat_loss_tokens'})
     targetless.add('loyalty_discard')
     targetless.update({'loyalty_shared_discard_draw', 'loyalty_graveyard_cast_many'})
     if steps and all(step['effect_key'] == 'loyalty_mana' or
@@ -235,7 +240,10 @@ def resolve(state, controller, payload):
     from rules_engine.events import emit_event, emit_event_batch
     kind = payload['loyalty_operation']
     target = state.cards.get(payload.get('target_card_id'))
-    if kind == 'discard':
+    if kind in {'combat_retaliation', 'combat_retaliation_destroy', 'combat_loss_tokens'}:
+        from rules_engine.loyalty_combat import resolve as resolve_combat
+        resolve_combat(state, controller, payload)
+    elif kind == 'discard':
         handlers.discard_cards(state, controller, {**payload, 'self_discard': True})
     elif kind == 'shared_discard_draw':
         handlers.each_player_discard(state, controller, payload)
@@ -1173,5 +1181,5 @@ def timing(state, card, player):
                     and not normal):
                 return False, False
     flash = 'Sorcery' in effective_types(state, card) and any(
-        p.get('kind') not in {'source_linked_exile', 'next_untap_lock'} and p['controller'] == player for p in state.loyalty_permissions)
+        p.get('kind') not in {'source_linked_exile', 'next_untap_lock', 'combat_retaliation'} and p['controller'] == player for p in state.loyalty_permissions)
     return True, flash

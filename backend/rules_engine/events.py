@@ -677,6 +677,8 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
     from rules_engine.loyalty_instructions import collect_emblem_triggers
     out.extend(collect_emblem_triggers(state, event, payload))
+    from rules_engine.loyalty_combat import collect_retaliation
+    out.extend(collect_retaliation(state, event, payload))
     from rules_engine.foretell import collect_foretell_triggers
     out.extend(collect_foretell_triggers(state, event, payload))
     from rules_engine.suspend import collect_triggers as collect_suspend_triggers
@@ -1749,6 +1751,13 @@ def _trigger_from_oracle(
     raw_entry_oracle: str | None = None,
 ) -> dict[str, Any]:
     entry_oracle = oracle if event == 'enters_battlefield' else None
+    from rules_engine.loyalty_combat import PLAYER_LOSS
+    if (event == 'combat_damage_dealt' and payload.get('source_card_id') == source_card_id
+            and payload.get('amount', 0) > 0 and payload.get('target_player') in state.players
+            and re.fullmatch(PLAYER_LOSS, oracle, re.I)):
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': 'player_loses_game',
+                'payload': {'target_player': payload['target_player'], '__trigger_full_clause': oracle}}
     source = state.cards.get(source_card_id)
     if (entry_oracle is not None and source is not None
             and payload.get('card_id') == source_card_id):

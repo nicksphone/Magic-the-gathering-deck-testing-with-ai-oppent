@@ -384,15 +384,15 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1791752774.0938365,
-    "seen": 1791753079.0093105,
-    "ast_hash": "a54ec3fbe282c2d951be5e486c38a1da",
+    "mtime": 1791818916.7356708,
+    "seen": 1791819167.1248868,
+    "ast_hash": "360e47e7a819dcc111a404fc07d820e9",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1791752774.1148362,
-    "seen": 1791753079.0093122,
-    "ast_hash": "8cf15620f72426daaddee8c261c41d65",
+    "mtime": 1791818916.7366707,
+    "seen": 1791819167.1248894,
+    "ast_hash": "3652f753449678cee607a62d416c5f08",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -702,9 +702,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1791667789.8379323,
-    "seen": 1791671014.2828171,
-    "ast_hash": "92be3e318ee683fb167ebf7f378d15bb",
+    "mtime": 1791818916.7346709,
+    "seen": 1791819167.1249967,
+    "ast_hash": "cb578c5e797da73d8c6f6aa45a4aa57d",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791813753.353952,
-    "seen": 1791813859.2477899,
-    "ast_hash": "6e78d95b3a8443a65437f624211c5df0",
+    "mtime": 1791819058.72791,
+    "seen": 1791819167.1299112,
+    "ast_hash": "c19693b27afd3fea168c7bf6599321ac",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -15366,15 +15366,15 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/closed_loyalty.py": {
-    "mtime": 1791788772.3064232,
-    "seen": 1791788850.3549218,
-    "ast_hash": "7d1404719a2c27ea149c0bd715ed49eb",
+    "mtime": 1791818916.7316709,
+    "seen": 1791819167.1249504,
+    "ast_hash": "6a66de694a6795c7cc8eb13cd2749189",
     "semantic_hash": ""
   },
   "backend/rules_engine/loyalty_instructions.py": {
-    "mtime": 1791667789.8509321,
-    "seen": 1791671014.2828538,
-    "ast_hash": "3bfab56ac960ab16612f0a43e66fc241",
+    "mtime": 1791818916.7346709,
+    "seen": 1791819167.1250403,
+    "ast_hash": "21442cf94fa95ad55528038dce30424c",
     "semantic_hash": ""
   },
   "backend/rules_engine/printed_body.py": {
@@ -17118,9 +17118,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_loyalty_destruction_scope_diagnostic.py": {
-    "mtime": 1791788772.3064232,
-    "seen": 1791788850.3577664,
-    "ast_hash": "14855cd55094c1cd92158dc25c13c0d4",
+    "mtime": 1791818916.7366707,
+    "seen": 1791819167.1275835,
+    "ast_hash": "ef9b27f9e7cdf945424161802c4b28ad",
     "semantic_hash": ""
   },
   "docs/testing/ci-closed-loyalty-creature-and-boon.md": {
@@ -17259,6 +17259,168 @@
     "mtime": 1791813753.350952,
     "seen": 1791813859.2465503,
     "ast_hash": "6f5def214f6c28f7606fa27c21201abe",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/loyalty_combat.py": {
+    "mtime": 1791818916.7366707,
+    "seen": 1791819167.1250384,
+    "ast_hash": "16552b5563376ff6b64247af96e9015b",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/__init__.py": {
+    "mtime": 1791818916.7366707,
+    "seen": 1791819167.1282516,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/conftest.py": {
+    "mtime": 1791818916.7366707,
+    "seen": 1791819167.1282535,
+    "ast_hash": "ba2b10c74bb7397d1b433e3e64c597f0",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/CANONICAL_INTAKE.json": {
+    "mtime": 1791818916.7396708,
+    "seen": 1791819167.128255,
+    "ast_hash": "dda6296cfebdd383586aeedfb184c3be",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/LETHAL_CANONICAL_INTAKE.json": {
+    "mtime": 1791818916.7406707,
+    "seen": 1791819167.1282566,
+    "ast_hash": "69fe2a70435d43ac7e3a3f534a254ce5",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/LETHAL_RESOURCE_INTAKE.json": {
+    "mtime": 1791818916.7406707,
+    "seen": 1791819167.1282578,
+    "ast_hash": "1175d7b5ae094ac0a49a46e7027ff4ec",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/NEIGHBOR_CANONICAL_INTAKE.json": {
+    "mtime": 1791818916.7386708,
+    "seen": 1791819167.1282597,
+    "ast_hash": "2c27faa45d6f2cf4234a5ceda6d60eec",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/PROVENANCE.json": {
+    "mtime": 1791818916.7386708,
+    "seen": 1791819167.1282609,
+    "ast_hash": "6ab38aa65880339141cf7e59776c9f5e",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/colossal-dreadmaw.json": {
+    "mtime": 1791818916.7396708,
+    "seen": 1791819167.1282623,
+    "ast_hash": "d0ec522c02e9cdf99e1e5bf52743dc95",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/craw-wurm.json": {
+    "mtime": 1791818916.7406707,
+    "seen": 1791819167.1282635,
+    "ast_hash": "cd90b61680d31ffc81cc36c9a9056147",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/divination.json": {
+    "mtime": 1791818916.7396708,
+    "seen": 1791819167.1282647,
+    "ast_hash": "0c2583bd9d5fa9b1707065353f310616",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/flicker-of-fate.json": {
+    "mtime": 1791818916.7386708,
+    "seen": 1791819167.1282663,
+    "ast_hash": "cf4245929f11531f61c90f1dd3c8e08f",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/forest.json": {
+    "mtime": 1791818916.7396708,
+    "seen": 1791819167.1282675,
+    "ast_hash": "e8f7e450f00d4c477c5e4438c884caed",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/grizzly-bears-scryfall-raw.json": {
+    "mtime": 1791818916.7396708,
+    "seen": 1791819167.1282687,
+    "ast_hash": "0d69ffc3cdb69cbd25fc964874b4ca79",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/island-scryfall-raw.json": {
+    "mtime": 1791818916.7406707,
+    "seen": 1791819167.1282701,
+    "ast_hash": "91f577d347bb5f46417347e0d3d85e12",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/lightning-bolt.json": {
+    "mtime": 1791818916.7386708,
+    "seen": 1791819167.1282713,
+    "ast_hash": "9bcd1d3249ca3d62732207abee6e051d",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/mountain.json": {
+    "mtime": 1791818916.7386708,
+    "seen": 1791819167.128273,
+    "ast_hash": "f35d8215fe870a1df2e3607b58b74ebd",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/plains.json": {
+    "mtime": 1791818916.7406707,
+    "seen": 1791819167.1282742,
+    "ast_hash": "6488f8308f1039ce4011b6f380a5ad5d",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/platinum-angel.json": {
+    "mtime": 1791818916.7396708,
+    "seen": 1791819167.1282756,
+    "ast_hash": "8017fc8eaef4e9869a2253998288e32f",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/stifle-scryfall-raw.json": {
+    "mtime": 1791818916.7376707,
+    "seen": 1791819167.128277,
+    "ast_hash": "7f2b0ee6a038349d7cde51ded219f58d",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/swamp.json": {
+    "mtime": 1791818916.7406707,
+    "seen": 1791819167.1282785,
+    "ast_hash": "2a19123e8c84a7edf6024c5cc0c775ca",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/fixtures/vraska-scryfall-raw.json": {
+    "mtime": 1791818916.7386708,
+    "seen": 1791819167.1282794,
+    "ast_hash": "44dcb87edf05e9520ee1f15b03b279bc",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/test_animated_retaliation.py": {
+    "mtime": 1791818916.7376707,
+    "seen": 1791819167.1282809,
+    "ast_hash": "32810f37d79bfbca65c120b631633790",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/test_edges.py": {
+    "mtime": 1791818916.7376707,
+    "seen": 1791819167.128282,
+    "ast_hash": "bdaa7b74521cb4b3889d0f21e14baf2d",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/test_full_vraska.py": {
+    "mtime": 1791818916.7376707,
+    "seen": 1791819167.1282835,
+    "ast_hash": "59c46ab29add479713e648e99463728b",
+    "semantic_hash": ""
+  },
+  "backend/tests/vraska_full/test_vraska_boundaries.py": {
+    "mtime": 1791818916.7376707,
+    "seen": 1791819167.1282847,
+    "ast_hash": "6b4fc5dcb8623f5ce2355ac9a49ead56",
+    "semantic_hash": ""
+  },
+  "docs/testing/vraska-full-current-acceptance.md": {
+    "mtime": 1791819038.129305,
+    "seen": 1791819167.1298862,
+    "ast_hash": "74d43b2a7dd3ba04c4263bc9d8f8adac",
     "semantic_hash": ""
   }
 }

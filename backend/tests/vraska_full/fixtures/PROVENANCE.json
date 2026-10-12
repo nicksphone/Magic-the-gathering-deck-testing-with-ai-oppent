@@ -1,0 +1,26 @@
+{
+  "source_epoch": "7c711d2382ddd1aa95f6ae99012905203009ef7a",
+  "fixture_bytes": {
+    "colossal-dreadmaw.json": "bc3e4fa3bc1ede38ffde0b8c0dcb4795cbae5935558f75f9223dae309d3fd733",
+    "craw-wurm.json": "4ee2a42b0f3f871bb2ef9f0eb4b4c38a0567ed4085081901f97e3b52e5fc968b",
+    "divination.json": "b4027892ddae4183a1107d169a27a6197bf338dec1ce71283575e1d3618036f2",
+    "flicker-of-fate.json": "1c027b019e3429fe066cf1b8e49d79bd7d42ff696bde3c6eeb6469d844ce26ed",
+    "forest.json": "b017c987ba63f9d1e957eb4abd4ac4ca830753315b4b29a885bfc5e038ed9a44",
+    "grizzly-bears-scryfall-raw.json": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "island-scryfall-raw.json": "d5a32d1ed9ae393edd357e6296385e81bc88848b708f45afae2ceb840a32bf27",
+    "lightning-bolt.json": "e5c62f8029d332d232605077fcdd73549f7383fdc8f610da97c071b242e3d787",
+    "mountain.json": "a92fe191ac7038da46e8e5f8143a0f1d2ff53f3b5302bdf34de9df9a99e5321a",
+    "plains.json": "c191c9d1b17836c87f5908ffa33b7cb6b7ccab293a1162665219691c043f9a65",
+    "platinum-angel.json": "747ff3f591d24373448e75d0dca8512f0315b8b75b2155ff1a68716500d8980b",
+    "stifle-scryfall-raw.json": "063875625c00c64cc3ca21d16542e15eadd74707836780bd72e8a510889c5cc1",
+    "swamp.json": "4c799e1c5170e492b7631ea7e96d8356b9cae9bed0645f104434c1095a568b4a",
+    "vraska-scryfall-raw.json": "d05bc8f4d639536deb46eabb9f1ee807373418591be1deb1af7d57548d79423f"
+  },
+  "receipts": "Original intake receipt bytes retained. No intake timestamps were recorded in these receipts; none are invented. RAW contains original printed/Oracle metadata unchanged.",
+  "public_git_inputs": {
+    "flicker-of-fate.json": "backend/tests/fixtures/archangel_pair/flicker-of-fate.json",
+    "platinum-angel.json": "backend/tests/fixtures/life_conversion/platinum-angel.json",
+    "divination.json": "backend/tests/fixtures/global_flash_timing_audit/divination.json",
+    "plains.json": "backend/tests/fixtures/activated_top_selection/plains.json"
+  }
+}
