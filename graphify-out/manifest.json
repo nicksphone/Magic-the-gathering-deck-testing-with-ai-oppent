@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791830582.3436174,
-    "seen": 1791830738.9545212,
-    "ast_hash": "03d5e3924953df30f1e7353e5d555fd3",
+    "mtime": 1791841700.717624,
+    "seen": 1791841805.0600686,
+    "ast_hash": "ccf25ac6280748222ef54be52dea624a",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -192,9 +192,9 @@
     "semantic_hash": ""
   },
   "backend/analytics/decision_quality.py": {
-    "mtime": 1791667789.8039327,
-    "seen": 1791671014.2826595,
-    "ast_hash": "79268e3fc3b8dad4a88283f23dd41e9f",
+    "mtime": 1791841700.717624,
+    "seen": 1791841805.0601368,
+    "ast_hash": "5a5a169a485c74ebe91166418d35f26a",
     "semantic_hash": ""
   },
   "backend/analytics/decision_taxonomy.py": {
@@ -216,9 +216,9 @@
     "semantic_hash": ""
   },
   "backend/analytics/service.py": {
-    "mtime": 1791667789.8039327,
-    "seen": 1791671014.2826679,
-    "ast_hash": "f4bdbc9b4ff85c9f597867b7824f60a2",
+    "mtime": 1791841700.717624,
+    "seen": 1791841805.060146,
+    "ast_hash": "45881e479ad1a029c091d6a3ef393c7a",
     "semantic_hash": ""
   },
   "backend/api_contracts.py": {
@@ -264,9 +264,9 @@
     "semantic_hash": ""
   },
   "backend/card_data/hydration.py": {
-    "mtime": 1791667789.8059328,
-    "seen": 1791671014.2826855,
-    "ast_hash": "c2f4834d22b08533f876888b141b5966",
+    "mtime": 1791841700.717624,
+    "seen": 1791841805.0601666,
+    "ast_hash": "fcb20b1cc9c265ec21068f4a44b2e7a2",
     "semantic_hash": ""
   },
   "backend/card_data/models.py": {
@@ -408,9 +408,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/serializers.py": {
-    "mtime": 1791762978.8595638,
-    "seen": 1791764403.5648346,
-    "ast_hash": "ba94ab4153c65be9589c7aef79f7db3b",
+    "mtime": 1791841700.717624,
+    "seen": 1791841805.0602186,
+    "ast_hash": "bb24d6c073876f370ee18a1fee7bb296",
     "semantic_hash": ""
   },
   "backend/game_state/series_policy.py": {
@@ -420,9 +420,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/state.py": {
-    "mtime": 1791667789.8139327,
-    "seen": 1791671014.2827325,
-    "ast_hash": "3be8a4ec38418fff3b18269935eda631",
+    "mtime": 1791841700.717624,
+    "seen": 1791841805.0602221,
+    "ast_hash": "edce5732d425f03274195cb999d48e9b",
     "semantic_hash": ""
   },
   "backend/knowledge/__init__.py": {
@@ -1062,9 +1062,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/debug_head_to_head.py": {
-    "mtime": 1791667789.866932,
-    "seen": 1791671014.2829494,
-    "ast_hash": "d612c1ed0540743228cd8d9c4cc32528",
+    "mtime": 1791841700.717624,
+    "seen": 1791841805.0604794,
+    "ast_hash": "cb4910201c3b1d7fab997af163c628d1",
     "semantic_hash": ""
   },
   "backend/scripts/export_builtin_oracle_seed.py": {
@@ -1110,9 +1110,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/overnight_verbose_round_robin.py": {
-    "mtime": 1791667789.8689318,
-    "seen": 1791671014.2829645,
-    "ast_hash": "87c24fa860773d83101d502c27c5a18d",
+    "mtime": 1791841700.717624,
+    "seen": 1791841805.0604966,
+    "ast_hash": "373b1a96fde9bff7b6fdaec20d9486c3",
     "semantic_hash": ""
   },
   "backend/scripts/profile_ai_match.py": {
@@ -6876,9 +6876,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1791838529.4927623,
-    "seen": 1791838636.9144025,
-    "ast_hash": "00de584f6eeb0d345a23b165028fd20c",
+    "mtime": 1791841700.7486234,
+    "seen": 1791841805.0640724,
+    "ast_hash": "e7cba1d6c3677752d59af299f6e30b1b",
     "semantic_hash": ""
   },
   "docs/plans/casting-trigger-repair-batch.md": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791838529.4917624,
-    "seen": 1791838636.9159956,
-    "ast_hash": "d29cdf298f5af042015efb9a454dfcbe",
+    "mtime": 1791841700.7476234,
+    "seen": 1791841805.0651405,
+    "ast_hash": "bd85a32f4afbeade9d628316f4f74585",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -17553,6 +17553,60 @@
     "mtime": 1791838529.4637628,
     "seen": 1791838636.9152665,
     "ast_hash": "457cb60b357413b0e2142929a93ce919",
+    "semantic_hash": ""
+  },
+  "backend/knowledge/service.py": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.0602343,
+    "ast_hash": "447e9cf9097e0629c793ec1e8779c622",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_knowledge_natural_smoke.py": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.061959,
+    "ast_hash": "956fcc7809eb100bb19adb187a66f13e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_knowledge_profile_boundaries.py": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.0619607,
+    "ast_hash": "590c928e8bb8367430e5886971b0757e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_knowledge_profile_consumer.py": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.0619621,
+    "ast_hash": "3aed5b9f170bfff64658ca06f106068e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_knowledge_repository_pipeline.py": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.0619638,
+    "ast_hash": "0ff33705befc69f684b96e48dbde0204",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_knowledge_snapshot_contract.py": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.061965,
+    "ast_hash": "171973a7835acefba4f0b18627cf4a4a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_usage_trace_contract.py": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.062639,
+    "ast_hash": "e7c2dd0d6e7be95138c68c99da3a9000",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-knowledge-repository-and-traces.md": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.0641422,
+    "ast_hash": "a5197997302f6c72dc9a1f27f6edac2f",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-knowledge-tags-current-acceptance.md": {
+    "mtime": 1791841700.7186239,
+    "seen": 1791841805.064144,
+    "ast_hash": "5f41e04ade5e5313afbb03c34629cbc5",
     "semantic_hash": ""
   }
 }

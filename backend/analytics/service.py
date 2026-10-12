@@ -132,6 +132,7 @@ class AnalyticsService:
                         legal,
                         action,
                         decision.reasoning,
+                        knowledge_usage=getattr(decision, 'knowledge_usage', None),
                     )
                     trace_line = budget.trace_line(trace_payload)
                     if should_cancel is not None and should_cancel():

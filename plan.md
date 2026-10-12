@@ -39,11 +39,18 @@ names: 443 rulings and35 verified empty lists, with all89 cases in seven whole
 modules passing. Actual cache/knowledge persistence, new-session reads,
 idempotence and malformed-ruling rejection are covered; live databases and
 additional user-deck cards are not modified or certified by that component.
-Production AI consumers are being implemented; they and the learned-matchup/
-quality phases remain open.
+The next consumer increment connects validated match-frozen printed tags to
+production AI and forwards anonymous per-decision usage into diagnostics. Its
+15-whole-module component passes190 cases, including actual155-card repository
+hydration, both-seat checked paid decisions, private cold/public-view controls,
+and the original seeded Tempo/BlueControl master smoke completing naturally.
+No numeric policy weights change. Full current hosted CI and HTTP/file-storage
+acceptance remain separate; threat-aware numerical scoring, learned matchups,
+deliberate sideboarding and measured quality phases remain open.
 See [profile derivation](docs/testing/knowledge-profiles-current-derivation.md)
 and [sync/persistence qualification](docs/testing/knowledge-profile-sync.md),
 plus [shipped rulings](docs/testing/knowledge-rulings-shipped-corpus.md).
+See [actual knowledge decisions and traces](docs/testing/ai-knowledge-repository-and-traces.md).
 
 Published `3a7db1e2` now passes the complete configured frontend, browser and
 protected backend CI workflow. Verified sanitized metadata accounts for all

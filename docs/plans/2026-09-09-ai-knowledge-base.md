@@ -12,9 +12,15 @@ rules permission or measured AI strength. See
 [derivation](../testing/knowledge-profiles-current-derivation.md) and
 [sync evidence](../testing/knowledge-profile-sync.md).
 
-Production AI does not yet consume these persisted estimates. Tactical-profile
-consumers, learned matchups, deliberate sideboarding and the specified A/B
-quality improvements remain required; this checkpoint does not complete the plan.
+Production AI now consumes validated match-frozen printed tags from persisted
+knowledge, with exact legacy fallback and anonymous per-decision trace usage.
+The composed15-whole-module component passes190 cases, including real repository
+hydration and the original seeded master head-to-head completing naturally.
+Numerical threat/play-value estimates are not yet scoring inputs. Full current
+pytest/hosted qualification, threat-aware scoring, learned matchups, deliberate
+sideboarding and the specified A/B improvements remain required; this checkpoint
+does not complete the plan. See
+[actual decisions and traces](../testing/ai-knowledge-repository-and-traces.md).
 
 The subsequent test/data-only shipped-corpus rulings component fetches155
 official lists: 443 rulings and35 verified empty lists. Seven whole modules

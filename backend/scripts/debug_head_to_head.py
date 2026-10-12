@@ -26,9 +26,10 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
 
 
-def build_debug_trace_payload(state, pid: int, legal: list[dict], action: dict, reasoning: str) -> dict:
+def build_debug_trace_payload(state, pid: int, legal: list[dict], action: dict, reasoning: str,
+                              *, knowledge_usage: dict | None = None) -> dict:
     opponent = 1 if pid == 2 else 2
-    trace = build_trace_payload(state, pid, legal, action, reasoning)
+    trace = build_trace_payload(state, pid, legal, action, reasoning, knowledge_usage=knowledge_usage)
     trace.update({
         "graveyard_count": len(state.players[pid].graveyard),
         "opp_graveyard_count": len(state.players[opponent].graveyard),
@@ -107,6 +108,7 @@ def main() -> int:
                 while state.winner is None and ticks < args.max_ticks:
                     pid = pregame_actor(state) if state.pregame_pending else state.priority_player
                     legal = engine_rules.legal_moves(state, pid)
+                    knowledge_usage = None
                     if not legal:
                         action = {"type": "pass_priority"}
                         reasoning = "No legal action"
@@ -115,8 +117,10 @@ def main() -> int:
                         decision = agent.choose_action(state, legal, pid)
                         action = decision.action
                         reasoning = decision.reasoning
+                        knowledge_usage = getattr(decision, 'knowledge_usage', None)
 
-                    trace = build_debug_trace_payload(state, pid, legal, action, reasoning)
+                    trace = build_debug_trace_payload(state, pid, legal, action, reasoning,
+                                                      knowledge_usage=knowledge_usage)
                     state.log.append(f"AI TRACE {json.dumps(trace, separators=(',', ':'))}")
 
                     engine_rules.take_action(state, pid, action)

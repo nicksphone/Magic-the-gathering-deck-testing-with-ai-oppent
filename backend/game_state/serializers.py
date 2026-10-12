@@ -71,6 +71,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
 
 def serialize_match_snapshot(state: MatchState) -> dict:
     """Serialize all mutable rules state needed to resume a match."""
+    from knowledge.service import copy_snapshot
     from rules_engine.kicker import validate_kicker_count
     from rules_engine.control_effects import validate_control_effects
     for card in state.cards.values():
@@ -241,6 +242,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "was_kicked": card.was_kicked,
                 **({'kicker_count': card.kicker_count} if card.kicker_count is not None else {}),
                 "selected_face_index": card.selected_face_index,
+                **({'knowledge_snapshot': copy_snapshot(card.knowledge_snapshot)} if card.knowledge_snapshot else {}),
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
                 "bestow_characteristics": deepcopy(card.bestow_characteristics),
@@ -291,6 +293,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         players[player.id] = player
 
     cards = {}
+    from knowledge.service import copy_snapshot
     from rules_engine.keyword_effects import restore_keyword_effects
     for cid, raw in payload["cards"].items():
         if 'kicker_count' in raw:
@@ -317,6 +320,7 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             zone_change_sequence=int(raw.get("zone_change_sequence", 0)),
             instance_order=int(raw.get("instance_order", 0)), card_faces=list(raw.get("card_faces", [])),
             selected_face_index=raw.get("selected_face_index"),
+            knowledge_snapshot=copy_snapshot(raw.get('knowledge_snapshot', {}), semantic=True),
             layout=str(raw.get("layout") or ""),
             chosen_creature_type=raw.get("chosen_creature_type"),
             printed_characteristics=dict(raw.get("printed_characteristics", {})),
@@ -355,6 +359,10 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         restore(state, payload['scheduler'])
     state.starting_decks = {int(pid): deepcopy(rows) for pid, rows in payload.get('starting_decks', {}).items()}
     state.card_observations = {int(pid): deepcopy(rows) for pid, rows in payload.get('card_observations', {}).items()}
+    for records in state.card_observations.values():
+        for record in records.values():
+            if 'knowledge_snapshot' in record:
+                record['knowledge_snapshot'] = copy_snapshot(record['knowledge_snapshot'], semantic=True)
     state.failed_draw_players = {int(value) for value in payload.get("failed_draw_players", [])}
     state.passed_priority = {int(value) for value in payload.get("passed_priority", [])}
     state.attackers = list(payload.get("attackers", []))
@@ -460,6 +468,16 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     return state
 
 
+def _without_knowledge_snapshot(value):
+    if isinstance(value, dict):
+        return {key: _without_knowledge_snapshot(item) for key, item in value.items() if key != 'knowledge_snapshot'}
+    if isinstance(value, list):
+        return [_without_knowledge_snapshot(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_without_knowledge_snapshot(item) for item in value)
+    return value
+
+
 def serialize_match(state: MatchState, *, look_players=()) -> dict:
     from rules_engine.foretell import can_look
     from rules_engine.land_rules import remaining_land_plays_this_turn
@@ -469,7 +487,7 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
         vals = [s.value for s in steps]
         return sorted(vals, key=lambda x: step_order.index(x) if x in step_order else 999)
 
-    return {
+    return _without_knowledge_snapshot({
         "id": state.id,
         "emblems": [{**serialize_card_view(state, cid), "controller": state.cards[cid].controller,
                      "owner": state.cards[cid].owner, "zone": Zone.COMMAND.value} for cid in state.emblems
@@ -549,4 +567,4 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
         "attack_bands": state.attack_bands,
         "blocks": state.blocks,
         "log": state.log[-120:],
-    }
+    })

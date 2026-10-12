@@ -216,12 +216,31 @@ def _validated_bad_blocks(state: Any, pid: int, action: dict[str, Any]) -> int |
     )
 
 
+def _anonymous_knowledge_usage(value: Any) -> dict[str, Any] | None:
+    """Optional diagnostics only: reject identities and unknown counter schemas."""
+    if type(value) is not dict or set(value) != {'persisted', 'fallback', 'opaque', 'fallback_reasons'}:
+        return None
+    counts = {key: value[key] for key in ('persisted', 'fallback', 'opaque')}
+    if any(type(count) is not int or not 0 <= count < 2 ** 31 for count in counts.values()):
+        return None
+    reasons = value['fallback_reasons']
+    if type(reasons) is not dict or not set(reasons) <= {'missing', 'shape', 'face', 'surface'}:
+        return None
+    if any(type(count) is not int or not 0 <= count < 2 ** 31 for count in reasons.values()):
+        return None
+    if sum(reasons.values()) != counts['fallback']:
+        return None
+    return {**counts, 'fallback_reasons': dict(reasons)}
+
+
 def build_trace_payload(
     state: Any,
     pid: int,
     legal_moves: list[dict[str, Any]],
     action: dict[str, Any],
     reasoning: str = "",
+    *,
+    knowledge_usage: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Capture authoritative decision evidence before mutating match state."""
     opponent_pid = 1 if pid == 2 else 2
@@ -233,7 +252,7 @@ def build_trace_payload(
         and _step_key(state.step) in {"precombat_main", "postcombat_main"}
         and not state.stack
     )
-    return {
+    payload = {
         "trace": True,
         "pid": pid,
         "turn": state.turn,
@@ -256,6 +275,10 @@ def build_trace_payload(
         "action": compact_action(action),
         "reasoning": reasoning,
     }
+    usage = _anonymous_knowledge_usage(knowledge_usage)
+    if usage is not None:
+        payload['knowledge_usage'] = usage
+    return payload
 
 
 def _stack_snapshot(state: Any) -> list[dict]:

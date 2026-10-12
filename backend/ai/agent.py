@@ -5,7 +5,7 @@ from rules_engine.type_effects import effective_types
 import copy
 import re
 from itertools import combinations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ai.endgame_policy import should_force_closure, should_force_inevitability_line
 from ai.heuristics import evaluate_board, recurring_engine_value, repeatable_mana_value
@@ -100,6 +100,7 @@ def _effective_combat_stats(state: MatchState, card_id: str) -> tuple[int, int]:
 class AIDecision:
     action: dict
     reasoning: str
+    knowledge_usage: dict = field(default_factory=dict)
 
 
 def _shortlist_with_priority_pass(ranked: list[dict], legal: list[dict], limit: int) -> list[dict]:
@@ -121,6 +122,7 @@ class AIAgent:
         self.matchup_profile = profile_for(archetype, opponent_archetype)
         self.engine = RulesEngine()
         self._main_pass_signature_counts: dict[tuple, int] = {}
+        self._knowledge_usage = None
         if AIAgent._log_priors_cache is None:
             AIAgent._log_priors_cache = load_log_priors()
 
@@ -128,20 +130,27 @@ class AIAgent:
         from ai.pending_effects import decision_projection_scope
         from ai.information import decision_view
         state, legal_moves = decision_view(state, player_id, legal_moves)
-        with decision_projection_scope(state, player_id):
-            decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
-            if decision.action.get('type') == 'pass_priority':
-                from ai.foretell_policy import idle_foretell_action
-                action = idle_foretell_action(self, state, legal_moves, player_id)
-                if action:
-                    decision = AIDecision(action=action, reasoning='Bank idle mana without displacing a play or known answer')
-            if decision.action.get('type') == 'pass_priority':
-                from ai.suspend_policy import idle_suspend
-                action = idle_suspend(self, state, legal_moves, player_id)
-                if action:
-                    decision = AIDecision(action=action, reasoning='Invest idle mana in supported Suspend without spending a known answer')
-            from ai.declaration_policy import finalize_declaration
-            return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning)
+        previous_usage = self._knowledge_usage
+        self._knowledge_usage = {'seen': set(), 'counts': {'persisted': 0, 'fallback': 0, 'opaque': 0,
+                                                         'fallback_reasons': {}}}
+        try:
+            with decision_projection_scope(state, player_id):
+                decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
+                if decision.action.get('type') == 'pass_priority':
+                    from ai.foretell_policy import idle_foretell_action
+                    action = idle_foretell_action(self, state, legal_moves, player_id)
+                    if action:
+                        decision = AIDecision(action=action, reasoning='Bank idle mana without displacing a play or known answer')
+                if decision.action.get('type') == 'pass_priority':
+                    from ai.suspend_policy import idle_suspend
+                    action = idle_suspend(self, state, legal_moves, player_id)
+                    if action:
+                        decision = AIDecision(action=action, reasoning='Invest idle mana in supported Suspend without spending a known answer')
+                from ai.declaration_policy import finalize_declaration
+                return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning,
+                                  knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+        finally:
+            self._knowledge_usage = previous_usage
 
     def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         trigger_choice = getattr(state, 'pending_trigger_order', None) or {}
@@ -356,8 +365,9 @@ class AIAgent:
                     and pending.get('player_id') == player_id
                     and set(payload.get('required_types', [])).intersection(top.get('types', []))
                     and 0 <= index < len(source.card_faces)
-                    and self._score_modal_face(state, source, source.card_faces[index], player_id)
-                    >= self._score_modal_face(state, source, source.card_faces[source.selected_face_index or 0], player_id)
+                    and self._score_modal_face(state, source, source.card_faces[index], player_id, face_index=index)
+                    >= self._score_modal_face(state, source, source.card_faces[source.selected_face_index or 0], player_id,
+                                              face_index=source.selected_face_index or 0)
                 )
                 selected = 'reveal' if beneficial else 'decline'
                 return AIDecision(action={'type': 'choose_mechanic', 'card_ids': [selected]},
@@ -2259,7 +2269,7 @@ class AIAgent:
         if getattr(card, "layout", "") in {"modal_dfc", "adventure", "split"}:
             from rules_engine.card_faces import select_cast_face
             index = int(move.get("selected_face_index", 0))
-            face_score = self._score_modal_face(state, card, card.card_faces[index], player_id)
+            face_score = self._score_modal_face(state, card, card.card_faces[index], player_id, face_index=index)
             card = select_cast_face(card, index)
         elif self._modal_face_options(card):
             _, face_score = self._select_modal_face_index(state, card, player_id)
@@ -2694,21 +2704,40 @@ class AIAgent:
                     land2.controller = player_id
 
     def _spell_tags(self, card) -> set[str]:
-        return tactical_tags(
-            getattr(card, "oracle_text", ""), getattr(card, "type_line", ""),
-            getattr(card, "types", None),
-        )
+        from knowledge.service import tags_for
+        result = tags_for(card)
+        usage = getattr(self, '_knowledge_usage', None)
+        if usage is not None:
+            # Decision-local identity/surface dedup; never emitted or retained.
+            key = (getattr(card, '_knowledge_source_id', getattr(card, 'id', None)), result.face_index, getattr(card, 'oracle_text', ''),
+                   getattr(card, 'type_line', ''), result.source, result.reason)
+            if key not in usage['seen']:
+                usage['seen'].add(key)
+                usage['counts'][result.source] += 1
+                if result.source == 'fallback':
+                    reasons = usage['counts']['fallback_reasons']
+                    reasons[result.reason] = reasons.get(result.reason, 0) + 1
+        return set(result.tags)
 
     def _modal_face_options(self, card) -> list[dict]:
         faces = list(getattr(card, "card_faces", []) or [])
         return faces[:1] if getattr(card, "layout", "") in {"transform", "meld", "flip", "double_faced_token"} else faces
 
-    def _modal_face_proxy(self, card, face: dict) -> object:
+    def _modal_face_proxy(self, card, face: dict, *, face_index=None) -> object:
         proxy = type("ModalFaceProxy", (), {})()
         proxy.name = str(face.get("name") or getattr(card, "name", ""))
         proxy.oracle_text = str(face.get("oracle_text") or getattr(card, "oracle_text", "") or "")
         proxy.mana_cost = str(face.get("mana_cost") or getattr(card, "mana_cost", "") or "")
-        proxy.types = self._types_from_type_line(str(face.get("type_line") or getattr(card, "type_line", "") or ""))
+        proxy.type_line = str(face.get("type_line") or getattr(card, "type_line", "") or "")
+        proxy.types = self._types_from_type_line(proxy.type_line)
+        proxy.layout = getattr(card, 'layout', '')
+        proxy.card_faces = getattr(card, 'card_faces', [])
+        proxy.selected_face_index = face_index
+        proxy.knowledge_snapshot = {}
+        if type(face_index) is int and 0 <= face_index < len(proxy.card_faces) and face is proxy.card_faces[face_index]:
+            proxy.knowledge_snapshot = getattr(card, 'knowledge_snapshot', {})
+            # Usage-only provenance; an engine-facing id would change layer lookups.
+            proxy._knowledge_source_id = getattr(card, 'id', None)
         return proxy
 
     def _types_from_type_line(self, type_line: str) -> list[str]:
@@ -2721,8 +2750,8 @@ class AIAgent:
             primary = primary.split("-", 1)[0]
         return [part.strip() for part in primary.split() if part.strip()]
 
-    def _score_modal_face(self, state: MatchState, card, face: dict, player_id: int) -> float:
-        proxy = self._modal_face_proxy(card, face)
+    def _score_modal_face(self, state: MatchState, card, face: dict, player_id: int, *, face_index=None) -> float:
+        proxy = self._modal_face_proxy(card, face, face_index=face_index)
         tags = self._spell_tags(proxy)
         text = _oracle_text(proxy)
         mana_req = parse_mana_cost(getattr(proxy, "mana_cost", ""), is_land=False)
@@ -2826,7 +2855,7 @@ class AIAgent:
             return 0, 0.0
         scored: list[tuple[float, int]] = []
         for idx, face in enumerate(faces):
-            scored.append((self._score_modal_face(state, card, face, player_id), idx))
+            scored.append((self._score_modal_face(state, card, face, player_id, face_index=idx), idx))
         scored.sort(key=lambda x: (x[0], -x[1]), reverse=True)
         best_score, best_idx = scored[0]
         if best_score <= 0.0:

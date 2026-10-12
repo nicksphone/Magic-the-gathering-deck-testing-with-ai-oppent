@@ -63,6 +63,7 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
     for item in deck:
         name = str(item.get("card_name") or "Card")
         out = dict(item)
+        out.pop('knowledge_snapshot', None)
         row = cached.get(name.lower())
         fallback = fallback_card_payload(name) or {}
         profile = ScryfallSyncService.canonical_local_profile(knowledge.get(name.casefold()), name)
@@ -137,5 +138,9 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
         if not out.get("image_uri"):
             out["image_uri"] = select_display_image_uri(out, name=name, type_line=str(out.get("type_line") or ""))
         out['card_data_sources'] = sources
+        from knowledge.service import snapshot_for
+        snapshot = snapshot_for(knowledge.get(name.casefold()), name, out)
+        if snapshot:
+            out['knowledge_snapshot'] = snapshot
         hydrated.append(out)
     return hydrated

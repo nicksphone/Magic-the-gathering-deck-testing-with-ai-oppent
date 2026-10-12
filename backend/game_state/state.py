@@ -108,6 +108,7 @@ class CardInstance:
     kicker_count: int | None = None
     printed_power: str | None = None
     printed_toughness: str | None = None
+    knowledge_snapshot: dict = field(default_factory=dict)
 
     def __setattr__(self, name, value):
         # Suspend's granted haste ends permanently at the first control loss.
@@ -388,6 +389,7 @@ class MatchFactory:
                     card_faces=list(raw_item.get("card_faces") or []),
                     layout=str(raw_item.get("layout") or ""),
                     selected_face_index=raw_item.get("selected_face_index"),
+                    knowledge_snapshot=deepcopy(raw_item.get('knowledge_snapshot') or {}),
                     instance_order=copy_index,
                     colors=raw_item.get("colors"),
                 )

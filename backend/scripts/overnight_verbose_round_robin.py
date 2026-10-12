@@ -137,10 +137,12 @@ def _build_overnight_trace_payload(
     action: dict,
     reasoning: str,
     reason_code: str,
+    *,
+    knowledge_usage: dict | None = None,
 ) -> dict:
     """Extend the shared authoritative trace with overnight-only diagnostics."""
     opponent_pid = 1 if pid == 2 else 2
-    payload = build_trace_payload(state, pid, legal_moves, action, reasoning)
+    payload = build_trace_payload(state, pid, legal_moves, action, reasoning, knowledge_usage=knowledge_usage)
     payload.update(
         {
             "graveyard_count": len(state.players[pid].graveyard),
@@ -301,6 +303,7 @@ def run() -> int:
                     while state.winner is None and ticks < args.max_ticks:
                         pid = pregame_actor(state) if state.pregame_pending else state.priority_player
                         legal = engine_rules.legal_moves(state, pid)
+                        knowledge_usage = None
                         if not legal:
                             action = {"type": "pass_priority"}
                             reasoning = "No legal action"
@@ -309,6 +312,7 @@ def run() -> int:
                             decision = agent.choose_action(state, legal, pid)
                             action = decision.action
                             reasoning = decision.reasoning
+                            knowledge_usage = getattr(decision, 'knowledge_usage', None)
 
                         legal_non_pass = has_actionable_move(legal)
                         meaningful_non_pass = has_meaningful_move(legal)
@@ -347,6 +351,7 @@ def run() -> int:
                             action,
                             reasoning,
                             reason_code,
+                            knowledge_usage=knowledge_usage,
                         )
                         state.log.append(f"AI TRACE {json.dumps(trace_line, separators=(',', ':'))}")
 
