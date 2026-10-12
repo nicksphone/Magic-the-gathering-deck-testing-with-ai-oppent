@@ -142,10 +142,12 @@ try {
   await waitFor("!document.body.innerText.includes('Match operation pending') && ![...document.querySelectorAll('button')].some(e=>e.textContent.startsWith('Play Land Forest'))");
   let state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);await reload();await waitFor("document.querySelector('[data-match-revision=\"1\"]')");
   await record('Double intent applies once; full-page reload restores persisted revision');
-  s=await setup('/fixture');let dropped=false;
-  b.onIntercept(async e=>{if(e.request.method==='POST'&&e.responseStatusCode===200&&!dropped){dropped=true;await command('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});}else await command('Fetch.continueResponse',{requestId:e.requestId});});
+  s=await setup('/fixture');let dropped=false;const responseTrace=[];
+  b.onIntercept(async e=>{responseTrace.push({method:e.request.method,status:e.responseStatusCode});if(e.request.method==='POST'&&e.responseStatusCode===200&&!dropped){dropped=true;await command('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});}else await command('Fetch.continueResponse',{requestId:e.requestId});});
   await command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Response'}]});await click('Play Land Forest');
-  await waitFor("document.querySelector('.operation-alert') && !document.body.innerText.includes('Match operation pending')");await command('Fetch.disable');
+  try {await waitFor("document.querySelector('.operation-alert') && !document.body.innerText.includes('Match operation pending')");}
+  catch(error){console.error('DROP_RESPONSE_TRACE',JSON.stringify({dropped,responses:responseTrace}));throw error;}
+  await command('Fetch.disable');
   state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);assert.ok(dropped);await shot('after-reconciled-failure');
   await record('Dropped accepted HTTP response surfaces error and reconciles server revision without replay');
 } finally { await b.close(); }

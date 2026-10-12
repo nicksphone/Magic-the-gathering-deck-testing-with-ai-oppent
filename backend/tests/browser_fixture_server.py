@@ -49,6 +49,16 @@ def fixture_simulation_job_count():
     return {'jobs': len(SIM_JOBS)}
 
 
+@app.post('/fixture/distinct-permanents')
+def fixture_distinct_permanents(seat: int = 1, foreign: bool = False):
+    from tests.test_multi_target_immediate_return import case
+    state, targets, source = case(seat, foreign)
+    for player in state.players.values():
+        player.mana_pool = {color: player.mana_pool.get(color, 0) for color in 'WUBRGC'}
+    return {'match': publish(state, [{'quantity': 60, 'card_name': 'Island'}]),
+            'target_ids': targets, 'source_id': source}
+
+
 @app.post("/fixture")
 def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, face_kind: str = ""):
     if face_kind in {f'foretell_created_{index}_{seat}' for index in range(2) for seat in [1, 2]}:

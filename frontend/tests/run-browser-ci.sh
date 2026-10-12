@@ -156,6 +156,7 @@ echo 'Browser CI: action scenarios'
 (cd frontend && timeout 90s node tests/browser-land-types.mjs)
 (cd frontend && timeout 300s node tests/browser-human-actions.mjs)
 (cd frontend && timeout 120s node tests/browser-ordered-targets.mjs)
+(cd frontend && timeout 120s node tests/browser-distinct-permanents.mjs)
 (cd frontend && timeout 120s node tests/browser-ordered-modifiers.mjs)
 (cd frontend && timeout 120s node tests/browser-ordered-copy.mjs)
 (cd frontend && timeout 180s node tests/browser-linked-damage.mjs)

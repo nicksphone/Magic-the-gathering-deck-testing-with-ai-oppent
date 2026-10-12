@@ -538,7 +538,8 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
                 "effect_key": item.effect_key,
                 "targets": ((item.payload.get('__announced_targets') or {}).get('target_card_ids', [])
                             if item.payload.get('__ordered_target_instances')
-                            or item.payload.get('__ordered_distinct_targets') else item.targets),
+                            or item.payload.get('__ordered_distinct_targets')
+                            or item.effect_key == 'exile_return_batch' else item.targets),
             }
             for item in state.stack
         ],

@@ -408,9 +408,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/serializers.py": {
-    "mtime": 1791667789.8139327,
-    "seen": 1791671014.2827291,
-    "ast_hash": "e4b75130f5f4d525b6db7e2544c52dc4",
+    "mtime": 1791762978.8595638,
+    "seen": 1791764403.5648346,
+    "ast_hash": "ba94ab4153c65be9589c7aef79f7db3b",
     "semantic_hash": ""
   },
   "backend/game_state/series_policy.py": {
@@ -1164,9 +1164,9 @@
     "semantic_hash": ""
   },
   "backend/tests/browser_fixture_server.py": {
-    "mtime": 1791667789.8749318,
-    "seen": 1791671014.2829857,
-    "ast_hash": "88cfb113f731765914bff7f90e5c5cfc",
+    "mtime": 1791762816.1411629,
+    "seen": 1791764403.565268,
+    "ast_hash": "cf4cadee58769c5f778baa277d69c608",
     "semantic_hash": ""
   },
   "backend/tests/casting_trigger_browser_fixture.py": {
@@ -5892,9 +5892,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1791667790.4349241,
-    "seen": 1791671014.285512,
-    "ast_hash": "6e8932fbe00ee5fcdbab0e8e813a8011",
+    "mtime": 1791762816.195162,
+    "seen": 1791764403.5694978,
+    "ast_hash": "65dff9962dc69261eba95f0926de76bb",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5952,9 +5952,9 @@
     "semantic_hash": ""
   },
   "frontend/src/components/Battlefield.tsx": {
-    "mtime": 1791667790.436924,
-    "seen": 1791671014.2855282,
-    "ast_hash": "8631ac8427350ce7da982d79bc4ab512",
+    "mtime": 1791762723.1316507,
+    "seen": 1791764403.5695183,
+    "ast_hash": "635d3de7d63e164db5dcc7debf2cc910",
     "semantic_hash": ""
   },
   "frontend/src/components/CardArt.tsx": {
@@ -6528,15 +6528,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2-costs.mjs": {
-    "mtime": 1791667790.4809234,
-    "seen": 1791671014.2857254,
-    "ast_hash": "15b6437a6712397e0d0c41e734372f85",
+    "mtime": 1791763238.099431,
+    "seen": 1791764403.5697415,
+    "ast_hash": "4f8a2410295e612967b485556d5de9eb",
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1791667790.4819233,
-    "seen": 1791671014.2857268,
-    "ast_hash": "5e18b25f2918b9b21beec4e99a92621e",
+    "mtime": 1791763937.44648,
+    "seen": 1791764403.5697432,
+    "ast_hash": "96530dc85bbf435d9ee0dbebe61b2eb5",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -6678,9 +6678,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/run-browser-ci.sh": {
-    "mtime": 1791667790.4979231,
-    "seen": 1791671014.2858288,
-    "ast_hash": "b1306c86906377c916ce18082283c882",
+    "mtime": 1791762816.1421628,
+    "seen": 1791764403.5698714,
+    "ast_hash": "1ece1deff06df973a9ad0771402eb111",
     "semantic_hash": ""
   },
   "frontend/tests/run-ui-action-diagnostics.sh": {
@@ -16905,6 +16905,36 @@
     "mtime": 1791755842.44549,
     "seen": 1791755959.0453246,
     "ast_hash": "c0482d99d434da72a2c110d915cc3fa9",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_multi_target_public_stack.py": {
+    "mtime": 1791763737.3430033,
+    "seen": 1791764403.5685894,
+    "ast_hash": "4f0575e9455a281a5e41b7bd3c1d39cb",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-distinct-permanents.mjs": {
+    "mtime": 1791763499.6012683,
+    "seen": 1791764403.569635,
+    "ast_hash": "98764f8274cfcd0b1bf3c0583eb531c5",
+    "semantic_hash": ""
+  },
+  "frontend/tests/ordered-target-controls.mjs": {
+    "mtime": 1791762689.0941958,
+    "seen": 1791764403.569848,
+    "ast_hash": "8c8b89dd7cfafb128c77eb8002899cfc",
+    "semantic_hash": ""
+  },
+  "frontend/tests/ordered-target-engine.py": {
+    "mtime": 1791762946.1690857,
+    "seen": 1791764403.5698495,
+    "ast_hash": "e1a35596cf3d30ef7cbc42ed8b248b3f",
+    "semantic_hash": ""
+  },
+  "docs/rc-distinct-permanent-targets.md": {
+    "mtime": 1791764296.445546,
+    "seen": 1791764403.570103,
+    "ast_hash": "b004b9a160065aac7a8bac8a9d131576",
     "semantic_hash": ""
   }
 }
