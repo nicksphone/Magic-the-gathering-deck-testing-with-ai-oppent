@@ -1,22 +1,60 @@
 """Cold ASGI HTTP restore and deliberate action against the owned local SQLite."""
 import json
+import hashlib
+import importlib.util
 import os
 from pathlib import Path
 import sys
 
-root = Path(os.environ['MTG_ISOLATED_TEST_ROOT']).resolve()
 backend = Path(__file__).resolve().parents[1]
-assert backend.parent == root
 sys.path.insert(0, str(backend))
 database, expected_path, output_path = map(Path, sys.argv[1:])
-assert all(path.resolve().is_relative_to(root) for path in (database, expected_path, output_path))
+
+
+def deny(reason):
+    raise RuntimeError('FAVOR_COLD_DENY:' + reason)
+
+
+try:
+    root = Path(os.environ['MTG_FAVOR_COLD_ROOT'])
+    permit = Path(os.environ['MTG_FAVOR_COLD_PERMIT'])
+    if root.resolve() != root or permit != root / '.favor-cold-owned.json':
+        deny('permit')
+    if any(path.is_symlink() for path in (permit, *permit.parents)):
+        deny('permit')
+    raw = permit.read_bytes()
+    if hashlib.sha256(raw).hexdigest() != os.environ['MTG_FAVOR_COLD_PERMIT_SHA256']:
+        deny('permit')
+    bound = json.loads(raw)
+except (KeyError, OSError, ValueError):
+    deny('permit')
+if (type(bound) is not dict or set(bound) != {'version', 'parent_pid', 'root', 'backend',
+        'worker_sha256', 'database', 'expected', 'output', 'expected_sha256'}
+        or type(bound['version']) is not int or bound['version'] != 1
+        or type(bound['parent_pid']) is not int or bound['parent_pid'] != os.getppid()
+        or bound['root'] != str(root)):
+    deny('permit')
+if (os.environ.get('MTG_FAVOR_COLD_SOURCE') != str(backend.parent)
+        or bound['backend'] != str(backend)
+        or bound['worker_sha256'] != hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+        or Path(importlib.util.find_spec('main').origin).resolve() != backend / 'main.py'):
+    deny('source')
+paths = (database, expected_path, output_path)
+if (any(path.resolve() != path or not path.is_relative_to(root) for path in paths)
+        or any(part.is_symlink() for path in paths for part in (path, *path.parents))
+        or [bound[key] for key in ('database', 'expected', 'output')] != list(map(str, paths))
+        or not database.is_file() or not expected_path.is_file() or output_path.exists()):
+    deny('paths')
+expected_bytes = expected_path.read_bytes()
+if hashlib.sha256(expected_bytes).hexdigest() != bound['expected_sha256']:
+    deny('input')
 
 
 def guard(event, args):
     if event == 'socket.connect':
         raise AssertionError('No network or live service in owned cold ASGI worker')
     if event == 'sqlite3.connect' and str(args[0]) != ':memory:':
-        assert Path(str(args[0])).resolve().is_relative_to(root)
+        assert Path(str(args[0])).resolve() == database, 'Declared owned database only'
 
 
 sys.addaudithook(guard)
@@ -28,7 +66,7 @@ from persistence.repository import Repository
 from tests.favor_lifecycle_support import assert_private, snap
 from tests.test_spell_admission_safety_http import sql_facts
 
-expected = json.loads(expected_path.read_text())
+expected = json.loads(expected_bytes)
 engine = create_engine('sqlite:///' + str(database), connect_args={'check_same_thread': False})
 main.engine = engine
 main.ACTIVE_MATCHES = {}

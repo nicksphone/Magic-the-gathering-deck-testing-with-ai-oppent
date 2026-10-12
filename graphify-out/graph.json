@@ -39492,6 +39492,31 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_favor_cold_launch_support",
+      "label": "favor_cold_launch_support.py",
+      "file_type": "code",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_favor_cold_launch_support_cold_environment",
+      "label": "cold_environment()",
+      "file_type": "code",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L8",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_favor_cold_launch_support_rationale_1",
+      "label": "Explicit per-child test inputs; never reuse a global audit root.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_favor_lifecycle_http_worker",
       "label": "favor_lifecycle_http_worker.py",
       "file_type": "code",
@@ -39500,11 +39525,20 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_favor_lifecycle_http_worker_deny",
+      "label": "deny()",
+      "file_type": "code",
+      "source_file": "backend/tests/favor_lifecycle_http_worker.py",
+      "source_location": "L14",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_favor_lifecycle_http_worker_guard",
       "label": "guard()",
       "file_type": "code",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L15",
+      "source_location": "L53",
       "_callable": true,
       "_origin": "ast"
     },
@@ -39513,7 +39547,7 @@
       "label": "forbidden()",
       "file_type": "code",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L39",
+      "source_location": "L77",
       "_callable": true,
       "_origin": "ast"
     },
@@ -80725,6 +80759,48 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_test_favor_cold_launch_contract",
+      "label": "test_favor_cold_launch_contract.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_favor_cold_launch_contract_py_parametrize",
+      "label": "parametrize",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_favor_cold_launch_contract_test_actual_paid_cold_choice_needs_no_inherited_audit_env",
+      "label": "test_actual_paid_cold_choice_needs_no_inherited_audit_env()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L24",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_favor_cold_launch_contract_test_actual_child_rejects_bad_binding_before_backend_or_sql",
+      "label": "test_actual_child_rejects_bad_binding_before_backend_or_sql()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L34",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_favor_cold_launch_contract_rationale_1",
+      "label": "Actual owned worker launches, explicit source/data binding, and early denials.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_test_favor_target_lifecycle",
       "label": "test_favor_target_lifecycle.py",
       "file_type": "code",
@@ -80813,7 +80889,7 @@
       "label": "test_favor_actual_http_response_choice_atomic_sql_and_cold_continuation()",
       "file_type": "code",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L23",
+      "source_location": "L24",
       "_callable": true,
       "_origin": "ast"
     },
@@ -80822,7 +80898,7 @@
       "label": "post()",
       "file_type": "code",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L37",
+      "source_location": "L38",
       "_callable": true,
       "_origin": "ast"
     },
@@ -156800,6 +156876,33 @@
       "_origin": "ast"
     },
     {
+      "id": "docs_testing_ci_favor_cold_launch_inputs",
+      "label": "ci-favor-cold-launch-inputs.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": "docs/testing/ci-favor-cold-launch-inputs.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_testing_ci_favor_cold_launch_inputs_favor_cold_test_inputs",
+      "label": "Favor Cold Test Inputs",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/testing/ci-favor-cold-launch-inputs.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_testing_ci_favor_cold_launch_inputs_actual_qualification",
+      "label": "Actual Qualification",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/testing/ci-favor-cold-launch-inputs.md",
+      "source_location": "L15",
+      "_origin": "ast"
+    },
+    {
       "id": "docs_testing_ci_loyalty_http_search_current",
       "label": "ci-loyalty-http-search-current.md",
       "file_type": "document",
@@ -175589,6 +175692,15 @@
       "node_kind": "heading",
       "source_file": "plan.md",
       "source_location": "L997",
+      "_origin": "ast"
+    },
+    {
+      "id": "plan_2026_10_12_explicit_favor_cold_test_inputs",
+      "label": "2026-10-12 Explicit Favor Cold Test Inputs",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "plan.md",
+      "source_location": "L1008",
       "_origin": "ast"
     },
     {
@@ -299868,6 +299980,70 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_favor_cold_launch_support",
+      "target": "hashlib",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_cold_launch_support",
+      "target": "json",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_cold_launch_support",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_cold_launch_support",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_cold_launch_support",
+      "target": "backend_tests_favor_cold_launch_support_cold_environment",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_cold_launch_support_rationale_1",
+      "target": "backend_tests_favor_cold_launch_support",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_favor_lifecycle_http_worker",
       "target": "json",
       "relation": "imports",
@@ -299880,7 +300056,7 @@
     },
     {
       "source": "backend_tests_favor_lifecycle_http_worker",
-      "target": "os",
+      "target": "hashlib",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -299891,8 +300067,8 @@
     },
     {
       "source": "backend_tests_favor_lifecycle_http_worker",
-      "target": "pathlib",
-      "relation": "imports_from",
+      "target": "importlib_util",
+      "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
@@ -299902,7 +300078,7 @@
     },
     {
       "source": "backend_tests_favor_lifecycle_http_worker",
-      "target": "sys",
+      "target": "os",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -299913,11 +300089,43 @@
     },
     {
       "source": "backend_tests_favor_lifecycle_http_worker",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_lifecycle_http_worker.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_lifecycle_http_worker",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_lifecycle_http_worker.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_lifecycle_http_worker",
+      "target": "backend_tests_favor_lifecycle_http_worker_deny",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/favor_lifecycle_http_worker.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_lifecycle_http_worker",
       "target": "backend_tests_favor_lifecycle_http_worker_guard",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L15",
+      "source_location": "L53",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -299928,7 +300136,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L24",
+      "source_location": "L62",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -299939,7 +300147,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L25",
+      "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -299950,7 +300158,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L26",
+      "source_location": "L64",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -299961,7 +300169,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L27",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -299972,7 +300180,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L28",
+      "source_location": "L66",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -299983,7 +300191,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L29",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -299993,7 +300201,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L39",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -300005,7 +300213,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.85,
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L42",
+      "source_location": "L80",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -435490,6 +435698,146 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "hashlib",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "json",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "subprocess",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "pytest",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "backend_tests_test_favor_target_lifecycle_http",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract_test_actual_paid_cold_choice_needs_no_inherited_audit_env",
+      "target": "backend_tests_test_favor_cold_launch_contract_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "backend_tests_test_favor_cold_launch_contract_test_actual_paid_cold_choice_needs_no_inherited_audit_env",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L24",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract_test_actual_child_rejects_bad_binding_before_backend_or_sql",
+      "target": "backend_tests_test_favor_cold_launch_contract_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "backend_tests_test_favor_cold_launch_contract_test_actual_child_rejects_bad_binding_before_backend_or_sql",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L34",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract_rationale_1",
+      "target": "backend_tests_test_favor_cold_launch_contract",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_favor_target_lifecycle",
       "target": "copy",
       "relation": "imports_from",
@@ -435762,7 +436110,7 @@
     },
     {
       "source": "backend_tests_test_favor_target_lifecycle_http",
-      "target": "backend_tests_favor_lifecycle_support",
+      "target": "backend_tests_favor_cold_launch_support",
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
@@ -435772,12 +436120,23 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_favor_target_lifecycle_http",
+      "target": "backend_tests_favor_lifecycle_support",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_favor_target_lifecycle_http_test_favor_actual_http_response_choice_atomic_sql_and_cold_continuation",
       "target": "backend_tests_test_favor_target_lifecycle_http_py_parametrize",
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L21",
+      "source_location": "L22",
       "weight": 1.0,
       "context": "decorator",
       "_origin": "ast"
@@ -435788,7 +436147,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L23",
+      "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -435798,7 +436157,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L37",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -435809,7 +436168,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L42",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -662237,6 +662596,26 @@
       "_origin": "ast"
     },
     {
+      "source": "docs_testing_ci_favor_cold_launch_inputs",
+      "target": "docs_testing_ci_favor_cold_launch_inputs_favor_cold_test_inputs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/testing/ci-favor-cold-launch-inputs.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "docs_testing_ci_favor_cold_launch_inputs_favor_cold_test_inputs",
+      "target": "docs_testing_ci_favor_cold_launch_inputs_actual_qualification",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/testing/ci-favor-cold-launch-inputs.md",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "docs_testing_ci_loyalty_http_search_current",
       "target": "docs_testing_ci_loyalty_http_search_current_loyalty_http_fixtures_and_private_search_views",
       "relation": "contains",
@@ -680143,6 +680522,26 @@
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
       "source_location": "L1005",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "plan_mtg_deck_testing_lab_finish_plan",
+      "target": "plan_2026_10_12_explicit_favor_cold_test_inputs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plan.md",
+      "source_location": "L1008",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "plan",
+      "target": "docs_testing_ci_favor_cold_launch_inputs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "plan.md",
+      "source_location": "L1014",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -711218,7 +711617,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L27",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -711229,7 +711628,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L28",
+      "source_location": "L66",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -711240,7 +711639,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L29",
+      "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -753496,6 +753895,17 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_favor_cold_launch_contract",
+      "target": "backend_tests_test_favor_target_lifecycle_http_test_favor_actual_http_response_choice_atomic_sql_and_cold_continuation",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_favor_target_lifecycle",
       "target": "backend_rules_engine_action_validation_actionrejected",
       "relation": "imports",
@@ -753618,12 +754028,23 @@
     },
     {
       "source": "backend_tests_test_favor_target_lifecycle_http",
-      "target": "backend_tests_favor_lifecycle_support_position",
+      "target": "backend_tests_favor_cold_launch_support_cold_environment",
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
       "source_location": "L16",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_target_lifecycle_http",
+      "target": "backend_tests_favor_lifecycle_support_position",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -753634,7 +754055,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -753645,7 +754066,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -753656,7 +754077,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -753667,7 +754088,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -753678,7 +754099,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -980608,7 +981029,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.95,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L33",
+      "source_location": "L34",
       "weight": 0.8,
       "_origin": "ast"
     },
@@ -1055659,18 +1056080,6 @@
       "_origin": "ast"
     },
     {
-      "source": "backend_tests_favor_lifecycle_http_worker_guard",
-      "target": "backend_tests_test_soulless_jailer_action_goldens_root",
-      "relation": "indirect_call",
-      "context": "argument",
-      "confidence": "INFERRED",
-      "confidence_score": 0.85,
-      "source_file": "backend/tests/favor_lifecycle_http_worker.py",
-      "source_location": "L19",
-      "weight": 1.0,
-      "_origin": "ast"
-    },
-    {
       "source": "backend_tests_human_bo3_cold_worker_repo",
       "target": "backend_tests_test_expansion_refresh_session",
       "relation": "calls",
@@ -1107259,6 +1107668,18 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_favor_cold_launch_contract_test_actual_paid_cold_choice_needs_no_inherited_audit_env",
+      "target": "backend_tests_test_session_lifecycle_test_request_scoped_session_releases_pool_and_rolls_back_errors_exercise",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_favor_target_lifecycle_test_actual_paid_favor_response_partial_target_search_continuation",
       "target": "backend_tests_favor_lifecycle_support_paid_to_search",
       "relation": "calls",
@@ -1107350,7 +1107771,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L25",
+      "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1107362,7 +1107783,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L31",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1107374,7 +1107795,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L42",
+      "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1107386,7 +1107807,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L48",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1107398,7 +1107819,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L59",
+      "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1107410,7 +1107831,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L77",
+      "source_location": "L78",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1107422,7 +1107843,19 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L81",
+      "source_location": "L82",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_target_lifecycle_http_test_favor_actual_http_response_choice_atomic_sql_and_cold_continuation",
+      "target": "backend_tests_favor_cold_launch_support_cold_environment",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
+      "source_location": "L95",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1107434,7 +1107867,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L114",
+      "source_location": "L115",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1204603,6 +1205036,42 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_favor_cold_launch_support_cold_environment",
+      "target": "os",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_cold_launch_support_cold_environment",
+      "target": "hashlib",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_favor_cold_launch_support_cold_environment",
+      "target": "json",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/favor_cold_launch_support.py",
+      "source_location": "L18",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_favor_lifecycle_support_record",
       "target": "json",
       "relation": "calls",
@@ -1219747,6 +1220216,54 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_favor_cold_launch_contract_test_actual_child_rejects_bad_binding_before_backend_or_sql",
+      "target": "os",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L43",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract_test_actual_child_rejects_bad_binding_before_backend_or_sql",
+      "target": "hashlib",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract_test_actual_child_rejects_bad_binding_before_backend_or_sql",
+      "target": "json",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_favor_cold_launch_contract_test_actual_child_rejects_bad_binding_before_backend_or_sql",
+      "target": "subprocess",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_favor_cold_launch_contract.py",
+      "source_location": "L62",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_favor_target_lifecycle_http_test_favor_actual_http_response_choice_atomic_sql_and_cold_continuation",
       "target": "json",
       "relation": "calls",
@@ -1219754,7 +1220271,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L88",
+      "source_location": "L89",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1219766,7 +1220283,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_favor_target_lifecycle_http.py",
-      "source_location": "L92",
+      "source_location": "L93",
       "weight": 1.0,
       "_origin": "ast"
     },

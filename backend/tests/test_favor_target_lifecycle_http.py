@@ -13,6 +13,7 @@ from tests.generic_import_fixtures import client as base_client
 from tests.test_batch_graveyard_publication_audit import client
 from tests.test_builtin_metadata_refresh import repo, seed_cache
 from tests.test_spell_admission_safety_http import sql_facts
+from tests.favor_cold_launch_support import cold_environment
 from tests.favor_lifecycle_support import (
     position, favor_action, response_action, snap, record, assert_private, assert_outcome,
 )
@@ -91,7 +92,7 @@ def test_favor_actual_http_response_choice_atomic_sql_and_cold_continuation(repo
         worker = Path(__file__).with_name('favor_lifecycle_http_worker.py')
         result = subprocess.run([sys.executable, str(worker), database, str(expected), str(output)],
             capture_output=True, text=True, timeout=60, cwd=Path(__file__).parents[1],
-            env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
+            env=cold_environment(tmp_path, database, expected, output))
         (tmp_path / 'cold-worker.log').write_text(result.stdout + result.stderr)
         assert result.returncode == 0, result.stdout + result.stderr
         cold = json.loads(output.read_text())

@@ -1004,3 +1004,12 @@ pass 67 cases (95.85s): actual cold epoch changes are proved before a new raw SQ
 baseline, exact saved game/controller bytes and all 26 original assertions remain.
 See [scope and evidence](docs/testing/ci-missing-source-and-consumer-epochs.md).
 All original release gates and measured AI quality remain required and unfinished.
+
+## 2026-10-12 Explicit Favor Cold Test Inputs
+
+The cold ASGI test now binds source and owned data explicitly instead of depending
+on an inherited audit-root environment. All original 18 caller assertions and
+the ASGI body are preserved. Independent parent original16/new8 pass all 24
+cases (47.36s); two generated cache SVGs are separately recorded, not published.
+See [scope and evidence](docs/testing/ci-favor-cold-launch-inputs.md).
+Hosted backend qualification, all original gates and measured AI quality remain open.
