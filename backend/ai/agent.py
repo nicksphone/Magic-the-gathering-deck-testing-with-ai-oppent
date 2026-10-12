@@ -38,6 +38,15 @@ _PURE_COUNTER_SPELL_RE = re.compile(
 NEXT_COMBAT_FORECAST_BUDGET = 13
 
 
+def _terminal_utility(winner, player_id, magnitude):
+    """None keeps nonterminal evaluation; a genuine draw has neutral utility."""
+    if winner is None:
+        return None
+    if winner == 0:
+        return 0.0
+    return magnitude if winner == player_id else -magnitude
+
+
 def _only_counter_spell_text(text: str) -> bool:
     return bool(_PURE_COUNTER_SPELL_RE.fullmatch(without_reminder_text(text).strip()))
 
@@ -885,6 +894,7 @@ class AIAgent:
             if remaining and creatures:
                 allocation[min(creatures, key=lambda target: (threat(target), target))] += remaining
             return allocation
+        creatures.sort(key=lambda target: has_keyword(state, target, "indestructible"))
         lethal_needs: dict[str, int] = {}
         for target in creatures:
             prior = sum(amounts.get(target, 0) for cid, amounts in state.combat_damage_assignments.items() if cid in state.attackers)
@@ -1296,10 +1306,11 @@ class AIAgent:
             f -= max(0.0, opp_untapped - 2) * 0.2
         if self.archetype in {"Aggro", "Burn", "Tempo"}:
             f += max(0.0, 14 - opp_life) * 0.2
-        if state.winner == player_id:
-            f += 200.0
-        elif state.winner is not None and state.winner != player_id:
-            f -= 200.0
+        terminal = _terminal_utility(state.winner, player_id, 200.0)
+        if terminal == 0.0:
+            return 0.0
+        if terminal is not None:
+            f += terminal
         return f
 
     def _forced_progress_attack(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
@@ -4631,10 +4642,11 @@ class AIAgent:
             score = evaluate_board(sim, player_id)
             score += (sim.players[opponent].life - state.players[opponent].life) * -2.0
             score += (sim.players[player_id].life - state.players[player_id].life) * 1.5
-            if sim.winner == player_id:
-                score += 1000.0
-            elif sim.winner is not None:
-                score -= 1000.0
+            terminal = _terminal_utility(sim.winner, player_id, 1000.0)
+            if terminal == 0.0:
+                score = 0.0
+            elif terminal is not None:
+                score += terminal
             score += sum(max(0, _effective_combat_stats(sim, cid)[0]) for cid in actual_attackers) * 0.05
             candidate = (score, tuple(subset), actual_attackers)
             if best is None or candidate[:2] > best[:2]:
@@ -4901,10 +4913,9 @@ class AIAgent:
             simulation_take_action(self.engine, sim, player_id, move)
         except Exception:
             return 0.0
-        if sim.winner == player_id:
-            return 100.0
-        if sim.winner is not None and sim.winner != player_id:
-            return -100.0
+        terminal = _terminal_utility(sim.winner, player_id, 100.0)
+        if terminal is not None:
+            return terminal
         total = 0.0
         samples = 3
         plies = 6
@@ -4940,10 +4951,9 @@ class AIAgent:
                 simulation_take_action(self.engine, state, pid, chosen)
             except Exception:
                 break
-        if state.winner == eval_for_player:
-            return 40.0
-        if state.winner is not None and state.winner != eval_for_player:
-            return -40.0
+        terminal = _terminal_utility(state.winner, eval_for_player, 40.0)
+        if terminal is not None:
+            return terminal
         return evaluate_board(state, eval_for_player) * 0.05
 
     def _pick_rollout_move(self, state: MatchState, legal: list[dict], player_id: int) -> dict:

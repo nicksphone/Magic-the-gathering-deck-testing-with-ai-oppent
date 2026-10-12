@@ -1,5 +1,27 @@
 # Release Acceptance Status
 
+## Current Checkpoint: 2026-10-12
+
+Published `3a7db1e2` passes the complete configured frontend, browser and
+protected backend CI workflow. Sanitized metadata accounts for all26,173 nodes:
+26,091 passed bodies, 82 setup skips, and 15 separately passed subreports, with
+zero failed bodies or incomplete/duplicate phases. See
+[the exact CI checkpoint](current-3a7-complete-ci.md). The earlier pending and
+failed entries below remain historical evidence for their own source pins.
+
+This does not complete the original project or Gates1--3. Current-source manual
+full-game/LAN/accessibility/soak acceptance, broader rules coverage and measured
+AI strength remain open. The terminal-draw/allocation increment has independent
+NEW36 and separate unchanged HTTP/combat86 qualification, not hosted qualification
+yet; see [its scope](ai-terminal-draw-and-allocation.md). Additional cold HTTP
+episodes and the unscored decision-quality benchmark remain separate work.
+
+The five phases in `docs/plans/2026-09-09-ai-knowledge-base.md` describe an AI/data
+subproject, not the entire application. Neither commit counts nor passing test
+counts provide a calibrated total-project completion percentage.
+
+## Earlier Source-Specific Checkpoints
+
 Published `25ef55ea` passes frontend and the whole browser job in run38175740307.
 Its protected backend job remains active at this checkpoint; no backend pass
 or failure count is inferred. The preceding `6df6811b` also passes frontend and

@@ -26,6 +26,21 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+Published `3a7db1e2` now passes the complete configured frontend, browser and
+protected backend CI workflow. Verified sanitized metadata accounts for all
+26,173 nodes: 26,091 passed bodies, 82 setup skips, 15 separately passed subreports,
+and zero failures, missing/duplicate phases or export errors. Preceding `7697eb2c`
+also passes its full workflow. No protected input or raw backend logs were exposed.
+Unpublished AI changes, additional cold HTTP episodes and unproved original
+release requirements remain open. See [complete CI checkpoint](docs/testing/current-3a7-complete-ci.md).
+
+The next AI increment repairs neutral draw utility and effective-indestructible
+combat allocation without changing rules or policy weights. An independent
+whole NEW36 cohort passes; three unchanged HTTP/combat modules pass all86 cases
+in a separate isolated run. These are concrete behavior repairs, not a measured
+expert-AI or full-horizon benchmark. Hosted qualification of the new increment
+remains required. See [AI behavior evidence](docs/testing/ai-terminal-draw-and-allocation.md).
+
 A fresh composition passes all395 cases in12 whole modules (84.26s), covering
 native worker URI/scope, paid flashback/query/provenance, and hydration/foretell
 fixtures. Production is unchanged; two malformed-cache predecessor cases now

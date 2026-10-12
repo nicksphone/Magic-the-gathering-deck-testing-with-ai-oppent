@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791752774.0898366,
-    "seen": 1791753079.0091777,
-    "ast_hash": "bae6e4efc470f4ad27228fcbe2c199bc",
+    "mtime": 1791830582.3436174,
+    "seen": 1791830738.9545212,
+    "ast_hash": "03d5e3924953df30f1e7353e5d555fd3",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791819058.72791,
-    "seen": 1791819167.1299112,
-    "ast_hash": "c19693b27afd3fea168c7bf6599321ac",
+    "mtime": 1791830631.2400537,
+    "seen": 1791830738.9599664,
+    "ast_hash": "8a74b4e21f5d438bad2806fe1e3eab7d",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13368,9 +13368,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791755842.4464898,
-    "seen": 1791755959.0455265,
-    "ast_hash": "8e5a2e52c99c42f9316462bea8350421",
+    "mtime": 1791830725.9169314,
+    "seen": 1791830738.9596364,
+    "ast_hash": "f32e928c8161a0824b048845baefae75",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -17421,6 +17421,72 @@
     "mtime": 1791819038.129305,
     "seen": 1791819167.1298862,
     "ast_hash": "74d43b2a7dd3ba04c4263bc9d8f8adac",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_terminal_draw/PROVENANCE.json": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.9551222,
+    "ast_hash": "55d4dd7e0deea74501e7de6a9b99e147",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_terminal_draw/agent-3a7-methods.json": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.955124,
+    "ast_hash": "6c5cec549c72af0c2e202f0856fb3b7d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_terminal_draw/crypt-rats.raw.json": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.9551265,
+    "ast_hash": "0b3367caa1770cb51ad0f2a9d013ffbe",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_terminal_draw/darksteel-sentinel.raw.json": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.9551284,
+    "ast_hash": "0cba5990db884d1ec2824b6220f704de",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_terminal_draw/grizzly-bears.raw.json": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.95513,
+    "ast_hash": "0d69ffc3cdb69cbd25fc964874b4ca79",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_terminal_draw/lightning-bolt.raw.json": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.9551313,
+    "ast_hash": "9bcd1d3249ca3d62732207abee6e051d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_terminal_draw/rumbling-baloth.raw.json": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.9551332,
+    "ast_hash": "e87479ececa342a0a9ad92ed74cc79aa",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_terminal_allocation_preservation.py": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.9566727,
+    "ast_hash": "c57cf0a5dee8eb4f7ed411ba9dd40061",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_terminal_draw_product.py": {
+    "mtime": 1791830582.3446174,
+    "seen": 1791830738.9566743,
+    "ast_hash": "351a87f23905eb9578c615e6626a1ce6",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-terminal-draw-and-allocation.md": {
+    "mtime": 1791830631.2390535,
+    "seen": 1791830738.9589193,
+    "ast_hash": "5a49791eed652bfa1227753277138769",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-3a7-complete-ci.md": {
+    "mtime": 1791829343.5523598,
+    "seen": 1791830738.9591625,
+    "ast_hash": "edaf3f7f18ab277b39cd43e109744e5c",
     "semantic_hash": ""
   }
 }
