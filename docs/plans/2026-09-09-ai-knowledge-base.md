@@ -1,5 +1,21 @@
 # AI Quality + Knowledge Base Implementation Plan
 
+## October 12 Data-Layer Checkpoint
+
+The Task2.1 derivation and opt-in corpus-sync path now have an actual six-module
+85-pass component qualification, plus10 separately passed subtests. Complete
+official data for all155 shipped names round-trips through the real repository;
+repeating profile generation updates zero rows. Canonical objects, provenance,
+unknown metadata and pending-rulings status are preserved. The profile schema
+labels versioned heuristic estimates and context-dependent answer routes, not
+rules permission or measured AI strength. See
+[derivation](../testing/knowledge-profiles-current-derivation.md) and
+[sync evidence](../testing/knowledge-profile-sync.md).
+
+Production AI does not yet consume these persisted estimates. Tactical-profile
+consumers, learned matchups, deliberate sideboarding and the specified A/B
+quality improvements remain required; this checkpoint does not complete the plan.
+
 ## September 27 implementation status
 
 The historical baseline below describes September 9 only. Canonical ingestion now supports all unique Scryfall Oracle cards via `scripts.sync_all_card_knowledge`, plus individual/corpus rulings verification via `scripts.sync_corpus_cards` and coverage reporting via `scripts.knowledge_gap_report`. The first local bulk import added 38,690 records, including 6,433 faces and 504 disambiguated same-name Oracle variants. Bulk metadata is not a gameplay-support certificate and does not include verified rulings until separately fetched. Successful empty ruling lists are valid; do not require every card to have published rulings. The existing AI does not yet consume persisted knowledge, and verified seed replacement, tactical profiles and sideboarding remain unfinished. See the current root `plan.md` for release priorities.

@@ -26,6 +26,17 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+Published `f2d4622c` passes frontend and browser CI in run38293276911;
+its protected backend job is still executing at this checkpoint.
+The next data-layer increment adds deterministic tactical profiles and opt-in
+`sync_corpus_cards --profile` without changing AI policy. Six whole component
+modules pass85 ordinary cases plus10 subtests, including real repository
+roundtrip and zero-update repetition across all155 shipped names using complete
+official API data. Profile estimates are not measured strength or legality.
+Production AI consumers and the learned-matchup/quality phases remain open.
+See [profile derivation](docs/testing/knowledge-profiles-current-derivation.md)
+and [sync/persistence qualification](docs/testing/knowledge-profile-sync.md).
+
 Published `3a7db1e2` now passes the complete configured frontend, browser and
 protected backend CI workflow. Verified sanitized metadata accounts for all
 26,173 nodes: 26,091 passed bodies, 82 setup skips, 15 separately passed subreports,

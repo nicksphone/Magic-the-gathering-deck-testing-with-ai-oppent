@@ -1146,9 +1146,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/sync_corpus_cards.py": {
-    "mtime": 1791667789.8719318,
-    "seen": 1791671014.2829752,
-    "ast_hash": "0270ea5382700d5668cfdecde7976373",
+    "mtime": 1791835934.6663024,
+    "seen": 1791836083.5297225,
+    "ast_hash": "867d3ea81552e81d3dc59f626a1b1838",
     "semantic_hash": ""
   },
   "backend/scripts/verify_storage_restore.py": {
@@ -6876,9 +6876,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1791667790.3359253,
-    "seen": 1791671014.286002,
-    "ast_hash": "1ed232216aeef7419453df84a44cf236",
+    "mtime": 1791835961.4329207,
+    "seen": 1791836083.5339618,
+    "ast_hash": "dc6799e76aa083c1cadac0aa1cb4490f",
     "semantic_hash": ""
   },
   "docs/plans/casting-trigger-repair-batch.md": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791830631.2400537,
-    "seen": 1791830738.9599664,
-    "ast_hash": "8a74b4e21f5d438bad2806fe1e3eab7d",
+    "mtime": 1791835961.4319208,
+    "seen": 1791836083.5351882,
+    "ast_hash": "d4759313d8b639cd57ec80ad05c623b9",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -17487,6 +17487,54 @@
     "mtime": 1791829343.5523598,
     "seen": 1791830738.9591625,
     "ast_hash": "edaf3f7f18ab277b39cd43e109744e5c",
+    "semantic_hash": ""
+  },
+  "backend/knowledge/profiles.py": {
+    "mtime": 1791835934.6693025,
+    "seen": 1791836083.5293627,
+    "ast_hash": "71f9006518b0c9533d07b572acc6aa9c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json": {
+    "mtime": 1791835934.6753023,
+    "seen": 1791836083.5306873,
+    "ast_hash": "37a68b41eaaa0673283415b6b29f879a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_profile_repository.py": {
+    "mtime": 1791835934.6713023,
+    "seen": 1791836083.532187,
+    "ast_hash": "81590058a424f6cc077372fb671f70fb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_profile_review_regressions.py": {
+    "mtime": 1791835934.6713023,
+    "seen": 1791836083.5321894,
+    "ast_hash": "8bb09c8cbcd6a29faa73857a00f037a8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_profile_sync.py": {
+    "mtime": 1791835934.6713023,
+    "seen": 1791836083.532191,
+    "ast_hash": "47b333fe07a18cebc04a4e7e7b3a0566",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_profiles.py": {
+    "mtime": 1791835934.6713023,
+    "seen": 1791836083.5321925,
+    "ast_hash": "c58bb72e47551b8efbc1314e966b077f",
+    "semantic_hash": ""
+  },
+  "docs/testing/knowledge-profile-sync.md": {
+    "mtime": 1791835934.6793022,
+    "seen": 1791836083.5345829,
+    "ast_hash": "5619b4c220be219d26186aa981680eac",
+    "semantic_hash": ""
+  },
+  "docs/testing/knowledge-profiles-current-derivation.md": {
+    "mtime": 1791835934.6793022,
+    "seen": 1791836083.5345843,
+    "ast_hash": "a3ba3e161e8a5c1dafbda30f323159a1",
     "semantic_hash": ""
   }
 }

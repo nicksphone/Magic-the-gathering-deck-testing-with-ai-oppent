@@ -1,0 +1,22 @@
+{
+  "source": "Scryfall public cards/collection API",
+  "source_epoch": "2026-10-12",
+  "input_kind": "public canonical card data, not game traces",
+  "requested_names": 155,
+  "raw_objects": 155,
+  "batch_sizes": [
+    75,
+    75,
+    5
+  ],
+  "response_statuses": [
+    200,
+    200,
+    200
+  ],
+  "rulings_fetched": false,
+  "oracle_modified": false,
+  "snapshot_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+  "intake_report_sha256": "60e1dc9cd28825471535acfe0e3a64bc64949074f2c2e40eaae2c9e1f8696e56",
+  "format": "complete JSON objects compacted into JSONL; original response bodies privately archived"
+}
