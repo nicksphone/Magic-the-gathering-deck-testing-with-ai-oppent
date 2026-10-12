@@ -26,6 +26,11 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+The next test-only trigger/query fixture correction passes all 44 cases across
+four directly affected whole modules independently. Exact trigger clauses and
+both query-scope paths remain covered; no production or full-ability-resolution
+claim follows. [Trigger and query evidence](docs/testing/ci-suspend-and-multiplier-fixtures.md).
+
 The next conservative passed-startup-snapshot cleanup and animation-fixture
 batch passes independent whole cohorts of 141 CI-script checks and 114 animation
 tests. Gameplay, backup and capacity clocks remain unchanged; no hosted startup

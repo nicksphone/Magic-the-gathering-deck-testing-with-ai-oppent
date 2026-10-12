@@ -57,6 +57,14 @@ def test_DESIRED_owner_upkeep_keyword_collector_not_whole_extra_ability(name, se
 @pytest.mark.parametrize('seat', [1, 2])
 def test_DESIRED_keyword_last_counter_cast_trigger_separate_from_card_trigger(name, seat):
     state, cid = exile_position(name, seat, count=0)
-    rows = collect_triggers(state, 'time_counters_removed', {'card_id': cid, 'before': 1, 'after': 0})
+    collected = collect_triggers(state, 'time_counters_removed', {'card_id': cid, 'before': 1, 'after': 0})
+    rows = [row for row in collected if row['effect_key'] == 'suspend_cast_trigger']
     assert len(rows) == 1 and rows[0]['effect_key'] == 'suspend_cast_trigger'
     assert rows[0]['source_card_id'] == cid and rows[0]['controller'] == seat
+    printed = [row for row in collected if row['effect_key'] != 'suspend_cast_trigger']
+    assert len(collected) == 2 and len(printed) == 1
+    assert printed[0]['effect_key'] == {'Aeon Chronicler': 'draw_cards', 'Detritivore': 'destroy_permanent'}[name]
+    assert printed[0]['source_card_id'] == cid and printed[0]['controller'] == seat
+    clause = next(line for line in RAW[name]['oracle_text'].splitlines()
+                  if line.startswith('Whenever a time counter is removed'))
+    assert printed[0]['payload']['__trigger_full_clause'] == clause
