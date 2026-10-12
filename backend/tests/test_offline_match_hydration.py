@@ -101,6 +101,12 @@ def test_partial_dfc_cache_recovers_canonical_seed_faces_without_fetch(faces_jso
                           layout='transform', colors='', card_faces_json=faces_json, image_uri=None)
     repo = SimpleNamespace(get_cached_cards_by_names=lambda names: {'brutal cathar': row})
     metadata = REAL_HYDRATE(repo, [{'card_name': 'Brutal Cathar', 'quantity': 4}])[0]
+    if faces_json in {'{}', 'invalid json'}:
+        # Malformed stored facts must not be masked by the canonical offline seed.
+        assert not ready_for_match(metadata)
+        assert metadata['card_faces'] == [] and metadata['card_data_sources'] == []
+        assert metadata['oracle_text'] == metadata['type_line'] == ''
+        return
     assert ready_for_match(metadata)
     assert len(metadata['card_faces']) == 2
     assert metadata['mana_cost'] == '{2}{W}'

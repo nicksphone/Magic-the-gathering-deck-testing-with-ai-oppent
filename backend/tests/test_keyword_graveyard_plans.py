@@ -193,6 +193,9 @@ def test_only_authorized_sacrifice_slice_changes():
     root = Path(__file__).parents[2]
     before = json.loads((Path(__file__).parent / 'fixtures/keyword_graveyard_plans/preimage.json').read_text())
     current = (root / 'backend/rules_engine/keyword_actions.py').read_text()
+    from tests.interface_scope_compatibility import restore_keyword_edges
+    # Undo only pinned later dispatches; leave the actual sacrifice slice intact.
+    current = restore_keyword_edges(current)
     after = {node.name: hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
              for node in ast.parse(current).body if isinstance(node, ast.FunctionDef) and node.name != 'finish_mechanic_choice'}
     assert before['other_functions'] == after

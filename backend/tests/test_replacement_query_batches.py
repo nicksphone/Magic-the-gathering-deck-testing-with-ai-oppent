@@ -47,11 +47,13 @@ def test_real_layer_scan_work_is_reduced_not_source_rows(seat):
     state = position(seat)
     for index in range(8):
         add(state, 'Llanowar Elves', seat if index % 2 else 3-seat)
-    original = land_types.land_type_instructions
-    with patch.object(land_types, 'land_type_instructions', wraps=original) as query:
+    # The cached parser can do zero work; count actual battlefield prechecks.
+    from rules_engine import basic_land_layer
+    original = basic_land_layer._printed_layer_four_effect
+    with patch.object(basic_land_layer, '_printed_layer_four_effect', wraps=original) as query:
         expected = reference(state)
         baseline = query.call_count
-    with patch.object(land_types, 'land_type_instructions', wraps=original) as query:
+    with patch.object(basic_land_layer, '_printed_layer_four_effect', wraps=original) as query:
         assert rows(state) == expected
         assert 0 < query.call_count < baseline / 2
     assert len(expected) == 8

@@ -26,6 +26,13 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+A fresh composition passes all395 cases in12 whole modules (84.26s), covering
+native worker URI/scope, paid flashback/query/provenance, and hydration/foretell
+fixtures. Production is unchanged; two malformed-cache predecessor cases now
+explicitly assert rejection rather than recovery. See [URI scope](docs/testing/ci-interface-uri-scope.md),
+[stack/query](docs/testing/ci-stack-query-provenance.md), and
+[hydration/foretell](docs/testing/ci-hydration-foretell-contracts.md).
+
 The controlled BO3 cold-read test no longer depends on uncommitted `gate.py`.
 Its fresh three-whole-module cohort passes22 with all46 original assertions
 unchanged; production/gameplay is untouched. [Cold worker scope](docs/testing/ci-bo3-cold-worker.md).

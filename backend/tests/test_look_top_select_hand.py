@@ -120,18 +120,38 @@ def test_flashback_memory_deluge_looks_at_seven_and_exiles_after_resolution() ->
 def test_countered_flashback_spell_is_exiled() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=29)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.active_player = state.priority_player = 1
+    state.step = Step.DRAW
     canonical = fallback_card_payload("Memory Deluge")
     deluge = CardInstance(
         id="deluge", name="Memory Deluge", owner=1, controller=1,
-        zone=Zone.STACK, types=["Instant"], mana_cost=canonical["mana_cost"],
+        zone=Zone.GRAVEYARD, types=["Instant"], mana_cost=canonical["mana_cost"],
         oracle_text=canonical["oracle_text"],
     )
     state.cards[deluge.id] = deluge
-    state.stack.append(StackItem(
-        "deluge-stack", deluge.id, 1, deluge.name, "look_top_select_hand",
-        {"mana_spent_to_cast": 7, "hand_count": 2, "__flashback": True},
-    ))
-    counter_spell(state, 2, {"target_stack_id": "deluge-stack"})
+    state.players[1].graveyard.append(deluge.id)
+    state.players[1].mana_pool["U"] = 7
+    rules = RulesEngine()
+    rules.take_action(state, 1, {"type": "cast_spell", "card_id": deluge.id,
+                      "from_graveyard": True, "cost_choice": {"id": "flashback"}}, reject_invalid=True)
+    original = state.stack[-1]
+    from rules_engine.targeting import stack_object_kind
+    assert original.payload["mana_spent"] == original.payload["mana_spent_to_cast"] == 7
+    assert original.payload["__flashback"] is True
+    assert stack_object_kind(state, original) == "spell"
+    response = fallback_card_payload("Negate")
+    negate = CardInstance("negate", "Negate", 2, 2, Zone.HAND, ["Instant"],
+                          mana_cost=response["mana_cost"], oracle_text=response["oracle_text"])
+    state.cards[negate.id] = negate
+    state.players[2].hand.append(negate.id)
+    state.players[2].mana_pool["U"] = 2
+    rules.take_action(state, 1, {"type": "pass_priority"}, reject_invalid=True)
+    rules.take_action(state, 2, {"type": "cast_spell", "card_id": negate.id,
+                      "targets": {"target_stack_id": original.id}}, reject_invalid=True)
+    assert state.stack[-1].payload["mana_spent"] == 2
+    assert resolve_top_of_stack(state)
     assert state.stack == []
     assert deluge.zone == Zone.EXILE
     assert deluge.id in state.players[1].exile

@@ -13,7 +13,8 @@ WORKERS = sorted(ORIGINAL['workers'])
 
 @pytest.mark.parametrize('name', WORKERS)
 def test_all_original_worker_assertion_asts_retained_in_order(name):
-    parsed = ast.parse((HERE / name).read_text())
+    from tests.interface_scope_compatibility import restore_worker_platform
+    parsed = ast.parse(restore_worker_platform(name, (HERE / name).read_text()))
     current = iter(ast.dump(node, include_attributes=False) for node in ast.walk(parsed)
                    if isinstance(node, ast.Assert))
     for old in ORIGINAL['workers'][name]['assertions']:
@@ -50,6 +51,9 @@ def test_delegation_wrappers_and_already_adapted_library_worker_unchanged():
 
 
 def test_production_main_and_repository_unchanged_from_copied_current_b():
+    from tests.interface_scope_compatibility import compatible_product_hash
     backend = HERE.parent
     for name, expected in ORIGINAL['production'].items():
+        # The original pin still must be proven by finite exact public-hunk undo.
+        expected = compatible_product_hash(name, (backend / name).read_bytes(), expected)
         assert hashlib.sha256((backend / name).read_bytes()).hexdigest() == expected

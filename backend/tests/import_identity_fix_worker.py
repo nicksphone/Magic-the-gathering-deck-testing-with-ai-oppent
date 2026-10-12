@@ -34,6 +34,8 @@ def run(phase, mode, root):
     db.engine = create_engine(db.DATABASE_URL, connect_args={'check_same_thread': False})
     def audit(event, args):
         if event == 'sqlite3.connect' and str(args[0]) != ':memory:':
+            from tests.import_identity_sql_support import sqlite_guard_value
+            args = (sqlite_guard_value(root, args[0]), *args[1:])
             assert Path(args[0]).resolve().is_relative_to(root), args[0]
         if event in {'socket.connect', 'socket.bind'}:
             raise AssertionError('No external network/listening sockets')

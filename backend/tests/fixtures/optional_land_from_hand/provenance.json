@@ -1,6 +1,9 @@
 {
   "source_path": "backend/card_data/builtin_oracle_seed.json",
-  "source_sha256": "a07caf7e2faa72ba860a44930e5d0df2f6f79eb858044564befa1434bfc4d0e6",
+  "source_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+  "source_revision": "21db2554cce47eebc4de48dd606a76ee415edc36",
+  "qualified_previous_source_sha256": "a07caf7e2faa72ba860a44930e5d0df2f6f79eb858044564befa1434bfc4d0e6",
+  "current_source_refresh_note": "Seed expanded in 21db2554; every field of every declared profile is verbatim unchanged. Historical digests and prior refresh note retained.",
   "source_kind": "verbatim admitted offline canonical profiles, not invented or full Scryfall raw objects",
   "card_names": [
     "Growth Spiral",

@@ -4200,9 +4200,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_foretell_effects.py": {
-    "mtime": 1791667790.1659276,
-    "seen": 1791671014.284691,
-    "ast_hash": "5e7095132e1558e62ff4fd19582e5e59",
+    "mtime": 1791793775.9696612,
+    "seen": 1791793853.470748,
+    "ast_hash": "381f12164107d43b5b2cf0b8869d4e73",
     "semantic_hash": ""
   },
   "backend/tests/test_game_object_ids.py": {
@@ -4578,9 +4578,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_look_top_select_hand.py": {
-    "mtime": 1791667790.1969273,
-    "seen": 1791671014.284895,
-    "ast_hash": "aa9b14dbac44491b3d67b7ffad9dbfbd",
+    "mtime": 1791793775.9646614,
+    "seen": 1791793853.4710138,
+    "ast_hash": "f7b571fdb00999e1b102f3b9084d9219",
     "semantic_hash": ""
   },
   "backend/tests/test_loyalty_counter_costs.py": {
@@ -4788,9 +4788,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_offline_match_hydration.py": {
-    "mtime": 1791667790.2149272,
-    "seen": 1791671014.2849991,
-    "ast_hash": "4a109b6cccb754899014c078f37a9d30",
+    "mtime": 1791793775.9696612,
+    "seen": 1791793853.4711556,
+    "ast_hash": "983376eedb1fe8d6d775a17eef40f69b",
     "semantic_hash": ""
   },
   "backend/tests/test_opaque_selection_http.py": {
@@ -5016,9 +5016,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_replacement_query_batches.py": {
-    "mtime": 1791667790.227927,
-    "seen": 1791671014.2851162,
-    "ast_hash": "b79ac16c6ccba032d9c7bb8e6c5d3e36",
+    "mtime": 1791793775.9646614,
+    "seen": 1791793853.4713085,
+    "ast_hash": "c723b3f21783f5b223c7ffe1bd7a4084",
     "semantic_hash": ""
   },
   "backend/tests/test_replay_decision_metrics.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791791713.8476753,
-    "seen": 1791791791.507252,
-    "ast_hash": "223ad9869379f7c032805eba33ae44a0",
+    "mtime": 1791793776.0226605,
+    "seen": 1791793853.4734557,
+    "ast_hash": "a5755ac821dc7ff99e5d7901efc11b47",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -8400,9 +8400,9 @@
     "semantic_hash": ""
   },
   "backend/tests/import_identity_fix_worker.py": {
-    "mtime": 1791667790.0659292,
-    "seen": 1791671014.2840867,
-    "ast_hash": "1ecb1f44ad11d6634f1363336700dfd1",
+    "mtime": 1791793775.9566615,
+    "seen": 1791793853.4699912,
+    "ast_hash": "604a54140cd5b49ec7119519bd7ae533",
     "semantic_hash": ""
   },
   "backend/tests/test_import_identity_fixes.py": {
@@ -9390,9 +9390,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_lazy_restart_worker_interfaces.py": {
-    "mtime": 1791667790.1849275,
-    "seen": 1791671014.2848222,
-    "ast_hash": "822915216573aaa338a71014315dd641",
+    "mtime": 1791793775.9566615,
+    "seen": 1791793853.4709194,
+    "ast_hash": "7c512dfccf77cab68310095c8ab42a75",
     "semantic_hash": ""
   },
   "docs/testing/lazy-restart-worker-interfaces.md": {
@@ -9666,9 +9666,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_keyword_graveyard_plans.py": {
-    "mtime": 1791667790.1799276,
-    "seen": 1791671014.284782,
-    "ast_hash": "0f767cba45f09096f23e042d6dd72386",
+    "mtime": 1791793775.9566615,
+    "seen": 1791793853.470864,
+    "ast_hash": "4b36c13e74d39897a1e7b1ffefd5c3e6",
     "semantic_hash": ""
   },
   "backend/tests/test_keyword_graveyard_trigger_dependency.py": {
@@ -10530,9 +10530,9 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/optional_land_from_hand/provenance.json": {
-    "mtime": 1791667790.0219297,
-    "seen": 1791671014.283802,
-    "ast_hash": "66de2863eddad44a399c2fba01caede8",
+    "mtime": 1791793775.9646614,
+    "seen": 1791793853.4696333,
+    "ast_hash": "c9786248dfa7cd61b669ed43a3d10963",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/paid_optional_continuation/provenance.json": {
@@ -17163,6 +17163,66 @@
     "mtime": 1791791713.8466752,
     "seen": 1791791791.506336,
     "ast_hash": "92426e6f9cead0ac2341742d98cda9f4",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/interface_scope_compatibility/approved_public_deltas.json": {
+    "mtime": 1791793775.9576614,
+    "seen": 1791793853.4691935,
+    "ast_hash": "f3e7e6725a3b63bec038415efbb9d1f5",
+    "semantic_hash": ""
+  },
+  "backend/tests/import_identity_sql_support.py": {
+    "mtime": 1791793775.9566615,
+    "seen": 1791793853.4699929,
+    "ast_hash": "9010edd2d180ce56daff5cc1629d7323",
+    "semantic_hash": ""
+  },
+  "backend/tests/interface_scope_compatibility.py": {
+    "mtime": 1791793775.9566615,
+    "seen": 1791793853.469995,
+    "ast_hash": "ff22b25108bc711d9757670f95ee01eb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_import_identity_sql_guard.py": {
+    "mtime": 1791793775.9566615,
+    "seen": 1791793853.47084,
+    "ast_hash": "61bfb83408277973205a7d06948d9a38",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_interface_scope_compatibility.py": {
+    "mtime": 1791793775.9566615,
+    "seen": 1791793853.4708548,
+    "ast_hash": "8c1706cc3f05ea02cb4085fd61c16b29",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_malformed_cached_face_boundary.py": {
+    "mtime": 1791793775.9696612,
+    "seen": 1791793853.4710336,
+    "ast_hash": "5414f5aa9ffba6c23633a8b2202e3c5a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_select_query_fixture_provenance.py": {
+    "mtime": 1791793775.9646614,
+    "seen": 1791793853.4713848,
+    "ast_hash": "c051b17740feaf6430a1b187bd6ef31e",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-hydration-foretell-contracts.md": {
+    "mtime": 1791793776.0216606,
+    "seen": 1791793853.4726255,
+    "ast_hash": "89765a866b8b35233bdbc108244b716f",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-interface-uri-scope.md": {
+    "mtime": 1791793776.0216606,
+    "seen": 1791793853.472627,
+    "ast_hash": "9ed123f50915b2421e44b85811ce8fed",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-stack-query-provenance.md": {
+    "mtime": 1791793776.0216606,
+    "seen": 1791793853.4726396,
+    "ast_hash": "41dafab52a27d3e0e725364d4db0fc9d",
     "semantic_hash": ""
   }
 }
