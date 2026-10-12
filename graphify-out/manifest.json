@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791790526.4925284,
-    "seen": 1791790603.4221485,
-    "ast_hash": "5be507db82c8fb68ca294ffd23b01653",
+    "mtime": 1791791713.8476753,
+    "seen": 1791791791.507252,
+    "ast_hash": "223ad9869379f7c032805eba33ae44a0",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13320,9 +13320,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_human_bo3_readiness.py": {
-    "mtime": 1791667790.1749277,
-    "seen": 1791671014.284754,
-    "ast_hash": "75fc3627b8c3e8868ad5a77d4bc27129",
+    "mtime": 1791791713.805676,
+    "seen": 1791791791.5045838,
+    "ast_hash": "981f42bb6adaffb92018cc5dba61df46",
     "semantic_hash": ""
   },
   "backend/tests/test_human_bo3_terminal_restore.py": {
@@ -17145,6 +17145,24 @@
     "mtime": 1791790526.4915285,
     "seen": 1791790603.421244,
     "ast_hash": "a1fcb00cc3888014f8575ca4cf0129b0",
+    "semantic_hash": ""
+  },
+  "backend/tests/human_bo3_cold_probe.py": {
+    "mtime": 1791791713.805676,
+    "seen": 1791791791.503741,
+    "ast_hash": "642e892c50fcd192be069b28a16364a1",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_human_bo3_cold_probe.py": {
+    "mtime": 1791791713.805676,
+    "seen": 1791791791.504576,
+    "ast_hash": "344a78824d999e5c0126e7588187ce9a",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-bo3-cold-worker.md": {
+    "mtime": 1791791713.8466752,
+    "seen": 1791791791.506336,
+    "ast_hash": "92426e6f9cead0ac2341742d98cda9f4",
     "semantic_hash": ""
   }
 }

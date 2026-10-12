@@ -40129,6 +40129,49 @@
       "_origin": "ast"
     },
     {
+      "id": "backend_tests_human_bo3_cold_probe",
+      "label": "human_bo3_cold_probe.py",
+      "file_type": "code",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_human_bo3_cold_probe_read_cold_match",
+      "label": "read_cold_match()",
+      "file_type": "code",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L11",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_human_bo3_cold_probe_run",
+      "label": "run()",
+      "file_type": "code",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L22",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_human_bo3_cold_probe_run_guard",
+      "label": "guard()",
+      "file_type": "code",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L32",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_human_bo3_cold_probe_rationale_1",
+      "label": "Committed test-only cold public lookup; no lifespan or writable SQL.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "backend_tests_human_bo3_cold_worker",
       "label": "human_bo3_cold_worker.py",
       "file_type": "code",
@@ -85658,6 +85701,48 @@
       "source_file": "backend/tests/test_human_auto_progress.py",
       "source_location": "L75",
       "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_human_bo3_cold_probe",
+      "label": "test_human_bo3_cold_probe.py",
+      "file_type": "code",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_human_bo3_cold_probe_py_parametrize",
+      "label": "parametrize",
+      "file_type": "code",
+      "source_file": "",
+      "source_location": "",
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_human_bo3_cold_probe_test_cold_read_preserves_each_partial_confirmation_and_complete_roots",
+      "label": "test_cold_read_preserves_each_partial_confirmation_and_complete_roots()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L13",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_human_bo3_cold_probe_test_cold_worker_rejects_foreign_source_or_database_before_project_read",
+      "label": "test_cold_worker_rejects_foreign_source_or_database_before_project_read()",
+      "file_type": "code",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L31",
+      "_callable": true,
+      "_origin": "ast"
+    },
+    {
+      "id": "backend_tests_test_human_bo3_cold_probe_rationale_1",
+      "label": "Cold public reads use the committed worker, never an external audit gate.",
+      "file_type": "rationale",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L1",
       "_origin": "ast"
     },
     {
@@ -157119,6 +157204,24 @@
       "_origin": "ast"
     },
     {
+      "id": "docs_testing_ci_bo3_cold_worker",
+      "label": "ci-bo3-cold-worker.md",
+      "file_type": "document",
+      "node_kind": "page",
+      "source_file": "docs/testing/ci-bo3-cold-worker.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
+      "id": "docs_testing_ci_bo3_cold_worker_bo3_cold_worker_portability",
+      "label": "BO3 Cold Worker Portability",
+      "file_type": "document",
+      "node_kind": "heading",
+      "source_file": "docs/testing/ci-bo3-cold-worker.md",
+      "source_location": "L1",
+      "_origin": "ast"
+    },
+    {
       "id": "docs_testing_ci_boon_paid_fixture_current",
       "label": "ci-boon-paid-fixture-current.md",
       "file_type": "document",
@@ -175862,7 +175965,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L268",
+      "source_location": "L272",
       "_origin": "ast"
     },
     {
@@ -175871,7 +175974,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L357",
+      "source_location": "L361",
       "_origin": "ast"
     },
     {
@@ -175880,7 +175983,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L392",
+      "source_location": "L396",
       "_origin": "ast"
     },
     {
@@ -175889,7 +175992,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L394",
+      "source_location": "L398",
       "_origin": "ast"
     },
     {
@@ -175898,7 +176001,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L479",
+      "source_location": "L483",
       "_origin": "ast"
     },
     {
@@ -175907,7 +176010,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L532",
+      "source_location": "L536",
       "_origin": "ast"
     },
     {
@@ -175916,7 +176019,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L579",
+      "source_location": "L583",
       "_origin": "ast"
     },
     {
@@ -175925,7 +176028,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L606",
+      "source_location": "L610",
       "_origin": "ast"
     },
     {
@@ -175934,7 +176037,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L684",
+      "source_location": "L688",
       "_origin": "ast"
     },
     {
@@ -175943,7 +176046,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L691",
+      "source_location": "L695",
       "_origin": "ast"
     },
     {
@@ -175952,7 +176055,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L700",
+      "source_location": "L704",
       "_origin": "ast"
     },
     {
@@ -175961,7 +176064,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L711",
+      "source_location": "L715",
       "_origin": "ast"
     },
     {
@@ -175970,7 +176073,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L721",
+      "source_location": "L725",
       "_origin": "ast"
     },
     {
@@ -175979,7 +176082,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L731",
+      "source_location": "L735",
       "_origin": "ast"
     },
     {
@@ -175988,7 +176091,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L740",
+      "source_location": "L744",
       "_origin": "ast"
     },
     {
@@ -175997,7 +176100,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L749",
+      "source_location": "L753",
       "_origin": "ast"
     },
     {
@@ -176006,7 +176109,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L758",
+      "source_location": "L762",
       "_origin": "ast"
     },
     {
@@ -176015,7 +176118,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L782",
+      "source_location": "L786",
       "_origin": "ast"
     },
     {
@@ -176024,7 +176127,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L792",
+      "source_location": "L796",
       "_origin": "ast"
     },
     {
@@ -176033,7 +176136,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L808",
+      "source_location": "L812",
       "_origin": "ast"
     },
     {
@@ -176042,7 +176145,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L818",
+      "source_location": "L822",
       "_origin": "ast"
     },
     {
@@ -176051,7 +176154,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L832",
+      "source_location": "L836",
       "_origin": "ast"
     },
     {
@@ -176060,7 +176163,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L845",
+      "source_location": "L849",
       "_origin": "ast"
     },
     {
@@ -176069,7 +176172,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L859",
+      "source_location": "L863",
       "_origin": "ast"
     },
     {
@@ -176078,7 +176181,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L871",
+      "source_location": "L875",
       "_origin": "ast"
     },
     {
@@ -176087,7 +176190,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L884",
+      "source_location": "L888",
       "_origin": "ast"
     },
     {
@@ -176096,7 +176199,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L908",
+      "source_location": "L912",
       "_origin": "ast"
     },
     {
@@ -176105,7 +176208,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L930",
+      "source_location": "L934",
       "_origin": "ast"
     },
     {
@@ -176114,7 +176217,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L950",
+      "source_location": "L954",
       "_origin": "ast"
     },
     {
@@ -176123,7 +176226,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L973",
+      "source_location": "L977",
       "_origin": "ast"
     },
     {
@@ -176132,7 +176235,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L989",
+      "source_location": "L993",
       "_origin": "ast"
     },
     {
@@ -176141,7 +176244,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L1007",
+      "source_location": "L1011",
       "_origin": "ast"
     },
     {
@@ -176150,7 +176253,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L1021",
+      "source_location": "L1025",
       "_origin": "ast"
     },
     {
@@ -176159,7 +176262,7 @@
       "file_type": "document",
       "node_kind": "heading",
       "source_file": "plan.md",
-      "source_location": "L1032",
+      "source_location": "L1036",
       "_origin": "ast"
     },
     {
@@ -301890,6 +301993,135 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/historical_seed_export_worker.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "hashlib",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "json",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L4",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "subprocess",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L6",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "sys",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "urllib_parse",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "backend_tests_human_bo3_cold_probe_read_cold_match",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L11",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "backend_tests_human_bo3_cold_probe_run",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe_run",
+      "target": "backend_tests_human_bo3_cold_probe_run_guard",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe_run",
+      "target": "backend_tests_human_bo3_cold_probe_run_guard",
+      "relation": "indirect_call",
+      "context": "argument",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe_rationale_1",
+      "target": "backend_tests_human_bo3_cold_probe",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast"
@@ -454606,6 +454838,124 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "os",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L2",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "pathlib",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "pytest",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_main",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L7",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_test_api_input_contracts",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_test_human_bo3_readiness",
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_read_preserves_each_partial_confirmation_and_complete_roots",
+      "target": "backend_tests_test_human_bo3_cold_probe_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L12",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_test_human_bo3_cold_probe_test_cold_read_preserves_each_partial_confirmation_and_complete_roots",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_worker_rejects_foreign_source_or_database_before_project_read",
+      "target": "backend_tests_test_human_bo3_cold_probe_py_parametrize",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "context": "decorator",
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_test_human_bo3_cold_probe_test_cold_worker_rejects_foreign_source_or_database_before_project_read",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe_rationale_1",
+      "target": "backend_tests_test_human_bo3_cold_probe",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_human_bo3_fixture_owner_release",
       "target": "pytest",
       "relation": "imports",
@@ -455700,7 +456050,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_human_bo3_readiness.py",
-      "source_location": "L148",
+      "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -664212,6 +664562,16 @@
       "_origin": "ast"
     },
     {
+      "source": "docs_testing_ci_bo3_cold_worker",
+      "target": "docs_testing_ci_bo3_cold_worker_bo3_cold_worker_portability",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/testing/ci-bo3-cold-worker.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "docs_testing_ci_boon_paid_fixture_current",
       "target": "docs_testing_ci_boon_paid_fixture_current_paid_counterspell_fixture",
       "relation": "contains",
@@ -681403,17 +681763,17 @@
     },
     {
       "source": "plan",
-      "target": "docs_testing_ci_734_sqlite_full_diagnosis",
+      "target": "docs_testing_ci_bo3_cold_worker",
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L33",
+      "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast"
     },
     {
       "source": "plan",
-      "target": "docs_testing_ci_stack_provenance_fixtures",
+      "target": "docs_testing_ci_734_sqlite_full_diagnosis",
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
@@ -681423,11 +681783,21 @@
     },
     {
       "source": "plan",
+      "target": "docs_testing_ci_stack_provenance_fixtures",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "source_file": "plan.md",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "plan",
       "target": "docs_testing_ci_capacity_policy_fixture_portability",
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L45",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681437,7 +681807,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L51",
+      "source_location": "L55",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681447,7 +681817,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L56",
+      "source_location": "L60",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681457,7 +681827,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L61",
+      "source_location": "L65",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681467,7 +681837,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L67",
+      "source_location": "L71",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681477,7 +681847,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L73",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681487,7 +681857,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L74",
+      "source_location": "L78",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681497,7 +681867,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L82",
+      "source_location": "L86",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681507,7 +681877,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L91",
+      "source_location": "L95",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681517,7 +681887,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L99",
+      "source_location": "L103",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681527,7 +681897,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L107",
+      "source_location": "L111",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681537,7 +681907,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L114",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681547,7 +681917,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L124",
+      "source_location": "L128",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681557,7 +681927,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L139",
+      "source_location": "L143",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681567,7 +681937,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L147",
+      "source_location": "L151",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681577,7 +681947,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L157",
+      "source_location": "L161",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681587,7 +681957,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L158",
+      "source_location": "L162",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681597,7 +681967,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L169",
+      "source_location": "L173",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681607,7 +681977,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L177",
+      "source_location": "L181",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681617,7 +681987,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L187",
+      "source_location": "L191",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681627,7 +681997,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L193",
+      "source_location": "L197",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681637,7 +682007,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L200",
+      "source_location": "L204",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681647,7 +682017,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L207",
+      "source_location": "L211",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681657,7 +682027,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L222",
+      "source_location": "L226",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681667,7 +682037,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L230",
+      "source_location": "L234",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681677,7 +682047,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L239",
+      "source_location": "L243",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681687,7 +682057,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L263",
+      "source_location": "L267",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681697,7 +682067,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L268",
+      "source_location": "L272",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681707,7 +682077,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L318",
+      "source_location": "L322",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681717,7 +682087,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L324",
+      "source_location": "L328",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681727,7 +682097,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L332",
+      "source_location": "L336",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681737,7 +682107,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L335",
+      "source_location": "L339",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681747,7 +682117,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L340",
+      "source_location": "L344",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681757,7 +682127,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L343",
+      "source_location": "L347",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681767,7 +682137,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L346",
+      "source_location": "L350",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681777,7 +682147,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L350",
+      "source_location": "L354",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681787,7 +682157,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L357",
+      "source_location": "L361",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681797,7 +682167,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L389",
+      "source_location": "L393",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681807,7 +682177,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L392",
+      "source_location": "L396",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681817,7 +682187,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L394",
+      "source_location": "L398",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681827,7 +682197,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L405",
+      "source_location": "L409",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681837,7 +682207,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L410",
+      "source_location": "L414",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681847,7 +682217,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L421",
+      "source_location": "L425",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681857,7 +682227,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L428",
+      "source_location": "L432",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681867,7 +682237,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L435",
+      "source_location": "L439",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681877,7 +682247,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L442",
+      "source_location": "L446",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681887,7 +682257,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L458",
+      "source_location": "L462",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681897,7 +682267,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L462",
+      "source_location": "L466",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681907,7 +682277,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L464",
+      "source_location": "L468",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681917,7 +682287,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L469",
+      "source_location": "L473",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681927,7 +682297,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L479",
+      "source_location": "L483",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681937,7 +682307,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L532",
+      "source_location": "L536",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681947,7 +682317,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L579",
+      "source_location": "L583",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681957,7 +682327,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L606",
+      "source_location": "L610",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681967,7 +682337,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L684",
+      "source_location": "L688",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681977,7 +682347,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L691",
+      "source_location": "L695",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681987,7 +682357,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L700",
+      "source_location": "L704",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -681997,7 +682367,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L711",
+      "source_location": "L715",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682007,7 +682377,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L721",
+      "source_location": "L725",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682017,7 +682387,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L731",
+      "source_location": "L735",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682027,7 +682397,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L740",
+      "source_location": "L744",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682037,7 +682407,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L749",
+      "source_location": "L753",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682047,7 +682417,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L758",
+      "source_location": "L762",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682057,7 +682427,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L782",
+      "source_location": "L786",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682067,7 +682437,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L792",
+      "source_location": "L796",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682077,7 +682447,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L800",
+      "source_location": "L804",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682087,7 +682457,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L808",
+      "source_location": "L812",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682097,7 +682467,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L814",
+      "source_location": "L818",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682107,7 +682477,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L818",
+      "source_location": "L822",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682117,7 +682487,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L828",
+      "source_location": "L832",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682127,7 +682497,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L832",
+      "source_location": "L836",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682137,7 +682507,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L841",
+      "source_location": "L845",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682147,7 +682517,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L845",
+      "source_location": "L849",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682157,7 +682527,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L854",
+      "source_location": "L858",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682167,7 +682537,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L859",
+      "source_location": "L863",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682177,7 +682547,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L867",
+      "source_location": "L871",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682187,7 +682557,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L871",
+      "source_location": "L875",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682197,7 +682567,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L879",
+      "source_location": "L883",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682207,7 +682577,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L884",
+      "source_location": "L888",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682217,7 +682587,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L898",
+      "source_location": "L902",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682227,7 +682597,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L908",
+      "source_location": "L912",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682237,7 +682607,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L920",
+      "source_location": "L924",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682247,7 +682617,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L930",
+      "source_location": "L934",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682257,7 +682627,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L940",
+      "source_location": "L944",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682267,7 +682637,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L950",
+      "source_location": "L954",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682277,7 +682647,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L968",
+      "source_location": "L972",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682287,7 +682657,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L969",
+      "source_location": "L973",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682297,7 +682667,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L973",
+      "source_location": "L977",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682307,7 +682677,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L985",
+      "source_location": "L989",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682317,7 +682687,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L989",
+      "source_location": "L993",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682327,7 +682697,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1003",
+      "source_location": "L1007",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682337,7 +682707,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1007",
+      "source_location": "L1011",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682347,7 +682717,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1021",
+      "source_location": "L1025",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682357,7 +682727,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1029",
+      "source_location": "L1033",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682367,7 +682737,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1032",
+      "source_location": "L1036",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -682377,7 +682747,7 @@
       "relation": "references",
       "confidence": "EXTRACTED",
       "source_file": "plan.md",
-      "source_location": "L1038",
+      "source_location": "L1042",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -713773,6 +714143,17 @@
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/generic_import_fixtures.py",
       "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L54",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -761759,6 +762140,61 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_test_api_input_contracts_game",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_test_api_input_contracts_snapshot",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L8",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_test_human_bo3_readiness_finished",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_human_bo3_cold_probe_read_cold_match",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe",
+      "target": "backend_tests_human_bo3_cold_probe_run",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L32",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_human_bo3_fixture_owner_release",
       "target": "backend_ai_agent_aiagent",
       "relation": "imports",
@@ -761975,6 +762411,17 @@
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_human_bo3_readiness.py",
       "source_location": "L13",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_readiness",
+      "target": "backend_tests_human_bo3_cold_probe_read_cold_match",
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_readiness.py",
+      "source_location": "L145",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -852608,6 +853055,17 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_human_bo3_cold_probe_run",
+      "target": "backend_game_state_serializers_serialize_match_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L65",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_human_bo3_cold_worker_repo",
       "target": "backend_persistence_repository_repository",
       "relation": "calls",
@@ -888683,6 +889141,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_human_bo3_readiness.py",
+      "source_location": "L150",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_readiness_test_partial_confirmation_survives_real_cold_read_and_parent_reload",
+      "target": "backend_tests_human_bo3_cold_probe_read_cold_match",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/tests/test_human_bo3_readiness.py",
       "source_location": "L151",
       "weight": 1.0,
       "_origin": "ast"
@@ -888694,7 +889163,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "backend/tests/test_human_bo3_readiness.py",
-      "source_location": "L159",
+      "source_location": "L154",
       "weight": 1.0,
       "_origin": "ast"
     },
@@ -1121366,6 +1121835,54 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_read_preserves_each_partial_confirmation_and_complete_roots",
+      "target": "backend_tests_test_human_bo3_readiness_finished",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_read_preserves_each_partial_confirmation_and_complete_roots",
+      "target": "backend_tests_test_api_input_contracts_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_read_preserves_each_partial_confirmation_and_complete_roots",
+      "target": "backend_tests_human_bo3_cold_probe_read_cold_match",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L22",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_worker_rejects_foreign_source_or_database_before_project_read",
+      "target": "backend_tests_human_bo3_cold_probe_run",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L41",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_human_bo3_fixture_owner_release_test_native_swap_fixture_exception_does_not_poison_the_next_lifespan_stop_after_real_match_start",
       "target": "backend_persistence_capacity_owner_for_engine",
       "relation": "calls",
@@ -1209458,6 +1209975,66 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_human_bo3_cold_probe_read_cold_match",
+      "target": "subprocess",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L15",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe_read_cold_match",
+      "target": "json",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe_run",
+      "target": "hashlib",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L30",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe_run",
+      "target": "sys",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L46",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_human_bo3_cold_probe_run",
+      "target": "os",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/human_bo3_cold_probe.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_import_identity_fix_support_assert_provenance",
       "target": "backend_card_data_hydration_hydrate_deck_cards",
       "relation": "calls",
@@ -1226450,6 +1227027,42 @@
       "_origin": "ast"
     },
     {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_read_preserves_each_partial_confirmation_and_complete_roots",
+      "target": "os",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L23",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_read_preserves_each_partial_confirmation_and_complete_roots",
+      "target": "backend_main_controller_snapshot",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
+      "source": "backend_tests_test_human_bo3_cold_probe_test_cold_worker_rejects_foreign_source_or_database_before_project_read",
+      "target": "pytest",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "backend/tests/test_human_bo3_cold_probe.py",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_origin": "ast"
+    },
+    {
       "source": "backend_tests_test_human_bo3_fixture_owner_release_test_native_swap_fixture_exception_does_not_poison_the_next_lifespan",
       "target": "backend_tests_test_human_bo3_native_swaps_test_native_swaps_between_checked_human_games",
       "relation": "calls",
@@ -1226613,7 +1227226,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "backend/tests/test_human_bo3_readiness.py",
-      "source_location": "L156",
+      "source_location": "L154",
       "weight": 1.0,
       "_origin": "ast"
     },

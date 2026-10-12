@@ -142,18 +142,13 @@ def test_revision_duplicate_and_conflicting_retry_preserve_complete_roots(game):
 
 
 def test_partial_confirmation_survives_real_cold_read_and_parent_reload(game):
-    import subprocess
-    import sys
+    from tests.human_bo3_cold_probe import read_cold_match
     client, controller = game
     finished(controller)
     url = '/matches/' + controller.state.id
     assert client.post(url + '/sideboard', json={'player_id': 1, 'cards_out': [], 'cards_in': []}).status_code == 200
     before = snapshot(controller)
-    root = Path(__file__).resolve().parents[2]
-    child = subprocess.run([sys.executable, str(root / 'gate.py'), '--cold', controller.state.id],
-        cwd=root / 'backend', env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'},
-        capture_output=True, text=True, timeout=60, check=True)
-    read = json.loads(child.stdout)
+    read = read_cold_match(controller.state.id)
     assert read['view']['sideboarding']['1']['applied']
     assert not read['view']['sideboarding']['2']['applied']
     assert read['snapshot'] == json.loads(json.dumps(serialize_match_snapshot(controller.state)))

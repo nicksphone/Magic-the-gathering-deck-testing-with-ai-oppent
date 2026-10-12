@@ -26,6 +26,10 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
+The controlled BO3 cold-read test no longer depends on uncommitted `gate.py`.
+Its fresh three-whole-module cohort passes22 with all46 original assertions
+unchanged; production/gameplay is untouched. [Cold worker scope](docs/testing/ci-bo3-cold-worker.md).
+
 The older `73458804` protected backend now has complete sanitized terminal
 phase records: 26,006 nodes, 25,324 passed calls, 66 failed calls, 534 setup
 failures and 82 skips. Every setup failure is native SQLITE_FULL13; source
