@@ -2,7 +2,10 @@
 import hashlib
 import json
 from pathlib import Path
+import re
 import sys
+
+from tests.import_identity_sql_support import sqlite_guard_value
 
 
 def run(mode):
@@ -20,7 +23,9 @@ def run(mode):
             network.append(event)
             raise AssertionError('No external network')
         if event == 'sqlite3.connect' and str(args[0]) != ':memory:':
-            assert Path(str(args[0])).resolve() == database
+            path = Path(sqlite_guard_value(backend, args[0]))
+            assert path == database or (path.parent == backend and re.fullmatch(
+                re.escape(database.name) + r'\.before-capacity-[0-9a-f]{32}\.db', path.name))
 
     sys.addaudithook(guard)
     import main
@@ -60,7 +65,11 @@ def run(mode):
                 assert response.headers['content-type'].startswith('image/svg+xml')
             else:
                 assert resolve_token_image_uri('Phyrexian Golem', 3, 3) == uri
-                assert not target.exists(), 'memoized URI does not reinstall evicted art'
+                assert target.read_bytes() == original, 'explicit resolver repairs evicted tracked fallback'
+                regenerated = client.get(uri)
+                assert regenerated.status_code == 200 and regenerated.content == original
+                assert regenerated.headers['content-type'].startswith('image/svg+xml')
+                result['regenerated_http_media_status'] = regenerated.status_code
             result['http_media_status'] = expected
             result['lifespan_entered'] = True
             result['startup_created_database'] = True

@@ -9,6 +9,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import math
 import os
 from pathlib import Path
 import re
@@ -210,7 +211,27 @@ def empty_metadata():
         'phases': [], 'failures': [], 'collection_errors': [], 'sessions': [],
         'unresolved_failure_count': None, 'rows_exported': False,
         'skips_and_xfails_are_not_passes': True, 'metadata_error_codes': [],
+        'timing': {'recorded_phase_count': 0, 'total_recorded_seconds': None,
+                   'slowest_phases': []},
     }
+
+
+def phase_timing(phases, public):
+    measured = []
+    for row in phases:
+        seconds = row.get('duration_seconds')
+        if (type(seconds) not in (int, float) or not 0 <= seconds <= 86400
+                or not math.isfinite(seconds)):
+            continue
+        measured.append((seconds, row))
+    # Resolve committed public ASTs only for the bounded exported summary.
+    slowest = sorted(measured, key=lambda row: row[0], reverse=True)[:20]
+    return {'recorded_phase_count': len(measured),
+            'total_recorded_seconds': math.fsum(seconds for seconds, _ in measured) if measured else None,
+            'slowest_phases': [{'nodeid_sha256': node(row['nodeid']),
+                               'public_test': public.resolve(row['nodeid']),
+                               'phase': row['phase'], 'seconds': seconds}
+                              for seconds, row in slowest]}
 
 
 def audit_evidence(root, exitcode):
@@ -282,6 +303,7 @@ def build_metadata(evidence, source):
             raise MetadataError('AUDIT_ERROR')
 
         public = PublicDefinitions(source, commit)
+        document['timing'] = phase_timing(phases, public)
         failures = [{'nodeid_sha256': node(row['nodeid']), 'phase': row['phase'],
                      'public_test': public.resolve(row['nodeid'])}
                     for row in phases if row['outcome'] == 'failed']

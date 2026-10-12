@@ -53,7 +53,12 @@ def test_tapped_basic_acceptance_supersedes_old_pass_characterization(seat, crea
 @pytest.mark.parametrize('boundary', ['hand', 'graveyard', 'exile', 'blocker', 'nonbasic', 'unannounced'])
 def test_unknown_or_adverse_boundary_keeps_original_prefix_score(seat, boundary):
     state, source = position(seat, 'Sheoldred, the Apocalypse')
-    if boundary in {'hand', 'graveyard', 'exile'}:
+    if boundary == 'graveyard':
+        # Inert Bolt permits completion; use a genuinely payable public response.
+        raw_card(state, ROWS['Memory Deluge'], 3-seat, Zone.GRAVEYARD)
+        raw_card(state, ROWS['Island'], 3-seat, Zone.BATTLEFIELD)
+        raw_card(state, ROWS['Island'], 3-seat, Zone.BATTLEFIELD)
+    elif boundary in {'hand', 'exile'}:
         raw_card(state, ROWS['Lightning Bolt'], 3-seat, getattr(Zone, boundary.upper()))
     elif boundary == 'blocker':
         raw_card(state, ROWS['Monastery Swiftspear'], 3-seat, Zone.BATTLEFIELD)

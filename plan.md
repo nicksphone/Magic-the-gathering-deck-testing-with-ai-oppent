@@ -1048,3 +1048,15 @@ the ASGI body are preserved. Independent parent original16/new8 pass all 24
 cases (47.36s); two generated cache SVGs are separately recorded, not published.
 See [scope and evidence](docs/testing/ci-favor-cold-launch-inputs.md).
 Hosted backend qualification, all original gates and measured AI quality remain open.
+
+## 2026-10-12 Safe CI Timings And Current Fixture Contracts
+
+The safe metadata reporter adds bounded, public-definition-verified numeric
+phase timing without raw logs or private parameters. Independent parent script
+verification passes all 146 checks. Separately, current combat/Suspend fixtures
+pass 109 checks and token packaging passes 7 checks plus 15 URI subtests. Explicit
+obsolete expectation adaptations are documented; gameplay production is unchanged.
+See [scope and evidence](docs/testing/ci-timings-combat-and-media.md).
+The completed `8fff3117` backend cohort has zero setup failures but 58 call
+failures, so it is not green. Current whole-backend qualification, all original
+release gates and measured AI quality remain open.

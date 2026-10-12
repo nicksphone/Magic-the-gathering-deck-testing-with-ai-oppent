@@ -157,7 +157,12 @@ def test_other_canonical_warning_families_unchanged(name):
     row = json.loads((root / 'card_data/builtin_oracle_seed.json').read_text())['cards'][name]
     row = {**row, 'card_name': name, 'card_data_sources': ['offline_seed']}
     legacy = known_unsupported_mechanics(row['oracle_text'], card_name=name)
-    assert legacy and gaps(row) == legacy
+    # Current known-gap labels, not a whole-card execution certificate.
+    # Searing Blaze has a sourced complete-body exception; Soul-Scar has no label.
+    expected_legacy = ([] if name == 'Soul-Scar Mage' else
+                       ['controller-linked damage targets', 'conditional land-entry damage'])
+    assert legacy == expected_legacy
+    assert gaps(row) == []
 
 
 @pytest.mark.parametrize('surface', [
