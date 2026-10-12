@@ -37,3 +37,19 @@ failure without relaxing its expectations.
 These checks are component evidence, not an arbitrary-rules, expert-AI, or full
 release certificate. Historical failed harness attempts are retained privately;
 the protected archived game trace remains private.
+
+## Distinct-Target Response Boundary
+
+The shared legal-move/cost-option parser validates distinct counts within the
+existing ordered-control budget (2..250), supplied candidate IDs/names and
+per-pool uniqueness, mutually exclusive instance metadata, and paired counter
+amount/type fields. Counter amounts must match the count and be nonnegative
+integers. Extra candidate metadata is preserved. Empty or insufficient candidate
+pools remain valid responses, leaving the action incomplete rather than choosing
+recipients or pretending it is castable.
+
+The regression rejects 58 malformed move/cost-specific views and retains four
+positive response shapes in both locations. The full frontend test command, lint and build pass;
+the actual Ghostly, Incremental Growth and Agony Warp browser programs pass on
+this follow-up. The complete browser result above belongs to `d727e0d1`, not an
+implicit full-suite certificate for every later source revision.

@@ -192,6 +192,23 @@ function targetHints(value: unknown): boolean {
           && pair.targets.target_player === undefined && pair.targets.target_card_id === undefined
           && Array.isArray(pair.targets.target_card_ids) && pair.targets.target_card_ids.length === 2
           && pair.targets.target_card_ids[0] === pair.primary_id && pair.targets.target_card_ids[1] === pair.creature_id)))) return false;
+  if (['required_distinct_target_count', 'ordered_counter_amounts', 'ordered_counter_type']
+    .some(key => value[key] !== undefined)) {
+    if (value.required_target_instance_count !== undefined || value.ordered_creature_modifiers !== undefined
+      || !Number.isInteger(value.required_distinct_target_count)
+      || (value.required_distinct_target_count as number) < 2
+      || (value.required_distinct_target_count as number) > 250) return false;
+    const pools = [value.creature_targets, value.permanent_targets].filter(pool => pool !== undefined);
+    if (!pools.length || !pools.every(pool => Array.isArray(pool)
+      && pool.every(target => record(target) && typeof target.id === 'string' && target.id.trim().length > 0
+        && typeof target.name === 'string' && target.name.trim().length > 0)
+      && new Set(pool.map(target => target.id)).size === pool.length)) return false;
+    if (value.ordered_counter_amounts === undefined && value.ordered_counter_type === undefined) return true;
+    return Array.isArray(value.ordered_counter_amounts)
+      && value.ordered_counter_amounts.length === value.required_distinct_target_count
+      && value.ordered_counter_amounts.every(amount => Number.isInteger(amount) && amount >= 0)
+      && typeof value.ordered_counter_type === 'string' && value.ordered_counter_type.trim().length > 0;
+  }
   if (value.required_target_instance_count === undefined && value.ordered_creature_modifiers === undefined) return true;
   return value.required_distinct_target_count === undefined
     && Number.isInteger(value.required_target_instance_count)

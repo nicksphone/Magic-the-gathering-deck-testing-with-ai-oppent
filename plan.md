@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-11 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-12 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -24,10 +24,19 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
-## Current Candidate Qualification: 2026-10-11
+## Current Candidate Qualification: 2026-10-12
 
-Latest published `25ef55ea` passes frontend and the whole browser job in
-run38175740307; protected backend qualification remains active. The reviewed
+Latest published `d727e0d1` passes frontend and the whole browser job in
+run38188006567. Its complete local zero-argument browser run also passes, with
+all 2,020 tracked backend/frontend source files byte-equal to that commit.
+The human two-target permanent picker and public original/copied stack targets
+are corrected; the six-whole-module backend neighborhood passes all 218 cases.
+Protected full backend CI remains active and is not qualified by these component
+results. The original all-rules, arbitrary-deck, expert-AI and remaining release
+requirements stay open. See [human target scope](docs/rc-distinct-permanent-targets.md).
+
+At the previous `25ef55ea` checkpoint, frontend and whole browser CI pass in
+run38175740307; protected backend qualification was still active. The reviewed
 legacy restart follow-up now passes 113 pure controls and a distinct current-source
 20-case whole HTTP cohort. It retains raw database comparisons, verifies the
 actual owner-epoch transition and preserves the historical failed ledgers.
