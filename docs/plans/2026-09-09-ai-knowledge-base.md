@@ -16,6 +16,13 @@ Production AI does not yet consume these persisted estimates. Tactical-profile
 consumers, learned matchups, deliberate sideboarding and the specified A/B
 quality improvements remain required; this checkpoint does not complete the plan.
 
+The subsequent test/data-only shipped-corpus rulings component fetches155
+official lists: 443 rulings and35 verified empty lists. Seven whole modules
+pass89 ordinary cases with actual repository/cache ingestion, new-session
+reads and zero-update repetition; all existing profile tests are unchanged.
+This is not a live-database update or additional-user-deck coverage. See
+[rulings qualification](../testing/knowledge-rulings-shipped-corpus.md).
+
 ## September 27 implementation status
 
 The historical baseline below describes September 9 only. Canonical ingestion now supports all unique Scryfall Oracle cards via `scripts.sync_all_card_knowledge`, plus individual/corpus rulings verification via `scripts.sync_corpus_cards` and coverage reporting via `scripts.knowledge_gap_report`. The first local bulk import added 38,690 records, including 6,433 faces and 504 disambiguated same-name Oracle variants. Bulk metadata is not a gameplay-support certificate and does not include verified rulings until separately fetched. Successful empty ruling lists are valid; do not require every card to have published rulings. The existing AI does not yet consume persisted knowledge, and verified seed replacement, tactical profiles and sideboarding remain unfinished. See the current root `plan.md` for release priorities.

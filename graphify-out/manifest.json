@@ -6876,9 +6876,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1791835961.4329207,
-    "seen": 1791836083.5339618,
-    "ast_hash": "dc6799e76aa083c1cadac0aa1cb4490f",
+    "mtime": 1791838529.4927623,
+    "seen": 1791838636.9144025,
+    "ast_hash": "00de584f6eeb0d345a23b165028fd20c",
     "semantic_hash": ""
   },
   "docs/plans/casting-trigger-repair-batch.md": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791835961.4319208,
-    "seen": 1791836083.5351882,
-    "ast_hash": "d4759313d8b639cd57ec80ad05c623b9",
+    "mtime": 1791838529.4917624,
+    "seen": 1791838636.9159956,
+    "ast_hash": "d29cdf298f5af042015efb9a454dfcbe",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -17535,6 +17535,24 @@
     "mtime": 1791835934.6793022,
     "seen": 1791836083.5345843,
     "ast_hash": "a3ba3e161e8a5c1dafbda30f323159a1",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json": {
+    "mtime": 1791838529.4627628,
+    "seen": 1791838636.9103713,
+    "ast_hash": "e57e582eb3a035151ca3032ceafada70",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_rulings_corpus.py": {
+    "mtime": 1791838529.461763,
+    "seen": 1791838636.9123313,
+    "ast_hash": "bb68063305a317e134c553c9a0875998",
+    "semantic_hash": ""
+  },
+  "docs/testing/knowledge-rulings-shipped-corpus.md": {
+    "mtime": 1791838529.4637628,
+    "seen": 1791838636.9152665,
+    "ast_hash": "457cb60b357413b0e2142929a93ce919",
     "semantic_hash": ""
   }
 }

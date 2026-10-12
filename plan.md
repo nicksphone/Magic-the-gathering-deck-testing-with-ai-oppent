@@ -26,16 +26,24 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
-Published `f2d4622c` passes frontend and browser CI in run38293276911;
-its protected backend job is still executing at this checkpoint.
-The next data-layer increment adds deterministic tactical profiles and opt-in
+Published `4ff6a814` passes frontend and browser CI in run38303109399;
+its protected backend job is still executing at this checkpoint. The preceding
+`f2d4622c` backend job is also still executing, not inferred to pass.
+The data-layer increment adds deterministic tactical profiles and opt-in
 `sync_corpus_cards --profile` without changing AI policy. Six whole component
 modules pass85 ordinary cases plus10 subtests, including real repository
 roundtrip and zero-update repetition across all155 shipped names using complete
 official API data. Profile estimates are not measured strength or legality.
-Production AI consumers and the learned-matchup/quality phases remain open.
+The next test/data-only increment verifies official rulings for all155 shipped
+names: 443 rulings and35 verified empty lists, with all89 cases in seven whole
+modules passing. Actual cache/knowledge persistence, new-session reads,
+idempotence and malformed-ruling rejection are covered; live databases and
+additional user-deck cards are not modified or certified by that component.
+Production AI consumers are being implemented; they and the learned-matchup/
+quality phases remain open.
 See [profile derivation](docs/testing/knowledge-profiles-current-derivation.md)
-and [sync/persistence qualification](docs/testing/knowledge-profile-sync.md).
+and [sync/persistence qualification](docs/testing/knowledge-profile-sync.md),
+plus [shipped rulings](docs/testing/knowledge-rulings-shipped-corpus.md).
 
 Published `3a7db1e2` now passes the complete configured frontend, browser and
 protected backend CI workflow. Verified sanitized metadata accounts for all

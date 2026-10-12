@@ -1,0 +1,16 @@
+{
+  "card_fixture_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+  "cards": 155,
+  "database_ingestion_tested": false,
+  "empty_verified_cards": 35,
+  "fetched_at_begin": "2026-10-12T20:37:15.810724+00:00",
+  "fetched_at_end": "2026-10-12T20:39:29.990119+00:00",
+  "gameplay_support_certified": false,
+  "pages": 155,
+  "raw_intake_provenance_sha256": "216d7e56b5394dfd23793e3b457cd7157a22bc6c024be4f10774f5013a9fc828",
+  "responses_200": 155,
+  "rulings": 443,
+  "schema_version": 1,
+  "snapshot_sha256": "f54b2bae40fffe3e1714877851bf65cbb854b551951d09cc20f7cadfb70994f9",
+  "source": "Scryfall official rulings API"
+}
