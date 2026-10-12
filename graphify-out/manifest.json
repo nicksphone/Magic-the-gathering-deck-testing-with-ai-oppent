@@ -3342,9 +3342,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_api_input_contracts.py": {
-    "mtime": 1791667790.1089284,
-    "seen": 1791671014.2843056,
-    "ast_hash": "d20274cd2795ef0bcf095f9ea33c5c3b",
+    "mtime": 1791777533.0365095,
+    "seen": 1791777638.211852,
+    "ast_hash": "70f68136af60a1829bffcab9688dcfd9",
     "semantic_hash": ""
   },
   "backend/tests/test_api_smoke.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791766505.0078554,
-    "seen": 1791766674.5662665,
-    "ast_hash": "c92a1b79711a642bd933fa47cc033841",
+    "mtime": 1791777533.0865088,
+    "seen": 1791777638.215172,
+    "ast_hash": "df0d89eff81f030bca9885dd0ea1254c",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -16941,6 +16941,18 @@
     "mtime": 1791766685.8989325,
     "seen": 1791766912.681719,
     "ast_hash": "6d8c461b778c0e3964dc7be4231de918",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_boon_fixture_diagnostic.py": {
+    "mtime": 1791777533.0415094,
+    "seen": 1791777638.2119114,
+    "ast_hash": "665a1e7b1269151b722fb6b9dd71134d",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-boon-paid-fixture-current.md": {
+    "mtime": 1791777533.0845087,
+    "seen": 1791777638.2142456,
+    "ast_hash": "ef700f944cf4121076d1c77d73d906e7",
     "semantic_hash": ""
   }
 }

@@ -26,7 +26,15 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## Current Candidate Qualification: 2026-10-12
 
-Latest published `d727e0d1` passes frontend and the whole browser job in
+Published `8b1bffa2` passes frontend and browser CI. Its protected backend job
+completed with failure: sanitized metadata records 25,997 collected nodes,
+25,308 passed bodies, 73 failed bodies, 532 setup failures, 82 skips and two
+missing call phases. These are not independent bug counts or complete coverage.
+The next test-only paid-counterspell fixture repair passes its whole 48-case
+cohort independently; the shared startup-backup cluster and remaining release
+requirements remain open. See [current fixture evidence](docs/testing/ci-boon-paid-fixture-current.md).
+
+Earlier published `d727e0d1` passes frontend and the whole browser job in
 run38188006567. Its complete local zero-argument browser run also passes, with
 all 2,020 tracked backend/frontend source files byte-equal to that commit.
 The human two-target permanent picker and public original/copied stack targets

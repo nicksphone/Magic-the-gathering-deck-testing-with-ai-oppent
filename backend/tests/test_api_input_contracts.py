@@ -188,24 +188,46 @@ def test_life_cost_counterspell_exposes_typed_stack_target_and_payment_trigger(g
         controller, "boon", "Withering Boon", Zone.HAND, ["Instant"], "{1}{B}",
         "As an additional cost to cast this spell, pay 3 life.\nCounter target creature spell.",
     )
-    bear = CardInstance(
-        "bear", "Grizzly Bears", 2, 2, Zone.STACK, ["Creature"],
-        mana_cost="{1}{G}", power=2, toughness=2,
+    bear = add_card(
+        controller, "bear", "Grizzly Bears", Zone.HAND, ["Creature"],
+        cost="{1}{G}", power=2, toughness=2, owner=2,
     )
-    state.cards[bear.id] = bear
-    state.stack.append(StackItem("bear-spell", bear.id, 2, bear.name, "noop", {}))
+    state.active_player = state.priority_player = 2
+    state.players[2].mana_pool.update({"G": 1, "C": 1})
     state.players[1].mana_pool.update({"B": 1, "C": 1})
     persist(controller)
 
     match_id = state.id
+    response = client.post(
+        f"/matches/{match_id}/action",
+        json={"player_id": 2, "action": {"type": "cast_spell", "card_id": bear.id}},
+    )
+    assert response.status_code == 200, response.text
+    state = controller.state
+    target_spell = state.stack[-1]
+    assert target_spell.source_card_id == bear.id and target_spell.controller == 2
+    assert target_spell.payload["__announced_stack_kind"] == "spell"
+    assert target_spell.payload["mana_spent"] == 2
+    from game_state.serializers import deserialize_match_snapshot
+    from rules_engine.targeting import stack_object_kind
+    restored = deserialize_match_snapshot(serialize_match_snapshot(state))
+    assert restored.stack[-1].payload == target_spell.payload
+    assert stack_object_kind(restored, restored.stack[-1]) == "spell"
+    response = client.post(
+        f"/matches/{match_id}/action",
+        json={"player_id": 2, "action": {"type": "pass_priority"}},
+    )
+    assert response.status_code == 200, response.text
+    state = controller.state
+    assert state.priority_player == 1
     moves_response = client.get(f"/matches/{match_id}/legal-moves?player_id=1")
     assert moves_response.status_code == 200
     move = next(move for move in moves_response.json()["moves"] if move.get("card_id") == "boon" and move["type"] == "cast_spell")
-    assert [item["id"] for item in move["target_hints"]["stack_targets"]] == ["bear-spell"]
+    assert [item["id"] for item in move["target_hints"]["stack_targets"]] == [target_spell.id]
 
     response = client.post(
         f"/matches/{match_id}/action",
-        json={"player_id": 1, "action": {"type": "cast_spell", "card_id": "boon", "targets": {"target_stack_id": "bear-spell"}}},
+        json={"player_id": 1, "action": {"type": "cast_spell", "card_id": "boon", "targets": {"target_stack_id": target_spell.id}}},
     )
     assert response.status_code == 200, response.text
     body = response.json()
