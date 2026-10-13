@@ -1,5 +1,32 @@
 # Current Locked Dependency Advisories
 
+## Published `8ad9724f` Refresh
+
+On October 13, the unchanged published locks are queried in an owned directory,
+without installing packages or executing package scripts. Official npm audit
+reports zero advisories for its 214 declared dependencies and exits zero.
+An official OSV batch query returns HTTP 200 and exactly 28 result rows for the
+locked PyPI closure, with no vulnerability matches. Only public package names
+and versions are transmitted. This is database-match evidence, not proof that
+undiscovered vulnerabilities or runtime exposure are absent.
+
+Raw inputs, responses and source hashes are byte-verified under
+`diagnostics/dependency-audit/20261013-8ad-current-locks-7eIY5wlC/` on RCHFiles.
+The first npm invocation fails during configuration because user/global roles
+both use `/dev/null`; separate empty owned configurations correct that setup.
+Its failure is retained, not represented as an advisory result.
+
+Current locks and the fresh application install use Vite 6.4.4. The borrowed
+read-only development cache used by a separate built-app component uses 6.4.3.
+Two [Vite](https://github.com/vitejs/vite/security/advisories/GHSA-rq7h-c2jc-7f22)
+[advisories](https://github.com/vitejs/vite/security/advisories/GHSA-9jrq-w75r-8gcw)
+include 6.4.3 and fix 6.4.4, subject to specific dev-server exposure or middleware
+conditions. No exploit or exposure condition is established here. Functional
+acceptance using that old cache does not certify the locked runtime, and user
+dependencies are not upgraded in place. The separate Wasm advisory affects
+8.2/8.3, not this 6.4 line. Installer, OS, Python/Node/browser binaries and source
+code security remain outside these lock-query results.
+
 ## October 13 Refresh
 
 Pinned `2f42a6eb352480fae1940018b70f4395c478c38e` retains all three lock/input
