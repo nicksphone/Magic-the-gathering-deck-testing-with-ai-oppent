@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import builtins
 import os
 import sys
 from contextlib import ExitStack, contextmanager
@@ -33,6 +34,7 @@ _CANARIES = {
     'test_preimport_guard_denies_native_public_and_dbapi_sqlite_aliases': ('test_fable_optional_linked_discard.py', RuntimeError),
     'test_native_and_public_sqlite_socket_denial_precedes_collection': ('test_bloodtithe_resource_debuff_audit.py', RuntimeError),
     'test_pure_guard_precollection_aliases_and_audit': ('test_public_graveyard_inventory.py', AssertionError),
+    'test_precollection_pure_io_canaries': ('test_log_priors_archetype.py', RuntimeError),
 }
 
 
@@ -45,10 +47,13 @@ def _canary_error(item):
 
 def _deny_guard_canary_io(event, _args, _scope=_CANARY_SCOPE, _get_ident=get_ident):
     scope = _scope.get()
-    if scope and scope['active'] and scope['thread'] == _get_ident() and event in {
-        'sqlite3.connect', 'socket.__new__', 'socket.connect', 'socket.getaddrinfo',
-    }:
-        raise scope['error']('SQL/socket denied')
+    if scope and scope['active'] and scope['thread'] == _get_ident():
+        if (event in {'sqlite3.connect', 'socket.__new__', 'socket.connect', 'socket.getaddrinfo'}
+                or scope.get('task33') and (event in {'subprocess.Popen', 'os.system', 'os.fork',
+                                                     'os.forkpty', 'os.posix_spawn', 'os.exec'}
+                    or event == 'import' and _args and isinstance(_args[0], str)
+                       and _args[0].split('.', 1)[0] == 'openai')):
+            raise scope['error'](scope.get('message', 'SQL/socket denied'))
 
 
 sys.addaudithook(_deny_guard_canary_io)
@@ -57,10 +62,21 @@ sys.addaudithook(_deny_guard_canary_io)
 @contextmanager
 def _canary_scope_for(item):
     error = _canary_error(item)
+    task33 = error is RuntimeError and getattr(item, 'originalname', None) == 'test_precollection_pure_io_canaries'
+    prior_flag = os.environ.get('TASK33_PURE_GUARD') if task33 else None
     scope = {'thread': get_ident(), 'error': error, 'active': True} if error else None
+    if task33:
+        scope.update(task33=True, message='pure guard SQL/socket/process/provider denied')
     token = _CANARY_SCOPE.set(scope)
     try:
         with ExitStack() as constructors:
+            if task33:
+                os.environ['TASK33_PURE_GUARD'] = '1'
+                prior_import = builtins.__import__
+                def guarded_import(name, *args, **kwargs):
+                    _deny_guard_canary_io('import', (name,))
+                    return prior_import(name, *args, **kwargs)
+                constructors.enter_context(patch.object(builtins, '__import__', guarded_import))
             if error:
                 # Bare __new__ creates an uninitialized socket without an audit event.
                 native_socket = _socket.socket
@@ -79,6 +95,11 @@ def _canary_scope_for(item):
                 constructors.enter_context(patch.object(socket.socket, '__new__', staticmethod(guarded_new)))
             yield
     finally:
+        if task33:
+            if prior_flag is None:
+                os.environ.pop('TASK33_PURE_GUARD', None)
+            else:
+                os.environ['TASK33_PURE_GUARD'] = prior_flag
         if scope:
             scope['active'] = False
         _CANARY_SCOPE.reset(token)

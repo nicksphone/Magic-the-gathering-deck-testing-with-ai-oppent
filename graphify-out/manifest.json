@@ -1026,9 +1026,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/build_ai_log_priors.py": {
-    "mtime": 1791858240.3387501,
-    "seen": 1791858400.8206234,
-    "ast_hash": "2539275feeb00c75ba7819298ea8ca2e",
+    "mtime": 1791862023.3816893,
+    "seen": 1791862158.5356522,
+    "ast_hash": "6b7171d11a50512bbd649fa61a54fd45",
     "semantic_hash": ""
   },
   "backend/scripts/card_mechanics_inventory.py": {
@@ -1176,9 +1176,9 @@
     "semantic_hash": ""
   },
   "backend/tests/conftest.py": {
-    "mtime": 1791778692.128458,
-    "seen": 1791778823.113016,
-    "ast_hash": "7c7e1225792f54b4c43ad5148b1e7f4a",
+    "mtime": 1791862023.3826895,
+    "seen": 1791862158.5357234,
+    "ast_hash": "4d0bbe592024e50f96db47e188838fcf",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/ability_cost_discounts.json": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791858519.627311,
-    "seen": 1791858627.0903351,
-    "ast_hash": "53940141d1e518e8263b457dcc9ff02a",
+    "mtime": 1791862051.0042236,
+    "seen": 1791862158.540623,
+    "ast_hash": "da24869b5cc0363c46436ae20a701fd3",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -15426,9 +15426,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-locked-dependency-advisories.md": {
-    "mtime": 1791684597.1405368,
-    "seen": 1791705973.4795322,
-    "ast_hash": "a0a51a8636fc7d65d96b817f0020e4b0",
+    "mtime": 1791860278.9878263,
+    "seen": 1791862158.5398679,
+    "ast_hash": "5efe4cb558259b7becf7caecaf833fb6",
     "semantic_hash": ""
   },
   "audit/complete-body/tests/test_loyalty_ai_continuations.py": {
@@ -17829,6 +17829,66 @@
     "mtime": 1791858240.3437502,
     "seen": 1791858400.8252861,
     "ast_hash": "f40e4f32a220fa1700644b6810a2d759",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/task41_lethal_canonical/PROVENANCE.json": {
+    "mtime": 1791862023.3826895,
+    "seen": 1791862158.5369637,
+    "ast_hash": "34d5fa6c784dfe4bd68c45fc0e23da28",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/task41_lethal_canonical/silverback-ape.raw.json": {
+    "mtime": 1791862023.3826895,
+    "seen": 1791862158.5369658,
+    "ast_hash": "b2f994d24ab1687403d432b6a9492487",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/task41_lethal_canonical/tundra-wolves.raw.json": {
+    "mtime": 1791862023.3826895,
+    "seen": 1791862158.5369678,
+    "ast_hash": "1a83aae316e111c6e17f073b5f471d7e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/task41_lethal_canonical/volcanic-geyser.raw.json": {
+    "mtime": 1791862023.3826895,
+    "seen": 1791862158.5369692,
+    "ast_hash": "262214526bdc494d725c0e48b30b4fa6",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_native_training_export.py": {
+    "mtime": 1791862023.3836894,
+    "seen": 1791862158.5372665,
+    "ast_hash": "85d11ade1b1e4daaddab801ee95a070c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task33_canary_scope.py": {
+    "mtime": 1791862023.3836894,
+    "seen": 1791862158.538656,
+    "ast_hash": "832b0f4b4c4023e6dbc84b0c558e1335",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task41_canonical_lethal_gap.py": {
+    "mtime": 1791862023.3836894,
+    "seen": 1791862158.538658,
+    "ast_hash": "16e3327ee8e721c945a6b160fe1f4809",
+    "semantic_hash": ""
+  },
+  "docs/qualification/task41-canonical-lethal-gap.md": {
+    "mtime": 1791862023.3836894,
+    "seen": 1791862158.5394962,
+    "ast_hash": "d0d5522fd270417f17671342c59f70ab",
+    "semantic_hash": ""
+  },
+  "docs/testing/task33-native-training-adapter.md": {
+    "mtime": 1791862023.3836894,
+    "seen": 1791862158.5404868,
+    "ast_hash": "a52db2c14faaa3c962cf71dff13460c7",
+    "semantic_hash": ""
+  },
+  "docs/testing/task33-ordinary-ci-canary.md": {
+    "mtime": 1791862023.3836894,
+    "seen": 1791862158.5404923,
+    "ast_hash": "ced488f987475d0a76721d35a37732be",
     "semantic_hash": ""
   }
 }

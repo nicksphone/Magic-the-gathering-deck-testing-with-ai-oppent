@@ -64,6 +64,24 @@ open until their own acceptance evidence exists.
 
 See [Phase 3 code and execution evidence](docs/testing/ai-phase3-groundwork-current.md).
 
+The next composition, based on published `2f42a6eb`, passes 202 ordinary cases
+in seven whole modules (13.94 seconds, zero failures/errors/skips). It adds a
+sealed, terminal-only native training exporter, enables the unchanged Task33
+canary in ordinary backend CI through an exact call-scoped guard, and verifies
+24 canonical lethal/nonlethal scenarios on existing AI and rules. No active
+matrix data is read or learned artifact generated. The full matrix remains a
+separate running measurement on its retained preconsumer source epoch.
+See [native intake contract](docs/testing/task33-native-training-adapter.md),
+[ordinary canary scope](docs/testing/task33-ordinary-ci-canary.md), and
+[canonical lethal checkpoint](docs/qualification/task41-canonical-lethal-gap.md).
+
+The original five-plus-one first-strike example against seven life deals six,
+not lethal damage; its literal position is preserved as a nonlethal control,
+with six life as the actual-win sibling. Scenario positives do not replace the
+plan's measured A/B or bounded-search acceptance. Sideboarding private-fact
+capture is under implementation; completed-game coverage, actual selection,
+legal between-game transitions and a real BO3 swap remain unfinished.
+
 ## Current Candidate Qualification: 2026-10-12
 
 Published `4ff6a814` passes frontend and browser CI in run38303109399;

@@ -1,5 +1,26 @@
 # Current Locked Dependency Advisories
 
+## October 13 Refresh
+
+Pinned `2f42a6eb352480fae1940018b70f4395c478c38e` retains all three lock/input
+hashes below. A fresh official OSV batch request queried all 242 unique locked
+versions (28 PyPI, 214 npm). HTTP 200/curl exit 0 returned 242 complete results,
+no affected package, no errors and no continuation token. Independent verification
+reconstructed the complete inventory and compared inputs to the pinned Git blobs.
+Only public package names, ecosystems and versions were transmitted.
+
+The new immutable evidence is
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/dependency-audit/current-2f42a6e-20261013-KDnZJa16/`.
+Its report hash is `f3f1c313550b9964e169c6f0adff0f013562582fc1bdbcbe04ed986f9e5a2ae3`.
+No dependency changed or was installed. Current CI installs `requirements.txt`
+with resolver-selected transitives; this exact lock audit does not automatically
+certify that runtime closure. Current clean-install, runtime and deployment
+acceptance remain separate Gate 3 requirements. The earlier evidence below is
+preserved, not relabeled. API ordering and pagination semantics are documented
+in the [official OSV protocol](https://google.github.io/osv.dev/post-v1-querybatch/).
+
+## October 11 Refresh
+
 Source: `1a8e086964039605a8663a5f4e51d3e3902ffe14`.
 Actual OSV refresh: HTTP 200 on `2026-10-11` at `02:07:07 UTC`; curl exits zero.
 
