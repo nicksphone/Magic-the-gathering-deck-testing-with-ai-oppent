@@ -44,6 +44,7 @@ def test_estimate_api_is_present_without_new_agent_weights():
 
 
 def test_all155_compact_inputs_equal_same_estimator_and_full_raw_is_unchanged():
+    import math
     api()
     assert len(RAW) == 155
     original = deepcopy(RAW)
@@ -57,10 +58,16 @@ def test_all155_compact_inputs_equal_same_estimator_and_full_raw_is_unchanged():
         snapshot = service.snapshot_for(row, name, hydrated)
         assert snapshot and 'estimates' in snapshot, name
         namespace = snapshot['estimates']
-        assert set(namespace) == {'transport_version', 'root', 'faces'} and namespace['transport_version'] == 1
+        assert set(namespace) == {'transport_version', 'root', 'faces', 'context'} and namespace['transport_version'] == 2
+        assert type(namespace['context']) is dict and set(namespace['context']) == {
+            'mode', 'archetype', 'archetype_verification', 'corpus_fingerprint',
+            'curve_nonland_mean', 'deck_analysis_primary_archetype_estimate'}
+        assert namespace['context'] == profile.context
         assert len(namespace['faces']) == len(profile.faces)
         for entry, expected in zip([namespace['root'], *namespace['faces']], [profile, *profile.faces]):
-            assert set(entry) == {'tier', 'routes', 'limits', 'printed_inputs'}
+            assert set(entry) == {'tier', 'routes', 'limits', 'printed_inputs', 'play_value'}
+            assert type(entry['play_value']) is float and math.isfinite(entry['play_value'])
+            assert 0 <= entry['play_value'] <= 10 and entry['play_value'] == expected.play_value
             assert set(entry['printed_inputs']) <= {'name', 'oracle_text', 'type_line', 'mana_cost',
                                                     'power', 'toughness', 'layout'}
             actual = {key: entry[key] for key in ('tier', 'routes', 'limits')}

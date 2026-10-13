@@ -25,6 +25,9 @@ def decision_view(state, player_id, legal_moves):
     """Keep current authorized observations, never expose an unseen draw/reply."""
     from rules_engine.foretell import can_look
     memo = {}
+    facts = getattr(state, 'sideboard_facts', None)
+    if facts is not None:
+        memo[id(facts)] = {}
     deck_lists = getattr(state, 'starting_decks', None)
     if deck_lists is not None:
         memo[id(deck_lists)] = {player_id: deepcopy(deck_lists.get(player_id, []))}

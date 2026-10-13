@@ -136,6 +136,8 @@ def was_creature_on_battlefield(card) -> bool:
 
 
 def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
+    from ai.sideboard_facts import record_event
+    record_event(state, event, payload)
     if event == 'enters_battlefield':
         from rules_engine.land_history import record_land_entry
         record_land_entry(state, payload)
@@ -155,6 +157,9 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
 
 def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any]]) -> None:
     """Collect simultaneous events before putting their triggers on the stack."""
+    from ai.sideboard_facts import record_event
+    for payload in payloads:
+        record_event(state, event, payload)
     if event == 'enters_battlefield':
         from rules_engine.land_history import record_land_entry
         for payload in payloads:
@@ -225,6 +230,9 @@ def _finish_battlefield_exit(state: MatchState, card_id: str | None) -> None:
 def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
     if not triggers:
         return
+    from ai.sideboard_facts import protect_source
+    for trigger in triggers:
+        protect_source(state, trigger.get('source_card_id'))
     # Automatic target selection occurs inside _append_trigger_groups, after APNAP.
     # Arm its actual selection boundary, not a later resolution scan.
     triggers = [{**trigger, 'payload': {**trigger['payload'], '__granted_target_selection_pending': True}}

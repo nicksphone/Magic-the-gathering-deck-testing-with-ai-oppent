@@ -171,6 +171,13 @@ def _routes(types, keywords, uncounterable):
     return tuple(routes)
 
 
+def complete_self_counter_prohibition(clause, name):
+    """Exact existing self-prohibition membership, not other spell protection."""
+    return clause.strip().lower().rstrip('.') in {
+        f"{source} {verb} be countered" for source in ('this spell', name.lower())
+        for verb in ("can't", 'cannot')}
+
+
 def _face(raw, index, curve):
     types = tuple(sorted(printed_card_types(raw.get('type_line', ''), raw.get('types'))))
     text, name = raw.get('oracle_text') or '', raw.get('name') or ''
@@ -210,9 +217,7 @@ def _face(raw, index, curve):
                 etb = etb + _impact(effects) if effects and etb is not None else None
     # Same complete self-prohibition scope as targeting.spell_cant_be_countered;
     # no battlefield/global permissions or conditions are inferred from this trait.
-    uncounterable = any(c['text'].strip().lower().rstrip('.') in {
-        f"{source} {verb} be countered" for source in ('this spell', name.lower())
-        for verb in ("can't", 'cannot')} for c in clauses)
+    uncounterable = any(complete_self_counter_prohibition(c['text'], name) for c in clauses)
     routes = _routes(types, keywords, uncounterable)
     available = tuple(sorted({r.effect_key for r in routes if 'targeter_is_controller' not in r.conditions}))
     land = 'land' in types

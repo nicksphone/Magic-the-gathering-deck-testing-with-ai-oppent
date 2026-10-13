@@ -26,6 +26,15 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## October 13 Execution Checkpoint
 
+The next reviewed composition over published `837bf513` passes 2,147 ordinary
+cases in 54 whole modules, with zero failures, errors or skips and unchanged
+source. It combines bounded profile play advice, private sideboarding, the
+knowledge-report correction and reproduced inventory/observation CI repairs.
+The prior published workflow actually finishes with 139 failed bodies;
+frontend and browser pass. Current full hosted CI, final-source cold HTTP,
+natural sideboarding and measured AI quality still require their own evidence.
+See [the exact composition and failed histories](docs/testing/current-837-ci-repair-composition.md).
+
 Published `7c5e933a` adds tested actual-allocation blocking and the source-bound
 BO3 measurement runner. Its fresh 41-whole-module component passed 775 ordinary
 cases with zero failures, errors or skips. Frontend and browser CI have completed

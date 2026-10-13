@@ -1,11 +1,12 @@
 """Match-frozen printed tags, not rules permissions or a source authority registry."""
 from copy import deepcopy
 from dataclasses import dataclass
+import math
 import re
 
 from card_data.tactical import printed_card_types, tactical_tags
 from knowledge.profiles import (AnswerRoute, ESTIMATOR_VERSION, MAX_FACES, MAX_TEXT,
-                               SCHEMA_VERSION, _hash, derive_profile, profile_payload)
+                               SCHEMA_VERSION, _face, _hash, _number, derive_profile, profile_payload)
 
 
 SURFACE_FIELDS = {'oracle_text', 'type_line', 'mana_cost', 'types', 'tags'}
@@ -31,6 +32,8 @@ class ThreatEstimate:
     tier: int
     routes: tuple[AnswerRoute, ...]
     limits: tuple[str, ...]
+    play_value: float | None = None
+    context: dict | None = None
 
 
 def _printed_inputs(raw):
@@ -45,12 +48,42 @@ def _estimate_fields(profile):
 
 
 def _valid_estimates(value, surfaces, semantic):
-    if (type(value) is not dict or set(value) != {'transport_version', 'root', 'faces'}
-            or type(value['transport_version']) is not int or value['transport_version'] != 1
+    if (type(value) is not dict or type(value.get('transport_version')) is not int
+            or value['transport_version'] not in (1, 2)
+            or set(value) != ({'transport_version', 'root', 'faces'} |
+                             ({'context'} if value['transport_version'] == 2 else set()))
             or type(value['faces']) is not list or len(value['faces']) != len(surfaces) - 1):
         return False
+    context = value.get('context')
+    if value['transport_version'] == 2:
+        if (type(context) is not dict or set(context) != {'mode', 'archetype', 'archetype_verification',
+                'corpus_fingerprint', 'curve_nonland_mean', 'deck_analysis_primary_archetype_estimate'}
+                or type(context['mode']) is not str or context['mode'] not in ('printed_only', 'supplied_corpus', 'supplied_archetype')
+                or type(context['archetype_verification']) is not str or context['archetype_verification'] != 'caller_declared_not_verified'
+                or any(item is not None and (type(item) is not str or len(item) > MAX_TEXT)
+                       for item in (context['archetype'], context['deck_analysis_primary_archetype_estimate']))
+                or type(context['corpus_fingerprint']) is not str
+                or not DIGEST.fullmatch(context['corpus_fingerprint'])):
+            return False
+        curve = context['curve_nonland_mean']
+        if curve is not None:
+            try:
+                if type(curve) not in (int, float) or not math.isfinite(curve) or curve < 0:
+                    return False
+            except OverflowError:
+                return False
+        if context['mode'] == 'printed_only':
+            if curve is not None or context['corpus_fingerprint'] != _hash([]) or context['deck_analysis_primary_archetype_estimate'] is not None:
+                return False
+        elif (context['corpus_fingerprint'] == _hash([])
+              or bool(context['archetype']) != (context['mode'] == 'supplied_archetype')):
+            return False
     for entry, surface in zip([value['root'], *value['faces']], surfaces):
-        if type(entry) is not dict or set(entry) != {'tier', 'routes', 'limits', 'printed_inputs'}:
+        if type(entry) is not dict or set(entry) != ({'tier', 'routes', 'limits', 'printed_inputs'} |
+                ({'play_value'} if value['transport_version'] == 2 else set())):
+            return False
+        if value['transport_version'] == 2 and (type(entry['play_value']) is not float
+                or not math.isfinite(entry['play_value']) or not 0 <= entry['play_value'] <= 10):
             return False
         if type(entry['tier']) is not int or not 0 <= entry['tier'] <= 3:
             return False
@@ -84,6 +117,8 @@ def _valid_estimates(value, surfaces, semantic):
                 expected = _estimate_fields(profile_payload(derive_profile(inputs)))
                 if expected != {key: entry[key] for key in ('tier', 'routes', 'limits')}:
                     return False
+                if context is not None and entry['play_value'] != _face(inputs, None, context['curve_nonland_mean']).play_value:
+                    return False
             except (KeyError, TypeError, ValueError, AttributeError):
                 return False
     return True
@@ -103,7 +138,20 @@ def _estimates_for(raw, stored, surfaces):
         entry['printed_inputs'] = _printed_inputs(inputs)
         entries.append(entry)
     result = {'transport_version': 1, 'root': entries[0], 'faces': entries[1:]}
-    return result if _valid_estimates(result, surfaces, True) else None
+    if not _valid_estimates(result, surfaces, True):
+        return None
+    # Context is existing caller-declared provenance, not a corpus certificate.
+    # Invalid additive advice leaves the valid v1 tier/routes carrier intact.
+    candidate = deepcopy(result)
+    candidate.update(transport_version=2, context=deepcopy(stored.get('context')))
+    for entry, cached in zip([candidate['root'], *candidate['faces']], [stored, *stored['faces']]):
+        entry['play_value'] = deepcopy(cached.get('play_value'))
+    if _valid_estimates(candidate, surfaces, True):
+        curve = candidate['context']['curve_nonland_mean']
+        if all(entry['play_value'] == _face(inputs, None, curve).play_value
+               for entry, inputs in zip([candidate['root'], *candidate['faces']], [main, *faces])):
+            return candidate
+    return result
 
 
 def _surface(raw):
@@ -259,8 +307,8 @@ def tags_for(card):
 def estimate_for(card):
     """Printed advisory estimates, never permission or guaranteed live answers.
 
-    This first transport slice revalidates semantics before numeric use; no
-    scoring caller or unreviewed hot validation cache is introduced here.
+    Scalars are revalidated against the printed estimator and caller-declared
+    context before bounded scoring; this is not a rules or corpus certificate.
     """
     result = tags_for(card)
     if result.source != 'persisted':
@@ -270,5 +318,26 @@ def estimate_for(card):
     if not _valid_estimates(estimates, [snapshot['root'], *snapshot['faces']], True):
         return None
     entry = estimates['root'] if result.face_index is None else estimates['faces'][result.face_index]
+    play_value, context = None, None
+    if estimates['transport_version'] == 2:
+        try:
+            # Missing/dynamic/incoherent literal PT cannot authorize new advice;
+            # keep the already validated legacy tier/routes for these objects.
+            coherent = ('creature' not in printed_card_types(entry['printed_inputs']['type_line'])
+                        or all(entry['printed_inputs'].get(key) not in (None, '') for key in ('power', 'toughness')))
+            for key in ('power', 'toughness'):
+                printed = entry['printed_inputs'].get(key)
+                literal = getattr(card, key, None)
+                if printed in (None, ''):
+                    coherent &= literal is None
+                else:
+                    coherent &= (_number(printed) is not None and type(literal) in (int, float)
+                                 and math.isfinite(literal) and _number(printed) == literal)
+            if coherent:
+                play_value = entry['play_value']
+                context = deepcopy(estimates['context'])
+        except (TypeError, ValueError, OverflowError):
+            pass
     return ThreatEstimate(entry['tier'], tuple(AnswerRoute(route['effect_key'], route['target_zone'],
-                         route['targeted'], tuple(route['conditions'])) for route in entry['routes']), tuple(entry['limits']))
+                         route['targeted'], tuple(route['conditions'])) for route in entry['routes']),
+                         tuple(entry['limits']), play_value, context)

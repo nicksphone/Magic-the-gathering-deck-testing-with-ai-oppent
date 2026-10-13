@@ -11,8 +11,8 @@ from rules_engine.oracle_text import without_reminder_text
 
 _SCHEMA_PINS = {
     # Emblems, loyalty permissions and control ledgers require empty defaults below.
-    MatchState: '28b90ac3db8b3ab590e70fd78e820b93a54b8279a77e56b02b0056281a76d488',
-    CardInstance: 'aca805857c113a54aa13e0b379201d693b1ffe304727af79ca4a36c289d4530e',
+    MatchState: '7265c59f3d8a00fa8ff70ec4f64d89143e4ad9a9b2aa8cda527716f667081e37',
+    CardInstance: '3649b2a064848c172953460b68fb7202fc36e33a7c2e0a3149492adad96cd7a8',
     PlayerState: 'dd8f36bedf446625796592fe8045ce675eb471d167ffe68cedb2124ccae1e973',
 }
 
@@ -33,6 +33,12 @@ def _metadata_covered(value, schema):
         expected = {'list': list, 'dict': dict, 'set': set,
                     'int': int, 'bool': bool, 'str': str}.get(kind)
         if expected is not None and type(item) is not expected:
+            return False
+    if schema is CardInstance and value.knowledge_snapshot:
+        from knowledge.service import copy_snapshot, tags_for
+        snapshot = value.knowledge_snapshot
+        # Reviewed live-bound advisory data, never a rules permission.
+        if copy_snapshot(snapshot, semantic=True) != snapshot or tags_for(value).source != 'persisted':
             return False
     return True
 

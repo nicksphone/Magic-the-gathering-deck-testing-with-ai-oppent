@@ -1502,6 +1502,66 @@ class AIAgent:
             candidates.append(mat)
         return candidates[0] if candidates else None
 
+    def _profile_cast_advice(self, state, move, player_id, *, resource_plan=None):
+        """Pure bounded printed advice; unestablished live context stays legacy."""
+        from knowledge.service import estimate_for, tags_for
+        from card_data.tactical import printed_card_types
+        from rules_engine.continuous import printed_abilities_suppressed
+        from rules_engine.entry_counters import prospective_entry_ability_view
+        from rules_engine.costs import CostOption, collect_cost_options
+        from rules_engine.move_generator import _cost_option_view
+        from rules_engine.casting_resources import resource_keywords
+
+        if (not isinstance(state, MatchState) or move.get('type') != 'cast_spell'
+                or state.active_player != player_id or _step_key(state.step) not in {'precombat_main', 'postcombat_main'}
+                or state.stack or state.pending_trigger_order or state.pending_mechanic_choice or state.pending_replacement_choice
+                or resource_plan is not None or move.get('cast_variant') or move.get('from_graveyard')
+                or move.get('from_exile') or move.get('from_library') or move.get('resource_payment') is not None):
+            return 0.0
+        card = _card_for_move(state, move)
+        estimate = estimate_for(card)
+        if estimate is None or estimate.play_value is None or not isinstance(card, CardInstance) or card.zone != Zone.HAND:
+            return 0.0
+        options = collect_cost_options(state, player_id, card)
+        if len(options) != 1:
+            return 0.0
+        option = options[0]
+        if (option != CostOption('base', option.label, option.mana_cost) or '{X}' in option.mana_cost.upper()
+                or resource_keywords(card) or move.get('cost_choice') not in (None, {'id': 'base'})
+                or move.get('cost_options') != [_cost_option_view(option, state, player_id, card.id, cast_card=card)]):
+            return 0.0
+        entry = prospective_entry_ability_view(state, card, player_id)
+        if (entry['printed_suppressed'] or {kind.lower() for kind in entry['types']} != set(printed_card_types(card.type_line))
+                or 'Creature' in entry['types'] and prospective_creature_stats(state, card, player_id) != (card.power, card.toughness)):
+            return 0.0
+        magnitude = max(0.0, min(1.5, 1.5 * estimate.play_value / 10.0))
+        if 'sweeper' not in tags_for(card).tags:
+            return magnitude
+        own, opponents = ([state.cards[cid] for cid in state.players[pid].battlefield
+                           if cid in state.cards and 'Creature' in effective_types(state, state.cards[cid])]
+                          for pid in (player_id, 3 - player_id))
+        # Changed/opaque public bodies are not a printed answer certificate.
+        for body in own + opponents:
+            advice = estimate_for(body)
+            if (advice is None or advice.play_value is None or printed_abilities_suppressed(state, body.id)
+                    or {kind.lower() for kind in effective_types(state, body)} != set(printed_card_types(body.type_line))
+                    or effective_combat_stats(state, body.id) != (body.power, body.toughness)
+                    or set(effective_keywords(state, body.id)) != {word.lower() for word in body.keywords}):
+                return 0.0
+        if not opponents:
+            return -magnitude
+        if (self._board_role(state, player_id) in {'stabilize', 'defend'}
+                or state.players[player_id].life <= sum(max(0, body.power or 0) for body in opponents)
+                or len(own) < len(opponents)):
+            return magnitude
+        bodies = own + opponents
+        stats = (bodies[0].power, bodies[0].toughness)
+        stable = (all(type(number) is int and number > 0 for number in stats)
+                  and all(not body.oracle_text.strip() and not effective_keywords(state, body.id)
+                          and not body.tapped and not body.summoning_sick
+                          and (body.power, body.toughness) == stats and estimate_for(body).tier < 2 for body in bodies))
+        return -magnitude if stable else magnitude
+
     def _forced_sweeper_stabilization_line(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if getattr(state, "active_player", player_id) != player_id:
             return None
@@ -1542,6 +1602,17 @@ class AIAgent:
             tags = self._spell_tags(card)
             if "removal" not in tags and "sweeper" not in tags:
                 continue
+            if 'sweeper' in tags:
+                from ai.mana_resource_policy import resource_change_plan
+                if (self._profile_cast_advice(state, move, player_id,
+                        resource_plan=resource_change_plan(self, state, move, player_id)) < 0
+                        and any(other is not move and (deployment := _card_for_move(state, other))
+                                and 'Creature' in effective_types(state, deployment)
+                                and not deployment.oracle_text.strip() and not deployment.keywords
+                                and self._profile_cast_advice(state, other, player_id,
+                                    resource_plan=resource_change_plan(self, state, other, player_id)) > 0
+                                for other in cast_moves)):
+                    continue
             mat = self._materialize_action(state, move, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
@@ -1820,6 +1891,7 @@ class AIAgent:
                     base += gain if gain > 0 else -10.0
                 base += self._cast_bias(state, move, player_id)
                 base += self._instant_value_reservation(state, move, player_id)
+                base += self._profile_cast_advice(state, move, player_id, resource_plan=resource_plan)
                 if "burn" in tags:
                     base += 6 if self.archetype in {"Burn", "Aggro", "Tempo"} else 3
                 if "counter" in tags:

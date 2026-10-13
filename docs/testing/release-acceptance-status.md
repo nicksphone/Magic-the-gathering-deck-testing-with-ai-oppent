@@ -1,6 +1,20 @@
 # Release Acceptance Status
 
-## Current Checkpoint: 2026-10-12
+## Current Checkpoint: 2026-10-13
+
+Published `837bf513` completes frontend and browser CI, but its protected backend
+actually fails: all 26,969 collected nodes are accounted for, with 26,748 passed
+bodies, 139 failed bodies and 82 setup skips. No missing or duplicate phases or
+metadata errors are reported. The next reviewed isolated composition passes
+2,147 ordinary cases across 54 whole modules, including all reproduced repair
+families; final hosted qualification remains required. See
+[the exact current composition](current-837-ci-repair-composition.md).
+
+Final-source sideboarding HTTP/cold acceptance, naturally played deliberate BO3
+swaps, genuine terminal matchup data, measured quality comparisons and the
+remaining original Gates 1--3 are still open. This is not RC1 completion.
+
+## October 12 Source-Specific Checkpoint
 
 Published `3a7db1e2` passes the complete configured frontend, browser and
 protected backend CI workflow. Sanitized metadata accounts for all26,173 nodes:

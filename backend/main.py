@@ -162,6 +162,7 @@ class MatchController:
     play_draw_chooser: int = 1
     sideboarded_players: set[int] = field(default_factory=set)
     seen_opponent_types: dict[int, set[str]] = field(default_factory=lambda: {1: set(), 2: set()})
+    auto_sideboard: bool = True
     mutation_lock: object = field(default_factory=threading.RLock, repr=False)
     revision: int = 0
     mutation_receipts: dict[str, str] = field(default_factory=dict)
@@ -244,6 +245,7 @@ class StartMatchRequest(DeckPairInput):
     ai_difficulty: Literal["casual", "strong", "master", "master_plus"] = "master"
     mode: Literal["player_vs_ai", "ai_vs_ai", "human_vs_human"] = "player_vs_ai"
     best_of: int = Field(default=3, ge=3, le=15)
+    auto_sideboard: bool = Field(default=True, strict=True)
     seed: int | None = None
 
     @field_validator("best_of")
@@ -343,6 +345,7 @@ def _controller_snapshot(match: MatchController) -> dict:
         "play_draw_chooser": match.play_draw_chooser,
         "sideboarded_players": sorted(match.sideboarded_players),
         "seen_opponent_types": {str(pid): sorted(types) for pid, types in match.seen_opponent_types.items()},
+        "auto_sideboard": match.auto_sideboard,
         "difficulties": difficulties,
         "archetypes": archetypes,
         "revision": match.revision,
@@ -423,6 +426,7 @@ def _restore_active_matches_locked(repo: Repository, match_id: str | None = None
                 play_draw_chooser=int(config.get("play_draw_chooser", state.active_player)),
                 sideboarded_players={int(pid) for pid in config.get("sideboarded_players", [])},
                 seen_opponent_types={pid: set(config.get("seen_opponent_types", {}).get(str(pid), [])) for pid in (1, 2)},
+                auto_sideboard=config.get('auto_sideboard', True),
                 revision=int(config.get("revision", 0)),
                 mutation_receipts=dict(config.get("mutation_receipts", {})),
             )
@@ -845,6 +849,7 @@ def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None,
         match_complete=False,
         best_of=payload.best_of,
         root_seed=root_seed,
+        auto_sideboard=payload.auto_sideboard,
     )
     try:
         with repo.atomic_match_writes() if isinstance(repo, Repository) else nullcontext():
@@ -1023,6 +1028,8 @@ def take_action(match_id: str, payload: ActionRequest, repo: Repository = Depend
         candidate = checked_action(match.state, match.rules, payload.player_id, payload.action.model_dump(exclude_none=True))
     except ActionRejected as exc:
         raise HTTPException(status_code=422, detail={"code": "illegal_action", "message": str(exc)}) from exc
+    from ai.sideboard_facts import record_accepted_action
+    record_accepted_action(match.state, candidate, payload.player_id, payload.action.model_dump(exclude_none=True))
     match.state = candidate
     _post_step_finalize(match, repo)
     _persist_active_match(repo, match)
@@ -1067,7 +1074,10 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
                         action = guard_land
             try:
                 action = complete_action(action)
-                match.state = checked_action(match.state, match.rules, pid, action)
+                candidate = checked_action(match.state, match.rules, pid, action)
+                from ai.sideboard_facts import record_accepted_action
+                record_accepted_action(match.state, candidate, pid, action)
+                match.state = candidate
             except ActionRejected as exc:
                 raise HTTPException(status_code=422, detail={
                     "code": "illegal_ai_action", "message": str(exc),
@@ -1078,7 +1088,10 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
                 break
             if _human_priority_pause(match, pid):
                 break
-            match.state = checked_action(match.state, match.rules, pid, {"type": "pass_priority"})
+            candidate = checked_action(match.state, match.rules, pid, {"type": "pass_priority"})
+            from ai.sideboard_facts import record_accepted_action
+            record_accepted_action(match.state, candidate, pid, {"type": "pass_priority"})
+            match.state = candidate
         _remember_public_types(match)
     _post_step_finalize(match, repo)
     _persist_active_match(repo, match)
@@ -1679,6 +1692,8 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
     reveal_at_game_end(state)
     if state.winner is None or match.current_game_recorded:
         return
+    from ai.sideboard_facts import seal_game
+    seal_game(state)
     p1 = state.players[1]
     p2 = state.players[2]
     state.log.append(
@@ -1802,19 +1817,43 @@ def _remember_public_types(match: MatchController) -> None:
 
 def _ai_sideboard_for_next_game(match: MatchController, repo: Repository | None) -> None:
     from card_data.hydration import hydrate_deck_cards
+    from ai.sideboard_facts import summary_for
+    from ai import sideboard_policy as policy
+    from collections import Counter
+
+    if match.auto_sideboard is not True:
+        return
 
     for pid in (1, 2):
         if match.controllers.get(pid) != "ai" or not match.sideboards.get(pid):
             continue
-        known_archetype = match.ai[pid].opponent_archetype if _is_full_ai_match(match) else None
-        cards_out, cards_in = plan_sideboard(
-            match.mainboards[pid], match.sideboards[pid], match.seen_opponent_types.get(pid, set()), known_archetype,
-        )
+        summary = summary_for(match.state, pid)
+        deck = {'mainboard': match.mainboards[pid], 'sideboard': match.sideboards[pid]}
+        route = policy.route_for(deck, summary)
+        if route == 'knowledge':
+            swaps = policy.plan_swaps(deck, summary, summary)
+            out = Counter(swap['out'] for swap in swaps)
+            into = Counter(swap['in'] for swap in swaps)
+            cards_out = [{'card_name': name, 'quantity': qty} for name, qty in sorted(out.items())]
+            cards_in = [{'card_name': name, 'quantity': qty} for name, qty in sorted(into.items())]
+        elif route == 'legacy':
+            known_archetype = match.ai[pid].opponent_archetype if _is_full_ai_match(match) else None
+            cards_out, cards_in = plan_sideboard(
+                match.mainboards[pid], match.sideboards[pid], set(summary['observed_types']), known_archetype, max_swaps=3)
+        else:
+            continue
         if not cards_in:
             continue
+        if (sum(item['quantity'] for item in cards_in) > 3
+                or any(item['card_name'] in summary['protected_stock']
+                    or item['quantity'] > summary['held_counts'].get(item['card_name'], 0) for item in cards_out)):
+            continue
         next_main, next_side = apply_sideboard_swaps(match.mainboards[pid], match.sideboards[pid], cards_out, cards_in)
-        match.mainboards[pid] = hydrate_deck_cards(repo, next_main)
-        match.sideboards[pid] = hydrate_deck_cards(repo, next_side)
+        if sum(item['quantity'] for item in next_main) != sum(item['quantity'] for item in match.mainboards[pid]):
+            raise ValueError('Sideboarding changed original main size')
+        hydrated_main = hydrate_deck_cards(repo, next_main)
+        hydrated_side = hydrate_deck_cards(repo, next_side)
+        match.mainboards[pid], match.sideboards[pid] = hydrated_main, hydrated_side
         match.state.log.append(f"{match.state.players[pid].name} sideboards {sum(item['quantity'] for item in cards_in)} card(s) for the next game.")
 
 
@@ -1834,6 +1873,7 @@ def _start_next_game_state(match: MatchController, *, play_first: bool = True, r
     seed = game_seed(match.root_seed, match.game_number + 1)
     new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name, seed=seed)
     new_state.id = prior_id
+    new_state.sideboard_facts['game_id'] = prior_id
     new_state.score = dict(match.state.score)
     new_state.best_of = match.best_of
     new_state.replacement_choice_required = any(

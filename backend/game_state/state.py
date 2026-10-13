@@ -220,6 +220,7 @@ class MatchState:
     rng: random.Random = field(default_factory=random.Random)
     starting_decks: dict[int, list[dict]] = field(default_factory=dict)
     card_observations: dict[int, dict[str, dict]] = field(default_factory=dict)
+    sideboard_facts: dict = field(default_factory=dict)
     turn: int = 1
     active_player: int = 1
     priority_player: int = 1
@@ -344,6 +345,7 @@ class MatchFactory:
         seed: int | None = None,
     ) -> MatchState:
         cards: dict[str, CardInstance] = {}
+        sideboard_inventory = {}
         p1 = PlayerState(id=1, name=player_a_name)
         p2 = PlayerState(id=2, name=player_b_name)
         rng = random.Random(seed) if seed is not None else random
@@ -400,10 +402,13 @@ class MatchFactory:
                     card.selected_face_index = previous_selection
                     card.printed_characteristics['selected_face_index'] = previous_selection
                 cards[cid] = card
+                sideboard_inventory[cid] = {'owner': owner, 'stock_key': raw_item['card_name']}
                 player.library.append(cid)
 
         match = MatchState(id=str(uuid.uuid4()), players={1: p1, 2: p2}, cards=cards, stack=[])
         match.starting_decks = {1: deepcopy(deck_a), 2: deepcopy(deck_b)}
+        from ai.sideboard_facts import initialize
+        initialize(match, sideboard_inventory)
         match.rng = rng if seed is not None else random.Random()
         for pid in [1, 2]:
             for _ in range(7):

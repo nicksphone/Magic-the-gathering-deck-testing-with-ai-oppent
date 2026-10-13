@@ -71,6 +71,7 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
 
 def serialize_match_snapshot(state: MatchState) -> dict:
     """Serialize all mutable rules state needed to resume a match."""
+    from ai.sideboard_facts import copy_facts
     from knowledge.service import copy_snapshot
     from rules_engine.kicker import validate_kicker_count
     from rules_engine.control_effects import validate_control_effects
@@ -87,7 +88,13 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "id": state.id,
         "numeric_prevention_shields": [asdict(receipt) for receipt in state.numeric_prevention_shields],
         "starting_decks": {str(pid): deepcopy(rows) for pid, rows in state.starting_decks.items()},
-        "card_observations": {str(pid): deepcopy(rows) for pid, rows in state.card_observations.items()},
+        "card_observations": {
+            str(pid): {cid: {key: deepcopy(value) for key, value in record.items()
+                            if not (key == 'knowledge_snapshot' and type(value) is dict and not value)}
+                       for cid, record in rows.items()}
+            for pid, rows in state.card_observations.items()
+        },
+        "sideboard_facts": copy_facts(state.sideboard_facts, state),
         "turn": state.turn,
         "active_player": state.active_player,
         "priority_player": state.priority_player,
@@ -358,11 +365,13 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     if 'scheduler' in payload:
         restore(state, payload['scheduler'])
     state.starting_decks = {int(pid): deepcopy(rows) for pid, rows in payload.get('starting_decks', {}).items()}
+    from ai.sideboard_facts import copy_facts
     state.card_observations = {int(pid): deepcopy(rows) for pid, rows in payload.get('card_observations', {}).items()}
     for records in state.card_observations.values():
         for record in records.values():
             if 'knowledge_snapshot' in record:
                 record['knowledge_snapshot'] = copy_snapshot(record['knowledge_snapshot'], semantic=True)
+    state.sideboard_facts = copy_facts(payload.get('sideboard_facts', {}), state)
     state.failed_draw_players = {int(value) for value in payload.get("failed_draw_players", [])}
     state.passed_priority = {int(value) for value in payload.get("passed_priority", [])}
     state.attackers = list(payload.get("attackers", []))
