@@ -9,14 +9,22 @@ evidence=$(mktemp -d "$RUNNER_TEMP/mtg-backend-evidence-XXXXXX" 5>&- 2>/dev/null
   printf 'CI_BACKEND_EVIDENCE_SETUP_ERROR\n' >&2
   exit 1
 }
-# Open before private decoding; even shell/observer errors stay runner-local.
-if ! { exec 4>"$evidence/runner.log"; } 2>/dev/null; then
+# Open before private decoding; raw streams never reach the public sink.
+storage_python=$(command -v python3 5>&-)
+storage_script="$PWD/.github/scripts/ci_backend_storage.py"
+exec 4> >(/usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 "$storage_python" -I -B \
+  "$storage_script" stream "$evidence" runner.log 5>&- 2>/dev/null)
+logger_pid=$!
+if ! kill -0 "$logger_pid" 2>/dev/null; then
   printf 'CI_BACKEND_EVIDENCE_SETUP_ERROR\n' >&2
   exit 1
 fi
 exec 1>&4 2>&4 4>&-
 progress_pid=
 sampler=
+pressure_pid=
+pytest_pid=
+sink_pid=
 cleanup_owned() {
   status=$?
   trap - EXIT
@@ -34,7 +42,26 @@ cleanup_owned() {
     printf 'stop\n' >&3 || true
     wait "$sampler" || true
   fi
-  return "$status"
+  if [[ -n "$pressure_pid" ]]; then
+    kill -TERM "$pressure_pid" 2>/dev/null || true
+    wait "$pressure_pid" || true
+  fi
+  if [[ -n "$pytest_pid" ]]; then
+    kill -INT "$pytest_pid" 2>/dev/null || true
+    wait "$pytest_pid" || true
+  fi
+  if [[ -n "$sink_pid" ]]; then wait "$sink_pid" || true; fi
+  # Release only this freshly pinned reserve, never failed/source scratch.
+  /usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 "$storage_python" -I -B \
+    "$storage_script" release "$evidence" </dev/null || true
+  exec 1>/dev/null 2>/dev/null
+  for ((attempt=0; attempt<20; attempt++)); do
+    if ! kill -0 "$logger_pid" 2>/dev/null; then break; fi
+    sleep 0.1
+  done
+  if kill -0 "$logger_pid" 2>/dev/null; then kill -TERM "$logger_pid" || true; fi
+  wait "$logger_pid" || { if ((status == 0)); then status=2; fi; }
+  exit "$status"
 }
 trap cleanup_owned EXIT
 if [[ "${MTG_CI_PROGRESS:-}" == 1 ]]; then
@@ -87,6 +114,8 @@ test ! -e "$MTG_EXPORT_RECOVERY_EVIDENCE_ROOT" && test ! -L "$MTG_EXPORT_RECOVER
 export MTG_EXPORT_RECOVERY_SQL_SLOT=github-actions-isolated
 export TMPDIR="$work/tmp" PYTEST_DEBUG_TEMPROOT="$work/pytest-tmp"
 export MTG_LAND_CHOICE_STAGE_EVIDENCE="$work/http"
+/usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 "$storage_python" -I -B \
+  "$storage_script" reserve "$evidence" </dev/null
 python "$scratch/.github/scripts/prepare-backend-private-inputs.py" "$work/private-inputs"
 export MTG_HEAT_WITNESS="$work/private-inputs/sealed-self-removal-witness.json"
 for number in {01..13}; do unset "MTG_HEAT_WITNESS_$number"; done
@@ -125,10 +154,27 @@ cd "$scratch/backend"
 export PYTHONPATH="$scratch/.github/scripts:$scratch/backend"
 # Only this fresh serial job workspace may reclaim fully passed startup snapshots.
 export MTG_CI_PASSED_SNAPSHOT_CLEANUP=1
+export MTG_CI_STORAGE_GUARD=1
+export PYTEST_PLUGINS="${PYTEST_PLUGINS:+$PYTEST_PLUGINS,}ci_backend_storage"
+mkfifo "$work/pytest-output"
 set +e
-python -m pytest -vv --tb=short -ra -p no:cacheprovider -p ci_backend_evidence -p ci_backend_snapshot_cleanup -o tmp_path_retention_policy=failed \
-  3>&- 2>&1 | tee "$evidence/pytest.log" 3>&-
-statuses=("${PIPESTATUS[@]}")
+/usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 "$storage_python" -I -B \
+  "$storage_script" stream "$evidence" pytest.log <"$work/pytest-output" 3>&- &
+sink_pid=$!
+/usr/bin/env --default-signal=INT python -m pytest -vv --tb=short -ra -p no:cacheprovider -p ci_backend_evidence -p ci_backend_snapshot_cleanup -o tmp_path_retention_policy=failed \
+  3>&- >"$work/pytest-output" 2>&1 &
+pytest_pid=$!
+/usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 "$storage_python" -I -B \
+  "$storage_script" watch "$evidence" "$pytest_pid" </dev/null 3>&- &
+pressure_pid=$!
+wait "$pytest_pid"; pytest_status=$?
+pytest_pid=
+wait "$pressure_pid"; pressure_status=$?
+pressure_pid=
+wait "$sink_pid"; sink_status=$?
+sink_pid=
+statuses=("$pytest_status" "$sink_status")
+if ((pressure_status != 0 && statuses[0] == 0)); then statuses[0]=2; fi
 set -e
 evidence_status=0
 printf '%s\n' "${statuses[0]}" > "$evidence/pytest-exit-code.txt" || evidence_status=1

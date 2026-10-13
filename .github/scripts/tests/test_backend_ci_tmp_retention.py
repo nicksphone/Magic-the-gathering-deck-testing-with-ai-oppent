@@ -16,7 +16,7 @@ SCRIPTS = Path(__file__).resolve().parents[1]
 
 def runner_options():
     script = (SCRIPTS / 'run-backend-ci.sh').read_text()
-    command = re.search(r'^python -m pytest (.*?)\\\n  3>&-', script, re.M | re.S)
+    command = re.search(r'^/usr/bin/env --default-signal=INT python -m pytest (.*?)\\\n  3>&-', script, re.M | re.S)
     if command is None:
         raise AssertionError('Backend pytest command not found')
     return shlex.split(command.group(1).replace('\\\n', ' '))

@@ -45,6 +45,7 @@ if args == ['-']:
     print('[]')
     raise SystemExit(0)
 if args[0].endswith('prepare-backend-private-inputs.py'):
+    Path(os.environ['MTG_CI_EVIDENCE'], 'synthetic-stream-mode.txt').write_text(mode)
     print('synthetic source echo: assert ' + repr(marker))
     print('synthetic provision stderr: ' + marker, file=sys.stderr)
     if mode == 'shell':
@@ -74,6 +75,7 @@ for node in nodes:
     observer.pytest_itemcollected(SimpleNamespace(nodeid=node))
 observer.pytest_collection_finish(SimpleNamespace(items=[SimpleNamespace(nodeid=n) for n in nodes]))
 if mode == 'observer':
+    Path(os.environ['MTG_CI_EVIDENCE'], 'phases.jsonl').unlink(missing_ok=True)
     Path(os.environ['MTG_CI_EVIDENCE'], 'phases.jsonl').mkdir()
 for node in nodes:
     for phase in ('setup', 'call', 'teardown'):
@@ -103,8 +105,18 @@ class RunnerPrivacyTests(unittest.TestCase):
         self.source = self.root / 'source'
         scripts = self.source / '.github/scripts'
         scripts.mkdir(parents=True)
-        for name in ('run-backend-ci.sh', 'ci_backend_evidence.py'):
+        for name in ('run-backend-ci.sh', 'ci_backend_evidence.py', 'ci_backend_storage.py'):
             shutil.copyfile(SCRIPTS / name, scripts / name)
+        # Keep the original failed-sink assertions: inject the same exit 23 at
+        # the new bounded writer boundary, not at a tee no longer invoked.
+        storage = scripts / 'ci_backend_storage.py'
+        storage.write_text(storage.read_text().replace('raise SystemExit(main())',
+            "status = main()\n"
+            "    if sys.argv[1] == 'stream' and sys.argv[-1] == 'pytest.log':\n"
+            "        mode = (Path(sys.argv[2]) / 'synthetic-stream-mode.txt').read_text()\n"
+            "        if mode.endswith('tee'):\n"
+            "            status = 23\n"
+            "    raise SystemExit(status)"))
         # This stand-in never reads env secrets or the real preparation implementation.
         (scripts / 'prepare-backend-private-inputs.py').write_text('# generated public stand-in\n')
         tests = self.source / 'backend/tests'
@@ -207,8 +219,8 @@ class RunnerPrivacyTests(unittest.TestCase):
         result, evidence = self.run_backend('observer')
         self.assertEqual(result.returncode, 2)
         self.assert_local_only(result, evidence)
-        self.assertIn('CI_EVIDENCE_WRITE_ERROR', (evidence / 'runner.log').read_text())
-        self.assertIn('CI_EVIDENCE_DEGRADED=1', (evidence / 'runner.log').read_text())
+        self.assertIn('CI_EVIDENCE_WRITE_ERROR', (evidence / 'pytest.log').read_text())
+        self.assertIn('CI_EVIDENCE_DEGRADED=1', (evidence / 'pytest.log').read_text())
         document, status = self.metadata(evidence)
         self.assertEqual(status, 2)
         self.assertFalse(document['rows_exported'])

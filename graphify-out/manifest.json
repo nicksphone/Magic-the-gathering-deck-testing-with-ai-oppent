@@ -16074,9 +16074,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/run-backend-ci.sh": {
-    "mtime": 1791780815.8385813,
-    "seen": 1791781014.9850721,
-    "ast_hash": "0c02f1e49dee33e8706fd03bfa00ab85",
+    "mtime": 1791899314.3412063,
+    "seen": 1791899429.6165438,
+    "ast_hash": "f8173fe05bdd187c1a57e8c2ae51e516",
     "semantic_hash": ""
   },
   "backend/tests/ci_input_contracts.py": {
@@ -16332,9 +16332,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_privacy.py": {
-    "mtime": 1791780815.8385813,
-    "seen": 1791781014.9850752,
-    "ast_hash": "578caa0350a75d66588b64ce5b0572b9",
+    "mtime": 1791897493.731049,
+    "seen": 1791897606.657165,
+    "ast_hash": "4c81f0e20be3c979e2a3765ff56abfb2",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_ci_backend_metadata.py": {
@@ -16812,9 +16812,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_tmp_retention.py": {
-    "mtime": 1791780815.8385813,
-    "seen": 1791781014.9850807,
-    "ast_hash": "48377fb694c1b05c430970660ed4c63e",
+    "mtime": 1791899314.3412063,
+    "seen": 1791899429.6165538,
+    "ast_hash": "9bfdff597f6aca0ff09465d3fe4b89c2",
     "semantic_hash": ""
   },
   "docs/testing/ci-backend-scratch-current.md": {
@@ -18219,6 +18219,30 @@
     "mtime": 1791889928.3082938,
     "seen": 1791890061.38273,
     "ast_hash": "67128089ec3f07c588b990ed0c06027e",
+    "semantic_hash": ""
+  },
+  ".github/scripts/ci_backend_storage.py": {
+    "mtime": 1791897493.731049,
+    "seen": 1791897606.6571558,
+    "ast_hash": "c9f7ef13a357692234f4f29ee910e3ee",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_backend_storage.py": {
+    "mtime": 1791897493.731049,
+    "seen": 1791897606.6571827,
+    "ast_hash": "be71e01fc0aac979de2099b31acc1c92",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-bounded-private-storage-current.md": {
+    "mtime": 1791899314.3782055,
+    "seen": 1791899429.6218581,
+    "ast_hash": "9d92ccab2c2dc08a08615e68a38f2289",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_storage_early_interrupt.py": {
+    "mtime": 1791899314.3412063,
+    "seen": 1791899429.616592,
+    "ast_hash": "28e0bd5e19a78427e72c43d05e1e7e46",
     "semantic_hash": ""
   }
 }
