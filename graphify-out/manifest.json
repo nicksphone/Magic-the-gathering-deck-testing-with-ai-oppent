@@ -6738,9 +6738,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/ui_fixture_server.py": {
-    "mtime": 1791667790.501923,
-    "seen": 1791671014.28585,
-    "ast_hash": "1fe9c92c75622ad331de827d9b21e130",
+    "mtime": 1791883606.1707664,
+    "seen": 1791883730.4473112,
+    "ast_hash": "8f85e780b67a008bbd3382311a52db82",
     "semantic_hash": ""
   },
   "frontend/tests/ui_v2_fixture_server.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791881589.2840116,
-    "seen": 1791881752.1916094,
-    "ast_hash": "d3c3381f388a0fe8fa9e8fadca3a4c8e",
+    "mtime": 1791883606.209766,
+    "seen": 1791883730.448631,
+    "ast_hash": "52ee0e81396ee0801208cfd2bb025961",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -17976,9 +17976,9 @@
     "semantic_hash": ""
   },
   "backend/tests/task43_play_order_support.py": {
-    "mtime": 1791881589.113014,
-    "seen": 1791881752.188316,
-    "ast_hash": "d5b09f4a8723b6f1e4fdd4283638728b",
+    "mtime": 1791882060.4419575,
+    "seen": 1791882200.3290029,
+    "ast_hash": "28daa90e37e69aa0d63e0a3626c8d09c",
     "semantic_hash": ""
   },
   "backend/tests/test_inventory_advisory_schema.py": {
@@ -18090,9 +18090,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
-    "mtime": 1791881589.2820115,
-    "seen": 1791881752.1909044,
-    "ast_hash": "26fb20b2bdfe320c152f9815ecf0ea3a",
+    "mtime": 1791882060.4419575,
+    "seen": 1791882200.33218,
+    "ast_hash": "f4e49c5059440df048b73d97f054660b",
     "semantic_hash": ""
   },
   "docs/testing/observation-knowledge-legacy-parity.md": {
@@ -18111,6 +18111,18 @@
     "mtime": 1791881589.2390122,
     "seen": 1791881752.1914918,
     "ast_hash": "63cb59473640d4b7beaf265006e2fa58",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ui_direct_combat_fixture_capture.py": {
+    "mtime": 1791883606.1727664,
+    "seen": 1791883730.4467976,
+    "ast_hash": "79cbe94e561362c4180865e0e1abc1d5",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-seat2-capture-fixture-current.md": {
+    "mtime": 1791883606.2087657,
+    "seen": 1791883730.4477115,
+    "ast_hash": "e7970d709db26ea356d95b47da463623",
     "semantic_hash": ""
   }
 }

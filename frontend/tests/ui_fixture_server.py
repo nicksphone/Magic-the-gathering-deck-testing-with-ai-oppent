@@ -29,6 +29,8 @@ def direct_combat(seat: int = 1):
         for card in state.cards.values():
             card.owner, card.controller = 3-card.owner, 3-card.controller
         state.active_player = state.priority_player = 2
+        # A mirrored synthetic board is not an original-stock capture.
+        state.sideboard_facts = {}
     return publish(state, [{"quantity": 60, "card_name": "Island"}])
 
 

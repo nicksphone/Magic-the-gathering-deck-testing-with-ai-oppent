@@ -35,6 +35,13 @@ frontend and browser pass. Current full hosted CI, final-source cold HTTP,
 natural sideboarding and measured AI quality still require their own evidence.
 See [the exact composition and failed histories](docs/testing/current-837-ci-repair-composition.md).
 
+The resulting published `2eeb7f76` frontend job passes, while its browser job
+exposes stale original-stock capture in a mirrored synthetic combat fixture.
+The fixture-only repair preserves every browser assertion and the strict owner
+validator; 21 pure cases and the unchanged actual browser scenario pass for both
+seats. This is focused acceptance, not the full browser gate. See
+[the exact fixture correction](docs/testing/browser-seat2-capture-fixture-current.md).
+
 Published `7c5e933a` adds tested actual-allocation blocking and the source-bound
 BO3 measurement runner. Its fresh 41-whole-module component passed 775 ordinary
 cases with zero failures, errors or skips. Frontend and browser CI have completed
