@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-12 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-13 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -23,6 +23,46 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
   passing characterization tests are not proof of correct gameplay.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
+
+## October 13 Execution Checkpoint
+
+Published `7c5e933a` adds tested actual-allocation blocking and the source-bound
+BO3 measurement runner. Its fresh 41-whole-module component passed 775 ordinary
+cases with zero failures, errors or skips. Frontend and browser CI have completed
+successfully in run38330804691; the protected backend is still running at this
+checkpoint. See [combined component evidence](docs/testing/ai-bo3-block-composed-current.md).
+
+Phase 2 is not unstarted: canonical profile derivation, persisted profile use,
+cast inputs and checked blocking improvements are implemented. The specified
+seed/seat-balanced A/B acceptance remains unfinished. Phase 3 runner code is
+implemented, but protocol tests do not certify a played matchup matrix or learned
+profiles. Complete matchup data, contextual priors, deliberate sideboarding and
+Phase 4 strength measurements remain required. Commit counts are not a percentage
+of either this AI plan or the three release gates.
+
+The first current-source native attempt reached real canonical ingestion,
+profiling and hydration of all 11 shipped decks, then stopped before games: the
+shared runner compared canonical full double-faced card names against printed
+front-name deck inventory. The reviewed correction preserves exact seed identity,
+card quantities and readiness checks. A fresh source-bound equal-budget Strong
+comparison then completed ten real games across both seat orientations; every
+normalized gameplay line and outcome matched. Its 600-second per-BO3 budgets
+were unchanged. The full 110-series matrix is now executing separately; it is
+not yet a qualified data artifact. No winner, private trace or matchup data is
+fabricated to close the gap.
+
+The final reviewed contextual-prior, canonical-admission and learned-profile
+protocol composition passes 933 ordinary cases across 45 whole pure modules.
+A separate fresh checkout of that same final composition passes the whole
+original 378-case public-mana module, including all six real
+SQLite/autoplay/restore controls, with unchanged source and no policy violations.
+Malformed context types, conflicting provenance, numeric overflow, asymmetric
+learned samples, incomplete roster coverage and measured-source CLI output
+mutation have explicit regression controls. No learned table is generated yet.
+The original all-rules, arbitrary-deck, expert-AI and release requirements remain
+open until their own acceptance evidence exists.
+
+See [Phase 3 code and execution evidence](docs/testing/ai-phase3-groundwork-current.md).
 
 ## Current Candidate Qualification: 2026-10-12
 

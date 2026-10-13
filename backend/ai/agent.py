@@ -2742,6 +2742,12 @@ class AIAgent:
         turn = int(getattr(state, "turn", 1) or 1)
         role = self._board_role(state, player_id)
         role_rows = row.get("board_roles")
+        from ai.log_priors import _eligible_opponent_rows, _normalize_opponent_archetype
+        context = _normalize_opponent_archetype(self.opponent_archetype)
+        matchup_row = _eligible_opponent_rows(row.get("opponent_archetypes")).get(context)
+        if matchup_row is not None:
+            row = matchup_row
+            role_rows = None
         if isinstance(role_rows, dict):
             role_row = role_rows.get(role)
             if not isinstance(role_row, dict) and role in {"stabilize", "defend"}:

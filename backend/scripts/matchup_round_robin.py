@@ -217,11 +217,26 @@ def _template_inventory(text):
 
 def admit_execution_rows(rows):
     """Structural/export hashes are not canonical card admission."""
+    from card_data.fallback_cards import FALLBACK_CARD_DATA
     from card_data.hydration import ready_for_match
+    canonical_names = {alias: payload['name'] for printed, payload in FALLBACK_CARD_DATA.items()
+                       for alias in (printed, payload['name'])}
+
+    def canonical_inventory(inventory):
+        counts = Counter()
+        for name, quantity in inventory.items():
+            if name not in canonical_names:
+                raise ValueError('Unsupported exact seed card name')
+            counts[canonical_names[name]] += quantity
+        return dict(counts)
+
     templates = builtin_templates()
     for row in rows:
-        inventories = {key: _board_inventory(row[key], main=key == 'mainboard') for key in ('mainboard', 'sideboard')}
-        if inventories != _template_inventory(templates[row['name']]):
+        inventories = {key: canonical_inventory(_board_inventory(row[key], main=key == 'mainboard'))
+                       for key in ('mainboard', 'sideboard')}
+        expected = {key: canonical_inventory(board)
+                    for key, board in _template_inventory(templates[row['name']]).items()}
+        if inventories != expected:
             raise ValueError('Prepared boards differ from the shipped builtin inventory')
         if not all(ready_for_match(card) for key in ('mainboard', 'sideboard') for card in row[key]):
             raise ValueError('Missing complete local canonical card admission')
