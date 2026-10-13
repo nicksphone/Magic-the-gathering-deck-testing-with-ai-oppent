@@ -14,11 +14,14 @@ import httpx
 from sqlmodel import Session, SQLModel, create_engine
 
 from knowledge.ingest import KnowledgeIngestor
+from knowledge import profiles as _profiles
 from knowledge.profiles import MAX_CORPUS, derive_profile, merge_profile_payload
 from card_data.sync import ScryfallSyncService
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from scripts.oracle_corpus_report import collect_corpus
+
+_BUILTIN_DERIVE_PROFILE = derive_profile
 
 
 def profile_corpus(repo: Repository, names, *, corpus=None, archetype=None) -> dict:
@@ -37,9 +40,17 @@ def profile_corpus(repo: Repository, names, *, corpus=None, archetype=None) -> d
             seen.add(row.name.casefold())
             valid.append((row, canonical))
     context = deepcopy(corpus) if corpus is not None else [deepcopy(profile["card_data"]) for _, profile in valid]
+    prepared_context = None
     for row, canonical in valid:
         try:
-            derived = derive_profile(deepcopy(canonical["card_data"]), context, archetype=archetype)
+            if derive_profile is _BUILTIN_DERIVE_PROFILE:
+                raw = _profiles._raw(deepcopy(canonical["card_data"]))
+                if prepared_context is None:
+                    prepared_context = _profiles._profile_context(context, archetype)
+                derived = _profiles._derive_with_context(raw, deepcopy(prepared_context))
+            else:
+                # Preserve the existing injectable estimator's original call contract.
+                derived = derive_profile(deepcopy(canonical["card_data"]), context, archetype=archetype)
             merged = merge_profile_payload(canonical, derived)
             answerable, windows = list(derived.answerable_by), list(derived.cast_windows)
             unchanged = (row.play_value == derived.play_value and row.threat_level == derived.threat_level

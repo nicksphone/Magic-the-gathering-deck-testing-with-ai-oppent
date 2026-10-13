@@ -234,8 +234,7 @@ def _face(raw, index, curve):
         'haste' in keywords, routes, tuple(specs), gaps, tuple(sorted(limits)))
 
 
-def derive_profile(card, corpus=(), *, archetype=None):
-    raw = _raw(card)
+def _profile_context(corpus, archetype):
     corpus = tuple(corpus)
     if len(corpus) > MAX_CORPUS: raise ValueError('Corpus limit exceeded')
     deck = [{'quantity': item.get('quantity', 1), 'card_metadata': _raw(item.get('card_metadata') or item)} for item in corpus]
@@ -246,15 +245,24 @@ def derive_profile(card, corpus=(), *, archetype=None):
              if 'land' not in printed_card_types(item['card_metadata'].get('type_line', ''))]
     count = sum(q for _, q in costs)
     curve = sum(mv*q for mv,q in costs)/count if count else None
-    context = {'mode': 'supplied_archetype' if archetype and deck else 'supplied_corpus' if deck else 'printed_only',
+    return {'mode': 'supplied_archetype' if archetype and deck else 'supplied_corpus' if deck else 'printed_only',
         'archetype': archetype, 'archetype_verification': 'caller_declared_not_verified',
         'corpus_fingerprint': _hash(deck), 'curve_nonland_mean': curve,
         'deck_analysis_primary_archetype_estimate': analysis['primary_archetype'] if analysis else None}
+
+
+def _derive_with_context(raw, context):
+    curve = context['curve_nonland_mean']
     faces = tuple(_face(_raw(face), i, curve) for i,face in enumerate(raw.get('card_faces') or []))
     root_types = printed_card_types(raw.get('type_line', ''), raw.get('types'))
     combined_parent = '//' in (raw.get('type_line') or '')
     main = faces[0] if faces and (combined_parent or not root_types) else _face(raw, None, curve)
     return TacticalProfile(**vars(main), faces=faces, context=context, input_sha256=_hash(raw))
+
+
+def derive_profile(card, corpus=(), *, archetype=None):
+    raw = _raw(card)
+    return _derive_with_context(raw, _profile_context(corpus, archetype))
 
 
 def profile_payload(profile):

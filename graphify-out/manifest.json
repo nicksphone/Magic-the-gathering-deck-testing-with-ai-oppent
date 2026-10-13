@@ -1140,9 +1140,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/sync_corpus_cards.py": {
-    "mtime": 1791835934.6663024,
-    "seen": 1791836083.5297225,
-    "ast_hash": "867d3ea81552e81d3dc59f626a1b1838",
+    "mtime": 1791904483.9671931,
+    "seen": 1791904596.045832,
+    "ast_hash": "bb50d3dd46754dc019ac0bf69ab3bffc",
     "semantic_hash": ""
   },
   "backend/scripts/verify_storage_restore.py": {
@@ -15420,9 +15420,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-locked-dependency-advisories.md": {
-    "mtime": 1791860278.9878263,
-    "seen": 1791862158.5398679,
-    "ast_hash": "5efe4cb558259b7becf7caecaf833fb6",
+    "mtime": 1791900669.9307466,
+    "seen": 1791904596.0515912,
+    "ast_hash": "6c1a9946b55e0a14828e52ba17cf13b0",
     "semantic_hash": ""
   },
   "audit/complete-body/tests/test_loyalty_ai_continuations.py": {
@@ -17484,9 +17484,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/profiles.py": {
-    "mtime": 1791881589.0630147,
-    "seen": 1791881752.186656,
-    "ast_hash": "541ceb71ad8d07542e44323d2f65a04f",
+    "mtime": 1791904483.9671931,
+    "seen": 1791904596.045429,
+    "ast_hash": "c43a59876cdc181f91a798fd605e3feb",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json": {
@@ -17934,9 +17934,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-clean-install-knowledge-acceptance.md": {
-    "mtime": 1791866517.4973495,
-    "seen": 1791869000.0337014,
-    "ast_hash": "2da0d3ef6f9f27e6915d54c8600675ac",
+    "mtime": 1791903207.5879323,
+    "seen": 1791904596.05158,
+    "ast_hash": "e7d67dfab7421b7072d99a20e3984d43",
     "semantic_hash": ""
   },
   "backend/ai/sideboard_facts.py": {
@@ -18078,9 +18078,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-plan-acceptance-progress.md": {
-    "mtime": 1791881589.2180126,
-    "seen": 1791881752.1906555,
-    "ast_hash": "a89c442067b198932dfdd0d60881d520",
+    "mtime": 1791903092.9208913,
+    "seen": 1791904596.0511825,
+    "ast_hash": "b1f3ca6dc0f37798c70b2b85ee969d35",
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
@@ -18234,15 +18234,27 @@
     "semantic_hash": ""
   },
   "docs/testing/ci-bounded-private-storage-current.md": {
-    "mtime": 1791899314.3782055,
-    "seen": 1791899429.6218581,
-    "ast_hash": "9d92ccab2c2dc08a08615e68a38f2289",
+    "mtime": 1791899631.2055438,
+    "seen": 1791904596.0513933,
+    "ast_hash": "7c24f13b545cbcdb605ff6bacaa1ae67",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_ci_storage_early_interrupt.py": {
     "mtime": 1791899314.3412063,
     "seen": 1791899429.616592,
     "ast_hash": "28e0bd5e19a78427e72c43d05e1e7e46",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_profile_batch_context.py": {
+    "mtime": 1791904483.9671931,
+    "seen": 1791904596.049382,
+    "ast_hash": "cde80a9a195d0c69ec647cafd51e9eb9",
+    "semantic_hash": ""
+  },
+  "docs/testing/profile-corpus-batch-context.md": {
+    "mtime": 1791904483.968193,
+    "seen": 1791904596.0521758,
+    "ast_hash": "8781eb1b65c915c93bc9b68ef1b930ff",
     "semantic_hash": ""
   }
 }
