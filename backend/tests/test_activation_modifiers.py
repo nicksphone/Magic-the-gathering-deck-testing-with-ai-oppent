@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from game_state.state import Zone
+from game_state.state import MatchFactory, Step, Zone
 from game_state.serializers import serialize_match_snapshot, deserialize_match_snapshot
 from rules_engine.activation_modifiers import activation_cost_view, payable_crew_group
 from rules_engine.action_validation import checked_action, ActionRejected
@@ -25,8 +25,22 @@ def add(state, name, seat=1, zone=Zone.BATTLEFIELD):
     return card
 
 
-def board(seat=1):
-    state = fixture()
+def board(seat=1, *, game_id=None):
+    if game_id is None:
+        state = fixture()
+    else:
+        deck = [{'quantity': 60, 'card_name': 'Swamp'}]
+        state = MatchFactory.from_decks(deck, deck, seed=941, game_id=game_id)
+        state.pregame_pending = False
+        state.kept_hands = {1, 2}
+        state.turn = 5
+        state.step = Step.PRECOMBAT_MAIN
+        for player in state.players.values():
+            for cid in player.hand:
+                state.cards[cid].move_to_zone(Zone.LIBRARY)
+                player.library.append(cid)
+            player.hand.clear()
+            player.mana_pool = {'B': 10, 'G': 2, 'C': 10}
     zero_mana(state)
     state.priority_player = state.active_player = seat
     return state
@@ -145,11 +159,10 @@ def test_http_tax_rejection_and_payment_are_atomic_and_resume(game, seat):
     from persistence.db import engine
     from persistence.repository import Repository
     client, match = game
-    state = board(seat)
+    state = board(seat, game_id=match.state.id)
     mage = add(state, 'Azure Mage', seat)
     add(state, 'Suppression Field', 3-seat)
     state.players[seat].mana_pool.update({'C': 3, 'U': 1})
-    state.id = match.state.id
     match.state = state
     persist(match)
     action = {'type': 'activate_ability', 'card_id': mage.id, 'ability_index': 0, 'targets': {}}

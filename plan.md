@@ -32,6 +32,19 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## October 13 Execution Checkpoint
 
+The counter-fixture and cold-restore component now passes 153 ordinary cases
+across four whole modules on its exact `50f9e58b` plus test-only composition.
+Both genuine cold HTTP workers and 38 snapshot children exit successfully;
+source, database ownership and resource closure are independently checked.
+Every original assertion remains intact. See
+[the exact cold acceptance](docs/testing/current-counter-fixture-cold-acceptance.md).
+
+The private reference bank now completes all 104 declared checked outcomes on
+its recorded `a9431b12` epoch, with 810 additionally charged native calls and
+unchanged source. The original 520-case, five-variant A/B comparison is still
+preparation, not measured AI improvement. Neither reference completion nor the
+older complete matrix transfers qualification to current HEAD.
+
 The current test-only printed-source fixture correction now passes all 244
 ordinary cases in sixteen whole modules, including eight genuine TestClient
 lifespans, with unchanged source and installed packages. It retains every old

@@ -6,11 +6,12 @@ from rules_engine.engine import RulesEngine
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
+from tests.controlled_basic_game_support import controlled_basic_game
 
 
 def _state(oracle_text: str):
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=7)
+    state = controlled_basic_game(deck, deck, seed=7)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1

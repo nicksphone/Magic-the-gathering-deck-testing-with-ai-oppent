@@ -2886,9 +2886,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_activated_ability_timing.py": {
-    "mtime": 1791667790.076929,
-    "seen": 1791671014.284162,
-    "ast_hash": "19e00c3f424896f12190ae685a22cc90",
+    "mtime": 1791930399.1273773,
+    "seen": 1791930528.6105547,
+    "ast_hash": "58c41684e5e1919d952b8bd4dcbe793b",
     "semantic_hash": ""
   },
   "backend/tests/test_activated_sacrifice_events.py": {
@@ -2922,9 +2922,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_activation_modifiers.py": {
-    "mtime": 1791667790.0799289,
-    "seen": 1791671014.2841785,
-    "ast_hash": "f6e854953f624e854446eb62270ad235",
+    "mtime": 1791930399.1273773,
+    "seen": 1791930528.6105897,
+    "ast_hash": "d2550cb66e28a84708d80bfe744d04db",
     "semantic_hash": ""
   },
   "backend/tests/test_activation_payment_choices.py": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791927223.790925,
-    "seen": 1791927337.064817,
-    "ast_hash": "da1dc5395383cefcadc061659f60f6eb",
+    "mtime": 1791930399.1373773,
+    "seen": 1791930528.614005,
+    "ast_hash": "54fc542e231f129e8b0670233cfb702a",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791895470.5010524,
-    "seen": 1791896941.7197056,
-    "ast_hash": "1d667b3d692bdf0a3897916f5c4c1d16",
+    "mtime": 1791930399.1593769,
+    "seen": 1791930528.6137075,
+    "ast_hash": "faafbddaab63cf8763c37a56c3be5fb3",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18327,6 +18327,18 @@
     "mtime": 1791927183.735577,
     "seen": 1791927337.0644002,
     "ast_hash": "2903618be5702565c2278692df0b7c65",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_counter_fixture_births.py": {
+    "mtime": 1791930399.1273773,
+    "seen": 1791930528.6110163,
+    "ast_hash": "ec8073351413db898a259fc24efd1f53",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-counter-fixture-cold-acceptance.md": {
+    "mtime": 1791930399.1273773,
+    "seen": 1791930528.613263,
+    "ast_hash": "c270ed95cac6e1778b8c9ea21f9b4183",
     "semantic_hash": ""
   }
 }

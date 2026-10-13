@@ -27,6 +27,15 @@ matched quality comparisons and the remaining original gates stay open. See
 
 ## Current Checkpoint: 2026-10-13
 
+The latest counter-fixture/cold-restore component passes all 153 cases in four
+whole modules, preserving every original assertion and completing both real
+cold HTTP workers. Its exact `50f9e58b` plus test-only source, native resource
+closure and private evidence boundaries are recorded in
+[counter acceptance](current-counter-fixture-cold-acceptance.md). The private
+reference bank separately completes 104 checked outcomes on `a9431b12`; the
+original 520-case A/B comparison is not yet executed or scored. These are
+source-specific components, not a current whole-backend or RC1 certificate.
+
 Published `837bf513` completes frontend and browser CI, but its protected backend
 actually fails: all 26,969 collected nodes are accounted for, with 26,748 passed
 bodies, 139 failed bodies and 82 setup skips. No missing or duplicate phases or
