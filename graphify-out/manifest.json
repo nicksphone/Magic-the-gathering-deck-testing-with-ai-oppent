@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791858240.3377502,
-    "seen": 1791858400.820232,
-    "ast_hash": "4ebe31312c31b1d38df8454431e6ef63",
+    "mtime": 1791868889.3021982,
+    "seen": 1791869000.0288718,
+    "ast_hash": "cc7503ed26c1593cbfe9365f2fe41f00",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791863719.743177,
-    "seen": 1791863827.279722,
-    "ast_hash": "9a4855d66ba6f61fdc6ae71c5d3da5e0",
+    "mtime": 1791868889.3621972,
+    "seen": 1791869000.0345016,
+    "ast_hash": "023f2ae1eca4dc9d38b479d9c2179808",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -17901,6 +17901,48 @@
     "mtime": 1791863719.6951778,
     "seen": 1791863827.2795973,
     "ast_hash": "586c2f333e8af3d2d04ef6c2d59c505f",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task42_checked_interaction_hold.py": {
+    "mtime": 1791868889.3041983,
+    "seen": 1791869000.0324135,
+    "ast_hash": "7cf0ada349df8cbc88779e880c205aaf",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task42_counter_hold_body_guard.py": {
+    "mtime": 1791868889.3041983,
+    "seen": 1791869000.032416,
+    "ast_hash": "1d324055d7f4ba4846a6df072bdeaaee",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task42_counter_hold_boundaries.py": {
+    "mtime": 1791868889.3041983,
+    "seen": 1791869000.032418,
+    "ast_hash": "3ed02947694890a98d9d6b6e4ccb7704",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task42_counter_hold_raw_tail.py": {
+    "mtime": 1791868889.3051982,
+    "seen": 1791869000.0324197,
+    "ast_hash": "71fecd8f95bba52cf9c2eca931a53b48",
+    "semantic_hash": ""
+  },
+  "docs/qualification/task42-interaction-hold-baseline.md": {
+    "mtime": 1791868889.3061981,
+    "seen": 1791869000.033312,
+    "ast_hash": "4c69d120814070b8f6e061672adb260e",
+    "semantic_hash": ""
+  },
+  "docs/qualification/task42-stable-counter-filter.md": {
+    "mtime": 1791868889.3061981,
+    "seen": 1791869000.0333138,
+    "ast_hash": "ebb3f0f0ed368acd022837907c165699",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-clean-install-knowledge-acceptance.md": {
+    "mtime": 1791866517.4973495,
+    "seen": 1791869000.0337014,
+    "ast_hash": "2da0d3ef6f9f27e6915d54c8600675ac",
     "semantic_hash": ""
   }
 }

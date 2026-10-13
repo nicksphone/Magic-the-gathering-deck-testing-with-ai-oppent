@@ -90,6 +90,29 @@ Old and mixed measurement tuples reject through the default loader. This is
 preparation for genuine terminal data, not a completed matrix, generated learned
 table or A/B result. See [epoch admission](docs/testing/task32-measured-epoch-repin.md).
 
+Fresh isolated installation on `03b601fc` passes the current 28-package backend
+hash lock, dependency consistency, the 367-case component cohort and all 48
+configured frontend test programs, lint and build. Separately, the unchanged
+knowledge CLI on `fb3291f6` exits zero for its actual 149 requested names; all 155
+seed identities are independently checked after real canonical/rulings/profile
+ingestion in owned SQLite. No live database or deployed runtime changes.
+See [exact install and knowledge scopes](docs/testing/current-clean-install-knowledge-acceptance.md).
+Current whole backend CI, genuine matrix/data/A-B, sideboarding and all three
+full release gates remain unfinished.
+
+The reviewed interaction-hold increment fixes the observed stable tier-1
+counter-waste cases without changing weights or granting legality. Its actual
+current-source composition passes 591 ordinary tests across 22 whole modules
+(88.29 seconds, zero failures/errors/skips). Only `_choose_action` changes;
+all 136 other prior agent methods are unchanged. The additive guard requires
+known RAW-complete vanilla/free-tap-mana bodies and a bounded stable public
+context. Actual Forest-paid spells and Island counter payments are covered.
+Unknown bodies, pressure and unsupported contexts preserve legacy behavior.
+See [counter-policy bounds and histories](docs/qualification/task42-stable-counter-filter.md).
+Sideboard private-fact transitions have separate scoped 285-case proof, but
+current combined real-I/O, cold-restart and natural BO3 acceptance remain open;
+no empirical A/B improvement is inferred from these scenarios.
+
 ## Current Candidate Qualification: 2026-10-12
 
 Published `4ff6a814` passes frontend and browser CI in run38303109399;

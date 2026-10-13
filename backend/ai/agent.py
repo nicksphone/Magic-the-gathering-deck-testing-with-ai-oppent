@@ -204,11 +204,53 @@ class AIAgent:
             item = stack_items[0]
             from rules_engine.targeting import stack_source_card
             source = stack_source_card(state, item)
+            from rules_engine.land_types import BASIC_TYPES, effective_type_line, has_land_type
+            from rules_engine.mana_abilities import tap_only_outputs
+            hold_printed_low = False
+            if (source is not None and getattr(item, 'controller', player_id) != player_id
+                    and stack_object_kind(state, item) == 'spell'
+                    and self.archetype in {'Control', 'Counter-heavy'}
+                    and state.players[player_id].life > 8
+                    and self._board_role(state, player_id) in {'convert', 'control'}
+                    and all('Land' in effective_types(state, state.cards[cid])
+                        and 'Creature' not in effective_types(state, state.cards[cid])
+                        and isinstance(state.cards[cid].oracle_text, str)
+                        and not without_reminder_text(state.cards[cid].oracle_text).strip()
+                        and effective_type_line(state, state.cards[cid])
+                        and any(has_land_type(state, state.cards[cid], subtype) for subtype in BASIC_TYPES)
+                        and tap_only_outputs(state, state.cards[cid], ignore_readiness=True)
+                        for cid in state.players[3 - player_id].battlefield)
+                    and not should_force_inevitability_line(state.turn, self.archetype, self.opponent_archetype)):
+                from knowledge.service import estimate_for
+                from rules_engine.printed_body import printed_body_gaps
+                from rules_engine.mana import fixed_mana_vector
+                from rules_engine.mana_abilities import _fixed_only_mana_text, mana_ability_specs
+                estimate = estimate_for(source)
+                body = (source.oracle_text or '').strip()
+                mana_rows = mana_ability_specs(source, state)
+                # Reconstruct only fixed typed outputs, never an unknown effect tail.
+                known_tap_text = '\n'.join('{T}: Add ' + ''.join(
+                    '{' + color + '}' for color in 'WUBRGC' for _ in range(vector.get(color, 0))) + '.'
+                    for _, cost, effect in mana_rows
+                    if cost == '{T}' and (vector := fixed_mana_vector(effect)))
+                whole_body_covered = (not body or (_fixed_only_mana_text(body)
+                    and bool(mana_rows) and all(cost == '{T}' for _, cost, _ in mana_rows)
+                    and body == known_tap_text
+                    and bool(tap_only_outputs(state, source, ignore_readiness=True))))
+                # Printed low tier is advisory only in a stable, covered public context.
+                hold_printed_low = (estimate is not None
+                    and whole_body_covered
+                    and not any(limit.startswith('known_gap:') or limit in {
+                        'trigger_conditions_and_frequency_not_evaluated',
+                        'unaccounted_raw_paragraph', 'dynamic_or_unknown_numeric_payload',
+                    } for limit in estimate.limits)
+                    and not printed_body_gaps(source)
+                    and self._printed_major_threat(state, source) is False)
             if (
                 getattr(item, "controller", player_id) != player_id
                 and source is not None
                 and "Creature" in effective_types(state, source)
-                and self._stack_item_threat_score(state, item.id, player_id) < 2.0
+                and (self._stack_item_threat_score(state, item.id, player_id) < 2.0 or hold_printed_low)
             ):
                 legal_moves = [
                     move for move in legal_moves
