@@ -12,12 +12,13 @@ from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from tests.extra_sequence_support import position
+from tests.fixture_state_support import controlled_library_position
 
 FIXTURES = Path(__file__).parent / 'fixtures/library_reorder'
 
 
 def setup(name, seat, size=8):
-    state = position(seat)
+    state = controlled_library_position(seat)
     for cid in state.players[seat].library:
         del state.cards[cid]
     state.players[seat].library.clear()

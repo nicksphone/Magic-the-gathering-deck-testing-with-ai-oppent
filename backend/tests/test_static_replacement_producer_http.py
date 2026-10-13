@@ -12,6 +12,7 @@ from tests.test_linked_damage_targets import raw_card
 from tests.test_self_graveyard_replacement_audit import SELF, ROWS as BASE, snap
 from tests.test_self_graveyard_replacement_interactions import ROWS
 from tests.test_self_graveyard_cost_routing import tower_position
+from tests.fixture_state_support import adopt_fixture_state
 
 
 def install(repo, client, state):
@@ -23,9 +24,7 @@ def install(repo, client, state):
                            'sandbox': True, 'controller_a': 'human', 'controller_b': 'human', 'seed': 7221})
     assert response.status_code == 200, response.text
     controller = main.ACTIVE_MATCHES[response.json()['id']]
-    state.id = controller.state.id
-    controller.state = state
-    main._persist_active_match(repo, controller)
+    adopt_fixture_state(controller, state, repo)
     return controller
 
 

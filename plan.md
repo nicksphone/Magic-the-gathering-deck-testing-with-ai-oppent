@@ -7,6 +7,12 @@ counts belong to their exact source revisions; they do not certify current HEAD.
 
 ## Goal And Constraints
 
+The user-facing delivery is one app with one launcher and one interface; internal
+services may remain separate. Target Linux first, then Windows and macOS. Browser
+acceptance includes Chrome, Brave and Firefox. Chromium-only evidence does not
+certify all three browsers, and these priorities do not reduce Gates 1--3 or the
+five-phase AI/data plan.
+
 Finish a reliable two-player Magic deck tester with real rules, human and AI
 pilots, custom and built-in decks, BO3 play, reproducible simulation, canonical
 card knowledge and measured seasoned-player AI across deck styles. The original
