@@ -414,9 +414,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/state.py": {
-    "mtime": 1791881589.0550148,
-    "seen": 1791881752.186646,
-    "ast_hash": "ff59f782e9f2d471a0d8fdf8b3f52019",
+    "mtime": 1791920785.1750796,
+    "seen": 1791920906.9039233,
+    "ast_hash": "35635c17773f6fc8560b2d668ba57aa5",
     "semantic_hash": ""
   },
   "backend/knowledge/__init__.py": {
@@ -5676,9 +5676,9 @@
     "semantic_hash": ""
   },
   "backend/training/environment.py": {
-    "mtime": 1791889423.525638,
-    "seen": 1791889559.079108,
-    "ast_hash": "3961fcf7529dc368b95ba65e5ae810d1",
+    "mtime": 1791920785.1750796,
+    "seen": 1791920906.909031,
+    "ast_hash": "51d74301c5110fe9dde501e9024d1c3a",
     "semantic_hash": ""
   },
   "docs/audits/2026-09-27-api-validation-jev-provenance.json": {
@@ -18285,6 +18285,18 @@
     "mtime": 1791915830.584051,
     "seen": 1791915981.6692278,
     "ast_hash": "bbb9d256dee344dc387f626f3ca61a2a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_training_reset_capture_birth.py": {
+    "mtime": 1791920785.1760795,
+    "seen": 1791920906.9088402,
+    "ast_hash": "778c8ed272883082e8133b57ed4ff1f5",
+    "semantic_hash": ""
+  },
+  "docs/testing/training-reset-birth-identity.md": {
+    "mtime": 1791920785.2220788,
+    "seen": 1791920906.9117084,
+    "ast_hash": "08657bd4e4b4c8848878f53ac87b5ff4",
     "semantic_hash": ""
   }
 }

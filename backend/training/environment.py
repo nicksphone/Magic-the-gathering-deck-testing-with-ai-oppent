@@ -149,8 +149,7 @@ class TrainingEnvironment:
             'engine_hash': _engine_hash(),
             'metadata_source': 'card_data/builtin_oracle_seed.json',
         }
-        state = MatchFactory.from_decks(*decks, seed=seed)
-        state.id = _digest(provenance)
+        state = MatchFactory.from_decks(*decks, seed=seed, game_id=_digest(provenance))
         # Policies, not engine defaults, must resolve supported private choices.
         state.mechanic_choice_players = {1, 2}
         state.replacement_choice_required = True

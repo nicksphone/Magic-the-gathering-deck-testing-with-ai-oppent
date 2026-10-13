@@ -343,7 +343,12 @@ class MatchFactory:
         player_a_name: str = "Player A",
         player_b_name: str = "Player B",
         seed: int | None = None,
+        *,
+        game_id: str | None = None,
     ) -> MatchState:
+        if game_id is not None and (type(game_id) is not str or not game_id
+                or not game_id.isprintable() or any(c.isspace() for c in game_id)):
+            raise ValueError('game_id must be a nonempty clean string or None')
         cards: dict[str, CardInstance] = {}
         sideboard_inventory = {}
         p1 = PlayerState(id=1, name=player_a_name)
@@ -405,7 +410,8 @@ class MatchFactory:
                 sideboard_inventory[cid] = {'owner': owner, 'stock_key': raw_item['card_name']}
                 player.library.append(cid)
 
-        match = MatchState(id=str(uuid.uuid4()), players={1: p1, 2: p2}, cards=cards, stack=[])
+        match = MatchState(id=game_id if game_id is not None else str(uuid.uuid4()),
+                           players={1: p1, 2: p2}, cards=cards, stack=[])
         match.starting_decks = {1: deepcopy(deck_a), 2: deepcopy(deck_b)}
         from ai.sideboard_facts import initialize
         initialize(match, sideboard_inventory)
