@@ -32,8 +32,23 @@ output path exclusively before input processing. A failed reservation is retaine
 as an empty non-artifact, never interpreted as learned data.
 
 No `ai/data/matchup_profiles.json` or fabricated contextual-prior data is shipped.
-The configured learned-data lineage is the explicitly reviewed preconsumer epoch;
-the new native admission epoch requires its own reviewed repin before consumption.
+The later reviewed lineage update retains the measured source-base `7c5e933a`,
+but replaces the two stale hashes with the authentic native producer's backend
+`9a9b0bd326a05e05b36ac3a01819f9d22709586a78da3c2a50352cf40f78da67`
+and source binding
+`123b889fbe544bac3dd31689baf793be55daac1da1976210cf034bc41ac212fa`.
+Every loader/cache/CLI function, fallback and advisory coefficient is unchanged.
+Default-loader tests admit only this exact epoch and reject old or mixed tuples.
+
+On published `fb3291f6` plus this three-path update, ten whole component modules
+pass 367 ordinary cases in 57.81 seconds. The whole 46-case builtin metadata
+refresh module separately passes in 38.15 seconds on owned memory/file SQLite,
+with real ASGI choices and in-process state/controller restore. It explicitly
+forbids default database and lifespan startup; this is not a listening-server
+or subprocess cold-restart certificate. Original source bytes are unchanged;
+runtime media generation is recorded separately. These gates do not qualify
+the still-active matrix or generate learned data. See
+[the exact epoch boundary](task32-measured-epoch-repin.md).
 
 ## Native Execution
 

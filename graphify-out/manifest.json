@@ -120,9 +120,9 @@
     "semantic_hash": ""
   },
   "backend/ai/matchup_profiles.py": {
-    "mtime": 1791858240.3387501,
-    "seen": 1791858400.8202665,
-    "ast_hash": "bcff4d40b06473ce345731e20a638815",
+    "mtime": 1791863719.6951778,
+    "seen": 1791863827.2744472,
+    "ast_hash": "6ed4adce11e0892043bd5b04d9afc45b",
     "semantic_hash": ""
   },
   "backend/ai/ordered_targets.py": {
@@ -8286,9 +8286,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791862051.0042236,
-    "seen": 1791862158.540623,
-    "ast_hash": "da24869b5cc0363c46436ae20a701fd3",
+    "mtime": 1791863719.743177,
+    "seen": 1791863827.279722,
+    "ast_hash": "9a4855d66ba6f61fdc6ae71c5d3da5e0",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -17808,9 +17808,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-phase3-groundwork-current.md": {
-    "mtime": 1791858519.627311,
-    "seen": 1791858627.0892792,
-    "ast_hash": "fb87d503cfc4afc4d9fa625422851d62",
+    "mtime": 1791863719.742177,
+    "seen": 1791863827.2786882,
+    "ast_hash": "f45d60f0aef6aa3eed91981d3db67e31",
     "semantic_hash": ""
   },
   "docs/testing/learned-matchup-profile-protocol-current.md": {
@@ -17889,6 +17889,18 @@
     "mtime": 1791862023.3836894,
     "seen": 1791862158.5404923,
     "ast_hash": "ced488f987475d0a76721d35a37732be",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_matchup_profiles_epoch.py": {
+    "mtime": 1791863719.6951778,
+    "seen": 1791863827.2772508,
+    "ast_hash": "b3cceaddccdefbe1752efc9d8eeb1729",
+    "semantic_hash": ""
+  },
+  "docs/testing/task32-measured-epoch-repin.md": {
+    "mtime": 1791863719.6951778,
+    "seen": 1791863827.2795973,
+    "ast_hash": "586c2f333e8af3d2d04ef6c2d59c505f",
     "semantic_hash": ""
   }
 }

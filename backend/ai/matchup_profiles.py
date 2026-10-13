@@ -17,8 +17,8 @@ QUALITY_KEYS = ('missed_land_drops', 'unused_mana_passes', 'lethal_misses',
 # Reviewed measurement lineage, NOT a hash of the newly installed consumer.
 EXPECTED_LINEAGE = {
     'source_base_commit': '7c5e933a73755b53da5efd50159c1bb248cf4906',
-    'backend_sha256': '57b0b0e28dfa2896b14b52505e8b978da4a6cc3c65202a86b738419101c9003c',
-    'source_binding_sha256': '7059b869b0a7693a8d4a463dffc44e39e45708280e56854c499218f2dedd59ce',
+    'backend_sha256': '9a9b0bd326a05e05b36ac3a01819f9d22709586a78da3c2a50352cf40f78da67',
+    'source_binding_sha256': '123b889fbe544bac3dd31689baf793be55daac1da1976210cf034bc41ac212fa',
 }
 
 

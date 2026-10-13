@@ -82,6 +82,14 @@ plan's measured A/B or bounded-search acceptance. Sideboarding private-fact
 capture is under implementation; completed-game coverage, actual selection,
 legal between-game transitions and a real BO3 swap remain unfinished.
 
+The reviewed measured-epoch update changes only two lineage hashes, preserving
+the actual `7c5e933a` source base and every consumer function. Its composition
+over published `fb3291f6` passes 367 ordinary cases in ten whole modules; the
+whole 46-case builtin metadata-refresh SQLite/ASGI module separately passes.
+Old and mixed measurement tuples reject through the default loader. This is
+preparation for genuine terminal data, not a completed matrix, generated learned
+table or A/B result. See [epoch admission](docs/testing/task32-measured-epoch-repin.md).
+
 ## Current Candidate Qualification: 2026-10-12
 
 Published `4ff6a814` passes frontend and browser CI in run38303109399;
