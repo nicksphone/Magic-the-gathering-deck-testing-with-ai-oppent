@@ -89,7 +89,8 @@ def settings():
         config[name] = path if name == "python" else path.resolve()
     runtime = config["runtime"]
     require(not runtime.is_relative_to(SOURCE) and runtime != Path("/") and runtime != Path.home())
-    require(not SOURCE.is_relative_to(runtime) and not config["dist"].is_relative_to(runtime))
+    require(not SOURCE.is_relative_to(runtime) and not config["dist"].is_relative_to(runtime)
+            and not runtime.is_relative_to(config["dist"]))
     require(not config["key"].is_relative_to(config["dist"]) and not private_file(os.environ["MTG_OPERATOR_CONFIG"]).is_relative_to(config["dist"]))
     require(config["dist"].is_dir() and (config["dist"] / "index.html").is_file())
     require(config["python"].is_file() and os.access(config["python"], os.X_OK))

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 from game_state.state import MatchFactory, Step, Zone
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -183,7 +184,7 @@ def test_state_actions_repeat_when_a_lord_dies_and_its_buff_disappears() -> None
 
 def test_cascading_death_triggers_share_one_order_choice_after_restore() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck, seed=9)
+    state = controlled_basic_game(deck, deck, seed=9)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.trigger_order_choice_required = True

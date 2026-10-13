@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,7 +15,7 @@ from rules_engine.stack_engine import resolve_top_of_stack
 
 def _state():
     deck = [{"quantity": 60, "card_name": "Swamp"}]
-    state = MatchFactory.from_decks(deck, deck, seed=919)
+    state = controlled_basic_game(deck, deck, seed=919)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1

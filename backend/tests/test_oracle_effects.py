@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
@@ -1046,7 +1047,7 @@ def test_arboreal_grazer_style_land_from_hand_enters_tapped_without_land_play() 
     from rules_engine.action_validation import ActionRejected, checked_action
 
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck)
+    state = controlled_basic_game(deck, deck)
     # This handler unit resolves during play; pregame entries do not count in land history.
     state.pregame_pending = False
     state.kept_hands = {1, 2}

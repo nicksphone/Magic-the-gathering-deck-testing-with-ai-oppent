@@ -1,4 +1,5 @@
 """Canonical creature-reveal abilities choose at resolution, not on activation."""
+from tests.controlled_basic_game_support import controlled_basic_game
 
 from fastapi.testclient import TestClient
 
@@ -27,7 +28,7 @@ MILITIA_TEXT = (
 
 def setup(oracle_text: str):
     deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=17)
+    state = controlled_basic_game(deck, deck, seed=17)
     state.pregame_pending = False
     player = state.players[1]
     source = state.cards[player.hand[0]]

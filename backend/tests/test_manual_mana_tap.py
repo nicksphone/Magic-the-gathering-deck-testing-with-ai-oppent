@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
@@ -39,7 +40,7 @@ def test_tap_lands_bulk_adds_mana_and_taps_requested_count() -> None:
 
 def _mana_game():
     deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest", "oracle_text": "{T}: Add {G}."}]
-    state = MatchFactory.from_decks(deck, deck, seed=8)
+    state = controlled_basic_game(deck, deck, seed=8)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN

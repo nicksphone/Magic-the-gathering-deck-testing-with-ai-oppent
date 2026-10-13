@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 from game_state.state import CardInstance, MatchFactory, StackItem, Zone
 from rules_engine.events import emit_event
@@ -352,7 +353,7 @@ def test_trigger_stack_items_include_order_metadata() -> None:
 
 def test_human_can_order_simultaneous_triggers_and_resume_stack() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=22)
+    state = controlled_basic_game(deck, deck, seed=22)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1

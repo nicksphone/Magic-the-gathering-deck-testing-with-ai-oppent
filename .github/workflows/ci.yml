@@ -23,6 +23,10 @@ jobs:
         run: python .github/scripts/ci_backend_capacity.py
       - name: Backend metadata reporter tests
         run: python -m unittest discover -s .github/scripts/tests -v
+      - name: Operator file-only boundary regressions
+        run: |
+          python ops/caddy/test_runtime_dist_boundary.py
+          python ops/caddy/test_runtime_inventory.py
       - name: Backend tests
         id: backend_tests
         env:

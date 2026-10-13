@@ -1,3 +1,4 @@
+from tests.controlled_basic_game_support import controlled_basic_game
 import pytest
 
 from card_data.seed_cards import seed_card_payload
@@ -11,7 +12,7 @@ from rules_engine.state_based_actions import apply_state_based_actions
 
 def _state():
     deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest", "oracle_text": "{T}: Add {G}."}]
-    state = MatchFactory.from_decks(deck, deck, seed=37)
+    state = controlled_basic_game(deck, deck, seed=37)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN

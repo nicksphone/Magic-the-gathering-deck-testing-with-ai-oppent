@@ -1,3 +1,4 @@
+from tests.controlled_basic_game_support import controlled_basic_game
 from ai.agent import AIAgent
 from card_data.seed_cards import seed_card_payload
 from effects.registry import resolve_effect
@@ -10,7 +11,7 @@ from rules_engine.engine import RulesEngine
 
 def _survey_state():
     deck = [{"quantity": 60, "card_name": "Mountain"}]
-    state = MatchFactory.from_decks(deck, deck, seed=823)
+    state = controlled_basic_game(deck, deck, seed=823)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     payload = seed_card_payload("Cartographer's Survey")

@@ -1,3 +1,4 @@
+from tests.controlled_basic_game_support import controlled_basic_game
 from ai.agent import AIAgent
 from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -11,7 +12,7 @@ from rules_engine.stack_engine import resolve_top_of_stack
 
 def _atraxa_state():
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck, seed=1994)
+    state = controlled_basic_game(deck, deck, seed=1994)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     source = seed_card_payload("Atraxa, Grand Unifier")

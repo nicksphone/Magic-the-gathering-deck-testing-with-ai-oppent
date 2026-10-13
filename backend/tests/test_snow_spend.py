@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 import pytest
 
@@ -22,7 +23,7 @@ SEARCH_FOR_GLORY = (
 
 def _search_state(snow_colors: dict[str, int]):
     deck = [{"quantity": 60, "card_name": "Swamp"}]
-    state = MatchFactory.from_decks(deck, deck, seed=933)
+    state = controlled_basic_game(deck, deck, seed=933)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1

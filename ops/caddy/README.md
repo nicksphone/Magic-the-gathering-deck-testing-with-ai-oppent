@@ -135,7 +135,11 @@ This is a schema example, not valid credentials or tested TLS material. Origin
 must be one canonical explicit HTTPS hostname and unprivileged port; backend
 port must differ. Paths cannot contain whitespace/Caddy control syntax. Both
 listeners remain 127.0.0.1 regardless of hostname. Runtime cannot be NFS or source,
-and must be private. Existing runtime source pins must match; upgrades require
+and must be private. Runtime and dist must not contain one another; placing
+runtime below dist could expose game data through the static file server.
+The file-only boundary regression is documented in
+`../../docs/testing/operator-dist-runtime-boundary.md`.
+Existing runtime source pins must match; upgrades require
 a separately prepared runtime and verified migration/restore, not copying over
 old code or deleting data. Private config/key files cannot lie inside served dist.
 

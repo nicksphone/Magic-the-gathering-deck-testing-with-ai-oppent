@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 from effects.handlers import copy_ability, copy_spell, counter_ability, counter_spell
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -9,9 +10,9 @@ from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.targeting import stack_object_kind
 
 
-def _state():
+def _state(*, controlled=False):
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=935)
+    state = (controlled_basic_game(deck, deck, seed=935) if controlled else MatchFactory.from_decks(deck, deck, seed=935))
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.priority_player = 1
@@ -217,7 +218,7 @@ def test_copied_permanent_spell_enters_as_token_without_moving_card() -> None:
 
 
 def test_twincast_cast_resolves_copy_before_original_after_priority_passes() -> None:
-    state = _state()
+    state = _state(controlled=True)
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["U"] = 2
     _bolt(state)
@@ -250,7 +251,7 @@ def test_http_twincast_action_exposes_copy_on_stack_before_resolution() -> None:
     from fastapi.testclient import TestClient
     from main import ACTIVE_MATCHES, MatchController, app
 
-    state = _state()
+    state = _state(controlled=True)
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["U"] = 2
     _bolt(state)
@@ -370,7 +371,7 @@ def test_counterspell_copy_cannot_target_itself() -> None:
 
 
 def test_creature_spell_copy_offers_only_legal_new_creature_targets() -> None:
-    state = _state()
+    state = _state(controlled=True)
     _bolt(state)
     spell = state.cards["bolt"]
     spell.name = "Murder"
@@ -703,7 +704,7 @@ def test_ai_redirects_divided_copy_damage_to_opponent() -> None:
 
 
 def test_twincast_divided_copy_finishes_only_after_all_target_choices() -> None:
-    state = _state()
+    state = _state(controlled=True)
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["U"] = 2
     _pyrotechnics(state)

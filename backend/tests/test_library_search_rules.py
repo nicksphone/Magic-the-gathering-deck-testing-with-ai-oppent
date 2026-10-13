@@ -1,3 +1,4 @@
+from tests.controlled_basic_game_support import controlled_basic_game
 from effects.registry import resolve_effect
 from ai.agent import AIAgent
 from game_state.state import CardInstance, MatchFactory, Zone
@@ -13,9 +14,9 @@ CULTIVATE_TEXT = (
 )
 
 
-def _state_with_searcher() -> object:
+def _state_with_searcher(*, controlled=False) -> object:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck, seed=11)
+    state = (controlled_basic_game(deck, deck, seed=11) if controlled else MatchFactory.from_decks(deck, deck, seed=11))
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     for cid in state.players[1].library:
@@ -45,7 +46,7 @@ def test_entomb_searches_any_card_into_graveyard() -> None:
 
 
 def test_demonic_tutor_does_not_reveal_hidden_hand_selection_in_log() -> None:
-    state = _state_with_searcher()
+    state = _state_with_searcher(controlled=True)
     chosen = state.players[1].library[-1]
     state.cards[chosen].name = "Lightning Bolt"
     spell = CardInstance(
@@ -157,7 +158,7 @@ def test_http_entomb_choice_moves_selected_card_to_graveyard() -> None:
 
 
 def test_reanimator_ai_entombs_creature_instead_of_mana_fixing_land() -> None:
-    state = _state_with_searcher()
+    state = _state_with_searcher(controlled=True)
     swamp, griselbrand = state.players[1].library[-2:]
     state.cards[swamp].name = "Swamp"
     state.cards[swamp].type_line = "Basic Land — Swamp"
@@ -192,7 +193,7 @@ def test_reanimator_ai_entombs_creature_instead_of_mana_fixing_land() -> None:
 
 
 def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
-    state = _state_with_searcher()
+    state = _state_with_searcher(controlled=True)
     state.mechanic_choice_players = {1}
     state.cards[state.players[1].hand[0]].name = "Counterspell"
     state.cards[state.players[1].hand[0]].mana_cost = "{U}{U}"
@@ -338,7 +339,7 @@ def test_library_search_hides_candidates_until_resolution_and_honors_choice() ->
 def test_cultivate_human_choice_orders_battlefield_then_hand() -> None:
     from rules_engine.engine import RulesEngine
 
-    state = _state_with_searcher()
+    state = _state_with_searcher(controlled=True)
     first, second = state.players[1].library[-2:]
     state.cards[first].name = "Plains"
     state.cards[first].type_line = "Basic Land - Plains"
@@ -461,7 +462,7 @@ def test_company_bottom_order_keeps_spell_unresolved_until_second_choice() -> No
     from rules_engine.engine import RulesEngine
     from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 
-    state = _state_with_searcher()
+    state = _state_with_searcher(controlled=True)
     top = state.players[1].library[-6:]
     for cid in top[:2]:
         card = state.cards[cid]
@@ -508,7 +509,7 @@ def test_topdeck_put_uses_resolution_library_and_resumes_stack_after_snapshot() 
     from rules_engine.engine import RulesEngine
     from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 
-    state = _state_with_searcher()
+    state = _state_with_searcher(controlled=True)
     player = state.players[1]
     top = player.library[-5:]
     for cid in top:
@@ -575,7 +576,7 @@ def test_topdeck_put_may_choose_zero_and_rejects_more_than_limit() -> None:
 
 
 def test_topdeck_creature_mana_value_counts_colorless_symbol() -> None:
-    state = _state_with_searcher()
+    state = _state_with_searcher(controlled=True)
     top = state.players[1].library[-2:]
     costly, eligible = top
     state.cards[costly].name = "Thought-Knot Seer"
@@ -595,7 +596,7 @@ def test_http_topdeck_put_choice_is_offered_only_after_resolution() -> None:
     from main import ACTIVE_MATCHES, MatchController, app
     from rules_engine.engine import RulesEngine
 
-    state = _state_with_searcher()
+    state = _state_with_searcher(controlled=True)
     top = state.players[1].library[-6:]
     for cid in top:
         state.cards[cid].types = ["Creature"]
