@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from effects.registry import resolve_effect
 from rules_engine.continuous import effective_power, effective_toughness
@@ -1180,7 +1180,7 @@ def test_real_noncreature_land_loyalty_clause_uses_legal_target_and_keywords() -
         state.cards[cid].zone = Zone.BATTLEFIELD
     state.cards[land_id].tapped = True
     state.cards[animated_id].types.append("Creature")
-    oracle = fallback_card_payload("Nissa, Who Shakes the World")
+    oracle = seed_card_payload("Nissa, Who Shakes the World")
     assert oracle is not None
     nissa = CardInstance(
         id="nissa", name=oracle["name"], owner=1, controller=1,

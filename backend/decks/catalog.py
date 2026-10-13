@@ -8,7 +8,7 @@ from typing import Literal
 import unicodedata
 
 from api_contracts import InputModel
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.hydration import local_knowledge, ready_for_match
 
 DATA_PATH = Path(__file__).with_name('historical_event_catalog.json')
@@ -136,7 +136,7 @@ class CatalogFacts:
         result = dict(local_knowledge(self.repo, names))
         for name in names:
             raw = self.raw.get(_key(name))
-            seed = fallback_card_payload(name)
+            seed = seed_card_payload(name)
             if (name.casefold() in result or raw is None
                     or seed and ready_for_match(seed)):
                 continue

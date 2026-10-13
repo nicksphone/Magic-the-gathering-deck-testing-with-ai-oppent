@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from card_data.display import select_display_image_uri
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.hydration import hydrate_deck_cards, ready_for_match, cached_json, local_knowledge
 from card_data.search import fuzzy_card_lookup
 from card_data.sync import ScryfallSyncService
@@ -23,9 +23,9 @@ class CardService:
             {
                 "id": card.id,
                 "name": card.name,
-                "mana_cost": card.mana_cost or (fallback_card_payload(card.name) or {}).get("mana_cost", ""),
-                "type_line": card.type_line or (fallback_card_payload(card.name) or {}).get("type_line", ""),
-                "oracle_text": card.oracle_text or (fallback_card_payload(card.name) or {}).get("oracle_text", ""),
+                "mana_cost": card.mana_cost or (seed_card_payload(card.name) or {}).get("mana_cost", ""),
+                "type_line": card.type_line or (seed_card_payload(card.name) or {}).get("type_line", ""),
+                "oracle_text": card.oracle_text or (seed_card_payload(card.name) or {}).get("oracle_text", ""),
                 "image_uri": select_display_image_uri(card, name=card.name, type_line=card.type_line or ""),
                 "colors": card.colors.split(",") if card.colors else [],
                 'loyalty': getattr(card, 'loyalty', None),
@@ -52,7 +52,7 @@ class CardService:
             card = cached.get(name.lower())
             profile = ScryfallSyncService.canonical_local_profile(knowledge.get(name.casefold()), name)
             raw = profile["card_data"] if profile else {}
-            fallback = fallback_card_payload(name) or {}
+            fallback = seed_card_payload(name) or {}
             faces = metadata.get('card_faces') or []
             rulings = cached_json(getattr(card, 'rulings_json', ''), list) if card else []
             type_line = str(metadata.get('type_line') or '')

@@ -4,11 +4,11 @@ from game_state.state import CardInstance, MatchFactory, Step, Zone
 from effects.handlers import counter_spell
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 
 
 def test_stack_resolves_after_priority_passes() -> None:
-    deck_a = [{**fallback_card_payload('Lightning Bolt'), "quantity": 60, "card_name": "Lightning Bolt"}]
+    deck_a = [{**seed_card_payload('Lightning Bolt'), "quantity": 60, "card_name": "Lightning Bolt"}]
     deck_b = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck_a, deck_b)
     engine = RulesEngine()
@@ -29,7 +29,7 @@ def test_stack_resolves_after_priority_passes() -> None:
 
 def test_casting_player_retains_priority_for_additional_spell() -> None:
     deck_a = [
-        {**fallback_card_payload('Lightning Bolt'), "quantity": 30, "card_name": "Lightning Bolt"},
+        {**seed_card_payload('Lightning Bolt'), "quantity": 30, "card_name": "Lightning Bolt"},
         {"quantity": 30, "card_name": "Mountain"},
     ]
     deck_b = [{"quantity": 60, "card_name": "Island"}]

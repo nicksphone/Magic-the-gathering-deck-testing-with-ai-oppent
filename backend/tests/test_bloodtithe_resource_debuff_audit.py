@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import MatchFactory, Step, Zone, object_incarnation
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -58,7 +58,7 @@ def act(state, seat, action):
 
 
 def add(state, name, owner, zone=Zone.HAND):
-    raw = ROWS.get(name) or fallback_card_payload(name)
+    raw = ROWS.get(name) or seed_card_payload(name)
     assert raw and raw['oracle_text'] is not None
     sample = MatchFactory.from_decks([{**raw, 'card_name': name, 'quantity': 1}], [], seed=7107)
     card = deepcopy(next(iter(sample.cards.values())))
@@ -71,7 +71,7 @@ def add(state, name, owner, zone=Zone.HAND):
 
 
 def position(seat):
-    raw = fallback_card_payload('Forest')
+    raw = seed_card_payload('Forest')
     deck = [{**raw, 'quantity': 60, 'card_name': 'Forest'}]
     state = MatchFactory.from_decks(deck, deck, seed=7107)
     state.pregame_pending = False
@@ -202,7 +202,7 @@ def test_full_raw_provenance_printed_bodies_and_wotc_resolution_rulings():
     for row in provenance['sources']:
         assert hashlib.sha256((Path(__file__).parents[1] / row['path']).read_bytes()).hexdigest() == row['sha256']
     assert RAW['object'] == 'card'
-    assert RAW['oracle_text'] == fallback_card_payload(RAW['name'])['oracle_text']
+    assert RAW['oracle_text'] == seed_card_payload(RAW['name'])['oracle_text']
     rulings = json.loads((DIRECTORY / 'bloodtithe-rulings.json').read_text())['data']
     assert any(row['source'] == 'wotc' and 'as Bloodtithe Harvester' in row['comment'] and
                'resolves' in row['comment'] for row in rulings)

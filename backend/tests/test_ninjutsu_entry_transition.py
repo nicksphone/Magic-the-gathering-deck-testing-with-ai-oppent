@@ -1,7 +1,7 @@
 """Canonical S1 transition controls; departure is explicitly controlled setup."""
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, Zone
 from training.environment import TrainingEnvironment
 from tests.test_linked_damage_targets import raw_card
@@ -50,7 +50,7 @@ def test_entry_uses_shared_transition_once_and_stale_guard_never_enters(monkeypa
 @pytest.mark.parametrize('seat', [1, 2])
 def test_two_actual_pending_activations_do_not_follow_entered_then_returned_source(seat):
     env, first, _, info = scenario(seat)
-    extra = [raw_card(env._state, fallback_card_payload('Island'), seat, Zone.BATTLEFIELD).id
+    extra = [raw_card(env._state, seed_card_payload('Island'), seat, Zone.BATTLEFIELD).id
              for _ in range(2)]
     initial = env._state.cards[info['ninja']].zone_change_sequence
     env.step(first)

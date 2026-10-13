@@ -5,7 +5,7 @@ from dataclasses import fields
 
 from ai.agent import AIAgent
 from ai.matchup_profiles import profile_for
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, MatchFactory, MatchState, PlayerState, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack
@@ -84,7 +84,7 @@ def test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability() -> None:
         land_id = player.library.pop()
         player.battlefield.append(land_id)
         state.cards[land_id].zone = Zone.BATTLEFIELD
-    oracle = fallback_card_payload("Ugin, the Spirit Dragon")
+    oracle = seed_card_payload("Ugin, the Spirit Dragon")
     assert oracle is not None
     ugin = CardInstance(
         id="ugin", name=oracle["name"], owner=1, controller=1,
@@ -116,7 +116,7 @@ def test_ai_uses_board_value_to_choose_x_loyalty_sweep() -> None:
     state.players[1].last_land_play_turn = state.turn
 
     def add(name: str, owner: int) -> CardInstance:
-        data = fallback_card_payload(name)
+        data = seed_card_payload(name)
         assert data is not None
         card = CardInstance(
             id=f"{name}-{owner}", name=data["name"], owner=owner, controller=owner,
@@ -155,7 +155,7 @@ def test_ai_does_not_force_x_sweep_for_a_single_low_value_threat() -> None:
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
-    data = fallback_card_payload("Ugin, the Spirit Dragon")
+    data = seed_card_payload("Ugin, the Spirit Dragon")
     assert data is not None
     ugin = CardInstance(id="ugin", name=data["name"], owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Planeswalker"], oracle_text=data["oracle_text"], mana_cost=data["mana_cost"], loyalty=7)
     mystic = CardInstance(id="mystic", name="Elvish Mystic", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{G}", power=1, toughness=1, colors=["G"])
@@ -169,7 +169,7 @@ def test_ai_does_not_force_x_sweep_for_a_single_low_value_threat() -> None:
 def test_ai_announces_only_one_target_for_any_target_damage() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
     state = MatchFactory.from_decks(deck, deck, seed=102)
-    bolt_data = fallback_card_payload("Lightning Bolt")
+    bolt_data = seed_card_payload("Lightning Bolt")
     assert bolt_data is not None
     bolt = CardInstance(
         id="bolt", name=bolt_data["name"], owner=1, controller=1,
@@ -723,10 +723,10 @@ def test_control_ai_holds_small_attacker_back_into_larger_blocker_when_not_press
 
 def test_ai_does_not_counter_its_only_own_spell_on_the_stack() -> None:
     island = {"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}
-    bolt = fallback_card_payload("Lightning Bolt")
+    bolt = seed_card_payload("Lightning Bolt")
     assert bolt
     for counter_name in ("Spell Pierce", "Counterspell"):
-        counter = fallback_card_payload(counter_name)
+        counter = seed_card_payload(counter_name)
         assert counter
         state = MatchFactory.from_decks([island], [island], seed=935713)
         state.pregame_pending = False
@@ -784,9 +784,9 @@ def test_control_ai_holds_counter_for_low_impact_creature_but_stops_planeswalker
         land_id = state.players[1].library.pop()
         state.cards[land_id].zone = Zone.BATTLEFIELD
         state.players[1].battlefield.append(land_id)
-    counter = fallback_card_payload("Counterspell")
-    grazer = fallback_card_payload("Arboreal Grazer")
-    ugin = fallback_card_payload("Ugin, the Spirit Dragon")
+    counter = seed_card_payload("Counterspell")
+    grazer = seed_card_payload("Arboreal Grazer")
+    ugin = seed_card_payload("Ugin, the Spirit Dragon")
     assert counter and grazer and ugin
     held = CardInstance("held-counter", counter["name"], 1, 1, Zone.HAND, ["Instant"], mana_cost=counter["mana_cost"], oracle_text=counter["oracle_text"])
     state.cards[held.id] = held
@@ -830,8 +830,8 @@ def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
         land_id = state.players[1].library.pop()
         state.cards[land_id].zone = Zone.BATTLEFIELD
         state.players[1].battlefield.append(land_id)
-    payload = fallback_card_payload("Counterspell")
-    removal = fallback_card_payload("Go for the Throat")
+    payload = seed_card_payload("Counterspell")
+    removal = seed_card_payload("Go for the Throat")
     assert payload and removal
     for index in range(2):
         card = CardInstance(f"counter-{index}", payload["name"], 1, 1, Zone.HAND, ["Instant"], mana_cost=payload["mana_cost"], oracle_text=payload["oracle_text"])
@@ -1418,7 +1418,7 @@ def test_ai_holds_variable_sweeper_without_creatures_to_kill() -> None:
         cid = player.library.pop()
         player.battlefield.append(cid)
         state.cards[cid].zone = Zone.BATTLEFIELD
-    oracle = fallback_card_payload("The Meathook Massacre")
+    oracle = seed_card_payload("The Meathook Massacre")
     assert oracle is not None
     spell = CardInstance(
         "sweeper", oracle["name"], 1, 1, Zone.HAND, ["Enchantment"],
@@ -1455,7 +1455,7 @@ def test_ai_variable_sweeper_spends_only_enough_to_kill_threat() -> None:
         cid = player.library.pop()
         player.battlefield.append(cid)
         state.cards[cid].zone = Zone.BATTLEFIELD
-    oracle = fallback_card_payload("The Meathook Massacre")
+    oracle = seed_card_payload("The Meathook Massacre")
     assert oracle is not None
     spell = CardInstance(
         "sweeper", oracle["name"], 1, 1, Zone.HAND, ["Enchantment"],

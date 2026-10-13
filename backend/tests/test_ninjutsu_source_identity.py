@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import Zone
 from training.environment import TrainingEnvironment
 from tests.test_linked_damage_targets import raw_card
@@ -114,7 +114,7 @@ def test_unverifiable_pending_legacy_reference_does_not_guess_or_refund(seat, re
 def test_new_activation_can_reference_returned_hand_object(seat):
     env, action, _, info = scenario(seat)
     for _ in range(2):
-        raw_card(env._state, fallback_card_payload('Island'), seat, Zone.BATTLEFIELD)
+        raw_card(env._state, seed_card_payload('Island'), seat, Zone.BATTLEFIELD)
     env.step(action)
     relocate(env._state, info['ninja'], Zone.EXILE)
     relocate(env._state, info['ninja'], Zone.HAND)
@@ -133,7 +133,7 @@ def test_canonical_cycling_draw_is_independent_of_departed_source(game, seat):
     env = position(seat)
     rows = json.loads((Path(__file__).parent / 'fixtures/death_cycle_ordering/canonical.json').read_text())
     cycler = raw_card(env._state, rows['Lonely Sandbar'], seat, Zone.HAND)
-    raw_card(env._state, fallback_card_payload('Island'), seat, Zone.BATTLEFIELD)
+    raw_card(env._state, seed_card_payload('Island'), seat, Zone.BATTLEFIELD)
     env._state.players[seat].mana_pool = {}
     client, match = game
     identifier = retain(match, env)

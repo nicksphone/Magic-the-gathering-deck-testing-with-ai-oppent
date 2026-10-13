@@ -5,7 +5,7 @@ import json
 
 from ai.deck_analysis import analyze_deck
 from card_data import hydration
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from decks.expansion_top_decks import EXPANSION_TOP_DECKS
 from decks.service import DeckService
 from decks.catalog import load_catalog
@@ -33,7 +33,7 @@ def facts_inventory(board):
     """Fixture identity equivalence, not access to a future game library."""
     result = Counter()
     for card in board:
-        raw = fallback_card_payload(card['card_name'])
+        raw = seed_card_payload(card['card_name'])
         if raw is None:
             # Catalog facts bind inventory identity, not global runtime admission.
             key = card['card_name'].replace('\u2019', "'").casefold()
@@ -48,7 +48,7 @@ def facts_inventory(board):
 
 
 def full_name(front):
-    raw = fallback_card_payload(front)
+    raw = seed_card_payload(front)
     assert raw and raw['name'].startswith(front + ' // ')
     return raw['name']
 
@@ -65,7 +65,7 @@ def alias_text(text, front, full):
 
 def seed_cache(repo, board):
     for item in board:
-        raw = fallback_card_payload(item['card_name'])
+        raw = seed_card_payload(item['card_name'])
         assert raw and raw.get('scryfall_id')
         repo.upsert_card({'scryfall_id': raw['scryfall_id'], 'name': raw['name'],
             'type_line': raw['type_line'], 'oracle_text': raw.get('oracle_text', ''),
@@ -86,7 +86,7 @@ def prepare(repo, monkeypatch, code, front, mode):
         row.card_faces_json = '[]'
         repo.session.commit()
     if mode != 'offline':
-        monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+        monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     return item
 
 

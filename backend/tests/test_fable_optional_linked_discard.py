@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -44,7 +44,7 @@ def act(state, seat, action):
 
 
 def add(state, name, seat, zone=Zone.HAND):
-    raw = ROWS.get(name) or fallback_card_payload(name)
+    raw = ROWS.get(name) or seed_card_payload(name)
     assert raw and (raw.get('oracle_text') is not None or raw.get('card_faces'))
     sample = MatchFactory.from_decks([{**raw, 'card_name': raw['name'], 'quantity': 1}], [], seed=7107)
     card = deepcopy(next(iter(sample.cards.values())))
@@ -57,7 +57,7 @@ def add(state, name, seat, zone=Zone.HAND):
 
 
 def position(seat):
-    raw = fallback_card_payload('Mountain')
+    raw = seed_card_payload('Mountain')
     deck = [{**raw, 'card_name': 'Mountain', 'quantity': 60}]
     state = MatchFactory.from_decks(deck, deck, seed=7107)
     state.pregame_pending = False
@@ -163,8 +163,8 @@ def test_complete_raw_faces_and_provenance_before_execution():
     assert FABLE['object'] == 'card' and FABLE['layout'] == 'transform'
     assert len(FABLE['card_faces']) == 2
     assert BODY in FABLE['card_faces'][0]['oracle_text']
-    assert fallback_card_payload('Fable of the Mirror-Breaker')['card_faces'] == FABLE['card_faces'] or all(
-        fallback_card_payload('Fable of the Mirror-Breaker')['card_faces'][i]['oracle_text'] == face['oracle_text']
+    assert seed_card_payload('Fable of the Mirror-Breaker')['card_faces'] == FABLE['card_faces'] or all(
+        seed_card_payload('Fable of the Mirror-Breaker')['card_faces'][i]['oracle_text'] == face['oracle_text']
         for i, face in enumerate(FABLE['card_faces']))
 
 

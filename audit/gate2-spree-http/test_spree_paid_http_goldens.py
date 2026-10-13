@@ -1,7 +1,7 @@
 """NEW whole12: actual paid Spree, private actors, mandatory/optional choices, cold lifespans."""
 import pytest
 from spree_paid_http_support import SpreeCase
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 import main
 from game_state.state import Zone
 
@@ -9,7 +9,7 @@ from game_state.state import Zone
 @pytest.fixture
 def offline_decks(monkeypatch):
     monkeypatch.setattr(main, '_hydrate_deck_cards',
-        lambda repo, deck: [{**fallback_card_payload(item['card_name']), **item} for item in deck])
+        lambda repo, deck: [{**seed_card_payload(item['card_name']), **item} for item in deck])
 
 
 CASES = [(actor, mode, copy) for actor in (1, 2) for mode in (0, 1, 2)

@@ -1,5 +1,30 @@
 # Release Acceptance Status
 
+## Latest Reviewed Composition: 2026-10-13
+
+The final reviewed backend composition now passes 2,998 ordinary cases in 82
+whole modules, with zero failures/errors/skips and unchanged source/protected
+input. Current-source HTTP separately passes 18 cases with six cold restores;
+the complete frontend test/lint/build chain passes. The unchanged zero-argument
+configured browser gate completes in 2,263 seconds, including all original
+BO3/recovery/Officer/Cathar programs; its earlier failed fixture and aggregate
+timeout runs remain separate. This does not qualify built HTTPS/LAN deployment
+or arbitrary-card mechanics. Published c259's hosted backend lacks test metadata after platform disk
+exhaustion. The native matrix ends incomplete: 100 resolved series and ten
+resource-limited series, exit 3. No qualified learned data or RC1 claim follows.
+See [the latest exact boundaries](current-c259-reviewed-composition.md).
+
+The isolated reviewed composition over `c2590095` passes 2,553 ordinary cases
+in 70 whole modules, with no failures, errors or skips. A separate natural BO3
+run completes six games in both seat orientations and nine actual different-card
+sideboard swap units. This closes the bounded natural-sideboarding smoke gap,
+not measured AI strength or all original release gates. The whole human-action
+browser program exposes a synthetic hybrid-payment stock mismatch after its
+Saga segment passes; the fixture-only correction requires integrated browser
+acceptance. Current-source HTTP, final hosted CI, genuine terminal matrix data,
+matched quality comparisons and the remaining original gates stay open. See
+[the exact acceptance boundaries](current-c259-reviewed-composition.md).
+
 ## Current Checkpoint: 2026-10-13
 
 Published `837bf513` completes frontend and browser CI, but its protected backend

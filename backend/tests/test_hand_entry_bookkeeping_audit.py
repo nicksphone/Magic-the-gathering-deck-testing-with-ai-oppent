@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import serialize_match_snapshot
 from game_state.state import MatchFactory, Zone, object_incarnation
 from tests.test_linked_damage_targets import raw_card
@@ -94,7 +94,7 @@ def test_ninjutsu_entry_metadata_and_real_entry_trigger_restart(game, tmp_path, 
 
 
 def opening_position(seat, name):
-    basic = {**fallback_card_payload('Island'), 'card_name': 'Island', 'quantity': 60}
+    basic = {**seed_card_payload('Island'), 'card_name': 'Island', 'quantity': 60}
     own = [{**basic, 'quantity': 59}, {**ROWS[name], 'card_name': name, 'quantity': 1}]
     decks = {seat: own, 3-seat: [basic]}
     state = MatchFactory.from_decks(decks[1], decks[2], seed=54)

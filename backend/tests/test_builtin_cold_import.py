@@ -43,7 +43,7 @@ def test_first_import_matches_actual_admitted_local_analysis(repo, monkeypatch, 
     if mode == 'canonical_cache':
         cache_all(repo)
     if mode != 'offline':
-        monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+        monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     parsed = boards(repo)
     before_cards = cards(repo)
     bootstrap.ensure_builtin_decks(repo)
@@ -86,7 +86,7 @@ def test_first_partial_cache_never_claims_concrete_label_then_recovers(repo, mon
     else:
         setattr(cached, missing, None if missing == 'power' else '')
     repo.session.commit()
-    monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+    monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     before_cards = cards(repo)
     bootstrap.ensure_builtin_decks(repo)
     row = builtin(repo, name)
@@ -142,7 +142,7 @@ def test_first_import_actual_http_repository_profile_and_restart(repo, monkeypat
     import main
     if mode == 'canonical_cache':
         cache_all(repo)
-        monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+        monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     bootstrap.ensure_builtin_decks(repo)
     before = rows(repo)
     monkeypatch.setattr(main.app, 'dependency_overrides', {main.get_repo: lambda: repo})

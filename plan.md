@@ -26,6 +26,23 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## October 13 Execution Checkpoint
 
+Final combined backend acceptance now passes 2,998 ordinary cases across 82
+whole modules. Current-source HTTP separately passes 18 cases/six cold restores,
+and frontend test/lint/build and the complete zero-argument configured browser
+program pass. The browser run finishes in 2,263 seconds under aggregate capacity
+45 minutes, preserving every per-program deadline and assertion. Built
+HTTPS/LAN and complete hosted CI remain required; the old c259 hosted
+backend stops with disk exhaustion and no available test counts. The native
+matrix is terminal but incomplete (100 resolved, ten resource-limited series,
+exit 3); no learned profiles or measured-strength completion is inferred.
+
+Latest bounded acceptance: the reviewed composition over `c2590095` passes
+2,553 ordinary cases across 70 whole modules, and a separate natural BO3 run
+completes six games in both seat orientations with nine actual different-card
+sideboard swap units. Full integrated browser/HTTP and hosted CI, terminal
+matchup data, measured quality comparisons and the original Gates 1--3 remain
+required. See [the current evidence boundaries](docs/testing/current-c259-reviewed-composition.md).
+
 The next reviewed composition over published `837bf513` passes 2,147 ordinary
 cases in 54 whole modules, with zero failures, errors or skips and unchanged
 source. It combines bounded profile play advice, private sideboarding, the

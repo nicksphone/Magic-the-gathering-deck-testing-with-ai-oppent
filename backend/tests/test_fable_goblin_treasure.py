@@ -1,4 +1,4 @@
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.token_definitions import named_artifact_token
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
@@ -26,7 +26,7 @@ def test_fable_chapter_goblin_attack_creates_real_treasure_for_colored_mana() ->
     state.active_player = state.priority_player = 1
     fable_id = state.players[1].library.pop()
     fable = state.cards[fable_id]
-    front = fallback_card_payload("Fable of the Mirror-Breaker")["card_faces"][0]
+    front = seed_card_payload("Fable of the Mirror-Breaker")["card_faces"][0]
     fable.name = front["name"]
     fable.oracle_text = front["oracle_text"]
     fable.type_line = front["type_line"]

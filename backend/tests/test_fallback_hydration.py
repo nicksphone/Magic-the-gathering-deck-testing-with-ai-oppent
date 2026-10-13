@@ -3,7 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 import re
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from decks.builtin_decks import BUILTIN_DECKS
 from scripts.export_builtin_oracle_seed import shipped_names
 from main import _hydrate_deck_cards
@@ -11,33 +11,33 @@ from scripts.debug_head_to_head import hydrate_deck as hydrate_diagnostic_deck
 
 
 def test_control_ramp_fallback_catalog_contains_core_fields() -> None:
-    deluge = fallback_card_payload("Memory Deluge")
+    deluge = seed_card_payload("Memory Deluge")
     assert deluge is not None
     assert deluge["mana_cost"] == "{2}{U}{U}"
     assert "Instant" in deluge["type_line"]
 
-    clarion = fallback_card_payload("Clarion Spirit")
+    clarion = seed_card_payload("Clarion Spirit")
     assert clarion is not None
     assert "second spell" in clarion["oracle_text"]
 
-    path = fallback_card_payload("Migration Path")
+    path = seed_card_payload("Migration Path")
     assert path is not None
     assert "Sorcery" in path["type_line"]
     assert path["mana_cost"] == "{3}{G}"
 
-    claim = fallback_card_payload("Claim the Firstborn")
+    claim = seed_card_payload("Claim the Firstborn")
     assert claim is not None
     assert "Gain control" in claim["oracle_text"]
 
-    company = fallback_card_payload("Collected Company")
+    company = seed_card_payload("Collected Company")
     assert company is not None
     assert "top six cards" in company["oracle_text"]
 
-    fable = fallback_card_payload("Fable of the Mirror Breaker")
+    fable = seed_card_payload("Fable of the Mirror Breaker")
     assert fable is not None
     assert "Goblin Shaman creature token" in fable["oracle_text"]
 
-    delver = fallback_card_payload("Delver of Secrets // Insectile Aberration")
+    delver = seed_card_payload("Delver of Secrets // Insectile Aberration")
     assert delver is not None
     assert "transform this creature" in delver["oracle_text"]
     assert len(delver["card_faces"]) == 2
@@ -51,27 +51,27 @@ def test_every_builtin_card_has_provenance_backed_offline_oracle_data() -> None:
         if line.strip()
     }
     for name in names:
-        payload = fallback_card_payload(name)
+        payload = seed_card_payload(name)
         assert payload is not None, name
         assert payload["scryfall_id"], name
         assert payload["oracle_text"], name
         assert payload["type_line"], name
-    assert "Choose one" in fallback_card_payload("Drown in the Loch")["oracle_text"]
-    assert "controller's graveyard" in fallback_card_payload("Drown in the Loch")["oracle_text"]
-    assert len(fallback_card_payload("Brutal Cathar")["card_faces"]) == 2
+    assert "Choose one" in seed_card_payload("Drown in the Loch")["oracle_text"]
+    assert "controller's graveyard" in seed_card_payload("Drown in the Loch")["oracle_text"]
+    assert len(seed_card_payload("Brutal Cathar")["card_faces"]) == 2
 
 
 def test_every_shipped_expansion_card_has_offline_oracle_data() -> None:
     for name in shipped_names():
-        payload = fallback_card_payload(name)
+        payload = seed_card_payload(name)
         assert payload is not None, name
         assert payload["scryfall_id"] and payload["type_line"], name
         assert payload["oracle_text"], name
-    adventure = fallback_card_payload("Imodane's Recruiter")
+    adventure = seed_card_payload("Imodane's Recruiter")
     assert adventure["layout"] == "adventure"
     assert len(adventure["card_faces"]) == 2
     assert adventure["card_faces"][0]["name"] == "Imodane's Recruiter"
-    assert "pay 2 life" in fallback_card_payload("Sacred Foundry")["oracle_text"].lower()
+    assert "pay 2 life" in seed_card_payload("Sacred Foundry")["oracle_text"].lower()
 
 
 def test_hydrate_deck_cards_uses_fallback_when_cache_unavailable() -> None:
@@ -106,8 +106,8 @@ def test_hydrate_deck_cards_merges_partial_cache_rows_with_fallback() -> None:
 
     hydrated = _hydrate_deck_cards(FakeRepo(), [{"quantity": 1, "card_name": "The Wandering Emperor"}])
     card = hydrated[0]
-    assert card["oracle_text"] == fallback_card_payload("The Wandering Emperor")["oracle_text"]
-    assert card["mana_cost"] == fallback_card_payload("The Wandering Emperor")["mana_cost"]
+    assert card["oracle_text"] == seed_card_payload("The Wandering Emperor")["oracle_text"]
+    assert card["mana_cost"] == seed_card_payload("The Wandering Emperor")["mana_cost"]
     assert card["type_line"] == "Legendary Planeswalker"
 
 

@@ -8,7 +8,7 @@ import pickle
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.sync import ScryfallSyncService
 from card_data.hydration import hydrate_deck_cards
 from decks import bootstrap
@@ -75,7 +75,7 @@ def test_actual_HTTP_cold_import_all75_joined_without_card_cache_writes(repo, cl
             metadata = row['card_metadata']
             original = by_name[metadata['name']]
             assert row['quantity'] == original['quantity']
-            seed = fallback_card_payload(original['canonical_name'])
+            seed = seed_card_payload(original['canonical_name'])
             admitted_id = seed['scryfall_id'] if seed else original['scryfall_id']
             assert metadata['scryfall_id'] == admitted_id
             assert metadata['name'] == original['canonical_name']
@@ -162,16 +162,16 @@ def test_template_and_tournament_HTTP_context_and_helper_parity(repo, client):
 
 
 def test_existing_Adventure_seed_faces_remain_priority_with_bounded_canonical_seed_append(repo):
-    seed = deepcopy(fallback_card_payload("Imodane's Recruiter"))
+    seed = deepcopy(seed_card_payload("Imodane's Recruiter"))
     service = DeckService(CatalogFacts(repo, EXPANSION_TOP_DECKS_BY_CODE['OTJ']))
     out = service.import_deck_text('Seed priority', EXPANSION_TOP_DECKS_BY_CODE['OTJ']['deck_text'])
     metadata = next(r['card_metadata'] for r in out['resolved_mainboard_cards']
                     if r['card_metadata']['name'].startswith("Imodane's Recruiter"))
     assert [f['colors'] for f in metadata['card_faces']] == [['R'], ['W']]
     assert 'offline_seed' in metadata['card_data_sources']
-    assert fallback_card_payload("Imodane's Recruiter") == seed
+    assert seed_card_payload("Imodane's Recruiter") == seed
     canonical = next(r for r in RAW.values() if r['name'] == 'Nadu, Winged Wisdom')
-    assert fallback_card_payload('Nadu, Winged Wisdom') == {**canonical, 'scryfall_id': canonical['id']}
+    assert seed_card_payload('Nadu, Winged Wisdom') == {**canonical, 'scryfall_id': canonical['id']}
     assert catalog_context(EXPANSION_TOP_DECKS_BY_CODE['MH3'])['offline_facts']['global_match_hydration_certified'] is False
 
 

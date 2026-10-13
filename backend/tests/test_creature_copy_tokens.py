@@ -1,6 +1,6 @@
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected
 from rules_engine.engine import RulesEngine
@@ -22,9 +22,9 @@ def _state():
 def _put(state, player_id: int, name: str) -> str:
     cid = state.players[player_id].library.pop()
     card = state.cards[cid]
-    data = fallback_card_payload(name) or {}
+    data = seed_card_payload(name) or {}
     if name == "Reflection of Kiki-Jiki":
-        data = fallback_card_payload("Fable of the Mirror-Breaker")["card_faces"][1]
+        data = seed_card_payload("Fable of the Mirror-Breaker")["card_faces"][1]
     card.name = name
     card.zone = Zone.BATTLEFIELD
     card.oracle_text = data.get("oracle_text", "{T}: Add {G}.")

@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 import main
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import serialize_match_snapshot
 from game_state.state import CardInstance, StackItem, Step, Zone
 from persistence.db import DATABASE_PATH, engine
@@ -19,7 +19,7 @@ from persistence.repository import Repository
 
 @pytest.fixture
 def game(monkeypatch):
-    monkeypatch.setattr(main, "_hydrate_deck_cards", lambda repo, deck: [{**fallback_card_payload(item["card_name"]), **item} for item in deck])
+    monkeypatch.setattr(main, "_hydrate_deck_cards", lambda repo, deck: [{**seed_card_payload(item["card_name"]), **item} for item in deck])
     original = dict(main.ACTIVE_MATCHES)
     with TestClient(main.app) as client:
         deck = [{"quantity": 60, "card_name": "Island"}]

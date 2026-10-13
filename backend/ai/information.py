@@ -90,7 +90,7 @@ def known_search_land_count(state, player_id, contains):
     This is an upper bound when hidden removals occurred. Actual resolution
     still searches only the authoritative, legally inspected library options.
     """
-    from card_data.fallback_cards import fallback_card_payload
+    from card_data.seed_cards import seed_card_payload
     from rules_engine.oracle_effects import search_card_matches
     player = state.players[player_id]
     observed = Counter()
@@ -102,7 +102,7 @@ def known_search_land_count(state, player_id, contains):
     count = 0
     for row in getattr(state, 'starting_decks', {}).get(player_id, []):
         name = row['card_name']
-        metadata = row if row.get('type_line') else (fallback_card_payload(name) or {})
+        metadata = row if row.get('type_line') else (seed_card_payload(name) or {})
         type_line = str(metadata.get('type_line') or '').split('//', 1)[0].strip()
         # A printed-data descriptor, never inserted into gameplay state.
         card = SimpleNamespace(name=name, type_line=type_line, types=type_line.split(),
@@ -121,7 +121,7 @@ def draw_resource_forecast(state, player_id, draws):
     Never inspect library card instances or transfer opposing deck knowledge.
     Probabilities describe unknown draws, not executable projected card objects.
     """
-    from card_data.fallback_cards import fallback_card_payload
+    from card_data.seed_cards import seed_card_payload
     from rules_engine.card_types import is_token_card
     if getattr(state, 'ai_information_player', None) != player_id:
         return None
@@ -133,7 +133,7 @@ def draw_resource_forecast(state, player_id, draws):
     descriptors = {}
     for row in rows:
         name = row['card_name'].casefold()
-        metadata = row if row.get('type_line') else fallback_card_payload(row['card_name'])
+        metadata = row if row.get('type_line') else seed_card_payload(row['card_name'])
         if not metadata or not metadata.get('type_line'):
             return None
         # Face choices need their own resource model; do not guess their value.

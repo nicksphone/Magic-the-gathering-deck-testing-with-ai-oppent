@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import Step, Zone
 from rules_engine.action_validation import ActionRejected
 from training.environment import TrainingEnvironment, encode_action, decode_action
@@ -33,7 +33,7 @@ def scenario(seat, blocked=False, before_blocks=False):
         assert getattr(ninja, key) == RAW[key]
     assert (ninja.power, ninja.toughness) == (int(RAW['power']), int(RAW['toughness']))
     attackers = [card(env, 'Grizzly Bears', seat, Zone.BATTLEFIELD) for _ in range(2)]
-    lands = [raw_card(state, fallback_card_payload('Island'), seat, Zone.BATTLEFIELD).id
+    lands = [raw_card(state, seed_card_payload('Island'), seat, Zone.BATTLEFIELD).id
              for _ in range(2)]
     for cid in attackers:
         state.cards[cid].summoning_sick = False

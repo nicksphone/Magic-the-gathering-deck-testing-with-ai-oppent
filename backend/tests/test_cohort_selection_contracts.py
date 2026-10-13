@@ -87,7 +87,7 @@ def test_partial_metadata_is_unknown_and_export_never_creates_unrestorable_file(
     from card_data import hydration
     ensure_builtin_decks(repo)
     candidates = [builtin(repo, n) for n in ['Burn', 'Dimir Control']]
-    monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+    monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     before = rows(repo)
     decks = cohort(repo, candidates)
     assert len(decks) == 2 and all(d['archetype'] == 'unknown' for d in decks)

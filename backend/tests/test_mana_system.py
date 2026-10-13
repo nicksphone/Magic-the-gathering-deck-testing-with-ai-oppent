@@ -79,6 +79,8 @@ def test_snow_cost_requires_source_provenance_and_survives_pool_snapshot() -> No
     assert not auto_pay_cost(state, 1, "{S}")
     assert not source.tapped
 
+    # This synthetic Forest is repurposed, not original printed-stock evidence.
+    state.sideboard_facts = {}
     source.name = "Snow-Covered Forest"
     source.type_line = "Basic Snow Land - Forest"
     assert can_pay_with_pool_and_lands(state, 1, "{S}")
@@ -430,6 +432,8 @@ def test_compleated_uses_announced_phyrexian_life_choice_on_entry() -> None:
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         source = state.cards[state.players[1].hand[0]]
+        # The synthetic Island is repurposed; original-stock capture is unknown.
+        state.sideboard_facts = {}
         source.name = "Tamiyo, Compleated Sage"
         source.types = ["Legendary", "Planeswalker"]
         source.mana_cost = "{2}{G}{G/U/P}{U}"

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, Zone
 from rules_engine.action_validation import ActionRejected, require_declared_targets
 from rules_engine.prevention import add_card_prevention_shield
@@ -52,7 +52,7 @@ def _setup(game, spell_data):
     walker = CardInstance(
         id="teferi", name="Teferi, Hero of Dominaria", owner=2, controller=2,
         zone=Zone.BATTLEFIELD, types=["Planeswalker"], type_line="Legendary Planeswalker — Teferi",
-        loyalty=4, oracle_text=fallback_card_payload("Teferi, Hero of Dominaria")["oracle_text"],
+        loyalty=4, oracle_text=seed_card_payload("Teferi, Hero of Dominaria")["oracle_text"],
     )
     state.cards.update({spike.id: spike, walker.id: walker})
     state.players[1].hand.append(spike.id)

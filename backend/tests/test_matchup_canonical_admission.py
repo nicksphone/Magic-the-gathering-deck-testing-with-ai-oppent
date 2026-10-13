@@ -35,7 +35,7 @@ def fixture():
     exec(compile(path.read_bytes(), str(path), 'exec'), api)
     real_import = builtins.__import__
     modules = {'card_data.hydration': SimpleNamespace(ready_for_match=hydration['ready_for_match']),
-               'card_data.fallback_cards': SimpleNamespace(FALLBACK_CARD_DATA=seed)}
+               'card_data.seed_cards': SimpleNamespace(SEED_CARD_DATA=seed)}
     def imports(name, globals=None, locals=None, fromlist=(), level=0):
         return modules[name] if name in modules else real_import(name, globals, locals, fromlist, level)
     api['__builtins__']['__import__'] = imports

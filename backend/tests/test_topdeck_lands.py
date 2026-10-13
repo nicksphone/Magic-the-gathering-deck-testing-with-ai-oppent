@@ -1,5 +1,5 @@
 from ai.agent import AIAgent
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Zone
@@ -13,7 +13,7 @@ def _survey_state():
     state = MatchFactory.from_decks(deck, deck, seed=823)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    payload = fallback_card_payload("Cartographer's Survey")
+    payload = seed_card_payload("Cartographer's Survey")
     assert payload is not None
     survey = CardInstance(
         "survey", payload["name"], 1, 1, Zone.STACK, ["Sorcery"],

@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 import httpx
 
 from card_data.http_utils import get_with_backoff
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.placeholders import ensure_placeholder_image
 from persistence.repository import Repository
 
@@ -234,7 +234,7 @@ class ScryfallSyncService:
         if not self._cached_oracle_fields_valid(card):
             raise ValueError('Oracle text fields must be strings or absent.')
         card_name = self._card_attr(card, "name", "")
-        fallback = fallback_card_payload(card_name)
+        fallback = seed_card_payload(card_name)
         return {
             "id": self._card_attr(card, "id"),
             "scryfall_id": self._card_attr(card, "scryfall_id"),

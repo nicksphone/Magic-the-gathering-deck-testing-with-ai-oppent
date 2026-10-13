@@ -1,5 +1,5 @@
 from ai.agent import AIAgent
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -14,7 +14,7 @@ def _atraxa_state():
     state = MatchFactory.from_decks(deck, deck, seed=1994)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    source = fallback_card_payload("Atraxa, Grand Unifier")
+    source = seed_card_payload("Atraxa, Grand Unifier")
     assert source is not None
     atraxa = CardInstance(
         "atraxa", source["name"], 1, 1, Zone.BATTLEFIELD,
@@ -31,7 +31,7 @@ def _atraxa_state():
         "artifact": (top[4], "Torrential Gearhulk"),
     }
     for card_id, name in named.values():
-        data = fallback_card_payload(name)
+        data = seed_card_payload(name)
         assert data is not None
         card = state.cards[card_id]
         card.name = data["name"]
@@ -111,8 +111,8 @@ def test_printed_type_parser_uses_only_the_front_face_and_excludes_subtypes() ->
 
 def test_atraxa_ai_considers_all_revealed_cards_before_type_filter() -> None:
     state, atraxa, top, _ = _atraxa_state()
-    forest = fallback_card_payload("Forest")
-    instant = fallback_card_payload("Memory Deluge")
+    forest = seed_card_payload("Forest")
+    instant = seed_card_payload("Memory Deluge")
     assert forest is not None and instant is not None
     for card_id in top:
         data = instant if card_id == top[0] else forest

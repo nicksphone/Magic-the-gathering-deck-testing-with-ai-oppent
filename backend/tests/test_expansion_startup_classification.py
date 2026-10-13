@@ -59,7 +59,7 @@ def test_admitted_import_and_repeat_startup_keep_actual_analysis_and_provenance(
     assert not parsed.errors
     if mode == 'canonical_cache':
         seed_cache(repo, parsed.mainboard + parsed.sideboard)
-        monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+        monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     imported = service.import_expansion_top_deck(code)
     assert not imported['errors']
     canonical, analysis, admitted = actual_admission(repo, imported['mainboard'])
@@ -111,7 +111,7 @@ def test_unadmitted_existing_label_is_historical_not_overwritten_or_certified(re
     assert not p.errors
     if mode != 'missing':
         seed_cache(repo, p.mainboard + p.sideboard)
-    monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+    monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     p = DeckService(repo).parser.parse(item['deck_text'])
     assert not p.errors
     row = repo.save_deck(item['deck_name'], 'expansion_top:' + code, p.mainboard, p.sideboard, 'Midrange')
@@ -152,7 +152,7 @@ def test_new_unadmitted_catalog_import_is_explicit_unknown_and_stays_unknown(rep
         row = repo.get_cached_card_by_name('Lightning Bolt' if code == 'LEA' else 'Counterspell')
         row.oracle_text = ''
         repo.session.commit()
-    monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+    monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     before_cards = cache_rows(repo)
     bootstrap.ensure_expansion_top_decks(repo)
     records = repo.list_decks()

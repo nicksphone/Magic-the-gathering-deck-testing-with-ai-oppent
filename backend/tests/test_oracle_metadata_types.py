@@ -13,7 +13,7 @@ from fastapi import HTTPException
 
 import main
 from api_contracts import DeckEntry
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.hydration import hydrate_deck_cards, ready_for_match
 from card_data.service import CardService
 from card_data.sync import ScryfallSyncService
@@ -32,7 +32,7 @@ def raw_card(name):
     if public is not None:
         return deepcopy(public)
     # Explicit projection of a committed seed row, not an invented canonical body.
-    raw = deepcopy(fallback_card_payload(name))
+    raw = deepcopy(seed_card_payload(name))
     raw['id'] = raw.pop('scryfall_id')
     raw['object'] = 'card'
     return raw

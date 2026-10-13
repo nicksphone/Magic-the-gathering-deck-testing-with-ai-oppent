@@ -145,6 +145,8 @@ def record_event(state, event, payload):
                 protected.append(cid)
         from rules_engine.continuous import effective_types
         types = effective_types(state, card)
+        if card.is_token is True:
+            types = [kind for kind in types if kind != 'Token']
         if card.controller in (1, 2) and 'Creature' in types:
             seat = facts['seats'][str(3-card.controller)]
             observed = seat['observed_creatures']

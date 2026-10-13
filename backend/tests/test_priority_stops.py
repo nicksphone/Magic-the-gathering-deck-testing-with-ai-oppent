@@ -4,11 +4,11 @@ from ai.agent import AIAgent
 from main import ACTIVE_MATCHES, MatchController, PriorityStopsRequest, _human_priority_pause, set_priority_stops
 from game_state.state import MatchFactory, Step
 from rules_engine.engine import RulesEngine
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 
 
 def _build_match() -> MatchController:
-    deck_a = [{**fallback_card_payload('Lightning Bolt'), "quantity": 60, "card_name": "Lightning Bolt"}]
+    deck_a = [{**seed_card_payload('Lightning Bolt'), "quantity": 60, "card_name": "Lightning Bolt"}]
     deck_b = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck_a, deck_b)
     state.pregame_pending = False

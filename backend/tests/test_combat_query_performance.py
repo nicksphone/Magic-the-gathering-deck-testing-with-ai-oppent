@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from effects.registry import resolve_effect
 from game_state.serializers import serialize_match_snapshot
 from game_state.state import MatchFactory, Step, Zone, assign_static_order_on_battlefield_entry
@@ -24,7 +24,7 @@ for filename in ('conditional_static.json', 'devotion.json', 'ability_suppressio
 
 
 def board(seat):
-    deck = [{**fallback_card_payload('Island'), 'card_name': 'Island', 'quantity': 60}]
+    deck = [{**seed_card_payload('Island'), 'card_name': 'Island', 'quantity': 60}]
     state = MatchFactory.from_decks(deck, deck, seed=701)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -34,7 +34,7 @@ def board(seat):
 
 
 def add(state, name, seat):
-    row = CARDS.get(name) or fallback_card_payload(name)
+    row = CARDS.get(name) or seed_card_payload(name)
     assert row and (row.get('id') or row.get('scryfall_id'))
     sample = MatchFactory.from_decks([{**row, 'card_name': name, 'quantity': 1}], [], seed=1)
     card = next(iter(sample.cards.values()))

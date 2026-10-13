@@ -161,12 +161,12 @@ def test_valki_http_choice_persists_link_and_returns_to_hand() -> None:
 
 
 def _valki_with_exiled_mystic():
-    from card_data.fallback_cards import fallback_card_payload
+    from card_data.seed_cards import seed_card_payload
 
     state, source = _valki_entry()
     state.mechanic_choice_players = {1, 2}
     target_id = state.players[2].hand[0]
-    printed = fallback_card_payload("Elvish Mystic")
+    printed = seed_card_payload("Elvish Mystic")
     assert printed is not None
     sample = MatchFactory.from_decks([{**printed, 'card_name': 'Elvish Mystic', 'quantity': 1}], [], seed=4)
     target = next(iter(sample.cards.values()))

@@ -1,0 +1,89 @@
+{
+  "base_commit": "2eeb7f769aa8b2a02e0b6e4cb14dc98ecf7f8e17",
+  "external_operator_artifact_read_or_written": false,
+  "guard_after_sha256": "0550d53c8d754b98bc81e276de265b05323d2940457c2436dafa7a295ac04ff3",
+  "guard_before_sha256": "17f5568e49cedb95923dae546b175b366369a3104485461ed9739b6060b967db",
+  "operator_artifact_relative_to_owned_root": "runner/startup-media-pins.json",
+  "operator_execution_component": "HELD until parent-reviewed finite actual artifact and explicit lease; no arbitrary import or source-pin fallback",
+  "required_operator_fields": [
+    "source_module_pins",
+    "seed_cards_structural_sha256",
+    "builtin_decks_structural_sha256",
+    "expansion_decks_structural_sha256",
+    "startup_media"
+  ],
+  "required_startup_media_entry_fields": [
+    "name",
+    "type_line",
+    "seed_row_sha256"
+  ],
+  "routine_creator_found_in_committed_inputs": false,
+  "seed_json_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+  "source_module_pin_tuples": [
+    {
+      "after_path": "backend/main.py",
+      "after_sha256": "0e163563dfabf109964588d53a2a56504745b032fd56ec44818d5a95258fec9f",
+      "before_path": "backend/main.py",
+      "before_sha256": "b341daccb96acb5dac4e6ad8e0244ed13aa6abb5e1c7e4e9d1b69dff6adad452",
+      "module": "main",
+      "scope": "exact real startup guard module; no wildcard or fallback"
+    },
+    {
+      "after_path": "backend/decks/bootstrap.py",
+      "after_sha256": "b968836717698f55e28f0d5b2942209e45ba47d9c67cb3423aa67579274e559b",
+      "before_path": "backend/decks/bootstrap.py",
+      "before_sha256": "b968836717698f55e28f0d5b2942209e45ba47d9c67cb3423aa67579274e559b",
+      "module": "decks.bootstrap",
+      "scope": "exact real startup guard module; no wildcard or fallback"
+    },
+    {
+      "after_path": "backend/card_data/hydration.py",
+      "after_sha256": "a234c5ab0bb4172555a9de8f5a1cbf27bc995a3232b5308bb07d9a6c46c1cc72",
+      "before_path": "backend/card_data/hydration.py",
+      "before_sha256": "2b415ce61869152a308584fbe33deb7ac04db99a395cb9e311b7a86a4c6a9bbf",
+      "module": "card_data.hydration",
+      "scope": "exact real startup guard module; no wildcard or fallback"
+    },
+    {
+      "after_path": "backend/card_data/display.py",
+      "after_sha256": "f7c584f6bccb22696bc3dfa83563248b6253e597ce87e493924088962c9765eb",
+      "before_path": "backend/card_data/display.py",
+      "before_sha256": "f7c584f6bccb22696bc3dfa83563248b6253e597ce87e493924088962c9765eb",
+      "module": "card_data.display",
+      "scope": "exact real startup guard module; no wildcard or fallback"
+    },
+    {
+      "after_path": "backend/card_data/placeholders.py",
+      "after_sha256": "44a0ba20815a7204ee2f0332bb5dbd30c648140e78b9cee004aca5ad57acf4df",
+      "before_path": "backend/card_data/placeholders.py",
+      "before_sha256": "44a0ba20815a7204ee2f0332bb5dbd30c648140e78b9cee004aca5ad57acf4df",
+      "module": "card_data.placeholders",
+      "scope": "exact real startup guard module; no wildcard or fallback"
+    },
+    {
+      "after_path": "backend/card_data/seed_cards.py",
+      "after_sha256": "cb64ae85690d5239a24895b4ed6ac8a46b5f4c15de64d5bb67192eb187b72c71",
+      "before_path": "backend/card_data/fallback_cards.py",
+      "before_sha256": "d0c9d84f0f518deaa6cb28efc7865547896a259935a196ea51eba2607ecb68d5",
+      "module": "card_data.seed_cards",
+      "scope": "exact real startup guard module; no wildcard or fallback"
+    },
+    {
+      "after_path": "backend/decks/expansion_top_decks.py",
+      "after_sha256": "df9d1667460859fc21be97ac07c8ae2a02b9980acd9391eb596f526d889b500b",
+      "before_path": "backend/decks/expansion_top_decks.py",
+      "before_sha256": "df9d1667460859fc21be97ac07c8ae2a02b9980acd9391eb596f526d889b500b",
+      "module": "decks.expansion_top_decks",
+      "scope": "exact real startup guard module; no wildcard or fallback"
+    },
+    {
+      "after_path": "backend/persistence/capacity.py",
+      "after_sha256": "fa0aa11cc1da4cdc13a646989fef86d2cda05b43dea9f1d10a1d4078cb5e4bf5",
+      "before_path": "backend/persistence/capacity.py",
+      "before_sha256": "fa0aa11cc1da4cdc13a646989fef86d2cda05b43dea9f1d10a1d4078cb5e4bf5",
+      "module": "persistence.capacity",
+      "scope": "exact real startup guard module; no wildcard or fallback"
+    }
+  ],
+  "status": "finite migration tuples for independent review; NOT an execution grant or generated operator artifact"
+}

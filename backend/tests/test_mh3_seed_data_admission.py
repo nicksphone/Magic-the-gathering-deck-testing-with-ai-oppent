@@ -7,7 +7,7 @@ import socket
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.hydration import hydrate_deck_cards, ready_for_match
 from decks.catalog import event_record, load_catalog
 from game_state.state import MatchFactory
@@ -43,14 +43,14 @@ def test_all119_whole_properties_and_source_unchanged_exact_append36():
     assert hashlib.sha256(BASE.read_bytes()).hexdigest() == LEDGER['baseline_seed_sha256']
     assert hashlib.sha256((DATA/'builtin_oracle_seed.json').read_bytes()).hexdigest() == LEDGER['seed_sha256']
     assert LEDGER['network_fetches'] == 0 and LEDGER['derived_facts_added'] is False
-    assert len(shipped_names()) == 155 and all(fallback_card_payload(n) for n in shipped_names())
+    assert len(shipped_names()) == 155 and all(seed_card_payload(n) for n in shipped_names())
 
 
 @pytest.mark.parametrize('name',ADDED)
 def test_full_raw_ID_Oracle_stats_colors_and_provenance_exact(name):
     evidence=next(r for r in LEDGER['records'] if r['requested_name']==name)
     raw=RAW[evidence['scryfall_id']]
-    payload=fallback_card_payload(name)
+    payload=seed_card_payload(name)
     assert payload == {**raw,'scryfall_id':raw['id']}
     assert digest(raw) == evidence['canonical_raw_sha256']
     assert digest(payload) == evidence['seed_payload_sha256']

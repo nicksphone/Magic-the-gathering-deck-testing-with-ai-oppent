@@ -35,7 +35,7 @@ from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from analytics.service import AnalyticsService, SimulationCancelled
 from analytics.resource_budget import RESOURCE_LIMITS, SimulationResourceLimit, checked_json, checked_text
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.display import select_display_image_uri
 from card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image
 from card_data.service import CardService

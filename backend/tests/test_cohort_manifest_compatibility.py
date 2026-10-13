@@ -134,7 +134,7 @@ def test_partial_repository_cannot_execute_or_export(repo, tmp_path, monkeypatch
     original = type(repo).list_decks
     monkeypatch.setattr(type(repo), 'list_decks', lambda self: [r for r in original(self) if r.id in ids])
     monkeypatch.setattr(replay, 'engine', repo.session.get_bind())
-    monkeypatch.setattr(hydration, 'fallback_card_payload', lambda _: None)
+    monkeypatch.setattr(hydration, 'seed_card_payload', lambda _: None)
     for name in ['init_db', 'ensure_builtin_decks', 'ensure_expansion_top_decks', 'run_match']:
         monkeypatch.setattr(replay, name, lambda *a: pytest.fail('partial input initialized or executed'))
     output, export = tmp_path/'output.json', tmp_path/'inputs.json'

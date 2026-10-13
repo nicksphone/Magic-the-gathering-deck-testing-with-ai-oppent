@@ -6,7 +6,7 @@ from pathlib import Path
 from uuid import UUID
 
 import pytest
-from card_data.fallback_cards import FALLBACK_CARD_DATA
+from card_data.seed_cards import SEED_CARD_DATA
 from card_data.hydration import ready_for_match
 from card_data.sync import ScryfallSyncService
 from decks.service import DeckService
@@ -51,13 +51,13 @@ def no_remote(monkeypatch):
 
 
 def test_every_ready_seed_actual_projection_preserves_pinned_id_and_faces(repo):
-    assert len(FALLBACK_CARD_DATA) == 155
-    original = deepcopy(FALLBACK_CARD_DATA)
+    assert len(SEED_CARD_DATA) == 155
+    original = deepcopy(SEED_CARD_DATA)
     before = '\n'.join(repo.session.connection().connection.driver_connection.iterdump())
-    board = [{'quantity': 1, 'card_name': name} for name in sorted(FALLBACK_CARD_DATA)]
+    board = [{'quantity': 1, 'card_name': name} for name in sorted(SEED_CARD_DATA)]
     resolved = DeckService(repo)._resolve_card_metadata(board)
     for item in resolved:
-        seed = FALLBACK_CARD_DATA[item['card_name']]
+        seed = SEED_CARD_DATA[item['card_name']]
         meta = contract(item['card_metadata'])
         assert meta['match_ready'] and ready_for_match(meta) and 'id' not in meta
         assert meta['scryfall_id'] == seed['scryfall_id']
@@ -65,7 +65,7 @@ def test_every_ready_seed_actual_projection_preserves_pinned_id_and_faces(repo):
         assert meta.get('card_faces') == seed.get('card_faces')
         for key in ('type_line', 'colors', 'layout'):
             assert meta.get(key) == seed.get(key)
-    assert FALLBACK_CARD_DATA == original
+    assert SEED_CARD_DATA == original
     assert '\n'.join(repo.session.connection().connection.driver_connection.iterdump()) == before
 
 
@@ -78,12 +78,12 @@ def test_actual_http_family_metadata_matches_complete_type_contract(repo, client
     for item in result['resolved_mainboard_cards'] + result['resolved_sideboard_cards']:
         meta = contract(item['card_metadata'])
         assert meta['match_ready'] and 'id' not in meta
-        assert meta['scryfall_id'] == FALLBACK_CARD_DATA[item['card_name']]['scryfall_id']
+        assert meta['scryfall_id'] == SEED_CARD_DATA[item['card_name']]['scryfall_id']
     assert repo.list_cards() == []
 
 
 def test_actual_http_all_seed_faces_and_colors(repo, client):
-    text = '\n'.join('1 ' + name for name in sorted(FALLBACK_CARD_DATA))
+    text = '\n'.join('1 ' + name for name in sorted(SEED_CARD_DATA))
     response = client.post('/decks/import', json={'name': 'Pinned seed response census', 'source': 'user:contract', 'deck_text': text})
     assert response.status_code == 200, response.text
     result = response.json()

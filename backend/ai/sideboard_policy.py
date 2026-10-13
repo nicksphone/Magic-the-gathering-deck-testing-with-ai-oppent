@@ -1,5 +1,7 @@
 """Deterministic printed-role advice from completed owned/public game facts."""
 from collections import Counter
+from dataclasses import replace
+import re
 from types import SimpleNamespace
 
 from ai.deck_analysis import _cmc
@@ -59,19 +61,38 @@ def _profile(row):
             'unaccounted_raw_paragraph',
             'dynamic_or_unknown_numeric_payload'}:
         return None
+    covered = []
     for spec in profile.ability_specs:
         if spec['kind'] != 'spell_effect' or spec['condition'] or spec['cost']:
             return None
         if spec['effects']:
+            covered.append(spec)
             continue
-        # Every positive effect is compiled from its entire raw clause by _face.
-        # Its sole empty-effect exception requires positive full-span membership
-        # in the exact existing self-prohibition grammar, never absence of a route.
+        # Missing estimator effects need positive whole raw-clause coverage;
+        # no prefix, erased reminder or physical target supplies that proof.
         start, end = spec['source_span']
-        if (not set(profile.types) & {'instant', 'sorcery'}
-                or not complete_self_counter_prohibition(inputs['oracle_text'][start:end], inputs['name'])):
+        body = inputs['oracle_text'][start:end].strip()
+        if not set(profile.types) & {'instant', 'sorcery'}:
             return None
-    return profile
+        if complete_self_counter_prohibition(body, inputs['name']):
+            covered.append(spec)
+            continue
+        if body != inputs['oracle_text'].strip():
+            return None
+        from rules_engine.oracle_effects import COUNTER_TARGET_SPELL_RE, infer_target_restrictions
+        # Complete native counter grammar; never accept its prefix-search path.
+        if body.endswith('.') and COUNTER_TARGET_SPELL_RE.fullmatch(body[:-1]):
+            key = 'counter_spell'
+            payload = {'target_kind': 'noncreature' if 'noncreature' in body.lower() else 'any'}
+        elif re.fullmatch(r'destroy target nonartifact creature\.', body, re.I):
+            key = 'destroy_permanent'
+            # Symbolic domain projection, not rewritten Oracle or runtime state.
+            payload = {**infer_target_restrictions(None, 'target creature', 1),
+                       **infer_target_restrictions(None, body, 1)}
+        else:
+            return None
+        covered.append({**spec, 'effects': [{'effect_key': key, 'payload': payload}]})
+    return replace(profile, ability_specs=tuple(covered))
 
 
 def _fit(profile, events, printed_body=None):
@@ -99,6 +120,16 @@ def _fit(profile, events, printed_body=None):
             return 0  # A context-dependent transport is unavailable, not guessed.
         if not set(restrictions) <= {'allowed_types', 'exclude_types'}:
             return 0
+        for spec in profile.ability_specs:
+            for effect in spec['effects']:
+                domain = effect['payload']
+                if set(domain) == {'allowed_types', 'exclude_types'}:
+                    allowed = set(domain['allowed_types'])
+                    if 'allowed_types' in restrictions:
+                        allowed &= set(restrictions['allowed_types'])
+                    restrictions = {**restrictions, 'allowed_types': sorted(allowed),
+                        'exclude_types': sorted(set(restrictions.get('exclude_types', []))
+                                                | set(domain['exclude_types']))}
         default = {'artifact', 'battle', 'creature', 'enchantment', 'planeswalker'}
         if counter:
             default |= {'instant', 'sorcery'}

@@ -52,7 +52,7 @@ def test_generic_import_actual_canonical_admission_and_legacy_display(repo, clie
     if mode in {'cache','partial_oracle'}:
         seed_cache(repo,p.mainboard+p.sideboard)
     if mode != 'offline':
-        monkeypatch.setattr(hydration,'fallback_card_payload',lambda _:None)
+        monkeypatch.setattr(hydration,'seed_card_payload',lambda _:None)
     if mode == 'partial_oracle':
         target = 'Lightning Bolt' if name == 'Burn' else 'Counterspell'
         row = repo.get_cached_card_by_name(target)
@@ -201,7 +201,7 @@ def test_canonical_import_preserves_existing_actual_ai_root_private_views_and_re
         repo.session.delete(row)
     repo.session.commit()
     if import_mode == 'missing':
-        monkeypatch.setattr(hydration,'fallback_card_payload',lambda _:None)
+        monkeypatch.setattr(hydration,'seed_card_payload',lambda _:None)
     before, before_cards = rows(repo), card_rows(repo)
     before_ctors, before_decisions = len(constructors),len(decisions)
     imported = client.post('/decks/import',json={'name':'Burn','source':'user','deck_text':BUILTIN_DECKS['Burn']})

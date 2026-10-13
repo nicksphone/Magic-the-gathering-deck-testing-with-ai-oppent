@@ -1,4 +1,4 @@
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Zone, assign_static_order_on_battlefield_entry
@@ -16,7 +16,7 @@ def _state():
     state = MatchFactory.from_decks(deck, deck, seed=621)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    printed = fallback_card_payload("Temporary Lockdown")
+    printed = seed_card_payload("Temporary Lockdown")
     assert printed is not None
     source = CardInstance(
         "lockdown", printed["name"], 1, 1, Zone.BATTLEFIELD, ["Enchantment"],

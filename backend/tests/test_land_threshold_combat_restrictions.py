@@ -1,4 +1,4 @@
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine import combat
 from rules_engine.engine import RulesEngine
@@ -14,7 +14,7 @@ def test_topiary_stomper_attack_and_block_unlock_at_seven_lands():
     stomper = state.cards[stomper_id]
     state.players[1].battlefield.append(stomper_id)
     stomper.move_to_zone(Zone.BATTLEFIELD)
-    printed = fallback_card_payload("Topiary Stomper")
+    printed = seed_card_payload("Topiary Stomper")
     stomper.name = printed["name"]
     stomper.oracle_text = printed["oracle_text"]
     stomper.types = ["Creature"]

@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from effects.handlers import counter_spell
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
@@ -29,7 +29,7 @@ def test_actual_paid_flashback_and_counter_keep_native_announcement_after_snapsh
     state.step = Step.DRAW
     for name, identifier, owner, zone in [('Memory Deluge', 'deluge', seat, Zone.GRAVEYARD),
                                           ('Negate', 'counter', 3-seat, Zone.HAND)]:
-        raw = fallback_card_payload(name)
+        raw = seed_card_payload(name)
         card = CardInstance(identifier, name, owner, owner, zone, ['Instant'],
                             mana_cost=raw['mana_cost'], oracle_text=raw['oracle_text'])
         state.cards[identifier] = card
@@ -60,7 +60,7 @@ def test_actual_paid_flashback_and_counter_keep_native_announcement_after_snapsh
 @pytest.mark.parametrize('seat', [1, 2])
 def test_flashback_flag_alone_never_classifies_unknown_frame_or_forces_counter(seat):
     state = position(seat)
-    raw = fallback_card_payload('Memory Deluge')
+    raw = seed_card_payload('Memory Deluge')
     card = CardInstance('legacy-deluge', 'Memory Deluge', seat, seat, Zone.STACK, ['Instant'],
                         mana_cost=raw['mana_cost'], oracle_text=raw['oracle_text'])
     state.cards[card.id] = card

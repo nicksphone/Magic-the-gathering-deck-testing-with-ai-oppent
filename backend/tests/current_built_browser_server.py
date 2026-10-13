@@ -282,11 +282,11 @@ def startup_media_write(path, flags, producer, data_bytes):
         deny('startup-noncanonical-placeholder-producer')
     modules = {name: sys.modules.get(name) for name in (
         'decks.bootstrap', 'card_data.hydration', 'card_data.display',
-        'card_data.placeholders', 'card_data.fallback_cards', 'decks.expansion_top_decks',
+        'card_data.placeholders', 'card_data.seed_cards', 'decks.expansion_top_decks',
         'persistence.capacity')}
     if any(module is None for module in modules.values()):
         deny('startup-missing-bound-module')
-    placeholders, fallback = modules['card_data.placeholders'], modules['card_data.fallback_cards']
+    placeholders, fallback = modules['card_data.placeholders'], modules['card_data.seed_cards']
     stack = []
     frame = sys._getframe()
     while frame:
@@ -335,7 +335,7 @@ def startup_media_write(path, flags, producer, data_bytes):
         if hashlib.sha256((SOURCE / relative).read_bytes()).hexdigest() != expected:
             deny('startup-source-pin')
     structural = lambda v: hashlib.sha256(json.dumps(v, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
-    if (structural(fallback.FALLBACK_CARD_DATA) != STARTUP_MEDIA['seed_cards_structural_sha256']
+    if (structural(fallback.SEED_CARD_DATA) != STARTUP_MEDIA['seed_cards_structural_sha256']
             or structural(modules['decks.bootstrap'].BUILTIN_DECKS) != STARTUP_MEDIA['builtin_decks_structural_sha256']
             or structural(modules['decks.expansion_top_decks'].EXPANSION_TOP_DECKS) != STARTUP_MEDIA['expansion_decks_structural_sha256']):
         deny('startup-structural-global-pins')
@@ -348,7 +348,7 @@ def startup_media_write(path, flags, producer, data_bytes):
             or name != hydrated.f_locals.get('name') or name != hydrated.f_locals.get('item', {}).get('card_name')
             or type_line != str(hydrated.f_locals.get('out', {}).get('type_line') or '')
             or display.f_locals.get('name') != name or display.f_locals.get('type_line') != type_line
-            or structural(fallback.fallback_card_payload(name)) != expected['seed_row_sha256']):
+            or structural(fallback.seed_card_payload(name)) != expected['seed_row_sha256']):
         deny('startup-canonical-row-characteristics')
     family = placeholders._family(type_line=type_line, token=False)
     filename = 'placeholder-' + family + '-' + placeholders._slug(name, type_line or family) + '.svg'

@@ -1,4 +1,4 @@
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from ai.agent import AIAgent
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
@@ -11,7 +11,7 @@ from rules_engine.stack_engine import resolve_top_of_stack
 def test_mana_spent_top_card_selection_is_not_a_draw() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=13)
-    canonical = fallback_card_payload("Memory Deluge")
+    canonical = seed_card_payload("Memory Deluge")
     card = CardInstance(
         id="deluge", name="Memory Deluge", owner=1, controller=1,
         zone=Zone.HAND, types=["Instant"], mana_cost=canonical["mana_cost"],
@@ -37,11 +37,13 @@ def test_paid_memory_deluge_pauses_for_two_cards_and_resumes_after_snapshot() ->
         player.battlefield.append(land_id)
         state.cards[land_id].zone = Zone.BATTLEFIELD
     top_ids = list(player.library[-4:])
+    # These synthetic Island copies are repurposed, not captured original stock.
+    state.sideboard_facts = {}
     for cid, name, cost in zip(top_ids, ("Island", "Negate", "Counterspell", "Sheoldred, the Apocalypse"),
                                ("", "{1}{U}", "{U}{U}", "{2}{B}{B}")):
         state.cards[cid].name = name
         state.cards[cid].mana_cost = cost
-    canonical = fallback_card_payload("Memory Deluge")
+    canonical = seed_card_payload("Memory Deluge")
     deluge = CardInstance(
         id="deluge", name="Memory Deluge", owner=1, controller=1,
         zone=Zone.HAND, types=["Instant"], mana_cost=canonical["mana_cost"],
@@ -88,7 +90,7 @@ def test_flashback_memory_deluge_looks_at_seven_and_exiles_after_resolution() ->
         player.battlefield.append(land_id)
         state.cards[land_id].zone = Zone.BATTLEFIELD
     top_ids = set(player.library[-7:])
-    canonical = fallback_card_payload("Memory Deluge")
+    canonical = seed_card_payload("Memory Deluge")
     deluge = CardInstance(
         id="deluge-flashback", name="Memory Deluge", owner=1, controller=1,
         zone=Zone.GRAVEYARD, types=["Instant"], mana_cost=canonical["mana_cost"],
@@ -124,7 +126,7 @@ def test_countered_flashback_spell_is_exiled() -> None:
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.DRAW
-    canonical = fallback_card_payload("Memory Deluge")
+    canonical = seed_card_payload("Memory Deluge")
     deluge = CardInstance(
         id="deluge", name="Memory Deluge", owner=1, controller=1,
         zone=Zone.GRAVEYARD, types=["Instant"], mana_cost=canonical["mana_cost"],
@@ -141,7 +143,7 @@ def test_countered_flashback_spell_is_exiled() -> None:
     assert original.payload["mana_spent"] == original.payload["mana_spent_to_cast"] == 7
     assert original.payload["__flashback"] is True
     assert stack_object_kind(state, original) == "spell"
-    response = fallback_card_payload("Negate")
+    response = seed_card_payload("Negate")
     negate = CardInstance("negate", "Negate", 2, 2, Zone.HAND, ["Instant"],
                           mana_cost=response["mana_cost"], oracle_text=response["oracle_text"])
     state.cards[negate.id] = negate

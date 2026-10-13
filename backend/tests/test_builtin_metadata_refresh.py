@@ -13,7 +13,7 @@ from sqlmodel import SQLModel, Session, create_engine
 import persistence.db  # Schema registration only: default engine must never connect.
 from persistence.repository import Repository
 from card_data import hydration
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from ai.agent import AIAgent
 from ai.deck_analysis import analyze_deck
 from ai.matchup_profiles import profile_for
@@ -54,7 +54,7 @@ def builtin(repo, name):
 
 def seed_cache(repo, board):
     for item in board:
-        raw = fallback_card_payload(item['card_name'])
+        raw = seed_card_payload(item['card_name'])
         assert raw and raw.get('scryfall_id')
         repo.upsert_card({'scryfall_id': raw['scryfall_id'], 'name': raw['name'],
                          'type_line': raw['type_line'], 'oracle_text': raw.get('oracle_text', ''),
@@ -117,7 +117,7 @@ def test_complete_local_metadata_refresh_only_guess_and_idempotent(repo, name, e
 def test_no_local_metadata_preserves_cold_unknown_analysis_and_all_rows(repo, monkeypatch):
     bootstrap.ensure_builtin_decks(repo)
     before = rows(repo)
-    monkeypatch.setattr(hydration, 'fallback_card_payload', lambda name: None)
+    monkeypatch.setattr(hydration, 'seed_card_payload', lambda name: None)
     deck = hydration.hydrate_deck_cards(repo, json.loads(builtin(repo, 'Burn').mainboard_json))
     analysis = analyze_deck(deck)
     assert analysis['confidence'] == analysis['type_metadata_coverage'] == 0
@@ -148,8 +148,8 @@ def test_partial_data_never_refreshes_even_with_full_type_coverage(repo, monkeyp
     else:
         setattr(cached, missing, None if missing == 'power' else '')
     repo.session.commit()
-    original = hydration.fallback_card_payload
-    monkeypatch.setattr(hydration, 'fallback_card_payload',
+    original = hydration.seed_card_payload
+    monkeypatch.setattr(hydration, 'seed_card_payload',
                         lambda n: None if n.split(' // ', 1)[0] == target else original(n))
     deck = hydration.hydrate_deck_cards(repo, board)
     assert not all(hydration.ready_for_match(card) for card in deck)

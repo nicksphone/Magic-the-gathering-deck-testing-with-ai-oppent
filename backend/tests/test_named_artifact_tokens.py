@@ -1,6 +1,6 @@
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
@@ -25,7 +25,7 @@ def _put(state, name: str) -> str:
     card.name = name
     card.zone = Zone.BATTLEFIELD
     if name != "Forest":
-        data = fallback_card_payload(name)
+        data = seed_card_payload(name)
         card.oracle_text = data["oracle_text"]
         card.type_line = data["type_line"]
         card.types = [kind for kind in ("Artifact", "Creature") if kind in card.type_line]

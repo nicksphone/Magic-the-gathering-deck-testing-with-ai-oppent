@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 
 from card_data.display import select_display_image_uri
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.sync import ScryfallSyncService, needs_split_color_sync, oracle_fields_valid
 
 
@@ -65,7 +65,7 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
         out = dict(item)
         out.pop('knowledge_snapshot', None)
         row = cached.get(name.lower())
-        fallback = fallback_card_payload(name) or {}
+        fallback = seed_card_payload(name) or {}
         profile = ScryfallSyncService.canonical_local_profile(knowledge.get(name.casefold()), name)
         try:
             raw_cached_faces = getattr(row, 'card_faces_json', None)

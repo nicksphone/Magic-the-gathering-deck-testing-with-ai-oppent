@@ -690,7 +690,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         return publish(state, deck)
     if face_kind == "linked_copy_x":
         import json
-        from card_data.fallback_cards import fallback_card_payload
+        from card_data.seed_cards import seed_card_payload
         from game_state.state import assign_static_order_on_battlefield_entry
         from rules_engine.linked_exile import record_linked_exile
 
@@ -713,7 +713,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.cards[source.id] = source
         state.players[1].battlefield.append(source.id)
         assign_static_order_on_battlefield_entry(state, source.id)
-        printed = fallback_card_payload("Elvish Mystic")
+        printed = seed_card_payload("Elvish Mystic")
         held = CardInstance(
             "linked-mystic", printed["name"], 2, 2, Zone.EXILE, ["Creature"],
             mana_cost=printed["mana_cost"], oracle_text=printed["oracle_text"],
@@ -839,7 +839,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         spell.types, spell.type_line = ["Artifact", "Creature"], "Snow Artifact Creature - Golem"
         spell.mana_cost, spell.power, spell.toughness = "{S}", 2, 2
         spell.oracle_text = "({S} can be paid with one mana from a snow source.)"
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind == "compleated_payment":
         deck = [{"quantity": 60, "card_name": "Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=925)
@@ -860,7 +860,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             "-X: Exile target nonland permanent card with mana value X from your graveyard. Create a token that's a copy of that card.\n"
             "-7: Create Tamiyo's Notebook, a legendary colorless artifact token with \"Spells you cast cost {2} less to cast\" and \"{T}: Draw a card.\""
         )
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind == "phyrexian_ability":
         deck = [{"quantity": 60, "card_name": "Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=923)
@@ -896,7 +896,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         )
         state.cards[creature.id] = creature
         state.players[1].battlefield.append(creature.id)
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind == "hybrid_payment":
         deck = [{"quantity": 60, "card_name": "Plains"}]
         state = MatchFactory.from_decks(deck, deck, seed=921)
@@ -914,7 +914,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         spell.types, spell.type_line = ["Sorcery"], "Sorcery"
         spell.mana_cost = "{2/W}{2/W}{2/W}"
         spell.oracle_text = "Create three 1/1 white Spirit creature tokens with flying."
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind in {"thoughtseize", "duress", "inquisition", "despise", "appetite"}:
         deck = [{"quantity": 60, "card_name": "Swamp"}]
         state = MatchFactory.from_decks(deck, deck, seed=920)
@@ -961,7 +961,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             fourth.name, fourth.types, fourth.type_line, fourth.mana_cost = (
                 "Jace, the Mind Sculptor", ["Planeswalker"], "Legendary Planeswalker - Jace", "{2}{U}{U}",
             )
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind == "revealed_discard":
         deck = [{"quantity": 60, "card_name": "Swamp"}]
         state = MatchFactory.from_decks(deck, deck, seed=919)
@@ -977,7 +977,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         spell.type_line = "Sorcery"
         spell.mana_cost = "{2}{B}"
         spell.oracle_text = "Target opponent reveals their hand. You choose a card from it. That player discards that card."
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind == "each_player_discard":
         deck = [{"quantity": 60, "card_name": "Swamp"}]
         state = MatchFactory.from_decks(deck, deck, seed=818)
@@ -994,7 +994,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         spell.type_line = "Sorcery"
         spell.mana_cost = "{2}{B}"
         spell.oracle_text = "Each player discards three cards."
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind == "modal_same_kind":
         deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
         state = MatchFactory.from_decks(deck, deck, seed=914)
@@ -1265,7 +1265,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         spec = build_ability_spec(state, spell, 2)
         add_to_stack(state, spell.id, 2, spell.name, spec.effect.key, spec.effect.payload)
         resolve_top_of_stack(state)
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind == "iteration":
         from effects.registry import resolve_effect
         deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
@@ -1282,7 +1282,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             card = state.cards[cid]
             card.name, card.mana_cost, card.types = name, cost, types
         resolve_effect(state, 2, "look_top_choose", {"top_n": 3})
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind == "search":
         from effects.registry import resolve_effect
         deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
@@ -1300,7 +1300,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             card.type_line = "Creature"
             card.power = card.toughness = power
         resolve_effect(state, 2, "search_library", {"contains": "creature", "destination": "hand", "count": 1, "shuffle": True})
-        return publish(state, deck)
+        return publish(state, deck, capture_original_stock=False)
     if face_kind in {"bo3", "bo3_sideboard", "bo3_draw"}:
         deck = ([{"quantity": 45, "card_name": "Island", "type_line": "Basic Land - Island"},
                  {"quantity": 15, "card_name": "Mountain", "type_line": "Basic Land - Mountain"}]
@@ -1364,7 +1364,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             getattr(state.players[owner], zone.value).append(cid)
         return publish(state, deck)
     if face_kind == "alternative_target":
-        from card_data.fallback_cards import fallback_card_payload
+        from card_data.seed_cards import seed_card_payload
 
         deck = [{"quantity": 60, "card_name": "Mountain"}]
         state = MatchFactory.from_decks(deck, deck, seed=23)
@@ -1382,7 +1382,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             id="teferi", name="Teferi, Hero of Dominaria", owner=1, controller=1,
             zone=Zone.BATTLEFIELD, types=["Planeswalker"], loyalty=4,
             type_line="Legendary Planeswalker — Teferi",
-            oracle_text=fallback_card_payload("Teferi, Hero of Dominaria")["oracle_text"],
+            oracle_text=seed_card_payload("Teferi, Hero of Dominaria")["oracle_text"],
         )
         state.cards.update({spell.id: spell, walker.id: walker})
         state.players[2].hand.append(spell.id)
@@ -1597,7 +1597,12 @@ def fixture_history():
     return {'matches': len(ACTIVE_MATCHES)}
 
 
-def publish(state, deck):
+def publish(state, deck, *, capture_original_stock=True):
+    if type(capture_original_stock) is not bool:
+        raise TypeError('capture_original_stock must be bool')
+    # Explicitly repurposed Factory cards cannot certify original printed stock.
+    if capture_original_stock is False:
+        state.sideboard_facts = {}
     ACTIVE_MATCHES.clear()
     ACTIVE_MATCHES[state.id] = MatchController(state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={1: AIAgent(), 2: AIAgent()}, mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck}, sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False, match_complete=False, best_of=3)
     with Session(engine) as session:

@@ -51,7 +51,7 @@ def run(phase, mode, root):
     from game_state.state import Step
     import main
     if phase == 'restart' and mode == 'missing':
-        hydration.fallback_card_payload = lambda _: None
+        hydration.seed_card_payload = lambda _: None
     evidence = {'phase': phase, 'mode': mode, 'pid': os.getpid()}
     with TestClient(main.app) as client:
         def inventory():
@@ -73,7 +73,7 @@ def run(phase, mode, root):
             snapshot = wire(serialize_match_snapshot(match.state))
             config = deepcopy(wire(main._controller_snapshot(match)))
             if mode == 'missing':
-                hydration.fallback_card_payload = lambda _: None
+                hydration.seed_card_payload = lambda _: None
             observations = []
             for code, front in [('LEA', 'Kumano Faces Kakkazan'), ('ARN', 'Delver of Secrets')]:
                 item = entry(code)

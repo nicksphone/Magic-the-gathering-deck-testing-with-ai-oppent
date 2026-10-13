@@ -1,4 +1,4 @@
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.engine import RulesEngine
@@ -100,7 +100,7 @@ def test_saga_next_creature_chapter_applies_one_shot_entry_counter() -> None:
 
 
 def test_saga_transform_chapter_uses_the_source_permanents_back_face() -> None:
-    fable = fallback_card_payload("Fable of the Mirror-Breaker")
+    fable = seed_card_payload("Fable of the Mirror-Breaker")
     assert fable
     state = _saga_state(fable["card_faces"][0]["oracle_text"])
     saga = state.cards["saga"]
@@ -143,7 +143,7 @@ def test_saga_transform_chapter_uses_the_source_permanents_back_face() -> None:
 
 
 def test_transforming_saga_returns_under_chapter_controller_after_exile() -> None:
-    fable = fallback_card_payload("Fable of the Mirror-Breaker")
+    fable = seed_card_payload("Fable of the Mirror-Breaker")
     assert fable
     state = _saga_state(fable["card_faces"][0]["oracle_text"])
     saga = state.cards["saga"]

@@ -8,7 +8,7 @@ import httpx
 import pytest
 
 from card_data import sync
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.hydration import ready_for_match
 from tests.test_oracle_metadata_types import BAD, raw_card
 
@@ -152,7 +152,7 @@ def test_valid_legacy_cache_fallback_and_multiface_codec_are_preserved(monkeypat
     result = service.sync_card_by_name(name, force=offline)
     assert result == expected
     assert result['oracle_text'] == (getattr(row, 'oracle_text', None) or
-                                    (fallback_card_payload(name) or {}).get('oracle_text', ''))
+                                    (seed_card_payload(name) or {}).get('oracle_text', ''))
     assert result['card_faces'] == json.loads(row.card_faces_json)
     assert (bool(calls)) is (offline or not ready_for_match(expected))
     assert vars(row) == before and not repo.writes

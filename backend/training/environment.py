@@ -8,7 +8,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from ai.information import decision_view, is_unknown
 from api_contracts import Action
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from decks.builtin_decks import BUILTIN_DECKS
 from game_state.serializers import (
     deserialize_match_snapshot, serialize_card_view, serialize_match_snapshot,
@@ -96,7 +96,7 @@ def _deck(name):
     rows = []
     for line in BUILTIN_DECKS[name].strip().splitlines():
         quantity, card_name = line.strip().split(' ', 1)
-        metadata = fallback_card_payload(card_name)
+        metadata = seed_card_payload(card_name)
         if not metadata or not metadata.get('scryfall_id') or not metadata.get('type_line'):
             raise ValueError(f'No canonical offline metadata for {card_name}')
         rows.append({**deepcopy(metadata), 'card_name': card_name, 'quantity': int(quantity)})
