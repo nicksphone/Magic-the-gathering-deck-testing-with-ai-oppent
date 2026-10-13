@@ -154,6 +154,7 @@ def create_fixture(path):
                       "current_game_recorded": False, "match_complete": False,
                       "best_of": state.best_of, "root_seed": 8128, "play_draw_chooser": state.active_player,
                       "sideboarded_players": [], "seen_opponent_types": {"1": [], "2": []},
+                      "auto_sideboard": True,
                       "difficulties": {"1": "master", "2": "master"},
                       "archetypes": {"1": "Midrange", "2": "Midrange"}, "revision": 7,
                       "mutation_receipts": {"fixture-action": "fixture-fingerprint"}}

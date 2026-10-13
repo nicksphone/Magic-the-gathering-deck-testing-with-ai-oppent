@@ -1146,9 +1146,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/verify_storage_restore.py": {
-    "mtime": 1791667789.8719318,
-    "seen": 1791671014.2829769,
-    "ast_hash": "ca0848237d478fc9a615cc16cbe0c0a1",
+    "mtime": 1791896828.6296554,
+    "seen": 1791896941.7149804,
+    "ast_hash": "884fd0bccc317849c3ff574aab37a713",
     "semantic_hash": ""
   },
   "backend/tests/activation_payment_browser_fixture.py": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791889423.541638,
-    "seen": 1791889559.080917,
-    "ast_hash": "abf16c8b30463a32772761e39139292a",
+    "mtime": 1791895470.5010524,
+    "seen": 1791896941.7200584,
+    "ast_hash": "03cfea32dbbfdaf3193aa1044c4b9468",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791889423.5306382,
-    "seen": 1791889559.0806115,
-    "ast_hash": "cc6d8b0f082bc4c25ee5f07d626df8c5",
+    "mtime": 1791895470.5010524,
+    "seen": 1791896941.7197056,
+    "ast_hash": "1d667b3d692bdf0a3897916f5c4c1d16",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13512,9 +13512,9 @@
     "semantic_hash": ""
   },
   "docs/testing/storage-current-acceptance.md": {
-    "mtime": 1791667790.4169242,
-    "seen": 1791671014.2867353,
-    "ast_hash": "0b363d7332b52d602d98d6415163bd24",
+    "mtime": 1791896828.6326551,
+    "seen": 1791896941.719871,
+    "ast_hash": "81b89da83b71f255a7132021d4cf5ead",
     "semantic_hash": ""
   },
   "ops/caddy/run.py": {
@@ -18186,9 +18186,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-c259-reviewed-composition.md": {
-    "mtime": 1791889423.5286381,
-    "seen": 1791889559.0801327,
-    "ast_hash": "2d9e64a6b2c8973a7721b927b26adca4",
+    "mtime": 1791895470.5000525,
+    "seen": 1791896941.719196,
+    "ast_hash": "88bde870e27f1097b9cc6a82d0f4b1f0",
     "semantic_hash": ""
   },
   "docs/testing/startup-media-pin-generator.md": {

@@ -1,5 +1,33 @@
 # Current Standalone Storage Acceptance
 
+## October 13 Current-Source Requalification
+
+An isolated archive of `a9431b12ad4b98777e1421a91746af193beca582` runs
+the same three complete maintenance modules, now containing 45 cases. The
+first run has 44 passes and one strict controller round-trip failure: the
+synthetic fixture omits `auto_sideboard`, while current restoration correctly
+supplies the default `True`. A one-line fixture-producer correction preserves
+the original exact snapshot assertion. The unchanged whole cohort then passes
+all **45 cases**, with 45 warnings, in **7.27 seconds**, exit 0.
+
+All non-graph source and external harness bytes remain equal before/after the
+passing gate. The historical external guard is reused byte-for-byte: only
+owned local scratch database files and the existing maintenance CLI children
+are admitted. Eight installed parent/child receipts report no unexpected
+denials; closure records no database descriptors and only MainThread. All
+eight Python processes and their timeout owner end. Direct `fuser` on the 50
+actual fixture databases exits 1 with empty output. The earlier unsupported
+`fuser --` invocation is preserved as an administrative error, not proof.
+
+The failed and passing ledgers, source, unchanged tests, harness and closed
+synthetic databases are archived and byte-verified under
+`diagnostics/ci/a943-storage-current-20261013-lMMGBxQr/` on RCHFiles.
+No live/default/NFS database is opened. Source equality is an observed check,
+not a physical write-sandbox claim; this remains component evidence, not a
+quota/exhaustion, soak, deployment or complete RC1 certificate.
+
+## Historical Qualification
+
 Application baseline: `29e86e4d17381ff09b40d252f649224deaf48f66`.
 Three unchanged whole modules (`release_agent/test_retention.py`,
 `test_restore.py`, `test_safety.py`) passed all **43 cases**, with 45 warnings,
