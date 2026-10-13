@@ -252,6 +252,18 @@ keyword. The [rules/choice/color scope](docs/testing/rules-choice-color-composit
 
 ## Setup
 
+For one foreground Linux operator entry, use the existing
+[private HTTPS launcher](ops/caddy/README.md): configure the qualified Python
+environment, built frontend and pinned Caddy binary, then run
+`MTG_OPERATOR_CONFIG=/absolute/private/operator.json python3 ops/caddy/run.py`.
+It coordinates both internal services; no desktop framework or system service
+is required. The default is loopback-only; an explicit validated private-IPv4
+frontend bind is optional, while the backend stays on loopback. The
+[CF1 native HTTPS qualification](docs/testing/caddy-operator-current-acceptance.md)
+does not qualify LAN deployment, clean-machine installation or client trust in
+Chrome, Brave and Firefox. Certificate trust remains an explicit manual choice.
+The separate development-server commands below are not that packaged entry.
+
 Use Python 3.12 and Node 22 as tested by the current development workflow.
 From the repository root, start the backend:
 

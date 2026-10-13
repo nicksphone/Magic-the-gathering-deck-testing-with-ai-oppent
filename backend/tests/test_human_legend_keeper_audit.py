@@ -29,8 +29,7 @@ class Legend(Episode):
         super().__init__(seat, 'ordinary', False, client, repo)
         match_id = self.state.id
         # Explicit canonical retained initial position, before any paid action.
-        self.state = position(3-seat if foreign else seat)
-        self.state.id = match_id
+        self.state = position(3-seat if foreign else seat, game_id=match_id)
         self.state.mechanic_choice_players = {1, 2}
         self.state.priority_stops = {pid: set(Step) for pid in (1, 2)}
         self.state.replacement_choice_required = True

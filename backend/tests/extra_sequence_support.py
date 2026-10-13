@@ -29,9 +29,9 @@ def seed_cache(repo):
         repo.upsert_card(normalize(raw))
 
 
-def position(seat, step=Step.PRECOMBAT_MAIN):
+def position(seat, step=Step.PRECOMBAT_MAIN, *, game_id=None):
     deck = [{**canonical('Island'), 'quantity': 60}]
-    state = MatchFactory.from_decks(deck, deck, seed=7214)
+    state = MatchFactory.from_decks(deck, deck, seed=7214, game_id=game_id)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.turn = 5

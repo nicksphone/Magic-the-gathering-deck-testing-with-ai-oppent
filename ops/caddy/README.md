@@ -4,13 +4,15 @@ Historical status: the `0e57baf` native loopback runtime with the former officia
 binary passed trusted-CA HTTPS, authenticated API/media, rejection atomicity and
 restart recovery. That acceptance does not transfer to the custom binary below. See
 `../../docs/testing/caddy-operator-current-acceptance.md` for exact evidence and
-scope. Final combined-source/browser and user-selected LAN topology still need
-qualification before deployment, including native runtime integration of this
-custom build. No live activation occurs by adding these files.
+scope. The source-bound LAN candidate's default-loopback native qualification
+is recorded in `../../docs/testing/linux-private-lan-bind-prep.md`; it does not
+qualify an assigned LAN interface or client trust. Final combined-source/browser
+and user-selected LAN topology still need qualification before deployment.
+No live activation occurs by adding these files.
 
 ## Files and boundaries
 
-- `Caddyfile`: manual-certificate HTTPS, IPv4 loopback only, native BasicAuth
+- `Caddyfile`: manual-certificate HTTPS, IPv4 loopback by default, native BasicAuth
   before every route, `/api/*` strips `/api`, `/card-images/*` stays unchanged,
   bare `/api` is 404, built static files with SPA fallback. Authorization is
   removed upstream; Origin and API idempotency/revision headers are preserved.
@@ -114,7 +116,8 @@ not another clean-install claim. Leave `VITE_API_BASE_URL` unset so existing
 frontend routing uses `/api` and unchanged `/card-images`.
 
 Create a private local directory outside source/dist, mode 0700, and an operator
-JSON file mode 0600 owned by the invoking user. Exact keys:
+JSON file mode 0600 owned by the invoking user. Accepted schemas are exactly
+these ten keys, optionally plus one `bind_address`:
 
 ```json
 {
@@ -134,7 +137,14 @@ JSON file mode 0600 owned by the invoking user. Exact keys:
 This is a schema example, not valid credentials or tested TLS material. Origin
 must be one canonical explicit HTTPS hostname and unprivileged port; backend
 port must differ. Paths cannot contain whitespace/Caddy control syntax. Both
-listeners remain 127.0.0.1 regardless of hostname. Runtime cannot be NFS or source,
+listeners remain 127.0.0.1 by default, regardless of hostname. Optional
+`bind_address` changes only Caddy: a plain canonical IPv4 string equal to
+`127.0.0.1` or inside RFC1918 `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`.
+Backend always binds 127.0.0.1. Public/wildcard/other-loopback/IPv6 addresses,
+whitespace/control characters and extra keys reject. The operator must select
+an actually assigned address, matching hostname/SAN and explicit client trust
+before a separately approved LAN launch; adaptation alone proves none of these.
+Runtime cannot be NFS or source,
 and must be private. Runtime and dist must not contain one another; placing
 runtime below dist could expose game data through the static file server.
 The file-only boundary regression is documented in

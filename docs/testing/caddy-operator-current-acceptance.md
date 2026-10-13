@@ -1,6 +1,52 @@
 # Private HTTPS Operator Qualification
 
-## Current Combined Source: 2026-10-10
+## CF1 Loopback Requalification: 2026-10-13
+
+One actual parent-issued invocation on immutable
+`cf1c3bf063bab18ceb4ca9fb1ce7337da1bfd18f` passes the complete original native
+H1/H2 cohort: **547 observed check instances, all PASS**, client/outer exit 0,
+55.64 seconds, no resource stop or retry. These are repeated assertions, not
+547 independent tests. The original client/backend helpers, certificate and
+authentication rules, request deadlines, restart checks and 800/900-second
+limits remain unchanged. Only runner root literals are rebound. The operator
+production delta from the historical eb8d source is one settings predicate
+rejecting runtime storage below the served dist.
+
+All 3,209 original CF1 source files plus three newly built frontend assets
+remain byte/file-set equal before/end. The retained-dependency build exits 0;
+225 frontend inputs and 5,682 dependency files/18 links remain equal in donor
+and owned copies. This is not another clean install. The native runtime also
+retains all 2,852 Python package files/four links and system binary pins; Caddy
+is the exact custom `e8d6545c...` executable documented in the operator README.
+
+All 46 positive native H2 requests verify CA and hostname. Unknown CA and
+wrong hostname each produce curl 60 with HTTP/version zero and respective
+verification results 20/1. Authentication, built SPA/API/media routing,
+incomplete hostile body rejection, full atomic root/controller/SQL equality,
+supported legal human action and actual saved-match/idempotency/media restart
+checks all pass. Both production-first shutdowns verify exact pool disposal,
+owner FD/registry closure and empty jobs/workers before observer assistance.
+Their raw closure observations contain one non-main thread each, not zero;
+external closure later verifies all 139 known process/task identities absent,
+both ports empty, no owned runtime/private FDs or journals, and all four actual
+database/backup/lock files unused with fuser exit 1 and empty output.
+SQL is released at `2026-10-13T22:39:55.292216+00:00`.
+
+Verified private archive:
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ci/current-cf1-caddy-native547-qualified-20261013-65DlkP1r/`.
+Archive SHA256:
+`f47e8db3a0d12769cc4b985aa8a8ddab8f9536144919eb596234792df3eff5aa`.
+All 5,526 regular members read back byte-equal with strict hashes and no links.
+Keys, authentication material, operator JSON, Caddy storage and environment
+values are excluded. Closed SQLite/raw evidence remains private on NFS and
+is never executed there. Later HEAD is not relabelled as this source epoch.
+
+This qualifies only the Linux private-loopback single-user/one-worker operator
+component. LAN binding/deployment, Chrome/Brave/Firefox trust and gameplay,
+clean-machine installation, Windows/macOS and all broader release/AI gates
+remain separate requirements. No global trust or firewall change is made.
+
+## Historical Combined Source: 2026-10-10
 
 One complete invocation on isolated published
 `eb8d8805f6ce74711508db0c7346ae3ca0921cab` passes the original H1 corpus and

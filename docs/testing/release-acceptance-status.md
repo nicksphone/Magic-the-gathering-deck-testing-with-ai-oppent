@@ -27,6 +27,21 @@ matched quality comparisons and the remaining original gates stay open. See
 
 ## Current Checkpoint: 2026-10-13
 
+The Linux operator's optional private-IPv4 configuration now passes real native
+adaptation/validation, and its default loopback completes the original full
+HTTPS/restart program with 541 observed checks and unchanged assertions.
+This is not an assigned-LAN, browser-trust or clean-machine certificate.
+The selected-mana, keeper and selection/Suspend fixture repairs have separate
+55, 125 and 177-check component evidence; the last includes one private witness,
+not an additional public test. Their combined current-source acceptance remains
+a distinct run, not a sum of these counts: the fresh nine-whole-module declaration
+passes all 356 public cases plus nine subtests in 460.28 seconds, with unchanged
+source/runtime and all 184 serializer children closed. The separate public
+operator copy passes its 49 configuration cases and 12 inventory controls. See
+[the composed fixture scope](current-composed-fixture-acceptance.md),
+[the operator scope](linux-private-lan-bind-prep.md) and
+[keeper fixture scope](keeper-fixture-birth.md).
+
 The latest counter-fixture/cold-restore component passes all 153 cases in four
 whole modules, preserving every original assertion and completing both real
 cold HTTP workers. Its exact `50f9e58b` plus test-only source, native resource

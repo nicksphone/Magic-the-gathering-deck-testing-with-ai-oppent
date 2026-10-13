@@ -8,8 +8,8 @@ from ai.pending_effects import planning_copy
 from rules_engine.action_validation import checked_action
 from rules_engine.engine import RulesEngine
 from game_state.state import Zone
-from tests.test_ai_selection_activation_policy import position, policy_agent, STYLES
-from tests.test_suspend_lifecycle import CARDS, add, restore
+from tests.test_ai_selection_activation_policy import position, policy_agent, relocate, STYLES
+from tests.test_suspend_lifecycle import CARDS, restore
 
 
 @pytest.mark.parametrize('seat', [1, 2])
@@ -17,12 +17,10 @@ from tests.test_suspend_lifecycle import CARDS, add, restore
 @pytest.mark.parametrize('difficulty', ['strong', 'master'])
 @pytest.mark.parametrize('scenario', ['favorable', 'reservation', 'deploy'])
 def test_suspend_preserves_selection_reservation_and_deployment(seat, style, difficulty, scenario):
-    state, source = position(seat, scenario)
+    vision = {**CARDS['Ancestral Vision'], 'card_name': 'Ancestral Vision', 'quantity': 1}
+    state, source = position(seat, scenario, additional_own_rows=(vision,))
     state.turn = 1
-    card = add(state, 'Ancestral Vision', seat, Zone.HAND, cards=CARDS)
-    # Keep own submitted inventory coherent; no inspection of hidden instances.
-    state.starting_decks[seat].append({**CARDS['Ancestral Vision'],
-                                      'card_name': 'Ancestral Vision', 'quantity': 1})
+    card = relocate(state, 'Ancestral Vision', seat, Zone.HAND)
     rules = RulesEngine()
     before = pickle.dumps(state, 5)
     legal = rules.legal_moves(state, seat)

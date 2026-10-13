@@ -2,6 +2,7 @@
 """Foreground private-loopback packaging; no services or global trust changes."""
 import fcntl
 import hashlib
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -67,7 +68,15 @@ def source_pin():
 
 def settings():
     config = json.loads(private_file(os.environ["MTG_OPERATOR_CONFIG"]).read_text())
-    require(set(config) == {"origin", "backend_port", "runtime", "python", "caddy", "dist", "cert", "key", "user", "password_hash"})
+    required = {"origin", "backend_port", "runtime", "python", "caddy", "dist", "cert", "key", "user", "password_hash"}
+    require(set(config) in (required, required | {"bind_address"}))
+    bind = config.get("bind_address", "127.0.0.1")
+    require(type(bind) is str)
+    address = ipaddress.IPv4Address(bind)
+    require(str(address) == bind and (bind == "127.0.0.1" or any(
+        address in ipaddress.IPv4Network(network)
+        for network in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"))))
+    config["bind_address"] = bind
     origin = config["origin"]
     sys.path.insert(0, str(SOURCE / "backend"))
     from browser_origin import trusted_origins
@@ -142,6 +151,7 @@ def environment(config):
     base = {"PATH": "/usr/bin:/bin", "HOME": str(config["runtime"]), "LANG": "C.UTF-8", "PYTHONDONTWRITEBYTECODE": "1"}
     backend = dict(base, MTG_TRUSTED_ORIGINS=config["origin"])
     caddy = dict(base, XDG_DATA_HOME=str(config["runtime"] / "caddy-data"), XDG_CONFIG_HOME=str(config["runtime"] / "caddy-config"),
+                 MTG_FRONTEND_BIND=config["bind_address"],
                  MTG_SITE_ORIGIN=config["origin"], MTG_BACKEND_PORT=str(config["backend_port"]), MTG_FRONTEND_DIST=str(config["dist"]),
                  MTG_TLS_CERT=str(config["cert"]), MTG_TLS_KEY=str(config["key"]), MTG_AUTH_USER=config["user"], MTG_AUTH_HASH=config["password_hash"])
     return backend, caddy

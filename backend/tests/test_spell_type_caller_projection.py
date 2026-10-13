@@ -3,6 +3,7 @@ import ast
 from copy import deepcopy
 import hashlib
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -17,10 +18,11 @@ from rules_engine.restrictions import can_cast_in_current_timing
 from rules_engine.type_effects import effective_types
 from tests.test_compleated_loyalty_full import RAW, act, clean, raw_card, settle
 from test_soulless_jailer_query_contract import add, position, pure_scope, rows
+from tests.controlled_basic_game_support import controlled_basic_game
 
 
 def original_compleated_fixture():
-    """Run the entire original function, replacing only its publication boundary."""
+    """Project the full controlled fixture with unknown stock from its birth."""
     path = Path(__file__).with_name('browser_fixture_server.py')
     tree = ast.parse(path.read_text())
     function = next(node for node in tree.body
@@ -29,11 +31,13 @@ def original_compleated_fixture():
     function.decorator_list = []
     publications = []
 
-    def publish(state, deck):
+    def publish(state, deck, *, capture_original_stock):
+        assert capture_original_stock is False
         publications.append((state, deck))
         return state
 
-    namespace = {'MatchFactory': MatchFactory, 'Step': Step, 'publish': publish}
+    namespace = {'MatchFactory': SimpleNamespace(from_decks=controlled_basic_game),
+                 'Step': Step, 'publish': publish}
     exec(compile(ast.Module(body=[function], type_ignores=[]), str(path), 'exec'), namespace)
     state = namespace['fixture'](face_kind='compleated_payment')
     assert len(publications) == 1 and publications[0][0] is state

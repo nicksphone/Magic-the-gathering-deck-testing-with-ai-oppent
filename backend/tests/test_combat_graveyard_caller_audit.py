@@ -56,13 +56,6 @@ class Episode:
         self.seat, self.mode, self.foreign = seat, mode, foreign
         self.client, self.repo = client, repo
         self.trace = []
-        self.state = position(3-seat)
-        self.traveler = raw_card(self.state, ROWS['Doomed Traveler'],
-                                 3-seat if foreign else seat, Zone.HAND).id
-        self.bear = raw_card(self.state, ROWS['Grizzly Bears'], 3-seat, Zone.HAND).id
-        self.enchantment = (raw_card(self.state, ROWS['Rest in Peace' if mode == 'rip' else 'Humility'],
-                                    seat, Zone.HAND).id if mode != 'ordinary' else None)
-        self.theft = raw_card(self.state, ROWS['Act of Treason'], seat, Zone.HAND).id if foreign else None
         if client:
             import main
             for raw in ROWS.values():
@@ -72,7 +65,14 @@ class Episode:
                                    'sandbox': True, 'controller_a': 'human', 'controller_b': 'human', 'seed': 7214})
             assert response.status_code == 200, response.text
             self.controller = main.ACTIVE_MATCHES[response.json()['id']]
-            self.state.id = self.controller.state.id
+        self.state = position(3-seat, game_id=self.controller.state.id if client else None)
+        self.traveler = raw_card(self.state, ROWS['Doomed Traveler'],
+                                 3-seat if foreign else seat, Zone.HAND).id
+        self.bear = raw_card(self.state, ROWS['Grizzly Bears'], 3-seat, Zone.HAND).id
+        self.enchantment = (raw_card(self.state, ROWS['Rest in Peace' if mode == 'rip' else 'Humility'],
+                                    seat, Zone.HAND).id if mode != 'ordinary' else None)
+        self.theft = raw_card(self.state, ROWS['Act of Treason'], seat, Zone.HAND).id if foreign else None
+        if client:
             self.persist()
 
     def persist(self):

@@ -13,7 +13,7 @@
 }
 
 {$MTG_SITE_ORIGIN} {
-	bind 127.0.0.1
+	bind {$MTG_FRONTEND_BIND:127.0.0.1}
 	tls {$MTG_TLS_CERT} {$MTG_TLS_KEY}
 	route {
 		basic_auth {

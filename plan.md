@@ -32,6 +32,32 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## October 13 Execution Checkpoint
 
+The next three fixture repairs retain the original assertions and strict stock
+validation: selected-mana HTTP/projection passes 55 cases, keeper/private-choice
+acceptance passes 125 cases plus nine subtests, and selection/Suspend passes
+177 checks including one private construction witness (176 public cases).
+These separate source-specific results are not a summed backend result.
+See [selected fixtures](docs/testing/current-selected-mana-fixture-acceptance.md),
+[keeper birth](docs/testing/keeper-fixture-birth.md), and
+[selection/Suspend birth](docs/testing/current-selection-suspend-fixture-birth.md).
+
+A fresh combined declaration then passes all 356 public cases in nine whole
+modules, plus nine separately reported subtests, in 460.28 seconds. It includes
+the publication-shaped keeper header and excludes the private construction
+witness. Source/runtime bytes are stable; all 184 serializer children and owned
+database resources close. See [the composed acceptance scope](docs/testing/current-composed-fixture-acceptance.md).
+The operator's public-copy 49 configuration cases and
+12 standalone inventory checks also pass separately. No whole-CI, all-browser,
+LAN trust or AI-strength completion follows from those component results.
+
+The Linux foreground launcher now supports an optional validated RFC1918 IPv4
+frontend bind while retaining default loopback and a loopback-only backend.
+Native configuration checks pass both default and private-IP adaptation; the
+unchanged full HTTPS/restart program also passes on the candidate default,
+with 541 observed checks and the same complete check-label set as prior 547.
+Actual LAN assignment, hostname/certificate trust and all-browser acceptance
+remain unqualified; see [the exact bind scope](docs/testing/linux-private-lan-bind-prep.md).
+
 The counter-fixture and cold-restore component now passes 153 ordinary cases
 across four whole modules on its exact `50f9e58b` plus test-only composition.
 Both genuine cold HTTP workers and 38 snapshot children exit successfully;
