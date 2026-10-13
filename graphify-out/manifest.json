@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1791847828.1399615,
-    "seen": 1791847935.6276395,
-    "ast_hash": "7901b0230d90eab3292d9ef58673edc0",
+    "mtime": 1791853602.1865354,
+    "seen": 1791853710.1298938,
+    "ast_hash": "c30e01306827a76c5766dca8875fea94",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -1134,9 +1134,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/regression_matrix_replay.py": {
-    "mtime": 1791667789.8719318,
-    "seen": 1791671014.2829707,
-    "ast_hash": "6c90ba92467c62c4e8fff78c2fe06a6d",
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1303306,
+    "ast_hash": "5f56e21a946df437ccbcff77041b605a",
     "semantic_hash": ""
   },
   "backend/scripts/sync_all_card_knowledge.py": {
@@ -6876,9 +6876,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1791847828.1399615,
-    "seen": 1791847935.631758,
-    "ast_hash": "63d7a1b254e8ac5510aac4a86eab2656",
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1341712,
+    "ast_hash": "69d7b6fa1a055418b42ee1a11b0d560c",
     "semantic_hash": ""
   },
   "docs/plans/casting-trigger-repair-batch.md": {
@@ -17691,6 +17691,96 @@
     "mtime": 1791847828.1409616,
     "seen": 1791847935.631843,
     "ast_hash": "110b94d020990f913d3f8d978ba54852",
+    "semantic_hash": ""
+  },
+  "backend/scripts/matchup_round_robin.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1303167,
+    "ast_hash": "769cd1491c9889eac6e0ac681a9cd4bb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_matchup_game_quality_source.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1328146,
+    "ast_hash": "b212843ec8625730f61ddf587fc39f39",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_matchup_round_robin_protocol.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1328168,
+    "ast_hash": "3107ae557137c0fc3ff468ca03da3ae4",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_matchup_series_resource_continuation.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1328187,
+    "ast_hash": "5831d914f691d1f5498902e7782d6d01",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_matchup_source_binding.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1328201,
+    "ast_hash": "00e934f2e0955a8b258d7b3aca27cf72",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_block_bias_offered_mana_baseline.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.133314,
+    "ast_hash": "84cb2c87445810885bfade45b234629b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_block_bias_selected_boundaries.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1333156,
+    "ast_hash": "1ee7d52de890487db7e8c37bcf564037",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_block_material_baseline.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1333168,
+    "ast_hash": "dfc427e31266a3bb511b1766a2b8a47a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task23_block_material_boundaries.py": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1333182,
+    "ast_hash": "973754106ac4f400f9c4244f32ae63d5",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/task31/replay_defaults.py.txt": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.134129,
+    "ast_hash": "ce620ba04e2807cdeb7e71a49de1be59",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-10-12-task31-bo3.md": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.134189,
+    "ast_hash": "b4115b293ab0b9647e90b2ed93f1fe99",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-bo3-block-composed-current.md": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1342115,
+    "ast_hash": "56f4a99dcda9a7a5cee2cee0feab90ba",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-profile-block-material-current.md": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.134261,
+    "ast_hash": "6956807dae367e1c50b7e6ba8804b7cf",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-selected-block-mana-current.md": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1342812,
+    "ast_hash": "a3c30e45fbdf2c8b869df9dc5059c87a",
+    "semantic_hash": ""
+  },
+  "docs/testing/task31-bo3-runner.md": {
+    "mtime": 1791853602.1875353,
+    "seen": 1791853710.1351547,
+    "ast_hash": "5cb808ea5b83fbda183b47019499f48a",
     "semantic_hash": ""
   }
 }

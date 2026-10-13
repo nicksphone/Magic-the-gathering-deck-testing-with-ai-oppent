@@ -2170,13 +2170,66 @@ class AIAgent:
         arche_bonus = 0.8 if self.archetype in {"Control", "Midrange", "Ramp"} else 0.3
         if self.archetype in {"Aggro", "Burn", "Tempo"} and life > 8:
             arche_bonus -= 0.4
+        selected_ids = None
+        if (isinstance(state, MatchState) and state.step == Step.DECLARE_BLOCKERS
+                and player_id == 3 - state.active_player
+                and not (state.stack or state.pending_trigger_order or state.pending_mechanic_choice
+                         or state.pending_replacement_choice)):
+            try:
+                action = self._materialize_action_without_resources(state, move, player_id)
+                groups = action.get('blocks') if type(action) is dict else None
+                valid = (type(groups) is dict and action.get('type') == 'block'
+                         and not action.get('_invalid_ai_choice'))
+                chosen = set()
+                if valid:
+                    for aid, bids in groups.items():
+                        values = [bids] if type(bids) is str else bids
+                        if (type(aid) is not str or aid not in attacker_ids or aid not in state.attackers
+                                or type(values) is not list or any(type(bid) is not str for bid in values)
+                                or len(values) != len(set(values))):
+                            valid = False
+                            break
+                        for bid in values:
+                            card = state.cards.get(bid)
+                            if (bid not in blocker_ids or card is None or card.zone != Zone.BATTLEFIELD
+                                    or card.controller != player_id):
+                                valid = False
+                                break
+                            chosen.add(bid)
+                        if not valid:
+                            break
+                if valid:
+                    from ai.pending_effects import simulation_checked_action
+                    # Validate on the existing copied-state engine path, including
+                    # pairing restrictions, payments and multi-block capacity.
+                    normalized = {aid: [bids] if type(bids) is str else list(bids)
+                                  for aid, bids in groups.items()}
+                    simulation_checked_action(state, self.engine, player_id,
+                                              {**action, 'blocks': normalized})
+                    if not chosen:
+                        return -0.8
+                    selected_ids = chosen
+            except (KeyError, TypeError, ValueError, UncertainSimulation):
+                pass  # Unknown allocation keeps the whole legacy offered-source tariff.
         # Penalize blocking with mana-producing creatures
         mana_penalty = 0.0
-        for bid in blocker_ids:
+        for bid in blocker_ids if selected_ids is None else sorted(selected_ids):
             blk = state.cards.get(bid)
             if blk:
                 blk_text = (getattr(blk, "oracle_text", "") or "").lower()
-                if ("{t}" in blk_text or "(t)" in blk_text) and ("add " in blk_text or "adds " in blk_text):
+                mana_source = (("{t}" in blk_text or "(t)" in blk_text)
+                               and ("add " in blk_text or "adds " in blk_text))
+                if selected_ids is not None:
+                    from rules_engine.mana import repeatable_nonland_mana_outputs
+                    from rules_engine.continuous import printed_abilities_suppressed
+                    try:
+                        if repeatable_nonland_mana_outputs(blk, state=state):
+                            mana_source = True
+                        elif printed_abilities_suppressed(state, bid):
+                            mana_source = False
+                    except (KeyError, TypeError, ValueError):
+                        pass
+                if mana_source:
                     mana_penalty += 3.5
         return profitable + lethal_pressure + arche_bonus - mana_penalty
 
@@ -4272,14 +4325,23 @@ class AIAgent:
         if not attacker_ids or not blocker_ids or len(attacker_ids) > 4 or len(blocker_ids) > 5:
             return None
         defender = 3-state.active_player
+        material_retention = False
         if self.difficulty not in {"master", "master_plus"}:
             if state.step != Step.DECLARE_BLOCKERS:
                 return None
             face_attackers = [aid for aid in attacker_ids
                               if state.attack_targets.get(aid, f'player:{defender}') == f'player:{defender}']
-            if not any('trample' in effective_keywords(state, aid) for aid in face_attackers):
+            material_retention = (len(face_attackers) == len(attacker_ids)
+                and not (state.stack or state.pending_trigger_order or state.pending_mechanic_choice
+                         or state.pending_replacement_choice)
+                and any(state.cards[bid].zone == Zone.BATTLEFIELD
+                        and state.cards[bid].controller == defender
+                        and 'Creature' in effective_types(state, state.cards[bid])
+                        and self._printed_major_threat(state, state.cards[bid]) is True
+                        and recurring_engine_value(state, bid) > 0 for bid in blocker_ids))
+            if not material_retention and not any('trample' in effective_keywords(state, aid) for aid in face_attackers):
                 return None
-            # Immediate survival only; retain the existing complete-menu bounds.
+            # Reuse checked outcomes for survival or retained recurring material.
             consider_next_combat = False
         from ai.block_search import block_intents
         assignments = block_intents(state, attacker_ids, blocker_ids)
@@ -4311,7 +4373,7 @@ class AIAgent:
                 'double strike' in effective_keywords(state, aid) for aid in attacker_ids):
             unblocked = project({})
             lethal = unblocked is not None and unblocked.winner == opponent
-            if self.difficulty == 'strong' and not lethal:
+            if self.difficulty == 'strong' and not lethal and not material_retention:
                 return None
             if lethal:
                 # A single power sum cannot classify multi-step combat as nonlethal.

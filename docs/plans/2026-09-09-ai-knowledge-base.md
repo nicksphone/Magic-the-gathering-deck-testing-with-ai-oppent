@@ -1,5 +1,26 @@
 # AI Quality + Knowledge Base Implementation Plan
 
+## October 13 Combined Block And Runner Checkpoint
+
+One fresh 41-whole-module composition passes 775 ordinary cases (278.08s),
+with no failures, errors, skips or unexpected I/O denials. The two reproduced
+blocking defects now preserve recurring material and stop pricing unused offered
+mana creatures as selected blockers. Actual allocation legality uses the existing
+checked copied-state engine; coefficients and rules are unchanged.
+
+The BO3 runner now binds the complete measured backend separately from export
+provenance, reserves output before execution, invalidates game and pair quality
+on source drift, and advances independent scheduled series after a fully recorded
+per-series resource stop. Fatal source, action, evidence and global limits still
+stop the matrix. These runner controls are protocol tests, not 110 played series.
+
+A separate native Master comparison completed the reference three-game BO3,
+matched the first instrumented game exactly and matched the second accepted
+gameplay prefix before its 600-second series limit. The budgets were unequal,
+so full native parity is not established. Equal-budget two-seat games, the full
+seeded matrix, learned matchup data, sideboarding and measured A/B improvements
+remain required. See [combined evidence](../testing/ai-bo3-block-composed-current.md).
+
 ## October 12 Data-Layer Checkpoint
 
 The subsequent cast-input migration now reads eligible persisted threat tiers

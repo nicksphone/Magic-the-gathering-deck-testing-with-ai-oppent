@@ -219,70 +219,95 @@ def _match_termination_status(match: dict) -> str:
 
 
 def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, *, starting_player: int = 1,
-             observer: Callable[[dict], None] | None = None) -> dict:
+             observer: Callable[[dict], None] | None = None, trace_builder=None, budget=None, record_game=None) -> dict:
     if starting_player not in (1, 2):
         raise ValueError("Starting player must be 1 or 2")
     state = MatchFactory.from_decks(deck_a, deck_b, seed=seed)
     state.active_player = starting_player
     state.priority_player = starting_player
     state.mechanic_choice_players = {1, 2}
-    engine_rules = RulesEngine()
-    ai_a = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a), opponent_archetype=guess_archetype(deck_b))
-    ai_b = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b), opponent_archetype=guess_archetype(deck_a))
     ticks = 0
-    while state.winner is None and ticks < max_ticks:
-        pid = pregame_actor(state) if state.pregame_pending else state.priority_player
-        context = ({'event': 'decision_stage', 'game_seed': seed, 'tick': ticks + 1,
-                    'pid': pid, 'turn': state.turn, 'step': str(state.step),
-                    'life': {str(seat): player.life for seat, player in state.players.items()},
-                    'mana_pool': dict(state.players[pid].mana_pool),
-                    'lands_played_this_turn': state.players[pid].lands_played_this_turn,
-                    'hand': [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
-                    'opponent_battlefield': [state.cards[cid].name for cid in state.players[3-pid].battlefield if cid in state.cards],
-                    'battlefield': [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards]}
-                   if observer is not None else {})
-        legal = _timed_stage(observer, context, 'legal_moves', lambda: engine_rules.legal_moves(state, pid))
-        if not legal:
-            action = {"type": "pass_priority"}
-        else:
-            agent = ai_a if pid == 1 else ai_b
-            action = _timed_stage(observer, context, 'choose_action', lambda: agent.choose_action(state, legal, pid)).action
-        action = complete_action(action)
-        trace_line = (
-            "AI TRACE "
-            + json.dumps(
-                {
-                    "trace": True,
-                    "pid": pid,
-                    "turn": state.turn,
-                    "step": str(state.step),
-                    "active_player": state.active_player,
-                    "priority_player": state.priority_player,
-                    "hand": [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
-                    "battlefield": [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards],
-                    "legal_non_pass": any(move.get("type") != "pass_priority" for move in legal),
-                    "legal_meaningful": any(
-                        move.get("type") in {
-                            "play_land", "cast_spell", "activate_ability", "activate_loyalty",
-                            "cycle_card", "equip", "attack",
-                        }
-                        for move in legal
-                    ),
-                    "legal_action_types": sorted({str(move.get("type")) for move in legal}),
-                    "action": action,
-                },
-                separators=(",", ":"),
-            )
-        )
-        candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',
-                                 lambda: checked_action(state, engine_rules, pid, action))
-        candidate.log.insert(len(state.log), trace_line)
-        state = candidate
-        ticks += 1
+    stop_reason = None
+    try:
+        if budget is not None:
+            budget.begin_game(state.log)
+        engine_rules = RulesEngine()
+        ai_a = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a), opponent_archetype=guess_archetype(deck_b))
+        ai_b = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b), opponent_archetype=guess_archetype(deck_a))
+        ticks = 0
+        while state.winner is None and ticks < max_ticks:
+            if budget is not None:
+                budget.before_clone()
+            pid = pregame_actor(state) if state.pregame_pending else state.priority_player
+            context = ({'event': 'decision_stage', 'game_seed': seed, 'tick': ticks + 1,
+                        'pid': pid, 'turn': state.turn, 'step': str(state.step),
+                        'life': {str(seat): player.life for seat, player in state.players.items()},
+                        'mana_pool': dict(state.players[pid].mana_pool),
+                        'lands_played_this_turn': state.players[pid].lands_played_this_turn,
+                        'hand': [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
+                        'opponent_battlefield': [state.cards[cid].name for cid in state.players[3-pid].battlefield if cid in state.cards],
+                        'battlefield': [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards]}
+                       if observer is not None else {})
+            legal = _timed_stage(observer, context, 'legal_moves', lambda: engine_rules.legal_moves(state, pid))
+            decision = None
+            if not legal:
+                action = {"type": "pass_priority"}
+            else:
+                agent = ai_a if pid == 1 else ai_b
+                decision = _timed_stage(observer, context, 'choose_action', lambda: agent.choose_action(state, legal, pid))
+                action = decision.action
+            action = complete_action(action)
+            if trace_builder is not None:
+                if budget is not None:
+                    budget.trace_inputs(state, pid, action, getattr(decision, 'reasoning', ''))
+                payload = trace_builder(state, pid, legal, action, decision)
+                trace_line = (budget.trace_line(payload) if budget is not None else
+                              'AI TRACE ' + json.dumps(payload, separators=(',', ':'), allow_nan=False))
+            else:
+                trace_line = (
+                    "AI TRACE "
+                    + json.dumps(
+                        {
+                            "trace": True,
+                            "pid": pid,
+                            "turn": state.turn,
+                            "step": str(state.step),
+                            "active_player": state.active_player,
+                            "priority_player": state.priority_player,
+                            "hand": [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
+                            "battlefield": [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards],
+                            "legal_non_pass": any(move.get("type") != "pass_priority" for move in legal),
+                            "legal_meaningful": any(
+                                move.get("type") in {
+                                    "play_land", "cast_spell", "activate_ability", "activate_loyalty",
+                                    "cycle_card", "equip", "attack",
+                                }
+                                for move in legal
+                            ),
+                            "legal_action_types": sorted({str(move.get("type")) for move in legal}),
+                            "action": action,
+                        },
+                        separators=(",", ":"),
+                    )
+                )
+            candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',
+                                     lambda: checked_action(state, engine_rules, pid, action))
+            if budget is None:
+                candidate.log.insert(len(state.log), trace_line)
+            else:
+                budget.accept_candidate(state, candidate, trace_line)
+            state = candidate
+            ticks += 1
+
+    except Exception as exc:
+        if record_game is None:
+            raise
+        from analytics.resource_budget import SimulationResourceLimit
+        stop_reason = 'resource_limit' if isinstance(exc, SimulationResourceLimit) else 'action_error'
 
     normalized_log = [normalize_log_line(line) for line in state.log]
     log_hash = hashlib.sha256("\n".join(normalized_log).encode("utf-8")).hexdigest()
-    return {
+    result = {
         "winner": state.winner,
         "turn": state.turn,
         "ticks": ticks,
@@ -291,10 +316,35 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
         "timeout": state.winner is None,
         "starting_player": starting_player,
     }
+    if stop_reason is not None:
+        result['stop_reason'] = stop_reason
+    if record_game is not None:
+        _record_game_evidence(result, state.log, record_game)
+    return result
+
+
+def _record_game_evidence(result, raw_log, record_game):
+    """The writer's return is a receipt, never an alternate game outcome."""
+    raw = json.dumps(raw_log, ensure_ascii=True, separators=(',', ':'), allow_nan=False).encode('utf-8')
+    try:
+        receipt = record_game(json.loads(json.dumps(result)), list(raw_log))
+        reference = receipt.get('reference') if type(receipt) is dict else None
+        if (type(receipt) is not dict or receipt.get('complete') is not True
+                or type(receipt.get('bytes')) is not int or receipt['bytes'] != len(raw)
+                or type(receipt.get('raw_sha256')) is not str
+                or receipt['raw_sha256'] != hashlib.sha256(raw).hexdigest()
+                or type(reference) is not str or len(reference) != 12
+                or not reference.startswith('game-') or not reference.endswith('.json')
+                or not all('0' <= char <= '9' for char in reference[5:7]) or reference[5:7] == '00'):
+            raise ValueError('Incomplete game evidence receipt')
+        result['evidence'] = {key: receipt[key] for key in ('complete', 'bytes', 'raw_sha256', 'reference')}
+    except Exception:
+        result.setdefault('stop_reason', 'evidence_error')
+        result['evidence'] = None
 
 
 def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, best_of: int, *,
-              observer: Callable[[dict], None] | None = None) -> dict:
+              observer: Callable[[dict], None] | None = None, game_runner=None) -> dict:
     """Run a seeded match while preserving each game's independent replay seed."""
     wins = {1: 0, 2: 0}
     games: list[dict] = []
@@ -307,12 +357,12 @@ def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str
         options = {'starting_player': chooser}
         if observer is not None:
             options['observer'] = lambda record: observer({**record, 'game_index': game_index + 1})
-        game = run_game(deck_a, deck_b, current_seed, difficulty, max_ticks, **options)
+        game = (run_game if game_runner is None else game_runner)(deck_a, deck_b, current_seed, difficulty, max_ticks, **options)
         game["seed"] = current_seed
         game["play_draw_chooser"] = chooser
         game["starting_player"] = chooser
         games.append(game)
-        if game["timeout"]:
+        if game["timeout"] or (game_runner is not None and (game['winner'] is None or game.get('stop_reason'))):
             break
         if game["winner"] != 0:
             counted_games += 1
