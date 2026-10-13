@@ -40,6 +40,36 @@ async function pointer(selector) {
   await command('Input.dispatchMouseEvent',{type:'mouseMoved',...p});
   for(const type of ['mousePressed','mouseReleased']) await command('Input.dispatchMouseEvent',{type,...p,button:'left',clickCount:1});
 }
+async function recoverDroppedResponse(s) {
+  let dropped=false, dropping=false, enabled=false, timer;
+  const responseTrace=[], actionUrl=`${api}/matches/${s.id}/action`;
+  let resolveDrop, rejectDrop;
+  const drop=new Promise((resolve,reject)=>{resolveDrop=resolve;rejectDrop=reject;});
+  drop.catch(()=>{}); // A callback may reject before click's CDP acknowledgement.
+  b.onIntercept(async e=>{
+    responseTrace.push({method:e.request.method,status:e.responseStatusCode,current:e.request.url===actionUrl});
+    try {
+      if(e.request.method==='POST'&&e.responseStatusCode===200&&e.request.url===actionUrl&&!dropping){
+        dropping=true;
+        await command('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});
+        dropped=true;resolveDrop();
+      }else await command('Fetch.continueResponse',{requestId:e.requestId});
+    }catch(error){rejectDrop(error);}
+  });
+  try {
+    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
+    await click('Play Land Forest');
+    const deadline=Date.now()+15000;
+    await Promise.race([drop,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Current accepted response drop timed out')),15000);})]);
+    const remaining=deadline-Date.now();
+    if(remaining<=0)throw new Error('Current accepted response reconciliation timed out');
+    await waitFor(`localStorage.getItem('mtg.activeMatch') === ${JSON.stringify(s.id)} && document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(s.id)} && document.querySelector('.battlefield')?.dataset.matchRevision === '1' && document.querySelector('.operation-alert') && !document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Restoring saved session') && ![...document.querySelectorAll('button')].some(e=>e.textContent.startsWith('Play Land Forest'))`,remaining);
+    if(Date.now()>=deadline)throw new Error('Current accepted response reconciliation timed out');
+    const state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);assert.ok(dropped);
+    return state;
+  }catch(error){console.error('DROP_RESPONSE_TRACE',JSON.stringify({dropped,responses:responseTrace}));throw error;}
+  finally{clearTimeout(timer);if(enabled)await command('Fetch.disable');}
+}
 try {
   await viewport();
   await evaluate("localStorage.removeItem('mtg.activeMatch'); localStorage.removeItem('mtg.pendingStart')");await reload();
@@ -142,12 +172,6 @@ try {
   await waitFor("!document.body.innerText.includes('Match operation pending') && ![...document.querySelectorAll('button')].some(e=>e.textContent.startsWith('Play Land Forest'))");
   let state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);await reload();await waitFor("document.querySelector('[data-match-revision=\"1\"]')");
   await record('Double intent applies once; full-page reload restores persisted revision');
-  s=await setup('/fixture');let dropped=false;const responseTrace=[];
-  b.onIntercept(async e=>{responseTrace.push({method:e.request.method,status:e.responseStatusCode});if(e.request.method==='POST'&&e.responseStatusCode===200&&!dropped){dropped=true;await command('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});}else await command('Fetch.continueResponse',{requestId:e.requestId});});
-  await command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Response'}]});await click('Play Land Forest');
-  try {await waitFor("document.querySelector('.operation-alert') && !document.body.innerText.includes('Match operation pending')");}
-  catch(error){console.error('DROP_RESPONSE_TRACE',JSON.stringify({dropped,responses:responseTrace}));throw error;}
-  await command('Fetch.disable');
-  state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);assert.ok(dropped);await shot('after-reconciled-failure');
+  s=await setup('/fixture');await recoverDroppedResponse(s);await shot('after-reconciled-failure');
   await record('Dropped accepted HTTP response surfaces error and reconciles server revision without replay');
 } finally { await b.close(); }
