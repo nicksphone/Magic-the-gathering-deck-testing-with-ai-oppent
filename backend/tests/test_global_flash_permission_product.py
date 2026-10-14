@@ -170,6 +170,11 @@ def test_actual_http_payment_privacy_atomic_rejection_and_sqlite_restore(isolate
     assert snapshot(controller.state) == before and database_dump(database) == before_db
     action = cast(card)
     expected = checked_action(state, RulesEngine(), seat, action) if funded else None
+    if funded:
+        from ai.sideboard_facts import record_accepted_action
+        record_accepted_action(state, expected, seat, action)
+        assert expected.sideboard_facts['coverage_ok'] is False
+    assert snapshot(state) == before
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat, 'action': action})
     assert response.status_code == (200 if funded else 422), response.text
     if funded:
@@ -233,6 +238,9 @@ def test_actual_http_paid_response_preserves_existing_real_spell_stack(isolated_
     assert hidden.id not in json.dumps(legal.json())
     assert snapshot(state) == before and database_dump(database) == db_before
     expected = checked_action(state, RulesEngine(), seat, cast(card))
+    from ai.sideboard_facts import record_accepted_action
+    record_accepted_action(state, expected, seat, cast(card))
+    assert expected.sideboard_facts['coverage_ok'] is False
     assert snapshot(state) == before
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat, 'action': cast(card)})
     assert response.status_code == 200, response.text

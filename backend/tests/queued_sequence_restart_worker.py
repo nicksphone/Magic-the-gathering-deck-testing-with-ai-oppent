@@ -72,8 +72,7 @@ def run(phase, seat, mode, root):
                 headers={'Idempotency-Key': 'queue-start'})
             assert response.status_code == 200, response.text
             controller = main.ACTIVE_MATCHES[response.json()['id']]
-            state = position(seat)
-            state.id = controller.state.id
+            state = position(seat, game_id=controller.state.id)
             state.priority_stops = {1: set(Step), 2: set(Step)}
             state.mechanic_choice_players = {1, 2}
             source = add(state, 'Time Warp' if mode in ('turn', 'pending') else 'Aggravated Assault', seat,

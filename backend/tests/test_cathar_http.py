@@ -35,9 +35,9 @@ def test_cached_http_cast_target_choice_and_restart(game, monkeypatch, seat, des
     assert all(len(card.card_faces) == 2 for card in match.state.cards.values() if card.name == 'Brutal Cathar')
     # Controlled canonical board isolates entry/targeting from opening shuffles.
     state, source, targets, _ = setup(seat, designation)
-    state.id = mid
-    match.state = state
-    persist(match)
+    from tests.fixture_state_support import adopt_fixture_state
+    adopt_fixture_state(match, state)
+    mid = state.id
 
     def restore():
         main.ACTIVE_MATCHES.pop(mid)

@@ -18,10 +18,14 @@ from tests.test_ai_strategic_pass import STYLES
 ROWS = json.loads((Path(__file__).parent / 'fixtures/holding_spells/canonical.json').read_text())
 
 
-def position(seat, name='Storm the Festival', remaining='Black Knight', lands=7):
+def position(seat, name='Storm the Festival', remaining='Black Knight', lands=7, *, extra_stock=()):
     deck = [{**ROWS[key], 'card_name': key, 'quantity': count}
             for key, count in [('Forest', 20), ('Swamp', 4),
                                ('Ugin, the Spirit Dragon', 2), (name, 4), (remaining, 30)]]
+    if extra_stock:
+        # Replace unposed basic stock; captured inventory stays exactly 60 units.
+        deck[0]['quantity'] -= sum(count for _, count in extra_stock)
+        deck.extend({**ROWS[key], 'card_name': key, 'quantity': count} for key, count in extra_stock)
     state = MatchFactory.from_decks(deck, deck, seed=351)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -66,7 +70,7 @@ def test_shared_planner_deploys_affordable_topdeck_spells(seat, name, style):
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('difficulty', ['master', 'master_plus'])
 def test_deterministic_reload_and_hidden_identity_order_invariance(seat, difficulty):
-    state, spell = position(seat)
+    state, spell = position(seat, extra_stock=(('Counterspell', 1),))
     before = serialize_match_snapshot(state)
     def choose(s):
         return AIAgent(difficulty=difficulty, archetype='Ramp').choose_action(
@@ -76,13 +80,9 @@ def test_deterministic_reload_and_hidden_identity_order_invariance(seat, difficu
     assert choose(state) == choose(deserialize_match_snapshot(before)) == expected
     for player in state.players.values():
         player.library.reverse()
-        for cid in player.library:
-            card = state.cards[cid]
-            card.name = 'Counterspell'
-            card.types = ['Instant']
-            card.mana_cost = '{U}{U}'
-            card.oracle_text = 'Counter target spell.'
-            card.power = card.toughness = 99
+        index = next(i for i, cid in enumerate(player.library) if state.cards[cid].name == 'Counterspell')
+        other = 0 if index else 1
+        player.library[index], player.library[other] = player.library[other], player.library[index]
     mutated = serialize_match_snapshot(state)
     assert choose(state) == expected
     assert serialize_match_snapshot(state) == mutated
@@ -157,12 +157,14 @@ def test_beneficial_card_selection_still_deploys_without_known_draws(seat, style
 
 @pytest.mark.parametrize('seat', [1, 2])
 def test_topdeck_instant_does_not_erase_counter_reservation(seat):
-    state, spell = position(seat, 'Collected Company')
+    state, spell = position(seat, 'Collected Company', extra_stock=(('Counterspell', 1),))
     state.active_player = 3-seat
     state.step = Step.UPKEEP
     state.players[seat].mana_pool = {'G': 1, 'U': 2, 'C': 1}
-    add(state, 'Counterspell', seat, Zone.HAND, cards=ROWS)
-    state.starting_decks[seat].append({**ROWS['Counterspell'], 'card_name': 'Counterspell', 'quantity': 1})
+    counter = next(cid for cid in state.players[seat].library if state.cards[cid].name == 'Counterspell')
+    state.players[seat].library.remove(counter)
+    state.cards[counter].move_to_zone(Zone.HAND)
+    state.players[seat].hand.append(counter)
     # A positive but modest deployment expectation must not spend the answer.
     for _ in range(26):
         cid = next(cid for cid in state.players[seat].library if state.cards[cid].name == 'Black Knight')

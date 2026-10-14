@@ -175,3 +175,53 @@ The separately executed current441 cold/warm backend component is now
 qualified; later compositions require their own evidence. Canonical artwork,
 browser fallback, production routing and broader release acceptance remain
 unproven. No application fix or deployment resulted from this gate.
+
+## Current C637 Cold And Warm Qualification
+
+One separately authorized source-only execution on immutable application
+`c637ca489aeaa2d8a1b45af5027d1f6833c492ec` began on 2026-10-14 at
+10:03:07.465757 UTC. The unchanged cold probe qualified: all 155 shipped
+names hydrated and fallback assets served, zero network attempts, persisted
+snapshot restoration, and one paired startup/shutdown. Its initially absent
+database and empty cache became a closed database and 156-file media cache.
+
+Only after cold qualified and closed, the same database and exact warmed cache
+were admitted to the original eight whole warm modules. All 73 ordinary cases
+passed with 42 warnings in 50.59 seconds, exit zero; JUnit has 73 unique cases
+and no failures, errors or skips. Original ordered node identities, all four
+strict sync/sync-bulk node/route stub provenance and code checks, and 23 paired
+lifespans passed. The cache ended at 170 files. Stubbed routes do not qualify
+external Scryfall service operation.
+
+All 1,964 backend Git source files and the source marker remained byte-equal.
+The 196 generated source extras were separately accounted for as the actual
+170 media files, main database, 24 observed owner-epoch backups and owner lock;
+they are not an unchanged whole-filesystem claim. Cached Python environment
+integrity covered 3,674 regular files and four link targets; system and
+normalized harness pins also remained equal. The current owner lock, live
+epoch backup and exact read-only URI additions retained the original owner
+predicate and memory/foreign SQL denials. A preceding native preflight passed
+the original 27 denials with zero admitted SQL or app lifespans.
+
+Supervisor and both workers ended. Phase database descriptors, children,
+non-main threads and jobs were empty. Independent physical checks of all 27
+actual existing main/migration/backup/lock files and four owned directories
+returned fuser exit one with empty output; live journals were absent. The
+independent SQL lease was released at 2026-10-14T10:08:21.660621Z. Connection
+object and post-exit pool inventories were not collected; no stronger inventory
+claim is inferred from process and file-handle closure.
+
+The first launch exited one before any phase, app or SQL execution because a
+waiting outer shell retained a source-directory cwd. That zero-phase ledger
+remains separate and immutable. The explicitly granted administrative
+continuation replaced that shell with `exec`; no handle-check suppression,
+guard/test edit, database/cache reset or cold/warm retry was performed. Bounds
+remained cold 300 seconds, warm 600 seconds and 15-second termination grace.
+
+Verified closed private source, runtime databases and evidence are archived at
+`/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ci/current-c637-offline-assets-cold-warm-qualified-20261014-whb3wH/`.
+Closed SQLite bytes are retained privately and never executed on NFS; raw
+database rows and fixture payloads are not public documentation. This qualifies
+only the pinned current offline backend component, not later source epochs,
+canonical artwork, browser fallback, proxy, clean-machine installation,
+remote service availability, AI quality or overall release Gate completion.
