@@ -99,8 +99,14 @@ def test_cleanup_discard_trigger_grants_priority_then_repeats_cleanup():
 
 def test_discard_shared_operation_preserves_zone_owner_and_atomic_rejection():
     state, _ = setup()
-    cid = state.players[1].hand[0]
-    state.cards[cid].owner = 2
+    # Put an actual opponent-born card in the actor's hand; never change stock ownership.
+    old_id = state.players[1].hand[0]
+    cid = state.players[2].hand.pop(0)
+    state.players[1].hand[0] = cid
+    state.players[1].library.append(old_id)
+    state.cards[old_id].move_to_zone(Zone.LIBRARY)
+    state.cards[cid].controller = 1
+    assert state.cards[cid].owner == state.sideboard_facts['inventory'][cid]['owner'] == 2
     before = serialize_match_snapshot(state)
     assert not discard_selected(state, 1, [cid, "missing"])
     assert serialize_match_snapshot(state) == before

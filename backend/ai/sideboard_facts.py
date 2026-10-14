@@ -251,13 +251,24 @@ def summary_for(state, player_id):
     protected = sorted({facts['inventory'][cid]['stock_key'] for cid in own['protected']})
     observed_types = set()
     public_type_groups = []
-    for record in state.card_observations.get(player_id, {}).values():
+    public_numeric_groups = []
+    for cid, record in state.card_observations.get(player_id, {}).items():
         if record.get('controller') != player_id:
             observed_types.update(record.get('types', []))
             public_type_groups.append(list(record.get('types', [])))
+            from types import SimpleNamespace
+            from knowledge.service import tags_for, estimate_for
+            card = SimpleNamespace(**record)
+            if (type(cid) is str and record.get('id') == cid
+                    and type(record.get('controller')) is int and record['controller'] == 3 - player_id
+                    and tags_for(card).source == 'persisted' and estimate_for(card) is not None):
+                public_numeric_groups.append({'card_id': cid,
+                    'source_sha256': card.knowledge_snapshot['source_sha256'],
+                    'types': list(record.get('types', [])), 'mana_cost': record.get('mana_cost')})
     return {'qualified': True, 'held_counts': dict(held), 'protected_stock': protected,
             'observed_creature_count': len(own['observed_creatures']),
             'observed_types': sorted(observed_types),
             'public_type_groups': public_type_groups,
+            'public_numeric_groups': public_numeric_groups,
             'own_creature_count': sum('Creature' in effective_types(state, state.cards[cid])
                 for cid in state.players[player_id].battlefield)}

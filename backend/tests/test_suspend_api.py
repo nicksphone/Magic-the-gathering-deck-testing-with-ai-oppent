@@ -12,6 +12,7 @@ from persistence.repository import Repository
 from rules_engine.events import emit_event
 from tests.test_api_input_contracts import game, persist, rejected
 from tests.test_suspend_lifecycle import setup
+from tests.fixture_state_support import adopt_fixture_state
 
 
 @pytest.fixture(autouse=True)
@@ -29,7 +30,7 @@ def isolated_database():
 def test_http_suspend_priority_upkeep_reload_and_cast_or_decline(game, seat, finish):
     client, controller = game
     state, cid = setup(seat)
-    state.id = controller.state.id
+    adopt_fixture_state(controller, state)
     controller.state = state
     persist(controller)
     path = f'/matches/{state.id}'

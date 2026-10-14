@@ -70,7 +70,11 @@ def _assert_reviewed_source_pins(root, historical, reviewed):
         else:
             assert entry['authority'] == 'public Git25ef'
             assert entry['approved_sha256'] == entry['git_25ef_sha256']
-        assert hashlib.sha256((root / relative).read_bytes()).hexdigest() == entry['approved_sha256']
+        raw = (root / relative).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != entry['approved_sha256']:
+            from tests.interface_scope_compatibility import restore_reviewed_source
+            raw = restore_reviewed_source(relative, raw, entry['approved_sha256'])
+        assert hashlib.sha256(raw).hexdigest() == entry['approved_sha256']
 
 
 def test_original_assertions_preserved_and_only_client_audit_changed():

@@ -147,7 +147,7 @@ def test_real_http_strict_second_token_and_snapshot_resume(repo,client,seat):
     r=client.post('/matches/start',json={'deck_a':deck,'deck_b':deck,'sandbox':True,'controller_a':'human','controller_b':'human','seed':6214})
     assert r.status_code==200,r.text
     c=main.ACTIVE_MATCHES[r.json()['id']]
-    state=position(seat);state.id=c.state.id;add(state,'Clarion Spirit',seat)
+    state=position(seat,game_id=c.state.id);add(state,'Clarion Spirit',seat)
     spells=[add(state,'Intangible Virtue',seat,Zone.HAND) for _ in range(3)]
     c.state=state;main._persist_active_match(repo,c)
     counts=[]

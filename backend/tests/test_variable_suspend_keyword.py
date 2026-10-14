@@ -228,8 +228,16 @@ def test_resource_query_fails_closed_with_bounded_planner_calls(monkeypatch, ass
 
 @pytest.mark.parametrize('control', ['owner', 'priority', 'opponent-turn', 'combat', 'untap', 'cleanup', 'pending', 'zone'])
 def test_timing_owner_and_continuation_revalidation(control):
-    state, cid = position('Aeon Chronicler')
-    if control == 'owner': state.cards[cid].owner = 2
+    state, cid = position('Aeon Chronicler', 2 if control == 'owner' else 1)
+    if control == 'owner':
+        # Foreign ownership must exist at birth, not corrupt a captured inventory binding.
+        state.players[2].hand.remove(cid)
+        state.players[1].hand.append(cid)
+        state.cards[cid].controller = 1
+        state.active_player = state.priority_player = 1
+        state.players[1].mana_pool = state.players[2].mana_pool.copy()
+        state.players[2].mana_pool.clear()
+        assert state.cards[cid].owner == state.sideboard_facts['inventory'][cid]['owner'] == 2
     elif control == 'priority': state.priority_player = 2
     elif control == 'opponent-turn': state.active_player = 2
     elif control == 'combat': state.step = Step.DECLARE_ATTACKERS

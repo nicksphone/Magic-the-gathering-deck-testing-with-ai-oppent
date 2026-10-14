@@ -40,9 +40,9 @@ def canonical(name):
     return row
 
 
-def position(seat):
+def position(seat, *, game_id=None):
     deck = [{**canonical('Island'), 'quantity':60}]
-    state = MatchFactory.from_decks(deck, deck, seed=6214)
+    state = MatchFactory.from_decks(deck, deck, seed=6214, game_id=game_id)
     state.pregame_pending = False
     state.kept_hands = {1,2}
     state.active_player = state.priority_player = seat

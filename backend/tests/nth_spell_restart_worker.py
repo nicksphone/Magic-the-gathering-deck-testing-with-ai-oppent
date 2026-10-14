@@ -38,7 +38,7 @@ def run(phase,seat,root):
             response=client.post('/matches/start',json=pair,headers={'Idempotency-Key':'nth-start'})
             assert response.status_code==200,response.text
             c=main.ACTIVE_MATCHES[response.json()['id']]
-            state=position(seat);state.id=c.state.id
+            state=position(seat,game_id=c.state.id)
             source=add(state,'Clarion Spirit',seat)
             spells=[add(state,'Intangible Virtue',seat,Zone.HAND) for _ in range(3)]
             c.state=state

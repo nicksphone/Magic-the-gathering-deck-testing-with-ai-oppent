@@ -30,6 +30,44 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 14 Public Numeric Sideboarding
+
+Sideboarding now retains complete fixed-bound removal coverage and pairs
+each verified public observation's printed cost with that same card's types.
+Malformed, unknown, variable, stale and cross-record evidence cannot supply
+a cheap target; missing cost is not zero. Only `_profile`, `summary_for` and
+`_fit` change, without policy-weight, legality or private-state access changes.
+
+The original 24 numeric cases plus eight malformed-receipt controls pass one
+32-case cohort in 419.06 seconds. The same 234 existing neighbor nodes and
+10 subtests pass in four separate whole-module cohorts, not a single summed
+acceptance run. Original failures, timeouts and instrumentation corrections
+remain archived. These are controlled correctness results, not natural BO3,
+expert strength or completed measurement matrices. See
+[the numeric coverage scope](docs/testing/sideboard-whole-numeric-profile-coverage.md).
+Complete current hosted backend and original release/AI gates remain open.
+
+## October 14 Restart And Ownership Fixtures
+
+Five whole modules pass all 137 original cases, with 126 warnings in
+89.27 seconds and zero failures/errors/skips. All 188 original module
+assertions, 18 worker assertions and native worker timeouts remain intact.
+Fixtures pass IDs before Factory capture or use the existing adopter;
+ownership controls use genuine opponent-born stock instead of changing its
+owner. The worker's producer statement changes explicitly, not its old
+assertions or guards. The unchanged baseline's 12 failures remain archived.
+See [the exact component scope](docs/current-residual137-fixture-acceptance.md).
+This is not a new full hosted backend or combined release certificate.
+
+Separately, three original source-contract modules plus 21 new inverse
+controls pass all 54 pure cases in 1.55 seconds. Exact approved public
+source deltas reconcile historical operands; unrelated mutations still
+reject, and production/repository code is unchanged. The baseline's three
+stale-source failures and two zero-execution harness stops remain separate.
+The HTTP-bearing fourth module has not run in this cohort. See
+[the finite source-contract scope](docs/testing/interface-source-contract-current-delta.md).
+The 137-case and 54-case results are not a combined 191-case execution.
+
 ## October 14 Remaining Fixture Integrity
 
 Six whole modules now pass all 249 ordinary cases, with 82 warnings in

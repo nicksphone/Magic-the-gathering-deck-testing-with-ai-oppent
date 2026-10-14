@@ -77,6 +77,11 @@ def _profile(row):
         if complete_self_counter_prohibition(body, inputs['name']):
             covered.append(spec)
             continue
+        if re.fullmatch(r'destroy target nonland permanent with mana value [0-9]+ or less\.', body, re.I):
+            from rules_engine.oracle_effects import infer_target_restrictions
+            covered.append({**spec, 'effects': [{'effect_key': 'destroy_permanent',
+                'payload': infer_target_restrictions(None, body, 1)}]})
+            continue
         if body != inputs['oracle_text'].strip():
             return None
         from rules_engine.oracle_effects import COUNTER_TARGET_SPELL_RE, infer_target_restrictions
@@ -118,8 +123,37 @@ def _fit(profile, events, printed_body=None):
             restrictions = infer_target_restrictions(None, printed_body, 1)
         except (AttributeError, TypeError):
             return 0  # A context-dependent transport is unavailable, not guessed.
-        if not set(restrictions) <= {'allowed_types', 'exclude_types'}:
+        if not set(restrictions) <= {'allowed_types', 'exclude_types', 'mana_value_max'}:
             return 0
+        public_type_groups = events.get('public_type_groups', [])
+        if 'mana_value_max' in restrictions:
+            bound = restrictions['mana_value_max']
+            if type(bound) is not int or bound < 0:
+                return 0
+            from rules_engine.mana import MANA_SYMBOL_RE, MANA_COLORS
+            public_type_groups = []
+            for group in events.get('public_numeric_groups', []):
+                if (type(group) is not dict
+                        or set(group) != {'card_id', 'source_sha256', 'types', 'mana_cost'}
+                        or type(group['card_id']) is not str or type(group['source_sha256']) is not str
+                        or not group['card_id'].strip() or not re.fullmatch('[0-9a-f]{64}', group['source_sha256'])
+                        or type(group['types']) is not list
+                        or any(type(kind) is not str for kind in group['types'])):
+                    continue
+                cost = group['mana_cost']
+                if type(cost) is not str or not cost:
+                    continue
+                symbols = MANA_SYMBOL_RE.findall(cost)
+                if (not symbols or ''.join('{' + symbol + '}' for symbol in symbols) != cost
+                        or any(not (symbol in (*MANA_COLORS, 'S')
+                            or symbol.isascii() and symbol.isdecimal()) for symbol in symbols)):
+                    continue
+                try:
+                    mana_value = sum(parse_mana_cost(cost).values())
+                except (ValueError, OverflowError):
+                    continue
+                if mana_value <= bound:
+                    public_type_groups.append(group['types'])
         for spec in profile.ability_specs:
             for effect in spec['effects']:
                 domain = effect['payload']
@@ -135,7 +169,7 @@ def _fit(profile, events, printed_body=None):
             default |= {'instant', 'sorcery'}
         allowed = {kind.lower() for kind in restrictions.get('allowed_types', default)}
         excluded = {kind.lower() for kind in restrictions.get('exclude_types', [])}
-        for types in events.get('public_type_groups', []):
+        for types in public_type_groups:
             kinds = {kind.lower() for kind in types}
             if kinds & allowed and not kinds & excluded:
                 return 2 if removal else 1

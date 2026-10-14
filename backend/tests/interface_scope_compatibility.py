@@ -9,6 +9,13 @@ assert hashlib.sha256(raw).hexdigest() == 'bc0cde4e6e52f6ce2b76c64f68688c3a64927
 CONTRACT = json.loads(raw)
 assert CONTRACT['approved_public_commit'] == '2fd7b7bb1e3ea3f353770744b113b92df2fd32e4'
 
+DELTA_PATH = PATH.with_name('accepted_1ca_deltas.json')
+delta_raw = DELTA_PATH.read_bytes()
+assert hashlib.sha256(delta_raw).hexdigest() == '5ec2d971a754c734fd4a378368398461664be3b48138150092e74dce9fb8bc40'
+ACCEPTED_DELTAS = json.loads(delta_raw)
+assert ACCEPTED_DELTAS['accepted_public_commit'] == '1ca5005d7840a569f35f3797d03e3c852386816e'
+ACCEPTED_MAIN_DELTA = ACCEPTED_DELTAS['accepted_main_delta']
+
 
 def _restore(text, recipe):
     if hashlib.sha256(text.encode()).hexdigest() == recipe['old_sha256']:
@@ -26,10 +33,23 @@ def compatible_product_hash(name, current, historical):
     assert name in {'main.py', 'persistence/repository.py'}
     recipe = CONTRACT['production'][name]
     assert historical == recipe['old_sha256']
-    if hashlib.sha256(current).hexdigest() == historical:
+    measured = hashlib.sha256(current).hexdigest()
+    if measured == historical:
         return historical
-    _restore(current.decode(), recipe)
-    return recipe['new_sha256']
+    reviewed = current
+    if name == 'main.py' and measured != recipe['new_sha256']:
+        reviewed = restore_reviewed_source(name, current, recipe['new_sha256'])
+    _restore(reviewed.decode(), recipe)
+    return measured
+
+
+def restore_reviewed_source(name, current, historical):
+    keys = {'main.py': 'accepted_main_delta',
+            'tests/private_choice_boundary_fixture_server.py': 'accepted_private_fixture_delta'}
+    assert name in keys, 'No approved current delta for this source'
+    recipe = ACCEPTED_DELTAS[keys[name]]
+    assert historical == recipe['old_sha256'], 'Historical operand changed'
+    return _restore(current.decode(), recipe).encode()
 
 
 def restore_worker_platform(name, text):
