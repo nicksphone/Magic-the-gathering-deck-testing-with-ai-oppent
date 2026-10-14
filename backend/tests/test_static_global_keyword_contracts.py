@@ -15,6 +15,7 @@ from rules_engine.state_based_actions import apply_state_based_actions
 from tests.static_global_keyword_support import FAMILIES, add, board, cast, zone_seam
 from tests.test_api_input_contracts import game, persist, snapshot
 from tests.test_selected_mana_http import restart
+from tests.fixture_state_support import adopt_fixture_state
 import main
 
 
@@ -197,10 +198,8 @@ def test_actual_http_source_restore_then_matching_target_atomic_rejection(game, 
     spell = add(state, 'Lightning Bolt' if color == 'red' else 'Doom Blade', seat, Zone.HAND)
     state.players[seat].mana_pool = dict.fromkeys(('R', 'B', 'C'), 10)
     state.priority_player = seat
-    state.id = controller.state.id
-    controller.state = state
     controller.controllers = {1: 'human', 2: 'human'}
-    persist(controller)
+    adopt_fixture_state(controller, state)
     controller = restart(state.id)
     before = snapshot(controller)
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat,

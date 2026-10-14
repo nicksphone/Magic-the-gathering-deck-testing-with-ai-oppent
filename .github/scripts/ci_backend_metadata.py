@@ -52,6 +52,19 @@ SQLITE_ERROR_CODES = {
     1032: 'SQLITE_READONLY_DBMOVED', 2067: 'SQLITE_CONSTRAINT_UNIQUE',
 }
 
+RUNTIME_PACKAGES = (
+    'annotated-doc', 'annotated-types', 'anyio', 'certifi', 'click', 'fastapi',
+    'greenlet', 'h11', 'httpcore', 'httpx', 'idna', 'iniconfig',
+    'opentelemetry-api', 'packaging', 'pluggy', 'pydantic-core', 'pydantic',
+    'pygments', 'pytest', 'python-multipart', 'rapidfuzz', 'sniffio',
+    'sqlalchemy', 'sqlmodel', 'starlette', 'typing-extensions',
+    'typing-inspection', 'uvicorn',
+)
+RUNTIME_DIRECT_PACKAGES = (
+    'fastapi', 'httpx', 'pydantic', 'pytest', 'python-multipart', 'rapidfuzz',
+    'sqlmodel', 'starlette', 'uvicorn',
+)
+
 
 def sqlite_error_fields(value):
     code = value.get('sqlite_errorcode')
@@ -82,7 +95,7 @@ def has_symlink_component(path):
     return any(component.is_symlink() for component in (*reversed(path.parents), path))
 
 
-def read_text(root, name, required=True):
+def read_text(root, name, required=True, *, max_bytes=None):
     path = root / name
     if path.is_symlink() or (path.exists() and not path.is_file()):
         raise MetadataError('EVIDENCE_NOT_REGULAR')
@@ -90,7 +103,13 @@ def read_text(root, name, required=True):
         if required:
             raise MetadataError('EVIDENCE_MISSING')
         return ''
-    return path.read_text(encoding='utf-8')
+    if max_bytes is None:
+        return path.read_text(encoding='utf-8')
+    with path.open('rb') as stream:
+        value = stream.read(max_bytes + 1)
+    if len(value) > max_bytes:
+        raise MetadataError('EVIDENCE_TYPE_INVALID')
+    return value.decode('utf-8')
 
 
 def json_value(text):
@@ -100,6 +119,49 @@ def json_value(text):
         return json.loads(text, parse_constant=invalid_constant)
     except ValueError:
         raise MetadataError('EVIDENCE_JSON_INVALID') from None
+
+
+def runtime_version_fields(root):
+    """Observe existing pre-pytest snapshots, never import or certify packages."""
+    packages = dict.fromkeys(RUNTIME_PACKAGES)
+    python_version = None
+    try:
+        text = read_text(root, 'python-version.txt', required=False, max_bytes=128)
+        match = re.fullmatch(r'Python ([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})\n?', text)
+        if match:
+            python_version = match[1]
+    except (MetadataError, OSError, UnicodeError):
+        pass
+    try:
+        values = json_value(read_text(root, 'installed-packages.json', required=False,
+                                      max_bytes=1024 * 1024))
+        if type(values) is list and len(values) <= 1024:
+            seen = set()
+            for row in values:
+                if type(row) is not dict or type(row.get('name')) is not str:
+                    continue
+                name = re.sub(r'[-_.]+', '-', row['name']).lower()
+                if name not in packages:
+                    continue
+                if name in seen:
+                    packages[name] = None
+                    continue
+                seen.add(name)
+                version = row.get('version')
+                # Local/build tags and arbitrary text must never cross this boundary.
+                if (type(version) is str and len(version) <= 64 and re.fullmatch(
+                        r'(?:[0-9]+!)?[0-9]+(?:\.[0-9]+)*(?:(?:a|b|rc)[0-9]+)?'
+                        r'(?:\.post[0-9]+)?(?:\.dev[0-9]+)?', version)):
+                    packages[name] = version
+    except (MetadataError, OSError, UnicodeError, RecursionError):
+        pass
+    observed = sum(value is not None for value in packages.values()) + (python_version is not None)
+    return {'runtime_versions': {
+        'observation': 'before_pytest',
+        'status': 'available' if observed == 29 else 'degraded' if observed else 'unavailable',
+        'python_version': python_version, 'packages': packages,
+        'direct_packages': list(RUNTIME_DIRECT_PACKAGES),
+    }}
 
 
 def rows(root, name, required=False):
@@ -296,6 +358,7 @@ def build_metadata(evidence, source):
         if commit != git(source, 'rev-parse', 'HEAD').strip():
             raise MetadataError('SOURCE_COMMIT_MISMATCH')
         document['source_commit'] = commit
+        document.update(runtime_version_fields(evidence))
         exit_text = read_text(evidence, 'pytest-exit-code.txt').strip()
         if not re.fullmatch(r'[0-9]{1,3}', exit_text) or int(exit_text) > 255:
             raise MetadataError('EXIT_CODE_INVALID')

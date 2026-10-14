@@ -30,6 +30,19 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 14 Current-Source Follow-Up
+
+A fresh composition over published `45d4ef47` passes all 172 cases in six whole
+modules, with 100 warnings in 106.59 seconds and zero failures/errors/skips.
+All 156 old assertions, full snapshot equality and six actual cold-restart
+workers remain intact; 154 observed database handles and owned resources close.
+The separate optional CI runtime-version report passes 200 script cases,
+preserving 707 old assertions without changing coverage or qualification.
+These are separate measured results, not a summed integrated cohort.
+See [the exact current-source scope](docs/testing/current-integrated-fixture172.md).
+Complete hosted backend, all original release/AI gates and clean-OS/browser
+trust remain open; the private synthetic trace is not published.
+
 ## October 14 Integrated Fixture Acceptance
 
 One actual combined execution over `f102874ff` passes all 484 cases in eleven

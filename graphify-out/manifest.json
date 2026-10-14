@@ -3090,9 +3090,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_known_deck.py": {
-    "mtime": 1791667790.0899289,
-    "seen": 1791671014.2842283,
-    "ast_hash": "03e47f4fd2b0b7634a6c9e76a7284989",
+    "mtime": 1791985273.898025,
+    "seen": 1791985473.1003804,
+    "ast_hash": "43acd44ce2afc2f9936419e2d127257f",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_landfall_forecast.py": {
@@ -4050,9 +4050,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_dynamic_activation_modifiers.py": {
-    "mtime": 1791667790.157928,
-    "seen": 1791671014.2846208,
-    "ast_hash": "bce0271d71fbc3a160ddd16c77a036cc",
+    "mtime": 1791985273.8920252,
+    "seen": 1791985473.100855,
+    "ast_hash": "0e57f27562a6d8e06aa83dae7e133627",
     "semantic_hash": ""
   },
   "backend/tests/test_dynamic_death_quantity.py": {
@@ -4560,9 +4560,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_locked_activation_mana_plan.py": {
-    "mtime": 1791667790.1969273,
-    "seen": 1791671014.284892,
-    "ast_hash": "470ccebcebb0decc80c611c71cea2cc7",
+    "mtime": 1791985273.8920252,
+    "seen": 1791985473.101213,
+    "ast_hash": "6f34c7d22bfe22086655184ce9cf7e96",
     "semantic_hash": ""
   },
   "backend/tests/test_log_priors.py": {
@@ -4746,9 +4746,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_next_turn_draw.py": {
-    "mtime": 1791667790.2119272,
-    "seen": 1791671014.2849743,
-    "ast_hash": "1c78d89f5619b90b9e1fbf176ba2f900",
+    "mtime": 1791985273.895025,
+    "seen": 1791985473.1013417,
+    "ast_hash": "438ab4a900a2df09c6c1845fe89705bc",
     "semantic_hash": ""
   },
   "backend/tests/test_no_priority_progression.py": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791980546.06612,
-    "seen": 1791980708.7511106,
-    "ast_hash": "fd5fa959c0709a5b84b827734b81e9ce",
+    "mtime": 1791985360.9744744,
+    "seen": 1791985473.1039014,
+    "ast_hash": "5b3c765daa8638a46a7cf306945ca831",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -8934,9 +8934,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_permanent_keyword_grants.py": {
-    "mtime": 1791667790.219927,
-    "seen": 1791671014.2850397,
-    "ast_hash": "28250a039df55155733d8e2ba263ae2a",
+    "mtime": 1791985273.895025,
+    "seen": 1791985473.101421,
+    "ast_hash": "34ae2fe5b729d5b29c2ae55f7955525c",
     "semantic_hash": ""
   },
   "backend/tests/test_suspend_keep_actor_composition.py": {
@@ -9354,9 +9354,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_static_global_keyword_contracts.py": {
-    "mtime": 1791667790.2489266,
-    "seen": 1791671014.2852812,
-    "ast_hash": "feaee11087432d22d73559bb964bdd15",
+    "mtime": 1791985273.895025,
+    "seen": 1791985473.1017642,
+    "ast_hash": "e95d5922aa6c8e35ae0f10ec73c8fca9",
     "semantic_hash": ""
   },
   "backend/tests/test_static_global_keyword_fix_boundaries.py": {
@@ -16326,9 +16326,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/ci_backend_metadata.py": {
-    "mtime": 1791951433.740718,
-    "seen": 1791951561.9128745,
-    "ast_hash": "7657376ee341d5ba7b9190d0f94928cd",
+    "mtime": 1791985273.902025,
+    "seen": 1791985473.0979197,
+    "ast_hash": "64081728603124dcc8abf3d63c09954d",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_privacy.py": {
@@ -18555,6 +18555,42 @@
     "mtime": 1791980574.035723,
     "seen": 1791980708.7503817,
     "ast_hash": "8efbb88397e867dbd21e7f0853749b7d",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_runtime_versions.py": {
+    "mtime": 1791985273.902025,
+    "seen": 1791985473.097969,
+    "ast_hash": "b48b15dd2c829b93f4a584d0780d8c21",
+    "semantic_hash": ""
+  },
+  "docs/testing/activation-locked-dynamic-captured-birth.md": {
+    "mtime": 1791985273.8930252,
+    "seen": 1791985473.1027029,
+    "ast_hash": "07522e2cd95f7b0d5a4b9ceefd2520a9",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-known-deck-legacy-wire.md": {
+    "mtime": 1791985273.898025,
+    "seen": 1791985473.1027598,
+    "ast_hash": "4e7837a22254f45e51d497a4fccf1bb6",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-runtime-version-projection.md": {
+    "mtime": 1791985273.902025,
+    "seen": 1791985473.102953,
+    "ast_hash": "e85deb2cf8330ede4df1d75cae4378c5",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-integrated-fixture172.md": {
+    "mtime": 1791985360.9714744,
+    "seen": 1791985473.1030746,
+    "ast_hash": "42fa8c409541d9de2a06ba66b5b28ae6",
+    "semantic_hash": ""
+  },
+  "docs/testing/durable-trigger-http-fixture-identity.md": {
+    "mtime": 1791985273.895025,
+    "seen": 1791985473.1031382,
+    "ast_hash": "dca4fee284c8d83c9cd9c0a175aca090",
     "semantic_hash": ""
   }
 }

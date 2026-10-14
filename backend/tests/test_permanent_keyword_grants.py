@@ -16,6 +16,7 @@ from tests.extra_sequence_support import position
 from tests.test_linked_damage_targets import raw_card
 from tests.test_api_input_contracts import game, persist
 from tests.test_selected_mana_http import restart
+from tests.fixture_state_support import adopt_fixture_state
 import main
 
 FIXTURES = Path(__file__).parent / 'fixtures/permanent_keyword_grants'
@@ -109,10 +110,8 @@ def test_later_layer_six_loss_overrides_then_later_grant_restores_keyword(seat):
 def test_real_http_group_grant_and_durable_keyword_restore(game, seat, name):
     client, controller = game
     state, source, allies, enemies, targets = board(seat, name)
-    state.id = controller.state.id
-    controller.state = state
     controller.controllers = {1: 'human', 2: 'human'}
-    persist(controller)
+    adopt_fixture_state(controller, state)
     def post(player, action, label):
         current = main.ACTIVE_MATCHES[state.id]
         response = client.post(f'/matches/{state.id}/action',

@@ -18,8 +18,8 @@ from tests.test_activation_modifiers import add
 from tests.test_api_input_contracts import game, persist, rejected, snapshot
 
 
-def position(seat, family, prefunded=False):
-    state = board(seat)
+def position(seat, family, prefunded=False, *, game_id=None):
+    state = board(seat, game_id=game_id)
     if family == 'artifact':
         card = source(state, "Tamiyo's Logbook", seat)
         color = 'U'
@@ -102,8 +102,7 @@ def test_http_locked_payment_reject_restore_and_resolution(game, seat, family):
     assert str(DATABASE_PATH) != '/home/nick/mtg-deck-testing-lab/backend/mtg_lab.db'
     assert not str(DATABASE_PATH).startswith('/mnt/')
     client, match = game
-    state, card, _ = position(seat, family)
-    state.id = match.state.id
+    state, card, _ = position(seat, family, game_id=match.state.id)
     match.state = state
     persist(match)
     offered = move_for(state, seat, card)
@@ -113,10 +112,18 @@ def test_http_locked_payment_reject_restore_and_resolution(game, seat, family):
     invalid = {**move, 'ability_index': 999}
     rejected(client, match, invalid, seat)
     assert snapshot(match) == before
+    before_expected = serialize_match_snapshot(state)
     expected = checked_action(state, RulesEngine(), seat, move)
+    from ai.sideboard_facts import record_accepted_action
+    record_accepted_action(state, expected, seat, move)
+    assert serialize_match_snapshot(state) == before_expected
+    assert expected.sideboard_facts['coverage_ok'] is False
+    assert expected.sideboard_facts['complete'] is False
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat, 'action': move})
     assert response.status_code == 200, response.text
     assert_paid(match.state, seat, False)
+    assert match.state.sideboard_facts['coverage_ok'] is False
+    assert match.state.sideboard_facts['complete'] is False
     assert serialize_match_snapshot(match.state) == serialize_match_snapshot(expected)
     committed = snapshot(match)
     main.ACTIVE_MATCHES.pop(state.id)
