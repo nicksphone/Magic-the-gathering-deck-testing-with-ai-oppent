@@ -3402,9 +3402,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_autoplay_seeded_games.py": {
-    "mtime": 1791667790.1099286,
-    "seen": 1791671014.2843316,
-    "ast_hash": "54773c0435ca1c78eecdaadda01a47d2",
+    "mtime": 1791956766.859349,
+    "seen": 1791956879.1442373,
+    "ast_hash": "0e11e9bf5983668f136aec29bb88caa3",
     "semantic_hash": ""
   },
   "backend/tests/test_base_vector_boundaries.py": {
@@ -18453,6 +18453,18 @@
     "mtime": 1791954369.3802133,
     "seen": 1791954482.8504837,
     "ast_hash": "3e63ec17a78564613fbadeadd700b0d7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_autoplay_factory_identity.py": {
+    "mtime": 1791956766.859349,
+    "seen": 1791956879.1442325,
+    "ast_hash": "edb6418aa5b0f6134f9b6ce8fd83a283",
+    "semantic_hash": ""
+  },
+  "docs/testing/autoplay-fixture-birth-identity.md": {
+    "mtime": 1791956766.859349,
+    "seen": 1791956879.1465137,
+    "ast_hash": "3143c6cdef647de298e4386812bde4b5",
     "semantic_hash": ""
   }
 }
