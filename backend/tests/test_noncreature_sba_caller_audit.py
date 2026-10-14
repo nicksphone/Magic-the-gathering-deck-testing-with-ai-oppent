@@ -24,7 +24,6 @@ class Harness(Episode):
     def __init__(self, seat, family, replacement, client=None, repo=None):
         self.seat, self.family, self.replacement = seat, family, replacement
         self.client, self.repo, self.trace = client, repo, []
-        self.state = position(seat)
         if client:
             import main
             for raw in [*ROWS.values()]:
@@ -37,7 +36,7 @@ class Harness(Episode):
                                    'sandbox': True, 'controller_a': 'human', 'controller_b': 'human', 'seed': 7214})
             assert response.status_code == 200, response.text
             self.controller = main.ACTIVE_MATCHES[response.json()['id']]
-            self.state.id = self.controller.state.id
+        self.state = position(seat, game_id=self.controller.state.id if client else None)
         self.target = raw_card(self.state, ROWS['Jace Beleren' if family == 'walker' else 'Pacifism'], seat, Zone.HAND).id
         self.artist = raw_card(self.state, ROWS['Blood Artist'], seat, Zone.HAND).id
         self.rip = raw_card(self.state, ROWS['Rest in Peace'], seat, Zone.HAND).id if replacement else None

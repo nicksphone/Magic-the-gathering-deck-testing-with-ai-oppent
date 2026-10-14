@@ -71,7 +71,44 @@ storage, environment dumps and credential-bearing native output are excluded.
 The successful earlier CF1 run remains its own unchanged-source historical
 qualification, not a transferred count or proof of this candidate's LAN exposure.
 
-An admitted private IPv4 is not proof of local assignment or reachability.
+## Subsequent Assigned-RFC1918 THISHOST Acceptance
+
+On immutable public `3f512cd06bf79f425b17a79067abcb138d2d3fcd`, the complete
+native program subsequently ran once against an actually assigned RFC1918
+interface on THISHOST. This was not a remote-client or browser run. All **537
+observed checks passed**, outer/native exit0, failure type null and resource
+stop null. All71 original check callsites and case bodies were retained with
+explicit private endpoint/config/SAN operand rebindings; the client was not
+claimed byte-unchanged. Counts are actual observations, not predicted541/547.
+
+The source3220 Git files plus3 retained DIST assets were unchanged before/end;
+all225 frontend source files match the retained build input. Python2852files
+and4links, system and helper pins also matched. The terminal receipt SHA256 is
+`12097018d3a7e28fcfe652640d7d663c4b16fe98bf60702c65f26d53eb7f7852`.
+
+Native HTTP/1+HTTP/2 checks retained authentication, exact Origin/atomic body
+rejection, API/media, incomplete-body and restart controls. All46 positive
+HTTP/2 observations verified the actual private interface and certificate
+with native exit0/version2/verification0; both unknown-CA and wrong-name
+certificate negatives were retained. Original800/900s+15s,1GiB combined,
+512MiB output and3GiB free limits were unchanged; no retry or gate pruning.
+
+Both production-first shutdowns verified before observer assistance. All135
+known PIDs/tasks ended; listeners, owned FDs, pools, owner/jobs/workers closed;
+four existing DB/backup/lock fuser checks returned1 with empty output and no
+journals remained. Backend non-main observations were[1,1], not invented zero.
+Parent independently verified closure and released the SQL lease. The initial
+parent metadata check compared numeric verification0 to a string; correcting
+that administrative comparison did not rerun or alter the native program.
+
+Exact topology, operands and closed private SQL remain in verified private NFS
+evidence, not this public report. Certificate/key/auth/config, Caddy storage,
+environment dumps and credential-bearing native output are excluded. This
+does not certify an assigned user-selected LAN hostname, remote routing,
+Chrome/Brave/Firefox trust or UI/recovery, clean-machine deployment, or final
+combined-source release. Gate3.1 remains open. No global trust/firewall change.
+
+An admitted private IPv4 by itself is not proof of assignment or reachability.
 Actual server interface/address, canonical hostname/port, matching DNS/IP SAN,
 client name resolution and manual trust choice are still required before LAN
 issuance. Chrome, Brave and Firefox each need actual trusted-chain and

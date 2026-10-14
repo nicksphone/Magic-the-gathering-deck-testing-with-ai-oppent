@@ -26,6 +26,7 @@ from tests.test_spell_admission_safety_http import sql_facts
 from tests.test_linked_damage_targets import raw_card
 from tests.test_library_reorder import setup
 from tests.test_self_graveyard_replacement_audit import snap, restart, act
+from tests.fixture_state_support import adopt_fixture_state
 
 FIXTURE = Path(__file__).parent / 'fixtures/direct_graveyard_audit/canonical.jsonl'
 PROVENANCE = json.loads(FIXTURE.with_name('provenance.json').read_text())
@@ -261,9 +262,7 @@ def install(repo, client, state):
                            'sandbox': True, 'controller_a': 'human', 'controller_b': 'human', 'seed': 7221})
     assert response.status_code == 200, response.text
     controller = main.ACTIVE_MATCHES[response.json()['id']]
-    state.id = controller.state.id
-    controller.state = state
-    main._persist_active_match(repo, controller)
+    adopt_fixture_state(controller, state, repo)
     return controller
 
 

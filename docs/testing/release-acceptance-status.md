@@ -25,7 +25,30 @@ acceptance. Current-source HTTP, final hosted CI, genuine terminal matrix data,
 matched quality comparisons and the remaining original gates stay open. See
 [the exact acceptance boundaries](current-c259-reviewed-composition.md).
 
-## Current Checkpoint: 2026-10-13
+## Current Checkpoint: 2026-10-14
+
+Release priority is Linux first, with Chrome, Brave and Firefox all required.
+Windows and macOS remain subsequent targets, not removed requirements.
+
+The next fixture-binding component passes all 354 tests in nine whole modules,
+with no failures/errors/skips and unchanged source/runtime. All 128 serializer
+children close; independent external checks verify 75 existing database,
+backup and lock files quiet. The original nine SQL-policy failures remain in
+their failed ledger. See [the full scope](current-fixture-binding-transitions.md).
+
+Same-host assigned private-interface HTTPS now passes 537 observed native checks
+on its exact `3f512cd0` source, preserving all 71 check callsites. This does not
+qualify remote LAN clients, Chrome/Brave/Firefox trust or a clean-machine install.
+Four isolated native Firefox controls separately pass: normal and opaque
+first-script interception, the original ready/go path, and refusal after
+genuine intercept removal. The native child exits zero; the external supervisor
+retains HOLD for unobserved process ancestry. All observed identities and owned
+profile handles close. These synthetic controls are not the full application
+browser gate or current-source Firefox acceptance.
+The full110 `2b9f3a60` matrix is terminal with 104 resolved and six resource-limited
+series; the original 520-case A/B run completes 442 cases with 78 unavailable.
+Both retain their full denominators and remain incomplete, source-specific data,
+not whole-current-source or AI-strength certificates.
 
 The Linux operator's optional private-IPv4 configuration now passes real native
 adaptation/validation, and its default loopback completes the original full
@@ -48,7 +71,7 @@ cold HTTP workers. Its exact `50f9e58b` plus test-only source, native resource
 closure and private evidence boundaries are recorded in
 [counter acceptance](current-counter-fixture-cold-acceptance.md). The private
 reference bank separately completes 104 checked outcomes on `a9431b12`; the
-original 520-case A/B comparison is not yet executed or scored. These are
+original 520-case A/B comparison remains incompletely executed and unscored. These are
 source-specific components, not a current whole-backend or RC1 certificate.
 
 Published `837bf513` completes frontend and browser CI, but its protected backend

@@ -26,6 +26,7 @@ from rules_engine.zone_actions import sacrifice_selected
 from scripts import knowledge_engine_coverage as corpus_report
 from tests.test_builtin_metadata_refresh import repo
 from tests.generic_import_fixtures import client
+from tests.fixture_state_support import adopt_fixture_state
 from tests.readiness_rules_seam_support import (
     FIXTURE, RAW, FAMILIES, add, canonical, cast, normalize, observation,
     position, resolve, resume, seed_cache,
@@ -235,11 +236,10 @@ def test_actual_http_admission_preflight_and_public_root_diagnostics_parity(repo
     started = client.post('/matches/start',json={**boards,'controller_a':'human','controller_b':'human','seed':6214})
     assert started.status_code==200,started.text
     controller = main.ACTIVE_MATCHES[started.json()['id']]
-    state = position(seat); state.id = controller.state.id
+    state = position(seat)
     for name in FAMILIES[family]:
         add(state,name,seat,Zone.HAND if family=='Dimir Control' else Zone.BATTLEFIELD)
-    controller.state = state
-    main._persist_active_match(repo,controller)
+    adopt_fixture_state(controller,state,repo)
     before = pickle.dumps(state),deepcopy(main._controller_snapshot(controller)),sql_dump(repo)
     response = client.get('/matches/'+state.id+'/rules-diagnostics')
     assert response.status_code==200,response.text
@@ -290,11 +290,10 @@ def test_actual_http_second_spell_bounded_execution_matches_settled_helper(repo,
         'controller_a':'human','controller_b':'human','seed':6214})
     assert response.status_code==200,response.text
     controller = main.ACTIVE_MATCHES[response.json()['id']]
-    state = position(seat); state.id = controller.state.id
+    state = position(seat)
     spirit = add(state,'Clarion Spirit',seat)
     spells = [add(state,'Intangible Virtue',seat,Zone.HAND) for _ in range(2)]
-    controller.state = state
-    main._persist_active_match(repo,controller)
+    adopt_fixture_state(controller,state,repo)
     counts = []
     statuses = []
     for index,spell in enumerate(spells,start=1):

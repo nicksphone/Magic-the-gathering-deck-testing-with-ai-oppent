@@ -14,16 +14,15 @@ from tests.test_paid_counter_family_audit import http_position
 from tests.test_spell_admission_safety_http import sql_facts
 from tests.test_multi_target_immediate_return import case, canonical, raw_card
 from game_state.serializers import serialize_match_snapshot
+from tests.fixture_state_support import adopt_fixture_state
 
 
 def install(repo, client, seat):
     import main
     controller, _, _, path = http_position(repo, client, seat, 'Fertilid')
     state, targets, spell = case(seat, foreign=True)
-    state.id = controller.state.id
-    controller.state = state
-    main._persist_active_match(repo, controller)
-    return state, targets, spell, path
+    adopt_fixture_state(controller, state, repo)
+    return state, targets, spell, '/matches/' + state.id
 
 
 def send(client, path, seat, action):

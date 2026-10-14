@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-13 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-14 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -30,6 +30,18 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 14 Checked Components
+
+The next test-only fixture-binding batch passes all 354 ordinary cases in nine
+whole modules, with 821 warnings and no failures/errors/skips, in 476.12s.
+All 195 old assertions, canonical data and gameplay production remain unchanged.
+The earlier nine SQL-policy failures are preserved; the corrected harness binds
+the actual collected callers rather than separately imported module copies.
+All 128 serializer children close, source/runtime pins match, and the independent
+external receipt verifies 75 existing database/backup/lock files quiet.
+See [the complete scope](docs/testing/current-fixture-binding-transitions.md).
+Current full hosted backend CI and all remaining original gates stay open.
+
 ## October 13 Execution Checkpoint
 
 The next three fixture repairs retain the original assertions and strict stock
@@ -55,8 +67,14 @@ frontend bind while retaining default loopback and a loopback-only backend.
 Native configuration checks pass both default and private-IP adaptation; the
 unchanged full HTTPS/restart program also passes on the candidate default,
 with 541 observed checks and the same complete check-label set as prior 547.
-Actual LAN assignment, hostname/certificate trust and all-browser acceptance
-remain unqualified; see [the exact bind scope](docs/testing/linux-private-lan-bind-prep.md).
+A subsequent complete native run on immutable `3f512cd0` uses an actually assigned
+RFC1918 interface on THISHOST: all537 observed checks pass, with all71 original
+check callsites retained through explicit endpoint/config/SAN operand rebindings.
+Source3220+DIST3/package/system pins match before/end, both production-first
+shutdowns verify and all135 known tasks plus owned SQL/listener resources close.
+This is same-host native TLS, not remote LAN/browser trust or final-source proof.
+User-selected LAN hostname, all-three-browser/manual trust and clean-machine
+acceptance remain unqualified; see [the exact bind scope](docs/testing/linux-private-lan-bind-prep.md).
 
 The counter-fixture and cold-restore component now passes 153 ordinary cases
 across four whole modules on its exact `50f9e58b` plus test-only composition.
@@ -67,9 +85,12 @@ Every original assertion remains intact. See
 
 The private reference bank now completes all 104 declared checked outcomes on
 its recorded `a9431b12` epoch, with 810 additionally charged native calls and
-unchanged source. The original 520-case, five-variant A/B comparison is still
-preparation, not measured AI improvement. Neither reference completion nor the
-older complete matrix transfers qualification to current HEAD.
+unchanged source. The original 520-case, five-variant A/B comparison has now
+executed on its recorded data epoch: 442 cases complete and 78 are unavailable,
+including 72 per-root resource stops and six blocked endpoints. All 520 rows
+and their original limits remain intact. This partial, unscored result is not
+measured AI improvement or a completed benchmark. Neither reference completion
+nor the older complete matrix transfers qualification to current HEAD.
 
 The current test-only printed-source fixture correction now passes all 244
 ordinary cases in sixteen whole modules, including eight genuine TestClient
@@ -93,8 +114,11 @@ program pass. The browser run finishes in 2,263 seconds under aggregate capacity
 HTTPS/LAN and complete hosted CI remain required; the old c259 hosted
 backend stops with disk exhaustion and no available test counts. The earlier
 native matrix is terminal but incomplete (100 resolved, ten resource-limited
-series, exit 3). A separate fresh `2b9f3a60` full110 matrix remains executing;
-no terminal data, learned profiles or measured-strength completion is inferred.
+series, exit 3). The separate `2b9f3a60` full110 matrix is now terminal: all 110
+series were attempted, with 104 resolved and six resource-limited. Its 258 game
+entries include 252 winners and six timeouts. Source/runtime and actual resource
+closure are verified, but the matrix is incomplete; no whole learned-profile,
+current-source or measured-strength completion is inferred.
 
 Latest bounded acceptance: the reviewed composition over `c2590095` passes
 2,553 ordinary cases across 70 whole modules, and a separate natural BO3 run
@@ -819,6 +843,11 @@ the supported-corpus exit does not redefine that larger goal as achieved.
    all 547 observed check instances with actual native closure. LAN deployment,
    final browser and clean-machine trust acceptance remain outstanding; see
    `docs/testing/caddy-operator-current-acceptance.md`.
+   Later immutable `3f512cd0` adds complete assigned-RFC1918 THISHOST native
+   H1/H2/auth/body/media/restart acceptance: all537 observed checks, source/pins
+   before/end equal and independent physical closure. It does not close this
+   checkbox: remote-client routing, Chrome/Brave/Firefox/manual trust,
+   clean-machine and final combined-source acceptance remain outstanding.
 2. [ ] Document/enforce local single-user/single-worker limits. Before broader
    exposure, add authorization, restricted origins and measured resource limits.
 3. [ ] Complete bounded job admission/queues, cancellation, byte/row retention,

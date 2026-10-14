@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791935362.5937493,
-    "seen": 1791935477.6101177,
-    "ast_hash": "857ec844ad96ddcb0b8c4a30d82c681d",
+    "mtime": 1791942846.4536226,
+    "seen": 1791942960.9113324,
+    "ast_hash": "501c851920f255087d4cf593e4098f0f",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -8580,9 +8580,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_readiness_rules_seam.py": {
-    "mtime": 1791667790.2259269,
-    "seen": 1791671014.285103,
-    "ast_hash": "50b84f99d86cbef787923e67a33c15b6",
+    "mtime": 1791942687.6050463,
+    "seen": 1791942960.9090147,
+    "ast_hash": "f2772bec743c7de1326d769eeda43db5",
     "semantic_hash": ""
   },
   "docs/testing/nth-spell-triggers.md": {
@@ -9630,9 +9630,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_direct_graveyard_bypass_audit.py": {
-    "mtime": 1791667790.154928,
-    "seen": 1791671014.2845998,
-    "ast_hash": "2e754728445f97fe15a7293e26f0e19e",
+    "mtime": 1791942687.6050463,
+    "seen": 1791942960.9083307,
+    "ast_hash": "7a5ff7804d63cf9c6c57df743235af8c",
     "semantic_hash": ""
   },
   "backend/tests/test_graveyard_entry_product_episodes.py": {
@@ -9846,9 +9846,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_noncreature_sba_caller_audit.py": {
-    "mtime": 1791667790.212927,
-    "seen": 1791671014.2849839,
-    "ast_hash": "89235b77d18e4b5633305b8c293b1999",
+    "mtime": 1791942687.6050463,
+    "seen": 1791942960.9088624,
+    "ast_hash": "156cbddd256e4a09f09270181da4b748",
     "semantic_hash": ""
   },
   "backend/tests/test_seed_import_metadata_type_contract.py": {
@@ -10032,9 +10032,9 @@
     "semantic_hash": ""
   },
   "backend/tests/ai_knowledge_consumer_fixture.py": {
-    "mtime": 1791667789.873932,
-    "seen": 1791671014.2829843,
-    "ast_hash": "8b9b1f543e41a6e88604b51da904ef0f",
+    "mtime": 1791942687.6050463,
+    "seen": 1791942960.9063225,
+    "ast_hash": "028fa49dc5406d119df87dc5067bc218",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_cast_surface_reservation.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791935362.610749,
-    "seen": 1791935477.6096606,
-    "ast_hash": "5dfec97a02d2de4f403aee4d92d0356c",
+    "mtime": 1791942846.4536226,
+    "seen": 1791942960.911029,
+    "ast_hash": "600cc518109dc799dd41f6b47c593baa",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -16854,9 +16854,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_multi_target_immediate_return_http.py": {
-    "mtime": 1791752774.1408358,
-    "seen": 1791753079.017868,
-    "ast_hash": "b87c3ccf78be75f4b043136f773ae1f2",
+    "mtime": 1791942687.6050463,
+    "seen": 1791942960.9088252,
+    "ast_hash": "b891fda54361c1bd836f0667fc197cc0",
     "semantic_hash": ""
   },
   "docs/testing/ghostly-flicker-batch-current.md": {
@@ -18384,9 +18384,27 @@
     "semantic_hash": ""
   },
   "docs/testing/linux-private-lan-bind-prep.md": {
-    "mtime": 1791934751.609445,
-    "seen": 1791935477.609396,
-    "ast_hash": "17580d36f9e4337ecd1be4fc42d90c3d",
+    "mtime": 1791937910.8567019,
+    "seen": 1791942960.91086,
+    "ast_hash": "1afd19a51bd1846935a0d400ca9f6414",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_fixture_binding_transitions.py": {
+    "mtime": 1791942687.6060462,
+    "seen": 1791942960.9084365,
+    "ast_hash": "422b502c268ddfa19af4f594f7f0b67c",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-composed-fixture-acceptance.md": {
+    "mtime": 1791935914.337879,
+    "seen": 1791942960.9105375,
+    "ast_hash": "292cb977f0b6bc959796fa54a9b2b765",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-fixture-binding-transitions.md": {
+    "mtime": 1791942756.4089992,
+    "seen": 1791942960.9105432,
+    "ast_hash": "46b34b3bab85b8afbd667e65d960d56b",
     "semantic_hash": ""
   }
 }
