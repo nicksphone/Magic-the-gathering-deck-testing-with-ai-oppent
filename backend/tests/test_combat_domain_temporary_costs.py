@@ -21,6 +21,7 @@ from tests.test_combat_payments_requirements import ROWS, zero_mana, attack_step
 from tests.test_declaration_limits import add as limit_card
 from tests.test_conditional_combat import lose
 from tests.test_api_input_contracts import game, persist, rejected, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 
 CARDS = {**ROWS, **RECURRING}
 for name in ('combat_temporary_costs.json', 'combat_minimums.json', 'attached_scaling.json'):
@@ -313,9 +314,7 @@ def test_http_sqlite_resume_and_diagnostics_include_resolved_rule_costs(game, se
     client, match = game
     state, attacker = blocking_board(seat, 2)
     guard = add(state, 'Grizzly Bears', 3-seat)
-    state.id = match.state.id
-    match.state = state
-    persist(match)
+    adopt_fixture_state(match, state)
     report = client.get(f'/matches/{state.id}/rules-diagnostics').json()
     assert report['block_taxes'][0]['origin'] == 'resolution'
     before = snapshot(match)
@@ -345,10 +344,9 @@ def test_actual_http_x_activation_resolves_then_survives_sqlite_restart(game, se
     state = fixture()
     zero_mana(state)
     source = add(state, name, seat)
-    state.id, state.priority_player = match.state.id, seat
+    state.priority_player = seat
     state.players[seat].mana_pool['U' if name == 'War Tax' else 'R'] = 3
-    match.state = state
-    persist(match)
+    adopt_fixture_state(match, state)
     action = {'type': 'activate_ability', 'card_id': source.id, 'ability_index': 0, 'targets': {'x_value': 2}}
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat, 'action': action})
     assert response.status_code == 200, response.text

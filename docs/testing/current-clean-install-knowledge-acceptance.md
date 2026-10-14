@@ -153,3 +153,38 @@ The knowledge run covers the declared shipped fixtures, not additional user
 decks, all-card rules, local-image quality or fields the old report omits.
 Actual matrix, learned/context data, matched A/B and sideboarding remain separate
 requirements. No gate is marked complete by these narrower results.
+
+## F102 Read-Only Installed-Pin Consistency
+
+On 2026-10-14, immutable `f102874ff5e7a1d9c77873054eb194e8261998d7`
+passed the unchanged `verify_hash_lock.py --installed` verifier, exit zero.
+All nine direct pins matched the 28-package application closure and installed
+raw METADATA bytes. The original 29 wheel hashes and compatibility checks
+passed, including separately excluded pip; all 33 active dependency edges
+closed. Scope remains CPython 3.12/Linux x86_64/glibc 2.39.
+
+Seven native preimport denials passed with no unexpected I/O. The six selected
+source inputs and the reused environment's 3,674 regular files/four link targets
+were byte-equal before/end. No install, download, package change, app startup,
+SQL, browser or advisory query occurred. Installed raw METADATA equality is
+not a new comparison of every installed code RECORD against wheel contents.
+
+Current CI installs the nine-pin `requirements.txt` in three jobs, leaving
+transitives resolver-selected. Its actual installed closure was not inspected:
+neither equality with the audited Linux lock nor package drift is inferred.
+Frontend package/lock root declarations match; the current configured chain
+has 49 distinct reachable programs, versus 48 in the older fresh-install
+record above. The 49 programs and installed Node closure were not executed or
+audited here, and no earlier 48-program run is relabeled as current acceptance.
+
+Private read-only evidence is frozen as
+`current-f102-installed-lock-readonly-20261014-10KVeQ`; archive SHA256
+`720c41f576ba9b7f3e7318921b7a0e0d4c8ec29c9afd9a482b188de390eacd7a`.
+All 35 regular members match the closed local bytes. No private environment
+paths, game data or credentials are part of this public addition.
+
+Remaining release work includes a final-source isolated fresh application
+install with all 49 frontend programs, complete hosted/runtime qualification,
+clean Linux OS deployment, remote LAN and Chrome/Brave/Firefox trust, manual
+accessibility/soak and scored AI acceptance. Windows/macOS remain later targets.
+This read-only consistency check closes none of those broader requirements.

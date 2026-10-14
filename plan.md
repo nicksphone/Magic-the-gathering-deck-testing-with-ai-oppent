@@ -30,6 +30,23 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 14 Integrated Fixture Acceptance
+
+One actual combined execution over `f102874ff` passes all 484 cases in eleven
+whole modules, with 146 warnings in 425.74 seconds and zero failures/errors/skips.
+All 371 original assertions remain; only fixtures and documentation change.
+All 216 observed database handles and 118 recorded child waits close, and the
+independent ownership/source/runtime checks pass.
+See [the integrated scope](docs/testing/current-integrated-fixture484.md).
+Complete hosted backend and the original release/AI gates remain open.
+
+Native Firefox separately completes the unchanged 50 application cases and
+seven natural BO3 games in 1,721.566 seconds. The outer supervisor retains a
+diagnostic hold for one historical process-identity observation; it is not
+silently relabeled as clean. Known physical resources close independently.
+See [the application result and diagnostic boundary](docs/testing/firefox-native-application50.md).
+Native Chrome/Brave and remote LAN/trust acceptance are not inferred.
+
 ## October 14 Checked Components
 
 The next test-only fixture-binding batch passes all 354 ordinary cases in nine

@@ -10,6 +10,7 @@ from tests.test_ai_recurring_engines import fixture, add
 from tests.test_devotion import ROWS
 from tests.test_pending_removal import add_card
 from tests.test_api_input_contracts import game, persist
+from tests.fixture_state_support import adopt_fixture_state
 
 
 def combat_board(seat=1, name='Aspect of Hydra', life=4, *, crowded=False):
@@ -129,12 +130,10 @@ def test_http_autoplay_casts_pump_and_restored_game_finishes_combat(game, seat):
     from persistence.repository import Repository
     client, match = game
     state, spell, host = combat_board(seat)
-    state.id = match.state.id
-    match.state = state
     match.controllers = {1: 'ai', 2: 'ai'}
     match.ai = {pid: AIAgent('master', archetype='Tempo') for pid in (1, 2)}
     match.best_of = 1
-    persist(match)
+    adopt_fixture_state(match, state)
     response = client.post(f'/matches/{state.id}/autoplay?ticks=1')
     assert response.status_code == 200, response.text
     assert match.state.cards[spell].zone == Zone.STACK

@@ -26,8 +26,8 @@ for entry in json.loads((FIXTURE / 'provenance.json').read_text())['cards']:
 FAMILIES = list(ROWS)
 
 
-def setup(name, seat, *, eligible=True, sick=False):
-    state = position('Ramp', 'Tempo', seat)
+def setup(name, seat, *, eligible=True, sick=False, game_id=None):
+    state = position('Ramp', 'Tempo', seat, game_id=game_id)
     state.mechanic_choice_players = {1, 2}
     source = raw_card(state, ROWS[name], seat, Zone.BATTLEFIELD)
     source.summoning_sick = sick
@@ -160,3 +160,34 @@ def test_actual_paid_creature_cast_cannot_pay_tap_cost_before_next_own_turn(seat
     with pytest.raises(ActionRejected):
         checked_action(state, RulesEngine(), seat, activation(source))
     assert serialize_match_snapshot(state) == before
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+@pytest.mark.parametrize('name', FAMILIES)
+def test_fixture_explicit_identity_is_captured_at_factory_birth(name, seat):
+    from uuid import uuid4
+    from game_state.serializers import deserialize_match_snapshot
+    identifier = str(uuid4())
+    state, source, _, _ = setup(name, seat, game_id=identifier)
+    assert state.id == state.sideboard_facts['game_id'] == identifier
+    assert source.oracle_text == ROWS[name]['oracle_text']
+    before = serialize_match_snapshot(state)
+    restored = deserialize_match_snapshot(before)
+    assert serialize_match_snapshot(restored) == before
+    assert restored.sideboard_facts['inventory'] == state.sideboard_facts['inventory']
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+def test_fixture_birth_default_preserves_declared_identity_and_rng(seat):
+    before = position('Ramp', 'Tempo', seat)
+    state, _, _, _ = setup(FAMILIES[0], seat)
+    assert state.id == before.id == state.sideboard_facts['game_id']
+    assert state.starting_decks == before.starting_decks
+    assert state.rng.getstate() == before.rng.getstate()
+    assert state.sideboard_facts['inventory'] == before.sideboard_facts['inventory']
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+def test_fixture_birth_invalid_boolean_is_rejected_not_silently_defaulted(seat):
+    with pytest.raises(ValueError):
+        setup(FAMILIES[0], seat, game_id=False)

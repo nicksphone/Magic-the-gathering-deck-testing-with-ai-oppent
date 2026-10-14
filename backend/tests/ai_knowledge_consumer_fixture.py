@@ -25,9 +25,10 @@ def deck(style):
     return result
 
 
-def position(style, opponent, seat):
+def position(style, opponent, seat, *, game_id=None):
     own, enemy = deck(style), deck(opponent)
-    game_id = f'knowledge-audit-{style}-{opponent}-{seat}-{SEED}'.replace(' ', '-')
+    if game_id is None:
+        game_id = f'knowledge-audit-{style}-{opponent}-{seat}-{SEED}'.replace(' ', '-')
     state = MatchFactory.from_decks(own if seat == 1 else enemy, enemy if seat == 1 else own, seed=SEED, game_id=game_id)
     state.pregame_pending = False
     state.kept_hands = {1, 2}

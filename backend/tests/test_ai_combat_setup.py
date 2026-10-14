@@ -12,6 +12,7 @@ from tests.test_restricted_mana import add as restricted_add
 from tests.test_ai_recurring_engines import resolve
 from tests.test_pending_removal import add_card as pending_add
 from tests.test_api_input_contracts import game
+from tests.fixture_state_support import adopt_fixture_state
 
 
 @pytest.mark.parametrize('seat', [1, 2])
@@ -120,14 +121,12 @@ def test_http_autoplay_chooses_bestow_persists_and_completes_real_combat(game, s
     from persistence.repository import Repository
     client, match = game
     state, source, host = cast_board(seat)
-    state.id = match.state.id
     host.summoning_sick = False
     state.players[3-seat].life = 4
-    match.state = state
     match.controllers = {1: 'ai', 2: 'ai'}
     match.ai = {pid: AIAgent('master', archetype='Tempo') for pid in (1, 2)}
     match.best_of = 1
-    persist(match)
+    adopt_fixture_state(match, state)
     response = client.post(f'/matches/{state.id}/autoplay?ticks=1')
     assert response.status_code == 200, response.text
     assert match.state.cards[source.id].bestow_characteristics

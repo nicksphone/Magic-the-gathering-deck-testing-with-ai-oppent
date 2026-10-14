@@ -14,8 +14,7 @@ def fixture(request: Request, family: str, seat: int, sick: bool = False):
     base.authorize(request)
     if family not in FAMILIES or seat not in (1, 2):
         raise HTTPException(422, 'Declared canonical family and seat required')
-    state, source, lands, enemy = setup(family, seat, sick=sick)
-    state.id = str(uuid4())
+    state, source, lands, enemy = setup(family, seat, sick=sick, game_id=str(uuid4()))
     state.log.append(base.LAND_LABEL)
     controller = base.main.MatchController(state=state, rules=base.RulesEngine(),
         controllers={1: 'human', 2: 'human'}, ai={1: base.AIAgent(), 2: base.AIAgent()},
@@ -38,13 +37,12 @@ def paid_cast_fixture(request: Request, family: str, seat: int):
     from tests.test_linked_damage_targets import raw_card
     from tests.test_activated_handland_instruction_audit import ROWS
     from game_state.state import Zone
-    state = position('Ramp', 'Tempo', seat)
+    state = position('Ramp', 'Tempo', seat, game_id=str(uuid4()))
     state.mechanic_choice_players = {1, 2}
     source = raw_card(state, ROWS[family], seat, Zone.HAND)
     take(state, 'Forest', seat, Zone.BATTLEFIELD)
     take(state, 'Tropical Island', seat, Zone.BATTLEFIELD)
     land = take(state, 'Forest', seat, Zone.HAND)
-    state.id = str(uuid4())
     state.log.append(base.LAND_LABEL)
     controller = base.main.MatchController(state=state, rules=base.RulesEngine(),
         controllers={1: 'human', 2: 'human'}, ai={1: base.AIAgent(), 2: base.AIAgent()},

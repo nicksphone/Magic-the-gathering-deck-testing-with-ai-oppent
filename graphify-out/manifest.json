@@ -3000,15 +3000,15 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_combat_intents.py": {
-    "mtime": 1791667790.085929,
-    "seen": 1791671014.2842057,
-    "ast_hash": "4f112cafd7538741dad932d3a8cd76b1",
+    "mtime": 1791980468.7342162,
+    "seen": 1791980708.747418,
+    "ast_hash": "01e0c14170130ed511a0f5421dd0a5a2",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_combat_responses.py": {
-    "mtime": 1791667790.085929,
-    "seen": 1791671014.2842069,
-    "ast_hash": "428a54054fd3c084125ad270f9c02c9e",
+    "mtime": 1791980468.7352161,
+    "seen": 1791980708.7474194,
+    "ast_hash": "235a30efab76a4403390e05aeb856f26",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_combat_search.py": {
@@ -3018,9 +3018,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_combat_setup.py": {
-    "mtime": 1791667790.085929,
-    "seen": 1791671014.28421,
-    "ast_hash": "5a181292cc0717719f7d2a41a95ad010",
+    "mtime": 1791980468.7352161,
+    "seen": 1791980708.747423,
+    "ast_hash": "e5dbdb4aac639e3fbcd45a4539796712",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_counterability.py": {
@@ -3036,9 +3036,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_defensive_responses.py": {
-    "mtime": 1791667790.0869288,
-    "seen": 1791671014.284214,
-    "ast_hash": "b967043a0bb384e9b7870053a8a7268b",
+    "mtime": 1791980468.7352161,
+    "seen": 1791980708.7474282,
+    "ast_hash": "17e2af194a592fa7649164094eab9366",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_deferred_forecast_scores.py": {
@@ -3672,9 +3672,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_combat_domain_temporary_costs.py": {
-    "mtime": 1791667790.1329281,
-    "seen": 1791671014.2844574,
-    "ast_hash": "c6cdba068da2ef874760144e1d389d4f",
+    "mtime": 1791980468.7522159,
+    "seen": 1791980708.7477572,
+    "ast_hash": "2bcfcee16c41a7cb2433dfbc9bfa6019",
     "semantic_hash": ""
   },
   "backend/tests/test_combat_keyword_triggers.py": {
@@ -3684,9 +3684,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_combat_minimums_payments.py": {
-    "mtime": 1791667790.1329281,
-    "seen": 1791671014.2844625,
-    "ast_hash": "b1022c7e9e8ad0be2f61647feb86f5d1",
+    "mtime": 1791980468.7522159,
+    "seen": 1791980708.7477627,
+    "ast_hash": "dcdb37e154b7983106505752262f8442",
     "semantic_hash": ""
   },
   "backend/tests/test_combat_payments_requirements.py": {
@@ -3714,9 +3714,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_conditional_combat_costs.py": {
-    "mtime": 1791667790.1349282,
-    "seen": 1791671014.2844744,
-    "ast_hash": "0a8924aee6678fe460e06d884aac1c3c",
+    "mtime": 1791980468.7522159,
+    "seen": 1791980708.7477813,
+    "ast_hash": "5e9a2e80a77e261152d625345d35420d",
     "semantic_hash": ""
   },
   "backend/tests/test_conditional_counter_rules.py": {
@@ -4980,9 +4980,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_recipient_combat.py": {
-    "mtime": 1791667790.2259269,
-    "seen": 1791671014.2851074,
-    "ast_hash": "de50099b8b55a1d0e74826fc01dbc181",
+    "mtime": 1791980468.7522159,
+    "seen": 1791980708.7486355,
+    "ast_hash": "3a3de2c41acbaf5e70e6d70daa09267f",
     "semantic_hash": ""
   },
   "backend/tests/test_regression_matrix_sampling.py": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791942846.4536226,
-    "seen": 1791942960.9113324,
-    "ast_hash": "501c851920f255087d4cf593e4098f0f",
+    "mtime": 1791980546.06612,
+    "seen": 1791980708.7511106,
+    "ast_hash": "fd5fa959c0709a5b84b827734b81e9ce",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -10032,9 +10032,9 @@
     "semantic_hash": ""
   },
   "backend/tests/ai_knowledge_consumer_fixture.py": {
-    "mtime": 1791942687.6050463,
-    "seen": 1791942960.9063225,
-    "ast_hash": "028fa49dc5406d119df87dc5067bc218",
+    "mtime": 1791980468.7322161,
+    "seen": 1791980708.7458684,
+    "ast_hash": "6b486fd3c971fe5fc73b8decec3e0740",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_cast_surface_reservation.py": {
@@ -10410,9 +10410,9 @@
     "semantic_hash": ""
   },
   "backend/tests/activated_handland_http_fixture_server.py": {
-    "mtime": 1791667789.8729317,
-    "seen": 1791671014.2829785,
-    "ast_hash": "8dfcea2ab3756689eea5817b54a17c46",
+    "mtime": 1791980468.7322161,
+    "seen": 1791980708.7458606,
+    "ast_hash": "596bd6a277cfcd16f5590519f5f55b36",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/activated_handland/provenance.json": {
@@ -10584,9 +10584,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_activated_handland_instruction_audit.py": {
-    "mtime": 1791667790.077929,
-    "seen": 1791671014.2841654,
-    "ast_hash": "c0a016df48c1590a99587b499de85342",
+    "mtime": 1791980468.7322161,
+    "seen": 1791980708.7473688,
+    "ast_hash": "cc7b493b714276ce0f9fc6af1e69ddce",
     "semantic_hash": ""
   },
   "backend/tests/test_canonical_magecraft_self_pump.py": {
@@ -17934,9 +17934,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-clean-install-knowledge-acceptance.md": {
-    "mtime": 1791903207.5879323,
-    "seen": 1791904596.05158,
-    "ast_hash": "e7d67dfab7421b7072d99a20e3984d43",
+    "mtime": 1791980468.755216,
+    "seen": 1791980708.7502286,
+    "ast_hash": "9399d98324a07239e3f3f8cc4f73dba1",
     "semantic_hash": ""
   },
   "backend/ai/sideboard_facts.py": {
@@ -18525,6 +18525,36 @@
     "mtime": 1791973489.1469362,
     "seen": 1791973607.82871,
     "ast_hash": "3717b12cd3fad4c8d9f5a667da74c0bf",
+    "semantic_hash": ""
+  },
+  "docs/testing/activated-handland-captured-birth.md": {
+    "mtime": 1791980468.7322161,
+    "seen": 1791980708.7498636,
+    "ast_hash": "384a90e7884ade0bae4b3bb0e3972ffc",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-combat-fixture-identity.md": {
+    "mtime": 1791980468.749216,
+    "seen": 1791980708.7498903,
+    "ast_hash": "a0d9a7aa2949136d05ad3c435e174b75",
+    "semantic_hash": ""
+  },
+  "docs/testing/combat-cost-http-fixture-identity.md": {
+    "mtime": 1791980468.7522159,
+    "seen": 1791980708.7501462,
+    "ast_hash": "7b9016cb3cf2d7118cd51917cdd8d083",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-integrated-fixture484.md": {
+    "mtime": 1791980546.06512,
+    "seen": 1791980708.7502398,
+    "ast_hash": "d996dcb75fe58c10e443107b5cf6213c",
+    "semantic_hash": ""
+  },
+  "docs/testing/firefox-native-application50.md": {
+    "mtime": 1791980574.035723,
+    "seen": 1791980708.7503817,
+    "ast_hash": "8efbb88397e867dbd21e7f0853749b7d",
     "semantic_hash": ""
   }
 }

@@ -16,6 +16,7 @@ from tests.test_combat_domain_temporary_costs import fixture, add, activate, zer
 from tests.test_ai_recurring_engines import add as raw_add
 from tests.test_declaration_limits import add as limit_card
 from tests.test_api_input_contracts import game, persist, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/combat_ability_provenance.json').read_text())}
 
@@ -210,9 +211,7 @@ def test_http_same_blocker_multiple_attackers_commits_and_restores(game, seat):
     from persistence.repository import Repository
     client, match = game
     state, attackers, bid = board(seat)
-    state.id = match.state.id
-    match.state = state
-    persist(match)
+    adopt_fixture_state(match, state)
     before = snapshot(match)[0]
     response = client.post(f'/matches/{state.id}/action', json={'player_id': 3-seat,
                            'action': {'type': 'block', 'blocks': {aid: [bid] for aid in attackers}}})
