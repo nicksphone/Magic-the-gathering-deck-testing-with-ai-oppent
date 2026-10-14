@@ -178,25 +178,30 @@ def test_ai_loser_chooses_play_without_human_payload():
 
 
 def test_http_choice_and_restored_seed_provenance():
-    match = _match()
-    match_id = match.state.id
-    with TestClient(app) as client:
-        ACTIVE_MATCHES[match_id] = match
-        try:
-            rejected = client.post(f"/matches/{match_id}/next-game", json={"player_id": 1, "play_first": True})
-            assert rejected.status_code == 422
-            for pid in (1, 2):
-                client.post(f"/matches/{match_id}/sideboard", json={"player_id": pid, "cards_out": [], "cards_in": []}).raise_for_status()
-            chosen = client.post(f"/matches/{match_id}/next-game", json={"player_id": 2, "play_first": False})
-            assert chosen.status_code == 200, chosen.text
-            assert (chosen.json()["active_player"], chosen.json()["game_seed"]) == (1, None)
-            ACTIVE_MATCHES.pop(match_id)
-            with Session(engine) as session:
-                _restore_active_matches(Repository(session))
-            restored = ACTIVE_MATCHES[match_id]
-            assert restored.root_seed == 91
-            assert _serialize_match_controller(restored)["game_seed"] is None
-            assert _controller_snapshot(restored)["root_seed"] == 91
-            assert _hands(restored.state) == _hands(match.state)
-        finally:
-            ACTIVE_MATCHES.pop(match_id, None)
+    original = dict(ACTIVE_MATCHES)
+    try:
+        match = _match()
+        match_id = match.state.id
+        with TestClient(app) as client:
+            ACTIVE_MATCHES[match_id] = match
+            try:
+                rejected = client.post(f"/matches/{match_id}/next-game", json={"player_id": 1, "play_first": True})
+                assert rejected.status_code == 422
+                for pid in (1, 2):
+                    client.post(f"/matches/{match_id}/sideboard", json={"player_id": pid, "cards_out": [], "cards_in": []}).raise_for_status()
+                chosen = client.post(f"/matches/{match_id}/next-game", json={"player_id": 2, "play_first": False})
+                assert chosen.status_code == 200, chosen.text
+                assert (chosen.json()["active_player"], chosen.json()["game_seed"]) == (1, None)
+                ACTIVE_MATCHES.pop(match_id)
+                with Session(engine) as session:
+                    _restore_active_matches(Repository(session))
+                restored = ACTIVE_MATCHES[match_id]
+                assert restored.root_seed == 91
+                assert _serialize_match_controller(restored)["game_seed"] is None
+                assert _controller_snapshot(restored)["root_seed"] == 91
+                assert _hands(restored.state) == _hands(match.state)
+            finally:
+                ACTIVE_MATCHES.pop(match_id, None)
+    finally:
+        ACTIVE_MATCHES.clear()
+        ACTIVE_MATCHES.update(original)

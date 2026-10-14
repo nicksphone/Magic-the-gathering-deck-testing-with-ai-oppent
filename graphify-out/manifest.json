@@ -4548,9 +4548,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_live_bo3_policy.py": {
-    "mtime": 1791667790.1969273,
-    "seen": 1791671014.284889,
-    "ast_hash": "fec11d63023b23ada2a6ccd586679e6c",
+    "mtime": 1791952169.8806908,
+    "seen": 1791952292.4231522,
+    "ast_hash": "7fc7225e0aef16f2d5ba28b539bdacd0",
     "semantic_hash": ""
   },
   "backend/tests/test_live_bo3_series.py": {
@@ -18417,6 +18417,24 @@
     "mtime": 1791948911.591741,
     "seen": 1791949023.591834,
     "ast_hash": "65e5659652e71da6927736e5e8aeeb4a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_live_bo3_registry_cleanup.py": {
+    "mtime": 1791952169.8806908,
+    "seen": 1791952292.4231563,
+    "ast_hash": "e7c40a5c9551de52a0a4acd1a9058fbc",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_live_bo3_registry_fifo.py": {
+    "mtime": 1791952169.8806908,
+    "seen": 1791952292.4231586,
+    "ast_hash": "cbc738ceed710f8aa4e53629d45483fa",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-ci-interruption-observer-acceptance.md": {
+    "mtime": 1791951516.5363078,
+    "seen": 1791952292.4253519,
+    "ast_hash": "1515c7576501fb5156cafd85e70cf7a0",
     "semantic_hash": ""
   }
 }
