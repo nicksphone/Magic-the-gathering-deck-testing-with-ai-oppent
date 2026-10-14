@@ -30,6 +30,24 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 14 Casting And Observation Fixtures
+
+Four casting modules now pass all 215 unchanged cases in 32.45 seconds,
+with 82 warnings and zero failures/errors/skips. Existing fixture adoption
+retains Factory-born IDs instead of overwriting captured identities; all
+172 assertions and 48 unrelated bodies remain intact. A separate eight-case
+pure projection also passes, not counted as part of the 215-case run. See
+[the casting scope](docs/testing/cast-http-fixture-birth-adoption.md).
+
+Separately, all 24 canonical self-entry cases plus nine serializer protocols
+pass in one 33-case run. The witness now uses complete canonical serialized
+observation records, matching the existing omission of an empty optional
+knowledge dictionary. All 71 original gameplay/privacy assertions, including
+the returned card's HAND zone, remain intact. See
+[the observation scope](docs/testing/self-entry-public-return-witness.md).
+These are separate measured cohorts, not a summed integrated result.
+Current complete hosted backend and the original release/AI gates remain open.
+
 ## October 14 Saved-Match Follow-Up
 
 The saved-match fixture repair now passes one actual four-whole-module cohort:

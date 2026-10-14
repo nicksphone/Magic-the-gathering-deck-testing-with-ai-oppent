@@ -233,7 +233,7 @@ def test_actual_canonical_self_entry_and_independent_controls(seat, scenario):
                    'public_before': asdict(public_before), 'turn': state.turn, 'step': state.step.value,
                    'returned_reference': {'incarnation': original.object_incarnation(returned),
                                           'zone_change_sequence': returned.zone_change_sequence},
-                   'observed_records': {viewer: deepcopy(state.card_observations[viewer][bounced])
+                   'observed_records': {viewer: deepcopy(original.serialize_match_snapshot(state)['card_observations'][str(viewer)][bounced])
                                         for viewer in (1, 2)}}
         restorer = lambda current: restore_public_return(current, witness)
         state = restorer(state)

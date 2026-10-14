@@ -3444,9 +3444,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_bestow.py": {
-    "mtime": 1791667790.1129284,
-    "seen": 1791671014.2843459,
-    "ast_hash": "2fa35f9a747062081592dbcbbadd1faf",
+    "mtime": 1791995860.949604,
+    "seen": 1791996064.9916153,
+    "ast_hash": "7c78c955d61f5946a73be58802ccbd2c",
     "semantic_hash": ""
   },
   "backend/tests/test_bounce_rules.py": {
@@ -3528,9 +3528,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_cast_payment_choices.py": {
-    "mtime": 1791667790.1209283,
-    "seen": 1791671014.284402,
-    "ast_hash": "304ef1a439a82ade487f11cd2bbc8e21",
+    "mtime": 1791995860.949604,
+    "seen": 1791996064.9916916,
+    "ast_hash": "5bdc428a28acc5afe285276e0e937db6",
     "semantic_hash": ""
   },
   "backend/tests/test_cast_resource_http.py": {
@@ -4092,15 +4092,15 @@
     "semantic_hash": ""
   },
   "backend/tests/test_effect_cast_admission.py": {
-    "mtime": 1791667790.1609278,
-    "seen": 1791671014.2846332,
-    "ast_hash": "c4896d3085988f3222ec213bbbea469d",
+    "mtime": 1791995860.949604,
+    "seen": 1791996064.9919455,
+    "ast_hash": "e3de76a98db7b62e67ff83ef87f51a32",
     "semantic_hash": ""
   },
   "backend/tests/test_effect_cast_choices.py": {
-    "mtime": 1791667790.1609278,
-    "seen": 1791671014.2846346,
-    "ast_hash": "9ba4500bf3623bbcbaa5c9cf2e745308",
+    "mtime": 1791995860.949604,
+    "seen": 1791996064.991947,
+    "ast_hash": "7392cc4ad85c40d04c4928ec585dc5a5",
     "semantic_hash": ""
   },
   "backend/tests/test_end_step_attack_reward.py": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791994807.676462,
-    "seen": 1791994922.8744934,
-    "ast_hash": "9a91786a997eb0db59b3908a84b7bea8",
+    "mtime": 1791995954.149032,
+    "seen": 1791996064.9950075,
+    "ast_hash": "c9a5aac03bff009eb0b1562f64f25915",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13590,9 +13590,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_self_entry_fixed_damage_desired.py": {
-    "mtime": 1791667790.2379267,
-    "seen": 1791671014.2851896,
-    "ast_hash": "d77adb7608c173ce214fa7388f6731b7",
+    "mtime": 1791995930.298434,
+    "seen": 1791996064.9927132,
+    "ast_hash": "4ed01da174c51cbba50aa3c11edbd5c5",
     "semantic_hash": ""
   },
   "docs/testing/hand-domain-current-acceptance.md": {
@@ -18597,6 +18597,30 @@
     "mtime": 1791994807.6744618,
     "seen": 1791994922.8739548,
     "ast_hash": "cee6f322f9bfc164a02e5e0eff7342f7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_cast_fixture_transplant_projection.py": {
+    "mtime": 1791995860.949604,
+    "seen": 1791996064.9916894,
+    "ast_hash": "0167aed6fc86dee97265af5d0b74c8a9",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_self_entry_public_return_witness_protocol.py": {
+    "mtime": 1791995930.298434,
+    "seen": 1791996064.9927154,
+    "ast_hash": "c1a2449fd35b5d77a56aee6e3f8cfef7",
+    "semantic_hash": ""
+  },
+  "docs/testing/cast-http-fixture-birth-adoption.md": {
+    "mtime": 1791995954.1480322,
+    "seen": 1791996064.9940276,
+    "ast_hash": "23018c3fd13531ab85457664bbec8453",
+    "semantic_hash": ""
+  },
+  "docs/testing/self-entry-public-return-witness.md": {
+    "mtime": 1791995930.298434,
+    "seen": 1791996064.9947474,
+    "ast_hash": "e288ca6993b7b3d3c2c29ffeaae536e7",
     "semantic_hash": ""
   }
 }

@@ -128,10 +128,10 @@ def test_ai_compares_either_cost_branches_and_retains_needed_land(seat, difficul
 
 @pytest.mark.parametrize('seat', [1, 2])
 def test_http_selection_is_strict_and_rejections_preserve_database(game, seat):
+    from tests.fixture_state_support import adopt_fixture_state
     client, controller = game
     state, spell, target, _, selected, _, _ = setup(seat)
-    state.id = controller.state.id
-    controller.state = state
+    adopt_fixture_state(controller, state)
     persist(controller)
     rejected(client, controller, announce(spell, target, 'discard', [selected.id, selected.id]), seat)
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat,
