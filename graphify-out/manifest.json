@@ -4668,9 +4668,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_modal_spell_faces.py": {
-    "mtime": 1791889423.487639,
-    "seen": 1791889559.078345,
-    "ast_hash": "e51a0622b7b75ae83c4812ac2bf6bf63",
+    "mtime": 1791958168.7413328,
+    "seen": 1791958281.98061,
+    "ast_hash": "e49f84ee91c06db1a7a78ed9be4eaae6",
     "semantic_hash": ""
   },
   "backend/tests/test_mulligan_and_timing.py": {
@@ -18465,6 +18465,18 @@
     "mtime": 1791956766.859349,
     "seen": 1791956879.1465137,
     "ast_hash": "3143c6cdef647de298e4386812bde4b5",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_modal_fixture_identity.py": {
+    "mtime": 1791958168.7413328,
+    "seen": 1791958281.980607,
+    "ast_hash": "96f176b93d5388ed804dcce5b0b5f417",
+    "semantic_hash": ""
+  },
+  "docs/testing/modal-fixture-birth-identity.md": {
+    "mtime": 1791958168.7413328,
+    "seen": 1791958281.9826665,
+    "ast_hash": "df1610fa4ef82ae68aa2f3c89f816620",
     "semantic_hash": ""
   }
 }
