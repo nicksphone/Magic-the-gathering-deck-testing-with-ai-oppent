@@ -4968,9 +4968,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_qualified_spell_costs.py": {
-    "mtime": 1791667790.224927,
-    "seen": 1791671014.2850957,
-    "ast_hash": "113d08ab154ebe8126aab6057828f35b",
+    "mtime": 1791966542.6323621,
+    "seen": 1791966685.9335027,
+    "ast_hash": "bde2cff13aa9594be6b176f642cec71e",
     "semantic_hash": ""
   },
   "backend/tests/test_real_ordered_spell_copy.py": {
@@ -18507,6 +18507,12 @@
     "mtime": 1791960667.0059702,
     "seen": 1791960791.550805,
     "ast_hash": "a54f2b6144be5f72d371acd1e5aa795e",
+    "semantic_hash": ""
+  },
+  "docs/testing/qualified-spell-cost-fixture-identity.md": {
+    "mtime": 1791966542.6323621,
+    "seen": 1791966685.9355822,
+    "ast_hash": "8c244230b142a0f8f9487629db381d9a",
     "semantic_hash": ""
   }
 }

@@ -19,6 +19,7 @@ from tests.test_kicker import ROWS as KICKER
 from tests.test_permanent_kicker import ROWS as PERMANENTS
 from tests.test_surveil_mill import add, resolve
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {c['name']: c for c in json.loads((Path(__file__).parent / 'fixtures/qualified_spell_costs.json').read_text())}
 SPELLS = {'Goblin Grenade': 'subtype_goblin', 'Fodder Launch': 'subtype_goblin',
@@ -199,10 +200,8 @@ def test_http_qualified_payment_rejection_and_resumable_resolution(game,seat,nam
     from sqlmodel import Session
     client,controller = game
     state,spell,payer,target = setup(name,seat)
-    state.id = controller.state.id
     state.mechanic_choice_players = {1,2}
-    controller.state = state
-    persist(controller)
+    adopt_fixture_state(controller, state)
     invalid = announcement(state,spell,add(state,'Island',seat),target,seat)
     persist(controller)
     rejected(client,controller,invalid,player_id=seat)
