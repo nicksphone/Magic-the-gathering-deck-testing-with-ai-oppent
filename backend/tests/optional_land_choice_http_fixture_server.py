@@ -16,8 +16,7 @@ def fixture(request: Request, family: str, seat: int, slice_only: bool = False):
     authorize(request)
     if family not in {'Growth Spiral', 'Arboreal Grazer'} or seat not in (1, 2):
         raise HTTPException(422, 'Declared canonical family and seat required')
-    state, source, land, drawn = setup(family, seat)
-    state.id = str(uuid4())
+    state, source, land, drawn = setup(family, seat, game_id=str(uuid4()))
     state.log.append(LABEL)
     if slice_only:
         # Lower-level handler fixture ONLY; never claim this executed a card.

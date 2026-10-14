@@ -30,6 +30,32 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 14 Remaining Fixture Integrity
+
+Six whole modules now pass all 249 ordinary cases, with 82 warnings in
+52.15 seconds and zero failures/errors/skips. All 285 original assertions
+and both real serializer workers remain unchanged. Four HTTP callers retain
+Factory-born identities; intentional hidden-stock counterfactuals start
+explicitly uncertified, while the Adventure attacker uses complete canonical
+stock before birth instead of a renamed physical card. Gameplay, shared
+helpers and canonical source files are unchanged. See
+[the exact component scope](docs/current-valueerror249-fixture-acceptance.md).
+
+Separately, five whole private-choice/optional-land modules pass all 61
+original cases, with eight warnings in 330.10 seconds. All 177 old assertions
+and original workers remain intact. Three fixture producers retain valid
+birth identities; a separate 20-case pure projection is not an 81-case
+integrated or HTTP result. The baseline's 20 identity failures and earlier
+guard setup errors are preserved. See
+[the private-choice fixture scope](docs/testing/http-bridge-factory-birth.md).
+Neither component is a combined 310-case execution or a complete release gate.
+
+The complete earlier hosted `f1fdfd0e` backend run separately accounts for
+all 28,333 nodes: 28,152 passed bodies, 99 failed bodies and 82 setup skips,
+with no metadata errors. Later component repairs do not retroactively turn
+that historical failure into success. Latest whole hosted backend acceptance,
+private-choice fixtures and the original release/AI gates remain open.
+
 ## October 14 Cost And Sideboarding Fixtures
 
 Eight cost/activation modules pass one actual 795-case cohort, with

@@ -17,19 +17,34 @@ BORROWER = "Brazen Borrower // Petty Theft"
 
 
 def test_brazen_borrower_blocks_only_flying_attackers_after_snapshot_restore():
-    game, borrower = fixture(BORROWER)
+    import json
+    from pathlib import Path
+    from tests.regression_agent.test_interactions import CARDS
+
+    raw_rows = map(json.loads, (Path(__file__).parent /
+                   'fixtures/knowledge_profiles/seed155-scryfall.jsonl').read_text().splitlines())
+    borrower_raw = next(row for row in raw_rows if row['name'] == BORROWER)
+    game, borrower = fixture(BORROWER, opponent_rows=[
+        {**borrower_raw, 'quantity': 59},
+        {**CARDS['Grizzly Bears'], 'quantity': 1},
+    ])
     game.players[1].hand.remove(borrower.id)
     game.players[1].battlefield.append(borrower.id)
     borrower.move_to_zone(Zone.BATTLEFIELD)
-    attacker_id = game.players[2].hand[0]
+    attacker_id = next(card.id for card in game.cards.values()
+                       if card.owner == 2 and card.name == 'Grizzly Bears')
+    opponent = game.players[2]
+    if attacker_id not in opponent.hand:
+        displaced_id = opponent.hand[0]
+        index = opponent.library.index(attacker_id)
+        opponent.library[index] = displaced_id
+        opponent.hand[0] = attacker_id
+        game.cards[displaced_id].move_to_zone(Zone.LIBRARY)
+        game.cards[attacker_id].move_to_zone(Zone.HAND)
     game.players[2].hand.remove(attacker_id)
     game.players[2].battlefield.append(attacker_id)
     attacker = game.cards[attacker_id]
     attacker.move_to_zone(Zone.BATTLEFIELD)
-    attacker.name = "Grizzly Bears"
-    attacker.oracle_text = ""
-    attacker.types = ["Creature"]
-    attacker.keywords = []
     game.active_player = 2
     game.priority_player = 1
     game.step = Step.DECLARE_BLOCKERS

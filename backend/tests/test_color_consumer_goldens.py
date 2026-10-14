@@ -13,7 +13,7 @@ import pytest
 from ai.information import decision_view
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import MatchFactory, Zone, assign_static_order_on_battlefield_entry, object_incarnation
+from game_state.state import MatchFactory, Step, Zone, assign_static_order_on_battlefield_entry, object_incarnation
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.continuous import effective_keywords
 from rules_engine.engine import RulesEngine
@@ -23,6 +23,7 @@ from rules_engine.targeting import validate_protection_targets
 from tests.test_basic_land_hooks import attach_song_fixture, cast_song, checked
 from tests.test_basic_land_layer_goldens import position
 from tests.test_ai_recurring_engines import resolve
+from tests.controlled_basic_game_support import controlled_basic_game
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -61,8 +62,26 @@ def restart(state):
     return resumed
 
 
-def retained_damage(seat, converted):
-    state = position(seat)
+def _counterfactual_position(seat):
+    """The deliberate hidden-stock substitution starts uncertified, not repaired."""
+    deck = [{'quantity': 60, 'card_name': 'Swamp'}]
+    state = controlled_basic_game(deck, deck, seed=941)
+    state.pregame_pending = False
+    state.kept_hands = {1, 2}
+    state.turn = 5
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = seat
+    for player in state.players.values():
+        for cid in player.hand:
+            state.cards[cid].move_to_zone(Zone.LIBRARY)
+            player.library.append(cid)
+        player.hand.clear()
+        player.mana_pool = dict.fromkeys('WUBRGC', 10)
+    return state
+
+
+def retained_damage(seat, converted, *, counterfactual=False):
+    state = _counterfactual_position(seat) if counterfactual else position(seat)
     source = add(state, 'Prodigal Pyromancer', seat)
     target = add(state, 'Etched Champion', 3-seat)
     add(state, 'Bonesplitter', 3-seat)
@@ -266,9 +285,9 @@ def test_converted_source_has_no_executable_printed_damage_ability(seat):
 @pytest.mark.parametrize('family', ['damage', 'selector'])
 def test_private_counterfactual_and_retained_root_ownership(seat, family):
     if family == 'damage':
-        state, source, target, _ = retained_damage(seat, True)
+        state, source, target, _ = retained_damage(seat, True, counterfactual=True)
     else:
-        state = position(seat)
+        state = _counterfactual_position(seat)
         source = add(state, 'Abzan Kin-Guard', seat).id
         target = add(state, 'Savannah Lions', seat).id
         state = cast_song(state, target, seat)

@@ -28,8 +28,8 @@ def save(name, state, ledger, **details):
         }, indent=2, sort_keys=True) + '\n')
 
 
-def setup(name, seat, *, eligible=True, drawn_land=False, shock=False):
-    state = position('Ramp', 'Tempo', seat)
+def setup(name, seat, *, eligible=True, drawn_land=False, shock=False, game_id=None):
+    state = position('Ramp', 'Tempo', seat, game_id=game_id)
     state.mechanic_choice_players = {1, 2}
     state.trigger_order_choice_players = {1, 2}
     source = take(state, name, seat, Zone.HAND)

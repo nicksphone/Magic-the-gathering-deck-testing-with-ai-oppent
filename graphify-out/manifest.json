@@ -3618,9 +3618,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_color_consumer_goldens.py": {
-    "mtime": 1791667790.1319282,
-    "seen": 1791671014.284444,
-    "ast_hash": "7bd0c403f0366c8f226fd059e1806476",
+    "mtime": 1792001429.231151,
+    "seen": 1792001557.4032114,
+    "ast_hash": "1df15c6eca3659cce6120e7236b85d50",
     "semantic_hash": ""
   },
   "backend/tests/test_color_domain_audit.py": {
@@ -4344,9 +4344,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_land_and_adventure_faces.py": {
-    "mtime": 1791667790.1819274,
-    "seen": 1791671014.2847989,
-    "ast_hash": "23883c9ace52b0e57f42ade066306211",
+    "mtime": 1792001429.231151,
+    "seen": 1792001557.4036615,
+    "ast_hash": "65344452e7d5310f6c2ef9558c6a7591",
     "semantic_hash": ""
   },
   "backend/tests/test_land_classification.py": {
@@ -4584,9 +4584,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_mana_abilities.py": {
-    "mtime": 1791667790.1989274,
-    "seen": 1791671014.2849085,
-    "ast_hash": "3db9c95e1cf0fc9edf070d83386e5971",
+    "mtime": 1792001429.231151,
+    "seen": 1792001557.4038067,
+    "ast_hash": "026fb5f2ac19215b2c2b07d148916668",
     "semantic_hash": ""
   },
   "backend/tests/test_mana_executor_ai_composition.py": {
@@ -4794,9 +4794,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_opening_entry_counters.py": {
-    "mtime": 1791667790.2159271,
-    "seen": 1791671014.285002,
-    "ast_hash": "2c1caefd5c8c5062f2fa4dd06a86214a",
+    "mtime": 1792001429.231151,
+    "seen": 1792001557.4039416,
+    "ast_hash": "6af2706f6bb0021ea7f28fa288277906",
     "semantic_hash": ""
   },
   "backend/tests/test_opening_hand.py": {
@@ -4992,9 +4992,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_regression_repair_edges.py": {
-    "mtime": 1791667790.2269268,
-    "seen": 1791671014.2851102,
-    "ast_hash": "05e344749e7a1f1eb8ef010429c379d8",
+    "mtime": 1792001429.231151,
+    "seen": 1792001557.404091,
+    "ast_hash": "164dca6c83e66840ed59fcf8ca2e9aa1",
     "semantic_hash": ""
   },
   "backend/tests/test_release_card_contracts.py": {
@@ -5334,9 +5334,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_surveil_mill.py": {
-    "mtime": 1791667790.2499266,
-    "seen": 1791671014.2852962,
-    "ast_hash": "f54cea31e90471909f69f91961b08f02",
+    "mtime": 1792001429.231151,
+    "seen": 1792001557.404344,
+    "ast_hash": "ed72176d94220e23e0a2f7c9f089a8bc",
     "semantic_hash": ""
   },
   "backend/tests/test_suspend_api.py": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791998145.0732875,
-    "seen": 1791998259.9523463,
-    "ast_hash": "ba00ff092f6e28adfef8fe72f9854983",
+    "mtime": 1792001965.0305192,
+    "seen": 1792002081.432608,
+    "ast_hash": "4ad6a6b82b20c477c5a834a8e119b8dc",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -8454,9 +8454,9 @@
     "semantic_hash": ""
   },
   "backend/tests/private_choice_boundary_fixture_server.py": {
-    "mtime": 1791754584.994901,
-    "seen": 1791755959.0424528,
-    "ast_hash": "c9f216c15e4ccfef4452ecf931c15f1c",
+    "mtime": 1792001964.9715204,
+    "seen": 1792002081.4290714,
+    "ast_hash": "2aec000e302f7da63aa3b573ff263321",
     "semantic_hash": ""
   },
   "backend/tests/test_private_choice_alternate_control.py": {
@@ -10572,9 +10572,9 @@
     "semantic_hash": ""
   },
   "backend/tests/optional_land_choice_http_fixture_server.py": {
-    "mtime": 1791667790.0689292,
-    "seen": 1791671014.2841103,
-    "ast_hash": "3e53c2091cfe40d85b8743dd1e9ff203",
+    "mtime": 1792001964.9715204,
+    "seen": 1792002081.4290662,
+    "ast_hash": "2103e7acf95a218d95d153ac9e94cfdd",
     "semantic_hash": ""
   },
   "backend/tests/test_activated_handland_http_audit.py": {
@@ -10632,9 +10632,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_optional_land_from_hand_audit.py": {
-    "mtime": 1791667790.2159271,
-    "seen": 1791671014.2850065,
-    "ast_hash": "698fdd9044c47d45fd652a259d4e05c4",
+    "mtime": 1792001964.9715204,
+    "seen": 1792002081.4302032,
+    "ast_hash": "5fe8bf92217656c08b8c9cbbee47ea44",
     "semantic_hash": ""
   },
   "backend/tests/test_optional_land_from_hand_choice_slice.py": {
@@ -18645,6 +18645,24 @@
     "mtime": 1791998108.3559024,
     "seen": 1791998259.9512272,
     "ast_hash": "cff626b8a9b7b1e85041e17ae9fa41c9",
+    "semantic_hash": ""
+  },
+  "docs/current-valueerror249-fixture-acceptance.md": {
+    "mtime": 1792001429.231151,
+    "seen": 1792001557.4052408,
+    "ast_hash": "538fe5e2b42eff24d37891a7aae69f0e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_http_bridge_fixture_birth.py": {
+    "mtime": 1792001964.9715204,
+    "seen": 1792002081.4298258,
+    "ast_hash": "9b4e56c34d75589b00f2626e572c11c0",
+    "semantic_hash": ""
+  },
+  "docs/testing/http-bridge-factory-birth.md": {
+    "mtime": 1792001964.9735205,
+    "seen": 1792002081.432026,
+    "ast_hash": "53d6a9253f66aa11b303bee4a5f942b0",
     "semantic_hash": ""
   }
 }

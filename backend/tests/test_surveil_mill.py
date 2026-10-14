@@ -16,6 +16,7 @@ from tests.test_activation_modifiers import board
 from tests.test_ai_recurring_engines import add as raw_add, resolve
 from tests.test_legendary_channels import resolve_to_choice, choice
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/surveil_mill.json').read_text())}
 
@@ -278,12 +279,11 @@ def test_sqlite_resumes_surveil_top_order_without_repeating_draw(game, seat):
     from persistence.repository import Repository
     client, controller = game
     state = board(seat)
-    state.id = controller.state.id
     source = add(state, 'Otherworldly Gaze', seat, Zone.HAND)
     for name in ['Mind Stone', 'Grizzly Bears', 'Island']:
         add(state, name, seat, Zone.LIBRARY)
     state.players[seat].mana_pool.update(U=1)
-    controller.state = resolve_to_choice(cast(state, source))
+    adopt_fixture_state(controller, resolve_to_choice(cast(state, source)))
     options = list(controller.state.pending_mechanic_choice['options'])
     controller.state = choice(controller.state, seat, [options[0]])
     assert controller.state.pending_mechanic_choice['kind'] == 'surveil_top_order'

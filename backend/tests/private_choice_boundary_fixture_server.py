@@ -56,7 +56,8 @@ def fixture(request: Request, family: str, seat: int):
     if family not in {'delver', 'officer'} or seat not in (1, 2):
         raise HTTPException(422, 'Declared canonical family and actor required')
     state, inspected, foreign = position(family, seat)
-    state.id = str(uuid4())
+    if family == 'officer':
+        state.id = str(uuid4())
     state.log.append(LABEL)
     controller = main.MatchController(state=state, rules=RulesEngine(),
         controllers={1: 'human', 2: 'human'}, ai={1: AIAgent(), 2: AIAgent()},

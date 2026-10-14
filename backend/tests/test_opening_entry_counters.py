@@ -11,6 +11,7 @@ from tests.test_opening_hand import opening_game, add_opening, keep_both
 from tests.test_counter_replacements import source as modifier, choose
 from tests.test_counter_prohibitions import source as prohibition
 from tests.test_api_input_contracts import game, persist
+from tests.fixture_state_support import adopt_fixture_state
 from ai.agent import AIAgent
 
 
@@ -140,13 +141,12 @@ def test_http_opening_replacement_restore_preserves_actor_and_hand_until_commit(
     from persistence.db import engine
     from persistence.repository import Repository
     client, controller = game
-    match_id = controller.state.id
     state = opening_game(starter=3-player)
-    state.id = match_id
+    match_id = state.id
     cid = add_opening(state, 'Gemstone Caverns', player)
     modifier(state, 'Vorinclex, Monstrous Raider', player)
     modifier(state, 'Vorinclex, Monstrous Raider', 3-player)
-    controller.state = keep_both(state)
+    adopt_fixture_state(controller, keep_both(state))
     persist(controller)
     path = f'/matches/{match_id}'
     response = client.post(path+'/action', json={'player_id': player,
