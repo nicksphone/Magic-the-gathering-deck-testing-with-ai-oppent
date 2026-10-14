@@ -8778,9 +8778,9 @@
     "semantic_hash": ""
   },
   "backend/tests/spell_admission_safety_restart_worker.py": {
-    "mtime": 1791667790.074929,
-    "seen": 1791671014.28414,
-    "ast_hash": "7ce039fe818715fd9ac8aab913bbb6f6",
+    "mtime": 1791954369.3762133,
+    "seen": 1791954482.8467896,
+    "ast_hash": "5cb831172a40010b9a7c9132bb5c12f7",
     "semantic_hash": ""
   },
   "backend/tests/spell_admission_safety_support.py": {
@@ -8808,9 +8808,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_spell_admission_safety_http.py": {
-    "mtime": 1791667790.2449267,
-    "seen": 1791671014.2852535,
-    "ast_hash": "2f5ad8ea72fcb4b319b5f2bf1c324ba4",
+    "mtime": 1791954369.3762133,
+    "seen": 1791954482.8483646,
+    "ast_hash": "82cfa6f9ecedefe1bccb4390a7a0b513",
     "semantic_hash": ""
   },
   "docs/testing/extra-sequence-readiness-audit.md": {
@@ -18435,6 +18435,24 @@
     "mtime": 1791951516.5363078,
     "seen": 1791952292.4253519,
     "ast_hash": "1515c7576501fb5156cafd85e70cf7a0",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_spell_admission_fixture_birth.py": {
+    "mtime": 1791954369.3762133,
+    "seen": 1791954482.848357,
+    "ast_hash": "6fdaef3c9f76f06850c565ee050ab54c",
+    "semantic_hash": ""
+  },
+  "docs/testing/live-bo3-fixture-registry-scope.md": {
+    "mtime": 1791952281.1401572,
+    "seen": 1791954482.8502018,
+    "ast_hash": "d1ab616765e1e5cdd9a3a8c01acb8b16",
+    "semantic_hash": ""
+  },
+  "docs/testing/spell-admission-fixture-birth.md": {
+    "mtime": 1791954369.3802133,
+    "seen": 1791954482.8504837,
+    "ast_hash": "3e63ec17a78564613fbadeadd700b0d7",
     "semantic_hash": ""
   }
 }

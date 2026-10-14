@@ -35,8 +35,7 @@ def test_actual_http_full_unsupported_rejection_is_explicit_and_atomic(repo, cli
         'sandbox': True, 'controller_a': 'human', 'controller_b': 'human', 'seed': 7214})
     assert start.status_code == 200, start.text
     controller = main.ACTIVE_MATCHES[start.json()['id']]
-    state = position(seat)
-    state.id = controller.state.id
+    state = position(seat, game_id=controller.state.id)
     state.players[seat].mana_pool = {'W': 20, 'U': 20, 'B': 20, 'R': 20, 'G': 20, 'C': 20}
     source = add(state, name, seat)
     controller.state = state
@@ -97,8 +96,7 @@ def test_invalid_real_face_choices_remain_structured_and_root_pure(repo, client,
         'sandbox': True, 'controller_a': 'human', 'controller_b': 'human', 'seed': 7214})
     assert response.status_code == 200, response.text
     controller = main.ACTIVE_MATCHES[response.json()['id']]
-    state = position(seat)
-    state.id = controller.state.id
+    state = position(seat, game_id=controller.state.id)
     source = add(state, 'Commit // Memory', seat)
     target = add(state, 'Grizzly Bears', 3 - seat, Zone.BATTLEFIELD)
     controller.state = state

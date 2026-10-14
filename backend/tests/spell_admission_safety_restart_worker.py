@@ -60,8 +60,7 @@ def run(phase, seat, name, root, behavior='reject'):
                 headers={'Idempotency-Key': 'sequence-start'})
             assert response.status_code == 200, response.text
             controller = main.ACTIVE_MATCHES[response.json()['id']]
-            state = position(seat)
-            state.id = controller.state.id
+            state = position(seat, game_id=controller.state.id)
             state.players[seat].mana_pool = {'W': 20, 'U': 20, 'B': 20, 'R': 20, 'G': 20, 'C': 20}
             source = add(state, name, seat, Zone.HAND)
             creature = add(state, 'Grizzly Bears', seat)
