@@ -222,12 +222,16 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
              observer: Callable[[dict], None] | None = None, trace_builder=None, budget=None, record_game=None) -> dict:
     if starting_player not in (1, 2):
         raise ValueError("Starting player must be 1 or 2")
+    if record_game is not None:
+        import time
+        game_started = time.monotonic()
     state = MatchFactory.from_decks(deck_a, deck_b, seed=seed)
     state.active_player = starting_player
     state.priority_player = starting_player
     state.mechanic_choice_players = {1, 2}
     ticks = 0
     stop_reason = None
+    resource_limit_dimension = None
     try:
         if budget is not None:
             budget.begin_game(state.log)
@@ -304,7 +308,16 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
             raise
         from analytics.resource_budget import SimulationResourceLimit
         stop_reason = 'resource_limit' if isinstance(exc, SimulationResourceLimit) else 'action_error'
+        if type(exc) is SimulationResourceLimit:
+            dimension = getattr(exc, 'dimension', None)
+            if type(dimension) is str and dimension in (
+                'deadline', 'game_log', 'game_log_entries', 'batch_log', 'batch_log_entries',
+                'trace_scalar', 'trace_nodes', 'trace_depth', 'trace_entry', 'action_log',
+            ):
+                resource_limit_dimension = dimension
 
+    if record_game is not None:
+        game_elapsed_seconds = time.monotonic() - game_started
     normalized_log = [normalize_log_line(line) for line in state.log]
     log_hash = hashlib.sha256("\n".join(normalized_log).encode("utf-8")).hexdigest()
     result = {
@@ -319,6 +332,8 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
     if stop_reason is not None:
         result['stop_reason'] = stop_reason
     if record_game is not None:
+        result.update(resource_limit_dimension=resource_limit_dimension,
+                      game_elapsed_seconds=game_elapsed_seconds)
         _record_game_evidence(result, state.log, record_game)
     return result
 

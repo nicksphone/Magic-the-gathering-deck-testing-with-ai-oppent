@@ -433,6 +433,37 @@ class RoundRobinProtocolTests(unittest.TestCase):
         game = copy.deepcopy(functions['run_game'])
         game.args.kwonlyargs = game.args.kwonlyargs[:-3]
         game.args.kw_defaults = game.args.kw_defaults[:-3]
+        # Verify the exact opt-in metadata additions before restoring the old AST.
+        self.assertEqual(ast.dump(game.body[1]), ast.dump(ast.parse(
+            "if record_game is not None:\n    import time\n    game_started = time.monotonic()"
+        ).body[0]))
+        game.body.pop(1)
+        self.assertEqual(ast.dump(game.body[7]), ast.dump(ast.parse(
+            "resource_limit_dimension = None"
+        ).body[0]))
+        game.body.pop(7)
+        metadata_wrapper = next(n for n in game.body if isinstance(n, ast.Try))
+        self.assertEqual(ast.dump(metadata_wrapper.handlers[0].body[-1]), ast.dump(ast.parse(
+            "if type(exc) is SimulationResourceLimit:\n"
+            "    dimension = getattr(exc, 'dimension', None)\n"
+            "    if type(dimension) is str and dimension in (\n"
+            "        'deadline', 'game_log', 'game_log_entries', 'batch_log', 'batch_log_entries',\n"
+            "        'trace_scalar', 'trace_nodes', 'trace_depth', 'trace_entry', 'action_log',\n"
+            "    ):\n        resource_limit_dimension = dimension"
+        ).body[0]))
+        metadata_wrapper.handlers[0].body.pop()
+        elapsed_index = game.body.index(metadata_wrapper) + 1
+        self.assertEqual(ast.dump(game.body[elapsed_index]), ast.dump(ast.parse(
+            "if record_game is not None:\n    game_elapsed_seconds = time.monotonic() - game_started"
+        ).body[0]))
+        game.body.pop(elapsed_index)
+        self.assertEqual(ast.dump(game.body[-2]), ast.dump(ast.parse(
+            "if record_game is not None:\n"
+            "    result.update(resource_limit_dimension=resource_limit_dimension,\n"
+            "                  game_elapsed_seconds=game_elapsed_seconds)\n"
+            "    _record_game_evidence(result, state.log, record_game)"
+        ).body[0]))
+        game.body[-2].body.pop(0)
         # Remove the opt-in budget/error wrapper, retaining its original body.
         wrapper = next(n for n in game.body if isinstance(n, ast.Try))
         prefix = game.body[:game.body.index(wrapper)]

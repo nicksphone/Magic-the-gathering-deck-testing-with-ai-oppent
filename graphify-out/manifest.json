@@ -1128,9 +1128,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/regression_matrix_replay.py": {
-    "mtime": 1791853602.1875353,
-    "seen": 1791853710.1303306,
-    "ast_hash": "5f56e21a946df437ccbcff77041b605a",
+    "mtime": 1791947372.8166168,
+    "seen": 1791949023.5874536,
+    "ast_hash": "45a3406058bd104a44c2614c684446dc",
     "semantic_hash": ""
   },
   "backend/scripts/sync_all_card_knowledge.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1791942846.4536226,
-    "seen": 1791942960.911029,
-    "ast_hash": "600cc518109dc799dd41f6b47c593baa",
+    "mtime": 1791943440.8384185,
+    "seen": 1791949023.5921695,
+    "ast_hash": "5d64cf73529b130ac1093ffde4a5e457",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -17700,9 +17700,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_matchup_round_robin_protocol.py": {
-    "mtime": 1791853602.1875353,
-    "seen": 1791853710.1328168,
-    "ast_hash": "3107ae557137c0fc3ff468ca03da3ae4",
+    "mtime": 1791947372.8196168,
+    "seen": 1791949023.5899193,
+    "ast_hash": "01f91348058c49d23e0043de0b828e18",
     "semantic_hash": ""
   },
   "backend/tests/test_matchup_series_resource_continuation.py": {
@@ -18405,6 +18405,18 @@
     "mtime": 1791942756.4089992,
     "seen": 1791942960.9105432,
     "ast_hash": "46b34b3bab85b8afbd667e65d960d56b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_regression_game_resource_metadata.py": {
+    "mtime": 1791947372.8166168,
+    "seen": 1791949023.5901694,
+    "ast_hash": "a3ec12d2e0d7d1315b5be06370276a3b",
+    "semantic_hash": ""
+  },
+  "docs/testing/game-resource-stop-metadata.md": {
+    "mtime": 1791948911.591741,
+    "seen": 1791949023.591834,
+    "ast_hash": "65e5659652e71da6927736e5e8aeeb4a",
     "semantic_hash": ""
   }
 }
