@@ -19,9 +19,9 @@ from persistence.repository import Repository
 from persistence import db as persistence_db
 
 
-def template():
+def template(*, game_id=None):
     deck = [{**seed_card_payload('Island'), 'card_name': 'Island', 'quantity': 60}]
-    state = MatchFactory.from_decks(deck, deck, seed=1729)
+    state = MatchFactory.from_decks(deck, deck, seed=1729, game_id=game_id)
     state.pregame_pending = False
     state.step = Step.PRECOMBAT_MAIN
     return main.MatchController(state=state, rules=main.RulesEngine(),
@@ -32,13 +32,11 @@ def template():
 
 
 def seed(repo, count=3):
-    match = template()
-    state = serialize_match_snapshot(match.state)
-    config = main._controller_snapshot(match)
     rows = []
     for i in range(count):
-        raw = deepcopy(state)
-        raw['id'] = f'lazy-{uuid4()}'
+        match = template(game_id=f'lazy-{uuid4()}')
+        raw = serialize_match_snapshot(match.state)
+        config = main._controller_snapshot(match)
         raw['turn'] = i + 1
         repo.save_active_match(raw['id'], json.dumps(raw), json.dumps(config))
         rows.append((raw, deepcopy(config)))

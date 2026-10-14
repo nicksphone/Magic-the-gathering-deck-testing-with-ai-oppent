@@ -30,6 +30,18 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 14 Saved-Match Follow-Up
+
+The saved-match fixture repair now passes one actual four-whole-module cohort:
+83 ordinary cases, 75 warnings, 16.15 seconds, zero failures/errors/skips.
+The baseline's 12 failures were inconsistent fixture IDs captured before a
+later serialized-ID overwrite. Intended IDs now enter before factory birth;
+original assertions, corruption controls and gameplay production remain intact.
+All 113 observed connections and owned processes close; 67 existing database,
+backup and lock files are independently quiet. See
+[the exact fixture scope](docs/testing/lazy-saved-match-fixture-birth.md).
+Current complete hosted backend and original release/AI gates remain open.
+
 ## October 14 Current-Source Follow-Up
 
 A fresh composition over published `45d4ef47` passes all 172 cases in six whole

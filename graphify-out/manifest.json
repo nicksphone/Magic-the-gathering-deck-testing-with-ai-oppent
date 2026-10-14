@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791985360.9744744,
-    "seen": 1791985473.1039014,
-    "ast_hash": "5b3c765daa8638a46a7cf306945ca831",
+    "mtime": 1791994807.676462,
+    "seen": 1791994922.8744934,
+    "ast_hash": "9a91786a997eb0db59b3908a84b7bea8",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -9270,9 +9270,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_lazy_saved_matches.py": {
-    "mtime": 1791889423.473639,
-    "seen": 1791889559.0781786,
-    "ast_hash": "c9c08f83238d4c6bc74d9b1369b3886d",
+    "mtime": 1791994781.4008954,
+    "seen": 1791994922.8715484,
+    "ast_hash": "2d4660a9d55168e9a448c96922ae303c",
     "semantic_hash": ""
   },
   "backend/tests/test_lazy_saved_restart.py": {
@@ -18591,6 +18591,12 @@
     "mtime": 1791985273.895025,
     "seen": 1791985473.1031382,
     "ast_hash": "dca4fee284c8d83c9cd9c0a175aca090",
+    "semantic_hash": ""
+  },
+  "docs/testing/lazy-saved-match-fixture-birth.md": {
+    "mtime": 1791994807.6744618,
+    "seen": 1791994922.8739548,
+    "ast_hash": "cee6f322f9bfc164a02e5e0eff7342f7",
     "semantic_hash": ""
   }
 }
