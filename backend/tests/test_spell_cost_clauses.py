@@ -17,6 +17,7 @@ from tests.test_activation_modifiers import board
 from tests.test_ai_recurring_engines import add as raw_add
 from tests.test_surveil_mill import add
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads(
     (Path(__file__).parent / 'fixtures/spell_additional_costs.json').read_text())}
@@ -168,8 +169,7 @@ def test_additional_branch_keeps_casting_method(method):
 def test_http_counted_cost_options_and_rejected_payment(game, seat):
     client, controller = game
     state = board(seat)
-    state.id = controller.state.id
-    controller.state = state
+    adopt_fixture_state(controller, state)
     spell = card(state, 'Cathartic Reunion', seat)
     first = add(state, 'Island', seat, Zone.HAND)
     second = add(state, 'Swamp', seat, Zone.HAND)

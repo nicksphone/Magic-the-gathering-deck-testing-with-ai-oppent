@@ -10,6 +10,7 @@ from rules_engine.state_based_actions import apply_state_based_actions
 from tests.test_foretell import setup, CARDS
 from tests.test_ai_recurring_engines import add, resolve
 from tests.test_api_input_contracts import game, persist
+from tests.fixture_state_support import adopt_fixture_state
 
 
 def cast_position(name, seat, foretold):
@@ -153,8 +154,7 @@ def test_http_end_reveal_persists_across_bo3_and_public_memory(game, seat):
     from sqlmodel import Session
     client, controller = game
     state, cid = setup(seat=seat)
-    state.id = controller.state.id
-    controller.state = checked_action(state, RulesEngine(), seat, {'type': 'foretell', 'card_id': cid})
+    adopt_fixture_state(controller, checked_action(state, RulesEngine(), seat, {'type': 'foretell', 'card_id': cid}))
     controller.best_of = controller.state.best_of = 3
     controller.state.players[seat].life = 0
     apply_state_based_actions(controller.state)

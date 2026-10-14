@@ -14,6 +14,7 @@ from rules_engine.targeting import stack_object_kind
 from tests.test_activation_modifiers import board, add
 from tests.test_ai_recurring_engines import add as raw_add, resolve
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads(
     (Path(__file__).parent / 'fixtures/hand_activations.json').read_text())}
@@ -250,8 +251,7 @@ def test_http_channel_restores_hand_source_and_stack_from_sqlite(game, seat):
     import main
     client, controller = game
     state = board(seat)
-    state.id = controller.state.id
-    controller.state = state
+    adopt_fixture_state(controller, state)
     source = hand_card(state, 'Twinshot Sniper', seat)
     state.players[seat].mana_pool.update(C=1, R=1)
     persist(controller)

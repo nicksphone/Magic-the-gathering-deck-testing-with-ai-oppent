@@ -30,6 +30,26 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 14 Cost And Sideboarding Fixtures
+
+Eight cost/activation modules pass one actual 795-case cohort, with
+107 warnings in 99.99 seconds and zero failures/errors/skips. All 371
+original assertions and gameplay rules remain unchanged; eight explicit
+HTTP callers retain valid Factory-born fixture identities through the
+existing adopter. The unchanged baseline's 18 failures remain separate.
+See [the exact scope](docs/current-cost-activation795-fixture-acceptance.md).
+
+Separately, the original seven AI-sideboarding tests plus four genuine
+producer controls pass one 11-case run in 14.45 seconds. The fixtures use
+checked paid actions and real terminal recording instead of injected winners;
+the actual human loser chooses play/draw explicitly. Four reviewed live
+swap-count expectations follow the existing three-card limit, while legacy
+pure planner checks retain four. This is controlled-unit correctness, not
+natural-game AI strength. See
+[the sideboarding scope](docs/testing/ai-sideboarding-current-fixtures.md).
+These independent results are not a summed integrated acceptance. Complete
+hosted backend, all-browser deployment and original release/AI gates remain open.
+
 ## October 14 Casting And Observation Fixtures
 
 Four casting modules now pass all 215 unchanged cases in 32.45 seconds,

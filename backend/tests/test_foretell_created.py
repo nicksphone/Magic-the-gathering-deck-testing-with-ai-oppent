@@ -14,6 +14,7 @@ from tests.test_foretell import setup, add
 from tests.test_ai_recurring_engines import resolve
 from tests.test_ai_recurring_engines import add as raw_add
 from tests.test_api_input_contracts import game, persist, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 
 EXTRA = {row['name']: row for file in ['ability_suppression', 'draw_forecast', 'foretell_created']
          for row in json.loads((Path(__file__).parent / f'fixtures/{file}.json').read_text())}
@@ -308,8 +309,7 @@ def test_http_pending_choice_and_effect_permission_survive_database_restart(game
                 if state.cards[cid].name == 'Behold the Multiverse')
     emit_event(state, 'enters_battlefield', {'card_id': source.id})
     state = resolve(state)
-    state.id = match.state.id
-    match.state = state
+    adopt_fixture_state(match, state)
     persist(match)
     main.ACTIVE_MATCHES.pop(state.id)
     with Session(engine) as session:

@@ -13,6 +13,7 @@ from rules_engine.continuous import effective_keywords
 from tests.test_activation_modifiers import board
 from tests.test_ai_recurring_engines import add as raw_add, resolve
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/legendary_channels.json').read_text())}
 LANDS = [name for name, row in ROWS.items() if 'Channel' in row['keywords']]
@@ -347,12 +348,11 @@ def test_sqlite_restores_owned_mill_return_without_milling_twice(game, seat):
     from persistence.repository import Repository
     client, controller = game
     state = board(seat)
-    state.id = controller.state.id
     source = add(state, 'Takenuma, Abandoned Mire', seat, Zone.HAND)
     target = add(state, 'Grizzly Bears', seat, Zone.LIBRARY)
     state.players[seat].mana_pool.update(C=3, B=1)
     state.mechanic_choice_players = {1, 2}
-    controller.state = state
+    adopt_fixture_state(controller, state)
     persist(controller)
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat, 'action': action(source)})
     assert response.status_code == 200, response.text

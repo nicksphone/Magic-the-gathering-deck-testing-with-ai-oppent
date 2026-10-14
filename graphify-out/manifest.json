@@ -3234,9 +3234,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_sideboarding.py": {
-    "mtime": 1791667790.1009288,
-    "seen": 1791671014.2842667,
-    "ast_hash": "f0de18ad5c223ef3ff9769cda09e7358",
+    "mtime": 1791998108.3549023,
+    "seen": 1791998259.9486694,
+    "ast_hash": "1e32f443ef7973f78551e7d2a5dff961",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_stack_response_delta.py": {
@@ -4182,21 +4182,21 @@
     "semantic_hash": ""
   },
   "backend/tests/test_foretell.py": {
-    "mtime": 1791667790.1649277,
-    "seen": 1791671014.2846878,
-    "ast_hash": "9a533aeea7726004b076e30aed0b4891",
+    "mtime": 1791998145.053288,
+    "seen": 1791998259.9491682,
+    "ast_hash": "2c54240c6b6e89523b4b8529ccb86d78",
     "semantic_hash": ""
   },
   "backend/tests/test_foretell_created.py": {
-    "mtime": 1791667790.1659276,
-    "seen": 1791671014.2846894,
-    "ast_hash": "8c74c9f4ef888a302738c00bac3b95e9",
+    "mtime": 1791998145.054288,
+    "seen": 1791998259.9491699,
+    "ast_hash": "12f4e3fb047a1f79a9c6f8748f0b937a",
     "semantic_hash": ""
   },
   "backend/tests/test_foretell_effects.py": {
-    "mtime": 1791793775.9696612,
-    "seen": 1791793853.470748,
-    "ast_hash": "381f12164107d43b5b2cf0b8869d4e73",
+    "mtime": 1791998145.054288,
+    "seen": 1791998259.9491718,
+    "ast_hash": "83e74b3689102c847115ab200d904fc7",
     "semantic_hash": ""
   },
   "backend/tests/test_game_object_ids.py": {
@@ -4236,9 +4236,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_hand_activations.py": {
-    "mtime": 1791706760.0869658,
-    "seen": 1791707675.6677735,
-    "ast_hash": "11cd521b7e479a713fe51f5fa564b54e",
+    "mtime": 1791998145.054288,
+    "seen": 1791998259.949213,
+    "ast_hash": "1e5beca6499c23a002c66e170be3e3a3",
     "semantic_hash": ""
   },
   "backend/tests/test_hexproof_variants.py": {
@@ -4314,9 +4314,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_kicker.py": {
-    "mtime": 1791667790.1809275,
-    "seen": 1791671014.284788,
-    "ast_hash": "7f427b634eff8d09a8ea959ea72447cc",
+    "mtime": 1791998145.054288,
+    "seen": 1791998259.9492967,
+    "ast_hash": "0f863c038c469e8e5b618b4e2b2977f8",
     "semantic_hash": ""
   },
   "backend/tests/test_kicker_goldens.py": {
@@ -4428,9 +4428,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_legendary_channels.py": {
-    "mtime": 1791667790.1879275,
-    "seen": 1791671014.2848494,
-    "ast_hash": "0e5c3de4280007a7d4fe2aed12e256b4",
+    "mtime": 1791998145.054288,
+    "seen": 1791998259.9493945,
+    "ast_hash": "be062f58b9508d972fcdf80abba9f779",
     "semantic_hash": ""
   },
   "backend/tests/test_lethal_keyword_query.py": {
@@ -5238,9 +5238,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_spell_cost_clauses.py": {
-    "mtime": 1791667790.2459266,
-    "seen": 1791671014.2852564,
-    "ast_hash": "ad497789ab997693f7f11ae2a4dca9e4",
+    "mtime": 1791998145.054288,
+    "seen": 1791998259.9499748,
+    "ast_hash": "4a5955c5406efd0ab3fa6e4d74290d11",
     "semantic_hash": ""
   },
   "backend/tests/test_spell_cost_overlap_http_investigation.py": {
@@ -5616,9 +5616,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_variable_spell_costs.py": {
-    "mtime": 1791667790.2679265,
-    "seen": 1791671014.2854304,
-    "ast_hash": "eed6e3ddec1e2d1f4d6b6b9ccef8324b",
+    "mtime": 1791998145.054288,
+    "seen": 1791998259.9502277,
+    "ast_hash": "09ecf5b260368c4fba041e8a1cbbd77e",
     "semantic_hash": ""
   },
   "backend/tests/test_vehicles.py": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1791995954.149032,
-    "seen": 1791996064.9950075,
-    "ast_hash": "c9a5aac03bff009eb0b1562f64f25915",
+    "mtime": 1791998145.0732875,
+    "seen": 1791998259.9523463,
+    "ast_hash": "ba00ff092f6e28adfef8fe72f9854983",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -18621,6 +18621,30 @@
     "mtime": 1791995930.298434,
     "seen": 1791996064.9947474,
     "ast_hash": "e288ca6993b7b3d3c2c29ffeaae536e7",
+    "semantic_hash": ""
+  },
+  "backend/tests/sideboard_finished_fixture_support.py": {
+    "mtime": 1791998108.3549023,
+    "seen": 1791998259.9484863,
+    "ast_hash": "a79ade32016a41d82429ae2c3fe9577e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_sideboard_finished_fixture_contract.py": {
+    "mtime": 1791998108.3549023,
+    "seen": 1791998259.9499042,
+    "ast_hash": "619d5a521c53f4c5d31664603af30d35",
+    "semantic_hash": ""
+  },
+  "docs/current-cost-activation795-fixture-acceptance.md": {
+    "mtime": 1791998145.054288,
+    "seen": 1791998259.951072,
+    "ast_hash": "3f9284193740247bdc31f9b38a7ceb1f",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-sideboarding-current-fixtures.md": {
+    "mtime": 1791998108.3559024,
+    "seen": 1791998259.9512272,
+    "ast_hash": "cff626b8a9b7b1e85041e17ae9fa41c9",
     "semantic_hash": ""
   }
 }
