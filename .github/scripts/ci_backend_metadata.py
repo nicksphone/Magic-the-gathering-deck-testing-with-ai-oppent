@@ -198,6 +198,28 @@ class PublicDefinitions:
             return None
         return '.'.join(names)
 
+    def interruption_diagnostic(self, value):
+        if (type(value) is not dict
+                or set(value) != {'schema_version', 'hook', 'category', 'frames'}
+                or type(value['schema_version']) is not int or value['schema_version'] != 1
+                or type(value['hook']) is not str or value['hook'] != 'pytest_keyboard_interrupt'
+                or type(value['category']) is not str or value['category'] not in {
+                    'KeyboardInterrupt', 'PytestInterrupted', 'PytestExit', 'Other'}
+                or type(value['frames']) is not list or len(value['frames']) > 2):
+            return None
+        for frame in value['frames']:
+            if (type(frame) is not dict or set(frame) != {'path', 'line', 'source_sha256'}
+                    or type(frame['path']) is not str
+                    or type(frame['line']) is not int or frame['line'] < 1
+                    or type(frame['source_sha256']) is not str
+                    or not re.fullmatch('[0-9a-f]{64}', frame['source_sha256'])):
+                return None
+        verified = self.diagnostic({'exception': 'Other', 'frames': value['frames']})
+        if verified['frames'] != value['frames']:
+            return None
+        return {'schema_version': 1, 'hook': 'pytest_keyboard_interrupt',
+                'category': value['category'], 'frames': verified['frames']}
+
 
 def empty_metadata():
     return {
@@ -245,6 +267,21 @@ def audit_evidence(root, exitcode):
     with contextlib.redirect_stdout(stream), contextlib.redirect_stderr(io.StringIO()):
         status = auditor.audit(root, exitcode)
     return json_value(stream.getvalue()), status
+
+
+def interruption_fields(evidence, public):
+    try:
+        path = evidence / 'interruption.jsonl'
+        if not path.exists() and not path.is_symlink():
+            return {}
+        observations = rows(evidence, 'interruption.jsonl')
+        if len(observations) == 1:
+            signature = public.interruption_diagnostic(observations[0])
+            if signature is not None:
+                return {'interruption': signature}
+    except (MetadataError, OSError, UnicodeError, KeyError, TypeError, ValueError):
+        pass
+    return {'interruption_diagnostics_status': 'degraded'}
 
 
 def build_metadata(evidence, source):
@@ -318,6 +355,7 @@ def build_metadata(evidence, source):
             raise MetadataError('AUDIT_ERROR')
 
         public = PublicDefinitions(source, commit)
+        document.update(interruption_fields(evidence, public))
         document['timing'] = phase_timing(phases, public)
         failures = [{'nodeid_sha256': node(row['nodeid']), 'phase': row['phase'],
                      'public_test': public.resolve(row['nodeid'])}

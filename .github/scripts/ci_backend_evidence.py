@@ -197,6 +197,66 @@ def pytest_sessionfinish(session, exitstatus):
         print('CI_EVIDENCE_DEGRADED=1', file=sys.stderr, flush=True)
 
 
+def interruption_signature(excinfo):
+    """Finite type/location observation, never an interruption-cause inference."""
+    from _pytest._code import ExceptionInfo
+    from _pytest.main import Interrupted
+    from _pytest.outcomes import Exit
+    from types import TracebackType
+
+    signature = {'schema_version': 1, 'hook': 'pytest_keyboard_interrupt',
+                 'category': 'Other', 'frames': []}
+    if type(excinfo) is not ExceptionInfo:
+        return signature
+    kinds = ((KeyboardInterrupt, 'KeyboardInterrupt'), (Interrupted, 'PytestInterrupted'),
+             (Exit, 'PytestExit'))
+    signature['category'] = next((name for kind, name in kinds if excinfo.type is kind), 'Other')
+    root = Path(__file__).absolute().parents[2]
+    if any(part.is_symlink() for part in (root, *root.parents)):
+        return signature
+    traceback = excinfo.tb
+    frames, digests = [], {}
+    for _ in range(256):
+        if traceback is None:
+            signature['frames'] = frames[-2:]
+            return signature
+        if type(traceback) is not TracebackType:
+            return signature
+        filename = traceback.tb_frame.f_code.co_filename
+        path = Path(filename)
+        if (path.is_absolute() and str(path) == filename and path.suffix == '.py'
+                and path.is_relative_to(root)
+                and not any(part.is_symlink() for part in (path, *path.parents))
+                and path.resolve(strict=True) == path and path.is_file()):
+            relative = path.relative_to(root).as_posix()
+            if relative.startswith(('backend/', '.github/scripts/')):
+                if path not in digests:
+                    digests[path] = hashlib.sha256(path.read_bytes()).hexdigest()
+                frames.append({'path': relative, 'line': traceback.tb_lineno,
+                               'source_sha256': digests[path]})
+        traceback = traceback.tb_next
+    # A truncated walk cannot certify which frames are innermost.
+    if traceback is None:
+        signature['frames'] = frames[-2:]
+    return signature
+
+
+def pytest_keyboard_interrupt(excinfo):
+    """Optional bounded record; its failure cannot degrade the mandatory ledger."""
+    try:
+        if _evidence_root is None:
+            return
+        path = _evidence_root / 'interruption.jsonl'
+        if (any(part.is_symlink() for part in (path, *path.absolute().parents))
+                or path.exists() and (not path.is_file() or path.stat().st_nlink != 1)):
+            return
+        signature = interruption_signature(excinfo)
+        with path.open('a') as stream:
+            stream.write(json.dumps(signature, sort_keys=True) + '\n')
+    except Exception:
+        return
+
+
 def audit(root, exitcode):
     def rows(filename):
         path = root / filename

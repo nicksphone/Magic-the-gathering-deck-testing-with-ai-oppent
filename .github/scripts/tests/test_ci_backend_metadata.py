@@ -735,5 +735,247 @@ class MetadataTests(unittest.TestCase):
         self.assertFalse(document['rows_exported'])
 
 
+class InterruptionPrivacyTests(unittest.TestCase):
+    """Synthetic committed-source protocol fixtures; no Git, child or backend."""
+
+    def setUp(self):
+        from _pytest._code import ExceptionInfo
+        self.ExceptionInfo = ExceptionInfo
+        directory = tempfile.TemporaryDirectory(prefix='interruption-protocol-')
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        self.source = self.root / 'source'
+        self.path = self.source / 'backend/tests/test_public.py'
+        self.path.parent.mkdir(parents=True)
+        self.body = ('def outer(exc):\n    return inner(exc)\n'
+                     'def inner(exc):\n    raise exc\n'
+                     'def test_failure():\n    pass\n')
+        self.path.write_text(self.body)
+        scripts = self.source / '.github/scripts'
+        scripts.mkdir(parents=True)
+        self.observer_path = scripts / 'ci_backend_evidence.py'
+        self.observer_path.write_text('# synthetic public observer location\n')
+        self.evidence = self.root / 'evidence'
+        self.evidence.mkdir()
+        self.observer = load('ci_backend_evidence')
+        self.observer.__file__ = str(self.observer_path)
+        self.observer._evidence_root = self.evidence
+        self.reporter = load('ci_backend_metadata')
+        self.assertTrue(callable(getattr(self.observer, 'pytest_keyboard_interrupt', None)),
+                        'Observer-only interruption hook is absent')
+        self.assertTrue(callable(getattr(self.reporter.PublicDefinitions, 'interruption_diagnostic', None)),
+                        'Strict optional interruption validator is absent')
+        self.commit = '1' * 40
+        self.namespace = {}
+        exec(compile(self.body, str(self.path), 'exec'), self.namespace)
+
+    def info(self, exception, function=None):
+        try:
+            (function or self.namespace['outer'])(exception)
+        except BaseException:
+            return self.ExceptionInfo.from_current()
+        self.fail('Synthetic exception was not raised')
+
+    def signature(self, category='KeyboardInterrupt'):
+        return {'schema_version': 1, 'hook': 'pytest_keyboard_interrupt',
+                'category': category, 'frames': [
+                    {'path': 'backend/tests/test_public.py', 'line': line,
+                     'source_sha256': hashlib.sha256(self.body.encode()).hexdigest()}
+                    for line in (2, 4)]}
+
+    def public(self):
+        public = object.__new__(self.reporter.PublicDefinitions)
+        public.source_paths = {'backend/tests/test_public.py'}
+        public.source_cache = {'backend/tests/test_public.py':
+            (hashlib.sha256(self.body.encode()).hexdigest(), len(self.body.splitlines()))}
+        return public
+
+    def fake_git(self, source, *args):
+        if args == ('rev-parse', 'HEAD'):
+            return self.commit + '\n'
+        if args[0] == 'ls-tree':
+            return 'backend/tests/test_public.py\0'
+        if args[0] == 'show' and args[1] == self.commit + ':backend/tests/test_public.py':
+            return self.body
+        self.fail('Unexpected synthetic Git protocol command')
+
+    def ledger(self):
+        (self.evidence / 'source-head.txt').write_text(self.commit)
+        (self.evidence / 'pytest-exit-code.txt').write_text('2')
+        self.rows('collected.json', {'nodeids': [NODE]})
+        self.rows('discovered.jsonl', [{'nodeid': NODE}])
+        self.rows('phases.jsonl', [{'nodeid': NODE, 'phase': 'setup',
+                                 'outcome': 'passed', 'duration_seconds': 0.1}])
+        self.rows('session.jsonl', [{'event': 'start'}, {'event': 'finish', 'exitstatus': 2}])
+        with contextlib.redirect_stdout(io.StringIO()) as stream:
+            self.assertEqual(self.observer.audit(self.evidence, 2), 2)
+        (self.evidence / 'coverage.json').write_text(stream.getvalue())
+
+    def rows(self, name, value):
+        text = json.dumps(value) if name.endswith('.json') else ''.join(
+            json.dumps(row) + '\n' for row in value)
+        (self.evidence / name).write_text(text)
+
+    def export(self, reporter=None):
+        reporter = reporter or self.reporter
+        with patch.object(reporter, 'git', side_effect=self.fake_git), \
+                patch.object(reporter, 'audit_evidence', side_effect=self.reporter.audit_evidence) \
+                if reporter is not self.reporter else contextlib.nullcontext():
+            stream = io.StringIO()
+            with contextlib.redirect_stdout(stream), contextlib.redirect_stderr(stream):
+                result = reporter.build_metadata(self.evidence, self.source)
+        self.assertNotIn(SECRET, stream.getvalue() + json.dumps(result))
+        return result
+
+    def test_exact_builtin_interrupt_records_only_two_public_frames(self):
+        self.observer.pytest_keyboard_interrupt(self.info(KeyboardInterrupt(SECRET)))
+        records = (self.evidence / 'interruption.jsonl').read_text().splitlines()
+        self.assertEqual(len(records), 1)
+        self.assertEqual(json.loads(records[0]), self.signature())
+        self.assertNotIn(SECRET, records[0])
+
+    def test_exact_pytest_types_and_other_never_export_dynamic_names(self):
+        from _pytest.main import Interrupted
+        from _pytest.outcomes import Exit
+        for kind, category in ((Interrupted, 'PytestInterrupted'), (Exit, 'PytestExit'),
+                               (type(SECRET, (KeyboardInterrupt,), {}), 'Other')):
+            with self.subTest(category=category):
+                actual = self.observer.interruption_signature(self.info(kind(SECRET)))
+                self.assertEqual(actual, self.signature(category))
+                self.assertNotIn(SECRET, json.dumps(actual))
+
+    def test_no_message_args_repr_or_environment_is_read(self):
+        class Hostile(KeyboardInterrupt):
+            def __str__(self):
+                raise AssertionError('message inspected')
+            def __repr__(self):
+                raise AssertionError('repr inspected')
+            def __getattribute__(self, name):
+                if name in {'args', 'msg'}:
+                    raise AssertionError('payload inspected')
+                return super().__getattribute__(name)
+        info = self.info(Hostile(SECRET))
+        with patch.dict(os.environ, {}, clear=True), patch.object(os, 'getenv', side_effect=AssertionError):
+            self.observer.pytest_keyboard_interrupt(info)
+        self.assertEqual(json.loads((self.evidence / 'interruption.jsonl').read_text()), self.signature('Other'))
+
+    def test_unknown_class_hash_or_equality_is_never_consulted(self):
+        class HostileMeta(type):
+            def __hash__(self):
+                raise AssertionError('class hash inspected')
+            def __eq__(self, other):
+                raise AssertionError('class equality inspected')
+        kind = HostileMeta(SECRET, (KeyboardInterrupt,), {})
+        info = self.info(kind(SECRET))
+        try:
+            actual = self.observer.interruption_signature(info)
+        except AssertionError:
+            actual = None
+        self.assertEqual(actual, self.signature('Other'))
+
+    def test_private_and_symlink_source_locations_are_not_exported(self):
+        outside = self.root / (SECRET + '.py')
+        outside.write_text('def private(exc):\n    raise exc\n')
+        alias = self.path.with_name('alias.py')
+        alias.symlink_to(outside)
+        for path in (outside, alias):
+            with self.subTest(alias=path == alias):
+                namespace = {}
+                exec(compile(outside.read_text(), str(path), 'exec'), namespace)
+                actual = self.observer.interruption_signature(self.info(KeyboardInterrupt(SECRET), namespace['private']))
+                self.assertEqual(actual['frames'], [])
+                self.assertNotIn(SECRET, json.dumps(actual))
+
+    def test_more_than_two_frames_retains_only_innermost_verified_two(self):
+        body = 'def first(exc):\n    return outer(exc)\n' + self.body
+        self.path.write_text(body)
+        namespace = {}
+        exec(compile(body, str(self.path), 'exec'), namespace)
+        actual = self.observer.interruption_signature(self.info(KeyboardInterrupt(SECRET), namespace['first']))
+        self.assertEqual([frame['line'] for frame in actual['frames']], [4, 6])
+
+    def test_overlong_native_traceback_is_bounded_and_not_called_innermost(self):
+        body = 'def recur(exc,n=280):\n    if n:\n        return recur(exc,n-1)\n    raise exc\n'
+        self.path.write_text(body)
+        namespace = {}
+        exec(compile(body, str(self.path), 'exec'), namespace)
+        actual = self.observer.interruption_signature(self.info(KeyboardInterrupt(SECRET), namespace['recur']))
+        self.assertEqual(actual['frames'], [])
+
+    def test_optional_writer_failure_cannot_disable_session_ledger(self):
+        original = Path.open
+        def opening(path, *args, **kwargs):
+            if path.name == 'interruption.jsonl':
+                raise OSError(SECRET)
+            return original(path, *args, **kwargs)
+        self.observer._degraded = False
+        stream = io.StringIO()
+        with patch.object(Path, 'open', opening), contextlib.redirect_stdout(stream), contextlib.redirect_stderr(stream):
+            self.observer.pytest_keyboard_interrupt(self.info(KeyboardInterrupt(SECRET)))
+            self.observer.pytest_sessionstart(None)
+            self.observer.pytest_sessionfinish(None, 2)
+        self.assertFalse(self.observer._degraded)
+        self.assertEqual(stream.getvalue(), '')
+        self.assertEqual([json.loads(line) for line in (self.evidence / 'session.jsonl').read_text().splitlines()],
+                         [{'event': 'start'}, {'event': 'finish', 'exitstatus': 2}])
+
+    def test_strict_validator_uses_existing_committed_frame_contract(self):
+        self.assertEqual(self.public().interruption_diagnostic(self.signature()), self.signature())
+
+    def test_invalid_shape_category_schema_frames_or_hash_are_rejected_whole(self):
+        changes = [None, [], {**self.signature(), 'message': SECRET},
+                   {**self.signature(), 'category': SECRET},
+                   {**self.signature(), 'schema_version': True},
+                   {**self.signature(), 'schema_version': 2},
+                   {**self.signature(), 'hook': SECRET},
+                   {**self.signature(), 'frames': self.signature()['frames'] * 2}]
+        for update in ({'line': True}, {'line': 0}, {'line': 9999},
+                       {'path': '/private/' + SECRET}, {'source_sha256': '0' * 64},
+                       {'locals': SECRET}):
+            row = self.signature()
+            row['frames'][0].update(update)
+            changes.append(row)
+        for row in changes:
+            with self.subTest(shape=type(row).__name__):
+                self.assertIsNone(self.public().interruption_diagnostic(row))
+
+    def test_absent_record_is_exact_legacy_projection(self):
+        self.ledger()
+        baseline = self.export()
+        with patch.object(self.reporter, 'interruption_fields', return_value={}):
+            self.assertEqual(baseline, self.export())
+
+    def test_optional_record_keeps_original_exit_coverage_and_failure_projection(self):
+        self.ledger()
+        baseline = self.export()
+        self.rows('interruption.jsonl', [self.signature()])
+        document, status = self.export()
+        self.assertEqual(document.pop('interruption'), self.signature())
+        self.assertEqual((document, status), baseline)
+        self.assertEqual(status, 2)
+        self.assertFalse(document['coverage']['all_collected_completed'])
+
+    def test_duplicate_malformed_or_unverified_optional_record_never_selects_winner(self):
+        self.ledger()
+        baseline = self.export()
+        for text in ('not-json\n', json.dumps(self.signature()) + '\n' + json.dumps(self.signature()) + '\n',
+                     json.dumps({**self.signature(), 'message': SECRET}) + '\n'):
+            with self.subTest(ambiguous='not-json' not in text):
+                (self.evidence / 'interruption.jsonl').write_text(text)
+                document, status = self.export()
+                self.assertEqual(document.pop('interruption_diagnostics_status'), 'degraded')
+                self.assertEqual((document, status), baseline)
+
+    def test_symlink_optional_record_is_degraded_without_following_payload(self):
+        self.ledger()
+        payload = self.root / (SECRET + '.json')
+        payload.write_text(SECRET)
+        (self.evidence / 'interruption.jsonl').symlink_to(payload)
+        document, status = self.export()
+        self.assertEqual(document['interruption_diagnostics_status'], 'degraded')
+        self.assertEqual(status, 2)
+        self.assertNotIn(SECRET, json.dumps(document))
+
+
 if __name__ == '__main__':
     unittest.main()
