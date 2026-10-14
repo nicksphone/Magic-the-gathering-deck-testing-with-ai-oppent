@@ -4320,9 +4320,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_kicker_goldens.py": {
-    "mtime": 1791667790.1809275,
-    "seen": 1791671014.2847896,
-    "ast_hash": "2ed26f7e8d16d14d520145a0e89de6d0",
+    "mtime": 1791960667.0059702,
+    "seen": 1791960791.5486517,
+    "ast_hash": "b66159a481d79f1bd7e39ba029df634b",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_engine_coverage.py": {
@@ -8484,9 +8484,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_private_choice_intent_boundary.py": {
-    "mtime": 1791667790.221927,
-    "seen": 1791671014.2850707,
-    "ast_hash": "d06f7a16787b25c4803499535813dc9d",
+    "mtime": 1791960667.0059702,
+    "seen": 1791960791.5490406,
+    "ast_hash": "bb6cbb9fe44665b370cb72abeb86bdd8",
     "semantic_hash": ""
   },
   "backend/tests/test_training_foretell_intent_audit.py": {
@@ -13914,9 +13914,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_archangel_pair_http_goldens.py": {
-    "mtime": 1791667790.1089284,
-    "seen": 1791671014.2843106,
-    "ast_hash": "5ab367362e0ea5a32d83feabcd7ccd7a",
+    "mtime": 1791960667.0059702,
+    "seen": 1791960791.5480585,
+    "ast_hash": "6a1ec5dfd95e9291f46971c3f0d87811",
     "semantic_hash": ""
   },
   "docs/testing/archangel-mixed-http-sql-current.md": {
@@ -13962,9 +13962,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_brainstorm_http_ordering_goldens.py": {
-    "mtime": 1791667790.1129284,
-    "seen": 1791671014.2843506,
-    "ast_hash": "abaa199949100323316267349bdce9e7",
+    "mtime": 1791959086.7971828,
+    "seen": 1791960791.548112,
+    "ast_hash": "1ff2f53496542c76a2d9d9f71d7dbbba",
     "semantic_hash": ""
   },
   "backend/tests/test_brainstorm_public_projection_goldens.py": {
@@ -18477,6 +18477,36 @@
     "mtime": 1791958168.7413328,
     "seen": 1791958281.9826665,
     "ast_hash": "df1610fa4ef82ae68aa2f3c89f816620",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_brainstorm_fixture_adoption.py": {
+    "mtime": 1791959086.7981827,
+    "seen": 1791960791.5481093,
+    "ast_hash": "45714f0dc5bec810722612db72a86301",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_http_sibling_fixture_identity.py": {
+    "mtime": 1791960667.0059702,
+    "seen": 1791960791.5485566,
+    "ast_hash": "5cc79e277cbb4aa0178b40e6ee58d8ca",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-calibration-advice-controlled-pilot.md": {
+    "mtime": 1791959622.3645165,
+    "seen": 1791960791.5502768,
+    "ast_hash": "f5d8766b53c45fda7a8feb6b4403ba71",
+    "semantic_hash": ""
+  },
+  "docs/testing/brainstorm-fixture-adoption.md": {
+    "mtime": 1791959086.7981827,
+    "seen": 1791960791.550414,
+    "ast_hash": "202652ca99daa75495cf0b9e2a6da566",
+    "semantic_hash": ""
+  },
+  "docs/testing/http-sibling-fixture-identity.md": {
+    "mtime": 1791960667.0059702,
+    "seen": 1791960791.550805,
+    "ast_hash": "a54f2b6144be5f72d371acd1e5aa795e",
     "semantic_hash": ""
   }
 }

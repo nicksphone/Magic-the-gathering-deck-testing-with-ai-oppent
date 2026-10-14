@@ -13,6 +13,7 @@ from training.environment import TrainingEnvironment
 from tests.test_activated_top_selection import position as officer_position, activate, resolve_activation, card
 from tests.test_optional_reveal_transform import pending as delver_pending
 from tests.test_api_input_contracts import game, persist, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 
 
 @pytest.fixture(autouse=True)
@@ -174,9 +175,7 @@ def test_bad_alias_or_null_rejects_before_completion_helper(family, seat, extra,
 def test_raw_http_strict_action_wrong_actor_and_database_root(family, seat, decline, game):
     client, controller = game
     state, inspected, _ = position(family, seat)
-    state.id = controller.state.id
-    controller.state = state
-    persist(controller)
+    adopt_fixture_state(controller, state)
     endpoint = f'/matches/{state.id}/action'
     action = selected(state, family, decline)
     before = snapshot(controller)
@@ -197,9 +196,7 @@ def test_raw_http_strict_action_wrong_actor_and_database_root(family, seat, decl
 def test_raw_http_bad_alias_null_never_reaches_engine(family, seat, extra, game, monkeypatch):
     client, controller = game
     state, _, _ = position(family, seat)
-    state.id = controller.state.id
-    controller.state = state
-    persist(controller)
+    adopt_fixture_state(controller, state)
     before = snapshot(controller)
     calls = []
     original = RulesEngine.take_action

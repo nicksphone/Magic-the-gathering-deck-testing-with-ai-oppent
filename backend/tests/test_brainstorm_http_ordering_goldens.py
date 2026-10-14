@@ -17,6 +17,7 @@ from persistence.db import engine
 from persistence.repository import Repository
 from rules_engine.targeting import stack_object_kind
 from tests.test_api_input_contracts import game, persist, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 from tests import pending_source_privacy_support as causal
 import test_brainstorm_desired as brain
 
@@ -65,9 +66,7 @@ def restore(mid):
 
 
 def install_position(controller, state):
-    state.id = controller.state.id
-    controller.state = state
-    persist(controller)
+    adopt_fixture_state(controller, state)
     return state.id
 
 

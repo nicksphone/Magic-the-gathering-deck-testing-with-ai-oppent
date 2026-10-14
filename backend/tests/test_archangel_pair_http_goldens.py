@@ -7,6 +7,7 @@ from game_state.state import Zone
 from persistence.db import engine
 from persistence.repository import Repository
 from tests.test_api_input_contracts import game, persist, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 from tests.test_archangel_pair_paid_desired import CHOICES, ROWS, setup, g
 
 
@@ -62,10 +63,8 @@ def reach(client, mid, seat, predicate):
 
 def position(controller, seat):
     state, source = setup(seat)
-    state.id = controller.state.id
     state.players[seat].mana_pool = {'C': 2, 'W': 2, 'B': 1, 'R': 1}
-    controller.state = state
-    persist(controller)
+    adopt_fixture_state(controller, state)
     return state.id, source
 
 
