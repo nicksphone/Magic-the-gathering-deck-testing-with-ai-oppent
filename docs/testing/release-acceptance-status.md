@@ -1,5 +1,13 @@
 # Release Acceptance Status
 
+## Focused Native Firefox Checkpoint
+
+The sealed `8c44f0f7` packet passes actual Firefox 158 trusted input, native PNGs
+and registered owned-stop closure, with unchanged source/runtime pins and no
+new sandbox flags. This is a focused native milestone, not the full 45-stage,
+68-program browser suite or release acceptance. See
+[the actual execution and remaining boundaries](firefox-native-ui-input.md).
+
 ## Firefox Native Gesture Component
 
 The explicit Firefox keyboard/pointer interface passes the two-module,

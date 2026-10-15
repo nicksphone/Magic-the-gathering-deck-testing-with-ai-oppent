@@ -51,3 +51,25 @@ with all eight source/test hashes unchanged before and after. These are
 inert-wire/code-level controls, not native-browser execution.
 Full Firefox application, launcher, child/profile, mobile/media and ancestry
 requirements remain open; this component does not complete Phase 1 or release.
+
+## Bounded Native Execution: October 15
+
+The separate sealed `8c44f0f7` packet now passes genuine Firefox 158 execution:
+14 trusted keyboard/pointer events, two activations, fractional click coordinates
+and both native viewport/document PNGs. Saved image bytes pass independent PNG
+validation and match the recorded hashes. Source/runtime pins remain equal.
+
+The actual registered browser exits from the requested SIGTERM, not a fabricated
+zero exit code. The private stop receipt binds its PID, start time, process group
+and executable before signaling and checks the real exit event afterward. Earlier
+failures caused by owner-domain checking and the incorrect zero-exit assertion
+remain separate; they are not retroactively passes. All observed owned groups
+end, profile handles clear and owned ports can be rebound. The fixed global native
+lease remains held through external closure proof; no sandbox flag is added.
+
+Private verified evidence is the NFS archive
+`firefox158-owned-stop-success-20261015-OA39se.tar.gz`, SHA256
+`2b9cf3dddaacfbb8612ac359ad41f030d4cd8ccc65a0ec203924b574d6b6f87e`.
+This packet is not the unchanged 45-stage/68-program browser gate, application
+interception, mobile/media behavior, response-body enrollment or resolution of
+the historical ancestry hold. Those acceptance requirements remain open.

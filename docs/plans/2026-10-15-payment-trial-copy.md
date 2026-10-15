@@ -113,6 +113,30 @@ first closure command returned `fuser` usage because this binary rejects `--`;
 that invocation and the actual corrected scan are preserved separately.
 
 The natural-game call passes in 317.431 seconds; this is not a matched timing
-comparison. Native series 55 has not been rerun on this follow-up, and its
-original deadline acceptance remains open. No resource caps, search branches,
-payment plans, decisions, seeds, weights or winners are changed.
+comparison. No resource caps, search branches, payment plans, decisions, seeds,
+weights or winners are changed.
+
+## Native Follow-Up: Deadline Still Open
+
+The subsequent exact `60b26ec1ef2218c1ce659727dec2f65ea13b6052` native run
+also ends with resource exit 3. Game 1 matches the complete retained reference:
+winner 2, starting player 1, 421 ticks, turn 14 and log hash
+`d998349bc2b41818023c3c02e5c23fbe710eaa5ea4d4a0e7791127ec1dc60ab8`.
+It takes 108.47 seconds. Game 2 again reaches 269 ticks, turn 9, with log hash
+`f82248ad0dc6a9fd669d9b4ec4d8eb2877f74ebe865e809e08a99d69a6bbaac3`,
+then hits the unchanged shared deadline without a winner. Its 511.70 seconds
+are not a fresh per-game budget. The complete series takes 620.37 seconds
+wall time and 618.60 seconds CPU; the deadline is cooperative.
+
+The once-only host supervisor retains the fixed native-exclusive lease through
+post-run source/runtime verification, owned process-group closure and a direct
+check of all six output files. Source and dependencies match, all owned process
+groups end, SQL closes, and there are no writers, threads or policy denials.
+Clean closure is not a passing matchup. No material native speed improvement or
+deadline closure is established, and 109 other series are outside this run.
+Independent comparison finds all 623 Game-2 log entries and all 269 complete
+AI traces identical to `7e81e30e`, without exclusions. Private closed-root
+evidence is archived under
+`diagnostics/ci/native-series55-60b26-20261015-xmm5dzqr/` on NFS.
+Further diagnosis needs a genuine late-game chooser profile: the older compact
+action traces omit selected-choice IDs and cannot support guessed replay.
