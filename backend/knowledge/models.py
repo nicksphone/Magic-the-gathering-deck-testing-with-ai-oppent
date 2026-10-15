@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from typing import Literal, Optional
 
+from pydantic import field_validator
 from sqlalchemy import String
 from sqlmodel import Field, SQLModel
 
@@ -27,3 +29,17 @@ class CardKnowledge(SQLModel, table=True):
     etb_impact: Optional[float] = None
     profiles_json: str = "{}"
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    @field_validator("answerable_by_json", "cast_windows_json")
+    @classmethod
+    def validate_string_list_json(cls, value: str) -> str:
+        decoded = json.loads(value)
+        if not isinstance(decoded, list) or any(not isinstance(item, str) for item in decoded):
+            raise ValueError("Expected a JSON list of strings")
+        return value
+
+    @field_validator("profiles_json")
+    @classmethod
+    def validate_profiles_json(cls, value: str) -> str:
+        json.loads(value)
+        return value

@@ -106,6 +106,15 @@ an actual legacy-copy sync, not selection or migration of the live deployment.
 
 ## Closure Work
 
+The subsequent [decoded JSON-field correction](knowledge-json-field-contract.md)
+closes another reproduced Task 1.1 gap: declaring encoded fields as strings did
+not enforce their specified decoded `list[str]` contents. It preserves encoded
+text, arbitrary valid profile JSON and legacy reads, without changing SQLite
+DDL or the Unicode repository behavior. Its final parent composition passes
+899 ordinary cases in 29 whole modules, retains all preceding 645 test
+identities, and separately passes the exact-model real copied-data repeat.
+Whole final-source hosted acceptance remains distinct from these results.
+
 The subsequent [Unicode name-identity correction](knowledge-unicode-name-identity.md)
 addresses an actual Task 1.1 defect: SQLite `lower()` was not equivalent to
 Python casefolding, causing accented-name upsert and lookup failures. The
