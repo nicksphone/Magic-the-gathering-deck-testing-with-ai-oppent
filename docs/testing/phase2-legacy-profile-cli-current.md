@@ -63,8 +63,12 @@ or verified archetype. The output contains heuristic estimates, not learned
 matchup evidence, measured playing strength or rules-support certification.
 This copy does not authorize promotion into the operator's live database.
 
-One pre-existing cache/knowledge surface discrepancy remains unchanged and is
-not profiler input. Its correctness for hydration is not certified here.
+One pre-existing cache/knowledge surface discrepancy remains unchanged in this
+historical qualification and is not profiler input. A later, separately qualified
+[canonical cache-rule recovery](canonical-cache-rule-recovery.md#original-cli-on-the-physical-legacy-copy)
+repairs the same owned copy on corrected source while preserving every knowledge
+row and profile, then repeats with zero changes. That does not retroactively
+change this earlier source, result or final hash.
 Known generated tactical structures are replaced as units; this initial
 namespace-absent run does not certify preservation of extensions inside an
 already populated known structure.

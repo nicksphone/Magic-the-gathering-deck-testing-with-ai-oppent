@@ -7,6 +7,15 @@ and completeness of a particular operator's stored decks are different claims.
 
 ## Observed Integrated Evidence
 
+The subsequent exact [`7d2d77bd` whole hosted run](current-7d-complete-ci.md)
+succeeds: 29,130 passed calls and 82 setup skips across 29,212 unique nodes,
+plus 111 separately counted passing subtests. All retained 899 component
+identities pass all three phases. This closes hosted acceptance of the Task 1.2
+fuzzy-request/spacing correction and shared copier on that source. The newer
+[canonical cache-rule recovery](canonical-cache-rule-recovery.md) has a distinct
+603-case local pass and actual two-pass copied-data repair; its own whole hosted
+result remains separate. Neither result resolves the literal test-data scope.
+
 The subsequent exact `b443db8a` workflow is terminal success. Independent
 sanitized metadata reconciliation verifies 29,150 unique nodes: 29,068 passed
 calls and 82 setup skips, with 111 passing subtest reports counted separately.
@@ -81,7 +90,7 @@ Private immutable metadata evidence is under the project's NFS archive:
 | Task | Established | Remaining Evidence Or Scope Limits |
 | --- | --- | --- |
 | 1.1: Knowledge model | Fields, repository roundtrip, upsert and queries are implemented and tested. The subsequent domain correction declares the two provenance values and numerical bounds, and validates public repository writes before querying or mutating rows. | SQLite storage is unchanged; this is not DB CHECK enforcement or validation of direct ORM/SQL bypasses. Legacy rows remain readable without rewrite. Historical test-first commit chronology has not been reconstructed. |
-| 1.2: Corpus sync | Real repository ingestion of the complete official shipped corpus, persisted rulings, error accumulation and idempotent CLI behavior are tested. Stored mainboard and sideboard names participate. Missing-cache recovery and later model/repository components are hosted-qualified on their exact sources, including the retained 899-case joins. An actual network sync of the legacy copy qualifies all 158 requested names. | The old failed ledger is preserved; corrected `b443` succeeds in whole CI. The later protocol correction still needs its hosted result. Copied-data qualification does not select a live deployment or authorize migration. |
+| 1.2: Corpus sync | Real repository ingestion of the complete official shipped corpus, persisted rulings, error accumulation and idempotent CLI behavior are tested. Stored mainboard and sideboard names participate. Missing-cache recovery and later model/repository components are hosted-qualified on their exact sources, including the retained 899-case joins. An actual network sync of the legacy copy qualifies all 158 requested names. The subsequent `7d` whole CI qualifies fuzzy lookup and request spacing; corrected cache recovery also repairs 78 copied-data rows and repeats with zero changes. | The newer cache correction still needs its own whole hosted result. Copied-data qualification does not select a live deployment or authorize migration. |
 | 1.3: Verified offline seed | The production handwritten fallback module is removed; committed official seed data supports tested offline hydration. | The literal requirement of no handwritten Oracle text anywhere in the repository is not met by test fixtures and rule-generated token descriptions. Offline hydration evidence alone is not a deployment-startup certificate. |
 | 1.4: Completeness command | The actual CLI succeeds for the default 149-name corpus. An owned stored-deck mainboard/sideboard expands it to 151 names. The separate real legacy-copy run covers 158 names, rejects pending rulings before sync, then passes with zero-request unchanged repetition. | This is not arbitrary deployment data. CLI success does not itself require every display-cache row, nonblank Oracle text or a local image; the legacy-copy report separately verifies its cache/Oracle fields, but not local images. |
 
@@ -122,8 +131,9 @@ This is two-name protocol evidence, not another full-corpus or live-data run.
 The first attempt stopped before test execution because pytest scanned the
 operator's home directory. Its separate failed ledger is preserved; fixing only
 the runner's working directory produced the meaningful RED and GREEN above.
-Final hosted acceptance and the literal handwritten-test-data scope question
-remain open. This correction does not itself sign off Phase 1.
+Final hosted acceptance for this protocol correction is subsequently established
+by the exact `7d` result above. The literal handwritten-test-data scope question
+remains open; this correction does not itself sign off Phase 1.
 
 ## Named-Card Fixture Follow-Up
 
@@ -228,8 +238,9 @@ silently substituted for whole-current-source acceptance.
    `2d106588` hosted proof for all 899 later component cases. The five historical
    guards are corrected and locally requalified in the 108-case whole-module
    cohort; the subsequent exact `b443db8a` whole workflow now succeeds. The later
-   Task 1.2 changes still need their own hosted result. Do not label the preceding
-   failed whole run a pass.
+   Task 1.2 changes subsequently pass whole hosted CI on exact `7d`; retain that
+   source boundary and separately review the later cache correction's result.
+   Do not label the preceding failed whole run a pass.
 3. Resolve the remaining literal specification differences explicitly before
    marking Phase 1 complete. Browser compatibility work does not close them.
 
