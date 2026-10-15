@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { openBrowser, waitForApiState } from './browser-driver.mjs';
-import { traceStartRecoveryResponses } from './browser-start-recovery-diagnostics.mjs';
+import { continueRequestForPostResponse, traceStartRecoveryResponses } from './browser-start-recovery-diagnostics.mjs';
 const api=process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
 const ui=process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15174';
 assert.ok(process.env.MTG_BROWSER_ORIGIN,'Set owned Chromium endpoint');
@@ -41,11 +41,12 @@ try {
  console.log('PASS v2 AI priority: human viewpoint remains P1, AI hand/actions hidden');
  const s=await setup('/fixture');let held,continueHeld;
  b.onIntercept(traceStartRecoveryResponses(b.command, async (e,command)=>{
+  if(await continueRequestForPostResponse(command,e))return;
   if(e.request.method!=='POST'){await command('Fetch.continueResponse',{requestId:e.requestId});return;}
   held=e;
   continueHeld=()=>command('Fetch.continueResponse',{requestId:e.requestId});
  }, ui, value=>console.error('V2_HELD_RESPONSE_TRACE',JSON.stringify(value))));
- await b.command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Response'}]});
+ await b.command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Request'}]});
  await b.click('Play Land Forest');
  await b.waitFor("document.body.innerText.includes('Match operation pending')");
  assert.equal(await b.evaluate("[...document.querySelectorAll('#table fieldset,#match-controls fieldset')].every(e=>e.disabled)"),true);

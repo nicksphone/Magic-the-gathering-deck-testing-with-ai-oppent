@@ -3,7 +3,15 @@ const resources = new Set(['Preflight', 'Fetch', 'XHR', 'Other']);
 const errors = new Set(['Failed', 'Aborted', 'TimedOut', 'AccessDenied', 'ConnectionClosed',
   'ConnectionReset', 'ConnectionRefused', 'ConnectionAborted', 'ConnectionFailed',
   'NameNotResolved', 'InternetDisconnected', 'AddressUnreachable', 'BlockedByClient', 'BlockedByResponse']);
-const commands = new Set(['Network.getRequestPostData', 'Fetch.continueResponse', 'Fetch.failRequest']);
+const commands = new Set(['Network.getRequestPostData', 'Fetch.continueRequest', 'Fetch.continueResponse', 'Fetch.failRequest']);
+
+export async function continueRequestForPostResponse(command, event) {
+  if (event.responseStatusCode !== undefined || event.responseErrorReason !== undefined) return false;
+  if (!methods.has(event.request.method)) throw new Error('Only POST or OPTIONS requests may enter POST-response capture');
+  // Leave genuine preflight untouched; only POST opts into the later response pause.
+  await command('Fetch.continueRequest', {requestId: event.requestId, interceptResponse: event.request.method === 'POST'});
+  return true;
+}
 
 function cors(headers, frontend) {
   if (!Array.isArray(headers) || headers.length > 128) return {allowOrigin: 'unavailable', contentTypeAllowed: null, idempotencyKeyAllowed: null};

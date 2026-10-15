@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
+import * as diagnostics from './browser-start-recovery-diagnostics.mjs';
 
 const source = await readFile(new URL('./browser-ui-v2.mjs', import.meta.url), 'utf8');
 const oldStart = source.indexOf("s=await setup('/fixture');let dropped=false;");
@@ -20,11 +21,14 @@ const deferred = () => {
 };
 async function flush() { for (let i=0; i<12; i++) await Promise.resolve(); }
 function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = false, lateReady = false,
-  continueError, holdContinue = false, uiReadError, holdUiRead = false, logError,
+  continueError, holdContinue = false, requestError, holdRequest = false, holdStateRead = false, holdDisable = false, uiReadError, holdUiRead = false, logError,
   storedId = 'new-fixture', renderedId = 'new-fixture', alertText = '', pending = false,
   restoring = false } = {}) {
-  const events = [], tasks = [], logs = [], state = { id: 'new-fixture', revision: 0 };
+  const events = [], tasks = [], logs = [], calls = [], state = { id: 'new-fixture', revision: 0 };
   const fail = deferred(), ui = deferred(), continuation = deferred(), uiRead = deferred();
+  const stateRead = deferred();
+  const disable = deferred();
+  const requestAcks = [];
   let intercept, enabled = false;
   let now = 0, sequence = 0; const timers = new Map();
   const timeout = new Error('Current accepted response was not dropped');
@@ -32,8 +36,16 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
     onIntercept(fn) { intercept = fn; },
     async command(method, params) {
       events.push(method);
+      calls.push([method, params]);
+      if (method === 'Fetch.continueRequest') {
+        if (holdRequest) {const ack=deferred();requestAcks.push(ack);await ack.promise;}
+        if (requestError) throw requestError;
+      }
       if (method === 'Fetch.enable') enabled = true;
-      if (method === 'Fetch.disable') enabled = false;
+      if (method === 'Fetch.disable') {
+        if (holdDisable) await disable.promise;
+        enabled = false;
+      }
       if (method === 'Fetch.continueResponse') {
         if (holdContinue) await continuation.promise;
         if (continueError) throw continueError;
@@ -57,6 +69,7 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
     }
   }
   const context = {
+    continueRequestForPostResponse: diagnostics.continueRequestForPostResponse,
     assert, b: browser, api:'http://fixture.invalid', origin:'http://ui.invalid',
     console:{error(...args) { if (logError) throw logError; logs.push(args); }},
     command: browser.command.bind(browser),
@@ -91,7 +104,11 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
         if (lateReady) now=15100; // Real driver may return a late evaluate result.
       } // OLD generic alert is already present, so its wait completes immediately.
     },
-    fetch: async () => ({json:async()=>state}), shot:async()=>{},
+    fetch: async () => ({json:async()=>{
+      events.push('canonical-state-read');
+      if (holdStateRead) await stateRead.promise;
+      return state;
+    }}), shot:async()=>{},
     Date:{now:()=>now},
     setTimeout: (fn, ms) => { assert.ok(ms>0 && ms<=15000); const id=++sequence; timers.set(id,{fn,ms}); return id; },
     clearTimeout: id => {timers.delete(id);},
@@ -101,7 +118,7 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   const promise = fn(state).finally(()=>{completed=true;});
   // Consume rejection during deferred probes without changing its eventual value.
   promise.catch(()=>{});
-  return {events, state, promise, fail, ui, continuation, uiRead, deliver, tasks, logs,
+  return {events, state, promise, fail, ui, continuation, uiRead, stateRead, disable, requestAcks, deliver, tasks, logs, calls,
     pause: event => intercept(event),
     completed:()=>completed, advance:ms=>{now=ms;},
     timeout:()=>{now=15000;for (const {fn,ms} of [...timers.values()]) if (ms===15000) fn();},
@@ -276,4 +293,271 @@ test('diagnostic logger failure cannot mask the original error or skip cleanup',
 test('successful response drop does not read diagnostic UI or emit diagnostics', async () => {
   const p=protocol(); p.fail.resolve(); await p.promise;
   assert.ok(!p.events.includes('diagnostic-ui')); assert.equal(p.logs.length,0);
+});
+
+function pausedRequest(method) {
+  const input = pausedResponse({method});
+  delete input.responseStatusCode;
+  input.resourceType = 'XHR';
+  return input;
+}
+
+for (const method of ['OPTIONS', 'POST']) {
+  test(`${method} request cannot satisfy the current accepted POST response drop`, async () => {
+    const p = protocol({lateEvent:true}); await flush();
+    await p.pause(pausedRequest(method));
+    assert.equal(p.completed(), false);
+    assert.ok(!p.events.includes('Fetch.failRequest'));
+    assert.ok(!p.events.includes('Fetch.continueResponse'));
+    assert.deepEqual(JSON.parse(JSON.stringify(p.calls.filter(([name]) => name === 'Fetch.continueRequest'))),
+      [['Fetch.continueRequest', {requestId: privateMarker, interceptResponse: method === 'POST'}]]);
+    p.deliver(); p.fail.resolve(); await p.promise;
+    assert.equal(p.events.filter(name => name === 'Fetch.failRequest').length, 1);
+    assert.equal(p.logs.length, 0);
+  });
+}
+
+for (const method of ['OPTIONS', 'POST']) {
+  test(`${method} request continuation error rejects the original drop promise with bounded diagnostics`, async () => {
+    const error = new Error(JSON.stringify({code:-32602,message:privateMarker}));
+    const p = protocol({lateEvent:true,requestError:error}); await flush();
+    await p.pause(pausedRequest(method));
+    await flush(); if (!p.completed()) p.timeout();
+    await assert.rejects(p.promise, actual => actual === error);
+    const report = trace(p);
+    assert.equal(report.postResponseObserved, false);
+    assert.equal(report.dropped, false);
+    assert.deepEqual(report.responses, []);
+    assert.ok(p.events.includes('Fetch.disable'));
+    assert.ok(!p.events.includes('Fetch.failRequest'));
+  });
+}
+
+test('unexpected request method rejects the drop promise without silent bypass or unhandled callback rejection', async () => {
+  const p = protocol({lateEvent:true}); await flush();
+  await p.pause(pausedRequest('GET'));
+  await flush(); if (!p.completed()) p.timeout();
+  await assert.rejects(p.promise);
+  assert.ok(!p.events.includes('Fetch.continueRequest'));
+  assert.ok(!p.events.includes('Fetch.continueResponse'));
+  assert.equal(trace(p).postResponseObserved, false);
+  assert.ok(p.events.includes('Fetch.disable'));
+});
+
+test('request-only timeout retains no fake POST response or request-phase response trace', async () => {
+  const p = protocol({lateEvent:true}); await flush();
+  await p.pause(pausedRequest('OPTIONS'));
+  await p.pause(pausedRequest('POST'));
+  p.timeout(); await assert.rejects(p.promise, /drop timed out/);
+  const report = trace(p);
+  assert.equal(report.postResponseObserved, false);
+  assert.equal(report.dropped, false);
+  assert.deepEqual(report.responses, []);
+});
+
+test('actual drop enable captures request stage at the same exact action endpoint', async () => {
+  const p = protocol(); p.fail.resolve(); await p.promise;
+  assert.deepEqual(JSON.parse(JSON.stringify(p.calls.find(([name]) => name === 'Fetch.enable'))),
+    ['Fetch.enable', {patterns:[{urlPattern:'http://fixture.invalid/matches/new-fixture/action',requestStage:'Request'}]}]);
+});
+
+for (const method of ['OPTIONS', 'POST']) {
+  for (const stage of ['UI readiness', 'canonical state read']) {
+    test(`post-ACK ${method} request failure rejects during pending ${stage} instead of returning revision 1`, async () => {
+      const error = new Error(JSON.stringify({code:-32602,message:privateMarker}));
+      const p = protocol({requestError:error,lateUi:stage==='UI readiness',holdStateRead:stage==='canonical state read'});
+      p.fail.resolve(); await flush(); await flush();
+      assert.ok(p.events.includes('drop-fulfilled'));
+      assert.ok(p.events.includes(stage==='UI readiness'?'ui-wait':'canonical-state-read'));
+      assert.equal(p.completed(),false);
+      await p.pause(pausedRequest(method)); await flush(); await flush();
+      const failedBeforeRelease = p.completed();
+      p.ui.resolve(); p.stateRead.resolve();
+      await assert.rejects(p.promise, actual => actual === error);
+      assert.equal(failedBeforeRelease,true,'A native failure must reject without waiting for reconciliation readiness');
+      const report = trace(p);
+      assert.equal(report.dropped,true);
+      assert.equal(report.postResponseObserved,true);
+      assert.deepEqual(report.responses,[{method:'POST',status:200,current:true,command:'drop',continuation:'ack',errorCode:null}]);
+      assert.equal(p.events.filter(name=>name==='click').length,1);
+      assert.equal(p.events.filter(name=>name==='Fetch.failRequest').length,1);
+      assert.ok(p.events.includes('Fetch.disable'));
+      assert.ok(!p.events.some(name=>name.startsWith('callback-error:')));
+    });
+  }
+}
+
+test('post-ACK response continuation failure also rejects reconciliation with its original native error', async () => {
+  const error = new Error(JSON.stringify({code:-32602,message:privateMarker}));
+  const p = protocol({lateUi:true,continueError:error});
+  p.fail.resolve(); await flush();
+  assert.ok(p.events.includes('drop-fulfilled'));
+  assert.ok(p.events.includes('ui-wait'));
+  await p.pause(pausedResponse()); await flush(); await flush();
+  const failedBeforeRelease = p.completed();
+  p.ui.resolve();
+  await assert.rejects(p.promise, actual => actual === error);
+  assert.equal(failedBeforeRelease,true);
+  const report = trace(p);
+  assert.equal(report.dropped,true);
+  assert.equal(report.responses[1].continuation,'error');
+  assert.equal(report.responses[1].errorCode,-32602);
+  assert.ok(p.events.includes('Fetch.disable'));
+});
+
+test('post-ACK unexpected request method cannot be swallowed by the settled drop promise', async () => {
+  const p = protocol({lateUi:true});
+  p.fail.resolve(); await flush();
+  assert.ok(p.events.includes('drop-fulfilled'));
+  assert.ok(p.events.includes('ui-wait'));
+  await p.pause(pausedRequest('GET')); await flush(); await flush();
+  const failedBeforeRelease = p.completed();
+  p.ui.resolve();
+  await assert.rejects(p.promise);
+  assert.equal(failedBeforeRelease,true);
+  assert.equal(trace(p).dropped,true);
+  assert.ok(!p.events.includes('Fetch.continueRequest'));
+  assert.ok(p.events.includes('Fetch.disable'));
+});
+
+test('successful post-ACK request continuation still permits the same reconciled revision without replay', async () => {
+  const p = protocol({lateUi:true});
+  p.fail.resolve(); await flush();
+  assert.ok(p.events.includes('drop-fulfilled'));
+  await p.pause(pausedRequest('POST'));
+  assert.equal(p.completed(),false);
+  p.ui.resolve();
+  assert.equal((await p.promise).revision,1);
+  assert.equal(p.logs.length,0);
+  assert.equal(p.events.filter(name=>name==='click').length,1);
+  assert.equal(p.events.filter(name=>name==='Fetch.failRequest').length,1);
+  assert.ok(p.events.includes('Fetch.disable'));
+});
+
+test('post-ACK request failure during disable acknowledgment cannot bypass the final success check', async () => {
+  const error = new Error(JSON.stringify({code:-32602,message:privateMarker}));
+  const p = protocol({holdDisable:true,requestError:error});
+  p.fail.resolve(); await flush(); await flush();
+  assert.ok(p.events.includes('drop-fulfilled'));
+  assert.ok(p.events.includes('canonical-state-read'));
+  assert.ok(p.events.includes('Fetch.disable'));
+  assert.equal(p.completed(),false);
+  await p.pause(pausedRequest('POST'));
+  p.disable.resolve();
+  await assert.rejects(p.promise, actual => actual === error);
+  assert.equal(trace(p).dropped,true);
+  assert.equal(p.events.filter(name=>name==='Fetch.disable').length,1);
+  assert.equal(p.events.filter(name=>name==='Fetch.failRequest').length,1);
+});
+
+for (const method of ['OPTIONS','POST']) for (const outcome of ['accepted','rejected']) {
+  test(`deferred ${method} continuation ${outcome} ACK must settle before recovery success`, async () => {
+    const error=new Error(JSON.stringify({code:-32602,message:privateMarker}));
+    const p=protocol({lateUi:true,holdRequest:true});
+    p.fail.resolve();await flush();
+    assert.ok(p.events.includes('drop-fulfilled'));
+    const paused=p.pause(pausedRequest(method));
+    assert.equal(p.requestAcks.length,1);
+    p.ui.resolve();await flush();await flush();
+    const completedBeforeAck=p.completed();
+    if(outcome==='rejected')p.requestAcks[0].reject(error);else p.requestAcks[0].resolve();
+    await paused;
+    if(outcome==='rejected') {
+      await assert.rejects(p.promise,actual=>actual===error);
+      assert.equal(trace(p).dropped,true);
+    }else {
+      assert.equal((await p.promise).revision,1);
+      assert.equal(p.logs.length,0);
+    }
+    assert.equal(completedBeforeAck,false,'Unsettled native continuation cannot be success evidence');
+    assert.equal(p.events.filter(name=>name==='Fetch.disable').length,1);
+    assert.equal(p.events.filter(name=>name==='Fetch.failRequest').length,1);
+  });
+}
+
+test('pending continuation expires on the original deadline without waiting for native ACK', async () => {
+  const p=protocol({lateUi:true,holdRequest:true});
+  p.fail.resolve();await flush();
+  const paused=p.pause(pausedRequest('POST'));
+  p.ui.resolve();await flush();await flush();
+  p.timeout();
+  await assert.rejects(p.promise,/timed out/);
+  assert.equal(trace(p).dropped,true);
+  assert.ok(p.events.includes('Fetch.disable'));
+  p.requestAcks[0].resolve();await paused;
+});
+
+test('late successful continuation ACK cannot pass an already expired shared deadline', async () => {
+  const p=protocol({lateUi:true,holdRequest:true});
+  p.fail.resolve();await flush();
+  const paused=p.pause(pausedRequest('POST'));
+  p.ui.resolve();await flush();await flush();
+  p.advance(15000);p.requestAcks[0].resolve();await paused;
+  await assert.rejects(p.promise,/timed out/);
+  assert.equal(trace(p).dropped,true);
+});
+
+test('continuation started during disable ACK is also drained before success', async () => {
+  const p=protocol({holdDisable:true,holdRequest:true});
+  p.fail.resolve();await flush();await flush();
+  assert.ok(p.events.includes('Fetch.disable'));
+  const error=new Error(JSON.stringify({code:-32602,message:privateMarker}));
+  const paused=p.pause(pausedRequest('POST'));
+  p.disable.resolve();await flush();await flush();
+  const completedBeforeAck=p.completed();
+  p.requestAcks[0].reject(error);await paused;
+  await assert.rejects(p.promise,actual=>actual===error);
+  assert.equal(completedBeforeAck,false);
+  assert.equal(trace(p).dropped,true);
+  assert.equal(p.events.filter(name=>name==='Fetch.disable').length,1);
+});
+
+test('draining continuations includes callbacks registered after the first drain snapshot', async () => {
+  const p=protocol({lateUi:true,holdRequest:true});
+  p.fail.resolve();await flush();
+  const first=p.pause(pausedRequest('OPTIONS'));
+  p.ui.resolve();await flush();await flush();
+  const second=p.pause(pausedRequest('POST'));
+  p.requestAcks[0].resolve();await first;await flush();await flush();
+  const completedBeforeSecondAck=p.completed();
+  p.requestAcks[1].resolve();await second;
+  assert.equal((await p.promise).revision,1);
+  assert.equal(completedBeforeSecondAck,false);
+  assert.equal(p.logs.length,0);
+});
+
+test('unsettled disable ACK cannot extend the original success deadline', async () => {
+  const p=protocol({holdDisable:true});
+  p.fail.resolve();await flush();await flush();
+  assert.ok(p.events.includes('Fetch.disable'));
+  p.timeout();await flush();await flush();
+  const failedWithinBudget=p.completed();
+  p.disable.resolve();
+  await assert.rejects(p.promise,/timed out/);
+  assert.equal(failedWithinBudget,true);
+  assert.equal(p.events.filter(name=>name==='Fetch.disable').length,1);
+  assert.equal(trace(p).dropped,true);
+});
+
+test('pending callback arriving during disable also remains bounded by the original deadline', async () => {
+  const p=protocol({holdDisable:true,holdRequest:true});
+  p.fail.resolve();await flush();await flush();
+  const paused=p.pause(pausedRequest('POST'));
+  p.timeout();await flush();await flush();
+  const failedWithinBudget=p.completed();
+  p.disable.resolve();p.requestAcks[0].resolve();await paused;
+  await assert.rejects(p.promise,/timed out/);
+  assert.equal(failedWithinBudget,true);
+  assert.equal(p.events.filter(name=>name==='Fetch.disable').length,1);
+});
+
+test('failure cleanup issues disable without waiting past the already expired deadline for its ACK', async () => {
+  const p=protocol({lateEvent:true,holdDisable:true});await flush();
+  p.timeout();await flush();await flush();
+  assert.ok(p.events.includes('Fetch.disable'));
+  const failedWithinBudget=p.completed();
+  p.disable.resolve();
+  await assert.rejects(p.promise,/drop timed out/);
+  assert.equal(failedWithinBudget,true);
+  assert.equal(trace(p).dropped,false);
 });

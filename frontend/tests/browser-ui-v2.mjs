@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { openBrowser } from './browser-driver.mjs';
 import { startReviewed } from './review-start.mjs';
+import { continueRequestForPostResponse } from './browser-start-recovery-diagnostics.mjs';
 
 // Isolated v2 suite. No dependency on production data or edits to the shared harness.
 const api = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
@@ -42,12 +43,29 @@ async function pointer(selector) {
 }
 async function recoverDroppedResponse(s) {
   let dropped=false, dropping=false, enabled=false, timer;
+  let deadlineExpired, disabling=false;
+  const pendingInterceptions=new Set();
   let postResponseObserved=false, omittedResponses=0;
   const responseTrace=[], actionUrl=`${api}/matches/${s.id}/action`;
   let resolveDrop, rejectDrop;
   const drop=new Promise((resolve,reject)=>{resolveDrop=resolve;rejectDrop=reject;});
   drop.catch(()=>{}); // A callback may reject before click's CDP acknowledgement.
+  let interceptionError, rejectInterception;
+  const interceptionFailed=new Promise((_,reject)=>{rejectInterception=reject;});
+  interceptionFailed.catch(()=>{});
+  function failInterception(error) {
+    // A later callback failure must remain fatal after the drop promise has fulfilled.
+    interceptionError??=error;
+    rejectDrop(interceptionError);
+    rejectInterception(interceptionError);
+  }
   b.onIntercept(async e=>{
+    let settle;
+    const pending=new Promise(resolve=>{settle=resolve;});
+    pendingInterceptions.add(pending);
+    try {
+    try {if(await continueRequestForPostResponse(command,e))return;}
+    catch(error){failInterception(error);return;}
     const trace={method:['OPTIONS','POST','GET','HEAD','PUT','PATCH','DELETE'].includes(e.request.method)?e.request.method:'OTHER',
       status:Number.isInteger(e.responseStatusCode)&&e.responseStatusCode>=100&&e.responseStatusCode<=599?e.responseStatusCode:null,
       current:e.request.url===actionUrl,command:'continue',continuation:'pending',errorCode:null};
@@ -66,19 +84,29 @@ async function recoverDroppedResponse(s) {
       trace.continuation='error';
       // The driver wraps CDP errors as JSON; never retain its message or data.
       try {const code=JSON.parse(error.message).code;if(Number.isSafeInteger(code))trace.errorCode=code;}catch{}
-      rejectDrop(error);
+      failInterception(error);
     }
+    }catch(error){failInterception(error);}
+    finally{pendingInterceptions.delete(pending);settle();}
   });
   try {
-    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
+    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Request'}]});enabled=true;
     await click('Play Land Forest');
     const deadline=Date.now()+15000;
-    await Promise.race([drop,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Current accepted response drop timed out')),15000);})]);
+    deadlineExpired=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Current accepted response drop timed out')),15000);});
+    await Promise.race([drop,deadlineExpired]);
     const remaining=deadline-Date.now();
     if(remaining<=0)throw new Error('Current accepted response reconciliation timed out');
-    await waitFor(`localStorage.getItem('mtg.activeMatch') === ${JSON.stringify(s.id)} && document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(s.id)} && document.querySelector('.battlefield')?.dataset.matchRevision === '1' && document.querySelector('.operation-alert') && !document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Restoring saved session') && ![...document.querySelectorAll('button')].some(e=>e.textContent.startsWith('Play Land Forest'))`,remaining);
+    await Promise.race([interceptionFailed,deadlineExpired,waitFor(`localStorage.getItem('mtg.activeMatch') === ${JSON.stringify(s.id)} && document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(s.id)} && document.querySelector('.battlefield')?.dataset.matchRevision === '1' && document.querySelector('.operation-alert') && !document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Restoring saved session') && ![...document.querySelectorAll('button')].some(e=>e.textContent.startsWith('Play Land Forest'))`,remaining)]);
     if(Date.now()>=deadline)throw new Error('Current accepted response reconciliation timed out');
-    const state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);assert.ok(dropped);
+    const state=await Promise.race([interceptionFailed,deadlineExpired,(async()=>await(await fetch(`${api}/matches/${s.id}`)).json())()]);assert.equal(state.revision,1);assert.ok(dropped);
+    // Repeat because callbacks can arrive while a previous snapshot is settling.
+    while(pendingInterceptions.size)await Promise.race([interceptionFailed,deadlineExpired,Promise.all([...pendingInterceptions])]);
+    disabling=true;
+    await Promise.race([interceptionFailed,deadlineExpired,command('Fetch.disable')]);enabled=false;
+    while(pendingInterceptions.size)await Promise.race([interceptionFailed,deadlineExpired,Promise.all([...pendingInterceptions])]);
+    if(interceptionError)throw interceptionError;
+    if(Date.now()>=deadline)throw new Error('Current accepted response reconciliation timed out');
     return state;
   }catch(error){
     const diagnostic={dropped,postResponseObserved,responses:responseTrace.map(trace=>({...trace})),
@@ -103,7 +131,14 @@ async function recoverDroppedResponse(s) {
     try {console.error('DROP_RESPONSE_TRACE',JSON.stringify(diagnostic));}catch{}
     throw error;
   }
-  finally{clearTimeout(timer);if(enabled)await command('Fetch.disable');}
+  finally{
+    try{
+      if(enabled&&!disabling){
+        const cleanup=command('Fetch.disable');
+        if(deadlineExpired)await Promise.race([cleanup,deadlineExpired.catch(()=>{})]);else await cleanup;
+      }
+    }finally{clearTimeout(timer);}
+  }
 }
 try {
   await viewport();

@@ -144,3 +144,42 @@ test('deferred continuation after callback return still reports its genuine nati
   assert.equal(reports[0].responses[0].commands[0].errorCode, -32602);
   assert.equal(JSON.stringify(reports).includes('PRIVATE_'), false);
 });
+
+for (const method of ['OPTIONS', 'POST']) {
+  test(`${method} request opts into response interception only for POST without rewriting the request`, async () => {
+    assert.equal(typeof feature.continueRequestForPostResponse, 'function');
+    const calls = [], input = event({resourceType: 'XHR', request: {method}});
+    delete input.responseStatusCode;
+    assert.equal(await feature.continueRequestForPostResponse(async (...args) => calls.push(args), input), true);
+    assert.deepEqual(calls, [['Fetch.continueRequest', {requestId: 'private-fetch-id', interceptResponse: method === 'POST'}]]);
+  });
+}
+
+for (const changes of [{responseStatusCode: 200}, {responseStatusCode: 0},
+  {responseErrorReason: 'Failed'}, {responseErrorReason: ''}]) {
+  test(`response-stage ${JSON.stringify(changes)} remains owned by the original handler`, async () => {
+    assert.equal(typeof feature.continueRequestForPostResponse, 'function');
+    const calls = [], input = {requestId: 'id', request: {method: 'POST'}, ...changes};
+    assert.equal(await feature.continueRequestForPostResponse(async (...args) => calls.push(args), input), false);
+    assert.deepEqual(calls, []);
+  });
+}
+
+test('unexpected request methods reject rather than silently bypassing POST-only capture', async () => {
+  assert.equal(typeof feature.continueRequestForPostResponse, 'function');
+  for (const method of ['GET', 'HEAD', 'PUT', 'PATCH', 'DELETE', '', undefined]) {
+    const calls = [];
+    await assert.rejects(feature.continueRequestForPostResponse(async (...args) => calls.push(args), {requestId: 'id', request: {method}}));
+    assert.deepEqual(calls, []);
+  }
+});
+
+test('request continuation failure retains its native error and fixed diagnostic command', async () => {
+  assert.equal(typeof feature.continueRequestForPostResponse, 'function');
+  const reports = [], error = new Error('{"code":-32602,"message":"PRIVATE_REQUEST"}');
+  const wrapped = wrap(async () => { throw error; }, (received, command) =>
+    feature.continueRequestForPostResponse(command, received), value => reports.push(value));
+  await assert.rejects(wrapped({requestId: 'PRIVATE_ID', resourceType: 'XHR', request: {method: 'OPTIONS'}}), actual => actual === error);
+  assert.deepEqual(reports[0].responses[0].commands, [{method: 'Fetch.continueRequest', acknowledgment: 'error', errorCode: -32602}]);
+  assert.equal(JSON.stringify(reports).includes('PRIVATE_'), false);
+});
