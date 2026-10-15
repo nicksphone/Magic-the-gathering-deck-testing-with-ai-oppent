@@ -11,11 +11,14 @@ canonical ELF in `MTG_CHROME`, and `MTG_BROWSER_NO_SANDBOX=0`. It never discover
 or substitutes Chromium. Every nested browser launch now respects the existing
 explicit `MTG_BROWSER_NO_SANDBOX=1` opt-in; native mode rejects that opt-in.
 
-The runner image supplies its official Chrome DEB. Brave is installed using
+Chrome is reinstalled through its signed official APT repository, with Google's
+active primary signing fingerprint checked. Brave is installed using
 the vendor's [APT instructions](https://brave.com/linux/), not a remote shell
 installer. Both binaries and their sandbox helpers must be root-owned package
-files, with the helper installed mode 4755. No local host installation,
-permission repair, AppArmor change or sysctl workaround is part of this job.
+files, with the helper installed mode 4755. The disposable runner's observed
+world-writable `/opt` and Chrome directories are explicitly protected as
+root-owned mode 0755; the vendor package restores its own file modes. No helper
+chmod, local host installation, AppArmor change or sysctl workaround is used.
 
 ## Runtime Checks
 

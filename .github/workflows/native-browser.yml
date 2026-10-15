@@ -15,6 +15,9 @@ jobs:
   native:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
@@ -41,6 +44,24 @@ jobs:
         run: |
           python -m pip install -r backend/requirements.txt
           npm --prefix frontend ci
+      - name: Protect vendor installation directories on the disposable runner
+        run: |
+          test ! -L /opt
+          sudo install -d -o root -g root -m 0755 /opt
+          if [[ "$MTG_BROWSER_VENDOR" == chrome ]]; then
+            test ! -L /opt/google
+            test ! -L /opt/google/chrome
+            sudo install -d -o root -g root -m 0755 /opt/google /opt/google/chrome
+          fi
+      - name: Reinstall official Chrome package from its signed repository
+        if: matrix.vendor == 'chrome'
+        run: |
+          curl -fsSLo "$RUNNER_TEMP/google-linux-key.pub" https://dl.google.com/linux/linux_signing_key.pub
+          gpg --batch --show-keys --with-colons "$RUNNER_TEMP/google-linux-key.pub" | grep '^fpr:::::::::EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796:' >/dev/null
+          gpg --batch --dearmor < "$RUNNER_TEMP/google-linux-key.pub" | sudo tee /usr/share/keyrings/mtg-google-chrome.gpg >/dev/null
+          printf '%s\n' 'deb [arch=amd64 signed-by=/usr/share/keyrings/mtg-google-chrome.gpg,EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796] https://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/mtg-google-chrome.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y --reinstall google-chrome-stable
       - name: Install official Brave package
         if: matrix.vendor == 'brave'
         run: |
@@ -48,8 +69,8 @@ jobs:
           sudo curl -fsSLo /etc/apt/sources.list.d/brave-browser-release.sources https://brave-browser-apt-release.s3.brave.com/brave-browser.sources
           sudo apt-get update
           sudo apt-get install -y brave-browser
-      # Chrome is the runner image's installed official google-chrome-stable DEB.
-      # Preflight rejects absent/wrong packages; it never substitutes Chromium.
+      # Vendor package installation, not ad-hoc helper chmod, restores file modes.
+      # Preflight still rejects wrong ownership/modes and never substitutes Chromium.
       - name: Secure native preflight and complete browser suite
         env:
           MTG_NATIVE_REPORT_DIR: ${{ runner.temp }}/native-${{ matrix.vendor }}
