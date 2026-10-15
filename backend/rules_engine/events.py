@@ -11,7 +11,8 @@ from rules_engine.oracle_text import without_reminder_text
 
 
 TRANSFORM_DRAW_RE = re.compile(
-    r"whenever a permanent you control transforms or a permanent enters the battlefield under your control transformed,\s*"
+    r"whenever a permanent you control transforms or a permanent "
+    r"(?:you control enters|enters the battlefield under your control) transformed,\s*"
     r"you may draw a card\.\s*do this only once each turn",
     re.IGNORECASE,
 )

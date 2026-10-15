@@ -1,8 +1,22 @@
 """Canonical transforming faces must keep numeric state safe for combat and AI."""
+from dataclasses import replace
+
 from ai.agent import AIAgent
 from effects.handlers import transform_card, transform_if_top_matches
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import MatchFactory, Step, Zone
 from rules_engine.continuous import effective_power, effective_toughness
+from tests.canonical_positive_fixtures import raw_card
+
+
+def _canonical_instance(name, card_id, zone, *, owner=1, controller=1, instance_order=0):
+    raw = raw_card(name)
+    # Eight copies leave one never-drawn template after the real opening draw.
+    materialized = MatchFactory.from_decks(
+        [{**raw, "card_name": raw["name"], "quantity": 8}], [], seed=77)
+    template = next(card for card in materialized.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id=card_id, owner=owner, controller=controller,
+                   zone=zone, instance_order=instance_order,
+                   summoning_sick=True if zone == Zone.BATTLEFIELD else template.summoning_sick)
 
 
 def _game():
@@ -18,18 +32,7 @@ def _game():
 
 def test_kumano_transforms_to_numeric_creature_and_ai_can_assess_it():
     game = _game()
-    saga = CardInstance(
-        id="kumano", name="Kumano Faces Kakkazan", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], mana_cost="{R}",
-        type_line="Enchantment \u2014 Saga", layout="transform",
-        card_faces=[
-            {"name": "Kumano Faces Kakkazan", "mana_cost": "{R}", "type_line": "Enchantment \u2014 Saga",
-             "oracle_text": "III \u2014 Exile this Saga, then return it to the battlefield transformed under your control."},
-            {"name": "Etching of Kumano", "mana_cost": "", "type_line": "Enchantment Creature \u2014 Human Shaman",
-             "oracle_text": "Haste\nIf a creature dealt damage this turn by a source you controlled would die, exile it instead.",
-             "power": "2", "toughness": "2"},
-        ],
-    )
+    saga = _canonical_instance("Kumano Faces Kakkazan // Etching of Kumano", "kumano", Zone.BATTLEFIELD)
     game.cards[saga.id] = saga
     game.players[1].battlefield.append(saga.id)
     transform_card(game, 1, {"target_card_id": saga.id, "face_index": 1})
@@ -40,23 +43,14 @@ def test_kumano_transforms_to_numeric_creature_and_ai_can_assess_it():
 
 def test_revealed_instant_transforms_delver_to_numeric_flying_face():
     game = _game()
-    delver = CardInstance(
-        id="delver", name="Delver of Secrets", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{U}",
-        type_line="Creature \u2014 Human Wizard", power=1, toughness=1, layout="transform",
-        card_faces=[
-            {"name": "Delver of Secrets", "mana_cost": "{U}", "type_line": "Creature \u2014 Human Wizard",
-             "oracle_text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform this creature.",
-             "power": "1", "toughness": "1"},
-            {"name": "Insectile Aberration", "mana_cost": "", "type_line": "Creature \u2014 Human Insect",
-             "oracle_text": "Flying", "power": "3", "toughness": "2"},
-        ],
-    )
+    delver = _canonical_instance("Delver of Secrets // Insectile Aberration", "delver", Zone.BATTLEFIELD)
     game.cards[delver.id] = delver
     game.players[1].battlefield.append(delver.id)
     top_id = game.players[1].library[-1]
-    game.cards[top_id].name = "Lightning Bolt"
-    game.cards[top_id].types = ["Instant"]
+    top = game.cards[top_id]
+    game.cards[top_id] = _canonical_instance(
+        "Lightning Bolt", top_id, top.zone, owner=top.owner,
+        controller=top.controller, instance_order=top.instance_order)
     transform_if_top_matches(game, 1, {"target_card_id": delver.id, "required_types": ["Instant"], "face_index": 1})
     assert (delver.power, delver.toughness) == (3, 2)
     assert delver.keywords == ["flying"]

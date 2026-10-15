@@ -137,6 +137,14 @@ remains open; this correction does not itself sign off Phase 1.
 
 ## Named-Card Fixture Follow-Up
 
+The later [current transform-draw composition](current-transform-draw-wording.md)
+passes 139 cases in 14 whole modules. Complete deck-import and transforming-card
+fixtures retain the old behavior assertions. Current canonical Corruption of
+Towashi wording also exposes and closes a generic trigger-selector parser gap;
+the collector and APNAP expectations are unchanged. This resolves the retained
+fixture-only day/night HOLD on that composition, not the repository-wide
+handwritten-data requirement or later whole hosted/browser acceptance.
+
 The ingestion module's positive Bolt, Island, Grizzly Bears and Delver fixtures
 now load complete pinned official objects instead of assembling card metadata.
 All 20 existing tests and 88 assertions remain; two expected operands now use

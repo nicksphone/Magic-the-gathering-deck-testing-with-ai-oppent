@@ -84,6 +84,7 @@ def test_day_night_transforms_matching_double_faced_permanents() -> None:
 def test_simultaneous_day_night_transforms_share_apnap_trigger_order_window(monkeypatch) -> None:
     from rules_engine import events
     from rules_engine.events import resume_trigger_order
+    from tests.day_night_apnap_canonical import CATHAR, permanent
 
     state = _state()
     state.turn = 3
@@ -92,34 +93,15 @@ def test_simultaneous_day_night_transforms_share_apnap_trigger_order_window(monk
     state.spells_cast_last_turn = 0
     state.trigger_order_choice_required = True
     state.trigger_order_choice_players = {1, 2}
-    arena = CardInstance(
-        "arena", "Phyrexian Arena", 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
-        oracle_text="At the beginning of your upkeep, you draw a card and you lose 1 life.",
-    )
+    arena = permanent("arena", "Phyrexian Arena", 1)
     state.cards[arena.id] = arena
     state.players[1].battlefield.append(arena.id)
-    oracle = (
-        "When Corruption of Towashi enters the battlefield, incubate 4.\n"
-        "Whenever a permanent you control transforms or a permanent enters the battlefield under your control transformed, "
-        "you may draw a card. Do this only once each turn."
-    )
     for owner in (1, 2):
-        corruption = CardInstance(
-            f"corruption-{owner}", "Corruption of Towashi", owner, owner,
-            Zone.BATTLEFIELD, ["Enchantment"], oracle_text=oracle,
-        )
+        corruption = permanent(f"corruption-{owner}", "Corruption of Towashi", owner)
         state.cards[corruption.id] = corruption
         state.players[owner].battlefield.append(corruption.id)
         for copy_number in (1, 2):
-            card = CardInstance(
-                f"cathar-{owner}-{copy_number}", "Brutal Cathar", owner, owner,
-                Zone.BATTLEFIELD, ["Creature"], oracle_text="Daybound", layout="transform",
-                selected_face_index=0,
-                card_faces=[
-                    {"name": "Brutal Cathar", "oracle_text": "Daybound", "type_line": "Creature - Human Soldier Werewolf", "power": "2", "toughness": "2"},
-                    {"name": "Moonrage Brute", "oracle_text": "First strike\nNightbound", "type_line": "Creature - Werewolf", "power": "3", "toughness": "3"},
-                ],
-            )
+            card = permanent(f"cathar-{owner}-{copy_number}", CATHAR, owner)
             state.cards[card.id] = card
             state.players[owner].battlefield.append(card.id)
 

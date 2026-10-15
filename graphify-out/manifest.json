@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1792033175.5076804,
-    "seen": 1792034402.3547807,
-    "ast_hash": "bd23d2fae5328149d3f4bdf51aab6d19",
+    "mtime": 1792105791.2536366,
+    "seen": 1792105930.9022162,
+    "ast_hash": "5eeb92468fa40c07a011f347cf7f1ec2",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -3888,9 +3888,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_day_night.py": {
-    "mtime": 1792033175.649678,
-    "seen": 1792034402.356705,
-    "ast_hash": "c21929a7279e62cca80fb844ec20b979",
+    "mtime": 1792105791.220637,
+    "seen": 1792105930.9058013,
+    "ast_hash": "d8e8e472a28889889d10c679fa374af1",
     "semantic_hash": ""
   },
   "backend/tests/test_death_cycle_ordering_audit.py": {
@@ -3966,9 +3966,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_deck_service_metadata.py": {
-    "mtime": 1792033175.650678,
-    "seen": 1792034402.3567295,
-    "ast_hash": "ebef8c0edfc61cf12dea998ad9ffb226",
+    "mtime": 1792105307.1095319,
+    "seen": 1792105930.9058518,
+    "ast_hash": "3f4775e9db6582f78982758e5cae7982",
     "semantic_hash": ""
   },
   "backend/tests/test_declaration_limits.py": {
@@ -5550,9 +5550,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_transform_numeric_ai.py": {
-    "mtime": 1792033175.713677,
-    "seen": 1792034402.357726,
-    "ast_hash": "77de865b92e5f77fdb405485a8d6cb59",
+    "mtime": 1792105791.2156372,
+    "seen": 1792105930.9076254,
+    "ast_hash": "7275e15d350722b712f47bbe51b45928",
     "semantic_hash": ""
   },
   "backend/tests/test_transform_triggers.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792103696.7275457,
-    "seen": 1792103812.2709973,
-    "ast_hash": "af381276ff251bd9a8c7be29734ea793",
+    "mtime": 1792105791.2566366,
+    "seen": 1792105930.9094834,
+    "ast_hash": "3ddd7155fde1d5fed9e0780a36cac8d9",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19209,6 +19209,102 @@
     "mtime": 1792103696.7275457,
     "seen": 1792103812.2712097,
     "ast_hash": "e690c28c3650c48559e99ef38f0e3e79",
+    "semantic_hash": ""
+  },
+  "backend/tests/day_night_apnap_canonical.py": {
+    "mtime": 1792105791.220637,
+    "seen": 1792105930.9025855,
+    "ast_hash": "18cc860a2d2615634728c60c3dd98593",
+    "semantic_hash": ""
+  },
+  "backend/tests/deck_service_metadata_fixtures.py": {
+    "mtime": 1792105307.1095319,
+    "seen": 1792105930.9025888,
+    "ast_hash": "4e8a340cacbac95b20f07f5ef01a8a81",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json": {
+    "mtime": 1792105791.220637,
+    "seen": 1792105930.9032981,
+    "ast_hash": "864a8f47626060aff5c7aa081f7d38a6",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/day_night_apnap_canonical/corruption-of-towashi-scryfall-raw.json": {
+    "mtime": 1792105791.220637,
+    "seen": 1792105930.9033012,
+    "ast_hash": "47d3e950b1f097efbe1823c809e48c63",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/day_night_apnap_canonical/phyrexian-arena-scryfall-raw.json": {
+    "mtime": 1792105791.220637,
+    "seen": 1792105930.9033034,
+    "ast_hash": "5d05353066cda90beafeab72b689e3ce",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/deck_service_metadata_6900/PROVENANCE.json": {
+    "mtime": 1792105307.1105318,
+    "seen": 1792105930.9033124,
+    "ast_hash": "87fd046625de1d4b4d7af8ed25707f8e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/deck_service_metadata_6900/kazandu-mammoth-scryfall-raw.json": {
+    "mtime": 1792105307.1105318,
+    "seen": 1792105930.9033153,
+    "ast_hash": "0854fa14d046a46d83837aa22888ee77",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/deck_service_metadata_6900/memnite-scryfall-raw.json": {
+    "mtime": 1792105307.1105318,
+    "seen": 1792105930.903318,
+    "ast_hash": "3b8084f53da14fd287f2c6b9da34ccfb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_day_night_apnap_fidelity.py": {
+    "mtime": 1792105791.220637,
+    "seen": 1792105930.905805,
+    "ast_hash": "7e557ba7b791af08be360e52828be6b0",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_deck_service_metadata_fixture_fidelity.py": {
+    "mtime": 1792105307.1095319,
+    "seen": 1792105930.9058545,
+    "ast_hash": "10dba8d6aecfd74cbf433a7a6ffd3991",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_transform_draw_current_wording.py": {
+    "mtime": 1792105791.2226372,
+    "seen": 1792105930.9076228,
+    "ast_hash": "2576469da62c0c7a18abd37d21b7f86e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_transform_numeric_fixture_fidelity.py": {
+    "mtime": 1792105791.2166371,
+    "seen": 1792105930.9076273,
+    "ast_hash": "5e394a05414d9faff6994b1acbb57b27",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-transform-numeric-fixtures.md": {
+    "mtime": 1792105791.2166371,
+    "seen": 1792105930.9087563,
+    "ast_hash": "93c541f1e26bc4edeb511091bb8275ae",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-transform-draw-wording.md": {
+    "mtime": 1792105791.2546365,
+    "seen": 1792105930.9089816,
+    "ast_hash": "22b7ba33a3ab2f45e5451ba3f0eb26e8",
+    "semantic_hash": ""
+  },
+  "docs/testing/day-night-apnap-canonical-fixture-hold.md": {
+    "mtime": 1792105791.220637,
+    "seen": 1792105930.909008,
+    "ast_hash": "0d95ecdcd7032345a1e6bc885ad96dbd",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-deck-service-metadata-fixtures-6900.md": {
+    "mtime": 1792105307.1095319,
+    "seen": 1792105930.9097328,
+    "ast_hash": "1cbbb24a611ec0a165069ce9732161e3",
     "semantic_hash": ""
   }
 }
