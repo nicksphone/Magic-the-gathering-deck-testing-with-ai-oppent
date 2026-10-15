@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 import vm from 'node:vm';
 import * as diagnostics from './browser-start-recovery-diagnostics.mjs';
+import * as driver from './browser-driver.mjs';
 
 const source = await readFile(new URL('./browser-ui-v2.mjs', import.meta.url), 'utf8');
 const oldStart = source.indexOf("s=await setup('/fixture');let dropped=false;");
@@ -23,16 +24,24 @@ async function flush() { for (let i=0; i<12; i++) await Promise.resolve(); }
 function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = false, lateReady = false,
   continueError, holdContinue = false, requestError, holdRequest = false, holdStateRead = false, holdDisable = false, uiReadError, holdUiRead = false, logError,
   storedId = 'new-fixture', renderedId = 'new-fixture', alertText = '', pending = false,
-  restoring = false } = {}) {
+  restoring = false, renderedRevision = '0', buttons = [], canonicalRevision = 0,
+  diagnosticReadError, holdDiagnosticRead = false, identityError, holdIdentity = false } = {}) {
   const events = [], tasks = [], logs = [], calls = [], state = { id: 'new-fixture', revision: 0 };
   const fail = deferred(), ui = deferred(), continuation = deferred(), uiRead = deferred();
   const stateRead = deferred();
   const disable = deferred();
   const requestAcks = [];
+  const diagnosticReads = [], identityReads = [], diagnosticRead = deferred(), identityRead = deferred();
   let intercept, enabled = false;
   let now = 0, sequence = 0; const timers = new Map();
   const timeout = new Error('Current accepted response was not dropped');
   const browser = {
+    async browserIdentity(signal) {
+      identityReads.push(signal);
+      if (holdIdentity) await identityRead.promise;
+      if (identityError) throw identityError;
+      return {product:'Chrome/155.0.8059.79',protocolVersion:'1.3'};
+    },
     onIntercept(fn) { intercept = fn; },
     async command(method, params) {
       events.push(method);
@@ -70,7 +79,7 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   }
   const context = {
     continueRequestForPostResponse: diagnostics.continueRequestForPostResponse,
-    assert, b: browser, api:'http://fixture.invalid', origin:'http://ui.invalid',
+    assert, AbortController, b: browser, api:'http://fixture.invalid', origin:'http://ui.invalid',
     console:{error(...args) { if (logError) throw logError; logs.push(args); }},
     command: browser.command.bind(browser),
     evaluate: async expression => {
@@ -80,9 +89,10 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
       return vm.runInNewContext(expression, {
         localStorage: { getItem: key => { assert.equal(key, 'mtg.activeMatch'); return storedId; } },
         document: {
+          querySelectorAll: selector => {assert.equal(selector,'button');return buttons;},
           body: { innerText: [pending && 'Match operation pending', restoring && 'Restoring saved session'].filter(Boolean).join(' ') },
           querySelector: selector => {
-            if (selector === '.battlefield') return { dataset: { matchId: renderedId } };
+            if (selector === '.battlefield') return { dataset: { matchId: renderedId, matchRevision:renderedRevision } };
             assert.equal(selector, '.operation-alert');
             return alertText ? { textContent: alertText } : null;
           },
@@ -104,11 +114,19 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
         if (lateReady) now=15100; // Real driver may return a late evaluate result.
       } // OLD generic alert is already present, so its wait completes immediately.
     },
-    fetch: async () => ({json:async()=>{
+    fetch: async (url, options) => {
+      if (options?.method==='GET') {
+        assert.equal(url,'http://fixture.invalid/matches/new-fixture');
+        diagnosticReads.push(options);
+        if (holdDiagnosticRead) await diagnosticRead.promise;
+        if (diagnosticReadError) throw diagnosticReadError;
+        return {ok:true,json:async()=>({revision:canonicalRevision,id:privateMarker,body:privateMarker})};
+      }
+      return {json:async()=>{
       events.push('canonical-state-read');
       if (holdStateRead) await stateRead.promise;
       return state;
-    }}), shot:async()=>{},
+    }};}, shot:async()=>{},
     Date:{now:()=>now},
     setTimeout: (fn, ms) => { assert.ok(ms>0 && ms<=15000); const id=++sequence; timers.set(id,{fn,ms}); return id; },
     clearTimeout: id => {timers.delete(id);},
@@ -119,6 +137,7 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   // Consume rejection during deferred probes without changing its eventual value.
   promise.catch(()=>{});
   return {events, state, promise, fail, ui, continuation, uiRead, stateRead, disable, requestAcks, deliver, tasks, logs, calls,
+    diagnosticReads, identityReads, diagnosticRead, identityRead,
     pause: event => intercept(event),
     completed:()=>completed, advance:ms=>{now=ms;},
     timeout:()=>{now=15000;for (const {fn,ms} of [...timers.values()]) if (ms===15000) fn();},
@@ -560,4 +579,201 @@ test('failure cleanup issues disable without waiting past the already expired de
   await assert.rejects(p.promise,/drop timed out/);
   assert.equal(failedWithinBudget,true);
   assert.equal(trace(p).dropped,false);
+});
+
+const emptyRequestCounts = () => ({observed:0,attempted:0,ack:0,error:0,pending:0});
+for (const phase of ['no-request','OPTIONS-ack','POST-ack-no-response','POST-pending']) {
+  test(`failure boundaries distinguish ${phase} without claiming a response`, async () => {
+    const p=protocol({lateEvent:true,holdRequest:phase==='POST-pending',
+      canonicalRevision:phase==='POST-ack-no-response'?1:0,renderedRevision:'0',buttons:[
+        {textContent:' Play Land Forest ',matches:selector=>{assert.equal(selector,':disabled');return false;}},
+        {textContent:'Play Land Forest disabled',matches:()=>true},
+        {textContent:'Other',matches:()=>false},
+      ]});
+    await flush();
+    let paused;
+    if(phase!=='no-request') {
+      paused=p.pause(pausedRequest(phase==='OPTIONS-ack'?'OPTIONS':'POST'));
+      if(phase!=='POST-pending')await paused;
+    }
+    await flush();p.timeout();
+    await assert.rejects(p.promise,/Current accepted response drop timed out/);
+    const report=trace(p);
+    const expected={OPTIONS:emptyRequestCounts(),POST:emptyRequestCounts(),OTHER:emptyRequestCounts(),errorCode:null};
+    if(phase!=='no-request')expected[phase==='OPTIONS-ack'?'OPTIONS':'POST']={
+      observed:1,attempted:1,ack:phase==='POST-pending'?0:1,error:0,pending:phase==='POST-pending'?1:0};
+    assert.deepEqual(report.requests,expected);
+    assert.equal(report.pendingInterceptions,phase==='POST-pending'?1:0);
+    assert.deepEqual(report.responses,[]);
+    assert.equal(report.postResponseObserved,false);
+    assert.equal(report.dropped,false);
+    assert.deepEqual(report.actionUi,{enabledPrefixCount:1,renderedRevision:0});
+    assert.deepEqual(report.canonical,{status:'available',revision:phase==='POST-ack-no-response'?1:0});
+    assert.deepEqual(report.runtime,{status:'available',product:'Chrome/155.0.8059.79',protocolVersion:'1.3'});
+    assert.equal(p.diagnosticReads.length,1);
+    assert.equal(p.identityReads.length,1);
+    assert.equal(p.diagnosticReads[0].signal,p.identityReads[0]);
+    assert.equal(p.events.filter(e=>e==='click').length,1);
+    if(paused&&phase==='POST-pending'){p.requestAcks[0].resolve();await paused;}
+  });
+}
+
+test('request ACK failure records only the native numeric code and rethrows the identical error', async () => {
+  const error=new Error(JSON.stringify({code:-32602,message:privateMarker,data:privateMarker}));
+  const p=protocol({lateEvent:true,requestError:error});await flush();
+  await p.pause(pausedRequest('POST'));
+  await assert.rejects(p.promise,actual=>actual===error);
+  const report=trace(p);
+  assert.deepEqual(report.requests.POST,{observed:1,attempted:1,ack:0,error:1,pending:0});
+  assert.equal(report.requests.errorCode,-32602);
+  assert.equal(report.pendingInterceptions,0);
+  assert.equal(report.postResponseObserved,false);
+});
+
+test('all failure reads share the original 1000ms bound, abort GETs and retain completed evidence', async () => {
+  const p=protocol({lateEvent:true,holdUiRead:true,holdIdentity:true,canonicalRevision:1});
+  await flush();p.timeout();await flush();
+  assert.equal(p.completed(),false);
+  assert.equal(p.diagnosticReads.length,1);
+  assert.equal(p.identityReads.length,1);
+  const signal=p.diagnosticReads[0].signal;
+  assert.equal(signal.aborted,false);
+  p.diagnosticTimeout();await assert.rejects(p.promise,/drop timed out/);
+  const report=trace(p);
+  assert.equal(signal.aborted,true);
+  assert.equal(report.uiStatus,'timed-out');
+  assert.deepEqual(report.canonical,{status:'available',revision:1});
+  assert.deepEqual(report.runtime,{status:'timed-out',product:null,protocolVersion:null});
+  const frozen=p.logs[0][1];
+  p.uiRead.resolve();p.identityRead.resolve();await flush();
+  assert.equal(p.logs[0][1],frozen);
+  assert.equal(p.logs.length,1);
+});
+
+test('unavailable diagnostics never replace original native error or retry any read', async () => {
+  const error=new Error(JSON.stringify({code:-32602,message:privateMarker}));
+  const p=protocol({lateEvent:true,requestError:error,uiReadError:error,
+    diagnosticReadError:error,identityError:error});await flush();
+  await p.pause(pausedRequest('OPTIONS'));
+  await assert.rejects(p.promise,actual=>actual===error);
+  const report=trace(p);
+  assert.equal(report.uiStatus,'unavailable');
+  assert.deepEqual(report.canonical,{status:'unavailable',revision:null});
+  assert.deepEqual(report.runtime,{status:'unavailable',product:null,protocolVersion:null});
+  assert.equal(p.diagnosticReads.length,1);
+  assert.equal(p.identityReads.length,1);
+});
+
+test('hung canonical diagnostic GET cannot extend the original diagnostic bound', async () => {
+  const p=protocol({lateEvent:true,holdDiagnosticRead:true});await flush();
+  p.timeout();await flush();p.diagnosticTimeout();
+  await assert.rejects(p.promise,/drop timed out/);
+  const report=trace(p);
+  assert.deepEqual(report.canonical,{status:'timed-out',revision:null});
+  assert.equal(report.uiStatus,'available');
+  assert.equal(p.diagnosticReads[0].signal.aborted,true);
+  p.diagnosticRead.resolve();await flush();
+});
+
+test('malformed revision data remains null, not private diagnostic text or an invented zero', async () => {
+  const p=protocol({lateEvent:true,canonicalRevision:privateMarker,renderedRevision:privateMarker});
+  await flush();p.timeout();await assert.rejects(p.promise,/drop timed out/);
+  const report=trace(p);
+  assert.deepEqual(report.canonical,{status:'unavailable',revision:null});
+  assert.equal(report.actionUi.renderedRevision,null);
+});
+
+test('successful recovery adds no diagnostic GET, UI read or runtime request', async () => {
+  const p=protocol();p.fail.resolve();assert.equal((await p.promise).revision,1);
+  assert.equal(p.diagnosticReads.length,0);assert.equal(p.identityReads.length,0);
+  assert.ok(!p.events.includes('diagnostic-ui'));assert.equal(p.logs.length,0);
+});
+
+test('runtime identity is projected only from an actual json/version GET with the caller signal', async t => {
+  assert.equal(typeof driver.readBrowserIdentity,'function');
+  const signal=new AbortController().signal,calls=[];
+  t.mock.method(globalThis,'fetch',async(...args)=>{calls.push(args);return{ok:true,json:async()=>({
+    Browser:'Chrome/155.0.8059.79','Protocol-Version':'1.3',
+    'User-Agent':privateMarker,webSocketDebuggerUrl:privateMarker,id:privateMarker})};});
+  assert.deepEqual(await driver.readBrowserIdentity('http://runtime.invalid',signal),{
+    product:'Chrome/155.0.8059.79',protocolVersion:'1.3'});
+  assert.deepEqual(calls,[['http://runtime.invalid/json/version',{signal}]]);
+});
+
+for(const value of [null,{'Browser':privateMarker,'Protocol-Version':'1.3'},
+  {'Browser':'Chrome/155.0.8059.79','Protocol-Version':privateMarker}]) {
+  test(`runtime identity rejects malformed fields (${JSON.stringify(value)}) without leaking them`, async t => {
+    assert.equal(typeof driver.readBrowserIdentity,'function');
+    t.mock.method(globalThis,'fetch',async()=>({ok:true,json:async()=>value}));
+    await assert.rejects(driver.readBrowserIdentity('http://runtime.invalid',new AbortController().signal),
+      error=>!error.message.includes(privateMarker));
+  });
+}
+
+test('runtime read preserves HTTP/native failures rather than substituting a version', async t => {
+  assert.equal(typeof driver.readBrowserIdentity,'function');
+  const error=new Error(privateMarker);
+  const mocked=t.mock.method(globalThis,'fetch',async()=>{throw error;});
+  await assert.rejects(driver.readBrowserIdentity('http://runtime.invalid',new AbortController().signal),actual=>actual===error);
+  mocked.mock.mockImplementation(async()=>({ok:false,status:503,json:async()=>{assert.fail('No failed HTTP body read');}}));
+  await assert.rejects(driver.readBrowserIdentity('http://runtime.invalid',new AbortController().signal));
+});
+
+for(const value of [
+  {Browser:['Chrome/155.0.8059.79'],'Protocol-Version':'1.3'},
+  {Browser:'Chrome/155.0.8059.79','Protocol-Version':1.3},
+  {Browser:'Chrome/155.0.8059.79','Protocol-Version':['1.3']},
+]) {
+  test(`runtime identity cannot coerce non-string native fields (${JSON.stringify(value)})`, async t => {
+    t.mock.method(globalThis,'fetch',async()=>({ok:true,json:async()=>value}));
+    await assert.rejects(driver.readBrowserIdentity('http://runtime.invalid',new AbortController().signal));
+  });
+}
+
+function identitySocket() {
+  return class {
+    constructor() {queueMicrotask(()=>this.onopen?.());}
+    send(raw) {
+      const message=JSON.parse(raw);
+      assert.equal(message.method,'Runtime.evaluate');
+      queueMicrotask(()=>this.onmessage({data:JSON.stringify({id:message.id,result:{result:{value:true}}})}));
+    }
+    close() {}
+  };
+}
+
+test('actual openBrowser reads identity from its selected CDP origin only when requested', async t => {
+  const previous=process.env.MTG_BROWSER_ORIGIN;
+  process.env.MTG_BROWSER_ORIGIN='http://runtime.invalid';
+  t.after(()=>{if(previous===undefined)delete process.env.MTG_BROWSER_ORIGIN;else process.env.MTG_BROWSER_ORIGIN=previous;});
+  const calls=[];
+  const previousSocket=globalThis.WebSocket;
+  globalThis.WebSocket=identitySocket();
+  t.after(()=>{globalThis.WebSocket=previousSocket;});
+  t.mock.method(globalThis,'fetch',async(url,options)=>{
+    calls.push([url,options]);
+    if(url==='http://runtime.invalid/json/new?http://ui.invalid'){
+      assert.equal(options.method,'PUT');
+      return{json:async()=>({id:privateMarker,webSocketDebuggerUrl:'ws://runtime.invalid'})};
+    }
+    if(url==='http://runtime.invalid/json/version')return{ok:true,json:async()=>({Browser:'Chrome/155.0.8059.79','Protocol-Version':'1.3'})};
+    assert.equal(url,`http://runtime.invalid/json/close/${privateMarker}`);
+    return{};
+  });
+  const browser=await driver.openBrowser('http://ui.invalid');
+  assert.equal(calls.length,1,'No new request on successful browser initialization');
+  const signal=new AbortController().signal;
+  assert.deepEqual(await browser.browserIdentity(signal),{product:'Chrome/155.0.8059.79',protocolVersion:'1.3'});
+  assert.deepEqual(calls[1],['http://runtime.invalid/json/version',{signal}]);
+  await browser.close();
+});
+
+test('native Firefox identity cannot probe or fall back to a CDP json/version endpoint', async t => {
+  const nativeDriver=await import('./browser-driver.mjs?identity-firefox-contract');
+  const Socket=identitySocket();let closed=false;
+  nativeDriver.configureFirefoxTransport({open:async()=>({socket:new Socket(),close:async()=>{closed=true;}}),close:async()=>{}});
+  t.mock.method(globalThis,'fetch',async()=>{assert.fail('No CDP HTTP fallback on Firefox');});
+  const browser=await nativeDriver.openBrowser('http://ui.invalid');
+  await assert.rejects(browser.browserIdentity(new AbortController().signal),/unavailable on Firefox/);
+  await browser.close();assert.equal(closed,true);
 });

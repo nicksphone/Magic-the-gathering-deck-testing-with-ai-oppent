@@ -223,6 +223,19 @@ export function configureFirefoxTransport(transport) {
   firefoxTransport = transport;
 }
 
+export async function readBrowserIdentity(origin, signal) {
+  if (!signal) throw new TypeError('Bounded browser identity signal required');
+  const response = await fetch(`${origin}/json/version`, {signal});
+  if (!response.ok) throw new Error('Browser identity read failed');
+  const version = await response.json();
+  if (typeof version?.Browser !== 'string' || typeof version?.['Protocol-Version'] !== 'string' ||
+      !/^(?:Chrome|HeadlessChrome|Chromium|Brave|Edg)\/\d{1,6}(?:\.\d{1,6}){0,4}$/.test(version.Browser) ||
+      !/^\d{1,4}\.\d{1,4}$/.test(version?.['Protocol-Version'])) {
+    throw new Error('Browser identity unavailable');
+  }
+  return {product:version.Browser, protocolVersion:version['Protocol-Version']};
+}
+
 export async function openBrowser(url) {
   const origin = process.env.MTG_BROWSER_ORIGIN || 'http://127.0.0.1:19222';
   if (process.env.MTG_FRONTEND_ORIGIN) url = url.replace('http://127.0.0.1:15173', process.env.MTG_FRONTEND_ORIGIN);
@@ -307,7 +320,12 @@ export async function openBrowser(url) {
     await passive.snapshot('navigation');
   }
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
-  return {command, evaluate, waitFor, click, reload, onIntercept: handler => { intercept = handler; }, ...(passive ? { passiveCdp: passive.status } : {}), async close() { if (passive) await passive.close(); if (nativePage) await nativePage.close(); else { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); } }};
+  return {command, evaluate, waitFor, click, reload,
+    async browserIdentity(signal) {
+      if (nativePage) throw new Error('CDP browser identity unavailable on Firefox transport');
+      return readBrowserIdentity(origin, signal);
+    },
+    onIntercept: handler => { intercept = handler; }, ...(passive ? { passiveCdp: passive.status } : {}), async close() { if (passive) await passive.close(); if (nativePage) await nativePage.close(); else { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); } }};
   } catch (error) {
     if (passive) await passive.close();
     if (nativePage) {

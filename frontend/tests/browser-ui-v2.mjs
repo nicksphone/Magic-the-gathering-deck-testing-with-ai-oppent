@@ -47,6 +47,9 @@ async function recoverDroppedResponse(s) {
   const pendingInterceptions=new Set();
   let postResponseObserved=false, omittedResponses=0;
   const responseTrace=[], actionUrl=`${api}/matches/${s.id}/action`;
+  const requests={OPTIONS:{observed:0,attempted:0,ack:0,error:0,pending:0},
+    POST:{observed:0,attempted:0,ack:0,error:0,pending:0},
+    OTHER:{observed:0,attempted:0,ack:0,error:0,pending:0},errorCode:null};
   let resolveDrop, rejectDrop;
   const drop=new Promise((resolve,reject)=>{resolveDrop=resolve;rejectDrop=reject;});
   drop.catch(()=>{}); // A callback may reject before click's CDP acknowledgement.
@@ -64,7 +67,21 @@ async function recoverDroppedResponse(s) {
     const pending=new Promise(resolve=>{settle=resolve;});
     pendingInterceptions.add(pending);
     try {
-    try {if(await continueRequestForPostResponse(command,e))return;}
+    let requestCommand=command;
+    if(e.responseStatusCode===undefined&&e.responseErrorReason===undefined){
+      const counts=requests[['OPTIONS','POST'].includes(e.request.method)?e.request.method:'OTHER'];
+      counts.observed++;
+      requestCommand=async(method,params)=>{
+        counts.attempted++;counts.pending++;
+        try{const result=await command(method,params);counts.ack++;return result;}
+        catch(error){
+          counts.error++;
+          try{const code=JSON.parse(error.message).code;if(Number.isSafeInteger(code))requests.errorCode=code;}catch{}
+          throw error;
+        }finally{counts.pending--;}
+      };
+    }
+    try {if(await continueRequestForPostResponse(requestCommand,e))return;}
     catch(error){failInterception(error);return;}
     const trace={method:['OPTIONS','POST','GET','HEAD','PUT','PATCH','DELETE'].includes(e.request.method)?e.request.method:'OTHER',
       status:Number.isInteger(e.responseStatusCode)&&e.responseStatusCode>=100&&e.responseStatusCode<=599?e.responseStatusCode:null,
@@ -110,24 +127,57 @@ async function recoverDroppedResponse(s) {
     return state;
   }catch(error){
     const diagnostic={dropped,postResponseObserved,responses:responseTrace.map(trace=>({...trace})),
-      omittedResponses,uiStatus:'unavailable',ui:null};
-    let diagnosticTimer;
-    try {
-      // Read only booleans, once, after failure; a stuck diagnostic cannot delay cleanup indefinitely.
-      const ui=await Promise.race([evaluate(`(()=>{
+      omittedResponses,requests:{OPTIONS:{...requests.OPTIONS},POST:{...requests.POST},OTHER:{...requests.OTHER},errorCode:requests.errorCode},
+      pendingInterceptions:pendingInterceptions.size,uiStatus:'unavailable',ui:null,actionUi:null,
+      canonical:{status:'pending',revision:null},runtime:{status:'pending',product:null,protocolVersion:null}};
+    let diagnosticTimer, collecting=true, uiDone=false;
+    const diagnosticAbort=new AbortController();
+    // All failure-only reads share the original diagnostic budget, never a second recovery deadline.
+    const readUi=async()=>{
+      try{
+      const ui=await evaluate(`(()=>{
         const alert=document.querySelector('.operation-alert'),text=alert?.textContent||'';
         return {activeMatch:localStorage.getItem('mtg.activeMatch')===${JSON.stringify(s.id)},
           renderedMatch:document.querySelector('.battlefield')?.dataset.matchId===${JSON.stringify(s.id)},
+          renderedRevision:document.querySelector('.battlefield')?.dataset.matchRevision,
+          enabledPrefixCount:[...document.querySelectorAll('button')].filter(b=>b.textContent.trim().startsWith('Play Land Forest')&&!b.matches(':disabled')).length,
           alert:Boolean(alert),pending:document.body.innerText.includes('Match operation pending'),
           restoring:document.body.innerText.includes('Restoring saved session'),
           failedToFetch:text.includes('Failed to fetch'),networkError:text.includes('NetworkError'),loadFailed:text.includes('Load failed')};
-      })()`),new Promise(resolve=>{diagnosticTimer=setTimeout(()=>{diagnostic.uiStatus='timed-out';resolve(null);},1000);})]);
-      if(ui&&typeof ui==='object'){
+      })()`);
+      if(collecting&&ui&&typeof ui==='object'){
         diagnostic.ui={};
         for(const key of ['activeMatch','renderedMatch','alert','pending','restoring','failedToFetch','networkError','loadFailed'])diagnostic.ui[key]=ui[key]===true;
+        diagnostic.actionUi={enabledPrefixCount:Number.isSafeInteger(ui.enabledPrefixCount)&&ui.enabledPrefixCount>=0?ui.enabledPrefixCount:null,
+          renderedRevision:typeof ui.renderedRevision==='string'&&/^(0|[1-9]\d*)$/.test(ui.renderedRevision)&&Number.isSafeInteger(Number(ui.renderedRevision))?Number(ui.renderedRevision):null};
         diagnostic.uiStatus='available';
       }
-    }catch{}finally{clearTimeout(diagnosticTimer);}
+      }catch{}finally{uiDone=true;}
+    };
+    const readCanonical=async()=>{
+      try{
+        const response=await fetch(`${api}/matches/${s.id}`,{method:'GET',signal:diagnosticAbort.signal});
+        if(!response.ok)throw new Error('Diagnostic state unavailable');
+        const state=await response.json();
+        if(!Number.isSafeInteger(state?.revision)||state.revision<0)throw new Error('Diagnostic revision unavailable');
+        if(collecting)diagnostic.canonical={status:'available',revision:state.revision};
+      }catch{if(collecting)diagnostic.canonical.status='unavailable';}
+    };
+    const readRuntime=async()=>{
+      try{
+        const identity=await b.browserIdentity(diagnosticAbort.signal);
+        if(collecting)diagnostic.runtime={status:'available',product:identity.product,protocolVersion:identity.protocolVersion};
+      }catch{if(collecting)diagnostic.runtime.status='unavailable';}
+    };
+    try{
+      await Promise.race([Promise.all([readUi(),readCanonical(),readRuntime()]),new Promise(resolve=>{
+        diagnosticTimer=setTimeout(()=>{
+          if(!uiDone)diagnostic.uiStatus='timed-out';
+          for(const key of ['canonical','runtime'])if(diagnostic[key].status==='pending')diagnostic[key].status='timed-out';
+          resolve();
+        },1000);
+      })]);
+    }finally{collecting=false;clearTimeout(diagnosticTimer);diagnosticAbort.abort();}
     try {console.error('DROP_RESPONSE_TRACE',JSON.stringify(diagnostic));}catch{}
     throw error;
   }
