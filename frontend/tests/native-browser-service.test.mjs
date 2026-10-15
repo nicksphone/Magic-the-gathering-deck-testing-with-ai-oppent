@@ -7,6 +7,14 @@ import test from 'node:test';
 
 const script = new URL('../../.github/scripts/run-native-browser-ci.sh', import.meta.url);
 
+test('runner-dependent report paths are resolved at step scope, not job env', () => {
+  const workflow = readFileSync(new URL('../../.github/workflows/native-browser.yml', import.meta.url), 'utf8');
+  const jobEnv = workflow.match(/^    env:\n([\s\S]*?)^    steps:/m);
+  assert.ok(jobEnv);
+  assert.equal(jobEnv[1].includes('runner.'), false, 'runner context is unavailable in job-level env');
+  assert.match(workflow, /name: Secure native preflight and complete browser suite\n        env:\n          MTG_NATIVE_REPORT_DIR:/);
+});
+
 function run(status = 0, extra = {}) {
   const scratch = mkdtempSync(path.join(tmpdir(), 'mtg-native-service-unit-'));
   try {

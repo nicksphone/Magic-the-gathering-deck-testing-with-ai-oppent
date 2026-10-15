@@ -18816,15 +18816,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/native-browser-service.test.mjs": {
-    "mtime": 1792034277.546724,
-    "seen": 1792034402.3581474,
-    "ast_hash": "4fcc72dec9718a97a555f6f523dcbaa6",
+    "mtime": 1792034705.3679695,
+    "seen": 1792034830.8744931,
+    "ast_hash": "978ecdc7242d816281599c40441108dc",
     "semantic_hash": ""
   },
   ".github/workflows/native-browser.yml": {
-    "mtime": 1792034079.8167436,
-    "seen": 1792034402.358278,
-    "ast_hash": "29bb5e720bf3d33266c09515a6879dea",
+    "mtime": 1792034705.9779596,
+    "seen": 1792034830.8746629,
+    "ast_hash": "a6ed4261bae18e1aa4a3114633941c25",
     "semantic_hash": ""
   },
   "docs/testing/native-vendor-browser-ci.md": {

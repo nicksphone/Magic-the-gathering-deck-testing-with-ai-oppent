@@ -26,7 +26,6 @@ jobs:
       MTG_BROWSER_VENDOR: ${{ matrix.vendor }}
       MTG_CHROME: ${{ matrix.executable }}
       MTG_BROWSER_NO_SANDBOX: '0'
-      MTG_NATIVE_REPORT_DIR: ${{ runner.temp }}/native-${{ matrix.vendor }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
@@ -51,6 +50,8 @@ jobs:
       # Chrome is the runner image's installed official google-chrome-stable DEB.
       # Preflight rejects absent/wrong packages; it never substitutes Chromium.
       - name: Secure native preflight and complete browser suite
+        env:
+          MTG_NATIVE_REPORT_DIR: ${{ runner.temp }}/native-${{ matrix.vendor }}
         run: |
           mkdir -m 700 "$MTG_NATIVE_REPORT_DIR"
           bash .github/scripts/run-native-browser-ci.sh
@@ -60,7 +61,7 @@ jobs:
         with:
           name: native-${{ matrix.vendor }}-${{ github.sha }}-${{ github.run_attempt }}
           path: |
-            ${{ env.MTG_NATIVE_REPORT_DIR }}/preflight.json
-            ${{ env.MTG_NATIVE_REPORT_DIR }}/lifecycle.json
+            ${{ runner.temp }}/native-${{ matrix.vendor }}/preflight.json
+            ${{ runner.temp }}/native-${{ matrix.vendor }}/lifecycle.json
           if-no-files-found: error
           retention-days: 7

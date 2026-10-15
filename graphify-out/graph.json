@@ -39541,7 +39541,7 @@
       "file_type": "code",
       "norm_label": "run()",
       "source_file": "frontend/tests/native-browser-service.test.mjs",
-      "source_location": "L10"
+      "source_location": "L18"
     },
     {
       "id": "frontend_tests_native_empty_human_window_regression_queryselectorall",
@@ -751413,7 +751413,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/native-browser-service.test.mjs",
-      "source_location": "L10",
+      "source_location": "L18",
       "weight": 1.0
     },
     {
@@ -1468474,5 +1468474,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "5e40e4e3774c2fbca9c98e5b1910886eb9be50fe"
+  "built_at_commit": "2a965ca74d3be51d661a162e57e7e6cd89ddad1d"
 }
