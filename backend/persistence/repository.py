@@ -33,6 +33,16 @@ class Repository:
     def __init__(self, session: Session):
         self.session = session
 
+    def _folded_card_name(self, column):
+        connection = self.session.connection()
+        # Pool-record info is cleared when its physical DBAPI connection is replaced.
+        if not connection.info.get('mtg_card_name_casefold'):
+            connection.connection.driver_connection.create_function(
+                'mtg_card_name_casefold', 1, _card_name_key, deterministic=True,
+            )
+            connection.info['mtg_card_name_casefold'] = True
+        return func.mtg_card_name_casefold(column)
+
     def upsert_card(self, payload: dict[str, Any]) -> CardCache:
         query = select(CardCache).where(CardCache.scryfall_id == payload["scryfall_id"])
         card = self.session.exec(query).first()
@@ -65,10 +75,12 @@ class Repository:
         }
         # Table constructors do not validate input; admit it before any ORM mutation.
         candidate = CardKnowledge.model_validate({"name": normalized, **values})
-        query = select(CardKnowledge).where(
-            func.lower(CardKnowledge.name) == normalized.lower()
-        )
-        row = self.session.exec(query).first()
+        row = self.session.exec(select(CardKnowledge).where(CardKnowledge.name == normalized)).first()
+        if row is None:
+            query = select(CardKnowledge).where(
+                self._folded_card_name(CardKnowledge.name) == _card_name_key(normalized)
+            ).order_by(CardKnowledge.id)
+            row = self.session.exec(query).first()
         if row is None:
             row = candidate
         else:
@@ -88,20 +100,22 @@ class Repository:
             return {}
         normalized = {name.casefold() for name in requested}
         rows = self.session.exec(select(CardKnowledge).where(CardKnowledge.name.in_(requested))).all()
-        out = {row.name.casefold(): row for row in rows}
+        out = {_card_name_key(row.name): row for row in rows}
         missing = normalized - out.keys()
         if missing:
-            rows = self.session.exec(select(CardKnowledge).where(func.lower(CardKnowledge.name).in_(missing))).all()
-            out.update({row.name.casefold(): row for row in rows})
+            rows = self.session.exec(select(CardKnowledge).where(
+                self._folded_card_name(CardKnowledge.name).in_(missing)
+            ).order_by(CardKnowledge.id)).all()
+            for row in rows:
+                out.setdefault(_card_name_key(row.name), row)
         missing = normalized - out.keys()
         if not missing:
             return out
         predicates = []
-        for name in requested:
-            if name.casefold() not in missing:
-                continue
-            predicates.extend([CardKnowledge.name.startswith(name + ' // ', autoescape=True),
-                               CardKnowledge.name.endswith(' // ' + name, autoescape=True)])
+        folded = self._folded_card_name(CardKnowledge.name)
+        for name in missing:
+            predicates.extend([folded.startswith(name + ' // ', autoescape=True),
+                               folded.endswith(' // ' + name, autoescape=True)])
         rows = self.session.exec(select(CardKnowledge).where(or_(*predicates)).order_by(CardKnowledge.id)).all()
         for row in rows:
             try:
@@ -118,9 +132,9 @@ class Repository:
     def list_card_knowledge(self, names: list[str] | None = None) -> list[CardKnowledge]:
         query = select(CardKnowledge)
         if names:
-            normalized = {str(n).strip().lower() for n in names if str(n).strip()}
+            normalized = {_card_name_key(str(n)) for n in names if str(n).strip()}
             if normalized:
-                query = query.where(func.lower(CardKnowledge.name).in_(normalized))
+                query = query.where(self._folded_card_name(CardKnowledge.name).in_(normalized))
         return list(self.session.exec(query).all())
 
     def list_card_knowledge_names(self) -> list[str]:
@@ -136,27 +150,39 @@ class Repository:
     def get_cached_cards_by_names(self, names: list[str]) -> dict[str, CardCache]:
         if not names:
             return {}
-        lowered = {n.strip().lower() for n in names if n.strip()}
-        if not lowered:
+        requested = {n.strip() for n in names if n.strip()}
+        if not requested:
             return {}
+        keys = {name.lower(): _card_name_key(name) for name in requested}
         # Exact Oracle names must win over face aliases regardless of row order.
         out: dict[str, CardCache] = {
             row.name.strip().lower(): row
-            for row in self.session.exec(select(CardCache).where(or_(
-                CardCache.name.in_({name.strip() for name in names}), func.lower(CardCache.name).in_(lowered)))).all()
+            for row in self.session.exec(select(CardCache).where(CardCache.name.in_(requested))).all()
         }
-        if len(out) == len(lowered):
+        missing = keys.keys() - out.keys()
+        if not missing:
             return out
-        missing = lowered - out.keys()
-        predicates = []
-        for name in missing:
-            predicates.extend([func.lower(CardCache.name).startswith(name + ' // ', autoescape=True),
-                               func.lower(CardCache.name).endswith(' // ' + name, autoescape=True)])
+        folded = self._folded_card_name(CardCache.name)
+        folded_keys = {keys[key] for key in missing}
+        predicates = [folded.in_(folded_keys)]
+        for name in folded_keys:
+            predicates.extend([folded.startswith(name + ' // ', autoescape=True),
+                               folded.endswith(' // ' + name, autoescape=True)])
         rows = self.session.exec(select(CardCache).where(or_(*predicates)).order_by(CardCache.id)).all()
+        matches, lower_matches = {}, {}
         for row in rows:
-            for alias in _name_aliases(row.name, row.layout, row.type_line):
-                if alias in lowered:
-                    out.setdefault(alias, row)
+            matches.setdefault(_card_name_key(row.name), row)
+            lower_matches.setdefault(row.name.strip().lower(), row)
+        for key in missing:
+            row = lower_matches.get(key) or matches.get(keys[key])
+            if row is not None:
+                out[key] = row
+        missing = keys.keys() - out.keys()
+        for row in rows:
+            aliases = _name_aliases(row.name, row.layout, row.type_line)
+            for key in missing:
+                if keys[key] in aliases:
+                    out.setdefault(key, row)
         return out
 
     def save_deck(self, name: str, source: str, mainboard: list[dict[str, Any]], sideboard: list[dict[str, Any]], archetype_guess: str) -> DeckRecord:
@@ -518,8 +544,12 @@ class Repository:
         return list(self.session.exec(q).all())
 
 
+def _card_name_key(name: str | None) -> str:
+    return (name or "").strip().casefold()
+
+
 def _name_aliases(name: str | None, layout: str = "", type_line: str = "") -> set[str]:
-    raw = (name or "").strip().lower()
+    raw = _card_name_key(name)
     if not raw:
         return set()
     aliases = {raw}
