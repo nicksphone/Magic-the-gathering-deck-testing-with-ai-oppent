@@ -12,12 +12,12 @@ assert.ok(evidence, 'Set MTG_UI_EVIDENCE to local scratch');
 assert.ok(process.env.MTG_BROWSER_ORIGIN, 'Explicit owned Chromium origin required');
 await mkdir(evidence, {recursive:true});
 const b = await openBrowser(origin);
-const {evaluate, command, waitFor, click, reload} = b;
+const {evaluate, command, waitFor, click, reload, uiInput} = b;
 await command('Page.bringToFront');
 const results = [];
 const record = async message => { results.push(message); console.log('PASS '+message); await writeFile(`${evidence}/v2-checks.json`,JSON.stringify(results,null,2)); };
 async function viewport(width=1440,height=1000) { await command('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false}); }
-async function key(key) { for(const type of ['keyDown','keyUp']) await command('Input.dispatchKeyEvent',{type,key,code:key,windowsVirtualKeyCode:({Enter:13,Escape:27,Tab:9})[key], ...(key==='Enter'&&type==='keyDown'?{text:'\r'}:{})}); }
+async function key(key) { if(uiInput) return uiInput.pressKey(...arguments); for(const type of ['keyDown','keyUp']) await command('Input.dispatchKeyEvent',{type,key,code:key,windowsVirtualKeyCode:({Enter:13,Escape:27,Tab:9})[key], ...(key==='Enter'&&type==='keyDown'?{text:'\r'}:{})}); }
 async function fit() { assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth + 1'),'Unintended page-wide overflow'); }
 async function shot(name, selector) {
   await evaluate('document.activeElement?.blur()'); await key('Escape');
@@ -38,6 +38,7 @@ async function select(selector,value) {
 }
 async function pointer(selector) {
   const p=await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});e.scrollIntoView({block:'center',inline:'center'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+  if(uiInput) return uiInput.clickAt(p);
   await command('Input.dispatchMouseEvent',{type:'mouseMoved',...p});
   for(const type of ['mousePressed','mouseReleased']) await command('Input.dispatchMouseEvent',{type,...p,button:'left',clickCount:1});
 }

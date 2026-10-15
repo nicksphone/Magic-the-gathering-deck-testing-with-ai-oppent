@@ -385,6 +385,35 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
   const channel={id:created.context,contexts:new Set([created.context]),requests:new Map(),patterns:[],intercepts:[],getters:new Map(),collector:null,initialization:null,registering:false,earlyChild:false,generation:0,readyChildren:new Map(),subscriptions:[],childInitialized:null,childDestroyed:null,onmessage:null,emit(message){channel.onmessage?.({data:JSON.stringify(message)});},assertHealthy:healthy};
   Object.assign(channel,{blockIntercept:null,blockedURLs:[],preloads:[],configuring:false,closing:false});
   channels.set(channel.id,channel);
+  let inputTail=Promise.resolve(),inputCount=0,inputFailure;
+  function inputOwned(){healthy();if(!channels.has(channel.id)||!channel.contexts.has(channel.id))unavailable();if(inputFailure)throw inputFailure;}
+  function performInput(actions){
+   inputOwned();if(channel.closing||inputCount>=64)unavailable();
+   const until=process.hrtime.bigint()+15_000_000_000n;
+   inputCount++;
+   const operation=inputTail.then(()=>{inputOwned();return native('input.performActions',{context:channel.id,actions},undefined,until);});
+   // Keep the queue joinable, but retain failures for every later gesture/close.
+   inputTail=operation.then(()=>{inputCount--;},error=>{inputCount--;inputFailure??=error;});
+   return operation;
+  }
+  // Native activation, not independent CDP code/VK/text overrides. Pointer
+  // positioning is part of a click; no forced click-detail or event-stream claim.
+  const uiInput=Object.freeze({
+   async pressKey(...args){
+    const keys={Enter:'\uE006',Escape:'\uE00C',Tab:'\uE004'},key=args[0];
+    if(args.length!==1||typeof key!=='string'||!Object.hasOwn(keys,key))throw Error('Unsupported Firefox uiInput key');
+    const value=keys[key];
+    return performInput([{type:'key',id:'ui-keyboard',actions:[{type:'keyDown',value},{type:'keyUp',value}]}]);
+   },
+   async clickAt(...args){
+    const point=args[0];
+    if(args.length!==1||!point||typeof point!=='object'||Array.isArray(point)||Reflect.ownKeys(point).length!==2||!Object.hasOwn(point,'x')||!Object.hasOwn(point,'y'))throw Error('Unsupported Firefox uiInput coordinates');
+    const {x,y}=point;if(!Number.isFinite(x)||!Number.isFinite(y))throw Error('Unsupported Firefox uiInput coordinates');
+    return performInput([{type:'pointer',id:'ui-mouse',parameters:{pointerType:'mouse'},actions:[
+     {type:'pointerMove',x,y,origin:'viewport',duration:0},{type:'pointerDown',button:0},{type:'pointerUp',button:0}
+    ]}]);
+   }
+  });
   function validateChildInitialized(readiness){
    healthy();if(!channel.initialization||channel.readyChildren.get(readiness?.context)!==readiness||readiness.generation!==channel.initialization.generation||!channel.contexts.has(readiness.context))unavailable();return readiness;
   }
@@ -496,7 +525,10 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
    if(channel.configuring||channel.registering)throw Error('Firefox channel configuration pending');
    channel.closing=true;
    channel.initialization=null;channel.readyChildren.clear();
+   await inputTail; // Admitted gestures retain their original, pre-close deadlines.
+   // Separate cleanup phase: joining input early can make close take about 30s.
    const until=process.hrtime.bigint()+15_000_000_000n;
+   try{
    await disableFetch(channel,until);
    if(channel.blockIntercept){await native('network.removeIntercept',{intercept:channel.blockIntercept},undefined,until);channel.blockIntercept=null;channel.blockedURLs=[];}
    for(const script of [...channel.preloads]){await native('script.removePreloadScript',{script},undefined,until);channel.preloads.splice(channel.preloads.indexOf(script),1);}
@@ -504,9 +536,11 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
    for(const subscription of channel.subscriptions)await native('session.unsubscribe',{subscriptions:[subscription]},undefined,until);
    for(const getter of channel.getters.values())getter.close();
    await native('browsingContext.close',{context:channel.id},undefined,until);channels.delete(channel.id);
+   }catch(error){if(inputFailure&&error!==inputFailure)throw new AggregateError([inputFailure,error],'Firefox input and page closure failed');throw error;}
+   if(inputFailure)throw inputFailure;
   };
   try{await native('browsingContext.navigate',{context:channel.id,url,wait:'none'});}catch(error){try{await channel.close();}catch{/* Original failure remains. */}throw error;}
-  return {id:channel.id,socket:channel,close:channel.close,armFutureChildren,onChildInitialized,validateChildInitialized};
+  return {id:channel.id,socket:channel,close:channel.close,armFutureChildren,onChildInitialized,validateChildInitialized,uiInput};
  }
  async function close(){
   const errors=[];for(const channel of [...channels.values()])try{await channel.close();}catch(error){errors.push(error);}

@@ -246,6 +246,9 @@ export async function openBrowser(url) {
   let nativePage;
   try {
   nativePage = firefoxTransport ? await firefoxTransport.open(url) : null;
+  if (firefoxTransport && (!nativePage?.uiInput || typeof nativePage.uiInput.pressKey !== 'function' || typeof nativePage.uiInput.clickAt !== 'function')) {
+    throw new Error('Firefox uiInput unavailable');
+  }
   const page = firefoxTransport ? nativePage : await (await fetch(`${origin}/json/new?${passive ? 'about:blank' : url}`, { method: 'PUT', signal: AbortSignal.timeout(15000) })).json();
   const socket = firefoxTransport ? nativePage.socket : new WebSocket(page.webSocketDebuggerUrl);
   if (passive) {
@@ -321,6 +324,7 @@ export async function openBrowser(url) {
   }
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
   return {command, evaluate, waitFor, click, reload,
+    ...(nativePage ? {uiInput:nativePage.uiInput} : {}),
     async browserIdentity(signal) {
       if (nativePage) throw new Error('CDP browser identity unavailable on Firefox transport');
       return readBrowserIdentity(origin, signal);

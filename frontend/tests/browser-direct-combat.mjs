@@ -7,10 +7,11 @@ for (const seat of [1, 2]) {
   assert.equal(response.status, 200);
   const fixture = await response.json();
   const browser = await openBrowser('http://127.0.0.1:15173/');
-  const {evaluate, command, waitFor, click, reload, close} = browser;
+  const {evaluate, command, waitFor, click, reload, close, uiInput} = browser;
   const card = id => `.card[data-combat-role][aria-label^="${({hero:'Benalish Hero',angel:'Serra Angel',elf:'Llanowar Elves',bears:'Grizzly Bears'})[id]};"]`;
   async function pointerClick(id) {
     const point = await evaluate(`(() => { const node=document.querySelector(${JSON.stringify(card(id))}); node.scrollIntoView({block:'center'}); const box=node.getBoundingClientRect(); return {x:box.x+box.width/2,y:box.y+15}; })()`);
+    if (uiInput) return uiInput.clickAt(point);
     await command('Input.dispatchMouseEvent', {type:'mousePressed',button:'left',clickCount:1,...point});
     await command('Input.dispatchMouseEvent', {type:'mouseReleased',button:'left',clickCount:1,...point});
   }

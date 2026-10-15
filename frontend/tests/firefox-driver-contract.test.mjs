@@ -36,6 +36,7 @@ function fixture() {
   };
   const page = {
     id: 'owned-firefox-top', socket,
+    uiInput: {async pressKey() {}, async clickAt() {}},
     async close() { closed++; if (closureFailure) throw closureFailure; },
     onChildInitialized(callback, onDestroyed) { initialized = callback; destroyed = onDestroyed; },
     validateChildInitialized(receipt) {
@@ -248,3 +249,80 @@ test('release driver remains fail-closed after native arming rejects', async t =
   assert.throws(() => page.command('Runtime.evaluate'), value => value === error);
   await page.close();
 });
+
+test('shared driver exposes native uiInput without translating its result or error',async t=>{
+ const driver=await loadDriver('./browser-driver.mjs'),f=fixture(),calls=[];
+ const original=new Error('Native input failure'),result={native:'opaque'};
+ const uiInput={async pressKey(key){calls.push(['key',key]);return result;},async clickAt(point){calls.push(['click',point]);throw original;}};
+ const open=f.transport.open;f.transport.open=async url=>({...await open(url),uiInput});
+ const fetcher=t.mock.method(globalThis,'fetch',()=>{throw Error('Unexpected Chromium discovery');});
+ driver.configureFirefoxTransport(f.transport);const page=await driver.openBrowser('http://127.0.0.1:15173/');
+ assert.equal(page.uiInput,uiInput);
+ assert.equal(await page.uiInput.pressKey('Enter'),result);
+ await assert.rejects(page.uiInput.clickAt({x:1.25,y:2.75}),error=>error===original);
+ assert.deepEqual(calls,[['key','Enter'],['click',{x:1.25,y:2.75}]]);
+ assert.equal(f.commands.some(m=>m.method.startsWith('Input.')),false);
+ assert.equal(fetcher.mock.callCount(),0);await page.close();
+});
+for(const uiInput of [undefined,null,{}, {pressKey(){},clickAt:1}, {pressKey:1,clickAt(){}}]){
+ test('shared driver rejects missing or malformed uiInput and closes its page: '+JSON.stringify(uiInput),async t=>{
+  const driver=await loadDriver('./browser-driver.mjs'),f=fixture();
+  const open=f.transport.open;f.transport.open=async url=>({...await open(url),uiInput});
+  const fetcher=t.mock.method(globalThis,'fetch',()=>{throw Error('Unexpected Chromium discovery');});
+  driver.configureFirefoxTransport(f.transport);
+  await assert.rejects(driver.openBrowser('http://127.0.0.1:15173/'),/Firefox.*uiInput/);
+  assert.equal(f.closed,1);assert.equal(fetcher.mock.callCount(),0);
+ });
+}
+
+// Compile only the existing helper declarations as an inert ES module. No VM,
+// browser startup, top-level scenario, application fetch, or DOM is executed.
+async function callerHelpers(name,uiInput,command,evaluate){
+ const {readFile}=await import('node:fs/promises');
+ const source=await readFile(new URL(name,import.meta.url),'utf8');
+ const take=(start,end)=>source.slice(source.indexOf(start),source.indexOf(end,source.indexOf(start)));
+ const declarations=name.includes('direct-combat')?
+  take('  async function pointerClick(id)', '  // Exercise the native HTML drag'):
+  name.includes('redesign')?
+   take('async function capture(name)', 'async function viewport')+
+   take('async function key(key','try {'):
+   take('async function key(key','async function fit')+
+   take('async function pointer(selector)','async function recoverDroppedResponse');
+ const exports=name.includes('direct-combat')?'pointerClick':name.includes('redesign')?'key,pointerClick,capture':'key,pointer';
+ const module=await import('data:text/javascript,'+encodeURIComponent(
+  `export function bind(uiInput,command,evaluate){const evidence='inert';const card=id=>id;const writeFile=async()=>{};${declarations}\nreturn {${exports}};}`));
+ return module.bind(uiInput,command,evaluate);
+}
+for(const name of ['./browser-ui-v2.mjs','./browser-ui-redesign.mjs','./browser-direct-combat.mjs']){
+ test(name+': original Chromium keyboard and pointer command tuples are preserved',async()=>{
+  const calls=[],point={x:10.125,y:20.875};
+  const helpers=await callerHelpers(name,undefined,async(method,params)=>{calls.push({method,params});return {data:''};},async()=>point);
+  if(helpers.key)for(const key of ['Enter','Escape','Tab']){
+   calls.length=0;await helpers.key(key);
+   assert.deepEqual(calls,['keyDown','keyUp'].map(type=>({method:'Input.dispatchKeyEvent',params:{type,key,code:key,
+    ...(name.includes('v2')?{windowsVirtualKeyCode:({Enter:13,Escape:27,Tab:9})[key],...(key==='Enter'&&type==='keyDown'?{text:'\r'}:{})}:{})}})));
+  }
+  calls.length=0;await (helpers.pointer??helpers.pointerClick)('inert-selector');
+  const move={method:'Input.dispatchMouseEvent',params:{type:'mouseMoved',...point}};
+  const click=['mousePressed','mouseReleased'].map(type=>({method:'Input.dispatchMouseEvent',params:{type,...point,button:'left',clickCount:1}}));
+  assert.deepEqual(calls,name.includes('direct-combat')?click:[move,...click]);
+  if(helpers.capture){calls.length=0;await helpers.capture('inert');assert.deepEqual(calls.slice(0,2),[
+   {method:'Input.dispatchKeyEvent',params:{type:'keyDown',key:'Escape',code:'Escape'}},
+   {method:'Input.dispatchKeyEvent',params:{type:'keyUp',key:'Escape',code:'Escape'}}]);}
+ });
+ test(name+': Firefox takes only the explicit native gesture branch at unchanged geometry',async()=>{
+  const calls=[],point={x:10.125,y:20.875};
+  const uiInput={async pressKey(...args){if(args.length!==1)throw Error('Unsupported key options');calls.push(['key',args[0]]);},async clickAt(p){assert.equal(p,point);calls.push(['click',p]);}};
+  const helpers=await callerHelpers(name,uiInput,async(method)=>{assert.equal(method,'Page.captureScreenshot');return {data:''};},async()=>point);
+  if(helpers.key)for(const key of ['Enter','Escape','Tab'])await helpers.key(key);
+  await (helpers.pointer??helpers.pointerClick)('inert-selector');
+  assert.deepEqual(calls,[...(helpers.key?[['key','Enter'],['key','Escape'],['key','Tab']]:[]),['click',point]]);
+  if(helpers.capture){await helpers.capture('inert');assert.deepEqual(calls.at(-1),['key','Escape']);}
+  if(helpers.key){
+   const before=calls.length;
+   await assert.rejects(helpers.key('Enter','NumpadEnter'),/Unsupported key options/);
+   await assert.rejects(helpers.key('Enter',undefined),/Unsupported key options/);
+   assert.equal(calls.length,before,'Explicit key metadata must not be silently dropped');
+  }
+ });
+}

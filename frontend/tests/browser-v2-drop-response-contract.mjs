@@ -771,7 +771,7 @@ test('actual openBrowser reads identity from its selected CDP origin only when r
 test('native Firefox identity cannot probe or fall back to a CDP json/version endpoint', async t => {
   const nativeDriver=await import('./browser-driver.mjs?identity-firefox-contract');
   const Socket=identitySocket();let closed=false;
-  nativeDriver.configureFirefoxTransport({open:async()=>({socket:new Socket(),close:async()=>{closed=true;}}),close:async()=>{}});
+  nativeDriver.configureFirefoxTransport({open:async()=>({socket:new Socket(),uiInput:{async pressKey(){},async clickAt(){}},close:async()=>{closed=true;}}),close:async()=>{}});
   t.mock.method(globalThis,'fetch',async()=>{assert.fail('No CDP HTTP fallback on Firefox');});
   const browser=await nativeDriver.openBrowser('http://ui.invalid');
   await assert.rejects(browser.browserIdentity(new AbortController().signal),/unavailable on Firefox/);

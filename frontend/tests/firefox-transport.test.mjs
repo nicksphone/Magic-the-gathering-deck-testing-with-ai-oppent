@@ -539,3 +539,197 @@ test('bodyless 204 cannot fulfill another page request, an unknown request or an
  await assert.rejects(f.command(c,'Fetch.fulfillRequest',{requestId:'resolved-204',responseCode:204,responseHeaders:fulfillmentHeaders}));
  assert.equal(f.sent.length,before);
 });
+
+// Gesture tests use inert wire replies, not browser input or native qualification.
+const inputCommands=f=>f.sent.filter(m=>m.method==='input.performActions');
+for(const [key,value] of [['Enter','\uE006'],['Escape','\uE00C'],['Tab','\uE004']]){
+ test('uiInput '+key+' sends a complete main-key gesture and returns its native result',async t=>{
+  const f=fixture(t),c=await f.open(),result={nativeResult:'opaque'};
+  assert.equal(typeof c.uiInput?.pressKey,'function');
+  f.replies.set('input.performActions',result);
+  assert.deepEqual(await c.uiInput.pressKey(key),result);
+  assert.deepEqual(inputCommands(f).map(m=>m.params),[{context:c.id,actions:[{
+   type:'key',id:'ui-keyboard',actions:[{type:'keyDown',value},{type:'keyUp',value}]
+  }]}]);
+ });
+}
+test('uiInput click sends exact fractional viewport CSS coordinates, positioning, left down and up',async t=>{
+ const f=fixture(t),c=await f.open(),point={x:123.125,y:456.875};
+ assert.equal(typeof c.uiInput?.clickAt,'function');
+ await c.uiInput.clickAt(point);
+ assert.deepEqual(inputCommands(f).map(m=>m.params),[{context:c.id,actions:[{
+  type:'pointer',id:'ui-mouse',parameters:{pointerType:'mouse'},actions:[
+   {type:'pointerMove',x:123.125,y:456.875,origin:'viewport',duration:0},
+   {type:'pointerDown',button:0},{type:'pointerUp',button:0}
+  ]
+ }]}]);
+ assert.deepEqual(point,{x:123.125,y:456.875});
+ assert.equal(f.sent.some(m=>m.method==='input.releaseActions'),false);
+});
+test('uiInput rejects unsupported keys, options and arities without sending',async t=>{
+ const f=fixture(t),c=await f.open(),before=f.sent.length;
+ assert.equal(typeof c.uiInput?.pressKey,'function');
+ for(const key of ['NumpadEnter','Return','Space','enter','',null,undefined,{},13,'\uE006'])
+  await assert.rejects(c.uiInput.pressKey(key));
+ await assert.rejects(c.uiInput.pressKey());
+ for(const extra of [undefined,{},true,{text:'\r'},{code:'Enter'},{context:'foreign'}])
+  await assert.rejects(c.uiInput.pressKey('Enter',extra));
+ assert.equal(f.sent.length,before);
+});
+test('uiInput rejects invalid or augmented coordinates instead of rounding or dropping metadata',async t=>{
+ const f=fixture(t),c=await f.open(),before=f.sent.length;
+ assert.equal(typeof c.uiInput?.clickAt,'function');
+ const symbol=Symbol('metadata'),hidden={x:1,y:2};Object.defineProperty(hidden,'button',{value:'left'});
+ for(const point of [null,undefined,[],{}, {x:1},{y:1},{x:'1',y:2},{x:NaN,y:2},
+  {x:1,y:Infinity},{x:-Infinity,y:2},{x:1,y:2,clickCount:1},
+  {x:1,y:2,context:'foreign'},{x:1,y:2,[symbol]:true},hidden,Object.create({x:1,y:2})])
+  await assert.rejects(c.uiInput.clickAt(point));
+ await assert.rejects(c.uiInput.clickAt());
+ for(const extra of [undefined,{},true,{button:'left'}])await assert.rejects(c.uiInput.clickAt({x:1,y:2},extra));
+ assert.equal(f.sent.length,before);
+});
+test('uiInput serializes keyboard and pointer gestures and snapshots caller coordinates',async t=>{
+ const f=fixture(t),c=await f.open();assert.ok(c.uiInput);
+ f.hold.add('input.performActions');
+ let firstDone=false,secondDone=false;
+ const first=c.uiInput.pressKey('Enter').then(()=>{firstDone=true;});first.catch(()=>{});
+ const point={x:2.25,y:3.75};
+ const second=c.uiInput.clickAt(point).then(()=>{secondDone=true;});second.catch(()=>{});
+ point.x=999;point.y=999;
+ await flush();assert.equal(inputCommands(f).length,1);assert.equal(firstDone,false);assert.equal(secondDone,false);
+ f.respond(f.held.shift());await first;await flush();
+ assert.equal(inputCommands(f).length,2);assert.equal(secondDone,false);
+ assert.deepEqual(inputCommands(f)[1].params.actions[0].actions[0],{type:'pointerMove',x:2.25,y:3.75,origin:'viewport',duration:0});
+ f.respond(f.held.shift());await second;assert.equal(secondDone,true);
+ const queued=Array.from({length:64},()=>c.uiInput.pressKey('Tab'));
+ for(const operation of queued)operation.catch(()=>{});
+ await flush();const before=inputCommands(f).length;
+ await assert.rejects(c.uiInput.pressKey('Tab'));
+ assert.equal(inputCommands(f).length,before,'Queue overflow must not send another native command');
+ for(const operation of queued){await flush();f.respond(f.held.shift());await operation;}
+ assert.equal(inputCommands(f).length,before+63);
+});
+for(const negative of [false,true])test('uiInput close joins queued gestures and '+(negative?'retains the exact native failure':'waits for every actual ACK'),async t=>{
+ const f=fixture(t),c=await f.open();assert.ok(c.uiInput);
+ f.hold.add('input.performActions');
+ const first=c.uiInput.pressKey('Enter');first.catch(()=>{});
+ const second=c.uiInput.clickAt({x:1.5,y:2.5});second.catch(()=>{});
+ await flush();let closed=false;
+ const close=f.close(c).then(()=>{closed=true;});close.catch(()=>{});await flush();
+ assert.equal(closed,false);assert.equal(f.sent.some(m=>m.method==='browsingContext.close'),false);
+ await assert.rejects(c.uiInput.pressKey('Escape'));
+ if(negative)f.errors.set('input.performActions','invalid argument');
+ f.respond(f.held.shift());
+ if(negative){
+  let original;await assert.rejects(first,error=>{original=error;return error.nativeCode==='invalid argument';});
+  await assert.rejects(second,error=>error===original);
+  await assert.rejects(close,error=>error===original);
+  assert.equal(inputCommands(f).length,1);
+  assert.equal(f.sent.filter(m=>m.method==='browsingContext.close').length,1);
+ }else{
+  await first;await flush();assert.equal(closed,false);assert.equal(inputCommands(f).length,2);
+  f.respond(f.held.shift());await second;await close;assert.equal(closed,true);
+ }
+ assert.equal(f.sent.some(m=>m.method==='input.releaseActions'),false);
+});
+test('uiInput failure remains fatal after its promise settles, without retry or repair',async t=>{
+ const f=fixture(t),c=await f.open();assert.ok(c.uiInput);
+ f.errors.set('input.performActions','unsupported operation');let original;
+ await assert.rejects(c.uiInput.pressKey('Tab'),error=>{original=error;return error.nativeCode==='unsupported operation';});
+ f.errors.clear();const before=f.sent.length;
+ await assert.rejects(c.uiInput.clickAt({x:1,y:2}),error=>error===original);
+ assert.equal(f.sent.length,before);
+ await assert.rejects(f.close(c),error=>error===original);
+ assert.equal(inputCommands(f).length,1);
+});
+test('uiInput times out under the original clock and close cannot hang on queued input',async t=>{
+ const f=fixture(t),timed=await f.open();assert.ok(timed.uiInput);
+ let now=process.hrtime.bigint();const delays=[],schedule=globalThis.setTimeout;
+ const clock=t.mock.method(process.hrtime,'bigint',()=>now);
+ const timer=t.mock.method(globalThis,'setTimeout',(callback,delay,...args)=>{delays.push(delay);return schedule(callback,delay,...args);});
+ f.hold.add('input.performActions');
+ const earlier=timed.uiInput.pressKey('Tab'),later=timed.uiInput.clickAt({x:1.5,y:2.5});
+ earlier.catch(()=>{});later.catch(()=>{});await flush();
+ const closing=f.close(timed);closing.catch(()=>{});await flush();
+ now+=14_000_000_000n;f.respond(f.held.shift());await earlier;await flush();
+ assert.equal(delays.at(-1),1000,'Queued gesture must use the original remaining second, not a new 15 seconds');
+ f.respond(f.held.shift());await later;await closing;
+ assert.equal(delays.at(-1),15000,'Cleanup starts its separate 15-second phase only after joining admitted input');
+ clock.mock.restore();timer.mock.restore();f.hold.clear();
+ const c=await f.open(),before=inputCommands(f).length;
+ t.mock.timers.enable({apis:['setTimeout']});f.hold.add('input.performActions');
+ const first=c.uiInput.pressKey('Enter');first.catch(()=>{});
+ const second=c.uiInput.pressKey('Escape');second.catch(()=>{});await flush();
+ const close=f.close(c);close.catch(()=>{});await flush();
+ t.mock.timers.tick(15000);await flush();let original;
+ await assert.rejects(first,error=>{original=error;return /Firefox command timed out: input.performActions/.test(error.message);});
+ await assert.rejects(second,error=>error===original);await assert.rejects(close,error=>error===original);
+ assert.equal(inputCommands(f).length,before+1);
+ assert.equal(f.sent.filter(m=>m.method==='browsingContext.close').length,2);
+ f.respond(f.held.shift());await flush();
+ assert.equal(inputCommands(f).length,before+1);
+ t.mock.timers.reset();
+});
+for(const stalled of [false,true])test('uiInput both-clock timeout '+(stalled?'retains input and bounded cleanup timeout errors':'still closes once and awaits the genuine context-close ACK'),async t=>{
+ const f=fixture(t),c=await f.open();let now=process.hrtime.bigint(),original;
+ const clock=t.mock.method(process.hrtime,'bigint',()=>now);
+ t.mock.timers.enable({apis:['setTimeout']});
+ const delays=[],schedule=globalThis.setTimeout;
+ const timer=t.mock.method(globalThis,'setTimeout',(callback,delay,...args)=>{delays.push(delay);return schedule(callback,delay,...args);});
+ f.hold.add('input.performActions');f.hold.add('browsingContext.close');
+ const first=c.uiInput.pressKey('Enter'),queued=c.uiInput.pressKey('Escape');
+ first.catch(()=>{});queued.catch(()=>{});await flush();
+ let closeSettled=false,closeError;
+ const closing=f.close(c).then(()=>{closeSettled=true;},error=>{closeSettled=true;closeError=error;});
+ try{
+  await flush();assert.equal(f.sent.some(m=>m.method==='browsingContext.close'),false);
+  now+=15_000_000_000n;t.mock.timers.tick(15000);await flush();
+  await assert.rejects(first,error=>{original=error;return error.message==='Firefox command timed out: input.performActions';});
+  await assert.rejects(queued,error=>error===original);
+  assert.equal(inputCommands(f).length,1,'A queued gesture must not restart its deadline or retry uncertain input');
+  const commands=f.sent.filter(m=>m.method==='browsingContext.close');
+  assert.equal(commands.length,1,'Expired input must not starve the owned context-close command');
+  assert.deepEqual(commands[0].params,{context:c.id});
+  assert.equal(closeSettled,false,'Sending context.close is not its native ACK');
+  assert.equal(delays.at(-1),15000,'Cleanup receives its own bounded phase, not an expired input-join clock');
+  const lateInput=f.held.find(m=>m.method==='input.performActions');
+  f.held.splice(f.held.indexOf(lateInput),1);f.respond(lateInput);await flush();
+  assert.equal(closeSettled,false,'A late input reply cannot acknowledge page closure');
+  if(stalled){
+   now+=14_999_000_000n;t.mock.timers.tick(14999);await flush();assert.equal(closeSettled,false);
+   now+=1_000_000n;t.mock.timers.tick(1);await closing;
+   assert.ok(closeError instanceof AggregateError);
+   assert.equal(closeError.errors.length,2);assert.equal(closeError.errors[0],original);
+   assert.equal(closeError.errors[1].message,'Firefox command timed out: browsingContext.close');
+  }else{
+   const ack=f.held.find(m=>m.method==='browsingContext.close');
+   f.held.splice(f.held.indexOf(ack),1);f.respond(ack);await closing;
+   assert.equal(closeError,original,'Successful cleanup must not swallow the original input timeout');
+  }
+  assert.equal(closeSettled,true);
+  assert.equal(f.sent.filter(m=>m.method==='browsingContext.close').length,1);
+  assert.equal(f.sent.some(m=>m.method==='input.releaseActions'),false);
+ }finally{
+  // Test teardown only: release inert replies and discard the owned fixture.
+  f.hold.clear();for(const message of f.held.splice(0))f.respond(message);await flush();await closing;
+  await c.close().catch(error=>{if(error!==original)throw error;});
+  timer.mock.restore();clock.mock.restore();t.mock.timers.reset();
+ }
+});
+test('uiInput remains top-owned and cannot revive a destroyed or closed page',async t=>{
+ const f=fixture(t),c=await f.open(),other=await f.open();assert.ok(c.uiInput);
+ f.emit('browsingContext.contextCreated',{context:'child',parent:c.id});await flush();
+ await c.uiInput.pressKey('Tab');await other.uiInput.pressKey('Escape');
+ assert.deepEqual(inputCommands(f).map(m=>m.params.context),[c.id,other.id]);
+ f.emit('browsingContext.contextDestroyed',{context:c.id});await flush();let before=f.sent.length;
+ await assert.rejects(c.uiInput.clickAt({x:1,y:2}));assert.equal(f.sent.length,before);
+ await f.close(other);before=f.sent.length;
+ await assert.rejects(other.uiInput.pressKey('Enter'));assert.equal(f.sent.length,before);
+});
+test('uiInput does not make raw CDP Input commands supported',async t=>{
+ const f=fixture(t),c=await f.open(),before=f.sent.length;
+ for(const [method,params] of [['Input.dispatchKeyEvent',{type:'keyDown',key:'Enter',code:'Enter'}],
+  ['Input.dispatchMouseEvent',{type:'mousePressed',x:1.5,y:2.5,button:'left',clickCount:1}]])
+  await assert.rejects(f.command(c,method,params));
+ assert.equal(f.sent.length,before);
+});
