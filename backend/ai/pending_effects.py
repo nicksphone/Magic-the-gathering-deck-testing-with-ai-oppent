@@ -11,6 +11,7 @@ import re
 from typing import Literal, TypedDict
 
 from game_state.state import CardInstance, MatchState, StackItem, Zone
+from game_state.copying import copy_match_state, _copy_card_field
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_text import without_reminder_text
@@ -22,7 +23,6 @@ SECONDARY_EFFECT_RE = re.compile(
 )
 
 _decision_projection = ContextVar("ai_decision_projection", default=None)
-_immutable_card_types = frozenset((str, int, float, bool, type(None), Zone))
 POSITION_SCORE_CACHE_BYTES = 16 * 1024 * 1024
 POSITION_SCORE_CACHE_ENTRIES = 256
 
@@ -233,40 +233,9 @@ def decision_projection_scope(state, player_id):
 
 def planning_copy(state, *, memo=None):
     """Copy all gameplay state, but not diagnostic history unused by search."""
-    log = getattr(state, "log", None)
-    memo = {} if memo is None else dict(memo)
-    if isinstance(log, list):
-        memo.setdefault(id(log), [])
-    # Avoid deepcopy's reconstruction/dispatch overhead for every immutable
-    # scalar of every card. Mutable metadata still shares one deepcopy memo.
-    cards = [card for card in getattr(state, "cards", {}).values()
-             if type(card) is CardInstance and id(card) not in memo]
-    for card in cards:
-        memo[id(card)] = object.__new__(CardInstance)
-        memo[id(card.__dict__)] = {}
-        memo[id(card)].__dict__ = memo[id(card.__dict__)]
-    for card in cards:
-        memo[id(card)].__dict__.update({
-            key: value if type(value) in _immutable_card_types
-            else _copy_card_field(value, memo)
-            for key, value in card.__dict__.items()
-        })
-    return deepcopy(state, memo)
-
-
-def _copy_card_field(value, memo):
-    """Copy common flat containers without deepcopy's per-scalar dispatch."""
-    if id(value) in memo:
-        return memo[id(value)]
-    kind = type(value)
-    if ((kind in (list, dict, set) and not value)
-            or (kind in (list, set) and all(type(item) in _immutable_card_types for item in value))
-            or (kind is dict and all(type(key) in _immutable_card_types and type(item) in _immutable_card_types
-                                     for key, item in value.items()))):
-        result = value.copy()
-        memo[id(value)] = result
-        return result
-    return deepcopy(value, memo)
+    # Keep the existing card-fields/hotpaths benchmark's dynamic hook active.
+    return copy_match_state(state, memo=memo, include_history=False,
+                            _field_copier=_copy_card_field)
 
 
 def prospective_creature_stats(state, card, player_id):

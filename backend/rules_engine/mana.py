@@ -7,6 +7,7 @@ from functools import lru_cache
 from typing import Set
 
 from game_state.state import MatchState, Zone
+from game_state.copying import copy_match_state
 from rules_engine.continuous import has_keyword
 from rules_engine.hooks import CostContext, apply_cost_modifiers
 from rules_engine.mana_restrictions import UNFILTERED, _parse_rule, available_pool, consume_pool, eligible, spending_rule
@@ -392,14 +393,12 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
     held_life = protected_life + req.get('life', 0)
     plan = _plan_free_payment(state, player_id, req, payment_context=payment_context, excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=held_life)
     if plan is not None and post_payment_condition is not None:
-        from copy import deepcopy
-        trial = deepcopy(state)
+        trial = copy_match_state(state)
         if not _produce_planned_mana(trial, player_id, plan[0], payment_context=payment_context,
                                      reserved_card_ids=reserved_card_ids, protected_life=held_life) or not post_payment_condition(trial):
             plan = None
     if plan is not None and (not optimize_paid or not plan[0]):
         return plan
-    from copy import deepcopy
     from rules_engine.mana_abilities import paid_candidates, activate_planned_mana_ability, PaidManaStep
     candidates = list(paid_candidates(state, player_id, excluded_sources or (), payment_context=payment_context,
                                      include_free=post_payment_condition is not None))
@@ -417,13 +416,13 @@ def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, pay
         return plan
     best, best_score = plan, None
     if plan is not None:
-        trial = deepcopy(state)
+        trial = copy_match_state(state)
         if _produce_planned_mana(trial, player_id, plan[0], payment_context=payment_context, reserved_card_ids=reserved_card_ids, protected_life=held_life):
             best_score = _remaining_mana_score(trial, player_id, payment_context)
     for cid, spec, color in candidates:
         # Each pending activation excludes its own source, preventing circular funding.
         excluded = frozenset(excluded_sources or ()) | {cid}
-        trial = deepcopy(state)
+        trial = copy_match_state(state)
         if not activate_planned_mana_ability(trial, player_id, cid, spec[0], color, excluded_sources=excluded, reserved_card_ids=reserved_card_ids, protected_life=held_life):
             continue
         from rules_engine.costs import parse_activated_cost
