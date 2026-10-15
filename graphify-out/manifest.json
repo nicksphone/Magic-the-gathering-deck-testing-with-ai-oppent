@@ -1074,9 +1074,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/extract_training_examples.py": {
-    "mtime": 1791667789.8679318,
-    "seen": 1791671014.2829542,
-    "ast_hash": "cde9f61e37cd2654ce6b2520d19274b5",
+    "mtime": 1792024021.6661656,
+    "seen": 1792024562.005103,
+    "ast_hash": "c082bbfcdc04e98d7e7fc2b0c262ee1a",
     "semantic_hash": ""
   },
   "backend/scripts/import_tournament_json.py": {
@@ -6774,9 +6774,9 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1791934751.7294433,
-    "seen": 1791935477.6083887,
-    "ast_hash": "df34e33bcbb6e43131cd22714c1c3c98",
+    "mtime": 1792024009.147341,
+    "seen": 1792024562.0089066,
+    "ast_hash": "f058780b355ea4bcf75abc2296f12d12",
     "semantic_hash": ""
   },
   "backend/requirements.txt": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1792006911.9515538,
-    "seen": 1792007026.2501512,
-    "ast_hash": "4be01b064bd6c784a6fc563b668833ed",
+    "mtime": 1792024107.352947,
+    "seen": 1792024562.0102174,
+    "ast_hash": "91ea727acec3a087f96b477889a028c5",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -13518,9 +13518,9 @@
     "semantic_hash": ""
   },
   "ops/caddy/run.py": {
-    "mtime": 1791934751.609445,
-    "seen": 1791935477.608307,
-    "ast_hash": "4a1cf32344a17bf87575c39148ef9051",
+    "mtime": 1792023765.2935762,
+    "seen": 1792024562.0088425,
+    "ast_hash": "c0d1b9317b5199d34f02beda9ea1c1b2",
     "semantic_hash": ""
   },
   "ops/caddy/verify-config.py": {
@@ -17820,9 +17820,9 @@
     "semantic_hash": ""
   },
   "docs/testing/task33-opponent-archetype-sidecar.md": {
-    "mtime": 1791858240.3437502,
-    "seen": 1791858400.8252861,
-    "ast_hash": "f40e4f32a220fa1700644b6810a2d759",
+    "mtime": 1792024337.6815372,
+    "seen": 1792024562.010082,
+    "ast_hash": "96cad1c421697974168ee8eaacab2278",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/task41_lethal_canonical/PROVENANCE.json": {
@@ -18078,9 +18078,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-plan-acceptance-progress.md": {
-    "mtime": 1791903092.9208913,
-    "seen": 1791904596.0511825,
-    "ast_hash": "b1f3ca6dc0f37798c70b2b85ee969d35",
+    "mtime": 1792024337.682537,
+    "seen": 1792024562.0090897,
+    "ast_hash": "92e0df184966d4dffc17b02639ad3bd5",
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
@@ -18711,6 +18711,30 @@
     "mtime": 1792006911.8915546,
     "seen": 1792007026.2499151,
     "ast_hash": "c5b6e54111d784f69e2455bb992a5b00",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_task33_extracted_context.py": {
+    "mtime": 1792024021.6661656,
+    "seen": 1792024562.0081577,
+    "ast_hash": "da8267c83f2bdad59d3765e736a585d2",
+    "semantic_hash": ""
+  },
+  "ops/caddy/test_startup_diagnostic.py": {
+    "mtime": 1792023765.2935762,
+    "seen": 1792024562.0088518,
+    "ast_hash": "0fe368e9baecb8f34fc378fa45a23415",
+    "semantic_hash": ""
+  },
+  "docs/testing/operator-startup-diagnostics.md": {
+    "mtime": 1792023765.2935762,
+    "seen": 1792024562.0098295,
+    "ast_hash": "06de7a0a1759de26c3472417cef80014",
+    "semantic_hash": ""
+  },
+  "docs/testing/task33-extracted-context.md": {
+    "mtime": 1792024101.8300266,
+    "seen": 1792024562.0100784,
+    "ast_hash": "58841ba0b08f2447ff4d7cc991fdb139",
     "semantic_hash": ""
   }
 }

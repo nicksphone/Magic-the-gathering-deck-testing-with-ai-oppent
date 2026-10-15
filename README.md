@@ -423,6 +423,30 @@ A small winning streak is not evidence of balance or seasoned-player strength.
 ## Card And Deck Development
 
 Card data comes from cached Scryfall/canonical facts and local knowledge.
+
+### Knowledge Diagnostics
+
+From `backend` in an owned disposable checkout, using the application Python
+environment, check the shipped corpus and all stored mainboards/sideboards:
+
+```bash
+python -m scripts.knowledge_gap_report --require-rulings
+```
+
+Missing canonical knowledge or unverified rulings produce a nonzero exit.
+Verified empty ruling lists are valid. Image availability is reported separately;
+a passing report does not certify images, rules support or AI strength. The
+command initializes its source-relative local database; do not use the live
+checkout or execute SQLite on NFS.
+
+To explicitly fetch and persist canonical cards and rulings for that same
+database, run `python -m scripts.sync_corpus_cards`, then repeat the report.
+Synchronization uses the network and updates local data; already-complete cards
+are reused unless `--force` is supplied. Keep private deck reports off public CI
+logs and repositories.
+
+### Card Rules And Decklists
+
 Syncing/importing data does not implement its rules. Faces, Oracle text, mana,
 types, keywords, provenance and images must survive hydration and serialization.
 Use the existing compiler/handler for a supported clause; for new semantics, add

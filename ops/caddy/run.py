@@ -181,12 +181,25 @@ def main():
     backend_env, caddy_env = environment(config)
     result = 1
     try:
-        children.append(subprocess.Popen([str(config["python"]), "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", str(config["backend_port"]), "--workers", "1", "--no-access-log", "--no-proxy-headers", "--log-level", "critical"], cwd=config["runtime"] / "backend", env=backend_env, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
-        children.append(subprocess.Popen([str(config["caddy"]), "run", "--config", str(Path(__file__).with_name("Caddyfile")), "--adapter", "caddyfile"], cwd=config["runtime"], env=caddy_env, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+        try:
+            children.append(subprocess.Popen([str(config["python"]), "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", str(config["backend_port"]), "--workers", "1", "--no-access-log", "--no-proxy-headers", "--log-level", "critical"], cwd=config["runtime"] / "backend", env=backend_env, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+        except OSError as error:
+            print(f"Backend could not start ({type(error).__name__}).", file=sys.stderr)
+            raise
+        try:
+            children.append(subprocess.Popen([str(config["caddy"]), "run", "--config", str(Path(__file__).with_name("Caddyfile")), "--adapter", "caddyfile"], cwd=config["runtime"], env=caddy_env, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+        except OSError as error:
+            print(f"HTTPS could not start ({type(error).__name__}).", file=sys.stderr)
+            raise
         print("Private loopback supervisor running; readiness is not yet established.", flush=True)
         while not stopping and all(child.poll() is None for child in children):
             time.sleep(0.1)
         result = 0 if stopping else 1
+        if not stopping:
+            for service, child in zip(("Backend", "HTTPS"), children):
+                code = child.poll()
+                if code is not None:
+                    print(f"{service} exited unexpectedly (exit code {code}).", file=sys.stderr)
     finally:
         for child in children:
             if child.poll() is None:

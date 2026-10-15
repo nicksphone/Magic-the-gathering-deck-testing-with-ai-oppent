@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-14 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-15 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -29,6 +29,26 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
   passing characterization tests are not proof of correct gameplay.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
+
+## October 15 Operator And Extraction Corrections
+
+The existing launcher now identifies which service failed and its numeric exit
+status without printing private configuration or subprocess output. Ctrl-C,
+child arguments, lock release and shutdown behavior remain unchanged. This is
+operator error reporting, not UI redesign or service-readiness qualification.
+
+Training extraction retains explicit matchup labels and valid action indices
+using the existing prior consumer's normalization. It does not infer labels,
+change AI weights or promote measured data. Seven whole integrated modules
+pass **185 cases in 7.72 seconds**, with source/dependency hashes unchanged and
+no unexpected I/O. Initial fixture setup errors and the superseded new test's
+private-preimage dependency remain separate historical records. See
+[operator diagnostics](docs/testing/operator-startup-diagnostics.md) and
+[extraction acceptance](docs/testing/task33-extracted-context.md).
+
+The README now documents the existing Phase 1 knowledge CLI, its stored-deck
+coverage and its image/rules limitations. This documentation does not complete
+the outstanding Phase 1 acceptance or the original release and AI gates.
 
 ## October 14 Public Numeric Sideboarding
 

@@ -2,6 +2,12 @@
 
 ## Status and boundary
 
+October 15 follow-up: the extractor now retains explicitly supplied valid
+archetype labels and action indices; see
+[the executed extraction checks](task33-extracted-context.md). It still does
+not infer missing producer fields or create qualified game data. The producer
+inspection below describes its stated historical base, not the new extractor.
+
 Code and synthetic component controls only. Task 3.3 is **not complete**:
 immutable base `ba3b8fb34a005b6a4ca6386851b481af96894370` contains zero
 committed `training_runs/` files, so no genuine qualified matchup priors were
