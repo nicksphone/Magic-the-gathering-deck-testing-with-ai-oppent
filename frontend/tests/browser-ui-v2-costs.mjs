@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { openBrowser, waitForApiState } from './browser-driver.mjs';
+import { traceStartRecoveryResponses } from './browser-start-recovery-diagnostics.mjs';
 const api=process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
 const ui=process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15174';
 assert.ok(process.env.MTG_BROWSER_ORIGIN,'Set owned Chromium endpoint');
@@ -38,18 +39,19 @@ try {
  assert.equal(await b.evaluate("document.querySelectorAll('.hand-card.playable').length"),0);
  assert.equal(await b.evaluate("[...document.querySelectorAll('button')].find(e=>e.textContent==='Pass Priority').disabled"),true);
  console.log('PASS v2 AI priority: human viewpoint remains P1, AI hand/actions hidden');
- const s=await setup('/fixture');let held;
- b.onIntercept(async e=>{
-  if(e.request.method!=='POST'){await b.command('Fetch.continueResponse',{requestId:e.requestId});return;}
+ const s=await setup('/fixture');let held,continueHeld;
+ b.onIntercept(traceStartRecoveryResponses(b.command, async (e,command)=>{
+  if(e.request.method!=='POST'){await command('Fetch.continueResponse',{requestId:e.requestId});return;}
   held=e;
- });
+  continueHeld=()=>command('Fetch.continueResponse',{requestId:e.requestId});
+ }, ui, value=>console.error('V2_HELD_RESPONSE_TRACE',JSON.stringify(value))));
  await b.command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Response'}]});
  await b.click('Play Land Forest');
  await b.waitFor("document.body.innerText.includes('Match operation pending')");
  assert.equal(await b.evaluate("[...document.querySelectorAll('#table fieldset,#match-controls fieldset')].every(e=>e.disabled)"),true);
  for(let n=0;!held&&n<100;n++)await new Promise(r=>setTimeout(r,20));assert.ok(held);
  assert.equal(held.request.method,'POST');assert.equal(held.responseStatusCode,200);
- await b.command('Fetch.continueResponse',{requestId:held.requestId});await b.command('Fetch.disable');
+ await continueHeld();await b.command('Fetch.disable');
  await b.waitFor("!document.body.innerText.includes('Match operation pending')");
  const final=await waitForApiState(`${api}/matches/${s.id}`,state=>state.revision===1);assert.equal(final.players['2'].battlefield.filter(c=>c.id==='forest').length,1);
  console.log('PASS v2 held real response: all gameplay controls disabled while pending; exactly one mutation persisted');

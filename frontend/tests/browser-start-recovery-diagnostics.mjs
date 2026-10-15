@@ -21,6 +21,11 @@ export function traceStartRecoveryResponses(command, handler, frontend,
   report = value => console.error('START_RECOVERY_RESPONSE_TRACE', JSON.stringify(value))) {
   const responses = [], requests = new Map(), networks = new Map();
   let omittedResponses = 0, reported = false;
+  function reportFailure() {
+    if (reported) return;
+    reported = true;
+    try { report({responses: structuredClone(responses), omittedResponses}); } catch { /* Preserve the original failure. */ }
+  }
   function ordinal(map, value) {
     if (typeof value !== 'string' || !value || value.length > 256) return null;
     if (!map.has(value)) {
@@ -52,15 +57,13 @@ export function traceStartRecoveryResponses(command, handler, frontend,
             if (Number.isSafeInteger(code)) observation.errorCode = code;
           }
         } catch { /* Diagnostic parsing cannot replace the native failure. */ }
+        reportFailure();
         throw error;
       }
     }
     try { return await handler(event, observedCommand); }
     catch (error) {
-      if (!reported) {
-        reported = true;
-        try { report({responses: structuredClone(responses), omittedResponses}); } catch { /* Preserve the original failure. */ }
-      }
+      reportFailure();
       throw error;
     }
   };

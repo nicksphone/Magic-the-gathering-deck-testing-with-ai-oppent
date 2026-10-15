@@ -128,3 +128,19 @@ test('invalid protocol error payload never leaks arbitrary values', async () => 
   assert.equal(reports[0].responses[0].commands[0].errorCode, null);
   assert.equal(JSON.stringify(reports).includes('PRIVATE_'), false);
 });
+
+test('deferred continuation after callback return still reports its genuine native failure', async () => {
+  const reports = [], error = new Error('{"code":-32602,"message":"PRIVATE_DEFERRED"}');
+  let resume;
+  const wrapped = wrap(async () => { throw error; }, (received, command) => {
+    resume = () => command('Fetch.continueResponse', {requestId: received.requestId});
+    return 'held';
+  }, report => reports.push(report));
+  assert.equal(await wrapped(event({resourceType: 'Fetch', request: {method: 'POST'}})), 'held');
+  assert.deepEqual(reports, []);
+  await assert.rejects(resume(), actual => actual === error);
+  assert.equal(reports.length, 1);
+  assert.equal(reports[0].responses[0].method, 'POST');
+  assert.equal(reports[0].responses[0].commands[0].errorCode, -32602);
+  assert.equal(JSON.stringify(reports).includes('PRIVATE_'), false);
+});
