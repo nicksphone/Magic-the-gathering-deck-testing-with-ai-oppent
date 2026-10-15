@@ -1,5 +1,22 @@
 # Release Acceptance Status
 
+## Current Native And Generic Browser Boundary
+
+Published `4297ed8059f56bc8e8a95379e46ca992bf19853e` completes both secure native
+Chrome and Brave whole browser suites: 45 ordered stages and 501 PASS banners
+per vendor, with enabled sandboxes and verified closure. Its separate generic
+browser CI job fails in response-loss recovery; the old empty response trace
+does not establish the runtime cause. The following bounded diagnostic change
+preserves deadlines and native actions while observing request/ACK, UI,
+canonical-revision and actual-browser-identity boundaries. See
+[the exact outcomes and limits](browser-4297-response-boundary.md).
+
+Phase 1 also has a reproduced Unicode name-identity defect and a reviewed
+repository correction, rather than only UI work. See
+[knowledge identity](knowledge-unicode-name-identity.md) and
+[the unsigned Phase 1 checklist](phase1-acceptance-current.md).
+Neither these components nor the native passes certify the full release.
+
 ## Native Browser Checkpoint: 2026-10-15
 
 Published `014263f8` completes the secure native Chrome whole browser suite:

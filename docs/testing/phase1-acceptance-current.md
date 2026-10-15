@@ -106,6 +106,18 @@ an actual legacy-copy sync, not selection or migration of the live deployment.
 
 ## Closure Work
 
+The subsequent [Unicode name-identity correction](knowledge-unicode-name-identity.md)
+addresses an actual Task 1.1 defect: SQLite `lower()` was not equivalent to
+Python casefolding, causing accented-name upsert and lookup failures. The
+corrected parent component passes 645 ordinary cases in 28 whole modules,
+including the complete ingestion module and original natural-game test, with
+no failures/errors/skips or I/O denials. The separate real copied-data repeat
+also passes without requests or data changes. These are exact-source local
+components, not later hosted CI or live-deployment qualification. The
+separate [browser checkpoint](browser-4297-response-boundary.md) records both
+current native-vendor successes and the generic recovery failure; neither is
+silently substituted for whole-current-source acceptance.
+
 1. Retain the now-passed missing-cache recovery regression and preservation
    coverage in normal CI.
 2. Complete hosted qualification of that changed source, not just the preceding

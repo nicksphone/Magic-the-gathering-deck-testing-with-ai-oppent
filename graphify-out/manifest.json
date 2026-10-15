@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "backend/persistence/repository.py": {
-    "mtime": 1792048723.755389,
-    "seen": 1792049945.3256507,
-    "ast_hash": "d13313e02803b30978b30e5df7891b21",
+    "mtime": 1792053238.8143322,
+    "seen": 1792053739.4077356,
+    "ast_hash": "afcfdf491e34d64b97ee0496a74b4870",
     "semantic_hash": ""
   },
   "backend/rules_engine/__init__.py": {
@@ -6246,9 +6246,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-driver.mjs": {
-    "mtime": 1792040753.278868,
-    "seen": 1792042099.5758154,
-    "ast_hash": "39ff33e5bdbca25ca3fdeb63959abf94",
+    "mtime": 1792053269.2298195,
+    "seen": 1792053739.411627,
+    "ast_hash": "71eb84dcdf7fb1388d7f4478528d3743",
     "semantic_hash": ""
   },
   "frontend/tests/browser-effect-casts.mjs": {
@@ -6528,9 +6528,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1792045841.7061188,
-    "seen": 1792046651.805622,
-    "ast_hash": "56a8fe92b2e9fe0d142eab9299b1da91",
+    "mtime": 1792053130.460167,
+    "seen": 1792053739.4117327,
+    "ast_hash": "1cfce5c624e52f0506b0d146ec2cfc83",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -18258,9 +18258,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-drop-response-contract.mjs": {
-    "mtime": 1792045789.834936,
-    "seen": 1792046651.805628,
-    "ast_hash": "dd2b2b76ba95d31f6bd927578f7502f7",
+    "mtime": 1792053235.6553855,
+    "seen": 1792053739.4117365,
+    "ast_hash": "4571ed25f25fa58f9cb9d3dbf8fb83bc",
     "semantic_hash": ""
   },
   "docs/testing/browser-v2-accepted-response-recovery.md": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792049829.7935407,
-    "seen": 1792049945.3309207,
-    "ast_hash": "683e537db1622c54b1c4fd63f2528493",
+    "mtime": 1792053600.3092868,
+    "seen": 1792053739.4130082,
+    "ast_hash": "6d2638b08ae95435f857ce0e505f820e",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -18945,6 +18945,24 @@
     "mtime": 1792049829.7925408,
     "seen": 1792049945.3309226,
     "ast_hash": "4abc85341273affe3a4d9994d00768f3",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_repository_unicode_names.py": {
+    "mtime": 1792053238.8393319,
+    "seen": 1792053739.410901,
+    "ast_hash": "a25169326c2d8f298cd1692f645e8a50",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-4297-response-boundary.md": {
+    "mtime": 1792053600.308287,
+    "seen": 1792053739.4123082,
+    "ast_hash": "36d30b0c92e4d9b0f41ac39428c38ed3",
+    "semantic_hash": ""
+  },
+  "docs/testing/knowledge-unicode-name-identity.md": {
+    "mtime": 1792053600.308287,
+    "seen": 1792053739.412806,
+    "ast_hash": "ac271aa0121a59e25c27ac52069c2846",
     "semantic_hash": ""
   }
 }
