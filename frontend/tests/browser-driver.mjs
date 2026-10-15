@@ -215,18 +215,31 @@ async function passiveCdp(url) {
   };
 }
 
+let firefoxTransport;
+export function configureFirefoxTransport(transport) {
+  if (firefoxTransport || typeof transport?.open !== 'function' || typeof transport?.close !== 'function') {
+    throw new TypeError('Exact once-bound Firefox transport required');
+  }
+  firefoxTransport = transport;
+}
+
 export async function openBrowser(url) {
   const origin = process.env.MTG_BROWSER_ORIGIN || 'http://127.0.0.1:19222';
   if (process.env.MTG_FRONTEND_ORIGIN) url = url.replace('http://127.0.0.1:15173', process.env.MTG_FRONTEND_ORIGIN);
+  if (firefoxTransport && process.env.MTG_PASSIVE_CDP_EVIDENCE) {
+    throw new Error('Firefox transport does not support passive CDP evidence');
+  }
   const passive = process.env.MTG_PASSIVE_CDP_EVIDENCE ? await passiveCdp(url) : null;
+  let nativePage;
   try {
-  const page = await (await fetch(`${origin}/json/new?${passive ? 'about:blank' : url}`, { method: 'PUT', signal: AbortSignal.timeout(15000) })).json();
-  const socket = new WebSocket(page.webSocketDebuggerUrl);
+  nativePage = firefoxTransport ? await firefoxTransport.open(url) : null;
+  const page = firefoxTransport ? nativePage : await (await fetch(`${origin}/json/new?${passive ? 'about:blank' : url}`, { method: 'PUT', signal: AbortSignal.timeout(15000) })).json();
+  const socket = firefoxTransport ? nativePage.socket : new WebSocket(page.webSocketDebuggerUrl);
   if (passive) {
     socket.addEventListener('close', () => passive.transportLost('transport-close'));
     socket.addEventListener('error', () => passive.transportLost('transport-error'));
   }
-  await new Promise((resolve, reject) => {
+  if (!firefoxTransport) await new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Chromium WebSocket connection timed out')), 15000);
     socket.onopen = () => { clearTimeout(timer); resolve(); };
     socket.onerror = () => { clearTimeout(timer); reject(new Error('Chromium WebSocket connection failed')); };
@@ -252,6 +265,7 @@ export async function openBrowser(url) {
     });
   }
   function command(method, params = {}) {
+    socket.assertHealthy?.();
     return method === 'Page.reload' ? reload(params) : rawCommand(method, params);
   }
   async function evaluate(expression) {
@@ -293,6 +307,13 @@ export async function openBrowser(url) {
     await passive.snapshot('navigation');
   }
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
-  return {command, evaluate, waitFor, click, reload, onIntercept: handler => { intercept = handler; }, ...(passive ? { passiveCdp: passive.status } : {}), async close() { if (passive) await passive.close(); socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); }};
-  } catch (error) { if (passive) await passive.close(); throw error; }
+  return {command, evaluate, waitFor, click, reload, onIntercept: handler => { intercept = handler; }, ...(passive ? { passiveCdp: passive.status } : {}), async close() { if (passive) await passive.close(); if (nativePage) await nativePage.close(); else { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); } }};
+  } catch (error) {
+    if (passive) await passive.close();
+    if (nativePage) {
+      try { await nativePage.close(); }
+      catch (cleanupError) { throw new AggregateError([error, cleanupError], 'Firefox initialization and page closure failed'); }
+    }
+    throw error;
+  }
 }

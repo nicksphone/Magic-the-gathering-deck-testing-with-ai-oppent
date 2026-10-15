@@ -1,5 +1,13 @@
 import {createCDPTrace} from './cdp-diagnostic-trace.mjs';
 
+let firefoxTransport;
+export function configureFirefoxTransport(transport) {
+  if (firefoxTransport || typeof transport?.open !== 'function' || typeof transport?.close !== 'function') {
+    throw new TypeError('Exact once-bound Firefox transport required');
+  }
+  firefoxTransport = transport;
+}
+
 export async function waitForApiState(url, predicate, timeoutMs = 15000) {
   const deadline = Date.now() + timeoutMs;
   let state;
@@ -36,9 +44,11 @@ export async function initializeOwnedIframeSession(send, sessionId, patterns, wa
 export async function openBrowser(url) {
   const origin = process.env.MTG_BROWSER_ORIGIN || 'http://127.0.0.1:19222';
   if (process.env.MTG_FRONTEND_ORIGIN) url = url.replace('http://127.0.0.1:15173', process.env.MTG_FRONTEND_ORIGIN);
-  const page = await (await fetch(`${origin}/json/new?${url}`, { method: 'PUT', signal: AbortSignal.timeout(15000) })).json();
-  const socket = new WebSocket(page.webSocketDebuggerUrl);
-  await new Promise((resolve, reject) => {
+  const nativePage = firefoxTransport ? await firefoxTransport.open(url) : null;
+  try {
+  const page = firefoxTransport ? nativePage : await (await fetch(`${origin}/json/new?${url}`, { method: 'PUT', signal: AbortSignal.timeout(15000) })).json();
+  const socket = firefoxTransport ? nativePage.socket : new WebSocket(page.webSocketDebuggerUrl);
+  if (!firefoxTransport) await new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('Chromium WebSocket connection timed out')), 15000);
     socket.onopen = () => { clearTimeout(timer); resolve(); };
     socket.onerror = () => { clearTimeout(timer); reject(new Error('Chromium WebSocket connection failed')); };
@@ -80,6 +90,15 @@ export async function openBrowser(url) {
     pending.delete(message.id);
     message.error ? waiter.reject(new Error(JSON.stringify(message.error))) : waiter.resolve(message.result);
   };
+  if (nativePage) nativePage.onChildInitialized(readiness => {
+    try {
+      nativePage.validateChildInitialized(readiness);
+      if (!iframePatterns || iframeSessions.size >= 16 || iframeSessions.has(readiness.context)) {
+        throw new Error('Unexpected or unbounded owned Firefox child');
+      }
+      iframeSessions.add(readiness.context);
+    } catch (error) { iframeFailure ??= error; }
+  }, context => iframeSessions.delete(context));
   function rawCommand(method, params = {}, sessionId) {
     const promise = new Promise((resolve, reject) => {
       const id = ++sequence;
@@ -94,7 +113,7 @@ export async function openBrowser(url) {
     }
     return promise;
   }
-  function assertInterceptionHealthy() { if (iframeFailure) throw iframeFailure; }
+  function assertInterceptionHealthy() { socket.assertHealthy?.(); if (iframeFailure) throw iframeFailure; }
   function command(method, params = {}, sessionId) {
     assertInterceptionHealthy();
     return method === 'Page.reload' && !sessionId ? reload(params) : rawCommand(method, params, sessionId);
@@ -102,6 +121,11 @@ export async function openBrowser(url) {
   async function enableOwnedIframeInterception(patterns) {
     assertInterceptionHealthy();
     iframePatterns = structuredClone(patterns);
+    if (nativePage) {
+      try { await nativePage.armFutureChildren(patterns); }
+      catch (error) { iframeFailure ??= error; throw error; }
+      return;
+    }
     await command('Target.setAutoAttach', {autoAttach: true, waitForDebuggerOnStart: true,
       flatten: true, filter: [{type: 'iframe', exclude: false}, {exclude: true}]});
   }
@@ -159,7 +183,38 @@ export async function openBrowser(url) {
   await command('Page.getFrameTree');
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
   return {command, evaluate, waitFor, click, reload, enableOwnedIframeInterception, assertInterceptionHealthy,
-    waitForInterceptions, onIntercept: handler => { intercept = handler; }, async close() { if (trace.hasProtocolError()) { trace.checkpoint('protocol-error-drain-begin'); await new Promise(resolve => setTimeout(resolve, 750)); trace.checkpoint('protocol-error-drain-end'); } trace.closed(); socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); }};
+    waitForInterceptions, onIntercept: handler => { intercept = handler; }, async close() {
+      let diagnosticError;
+      try {
+        if (trace.hasProtocolError()) {
+          trace.checkpoint('protocol-error-drain-begin');
+          await new Promise(resolve => setTimeout(resolve, 750));
+          trace.checkpoint('protocol-error-drain-end');
+        }
+        trace.closed();
+      } catch (error) {
+        if (!nativePage) throw error;
+        diagnosticError = error;
+      }
+      if (nativePage) {
+        try { await nativePage.close(); }
+        catch (cleanupError) {
+          if (diagnosticError) throw new AggregateError([diagnosticError, cleanupError], 'Firefox diagnostic and page closure failed');
+          throw cleanupError;
+        }
+        if (diagnosticError) throw diagnosticError;
+      } else {
+        socket.close();
+        await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) });
+      }
+    }};
+  } catch (error) {
+    if (nativePage) {
+      try { await nativePage.close(); }
+      catch (cleanupError) { throw new AggregateError([error, cleanupError], 'Firefox initialization and page closure failed'); }
+    }
+    throw error;
+  }
 }
 
 export async function drainConsumptiveCommands(consumptive, timeoutMs = 5000) {

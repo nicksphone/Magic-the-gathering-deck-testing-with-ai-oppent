@@ -1,5 +1,17 @@
 # Release Acceptance Status
 
+## Native Browser Checkpoint: 2026-10-15
+
+Published `014263f8` completes the secure native Chrome whole browser suite:
+45 ordered stage headers and 501 observed PASS banners, with the sandbox
+enabled and the enclosing control group empty. Brave now passes its actual
+native startup/identity/sandbox checks, but fails later in match-creation
+recovery with `Invalid InterceptionId`. The standard browser and frontend jobs
+pass; backend CI is still active at this checkpoint. See
+[the exact source and unresolved boundary](native-browser-014263-progress.md).
+Firefox transport integration is a separate tested-code component, not native
+Firefox or RC acceptance. All unproved release requirements remain open.
+
 ## Published CI Checkpoint: 2026-10-15
 
 Published `92a59e11` completes backend, frontend and the configured CI browser
