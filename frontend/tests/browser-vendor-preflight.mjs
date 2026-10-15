@@ -197,7 +197,7 @@ async function nativeReport(config, reportFile, env) {
     report.package = installed.package;
     report.binary = {path: config.binary, sha256: installed.binary_sha256};
     report.helper = {path: config.helper, sha256: installed.helper_sha256, root_owned_mode: '4755'};
-    const profileRoot = await mkdtemp(path.join(path.dirname(reportFile), '.vendor-preflight-'));
+    const profileRoot = await mkdtemp('/tmp/mtg-v-');
     for (const name of ['home', 'tmp', 'config', 'cache', 'data', 'runtime']) await mkdir(path.join(profileRoot, name), {mode: 0o700});
     const childEnvironment = {...metadataEnvironment, HOME: path.join(profileRoot, 'home'),
       TMPDIR: path.join(profileRoot, 'tmp'), XDG_CONFIG_HOME: path.join(profileRoot, 'config'),

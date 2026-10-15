@@ -18804,15 +18804,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-vendor-preflight.mjs": {
-    "mtime": 1792038193.3256266,
-    "seen": 1792038402.778422,
-    "ast_hash": "aaa99ebf46b2f78d59bbe092dbea99f4",
+    "mtime": 1792038910.9820762,
+    "seen": 1792039084.3514736,
+    "ast_hash": "625d794d2b45e068f680a0c777969b66",
     "semantic_hash": ""
   },
   "frontend/tests/browser-vendor-preflight.test.mjs": {
-    "mtime": 1792038193.1446302,
-    "seen": 1792038402.7784245,
-    "ast_hash": "0da7024cda21298556b5afacf0e75ae6",
+    "mtime": 1792038910.8110793,
+    "seen": 1792039084.351476,
+    "ast_hash": "0c825707038eecab5e821ff9b5cab891",
     "semantic_hash": ""
   },
   "frontend/tests/native-browser-service.test.mjs": {
@@ -18828,9 +18828,15 @@
     "semantic_hash": ""
   },
   "docs/testing/native-vendor-browser-ci.md": {
-    "mtime": 1792037393.9570558,
-    "seen": 1792037507.8746192,
-    "ast_hash": "62913567727fc96f79dfa2edcc786870",
+    "mtime": 1792038968.6560564,
+    "seen": 1792039084.3526523,
+    "ast_hash": "86d5797fb7f820337dc019b4e0c2ac7e",
+    "semantic_hash": ""
+  },
+  "docs/testing/native-chrome-7cf-acceptance.md": {
+    "mtime": 1792038543.4767585,
+    "seen": 1792039084.3526466,
+    "ast_hash": "cd4db107dbd965ff36f51aa6cc8ba336",
     "semantic_hash": ""
   }
 }

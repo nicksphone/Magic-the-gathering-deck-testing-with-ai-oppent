@@ -45,6 +45,9 @@ Those classifications describe matched text, not a proven kernel/policy cause.
 Counts cover observed pipe bytes only. Capture is released when the direct
 child is reaped, and the report distinguishes EOF from deliberate pipe closure;
 inherited descendant pipes cannot keep the observer alive.
+The private browser scratch root uses a short `/tmp/mtg-v-*` path so browser
+singleton sockets cannot overflow Linux's Unix-domain socket pathname limit;
+metadata reports still remain in the explicit runner evidence directory.
 Firefox needs its separate adapter and is not certified by this workflow.
 
 ## Local Checks

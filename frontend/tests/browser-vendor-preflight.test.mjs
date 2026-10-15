@@ -7,6 +7,8 @@ import fsPromises from 'node:fs/promises';
 import {syncBuiltinESMExports} from 'node:module';
 import {EventEmitter} from 'node:events';
 import {PassThrough} from 'node:stream';
+import path from 'node:path';
+import vm from 'node:vm';
 
 const moduleURL = new URL('./browser-vendor-preflight.mjs', import.meta.url);
 const implementation = await import(moduleURL).catch(error => {
@@ -153,6 +155,18 @@ test('startup stderr capture is bounded and never publishes private paths or byt
   assert.equal(facts.truncated, true);
   assert.equal(JSON.stringify(facts).includes('PRIVATE'), false);
   assert.equal(JSON.stringify(facts).includes('/home/'), false);
+});
+
+test('private native scratch cannot overflow the Linux singleton socket path', async () => {
+  const source = await readFile(moduleURL, 'utf8');
+  const expression = source.match(/const profileRoot = await mkdtemp\(([^\n]+)\);/);
+  assert.ok(expression, 'native profile allocation must remain explicit');
+  const prefix = vm.runInNewContext(expression[1], {
+    path, reportFile: '/home/runner/work/_temp/native-brave/preflight.json',
+  });
+  const socket = path.join(`${prefix}ABCDEF`, 'tmp', '.org.chromium.Chromium.ABCDEF', 'SingletonSocket');
+  assert.ok(Buffer.byteLength(socket) < 108, `unsafe Unix socket pathname: ${Buffer.byteLength(socket)} bytes`);
+  assert.equal(prefix, '/tmp/mtg-v-');
 });
 
 test('unclassified aborts expose only runtime flags and bounded compiler source locations', () => {
