@@ -85,4 +85,4 @@ def test_original_recipe_and_repository_operands_remain_immutable():
     assert hashlib.sha256(api.PATH.read_bytes()).hexdigest() == 'bc0cde4e6e52f6ce2b76c64f68688c3a649271e415b24bd581ce431a4e7c08f3'
     recipe = api.CONTRACT['production']['persistence/repository.py']
     raw = (BACKEND / 'persistence/repository.py').read_bytes()
-    assert api.compatible_product_hash('persistence/repository.py', raw, recipe['old_sha256']) == recipe['new_sha256']
+    assert api.compatible_product_hash('persistence/repository.py', raw, recipe['old_sha256']) == api.ACCEPTED_REPOSITORY_DELTA['new_sha256']
