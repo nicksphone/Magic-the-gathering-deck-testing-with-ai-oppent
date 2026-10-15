@@ -19,12 +19,13 @@ request drainage remain in place.
 
 ## Verification
 
-The original 71 Firefox transport test bodies are unchanged. The expanded
-module passes all 94 cases, including rejection, native-error, acknowledgement
-and ownership controls. The first regression run preserved 85 passes and nine
-failures before the implementation. The combined pure protocol declaration
-passes 219 cases. An independent reviewer also passes the complete 94-case
-module and verifies the frozen source hashes before and after.
+The original 51 transport cases and 20 driver cases are preserved. Appending
+23 transport cases produces a two-module Firefox declaration of 94 cases,
+including rejection, native-error, acknowledgement and ownership controls.
+The first regression run preserved 85 passes and nine failures before the
+implementation. The larger pure protocol declaration passes 219 cases. An
+independent reviewer also passes the complete two-module, 94-case declaration
+and verifies the frozen source hashes before and after.
 
 The parent's complete frontend test command, production build and lint each
 exit zero on the final component. This is frontend/code-level evidence, not

@@ -1,9 +1,17 @@
 # Release Acceptance Status
 
+## Firefox Native Gesture Component
+
+The explicit Firefox keyboard/pointer interface passes the two-module,
+121-case protocol/driver declaration, including corrected timeout cleanup.
+Chromium command paths and existing UI assertions are retained. This does not
+certify the actual Firefox build or the full application suite. See
+[the gesture and two-phase cleanup boundaries](firefox-native-ui-input.md).
+
 ## Firefox Protocol Component
 
-The screenshot/bodyless-204 extension passes its full 94-case Firefox
-transport module and the complete frontend test/build/lint chain. This is a
+The screenshot/bodyless-204 extension passes its full two-module, 94-case
+Firefox declaration and the complete frontend test/build/lint chain. This is a
 reviewed protocol component, not native Firefox or whole-application browser
 acceptance. The keyboard, pointer, capability and external ancestry holds
 remain open. See [the exact component boundary](firefox-screenshot-bodyless-204.md).
