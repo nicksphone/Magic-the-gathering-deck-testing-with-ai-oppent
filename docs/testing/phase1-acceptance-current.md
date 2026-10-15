@@ -125,6 +125,21 @@ the runner's working directory produced the meaningful RED and GREEN above.
 Final hosted acceptance and the literal handwritten-test-data scope question
 remain open. This correction does not itself sign off Phase 1.
 
+## Named-Card Fixture Follow-Up
+
+The ingestion module's positive Bolt, Island, Grizzly Bears and Delver fixtures
+now load complete pinned official objects instead of assembling card metadata.
+All 20 existing tests and 88 assertions remain; two expected operands now use
+the genuine full legalities map and Oracle identity. Deliberately invalid
+identity/mutation vectors remain explicitly noncanonical.
+
+The original nine Task 1.2 modules plus the new four-case fidelity module pass
+one ten-whole-module cohort: 235 cases in 69.351 seconds, with no failures,
+errors or skips. Production ingestion, canonical fixture files and runtime
+dependencies are unchanged. This closes those four positive fixture gaps,
+not the repository-wide synthetic/token/history scope question or whole hosted
+acceptance. See [the exact fixture evidence](knowledge-ingest-canonical-fixtures.md).
+
 ## Missing-Cache Recovery Qualification
 
 The corrected ingestor materializes a missing display-cache row from validated

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
+from pathlib import Path
 
 import httpx
 import pytest
@@ -14,6 +16,18 @@ from scripts.knowledge_gap_report import knowledge_report
 from scripts.card_mechanics_inventory import inventory
 
 
+def _official_card(name):
+    """Positive card facts come from complete, pinned official response objects."""
+    fixtures = Path(__file__).parent
+    if name == 'Grizzly Bears':
+        raw = (fixtures/'vraska_full/fixtures/grizzly-bears-scryfall-raw.json').read_bytes()
+        assert hashlib.sha256(raw).hexdigest() == '150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c'
+        return json.loads(raw)
+    raw = (fixtures/'fixtures/knowledge_profiles/seed155-scryfall.jsonl').read_bytes()
+    assert hashlib.sha256(raw).hexdigest() == '194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732'
+    return next(card for card in map(json.loads, raw.splitlines()) if card['name'] == name)
+
+
 @pytest.fixture
 def repo():
     engine = create_engine("sqlite://")
@@ -24,7 +38,7 @@ def repo():
 
 @pytest.fixture
 def bolt():
-    return {"object": "card", "id": "printing-bolt", "oracle_id": "oracle-bolt", "name": "Lightning Bolt", "type_line": "Instant", "oracle_text": "Lightning Bolt deals 3 damage to any target.", "mana_cost": "{R}", "cmc": 1, "color_identity": ["R"], "keywords": [], "layout": "normal", "rulings_uri": "https://api.scryfall.com/cards/printing-bolt/rulings", "legalities": {"modern": "legal"}}
+    return _official_card('Lightning Bolt')
 
 
 def test_sync_empty_rulings_is_verified_and_second_run_is_offline(repo, bolt):
@@ -76,7 +90,7 @@ def test_bulk_import_is_idempotent_and_does_not_claim_rulings_or_playability(rep
     assert repo.list_cards() == []
     profile = json.loads(repo.get_card_knowledge("Lightning Bolt").profiles_json)
     assert profile["rulings_verified"] is False
-    assert profile["card_data"]["legalities"] == {"modern": "legal"}
+    assert profile["card_data"]["legalities"] == bolt["legalities"]
 
 
 def test_offline_tag_backfill_preserves_canonical_and_verified_data(repo, bolt):
@@ -137,11 +151,7 @@ def test_bulk_cards_supply_offline_import_and_match_metadata(repo, bolt, monkeyp
     from decks.service import DeckService
     from main import _hydrate_deck_cards
 
-    island = {
-        **bolt, "id": "printing-island", "oracle_id": "oracle-island", "name": "Island",
-        "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.",
-        "mana_cost": "", "colors": [], "color_identity": ["U"],
-    }
+    island = _official_card('Island')
     import_cards(repo, [bolt, island], {"source": "scryfall", "updated_at": "2026-09-27"})
     def no_network(*args, **kwargs):
         pytest.fail("Offline bulk-backed import attempted a Scryfall request")
@@ -165,14 +175,8 @@ def test_bulk_cards_supply_offline_import_and_match_metadata(repo, bolt, monkeyp
 def test_bulk_only_cards_are_visible_to_completeness_and_suggestions(repo, bolt):
     from card_data.service import CardService
 
-    island = {
-        **bolt, "id": "printing-island", "oracle_id": "oracle-island", "name": "Island",
-        "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "mana_cost": "",
-    }
-    bears = {
-        **bolt, "id": "printing-bears", "oracle_id": "oracle-bears", "name": "Grizzly Bears",
-        "type_line": "Creature — Bear", "oracle_text": "", "mana_cost": "{1}{G}", "power": "2", "toughness": "2",
-    }
+    island = _official_card('Island')
+    bears = _official_card('Grizzly Bears')
     import_cards(repo, [bolt, island, bears], {"source": "scryfall"})
     assert repo.list_cards() == []
     service = CardService(repo)
@@ -206,15 +210,7 @@ def test_verified_empty_rulings_are_not_reported_missing(repo, bolt):
 def test_live_hydration_reads_bulk_faces_without_prior_deck_import_or_cache_write(repo, bolt, monkeypatch):
     from main import _hydrate_deck_cards
 
-    delver = {
-        **bolt, "id": "printing-delver", "oracle_id": "oracle-delver",
-        "name": "Delver of Secrets // Insectile Aberration", "type_line": "Creature — Human Wizard // Creature — Human Insect",
-        "layout": "transform", "mana_cost": "{U}",
-        "card_faces": [
-            {"name": "Delver of Secrets", "mana_cost": "{U}", "type_line": "Creature — Human Wizard", "power": "1", "toughness": "1", "colors": ["U"]},
-            {"name": "Insectile Aberration", "type_line": "Creature — Human Insect", "power": "3", "toughness": "2", "oracle_text": "Flying"},
-        ],
-    }
+    delver = _official_card('Delver of Secrets // Insectile Aberration')
     import_cards(repo, [delver], {"source": "scryfall"})
     monkeypatch.setattr("card_data.sync.get_with_backoff", lambda *args, **kwargs: pytest.fail("Network request"))
     cards = _hydrate_deck_cards(repo, [{"card_name": delver["name"], "quantity": 4}])
@@ -241,11 +237,7 @@ def test_http_match_start_uses_bulk_only_cards_offline(tmp_path, bolt, monkeypat
     SQLModel.metadata.create_all(engine)
     session = Session(engine)
     repo = Repository(session)
-    island = {
-        **bolt, "id": "printing-island", "oracle_id": "oracle-island", "name": "Island",
-        "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.",
-        "mana_cost": "", "colors": [], "color_identity": ["U"],
-    }
+    island = _official_card('Island')
     import_cards(repo, [bolt, island], {"source": "scryfall"})
     monkeypatch.setattr("card_data.sync.get_with_backoff", lambda *args, **kwargs: pytest.fail("Network request"))
     main.app.dependency_overrides[main.get_repo] = lambda: repo
@@ -277,6 +269,7 @@ def test_http_match_start_uses_bulk_only_cards_offline(tmp_path, bolt, monkeypat
 
 
 def test_bulk_preserves_distinct_oracle_variants_with_same_printed_name(repo, bolt):
+    # Deliberately noncanonical identity collision, not a second sourced printing.
     variant = copy.deepcopy(bolt)
     variant["id"] = "other-printing"
     variant["oracle_id"] = "other-oracle"
@@ -286,7 +279,7 @@ def test_bulk_preserves_distinct_oracle_variants_with_same_printed_name(repo, bo
     assert second["unchanged"] == 2
     assert len(repo.list_card_knowledge()) == 2
     assert repo.list_card_knowledge_names() == ["Lightning Bolt"]
-    assert {json.loads(row.profiles_json)["oracle_id"] for row in repo.list_card_knowledge()} == {"oracle-bolt", "other-oracle"}
+    assert {json.loads(row.profiles_json)["oracle_id"] for row in repo.list_card_knowledge()} == {bolt["oracle_id"], "other-oracle"}
 
 
 def test_bulk_preserves_faces_and_verified_rulings_for_unchanged_card(repo, bolt):
@@ -300,6 +293,7 @@ def test_bulk_preserves_faces_and_verified_rulings_for_unchanged_card(repo, bolt
 def test_bulk_changed_card_marks_previous_rulings_unverified(repo, bolt):
     with httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(200, json={"object": "list", "data": [], "has_more": False}))) as client:
         KnowledgeIngestor(repo, client).sync_payload(bolt)
+    # Synthetic identity mutation tests invalidation; it is not canonical card data.
     updated = {**bolt, "id": "new-printing"}
     report = import_cards(repo, [updated], {"source": "scryfall"})
     assert report["rulings_pending"] == 1
@@ -315,7 +309,7 @@ def test_gap_report_distinguishes_missing_cards_and_pending_rulings(repo, bolt):
 
 
 def test_search_follows_pages_and_obeys_limit(repo, bolt):
-    second = {**bolt, "id": "second", "oracle_id": "second-oracle", "name": "Island", "type_line": "Basic Land - Island", "oracle_text": ""}
+    second = _official_card('Island')
     fetched = []
     def handle(request):
         fetched.append(str(request.url))
@@ -337,10 +331,7 @@ def test_knowledge_rejects_non_scryfall_rulings_urls(repo, bolt):
 
 
 def test_bulk_retains_face_metadata_and_report_resolves_front_face(repo, bolt):
-    raw = {**bolt, "name": "Delver of Secrets // Insectile Aberration", "layout": "transform", "card_faces": [
-        {"name": "Delver of Secrets", "type_line": "Creature - Human Wizard", "power": "1", "toughness": "1"},
-        {"name": "Insectile Aberration", "type_line": "Creature - Human Insect", "power": "3", "toughness": "2", "oracle_text": "Flying"},
-    ]}
+    raw = _official_card('Delver of Secrets // Insectile Aberration')
     imported = import_cards(repo, [raw], {"source": "scryfall"})
     assert imported["faces"] == 2
     profile = json.loads(repo.get_card_knowledge(raw["name"]).profiles_json)
@@ -351,6 +342,7 @@ def test_bulk_retains_face_metadata_and_report_resolves_front_face(repo, bolt):
 
 
 def test_report_prefers_verified_record_over_unverified_same_name_variant(repo, bolt):
+    # Noncanonical duplicate identity is an explicit report-selection protocol vector.
     variant = {**bolt, "id": "variant", "oracle_id": "variant-oracle"}
     import_cards(repo, [bolt, variant], {"source": "scryfall"})
     rows = repo.list_card_knowledge()
@@ -364,6 +356,7 @@ def test_report_prefers_verified_record_over_unverified_same_name_variant(repo, 
 
 
 def test_inventory_reports_gaps_without_claiming_coverage(repo, bolt):
+    # Deliberately inconsistent metadata exercises gap reporting, not sourced facts.
     raw = {**bolt, "keywords": ["Suspend"]}
     import_cards(repo, [raw], {"source": "scryfall"})
     report = inventory(repo.list_card_knowledge())

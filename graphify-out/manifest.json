@@ -4332,9 +4332,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_ingest.py": {
-    "mtime": 1792033175.6656775,
-    "seen": 1792034402.3569643,
-    "ast_hash": "c0a655a48d3dc617b069f9ae1154a611",
+    "mtime": 1792088708.6947038,
+    "seen": 1792088826.5916364,
+    "ast_hash": "e32abdabe19512e472bd087f4f62fb8e",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_models.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792081523.8827834,
-    "seen": 1792081923.8569005,
-    "ast_hash": "154ba89245b82f56639b33489349b50e",
+    "mtime": 1792086208.0909967,
+    "seen": 1792088826.5941734,
+    "ast_hash": "8b34fd3e9a09c30f2e0e69307f09977d",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13536,9 +13536,9 @@
     "semantic_hash": ""
   },
   "ops/caddy/README.md": {
-    "mtime": 1792033176.1026704,
-    "seen": 1792034402.3593965,
-    "ast_hash": "52865ff553e189e23865a8c7e76c38c1",
+    "mtime": 1792083941.5095408,
+    "seen": 1792088826.5944633,
+    "ast_hash": "026b7af57c2f05de0fda5cd699cf4ef4",
     "semantic_hash": ""
   },
   "audit/gate2-domain-compiler/fixtures/domain-composition-baseline.json": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792082335.8788607,
-    "seen": 1792082343.6320844,
-    "ast_hash": "ca40672933068d23eff861532f49dd88",
+    "mtime": 1792086260.279161,
+    "seen": 1792088826.5941281,
+    "ast_hash": "02c67459ae10e51929a535cbafc04bbc",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19032,9 +19032,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-10-15-payment-trial-copy.md": {
-    "mtime": 1792081797.6044118,
-    "seen": 1792081923.8558984,
-    "ast_hash": "f251a833460ccc7d1da4b3ddd77abd5f",
+    "mtime": 1792084923.6044202,
+    "seen": 1792088826.5932527,
+    "ast_hash": "95e71c5073e17a80c65b20ef7a0e961b",
     "semantic_hash": ""
   },
   "backend/tests/test_nested_card_copy.py": {
@@ -19047,6 +19047,30 @@
     "mtime": 1792082115.128055,
     "seen": 1792082343.6294994,
     "ast_hash": "d899e10136ff382f1b304d083cf80d9f",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_ingest_fixture_fidelity.py": {
+    "mtime": 1792088708.6947038,
+    "seen": 1792088826.5916395,
+    "ast_hash": "3c0218f810101d29602b1e42bd993e93",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-b443-complete-ci.md": {
+    "mtime": 1792086208.088997,
+    "seen": 1792088826.5936644,
+    "ast_hash": "5e27f575e7218e3bd0767a22511a2d79",
+    "semantic_hash": ""
+  },
+  "docs/testing/knowledge-ingest-canonical-fixtures.md": {
+    "mtime": 1792088708.6967037,
+    "seen": 1792088826.5939224,
+    "ast_hash": "c0720effe4d74b595da64950d92c663a",
+    "semantic_hash": ""
+  },
+  "docs/testing/phase1-task12-fuzzy-spacing.md": {
+    "mtime": 1792082430.0454712,
+    "seen": 1792088826.5941331,
+    "ast_hash": "876575a5b171d36dd764a227de9ca9de",
     "semantic_hash": ""
   }
 }
