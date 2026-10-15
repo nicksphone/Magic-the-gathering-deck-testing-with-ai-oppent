@@ -74,7 +74,15 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
             cached_faces = {}
         cached_surface = {'oracle_text': getattr(row, 'oracle_text', None),
                           'card_faces': cached_faces}
+        rules = None
+        projection_valid = True
+        if profile is not None:
+            try:
+                rules = ScryfallSyncService._canonical_rule_projection(profile['card_data'], row, physical_front=True)
+            except (AttributeError, KeyError, TypeError, ValueError):
+                projection_valid = False
         if (not oracle_fields_valid(out) or not oracle_fields_valid(cached_surface)
+                or not projection_valid
                 or profile is not None and not oracle_fields_valid(profile['card_data'])):
             # Do not hide malformed stored facts behind otherwise valid seed data.
             out.update(oracle_text='', type_line='', card_faces=[], card_data_sources=[],
@@ -126,6 +134,10 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
                 'image_uri': getattr(row, 'image_uri', None) or (None if has_face_art else fallback.get('image_uri')),
                 'card_faces': out.get('card_faces') or [],
             }, name=name, type_line=str(out.get('type_line') or ''))
+        if rules is not None:
+            out.update({key: value for key, value in rules.items() if key not in {'colors', 'card_faces_json'}})
+            out['colors'] = rules['colors'].split(',') if rules['colors'] else []
+            out['card_faces'] = json.loads(rules['card_faces_json'])
         if out.get('layout') == 'split' and out.get('card_faces'):
             colors = {color for face in out['card_faces'] for color in (face.get('colors') or [])}
             if colors:

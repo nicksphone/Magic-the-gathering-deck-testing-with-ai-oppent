@@ -258,9 +258,9 @@
     "semantic_hash": ""
   },
   "backend/card_data/hydration.py": {
-    "mtime": 1792033175.4766808,
-    "seen": 1792034402.354637,
-    "ast_hash": "4d21c5adf7ec93150b32d095ff4f48ba",
+    "mtime": 1792096787.1598625,
+    "seen": 1792096905.6651502,
+    "ast_hash": "6da818b431323d2dd21313e29ccb0865",
     "semantic_hash": ""
   },
   "backend/card_data/models.py": {
@@ -288,9 +288,9 @@
     "semantic_hash": ""
   },
   "backend/card_data/sync.py": {
-    "mtime": 1792033175.4786808,
-    "seen": 1792034402.3546495,
-    "ast_hash": "dc50e53b9bf9801864671e012f35a9de",
+    "mtime": 1792096787.1598625,
+    "seen": 1792096905.6651642,
+    "ast_hash": "ccb4f7d54ba426134c9df197272f152c",
     "semantic_hash": ""
   },
   "backend/card_data/tactical.py": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/ingest.py": {
-    "mtime": 1792082115.1270552,
-    "seen": 1792082343.626916,
-    "ast_hash": "f3ede8284e2535564c5c5fa205551025",
+    "mtime": 1792096787.1598625,
+    "seen": 1792096905.6652124,
+    "ast_hash": "01c151582bef39cd24ff44b6eb63441f",
     "semantic_hash": ""
   },
   "backend/knowledge/mechanic_metadata.py": {
@@ -19074,9 +19074,27 @@
     "semantic_hash": ""
   },
   "docs/testing/phase2-legacy-profile-cli-current.md": {
-    "mtime": 1792093322.9795928,
-    "seen": 1792093492.1884885,
-    "ast_hash": "7a3b60a45c9e3f960399fff7d77a94cf",
+    "mtime": 1792093572.1524606,
+    "seen": 1792096905.6703906,
+    "ast_hash": "80f4766572c2fb817a219790bac08caa",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_canonical_cache_surface_boundaries.py": {
+    "mtime": 1792096787.1598625,
+    "seen": 1792096905.6672685,
+    "ast_hash": "bc10ccff5f61a5f01a37890686dc921e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_canonical_cache_surface_recovery.py": {
+    "mtime": 1792096787.1598625,
+    "seen": 1792096905.6672707,
+    "ast_hash": "5abc3f03d7bd6247454a2679351c4c30",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-cache-rule-recovery.md": {
+    "mtime": 1792096787.1598625,
+    "seen": 1792096905.6697133,
+    "ast_hash": "bfd32cbc8b188f20f00d204a6ac342b7",
     "semantic_hash": ""
   }
 }

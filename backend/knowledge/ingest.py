@@ -92,7 +92,17 @@ class KnowledgeIngestor:
         if (not isinstance(profile, dict) or profile.get("schema_version") != SCHEMA_VERSION
                 or profile.get("rulings_verified") is not True):
             return None
-        if self.repository.get_cached_card_by_name(name) is None:
+        cached_card = self.repository.get_cached_card_by_name(name)
+        needs_recovery = cached_card is None
+        if cached_card is not None:
+            canonical = self.normalizer.canonical_local_profile(row, name)
+            if canonical is not None:
+                try:
+                    rules = self.normalizer._canonical_rule_projection(canonical['card_data'], cached_card)
+                    needs_recovery = not self.normalizer._cache_rules_match(cached_card, rules)
+                except (AttributeError, KeyError, TypeError, ValueError):
+                    return None
+        if needs_recovery:
             canonical = self.normalizer.canonical_local_profile(row, name)
             if canonical is None:
                 return None
