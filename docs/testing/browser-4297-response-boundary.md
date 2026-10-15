@@ -44,3 +44,30 @@ Only browser-job logs and allowlisted native metadata were downloaded. No raw
 backend log or protected private game trace was fetched. Exact prior outcomes
 and full private evidence remain immutable under
 `diagnostics/ci/native-4297-browser-failure-supplement-20261015-2RXD7gPm/`.
+
+## Subsequent Held-Response Boundary
+
+Published `f2200b08970fd81099ea420df919f472a0e7323c` passes the preceding
+accepted-response-drop scenario, but generic browser job `116332921108` fails
+later at `browser-ui-v2-costs.mjs`'s `assert.ok(held)`. The pending-operation
+and disabled-controls assertions passed first. The original 100-by-20ms wait
+did not observe the held response. This is a distinct observed failure, not
+proof of its cause or proof that the earlier intermittent boundary is fixed.
+
+The existing shared trace recorded request activity but published it only on
+callback exceptions. Its new callable `reportFailure()` method permits one
+idempotent, immediate, cloned failure-time report when the outer assertion
+fails. Actual pending-command counts and observed native acknowledgments are
+retained. The outer catch concurrently reads UI state, canonical revision and
+real browser identity within one shared 1000ms diagnostic bound, then rethrows
+the original error. The original wait, every assertion, mutation, and native
+enable/continue/disable command remain byte-identical. No retry or timing fix
+is inferred from this instrumentation.
+
+The expanded combined component passes 196 pure cases; 52 targeted cases are
+independently reproduced. The original 30 case bodies remain unchanged. A
+31-pass/19-fail diagnostic RED precedes the implementation. No local browser,
+network or SQLite execution is used by these pure checks. The driver's existing
+fire-and-forget callback lifecycle and native runtime cause remain unqualified.
+Private exact-source evidence is under
+`native-held-boundary-diagnostic-20261015-ZtEE9T/`.

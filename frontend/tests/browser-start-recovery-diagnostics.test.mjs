@@ -183,3 +183,76 @@ test('request continuation failure retains its native error and fixed diagnostic
   assert.deepEqual(reports[0].responses[0].commands, [{method: 'Fetch.continueRequest', acknowledgment: 'error', errorCode: -32602}]);
   assert.equal(JSON.stringify(reports).includes('PRIVATE_'), false);
 });
+
+test('manual no-argument failure publication works without any interception and is idempotent', () => {
+  const reports=[];
+  const wrapped=wrap(async()=>{},async()=>{},value=>reports.push(value));
+  assert.equal(typeof wrapped,'function');
+  assert.equal(typeof wrapped.reportFailure,'function');
+  wrapped.reportFailure();wrapped.reportFailure();
+  assert.equal(reports.length,1);
+  assert.deepEqual(reports[0],{responses:[],omittedResponses:0,pendingCommands:0});
+});
+
+for(const method of ['OPTIONS','POST']) {
+  test(`manual publication exposes actual ${method} request ACK without inventing a response`, async()=>{
+    const reports=[];
+    const wrapped=wrap(async()=>{},(received,command)=>feature.continueRequestForPostResponse(command,received),value=>reports.push(value));
+    assert.equal(typeof wrapped.reportFailure,'function');
+    const input=event({resourceType:'XHR',request:{method}});delete input.responseStatusCode;
+    await wrapped(input);assert.deepEqual(reports,[]);
+    wrapped.reportFailure();
+    assert.equal(reports[0].responses[0].method,method);
+    assert.equal(reports[0].responses[0].status,null);
+    assert.deepEqual(reports[0].responses[0].commands,[{method:'Fetch.continueRequest',acknowledgment:'accepted',errorCode:null}]);
+    assert.equal(reports[0].pendingCommands,0);
+  });
+}
+
+for(const outcome of ['accepted','rejected']) {
+  test(`manual pending snapshot is immutable after a later ${outcome} native ACK`, async()=>{
+    const reports=[],error=new Error('{"code":-32602,"message":"PRIVATE_LATE"}');
+    let resolve,reject;const ack=new Promise((yes,no)=>{resolve=yes;reject=no;});
+    const wrapped=wrap(()=>ack,(received,command)=>feature.continueRequestForPostResponse(command,received),value=>reports.push(value));
+    assert.equal(typeof wrapped.reportFailure,'function');
+    const input=event({resourceType:'XHR',request:{method:'POST'}});delete input.responseStatusCode;
+    const paused=wrapped(input);paused.catch(()=>{});
+    wrapped.reportFailure();const snapshot=JSON.stringify(reports);
+    assert.equal(reports[0].pendingCommands,1);
+    assert.equal(reports[0].responses[0].commands[0].acknowledgment,'pending');
+    if(outcome==='accepted'){resolve();await paused;}else{reject(error);await assert.rejects(paused,actual=>actual===error);}
+    wrapped.reportFailure();
+    assert.equal(reports.length,1);assert.equal(JSON.stringify(reports),snapshot);
+  });
+}
+
+test('automatic callback-error and later outer-error reporting share the same one-shot publisher', async()=>{
+  const error=new Error('PRIVATE_CALLBACK'),reports=[];
+  const wrapped=wrap(async()=>{},()=>{throw error;},value=>reports.push(value));
+  assert.equal(typeof wrapped.reportFailure,'function');
+  await assert.rejects(wrapped(event()),actual=>actual===error);
+  wrapped.reportFailure();wrapped.reportFailure();
+  assert.equal(reports.length,1);assert.equal(reports[0].pendingCommands,0);
+});
+
+test('manual reporter failure never replaces the native error or retries the reporter', async()=>{
+  const error=new Error('PRIVATE_NATIVE');let calls=0;
+  const wrapped=wrap(async()=>{throw error;},async(received,command)=>command('Fetch.continueResponse',{requestId:received.requestId}),()=>{calls++;throw Error('PRIVATE_REPORT');});
+  assert.equal(typeof wrapped.reportFailure,'function');
+  assert.doesNotThrow(()=>wrapped.reportFailure());
+  await assert.rejects(wrapped(event()),actual=>actual===error);
+  wrapped.reportFailure();assert.equal(calls,1);
+});
+
+test('aggregate outstanding commands include omitted rows without widening retained history', async()=>{
+  const reports=[];let resolve;const ack=new Promise(yes=>{resolve=yes;});
+  const wrapped=wrap(()=>ack,async(received,command)=>command('Fetch.continueResponse',{requestId:received.requestId}),value=>reports.push(value));
+  assert.equal(typeof wrapped.reportFailure,'function');
+  const paused=Array.from({length:20},(_,i)=>wrapped(event({requestId:`PRIVATE_${i}`})));
+  wrapped.reportFailure();
+  assert.equal(reports[0].pendingCommands,20);
+  assert.equal(reports[0].responses.length,16);assert.equal(reports[0].omittedResponses,4);
+  assert.equal(JSON.stringify(reports).includes('PRIVATE_'),false);
+  resolve();await Promise.all(paused);
+  assert.equal(reports[0].pendingCommands,20);
+});

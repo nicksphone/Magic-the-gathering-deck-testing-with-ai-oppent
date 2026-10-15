@@ -40,7 +40,10 @@ try {
  assert.equal(await b.evaluate("[...document.querySelectorAll('button')].find(e=>e.textContent==='Pass Priority').disabled"),true);
  console.log('PASS v2 AI priority: human viewpoint remains P1, AI hand/actions hidden');
  const s=await setup('/fixture');let held,continueHeld;
- b.onIntercept(traceStartRecoveryResponses(b.command, async (e,command)=>{
+ let heldTrace,currentUrlSeen=false,otherUrlSeen=false;
+ try{
+ b.onIntercept(heldTrace=traceStartRecoveryResponses(b.command, async (e,command)=>{
+  if(e.request.url===`${api}/matches/${s.id}/action`)currentUrlSeen=true;else otherUrlSeen=true;
   if(await continueRequestForPostResponse(command,e))return;
   if(e.request.method!=='POST'){await command('Fetch.continueResponse',{requestId:e.requestId});return;}
   held=e;
@@ -56,4 +59,59 @@ try {
  await b.waitFor("!document.body.innerText.includes('Match operation pending')");
  const final=await waitForApiState(`${api}/matches/${s.id}`,state=>state.revision===1);assert.equal(final.players['2'].battlefield.filter(c=>c.id==='forest').length,1);
  console.log('PASS v2 held real response: all gameplay controls disabled while pending; exactly one mutation persisted');
+ }catch(error){
+  // Publish the failure-time native history before any bounded context reads can yield.
+  try{heldTrace?.reportFailure();}catch{}
+  try{
+   const context={cause:'unknown',held:Boolean(held),currentUrlSeen,otherUrlSeen,
+    ui:{status:'pending',activeMatch:null,renderedMatch:null,renderedRevision:null,pending:null,restoring:null,alert:null,controlsDisabled:null,enabledPrefixCount:null},
+    canonical:{status:'pending',revision:null},runtime:{status:'pending',product:null,protocolVersion:null}};
+   let collecting=true,diagnosticTimer;
+   const controller=new AbortController();
+   const readUi=async()=>{
+    try{
+     const value=await b.evaluate(`(()=>{
+      return {activeMatch:localStorage.getItem('mtg.activeMatch')===${JSON.stringify(s.id)},
+       renderedMatch:document.querySelector('.battlefield')?.dataset.matchId===${JSON.stringify(s.id)},
+       renderedRevision:document.querySelector('.battlefield')?.dataset.matchRevision,
+       pending:document.body.innerText.includes('Match operation pending'),restoring:document.body.innerText.includes('Restoring saved session'),
+       alert:Boolean(document.querySelector('.operation-alert')),
+       controlsDisabled:[...document.querySelectorAll('#table fieldset,#match-controls fieldset')].every(e=>e.disabled),
+       enabledPrefixCount:[...document.querySelectorAll('button')].filter(b=>b.textContent.trim().startsWith('Play Land Forest')&&!b.matches(':disabled')).length};
+     })()`);
+     if(collecting&&value&&typeof value==='object'){
+      for(const key of ['activeMatch','renderedMatch','pending','restoring','alert','controlsDisabled'])context.ui[key]=value[key]===true;
+      context.ui.renderedRevision=typeof value.renderedRevision==='string'&&/^(0|[1-9]\d*)$/.test(value.renderedRevision)&&Number.isSafeInteger(Number(value.renderedRevision))?Number(value.renderedRevision):null;
+      context.ui.enabledPrefixCount=Number.isSafeInteger(value.enabledPrefixCount)&&value.enabledPrefixCount>=0?value.enabledPrefixCount:null;
+      context.ui.status='available';
+     }else if(collecting)context.ui.status='unavailable';
+    }catch{if(collecting)context.ui.status='unavailable';}
+   };
+   const readCanonical=async()=>{
+    try{
+     const response=await fetch(`${api}/matches/${s.id}`,{method:'GET',signal:controller.signal});
+     if(!response.ok)throw new Error('Diagnostic state unavailable');
+     const value=await response.json();
+     if(!Number.isSafeInteger(value?.revision)||value.revision<0)throw new Error('Diagnostic revision unavailable');
+     if(collecting)context.canonical={status:'available',revision:value.revision};
+    }catch{if(collecting)context.canonical.status='unavailable';}
+   };
+   const readRuntime=async()=>{
+    try{
+     const identity=await b.browserIdentity(controller.signal);
+     if(collecting)context.runtime={status:'available',product:identity.product,protocolVersion:identity.protocolVersion};
+    }catch{if(collecting)context.runtime.status='unavailable';}
+   };
+   try{
+    await Promise.race([Promise.all([readUi(),readCanonical(),readRuntime()]),new Promise(resolve=>{
+     diagnosticTimer=setTimeout(()=>{
+      for(const key of ['ui','canonical','runtime'])if(context[key].status==='pending')context[key].status='timed-out';
+      resolve();
+     },1000);
+    })]);
+   }finally{collecting=false;clearTimeout(diagnosticTimer);controller.abort();}
+   try{console.error('V2_HELD_FAILURE_CONTEXT',JSON.stringify(context));}catch{}
+  }catch{} // Diagnostic failures cannot replace the original assertion or native error.
+  throw error;
+ }
 } finally {await b.close();}

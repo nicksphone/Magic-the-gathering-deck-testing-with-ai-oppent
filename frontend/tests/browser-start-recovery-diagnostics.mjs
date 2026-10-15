@@ -28,11 +28,11 @@ function cors(headers, frontend) {
 export function traceStartRecoveryResponses(command, handler, frontend,
   report = value => console.error('START_RECOVERY_RESPONSE_TRACE', JSON.stringify(value))) {
   const responses = [], requests = new Map(), networks = new Map();
-  let omittedResponses = 0, reported = false;
+  let omittedResponses = 0, reported = false, pendingCommands = 0;
   function reportFailure() {
     if (reported) return;
     reported = true;
-    try { report({responses: structuredClone(responses), omittedResponses}); } catch { /* Preserve the original failure. */ }
+    try { report({responses: structuredClone(responses), omittedResponses, pendingCommands}); } catch { /* Preserve the original failure. */ }
   }
   function ordinal(map, value) {
     if (typeof value !== 'string' || !value || value.length > 256) return null;
@@ -42,7 +42,7 @@ export function traceStartRecoveryResponses(command, handler, frontend,
     }
     return map.get(value);
   }
-  return async event => {
+  const traced = async event => {
     const row = {method: methods.has(event?.request?.method) ? event.request.method : 'other',
       requestOrdinal: ordinal(requests, event?.requestId), networkOrdinal: ordinal(networks, event?.networkId),
       resourceType: resources.has(event?.resourceType) ? event.resourceType : 'other',
@@ -53,11 +53,14 @@ export function traceStartRecoveryResponses(command, handler, frontend,
     async function observedCommand(method, ...args) {
       const observation = {method: commands.has(method) ? method : 'other', acknowledgment: 'pending', errorCode: null};
       if (row.commands.length < 8) row.commands.push(observation); else row.omittedCommands++;
+      pendingCommands++;
       try {
         const result = await command(method, ...args);
+        pendingCommands--;
         observation.acknowledgment = 'accepted';
         return result;
       } catch (error) {
+        pendingCommands--;
         observation.acknowledgment = 'error';
         try {
           if (typeof error.message === 'string' && error.message.length <= 4096) {
@@ -75,4 +78,6 @@ export function traceStartRecoveryResponses(command, handler, frontend,
       throw error;
     }
   };
+  traced.reportFailure = reportFailure;
+  return traced;
 }
