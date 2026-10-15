@@ -4,6 +4,7 @@ import httpx
 
 from card_data.sync import ScryfallSyncService
 from card_data.service import CardService
+from tests.canonical_positive_fixtures import cached_card
 
 
 class _DummyRepo:
@@ -132,14 +133,8 @@ def test_completeness_report_identifies_cached_and_missing_card_data() -> None:
 
 
 def test_completeness_report_warns_for_unsupported_bands_with_other() -> None:
-    variant = _CompleteCachedCard()
-    variant.name = "Old Fogey"
-    variant.type_line = "Summon — Dinosaur"
-    variant.oracle_text = "Phasing, fading 3, bands with other Dinosaurs, flanking"
-    ordinary = _CompleteCachedCard()
-    ordinary.name = "Benalish Hero"
-    ordinary.type_line = "Creature — Human Soldier"
-    ordinary.oracle_text = "Banding"
+    variant = cached_card("Old Fogey")
+    ordinary = cached_card("Benalish Hero")
 
     class _ReportRepo:
         def get_cached_cards_by_names(self, names):  # noqa: ANN001
@@ -156,10 +151,7 @@ def test_completeness_report_warns_for_unsupported_bands_with_other() -> None:
 
 
 def test_cached_vanilla_creature_has_valid_empty_oracle_text() -> None:
-    bear = _CompleteCachedCard()
-    bear.name = "Grizzly Bears"
-    bear.oracle_text = ""
-    bear.type_line = "Creature — Bear"
+    bear = cached_card("Grizzly Bears")
 
     class _ReportRepo:
         def get_cached_cards_by_names(self, names):  # noqa: ANN001
@@ -172,9 +164,7 @@ def test_cached_vanilla_creature_has_valid_empty_oracle_text() -> None:
 
 
 def test_completeness_report_warns_for_morph() -> None:
-    card = _CompleteCachedCard()
-    card.name = "Willbender"
-    card.oracle_text = "Morph {1}{U}"
+    card = cached_card("Willbender")
 
     class _ReportRepo:
         def get_cached_cards_by_names(self, names):  # noqa: ANN001

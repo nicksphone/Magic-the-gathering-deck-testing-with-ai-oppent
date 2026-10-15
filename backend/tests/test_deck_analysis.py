@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
 from ai.deck_analysis import analyze_deck, guess_archetype
+from tests.canonical_positive_fixtures import deck_entry
 
 
 def test_guess_archetype_uses_curve_and_damage_density_for_burn() -> None:
     deck = [
-        {"quantity": 20, "card_name": "Mountain", "card_metadata": {"name": "Mountain", "type_line": "Basic Land - Mountain", "mana_cost": ""}},
-        {"quantity": 4, "card_name": "Lightning Bolt", "card_metadata": {"name": "Lightning Bolt", "type_line": "Instant", "mana_cost": "{R}", "oracle_text": "Lightning Bolt deals 3 damage to any target."}},
-        {"quantity": 4, "card_name": "Lava Spike", "card_metadata": {"name": "Lava Spike", "type_line": "Sorcery", "mana_cost": "{R}", "oracle_text": "Lava Spike deals 3 damage to any target."}},
-        {"quantity": 4, "card_name": "Skewer the Critics", "card_metadata": {"name": "Skewer the Critics", "type_line": "Sorcery", "mana_cost": "{2}{R}", "oracle_text": "Skewer the Critics deals 3 damage to any target."}},
-        {"quantity": 28, "card_name": "Flame Rift", "card_metadata": {"name": "Flame Rift", "type_line": "Sorcery", "mana_cost": "{1}{R}", "oracle_text": "Flame Rift deals 4 damage to each player."}},
+        deck_entry("Mountain", 20),
+        deck_entry("Lightning Bolt", 4),
+        deck_entry("Lava Spike", 4),
+        deck_entry("Skewer the Critics", 4),
+        deck_entry("Flame Rift", 28),
     ]
 
     out = analyze_deck(deck)
@@ -22,12 +20,12 @@ def test_guess_archetype_uses_curve_and_damage_density_for_burn() -> None:
 
 def test_guess_archetype_uses_metadata_for_control_shell() -> None:
     deck = [
-        {"quantity": 26, "card_name": "Island", "card_metadata": {"name": "Island", "type_line": "Basic Land - Island", "mana_cost": ""}},
-        {"quantity": 4, "card_name": "Counterspell", "card_metadata": {"name": "Counterspell", "type_line": "Instant", "mana_cost": "{U}{U}", "oracle_text": "Counter target spell."}},
-        {"quantity": 4, "card_name": "Consider", "card_metadata": {"name": "Consider", "type_line": "Instant", "mana_cost": "{U}", "oracle_text": "Scry 1. Draw a card."}},
-        {"quantity": 4, "card_name": "Memory Deluge", "card_metadata": {"name": "Memory Deluge", "type_line": "Instant", "mana_cost": "{2}{U}{U}", "oracle_text": "Draw cards."}},
-        {"quantity": 4, "card_name": "Farewell", "card_metadata": {"name": "Farewell", "type_line": "Sorcery", "mana_cost": "{4}{W}{W}", "oracle_text": "Exile all creatures."}},
-        {"quantity": 22, "card_name": "Mystic Sanctuary", "card_metadata": {"name": "Mystic Sanctuary", "type_line": "Land - Island", "mana_cost": ""}},
+        deck_entry("Island", 26),
+        deck_entry("Counterspell", 4),
+        deck_entry("Consider", 4),
+        deck_entry("Memory Deluge", 4),
+        deck_entry("Farewell", 4),
+        deck_entry("Mystic Sanctuary", 22),
     ]
 
     out = analyze_deck(deck)
@@ -38,23 +36,22 @@ def test_guess_archetype_uses_metadata_for_control_shell() -> None:
 
 def test_deck_land_count_ignores_mana_creatures_and_land_text() -> None:
     deck = [
-        {"quantity": 1, "card_name": "Forest", "card_metadata": {"name": "Forest", "type_line": "Basic Land — Forest", "mana_cost": ""}},
-        {"quantity": 1, "card_name": "Llanowar Elves", "card_metadata": {"name": "Llanowar Elves", "type_line": "Creature — Elf Druid", "mana_cost": "{G}", "oracle_text": "{T}: Add {G}."}},
-        {"quantity": 1, "card_name": "Island Sanctuary", "card_metadata": {"name": "Island Sanctuary", "type_line": "Enchantment", "mana_cost": "{1}{W}"}},
-        {"quantity": 1, "card_name": "Growth Spiral", "card_metadata": {"name": "Growth Spiral", "type_line": "Instant", "mana_cost": "{G}{U}", "oracle_text": "Draw a card. You may put a land card from your hand onto the battlefield."}},
+        deck_entry("Forest", 1),
+        deck_entry("Llanowar Elves", 1),
+        deck_entry("Island Sanctuary", 1),
+        deck_entry("Growth Spiral", 1),
     ]
     assert analyze_deck(deck)["land_count_estimate"] == 1
 
 
 def test_modal_back_face_types_do_not_distort_front_face_deck_shape() -> None:
-    fixtures = json.loads((Path(__file__).parent / "fixtures" / "modal_spell_faces.json").read_text())
     names = (
         "Valki, God of Lies // Tibalt, Cosmic Impostor",
         "Delver of Secrets // Insectile Aberration",
         "Bala Ged Recovery // Bala Ged Sanctuary",
     )
-    deck = [{"quantity": 4, "card_name": "Forest", "card_metadata": {"name": "Forest", "type_line": "Basic Land — Forest"}}]
-    deck.extend({"quantity": 4, "card_name": name, "card_metadata": fixtures[name]} for name in names)
+    deck = [deck_entry("Forest", 4)]
+    deck.extend(deck_entry(name, 4) for name in names)
     analysis = analyze_deck(deck)
     assert analysis["land_count_estimate"] == 4
     assert analysis["creature_density_estimate"] == 0.5
@@ -65,11 +62,11 @@ def test_modal_back_face_types_do_not_distort_front_face_deck_shape() -> None:
 
 def test_guess_archetype_detects_tokens_from_metadata_and_text() -> None:
     deck = [
-        {"quantity": 24, "card_name": "Plains", "card_metadata": {"name": "Plains", "type_line": "Basic Land - Plains", "mana_cost": ""}},
-        {"quantity": 4, "card_name": "Wedding Announcement", "card_metadata": {"name": "Wedding Announcement", "type_line": "Enchantment", "mana_cost": "{2}{W}", "oracle_text": "At the beginning of your end step, create a 1/1 white Human creature token."}},
-        {"quantity": 4, "card_name": "Adeline, Resplendent Cathar", "card_metadata": {"name": "Adeline, Resplendent Cathar", "type_line": "Legendary Creature - Human Knight", "mana_cost": "{1}{W}{W}", "oracle_text": "Whenever you attack, create a 1/1 white Human creature token."}},
-        {"quantity": 4, "card_name": "Intangible Virtue", "card_metadata": {"name": "Intangible Virtue", "type_line": "Enchantment", "mana_cost": "{1}{W}", "oracle_text": "Creature tokens you control get +1/+1 and have vigilance."}},
-        {"quantity": 28, "card_name": "Raise the Alarm", "card_metadata": {"name": "Raise the Alarm", "type_line": "Instant", "mana_cost": "{1}{W}", "oracle_text": "Create two 1/1 white Soldier creature tokens."}},
+        deck_entry("Plains", 24),
+        deck_entry("Wedding Announcement", 4),
+        deck_entry("Adeline, Resplendent Cathar", 4),
+        deck_entry("Intangible Virtue", 4),
+        deck_entry("Raise the Alarm", 28),
     ]
 
     out = analyze_deck(deck)
@@ -79,26 +76,14 @@ def test_guess_archetype_detects_tokens_from_metadata_and_text() -> None:
 
 def test_guess_archetype_reads_split_cards_from_combined_face_costs() -> None:
     deck = [
-        {"quantity": 24, "card_name": "Island", "card_metadata": {"name": "Island", "type_line": "Basic Land - Island", "mana_cost": ""}},
-        {
-            "quantity": 4,
-            "card_name": "Fire // Ice",
-            "card_metadata": {
-                "name": "Fire // Ice",
-                "type_line": "Instant // Instant",
-                "mana_cost": "",
-                "card_faces": [
-                    {"name": "Fire", "type_line": "Instant", "oracle_text": "Fire deals 2 damage divided as you choose among one or two targets.", "mana_cost": "{1}{R}"},
-                    {"name": "Ice", "type_line": "Instant", "oracle_text": "Tap target permanent. Draw a card.", "mana_cost": "{1}{U}"},
-                ],
-            },
-        },
-        {"quantity": 4, "card_name": "Wedding Announcement", "card_metadata": {"name": "Wedding Announcement", "type_line": "Enchantment", "mana_cost": "{2}{W}", "oracle_text": "At the beginning of your end step, create a 1/1 white Human creature token."}},
-        {"quantity": 28, "card_name": "Raise the Alarm", "card_metadata": {"name": "Raise the Alarm", "type_line": "Instant", "mana_cost": "{1}{W}", "oracle_text": "Create two 1/1 white Soldier creature tokens."}},
+        deck_entry("Island", 24),
+        deck_entry("Fire // Ice", 4),
+        deck_entry("Wedding Announcement", 4),
+        deck_entry("Raise the Alarm", 28),
     ]
 
     out = analyze_deck(deck)
-    assert out["face_card_count_estimate"] == 4
+    assert out["face_card_count_estimate"] == 8
     assert out["split_card_count_estimate"] == 4
     assert out["avg_cmc_estimate"] > 0.2
     assert guess_archetype(deck) == "Tokens"

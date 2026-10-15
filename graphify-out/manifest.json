@@ -3504,9 +3504,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_card_image_sync.py": {
-    "mtime": 1792033175.638678,
-    "seen": 1792034402.3565223,
-    "ast_hash": "3e49d873fb4fb248bc8053d487f938f8",
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.267921,
+    "ast_hash": "a170e3c217b0870faee0e8adbf212189",
     "semantic_hash": ""
   },
   "backend/tests/test_card_observation_memory.py": {
@@ -3942,9 +3942,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_deck_analysis.py": {
-    "mtime": 1792033175.650678,
-    "seen": 1792034402.3567235,
-    "ast_hash": "72e273183d0d8b8d18935c540e8df399",
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.2681322,
+    "ast_hash": "1aa6736ec2d9b2c65ef64250f4e72a52",
     "semantic_hash": ""
   },
   "backend/tests/test_deck_bootstrap.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792100865.458344,
-    "seen": 1792100982.5310314,
-    "ast_hash": "8971068e2a04a9b31133ed357eebe801",
+    "mtime": 1792103696.7275457,
+    "seen": 1792103812.2709973,
+    "ast_hash": "af381276ff251bd9a8c7be29734ea793",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19149,6 +19149,66 @@
     "mtime": 1792100007.6707146,
     "seen": 1792100982.5312846,
     "ast_hash": "ec80c224cac2da2022044144d65ccdaf",
+    "semantic_hash": ""
+  },
+  "backend/tests/canonical_positive_fixtures.py": {
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.2661595,
+    "ast_hash": "46fdb05e4aac5857056dcefc0f52628b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_positive_batch/PROVENANCE.json": {
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.266454,
+    "ast_hash": "01dee57e366d19abcf1b42ec7e9f1795",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_positive_batch/fire-ice-scryfall-raw.json": {
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.2664561,
+    "ast_hash": "c6db3c4d88aa24823dec6b5eefaa880d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_positive_batch/flame-rift-scryfall-raw.json": {
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.2664578,
+    "ast_hash": "ec2b520c40f906c54d999b012386104e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_positive_batch/island-sanctuary-scryfall-raw.json": {
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.2664597,
+    "ast_hash": "ecc970c563fdb643d54b1aeed1ca6725",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_positive_batch/mystic-sanctuary-scryfall-raw.json": {
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.2664611,
+    "ast_hash": "aa3c3f81274ca692cc397d1825042a4c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_positive_batch/old-fogey-scryfall-raw.json": {
+    "mtime": 1792103696.6775465,
+    "seen": 1792103812.2664628,
+    "ast_hash": "a07aece8969b0c416bf709992e653247",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_positive_batch/willbender-scryfall-raw.json": {
+    "mtime": 1792103696.6775465,
+    "seen": 1792103812.2664642,
+    "ast_hash": "d5410663a1ed4ba10c63953503b36350",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_canonical_positive_fixture_fidelity.py": {
+    "mtime": 1792103696.6765466,
+    "seen": 1792103812.267903,
+    "ast_hash": "badf8c07755d9cc2b76ed99a53cb5761",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-positive-fixture-batch-current.md": {
+    "mtime": 1792103696.7275457,
+    "seen": 1792103812.2712097,
+    "ast_hash": "e690c28c3650c48559e99ef38f0e3e79",
     "semantic_hash": ""
   }
 }

@@ -168,6 +168,17 @@ hydration migrations and the preceding ingestion-fidelity module: 24 ordinary
 passes, zero failures/errors/skips, with physical SQL/socket/child denial active.
 That does not certify HTTP, arbitrary gameplay or the remaining fixture families.
 
+The subsequent [deck-analysis/image-cache batch](task13-positive-fixture-batch-current.md)
+retains 15 original tests while replacing their named positive facts with full
+official records. Complete Wedding Announcement data contributes four additional
+two-faced card copies in the split-deck fixture; its exact expected count changes
+from four to eight, independently derived from RAW faces and quantities. The
+other 42 assertions remain exact. A final eight-whole-module cohort passes all
+52 cases, including the preceding hydration/fidelity modules, with no failures,
+errors or skips and no admitted SQL/network/child I/O during the tests. The
+earlier 26-pass/one-stale-expectation ledger remains preserved. No classifier or
+other production code changes, and the remaining fixture families stay open.
+
 ## Missing-Cache Recovery Qualification
 
 The corrected ingestor materializes a missing display-cache row from validated
