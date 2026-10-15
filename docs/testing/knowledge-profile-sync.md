@@ -17,7 +17,9 @@ existing deck-analysis estimate; it requires `--profile`. Empty, zero-copy,
 oversized or invalid quantity contexts reject before archetype expansion.
 
 Profiling preserves complete canonical `card_data`, rulings, provenance and
-unknown metadata. It refuses missing/invalid canonical rows and opaque tactical
+unowned outer-profile metadata. Unknown direct tactical namespace keys survive;
+known generated structures are replaced, not recursively extension-merged.
+It refuses missing/invalid canonical rows and opaque tactical
 namespaces instead of overwriting them. Alias duplicates are written once, and
 an identical repeat does not update the row or its timestamp. `profiled` and
 `profiles_updated` are separate summary fields. Profile errors make the command
@@ -25,6 +27,12 @@ exit nonzero; independent row updates are not promised to be a batch transaction
 Additional search results need explicit requested names for corpus profiling.
 
 ## Observed Evidence
+
+The later [physical legacy-copy CLI qualification](phase2-legacy-profile-cli-current.md)
+executes the original command twice on the same owned file: 158 requested names
+resolve to 150 profiled rows, with 150 updates followed by zero updates and
+unchanged full tables/timestamps on repetition. This is separate from the earlier
+in-memory component below and does not migrate a live database.
 
 The final six-whole-module declaration passed **85 ordinary tests plus 10
 subtests in 34.66s**, with no failures, errors, skips or selection filters.

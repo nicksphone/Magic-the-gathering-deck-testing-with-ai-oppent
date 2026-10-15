@@ -17520,15 +17520,15 @@
     "semantic_hash": ""
   },
   "docs/testing/knowledge-profile-sync.md": {
-    "mtime": 1792033175.7756758,
-    "seen": 1792034402.3589358,
-    "ast_hash": "5619b4c220be219d26186aa981680eac",
+    "mtime": 1792093293.2760835,
+    "seen": 1792093492.1882465,
+    "ast_hash": "63b2909012bf38c4e2b372b5053de0ee",
     "semantic_hash": ""
   },
   "docs/testing/knowledge-profiles-current-derivation.md": {
-    "mtime": 1792033175.7756758,
-    "seen": 1792034402.3589373,
-    "ast_hash": "a3ba3e161e8a5c1dafbda30f323159a1",
+    "mtime": 1792093293.2760835,
+    "seen": 1792093492.1882484,
+    "ast_hash": "aa2b5ca568596478f945daf81feeb9a8",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792086260.279161,
-    "seen": 1792088826.5941281,
-    "ast_hash": "02c67459ae10e51929a535cbafc04bbc",
+    "mtime": 1792088883.836869,
+    "seen": 1792093492.1884813,
+    "ast_hash": "d76c15b78daa5dda25581051eaab355d",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19032,9 +19032,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-10-15-payment-trial-copy.md": {
-    "mtime": 1792084923.6044202,
-    "seen": 1792088826.5932527,
-    "ast_hash": "95e71c5073e17a80c65b20ef7a0e961b",
+    "mtime": 1792091029.4033964,
+    "seen": 1792093492.1875873,
+    "ast_hash": "1bbd094f4cf64d23e570eccde0c015f9",
     "semantic_hash": ""
   },
   "backend/tests/test_nested_card_copy.py": {
@@ -19071,6 +19071,12 @@
     "mtime": 1792082430.0454712,
     "seen": 1792088826.5941331,
     "ast_hash": "876575a5b171d36dd764a227de9ca9de",
+    "semantic_hash": ""
+  },
+  "docs/testing/phase2-legacy-profile-cli-current.md": {
+    "mtime": 1792093322.9795928,
+    "seen": 1792093492.1884885,
+    "ast_hash": "7a3b60a45c9e3f960399fff7d77a94cf",
     "semantic_hash": ""
   }
 }

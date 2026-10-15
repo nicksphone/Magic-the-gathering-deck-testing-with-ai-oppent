@@ -17,10 +17,12 @@ capability; nested metadata is copied, not claimed cryptographically immutable.
 
 `profile_payload(profile)` yields copied JSON primitives/lists using dataclass
 serialization. `merge_profile_payload(existing, profile)` (alias `merge_profile`)
-deep-copies the entire old profiles object, updates only known keys inside
-`tactical_profile`, and preserves unknown top-level/nested keys. An opaque existing
-namespace is rejected rather than discarded. Full `card_data`, rulings, metadata,
-provenance and schema fields stay unchanged. Repository fields remain scalar
+deep-copies the entire old profiles object, updates known keys inside
+`tactical_profile`, and preserves unknown outer-profile and direct namespace
+keys. Known generated structures, including `faces` and `context`, are replaced
+as units, not recursively merged with extensions inside those structures.
+An opaque existing namespace is rejected rather than discarded. Full `card_data`,
+rulings, metadata, provenance and schema fields stay unchanged. Repository fields remain scalar
 `play_value`, `threat_level`, `etb_impact`, with list conversions of `answerable_by`
 and `cast_windows`; no model/schema/repository changes are made here.
 
