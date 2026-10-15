@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/models.py": {
-    "mtime": 1792033175.4926805,
-    "seen": 1792034402.3546934,
-    "ast_hash": "0c54202a22e685ca03f4d82b935441d9",
+    "mtime": 1792048723.753389,
+    "seen": 1792049945.3256319,
+    "ast_hash": "56913bea1aae131ecc22b216ec72ca0d",
     "semantic_hash": ""
   },
   "backend/main.py": {
@@ -474,9 +474,9 @@
     "semantic_hash": ""
   },
   "backend/persistence/repository.py": {
-    "mtime": 1792033175.4956806,
-    "seen": 1792034402.354709,
-    "ast_hash": "005d30bfb08e205f835737a8559779b0",
+    "mtime": 1792048723.755389,
+    "seen": 1792049945.3256507,
+    "ast_hash": "d13313e02803b30978b30e5df7891b21",
     "semantic_hash": ""
   },
   "backend/rules_engine/__init__.py": {
@@ -18078,9 +18078,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-plan-acceptance-progress.md": {
-    "mtime": 1792046534.9801435,
-    "seen": 1792046651.8063009,
-    "ast_hash": "4ee97a329de389214c0dbbd3aac58831",
+    "mtime": 1792049829.7945406,
+    "seen": 1792049945.3300931,
+    "ast_hash": "ea281ca2b59d5584d6366ff166727d10",
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
@@ -18918,9 +18918,33 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792046534.9781437,
-    "seen": 1792046651.8073888,
-    "ast_hash": "95d3765a64d8942fcc69d2556c122f0c",
+    "mtime": 1792049829.7935407,
+    "seen": 1792049945.3309207,
+    "ast_hash": "683e537db1622c54b1c4fd63f2528493",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_domain_boundaries.py": {
+    "mtime": 1792048723.7583888,
+    "seen": 1792049945.3282495,
+    "ast_hash": "9c231bc5e0a1601df1a1c3494fbdae80",
+    "semantic_hash": ""
+  },
+  "docs/testing/knowledge-domain-admission.md": {
+    "mtime": 1792049829.7925408,
+    "seen": 1792049945.330702,
+    "ast_hash": "eb1314c1e6d8b86010326c923cece696",
+    "semantic_hash": ""
+  },
+  "docs/testing/native-linux-chrome-brave-95aa.md": {
+    "mtime": 1792049414.7043836,
+    "seen": 1792049945.3308399,
+    "ast_hash": "8de5de900eb54bba403c1c4b561855bf",
+    "semantic_hash": ""
+  },
+  "docs/testing/phase1-legacy-copy-readiness.md": {
+    "mtime": 1792049829.7925408,
+    "seen": 1792049945.3309226,
+    "ast_hash": "4abc85341273affe3a4d9994d00768f3",
     "semantic_hash": ""
   }
 }
