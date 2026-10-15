@@ -77,9 +77,19 @@ export function startupStderrFacts(prefix, totalBytes) {
     ['crashpad-database-required', /chrome_crashpad_handler: --database is required/],
     ['display-error', /Missing X server or \$DISPLAY/],
   ].filter(([, pattern]) => pattern.test(text)).map(([name]) => name);
+  const sourceLocations = [];
+  for (const match of text.matchAll(/:(?:FATAL|ERROR):[^\]\r\n]{0,160}?([A-Za-z_][A-Za-z_0-9-]{0,79}\.(?:cc|cpp|cxx|h)):(\d{1,6})\]/g)) {
+    if (!sourceLocations.some(row => row.file === match[1] && row.line === Number(match[2]))) {
+      sourceLocations.push({file: match[1], line: Number(match[2])});
+      if (sourceLocations.length === 4) break;
+    }
+  }
   return {total_bytes: totalBytes, captured_bytes: captured.length, truncated: totalBytes > captured.length,
     prefix_sha256: createHash('sha256').update(captured).digest('hex'),
-    classifications: classifications.length ? classifications : ['unclassified']};
+    classifications: classifications.length ? classifications : ['unclassified'], source_locations: sourceLocations,
+    runtime_flags: {check_failed: /Check failed:/.test(text), uncaught_exception: /terminate called after throwing|terminating due to uncaught exception/.test(text),
+      null_string_construction: /basic_string[^\r\n]*null/.test(text),
+      permission_denied: /Permission denied/.test(text), operation_not_permitted: /Operation not permitted/.test(text)}};
 }
 
 export function observeVendorChild(child) {

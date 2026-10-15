@@ -155,6 +155,28 @@ test('startup stderr capture is bounded and never publishes private paths or byt
   assert.equal(JSON.stringify(facts).includes('/home/'), false);
 });
 
+test('unclassified aborts expose only runtime flags and bounded compiler source locations', () => {
+  const message = '[11:22:123:FATAL:../../vendor/private/brave_main_delegate.cc:345] Check failed: PRIVATE\n'
+    + 'terminate called after throwing an instance of std::logic_error\n'
+    + 'what(): basic_string: construction from null is not valid\nPermission denied\n';
+  const bytes = Buffer.from(message);
+  const facts = api('startupStderrFacts')(bytes, bytes.length);
+  assert.deepEqual(facts.source_locations, [{file: 'brave_main_delegate.cc', line: 345}]);
+  assert.equal(facts.runtime_flags.check_failed, true);
+  assert.equal(facts.runtime_flags.uncaught_exception, true);
+  assert.equal(facts.runtime_flags.null_string_construction, true);
+  assert.equal(facts.runtime_flags.permission_denied, true);
+  assert.equal(JSON.stringify(facts).includes('PRIVATE'), false);
+  assert.equal(JSON.stringify(facts).includes('../../vendor/private'), false);
+  const many = Buffer.from(Array.from({length: 20}, (_, n) => `[1:2:3:ERROR:source_${n}.cc:12]`).join('\n'));
+  assert.equal(api('startupStderrFacts')(many, many.length).source_locations.length, 4);
+  const clang = Buffer.from('libc++abi: terminating due to uncaught exception of type std::logic_error: basic_string: null pointer\n[1:2:3:ERROR:libcxx/verbose_abort.cpp:99]');
+  const clangFacts = api('startupStderrFacts')(clang, clang.length);
+  assert.equal(clangFacts.runtime_flags.uncaught_exception, true);
+  assert.equal(clangFacts.runtime_flags.null_string_construction, true);
+  assert.deepEqual(clangFacts.source_locations, [{file: 'verbose_abort.cpp', line: 99}]);
+});
+
 test('direct process exit completes cleanup even when a descendant retains stderr', async () => {
   const child = new EventEmitter();
   child.stderr = new PassThrough();

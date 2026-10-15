@@ -1,7 +1,7 @@
 # Graph Report - mtg-native-vendor-ci-SqBhmsqw  (2026-10-15)
 
 ## Corpus Check
-- 3115 files · ~2,663,127 words
+- 3115 files · ~2,663,261 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 59 file(s) not represented in the graph (top: .jsonl 30, (none) 15, .utc 4)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `7cf693bb`
+- Built from commit: `4a67a665`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
