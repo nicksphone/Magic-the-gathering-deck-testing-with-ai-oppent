@@ -464,7 +464,8 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
    }
    if(method==='Page.reload')return sendNative('browsingContext.reload',{context,...(params.ignoreCache===undefined?{}:{ignoreCache:params.ignoreCache}),wait:'none'});
    if(method==='Page.captureScreenshot'){
-    if(params.format!=='png'||Object.keys(params).some(k=>k!=='format'))throw Error('Unsupported Firefox screenshot options');return sendNative('browsingContext.captureScreenshot',{context,origin:'viewport',format:{type:'image/png'}});
+    if(params.format!=='png'||Object.keys(params).some(k=>!['format','captureBeyondViewport'].includes(k))||Object.hasOwn(params,'captureBeyondViewport')&&typeof params.captureBeyondViewport!=='boolean')throw Error('Unsupported Firefox screenshot options');
+    return sendNative('browsingContext.captureScreenshot',{context,origin:params.captureBeyondViewport===true?'document':'viewport',format:{type:'image/png'}});
    }
    if(method==='Runtime.evaluate'){
     if(params.awaitPromise!==true||params.returnByValue!==true)throw Error('Unsupported Firefox evaluation options');
@@ -483,8 +484,9 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
    if(method==='Fetch.continueResponse'){nativeMethod='network.continueResponse';nativeParams={request:params.requestId};}
    else if(method==='Fetch.failRequest'){nativeMethod='network.failRequest';nativeParams={request:params.requestId};}
    else if(method==='Fetch.fulfillRequest'){
-    if(!Number.isInteger(params.responseCode)||typeof params.body!=='string'||!Array.isArray(params.responseHeaders))unavailable();
-    nativeMethod='network.provideResponse';nativeParams={request:params.requestId,statusCode:params.responseCode,body:{type:'base64',value:params.body},headers:params.responseHeaders.map(h=>({name:h.name,value:{type:'string',value:h.value}}))};
+    const bodyless=params.responseCode===204&&!Object.hasOwn(params,'body');
+    if(!Number.isInteger(params.responseCode)||!bodyless&&typeof params.body!=='string'||!Array.isArray(params.responseHeaders))unavailable();
+    nativeMethod='network.provideResponse';nativeParams={request:params.requestId,statusCode:params.responseCode,...(bodyless?{}:{body:{type:'base64',value:params.body}}),headers:params.responseHeaders.map(h=>({name:h.name,value:{type:'string',value:h.value}}))};
    }else throw Error('Unsupported Firefox driver command: '+method);
    return resolveRequest(channel,held,nativeMethod,nativeParams,until);
   }

@@ -407,3 +407,135 @@ test('review P2: replacing Fetch configuration invalidates and safely continues 
  assert.equal(f.sent.filter(m=>m.method==='network.continueResponse'&&m.params.request==='reconfigured-post').length,1);
  assert.doesNotThrow(()=>c.socket.assertHealthy());
 });
+
+// Opaque mocked native result data, not a generated PNG or native acceptance receipt.
+const screenshotResult={data:'OPAQUE_NATIVE_SCREENSHOT_TEST_DATA'};
+for(const [label,flag,origin] of [['omitted',undefined,'viewport'],['false',false,'viewport'],['true',true,'document']]){
+ test('screenshot '+label+' forwards exact native scope and result data',async t=>{
+  const f=fixture(t),c=await f.open();f.replies.set('browsingContext.captureScreenshot',screenshotResult);
+  const params={format:'png',...(flag===undefined?{}:{captureBeyondViewport:flag})};
+  const before=f.sent.length;
+  assert.deepEqual(await f.command(c,'Page.captureScreenshot',params),screenshotResult);
+  assert.equal(f.sent.length,before+1);
+  assert.deepEqual(f.sent.at(-1).params,{context:c.id,origin,format:{type:'image/png'}});
+  assert.equal(f.sent.at(-1).method,'browsingContext.captureScreenshot');
+ });
+}
+for(const flag of [null,0,1,'false',[],{}]){
+ test('screenshot rejects non-boolean scope '+JSON.stringify(flag)+' without native traffic',async t=>{
+  const f=fixture(t),c=await f.open(),before=f.sent.length;
+  await assert.rejects(f.command(c,'Page.captureScreenshot',{format:'png',captureBeyondViewport:flag}));
+  assert.equal(f.sent.length,before);
+ });
+}
+test('screenshot keeps explicit PNG and rejects every other option rather than silently dropping it',async t=>{
+ const f=fixture(t),c=await f.open(),before=f.sent.length;
+ for(const params of [{},{format:'jpeg'},{format:'png',quality:80},{format:'png',clip:{}},
+  {format:'png',fromSurface:true},{format:'png',optimizeForSpeed:true},
+  {format:'png',captureBeyondViewport:true,unknown:true}])await assert.rejects(f.command(c,'Page.captureScreenshot',params));
+ assert.equal(f.sent.length,before);
+});
+for(const flag of [false,true]){
+ test('screenshot '+flag+' cannot settle before its actual mocked native ACK',async t=>{
+  const f=fixture(t),c=await f.open();f.replies.set('browsingContext.captureScreenshot',screenshotResult);
+  f.hold.add('browsingContext.captureScreenshot');let settled=false;
+  const result=f.command(c,'Page.captureScreenshot',{format:'png',captureBeyondViewport:flag}).finally(()=>{settled=true;});result.catch(()=>{});
+  await flush();assert.equal(settled,false);
+  const command=f.held.shift();assert.ok(command);assert.equal(command.method,'browsingContext.captureScreenshot');
+  f.respond(command);assert.deepEqual(await result,screenshotResult);
+  assert.equal(settled,true);
+ });
+ test('screenshot '+flag+' preserves the native failure without viewport fallback',async t=>{
+  const f=fixture(t),c=await f.open();f.errors.set('browsingContext.captureScreenshot','unsupported operation');
+  const before=f.sent.length;
+  await assert.rejects(f.command(c,'Page.captureScreenshot',{format:'png',captureBeyondViewport:flag}),/^Error: unsupported operation$/);
+  assert.equal(f.sent.length,before+1);assert.equal(f.sent.at(-1).method,'browsingContext.captureScreenshot');
+ });
+}
+test('screenshot scope cannot admit an unowned context or revive a closed page',async t=>{
+ const f=fixture(t),c=await f.open();let before=f.sent.length;
+ await assert.rejects(f.command(c,'Page.captureScreenshot',{format:'png',captureBeyondViewport:true},'unowned-context'));
+ assert.equal(f.sent.length,before);
+ await f.close(c);before=f.sent.length;
+ await assert.rejects(f.command(c,'Page.captureScreenshot',{format:'png',captureBeyondViewport:false}));
+ assert.equal(f.sent.length,before);
+});
+
+const fulfillmentHeaders=[{name:'Access-Control-Allow-Origin',value:frontend},
+ {name:'Access-Control-Allow-Methods',value:'GET, POST, OPTIONS'}];
+async function optionsPause(f,c,request){
+ await f.command(c,'Fetch.enable',{patterns:[{urlPattern:'*/matches/*',requestStage:'Request'}]});
+ const event=networkEvent(c,request);event.request.method='OPTIONS';
+ f.emit('network.beforeRequestSent',event);await flush();
+ assert.equal(f.events.at(-1).params.requestId,request);
+ assert.equal(f.events.at(-1).params.request.method,'OPTIONS');
+}
+const nativeFulfillmentHeaders=()=>fulfillmentHeaders.map(h=>({name:h.name,value:{type:'string',value:h.value}}));
+test('bodyless 204 omits native body instead of manufacturing empty base64 bytes',async t=>{
+ const f=fixture(t),c=await f.open();await optionsPause(f,c,'bodyless-204');
+ const before=f.sent.length;
+ await f.command(c,'Fetch.fulfillRequest',{requestId:'bodyless-204',responseCode:204,responseHeaders:fulfillmentHeaders});
+ assert.equal(f.sent.length,before+1);assert.equal(f.sent.at(-1).method,'network.provideResponse');
+ assert.deepEqual(f.sent.at(-1).params,{request:'bodyless-204',statusCode:204,headers:nativeFulfillmentHeaders()});
+ assert.equal(Object.hasOwn(f.sent.at(-1).params,'body'),false);
+ await f.command(c,'Fetch.disable');
+ assert.equal(f.sent.filter(m=>m.method==='network.continueRequest'&&m.params.request==='bodyless-204').length,0);
+});
+for(const [responseCode,body] of [[200,'e30='],[204,''],[204,'e30=']]){
+ test('supplied string body is forwarded unchanged for '+responseCode+' '+JSON.stringify(body),async t=>{
+  const f=fixture(t),c=await f.open();await optionsPause(f,c,'supplied-body');
+  await f.command(c,'Fetch.fulfillRequest',{requestId:'supplied-body',responseCode,body,responseHeaders:fulfillmentHeaders});
+  assert.deepEqual(f.sent.at(-1).params,{request:'supplied-body',statusCode:responseCode,
+   body:{type:'base64',value:body},headers:nativeFulfillmentHeaders()});
+ });
+}
+test('bodyless exception cannot weaken old body, status or header type guards',async t=>{
+ const f=fixture(t),c=await f.open();await optionsPause(f,c,'invalid-fulfillment');const before=f.sent.length;
+ const base={requestId:'invalid-fulfillment',responseCode:200,responseHeaders:fulfillmentHeaders};
+ for(const responseCode of [200,201,400]){
+  await assert.rejects(f.command(c,'Fetch.fulfillRequest',{...base,responseCode}));
+  // JSON compatibility transport omits undefined; for non-204 it must still reject.
+  await assert.rejects(f.command(c,'Fetch.fulfillRequest',{...base,responseCode,body:undefined}));
+ }
+ for(const responseCode of [200,204])for(const body of [null,0,false,[],{}])
+  await assert.rejects(f.command(c,'Fetch.fulfillRequest',{...base,responseCode,body}));
+ for(const responseCode of [null,204.5,'204'])
+  await assert.rejects(f.command(c,'Fetch.fulfillRequest',{...base,responseCode}));
+ for(const responseHeaders of [undefined,null,'headers',{}])
+  await assert.rejects(f.command(c,'Fetch.fulfillRequest',{...base,responseCode:204,responseHeaders}));
+ assert.equal(f.sent.length,before);
+});
+for(const negative of [false,true]){
+ test('bodyless 204 '+(negative?'negative':'positive')+' ACK remains pending for disable without duplicate commands',async t=>{
+  const f=fixture(t),c=await f.open();await optionsPause(f,c,'pending-204');
+  f.hold.add('network.provideResponse');let settled=false,disabled=false;
+  const result=f.command(c,'Fetch.fulfillRequest',{requestId:'pending-204',responseCode:204,responseHeaders:fulfillmentHeaders}).finally(()=>{settled=true;});result.catch(()=>{});
+  await flush();assert.equal(settled,false);
+  const native=f.held.shift();assert.ok(native);assert.equal(native.method,'network.provideResponse');
+  assert.equal(Object.hasOwn(native.params,'body'),false);
+  const disable=f.command(c,'Fetch.disable').then(()=>{disabled=true;});disable.catch(()=>{});
+  await flush();assert.equal(disabled,false);
+  assert.equal(f.sent.filter(m=>m.method==='network.provideResponse').length,1);
+  assert.equal(f.sent.filter(m=>m.method==='network.continueRequest'&&m.params.request==='pending-204').length,0);
+  if(negative)f.errors.set('network.provideResponse','unsupported operation');
+  f.respond(native);
+  if(negative){
+   await assert.rejects(result,/^Error: unsupported operation$/);await assert.rejects(disable,/^Error: unsupported operation$/);
+   assert.equal(disabled,false);
+  }else{await result;await disable;assert.equal(disabled,true);}
+  assert.equal(settled,true);
+  assert.equal(f.sent.filter(m=>m.method==='network.provideResponse').length,1);
+ });
+}
+test('bodyless 204 cannot fulfill another page request, an unknown request or an already-resolved pause',async t=>{
+ const f=fixture(t),c=await f.open(),other=await f.open();await optionsPause(f,other,'foreign-204');
+ let before=f.sent.length;
+ for(const requestId of ['foreign-204','missing-204'])
+  await assert.rejects(f.command(c,'Fetch.fulfillRequest',{requestId,responseCode:204,responseHeaders:fulfillmentHeaders}));
+ await assert.rejects(f.command(other,'Fetch.fulfillRequest',{requestId:'foreign-204',responseCode:204,responseHeaders:fulfillmentHeaders},'unowned-context'));
+ assert.equal(f.sent.length,before);
+ await optionsPause(f,c,'resolved-204');await f.command(c,'Fetch.continueRequest',{requestId:'resolved-204',interceptResponse:false});
+ before=f.sent.length;
+ await assert.rejects(f.command(c,'Fetch.fulfillRequest',{requestId:'resolved-204',responseCode:204,responseHeaders:fulfillmentHeaders}));
+ assert.equal(f.sent.length,before);
+});
