@@ -8,6 +8,22 @@ Chromium command paths and existing UI assertions are retained. This does not
 certify the actual Firefox build or the full application suite. See
 [the gesture and two-phase cleanup boundaries](firefox-native-ui-input.md).
 
+Exact published `bca3ebd4` also completes generic browser job `116388037467`
+in run `38724848722`: independently reconciled 45 ordered stage headers and
+501 PASS banners from the unchanged 68-program launcher. Its full banner
+stream matches the preceding verified reference. No backend log or protected
+trace was fetched. The generic job retains its existing no-sandbox mode; this
+is not new native Chrome/Brave/Firefox or whole-backend qualification.
+
+The latest exact `2d106588` backend metadata matches all 899 retained Phase 1
+component cases to passed setup/call/teardown records, with all 1,986 archived
+backend source files independently byte-matched. Its whole run still has five
+historical repository source-guard failures. Their finite test-only correction
+passes all 108 cases in seven whole affected modules, including real cold HTTP
+restarts and mutation rejection. Production and original JSON contracts are
+unchanged; new whole hosted acceptance and the literal Phase 1 specification
+decision remain open. See [the updated checklist](phase1-acceptance-current.md).
+
 ## Firefox Protocol Component
 
 The screenshot/bodyless-204 extension passes its full two-module, 94-case

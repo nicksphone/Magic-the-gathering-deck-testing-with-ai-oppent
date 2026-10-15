@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792062047.3439188,
-    "seen": 1792062265.7794585,
-    "ast_hash": "fa0f1b9e61d528ccf30e18811386b7a6",
+    "mtime": 1792068239.7534828,
+    "seen": 1792068354.4283552,
+    "ast_hash": "a41ce53b40a9964f7254c53bec388ba1",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -17172,9 +17172,9 @@
     "semantic_hash": ""
   },
   "backend/tests/interface_scope_compatibility.py": {
-    "mtime": 1792033175.6146786,
-    "seen": 1792034402.3561413,
-    "ast_hash": "6612b4daa7e23eed3902921169339700",
+    "mtime": 1792068188.150341,
+    "seen": 1792068354.4248571,
+    "ast_hash": "3e1d26f68ab6cbd5b4eb93c059482615",
     "semantic_hash": ""
   },
   "backend/tests/test_import_identity_sql_guard.py": {
@@ -17184,9 +17184,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_interface_scope_compatibility.py": {
-    "mtime": 1792033175.6626778,
-    "seen": 1792034402.3569329,
-    "ast_hash": "7fecf2e7cacb7c684fa473235c511ffa",
+    "mtime": 1792068188.150341,
+    "seen": 1792068354.4257257,
+    "ast_hash": "384458e6bb436e33ef32979bfb0785da",
     "semantic_hash": ""
   },
   "backend/tests/test_malformed_cached_face_boundary.py": {
@@ -18672,9 +18672,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_interface_scope_current_delta.py": {
-    "mtime": 1792033175.6626778,
-    "seen": 1792034402.3569343,
-    "ast_hash": "06731005d27c297a5e2d9f05cb611de0",
+    "mtime": 1792068188.150341,
+    "seen": 1792068354.4257276,
+    "ast_hash": "23f4fce2b65e803898341d145906bed5",
     "semantic_hash": ""
   },
   "backend/tests/test_sideboard_numeric_receipt_shape.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792060843.7370417,
-    "seen": 1792062265.7794163,
-    "ast_hash": "6f8e6e0fc2e6e1c4297f78a0ab77ffe1",
+    "mtime": 1792068239.7524827,
+    "seen": 1792068354.4283116,
+    "ast_hash": "8427ab5896dc882b2c1051d9afe79bb5",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -18999,6 +18999,24 @@
     "mtime": 1792062149.9262054,
     "seen": 1792062265.7790878,
     "ast_hash": "5c1bbf1e490ba86c331465590a415893",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/interface_scope_compatibility/accepted_phase1_repository_delta.json": {
+    "mtime": 1792068188.151341,
+    "seen": 1792068354.4243052,
+    "ast_hash": "927c81ad16075b5c956204de269a0587",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_interface_scope_phase1_repository_delta.py": {
+    "mtime": 1792068188.151341,
+    "seen": 1792068354.4257295,
+    "ast_hash": "457fdfe9b4dd8acfedf93f6f6234adf7",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-two-series-resource-diagnostics.md": {
+    "mtime": 1792067176.5779552,
+    "seen": 1792068354.4275792,
+    "ast_hash": "d88badab9c86d164d70b87c8e66170ef",
     "semantic_hash": ""
   }
 }
