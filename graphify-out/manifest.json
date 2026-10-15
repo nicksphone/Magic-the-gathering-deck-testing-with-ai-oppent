@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/ingest.py": {
-    "mtime": 1792033175.4916806,
-    "seen": 1792034402.3546903,
-    "ast_hash": "680ded4cae1e25aff14b26065e5c7faf",
+    "mtime": 1792046365.8730083,
+    "seen": 1792046651.7999833,
+    "ast_hash": "f5d64c5a2736d30c25bcb83cf8cc18ff",
     "semantic_hash": ""
   },
   "backend/knowledge/mechanic_metadata.py": {
@@ -5886,9 +5886,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1792042794.0378153,
-    "seen": 1792043016.029019,
-    "ast_hash": "70989eb2b507e06ebb236fa2cad198ba",
+    "mtime": 1792045075.2072833,
+    "seen": 1792046651.8052793,
+    "ast_hash": "a593a014031437d78734010e027a1e5c",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -6486,9 +6486,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery.mjs": {
-    "mtime": 1792041572.615197,
-    "seen": 1792042099.5759044,
-    "ast_hash": "3622a5f9e157fadd9d7681d0f47cff2d",
+    "mtime": 1792044351.8497865,
+    "seen": 1792046651.805604,
+    "ast_hash": "928b52a14b75a487bfc519d1a7e5f2fb",
     "semantic_hash": ""
   },
   "frontend/tests/browser-surveil.mjs": {
@@ -6522,15 +6522,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2-costs.mjs": {
-    "mtime": 1792043135.2921185,
-    "seen": 1792043473.955169,
-    "ast_hash": "6e5ab558966cff39b4f4186a1dd8e98a",
+    "mtime": 1792044351.8497865,
+    "seen": 1792046651.8056197,
+    "ast_hash": "f8a581c3c7fb95a93a82fe4011713fc8",
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1792036086.5955513,
-    "seen": 1792036413.7482715,
-    "ast_hash": "e9228b0b36fff96c2e52f3f301669ad0",
+    "mtime": 1792045841.7061188,
+    "seen": 1792046651.805622,
+    "ast_hash": "56a8fe92b2e9fe0d142eab9299b1da91",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -18078,9 +18078,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-plan-acceptance-progress.md": {
-    "mtime": 1792033175.7416763,
-    "seen": 1792034402.358452,
-    "ast_hash": "4c0b5a2640dd331181eb7a7a0fcbb9b3",
+    "mtime": 1792046534.9801435,
+    "seen": 1792046651.8063009,
+    "ast_hash": "4ee97a329de389214c0dbbd3aac58831",
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
@@ -18258,9 +18258,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-drop-response-contract.mjs": {
-    "mtime": 1792036049.0971053,
-    "seen": 1792036413.7482767,
-    "ast_hash": "d86679976d04a001ec8c5fcfa4b40cf9",
+    "mtime": 1792045789.834936,
+    "seen": 1792046651.805628,
+    "ast_hash": "dd2b2b76ba95d31f6bd927578f7502f7",
     "semantic_hash": ""
   },
   "docs/testing/browser-v2-accepted-response-recovery.md": {
@@ -18852,15 +18852,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-diagnostics.mjs": {
-    "mtime": 1792043135.2921185,
-    "seen": 1792043473.955154,
-    "ast_hash": "a8818ad49dd96fc39d537075a62df172",
+    "mtime": 1792044351.8487864,
+    "seen": 1792046651.8055954,
+    "ast_hash": "75fb947d4f4a9b84fd52812ef95e32c6",
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-diagnostics.test.mjs": {
-    "mtime": 1792043102.9616585,
-    "seen": 1792043473.9551568,
-    "ast_hash": "525028f87c2bed612d1a3185430caf6e",
+    "mtime": 1792044313.9714203,
+    "seen": 1792046651.8055983,
+    "ast_hash": "f3d0088afec723972778b9a7e01c690f",
     "semantic_hash": ""
   },
   "frontend/tests/firefox-driver-contract.test.mjs": {
@@ -18900,9 +18900,27 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-held-response-contract.test.mjs": {
-    "mtime": 1792043102.9616585,
-    "seen": 1792043473.9551766,
-    "ast_hash": "a9a3fe7f1167c27159f6b9f8bac5ff51",
+    "mtime": 1792044313.9724205,
+    "seen": 1792046651.8056307,
+    "ast_hash": "20f4284bb95c2985d3f58e97d6d7585c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_cache_recovery.py": {
+    "mtime": 1792046308.660887,
+    "seen": 1792046651.80367,
+    "ast_hash": "363f0378e00b7bfaf6aa22f5c5e9e667",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-start-recovery-post-response-contract.test.mjs": {
+    "mtime": 1792044363.4585922,
+    "seen": 1792046651.8056011,
+    "ast_hash": "2c0d9a602cf1e024d08dac0d6ee31f3e",
+    "semantic_hash": ""
+  },
+  "docs/testing/phase1-acceptance-current.md": {
+    "mtime": 1792046534.9781437,
+    "seen": 1792046651.8073888,
+    "ast_hash": "95d3765a64d8942fcc69d2556c122f0c",
     "semantic_hash": ""
   }
 }
