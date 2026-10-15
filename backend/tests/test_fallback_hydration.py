@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+import json
 import re
 
 from card_data.seed_cards import seed_card_payload
+from card_data.sync import ScryfallSyncService
 from decks.builtin_decks import BUILTIN_DECKS
 from scripts.export_builtin_oracle_seed import shipped_names
 from main import _hydrate_deck_cards
 from scripts.debug_head_to_head import hydrate_deck as hydrate_diagnostic_deck
+from tests.test_knowledge_ingest import _official_card
 
 
 def test_control_ramp_fallback_catalog_contains_core_fields() -> None:
@@ -116,18 +119,16 @@ def test_hydrate_deck_cards_uses_face_image_when_root_image_missing(monkeypatch)
     class FakeRepo:
         def get_cached_cards_by_names(self, names):
             del names
+            raw = _official_card("Delver of Secrets // Insectile Aberration")
+            cached = ScryfallSyncService._normalize_payload(raw, "/card-images/delver-front.png")
+            # Only display metadata differs from the complete canonical projection.
+            cached["image_uri"] = None
+            faces = json.loads(cached["card_faces_json"])
+            for face, image in zip(faces, ("/card-images/delver-front.png", "/card-images/delver-back.png")):
+                face["image_uri"] = image
+            cached["card_faces_json"] = json.dumps(faces)
             return {
-                "delver of secrets": SimpleNamespace(
-                    name="Delver of Secrets // Insectile Aberration",
-                    oracle_text="Flying",
-                    mana_cost="{U}",
-                    type_line="Creature — Human Wizard",
-                    power="1",
-                    toughness="1",
-                    image_uri=None,
-                    card_faces_json='[{"name":"Delver of Secrets","image_uri":"/card-images/delver-front.png"},{"name":"Insectile Aberration","image_uri":"/card-images/delver-back.png"}]',
-                    loyalty=None,
-                )
+                "delver of secrets": SimpleNamespace(**cached)
             }
 
     deck = [{"quantity": 1, "card_name": "Delver of Secrets"}]

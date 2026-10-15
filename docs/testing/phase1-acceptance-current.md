@@ -150,6 +150,24 @@ dependencies are unchanged. This closes those four positive fixture gaps,
 not the repository-wide synthetic/token/history scope question or whole hosted
 acceptance. See [the exact fixture evidence](knowledge-ingest-canonical-fixtures.md).
 
+## Delver Cache Fixture Follow-Up
+
+The later [Delver cache-fixture correction](task13-delver-cache-fixture-fidelity.md)
+also replaces an incomplete named positive fixture with the complete pinned
+official root/face projection, retaining only explicit image overrides. Its
+two-whole-module run passes all nine cases, preserving the original six tests
+and all 40 assertions. That is another bounded Task 1.3 fixture migration, not
+resolution of the remaining repository-wide handwritten-data requirement.
+
+The adjacent [card-hydration fixture migration](canonical-hydration-fixtures.md)
+replaces truncated Skewer/Figure facts, reduced Valki faces and the unnamed
+devoid example with complete pinned official inputs. Deliberate missing-metadata
+and unknown-card boundaries remain explicit. All five original tests and their
+14 assertions remain. One final five-whole-module composition includes both
+hydration migrations and the preceding ingestion-fidelity module: 24 ordinary
+passes, zero failures/errors/skips, with physical SQL/socket/child denial active.
+That does not certify HTTP, arbitrary gameplay or the remaining fixture families.
+
 ## Missing-Cache Recovery Qualification
 
 The corrected ingestor materializes a missing display-cache row from validated

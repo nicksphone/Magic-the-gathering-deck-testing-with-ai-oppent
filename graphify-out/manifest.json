@@ -3498,9 +3498,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_card_hydration.py": {
-    "mtime": 1792033175.638678,
-    "seen": 1792034402.3565204,
-    "ast_hash": "229ff021c13a09c0f9a319c653514a4c",
+    "mtime": 1792100865.4103446,
+    "seen": 1792100982.527713,
+    "ast_hash": "b6ea73b1d435ad3a14f8448f595fd4a4",
     "semantic_hash": ""
   },
   "backend/tests/test_card_image_sync.py": {
@@ -4164,9 +4164,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_fallback_hydration.py": {
-    "mtime": 1792033175.6566777,
-    "seen": 1792034402.3568187,
-    "ast_hash": "6106e723e7caa2a74ebedc7bf36b87e4",
+    "mtime": 1792100007.6707146,
+    "seen": 1792100982.5281675,
+    "ast_hash": "9e8b53ed3f710ec983af223a86e2259a",
     "semantic_hash": ""
   },
   "backend/tests/test_fixed_color_feasibility.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792088883.836869,
-    "seen": 1792093492.1884813,
-    "ast_hash": "d76c15b78daa5dda25581051eaab355d",
+    "mtime": 1792100865.458344,
+    "seen": 1792100982.5310314,
+    "ast_hash": "8971068e2a04a9b31133ed357eebe801",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19074,9 +19074,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase2-legacy-profile-cli-current.md": {
-    "mtime": 1792093572.1524606,
-    "seen": 1792096905.6703906,
-    "ast_hash": "80f4766572c2fb817a219790bac08caa",
+    "mtime": 1792099037.66409,
+    "seen": 1792100982.5310383,
+    "ast_hash": "6a854ba5b7e271bdc1b5d740aa92f3a9",
     "semantic_hash": ""
   },
   "backend/tests/test_canonical_cache_surface_boundaries.py": {
@@ -19092,9 +19092,63 @@
     "semantic_hash": ""
   },
   "docs/testing/canonical-cache-rule-recovery.md": {
-    "mtime": 1792096787.1598625,
-    "seen": 1792096905.6697133,
-    "ast_hash": "bfd32cbc8b188f20f00d204a6ac342b7",
+    "mtime": 1792099037.66309,
+    "seen": 1792100982.53035,
+    "ast_hash": "3a6bc2554f9ee627677ba610f81ae034",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_hydration/PROVENANCE.json": {
+    "mtime": 1792100865.4113448,
+    "seen": 1792100982.5261009,
+    "ast_hash": "e451640a9f5a26fed112770c9d0ee120",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_hydration/figure-of-destiny-scryfall-raw.json": {
+    "mtime": 1792100865.4113448,
+    "seen": 1792100982.5261033,
+    "ast_hash": "52a74aaa4129ac2a832b7f6b9faf08a2",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_hydration/ruination-guide-scryfall-raw.json": {
+    "mtime": 1792100865.4113448,
+    "seen": 1792100982.5261052,
+    "ast_hash": "91fa4a2c096d64699c19526ad867409b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/canonical_hydration/valki-scryfall-raw.json": {
+    "mtime": 1792100865.4113448,
+    "seen": 1792100982.5261068,
+    "ast_hash": "da76fece90ea7842f491d14ffeb386ae",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_card_hydration_fixture_fidelity.py": {
+    "mtime": 1792100865.4103446,
+    "seen": 1792100982.527715,
+    "ast_hash": "1d2eabc9d982b8897465811954269cb2",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_fallback_hydration_fixture_fidelity.py": {
+    "mtime": 1792100007.6707146,
+    "seen": 1792100982.5281706,
+    "ast_hash": "6d374b435184e461e01c1032e2d54fc1",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-hydration-fixtures.md": {
+    "mtime": 1792100865.4113448,
+    "seen": 1792100982.5303545,
+    "ast_hash": "e6ea605cdde9c995f3b1f03682e049a5",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-7d-complete-ci.md": {
+    "mtime": 1792099180.4586585,
+    "seen": 1792100982.5305185,
+    "ast_hash": "30de1fdc038c43a357bafc96a9975407",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-delver-cache-fixture-fidelity.md": {
+    "mtime": 1792100007.6707146,
+    "seen": 1792100982.5312846,
+    "ast_hash": "ec80c224cac2da2022044144d65ccdaf",
     "semantic_hash": ""
   }
 }
