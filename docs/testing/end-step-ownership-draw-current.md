@@ -37,7 +37,7 @@ source-control changes, actual paid ability copies, and replacement resumes.
 These are constructed rules fixtures, not natural games or AI quality data.
 No production SQL, socket, provider, chooser or matrix execution is involved.
 
-## Final Component Qualification
+## Initial Component Qualification
 
 Over the isolated `92a59e11` archive plus this increment, the final thirteen
 whole modules pass **122 cases in 460.61 seconds**, with no failures, errors or
@@ -50,9 +50,23 @@ Verified private evidence is under
 `diagnostics/ci/20261015-ownership-endstep-122PASS-CLEAR-JeHVEG/` on RCHFiles.
 This is not an HTTP/SQLite, all-card, final hosted-CI or release certificate.
 
-## Remaining Dispatch Edge
+## Mixed End-Step Routing
 
-A source mixing a separate "each end step" paragraph with this "your end step"
-family still needs its own regression and correction: the existing outer
-each-end-step branch precedes the own-end-step branch. The 122-case cohort does
-not certify that combination. It remains tracked work, not full-card support.
+The later correction routes this family before the older each/own precedence
+chain. It preserves that entire chain when the ownership domain is absent;
+otherwise, eligible separate each-end-step and own-end-step paragraphs retain
+their independent effects. Unsupported compound paragraphs never receive a
+partial legacy draw, including on an opponent's end step.
+
+The new whole module first records 20 failures and 20 passes. With the minimal
+two-file correction, it passes all 40 cases. The final fourteen whole modules
+pass **162 cases in 476.36 seconds**, with no failures, errors or skips: all
+122 earlier cases plus those 40 controls. Source hashes and the existing
+compiler, ownership predicate, draw resolver, registry and original test bytes
+remain as recorded by the scoped inverse proofs. Independent static review
+is CLEAR. The initial 122-case result is not retroactively relabelled.
+
+The added controls declare synthetic initial ownership boards and use checked
+phase/priority transitions and actual published triggers; they are not natural
+games or fabricated event/stack receipts. This closes the measured each/own
+dispatch defect, not arbitrary-card, HTTP/browser or full release acceptance.

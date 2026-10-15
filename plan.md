@@ -74,8 +74,12 @@ condition at collection and resolution, retains actual copied-trigger control,
 and reuses draw replacements/continuations. Separate existing abilities are
 preserved; unsupported compound tails do not receive partial rewards. See
 [the rules component](docs/testing/end-step-ownership-draw-current.md).
-Mixed each-end-step/own-end-step paragraphs still need a separate dispatch
-regression and correction; the scoped pass is not full-card acceptance.
+A subsequent strict mixed each/own regression exposes the preceding dispatch
+priority defect. The corrected fourteen-whole-module cohort passes all 162
+cases in 476.36 seconds, retaining every earlier case and adding 40 controls.
+The compiler, predicate, draw resolver and registry remain unchanged; no-domain
+cards retain the full prior branch chain. This closes that measured edge, not
+all-card or browser acceptance. Earlier 122-case results remain historical.
 
 After both corrections are integrated, the seven complete launcher/context
 modules separately pass all 185 cases in 7.45 seconds. These are independent

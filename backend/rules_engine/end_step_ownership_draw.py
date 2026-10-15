@@ -53,3 +53,23 @@ def resolve(state, controller, payload):
     if condition_holds(state, controller, payload['threshold']):
         from effects.registry import resolve_effect
         resolve_effect(state, controller, 'draw_cards', {**payload, 'target_player': controller})
+
+
+def route_end_step(state, card, raw_oracle, active_player):
+    paragraphs = [line.strip() for line in raw_oracle.splitlines()]
+    if not any(CANDIDATE.search(clause) for clause in paragraphs):
+        return None
+    triggers, legacy = [], []
+    for clause in paragraphs:
+        text = clause.lower()
+        eligible = (text.startswith(('at the beginning of each end step,',
+                                     'at the beginning of end step,'))
+                    or text.startswith('at the beginning of your end step,')
+                    and card.controller == active_player)
+        if not eligible:
+            continue
+        if CANDIDATE.search(clause):
+            triggers.extend(collect(state, card, clause) or [])
+        else:
+            legacy.append(clause)
+    return triggers, legacy

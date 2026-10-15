@@ -1066,7 +1066,18 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                                 "payload": {"target_card_id": cid},
                             }
                         )
-                    if "at the beginning of each end step" in oracle or "at the beginning of end step" in oracle:
+                    from rules_engine.end_step_ownership_draw import route_end_step
+                    routes = route_end_step(state, card, raw_oracle, active_player)
+                    if routes is not None:
+                        ownership, legacy_clauses = routes
+                        out.extend(ownership)
+                        for clause in legacy_clauses:
+                            out.append(_trigger_from_oracle(
+                                state, cid, card.controller, without_reminder_text(clause.lower()),
+                                default_label=f"{card.name} end-step trigger",
+                                event=event, payload=payload,
+                            ))
+                    elif "at the beginning of each end step" in oracle or "at the beginning of end step" in oracle:
                         out.append(
                             _trigger_from_oracle(
                                 state,

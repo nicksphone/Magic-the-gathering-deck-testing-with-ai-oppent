@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1792025649.6665595,
-    "seen": 1792025955.1952932,
-    "ast_hash": "fc90c13735410a34d9bf7163e997ef74",
+    "mtime": 1792027877.4302871,
+    "seen": 1792028048.5159626,
+    "ast_hash": "bd23d2fae5328149d3f4bdf51aab6d19",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1792026085.7938612,
-    "seen": 1792026199.6255891,
-    "ast_hash": "182a336390ce097d6bf423d01eb52830",
+    "mtime": 1792027934.4733768,
+    "seen": 1792028048.5211735,
+    "ast_hash": "6a151b7923f83514bc5eae447d45ae4a",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -18738,9 +18738,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/end_step_ownership_draw.py": {
-    "mtime": 1792025649.6665595,
-    "seen": 1792025955.195285,
-    "ast_hash": "82dd602660bed26041e56559e707a8ab",
+    "mtime": 1792027877.4302871,
+    "seen": 1792028048.5159545,
+    "ast_hash": "13922b7654aab4dcb8d3561f64197dec",
     "semantic_hash": ""
   },
   "backend/tests/test_end_step_ownership_draw.py": {
@@ -18768,15 +18768,21 @@
     "semantic_hash": ""
   },
   "docs/testing/end-step-ownership-draw-current.md": {
-    "mtime": 1792025842.2134984,
-    "seen": 1792025955.1998827,
-    "ast_hash": "297824b571b1db034584ec377c5be2ef",
+    "mtime": 1792027934.4723768,
+    "seen": 1792028048.5204508,
+    "ast_hash": "b0553df2de5573f99d6e34c697407e18",
     "semantic_hash": ""
   },
   "docs/testing/phase1-stored-deck-corpus-current.md": {
     "mtime": 1792025817.971851,
     "seen": 1792025955.200237,
     "ast_hash": "6db051cfbc00efc3d80134730f3797ea",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_end_step_each_ownership_dispatch.py": {
+    "mtime": 1792027877.431287,
+    "seen": 1792028048.5181968,
+    "ast_hash": "f1253da19b5b4936db861ecf0b8cf0e5",
     "semantic_hash": ""
   }
 }
