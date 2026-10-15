@@ -1,5 +1,5 @@
 """Selective simulation copies with one memo and explicit history retention."""
-from copy import deepcopy
+from copy import deepcopy, _keep_alive
 
 from game_state.state import CardInstance, Zone
 
@@ -35,15 +35,32 @@ def copy_match_state(state, *, memo=None, include_history=True, _field_copier=No
 
 
 def _copy_card_field(value, memo):
-    """Copy flat exact containers while retaining aliases and custom-copy fallback."""
-    if id(value) in memo:
-        return memo[id(value)]
+    """Copy exact metadata containers, preserving one memo and custom-copy fallback."""
+    identity = id(value)
+    if identity in memo:
+        return memo[identity]
     kind = type(value)
-    if ((kind in (list, dict, set) and not value)
-            or (kind in (list, set) and all(type(item) in _immutable_card_types for item in value))
-            or (kind is dict and all(type(key) in _immutable_card_types and type(item) in _immutable_card_types
-                                     for key, item in value.items()))):
+    if kind in _immutable_card_types:
+        return value
+    if kind is list:
+        result = []
+        memo[identity] = result
+        for item in value:
+            result.append(memo.get(id(item), item) if type(item) in _immutable_card_types
+                          else _copy_card_field(item, memo))
+    elif kind is dict:
+        if not all(type(key) in _immutable_card_types for key in value):
+            return deepcopy(value, memo)
+        result = {}
+        memo[identity] = result
+        for key, item in value.items():
+            child = memo.get(id(item), item) if type(item) in _immutable_card_types else _copy_card_field(item, memo)
+            result[memo.get(id(key), key)] = child
+    elif kind is set and all(type(item) in _immutable_card_types and
+            (id(item) not in memo or memo[id(item)] is item) for item in value):
         result = value.copy()
-        memo[id(value)] = result
-        return result
-    return deepcopy(value, memo)
+    else:
+        return deepcopy(value, memo)
+    memo[identity] = result
+    _keep_alive(value, memo)
+    return result
