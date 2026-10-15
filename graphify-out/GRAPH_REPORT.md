@@ -1,17 +1,17 @@
 # Graph Report - mtg-native-vendor-ci-SqBhmsqw  (2026-10-15)
 
 ## Corpus Check
-- 3115 files · ~2,662,566 words
+- 3115 files · ~2,663,127 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 59 file(s) not represented in the graph (top: .jsonl 30, (none) 15, .utc 4)
 
 ## Summary
-- 22512 nodes · 102412 edges · 837 communities (665 shown, 172 thin omitted)
+- 22514 nodes · 102419 edges · 830 communities (662 shown, 168 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 10725 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `4e470c0d`
+- Built from commit: `7cf693bb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -19,15 +19,15 @@
 - test_hand_source_incarnation_causal_audit.py
 - random
 - Step
-- test_conditional_creature_types.py
-- compile_body
-- apply_state_based_actions
+- test_mana_self_sacrifice.py
+- loyalty_instructions.py
+- fastapi_testclient
 - AnalyticsService
-- ScryfallSyncService
+- PublicMemoryRows
 - regression_matrix_replay.py
 - client.ts
 - SimulationResourceLimit
-- fixture
+- put_counters
 - add_card
 - mana.py
 - capacity.py
@@ -37,22 +37,22 @@
 - test_cast_choice_modes.py
 - extra_sequence_support.py
 - test_flicker_nontoken_domain.py
-- test_no_priority_progression.py
+- stack_object_kind
 - StackItem
 - resolve
 - test_queued_sequences.py
-- Rules regression agent — independent handoff
+- decode_action
 - test_tribal_entry_trigger.py
-- test_cast_resource_payments.py
+- Spell-Cost Reservation Overlaps
 - Battlefield.tsx
 - test_fable_optional_linked_discard.py
-- retain
+- restart
 - evaluate
-- controlled_basic_game
+- seed_card_payload
 - bare_state
 - test_spell_cost_overlap_investigation.py
 - cdp-observer-interface-smoke.mjs
-- match-contract.ts
+- ref_node_path
 - test_training_environment.py
 - add
 - test_suspend_context_coverage.py
@@ -64,46 +64,46 @@
 - test_generic_prerequisite_repairs.py
 - engine.py
 - assign_static_order_on_battlefield_entry
-- decode_action
+- test_selected_mana_http.py
 - test_soulless_jailer_typed_query.py
 - Complete Exile-Then-Return Audit
-- act
+- declare_attackers
 - test_temporary_control_lifecycle_audit.py
 - RulesEngine
 - clean
-- clean
+- test_transformed_entry.py
 - test_counter_replacements.py
 - plan.md
 - test_daretti_native_continuations.py
 - MetadataTests
-- test_sideboard_inventory_boundary_audit.py
+- add_profiled
 - test_bloodtithe_resource_debuff_audit.py
 - Jailer, Reanimate And Cathar Candidate
 - test_baseline_report.py
-- SnapshotCleanup
-- domain_paid_support
+- ci_backend_snapshot_cleanup.py
+- test_exchange_edges.py
 - test_graveyard_self_activation_product.py
-- checked_action
+- fixture
 - test_death_cycle_ordering_audit.py
 - build_trace_payload
-- ActionRejected
-- test_ui_synthetic_stock_publication.py
+- test_training_pending_intent_audit.py
+- test_task23_canonical_block_outcomes.py
 - test_sideboard_review_boundaries.py
 - test_march_pitch_paid.py
 - test_selected_graveyard_reference.py
 - test_loyalty_copy_boundaries.py
 - test_cathar_day_night_linked_exile.py
-- test_combat_graveyard_caller_audit.py
+- restart
 - scripts
-- test_counter_prohibitions.py
+- clean
 - README.md
 - test_export_publication_recovery.py
 - destroy_permanent
 - test_variable_suspend_keyword.py
-- test_multicast_subject_audit.py
-- decision_view
+- test_linked_group_untap.py
+- state.py
 - corpus_knowledge_readiness.py
-- test_combat_damage_assignment.py
+- apply_state_based_actions
 - test_saga_counter_events.py
 - test_source_linked_exile.py
 - snap
@@ -112,12 +112,12 @@
 - log_priors.py
 - continuous.py
 - run-current-built-acceptance.mjs
-- test_wheel_draw.py
-- test_optional_land_from_hand_audit.py
+- checked_action
+- test_modal_spell_faces.py
 - test_march_desired_paid.py
 - Controlled Calibration Advice Pilot
 - test_brainstorm_http_ordering_goldens.py
-- emit_event
+- replacement.py
 - test_suspend_lifecycle.py
 - test_sba_graveyard_entry_audit.py
 - matchup_round_robin.py
@@ -129,40 +129,40 @@
 - act
 - test_officer_fixture_lifecycle.py
 - test_additive_mana.py
-- serializers.py
-- test_shuffle_observer_audit.py
+- add_keyword_effect
+- test_spell_admission_safety_http.py
 - test_readiness_rules_seam.py
-- human-response-timer.mjs
-- ResourceMetadataTests
-- test_numeric_inventory_adapter.py
+- seed-metadata-response-contract.mjs
+- copy
+- serializers.py
 - resolve_top_of_stack
 - test_end_step_ownership_draw.py
 - test_activation_modifiers.py
 - test_paid_force_twincast.py
-- declare_attackers
+- match-contract.ts
 - test_domain_paid_continuations.py
-- test_graveyard_inventory_feasibility.py
+- sideboard_finished_fixture_support.py
 - test_kicker.py
 - .exec
 - MTG Deck Testing Lab Finish Plan
 - test_ai_knowledge_consumer_audit.py
 - test_ai_resource_forecast.py
-- test_announced_target_reference_product.py
+- generic_import_fixtures.py
 - test_control_layer_contract.py
 - test_paid_edges.py
 - test_dynamic_death_quantity.py
 - original
 - test_knowledge_profile_sync.py
-- test_ai_public_mana_changes.py
+- test_conditional_creature_types.py
 - KeeperBirthControls
 - test_generic_article_mill.py
 - test_browser_origin_policy.py
-- serialize_match
+- passes
 - test_typed_resource_sacrifice_costs.py
 - favor_lifecycle_support.py
 - test_knowledge_usage_trace_contract.py
 - Profiles
-- passes
+- settled_public_position
 - position
 - test_paid_optional_view_consumer_audit.py
 - pending_source_privacy_support.py
@@ -177,8 +177,8 @@
 - test_bestow.py
 - query_cache
 - BackendCapacityTests
-- test_resolution_conditions.py
-- test_training_combat_intent_audit.py
+- test_fixture_binding_transitions.py
+- test_ai_topdeck_deployment.py
 - RuntimeVersionTests
 - test_training_reset_capture_birth.py
 - test_exiled_time_counter_bodies.py
@@ -188,27 +188,27 @@
 - test_affinity.py
 - test_ai_suspend_policy.py
 - ref_node_fs
-- browser_fixture_server.py
+- test_ai_defensive_responses.py
 - ui_v2_fixture_server.py
-- test_springheart_paid_body.py
+- domain_paid_support
 - test_archangel_pair_paid_desired.py
 - ci_backend_evidence.py
 - test_static_global_keyword_contracts.py
-- game
+- natural_ai_consumer_audit.py
 - test_loyalty_entry_lifecycle.py
 - Static Aura Control-Layer Handoff
-- test_creature_observer_audit.py
+- test_task23_numeric_priority_baseline.py
 - test_temporary_characteristics_http.py
 - test_paid_optional_payment_edges.py
 - test_three_paid_originals.py
 - Competitive table v2
-- test_profile_batch_context.py
-- test_fixture_state_adoption.py
+- KnowledgeSnapshotContract
+- resolve_effect
 - test_paid_trigger_ai_integration_audit.py
-- Gate 1: Reliable local human-playtesting beta
-- test_paid_preflight.py
-- deserialize_match_snapshot
-- rules_engine/__init__.py
+- MTG Deck Testing Lab Finish Plan
+- test_ai_turn25_race.py
+- serialize_match_snapshot
+- test_ability_suppression.py
 - Legendary Channel Lands and Shared Resolution Choices
 - Combat keyword triggers and delayed sacrifice
 - AIAgent
@@ -216,13 +216,13 @@
 - SpreeCase
 - .route
 - browser-vendor-preflight.mjs
-- card_color_symbols
+- has_keyword
 - test_match_hydration_backfills_stale_faces_from_local_canonical_data
 - test_loyalty_ai_continuations.py
 - browser-human-flow-audit.mjs
 - module
 - events.py
-- test_temporary_control_lifecycle_http_audit.py
+- sql_facts
 - test_task33_extracted_context.py
 - What to fix and how — worker-authored, Jev-evaluated bounded proposals
 - browser-human-transform-audit.mjs
@@ -232,63 +232,63 @@
 - Current Execution Order
 - Announced Spell Cost Modifiers
 - test_aura_costs.py
-- trigger-order-picker.mjs
+- DeckParser
 - test_modal_targetless_announcement.py
 - Prioritized findings
-- test_qualified_spell_costs.py
+- test_ai_knowledge_profile_consumer.py
 - AncestorSymlinkTests
 - test_suncleanser_desired.py
 - test_ai_native_training_export.py
-- seed_card_payload
+- test_opening_hand.py
 - test_soulscar_affected_order_goldens.py
 - test_private_choice_epoch_fingerprint.py
-- test_damage_source_controller_audit.py
-- test_interface_scope_current_delta.py
+- test_noncombat_clause_source_boundaries.py
+- test_combat_keyword_triggers.py
 - test_multi_target_immediate_return.py
-- damage_results.py
+- activate_mana_ability
 - ci_backend_storage.py
 - test_activated_sacrifice_identity.py
 - test_heroic_cast_target_contract.py
-- test_deck_service_metadata.py
+- test_knowledge_gap_report_fields.py
 - MatchState
 - test_mixed_entry_origin_audit.py
-- pending_effects.py
+- effective_types
 - test_private_choice_restart_audit_contract.py
 - test_color_consumer_goldens.py
-- test_compleated_loyalty_full.py
+- ResourceMetadataTests
 - test_modal_fixture_identity.py
 - test_veil_turn_protection_goldens.py
-- infer_effect_from_oracle
+- re
 - Counter prohibitions
 - Incremental Layer Consumer Hooks
 - Surveil, Fixed Mill and Effect-Authorized Casting
 - test_known_thread_start_failure_uncertain_settlement_preserves_storage_exception
-- test_canonical_magecraft_self_pump.py
+- rules_engine/__init__.py
 - test_ai_selection_activation_policy.py
-- mana_source_outputs
-- test_learned_matchup_profiles.py
-- runDelverRepairAudit
+- add
+- profile_for
+- browser-delver-repair.mjs
 - loyalty-public-engine.py
 - test_proliferation.py
-- hydrate_deck_cards
-- test_training_trigger_intent_audit.py
+- test_builtin_metadata_refresh.py
+- test_ai_search_prefix.py
 - test_resolver_actor_protocol.py
 - browser-manual-mana.mjs
-- cathar_fixture_server.py
+- test_no_priority_progression.py
 - Printed activation and trigger suppression
 - escape_position
 - test_self_entry_public_return_witness_protocol.py
 - Bounded Suspend Lifecycle
 - Accounting, Stack Fixtures And AI Continuations
-- decision_taxonomy.py
+- test_canonical_multicharacteristic_audit.py
 - test_simulation_shutdown.py
-- test_sideboard_game_facts.py
+- draw_card
 - run-backend-ci.sh
-- test_hand_source_context_product.py
+- test_ai_opaque_draw_horizon.py
 - add
-- test_variable_spell_costs.py
-- loyalty-activation-controls.mjs
-- ordered-target-controls.mjs
+- test_human_bo3_readiness.py
+- test_interface_scope_current_delta.py
+- test_creature_observer_audit.py
 - test_startup_media_pins.py
 - test_native_free_and_owner.py
 - test_sba_planeswalker_query_order.py
@@ -296,20 +296,20 @@
 - Controller-Linked Conditional Damage Candidate
 - _export_native_matrix_training
 - mechanic-match-reset.mjs
-- Learned Policy Groundwork
+- test_training_remaining_intent_audit.py
 - test_simulation_engine_shutdown.py
-- serialize_match_snapshot
+- position
 - Deliberate Nonmana Activated Payments
 - test_canonical_token_descriptors.py
 - test-cathar-ci-harness.sh
 - compilerOptions
-- Trigger Instruction Compilation Audit
-- test_supported_preflight_engine_parity.py
-- test_controlled_basic_game_birth.py
+- test_task41_canonical_lethal_gap.py
+- test_ai_strategic_score_reuse.py
+- test_closed_damage_instruction_compiler.py
 - .route
 - inventory
-- test_nonmana_kicker.py
-- test_each_player_discard_public_projection.py
+- test_activated_top_selection.py
+- test_compleated_loyalty_full.py
 - main.py
 - run-activated-top-selection.sh
 - turn_scheduler.py
@@ -324,39 +324,39 @@
 - SourceBindingTests
 - PureSession
 - _merge_card_rows
-- Release Acceptance Status
+- test_nested_mana_life.py
 - test_animation_color_state_forwarding.py
-- DeckParser
-- test_equip_context.py
-- test_ward_resolution.py
+- test_domain_admission.py
+- loyalty-activation-controls.mjs
+- test_player_counters.py
 - test_http_sibling_fixture_identity.py
 - Private HTTPS Operator Packaging
 - Canonical Cathar Browser Gate
 - test_composed_ai_real_http_lifecycle
 - Source-specific hexproof and object-bound grants
 - Queued Turn/Phase Scheduler Proposal
-- browser-vendor-preflight.test.mjs
-- human_transform_fixture_server.py
+- ordered-target-controls.mjs
+- test_startup_diagnostic.py
 - test_builtin_refresh.py
 - test_march_http_paid.py
 - test_creature_only_damage_wrapper.py
-- test_mana_multiplier_prefilter.py
-- cold_restart_http_fixture.py
-- test_optional_land_from_hand_choice_slice.py
+- test_ai_postcombat_mana.py
+- Request
+- test_variable_spell_costs.py
 - Combat lifelink gain-event boundary (2026-09-28)
-- test_immediate_return_product.py
+- test_permanent_keyword_grants.py
 - Revealed-Hand Memory and Selective Private Copies
 - Basic-Land Layer Investigation
 - Resource Event Fidelity
-- test_public_graveyard_reviewed_context.py
+- test_selected_fixture_contracts.py
 - temporary-characteristics-current-composition.md
 - Release/storage agent: standalone checkpoint
-- test_fixed_spell_cost_witness.py
+- test_targeted_library_search_compiler.py
 - Generic Article Mill
-- test_ai_instant_window.py
-- Progress
+- test_granted_target_publication.py
+- test_ward_forms.py
 - test_combat_damage_windows.py
-- draw_card
+- test_sideboard_game_events.py
 - current_built_browser_server.py
 - anomaly_cluster_report.py
 - test_intrinsic_entry_product.py
@@ -364,13 +364,13 @@
 - MTG Deck Testing Lab
 - Current Native Browser 50-Episode Checkpoint
 - Foretell Foundation
-- action_validation.py
+- test_granted_target_producers.py
 - UI redesign handoff
-- ci_regression_gate.py
+- test_fixed_color_feasibility.py
 - Release and Storage Operations Agent Handoff
 - estimate_for
 - .error
-- test_one_shot_origin_compatibility.py
+- test_ai_pending_deployment.py
 - Source-Linked Exile And AI Frontier: Current Composition
 - Dynamic Self-Death Token Quantities: Tests / Proposal Only
 - pytest
@@ -379,25 +379,25 @@
 - test_private_cold_reviewed_contract.py
 - run-browser-ci.sh
 - test-activated-top-selection-harness.sh
-- test_announced_spell_costs.py
+- DeckPanel
 - matchup-canonical-seed-admission.md
-- test_static_parser_cache.py
-- test_three_admission.py
-- test_graveyard_stat_selector_audit.py
+- test_fixed_spell_cost_witness.py
+- CardKnowledge
+- test_ai_oracle_semantics.py
 - Domain Compiler: Exact SAME328 Comparative Qualification
 - Activated-Sacrifice Zone Identity: Narrow Qualification
-- Paid-Cast Sickness Supplement
+- test_three_admission.py
 - Current Backend CI Terminal
 - Natural White/Tempo Four-Row Qualification
 - Current HTTP and Natural-Game Checkpoint
 - Independent Creature Modifier Targets
 - Lossless Seed Export Preservation ABI v1
-- test_ai_known_deck.py
+- passiveCdp
 - run-ui-action-diagnostics.sh
 - Rules Regression Agent Handoff
 - Batch Graveyard Publication Audit
 - Springheart Nantuko: Native Whole-Body RED26
-- release-acceptance-status.md
+- Release Acceptance Status
 - Task 3.1 BO3 Implementation Plan
 - Color domain / continuous classification audit
 - Closed Domain Admission Delta
@@ -412,7 +412,7 @@
 - Explicit Browser-Origin Boundary
 - Training Combat Fixture And Discard History Follow-Up
 - Bounded Color Consumer Fix
-- Offline Assets: Cold Component Evidence
+- .legal_moves
 - Dynamic Self-Death Base Quantities: Isolated Qualification
 - Natural Friendly-Removal Boundary Audit
 - Life Conversion and Public Beneficiary Planning
@@ -429,18 +429,18 @@
 - March Target-Only Delta: Immutable 8cf Qualification
 - Gate2 Current Actor-Binding Increment
 - TrainingEnvironment
-- Optional CI Runtime Version Projection
-- is_unknown
+- Learned Policy Groundwork
+- receipts
 - manifest.json
-- test_ai_affinity.py
+- Persisted Tactical Tags: Current Bounded Acceptance
 - Paid Counter Family Audit
 - Life-payment trigger boundary (2026-09-28)
 - Gate2 Stormdrake: Compiler Candidate, Not Full-Card Certification
-- mechanic_metadata
+- profiles.py
 - Split Card Casting Boundary
-- Optional land, paid triggers and printed roles
-- Phase 1 Stored-Deck Corpus Acceptance
 - test_ai_combat_responses.py
+- ai-plan-acceptance-progress.md
+- test_kicker_goldens.py
 - Known-Composition Draw and Rummage Priors
 - Actor-Correct Search and Pinned Replay Inputs
 - Strategic Waiting and Public Stack Threats
@@ -450,7 +450,7 @@
 - AI Public Mana Changes
 - Combat Graveyard Caller Audit
 - SubtestReportTests
-- sql_facts
+- act
 - nadu_support.py
 - Conditional Static Resource Effects
 - Damage Source Controller Audit
@@ -458,35 +458,35 @@
 - S2: bounded entry observer instructions
 - S2 preparation: canonical entry observers
 - test_decision_comparison.py
-- test_printed_body_admission.py
+- test_brainstorm_fixture_adoption.py
 - Favor Clause Target Binding
 - Favor Target Lifecycle Audit
 - test_source_counter_worker_owned_paths.py
 - Global As-Though-Flash Permission
-- test_task13_seed_loader_migration.py
+- browser-game-over.mjs
 - Recurring payoffs and safe mass destruction
 - Retained Graveyard Shuffle Reference
 - test_regression_repair_edges.py
 - Oracle-grounded AI heuristics
 - Human Response Controller Role
-- private-discard-browser-witness.mjs
+- test_one_shot_origin_compatibility.py
 - Bounded Graveyard-Entry Trigger Audit
 - Land Consumer Variant Audit
 - Basic-Land Subtype Layers
 - Printed Life Locks and Ability Suppression
 - Canonical mass-exile lifecycle audit
-- test_ai_distinct_permanent_targets.py
+- Expanded keyword engine contracts
 - Bounded Nth-Spell Triggers
-- test_activated_top_selection.py
-- run
+- ActionRejected
+- hydrate_deck_cards
 - test_effective_decision_quality.py
-- DeckRow
+- Selected Immediate Mana Choices
 - Cross-Family Rules Regression Repairs
 - Seat-Balanced Replay Protocol
 - Selected mana parent composition
 - Printed Self Graveyard Replacement Audit
 - Shared Printed Graveyard Replacement: Staged Increment
-- Announced Targets: Current Composition
+- test_ai_distinct_permanent_targets.py
 - Simultaneous graveyard episode audit
 - Affected-Player Ordered Resolution Goldens
 - Task 2.3: Checked Block Outcome Goldens
@@ -504,9 +504,9 @@
 - Rules Regression Agent: Second Investigation
 - Checked combat-response forecasting
 - Master AI planning latency: isolated performance-agent investigation
-- test_rejected_decision_preserves_complete_factory_state_and_storage
+- test_exhaustive_reservation_delta.py
 - test_granted_target_boundary.py
-- test_seeker_preview.py
+- run
 - Backend Capability Batches
 - Engineering Workflow
 - Qualified Python Wheel Hash Lock Proposal
@@ -514,10 +514,10 @@
 - Repository
 - Exact Strategic Score Reuse
 - Read-Only AI Hand Debugging
-- test_exhaustive_reservation_delta.py
+- test_ai_symmetric_draw.py
 - AI Casting Resource Opportunity
 - Unknown-Library Deployment Decisions
-- test_http_bridge_fixture_birth.py
+- Task 3.1: Offline Fixed-Board BO3 Runner
 - Attached scaling and honest static diagnostics
 - Aura Departure And Offline Import Metadata
 - Closed Exile-To-Graveyard Continuation
@@ -531,7 +531,7 @@
 - Loyalty, HTTP Fixtures And Private Search Views
 - Clean CI Fixture Portability
 - Color consumer current-main requalification
-- Current Native Cold-Restart Fixtures
+- test_seeker_preview.py
 - Capacity-aware combat intents and projections
 - entry-routes.md
 - Public-Board Combat Setup Planning
@@ -554,19 +554,19 @@
 - Graveyard Casting Methods And Permission Opportunity
 - HAND Source And Entry Damage Current Integration
 - Handler Graveyard Migration
-- test_loyalty_counter_costs.py
+- Shared Graveyard Lifecycle Acceptance
 - Officer Browser Fixture Lifecycle
 - Intrinsic Mana And Exporter Current Composition
 - Current 155-Card Inventory
 - Read-Only Layer Query Reuse
 - Lethal-State Query Order
-- Current Exile Time-Counter Bodies
+- Cast HTTP Fixture Birth Adoption
 - Locked Activation Mana Plans
 - Mana, Layers And Resource Identity Qualification
 - Mana Multiplier Query Prefilter
-- card_data/models.py
+- action_validation.py
 - Native Next-Cast And Entry-Counter Qualification
-- Bounded Spells, Target Drafts And AI Entry Strategy
+- Thirteen-Style AI Legality Baseline
 - Browser v2 accepted-response recovery
 - Selective Hand Acquisition
 - TimingTests
@@ -582,19 +582,19 @@
 - Static Replacement Shuffle ABI
 - Current Printed Replacement Composition
 - Strategic Pending Announcements
-- git
+- Legacy Restart Epoch Checks
 - Targeted Library Search Compiler / Consumer Proposal
 - Targeted Search Frame And Public Privacy Dependency
 - Targeted Search Lifecycle Audit
 - Granted Target, AI And Loyalty Composition
 - Land and priority consumer guard
 - Mulligan consumer intent guard
-- aura_fixture_controls.py
+- Non-mana intent field-drop audit
 - Contextual Life and Sacrifice Costs
 - Pending Choice Intent Audit
 - Strategic Draw Counts and Private Replay Views
 - Suspend and keep-hand consumer guard
-- test_fertilid_real_response_retains_paid_controller_and_source_receipt
+- test_damage_activation_source_validation.py
 - Canonical Global Flash: Frozen Baseline Audit
 - 2026-09-09-ai-knowledge-base.md
 - Locked and Dynamic Activation Fixture Integrity
@@ -608,7 +608,7 @@
 - Token zone-transfer boundary audit (2026-09-28)
 - test_native_next_creature_lifecycle.py
 - Affinity Cost Determination
-- pytest_keyboard_interrupt
+- Current Catalog And Canonical Seed Composition
 - Attached predicates and branch selection
 - Rules And Human Inspection Batch
 - SBA Committed Graveyard Entry Product
@@ -617,7 +617,7 @@
 - Exact existing-contract metadata
 - Current Full Frontend On Locked Python
 - Current Job Crash Recovery
-- Ledger
+- operator-startup-diagnostics.md
 - Lazy Saved Matches Over 0a50
 - Effective Battlefield Decision Evidence
 - Optional Linked Discard / Draw
@@ -626,7 +626,7 @@
 - Human Flow Audit: Cycling and Death Tokens
 - Official Import Identity and Sideboard Admission
 - Current Locked Dependency Advisories
-- re
+- entry_counters.py
 - Late-Game AI Combat Safety
 - Corpus Mechanic Backlog
 - Ordered Copy Targets And Acceptance Harness
@@ -637,7 +637,7 @@
 - Resource-Scaled Target P/T: Current Qualification
 - Native Resource Contract: 13-Case Component
 - Brainstorm Fixture Identity Adoption
-- Counter And Targeted Search Current Composition
+- Current Exile Time-Counter Bodies
 - Targeted library search resolver stage
 - Optional Private Reveal / Self-Transform
 - Modal Counter Prohibitions And Attached Characteristics
@@ -745,24 +745,24 @@
 - PROVENANCE.md
 - Restricted mana and attachment workflows
 - browser-synthetic-stock-publication.md
-- Soul-Scar Mage Preflight / Rules Audit
+- Learned matchup profile protocol
 - HTTP sibling fixture identity adoption
 - Spell-Type Caller Projection
 - Spell and Ability Counterability Scope
-- Interactive Preflight Entrypoint
+- Source Controller, Preflight and Heroic Checkpoint
 - Static Global Creature Keyword Grants
 - Variable Suspend Keyword Qualification
 - AI Force Copy Choices
 - Integrated Fixture Acceptance
-- Source Controller, Preflight and Heroic Checkpoint
-- AI Loyalty Choices And Replay Artifact Safety
+- Spell Admission Fixture Birth
+- Remaining Intent Guard
 - test_soulscar_preflight_rules_audit.py
 - Task 3.3 Native Training Adapter Prototype
 - Native Vendor Browser CI
 - Officer Origin And Private Browser Diagnostics
-- Checked Live Autoplay Actions
+- card_data/models.py
 - CHANGELOG.md
-- Complete Loyalty And Aura Composition
+- Missing Sources And Consumer Restart Epochs
 - Bounded continuous color classification fix
 - Opening-Hand Battlefield Actions
 - Activated Ability Hint Copy
@@ -771,14 +771,13 @@
 - Friendly Damage Materialization Safety
 - Fixed Additional Triggered Mana
 - inventory-advisory-schema-837.md
-- Current Clean Install And Shipped Knowledge
+- Interactive Preflight Cleanup
 - sideboard-unbound-public-event-coverage.md
 - AI Counterability Decisions
-- test_variable_mana.py
-- Bounded Generic Damage Protection
+- Legacy BO3 Fixture Registry Scope
+- Task 3.2 Measured-Epoch Preparation
 - Productive Destruction Targeting
 - run-native-browser-ci.sh
-- Current Graveyard and Public Combat Acceptance
 - March Paid Costs In The Current Composition
 - Generic Self-Land Animation Candidate
 - fixture-identity-stock-current.md
@@ -787,7 +786,6 @@
 - http-captured-identity-batch.md
 - AI projection performance and gameplay identities
 - Human Transform Audit
-- Human Exact-Two Permanent Targets
 - Immediate Exile-Return Product
 - Ordered Noncombat Damage Conversion
 - Numeric Prevention Receipts
@@ -798,19 +796,14 @@
 - State-aware variable mana
 - Task 4.2 Interaction-Hold Baseline
 - Repeatable mana-resource valuation
-- AI Phase 3 Groundwork
-- AI Plan Acceptance Progress
 - Pure-query Planning Latency
 - Combat-Cost HTTP Fixture Identity
 - Day/Night Turn Boundary
 - Targeted Cast Observer Contract
 - Loyalty Counter Costs
-- Mill And Selected Sacrifice Committed Batches
 - Modal Cost View Contract
 - Creature Token Descriptor Types
 - test_paid_last_counter_emits_distinct_keyword_and_printed_card_ability
-- AI Combat HTTP Fixture Identity
-- Legacy BO3 Fixture Registry Scope
 
 ## God Nodes (most connected - your core abstractions)
 1. `Zone` - 4225 edges
@@ -839,11 +832,11 @@
 ## Import Cycles
 - None detected.
 
-## Communities (837 total, 172 thin omitted)
+## Communities (830 total, 168 thin omitted)
 
 ### Community 0 - "test_hand_source_incarnation_causal_audit.py"
 Cohesion: 0.17
-Nodes (32): public_card_ids(), test_actual_paid_hand_source_is_not_controlled_for_either_real_mage(), test_actual_paid_lithoform_hand_copy_retains_original_source_not_copy_controller(), act(), add(), announce(), cast(), depart() (+24 more)
+Nodes (36): announced(), corrupt(), shield_pause(), snapshot(), test_actual_paid_hand_source_is_not_controlled_for_either_real_mage(), test_actual_paid_lithoform_hand_copy_retains_original_source_not_copy_controller(), test_protocol_corruption_rejects_before_direct_pop_fullroot(), test_protocol_entire_hand_batch_preflight_before_first_recipient() (+28 more)
 
 ### Community 1 - "random"
 Cohesion: 0.08
@@ -851,87 +844,87 @@ Nodes (42): act(), advance(), choose_target(), cold(), facts(), offers(), paid()
 
 ### Community 2 - "Step"
 Cohesion: 0.02
-Nodes (324): test_all_shipped_printed_planeswalker_availability(), initialize(), named_artifact_token(), discard_cards(), _infer_loyalty(), _infer_power(), _infer_toughness(), _infer_types() (+316 more)
+Nodes (316): test_all_shipped_printed_planeswalker_availability(), named_artifact_token(), discard_cards(), _infer_types(), MatchFactory, Step, combat_damage(), declare_blockers() (+308 more)
 
-### Community 3 - "test_conditional_creature_types.py"
-Cohesion: 0.22
-Nodes (23): _count_controlled_type(), lose_life(), _has_subtype(), fund_devotion(), position(), test_all_fifteen_canonical_gods_transition_at_exact_threshold(), test_becoming_noncreature_removes_attacker_and_return_does_not_rejoin(), test_condition_does_not_remove_creature_type_outside_battlefield() (+15 more)
+### Community 3 - "test_mana_self_sacrifice.py"
+Cohesion: 0.29
+Nodes (20): add(), position(), test_canonical_thoughtcast_locks_discount_and_keeps_star_death_trigger(), test_generic_self_death_clause_uses_lki_and_triggers_once(), test_intervening_if_self_death_is_explicitly_unsupported_not_unconditional(), test_paid_self_sacrifice_preserves_combined_supported_life_cost(), test_paid_tap_sacrifice_can_use_a_different_mana_source(), test_sacrificed_source_counter_mana_uses_last_known_amount() (+12 more)
 
-### Community 4 - "compile_body"
+### Community 4 - "loyalty_instructions.py"
+Cohesion: 0.04
+Nodes (79): clear_synthetic_action_transcript(), synthetic_receipt(), test_actual_paid_generic_closed_effects(), test_canonical_complete_body_compilation(), test_generic_costs_and_complete_lines_are_not_effect_tuple_recipes(), test_malformed_cast_and_legacy_battlefield_loyalty_are_atomic(), test_unaccounted_operands_and_sentences_reject_all(), test_unknown_raw_body_no_projection_or_coverage_waiver() (+71 more)
+
+### Community 5 - "fastapi_testclient"
 Cohesion: 0.05
-Nodes (49): clear_synthetic_action_transcript(), synthetic_receipt(), test_actual_paid_generic_closed_effects(), test_canonical_complete_body_compilation(), test_generic_costs_and_complete_lines_are_not_effect_tuple_recipes(), test_malformed_cast_and_legacy_battlefield_loyalty_are_atomic(), test_unaccounted_operands_and_sentences_reject_all(), test_unknown_raw_body_no_projection_or_coverage_waiver() (+41 more)
-
-### Community 5 - "apply_state_based_actions"
-Cohesion: 0.05
-Nodes (73): outcome(), _deal_unblocked_damage(), clear_control_effects(), apply_state_based_actions(), clear_type_effects(), test_bestowed_spell_copy_keeps_characteristics_after_original_is_countered(), _ability_moves(), _put() (+65 more)
+Nodes (26): assert_github_owned_source(), human_bo3_decks(), canonical_path(), guard(), owned_path(), ci_root(), cold_functions(), private_input_module() (+18 more)
 
 ### Community 6 - "AnalyticsService"
 Cohesion: 0.06
-Nodes (38): AnalyticsService, SimulationCancelled, FakeRepo, test_ai_diagnostics_reports_matchup_metrics(), test_compare_replay_logs_labels_cast_resolution_error(), test_compare_replay_logs_labels_face_choice_mismatch(), test_compare_replay_logs_labels_mode_choice_mismatch(), test_compare_replay_logs_labels_pass_vs_action_root_cause() (+30 more)
+Nodes (37): AnalyticsService, SimulationCancelled, FakeRepo, test_ai_diagnostics_reports_matchup_metrics(), test_compare_replay_logs_labels_cast_resolution_error(), test_compare_replay_logs_labels_face_choice_mismatch(), test_compare_replay_logs_labels_mode_choice_mismatch(), test_compare_replay_logs_labels_pass_vs_action_root_cause() (+29 more)
 
-### Community 7 - "ScryfallSyncService"
-Cohesion: 0.01
-Nodes (146): _available_image_uri(), _get_attr_or_key(), select_display_image_uri(), get_with_backoff(), ensure_generic_token_image(), ensure_placeholder_image(), _family(), local_image_available() (+138 more)
+### Community 7 - "PublicMemoryRows"
+Cohesion: 0.15
+Nodes (14): test_profile_deck_requires_profile_flag_before_database_initialization(), sync(), canonical_rows(), encoded(), legacy_corpus(), PublicMemoryRows, small(), test_all155_outputs_match_frozen8ad_including_faces_and_future_metadata() (+6 more)
 
 ### Community 8 - "regression_matrix_replay.py"
 Cohesion: 0.02
-Nodes (170): reconstruct_game(), card_view(), compare(), ReplayMismatch, deck_artifact_entries(), _classify_divergence_category(), classify_first_divergence(), classify_log_line() (+162 more)
+Nodes (169): reconstruct_game(), card_view(), compare(), ReplayMismatch, decision_reason_code(), has_actionable_move(), has_meaningful_move(), is_actionable_move() (+161 more)
 
 ### Community 9 - "client.ts"
 Cohesion: 0.03
-Nodes (99): api, API_BASE, BatchSimulationJobStart, BatchSimulationJobStatus, CardCompletenessReport, DeckImportResponse, DiagnosticGamePage, DiagnosticReplayComparison (+91 more)
+Nodes (94): api, API_BASE, BatchSimulationJobStart, BatchSimulationJobStatus, CardCompletenessReport, DeckImportResponse, DiagnosticGamePage, DiagnosticReplayComparison (+86 more)
 
 ### Community 10 - "SimulationResourceLimit"
-Cohesion: 0.07
-Nodes (32): checked_json(), checked_text(), _JSONWalk, _quoted_size(), ResourceBudget, SimulationResourceLimit, checked(), test_progress_failure_releases_reservation_without_writing_snapshot() (+24 more)
+Cohesion: 0.08
+Nodes (30): checked_json(), checked_text(), _JSONWalk, _quoted_size(), ResourceBudget, SimulationResourceLimit, admission_policy(), test_actual_worker_failure_envelope_uses_bounded_persistence() (+22 more)
 
-### Community 11 - "fixture"
-Cohesion: 0.04
-Nodes (125): crew_vehicle(), _mark_creature_damage(), put_counters(), fixture(), add(), attack(), end_combat(), settle() (+117 more)
+### Community 11 - "put_counters"
+Cohesion: 0.07
+Nodes (56): _mark_creature_damage(), put_counters(), add(), test_cannot_have_hexproof_overrides_newer_variant_counter_and_temporary_grant(), test_canonical_metadata_does_not_promote_variant_to_unrestricted_hexproof(), test_graveyard_hexproof_is_not_a_permanent_targeting_restriction(), test_planeswalker_activation_is_filtered_and_rejected_but_other_sources_remain_legal(), test_resolved_grants_keep_base_metadata_and_physical_counters_unchanged() (+48 more)
 
 ### Community 12 - "add_card"
-Cohesion: 0.06
-Nodes (59): _copy_card_field(), pending_removal_destinations(), unanswered_action_wins(), artifact_creature(), source(), dense_removal_state(), test_benchmark_checks_full_decision_and_state_without_timing_threshold(), test_concurrent_decisions_have_independent_contexts() (+51 more)
+Cohesion: 0.05
+Nodes (60): _copy_card_field(), pending_removal_destinations(), unanswered_action_wins(), artifact_creature(), source(), test_real_unresolved_order_stays_unknown_and_owned_choices_bypass_reuse(), dense_removal_state(), test_benchmark_checks_full_decision_and_state_without_timing_threshold() (+52 more)
 
 ### Community 13 - "mana.py"
 Cohesion: 0.04
-Nodes (113): joint_resource_payment(), physical(), search(), validate(), activated_cost_candidates(), activated_cost_selection(), ActivatedCost, parse_activated_cost() (+105 more)
+Nodes (115): GrantedManaLandReplacement, joint_resource_payment(), physical(), search(), validate(), activated_cost_available(), ActivatedCost, apply_activated_costs() (+107 more)
 
 ### Community 14 - "capacity.py"
 Cohesion: 0.02
-Nodes (117): application_database_path(), background_escrow(), capacity_transaction(), capacity_write(), CapacityExceeded, CapacityIntegrityError, CapacityTransaction, consume_snapshot() (+109 more)
+Nodes (114): application_database_path(), background_escrow(), capacity_transaction(), capacity_write(), CapacityExceeded, CapacityIntegrityError, CapacityTransaction, consume_snapshot() (+106 more)
 
 ### Community 15 - "Changelog"
 Cohesion: 0.01
 Nodes (162): 2026-05-16, 2026-05-17, 2026-05-18, 2026-06-06, 2026-06-07, 2026-06-11, 2026-07-09, 2026-07-10 (+154 more)
 
 ### Community 16 - "test_log_priors_archetype.py"
-Cohesion: 0.16
-Nodes (32): payload(), card_row(), examples(), logs(), position(), test_actor_association_consumption_and_reset(), test_actual_agent_matchup_selection_and_unknown_fallback(), test_aggregate_gate_and_role_fallback_are_unchanged() (+24 more)
+Cohesion: 0.17
+Nodes (30): payload(), card_row(), examples(), logs(), position(), test_actor_association_consumption_and_reset(), test_actual_agent_matchup_selection_and_unknown_fallback(), test_aggregate_gate_and_role_fallback_are_unchanged() (+22 more)
 
 ### Community 17 - "ref_node_assert"
 Cohesion: 0.04
 Nodes (34): action(), privacy(), request(), writes, episode(), run, source, names (+26 more)
 
 ### Community 18 - "test_cast_choice_modes.py"
-Cohesion: 0.07
-Nodes (48): counter_spell_unless_pay(), act(), add(), paid(), respond(), trigger_and_spell(), _state(), test_build_cast_hints_exposes_face_selection_schema() (+40 more)
+Cohesion: 0.11
+Nodes (34): act(), add(), paid(), respond(), trigger_and_spell(), _state(), test_build_cast_hints_exposes_face_selection_schema(), test_bullet_and_choose_two_modes_are_exposed_as_explicit_choices() (+26 more)
 
 ### Community 19 - "extra_sequence_support.py"
-Cohesion: 0.11
-Nodes (28): test_desired_activated_untap_then_extra_combat_main_not_extra_turn(), test_desired_most_recently_resolved_turn_first_and_restore(), test_desired_target_extra_turn_then_resume_normal_order(), action(), add(), canonical(), observe(), position() (+20 more)
+Cohesion: 0.10
+Nodes (30): copy_facts(), test_desired_activated_untap_then_extra_combat_main_not_extra_turn(), test_desired_most_recently_resolved_turn_first_and_restore(), test_desired_target_extra_turn_then_resume_normal_order(), action(), add(), canonical(), facts() (+22 more)
 
 ### Community 20 - "test_flicker_nontoken_domain.py"
 Cohesion: 0.15
 Nodes (26): cast(), position(), test_actual_foreign_owner_shock_entry_choice_resumes_retained_exile_once(), test_canonical_protection_excluded_from_candidates_and_cost_admission(), test_full_canonical_domain_compiles_and_offers_actual_permanent(), test_hidden_canonical_response_permutation_does_not_change_actor_input(), test_new_domain_unknown_complete_tail_has_no_partial_exile(), test_paid_flicker_owner_return_and_actual_new_object_replay() (+18 more)
 
-### Community 21 - "test_no_priority_progression.py"
-Cohesion: 0.15
-Nodes (17): get_legal_moves(), _human_priority_pause(), match_at(), test_actual_decisions_stop_even_outside_configured_steps(), test_autoplay_runs_untap_upkeep_draw_then_stops_at_legal_land(), test_empty_windows_ignore_bare_mana_and_restricted_hints(), test_no_available_blockers_does_not_require_human_confirmation(), test_payable_end_step_instant_preserves_control_window() (+9 more)
+### Community 21 - "stack_object_kind"
+Cohesion: 0.04
+Nodes (72): _redundant_removal_casts(), _stack_snapshot(), _copy_stack_object(), counter_spell_unless_pay(), _offer_clause_copy_target_choice(), _offer_copy_target_choice(), _offer_divided_copy_target_choice(), _offer_modal_copy_target_choice() (+64 more)
 
 ### Community 22 - "StackItem"
-Cohesion: 0.07
-Nodes (72): copy_ability(), copy_spell(), counter_ability(), StackItem, cast_meal(), grant_player_hexproof(), meal_state(), test_ai_retargets_beneficial_copy_clauses_to_itself() (+64 more)
+Cohesion: 0.05
+Nodes (95): copy_ability(), copy_spell(), counter_ability(), StackItem, add_cryptic(), prepare(), test_ai_can_materialize_counter_for_ability_from_spell_protected_source(), test_ai_holds_counter_against_battlefield_protected_spell() (+87 more)
 
 ### Community 23 - "resolve"
 Cohesion: 0.08
@@ -939,43 +932,43 @@ Nodes (68): can_look(), cast_costs(), record(), resolve(), add(), position(), te
 
 ### Community 24 - "test_queued_sequences.py"
 Cohesion: 0.14
-Nodes (31): next_upkeep(), act(), add(), cast(), protect_position(), test_copied_target_fizzles_independently_of_original_controller(), test_targeted_extra_turn_fizzles_if_target_now_has_hexproof(), put() (+23 more)
+Nodes (32): next_upkeep(), act(), add(), cast(), protect_position(), test_copied_target_fizzles_independently_of_original_controller(), test_targeted_extra_turn_fizzles_if_target_now_has_hexproof(), put() (+24 more)
 
-### Community 25 - "Rules regression agent — independent handoff"
-Cohesion: 0.17
-Nodes (11): 1. Remand drops both its draw and conditional hand destination, 2. Reanimate returns the creature but omits its life loss, 3. Furnace of Rath's canonical damage replacement is ignored, 4. Young Wolf's undying never returns it, 5. Cremate cannot legally be announced at an existing graveyard card, Exact failing node IDs, Passing coverage and remaining uncertainty, Provenance and evidence (+3 more)
+### Community 25 - "decode_action"
+Cohesion: 0.05
+Nodes (76): cast_permission(), scenario(), test_actor_private_bytes_unchanged_by_opposing_hidden_identity_permutation(), inputs(), test_actual_whole_move_display_metadata_preserves_selected_parameters(), test_recognized_authoritative_parameters_are_retained_and_checked(), test_requested_nonmana_choices_must_reject_not_transform_action(), trusted_execution() (+68 more)
 
 ### Community 26 - "test_tribal_entry_trigger.py"
 Cohesion: 0.45
 Nodes (10): _enter(), _state(), test_alternate_controller_clause_order_still_triggers(), test_first_trigger_stays_used_if_countered_but_resets_next_turn(), test_generic_creature_team_bonus_does_not_become_a_subtype_filter(), test_group_entry_pattern_is_not_specific_to_elves(), test_new_battlefield_incarnation_gets_a_new_once_per_turn_allowance(), test_other_elf_triggers_once_after_irrelevant_entries_and_makes_typed_token() (+2 more)
 
-### Community 27 - "test_cast_resource_payments.py"
-Cohesion: 0.07
-Nodes (55): apply_resource_payment(), resource_payment(), ResourcePayment, pay_resources(), materialize(), test_combined_convoke_delve_with_hybrid_cost_spends_no_mana(), test_convoke_preserves_large_blocker_for_any_archetype(), test_convoke_values_actual_self_tap_payoff() (+47 more)
+### Community 27 - "Spell-Cost Reservation Overlaps"
+Cohesion: 0.18
+Nodes (10): Canonical And Rules Provenance, Controls And Timing Boundary, Execution, Findings, P1: Casting Source Remains Consumable For Mana, P2 Contract: External Delve Reservations Are Dropped, P2: Native Escape Cannot See Mana-Created Fuel, Parent Candidate Follow-Up (+2 more)
 
 ### Community 28 - "Battlefield.tsx"
 Cohesion: 0.04
-Nodes (92): Browser BO3 Readiness Contract, Actual App Gate, Focused Checks, Mechanic Control Warning Gate, resolveCardMediaUrl(), Battlefield(), combatBadge(), combatEvents() (+84 more)
+Nodes (91): Browser BO3 Readiness Contract, Actual App Gate, Focused Checks, Mechanic Control Warning Gate, Preservation review and integration notes, resolveCardMediaUrl(), Battlefield(), combatBadge() (+83 more)
 
 ### Community 29 - "test_fable_optional_linked_discard.py"
 Cohesion: 0.20
 Nodes (23): act(), add(), cast(), choose(), episode(), pass_once(), restored(), snap() (+15 more)
 
-### Community 30 - "retain"
-Cohesion: 0.05
-Nodes (83): cast_permission(), test_actual_duplicate_observers_each_resolve_once_after_human_order_and_restart(), test_actual_entry_complete_mill_or_unsupported_body_receipt(), test_complete_compound_unknown_body_does_not_grant_partial_scry_or_counters(), test_canonical_unknown_body_keeps_diagnostic_receipt_without_free_reward(), test_exact_canonical_predicate_type_and_controller(), test_real_entry_http_receipt_resolution_and_private_restart(), test_unknown_core_event_noop_http_restart_preserves_source_without_reward() (+75 more)
+### Community 30 - "restart"
+Cohesion: 0.09
+Nodes (38): test_actual_duplicate_observers_each_resolve_once_after_human_order_and_restart(), test_actual_entry_complete_mill_or_unsupported_body_receipt(), test_complete_compound_unknown_body_does_not_grant_partial_scry_or_counters(), test_canonical_unknown_body_keeps_diagnostic_receipt_without_free_reward(), test_exact_canonical_predicate_type_and_controller(), test_real_entry_http_receipt_resolution_and_private_restart(), test_unknown_core_event_noop_http_restart_preserves_source_without_reward(), capture() (+30 more)
 
 ### Community 31 - "evaluate"
-Cohesion: 0.03
-Nodes (101): select(), load(), select(), archive, args, bounce(), checkpoint(), children (+93 more)
+Cohesion: 0.04
+Nodes (94): select(), load(), select(), archive, args, bounce(), checkpoint(), children (+86 more)
 
-### Community 32 - "controlled_basic_game"
-Cohesion: 0.08
-Nodes (29): cards_have_distinct_card_types(), assign(), controlled_basic_game(), function(), helpers(), test_genuine_factory_printed_stock_mutation_still_rejected(), test_http_board_identity_is_fixed_at_factory_birth(), test_invalid_requested_factory_identity_still_rejected() (+21 more)
+### Community 32 - "seed_card_payload"
+Cohesion: 0.05
+Nodes (52): _normalize_card_name(), seed_card_payload(), cards_have_distinct_card_types(), assign(), test_ai_announces_only_one_target_for_any_target_damage(), test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability(), test_ai_does_not_force_x_sweep_for_a_single_low_value_threat(), test_ai_holds_variable_sweeper_without_creatures_to_kill() (+44 more)
 
 ### Community 33 - "bare_state"
-Cohesion: 0.04
-Nodes (100): decision_projection_scope(), activation_payment(), joint_activation_payment(), nested_mana_life(), activation_card(), position(), test_ai_discard_payment_preserves_needed_land_instead_of_hand_order(), test_ai_does_not_sacrifice_a_creature_for_unneeded_proactive_scry() (+92 more)
+Cohesion: 0.07
+Nodes (59): decision_projection_scope(), activation_payment(), joint_activation_payment(), nested_mana_life(), activation_card(), position(), test_ai_discard_payment_preserves_needed_land_instead_of_hand_order(), test_ai_does_not_sacrifice_a_creature_for_unneeded_proactive_scry() (+51 more)
 
 ### Community 34 - "test_spell_cost_overlap_investigation.py"
 Cohesion: 0.16
@@ -985,17 +978,17 @@ Nodes (27): test_discard_cost_and_mana_need_disjoint_hand_resources(), test_majo
 Cohesion: 0.05
 Nodes (92): currentCastLabel(), journal(), postData(), runBuiltOrigins(), runBuiltRecovery(), runPaidBuiltCases(), validateColdOwnerChange(), waitForStartDropACKs() (+84 more)
 
-### Community 36 - "match-contract.ts"
-Cohesion: 0.01
-Nodes (180): card(), LegalMovesResponse, manaChoiceView(), parseAiDebugHands(), parseLegalMoves(), parseMatchState(), parseSavedMatches(), paymentOptions() (+172 more)
+### Community 36 - "ref_node_path"
+Cohesion: 0.02
+Nodes (115): deadlines, player, requests, state, requests, rows, server, html (+107 more)
 
 ### Community 37 - "test_training_environment.py"
-Cohesion: 0.04
-Nodes (78): main(), output_path(), inputs(), manifest(), records(), test_actual_canonical_bolt_complete_episode_terminal_rewards_and_no_next_input(), test_actual_heuristic_cast_exports_without_legal_move_display_hints(), test_aliases_are_independent_of_internal_deck_ids_and_round_trip_full_atomic_action() (+70 more)
+Cohesion: 0.05
+Nodes (69): main(), output_path(), ordinary_position(), manifest(), records(), test_actual_canonical_bolt_complete_episode_terminal_rewards_and_no_next_input(), test_actual_heuristic_cast_exports_without_legal_move_display_hints(), test_aliases_are_independent_of_internal_deck_ids_and_round_trip_full_atomic_action() (+61 more)
 
 ### Community 38 - "add"
-Cohesion: 0.09
-Nodes (67): add(), cast(), entry(), moves(), position(), record(), reject(), resume() (+59 more)
+Cohesion: 0.08
+Nodes (68): add(), cast(), entry(), moves(), position(), record(), reject(), resume() (+60 more)
 
 ### Community 39 - "test_suspend_context_coverage.py"
 Cohesion: 0.32
@@ -1006,16 +999,16 @@ Cohesion: 0.13
 Nodes (22): _can_snapshot_block(), _dict_items(), _is_main_phase_window(), main(), _nonnegative_int(), _number(), parse_args(), _step_key() (+14 more)
 
 ### Community 41 - "raw_card"
-Cohesion: 0.06
-Nodes (60): is_static_replacement_event_cause(), test_committed_transition_has_exact_references_once(), test_no_entry_event_for_replaced_or_same_zone_move(), test_paid_spiral_response_selects_blaze_amount_from_actual_entry(), leyline(), position(), raw_card(), test_ai_materializes_a_complete_planeswalker_pair_when_player_is_shielded() (+52 more)
+Cohesion: 0.08
+Nodes (49): is_static_replacement_event_cause(), test_committed_transition_has_exact_references_once(), test_no_entry_event_for_replaced_or_same_zone_move(), raw_card(), generic_position(), test_actual_http_competing_tower_preserves_full_root_controller_sql(), test_actual_selected_tower_owner_library_and_no_false_dies(), test_actual_tower_humility_removes_only_battlefield_self_replacement() (+41 more)
 
 ### Community 42 - "test_combat_query_performance.py"
-Cohesion: 0.14
-Nodes (32): _assignment_controller(), _assignment_options(), begin_combat_damage(), finish_combat_damage(), finish_damage_assignment(), _offer_damage_assignment(), _prepare_damage_step(), _remove_dead_creatures() (+24 more)
+Cohesion: 0.13
+Nodes (33): _assignment_controller(), _assignment_options(), begin_combat_damage(), finish_combat_damage(), finish_damage_assignment(), _offer_damage_assignment(), _prepare_damage_step(), _remove_dead_creatures() (+25 more)
 
 ### Community 43 - "board"
-Cohesion: 0.05
-Nodes (108): test_another_tap_target_rejects_its_source_without_costs(), test_artifact_discount_is_locked_before_treasure_is_consumed_for_mana(), source(), test_checked_payment_and_effect_resolution_use_selected_discount(), test_conditional_discount_checked_activation_and_real_effect(), test_controlled_creature_conditions_are_not_global(), test_counts_are_live_controller_relative_colored_and_snapshot_safe(), test_missing_or_unrelated_ability_index_does_not_apply_card_discount() (+100 more)
+Cohesion: 0.06
+Nodes (97): board(), test_api_cannot_forge_effect_permission(), test_effect_permission_does_not_allow_pregame_casting(), test_exile_replacement_does_not_replace_return_to_hand(), test_free_cast_falls_back_to_available_sacrifice_cost(), test_free_cast_pays_mandatory_discard_and_uses_zero_for_printed_x(), test_free_counter_has_announced_target_and_exiles_when_countered_target_is_legal(), test_free_counter_with_no_spell_target_does_not_move_or_cast() (+89 more)
 
 ### Community 44 - "test_canonical_global_flash_audit.py"
 Cohesion: 0.26
@@ -1027,27 +1020,27 @@ Nodes (16): facts(), record(), test_actual_malformed_enchant_instruction_rejecte
 
 ### Community 46 - "engine.py"
 Cohesion: 0.02
-Nodes (164): test_real_paid_printed_ability_resolution(), payable(), score_target(), rank(), _only_counter_spell_text(), choose_resource_payment(), graveyard_permission_opportunity(), combat_tax_plan() (+156 more)
+Nodes (181): _choices(), choose_resource_payment(), _graveyard_loss(), graveyard_permission_opportunity(), _requirements(), _score(), _tap_loss(), _tap_reward() (+173 more)
 
 ### Community 47 - "assign_static_order_on_battlefield_entry"
-Cohesion: 0.11
-Nodes (53): serialize_card_view(), assign_static_order_on_battlefield_entry(), test_paid_flicker_returns_fresh_land_and_old_pending_animation_cannot_apply(), ability(), action(), activate(), genuinely_unfunded_animation_position(), position() (+45 more)
+Cohesion: 0.16
+Nodes (35): serialize_card_view(), assign_static_order_on_battlefield_entry(), test_paid_flicker_returns_fresh_land_and_old_pending_animation_cannot_apply(), ability(), action(), activate(), genuinely_unfunded_animation_position(), position() (+27 more)
 
-### Community 48 - "decode_action"
-Cohesion: 0.06
-Nodes (88): ordinary_position(), land_action(), paid_position(), test_filter_sphere_same_final_color_uses_only_free_tap_spec(), test_fixed_mixed_tap_only_land_sphere_is_not_paid_ability_bypass(), test_legacy_land_intent_selected_fields_must_not_be_silently_dropped(), test_sibling_routes_cannot_activate_paid_or_other_resource_abilities(), test_simple_basic_land_default_and_explicit_colors_remain_legal() (+80 more)
+### Community 48 - "test_selected_mana_http.py"
+Cohesion: 0.07
+Nodes (54): land_action(), paid_position(), test_filter_sphere_same_final_color_uses_only_free_tap_spec(), test_fixed_mixed_tap_only_land_sphere_is_not_paid_ability_bypass(), test_legacy_land_intent_selected_fields_must_not_be_silently_dropped(), test_sibling_routes_cannot_activate_paid_or_other_resource_abilities(), test_simple_basic_land_default_and_explicit_colors_remain_legal(), legacy_position() (+46 more)
 
 ### Community 49 - "test_soulless_jailer_typed_query.py"
-Cohesion: 0.19
-Nodes (26): test_real_complete_method_offers_and_retained_aura_option_recheck(), add(), position(), pure_scope(), rows(), test_cast_timing_uses_actual_selected_spell_characteristics(), test_graveyard_permanent_entry_is_blocked(), test_inactive_or_suppressed_source_cannot_block_entry_or_cast_queries() (+18 more)
+Cohesion: 0.21
+Nodes (25): test_real_complete_method_offers_and_retained_aura_option_recheck(), add(), position(), pure_scope(), rows(), test_cast_timing_uses_actual_selected_spell_characteristics(), test_graveyard_permanent_entry_is_blocked(), test_inactive_or_suppressed_source_cannot_block_entry_or_cast_queries() (+17 more)
 
 ### Community 50 - "Complete Exile-Then-Return Audit"
 Cohesion: 0.50
 Nodes (3): Canonical And Ownership Boundaries, Complete Exile-Then-Return Audit, Ordinary Ledger
 
-### Community 51 - "act"
-Cohesion: 0.11
-Nodes (42): board(), cast(), pending_sacrifice(), select(), test_canonical_bolt_lethal_handler_identity(), test_competing_pending_replacements_reject_without_mutation(), test_http_actual_paid_wrath_and_two_priority_passes(), test_http_trusted_pending_choice_owner_library_after_restore() (+34 more)
+### Community 51 - "declare_attackers"
+Cohesion: 0.08
+Nodes (50): _deal_unblocked_damage(), declare_attackers(), _opposing_planeswalker(), _state(), put(), test_adeline_attack_group_triggers_once_and_token_enters_tapped_attacking(), test_adeline_does_not_trigger_if_no_attackers_are_declared(), test_adeline_triggers_when_another_creature_attacks_without_her() (+42 more)
 
 ### Community 52 - "test_temporary_control_lifecycle_audit.py"
 Cohesion: 0.10
@@ -1055,35 +1048,35 @@ Nodes (34): _infer_temporary_control_instruction(), test_malformed_persisted_con
 
 ### Community 53 - "RulesEngine"
 Cohesion: 0.03
-Nodes (142): test_actual_paid_thalia_increase_then_discount_and_floor(), test_pitch_cards_cannot_also_pay_real_discard_mana_ability(), test_selected_white_stale_after_actual_paid_cast_rejected(), test_training_requirement_public_option_contract(), prepared_position(), RulesEngine, _crypt_rats(), _state() (+134 more)
+Nodes (144): prepared_position(), RulesEngine, _crypt_rats(), _state(), test_ai_avoids_bad_crypt_rats_activation_but_uses_lethal_or_favorable_sweep(), test_crypt_rats_batch_resumes_human_damage_replacements_before_lethal_sba(), test_crypt_rats_damage_is_simultaneous_and_both_players_can_lose(), test_crypt_rats_damage_respects_protection_from_black() (+136 more)
 
 ### Community 54 - "clean"
-Cohesion: 0.18
-Nodes (30): add(), test_addition_keeps_printed_and_intrinsic_mana_restrictions_distinct(), test_ai_current_and_entering_land_colors_use_public_layers(), test_already_produced_mana_preserves_original_restriction_after_type_change(), test_attached_replacement_changes_only_its_target_and_removes_printed_mana(), test_basic_land_replacement_does_not_make_basic_forest_nonbasic(), test_controller_change_and_attachment_changes_invalidate_live_view(), test_controller_scoped_addition_does_not_fix_opponent_mana() (+22 more)
+Cohesion: 0.06
+Nodes (87): add(), setup(), test_aura_targets_are_selected_by_actual_resource_gain(), test_draw_aura_keeps_resource_outcome_unknown(), resource_change_plan(), mana_multiplier_clause(), multiplied_outputs(), mana_source_outputs() (+79 more)
 
-### Community 55 - "clean"
-Cohesion: 0.14
-Nodes (30): public_counters(), source(), test_ai_handles_resolved_counter_ward_without_mutating_live_state(), test_another_death_counter_trigger_survives_simultaneous_source_death(), test_characteristic_defined_token_stats_track_player_not_token_counters(), test_corrupted_dynamic_cost_suffix_is_not_accepted_as_supported(), test_corrupted_scaling_clause_does_not_apply_a_flat_prefix_bonus(), test_counter_gain_thresholds_and_timing_are_not_ignored() (+22 more)
+### Community 55 - "test_transformed_entry.py"
+Cohesion: 0.31
+Nodes (8): jace(), test_back_face_entry_loyalty_choices_preserve_exiled_front_and_resume(), test_in_place_transform_preserves_counters_and_uses_printed_loyalty_for_restore(), test_later_zone_exit_restores_real_front_characteristics_not_entry_loyalty(), test_loyalty_counters_survive_planeswalker_creature_face_changes(), test_noncast_back_face_does_not_inherit_source_x_escape_or_life_choices(), test_planeswalker_to_planeswalker_transform_preserves_current_loyalty(), test_transformed_entry_uses_counter_types_of_back_face_not_front()
 
 ### Community 56 - "test_counter_replacements.py"
-Cohesion: 0.16
-Nodes (30): add_counters(), add_player_counters(), test_melira_is_controller_scoped_and_poison_specific(), choose(), source(), test_affected_permanent_controller_chooses_not_placer(), test_canonical_clauses_recognized_but_full_route_warnings_retained(), test_cant_override_suppresses_all_replacements_and_choices() (+22 more)
+Cohesion: 0.14
+Nodes (33): add_counters(), add_player_counters(), choose(), source(), test_affected_permanent_controller_chooses_not_placer(), test_canonical_clauses_recognized_but_full_route_warnings_retained(), test_cant_override_suppresses_all_replacements_and_choices(), test_choice_order_changes_result_and_each_ability_applies_once() (+25 more)
 
 ### Community 57 - "plan.md"
 Cohesion: 0.02
-Nodes (66): Cost and activation fixture identity acceptance, Residual Five-Module Fixture Acceptance, Remaining six-module fixture integrity acceptance, Controls and Limits, Source and Evidence, Task 4.2 Stable Counter Filter, Mirrored Combat Fixture Capture, Actual Candidate Whole Acceptance (+58 more)
+Nodes (75): Cost and activation fixture identity acceptance, Residual Five-Module Fixture Acceptance, Remaining six-module fixture integrity acceptance, Distinct-Target Response Boundary, Human Exact-Two Permanent Targets, Current shared-source acceptance, Historical failing baseline, Paid-Cast Sickness Supplement (+67 more)
 
 ### Community 58 - "test_daretti_native_continuations.py"
-Cohesion: 0.14
-Nodes (53): activate(), advance_to_end(), board(), choose(), get_emblem(), put(), resolve_once(), restored() (+45 more)
+Cohesion: 0.06
+Nodes (85): public_choice(), test_actual_paid_public_projection_preserves_internal_resume_and_order(), test_legacy_projection_branches_exact_protocol_only(), test_optional_display_fields_kept_projection_only(), activate(), advance_to_end(), board(), choose() (+77 more)
 
 ### Community 59 - "MetadataTests"
 Cohesion: 0.10
 Nodes (3): load(), MetadataTests, sha()
 
-### Community 60 - "test_sideboard_inventory_boundary_audit.py"
-Cohesion: 0.19
-Nodes (19): apply_sideboard_swaps(), _from_counter(), SideboardError, _to_counter(), counts(), entry(), inventory(), test_core_rejects_invalid_quantities_without_coercion() (+11 more)
+### Community 60 - "add_profiled"
+Cohesion: 0.10
+Nodes (30): add_profiled(), paid_decision(), position(), test_actual_paid_opponent_counter_response_retains_original_threat(), test_explicit_illegal_source_sensitive_removal_rejects_full_root_atomically(), test_full_legal_menu_current_choice_and_checked_paid_complete_resolution(), announced(), base() (+22 more)
 
 ### Community 61 - "test_bloodtithe_resource_debuff_audit.py"
 Cohesion: 0.23
@@ -1097,45 +1090,45 @@ Nodes (5): Combined Qualification, Harness Corrections, Jailer, Reanimate And Ca
 Cohesion: 0.12
 Nodes (36): _aggregate_game_rows(), _archetypes_for_row(), build_report(), _deck_archetypes(), _iter_jsonl(), _load_json(), main(), parse_args() (+28 more)
 
-### Community 64 - "SnapshotCleanup"
-Cohesion: 0.35
-Nodes (6): canonical(), file_pin(), owned_children(), owned_children_closed(), pytest_configure(), SnapshotCleanup
+### Community 64 - "ci_backend_snapshot_cleanup.py"
+Cohesion: 0.25
+Nodes (8): canonical(), file_pin(), owned_children(), owned_children_closed(), pytest_configure(), pytest_runtest_makereport(), pytest_runtest_setup(), SnapshotCleanup
 
-### Community 65 - "domain_paid_support"
-Cohesion: 0.11
+### Community 65 - "test_exchange_edges.py"
+Cohesion: 0.10
 Nodes (43): chosen(), paid_instant(), pay(), settle(), test_actual_paid_creature_counter_prohibition_does_not_block_player_energy(), test_actual_static_suppression_prevents_trigger(), test_complete_unknown_suffix_is_compiler_only_fail_closed(), test_malformed_balance_protocol_rejects_without_mutation() (+35 more)
 
 ### Community 66 - "test_graveyard_self_activation_product.py"
 Cohesion: 0.21
 Nodes (29): act(), action(), paid(), position(), record(), resolve(), test_canonical_entry_prohibition_preserves_paid_cost_and_source(), test_complete_self_instruction_is_not_a_permission_from_other_zones() (+21 more)
 
-### Community 67 - "checked_action"
+### Community 67 - "fixture"
 Cohesion: 0.04
-Nodes (148): block_intents(), visit(), affordable(), finalize_declaration(), get_match_rules_diagnostics(), checked_action(), combat_rule_text(), _max_attackers_blockable_by_creature() (+140 more)
+Nodes (144): block_intents(), visit(), combat_tax_plan(), affordable(), finalize_declaration(), get_match_rules_diagnostics(), _can_block_attacker(), combat_rule_text() (+136 more)
 
 ### Community 68 - "test_death_cycle_ordering_audit.py"
-Cohesion: 0.17
-Nodes (25): test_actual_spell_discard_cost_is_one_counter_trigger(), test_cycle_trigger_has_no_target_and_survives_actual_source_sacrifice(), test_cycling_same_name_is_another_card_only_for_other_battlefield_copy(), test_independent_two_cycling_costs_each_trigger_once_not_lifetime_dedup(), test_opponent_cycling_does_not_fire_own_controller_condition(), assert_hand_entry(), capture_action(), observe() (+17 more)
+Cohesion: 0.15
+Nodes (27): test_actual_spell_discard_cost_is_one_counter_trigger(), test_cycle_trigger_has_no_target_and_survives_actual_source_sacrifice(), test_cycling_same_name_is_another_card_only_for_other_battlefield_copy(), test_independent_two_cycling_costs_each_trigger_once_not_lifetime_dedup(), test_opponent_cycling_does_not_fire_own_controller_condition(), test_canonical_paid_records_are_pinned(), test_supported_optional_trigger_payment_has_no_free_effect(), assert_hand_entry() (+19 more)
 
 ### Community 69 - "build_trace_payload"
 Cohesion: 0.05
-Nodes (48): _anonymous_knowledge_usage(), build_decision_quality_artifact(), build_trace_payload(), compact_action(), DecisionQualityAccumulator, _lethal_attack_available(), losing_blocks(), _mana_total() (+40 more)
+Nodes (48): _anonymous_knowledge_usage(), build_decision_quality_artifact(), build_trace_payload(), compact_action(), DecisionQualityAccumulator, deck_artifact_entries(), _lethal_attack_available(), losing_blocks() (+40 more)
 
-### Community 70 - "ActionRejected"
-Cohesion: 0.05
-Nodes (57): _decline_may(), preserve_lethal_response(), _responses(), _settled(), ActionRejected, require(), reject(), validate_prevention_item() (+49 more)
+### Community 70 - "test_training_pending_intent_audit.py"
+Cohesion: 0.22
+Nodes (11): outcome(), scenario(), test_independent_actual_whole_views_execute_explicit_choice_and_restore(), test_pending_actor_observation_bytes_ignore_opposing_hidden_identity_order(), inputs(), test_recognized_bad_choices_and_wrong_seat_are_atomic(), test_unsupported_choice_keys_reject_not_silently_normalize(), test_context_integer_bool_not_interchangeable() (+3 more)
 
-### Community 71 - "test_ui_synthetic_stock_publication.py"
-Cohesion: 0.25
-Nodes (10): projected_fixture(), persist(), test_canonical_face_stock_remains_captured_not_blanket_unknown(), test_default_publisher_does_not_hide_forged_original_owner(), test_default_publisher_preserves_native_v3_stock_and_checked_land(), test_every_explicit_factory_source_mutation_publishes_unknown_stock(), test_exact_hybrid_browser_cast_still_pays_three_white_lands(), test_existing_fixture_projection_rejects_unapproved_body_change() (+2 more)
+### Community 71 - "test_task23_canonical_block_outcomes.py"
+Cohesion: 0.07
+Nodes (43): restore_keyword_effects(), raw(), test_canonical_checked_outcomes_and_pinned_full_bodies(), tracked_search(), position(), settle_actual_decision(), test_full_menu_unused_mana_sources_do_not_hide_safe_native_block(), block_move() (+35 more)
 
 ### Community 72 - "test_sideboard_review_boundaries.py"
 Cohesion: 0.04
-Nodes (83): seal_game(), summary_for(), _fit(), _land(), plan_swaps(), _profile(), route_for(), _view() (+75 more)
+Nodes (69): initialize(), seal_game(), summary_for(), _fit(), _land(), plan_swaps(), _profile(), route_for() (+61 more)
 
 ### Community 73 - "test_march_pitch_paid.py"
-Cohesion: 0.35
-Nodes (7): setup(), test_bad_selections_reject_before_root_mutation(), test_paid_selected_white_and_multicolor_white_discount(), test_public_candidates_and_readonly_materialization_preserve_selection(), test_typed_rejects_shapes_before_exclude_none(), test_unknown_complete_body_tail_cannot_admit_partial_cost(), test_unmatched_option_rejects_even_empty_or_null()
+Cohesion: 0.22
+Nodes (11): test_actual_paid_thalia_increase_then_discount_and_floor(), test_pitch_cards_cannot_also_pay_real_discard_mana_ability(), test_selected_white_stale_after_actual_paid_cast_rejected(), test_training_requirement_public_option_contract(), setup(), test_bad_selections_reject_before_root_mutation(), test_paid_selected_white_and_multicolor_white_discount(), test_public_candidates_and_readonly_materialization_preserve_selection() (+3 more)
 
 ### Community 74 - "test_selected_graveyard_reference.py"
 Cohesion: 0.16
@@ -1146,120 +1139,120 @@ Cohesion: 0.15
 Nodes (37): begin_turn(), act(), activate(), cast_walker(), next_main(), settle(), test_paid_loyalty_copy_can_choose_a_new_legal_target(), resolve_with_declared_attachments() (+29 more)
 
 ### Community 76 - "test_cathar_day_night_linked_exile.py"
-Cohesion: 0.19
-Nodes (21): cast(), choose(), return_exiled(), setup(), test_cached_fixture_facts_match_provenance_backed_canonical_records(), test_canonical_entry_face_and_trigger(), test_departed_or_blinked_source_before_resolution_does_not_exile(), test_entry_projection_leaves_daybound_spell_front_face_up() (+13 more)
+Cohesion: 0.20
+Nodes (20): cast(), choose(), return_exiled(), setup(), test_cached_fixture_facts_match_provenance_backed_canonical_records(), test_canonical_entry_face_and_trigger(), test_departed_or_blinked_source_before_resolution_does_not_exile(), test_entry_projection_leaves_daybound_spell_front_face_up() (+12 more)
 
-### Community 77 - "test_combat_graveyard_caller_audit.py"
-Cohesion: 0.06
-Nodes (46): client(), Episode, receipts(), observe(), run(), test_actual_http_combat_cold_resume_and_private_atomicity(), test_actual_paid_shadowspear_deathtouch_combat_owner_replacement(), test_checked_combat_death_receipts() (+38 more)
+### Community 77 - "restart"
+Cohesion: 0.04
+Nodes (69): dynamo_board(), test_actual_nonmatching_protection_receives_paid_canonical_x_damage(), test_canonical_x_cost_sacrifice_keeps_selected_x_real_lki_and_damage(), test_canonical_x_invalid_activation_never_taps_sacrifices_or_pays(), test_controlled_no_target_aura_lbf_owner_and_entry(), test_controlled_no_target_preflight_failure_is_before_all_departure(), unavailable(), test_paid_bounce_retained_cause_not_reselected_after_lbf() (+61 more)
 
 ### Community 78 - "scripts"
 Cohesion: 0.03
-Nodes (62): dependencies, react, react-dom, devDependencies, eslint, @eslint/js, eslint-plugin-react-hooks, @types/react (+54 more)
+Nodes (58): dependencies, react, react-dom, devDependencies, eslint, @eslint/js, eslint-plugin-react-hooks, @types/react (+50 more)
 
-### Community 79 - "test_counter_prohibitions.py"
-Cohesion: 0.09
-Nodes (43): grant_keyword(), _combat_damage_step(), apply_creature_damage(), apply_player_damage(), collect_damage_counters(), flush_damage_counters(), queue_damage_counters(), source() (+35 more)
+### Community 79 - "clean"
+Cohesion: 0.11
+Nodes (45): grant_keyword(), _combat_damage_step(), apply_creature_damage(), apply_player_damage(), collect_damage_counters(), flush_damage_counters(), queue_damage_counters(), source() (+37 more)
 
 ### Community 80 - "README.md"
 Cohesion: 0.03
-Nodes (55): Executed Evidence, Limits, Shared Tap-Source Readiness, Animation And Tactical Combat: Current Composition, Completed Gates, Natural AI Evidence, Scope, CF1 Loopback Requalification: 2026-10-13 (+47 more)
+Nodes (62): Executed Evidence, Limits, Shared Tap-Source Readiness, Animation And Tactical Combat: Current Composition, Completed Gates, Natural AI Evidence, Scope, Announced Targets: Current Composition (+54 more)
 
 ### Community 81 - "test_export_publication_recovery.py"
 Cohesion: 0.06
 Nodes (35): main(), die(), record(), replacement(), journal(), kill_publication(), run_recovery(), setup_pair() (+27 more)
 
 ### Community 82 - "destroy_permanent"
-Cohesion: 0.04
-Nodes (77): destroy_all_creatures(), destroy_permanent(), return_permanent_to_hand(), sacrifice(), resolve_annihilator(), _add_merchant(), _state(), test_artifact_death_uses_marionette_masters_effective_power() (+69 more)
+Cohesion: 0.06
+Nodes (58): destroy_all_creatures(), destroy_permanent(), sacrifice(), resolve_annihilator(), _add_merchant(), _state(), test_artifact_death_uses_marionette_masters_effective_power(), test_exile_replacement_does_not_trigger_artifact_graveyard_clause() (+50 more)
 
 ### Community 83 - "test_variable_suspend_keyword.py"
 Cohesion: 0.15
 Nodes (36): ActionRequest, action_options(), act(), assert_rejected(), canonical_land(), live_position(), _order_keyword_above_draw(), _resolve_independent_owner_draw() (+28 more)
 
-### Community 84 - "test_multicast_subject_audit.py"
-Cohesion: 0.18
-Nodes (23): test_actual_canonical_pronoun_without_antecedent_does_not_guess_a_target(), test_actual_cast_resolves_current_group_once_with_stun_and_foreign_controls(), test_exact_canonical_compiled_group_not_an_invented_recipient(), test_real_source_removal_does_not_reselect_or_erase_queued_group(), test_played_copy_of_surviving_adventure_copy_uses_its_stack_subject(), act(), capture(), keep_target() (+15 more)
+### Community 84 - "test_linked_group_untap.py"
+Cohesion: 0.19
+Nodes (18): test_actual_canonical_pronoun_without_antecedent_does_not_guess_a_target(), test_actual_cast_resolves_current_group_once_with_stun_and_foreign_controls(), test_exact_canonical_compiled_group_not_an_invented_recipient(), test_real_source_removal_does_not_reselect_or_erase_queued_group(), test_played_copy_of_surviving_adventure_copy_uses_its_stack_subject(), act(), capture(), keep_target() (+10 more)
 
-### Community 85 - "decision_view"
+### Community 85 - "state.py"
 Cohesion: 0.05
-Nodes (88): decision_view(), topdeck_deployment_value(), _opaque_acquisition_items(), _opaque_acquisition_stack(), _opaque_draw_count_changes(), opaque_exile_opportunities(), OpaqueExileOpportunity, settled_public_position() (+80 more)
+Nodes (60): public_snapshots(), decision_view(), is_unknown(), public_card_ids(), remembered_hand_card(), _infer_loyalty(), _infer_power(), _infer_toughness() (+52 more)
 
 ### Community 86 - "corpus_knowledge_readiness.py"
-Cohesion: 0.05
-Nodes (96): canonical_hash(), validate_rulings_page(), apply_index(), audit(), bounded_artifact_lines(), campaign(), campaign_scratch_owned(), checked_apply_refresh() (+88 more)
+Cohesion: 0.02
+Nodes (151): get_with_backoff(), ensure_generic_token_image(), canonical_tactical_tags(), _cache_remote_token_image(), _extract_image_uri(), _index_key(), resolve_token_image_uri(), _search_scryfall_token_image() (+143 more)
 
-### Community 87 - "test_combat_damage_assignment.py"
-Cohesion: 0.19
-Nodes (32): _creature(), _enter_damage(), _finish_shared_blocker_choice(), _state(), test_ai_defender_with_banding_blocks_trample_to_life(), test_ai_prioritizes_killing_more_threatening_blocker(), test_ai_second_trampler_spills_after_first_assigned_lethal_to_shared_blocker(), test_all_attackers_use_pre_damage_power_when_first_hit_changes_a_continuous_value() (+24 more)
+### Community 87 - "apply_state_based_actions"
+Cohesion: 0.08
+Nodes (57): outcome(), apply_state_based_actions(), _creature(), _enter_damage(), _finish_shared_blocker_choice(), _state(), test_ai_defender_with_banding_blocks_trample_to_life(), test_ai_prioritizes_killing_more_threatening_blocker() (+49 more)
 
 ### Community 88 - "test_saga_counter_events.py"
 Cohesion: 0.11
-Nodes (27): core_stack(), grave(), test_copied_x_permanent_preserves_announced_x_without_doubling_token_creation(), test_creation_doublers_are_controller_scoped_and_compound_once(), test_creature_return_emits_own_entry_trigger_and_does_not_consume_cast_record(), test_library_entry_uses_intrinsic_saga_lore_and_preserves_selection(), test_noncast_library_entry_does_not_inherit_source_spells_x(), test_permanent_spell_copy_enters_with_loyalty_but_was_not_cast() (+19 more)
+Nodes (28): core_stack(), grave(), test_copied_x_permanent_preserves_announced_x_without_doubling_token_creation(), test_creation_doublers_are_controller_scoped_and_compound_once(), test_creature_return_emits_own_entry_trigger_and_does_not_consume_cast_record(), test_gift_token_entry_choices_resume_later_effect_for_original_caster(), test_library_entry_uses_intrinsic_saga_lore_and_preserves_selection(), test_noncast_library_entry_does_not_inherit_source_spells_x() (+20 more)
 
 ### Community 89 - "test_source_linked_exile.py"
 Cohesion: 0.10
 Nodes (26): exile_permission(), _targeted_trigger_clause(), paid(), test_actual_paid_entry_decision_views_preserve_private_root_and_rng(), test_actual_paid_entry_ward_is_resumable_response_cost(), test_actual_paid_hexproof_response_invalidates_entry_target(), test_paid_opposite_controller_copy_uses_resolving_controller(), test_complete_self_entry_control_clause() (+18 more)
 
 ### Community 90 - "snap"
-Cohesion: 0.05
-Nodes (104): dynamo_board(), test_actual_hint_copy_is_pure_and_distinct_from_real_protection_source(), inspect(), protection(), test_actual_nonmatching_protection_receives_paid_canonical_x_damage(), test_canonical_x_cost_sacrifice_keeps_selected_x_real_lki_and_damage(), test_canonical_x_invalid_activation_never_taps_sacrifices_or_pays(), take() (+96 more)
+Cohesion: 0.07
+Nodes (61): test_actual_hint_copy_is_pure_and_distinct_from_real_protection_source(), inspect(), protection(), take(), test_paid_activation_shuffle_retains_original_reference_at_reader(), test_actual_http_lux_compound_paid_stack_atomic_failures_and_cold_restart(), test_actual_last_ballista_counter_still_pays_before_sba_and_damage_uses_lki(), test_actual_lux_checked_payment_revalidates_stale_source_before_tap_or_removal() (+53 more)
 
 ### Community 91 - "test_additional_cost_draw_body.py"
-Cohesion: 0.16
-Nodes (23): spell_resolution_gaps(), assert_token(), native_calls(), position(), sequence(), test_canonical_selected_cost_draws_before_native_treasure_with_full_publication_order(), test_canonical_treasure_waits_for_both_real_draw_choices_and_survives_resume_once(), test_generic_template_body_not_card_name_compiles_and_resolves_complete_instructions() (+15 more)
+Cohesion: 0.15
+Nodes (24): spell_resolution_gaps(), assert_token(), native_calls(), position(), sequence(), test_canonical_selected_cost_draws_before_native_treasure_with_full_publication_order(), test_canonical_treasure_waits_for_both_real_draw_choices_and_survives_resume_once(), test_generic_template_body_not_card_name_compiles_and_resolves_complete_instructions() (+16 more)
 
 ### Community 92 - "export_builtin_oracle_seed.py"
-Cohesion: 0.05
-Nodes (76): _append_record(), builtin_names(), _bulk_cards(), _canonical_knowledge_card(), _enrich_card(), _exact_card(), export_seed(), _face_colors() (+68 more)
+Cohesion: 0.04
+Nodes (83): song_facts(), _append_record(), builtin_names(), _bulk_cards(), _canonical_knowledge_card(), _enrich_card(), _exact_card(), export_seed() (+75 more)
 
 ### Community 93 - "log_priors.py"
-Cohesion: 0.29
-Nodes (14): _board_role_hint(), build_priors_from_examples(), build_priors_from_logs(), _build_priors_payload(), _context_timing_row(), _count_creatures(), _eligible_opponent_rows(), _normalize_opponent_archetype() (+6 more)
+Cohesion: 0.22
+Nodes (18): _board_role_hint(), build_priors_from_examples(), build_priors_from_logs(), _build_priors_payload(), _cast_context(), _context_timing_row(), _count_creatures(), _eligible_opponent_rows() (+10 more)
 
 ### Community 94 - "continuous.py"
-Cohesion: 0.05
-Nodes (82): _infer_keywords(), effects_on(), attached_to(), prior_layer_abilities_lost(), _recipient_body(), _tax_recipient(), _ability_layer_continuation_source(), _all_battlefield_ids() (+74 more)
+Cohesion: 0.02
+Nodes (183): source(), test_canonical_layer_grant_and_departure_restore(), test_complete_canonical_instruction_retains_no_subtype_and_explicit_mana(), test_generic_parameter_not_a_card_name(), test_land_setting_source_ability_loss_ends_its_target_effect(), test_later_creature_ability_loss_cannot_suppress_noncreature_land_grant(), test_unknown_whole_body_is_not_erased(), _infer_keywords() (+175 more)
 
 ### Community 95 - "run-current-built-acceptance.mjs"
 Cohesion: 0.06
 Nodes (47): allocations, authorizeChild(), capture(), checkFuser(), checkPins(), children, closedBackupHashes, closedReceipt() (+39 more)
 
-### Community 96 - "test_wheel_draw.py"
-Cohesion: 0.10
-Nodes (51): full_card(), test_actual_canonical_minus_two_discards_and_refills_both_players(), test_actual_paid_stifle_counters_each_ability_without_refunding_loyalty(), test_conditional_damage_requires_actual_matching_discard(), test_deliberate_zero_one_or_two_free_casts_retain_resolution(), test_every_actual_printed_clause_requires_complete_compilation(), test_free_cast_waiver_does_not_waive_actual_noncreature_tax(), test_full_canonical_card_offers_every_printed_loyalty_ability() (+43 more)
+### Community 96 - "checked_action"
+Cohesion: 0.06
+Nodes (85): checked_action(), full_card(), test_actual_canonical_minus_two_discards_and_refills_both_players(), test_actual_paid_stifle_counters_each_ability_without_refunding_loyalty(), test_conditional_damage_requires_actual_matching_discard(), test_deliberate_zero_one_or_two_free_casts_retain_resolution(), test_every_actual_printed_clause_requires_complete_compilation(), test_free_cast_waiver_does_not_waive_actual_noncreature_tax() (+77 more)
 
-### Community 97 - "test_optional_land_from_hand_audit.py"
-Cohesion: 0.20
-Nodes (28): activation(), paid(), setup(), test_actual_paid_creature_cast_cannot_pay_tap_cost_before_next_own_turn(), test_deliberate_second_land_or_empty_decline_private_pending_restart(), test_fixture_birth_default_preserves_declared_identity_and_rng(), test_fixture_birth_invalid_boolean_is_rejected_not_silently_defaulted(), test_fixture_explicit_identity_is_captured_at_factory_birth() (+20 more)
+### Community 97 - "test_modal_spell_faces.py"
+Cohesion: 0.09
+Nodes (39): stomp(), test_adventure_permission_belongs_to_caster_not_owner(), test_adventure_resolves_then_normal_face_is_castable_after_snapshot_and_later_turn(), test_adventure_with_a_missing_target_does_not_resolve_or_grant_permission(), test_ai_materializes_the_available_adventure_face_and_target(), test_both_pathway_faces_are_land_choices_with_correct_mana(), test_countered_adventure_does_not_grant_exile_permission(), test_exile_land_face_needs_unexpired_permission() (+31 more)
 
 ### Community 98 - "test_march_desired_paid.py"
-Cohesion: 0.23
-Nodes (19): cold(), paid_march(), prepare(), receipt(), test_desired_above_x_rejected_only_after_successful_paid_control(), test_desired_actual_paid_zero_optional_march_exiles_valid_target(), test_desired_fullbody_announced_x_hint_cap(), test_desired_paid_march_real_response_and_serialized_restore() (+11 more)
+Cohesion: 0.25
+Nodes (18): cold(), paid_march(), prepare(), receipt(), test_desired_above_x_rejected_only_after_successful_paid_control(), test_desired_actual_paid_zero_optional_march_exiles_valid_target(), test_desired_fullbody_announced_x_hint_cap(), test_desired_paid_march_real_response_and_serialized_restore() (+10 more)
 
 ### Community 99 - "Controlled Calibration Advice Pilot"
 Cohesion: 0.40
 Nodes (4): Accounting And Limits, Controlled Calibration Advice Pilot, Intervention And Scope, Observed Paid Outcomes
 
 ### Community 100 - "test_brainstorm_http_ordering_goldens.py"
-Cohesion: 0.16
-Nodes (25): advance(), cast(), current(), install_position(), moves(), ordinary(), pending_brainstorm(), private_cards() (+17 more)
+Cohesion: 0.34
+Nodes (17): advance(), cast(), current(), install_position(), moves(), ordinary(), pending_brainstorm(), private_cards() (+9 more)
 
-### Community 101 - "emit_event"
-Cohesion: 0.02
-Nodes (187): _destroy_all_permanents_of_types(), draw_cards(), gain_life(), mill_cards(), _move_creature_to_graveyard(), put_hand_on_library(), _queue_human_damage_replacement_choice(), resolve_discard_followup() (+179 more)
+### Community 101 - "replacement.py"
+Cohesion: 0.05
+Nodes (74): draw_cards(), gain_life(), NumericPreventionShield, capture_hand_source_context(), damage_controller(), damage_lifelink_beneficiary(), damage_source_control(), validate_hand_source_context() (+66 more)
 
 ### Community 102 - "test_suspend_lifecycle.py"
 Cohesion: 0.27
 Nodes (28): suspended(), test_pending_useful_cast_complete_private_deterministic_restore(), act(), one(), ready(), restore(), setup(), suspend() (+20 more)
 
 ### Community 103 - "test_sba_graveyard_entry_audit.py"
-Cohesion: 0.15
-Nodes (22): bolt_position(), http_position(), legend_position(), observed(), paid_bolt(), paid_legend(), position(), target_events() (+14 more)
+Cohesion: 0.14
+Nodes (23): bolt_position(), http_position(), legend_position(), observed(), collect(), paid_bolt(), paid_legend(), position() (+15 more)
 
 ### Community 104 - "matchup_round_robin.py"
-Cohesion: 0.09
-Nodes (37): _admit(), _integer(), _require(), _sha(), admit_execution_rows(), _board_inventory(), build_schedule(), builtin_templates() (+29 more)
+Cohesion: 0.08
+Nodes (50): _legacy_profile_for(), load_profiles(), _admit(), _integer(), _require(), _sha(), admit_execution_rows(), _board_inventory() (+42 more)
 
 ### Community 105 - "combat-payments-requirements.md"
 Cohesion: 0.05
@@ -1270,56 +1263,56 @@ Cohesion: 0.14
 Nodes (3): InterruptionPrivacyTests, __getattribute__(), opening()
 
 ### Community 107 - "test_spell_trigger_surface_audit.py"
-Cohesion: 0.13
-Nodes (32): act(), add(), install(), offline_http(), position(), restore(), settle(), snapshot() (+24 more)
+Cohesion: 0.12
+Nodes (37): settle_http(), test_actual_http_reverberate_copy_only_matches_magecraft_not_cast_only(), test_actual_private_http_multi_cast_order_life_hand_board_restart(), test_http_unpaid_clauses_with_stable_opponent_hand(), act(), add(), install(), offline_http() (+29 more)
 
 ### Community 108 - "test_combat_ability_provenance.py"
 Cohesion: 0.21
 Nodes (28): card_must_attack_if_able(), add(), block(), lose(), prepare_blocks(), test_canonical_keywords_are_counterable_stack_triggers_not_immediate_changes(), test_each_supported_keyword_resolves_through_priority_and_expires(), test_flanking_blocker_does_not_trigger_and_nonmana_damage_action_cannot_skip_stack() (+20 more)
 
 ### Community 109 - "test_complete_copy_payment_roots.py"
-Cohesion: 0.26
+Cohesion: 0.27
 Nodes (14): cast_paid(), finish_counter_batch(), reach_choice_or_terminal(), residents(), test_actual_lockdown_multireturn_counter_continuation_preserves_rows(), test_paid_collected_company_two_entry_batch_preserves_selected_ids(), test_paid_single_entry_preserves_original_semantic_target(), cast_position() (+6 more)
 
 ### Community 110 - "act"
-Cohesion: 0.03
-Nodes (134): valid_damage_assignment(), offered_combat(), test_effective_removed_indestructible_not_printed_keyword_controls_killability(), test_foreign_controller_protection_branch_and_remaining_algorithm_exact(), test_marked_damage_does_not_erase_indestructible_trample_requirement(), test_nonterminal_and_existing_win_loss_methods_match_frozen_3a7(), test_search_nonterminal_and_win_loss_endpoint_ranks_match_frozen_3a7(), test_terminal_helper_exact_scale_and_nonterminal_sentinel() (+126 more)
+Cohesion: 0.09
+Nodes (57): valid_damage_assignment(), offered_combat(), test_effective_removed_indestructible_not_printed_keyword_controls_killability(), test_foreign_controller_protection_branch_and_remaining_algorithm_exact(), test_marked_damage_does_not_erase_indestructible_trample_requirement(), test_nonterminal_and_existing_win_loss_methods_match_frozen_3a7(), test_search_nonterminal_and_win_loss_endpoint_ranks_match_frozen_3a7(), test_terminal_helper_exact_scale_and_nonterminal_sentinel() (+49 more)
 
 ### Community 111 - "test_officer_fixture_lifecycle.py"
-Cohesion: 0.10
-Nodes (26): uncertified(), actual(), guard_state(), immediate(), lifecycle(), activity(), open_admission(), request() (+18 more)
+Cohesion: 0.09
+Nodes (28): test_actual_terminal_callers_keep_their_original_magnitudes(), record(), uncertified(), actual(), guard_state(), immediate(), lifecycle(), activity() (+20 more)
 
 ### Community 112 - "test_additive_mana.py"
-Cohesion: 0.05
-Nodes (95): activate_mana_ability(), count_untapped_lands_by_color(), mana_tap_scope(), resolve_mana_triggers(), activate(), add(), aura(), position() (+87 more)
-
-### Community 113 - "serializers.py"
-Cohesion: 0.04
-Nodes (72): life_target_score(), _tupleize(), add_keyword_effect(), restore_keyword_effects(), restore_history(), life_lock(), test_adversarial_replacement_order_is_not_newest_source_guessing(), test_caster_gain_conversion_does_not_make_ai_cast_suicidal_damage_spell() (+64 more)
-
-### Community 114 - "test_shuffle_observer_audit.py"
 Cohesion: 0.17
-Nodes (32): act(), finish(), order_prompt(), prepare(), record(), restore(), snap(), test_actual_accepted_ponder_shuffle_requires_observer_receipt_after_draw() (+24 more)
+Nodes (30): count_untapped_lands_by_color(), mana_tap_scope(), resolve_mana_triggers(), activate(), aura(), position(), test_all_tap_and_payment_callers_agree_on_mixed_output(), test_bonus_does_not_inherit_base_spending_restriction() (+22 more)
+
+### Community 113 - "add_keyword_effect"
+Cohesion: 0.11
+Nodes (31): life_target_score(), add_keyword_effect(), life_lock(), test_adversarial_replacement_order_is_not_newest_source_guessing(), test_caster_gain_conversion_does_not_make_ai_cast_suicidal_damage_spell(), test_conditional_copied_life_spell_redirects_to_conversion_lethal(), test_life_at_zero_is_not_a_win_when_public_effect_prevents_losing(), test_original_life_spell_uses_conversion_for_lethal_instead_of_healing_self() (+23 more)
+
+### Community 114 - "test_spell_admission_safety_http.py"
+Cohesion: 0.10
+Nodes (40): seed_cache(), test_actual_fresh_process_restores_order_or_shuffle_then_completes(), test_http_order_choices_reject_wrong_seat_and_restore_pending(), reload(), act(), finish(), order_prompt(), prepare() (+32 more)
 
 ### Community 115 - "test_readiness_rules_seam.py"
-Cohesion: 0.19
+Cohesion: 0.20
 Nodes (36): add(), add(), canonical(), cast(), observation(), position(), resolve(), resume() (+28 more)
 
-### Community 116 - "human-response-timer.mjs"
+### Community 116 - "seed-metadata-response-contract.mjs"
+Cohesion: 0.04
+Nodes (46): client, html, metadata, mod, react, report, require, source (+38 more)
+
+### Community 117 - "copy"
 Cohesion: 0.10
-Nodes (15): controls, displayedLive, effects, failures, printer, render(), setTimeout(), source (+7 more)
+Nodes (26): apply_sideboard_swaps(), _from_counter(), SideboardError, _to_counter(), helper(), test_all_non_capture_fields_match_real_factory(), test_independent_payloads_uuid_and_old_player_names(), test_never_calls_factory_or_initializes_or_erases_capture() (+18 more)
 
-### Community 117 - "ResourceMetadataTests"
-Cohesion: 0.12
-Nodes (3): replay(), ResourceMetadataTests, StringSubclass
-
-### Community 118 - "test_numeric_inventory_adapter.py"
-Cohesion: 0.07
-Nodes (60): add_player_prevention_shield(), public_grave(), test_hidden_advisory_changes_never_create_public_receipts(), test_reviewed_advisory_field_preserves_actual_public_inventory(), test_unreviewed_future_card_field_stays_unknown(), test_unreviewed_public_advisory_carrier_is_unknown_without_mutation(), test_valid_advice_does_not_cover_actual_graveyard_permission(), PrivateValue (+52 more)
+### Community 118 - "serializers.py"
+Cohesion: 0.08
+Nodes (46): serialize_match(), _tupleize(), _without_knowledge_snapshot(), remaining_land_plays_this_turn(), add_player_prevention_shield(), restore_history(), public_grave(), qualified() (+38 more)
 
 ### Community 119 - "resolve_top_of_stack"
-Cohesion: 0.02
-Nodes (157): test_canonical_paid_damage_execution_and_restore(), test_original_desired_upstream_contract(), pay_optional(), add_card_prevention_shield(), has_numeric_prevention_instruction(), _damage_replacement_source_context(), _replacement_context(), resolve_top_of_stack() (+149 more)
+Cohesion: 0.03
+Nodes (144): pay_optional(), add_card_prevention_shield(), has_numeric_prevention_instruction(), _damage_replacement_source_context(), _replacement_context(), resolve_top_of_stack(), resolve_trigger(), _game() (+136 more)
 
 ### Community 120 - "test_end_step_ownership_draw.py"
 Cohesion: 0.14
@@ -1327,47 +1320,47 @@ Nodes (34): collect(), compile_clause(), condition_holds(), resolve(), route_end
 
 ### Community 121 - "test_activation_modifiers.py"
 Cohesion: 0.11
-Nodes (33): add(), requirement(), test_ai_announced_x_respects_tax_and_tap_source_reservations(), test_ai_crew_suggestion_reserves_crew_creatures_for_mana_payment(), test_attached_artifact_reduction_and_tap_sacrifice_source_reservation(), test_checked_draw_ability_is_priced_resolves_and_preserves_original(), test_controller_reductions_colored_floor_stacking_and_source_departure(), test_coverage_recognizes_supported_clauses_but_not_unknown_scopes_or_floors() (+25 more)
+Nodes (36): add(), requirement(), test_ai_announced_x_respects_tax_and_tap_source_reservations(), test_ai_crew_suggestion_reserves_crew_creatures_for_mana_payment(), test_attached_artifact_reduction_and_tap_sacrifice_source_reservation(), test_checked_draw_ability_is_priced_resolves_and_preserves_original(), test_controller_reductions_colored_floor_stacking_and_source_departure(), test_coverage_recognizes_supported_clauses_but_not_unknown_scopes_or_floors() (+28 more)
 
 ### Community 122 - "test_paid_force_twincast.py"
 Cohesion: 0.17
 Nodes (28): boundary(), choose(), finish_copy(), test_actual_ai_copy_destroys_opponent_not_friendly(), test_actual_ai_hidden_identity_swap_and_root_invariance(), test_same_boundary_explicit_keep_and_retarget_counterfactuals(), facts(), frame() (+20 more)
 
-### Community 123 - "declare_attackers"
-Cohesion: 0.17
-Nodes (26): declare_attackers(), _opposing_planeswalker(), _state(), put(), test_adeline_attack_group_triggers_once_and_token_enters_tapped_attacking(), test_adeline_does_not_trigger_if_no_attackers_are_declared(), test_adeline_triggers_when_another_creature_attacks_without_her(), test_ai_selects_one_loyalty_planeswalker_over_nonlethal_face_damage() (+18 more)
+### Community 123 - "match-contract.ts"
+Cohesion: 0.03
+Nodes (76): card(), LegalMovesResponse, manaChoiceView(), parseAiDebugHands(), parseLegalMoves(), parseMatchState(), parseSavedMatches(), paymentOptions() (+68 more)
 
 ### Community 124 - "test_domain_paid_continuations.py"
 Cohesion: 0.12
 Nodes (33): act(), add(), cast(), position(), receipt(), resolve(), respond(), restore() (+25 more)
 
-### Community 125 - "test_graveyard_inventory_feasibility.py"
-Cohesion: 0.16
-Nodes (20): escape_cost(), flashback_cost(), granted_cost(), public_graveyard_inventory(), _reviewed_context_covered(), canonical(), test_complete_linked_damage_diagnostic_does_not_clear_unbacked_or_unaccounted_context(), test_current_known_gap_diagnostics_not_unconditional_execution_certificates() (+12 more)
+### Community 125 - "sideboard_finished_fixture_support.py"
+Cohesion: 0.09
+Nodes (31): record_accepted_action(), plan_sideboard(), castable(), _ai_sideboard_for_next_game(), _start_next_game_state(), assert_play_draw_rejections(), birth_order(), cast() (+23 more)
 
 ### Community 126 - "test_kicker.py"
 Cohesion: 0.10
 Nodes (38): test_actual_ai_cost_choice_accounts_for_doubled_draw_deckout(), test_base_and_kicked_payoffs_compare_replaced_counts(), test_draw_caps_apply_between_replaced_single_draws(), test_exhaustion_cap_and_suppression_use_no_hidden_library_identity(), test_forecast_matches_default_resolution_without_mutating_match(), test_symmetric_first_draw_exception_counts_only_own_draw_step(), cast(), source() (+30 more)
 
 ### Community 127 - ".exec"
-Cohesion: 0.06
-Nodes (23): failure(), fake_owner(), main_functions(), test_actual_acknowledged_update_publishes_only_after_persistence(), test_actual_activity_fence_allows_existing_nested_settlement_only(), test_actual_initial_admission_uncertainty_fences_under_held_start_lock(), save(), test_actual_lifespan_owner_order_without_any_native_sql() (+15 more)
+Cohesion: 0.05
+Nodes (30): failure(), fake_owner(), main_functions(), test_actual_acknowledged_update_publishes_only_after_persistence(), test_actual_activity_fence_allows_existing_nested_settlement_only(), test_actual_initial_admission_uncertainty_fences_under_held_start_lock(), save(), test_actual_lifespan_owner_order_without_any_native_sql() (+22 more)
 
 ### Community 128 - "MTG Deck Testing Lab Finish Plan"
 Cohesion: 0.04
 Nodes (51): 2026-10-07 Fable Linked-Discard Checkpoint, 2026-10-07 Locked Frontend Checkpoint, 2026-10-07 Native Type-Note Control Checkpoint, 2026-10-07 Pinned Offline Warm Checkpoint, 2026-10-07 Pull and Mass-Exile Checkpoint, 2026-10-07 Resource-Scaled P/T Checkpoint, 2026-10-07 Source-Controller and Heroic Checkpoint, 2026-10-08 Complete Printed-Body Composition (+43 more)
 
 ### Community 129 - "test_ai_knowledge_consumer_audit.py"
-Cohesion: 0.25
-Nodes (22): actor(), deck(), emit(), modal_case(), position(), receipt(), reservation_case(), take() (+14 more)
+Cohesion: 0.08
+Nodes (65): actor(), deck(), emit(), modal_case(), position(), receipt(), reservation_case(), take() (+57 more)
 
 ### Community 130 - "test_ai_resource_forecast.py"
 Cohesion: 0.19
 Nodes (19): draw_resource_forecast(), position(), test_actual_rummage_retains_spells_against_land_heavy_remaining_composition(), test_equal_expensive_draws_do_not_get_fictitious_five_point_credit(), test_forecast_requires_private_matching_actor_and_exchangeable_library(), test_hypergeometric_prior_and_hidden_identity_invariance(), test_land_light_board_can_recycle_expensive_cards_to_find_resources(), test_out_of_bounds_draws_are_unknown_not_probabilities() (+11 more)
 
-### Community 131 - "test_announced_target_reference_product.py"
-Cohesion: 0.24
-Nodes (19): frame(), paid_copy(), test_actual_conditional_copy_explicit_new_object_refreshes_conditional_and_generic_receipts(), test_paid_divided_copy_same_slot_new_object_preserves_amount_and_rejects_collision(), test_paid_linked_shape_change_migrates_untouched_old_secondary_and_specialized_receipt(), test_actual_graveyard_target_receipt_resolves_normally_or_fizzles_after_paid_exile(), blink(), cast() (+11 more)
+### Community 131 - "generic_import_fixtures.py"
+Cohesion: 0.10
+Nodes (30): frame(), paid_copy(), test_actual_conditional_copy_explicit_new_object_refreshes_conditional_and_generic_receipts(), test_paid_divided_copy_same_slot_new_object_preserves_amount_and_rejects_collision(), test_paid_linked_shape_change_migrates_untouched_old_secondary_and_specialized_receipt(), test_actual_graveyard_target_receipt_resolves_normally_or_fizzles_after_paid_exile(), blink(), cast() (+22 more)
 
 ### Community 132 - "test_control_layer_contract.py"
 Cohesion: 0.12
@@ -1378,20 +1371,20 @@ Cohesion: 0.26
 Nodes (18): tap_paid(), test_real_paid_tap_restrictions(), add(), drain(), frame_done(), land_boundary(), log(), optional() (+10 more)
 
 ### Community 134 - "test_dynamic_death_quantity.py"
-Cohesion: 0.20
-Nodes (26): add(), test_actual_bewilder_negative_and_zero_power_create_zero(), test_announced_x_spell_remains_distinct_from_departure_context(), test_dress_down_suppresses_self_death_quantity_trigger(), test_effective_power_includes_canonical_anthem(), test_foreign_owned_source_uses_death_controller_for_tokens(), test_frozen_lki_is_not_nested_dictionary_alias(), test_literal_counter_zero_and_other_counter_not_counted() (+18 more)
+Cohesion: 0.22
+Nodes (25): add(), test_actual_bewilder_negative_and_zero_power_create_zero(), test_announced_x_spell_remains_distinct_from_departure_context(), test_dress_down_suppresses_self_death_quantity_trigger(), test_effective_power_includes_canonical_anthem(), test_foreign_owned_source_uses_death_controller_for_tokens(), test_frozen_lki_is_not_nested_dictionary_alias(), test_literal_counter_zero_and_other_counter_not_counted() (+17 more)
 
 ### Community 135 - "original"
 Cohesion: 0.03
-Nodes (62): test_already_admitted_complete_escaped_body(), observe(), resolve_checked(), actual_entry_context_trace(), observed(), mounts(), observe(), checked() (+54 more)
+Nodes (61): resolve_checked(), actual_entry_context_trace(), observed(), mounts(), observe(), original(), inspect_lbf(), no_confidence() (+53 more)
 
 ### Community 136 - "test_knowledge_profile_sync.py"
 Cohesion: 0.11
-Nodes (19): canonical(), cli_repository(), function(), profile_api(), Repository, row(), test_bad_deck_context_does_not_write_a_mislabelled_profile(), test_cli_deck_context_uses_real_quantities_and_existing_archetype_analysis() (+11 more)
+Nodes (18): canonical(), cli_repository(), function(), profile_api(), Repository, row(), test_bad_deck_context_does_not_write_a_mislabelled_profile(), test_cli_deck_context_uses_real_quantities_and_existing_archetype_analysis() (+10 more)
 
-### Community 137 - "test_ai_public_mana_changes.py"
-Cohesion: 0.25
-Nodes (19): resource_change_plan(), add(), setup(), test_actual_artifact_cast_does_not_run_quoted_token_entry_ability(), test_actual_decisions_fix_access_or_hold_unhelpful_changes(), test_aura_targets_are_selected_by_actual_resource_gain(), test_canonical_aura_and_equipment_self_entry_matches_original_object_only(), test_draw_aura_keeps_resource_outcome_unknown() (+11 more)
+### Community 137 - "test_conditional_creature_types.py"
+Cohesion: 0.12
+Nodes (33): _count_controlled_type(), lose_life(), _has_subtype(), static_coverage_details(), fund_devotion(), position(), test_all_fifteen_canonical_gods_transition_at_exact_threshold(), test_becoming_noncreature_removes_attacker_and_return_does_not_rejoin() (+25 more)
 
 ### Community 138 - "KeeperBirthControls"
 Cohesion: 0.11
@@ -1402,40 +1395,40 @@ Cohesion: 0.28
 Nodes (18): activation(), checked(), test_paid_two_tokens_two_altars_deliberate_order_restart_and_exact_four_mills(), resolve(), restart_state(), setup(), snapshot(), test_actual_activation_replacement_empty_library_and_retained_controller() (+10 more)
 
 ### Community 140 - "test_browser_origin_policy.py"
-Cohesion: 0.05
-Nodes (35): observe_reveal(), BrowserOriginMiddleware, trusted_origins(), response(), endpoint(), send(), test_browser_ci_explicit_origin_reaches_real_policy(), test_default_policy_rejects_nondefault_ci_origin() (+27 more)
+Cohesion: 0.08
+Nodes (24): BrowserOriginMiddleware, trusted_origins(), response(), endpoint(), send(), test_browser_ci_explicit_origin_reaches_real_policy(), test_default_policy_rejects_nondefault_ci_origin(), dispatch() (+16 more)
 
-### Community 141 - "serialize_match"
-Cohesion: 0.12
-Nodes (21): serialize_match(), _without_knowledge_snapshot(), public_choice(), test_actual_paid_public_projection_preserves_internal_resume_and_order(), test_legacy_projection_branches_exact_protocol_only(), test_optional_display_fields_kept_projection_only(), actor_expected(), main_prompt() (+13 more)
-
-### Community 142 - "test_typed_resource_sacrifice_costs.py"
-Cohesion: 0.18
-Nodes (28): board(), compile_entry(), negative_text(), paid_entry(), test_adversarial_complete_body_native_paid_entry_never_rewards_life_or_draw(), test_complete_devotion_body_does_not_infer_a_missing_or_other_entry_source(), test_complete_raw_canonical_devotion_dispatch_has_live_resource_semantics(), test_full_canonical_paid_devotion_entry_resolves_and_preserves_real_frame() (+20 more)
-
-### Community 143 - "favor_lifecycle_support.py"
-Cohesion: 0.17
-Nodes (18): assert_outcome(), assert_private(), favor_action(), paid_to_search(), position(), record(), resolve_one(), response_action() (+10 more)
-
-### Community 144 - "test_knowledge_usage_trace_contract.py"
-Cohesion: 0.10
-Nodes (11): pure_snapshot_storage(), PureSnapshotRepository, SnapshotRepo, test_opening_quality_stays_with_deck_when_seats_alternate(), test_actual_trace_builder_exports_detached_anonymous_counts(), test_invalid_or_identity_rich_usage_never_reaches_private_trace(), test_legacy_missing_counters_are_omitted_not_claimed_as_zero(), test_real_analytics_decisions_forward_usage_to_trace_with_pure_snapshot_storage() (+3 more)
-
-### Community 146 - "passes"
+### Community 141 - "passes"
 Cohesion: 0.18
 Nodes (26): http_position(), test_actual_two_card_paid_discard_batch_explicit_order_restart(), test_paid_entry_trigger_survives_http_sqlite_restart_private_views(), test_real_resolving_shuffle_cause_retains_trigger_entry_reference(), test_wrong_actor_http_entry_reject_preserves_root_controller_sql(), test_actual_canonical_complete_instruction_compiles_without_mutating_source(), test_hand_source_and_incomplete_entry_are_not_a_graveyard_trigger(), test_missing_real_resolution_context_rejected_before_any_mutation() (+18 more)
 
+### Community 142 - "test_typed_resource_sacrifice_costs.py"
+Cohesion: 0.10
+Nodes (38): record(), test_current_full_canonical_march_cost_block_is_atomic(), test_current_fullbody_hint_diagnostic_does_not_enforce_announced_x_cap(), test_current_unsupported_fullbody_suffix_remains_cost_blocked(), zero_artifact_from_paid_sunfall(), compile_optional_hand_exile_discount(), _component(), fixed_cost_component() (+30 more)
+
+### Community 143 - "favor_lifecycle_support.py"
+Cohesion: 0.20
+Nodes (16): assert_outcome(), assert_private(), favor_action(), paid_to_search(), position(), record(), resolve_one(), response_action() (+8 more)
+
+### Community 144 - "test_knowledge_usage_trace_contract.py"
+Cohesion: 0.07
+Nodes (14): pure_snapshot_storage(), PureSnapshotRepository, SnapshotRepo, test_opening_quality_stays_with_deck_when_seats_alternate(), test_actual_trace_builder_exports_detached_anonymous_counts(), test_invalid_or_identity_rich_usage_never_reaches_private_trace(), test_legacy_missing_counters_are_omitted_not_claimed_as_zero(), test_real_analytics_decisions_forward_usage_to_trace_with_pure_snapshot_storage() (+6 more)
+
+### Community 146 - "settled_public_position"
+Cohesion: 0.13
+Nodes (37): opaque_exile_opportunities(), OpaqueExileOpportunity, settled_public_position(), position(), test_actual_copies_keep_fixed_counts_but_not_mana_spent(), test_announced_counter_prevents_selective_hand_gain(), test_filtered_creature_search_does_not_invent_hits(), test_fixed_selection_and_deliberate_bottom_order_survive_reload() (+29 more)
+
 ### Community 147 - "position"
-Cohesion: 0.18
-Nodes (23): _can_pay(), _ready_board(), resource_delta(), has_access(), _resource_value(), assert_access_delta(), capacity_delta(), discard() (+15 more)
+Cohesion: 0.17
+Nodes (24): _can_pay(), _ready_board(), resource_delta(), has_access(), _resource_value(), assert_access_delta(), capacity_delta(), discard() (+16 more)
 
 ### Community 148 - "test_paid_optional_view_consumer_audit.py"
-Cohesion: 0.19
-Nodes (19): test_actual_http_compound_self_cycling_search_and_draw(), act(), drain(), frozen(), install(), restore(), test_actual_http_cycle_or_discard_watcher_once_after_restart(), test_actual_http_replacement_order_and_self_trigger_restart() (+11 more)
+Cohesion: 0.18
+Nodes (16): test_actual_http_compound_self_cycling_search_and_draw(), act(), drain(), install(), offline_client(), restore(), test_actual_http_cycle_or_discard_watcher_once_after_restart(), test_actual_http_replacement_order_and_self_trigger_restart() (+8 more)
 
 ### Community 149 - "pending_source_privacy_support.py"
-Cohesion: 0.14
-Nodes (19): remembered_hand_card(), act(), add(), announce(), cast(), depart(), priority(), record() (+11 more)
+Cohesion: 0.33
+Nodes (13): act(), add(), announce(), cast(), depart(), priority(), record(), reenter() (+5 more)
 
 ### Community 150 - "Kicked-cast payoffs and decision guards"
 Cohesion: 0.06
@@ -1443,11 +1436,11 @@ Nodes (28): Checklist, Contract, Known Limitations and Next Upgrades, Replacemen
 
 ### Community 151 - "effective_power"
 Cohesion: 0.06
-Nodes (79): _active_card_surface(), _board_value(), choose_damage_trigger_target(), score(), _creature_value(), _noncreature_value(), recurring_engine_value(), repeatable_mana_value() (+71 more)
+Nodes (79): _active_card_surface(), _board_value(), choose_damage_trigger_target(), score(), _creature_value(), evaluate_inevitability(), _noncreature_value(), _planeswalker_count() (+71 more)
 
 ### Community 152 - "test_basic_land_layer_goldens.py"
-Cohesion: 0.24
-Nodes (27): add(), position(), public_query(), setter(), test_already_stacked_activation_survives_song_and_source_departure(), test_already_stacked_printed_trigger_survives_song_and_source_departure(), test_canonical_aura_cast_acceptance_is_not_layer_certification(), test_decision_projection_is_hidden_info_invariant_pure_and_fresh_process_replayable() (+19 more)
+Cohesion: 0.25
+Nodes (26): add(), position(), public_query(), setter(), test_already_stacked_activation_survives_song_and_source_departure(), test_already_stacked_printed_trigger_survives_song_and_source_departure(), test_canonical_aura_cast_acceptance_is_not_layer_certification(), test_decision_projection_is_hidden_info_invariant_pure_and_fresh_process_replayable() (+18 more)
 
 ### Community 153 - "test_knowledge_engine_coverage.py"
 Cohesion: 0.17
@@ -1462,12 +1455,12 @@ Cohesion: 0.23
 Nodes (19): restart(), evidence(), exclusive_local_source_required(), fresh_readonly_restore(), offered(), PaidTriggerContinuationMissing, position(), private_root() (+11 more)
 
 ### Community 156 - "test_basic_land_hooks.py"
-Cohesion: 0.22
-Nodes (21): add(), attach_song_fixture(), attached(), cast_song(), checked(), test_actual_converted_attachment_detaches_without_destroying_land(), test_actual_song_resolution_records_noncreature_colorless_lki(), test_converted_permanent_cannot_reattach_and_rejection_does_not_mutate() (+13 more)
+Cohesion: 0.26
+Nodes (18): add(), attached(), cast_song(), test_actual_converted_attachment_detaches_without_destroying_land(), test_actual_song_resolution_records_noncreature_colorless_lki(), test_converted_permanent_cannot_reattach_and_rejection_does_not_mutate(), test_existing_stack_ability_retains_true_departure_lki_and_resolves_after_restart(), test_live_source_color_uses_current_effective_characteristics() (+10 more)
 
 ### Community 157 - "test_soulless_jailer_action_goldens.py"
-Cohesion: 0.25
-Nodes (20): policy(), test_invalid_reanimate_target_rejects_before_payment(), test_paid_exile_response_fizzles_whole_reanimate_without_life_loss(), test_paid_reanimate_cage_blocks_entry_not_independent_life_loss(), test_paid_reanimate_full_mana_value_eight_once(), act(), board(), cast() (+12 more)
+Cohesion: 0.22
+Nodes (21): policy(), test_invalid_reanimate_target_rejects_before_payment(), test_paid_exile_response_fizzles_whole_reanimate_without_life_loss(), test_paid_reanimate_cage_blocks_entry_not_independent_life_loss(), test_paid_reanimate_full_mana_value_eight_once(), act(), board(), cast() (+13 more)
 
 ### Community 158 - "test_bestow.py"
 Cohesion: 0.21
@@ -1477,13 +1470,17 @@ Nodes (20): begin_bestow(), end_bestow(), is_bestowed(), test_hidden_zone_change
 Cohesion: 0.15
 Nodes (21): query_cache(), guarded(), execute(), reference(), rows(), test_actual_song_resolution_and_controlled_removal_refresh_game_loss_source(), test_each_construction_scope_is_immutable_and_nests_without_leaking(), audited_scope() (+13 more)
 
-### Community 161 - "test_resolution_conditions.py"
-Cohesion: 0.31
-Nodes (22): sacrifice_selected(), add(), cast(), position(), reload(), test_actual_ai_push_uses_effective_target_but_hints_keep_all_legal_creatures(), test_competing_damage_replacements_pause_reload_and_resume_once(), test_complete_parser_and_coverage_do_not_certify_adjacent_conditional_grammar() (+14 more)
+### Community 160 - "BackendCapacityTests"
+Cohesion: 0.10
+Nodes (3): BackendCapacityTests, replaced(), slow_cleanup()
 
-### Community 162 - "test_training_combat_intent_audit.py"
-Cohesion: 0.16
-Nodes (15): test_declared_combat_fixture_has_exact_restorable_ordinary_visit(), test_ordinary_fixture_helper_cannot_reposition_queued_schedule(), assert_assignment(), assert_outcome(), finish(), scenario(), test_combat_actor_input_ignores_opposing_hidden_identity_order(), inputs() (+7 more)
+### Community 161 - "test_fixture_binding_transitions.py"
+Cohesion: 0.36
+Nodes (10): assert_adopted(), definition(), test_bad_direct_install_rejects_before_controller_registry_or_callbacks(), test_direct_install_retains_real_birth_id_and_rekeys_callback_binding(), test_existing_multiword_archetype_birth_is_clean_and_cold_valid(), test_knowledge_identity_is_supplied_before_real_factory_capture(), test_multi_target_install_returns_the_retained_genuine_http_path(), test_overridden_noncreature_http_constructor_binds_before_position() (+2 more)
+
+### Community 162 - "test_ai_topdeck_deployment.py"
+Cohesion: 0.15
+Nodes (18): topdeck_deployment_value(), test_counterwar_reply_shortlist_retains_a_low_ranked_legal_pass(), test_shortlist_preserves_order_and_does_not_invent_or_duplicate_pass(), controlled_planner(), position(), test_completed_canonical_friendly_destruction_does_not_override_better_wait(), test_planner_preserves_highest_scored_action_for_every_style(), test_wait_is_evaluated_even_outside_shallow_shortlist() (+10 more)
 
 ### Community 164 - "test_training_reset_capture_birth.py"
 Cohesion: 0.10
@@ -1503,103 +1500,103 @@ Nodes (19): test_affected_controller_orders_compleated_against_doubling_across_s
 
 ### Community 168 - "json"
 Cohesion: 0.01
-Nodes (199): facts(), receipts(), test_full_inherited_raw_rows_match_provenance(), action_receipt(), facts(), test_exhaustive_deterministic_lossless_inventory(), test_missing_join_and_unrecognized_clause_never_promoted(), test_publish_execution_receipts() (+191 more)
+Nodes (212): facts(), receipts(), test_full_inherited_raw_rows_match_provenance(), action_receipt(), facts(), report(), test_exact_full155_delta_has_only_two_domain_reason_removals(), test_exhaustive_deterministic_lossless_inventory() (+204 more)
 
 ### Community 169 - "test_affinity.py"
-Cohesion: 0.25
-Nodes (19): setup(), test_ability_loss_suppresses_grant_not_artifact_characteristic(), test_added_artifact_type_counts_until_removal(), test_affinity_subjects_follow_actual_types_and_changeling(), test_artifacts_count_controlled_permanents_not_hand_or_enemy(), test_copied_creature_tokens_count_as_tokens_and_artifacts(), test_count_is_locked_before_sacrificing_a_mana_source(), test_discount_never_pays_colored_requirement() (+11 more)
+Cohesion: 0.13
+Nodes (35): setup(), test_ability_loss_suppresses_grant_not_artifact_characteristic(), test_added_artifact_type_counts_until_removal(), test_affinity_subjects_follow_actual_types_and_changeling(), test_artifacts_count_controlled_permanents_not_hand_or_enemy(), test_copied_creature_tokens_count_as_tokens_and_artifacts(), test_count_is_locked_before_sacrificing_a_mana_source(), test_discount_never_pays_colored_requirement() (+27 more)
 
 ### Community 170 - "test_ai_suspend_policy.py"
 Cohesion: 0.24
 Nodes (16): idle_suspend(), optional_cast(), test_actual_agent_fresh_process_snapshot_replay(), test_actual_agent_hand_and_last_counter(), test_actual_agent_normal_deployment_not_displaced(), test_actual_agent_required_decline_not_pass_loop(), agent(), moves() (+8 more)
 
 ### Community 171 - "ref_node_fs"
-Cohesion: 0.02
-Nodes (90): begin, end, source, archive, children, existing, fixtureRequest(), ports (+82 more)
+Cohesion: 0.03
+Nodes (59): begin, end, source, harness(), events(), finish(), request(), response() (+51 more)
 
-### Community 172 - "browser_fixture_server.py"
-Cohesion: 0.12
-Nodes (29): fixture_distinct_permanents(), fixture_history(), fixture_sideboard_pool(), fixture_simulation_job_count(), announce_pump(), board(), finish(), test_announced_hostile_pump_is_answered_through_actual_stack() (+21 more)
+### Community 172 - "test_ai_defensive_responses.py"
+Cohesion: 0.29
+Nodes (17): announce_pump(), board(), finish(), test_announced_hostile_pump_is_answered_through_actual_stack(), test_between_strike_steps_uses_remaining_damage_and_marked_damage(), test_canonical_compound_pump_keeps_both_clauses(), test_compound_indestructibility_preserves_blocker_that_pump_alone_cannot(), test_copy_stack_exhaustion_does_not_certify_partial_search() (+9 more)
 
 ### Community 173 - "ui_v2_fixture_server.py"
 Cohesion: 0.11
 Nodes (20): rules(), add(), cast(), reject(), row(), announced_color_cost(), cast_resources(), casting_payment() (+12 more)
 
-### Community 174 - "test_springheart_paid_body.py"
-Cohesion: 0.25
-Nodes (22): native_land_frame(), owned_tokens(), reach_payment(), resolve_response_only(), response_position(), test_conditional_resolution_payment_underfunded_accept_rejects_atomically(), test_live_source_host_blink_does_not_copy_new_incarnation(), test_simultaneous_source_and_host_departure_retains_complete_body() (+14 more)
+### Community 174 - "domain_paid_support"
+Cohesion: 0.17
+Nodes (28): native_land_frame(), owned_tokens(), reach_payment(), resolve_response_only(), response_position(), test_conditional_resolution_payment_underfunded_accept_rejects_atomically(), test_live_source_host_blink_does_not_copy_new_incarnation(), test_simultaneous_source_and_host_departure_retains_complete_body() (+20 more)
 
 ### Community 175 - "test_archangel_pair_paid_desired.py"
 Cohesion: 0.25
 Nodes (21): CostChoice, test_detached_complete_body_parser_denies_partial_or_unknown_paired_rewards(), test_paid_entry_under_canonical_public_humility_has_no_abilities_or_etbs(), test_paid_source_return_retains_explicit_count_and_lifelink_in_old_lki(), test_paid_split_targets_deliberate_order_and_independent_response(), act(), advance(), cast_pair() (+13 more)
 
 ### Community 176 - "ci_backend_evidence.py"
-Cohesion: 0.17
-Nodes (14): audit(), emit(), evidence_directory(), failure(), pytest_collection_finish(), pytest_collectreport(), pytest_deselected(), pytest_itemcollected() (+6 more)
+Cohesion: 0.12
+Nodes (18): Optional CI interruption observation, Qualification scopes, audit(), emit(), evidence_directory(), failure(), interruption_signature(), pytest_collection_finish() (+10 more)
 
 ### Community 177 - "test_static_global_keyword_contracts.py"
-Cohesion: 0.27
-Nodes (18): add(), board(), cast(), zone_seam(), test_actual_http_source_restore_then_matching_target_atomic_rejection(), test_black_equipment_cannot_equip_but_colorless_can(), test_block_consumer_observes_global_grant(), test_checked_black_equip_rejected_atomically() (+10 more)
+Cohesion: 0.21
+Nodes (20): add(), board(), cast(), zone_seam(), test_actual_http_source_restore_then_matching_target_atomic_rejection(), test_black_equipment_cannot_equip_but_colorless_can(), test_block_consumer_observes_global_grant(), test_checked_black_equip_rejected_atomically() (+12 more)
 
-### Community 178 - "game"
-Cohesion: 0.27
-Nodes (12): canonical(), digest(), game(), choose_action(), emit(), observer(), take_action(), probe() (+4 more)
+### Community 178 - "natural_ai_consumer_audit.py"
+Cohesion: 0.16
+Nodes (17): canonical(), digest(), game(), choose_action(), emit(), observer(), take_action(), probe() (+9 more)
 
 ### Community 179 - "test_loyalty_entry_lifecycle.py"
-Cohesion: 0.26
-Nodes (20): test_actual_ai_beneficial_aura_uses_same_settled_decline_baseline(), action(), cold(), hand_entry(), position(), test_already_offered_land_payment_rechecks_current_affordability(), test_already_offered_payment_rechecks_new_ability_loss(), test_attachment_choice_cannot_follow_departed_returned_target() (+12 more)
+Cohesion: 0.29
+Nodes (18): action(), hand_entry(), position(), test_already_offered_land_payment_rechecks_current_affordability(), test_already_offered_payment_rechecks_new_ability_loss(), test_attachment_choice_cannot_follow_departed_returned_target(), test_aura_without_legal_attachment_remains_private_in_hand(), test_command_emblem_is_public_and_persisted_not_a_battlefield_target() (+10 more)
 
 ### Community 180 - "Static Aura Control-Layer Handoff"
 Cohesion: 0.25
 Nodes (7): Final Ordering Review And Qualification, Frozen Evidence And Findings, Historical Parent Verification, Immutable Inputs, Integration And Limits, Invariants, Static Aura Control-Layer Handoff
 
-### Community 181 - "test_creature_observer_audit.py"
-Cohesion: 0.22
-Nodes (14): observer_items(), optional(), position(), test_existing_optional_handler_control_real_paid_death(), test_observer_filters_on_paid_real_actions(), test_offline_compiler_probe_from_actual_emitted_event(), test_paid_observer_deliberate_optional_draw(), test_source_departure_response_does_not_cancel_observer() (+6 more)
+### Community 181 - "test_task23_numeric_priority_baseline.py"
+Cohesion: 0.11
+Nodes (24): removal_move(), test_actual_cast_bias_reads_validated_numeric_carrier_and_replaces_low_premium(), observed(), test_actual_indexed_cast_face_identity_and_mismatch_are_checked(), test_genuine_humility_prospective_entry_keeps_exact_legacy_deployment(), test_genuine_pending_growth_keeps_exact_legacy_priority_not_tier_demote(), test_low_printed_tier_counters_preserve_effective_big_pressure(), test_unavailable_priority_is_none_and_entire_legacy_cast_branch_is_exact() (+16 more)
 
 ### Community 182 - "test_temporary_characteristics_http.py"
 Cohesion: 0.05
-Nodes (50): isolated_api(), api_context(), source_default_identity(), source_lease(), import_proof(), install_guard(), run(), ambient_simulation_state() (+42 more)
+Nodes (54): bootstrap_transition(), isolated_api(), api_context(), owned_database(), source_default_identity(), source_lease(), import_proof(), install_guard() (+46 more)
 
 ### Community 183 - "test_paid_optional_payment_edges.py"
-Cohesion: 0.13
-Nodes (30): resolution_mana_payment(), test_canonical_paid_records_are_pinned(), test_supported_optional_trigger_payment_has_no_free_effect(), tokens(), decide(), lunar_position(), pending(), test_actual_http_interrupted_real_mana_replay_rolls_back_everything() (+22 more)
+Cohesion: 0.16
+Nodes (31): resolution_mana_payment(), frozen(), decide(), lunar_position(), pending(), test_actual_http_interrupted_real_mana_replay_rolls_back_everything(), test_actual_http_paid_draw_reward_continuation_restore(), test_actual_http_unavailable_accept_is_atomic_and_decline_restores() (+23 more)
 
 ### Community 184 - "test_three_paid_originals.py"
 Cohesion: 0.27
 Nodes (16): facts(), test_paid_seedshark_flying_blocks_and_actual_damage(), act(), add(), cast(), position(), receipt(), resolve() (+8 more)
 
 ### Community 185 - "Competitive table v2"
-Cohesion: 0.09
-Nodes (20): test_symlink_sidecars_nfs_and_database_size_refused(), nfs(), Competitive table v2, Delivered presentation, Evidence and visual review, Executed verification, Independent coordinator verification, Inspection and implementation plan (+12 more)
+Cohesion: 0.10
+Nodes (19): test_symlink_sidecars_nfs_and_database_size_refused(), nfs(), Competitive table v2, Delivered presentation, Evidence and visual review, Executed verification, Independent coordinator verification, Inspection and implementation plan (+11 more)
 
-### Community 186 - "test_profile_batch_context.py"
-Cohesion: 0.15
-Nodes (16): sync(), canonical_rows(), encoded(), legacy_corpus(), PublicMemoryRows, small(), test_all155_outputs_match_frozen8ad_including_faces_and_future_metadata(), test_batch_normalizes_analyzes_and_fingerprints_corpus_once() (+8 more)
+### Community 186 - "KnowledgeSnapshotContract"
+Cohesion: 0.18
+Nodes (5): KnowledgeSnapshotContract, position(), test_empty_observation_knowledge_is_omitted_like_card_without_live_mutation(), test_nonempty_verified_observation_knowledge_survives_private_roundtrip(), test_omission_never_silently_erases_other_advisory_or_observation_data()
 
-### Community 187 - "test_fixture_state_adoption.py"
-Cohesion: 0.14
-Nodes (14): copy_facts(), controlled_library_position(), test_controlled_constructor_preserves_every_non_capture_position_field(), test_controlled_library_is_initially_unknown_not_recaptured_stock(), test_explicit_adoption_cannot_repair_corrupt_factory_capture(), test_explicit_http_fixture_keeps_factory_uuid_and_capture(), test_original_factory_corruption_still_rejects_without_repair(), test_original_factory_position_keeps_full_birth_stock() (+6 more)
+### Community 187 - "resolve_effect"
+Cohesion: 0.03
+Nodes (122): resolve_effect(), build_ability_spec(), validate_cast_choice(), clear_control_effects(), clear_type_effects(), controlled_basic_game(), _state_with_target(), test_bounce_ability_spec_is_not_marked_as_oracle_fallback() (+114 more)
 
 ### Community 188 - "test_paid_trigger_ai_integration_audit.py"
 Cohesion: 0.19
 Nodes (19): _response_window(), finish_response(), position(), response_window(), test_actual_dredge_prefix_remains_unknown_and_root_pure(), test_actual_family_choice_with_complete_checked_response_witness(), test_preserve_real_lifegain_response_not_only_counters(), actual_choice() (+11 more)
 
-### Community 189 - "Gate 1: Reliable local human-playtesting beta"
+### Community 189 - "MTG Deck Testing Lab Finish Plan"
+Cohesion: 0.07
+Nodes (27): 10. Verify corpus and finish knowledge consumers, 11. Validate semantics across rule families, 12. Measure and improve decisions across archetypes, 13. Run seeded matrices and replay/restart gates, 14. Test production API and media routing, 15. Bound jobs and concurrent mutations, 16. Verify installation and long-session operation, 1. Make clean checkout assets reproducible (P1) (+19 more)
+
+### Community 190 - "test_ai_turn25_race.py"
 Cohesion: 0.20
-Nodes (10): 1. Make clean checkout assets reproducible (P1), 2. Unify live and diagnostic hydration (P1), 3. Expose truthful effective card views (P1), 4. Share draw/discard event paths and choices (P1), 5. Render legal actions for the acting seat (P1), 6. Validate API requests before mutation (P2), 7. Restore matches and coordinate UI mutations (P2), 8. Share BO3 transitions and seed provenance (P2) (+2 more)
+Nodes (17): high_life_board(), next_public_attack(), reconstructed_board(), record_submitted_blocks(), resolve_blocks(), test_adeline_characteristic_power_and_vigilance_not_stored_base_power(), test_forecast_budget_keeps_baseline_when_only_unvisited_line_would_win(), forecast() (+9 more)
 
-### Community 190 - "test_paid_preflight.py"
-Cohesion: 0.19
-Nodes (16): test_bounded_selection_is_atomic(), test_embedded_unknown_parenthetical_cannot_hide_linked_body(), test_real_paid_response_invalidates_one_bounded_target(), test_unknown_parenthetical_is_not_a_reminder(), test_unknown_resource_reminder_is_rejected(), test_whitespace_cannot_hide_unknown_x_token_body(), test_mixed_bounded_target_announcements_are_atomic(), test_singular_bounded_target_uses_native_single_target_frame() (+8 more)
+### Community 191 - "serialize_match_snapshot"
+Cohesion: 0.02
+Nodes (207): test_canonical_paid_damage_execution_and_restore(), test_already_admitted_complete_escaped_body(), observe(), known_search_land_count(), counter_spell(), deserialize_match_snapshot(), serialize_match_snapshot(), effective_combat_stats() (+199 more)
 
-### Community 191 - "deserialize_match_snapshot"
-Cohesion: 0.03
-Nodes (162): counter_spell(), resolve_effect(), deserialize_match_snapshot(), build_ability_spec(), validate_cast_choice(), effective_combat_stats(), damage_gain_position(), test_common_beneficial_polarity_does_not_guess_unknown_history() (+154 more)
-
-### Community 192 - "rules_engine/__init__.py"
-Cohesion: 0.10
-Nodes (21): add(), test_ability_already_on_stack_remains_independent_after_its_source_loses_abilities(), test_entry_trigger_already_stacked_is_not_removed_by_later_suppression(), test_entry_trigger_suppression_does_not_change_printed_oracle_and_restores_when_source_leaves(), test_http_suppression_survives_sqlite_restore_and_rejects_mana_and_ability_writes(), test_real_dress_down_keeps_its_enchantment_entry_draw_and_only_suppresses_creatures(), test_suppressed_activated_ability_hidden_and_checked_write_is_atomic(), test_suppressed_mana_creature_cannot_fund_spells_or_reappear_after_keyword_grant() (+13 more)
+### Community 192 - "test_ability_suppression.py"
+Cohesion: 0.08
+Nodes (31): test_another_tap_target_rejects_its_source_without_costs(), test_artifact_discount_is_locked_before_treasure_is_consumed_for_mana(), source(), test_checked_payment_and_effect_resolution_use_selected_discount(), test_conditional_discount_checked_activation_and_real_effect(), test_controlled_creature_conditions_are_not_global(), test_counts_are_live_controller_relative_colored_and_snapshot_safe(), test_missing_or_unrelated_ability_index_does_not_apply_card_discount() (+23 more)
 
 ### Community 193 - "Legendary Channel Lands and Shared Resolution Choices"
 Cohesion: 0.08
@@ -1610,35 +1607,35 @@ Cohesion: 0.08
 Nodes (23): Canonical evidence and rules, Combat ability provenance and stack timing, Implemented increment, Known Limitations and Next Upgrades, Validation, Acceptance evidence, AI scope, Combat keyword triggers and delayed sacrifice (+15 more)
 
 ### Community 195 - "AIAgent"
-Cohesion: 0.03
-Nodes (138): AIAgent, knowledge_snapshot(), complete_card_bookkeeping(), test_aggro_ai_avoids_suicide_attack_into_larger_blocker(), test_aggro_ai_mulligans_hand_without_early_pressure(), test_aggro_ai_prefers_creature_development_over_burn_early(), test_aggro_cast_bias_values_stronger_modal_face_higher(), test_aggro_modal_face_prefers_creature_face_when_board_is_empty() (+130 more)
+Cohesion: 0.05
+Nodes (85): AIAgent, complete_card_bookkeeping(), test_aggro_ai_avoids_suicide_attack_into_larger_blocker(), test_aggro_ai_mulligans_hand_without_early_pressure(), test_aggro_ai_prefers_creature_development_over_burn_early(), test_aggro_cast_bias_values_stronger_modal_face_higher(), test_aggro_modal_face_prefers_creature_face_when_board_is_empty(), test_aggro_prefers_token_mode_over_draw_when_board_is_empty() (+77 more)
 
 ### Community 196 - "test_brainstorm_continuation_goldens.py"
 Cohesion: 0.32
 Nodes (20): test_actual_draw_replacement_six_draws_then_exactly_two_put(), test_actual_dredge_pause_then_remaining_draws_then_put(), test_direct_helper_short_hand_as_much_as_possible_protocol(), test_existing_ai_materializes_legal_private_order(), test_explicit_topmost_first_order_survives_restore(), test_invalid_pending_selection_full_root_atomic(), test_pending_hand_options_private_and_returned_library_opaque(), test_whole_public_choice_intent_preserves_explicit_order() (+12 more)
 
 ### Community 197 - "SpreeCase"
-Cohesion: 0.19
-Nodes (4): SpreeCase, test_real_paid_private_actor_choices_and_cold_lifespan(), test_real_paid_response_removes_last_alternative_without_pending(), Proof
+Cohesion: 0.16
+Nodes (5): SpreeCase, offline_decks(), test_real_paid_private_actor_choices_and_cold_lifespan(), test_real_paid_response_removes_last_alternative_without_pending(), Proof
 
 ### Community 198 - ".route"
-Cohesion: 0.21
-Nodes (3): SeriesResourceContinuationTests, begin_game(), __init__()
+Cohesion: 0.19
+Nodes (4): SeriesResourceContinuationTests, begin_game(), checked(), __init__()
 
 ### Community 199 - "browser-vendor-preflight.mjs"
-Cohesion: 0.24
-Nodes (18): command(), describeInstalledPath(), fail(), installedVendor(), main(), metadataEnvironment, nativeReport(), ownedReport() (+10 more)
+Cohesion: 0.22
+Nodes (20): command(), describeInstalledPath(), fail(), installedVendor(), main(), metadataEnvironment, nativeReport(), observeVendorChild() (+12 more)
 
-### Community 200 - "card_color_symbols"
-Cohesion: 0.03
-Nodes (104): source(), test_canonical_layer_grant_and_departure_restore(), test_complete_canonical_instruction_retains_no_subtype_and_explicit_mana(), test_generic_parameter_not_a_card_name(), test_land_setting_source_ability_loss_ends_its_target_effect(), test_later_creature_ability_loss_cannot_suppress_noncreature_land_grant(), test_unknown_whole_body_is_not_erased(), test_paid_target_loses_creature_type_retains_object_ban() (+96 more)
+### Community 200 - "has_keyword"
+Cohesion: 0.04
+Nodes (65): test_paid_target_loses_creature_type_retains_object_ban(), test_paid_unknown_complete_body_never_partially_removes(), test_all_kinds_share_actual_paid_duration_predicate(), test_original_desired_upstream_contract(), intrinsic_land(), _matches(), supported_subject(), creature_subtype_candidates() (+57 more)
 
 ### Community 202 - "test_loyalty_ai_continuations.py"
-Cohesion: 0.21
-Nodes (15): decide(), setup(), test_actual_ai_all_stale_optional_hand_offers_choose_zero(), test_actual_ai_attachment_uses_live_offered_target_not_returned_object(), test_actual_ai_aura_attachment_uses_offered_choice_id(), test_actual_ai_choices_ignore_unobserved_opponent_names_and_metadata(), test_actual_ai_hand_selection_does_not_follow_stale_incarnation(), test_actual_ai_hand_selection_respects_zero_subset_max_and_private_receipts() (+7 more)
+Cohesion: 0.20
+Nodes (17): decide(), setup(), test_actual_ai_all_stale_optional_hand_offers_choose_zero(), test_actual_ai_attachment_uses_live_offered_target_not_returned_object(), test_actual_ai_aura_attachment_uses_offered_choice_id(), test_actual_ai_choices_ignore_unobserved_opponent_names_and_metadata(), test_actual_ai_hand_selection_does_not_follow_stale_incarnation(), test_actual_ai_hand_selection_respects_zero_subset_max_and_private_receipts() (+9 more)
 
 ### Community 203 - "browser-human-flow-audit.mjs"
-Cohesion: 0.11
+Cohesion: 0.12
 Nodes (24): archive, children, existing, fixtureRequest(), ports, ready(), requests, restartBackend() (+16 more)
 
 ### Community 204 - "module"
@@ -1646,16 +1643,16 @@ Cohesion: 0.19
 Nodes (3): BackendStorageTests, full_volume(), module()
 
 ### Community 205 - "events.py"
-Cohesion: 0.05
-Nodes (67): protect_source(), record_event(), preferred_trigger_order(), source_view(), _advance_trigger_target(), _append_trigger_groups(), _cast_clause_trigger(), _cast_event_source() (+59 more)
+Cohesion: 0.04
+Nodes (82): choose_effect_foretell_card(), value(), idle_foretell_action(), protect_source(), record_event(), preferred_trigger_order(), source_view(), _advance_trigger_target() (+74 more)
 
-### Community 206 - "test_temporary_control_lifecycle_http_audit.py"
-Cohesion: 0.25
-Nodes (16): client(), collected(), collect(), cleanup(), persist(), source_land(), test_paid_ray_cold_restart_retains_real_cleanup_stack_then_tap_and_repeat(), test_real_http_cleanup_response_blink_never_taps_new_incarnation() (+8 more)
+### Community 206 - "sql_facts"
+Cohesion: 0.09
+Nodes (51): assert_observers(), assert_outcomes(), assert_private(), assert_publication_frontier(), client(), collected(), collect(), http_position() (+43 more)
 
 ### Community 207 - "test_task33_extracted_context.py"
-Cohesion: 0.24
-Nodes (16): _cast_context(), _opponent_archetype(), _qualified_export_contexts(), record(), _board_role_hint(), _feature_row(), event(), test_absent_invalid_or_conflicting_context_is_unavailable() (+8 more)
+Cohesion: 0.30
+Nodes (12): _board_role_hint(), _feature_row(), event(), test_absent_invalid_or_conflicting_context_is_unavailable(), test_alias_normalization_matches_existing_semantics(), test_context_without_index_remains_unqualified(), test_explicit_nonnegative_integer_index_has_no_new_cap(), test_invalid_action_index_is_omitted() (+4 more)
 
 ### Community 208 - "What to fix and how — worker-authored, Jev-evaluated bounded proposals"
 Cohesion: 0.08
@@ -1670,40 +1667,40 @@ Cohesion: 0.10
 Nodes (18): start(), helper(), Process, roots(), test_archive_write_failure_retains_originals_and_fails_teardown(), fail(), test_foreign_or_unsupported_roots_are_never_deleted(), test_full_members_bytes_empty_dirs_proven_before_both_roots_removed() (+10 more)
 
 ### Community 211 - "test_restricted_mana.py"
-Cohesion: 0.21
-Nodes (20): add(), equip_state(), tap(), test_actual_artifact_activation_uses_cost_context_without_spell_tax(), test_actual_artifact_cast_preserves_unrestricted_pool_when_color_is_shared(), test_actual_creature_cast_uses_ready_restricted_sources(), test_ai_does_not_invent_payable_restricted_mana(), test_ai_reserves_restricted_source_only_for_a_payable_postcombat_spell() (+12 more)
+Cohesion: 0.12
+Nodes (28): add(), equip_state(), tap(), test_actual_artifact_activation_uses_cost_context_without_spell_tax(), test_actual_artifact_cast_preserves_unrestricted_pool_when_color_is_shared(), test_actual_creature_cast_uses_ready_restricted_sources(), test_ai_does_not_invent_payable_restricted_mana(), test_ai_reserves_restricted_source_only_for_a_payable_postcombat_spell() (+20 more)
 
 ### Community 212 - "human-actions-browser.md"
 Cohesion: 0.10
 Nodes (13): Current validation milestone: bounded Jev second opinion, Crew Stack Timing, Human action browser regression, Checks, Implemented Boundary, Land Faces and Adventure Permissions, Still Open, Match recovery regression (+5 more)
 
 ### Community 213 - "Current Execution Order"
-Cohesion: 0.05
-Nodes (41): 10. Verify corpus and finish knowledge consumers, 11. Validate semantics across rule families, 12. Measure and improve decisions across archetypes, 13. Run seeded matrices and replay/restart gates, 14. Test production API and media routing, 15. Bound jobs and concurrent mutations, 16. Verify installation and long-session operation, Aura And Offline Import Metadata (Qualified Candidate) (+33 more)
+Cohesion: 0.08
+Nodes (24): Aura And Offline Import Metadata (Qualified Candidate), Backend Dependency Compatibility, Corrected Self-Trigger Shared-Source Gate, Counter Costs And Seed Data Shared-Source Acceptance, Current Execution Order, Entry Bookkeeping And Complete Article Mill, Friendly Damage And Media Cache Recovery, Land/Pass And State-Based-Action Composition (+16 more)
 
 ### Community 214 - "Announced Spell Cost Modifiers"
 Cohesion: 0.08
 Nodes (19): Announced Spell Cost Modifiers, Evidence, Implemented Scope, Known Limitations And Next Upgrades, Consolidated Backend Qualification, Known Limitations And Next Upgrades, Verified, Graveyard Play Permissions (+11 more)
 
 ### Community 215 - "test_aura_costs.py"
-Cohesion: 0.26
-Nodes (21): add_mana_to_pool(), add(), cast(), discounted(), test_ai_preserves_source_permission_flags_in_checked_aura_action(), test_aura_projection_resolves_real_heroic_trigger_before_valuing_attachment(), test_countered_discounted_aura_does_not_attach_or_refund_cost(), test_discount_does_not_consume_artifact_only_mana() (+13 more)
+Cohesion: 0.16
+Nodes (33): attach_if_legal(), add_mana_to_pool(), add(), cast(), discounted(), test_ai_preserves_source_permission_flags_in_checked_aura_action(), test_aura_projection_resolves_real_heroic_trigger_before_valuing_attachment(), test_countered_discounted_aura_does_not_attach_or_refund_cost() (+25 more)
 
-### Community 216 - "trigger-order-picker.mjs"
-Cohesion: 0.15
-Nodes (14): base, button(), buttons(), walk(), pickerElement(), walk(), props, React (+6 more)
+### Community 216 - "DeckParser"
+Cohesion: 0.09
+Nodes (16): fuzzy_card_lookup(), normalize_card_lookup_name(), DeckParser, ParsedDeck, _DeckRow, _FakeRecord, _FakeRepo, _FakeSession (+8 more)
 
 ### Community 217 - "test_modal_targetless_announcement.py"
-Cohesion: 0.12
-Nodes (47): ModeTarget, _infer_closed_damage_instruction(), permanent(), test_forged_aliases_reject_atomic_checked_cast_not_because_outer_compiler_falls_back(), test_native_mode_validator_does_not_let_nested_mode_alias_change_target_restrictions(), test_native_mode_validator_enforces_type_nonbasic_and_protection_without_compiler(), test_paid_full_body_damage_targets_real_canonical_planeswalker_not_creature_or_player(), test_unknown_unselected_tail_still_rejects_full_envelope_and_internal_single_probe() (+39 more)
+Cohesion: 0.11
+Nodes (46): ModeTarget, permanent(), test_forged_aliases_reject_atomic_checked_cast_not_because_outer_compiler_falls_back(), test_native_mode_validator_does_not_let_nested_mode_alias_change_target_restrictions(), test_native_mode_validator_enforces_type_nonbasic_and_protection_without_compiler(), test_paid_full_body_damage_targets_real_canonical_planeswalker_not_creature_or_player(), test_unknown_unselected_tail_still_rejects_full_envelope_and_internal_single_probe(), cast() (+38 more)
 
 ### Community 218 - "Prioritized findings"
 Cohesion: 0.09
 Nodes (22): Artifacts and remaining verification, Bottom line, Completion roadmap and acceptance gates, Executed checks and results, Gap to the intended finished product, Gate 1 — Reliable local human-playtesting beta (highest priority), Gate 2 — Trustworthy supported-corpus simulator, Gate 3 — Packaged release and operational hardening (+14 more)
 
-### Community 219 - "test_qualified_spell_costs.py"
-Cohesion: 0.33
-Nodes (14): announcement(), setup(), test_actual_goblin_entry_token_is_an_eligible_lower_loss_payment(), test_all_ai_tiers_materialize_eligible_payment_and_checked_cast(), test_candidates_are_owned_controlled_present_and_exact(), test_color_cost_uses_actual_colors_not_mana_abilities_or_identity(), test_controlled_opponent_owned_resource_goes_to_its_owners_graveyard(), test_controller_damage_uses_prevention_and_fizzles_with_its_only_target() (+6 more)
+### Community 219 - "test_ai_knowledge_profile_consumer.py"
+Cohesion: 0.10
+Nodes (24): copy_snapshot(), _metadata_covered(), fixture(), test_actual_face_roster_change_and_boolean_index_are_rejected(), test_actual_front_face_zero_and_unselected_composite_are_distinct(), test_changed_live_oracle_uses_current_legacy_tags_not_stale_profile(), test_client_supplied_carrier_is_dropped_before_hydration_even_with_valid_seal(), test_cold_known_memory_cannot_bypass_semantic_carrier_validation() (+16 more)
 
 ### Community 221 - "test_suncleanser_desired.py"
 Cohesion: 0.36
@@ -1713,33 +1710,33 @@ Nodes (13): advance_main(), choose_public(), cold(), count(), drain(), paid(), p
 Cohesion: 0.23
 Nodes (19): _read_training_run_examples(), _read_training_run_logs(), _training_records(), canonical(), digest(), protocol_packet(), reseal(), run_export() (+11 more)
 
-### Community 223 - "seed_card_payload"
-Cohesion: 0.05
-Nodes (57): seed_card_payload(), add_to_stack(), record_spell_colors(), aftermath_state(), cast_mind(), test_aftermath_half_rejected_outside_graveyard_without_mutation(), test_aftermath_insufficient_cost_rejected_without_mutation(), test_aftermath_replaces_every_requested_stack_destination() (+49 more)
+### Community 223 - "test_opening_hand.py"
+Cohesion: 0.20
+Nodes (22): can_begin_on_battlefield(), enter_conditional(), test_ai_completes_exile_instruction_with_a_legal_remaining_card(), test_bulk_tap_filters_same_name_by_actual_output_before_counting(), test_empty_followup_hand_does_not_turn_exile_instruction_into_cost(), test_nonstarter_entry_counter_then_mandatory_exile_survives_snapshot(), test_starter_cannot_use_conditional_permission_and_may_decline(), test_ai_completes_opening_counter_choice_and_followup_without_mulligan() (+14 more)
 
 ### Community 224 - "test_soulscar_affected_order_goldens.py"
-Cohesion: 0.27
-Nodes (19): act(), announce_damage(), choose(), episode(), observe_damage(), paid_spell(), record(), reload_exact() (+11 more)
+Cohesion: 0.24
+Nodes (21): test_actual_paid_nontargeted_black_damage_offers_matching_protection_order(), act(), announce_damage(), choose(), episode(), observe_damage(), paid_spell(), record() (+13 more)
 
 ### Community 225 - "test_private_choice_epoch_fingerprint.py"
 Cohesion: 0.19
 Nodes (13): audit(), execute(), __init__(), iterdump(), owned(), dump(), fingerprint(), ledger() (+5 more)
 
-### Community 226 - "test_damage_source_controller_audit.py"
-Cohesion: 0.15
-Nodes (37): _validate_damage_activation_source(), live(), reject_pure(), test_actual_cast_prowess_frame_remains_outside_native_activation_guard(), test_actual_paid_target_bounce_valid_fizzle_or_early_bad_lki_rejection(), test_bad_departed_receipt_rejected_before_target_fizzle_including_containers(), test_child_lki_cannot_override_valid_root_receipt_with_wrong_incarnation(), test_disappeared_source_card_still_resolves_with_real_retained_lki() (+29 more)
+### Community 226 - "test_noncombat_clause_source_boundaries.py"
+Cohesion: 0.24
+Nodes (22): add(), cast(), priority(), record(), resolve_announced(), send(), setup(), test_actual_opposing_twincast_damage_uses_copy_controller_after_original_departure() (+14 more)
 
-### Community 227 - "test_interface_scope_current_delta.py"
-Cohesion: 0.14
-Nodes (18): compatible_product_hash(), _restore(), restore_keyword_edges(), restore_reviewed_source(), restore_worker_platform(), test_actual_current_main_requires_both_exact_historical_inverses(), test_actual_private_fixture_restores_only_reviewed_delver_identity_clause(), test_every_current_main_hunk_mutation_is_rejected() (+10 more)
+### Community 227 - "test_combat_keyword_triggers.py"
+Cohesion: 0.19
+Nodes (25): add(), attack(), end_combat(), settle(), test_actual_stifle_counters_each_decayed_stage_without_a_later_sacrifice(), test_combat_projection_does_not_rank_unknown_choice_or_newly_drawn_hidden_cards(), test_combat_projection_finishes_decayed_sacrifice_before_scoring_board(), test_decayed_counter_blocks_and_attacks_then_uses_two_distinct_counterable_triggers() (+17 more)
 
 ### Community 228 - "test_multi_target_immediate_return.py"
 Cohesion: 0.18
 Nodes (33): canonical(), case(), cast(), install(), request(), resolve(), restore(), send() (+25 more)
 
-### Community 229 - "damage_results.py"
-Cohesion: 0.17
-Nodes (16): deal_damage_batch(), _gain_lifelink_from_damage(), capture_hand_source_context(), damage_controller(), damage_lifelink_beneficiary(), damage_source_control(), source_has_keyword(), validate_hand_damage_continuation() (+8 more)
+### Community 229 - "activate_mana_ability"
+Cohesion: 0.27
+Nodes (15): activate_mana_ability(), spec(), test_ambiguous_manual_output_requires_bundle_but_planner_still_works(), test_bog_witch_binds_exact_discard_and_pays_once(), test_complete_mixed_filterland_base_with_explicit_announcement(), test_explicit_base_anchor_is_not_final_replacement_or_bonus_color(), test_filterland_automatic_affordability_and_payment(), test_filterland_base_replacements_are_not_flattened_choices() (+7 more)
 
 ### Community 230 - "ci_backend_storage.py"
 Cohesion: 0.22
@@ -1753,33 +1750,33 @@ Nodes (14): activate(), add(), expected_transition(), test_counter_dependent_dea
 Cohesion: 0.34
 Nodes (22): act(), add(), announcement(), board(), cast(), passes(), priority(), reload() (+14 more)
 
-### Community 233 - "test_deck_service_metadata.py"
-Cohesion: 0.21
-Nodes (7): _FakeCard, _FakeRecord, _FakeRepo, test_import_curve_and_colors_use_cached_oracle_metadata(), card(), test_import_curve_does_not_invent_cost_for_missing_metadata(), test_import_deck_text_exposes_resolved_card_metadata()
+### Community 233 - "test_knowledge_gap_report_fields.py"
+Cohesion: 0.23
+Nodes (20): test_declared_multiface_missing_surfaces_remain_unavailable(), cached(), field(), knowledge(), report(), Rows, test_blank_canonical_surface_is_not_missing_or_repaired_by_cache(), test_face_blankness_uses_requested_surface_and_unknown_not_zero() (+12 more)
 
 ### Community 234 - "MatchState"
 Cohesion: 0.02
-Nodes (215): _crackback_risk(), choose_effect_foretell_card(), value(), idle_foretell_action(), evaluate_inevitability(), _planeswalker_count(), add_counters_each_creature(), add_mana() (+207 more)
+Nodes (313): preferred_recipients(), add_counters_each_creature(), add_mana(), attack_count_reward(), bind_creature_spell_entry_counter(), cast_from_graveyard(), change_control(), choose_graveyard_return() (+305 more)
 
 ### Community 235 - "test_mixed_entry_origin_audit.py"
-Cohesion: 0.20
+Cohesion: 0.21
 Nodes (7): finish_priority(), paid_source(), record(), test_strict_full_canonical_conditional_source_does_not_arm_unconditional_packet(), test_strict_full_canonical_fenrir_first_chapter_is_real_search_before_one_shot(), test_real_published_frame_retains_source_pre_after_paid_bounce(), test_strict_paid_fenrir_next_cast_publishes_real_delayed_trigger()
 
-### Community 236 - "pending_effects.py"
+### Community 236 - "effective_types"
 Cohesion: 0.02
-Nodes (107): Assignment, Boundaries, Investigation checklist, Known evidence, Regression Agent: Master AI Planning Performance Investigation, score_land(), entry_score(), continuation() (+99 more)
+Nodes (127): Assignment, Boundaries, Investigation checklist, Known evidence, Regression Agent: Master AI Planning Performance Investigation, payable(), score_land(), entry_score() (+119 more)
 
 ### Community 237 - "test_private_choice_restart_audit_contract.py"
 Cohesion: 0.28
 Nodes (17): pair(), projected(), prove(), row(), test_default_new_projection_keeps_raw_epoch_and_whole_ledger(), test_full_capacity_cells_have_exact_types_and_epoch_binding(), test_genuine_pair_projection_is_explicit_and_nonmutating(), test_new_contract_rejects_malformed_members() (+9 more)
 
 ### Community 238 - "test_color_consumer_goldens.py"
-Cohesion: 0.23
-Nodes (15): add(), _counterfactual_position(), no_database_or_network(), resolve_copy(), restart(), retained_damage(), test_actual_departure_old_black_ability_cannot_use_new_colorless_incarnation(), test_actual_song_changes_color_condition_without_printed_identity_leak() (+7 more)
+Cohesion: 0.19
+Nodes (19): attach_song_fixture(), checked(), add(), _counterfactual_position(), no_database_or_network(), resolve_copy(), restart(), retained_damage() (+11 more)
 
-### Community 239 - "test_compleated_loyalty_full.py"
-Cohesion: 0.20
-Nodes (16): reject(), test_actual_paid_permanent_spell_copy_suppresses_source_life_payment(), test_full_canonical_checked_cast_all_hybrid_branches(), test_generic_complete_families_are_not_a_card_name_allowlist(), test_new_hint_delegate_does_not_parse_unrelated_or_full_card_surfaces(), test_rejected_hybrid_payments_leave_entire_root_unmodified(), test_reminder_accounting_is_exact_not_keyword_admission(), test_unknown_full_body_tails_reject_cast_root_pure() (+8 more)
+### Community 239 - "ResourceMetadataTests"
+Cohesion: 0.12
+Nodes (3): replay(), ResourceMetadataTests, StringSubclass
 
 ### Community 240 - "test_modal_fixture_identity.py"
 Cohesion: 0.19
@@ -1789,9 +1786,9 @@ Nodes (13): assert_bound(), assert_mystic_stock(), BirthCaptured, opponent_rows(
 Cohesion: 0.13
 Nodes (30): test_actual_paid_complete_targeted_loyalty_bodies(), test_paid_used_emperor_prospective_entry_query_preserves_live_once_guard(), add_raw(), atomic_reject(), loyalty_action(), offered(), priority(), resolve_cast() (+22 more)
 
-### Community 242 - "infer_effect_from_oracle"
+### Community 242 - "re"
 Cohesion: 0.02
-Nodes (204): card_instance(), compiler_preview(), inspect_surfaces(), discards(), draws(), _stack_snapshot(), _copy_stack_object(), _offer_clause_copy_target_choice() (+196 more)
+Nodes (198): card_instance(), compiler_preview(), inspect_card(), inspect_surfaces(), discards(), draws(), mana_value_for(), _effects() (+190 more)
 
 ### Community 243 - "Counter prohibitions"
 Cohesion: 0.14
@@ -1805,7 +1802,7 @@ Nodes (16): Artifacts, Baseline And Scope, Canonical Goldens, Incremental Layer 
 Cohesion: 0.11
 Nodes (16): AI, Known Limitations and Next Upgrades, Shared contract, Spell payment card selections, Validation, AI behavior, Effect-authorized graveyard casting choices, Known Limitations and Next Upgrades (+8 more)
 
-### Community 247 - "test_canonical_magecraft_self_pump.py"
+### Community 247 - "rules_engine/__init__.py"
 Cohesion: 0.10
 Nodes (46): buffs(), cleanup(), finish_stack(), position(), ref(), require_buff(), stats(), test_actual_bounce_recast_old_trigger_cannot_buff_new_object() (+38 more)
 
@@ -1813,29 +1810,29 @@ Nodes (46): buffs(), cleanup(), finish_stack(), position(), ref(), require_buff(
 Cohesion: 0.18
 Nodes (19): policy_agent(), position(), relocate(), row(), test_actual_production_decisions_are_legal_pure_and_hidden_order_invariant(), test_canonical_other_requested_sources_are_explicitly_engine_unsupported(), test_fractional_prior_does_not_project_guaranteed_filtered_card(), test_multiple_unsettled_acquisitions_and_terminal_state_have_no_single_prior() (+11 more)
 
-### Community 249 - "mana_source_outputs"
-Cohesion: 0.28
-Nodes (17): mana_source_outputs(), add(), paid_position(), test_actual_autopayment_activates_paid_land_and_resolves_spell(), test_ai_casts_with_paid_resources_without_proactive_mana_floating(), test_artifact_counted_land_tracks_friendly_current_permanents(), test_automatic_payment_preserves_resources_for_another_colored_spell(), test_counted_land_outputs_and_zero_resources() (+9 more)
+### Community 249 - "add"
+Cohesion: 0.17
+Nodes (20): add(), pool(), test_modal_artifact_stays_alternative_not_rg_vector(), test_paid_five_color_base_pays_cost_and_taps_once(), test_produced_type_trigger_requires_proven_post_replacement_singleton(), test_rejected_vector_actions_are_atomic(), test_restricted_base_and_same_color_unrestricted_bonus(), test_self_sacrifice_vector_survives_cost_departure() (+12 more)
 
-### Community 250 - "test_learned_matchup_profiles.py"
-Cohesion: 0.10
-Nodes (36): _legacy_profile_for(), _load_profile_table(), load_profiles(), profile_for(), collect_source_manifest(), test_matchup_profile_pushes_combo_lite_to_proactive_conversion_against_control(), test_matchup_profile_pushes_control_to_hold_up_against_aggro(), test_matchup_profile_pushes_tempo_to_be_more_proactive_against_control() (+28 more)
+### Community 250 - "profile_for"
+Cohesion: 0.23
+Nodes (12): _load_profile_table(), profile_for(), test_matchup_profile_pushes_combo_lite_to_proactive_conversion_against_control(), test_matchup_profile_pushes_control_to_hold_up_against_aggro(), test_matchup_profile_pushes_tempo_to_be_more_proactive_against_control(), protocol_packet(), test_current_epoch_does_not_admit_unqualified_or_malformed_table(), test_default_loader_accepts_current_measured_epoch_protocol() (+4 more)
 
-### Community 251 - "runDelverRepairAudit"
-Cohesion: 0.54
-Nodes (8): runDelverRepairAudit(), checkpoint(), clickAction(), loaded(), privacy(), restart(), step(), until()
+### Community 251 - "browser-delver-repair.mjs"
+Cohesion: 0.12
+Nodes (23): archive, children, existing, fixtureRequest(), ports, ready(), requests, restartBackend() (+15 more)
 
 ### Community 253 - "test_proliferation.py"
-Cohesion: 0.17
-Nodes (18): card(), select(), test_ai_casts_canonical_proliferation_spell_for_public_poison_lethal(), test_ai_uses_public_mixed_counter_values_across_archetypes(), test_ai_vector_replacement_order_optimizes_recipient_result(), test_all_recipients_wait_for_apnap_choices_and_resume_once(), test_canonical_trigger_families(), test_events_observe_the_complete_placement_batch() (+10 more)
+Cohesion: 0.18
+Nodes (17): card(), select(), test_ai_casts_canonical_proliferation_spell_for_public_poison_lethal(), test_ai_uses_public_mixed_counter_values_across_archetypes(), test_ai_vector_replacement_order_optimizes_recipient_result(), test_all_recipients_wait_for_apnap_choices_and_resume_once(), test_canonical_trigger_families(), test_events_observe_the_complete_placement_batch() (+9 more)
 
-### Community 254 - "hydrate_deck_cards"
+### Community 254 - "test_builtin_metadata_refresh.py"
 Cohesion: 0.02
-Nodes (160): offline_decks(), analyze_deck(), tagged(), _card_text_matches(), _derive_face_based_mana_cost(), guess_archetype(), _summarize_card_metadata(), cached_json() (+152 more)
+Nodes (135): analyze_deck(), tagged(), _card_text_matches(), _derive_face_based_mana_cost(), guess_archetype(), _summarize_card_metadata(), _admitted_builtin_archetype(), ensure_builtin_decks() (+127 more)
 
-### Community 255 - "test_training_trigger_intent_audit.py"
-Cohesion: 0.26
-Nodes (11): scenario(), test_actor_inputs_ignore_opposing_hidden_identity_permutation(), test_display_context_cannot_supply_omitted_order(), test_independent_whole_views_chosen_order_http_and_restart(), test_legitimate_order_wrong_seat_rejects(), test_recognized_invalid_orders_reject_atomically(), test_unsupported_fields_reject_without_normalization(), test_display_labels_do_not_override_explicit_reversed_order() (+3 more)
+### Community 255 - "test_ai_search_prefix.py"
+Cohesion: 0.12
+Nodes (15): position(), test_friendly_removal_with_real_targeted_death_trigger_can_win(), test_no_forced_cast_wastes_pure_removal_on_own_unthreatened_creature(), test_optional_policy_does_not_hide_legal_enemy_removal(), announced_removal(), test_fizzled_removal_does_not_create_a_prevention_payoff(), test_prevention_values_actual_permanent_loss_without_mutation(), test_unknown_choice_and_counterability_are_not_assumed_away() (+7 more)
 
 ### Community 256 - "test_resolver_actor_protocol.py"
 Cohesion: 0.44
@@ -1845,9 +1842,9 @@ Nodes (5): captured_state(), test_INTERNALPROTOCOL_energy_continuation_wrong_act
 Cohesion: 0.13
 Nodes (19): archive, checkpoint(), children, existing, fixtureRequest(), loaded(), ports, ready() (+11 more)
 
-### Community 258 - "cathar_fixture_server.py"
+### Community 258 - "test_no_priority_progression.py"
 Cohesion: 0.15
-Nodes (8): actions(), audit(), authorize(), owned(), read_audit(), status(), transition(), direct_combat()
+Nodes (17): get_legal_moves(), _human_priority_pause(), match_at(), test_actual_decisions_stop_even_outside_configured_steps(), test_autoplay_runs_untap_upkeep_draw_then_stops_at_legal_land(), test_empty_windows_ignore_bare_mana_and_restricted_hints(), test_no_available_blockers_does_not_require_human_confirmation(), test_payable_end_step_instant_preserves_control_window() (+9 more)
 
 ### Community 259 - "Printed activation and trigger suppression"
 Cohesion: 0.11
@@ -1869,41 +1866,41 @@ Nodes (12): Bounded Suspend AI Consumer, Consumer Contract, Focused Gate, Bounde
 Cohesion: 0.33
 Nodes (5): Accounting Fixtures, Accounting, Stack Fixtures And AI Continuations, Declared Stack Fixture Contracts, Evidence And Scope, Private AI Continuation Consumer
 
-### Community 264 - "decision_taxonomy.py"
-Cohesion: 0.20
-Nodes (13): decision_reason_code(), has_actionable_move(), has_meaningful_move(), is_actionable_move(), is_meaningful_move(), build_debug_trace_payload(), _reason(), test_common_ai_reasons_are_stable_labels() (+5 more)
+### Community 264 - "test_canonical_multicharacteristic_audit.py"
+Cohesion: 0.18
+Nodes (21): observe(), cast(), observed(), position(), resolved(), test_actor_private_projection_and_known_public_target_root_unchanged(), test_actual_cloudshift_response_all_targets_illegal_no_partial_draw(), test_actual_paid_cast_root_rollback_and_native_roundtrip() (+13 more)
 
 ### Community 265 - "test_simulation_shutdown.py"
 Cohesion: 0.12
 Nodes (9): policy(), worker(), Rejected, test_shutdown_cancels_and_joins_actual_thread(), test_shutdown_waits_for_registration_and_start_under_admission_lock(), controlled_admit(), test_startup_reaps_dead_worker_but_stays_fenced_until_initialization(), test_startup_refuses_live_worker_before_reopening() (+1 more)
 
-### Community 266 - "test_sideboard_game_facts.py"
-Cohesion: 0.42
-Nodes (9): facts_api(), state(), test_factory_binds_original_inventory_and_real_initial_draws(), test_new_snapshot_invalid_fact_binding_rejects_without_mutating_payload(), test_physical_hand_identity_not_same_name_or_returned_incarnation(), test_private_snapshot_roundtrip_preserves_detached_facts_and_old_snapshot_unknown(), test_projected_draw_never_modifies_authoritative_fact_history(), test_public_and_decision_views_never_transport_private_fact_map() (+1 more)
+### Community 266 - "draw_card"
+Cohesion: 0.40
+Nodes (10): draw_card(), facts_api(), state(), test_factory_binds_original_inventory_and_real_initial_draws(), test_new_snapshot_invalid_fact_binding_rejects_without_mutating_payload(), test_physical_hand_identity_not_same_name_or_returned_incarnation(), test_private_snapshot_roundtrip_preserves_detached_facts_and_old_snapshot_unknown(), test_projected_draw_never_modifies_authoritative_fact_history() (+2 more)
 
 ### Community 267 - "run-backend-ci.sh"
 Cohesion: 0.11
 Nodes (17): MTG_CI_EVIDENCE, MTG_CI_PASSED_SNAPSHOT_CLEANUP, MTG_CI_STORAGE_GUARD, MTG_EXPORT_RECOVERY_EVIDENCE_ROOT, MTG_EXPORT_RECOVERY_SQL_SLOT, MTG_HEAT_REPORT, MTG_HEAT_WITNESS, MTG_ISOLATED_TEST_ROOT (+9 more)
 
-### Community 268 - "test_hand_source_context_product.py"
-Cohesion: 0.26
-Nodes (14): announced(), corrupt(), shield_pause(), snapshot(), test_protocol_corruption_rejects_before_direct_pop_fullroot(), test_protocol_entire_hand_batch_preflight_before_first_recipient(), test_protocol_equal_python_bool_is_not_equal_typed_child_context(), test_protocol_existing_hand_frame_stays_ability_when_physical_source_is_stack_spell() (+6 more)
+### Community 268 - "test_ai_opaque_draw_horizon.py"
+Cohesion: 0.25
+Nodes (14): _opaque_acquisition_items(), _opaque_acquisition_stack(), _opaque_draw_count_changes(), draw_position(), test_actual_announced_counterspell_prevents_projected_draw(), test_actual_master_draws_in_a_safe_empty_board_instead_of_passing(), test_existing_strict_projection_still_rejects_raw_hidden_draws(), test_hidden_order_does_not_change_count_score_or_action() (+6 more)
 
 ### Community 269 - "add"
-Cohesion: 0.06
-Nodes (66): unanswered_action_loses(), position(), test_friendly_removal_with_real_targeted_death_trigger_can_win(), test_no_forced_cast_wastes_pure_removal_on_own_unthreatened_creature(), test_optional_policy_does_not_hide_legal_enemy_removal(), add(), test_eligibility_not_trigger_condition_or_spent_entry_text_sets_rewards(), test_live_creature_payoff_affects_threat_and_cast_values_across_styles() (+58 more)
+Cohesion: 0.04
+Nodes (111): apply_resource_payment(), resource_payment(), ResourcePayment, pay_resources(), materialize(), test_combined_convoke_delve_with_hybrid_cost_spends_no_mana(), test_convoke_preserves_large_blocker_for_any_archetype(), test_convoke_values_actual_self_tap_payoff() (+103 more)
 
-### Community 270 - "test_variable_spell_costs.py"
+### Community 270 - "test_human_bo3_readiness.py"
 Cohesion: 0.19
-Nodes (21): position(), test_checked_action_rejects_sick_tap_without_mutation(), test_haste_does_not_allow_an_already_tapped_source(), test_noncreature_tap_cost_ignores_sickness_flag(), test_removing_effective_haste_restores_tap_restriction(), test_sickness_does_not_restrict_non_tap_creature_abilities(), test_tap_cost_uses_effective_haste_and_preserves_snapshot(), action() (+13 more)
+Nodes (13): read_cold_match(), run(), test_cold_read_preserves_each_partial_confirmation_and_complete_roots(), test_cold_worker_rejects_foreign_source_or_database_before_project_read(), evidence(), finished(), inventory(), test_ai_only_transition_does_not_require_human_confirmation() (+5 more)
 
-### Community 271 - "loyalty-activation-controls.mjs"
-Cohesion: 0.11
-Nodes (16): adapter, dependencies, effects, failures, fixture, module, nodes(), React (+8 more)
+### Community 271 - "test_interface_scope_current_delta.py"
+Cohesion: 0.14
+Nodes (18): compatible_product_hash(), _restore(), restore_keyword_edges(), restore_reviewed_source(), restore_worker_platform(), test_actual_current_main_requires_both_exact_historical_inverses(), test_actual_private_fixture_restores_only_reviewed_delver_identity_clause(), test_every_current_main_hunk_mutation_is_rejected() (+10 more)
 
-### Community 272 - "ordered-target-controls.mjs"
-Cohesion: 0.11
-Nodes (16): adapter, dependencies, effects, fixture, module, nodes(), options, packets (+8 more)
+### Community 272 - "test_creature_observer_audit.py"
+Cohesion: 0.21
+Nodes (16): observer_items(), optional(), position(), test_existing_optional_handler_control_real_paid_death(), test_http_actual_observer_cold_restore_privacy(), test_http_invalid_cast_root_database_atomic(), test_observer_filters_on_paid_real_actions(), test_offline_compiler_probe_from_actual_emitted_event() (+8 more)
 
 ### Community 273 - "test_startup_media_pins.py"
 Cohesion: 0.17
@@ -1933,17 +1930,17 @@ Nodes (9): _export_native_matrix_training(), canonical(), digest(), hex_string()
 Cohesion: 0.13
 Nodes (11): dependencies, effects, module, move, nodes(), props, React, render() (+3 more)
 
-### Community 280 - "Learned Policy Groundwork"
-Cohesion: 0.25
-Nodes (5): Acceptance Still Needed, Learned Policy Groundwork, References, Status, Step-By-Step Gates
+### Community 280 - "test_training_remaining_intent_audit.py"
+Cohesion: 0.11
+Nodes (22): settle(), test_canonical_shark_stats_use_chosen_cycling_x_after_snapshot_resume(), test_renewed_faith_cycling_resolves_its_own_optional_gain_not_the_spell(), test_renewed_faith_optional_cycling_choice_survives_http_restart(), test_self_clause_matches_only_the_cycled_instance_and_controller(), forbid_external_network(), test_canonical_shark_typhoon_chosen_x_must_create_actual_token(), test_misplaced_chosen_parameters_are_not_display_metadata() (+14 more)
 
 ### Community 281 - "test_simulation_engine_shutdown.py"
 Cohesion: 0.14
 Nodes (3): lifecycle(), test_failed_worker_join_does_not_dispose_engine(), test_lifespan_disposes_only_after_successful_join()
 
-### Community 282 - "serialize_match_snapshot"
-Cohesion: 0.03
-Nodes (108): serialize_match_snapshot(), public_trigger_clause_coverage(), position(), test_adoption_preserves_unrelated_binding_and_real_canonical_cards(), test_foreign_target_controller_is_not_overwritten(), test_forged_capture_rejects_before_binding_or_persistence(), test_original_producers_keep_real_capture_through_installer(), transport() (+100 more)
+### Community 282 - "position"
+Cohesion: 0.05
+Nodes (72): public_trigger_clause_coverage(), public_graveyard_inventory(), _reviewed_context_covered(), canonical(), test_complete_linked_damage_diagnostic_does_not_clear_unbacked_or_unaccounted_context(), test_current_known_gap_diagnostics_not_unconditional_execution_certificates(), test_full_canonical_paid_graveyard_flashback_response_is_not_passed_away(), test_inert_full_canonical_graveyard_bolt_preserves_root_and_matches_checked_damage() (+64 more)
 
 ### Community 284 - "Deliberate Nonmana Activated Payments"
 Cohesion: 0.14
@@ -1961,41 +1958,41 @@ Nodes (13): GITHUB_ACTIONS, MTG_CHECK_DEPS, MTG_CHECK_EVENT_LOG, MTG_CHECK_NODE,
 Cohesion: 0.13
 Nodes (14): compilerOptions, allowImportingTsExtensions, baseUrl, isolatedModules, jsx, lib, module, moduleResolution (+6 more)
 
-### Community 289 - "Trigger Instruction Compilation Audit"
-Cohesion: 0.40
-Nodes (4): Canonical Provenance And Limits, Evidence, Pinned Source And Scope, Trigger Instruction Compilation Audit
+### Community 289 - "test_task41_canonical_lethal_gap.py"
+Cohesion: 0.31
+Nodes (14): base(), choose(), combat_pose(), finish_combat(), geyser_pose(), paid_geyser(), removal_pose(), replay() (+6 more)
 
-### Community 290 - "test_supported_preflight_engine_parity.py"
-Cohesion: 0.27
-Nodes (10): DeckPairInput, CanonicalReadAdapter, hydrated(), production_bodies(), record(), test_canonical_salve_paid_gainlife_mode_preserved(), test_desired_mage_warning_does_not_claim_unsupported_counter_modifier(), test_hydrated_paid_mage_salve_damage_orders_are_real_and_restorable() (+2 more)
+### Community 290 - "test_ai_strategic_score_reuse.py"
+Cohesion: 0.14
+Nodes (10): reuse_position_score(), eager_reference(), test_only_relevant_response_or_fallback_positions_are_scored(), test_real_counter_and_pass_forecasts_match_eager_reference(), test_cache_budget_falls_back_without_changing_results(), test_failed_or_unserializable_queries_are_not_cached(), test_identical_encoding_reuses_but_gameplay_and_ai_changes_do_not(), position() (+2 more)
 
-### Community 291 - "test_controlled_basic_game_birth.py"
-Cohesion: 0.35
-Nodes (8): helper(), test_all_non_capture_fields_match_real_factory(), test_independent_payloads_uuid_and_old_player_names(), test_never_calls_factory_or_initializes_or_erases_capture(), observe(), test_uncaptured_repurpose_and_genuine_factory_stock_guards(), test_unknown_templates_reject_before_birth(), wire()
+### Community 291 - "test_closed_damage_instruction_compiler.py"
+Cohesion: 0.24
+Nodes (14): test_actual_paid_pyroclasm_requires_real_creature_only_resolver(), test_actual_paid_salve_complete_prevention_mode_restores_exact_shield(), test_audit_denies_all_sql_and_socket_aliases(), test_canonical_salve_gain_life_mode_unchanged(), test_compiler_does_not_guess_malformed_player_destination(), test_conflicting_explicit_destinations_are_not_prioritized(), test_full_canonical_prevention_compiles_explicit_destination(), test_full_modal_envelope_rejects_missing_or_unoffered_mode() (+6 more)
 
 ### Community 293 - "inventory"
 Cohesion: 0.05
 Nodes (34): facts(), cold(), facts(), paid_march(), prepare(), receipt(), test_desired_above_x_rejected_only_after_successful_paid_control(), test_desired_actual_paid_zero_optional_march_exiles_valid_target() (+26 more)
 
-### Community 294 - "test_nonmana_kicker.py"
-Cohesion: 0.35
-Nodes (11): announcement(), setup(), test_ai_sacrifice_requires_a_payoff_and_selects_checked_cost_card(), test_ai_trades_life_for_counters_without_buying_a_losing_branch(), test_controller_scoped_self_or_other_dies_is_exact(), test_copied_permanent_preserves_paid_choice_without_second_life_payment(), test_insufficient_life_rejected_but_unpaid_branch_remains_legal(), test_invalid_payment_is_atomic_before_mana_and_departures() (+3 more)
+### Community 294 - "test_activated_top_selection.py"
+Cohesion: 0.31
+Nodes (19): activate(), api_action(), card(), choose(), position(), resolve_activation(), test_actual_bounded_ai_activates_and_completes_private_choice(), test_any_order_payload_uses_existing_bottom_order_choice_and_resume() (+11 more)
 
-### Community 295 - "test_each_player_discard_public_projection.py"
-Cohesion: 0.36
-Nodes (13): choose(), chosen(), finish(), paid_state(), paused(), projection(), prompt(), test_each_player_public_view_writes_cannot_change_owned_pending_root() (+5 more)
+### Community 295 - "test_compleated_loyalty_full.py"
+Cohesion: 0.20
+Nodes (16): reject(), test_actual_paid_permanent_spell_copy_suppresses_source_life_payment(), test_full_canonical_checked_cast_all_hybrid_branches(), test_generic_complete_families_are_not_a_card_name_allowlist(), test_new_hint_delegate_does_not_parse_unrelated_or_full_card_surfaces(), test_rejected_hybrid_payments_leave_entire_root_unmodified(), test_reminder_accounting_is_exact_not_keyword_admission(), test_unknown_full_body_tails_reject_cast_root_pure() (+8 more)
 
 ### Community 296 - "main.py"
-Cohesion: 0.01
-Nodes (163): load_log_priors(), AIDiagnosticsRequest, BatchSimulationRequest, DeckEntry, CardService, TournamentIngestService, CatalogImportRequest, ai_diagnostics() (+155 more)
+Cohesion: 0.02
+Nodes (105): load_log_priors(), AIDiagnosticsRequest, BatchSimulationRequest, DeckPairInput, TournamentIngestService, CatalogImportRequest, ai_diagnostics(), analytics_history() (+97 more)
 
 ### Community 297 - "run-activated-top-selection.sh"
 Cohesion: 0.15
 Nodes (12): MTG_BACKEND_ORIGIN, MTG_BROWSER_ORIGIN, MTG_FRONTEND_DEPS, MTG_FRONTEND_ORIGIN, MTG_OFFICER_EVIDENCE, MTG_OFFICER_PORT, MTG_OFFICER_RUNTIME, MTG_TRUSTED_ORIGINS (+4 more)
 
 ### Community 298 - "turn_scheduler.py"
-Cohesion: 0.20
-Nodes (8): advance(), ensure_plan(), _normal_plan(), resolve_turn(), restore(), snapshot(), test_fixture_adapter_cannot_erase_real_extra_turn(), test_fixture_position_preserves_gameplay_and_remains_restorable()
+Cohesion: 0.29
+Nodes (6): advance(), ensure_plan(), _normal_plan(), resolve_turn(), restore(), snapshot()
 
 ### Community 299 - "projected_caller"
 Cohesion: 0.13
@@ -2003,19 +2000,19 @@ Nodes (5): projected_caller(), allocate(), filesystem(), test_actual_private_cal
 
 ### Community 300 - "test_natural_heat_target_audit.py"
 Cohesion: 0.08
-Nodes (52): tuple_tree(), advance_until(), agent(), canonical(), canonical_control(), exact_state(), private_cards(), rank_diagnostic() (+44 more)
+Nodes (51): advance_until(), agent(), canonical(), canonical_control(), exact_state(), private_cards(), rank_diagnostic(), receipts() (+43 more)
 
 ### Community 301 - "generate_startup_media_pins.py"
 Cohesion: 0.28
 Nodes (9): _assignment(), build_artifact(), _checked_directory(), _functions(), main(), _read_public(), _structural(), write_bundle() (+1 more)
 
 ### Community 302 - "test_numeric_prevention_receipts.py"
-Cohesion: 0.13
-Nodes (29): test_actual_paid_pyroclasm_requires_real_creature_only_resolver(), test_actual_paid_salve_complete_prevention_mode_restores_exact_shield(), test_audit_denies_all_sql_and_socket_aliases(), test_canonical_salve_gain_life_mode_unchanged(), test_compiler_does_not_guess_malformed_player_destination(), test_conflicting_explicit_destinations_are_not_prioritized(), test_full_canonical_prevention_compiles_explicit_destination(), test_full_modal_envelope_rejects_missing_or_unoffered_mode() (+21 more)
+Cohesion: 0.27
+Nodes (14): cast_salve(), shielded(), test_actual_paid_blink_retires_old_target_shield_without_refresh(), test_actual_paid_broadcast_legacy_competition_rejects_before_pop(), test_component_cleanup_and_legacy_competition_boundary(), test_component_combat_bridge_and_locked_prevention_do_not_desynchronize(), test_corrupted_real_prevention_amount_rejects_before_pop(), test_paid_multiplier_then_numeric_shield_then_conversion_requeries_amount() (+6 more)
 
 ### Community 304 - "pickle"
-Cohesion: 0.30
-Nodes (9): facts(), add(), canonical(), test_caller_mode_text_cannot_replace_nonmodal_full_oracle(), test_direct_strict_engine_rejection_is_byte_pure_before_payment(), test_supported_counter_and_later_fizzle_are_not_unsupported_noops(), test_supported_real_spell_controls_still_cast_and_resolve(), test_unrecognized_resolution_without_a_known_schema_is_rejected_at_actual_choices() (+1 more)
+Cohesion: 0.41
+Nodes (8): add(), canonical(), test_caller_mode_text_cannot_replace_nonmodal_full_oracle(), test_direct_strict_engine_rejection_is_byte_pure_before_payment(), test_supported_counter_and_later_fizzle_are_not_unsupported_noops(), test_supported_real_spell_controls_still_cast_and_resolve(), test_unrecognized_resolution_without_a_known_schema_is_rejected_at_actual_choices(), test_unsupported_full_spell_not_offered_and_rejected_before_costs()
 
 ### Community 305 - "test_entry_width.py"
 Cohesion: 0.47
@@ -2030,28 +2027,28 @@ Cohesion: 0.15
 Nodes (11): Combined Backend and Replay Acceptance, Decision-local Destruction Projection Reuse, Implemented Scope, Known Limitations and Next Upgrades, Pinned Benchmark, Verification, Checks, Current behavior (+3 more)
 
 ### Community 310 - "_merge_card_rows"
-Cohesion: 0.22
-Nodes (10): _merge_card_rows(), _merge_priors(), test_merge_contexts_is_weighted_deterministic_and_no_aliases(), Agent confidence and fallback, Context contract, Offline export reconciliation, P2 corrective increment, Status and boundary (+2 more)
+Cohesion: 0.14
+Nodes (13): _merge_card_rows(), _merge_priors(), test_merge_contexts_is_weighted_deterministic_and_no_aliases(), test_producer_and_teacher_context_remain_unavailable(), baseline_teacher_config(), Extracted Matchup Context, Agent confidence and fallback, Context contract (+5 more)
 
-### Community 311 - "Release Acceptance Status"
-Cohesion: 0.11
-Nodes (18): Browser BO3 Readiness Expectation (2026-10-09), Browser Copy Choice Contract (2026-10-09), Clean CI Fixture Repair (2026-10-09), Complete Loyalty And CI Composition (2026-10-09), Current Checkpoint: 2026-10-14, Earlier Source-Specific Checkpoints, Latest Reviewed Composition: 2026-10-13, Modal Cost View Contract (2026-10-09) (+10 more)
+### Community 311 - "test_nested_mana_life.py"
+Cohesion: 0.36
+Nodes (10): position(), test_activation_finds_lower_life_mana_sources_even_when_painful_sources_are_first(), test_ai_materializes_a_funded_nonlethal_phyrexian_payment_across_styles(), test_funded_combined_mana_and_activation_life_cost_actually_pays_all_four_life(), test_generic_only_mana_payment_preserves_external_life_and_rejects_without_mutation(), test_mana_availability_reserves_outer_life_after_all_nested_mana_costs(), test_paid_mana_ability_funding_preserves_outer_life_budget(), test_phyrexian_payment_and_mana_production_share_one_life_budget() (+2 more)
 
 ### Community 312 - "test_animation_color_state_forwarding.py"
-Cohesion: 0.23
-Nodes (11): animated(), song_after_animation(), test_full_canonical_favor_conditional_aura_checked_episode(), test_full_canonical_shields_real_colored_convoke_and_invalid_color_rollback(), test_grammar_query_uses_state_after_canonical_song_colorless_replacement(), test_resource_color_query_receives_exact_readonly_state(), observe(), test_unsupported_grammar_condition_remains_unknown() (+3 more)
+Cohesion: 0.36
+Nodes (7): animated(), song_after_animation(), test_full_canonical_favor_conditional_aura_checked_episode(), test_full_canonical_shields_real_colored_convoke_and_invalid_color_rollback(), test_grammar_query_uses_state_after_canonical_song_colorless_replacement(), test_resource_color_query_receives_exact_readonly_state(), test_unsupported_grammar_condition_remains_unknown()
 
-### Community 313 - "DeckParser"
-Cohesion: 0.07
-Nodes (23): report(), cards(), test_admission_is_body_driven_not_a_name_exemption(), test_complete_body_boundaries_keep_domain_warning(), test_exact_full155_delta_has_only_two_domain_reason_removals(), test_sourced_complete_body_admission_is_query_pure(), warnings(), fuzzy_card_lookup() (+15 more)
+### Community 313 - "test_domain_admission.py"
+Cohesion: 0.36
+Nodes (5): cards(), test_admission_is_body_driven_not_a_name_exemption(), test_complete_body_boundaries_keep_domain_warning(), test_sourced_complete_body_admission_is_query_pure(), warnings()
 
-### Community 314 - "test_equip_context.py"
-Cohesion: 0.32
-Nodes (11): add(), equip(), test_ai_emits_concrete_payable_equip_and_does_not_loop_on_same_target(), test_attached_base_setters_do_not_affect_either_unrelated_board(), test_champion_discount_only_offers_the_payable_target_without_mana(), test_discount_uses_effective_power_and_discounts_do_not_consume_restricted_mana_unnecessarily(), test_global_and_targeted_generic_discounts_stack_but_not_on_other_activations(), test_global_base_setter_and_reattachment_timestamp_keep_counters_and_identity() (+3 more)
+### Community 314 - "loyalty-activation-controls.mjs"
+Cohesion: 0.11
+Nodes (16): adapter, dependencies, effects, failures, fixture, module, nodes(), React (+8 more)
 
-### Community 315 - "test_ward_resolution.py"
-Cohesion: 0.15
-Nodes (32): ward_instances(), test_replaced_damage_defers_zero_toughness_until_resolution_finishes(), test_zero_counter_ward_is_a_real_pay_or_decline_choice_and_source_may_leave(), target(), test_conditional_self_ward_tracks_current_tap_state_and_incarnation(), test_effect_body_or_attachment_grant_is_not_printed_self_ward(), test_inline_player_counter_cost_is_supported(), test_payment_labels_keep_oracle_capitalization() (+24 more)
+### Community 315 - "test_player_counters.py"
+Cohesion: 0.11
+Nodes (43): public_counters(), test_replaced_damage_defers_zero_toughness_until_resolution_finishes(), source(), test_ai_handles_resolved_counter_ward_without_mutating_live_state(), test_another_death_counter_trigger_survives_simultaneous_source_death(), test_characteristic_defined_token_stats_track_player_not_token_counters(), test_corrupted_dynamic_cost_suffix_is_not_accepted_as_supported(), test_corrupted_scaling_clause_does_not_apply_a_flat_prefix_bonus() (+35 more)
 
 ### Community 316 - "test_http_sibling_fixture_identity.py"
 Cohesion: 0.24
@@ -2077,17 +2074,17 @@ Nodes (10): Acceptance evidence, Engine scope, Known Limitations and Next Upgrad
 Cohesion: 0.17
 Nodes (10): Evidence And Boundaries, Queued, Global And Lazy-Recovery Candidate, Remaining Work, Existing Lifecycle Interactions, Minimal Authoritative State, Proposed Scope And Acceptance, Queued Turn/Phase Scheduler Proposal, Resolution And Timing (+2 more)
 
-### Community 322 - "browser-vendor-preflight.test.mjs"
-Cohesion: 0.28
-Nodes (7): api(), config(), helper, identity, inputs(), moduleURL, regular
+### Community 322 - "ordered-target-controls.mjs"
+Cohesion: 0.11
+Nodes (16): adapter, dependencies, effects, fixture, module, nodes(), options, packets (+8 more)
 
-### Community 323 - "human_transform_fixture_server.py"
-Cohesion: 0.27
-Nodes (8): actions(), audit(), status(), actions(), audit(), authorize(), owned(), status()
+### Community 323 - "test_startup_diagnostic.py"
+Cohesion: 0.16
+Nodes (10): observe_reveal(), handler(), supervisor(), drive(), test_both_exited_services_are_named(), test_check_remains_configuration_only(), test_ctrl_c_remains_normal_and_releases_lock(), test_service_exit_is_named_without_private_output() (+2 more)
 
 ### Community 324 - "test_builtin_refresh.py"
-Cohesion: 0.17
-Nodes (6): _ensure_builtin_decks(), _DeckRow, _FakeRecord, _FakeRepo, _FakeSession, test_builtin_refresh_updates_saved_deck_in_place()
+Cohesion: 0.18
+Nodes (5): _DeckRow, _FakeRecord, _FakeRepo, _FakeSession, test_builtin_refresh_updates_saved_deck_in_place()
 
 ### Community 325 - "test_march_http_paid.py"
 Cohesion: 0.24
@@ -2097,25 +2094,25 @@ Nodes (7): cold_reload(), http_facts(), install(), public_move(), test_http_reje
 Cohesion: 0.23
 Nodes (8): damage_each_creature(), test_actual_paid_animation_response_joins_creature_cohort_at_resolution(), test_component_effective_membership_and_provenance_forwarded_once(), test_component_empty_creature_cohort_never_adds_players(), test_component_nonpositive_amount_has_no_batch_or_mutation(), test_paid_pyroclasm_pause_restores_frozen_cohort_without_wrapper_reentry(), observe(), Creature-Only Damage Wrapper
 
-### Community 327 - "test_mana_multiplier_prefilter.py"
-Cohesion: 0.29
-Nodes (8): mana_multiplier_clause(), multiplied_outputs(), reference(), test_controller_changes_recompute_without_a_persistent_cache(), test_only_matching_sources_need_suppression_queries(), test_suppressed_real_creature_multiplier_still_stops(), test_real_scope_reentry_evaluates_only_matching_source_once(), observe()
+### Community 327 - "test_ai_postcombat_mana.py"
+Cohesion: 0.25
+Nodes (15): add(), board(), test_actual_vigilance_grant_keeps_attack_and_ready_mana(), test_all_styles_reserve_one_damage_for_known_three_green_cast_and_resume(), test_direct_burn_opportunity_can_be_worth_more_than_one_damage(), test_flexible_sources_do_not_double_count_colors_for_double_blue(), test_floating_mana_does_not_survive_to_postcombat_but_lethal_pressure_wins(), test_forced_late_progress_does_not_undo_resource_reservation() (+7 more)
 
-### Community 328 - "cold_restart_http_fixture.py"
+### Community 328 - "Request"
 Cohesion: 0.03
-Nodes (62): owner_for_engine(), get_session(), audit(), authorize(), bootstrap(), database(), intent(), observe() (+54 more)
+Nodes (75): fixture(), paid_cast_fixture(), audit(), authorize(), bootstrap(), database(), intent(), observe() (+67 more)
 
-### Community 329 - "test_optional_land_from_hand_choice_slice.py"
-Cohesion: 0.33
-Nodes (10): pending(), test_existing_shock_pause_carries_queue_once_and_no_hand_options(), test_existing_typed_decline_helper_continuation_without_public_validator_claim(), test_handler_candidates_are_collected_after_real_draw(), test_invalid_and_stale_actual_choices_do_not_mutate_root(), test_multiple_candidates_remain_explicit_and_unselected_private(), test_no_eligible_current_hand_does_not_open_empty_choice(), test_no_invalid_explicit_identity_fallback_and_mandatory_no_decline() (+2 more)
+### Community 329 - "test_variable_spell_costs.py"
+Cohesion: 0.35
+Nodes (14): action(), setup(), test_ai_chooses_payable_minimum_lethal_x_and_avoids_self_loss(), test_ai_does_not_nuke_resources_for_unproductive_fixed_life_loss(), test_all_resources_are_paid_and_source_survives_hand_discard(), test_announced_x_pays_exact_cards_and_deals_actual_symmetric_damage(), test_authorized_free_cast_keeps_mandatory_nonmana_payment(), test_copy_uses_announced_x_without_a_second_discard() (+6 more)
 
 ### Community 330 - "Combat lifelink gain-event boundary (2026-09-28)"
 Cohesion: 0.18
 Nodes (9): Life-total-lock boundary (2026-09-28), Rules evidence, Shared path, Still open, Combat lifelink gain-event boundary (2026-09-28), Cross-effect follow-up, Remaining gate, Repair (+1 more)
 
-### Community 333 - "test_immediate_return_product.py"
-Cohesion: 0.24
-Nodes (11): position(), test_actual_http_paid_blink_response_returns_exact_object_then_private_search(), test_complete_body_cannot_compile_as_only_exile(), test_hidden_full_response_identity_swap_preserves_actor_input(), test_invalid_absent_target_rejects_without_cost_or_root_mutation(), test_actual_bounce_response_leaves_original_blink_target_in_hand(), test_entry_counter_replacement_choice_keeps_exiled_object_and_resumes_once(), test_existing_humility_suppresses_printed_fixed_counters_on_reentry() (+3 more)
+### Community 333 - "test_permanent_keyword_grants.py"
+Cohesion: 0.25
+Nodes (8): board(), granted(), test_canonical_group_grants_apply_to_all_current_permanent_types_and_survive_restore(), test_group_recipient_set_does_not_follow_new_objects_and_expires_at_cleanup(), test_heroic_intervention_hexproof_rejects_real_opponent_spell_without_costs(), test_later_layer_six_loss_overrides_then_later_grant_restores_keyword(), test_real_http_group_grant_and_durable_keyword_restore(), test_actual_schedule_keeps_grants_until_natural_cleanup()
 
 ### Community 334 - "Revealed-Hand Memory and Selective Private Copies"
 Cohesion: 0.18
@@ -2129,9 +2126,9 @@ Nodes (8): Basic-Land Layer Investigation, Canonical Receipt, Observed Goldens, 
 Cohesion: 0.18
 Nodes (9): Candidate Contract, Casting Resource Payments, Evidence, Remaining Acceptance, Candidate Scope, Evidence, Remaining Acceptance, Resource Event Fidelity (+1 more)
 
-### Community 337 - "test_public_graveyard_reviewed_context.py"
-Cohesion: 0.44
-Nodes (10): public_position(), test_active_malformed_or_contradictory_kicker_metadata_is_unknown(), test_active_unknown_and_malformed_contexts_are_unknown(), test_complete_unknown_tail_still_has_no_inert_certificate(), test_future_schema_pin_mismatch_fails_closed(), test_missing_reviewed_field_is_not_legacy_inert_certificate(), test_printed_flashback_remains_interactive_with_real_paid_control(), test_reviewed_defaults_are_inert_without_private_mutation() (+2 more)
+### Community 337 - "test_selected_fixture_contracts.py"
+Cohesion: 0.29
+Nodes (8): publication_function(), retain_function(), adopt(), persist(), test_actual_factory_birth_identity_retained_not_transplanted(), test_bad_factory_capture_is_never_repaired_or_published(), test_publication_accepts_exact_declared_false_keyword_only(), test_publication_rejects_any_other_capture_value()
 
 ### Community 338 - "temporary-characteristics-current-composition.md"
 Cohesion: 0.18
@@ -2141,29 +2138,33 @@ Nodes (8): Current Suspend Composition, Current Temporary Characteristics HTTP, 
 Cohesion: 0.20
 Nodes (9): Coordinator independent verification, Current behavior reconciled against Gate 3, Deliverable 1: explicit-path retention, Deliverable 2: backup/restore verification, Deliverable 3: clean-source release evidence, Evidence, archive and integration, Identity and ownership, Main integration verification (+1 more)
 
-### Community 340 - "test_fixed_spell_cost_witness.py"
-Cohesion: 0.38
-Nodes (9): fixed_cost_selections(), add(), physical_witness(), setup(), test_all_fixed_discards_are_reserved_together(), test_exhaustive_selections_are_not_frozen_or_reserved_before_mana(), test_fixed_sacrifice_retains_legal_tap_then_sacrifice_payment(), test_joint_fixed_cost_existence_and_explicit_execution() (+1 more)
+### Community 340 - "test_targeted_library_search_compiler.py"
+Cohesion: 0.25
+Nodes (10): setup(), test_actual_paid_affected_private_search_find_or_fail_restart_then_compound(), test_full_body_compiles_explicit_target_and_entire_ordered_suffix(), test_full_canonical_rampant_growth_retains_own_search_control(), test_full_favor_deliberately_zero_optional_counter_target_no_inferred_creature(), test_actual_targeted_activation_rejects_client_search_overrides_root_pure(), test_complete_optional_counter_suffix_zero_selected_target_is_not_inferred(), test_missing_or_invalid_player_never_infers_own_or_opponent_before_cost() (+2 more)
 
 ### Community 341 - "Generic Article Mill"
 Cohesion: 0.40
 Nodes (4): Boundary, Generic Article Mill, Integration Dependency, Observed Qualification
 
-### Community 342 - "test_ai_instant_window.py"
-Cohesion: 0.42
-Nodes (8): position(), test_actual_flashback_payment_prices_lost_interaction_and_is_pure(), test_existing_stack_response_does_not_inherit_empty_stack_reservation(), test_hidden_opponent_hand_does_not_change_reservation(), test_master_holds_flashback_until_opponent_endstep(), test_no_available_interaction_or_own_turn_does_not_force_wait(), test_opponent_upkeep_is_not_an_endstep_draw_bonus(), test_value_cast_that_keeps_counter_mana_is_not_penalized()
+### Community 342 - "test_granted_target_publication.py"
+Cohesion: 0.30
+Nodes (7): test_unknown_is_not_authoritative_empty(), announce(), board(), capture(), depart(), test_real_publication_boundary(), triggers()
+
+### Community 343 - "test_ward_forms.py"
+Cohesion: 0.36
+Nodes (10): ward_instances(), target(), test_conditional_self_ward_tracks_current_tap_state_and_incarnation(), test_effect_body_or_attachment_grant_is_not_printed_self_ward(), test_inline_player_counter_cost_is_supported(), test_payment_labels_keep_oracle_capitalization(), test_printed_keyword_lists(), test_real_cast_triggers_payment_and_survives_snapshot() (+2 more)
 
 ### Community 345 - "test_combat_damage_windows.py"
 Cohesion: 0.44
 Nodes (11): _creature(), _enter_damage(), _state(), test_double_strike_uses_two_priority_windows_and_snapshot_resume(), test_first_strike_attacker_kills_blocker_before_regular_step(), test_first_strike_blocker_kills_normal_attacker_before_it_deals_damage(), test_first_strike_membership_is_fixed_before_response_window(), test_instant_can_be_cast_after_first_damage_before_regular_damage() (+3 more)
 
-### Community 346 - "draw_card"
-Cohesion: 0.20
-Nodes (13): held_unused_ids(), draw_card(), test_unconditional_loss_protection_and_checked_failed_draw_history(), test_empty_library_draw_loss_waits_for_state_based_actions(), test_simultaneous_empty_library_draw_failures_are_a_draw(), act(), game(), paid() (+5 more)
+### Community 346 - "test_sideboard_game_events.py"
+Cohesion: 0.30
+Nodes (8): held_unused_ids(), act(), game(), paid(), test_actual_used_copy_protects_other_held_copies_of_original_inventory_entry(), test_rejected_unfunded_real_creature_cast_cannot_publish_fact_updates(), test_six_paid_public_creatures_are_six_physical_ids_not_spell_entry_double_count(), test_actual_cycling_hand_source_protects_whole_entry()
 
 ### Community 347 - "current_built_browser_server.py"
-Cohesion: 0.13
-Nodes (25): accepted_owned_listener(), artifact_write(), audit(), deny(), guarded_connect(), authorize(), connect(), in_constructor() (+17 more)
+Cohesion: 0.17
+Nodes (22): accepted_owned_listener(), artifact_write(), audit(), deny(), guarded_connect(), authorize(), connect(), in_constructor() (+14 more)
 
 ### Community 351 - "anomaly_cluster_report.py"
 Cohesion: 0.30
@@ -2174,8 +2175,8 @@ Cohesion: 0.19
 Nodes (15): announced(), record(), test_actual_paid_observed_subset_preserves_root_rng_and_native_restore(), test_clause_and_rules_require_an_intrinsic_entry_identity_not_self_replacement_priority(), test_existing_full_canonical_and_official_rules_pins(), test_strict_desired_initial_choice_offers_intrinsic_and_resident_entry_producers(), test_unfunded_actual_x_two_cast_rejected_atomically(), test_wrong_actor_existing_replacement_choice_preserves_root() (+7 more)
 
 ### Community 353 - "Current CI And Runner Capacity"
-Cohesion: 0.20
-Nodes (8): Coverage Limits, Current Whole Browser Acceptance, Executed Scope, Current CI And Runner Capacity, Current Results, Previous Backend Stop, Remaining Acceptance, Runner Capacity Change
+Cohesion: 0.40
+Nodes (5): Current CI And Runner Capacity, Current Results, Previous Backend Stop, Remaining Acceptance, Runner Capacity Change
 
 ### Community 354 - "MTG Deck Testing Lab"
 Cohesion: 0.22
@@ -2189,33 +2190,33 @@ Nodes (8): Actual Run, Current Native Browser 50-Episode Checkpoint, Fidelity An
 Cohesion: 0.20
 Nodes (9): Canonical Evidence, Conditional Effects Follow-Up, Effect-Created Permissions Follow-Up, Follow-Up Validation, Foretell Foundation, Foundation Validation (d4b3ecc), Implemented Scope, Permission Follow-Up Validation (+1 more)
 
-### Community 359 - "action_validation.py"
-Cohesion: 0.04
-Nodes (30): test_actual_paid_ballista_intrinsic_then_ordered_residents_terminal(), test_unknown_is_not_authoritative_empty(), grant(), observe_before_staging(), test_actual_final_producer_publishes_frozen_receipts_once(), announce(), board(), capture() (+22 more)
+### Community 359 - "test_granted_target_producers.py"
+Cohesion: 0.14
+Nodes (3): grant(), observe_before_staging(), test_actual_final_producer_publishes_frozen_receipts_once()
 
 ### Community 360 - "UI redesign handoff"
 Cohesion: 0.20
 Nodes (9): Actual validation, Evidence, Implementation and changed paths, Independent coordinator verification, Inspection checklist, Integration, Limitations and backend dependencies, Main integration (+1 more)
 
-### Community 361 - "ci_regression_gate.py"
-Cohesion: 0.35
-Nodes (8): build_round_robin_command(), load_json(), main(), parse_args(), run_cmd(), summary_output_path(), test_ci_gate_has_explicit_out_summary_path_separate_from_output_directory(), test_ci_gate_round_robin_command_always_requests_complete_games_log()
+### Community 361 - "test_fixed_color_feasibility.py"
+Cohesion: 0.33
+Nodes (5): test_complex_contexts_and_metadata_keep_original_search(), test_continuous_source_departure_cannot_be_assumed_color_stable(), test_filter_prerequisite_conversion_and_complete_mixed_output(), test_positive_resource_count_reservation_and_pool_deficit(), test_unavailable_color_does_not_trial_resource_permutations()
 
 ### Community 362 - "Release and Storage Operations Agent Handoff"
 Cohesion: 0.20
 Nodes (9): 1. Safe Simulator Job Retention, 2. Backup and Restore Verification, 3. Clean-Checkout Release Evidence, Connected Deliverables, Exclusive File Ownership, Handoff, Isolate Your Work, Release and Storage Operations Agent Handoff (+1 more)
 
 ### Community 363 - "estimate_for"
-Cohesion: 0.03
-Nodes (123): _cmc(), _effect_tags(), printed_card_types(), _rules_surface(), tactical_clauses(), tactical_tags(), inspect(), answerable_by() (+115 more)
+Cohesion: 0.08
+Nodes (54): AnswerRoute, derive_profile(), _hash(), merge_profile_payload(), play_value(), profile_payload(), add(), _estimate_fields() (+46 more)
 
 ### Community 367 - ".error"
 Cohesion: 0.14
 Nodes (4): CanonicalAdmissionTests, fixture(), load(), SQLiteDiagnosticTests
 
-### Community 368 - "test_one_shot_origin_compatibility.py"
-Cohesion: 0.40
-Nodes (6): pending_mixed(), test_actual_completion_preflight_rejects_corruption_without_commit(), test_actual_paid_mixed_eight_preserves_packet_until_commit(), test_no_frame_handler_remains_explicit_legacy_and_lossless_defaults(), test_original_fifo_queue_keeps_unselected_records(), test_stale_pending_packet_is_rejected_before_clear()
+### Community 368 - "test_ai_pending_deployment.py"
+Cohesion: 0.27
+Nodes (7): observed(), test_horizon_keeps_actual_counter_response_value_and_original_stack(), test_observed_empty_board_deploys_instead_of_passing_for_six_turns(), test_pending_hidden_library_change_is_not_a_known_forecast(), test_shared_strategic_horizon_values_supported_creature_development(), test_pass_only_response_delta_is_independent_of_absolute_score(), test_real_counter_response_is_negative_and_score_offset_invariant()
 
 ### Community 369 - "Source-Linked Exile And AI Frontier: Current Composition"
 Cohesion: 0.33
@@ -2227,7 +2228,7 @@ Nodes (8): Actual HTTP, Root Privacy and Restart, Canonical Provenance, Dynamic 
 
 ### Community 371 - "pytest"
 Cohesion: 0.03
-Nodes (60): test_native_denial_is_active(), test_invalid_ordered_escape_is_atomic(), test_real_graveyard_replacement_cannot_manufacture_escape_card(), test_actual_paid_resource_qualified_incarnation(), reuse_position_score(), eager_reference(), test_only_relevant_response_or_fallback_positions_are_scored(), test_real_counter_and_pass_forecasts_match_eager_reference() (+52 more)
+Nodes (68): test_bounded_selection_is_atomic(), test_embedded_unknown_parenthetical_cannot_hide_linked_body(), test_real_paid_response_invalidates_one_bounded_target(), test_unknown_parenthetical_is_not_a_reminder(), test_unknown_resource_reminder_is_rejected(), test_whitespace_cannot_hide_unknown_x_token_body(), test_mixed_bounded_target_announcements_are_atomic(), test_singular_bounded_target_uses_native_single_target_frame() (+60 more)
 
 ### Community 373 - "Blink, Clause Binding And Full Seed Export: Current Stage"
 Cohesion: 0.40
@@ -2235,7 +2236,7 @@ Nodes (4): Blink, Clause Binding And Full Seed Export: Current Stage, Executed C
 
 ### Community 374 - "Zone"
 Cohesion: 0.03
-Nodes (210): deal_damage(), destroy_all_enchantments(), prevent_damage(), CardInstance, Zone, test_ability_model_exposes_effect_targets_modes_and_choices(), test_ability_model_marks_unparsed_action_text_as_fallback(), test_event_layer_patterns_are_not_reported_as_cast_parser_fallbacks() (+202 more)
+Nodes (223): deal_damage(), destroy_all_enchantments(), prevent_damage(), return_permanent_to_hand(), CardInstance, Zone, add_to_stack(), record_spell_colors() (+215 more)
 
 ### Community 375 - "test_private_cold_reviewed_contract.py"
 Cohesion: 0.32
@@ -2249,21 +2250,21 @@ Nodes (8): cleanup(), GIT_DIR, GIT_WORK_TREE, run-browser-ci.sh script, start_ba
 Cohesion: 0.22
 Nodes (6): MTG_CHROME, MTG_FRONTEND_DEPS, MTG_OFFICER_EVIDENCE_ROOT, MTG_TEST_PYTHON, test-activated-top-selection-harness.sh script, TMPDIR
 
-### Community 380 - "test_announced_spell_costs.py"
+### Community 380 - "DeckPanel"
+Cohesion: 0.33
+Nodes (6): DeckPanel(), importAllExpansionTopDecks(), importDeck(), importSelectedBuiltin(), importSelectedExpansionTopDeck(), showCompleteness()
+
+### Community 385 - "test_fixed_spell_cost_witness.py"
 Cohesion: 0.38
-Nodes (9): cast(), test_color_discount_and_controller_scope(), test_devoid_uses_actual_color_not_mana_symbols(), test_distinct_multicolor_clauses_stack_and_opponent_tax_applies(), test_multicolor_familiar_clause_reduces_once_not_twice(), test_prototype_is_colored_for_discount_checks_and_real_payment(), test_tax_and_discount_combine_without_discounting_colored_symbols(), test_unknown_color_qualifiers_warn_instead_of_becoming_global() (+1 more)
+Nodes (9): fixed_cost_selections(), add(), physical_witness(), setup(), test_all_fixed_discards_are_reserved_together(), test_exhaustive_selections_are_not_frozen_or_reserved_before_mana(), test_fixed_sacrifice_retains_legal_tap_then_sacrifice_payment(), test_joint_fixed_cost_existence_and_explicit_execution() (+1 more)
 
-### Community 385 - "test_static_parser_cache.py"
+### Community 386 - "CardKnowledge"
+Cohesion: 0.11
+Nodes (17): CardKnowledge, _name_aliases(), parent_cache(), recorded_repository(), stored_knowledge(), test_cache_alias_image_is_independent_of_canonical_knowledge(), test_exact_parent_and_single_face_keep_their_own_uri(), _payload() (+9 more)
+
+### Community 387 - "test_ai_oracle_semantics.py"
 Cohesion: 0.26
-Nodes (8): add(), test_attached_base_setter_reassignment_and_dynamic_scaling_use_live_state(), test_cache_reuses_text_not_object_identity_and_keeps_iterator_fresh(), test_cached_payload_has_no_mutable_containers_or_card_references(), immutable(), test_canonical_composed_cant_override_wins_over_opponents_grant(), test_control_change_counter_and_zone_updates_are_not_cached(), test_keyword_cant_override_and_grant_control_changes_remain_dynamic()
-
-### Community 386 - "test_three_admission.py"
-Cohesion: 0.31
-Nodes (7): cards(), test_body_driven_admission_not_name_allowlist(), test_complete_canonical_body_and_unsourced_negative(), test_complete_incubator_reminder_is_not_arbitrary_parenthesis_stripping(), test_full155_only_three_hydrated_reason_changes(), test_unknown_fullbody_and_untrusted_context_keep_all_warnings(), warnings()
-
-### Community 387 - "test_graveyard_stat_selector_audit.py"
-Cohesion: 0.15
-Nodes (20): _graveyard_card_matches_selector(), add(), setup(), test_basic_is_supertype_not_land_subtype(), test_existing_unqualified_land_domains_remain_supported(), test_opponent_count_uses_controller_on_battlefield_owner_elsewhere(), test_printed_canonical_stats_public_snapshot_and_query_purity(), test_qualified_land_counts_respect_graveyard_domain() (+12 more)
+Nodes (9): card(), test_all_builtin_deck_analysis_uses_metadata_not_display_labels(), test_board_and_closure_values_ignore_display_names_but_keep_real_draw_text(), test_cast_surface_uses_announced_face_not_aggregate_or_front_only_roles(), test_counter_recognition_and_color_demand_include_nonblue_counters(), test_fixed_player_damage_is_printed_not_guessed_from_names(), test_flat_and_nested_canonical_face_metadata_have_identical_analysis(), test_rank_and_rollout_burn_roles_do_not_come_from_move_labels() (+1 more)
 
 ### Community 388 - "Domain Compiler: Exact SAME328 Comparative Qualification"
 Cohesion: 0.25
@@ -2273,9 +2274,9 @@ Nodes (7): Actual Inventory, Actual Results, Domain Compiler: Exact SAME328 Comp
 Cohesion: 0.25
 Nodes (7): Activated-Sacrifice Zone Identity: Narrow Qualification, Canonical Inputs, Integration, Scope / Source, Semantics / Exile Difference, Separate Consequential Remaining Gap, Strict Before / After
 
-### Community 390 - "Paid-Cast Sickness Supplement"
-Cohesion: 0.50
-Nodes (3): Current shared-source acceptance, Historical failing baseline, Paid-Cast Sickness Supplement
+### Community 390 - "test_three_admission.py"
+Cohesion: 0.31
+Nodes (7): cards(), test_body_driven_admission_not_name_allowlist(), test_complete_canonical_body_and_unsourced_negative(), test_complete_incubator_reminder_is_not_arbitrary_parenthesis_stripping(), test_full155_only_three_hydrated_reason_changes(), test_unknown_fullbody_and_untrusted_context_keep_all_warnings(), warnings()
 
 ### Community 391 - "Current Backend CI Terminal"
 Cohesion: 0.25
@@ -2297,9 +2298,9 @@ Nodes (7): Fresh Capability Match Acceptance, Implemented Contract, Independent 
 Cohesion: 0.29
 Nodes (6): Admission and Preservation, CLI and Failure Boundary, Evidence, Explicit Prior Facts, Lossless Seed Export Preservation ABI v1, Qualified Scope
 
-### Community 396 - "test_ai_known_deck.py"
-Cohesion: 0.27
-Nodes (7): known_search_land_count(), test_composition_persists_privately_and_does_not_alias_input(), test_current_snapshot_missing_composition_rejects_retained_inventory_facts(), test_known_inventory_counts_owned_lands_under_opponent_control_and_excludes_copied_tokens(), test_known_search_count_subtracts_visible_copies_and_caps_by_library(), test_legacy_snapshot_does_not_recover_composition_from_hidden_cards(), test_linked_search_uses_own_list_not_hidden_instances()
+### Community 396 - "passiveCdp"
+Cohesion: 0.57
+Nodes (8): passiveCdp(), handle(), incomplete(), project(), record(), route(), snapshot(), writeFailure()
 
 ### Community 398 - "run-ui-action-diagnostics.sh"
 Cohesion: 0.29
@@ -2317,9 +2318,9 @@ Nodes (9): Actual Canonical Episodes, Batch Graveyard Publication Audit, Frozen 
 Cohesion: 0.29
 Nodes (6): Actual Terminal And Strong Closure, Canonical Provenance, Concrete Causal Seam And Future Proposal, Honest Failed Ledgers, Opt-In Reproduction, Springheart Nantuko: Native Whole-Body RED26
 
-### Community 402 - "release-acceptance-status.md"
-Cohesion: 0.06
-Nodes (22): Behavior, Evidence Boundaries, Observed Qualification, Terminal Draw Utility And Combat Allocation, Complete Configured CI: 3a7db1e2, Current CI Repair And AI Composition, Evidence And Remaining Work, Reproduced Histories (+14 more)
+### Community 402 - "Release Acceptance Status"
+Cohesion: 0.04
+Nodes (40): Behavior, Evidence Boundaries, Observed Qualification, Terminal Draw Utility And Combat Allocation, Complete Configured CI: 3a7db1e2, Current CI Repair And AI Composition, Evidence And Remaining Work, Reproduced Histories (+32 more)
 
 ### Community 403 - "Task 3.1 BO3 Implementation Plan"
 Cohesion: 0.33
@@ -2373,9 +2374,9 @@ Nodes (6): Already-Correct Trigger Family, Existing AI Repair Qualification, Fab
 Cohesion: 0.29
 Nodes (6): Bounded Color Consumer Fix, Commands And Rules, Input And Ownership, Ordinary Qualification, Remaining Bounds, Retained Source Interface
 
-### Community 418 - "Offline Assets: Cold Component Evidence"
-Cohesion: 0.20
-Nodes (9): Current441 Cold And Warm Qualification, Current A42 Cold And Warm Qualification, Current C637 Cold And Warm Qualification, Evidence And Closure, Historical Actual Results, Offline Assets: Cold Component Evidence, Qualified V6 Warm Continuation, Remaining Work (+1 more)
+### Community 418 - ".legal_moves"
+Cohesion: 0.29
+Nodes (5): Battlefield-entry choice boundary (2026-09-28), Bounded repair evidence, Repair gate, Reproduced defect, Rules boundary
 
 ### Community 419 - "Dynamic Self-Death Base Quantities: Isolated Qualification"
 Cohesion: 0.29
@@ -2406,8 +2407,8 @@ Cohesion: 0.29
 Nodes (6): Actual Producer Fields Before Any Fix, Canonical Actions And Controls, Honest Initial Receipts, Paid optional observer consumer audit, Reproduction And Dependencies, Terminal Scope
 
 ### Community 428 - "human-bo3-readiness.cjs"
-Cohesion: 0.18
-Nodes (7): assert, base, {Controls}, fs, React, {renderToStaticMarkup}, source
+Cohesion: 0.17
+Nodes (8): assert, base, {Controls}, fs, React, render(), {renderToStaticMarkup}, source
 
 ### Community 429 - "Complete Loyalty And Typed Food Costs"
 Cohesion: 0.11
@@ -2439,23 +2440,23 @@ Nodes (5): Actual SAME168 Native-Pure Gates, Exact Repair, Gate2 Current Actor-B
 
 ### Community 436 - "TrainingEnvironment"
 Cohesion: 0.02
-Nodes (155): complete_action(), AbilityAction, AttackAction, BlockAction, BulkTapAction, CardAction, CastAction, ConvokeCard (+147 more)
+Nodes (142): complete_action(), AbilityAction, AttackAction, BlockAction, BulkTapAction, CardAction, CastAction, ConvokeCard (+134 more)
 
-### Community 437 - "Optional CI Runtime Version Projection"
-Cohesion: 0.50
-Nodes (3): Optional CI Runtime Version Projection, Public Fields, Qualification Boundary
+### Community 437 - "Learned Policy Groundwork"
+Cohesion: 0.18
+Nodes (8): Acceptance Still Needed, Learned Policy Groundwork, References, Status, Step-By-Step Gates, Invocation, Records And Information Boundary, Versioned Training Trajectories
 
-### Community 438 - "is_unknown"
-Cohesion: 0.11
-Nodes (22): is_unknown(), controlled(), invoke(), publication(), single(), test_buffered_entry_boundary_real_canonical_plans(), receipts(), many() (+14 more)
+### Community 438 - "receipts"
+Cohesion: 0.28
+Nodes (6): publication(), single(), receipts(), many(), one(), record()
 
 ### Community 439 - "manifest.json"
 Cohesion: 0.33
 Nodes (5): cards, official_release_notes, retrieved_utc, scope, source
 
-### Community 440 - "test_ai_affinity.py"
-Cohesion: 0.49
-Nodes (7): accept_cast(), affinity_position(), test_agent_selects_and_executes_discounted_cast(), test_higher_printed_cost_land_affinity_is_selected_and_paid(), test_master_accepts_free_affinity_artifact_cost_path(), test_missing_blue_never_repeatedly_selects_thoughtcast(), test_strong_styles_accept_single_affordable_affinity_artifact()
+### Community 440 - "Persisted Tactical Tags: Current Bounded Acceptance"
+Cohesion: 0.29
+Nodes (6): Data Flow, Modal Usage Counter Correction, Observed Gates, Persisted Tactical Tags: Current Bounded Acceptance, Private Usage And Privacy, Remaining Original Acceptance
 
 ### Community 442 - "Paid Counter Family Audit"
 Cohesion: 0.33
@@ -2469,25 +2470,25 @@ Nodes (5): Life-payment trigger boundary (2026-09-28), Reproduction, Rules evide
 Cohesion: 0.33
 Nodes (5): Actual Evidence, Complete155 Inventory And Data, Gate2 Stormdrake: Compiler Candidate, Not Full-Card Certification, Paid Continuation Evidence, Remaining Blockers And Ownership
 
-### Community 445 - "mechanic_metadata"
-Cohesion: 0.12
-Nodes (26): FamilyCoverage, mechanic_metadata(), MechanicEvidence, MechanicMetadata, MechanicProvenance, entries(), fixture(), test_activation_trigger_and_loyalty_have_distinct_contexts() (+18 more)
+### Community 445 - "profiles.py"
+Cohesion: 0.06
+Nodes (57): _cmc(), _effect_tags(), printed_card_types(), _rules_surface(), tactical_clauses(), tactical_tags(), FamilyCoverage, mechanic_metadata() (+49 more)
 
 ### Community 446 - "Split Card Casting Boundary"
 Cohesion: 0.33
 Nodes (4): Aftermath Casting and Stack Departure, Not Yet Supported, Split Card Casting Boundary, Supported
 
-### Community 447 - "Optional land, paid triggers and printed roles"
-Cohesion: 0.33
-Nodes (5): Executed acceptance, Known Limitations and Next Upgrades, Optional land, paid triggers and printed roles, Preserved earlier evidence, Scope
-
-### Community 448 - "Phase 1 Stored-Deck Corpus Acceptance"
-Cohesion: 0.33
-Nodes (6): Evidence Boundary, Execution Bounds, Genuine Stored Corpus, Minimal Correction, Phase 1 Stored-Deck Corpus Acceptance, Qualified Component
-
-### Community 450 - "test_ai_combat_responses.py"
+### Community 447 - "test_ai_combat_responses.py"
 Cohesion: 0.44
 Nodes (7): assert_checked_win(), combat_board(), test_http_autoplay_casts_pump_and_restored_game_finishes_combat(), test_master_uses_winning_post_block_pump_and_checked_damage(), test_no_proved_win_does_not_force_a_pump(), test_unknown_response_outcome_is_not_claimed_as_winning(), test_winning_recipient_beats_larger_but_blocked_recipient()
+
+### Community 448 - "ai-plan-acceptance-progress.md"
+Cohesion: 0.09
+Nodes (19): Controls and Limits, Source and Evidence, Task 4.2 Stable Counter Filter, AI Plan Acceptance Progress, Evidence Boundaries, Implementation And Acceptance Are Different, Next Acceptance Milestones, Current Clean Install And Shipped Knowledge (+11 more)
+
+### Community 450 - "test_kicker_goldens.py"
+Cohesion: 0.42
+Nodes (8): cast_action(), setup(), test_ai_does_not_count_marked_damage_as_lethal_on_indestructible(), test_ai_paid_branch_targets_killable_creature_not_unproductive_larger_one(), test_copy_keeps_paid_toughness_change_without_another_payment(), test_negative_stat_projection_matches_actual_layers_without_mutating_state(), test_paid_unpaid_resource_effect_and_snapshot_goldens(), test_union_candidates_exclude_owned_enchantments_and_opponent_creatures()
 
 ### Community 451 - "Known-Composition Draw and Rummage Priors"
 Cohesion: 0.33
@@ -2517,9 +2518,9 @@ Nodes (5): AI Public Mana Changes, Canonical Data and Honesty, Checklist, Implem
 Cohesion: 0.33
 Nodes (5): Combat Graveyard Caller Audit, Episode Boundaries, Frozen Composition, Inspected Caller Seams, Strict Expected Semantics
 
-### Community 462 - "sql_facts"
-Cohesion: 0.07
-Nodes (65): discard_simultaneous(), normalize(), attack_position(), deliberate_orders(), genuine_pending(), test_genuine_attack_pending_invalid_selection_is_pure(), test_http_genuine_attack_and_selected_sacrifice_root_sql_private_restart(), test_independent_actual_attack_selection_owner_refs_apnap_replacement_restart() (+57 more)
+### Community 462 - "act"
+Cohesion: 0.05
+Nodes (104): client(), normalize(), attack_position(), deliberate_orders(), genuine_pending(), test_genuine_attack_pending_invalid_selection_is_pure(), test_http_genuine_attack_and_selected_sacrifice_root_sql_private_restart(), test_independent_actual_attack_selection_owner_refs_apnap_replacement_restart() (+96 more)
 
 ### Community 463 - "nadu_support.py"
 Cohesion: 0.19
@@ -2549,9 +2550,9 @@ Nodes (5): Frozen Dependencies, Read-Only Root Probe, S2 preparation: canonical 
 Cohesion: 0.29
 Nodes (12): compare_decision_views(), decision_records(), records(), test_cli_private_output_and_non_overwrite(), test_first_changed_decision_is_checked_even_with_unequal_lengths(), test_identical_streams_and_different_lengths(), test_metadata_exception_is_explicit_one_sided_and_never_drops_declarations(), test_private_state_differences_not_hidden() (+4 more)
 
-### Community 472 - "test_printed_body_admission.py"
-Cohesion: 0.36
-Nodes (6): add(), facts(), test_complete_contract_does_not_depend_on_catalog_name_or_printed_mana_cost(), test_only_matching_complete_reminder_is_ignored(), test_public_and_direct_cast_reject_whole_unknown_body_before_payment(), test_supported_body_does_not_require_unrelated_printed_keywords_or_spell_speed()
+### Community 472 - "test_brainstorm_fixture_adoption.py"
+Cohesion: 0.44
+Nodes (7): position(), test_adoption_preserves_unrelated_binding_and_real_canonical_cards(), test_foreign_target_controller_is_not_overwritten(), test_forged_capture_rejects_before_binding_or_persistence(), test_original_producers_keep_real_capture_through_installer(), transport(), persist()
 
 ### Community 473 - "Favor Clause Target Binding"
 Cohesion: 0.33
@@ -2569,9 +2570,9 @@ Nodes (7): preamble(), test_declared_owned_ci_temp_and_sqlite_are_admitted(), te
 Cohesion: 0.33
 Nodes (5): Canonical Evidence, Frozen Baseline, Gates And Limits, Global As-Though-Flash Permission, Product Scope
 
-### Community 478 - "test_task13_seed_loader_migration.py"
-Cohesion: 0.40
-Nodes (7): seed_api(), test_all155_actual_seed_payloads_keep_every_root_raw_and_face_field(), test_committed_seed_bytes_and_inventory_are_preserved(), test_existing_alias_and_front_lookup_preserves_payload_shape(), test_incomplete_actual_seed_copy_is_not_match_ready(), test_old_module_is_removed_without_a_competing_loader(), test_unknown_names_stay_none_without_invented_metadata()
+### Community 478 - "browser-game-over.mjs"
+Cohesion: 0.22
+Nodes (7): corsHeaders, fixture(), moves, player(), state, unexpected, writes
 
 ### Community 479 - "Recurring payoffs and safe mass destruction"
 Cohesion: 0.33
@@ -2593,9 +2594,9 @@ Nodes (4): Changes, Evidence, Oracle-grounded AI heuristics, Remaining Limits
 Cohesion: 0.33
 Nodes (5): Evidence, Human Response Controller Role, Limits, Pause And Resume Lifecycle, Seat-Neutral Setup Labels
 
-### Community 484 - "private-discard-browser-witness.mjs"
-Cohesion: 0.29
-Nodes (9): expression, fixture(), render(), nodes(), panel(), React, require, textContent() (+1 more)
+### Community 484 - "test_one_shot_origin_compatibility.py"
+Cohesion: 0.40
+Nodes (6): pending_mixed(), test_actual_completion_preflight_rejects_corruption_without_commit(), test_actual_paid_mixed_eight_preserves_packet_until_commit(), test_no_frame_handler_remains_explicit_legacy_and_lossless_defaults(), test_original_fifo_queue_keeps_unselected_records(), test_stale_pending_packet_is_rejected_before_clear()
 
 ### Community 485 - "Bounded Graveyard-Entry Trigger Audit"
 Cohesion: 0.33
@@ -2617,29 +2618,29 @@ Nodes (5): Expanded Evidence, Integration and Query Performance, Printed Life Lo
 Cohesion: 0.33
 Nodes (5): Canonical mass-exile lifecycle audit, Historical harness ledgers, Minimal proposal, not implementation grant, Passing boundaries, Strict findings
 
-### Community 491 - "test_ai_distinct_permanent_targets.py"
-Cohesion: 0.47
-Nodes (6): paid_result(), position(), test_candidate_field_and_count_are_not_guessed_from_oracle_or_board(), test_explicit_wrong_target_count_rejects_atomically_without_ai_repair(), test_real_public_choose_action_materializes_checked_paid_ghostly(), test_real_public_move_materializes_distinct_permanents_and_pays()
+### Community 491 - "Expanded keyword engine contracts"
+Cohesion: 0.33
+Nodes (5): Expanded keyword engine contracts, Implemented foundations, Regression coverage, Remaining work, Validation notes
 
 ### Community 492 - "Bounded Nth-Spell Triggers"
 Cohesion: 0.33
 Nodes (5): Bounded Nth-Spell Triggers, Canonical Evidence, Historical Witness Transition, Scope, Unsupported Boundaries
 
-### Community 493 - "test_activated_top_selection.py"
-Cohesion: 0.08
-Nodes (57): activate(), api_action(), card(), choose(), position(), resolve_activation(), test_actual_bounded_ai_activates_and_completes_private_choice(), test_any_order_payload_uses_existing_bottom_order_choice_and_resume() (+49 more)
+### Community 493 - "ActionRejected"
+Cohesion: 0.05
+Nodes (72): _decline_may(), preserve_lethal_response(), _responses(), _settled(), ActionRejected, require(), reject(), validate_prevention_item() (+64 more)
 
-### Community 494 - "run"
-Cohesion: 0.29
-Nodes (4): run(), passes(), post(), seed_cache()
+### Community 494 - "hydrate_deck_cards"
+Cohesion: 0.02
+Nodes (136): DeckEntry, _available_image_uri(), _get_attr_or_key(), select_display_image_uri(), cached_json(), hydrate_deck_cards(), is_playable_deck_card(), local_knowledge() (+128 more)
 
 ### Community 495 - "test_effective_decision_quality.py"
 Cohesion: 0.47
 Nodes (6): combat_position(), test_full_trace_records_available_lethal_without_changing_action_or_root(), test_layer_source_departure_restores_blocker_and_trace(), test_layered_trace_uses_effective_types_and_is_query_pure(), test_real_creature_blocker_still_excludes_open_board_metric(), test_transformed_nonblocker_does_not_hide_actual_lethal()
 
-### Community 497 - "DeckRow"
+### Community 497 - "Selected Immediate Mana Choices"
 Cohesion: 0.33
-Nodes (5): DeckRow, Repo, test_expansion_refresh_preserves_historic_duplicate(), test_expansion_refresh_uses_visible_builtin_reference(), test_saved_expansion_templates_refresh_in_place_without_touching_user_decks()
+Nodes (5): AI Boundary, Canonical Qualification Surface, Human UI Boundary, Remaining Boundaries, Selected Immediate Mana Choices
 
 ### Community 498 - "Cross-Family Rules Regression Repairs"
 Cohesion: 0.33
@@ -2661,9 +2662,9 @@ Nodes (5): Canonical Inputs, General Fix Proposal, Not Production, Limits, Ordin
 Cohesion: 0.33
 Nodes (5): Exact Scope, Precedence And Limits, Remaining Caller Migration, Not Release Ready, Shared Printed Graveyard Replacement: Staged Increment, Truthful Ordinary Ledger
 
-### Community 504 - "Announced Targets: Current Composition"
-Cohesion: 0.29
-Nodes (6): Announced Targets: Current Composition, Browser And Recovery Evidence, Current Executed Gates, Implemented Scope, Later Current Whole-Module Composition, Remaining Acceptance
+### Community 504 - "test_ai_distinct_permanent_targets.py"
+Cohesion: 0.47
+Nodes (6): paid_result(), position(), test_candidate_field_and_count_are_not_guessed_from_oracle_or_board(), test_explicit_wrong_target_count_rejects_atomically_without_ai_repair(), test_real_public_choose_action_materializes_checked_paid_ghostly(), test_real_public_move_materializes_distinct_permanents_and_pays()
 
 ### Community 505 - "Simultaneous graveyard episode audit"
 Cohesion: 0.33
@@ -2714,8 +2715,8 @@ Cohesion: 0.33
 Nodes (5): Frozen scope, Narrow proposal, not implementation, Public contracts and measured views, Suspend and keep-hand intent audit, Terminal result
 
 ### Community 518 - "ci_backend_metadata.py"
-Cohesion: 0.26
-Nodes (14): audit_evidence(), build_metadata(), empty_metadata(), has_symlink_component(), interruption_fields(), json_value(), invalid_constant(), MetadataError (+6 more)
+Cohesion: 0.10
+Nodes (22): audit_evidence(), build_metadata(), empty_metadata(), git(), has_symlink_component(), interruption_fields(), json_value(), invalid_constant() (+14 more)
 
 ### Community 519 - "Rules Regression Agent: Second Investigation"
 Cohesion: 0.33
@@ -2729,17 +2730,17 @@ Nodes (8): Acceptance Checklist, Checked combat-response forecasting, Implemente
 Cohesion: 0.20
 Nodes (9): Evidence, provenance and executable baseline, Independent parent verification, Legality, stability and private information, Limits and execution issues, Master AI planning latency: isolated performance-agent investigation, Outcome and scope, Parent reproduction, Regression and benchmark acceptance plan (+1 more)
 
-### Community 522 - "test_rejected_decision_preserves_complete_factory_state_and_storage"
-Cohesion: 0.25
-Nodes (4): Repository, test_real_heuristic_pregame_actions_are_accepted_without_display_hints(), test_rejected_decision_preserves_complete_factory_state_and_storage(), create()
+### Community 522 - "test_exhaustive_reservation_delta.py"
+Cohesion: 0.36
+Nodes (4): observe(), traced(), test_exhaustive_resource_paid_after_real_mana(), test_explicit_finite_cost_keeps_reserved_resource()
 
 ### Community 523 - "test_granted_target_boundary.py"
 Cohesion: 0.39
 Nodes (5): add_raw(), test_complete_generic_limit_compilation(), test_instruction_has_typed_condition_not_selected_effect_recipe(), test_layer_boundary_receipts_are_pure_and_independently_identified(), test_unknown_complete_body_is_diagnostic_not_partial_grant()
 
-### Community 524 - "test_seeker_preview.py"
-Cohesion: 0.47
-Nodes (3): test_current_legacy_reference_unchanged(), test_paid_seeker_preview_and_resolution(), test_unknown_raw_preview_no_partial_effect()
+### Community 524 - "run"
+Cohesion: 0.29
+Nodes (4): run(), passes(), post(), seed_cache()
 
 ### Community 525 - "Backend Capability Batches"
 Cohesion: 0.40
@@ -2755,7 +2756,7 @@ Nodes (4): Exact Scope And Provenance, Failure Ledger, Parent-Owned Future Quali
 
 ### Community 529 - "Repository"
 Cohesion: 0.01
-Nodes (368): AIDecision, save_log_priors(), gap(), record_accepted_action(), plan_sideboard(), castable(), value(), _ai_sideboard_for_next_game() (+360 more)
+Nodes (354): AIDecision, gap(), value(), KnowledgeIngestor, apply_sideboard(), autoplay_tick(), _controller_snapshot(), wrapped() (+346 more)
 
 ### Community 530 - "Exact Strategic Score Reuse"
 Cohesion: 0.40
@@ -2765,9 +2766,9 @@ Nodes (4): Evidence, Exact Strategic Score Reuse, Implementation, Known Limitati
 Cohesion: 0.40
 Nodes (4): Contract, Executed Evidence, Historical Decision Finding, Read-Only AI Hand Debugging
 
-### Community 532 - "test_exhaustive_reservation_delta.py"
-Cohesion: 0.36
-Nodes (4): observe(), traced(), test_exhaustive_resource_paid_after_real_mana(), test_explicit_finite_cost_keeps_reserved_resource()
+### Community 532 - "test_ai_symmetric_draw.py"
+Cohesion: 0.39
+Nodes (5): _position(), test_ai_avoids_symmetric_draw_that_only_decks_itself(), test_ai_checks_x_draw_against_both_library_sizes(), test_ai_holds_symmetric_draw_when_it_refills_only_opponent(), test_ai_uses_symmetric_draw_when_it_decks_opponent_safely()
 
 ### Community 533 - "AI Casting Resource Opportunity"
 Cohesion: 0.40
@@ -2777,9 +2778,9 @@ Nodes (4): AI Casting Resource Opportunity, Contract, Evidence, Limits And Next 
 Cohesion: 0.40
 Nodes (4): Cause And Shared Repair, Executed Evidence, Remaining Limits, Unknown-Library Deployment Decisions
 
-### Community 535 - "test_http_bridge_fixture_birth.py"
-Cohesion: 0.39
-Nodes (5): setup_prefix(), test_bridge_setup_prefix_is_serializable_and_fresh(), test_optional_birth_id_preserves_factory_validation(), test_optional_default_snapshot_retains_exact_old_setup(), test_optional_explicit_identity_is_captured_at_birth()
+### Community 535 - "Task 3.1: Offline Fixed-Board BO3 Runner"
+Cohesion: 0.25
+Nodes (7): CLI, Corrective Measured-Source Binding (P1/P2), Evidence Scope, Explicit Offline Input, Route, Task 3.1: Offline Fixed-Board BO3 Runner, Trace, Budget And Stops
 
 ### Community 536 - "Attached scaling and honest static diagnostics"
 Cohesion: 0.40
@@ -2794,8 +2795,8 @@ Cohesion: 0.40
 Nodes (4): Closed Exile-To-Graveyard Continuation, Qualification Boundary, Retained ABI, Selection and Execution
 
 ### Community 539 - "fixture"
-Cohesion: 0.10
-Nodes (33): fixture(), add(), add_cryptic(), prepare(), test_ai_can_materialize_counter_for_ability_from_spell_protected_source(), test_ai_holds_counter_against_battlefield_protected_spell(), test_ai_holds_plain_counter_against_intrinsically_protected_spell(), test_ai_preserves_compound_counter_draw_action_when_secondary_effect_is_useful() (+25 more)
+Cohesion: 0.20
+Nodes (24): fixture(), add(), hold(), release(), test_departed_exile_incarnation_is_not_returned(), test_linked_hand_return_does_not_add_loyalty_or_request_replacements(), test_linked_read_ahead_pauses_sbas_and_returns_with_chapter_choice(), test_mixed_owner_land_payments_reserve_life_per_player() (+16 more)
 
 ### Community 540 - "Browser Cost Fixture Handoff"
 Cohesion: 0.40
@@ -2833,9 +2834,9 @@ Nodes (4): Backend And Browser Setup, Clean CI Fixture Portability, Frontend Fix
 Cohesion: 0.40
 Nodes (4): Color consumer current-main requalification, Executed qualification, Frozen handoff and limits, Source and patch boundary
 
-### Community 549 - "Current Native Cold-Restart Fixtures"
-Cohesion: 0.50
-Nodes (3): Current Native Cold-Restart Fixtures, Native Meaning, Preserved Setup Histories
+### Community 549 - "test_seeker_preview.py"
+Cohesion: 0.47
+Nodes (3): test_current_legacy_reference_unchanged(), test_paid_seeker_preview_and_resolution(), test_unknown_raw_preview_no_partial_effect()
 
 ### Community 550 - "Capacity-aware combat intents and projections"
 Cohesion: 0.40
@@ -2890,8 +2891,8 @@ Cohesion: 0.40
 Nodes (4): Current Acceptance, Current Entry And Article-Mill Composition, Product Scope, Remaining Work
 
 ### Community 563 - "ast"
-Cohesion: 0.10
-Nodes (17): escape_count_pattern(), test_existing_count_vocabulary(), test_unknown_token_never_reaches_fallback_parser(), check(), outside(), delirium_printed_surface(), guard_namespace(), test_active_canary_keeps_denial_when_module_globals_are_cleared() (+9 more)
+Cohesion: 0.09
+Nodes (18): escape_count_pattern(), test_existing_count_vocabulary(), test_unknown_token_never_reaches_fallback_parser(), check(), outside(), test_main_wiring_uses_one_config_and_outer_guard_without_importing_main(), delirium_printed_surface(), guard_namespace() (+10 more)
 
 ### Community 564 - "Combat Damage Assignment Audit"
 Cohesion: 0.29
@@ -2921,9 +2922,9 @@ Nodes (4): Actual Qualification, Boundaries, Evidence, HAND Source And Entry Dam
 Cohesion: 0.40
 Nodes (4): Actual Whole Gates, Exact Source And Scope, Handler Graveyard Migration, Preserved Setup Ledgers And Remaining Seams
 
-### Community 572 - "test_loyalty_counter_costs.py"
-Cohesion: 0.46
-Nodes (5): activate(), test_cost_choice_resume_announces_and_pays_exactly_once(), test_negative_cost_is_removal_not_counter_placement(), test_positive_loyalty_cost_is_not_initially_an_effect(), test_replacement_makes_cost_eligible_for_effect_only_doubling()
+### Community 572 - "Shared Graveyard Lifecycle Acceptance"
+Cohesion: 0.33
+Nodes (5): Executed Acceptance, Historical Evidence And Test Adapters, Remaining Limits, Shared Graveyard Lifecycle Acceptance, Source And Scope
 
 ### Community 573 - "Officer Browser Fixture Lifecycle"
 Cohesion: 0.40
@@ -2945,9 +2946,9 @@ Nodes (4): Evidence, Implementation, Known Limitations And Next Upgrades, Read-O
 Cohesion: 0.40
 Nodes (4): Implementation, Known Limitations And Next Upgrades, Lethal-State Query Order, Validation
 
-### Community 578 - "Current Exile Time-Counter Bodies"
-Cohesion: 0.40
-Nodes (4): Current Exile Time-Counter Bodies, Independent Parent Acceptance, Product, Provenance And Limits
+### Community 578 - "Cast HTTP Fixture Birth Adoption"
+Cohesion: 0.50
+Nodes (3): Actual Candidate Whole Acceptance, Cast HTTP Fixture Birth Adoption, Distinct Evidence
 
 ### Community 579 - "Locked Activation Mana Plans"
 Cohesion: 0.40
@@ -2961,13 +2962,17 @@ Nodes (4): Evidence, Implemented Scope, Known Limitations And Next Upgrades, Man
 Cohesion: 0.40
 Nodes (4): Contract, Current Evidence, Mana Multiplier Query Prefilter, Remaining Acceptance
 
+### Community 582 - "action_validation.py"
+Cohesion: 0.09
+Nodes (36): test_mulligan_default_and_explicit_actor_equivalence(), test_mulligan_invalid_actor_rejects_before_helpers(), retain(), position(), test_new_families_keep_default_and_explicit_actor_equivalence(), test_new_families_reject_invalid_actor_before_helpers(), test_independent_foretell_exact_cost_private_exile_and_replay(), watch_helpers() (+28 more)
+
 ### Community 583 - "Native Next-Cast And Entry-Counter Qualification"
 Cohesion: 0.40
 Nodes (4): Actual Acceptance, Artifacts And Parent Verification, Limits, Native Next-Cast And Entry-Counter Qualification
 
-### Community 584 - "Bounded Spells, Target Drafts And AI Entry Strategy"
-Cohesion: 0.33
-Nodes (5): Bounded Spells, Target Drafts And AI Entry Strategy, Changes, Preserved Ledgers, Qualification, Remaining Limits
+### Community 584 - "Thirteen-Style AI Legality Baseline"
+Cohesion: 0.50
+Nodes (3): Executed Scope, Remaining Quality Work, Thirteen-Style AI Legality Baseline
 
 ### Community 585 - "Browser v2 accepted-response recovery"
 Cohesion: 0.33
@@ -3025,9 +3030,9 @@ Nodes (4): Acceptance, Current Printed Replacement Composition, Integration And 
 Cohesion: 0.40
 Nodes (4): Evidence and Limits, Observed Failure, Shared Repair, Strategic Pending Announcements
 
-### Community 600 - "git"
-Cohesion: 0.36
-Nodes (3): git(), PublicDefinitions, sqlite_error_fields()
+### Community 600 - "Legacy Restart Epoch Checks"
+Cohesion: 0.50
+Nodes (3): Evidence Boundaries, Legacy Restart Epoch Checks, Qualification
 
 ### Community 601 - "Targeted Library Search Compiler / Consumer Proposal"
 Cohesion: 0.40
@@ -3053,9 +3058,9 @@ Nodes (4): Exact pins and limitations, Frozen dependency and scope, Land and pri
 Cohesion: 0.40
 Nodes (4): Contract, Exact frozen dependency, Mulligan consumer intent guard, Qualification / truthful history
 
-### Community 607 - "aura_fixture_controls.py"
-Cohesion: 0.48
-Nodes (4): add(), setup(), test_aura_targets_are_selected_by_actual_resource_gain(), test_draw_aura_keeps_resource_outcome_unknown()
+### Community 607 - "Non-mana intent field-drop audit"
+Cohesion: 0.33
+Nodes (5): Canonical coverage, Non-mana intent field-drop audit, Provenance and limitations, Reproduction, Result
 
 ### Community 608 - "Contextual Life and Sacrifice Costs"
 Cohesion: 0.33
@@ -3073,9 +3078,9 @@ Nodes (6): result(), resolve(), Planner Contract, Private Diagnostic Export, Str
 Cohesion: 0.40
 Nodes (4): Boundary, Exact dependency, Qualification, Suspend and keep-hand consumer guard
 
-### Community 612 - "test_fertilid_real_response_retains_paid_controller_and_source_receipt"
-Cohesion: 0.43
-Nodes (5): assert_private(), position(), test_favor_paid_search_survives_real_counter_target_departure_without_free_counters(), test_fertilid_real_response_retains_paid_controller_and_source_receipt(), test_unobserved_response_identity_permutation_has_identical_actor_input()
+### Community 612 - "test_damage_activation_source_validation.py"
+Cohesion: 0.20
+Nodes (20): _validate_damage_activation_source(), live(), reject_pure(), test_actual_cast_prowess_frame_remains_outside_native_activation_guard(), test_actual_paid_target_bounce_valid_fizzle_or_early_bad_lki_rejection(), test_bad_departed_receipt_rejected_before_target_fizzle_including_containers(), test_child_lki_cannot_override_valid_root_receipt_with_wrong_incarnation(), test_disappeared_source_card_still_resolves_with_real_retained_lki() (+12 more)
 
 ### Community 613 - "Canonical Global Flash: Frozen Baseline Audit"
 Cohesion: 0.29
@@ -3121,9 +3126,9 @@ Nodes (31): cast_recipient(), choose_type(), finish_entry(), source_ready(), tes
 Cohesion: 0.50
 Nodes (3): Affinity Cost Determination, Evidence, Supported behavior
 
-### Community 627 - "pytest_keyboard_interrupt"
-Cohesion: 0.29
-Nodes (4): Optional CI interruption observation, Qualification scopes, interruption_signature(), pytest_keyboard_interrupt()
+### Community 627 - "Current Catalog And Canonical Seed Composition"
+Cohesion: 0.40
+Nodes (4): Current Catalog And Canonical Seed Composition, Executed Gates, Remaining Risks, Scope
 
 ### Community 628 - "Attached predicates and branch selection"
 Cohesion: 0.40
@@ -3171,7 +3176,7 @@ Nodes (5): Canonical Paid Acceptance, Gate And Limits, Optional Linked Discard /
 
 ### Community 640 - "RoundRobinProtocolTests"
 Cohesion: 0.07
-Nodes (14): legal(), fake_engine(), checked(), game_fixture(), roster(), RoundRobinProtocolTests, trace(), play() (+6 more)
+Nodes (16): legal(), fake_engine(), checked(), game_fixture(), project(), replay_namespace(), roster(), RoundRobinProtocolTests (+8 more)
 
 ### Community 641 - "Human-versus-AI Automatic Priority Flow"
 Cohesion: 0.50
@@ -3189,9 +3194,9 @@ Nodes (3): Desired Contracts, Official Import Identity and Sideboard Admission, 
 Cohesion: 0.40
 Nodes (4): Current Locked Dependency Advisories, October 11 Refresh, October 13 Refresh, Published `8ad9724f` Refresh
 
-### Community 646 - "re"
-Cohesion: 0.02
-Nodes (187): inspect_card(), record(), test_current_full_canonical_march_cost_block_is_atomic(), test_current_fullbody_hint_diagnostic_does_not_enforce_announced_x_cap(), test_current_unsupported_fullbody_suffix_remains_cost_blocked(), zero_artifact_from_paid_sunfall(), _choices(), _graveyard_loss() (+179 more)
+### Community 646 - "entry_counters.py"
+Cohesion: 0.06
+Nodes (49): preferred_counter_option(), final_count(), score(), preferred_counter_vector_option(), apply(), best(), score(), signature() (+41 more)
 
 ### Community 647 - "Late-Game AI Combat Safety"
 Cohesion: 0.50
@@ -3233,9 +3238,9 @@ Nodes (3): Closure And Remaining Work, Failure History, Native Resource Contract
 Cohesion: 0.40
 Nodes (4): Actual Whole HTTP Qualification, Brainstorm Fixture Identity Adoption, Pending Whole HTTP Qualification, Pure Boundary Qualification
 
-### Community 657 - "Counter And Targeted Search Current Composition"
-Cohesion: 0.33
-Nodes (5): Counter And Targeted Search Current Composition, Current Behavior, Executed Gates, Frozen Inputs And Storage, Known Limitations and Next Upgrades
+### Community 657 - "Current Exile Time-Counter Bodies"
+Cohesion: 0.40
+Nodes (4): Current Exile Time-Counter Bodies, Independent Parent Acceptance, Product, Provenance And Limits
 
 ### Community 658 - "Targeted library search resolver stage"
 Cohesion: 0.50
@@ -3285,9 +3290,9 @@ Nodes (4): Current Standalone Storage Acceptance, Historical Qualification, Octo
 Cohesion: 0.33
 Nodes (5): Known Limitations and Next Upgrades, Reproduced and implemented, Restricted mana and attachment workflows, Rules grounding, Validation
 
-### Community 770 - "Soul-Scar Mage Preflight / Rules Audit"
-Cohesion: 0.33
-Nodes (5): Actual Gates, Frozen Scope, Passing Rules Boundaries, Reproduce / Limits, Soul-Scar Mage Preflight / Rules Audit
+### Community 770 - "Learned matchup profile protocol"
+Cohesion: 0.40
+Nodes (4): Admission and lineage, Deterministic advisory transform, Evidence and limits, Learned matchup profile protocol
 
 ### Community 772 - "Spell-Type Caller Projection"
 Cohesion: 0.33
@@ -3297,9 +3302,9 @@ Nodes (5): Focused Evidence, Observed Regression, Pins, Remaining Acceptance, Sp
 Cohesion: 0.50
 Nodes (3): Known Limitations and Next Upgrades, Spell and Ability Counterability Scope, Supported behavior
 
-### Community 774 - "Interactive Preflight Entrypoint"
-Cohesion: 0.50
-Nodes (3): Interactive Preflight Entrypoint, Root Cause And Correction, Verification
+### Community 774 - "Source Controller, Preflight and Heroic Checkpoint"
+Cohesion: 0.40
+Nodes (4): Executed Acceptance, Isolation and Limits, Scope, Source Controller, Preflight and Heroic Checkpoint
 
 ### Community 775 - "Static Global Creature Keyword Grants"
 Cohesion: 0.33
@@ -3317,17 +3322,17 @@ Nodes (4): AI Force Copy Choices, Evidence, Limits, Observed Qualification
 Cohesion: 0.50
 Nodes (3): Exact Scope, Integrated Fixture Acceptance, Verification And Closure
 
-### Community 779 - "Source Controller, Preflight and Heroic Checkpoint"
+### Community 779 - "Spell Admission Fixture Birth"
 Cohesion: 0.40
-Nodes (4): Executed Acceptance, Isolation and Limits, Scope, Source Controller, Preflight and Heroic Checkpoint
+Nodes (4): Pending Mixed Acceptance, Pure Evidence, Qualified Mixed Cohort, Spell Admission Fixture Birth
 
-### Community 780 - "AI Loyalty Choices And Replay Artifact Safety"
+### Community 780 - "Remaining Intent Guard"
 Cohesion: 0.40
-Nodes (4): Actual Qualification, AI Loyalty Choices And Replay Artifact Safety, Behavior, Evidence And Limits
+Nodes (4): Contract, Independent Open Engine Gap, Qualification, Remaining Intent Guard
 
 ### Community 781 - "test_soulscar_preflight_rules_audit.py"
-Cohesion: 0.21
-Nodes (24): test_actual_paid_conversion_retains_nested_counter_choice_and_real_frame(), test_actual_paid_nontargeted_black_damage_offers_matching_protection_order(), test_combat_never_acquires_conversion_and_missing_context_does_not_guess_active(), test_core_damage_uses_real_source_controller_not_unrelated_handler_actor(), test_readonly_known_zero_and_legacy_unknown_amounts(), test_selected_unoffered_source_rejects_before_log_counters_or_zones(), test_virtual_protection_component_choice_is_not_a_fabricated_paid_episode(), add() (+16 more)
+Cohesion: 0.23
+Nodes (23): test_actual_paid_conversion_retains_nested_counter_choice_and_real_frame(), test_combat_never_acquires_conversion_and_missing_context_does_not_guess_active(), test_core_damage_uses_real_source_controller_not_unrelated_handler_actor(), test_readonly_known_zero_and_legacy_unknown_amounts(), test_selected_unoffered_source_rejects_before_log_counters_or_zones(), test_virtual_protection_component_choice_is_not_a_fabricated_paid_episode(), add(), cast() (+15 more)
 
 ### Community 782 - "Task 3.3 Native Training Adapter Prototype"
 Cohesion: 0.40
@@ -3341,17 +3346,13 @@ Nodes (3): Local Checks, Native Vendor Browser CI, Runtime Checks
 Cohesion: 0.50
 Nodes (3): Observed Failure, Officer Origin And Private Browser Diagnostics, Opt-In Observer
 
-### Community 785 - "Checked Live Autoplay Actions"
-Cohesion: 0.40
-Nodes (4): Checked Live Autoplay Actions, Contract, Known Limitations and Next Upgrades, Validation Scope
-
 ### Community 786 - "CHANGELOG.md"
 Cohesion: 0.05
 Nodes (32): Card-copy latency follow-up, Evidence and implementation, Reusable commands, Validation and remaining work, AI Hot-Path Integrity and Keyword Prohibitions, Diagnostic Failure, Implemented, Known Limitations and Next Upgrades (+24 more)
 
-### Community 787 - "Complete Loyalty And Aura Composition"
+### Community 787 - "Missing Sources And Consumer Restart Epochs"
 Cohesion: 0.50
-Nodes (3): Actual Qualification, Complete Loyalty And Aura Composition, Limits
+Nodes (3): Corrections, Executed Evidence, Missing Sources And Consumer Restart Epochs
 
 ### Community 788 - "Bounded continuous color classification fix"
 Cohesion: 0.40
@@ -3381,29 +3382,21 @@ Nodes (4): Friendly Damage Materialization Safety, Limits, Qualification, Reprod
 Cohesion: 0.50
 Nodes (3): Acceptance, Fixed Additional Triggered Mana, Remaining Coverage
 
-### Community 796 - "Current Clean Install And Shipped Knowledge"
-Cohesion: 0.33
-Nodes (6): Current Clean Install And Shipped Knowledge, Current Fresh Application Environments: `a9431b12`, Current Knowledge CLI: `8ad9724f`, F102 Read-Only Installed-Pin Consistency, Fresh Environment: `03b601fc`, Remaining Acceptance
+### Community 796 - "Interactive Preflight Cleanup"
+Cohesion: 0.50
+Nodes (3): Correction And Evidence, Integration And Limits, Interactive Preflight Cleanup
 
 ### Community 798 - "AI Counterability Decisions"
 Cohesion: 0.50
 Nodes (4): AI Counterability Decisions, Known Limitations and Next Upgrades, Reproduced Before and After, Verification
 
-### Community 799 - "test_variable_mana.py"
-Cohesion: 0.39
-Nodes (9): nonland_mana_outputs(), add(), test_automatic_payment_uses_entire_dynamic_output_and_retains_excess(), test_count_scope_and_live_board_changes(), test_counter_zero_is_not_free_mana_and_current_counters_control_quantity(), test_effective_source_power_not_symbol_count_or_base_stat(), test_scaling_resource_reservation_reaches_each_style_without_hidden_hand(), test_tapping_and_sickness_still_gate_scaling_sources() (+1 more)
-
-### Community 800 - "Bounded Generic Damage Protection"
-Cohesion: 0.40
-Nodes (4): Bounded Generic Damage Protection, Executed strict ledgers, Explicit unclosed activation ledger, Frozen inputs and evidence
+### Community 800 - "Task 3.2 Measured-Epoch Preparation"
+Cohesion: 0.67
+Nodes (3): Exact Epoch, Task 3.2 Measured-Epoch Preparation, Tests And Boundary
 
 ### Community 801 - "Productive Destruction Targeting"
 Cohesion: 0.50
 Nodes (4): Behavior, Evidence, Known Limitations and Next Upgrades, Productive Destruction Targeting
-
-### Community 803 - "Current Graveyard and Public Combat Acceptance"
-Cohesion: 0.50
-Nodes (3): Current Graveyard and Public Combat Acceptance, Exact Whole Cohort, What This Proves
 
 ### Community 804 - "March Paid Costs In The Current Composition"
 Cohesion: 0.50
@@ -3461,14 +3454,6 @@ Nodes (3): Qualified Whole Module, Retained Development Ledgers, Task 4.2 Intera
 Cohesion: 0.50
 Nodes (4): Fixtures and validation, Implemented, Known Limitations and Next Upgrades, Repeatable mana-resource valuation
 
-### Community 824 - "AI Phase 3 Groundwork"
-Cohesion: 0.50
-Nodes (4): AI Phase 3 Groundwork, Native Execution, Preserved Limits, Tested Code
-
-### Community 825 - "AI Plan Acceptance Progress"
-Cohesion: 0.50
-Nodes (4): AI Plan Acceptance Progress, Evidence Boundaries, Implementation And Acceptance Are Different, Next Acceptance Milestones
-
 ### Community 826 - "Pure-query Planning Latency"
 Cohesion: 0.50
 Nodes (4): Acceptance and Remaining Work, Final Validation, Profiling and Implementation, Pure-query Planning Latency
@@ -3489,10 +3474,6 @@ Nodes (3): Actual Qualification, Preserved Setup History, Targeted Cast Observer
 Cohesion: 0.50
 Nodes (3): Checks, Loyalty Counter Costs, Remaining Scope
 
-### Community 831 - "Mill And Selected Sacrifice Committed Batches"
-Cohesion: 0.50
-Nodes (3): Actual Current-Source Acceptance, Mill And Selected Sacrifice Committed Batches, Remaining Boundaries
-
 ### Community 832 - "Modal Cost View Contract"
 Cohesion: 0.50
 Nodes (3): Executed Qualification, Modal Cost View Contract, Remaining Acceptance
@@ -3503,23 +3484,23 @@ Nodes (3): Creature Token Descriptor Types, Independent Fixture Adaptation, Qual
 
 ## Knowledge Gaps
 - **2588 isolated node(s):** `MTG_ISOLATED_TEST_ROOT`, `MTG_CI_EVIDENCE`, `MTG_RELEASE_MEDIA_ARCHIVE`, `MTG_RELEASE_MEDIA_ARCHIVE_SHA256`, `MTG_EXPORT_RECOVERY_EVIDENCE_ROOT` (+2583 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 6058 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **172 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 6057 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **168 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `Zone` connect `Zone` to `test_hand_source_incarnation_causal_audit.py`, `random`, `Step`, `test_conditional_creature_types.py`, `compile_body`, `apply_state_based_actions`, `AnalyticsService`, `ScryfallSyncService`, `regression_matrix_replay.py`, `test_granted_target_boundary.py`, `test_seeker_preview.py`, `mana.py`, `fixture`, `add_card`, `test_log_priors_archetype.py`, `Repository`, `test_cast_choice_modes.py`, `extra_sequence_support.py`, `test_exhaustive_reservation_delta.py`, `test_flicker_nontoken_domain.py`, `test_no_priority_progression.py`, `resolve`, `test_queued_sequences.py`, `StackItem`, `test_tribal_entry_trigger.py`, `test_cast_resource_payments.py`, `fixture`, `test_fable_optional_linked_discard.py`, `retain`, `controlled_basic_game`, `bare_state`, `test_spell_cost_overlap_investigation.py`, `test_training_environment.py`, `add`, `raw_card`, `test_combat_query_performance.py`, `board`, `test_canonical_global_flash_audit.py`, `test_generic_prerequisite_repairs.py`, `engine.py`, `assign_static_order_on_battlefield_entry`, `decode_action`, `test_complete_clause_boundaries.py`, `test_soulless_jailer_typed_query.py`, `act`, `test_temporary_control_lifecycle_audit.py`, `RulesEngine`, `clean`, `clean`, `test_counter_replacements.py`, `test_daretti_native_continuations.py`, `test_bloodtithe_resource_debuff_audit.py`, `domain_paid_support`, `test_graveyard_self_activation_product.py`, `checked_action`, `test_death_cycle_ordering_audit.py`, `build_trace_payload`, `ActionRejected`, `test_ui_synthetic_stock_publication.py`, `test_sideboard_review_boundaries.py`, `test_march_pitch_paid.py`, `test_selected_graveyard_reference.py`, `test_loyalty_copy_boundaries.py`, `test_cathar_day_night_linked_exile.py`, `test_combat_graveyard_caller_audit.py`, `test_counter_prohibitions.py`, `destroy_permanent`, `test_variable_suspend_keyword.py`, `test_multicast_subject_audit.py`, `decision_view`, `test_combat_damage_assignment.py`, `test_saga_counter_events.py`, `test_source_linked_exile.py`, `snap`, `test_additional_cost_draw_body.py`, `continuous.py`, `aura_fixture_controls.py`, `test_wheel_draw.py`, `test_optional_land_from_hand_audit.py`, `test_march_desired_paid.py`, `test_brainstorm_http_ordering_goldens.py`, `emit_event`, `test_suspend_lifecycle.py`, `test_sba_graveyard_entry_audit.py`, `test_fertilid_real_response_retains_paid_controller_and_source_receipt`, `test_spell_trigger_surface_audit.py`, `test_combat_ability_provenance.py`, `test_complete_copy_payment_roots.py`, `act`, `test_additive_mana.py`, `serializers.py`, `test_shuffle_observer_audit.py`, `test_readiness_rules_seam.py`, `test_native_next_creature_lifecycle.py`, `test_numeric_inventory_adapter.py`, `resolve_top_of_stack`, `test_end_step_ownership_draw.py`, `test_activation_modifiers.py`, `test_paid_force_twincast.py`, `declare_attackers`, `test_domain_paid_continuations.py`, `test_graveyard_inventory_feasibility.py`, `test_kicker.py`, `test_ai_knowledge_consumer_audit.py`, `test_ai_resource_forecast.py`, `test_announced_target_reference_product.py`, `test_control_layer_contract.py`, `test_paid_edges.py`, `re`, `original`, `test_dynamic_death_quantity.py`, `test_ai_public_mana_changes.py`, `test_generic_article_mill.py`, `serialize_match`, `test_typed_resource_sacrifice_costs.py`, `favor_lifecycle_support.py`, `passes`, `position`, `test_paid_optional_view_consumer_audit.py`, `pending_source_privacy_support.py`, `effective_power`, `test_basic_land_layer_goldens.py`, `test_paid_trigger_continuation_adapted.py`, `test_basic_land_hooks.py`, `test_soulless_jailer_action_goldens.py`, `test_bestow.py`, `test_resolution_conditions.py`, `test_training_combat_intent_audit.py`, `test_exiled_time_counter_bodies.py`, `test_mass_exile_lifecycle_audit.py`, `test_spell_entry_counters.py`, `json`, `test_affinity.py`, `test_ai_suspend_policy.py`, `browser_fixture_server.py`, `ui_v2_fixture_server.py`, `test_springheart_paid_body.py`, `test_archangel_pair_paid_desired.py`, `test_static_global_keyword_contracts.py`, `test_loyalty_entry_lifecycle.py`, `test_creature_observer_audit.py`, `test_temporary_characteristics_http.py`, `test_paid_optional_payment_edges.py`, `test_three_paid_originals.py`, `test_fixture_state_adoption.py`, `test_paid_trigger_ai_integration_audit.py`, `test_paid_preflight.py`, `deserialize_match_snapshot`, `rules_engine/__init__.py`, `AIAgent`, `test_brainstorm_continuation_goldens.py`, `SpreeCase`, `card_color_symbols`, `test_loyalty_ai_continuations.py`, `events.py`, `test_temporary_control_lifecycle_http_audit.py`, `test_restricted_mana.py`, `test_aura_costs.py`, `test_modal_targetless_announcement.py`, `test_qualified_spell_costs.py`, `test_suncleanser_desired.py`, `seed_card_payload`, `test_soulscar_affected_order_goldens.py`, `test_damage_source_controller_audit.py`, `test_multi_target_immediate_return.py`, `damage_results.py`, `test_activated_sacrifice_identity.py`, `test_heroic_cast_target_contract.py`, `MatchState`, `test_mixed_entry_origin_audit.py`, `pending_effects.py`, `test_color_consumer_goldens.py`, `test_compleated_loyalty_full.py`, `test_modal_fixture_identity.py`, `test_veil_turn_protection_goldens.py`, `infer_effect_from_oracle`, `test_canonical_magecraft_self_pump.py`, `test_ai_selection_activation_policy.py`, `mana_source_outputs`, `test_proliferation.py`, `hydrate_deck_cards`, `test_training_trigger_intent_audit.py`, `test_resolver_actor_protocol.py`, `cathar_fixture_server.py`, `escape_position`, `test_sideboard_game_facts.py`, `test_hand_source_context_product.py`, `add`, `test_soulscar_preflight_rules_audit.py`, `test_variable_spell_costs.py`, `test_native_free_and_owner.py`, `test_sba_planeswalker_query_order.py`, `serialize_match_snapshot`, `test_canonical_token_descriptors.py`, `test_variable_mana.py`, `test_supported_preflight_engine_parity.py`, `inventory`, `test_nonmana_kicker.py`, `test_each_player_discard_public_projection.py`, `main.py`, `turn_scheduler.py`, `test_natural_heat_target_audit.py`, `test_numeric_prevention_receipts.py`, `pickle`, `test_entry_width.py`, `test_animation_color_state_forwarding.py`, `test_equip_context.py`, `test_ward_resolution.py`, `test_paid_last_counter_emits_distinct_keyword_and_printed_card_ability`, `test_march_http_paid.py`, `test_creature_only_damage_wrapper.py`, `test_mana_multiplier_prefilter.py`, `cold_restart_http_fixture.py`, `test_optional_land_from_hand_choice_slice.py`, `test_immediate_return_product.py`, `test_public_graveyard_reviewed_context.py`, `test_fixed_spell_cost_witness.py`, `test_ai_instant_window.py`, `test_combat_damage_windows.py`, `draw_card`, `current_built_browser_server.py`, `test_intrinsic_entry_product.py`, `action_validation.py`, `estimate_for`, `test_one_shot_origin_compatibility.py`, `pytest`, `test_announced_spell_costs.py`, `test_static_parser_cache.py`, `test_graveyard_stat_selector_audit.py`, `test_ai_known_deck.py`, `is_unknown`, `test_ai_affinity.py`, `test_ai_combat_responses.py`, `sql_facts`, `nadu_support.py`, `test_printed_body_admission.py`, `test_regression_repair_edges.py`, `test_ai_distinct_permanent_targets.py`, `test_activated_top_selection.py`, `run`, `test_effective_decision_quality.py`?**
-  _High betweenness centrality (0.185) - this node is a cross-community bridge._
+- **Why does `Zone` connect `Zone` to `test_hand_source_incarnation_causal_audit.py`, `random`, `Step`, `test_mana_self_sacrifice.py`, `loyalty_instructions.py`, `AnalyticsService`, `regression_matrix_replay.py`, `test_exhaustive_reservation_delta.py`, `test_granted_target_boundary.py`, `put_counters`, `mana.py`, `add_card`, `run`, `test_log_priors_archetype.py`, `Repository`, `test_cast_choice_modes.py`, `extra_sequence_support.py`, `test_flicker_nontoken_domain.py`, `stack_object_kind`, `StackItem`, `resolve`, `test_queued_sequences.py`, `decode_action`, `test_tribal_entry_trigger.py`, `fixture`, `test_fable_optional_linked_discard.py`, `restart`, `seed_card_payload`, `bare_state`, `test_spell_cost_overlap_investigation.py`, `test_seeker_preview.py`, `add`, `test_training_environment.py`, `raw_card`, `test_combat_query_performance.py`, `board`, `test_canonical_global_flash_audit.py`, `test_generic_prerequisite_repairs.py`, `engine.py`, `assign_static_order_on_battlefield_entry`, `test_selected_mana_http.py`, `test_complete_clause_boundaries.py`, `test_soulless_jailer_typed_query.py`, `declare_attackers`, `test_temporary_control_lifecycle_audit.py`, `RulesEngine`, `clean`, `test_transformed_entry.py`, `test_counter_replacements.py`, `test_daretti_native_continuations.py`, `test_bloodtithe_resource_debuff_audit.py`, `test_exchange_edges.py`, `test_graveyard_self_activation_product.py`, `fixture`, `test_death_cycle_ordering_audit.py`, `build_trace_payload`, `action_validation.py`, `test_task23_canonical_block_outcomes.py`, `test_sideboard_review_boundaries.py`, `test_march_pitch_paid.py`, `test_selected_graveyard_reference.py`, `test_loyalty_copy_boundaries.py`, `test_cathar_day_night_linked_exile.py`, `restart`, `test_training_pending_intent_audit.py`, `clean`, `destroy_permanent`, `test_variable_suspend_keyword.py`, `test_linked_group_untap.py`, `state.py`, `apply_state_based_actions`, `test_saga_counter_events.py`, `test_source_linked_exile.py`, `snap`, `test_additional_cost_draw_body.py`, `continuous.py`, `checked_action`, `test_modal_spell_faces.py`, `test_march_desired_paid.py`, `test_damage_activation_source_validation.py`, `replacement.py`, `test_suspend_lifecycle.py`, `test_brainstorm_http_ordering_goldens.py`, `test_sba_graveyard_entry_audit.py`, `test_spell_trigger_surface_audit.py`, `test_combat_ability_provenance.py`, `test_complete_copy_payment_roots.py`, `act`, `test_additive_mana.py`, `add_keyword_effect`, `test_spell_admission_safety_http.py`, `test_readiness_rules_seam.py`, `test_native_next_creature_lifecycle.py`, `copy`, `serializers.py`, `resolve_top_of_stack`, `test_end_step_ownership_draw.py`, `test_activation_modifiers.py`, `test_paid_force_twincast.py`, `test_domain_paid_continuations.py`, `sideboard_finished_fixture_support.py`, `test_kicker.py`, `test_ai_knowledge_consumer_audit.py`, `test_ai_resource_forecast.py`, `generic_import_fixtures.py`, `test_control_layer_contract.py`, `test_paid_edges.py`, `entry_counters.py`, `original`, `test_dynamic_death_quantity.py`, `test_conditional_creature_types.py`, `test_generic_article_mill.py`, `passes`, `test_typed_resource_sacrifice_costs.py`, `favor_lifecycle_support.py`, `settled_public_position`, `position`, `test_paid_optional_view_consumer_audit.py`, `pending_source_privacy_support.py`, `effective_power`, `test_basic_land_layer_goldens.py`, `test_paid_trigger_continuation_adapted.py`, `test_basic_land_hooks.py`, `test_soulless_jailer_action_goldens.py`, `test_bestow.py`, `test_fixture_binding_transitions.py`, `test_ai_topdeck_deployment.py`, `test_exiled_time_counter_bodies.py`, `test_mass_exile_lifecycle_audit.py`, `test_spell_entry_counters.py`, `json`, `test_affinity.py`, `test_ai_suspend_policy.py`, `test_ai_defensive_responses.py`, `ui_v2_fixture_server.py`, `domain_paid_support`, `test_archangel_pair_paid_desired.py`, `test_static_global_keyword_contracts.py`, `test_loyalty_entry_lifecycle.py`, `test_temporary_characteristics_http.py`, `test_paid_optional_payment_edges.py`, `test_three_paid_originals.py`, `KnowledgeSnapshotContract`, `resolve_effect`, `test_paid_trigger_ai_integration_audit.py`, `test_ai_turn25_race.py`, `serialize_match_snapshot`, `test_ability_suppression.py`, `AIAgent`, `test_brainstorm_continuation_goldens.py`, `SpreeCase`, `has_keyword`, `test_loyalty_ai_continuations.py`, `events.py`, `sql_facts`, `test_restricted_mana.py`, `test_aura_costs.py`, `test_modal_targetless_announcement.py`, `test_ai_knowledge_profile_consumer.py`, `test_suncleanser_desired.py`, `test_opening_hand.py`, `test_soulscar_affected_order_goldens.py`, `test_noncombat_clause_source_boundaries.py`, `test_combat_keyword_triggers.py`, `test_multi_target_immediate_return.py`, `activate_mana_ability`, `test_activated_sacrifice_identity.py`, `test_heroic_cast_target_contract.py`, `MatchState`, `test_mixed_entry_origin_audit.py`, `effective_types`, `test_color_consumer_goldens.py`, `test_modal_fixture_identity.py`, `test_veil_turn_protection_goldens.py`, `re`, `rules_engine/__init__.py`, `test_ai_selection_activation_policy.py`, `add`, `test_proliferation.py`, `test_ai_search_prefix.py`, `test_resolver_actor_protocol.py`, `test_no_priority_progression.py`, `escape_position`, `test_canonical_multicharacteristic_audit.py`, `draw_card`, `test_ai_opaque_draw_horizon.py`, `add`, `test_soulscar_preflight_rules_audit.py`, `test_creature_observer_audit.py`, `test_native_free_and_owner.py`, `test_sba_planeswalker_query_order.py`, `test_training_remaining_intent_audit.py`, `position`, `test_canonical_token_descriptors.py`, `test_ai_strategic_score_reuse.py`, `test_closed_damage_instruction_compiler.py`, `inventory`, `test_activated_top_selection.py`, `test_compleated_loyalty_full.py`, `main.py`, `test_natural_heat_target_audit.py`, `test_numeric_prevention_receipts.py`, `pickle`, `test_entry_width.py`, `test_nested_mana_life.py`, `test_animation_color_state_forwarding.py`, `test_player_counters.py`, `test_paid_last_counter_emits_distinct_keyword_and_printed_card_ability`, `test_march_http_paid.py`, `test_creature_only_damage_wrapper.py`, `test_ai_postcombat_mana.py`, `Request`, `test_variable_spell_costs.py`, `test_permanent_keyword_grants.py`, `test_targeted_library_search_compiler.py`, `test_granted_target_publication.py`, `test_ward_forms.py`, `test_combat_damage_windows.py`, `test_sideboard_game_events.py`, `current_built_browser_server.py`, `test_intrinsic_entry_product.py`, `test_granted_target_producers.py`, `test_fixed_color_feasibility.py`, `test_ai_pending_deployment.py`, `pytest`, `test_fixed_spell_cost_witness.py`, `TrainingEnvironment`, `profiles.py`, `test_ai_combat_responses.py`, `test_kicker_goldens.py`, `act`, `nadu_support.py`, `test_regression_repair_edges.py`, `test_one_shot_origin_compatibility.py`, `ActionRejected`, `hydrate_deck_cards`, `test_effective_decision_quality.py`, `test_ai_distinct_permanent_targets.py`?**
+  _High betweenness centrality (0.183) - this node is a cross-community bridge._
 - **Are the 3457 inferred relationships involving `Zone` (e.g. with `boundary()` and `test_actual_ai_copy_destroys_opponent_not_friendly()`) actually correct?**
   _`Zone` has 3457 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `MTG_ISOLATED_TEST_ROOT`, `MTG_CI_EVIDENCE`, `MTG_RELEASE_MEDIA_ARCHIVE` to the rest of the system?**
   _2588 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `random` be split into smaller, more focused modules?**
   _Cohesion score 0.08413461538461539 - nodes in this community are weakly interconnected._
-- **Why does `Public startup-media pin bundle` connect `ScryfallSyncService` to `browser-vendor-preflight.mjs`?**
-  _High betweenness centrality (0.091) - this node is a cross-community bridge._
+- **Why does `Public startup-media pin bundle` connect `hydrate_deck_cards` to `browser-vendor-preflight.mjs`?**
+  _High betweenness centrality (0.089) - this node is a cross-community bridge._
 - **Are the 1191 inferred relationships involving `RulesEngine` (e.g. with `choose()` and `test_actual_ai_hidden_identity_swap_and_root_invariance()`) actually correct?**
   _`RulesEngine` has 1191 INFERRED edges - model-reasoned connections that need verification._
 - **Should `Step` be split into smaller, more focused modules?**
-  _Cohesion score 0.016192305453698853 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.01662722947357708 - nodes in this community are weakly interconnected._

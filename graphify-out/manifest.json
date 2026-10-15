@@ -18804,15 +18804,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-vendor-preflight.mjs": {
-    "mtime": 1792036156.2795122,
-    "seen": 1792036413.7482803,
-    "ast_hash": "c60044d8d22d8ac51ff2b6504cc47ff9",
+    "mtime": 1792037347.0138094,
+    "seen": 1792037507.873498,
+    "ast_hash": "747930b0638cc988245ed8b6e0f6cd11",
     "semantic_hash": ""
   },
   "frontend/tests/browser-vendor-preflight.test.mjs": {
-    "mtime": 1792036156.092515,
-    "seen": 1792036413.7482824,
-    "ast_hash": "8d4948dc727bb7c40994107475ac1b86",
+    "mtime": 1792037346.8318121,
+    "seen": 1792037507.8735003,
+    "ast_hash": "e68edd7a82daed5f1a1beb421f488588",
     "semantic_hash": ""
   },
   "frontend/tests/native-browser-service.test.mjs": {
@@ -18828,9 +18828,9 @@
     "semantic_hash": ""
   },
   "docs/testing/native-vendor-browser-ci.md": {
-    "mtime": 1792036156.2795122,
-    "seen": 1792036413.7494664,
-    "ast_hash": "ece425a4af5c9a8aa5a4805dedcc5563",
+    "mtime": 1792037393.9570558,
+    "seen": 1792037507.8746192,
+    "ast_hash": "62913567727fc96f79dfa2edcc786870",
     "semantic_hash": ""
   }
 }

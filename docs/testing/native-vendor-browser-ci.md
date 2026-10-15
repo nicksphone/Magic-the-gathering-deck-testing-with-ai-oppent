@@ -39,6 +39,12 @@ existing per-program bounds and ordered assertions are unchanged.
 
 Only `preflight.json` and `lifecycle.json` are uploaded. Profiles, databases,
 screenshots, game dumps, provider inputs and raw private traces are excluded.
+Startup failures include the actual pre-cleanup exit state and a bounded stderr
+prefix hash/count with fixed message classifications, never the original text.
+Those classifications describe matched text, not a proven kernel/policy cause.
+Counts cover observed pipe bytes only. Capture is released when the direct
+child is reaped, and the report distinguishes EOF from deliberate pipe closure;
+inherited descendant pipes cannot keep the observer alive.
 Firefox needs its separate adapter and is not certified by this workflow.
 
 ## Local Checks

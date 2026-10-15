@@ -67,6 +67,48 @@ export function parseDevToolsVersion(text) {
   return {product: match[1], version: match[2]};
 }
 
+export function startupStderrFacts(prefix, totalBytes) {
+  if (!Buffer.isBuffer(prefix) || !Number.isSafeInteger(totalBytes) || totalBytes < prefix.length) fail('VENDOR_STARTUP_REPORT');
+  const captured = prefix.subarray(0, 8192), text = captured.toString('utf8');
+  const classifications = [
+    ['namespace-error', /Failed to move to new namespace/],
+    ['no-usable-sandbox', /No usable sandbox/],
+    ['shared-library-error', /error while loading shared libraries/],
+    ['crashpad-database-required', /chrome_crashpad_handler: --database is required/],
+    ['display-error', /Missing X server or \$DISPLAY/],
+  ].filter(([, pattern]) => pattern.test(text)).map(([name]) => name);
+  return {total_bytes: totalBytes, captured_bytes: captured.length, truncated: totalBytes > captured.length,
+    prefix_sha256: createHash('sha256').update(captured).digest('hex'),
+    classifications: classifications.length ? classifications : ['unclassified']};
+}
+
+export function observeVendorChild(child) {
+  let prefix = Buffer.alloc(0), bytesSeen = 0, streamEnded = false, destroyedAtReap = false, readError = false;
+  child.stderr?.on('data', bytes => {
+    bytesSeen += bytes.length;
+    if (prefix.length < 8192) prefix = Buffer.concat([prefix, bytes.subarray(0, 8192 - prefix.length)]);
+  });
+  child.stderr?.on('error', () => { readError = true; });
+  const closed = new Promise(resolve => {
+    let reaped = false;
+    const finish = (code, signal) => {
+      if (reaped) return;
+      reaped = true;
+      streamEnded = Boolean(child.stderr?.readableEnded);
+      if (child.stderr && !child.stderr.destroyed) {
+        destroyedAtReap = !streamEnded;
+        child.stderr.destroy();
+      }
+      resolve({code, signal});
+    };
+    // Node's close waits for inherited pipes; exit already reaps the direct child.
+    child.once('exit', finish);
+    child.once('close', finish); // Failed spawn has close without exit.
+  });
+  return {closed, facts: () => ({...startupStderrFacts(prefix, bytesSeen), count_basis: 'observed pipe bytes',
+    stream_ended: streamEnded, pipe_destroyed_at_reap: destroyedAtReap, read_error: readError})};
+}
+
 export function parseDevToolsActivePort(text) {
   const match = typeof text === 'string' && text.length <= 512
     && text.match(/^([1-9][0-9]{0,4})\n(\/devtools\/browser\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\n?$/);
@@ -137,7 +179,7 @@ async function nativeReport(config, reportFile, env) {
   const output = await ownedReport(reportFile);
   const report = {schema: 1, vendor: config.vendor, ok: false, sandbox_disabled: false,
     checks: {}, closure_scope: 'direct child only; enclosing systemd unit owns control-group cleanup'};
-  let child, closed, page, error;
+  let child, closed, page, error, observedChild;
   const priorOrigin = process.env.MTG_BROWSER_ORIGIN;
   const priorFrontend = process.env.MTG_FRONTEND_ORIGIN;
   try {
@@ -155,14 +197,25 @@ async function nativeReport(config, reportFile, env) {
     child = spawn(config.binary, ['--headless', '--no-first-run', '--no-default-browser-check',
       '--disable-background-networking', '--disable-dev-shm-usage', '--enable-automation', '--lang=en-US',
       `--user-data-dir=${profile}`, '--remote-debugging-address=127.0.0.1', '--remote-debugging-port=0', 'about:blank'],
-    {env: childEnvironment, stdio: 'ignore'});
+    {env: childEnvironment, stdio: ['ignore', 'ignore', 'pipe']});
+    observedChild = observeVendorChild(child);
     let spawnError = false;
-    child.on('error', () => { spawnError = true; });
-    closed = new Promise(resolve => child.once('close', (code, signal) => resolve({code, signal})));
+    let spawnErrno = null;
+    child.on('error', cause => {
+      spawnError = true;
+      spawnErrno = ['ENOENT', 'EACCES', 'ENOEXEC', 'ENOMEM', 'EAGAIN'].includes(cause.code) ? cause.code : 'OTHER';
+    });
+    closed = observedChild.closed;
+    const startupFailure = reason => {
+      report.startup_failure = {reason, spawn_errno: spawnErrno, exit_code: child.exitCode, signal: child.signalCode};
+      fail('VENDOR_BROWSER_START');
+    };
     let endpoint;
     const deadline = Date.now() + 20000;
     while (!endpoint) {
-      if (spawnError || child.exitCode !== null || child.signalCode !== null || Date.now() >= deadline) fail('VENDOR_BROWSER_START');
+      if (spawnError) startupFailure('spawn-error');
+      if (child.exitCode !== null || child.signalCode !== null) startupFailure('exited');
+      if (Date.now() >= deadline) startupFailure('deadline');
       try {
         const file = path.join(profile, 'DevToolsActivePort'), info = await lstat(file);
         if (!info.isFile() || info.isSymbolicLink() || info.size > 512 || info.uid !== process.getuid()) fail('VENDOR_DEVTOOLS');
@@ -170,7 +223,7 @@ async function nativeReport(config, reportFile, env) {
       } catch (missing) { if (missing.code !== 'ENOENT') throw missing; }
       if (!endpoint) await new Promise(resolve => setTimeout(resolve, 50));
     }
-    if (Date.now() >= deadline) fail('VENDOR_BROWSER_START');
+    if (Date.now() >= deadline) startupFailure('deadline');
     const actual = await stat(`/proc/${child.pid}/exe`);
     if (await realpath(`/proc/${child.pid}/exe`) !== config.binary || actual.dev !== installed.dev || actual.ino !== installed.ino
         || await sha256(`/proc/${child.pid}/exe`) !== installed.binary_sha256) fail('VENDOR_PROCESS_IDENTITY');
@@ -220,6 +273,8 @@ async function nativeReport(config, reportFile, env) {
       let result = await wait(10000);
       if (!result) { child.kill('SIGKILL'); result = await wait(2000); error ??= new Error('VENDOR_FORCED_CLOSE'); }
       report.checks.direct_child_closed = result !== null;
+      report.child_exit_after_cleanup = result;
+      report.browser_stderr = observedChild.facts();
       if (!result) error ??= new Error('VENDOR_CHILD_UNCLOSED');
     }
     report.ok = !error && report.checks.dom_nonce === true && report.checks.native_identity === true && report.checks.direct_child_closed === true;

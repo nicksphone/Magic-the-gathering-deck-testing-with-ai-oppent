@@ -5,6 +5,8 @@ import childProcess from 'node:child_process';
 import fs from 'node:fs';
 import fsPromises from 'node:fs/promises';
 import {syncBuiltinESMExports} from 'node:module';
+import {EventEmitter} from 'node:events';
+import {PassThrough} from 'node:stream';
 
 const moduleURL = new URL('./browser-vendor-preflight.mjs', import.meta.url);
 const implementation = await import(moduleURL).catch(error => {
@@ -123,6 +125,65 @@ test('runtime version is observed from the actual DevTools endpoint, not CLI tex
   for (const bad of [undefined, 'Chrome/PRIVATE', 'Chrome/155.0.1.2\nPRIVATE', 'https://private/155.0.1.2']) {
     assert.throws(() => api('parseDevToolsVersion')(bad), /VENDOR_VERSION/);
   }
+});
+
+test('startup failure diagnostics classify messages without returning their text', () => {
+  for (const [message, classification] of [
+    ['Failed to move to new namespace: Operation not permitted', 'namespace-error'],
+    ['No usable sandbox!', 'no-usable-sandbox'],
+    ['error while loading shared libraries: libX.so', 'shared-library-error'],
+    ['chrome_crashpad_handler: --database is required', 'crashpad-database-required'],
+    ['Missing X server or $DISPLAY', 'display-error'],
+    ['PRIVATE unknown message', 'unclassified'],
+  ]) {
+    const bytes = Buffer.from(message);
+    const facts = api('startupStderrFacts')(bytes, bytes.length);
+    assert.deepEqual(facts.classifications, [classification]);
+    assert.equal(facts.total_bytes, bytes.length);
+    assert.equal(facts.truncated, false);
+    assert.match(facts.prefix_sha256, /^[a-f0-9]{64}$/);
+    assert.equal(JSON.stringify(facts).includes(message), false);
+  }
+});
+
+test('startup stderr capture is bounded and never publishes private paths or bytes', () => {
+  const bytes = Buffer.from('PRIVATE:/home/private/'.repeat(2000));
+  const facts = api('startupStderrFacts')(bytes, bytes.length);
+  assert.equal(facts.captured_bytes, 8192);
+  assert.equal(facts.truncated, true);
+  assert.equal(JSON.stringify(facts).includes('PRIVATE'), false);
+  assert.equal(JSON.stringify(facts).includes('/home/'), false);
+});
+
+test('direct process exit completes cleanup even when a descendant retains stderr', async () => {
+  const child = new EventEmitter();
+  child.stderr = new PassThrough();
+  const observed = api('observeVendorChild')(child);
+  child.stderr.write('No usable sandbox! PRIVATE');
+  child.emit('exit', 132, 'SIGTRAP');
+  let timer;
+  const result = await Promise.race([observed.closed,
+    new Promise(resolve => { timer = setTimeout(() => resolve('not-reaped'), 100); })]);
+  clearTimeout(timer);
+  assert.deepEqual(result, {code: 132, signal: 'SIGTRAP'});
+  assert.equal(child.stderr.destroyed, true);
+  assert.equal(observed.facts().stream_ended, false);
+  assert.equal(observed.facts().pipe_destroyed_at_reap, true);
+  assert.deepEqual(observed.facts().classifications, ['no-usable-sandbox']);
+  assert.equal(JSON.stringify(observed.facts()).includes('PRIVATE'), false);
+  const firstReaped = observed.facts();
+  Object.defineProperty(child.stderr, 'readableEnded', {value: true});
+  child.emit('close', 132, 'SIGTRAP');
+  assert.deepEqual(observed.facts(), firstReaped, 'later pipe close must not rewrite the reap snapshot');
+});
+
+test('failed-spawn close without an exit event still resolves and releases its pipe', async () => {
+  const child = new EventEmitter();
+  child.stderr = new PassThrough();
+  const observed = api('observeVendorChild')(child);
+  child.emit('close', -2, null);
+  assert.deepEqual(await observed.closed, {code: -2, signal: null});
+  assert.equal(child.stderr.destroyed, true);
 });
 
 test('DevToolsActivePort accepts only one bounded numeric port and browser UUID path', () => {
