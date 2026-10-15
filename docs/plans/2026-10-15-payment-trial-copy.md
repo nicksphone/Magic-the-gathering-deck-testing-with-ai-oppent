@@ -140,3 +140,29 @@ evidence is archived under
 `diagnostics/ci/native-series55-60b26-20261015-xmm5dzqr/` on NFS.
 Further diagnosis needs a genuine late-game chooser profile: the older compact
 action traces omit selected-choice IDs and cannot support guessed replay.
+
+## Profiled Late-Game Diagnostic
+
+A separate once-only run on the same `60b26ec1` source profiles one genuinely
+executed main-phase chooser call: game 2, tick 242, turn 9. The profiler records
+10.36 cumulative seconds for that call, not an independently stored stage-wall
+measurement. Within it, 98 `copy_match_state` calls account
+for 6.04 cumulative seconds, including 2.12 cumulative seconds in the card-field
+helper. These overlapping cumulative times must not be added. The retained
+cost-sorted report contains 64 source-bound functions, explicitly omits 604
+other source rows and counts 73 unknown entries. It is not a complete call graph
+or evidence that every chooser invocation has the same cost distribution.
+
+This instrumented series still ends with deadline exit 3: game 1 matches the
+original reference, and game 2 reaches 267 accepted ticks with no winner.
+All 267 AI traces match the unprofiled reference prefix. The selected tick is
+among the accepted actions, not a synthetic or repeated chooser invocation.
+The shared 600-second budget and all other caps remain unchanged. Profiling
+overhead is included; 603.06 seconds wall and 601.50 seconds CPU do not establish
+an unprofiled speed result or a gameplay regression from the earlier 269 ticks.
+
+Source/runtime checks, owned-group closure and all seven output-file handle
+checks pass. The private closed-root archive is
+`diagnostics/ci/native-series55-late-profile-60b-20261015-bdjmz86f/` on NFS.
+The next bounded experiment targets full-root container copying, without omitted
+fields, shared mutable data, altered histories or payment-search pruning.

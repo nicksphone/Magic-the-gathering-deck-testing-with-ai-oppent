@@ -1,5 +1,17 @@
 # Release Acceptance Status
 
+## Published Backend And Latest Browser
+
+Exact `b443db8a` completes the whole CI workflow. Independently reconciled
+backend metadata accounts for 29,068 passed calls and 82 setup skips across
+29,150 unique nodes, plus 111 separately counted passing subtests. The retained
+899 Phase 1 component cases and all five corrected historical guards pass.
+Newer `7d2d77bd` separately completes frontend and the configured generic browser
+job, with all 45 ordered stages and 501 PASS banners; its backend remains a
+separate acceptance run. Neither result certifies native Firefox, deployment,
+measured AI strength or the complete release. See
+[the source-specific checkpoint](current-b443-complete-ci.md).
+
 ## Focused Native Firefox Checkpoint
 
 The sealed `8c44f0f7` packet passes actual Firefox 158 trusted input, native PNGs

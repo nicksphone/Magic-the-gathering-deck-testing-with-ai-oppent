@@ -7,6 +7,15 @@ and completeness of a particular operator's stored decks are different claims.
 
 ## Observed Integrated Evidence
 
+The subsequent exact `b443db8a` workflow is terminal success. Independent
+sanitized metadata reconciliation verifies 29,150 unique nodes: 29,068 passed
+calls and 82 setup skips, with 111 passing subtest reports counted separately.
+All retained 899 component identities and their 2,697 phases pass; the five
+historical source guards and 17 added identities also pass, with none removed.
+This closes hosted acceptance of that test-only correction, not the later
+`7d2d77bd` copier and Task 1.2 changes. See
+[the exact source and reconciliation](current-b443-complete-ci.md).
+
 The subsequent exact `2d106588ace24587b7b04f3719ba90606ab47017` hosted run
 qualifies all 899 retained component identities: each has one passed setup,
 call and teardown, with no missing, duplicate or non-passing matched phase.
@@ -17,7 +26,7 @@ these two commits. This closes the outstanding hosted-evidence gap for the
 model/domain/JSON/Unicode/cache components, not the literal specification
 differences below.
 
-The whole hosted run is still **failed**: 29,046 passed calls, five failed
+That older whole hosted run remains **failed**: 29,046 passed calls, five failed
 source-compatibility guards and 82 setup skips across 29,133 collected nodes.
 Its 111 passed subtest reports are separate. All five failures are outside the
 retained 899 cases; they reject the evolved repository against older finite
@@ -72,7 +81,7 @@ Private immutable metadata evidence is under the project's NFS archive:
 | Task | Established | Remaining Evidence Or Scope Limits |
 | --- | --- | --- |
 | 1.1: Knowledge model | Fields, repository roundtrip, upsert and queries are implemented and tested. The subsequent domain correction declares the two provenance values and numerical bounds, and validates public repository writes before querying or mutating rows. | SQLite storage is unchanged; this is not DB CHECK enforcement or validation of direct ORM/SQL bypasses. Legacy rows remain readable without rewrite. Historical test-first commit chronology has not been reconstructed. |
-| 1.2: Corpus sync | Real repository ingestion of the complete official shipped corpus, persisted rulings, error accumulation and idempotent CLI behavior are tested. Stored mainboard and sideboard names participate. Missing-cache recovery and later model/repository components are hosted-qualified on their exact sources, including the retained 899-case join at `2d106588`. An actual network sync of the legacy copy qualifies all 158 requested names. | The scoped hosted passes do not make the five-failure whole run green. The copied-data result does not establish a selected live deployment or authorize migration. |
+| 1.2: Corpus sync | Real repository ingestion of the complete official shipped corpus, persisted rulings, error accumulation and idempotent CLI behavior are tested. Stored mainboard and sideboard names participate. Missing-cache recovery and later model/repository components are hosted-qualified on their exact sources, including the retained 899-case joins. An actual network sync of the legacy copy qualifies all 158 requested names. | The old failed ledger is preserved; corrected `b443` succeeds in whole CI. The later protocol correction still needs its hosted result. Copied-data qualification does not select a live deployment or authorize migration. |
 | 1.3: Verified offline seed | The production handwritten fallback module is removed; committed official seed data supports tested offline hydration. | The literal requirement of no handwritten Oracle text anywhere in the repository is not met by test fixtures and rule-generated token descriptions. Offline hydration evidence alone is not a deployment-startup certificate. |
 | 1.4: Completeness command | The actual CLI succeeds for the default 149-name corpus. An owned stored-deck mainboard/sideboard expands it to 151 names. The separate real legacy-copy run covers 158 names, rejects pending rulings before sync, then passes with zero-request unchanged repetition. | This is not arbitrary deployment data. CLI success does not itself require every display-cache row, nonblank Oracle text or a local image; the legacy-copy report separately verifies its cache/Oracle fields, but not local images. |
 
@@ -203,8 +212,9 @@ silently substituted for whole-current-source acceptance.
 2. Retain the `95aa731e` cache-recovery result and the now-established exact
    `2d106588` hosted proof for all 899 later component cases. The five historical
    guards are corrected and locally requalified in the 108-case whole-module
-   cohort; final hosted acceptance of that increment remains required. Do not
-   label the preceding failed whole run a pass.
+   cohort; the subsequent exact `b443db8a` whole workflow now succeeds. The later
+   Task 1.2 changes still need their own hosted result. Do not label the preceding
+   failed whole run a pass.
 3. Resolve the remaining literal specification differences explicitly before
    marking Phase 1 complete. Browser compatibility work does not close them.
 

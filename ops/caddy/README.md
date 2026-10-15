@@ -228,9 +228,12 @@ https://caddyserver.com/docs/caddyfile/options#enable-full-duplex
 https://github.com/caddyserver/caddy/blob/v2.11.7/modules/caddyhttp/server.go
 https://github.com/golang/go/blob/go1.26.9/src/net/http/responsecontroller.go
 
-No LAN/public binding is implemented. User-selected hostname, user-approved
-certificate trust, firewall and authenticated TLS exposure require future explicit
-configuration and qualification; do not replace loopback with blanket LAN binds.
+Loopback remains the default. Explicit `bind_address` configuration supports a
+canonical RFC1918 IPv4 address for Caddy only; public and wildcard binding remain
+unsupported. See [the private-binding scope](../../docs/testing/linux-private-lan-bind-prep.md).
+Remote-client hostname routing, user-approved certificate trust, firewall and
+authenticated TLS exposure still require configuration and qualification; an
+implemented bind option is not proof of remote-LAN acceptance.
 The backend is intentionally unauthenticated on loopback. Native requests without
 Origin are compatible, NOT authenticated. Local processes remain trusted. This
 single-user/one-worker service shares game/job state; BasicAuth is not per-user
