@@ -3,6 +3,10 @@
 Baseline: `92a59e1135fa53e1c4363734a61211bfb88e4a81`.
 The existing foreground entry remains `ops/caddy/run.py`; no new installer,
 service, logger, option, browser launcher or configuration field is introduced.
+CI's file-only operator stage now also runs the new 14-case pytest module.
+The integrating parent verifies that command without `MTG_CADDY_BINARY` set:
+14 passes, zero observed native SQL/socket/process operations. This does not
+start or qualify an actual backend or HTTPS service.
 
 If either child exits without a supervisor stop request, the operator reports
 only the literal service (`Backend` or `HTTPS`) and its numeric exit code.

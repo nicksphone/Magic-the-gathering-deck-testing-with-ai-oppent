@@ -1,5 +1,15 @@
 # Release Acceptance Status
 
+## Published CI Checkpoint: 2026-10-15
+
+Published `92a59e11` completes backend, frontend and the configured CI browser
+job successfully. Exact backend accounting is 28,357 passed calls and 82
+recorded setup skips across 28,439 collected nodes; 81 passed subtest reports
+are separate. No failures, errors or missing records occur. See
+[the exact terminal evidence](current-92a-complete-ci.md).
+Newer local changes still need CI; named native browsers, deployment, measured
+AI quality and the full original release requirements remain open.
+
 ## Latest Reviewed Composition: 2026-10-13
 
 The final reviewed backend composition now passes 2,998 ordinary cases in 82

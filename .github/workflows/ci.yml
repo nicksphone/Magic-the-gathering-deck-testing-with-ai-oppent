@@ -27,6 +27,7 @@ jobs:
         run: |
           python ops/caddy/test_runtime_dist_boundary.py
           python ops/caddy/test_runtime_inventory.py
+          python -m pytest -q -p no:cacheprovider ops/caddy/test_startup_diagnostic.py
       - name: Backend tests
         id: backend_tests
         env:

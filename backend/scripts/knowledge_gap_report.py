@@ -104,7 +104,10 @@ def knowledge_report(repo: Repository, names: list[str], *, image_cache_dir: Pat
     cards = []
     totals['cached_rows'] = len(repo.list_cards())
     cached = repo.get_cached_cards_by_names(names)
-    for name in sorted(set(names), key=str.casefold):
+    requested_names = {}
+    for name in names:
+        requested_names.setdefault(name.casefold(), name)
+    for name in sorted(requested_names.values(), key=str.casefold):
         match = lookup.get(name.casefold())
         row, profile = match if match else (None, {})
         raw = profile.get("card_data", {})

@@ -32,10 +32,18 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 
 ## October 15 Operator And Extraction Corrections
 
+Published parent `92a59e11` separately completes all three CI jobs, including
+28,357 passed backend calls and 82 recorded setup skips, with zero failures or
+errors. The 81 passed subtest reports are not additional unique nodes. This is
+the published parent, not CI for the changes below. See
+[the complete terminal record](docs/testing/current-92a-complete-ci.md).
+
 The existing launcher now identifies which service failed and its numeric exit
 status without printing private configuration or subprocess output. Ctrl-C,
 child arguments, lock release and shutdown behavior remain unchanged. This is
 operator error reporting, not UI redesign or service-readiness qualification.
+The existing file-only CI stage now runs its new 14-case regression module;
+the same target passes locally without a Caddy binary environment binding.
 
 Training extraction retains explicit matchup labels and valid action indices
 using the existing prior consumer's normalization. It does not infer labels,
@@ -49,6 +57,31 @@ private-preimage dependency remain separate historical records. See
 The README now documents the existing Phase 1 knowledge CLI, its stored-deck
 coverage and its image/rules limitations. This documentation does not complete
 the outstanding Phase 1 acceptance or the original release and AI gates.
+
+## October 15 Knowledge And End-Step Acceptance
+
+The real stored-deck knowledge workflow now passes 61 cases in three whole
+modules, 6.53 seconds, with no failures/errors/skips. It rejects missing
+mainboard/sideboard knowledge, ingests complete official records, and repeats
+without requests or row changes. A minimal report correction deduplicates
+casefold-equivalent names while retaining first spelling and distinct faces.
+The unchanged baseline's 153-versus-151 failure is preserved. See
+[the data/CLI component](docs/testing/phase1-stored-deck-corpus-current.md).
+
+The generic ownership-conditioned end-step draw passes 122 cases in thirteen
+whole modules, 460.61 seconds, with no failures/errors/skips. It checks the
+condition at collection and resolution, retains actual copied-trigger control,
+and reuses draw replacements/continuations. Separate existing abilities are
+preserved; unsupported compound tails do not receive partial rewards. See
+[the rules component](docs/testing/end-step-ownership-draw-current.md).
+Mixed each-end-step/own-end-step paragraphs still need a separate dispatch
+regression and correction; the scoped pass is not full-card acceptance.
+
+After both corrections are integrated, the seven complete launcher/context
+modules separately pass all 185 cases in 7.45 seconds. These are independent
+cohorts, not a summed single execution. Only the earlier published `92a59e11`
+has full hosted CI so far; the new integrated commit still needs that run.
+Phase 1 and the full release are not declared complete by these checks.
 
 ## October 14 Public Numeric Sideboarding
 

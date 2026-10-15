@@ -7,6 +7,7 @@ from rules_engine.temporary_characteristics import resolve_temporary_characteris
 from rules_engine.turn_spell_protection import conditional_draw, grant_protection
 from rules_engine.retained_counter_prohibition import resolve as resolve_counter_prohibition
 from rules_engine.spree import resolve_copy as resolve_spree_copy, offer_change as resolve_spree_target_change
+from rules_engine.end_step_ownership_draw import resolve as resolve_ownership_end_step_draw
 
 from collections.abc import Callable
 
@@ -18,6 +19,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'ownership_end_step_draw': resolve_ownership_end_step_draw,
     'reveal_top_conditional': handlers.reveal_top_conditional,
     'attached_token_payment': resolve_attached_token_payment,
     'spree_copy': resolve_spree_copy,

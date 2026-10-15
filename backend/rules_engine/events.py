@@ -1079,17 +1079,32 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                             )
                         )
                     elif "at the beginning of your end step" in oracle and card.controller == active_player:
-                        out.append(
-                            _trigger_from_oracle(
-                                state,
-                                cid,
-                                card.controller,
-                                oracle,
-                                default_label=f"{card.name} end-step trigger",
-                                event=event,
-                                payload=payload,
+                        from rules_engine.end_step_ownership_draw import collect as collect_ownership_draw
+                        ownership_draw = collect_ownership_draw(state, card, raw_oracle)
+                        if ownership_draw is not None:
+                            out.extend(ownership_draw)
+                            from rules_engine.end_step_ownership_draw import CANDIDATE as ownership_candidate
+                            for clause in raw_oracle.splitlines():
+                                clause = clause.strip()
+                                if (clause.lower().startswith('at the beginning of your end step,')
+                                        and not ownership_candidate.search(clause)):
+                                    out.append(_trigger_from_oracle(
+                                        state, cid, card.controller, without_reminder_text(clause.lower()),
+                                        default_label=f"{card.name} end-step trigger",
+                                        event=event, payload=payload,
+                                    ))
+                        else:
+                            out.append(
+                                _trigger_from_oracle(
+                                    state,
+                                    cid,
+                                    card.controller,
+                                    oracle,
+                                    default_label=f"{card.name} end-step trigger",
+                                    event=event,
+                                    payload=payload,
+                                )
                             )
-                        )
             if once_each_turn and len(out) > trigger_count_before:
                 state.trigger_once_seen_this_turn.add(trigger_key)
     out.sort(key=lambda trig: (0 if trig["controller"] == state.active_player else 1, str(trig["source_card_id"]), str(trig["label"])))

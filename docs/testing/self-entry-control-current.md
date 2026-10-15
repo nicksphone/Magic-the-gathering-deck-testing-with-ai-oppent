@@ -39,6 +39,8 @@ preserved separately; neither is hidden as a passing initial attempt.
 ## Remaining Work
 
 Static Aura control and broader timestamp/control layers remain separate work.
-The original Confiscate failures are not closed here. Agent's end-step draw,
-HTTP/SQLite/browser episodes, arbitrary complete-card semantics, the full
-backend suite and release acceptance are not certified by this pure component.
+The original Confiscate failures are not closed by this historical component.
+The later [ownership-conditioned end-step draw](end-step-ownership-draw-current.md)
+has separate pure-component acceptance. HTTP/SQLite/browser episodes, arbitrary
+complete-card semantics and final-source release acceptance are not certified
+by this earlier self-entry qualification.
