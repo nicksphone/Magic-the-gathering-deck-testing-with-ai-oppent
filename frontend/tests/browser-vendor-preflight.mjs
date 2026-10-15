@@ -15,6 +15,11 @@ const rejectedEnvironment = ['LD_PRELOAD', 'LD_LIBRARY_PATH', 'LD_AUDIT', 'LD_DE
   'CHROME_DEVEL_SANDBOX', 'CHROMIUM_FLAGS', 'CHROME_WRAPPER', 'CHROME_FLAGS', 'MTG_PASSIVE_CDP_EVIDENCE'];
 const fail = code => { throw new Error(code); };
 
+export function describeInstalledPath(file, info) {
+  return {path: file, uid: info.uid, gid: info.gid, mode: (info.mode & 0o7777).toString(8), links: info.nlink,
+    regular_file: info.isFile(), directory: info.isDirectory(), symlink: info.isSymbolicLink()};
+}
+
 export function validateVendorInputs(env, {platform = process.platform, uid = process.getuid?.(),
   selectedBrowser = env.MTG_CHROME} = {}) {
   const selected = typeof env.MTG_BROWSER_VENDOR === 'string'
@@ -88,13 +93,16 @@ async function command(executable, args, env = metadataEnvironment) {
   return result.stdout;
 }
 
-async function installedVendor(config) {
+async function installedVendor(config, report) {
+  report.installation = {ancestors: [], files: []};
   for (let directory = path.dirname(config.binary); directory !== '/'; directory = path.dirname(directory)) {
     const info = await lstat(directory);
+    report.installation.ancestors.push(describeInstalledPath(directory, info));
     if (!info.isDirectory() || info.uid !== 0 || (info.mode & 0o022) || await realpath(directory) !== directory) fail('VENDOR_INSTALLATION');
   }
   for (const file of [config.binary, config.helper]) if (await realpath(file) !== file) fail('VENDOR_INSTALLATION');
   const binary = await lstat(config.binary), helper = await lstat(config.helper);
+  report.installation.files.push(describeInstalledPath(config.binary, binary), describeInstalledPath(config.helper, helper));
   validateInstalledFiles(binary, helper);
   const fd = await open(config.binary, constants.O_RDONLY | constants.O_NOFOLLOW);
   try {
@@ -126,7 +134,7 @@ async function nativeReport(config, reportFile, env) {
   const priorOrigin = process.env.MTG_BROWSER_ORIGIN;
   const priorFrontend = process.env.MTG_FRONTEND_ORIGIN;
   try {
-    const installed = await installedVendor(config);
+    const installed = await installedVendor(config, report);
     report.package = installed.package;
     report.binary = {path: config.binary, sha256: installed.binary_sha256};
     report.helper = {path: config.helper, sha256: installed.helper_sha256, root_owned_mode: '4755'};

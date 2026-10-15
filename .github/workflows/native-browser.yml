@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - .github/workflows/native-browser.yml
+      - frontend/tests/browser-vendor-preflight.mjs
 
 permissions:
   contents: read

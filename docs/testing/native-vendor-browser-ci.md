@@ -2,8 +2,9 @@
 
 The separate `Native Linux Browsers` workflow runs the existing complete
 zero-argument browser launcher on official packaged Chrome and Brave. It runs
-when its workflow file changes (including initial branch registration) and can
-also be dispatched manually. The original `CI` browser job is unchanged.
+when its workflow or vendor preflight changes (including initial branch
+registration) and can also be dispatched manually. The original `CI` browser
+job is unchanged.
 
 Native mode requires `MTG_BROWSER_VENDOR=chrome|brave`, the corresponding
 canonical ELF in `MTG_CHROME`, and `MTG_BROWSER_NO_SANDBOX=0`. It never discovers

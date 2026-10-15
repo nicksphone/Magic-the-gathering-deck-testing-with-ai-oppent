@@ -18804,15 +18804,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-vendor-preflight.mjs": {
-    "mtime": 1792034052.5231526,
-    "seen": 1792034402.3580704,
-    "ast_hash": "8915d843b7b94167aaf555bcc46e6a2f",
+    "mtime": 1792035064.8351681,
+    "seen": 1792035223.9274762,
+    "ast_hash": "cd54b9e41d02dd26b2a6efc342a9e1ea",
     "semantic_hash": ""
   },
   "frontend/tests/browser-vendor-preflight.test.mjs": {
-    "mtime": 1792034043.2392914,
-    "seen": 1792034402.3580718,
-    "ast_hash": "3d9873d006ac149fba263605f0728e12",
+    "mtime": 1792035064.6541712,
+    "seen": 1792035223.9274786,
+    "ast_hash": "0fa411b8005f453e7f95dc7623ec7705",
     "semantic_hash": ""
   },
   "frontend/tests/native-browser-service.test.mjs": {
@@ -18822,15 +18822,15 @@
     "semantic_hash": ""
   },
   ".github/workflows/native-browser.yml": {
-    "mtime": 1792034705.9779596,
-    "seen": 1792034830.8746629,
-    "ast_hash": "a6ed4261bae18e1aa4a3114633941c25",
+    "mtime": 1792035064.8351681,
+    "seen": 1792035223.9277258,
+    "ast_hash": "469693e57e29b0239df9894ab140a4b6",
     "semantic_hash": ""
   },
   "docs/testing/native-vendor-browser-ci.md": {
-    "mtime": 1792034243.579249,
-    "seen": 1792034402.3590393,
-    "ast_hash": "8cb861d298146b8bc0b74812bed48954",
+    "mtime": 1792035064.8361683,
+    "seen": 1792035223.9286163,
+    "ast_hash": "f9b2065c172043fcc571d0e9e7484a86",
     "semantic_hash": ""
   }
 }

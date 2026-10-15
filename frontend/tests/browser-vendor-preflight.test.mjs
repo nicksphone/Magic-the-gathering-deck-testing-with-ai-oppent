@@ -29,6 +29,14 @@ const sandbox = () => ({rows: [
   ['Network namespaces', 'Yes'], ['Seccomp-BPF sandbox', 'Yes'],
 ], evaluation: 'You are adequately sandboxed.'});
 
+test('installation diagnostics contain only actual stat operands and the fixed path', () => {
+  const info = {...regular, isDirectory: () => false, isSymbolicLink: () => false, privateValue: 'PRIVATE'};
+  assert.deepEqual(api('describeInstalledPath')('/opt/google/chrome/chrome', info), {
+    path: '/opt/google/chrome/chrome', uid: 0, gid: 0, mode: '755', links: 1,
+    regular_file: true, directory: false, symlink: false,
+  });
+});
+
 test('explicit Chrome and Brave contracts are independent and preserve caller input', () => {
   for (const vendor of ['chrome', 'brave']) {
     const env = Object.freeze(inputs(vendor));
