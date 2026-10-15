@@ -72,6 +72,13 @@ SH
 cat > "$scratch/ci/bin/node" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
+if [[ "$1" == tests/browser-interactive-preflight.mjs ]]; then
+  test "$PWD" = "$TMPDIR/ci/frontend"
+  test "$MTG_UI_EVIDENCE" = "$TMPDIR/interactive-preflight-evidence"
+  test "$CHROMIUM_BINARY" = /bin/true
+  for pid in $MTG_CHECK_PIDS; do ! kill -0 "$pid" 2>/dev/null; done
+  exit 0
+fi
 test "$1" = frontend/tests/browser-cathar.mjs
 test "$MTG_CATHAR_ARCHIVE" = "$RUNNER_TEMP/mtg-cathar-evidence"
 test "$MTG_FRONTEND_DEPS" = "$PWD/frontend/node_modules"

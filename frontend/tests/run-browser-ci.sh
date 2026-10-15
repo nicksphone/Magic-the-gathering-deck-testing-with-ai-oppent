@@ -4,6 +4,19 @@ root=$(cd "$(dirname "$0")/../.." && pwd -P)
 cd "$root"
 test "$(realpath "$(git rev-parse --show-toplevel)")" = "$root"
 
+# Select the browser before starting services.
+browser="${MTG_CHROME:-}"
+if [[ -z "$browser" ]]; then
+  if [[ -n "${MTG_BROWSER_VENDOR:-}" ]]; then
+    echo 'Native browser mode requires MTG_CHROME; automatic fallback is disabled.' >&2
+    exit 2
+  fi
+  browser=$(command -v google-chrome || command -v chromium)
+fi
+if [[ -n "${MTG_BROWSER_VENDOR:-}" ]]; then
+  node frontend/tests/browser-vendor-preflight.mjs --check-config "$browser"
+fi
+
 # The harness owns fixed loopback ports; concurrent runs must not share them.
 exec 9>"${TMPDIR:-/tmp}/mtg-browser-ci.lock"
 if ! flock -n 9; then
@@ -101,7 +114,6 @@ start_backend
 (cd frontend && exec setsid env VITE_API_BASE_URL=http://127.0.0.1:10199 node "$frontend_deps/vite/bin/vite.js" --config vite.ci.config.ts --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
 frontend_pid=$!
 
-browser=$(command -v google-chrome || command -v chromium)
 browser_flags=()
 if [[ "${MTG_BROWSER_NO_SANDBOX:-}" == 1 ]]; then browser_flags+=(--no-sandbox); fi
 setsid "$browser" --headless --disable-dev-shm-usage --no-first-run "${browser_flags[@]}" \

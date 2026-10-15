@@ -89,7 +89,9 @@ kill "$backend"; wait "$backend" || true; backend=''
 start_backend after-restart
 node "$deps/node_modules/vite/bin/vite.js" --config "$root/frontend/tests/vite-activated-top-selection.mjs" > "$runtime/frontend.log" 2>&1 &
 frontend=$!
-"$chrome" --headless --disable-dev-shm-usage --no-first-run --no-sandbox \
+browser_flags=()
+if [[ "${MTG_BROWSER_NO_SANDBOX:-}" == 1 ]]; then browser_flags+=(--no-sandbox); fi
+"$chrome" --headless --disable-dev-shm-usage --no-first-run "${browser_flags[@]}" \
   --user-data-dir="$runtime/browser-profile" --remote-debugging-port=19237 about:blank > "$runtime/browser.log" 2>&1 &
 browser=$!
 for _ in $(seq 1 120); do

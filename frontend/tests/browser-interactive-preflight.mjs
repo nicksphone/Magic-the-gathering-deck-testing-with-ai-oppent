@@ -23,7 +23,8 @@ const server = await createServer({
 const profile = await mkdtemp(`${tmpdir()}/mtg-interactive-preflight-browser-`);
 const chromeLog = createWriteStream(`${evidence}/chromium.log`);
 const chromium = spawn(process.env.CHROMIUM_BINARY ?? '/snap/bin/chromium', [
-  '--headless', '--no-sandbox', '--disable-gpu', '--no-first-run', '--disable-background-networking', '--enable-automation',
+  '--headless', ...(process.env.MTG_BROWSER_NO_SANDBOX === '1' ? ['--no-sandbox'] : []),
+  '--disable-gpu', '--no-first-run', '--disable-background-networking', '--enable-automation',
   `--remote-debugging-port=${browserPort}`, `--user-data-dir=${profile}`, 'about:blank',
 ], { stdio: ['ignore', 'pipe', 'pipe'] });
 const chromiumClosed = new Promise(resolve => chromium.once('close', resolve));
