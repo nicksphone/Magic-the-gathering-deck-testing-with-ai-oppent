@@ -52,10 +52,6 @@ class Repository:
     def upsert_card_knowledge(self, payload: dict[str, Any]) -> CardKnowledge:
         """Upsert one CardKnowledge row keyed by normalized card name."""
         normalized = str(payload["name"]).strip()
-        query = select(CardKnowledge).where(
-            func.lower(CardKnowledge.name) == normalized.lower()
-        )
-        row = self.session.exec(query).first()
         values = {
             "scryfall_id": str(payload.get("scryfall_id", "")),
             "oracle_source": str(payload.get("oracle_source", "manual")),
@@ -67,11 +63,17 @@ class Repository:
             "profiles_json": json.dumps(payload.get("profiles") or {}),
             "updated_at": datetime.utcnow(),
         }
+        # Table constructors do not validate input; admit it before any ORM mutation.
+        candidate = CardKnowledge.model_validate({"name": normalized, **values})
+        query = select(CardKnowledge).where(
+            func.lower(CardKnowledge.name) == normalized.lower()
+        )
+        row = self.session.exec(query).first()
         if row is None:
-            row = CardKnowledge(name=normalized, **values)
+            row = candidate
         else:
-            for key, value in values.items():
-                setattr(row, key, value)
+            for key in values:
+                setattr(row, key, getattr(candidate, key))
         self.session.add(row)
         self.session.commit()
         self.session.refresh(row)

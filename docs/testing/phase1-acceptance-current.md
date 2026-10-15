@@ -31,10 +31,10 @@ Private immutable metadata evidence is under the project's NFS archive:
 
 | Task | Established | Still Open Or Different From The Original |
 | --- | --- | --- |
-| 1.1: Knowledge model | Fields, repository roundtrip, upsert and queries are implemented and tested. | The source string is not an enum and documented numerical ranges are not schema constraints. Test-first commit chronology has not been reconstructed. |
-| 1.2: Corpus sync | Real repository ingestion of the complete official shipped corpus, persisted rulings, error accumulation and idempotent CLI behavior are tested. Stored mainboard and sideboard names participate. Missing-cache recovery is corrected and locally qualified below. | Hosted qualification of the changed recovery code remains separate. A real sync/readiness check of the operator's additional stored decks is unmeasured. |
+| 1.1: Knowledge model | Fields, repository roundtrip, upsert and queries are implemented and tested. The subsequent domain correction declares the two provenance values and numerical bounds, and validates public repository writes before querying or mutating rows. | SQLite storage is unchanged; this is not DB CHECK enforcement or validation of direct ORM/SQL bypasses. Legacy rows remain readable without rewrite. Historical test-first commit chronology has not been reconstructed. |
+| 1.2: Corpus sync | Real repository ingestion of the complete official shipped corpus, persisted rulings, error accumulation and idempotent CLI behavior are tested. Stored mainboard and sideboard names participate. Missing-cache recovery is corrected and locally qualified below. An actual network sync of the legacy copy qualifies all 158 requested names. | Hosted qualification of the changed recovery/model code remains separate. The selected deployment database and any live migration remain unestablished. |
 | 1.3: Verified offline seed | The production handwritten fallback module is removed; committed official seed data supports tested offline hydration. | The literal requirement of no handwritten Oracle text anywhere in the repository is not met by test fixtures and rule-generated token descriptions. Offline hydration evidence alone is not a deployment-startup certificate. |
-| 1.4: Completeness command | The actual CLI succeeds for the default 149-name corpus. An owned stored-deck mainboard/sideboard expands it to 151 names, fails before sync, passes after sync and makes zero requests on repetition. | That test is not an inspection of arbitrary operator data. CLI success does not itself require every display-cache row, nonblank Oracle text or a local image; those fields are reported separately. |
+| 1.4: Completeness command | The actual CLI succeeds for the default 149-name corpus. An owned stored-deck mainboard/sideboard expands it to 151 names. The separate real legacy-copy run covers 158 names, rejects pending rulings before sync, then passes with zero-request unchanged repetition. | This is not arbitrary deployment data. CLI success does not itself require every display-cache row, nonblank Oracle text or a local image; the legacy-copy report separately verifies its cache/Oracle fields, but not local images. |
 
 The shipped data checks cover 155 canonical identities, 443 published rulings
 and 35 verified empty ruling lists. An empty verified list is valid; demanding
@@ -79,6 +79,12 @@ last 24 regressions and is not substituted for the final 268-pass result.
 This local component does not certify the operator's live data or later whole
 hosted CI.
 
+The subsequent [domain-admission correction](knowledge-domain-admission.md)
+passes the expanded 27-whole-module, 510-case component, retaining the complete
+recovery module and a naturally played existing seeded game. It also has a
+distinct zero-request real copied-data follow-up on the corrected model source.
+Those results remain separate from the earlier 268-case recovery qualification.
+
 ## Legacy Database Inspection
 
 A separate read-only transaction inspected the known legacy deployment file,
@@ -91,13 +97,21 @@ not a full canonical/rulings validation or a write/migration qualification.
 The currently selected deployment database has not been established, so this
 legacy file is not silently substituted for the operator's current data.
 
+The subsequent [real legacy-copy qualification](phase1-legacy-copy-readiness.md)
+uses the unmodified CLIs and actual Scryfall responses on an owned backup.
+It reaches 158 cached/canonical names with nonblank Oracle text and verified
+rulings, then repeats with zero requests and identical full-table digests.
+The original and unrelated user data remain unchanged. This closes the lack of
+an actual legacy-copy sync, not selection or migration of the live deployment.
+
 ## Closure Work
 
 1. Retain the now-passed missing-cache recovery regression and preservation
    coverage in normal CI.
 2. Complete hosted qualification of that changed source, not just the preceding
    hosted commit or the local component.
-3. Establish the actual deployment's stored-deck readiness without modifying a
-   live database or publishing private data during inspection.
+3. Establish the selected deployment and qualify any migration, retaining the
+   completed legacy-copy result without treating it as authorization to replace
+   a live database or publish private data.
 4. Resolve the remaining literal specification differences explicitly before
    marking Phase 1 complete. Browser compatibility work does not close them.

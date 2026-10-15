@@ -3,8 +3,10 @@
 The original table was checked against published
 `8ad9724fb69641a731f39ed7a2074962f5dce57c` on 2026-10-13. The subsequent
 [2026-10-15 Phase 1 review](phase1-acceptance-current.md) records completed
-hosted CI, unchanged-source evidence and the locally corrected cache-recovery
-gap; Phase 1 remains unsigned. This records requirements, not a completion
+hosted CI, the corrected cache/domain boundaries, the 510-case knowledge
+component and the actual 158-name legacy-copy sync. Phase 1 remains unsigned
+until its remaining acceptance/deployment questions are resolved. This records
+requirements, not a completion
 percentage. The five
 phases in [the AI plan](../plans/2026-09-09-ai-knowledge-base.md) are a subproject;
 they do not replace the three release gates in [plan.md](../../plan.md).
