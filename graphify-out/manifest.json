@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792053935.7457395,
-    "seen": 1792055384.2266066,
-    "ast_hash": "dee84c4a7c48e4fe7015688d025b7227",
+    "mtime": 1792060089.3217335,
+    "seen": 1792060205.917405,
+    "ast_hash": "64100b84c3f0124350767a98f979c904",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18870,15 +18870,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/firefox-transport.mjs": {
-    "mtime": 1792041555.1214893,
-    "seen": 1792042099.575948,
-    "ast_hash": "869605e60d2680a63383f55d955c65b7",
+    "mtime": 1792059374.1730492,
+    "seen": 1792060205.9161637,
+    "ast_hash": "f95f3f32b2ef2afa3920046a7e927be5",
     "semantic_hash": ""
   },
   "frontend/tests/firefox-transport.test.mjs": {
-    "mtime": 1792041525.8249788,
-    "seen": 1792042099.5759497,
-    "ast_hash": "e05fb3dce4feb8e39dc607e279c10bc9",
+    "mtime": 1792059340.8106396,
+    "seen": 1792060205.9161658,
+    "ast_hash": "1dd2bb7743a6c8d8bf9dc4fd6b182d2a",
     "semantic_hash": ""
   },
   "frontend/tests/firefox-wire-trace.mjs": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792056153.0569177,
-    "seen": 1792056273.4831903,
-    "ast_hash": "2bfa851ba8d4e936e0c6abff1797ea72",
+    "mtime": 1792058241.6282492,
+    "seen": 1792060205.9173615,
+    "ast_hash": "0d3a2a5ef9e51fedce33c1153eae24cd",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -18954,9 +18954,9 @@
     "semantic_hash": ""
   },
   "docs/testing/browser-4297-response-boundary.md": {
-    "mtime": 1792055266.3692625,
-    "seen": 1792055384.225716,
-    "ast_hash": "3cb2ab0294799536c6ab2fba6ab3d683",
+    "mtime": 1792056546.7745235,
+    "seen": 1792060205.9167,
+    "ast_hash": "0eef551ea38b0dbad7a71e2ff7bdca3f",
     "semantic_hash": ""
   },
   "docs/testing/knowledge-unicode-name-identity.md": {
@@ -18972,9 +18972,27 @@
     "semantic_hash": ""
   },
   "docs/testing/knowledge-json-field-contract.md": {
-    "mtime": 1792056249.0833588,
-    "seen": 1792056273.4829845,
-    "ast_hash": "7a17c8ecdba56d7aa2ece56a1c63225e",
+    "mtime": 1792056546.7745235,
+    "seen": 1792060205.9171627,
+    "ast_hash": "da3e8af1d96a4d76a723d05cc5acf13a",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-2d-browser-acceptance.md": {
+    "mtime": 1792059387.6388113,
+    "seen": 1792060205.916887,
+    "ast_hash": "21cc1cc2620c11c3814bc68059eb63ee",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-95aa-complete-ci.md": {
+    "mtime": 1792058241.6282492,
+    "seen": 1792060205.9168947,
+    "ast_hash": "1532b710eb440ebe001b59858e3aa88a",
+    "semantic_hash": ""
+  },
+  "docs/testing/firefox-screenshot-bodyless-204.md": {
+    "mtime": 1792060089.3217335,
+    "seen": 1792060205.9170268,
+    "ast_hash": "1c1274251adc03a8f2ed560803e587d5",
     "semantic_hash": ""
   }
 }

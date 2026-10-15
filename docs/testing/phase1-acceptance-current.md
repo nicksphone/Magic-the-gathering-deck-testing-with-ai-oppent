@@ -7,6 +7,13 @@ and completeness of a particular operator's stored decks are different claims.
 
 ## Observed Integrated Evidence
 
+The later [hosted cache-recovery checkpoint](current-95aa-complete-ci.md) is
+terminal at exact `95aa731e`: 28,628 passed calls and 82 setup skips across
+28,710 unique collected nodes, plus 111 separately counted passed subtests.
+Independent raw metadata reconciliation specifically verifies all 92
+cache-recovery cases' setup/call/teardown records. This qualifies that recovery
+correction on its own source, not the subsequent model/repository changes.
+
 Hosted CI run `38666739801`, exact source
 `5e40e4e3774c2fbca9c98e5b1910886eb9be50fe`, succeeds. Independently reconciled
 sanitized backend metadata accounts for 28,568 distinct collected nodes:
@@ -129,8 +136,9 @@ silently substituted for whole-current-source acceptance.
 
 1. Retain the now-passed missing-cache recovery regression and preservation
    coverage in normal CI.
-2. Complete hosted qualification of that changed source, not just the preceding
-   hosted commit or the local component.
+2. Retain the now-completed `95aa731e` hosted cache-recovery result, then
+   complete hosted qualification of the later model/repository corrections,
+   rather than substituting that preceding source or local components.
 3. Establish the selected deployment and qualify any migration, retaining the
    completed legacy-copy result without treating it as authorization to replace
    a live database or publish private data.

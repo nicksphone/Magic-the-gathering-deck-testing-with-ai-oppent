@@ -1,5 +1,26 @@
 # Release Acceptance Status
 
+## Firefox Protocol Component
+
+The screenshot/bodyless-204 extension passes its full 94-case Firefox
+transport module and the complete frontend test/build/lint chain. This is a
+reviewed protocol component, not native Firefox or whole-application browser
+acceptance. The keyboard, pointer, capability and external ancestry holds
+remain open. See [the exact component boundary](firefox-screenshot-bodyless-204.md).
+
+## Verified 2d106588 Browser Checkpoint
+
+Exact `2d106588` completes the full configured generic browser job and both
+native Linux Chrome and Brave suites. All three independently match 45 ordered
+stages and 501 PASS banners from the 68-program launcher. Both native vendors
+retain enabled sandboxes and verified closure. The current hosted backend job
+is separate and is not certified by these results. See
+[the exact source and acceptance boundaries](current-2d-browser-acceptance.md).
+The earlier response-loss causes remain unproved; Firefox/LAN/AI/full release
+requirements remain open. The separate
+[95aa backend checkpoint](current-95aa-complete-ci.md) qualifies the earlier
+cache-recovery source, not the later model/repository corrections.
+
 ## Current Native And Generic Browser Boundary
 
 Published `4297ed8059f56bc8e8a95379e46ca992bf19853e` completes both secure native
