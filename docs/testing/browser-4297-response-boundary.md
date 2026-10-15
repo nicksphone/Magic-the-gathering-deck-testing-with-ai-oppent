@@ -47,6 +47,12 @@ and full private evidence remain immutable under
 
 ## Subsequent Held-Response Boundary
 
+The same `f2200b08` source separately completes both native vendor suites in
+run `38708291897`: Chrome `116333077433` and Brave `116333077057` each match
+all 45 ordered headers and 501 PASS banners, with enabled sandbox, exact
+preflight/driver pins and verified closure. This does not transfer acceptance
+to the later JSON-validator or held-diagnostic source.
+
 Published `f2200b08970fd81099ea420df919f472a0e7323c` passes the preceding
 accepted-response-drop scenario, but generic browser job `116332921108` fails
 later at `browser-ui-v2-costs.mjs`'s `assert.ok(held)`. The pending-operation

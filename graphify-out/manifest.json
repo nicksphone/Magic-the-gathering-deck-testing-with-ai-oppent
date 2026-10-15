@@ -438,9 +438,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/models.py": {
-    "mtime": 1792048723.753389,
-    "seen": 1792049945.3256319,
-    "ast_hash": "56913bea1aae131ecc22b216ec72ca0d",
+    "mtime": 1792055793.962741,
+    "seen": 1792056273.4780283,
+    "ast_hash": "5b90b83db65d5b188d52ce2a94f86543",
     "semantic_hash": ""
   },
   "backend/main.py": {
@@ -6522,9 +6522,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2-costs.mjs": {
-    "mtime": 1792044351.8497865,
-    "seen": 1792046651.8056197,
-    "ast_hash": "f8a581c3c7fb95a93a82fe4011713fc8",
+    "mtime": 1792054916.68386,
+    "seen": 1792055384.224979,
+    "ast_hash": "066936e6089a4273e8624d028f4b526f",
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792041821.8490307,
-    "seen": 1792042099.577169,
-    "ast_hash": "9ebde1258d838fe9e8b74939e9468806",
+    "mtime": 1792053935.7457395,
+    "seen": 1792055384.2266066,
+    "ast_hash": "dee84c4a7c48e4fe7015688d025b7227",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18078,9 +18078,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-plan-acceptance-progress.md": {
-    "mtime": 1792049829.7945406,
-    "seen": 1792049945.3300931,
-    "ast_hash": "ea281ca2b59d5584d6366ff166727d10",
+    "mtime": 1792053935.7437394,
+    "seen": 1792055384.2255347,
+    "ast_hash": "07fcebcc0d6237f1e3014c8f3d1c6ae1",
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
@@ -18852,15 +18852,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-diagnostics.mjs": {
-    "mtime": 1792044351.8487864,
-    "seen": 1792046651.8055954,
-    "ast_hash": "75fb947d4f4a9b84fd52812ef95e32c6",
+    "mtime": 1792054916.68386,
+    "seen": 1792055384.2249599,
+    "ast_hash": "ced183b5e41cab7ba689650c65d1191c",
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-diagnostics.test.mjs": {
-    "mtime": 1792044313.9714203,
-    "seen": 1792046651.8055983,
-    "ast_hash": "f3d0088afec723972778b9a7e01c690f",
+    "mtime": 1792054793.0368218,
+    "seen": 1792055384.2249632,
+    "ast_hash": "5ad35bbe3ec4bb6ff4b25d39e5c0cfd5",
     "semantic_hash": ""
   },
   "frontend/tests/firefox-driver-contract.test.mjs": {
@@ -18900,9 +18900,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-held-response-contract.test.mjs": {
-    "mtime": 1792044313.9724205,
-    "seen": 1792046651.8056307,
-    "ast_hash": "20f4284bb95c2985d3f58e97d6d7585c",
+    "mtime": 1792054996.8735821,
+    "seen": 1792055384.2249877,
+    "ast_hash": "d37c8da7b1c2bd0b838f751a21a341cc",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_cache_recovery.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792053600.3092868,
-    "seen": 1792053739.4130082,
-    "ast_hash": "6d2638b08ae95435f857ce0e505f820e",
+    "mtime": 1792056153.0569177,
+    "seen": 1792056273.4831903,
+    "ast_hash": "2bfa851ba8d4e936e0c6abff1797ea72",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -18954,15 +18954,27 @@
     "semantic_hash": ""
   },
   "docs/testing/browser-4297-response-boundary.md": {
-    "mtime": 1792053600.308287,
-    "seen": 1792053739.4123082,
-    "ast_hash": "36d30b0c92e4d9b0f41ac39428c38ed3",
+    "mtime": 1792055266.3692625,
+    "seen": 1792055384.225716,
+    "ast_hash": "3cb2ab0294799536c6ab2fba6ab3d683",
     "semantic_hash": ""
   },
   "docs/testing/knowledge-unicode-name-identity.md": {
-    "mtime": 1792053600.308287,
-    "seen": 1792053739.412806,
-    "ast_hash": "ac271aa0121a59e25c27ac52069c2846",
+    "mtime": 1792054041.8829913,
+    "seen": 1792055384.2263055,
+    "ast_hash": "b9dc283a7f6b88b260a9d65c05d38d1b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_json_boundaries.py": {
+    "mtime": 1792055793.964741,
+    "seen": 1792056273.480637,
+    "ast_hash": "5a2d22ee6855a9d0371b9800956c427f",
+    "semantic_hash": ""
+  },
+  "docs/testing/knowledge-json-field-contract.md": {
+    "mtime": 1792056249.0833588,
+    "seen": 1792056273.4829845,
+    "ast_hash": "7a17c8ecdba56d7aa2ece56a1c63225e",
     "semantic_hash": ""
   }
 }
