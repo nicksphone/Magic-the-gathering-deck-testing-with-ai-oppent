@@ -164,5 +164,64 @@ an unprofiled speed result or a gameplay regression from the earlier 269 ticks.
 Source/runtime checks, owned-group closure and all seven output-file handle
 checks pass. The private closed-root archive is
 `diagnostics/ci/native-series55-late-profile-60b-20261015-bdjmz86f/` on NFS.
-The next bounded experiment targets full-root container copying, without omitted
-fields, shared mutable data, altered histories or payment-search pruning.
+The subsequent bounded experiments below retain complete fields, mutable-state
+isolation, histories and payment search. Neither is integrated as a performance
+fix merely because its correctness tests pass.
+
+## Rejected Root-Container Prototype
+
+Three alternating baseline/candidate pairs copy the same genuine hydrated
+120-card initial state. The measured candidate passes its 78-case correctness
+cohort and all six complete-value/RNG/history checks, but the median copy-only
+difference is approximately 3.5% across three variable pairs. No useful native
+gain is established. A separate hook correction passes 82 cases but is not
+timed; its bytes must not inherit the earlier measurement. Both remain rejected
+prototypes, not product changes.
+
+## Paid-Prefix Candidate: Not Integrated
+
+The candidate shares identical checked announcements and settled projections
+between friendly-destruction and unanswered-outcome queries, retaining complete
+root/action identity and callback safety. Initial review exposes an eager winner
+read before the unanswered consumer's hidden-zone check. Twelve strict new
+regressions first fail; lazy access then preserves both consumers' original read
+order and counts. The corrected 12-whole-module component passes 267 cases.
+
+One fresh 48-whole-module execution subsequently passes all 1,946 cases in
+924.93 seconds, with no failures/errors/skips and the complete existing natural
+game retained. An earlier same-roster run records 1,940 passes and six cold-worker
+failures from a missing launcher environment value. Restoring only the original
+isolated-root/TMPDIR environment closes those failures; product and test bytes
+are unchanged between the two executions. Both ledgers remain distinct.
+
+The separate unprofiled native run still ends at the unchanged shared deadline.
+Game 1 has the exact original hash/winner/421 ticks and takes 107.69 seconds,
+against 108.47 seconds for the retained reference, only a 0.72% difference.
+Game 2 reaches 288 ticks and turn 10 rather than 269 ticks and turn 9, but has
+no winner and no qualified quality result. All 1,010 Game-1 entries and all 623
+common Game-2 entries match as complete strings, without dropped fields.
+
+The series records 603.25 seconds wall and 598.48 seconds CPU. The earlier
+620.37-second reference has a larger cooperative-deadline overshoot; subtracting
+these totals does not establish a causal speedup. Tick costs are nonuniform,
+and one short cohosted archival operation is disclosed without attributing an
+effect. Source/runtime preservation and process/SQL/lease closure pass, but the
+experiment does not establish enough benefit to justify merging its private
+frame cache. Candidate patch `538e4fbd` remains archived and unmerged.
+
+Closed private evidence is under
+`diagnostics/ci/20261015-paid-prefix-1946-PASS-io66jcpx/` and
+`diagnostics/ci/native55-paid-prefix-deadline-20261015-k74PQRQw/` on NFS.
+This does not complete a matchup, the 110-series matrix or measured AI strength.
+
+## Next Diagnostic Boundary
+
+The closed packet has no complete late root, RNG/topology reference or full
+choice-bearing action sequence. Its compact traces cannot justify an inferred
+replay. Future targeted timing first needs a genuine checkpoint and exact helper
+inputs, with restoration validated before measuring anything. Full chooser
+reproduction would additionally require agent and module-cache history.
+High payment-plan call counts and overlapping cumulative times alone do not
+prove reusable inputs; mutable postconditions and shared search-node budgets
+must not be memoized away. No further cache or search change is authorized by
+the rejected measurements themselves.
