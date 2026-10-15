@@ -222,7 +222,7 @@ def test_missing_raw_or_force_keeps_named_resync_and_preserves_learned_fields(re
     def resync(request):
         requests.append(str(request.url))
         if request.url.path == '/cards/named':
-            assert dict(request.url.params) == {'exact': raw['name']}
+            assert dict(request.url.params) == {'fuzzy': raw['name']}
             return httpx.Response(200, json=raw)
         assert str(request.url) == raw['rulings_uri']
         return httpx.Response(200, json={'object': 'list', 'data': rulings[raw['id']], 'has_more': False})

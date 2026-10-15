@@ -132,9 +132,9 @@
     "semantic_hash": ""
   },
   "backend/ai/pending_effects.py": {
-    "mtime": 1792033175.466681,
-    "seen": 1792034402.3545904,
-    "ast_hash": "aa5c968773f24b088e749da298f95aab",
+    "mtime": 1792069327.8578033,
+    "seen": 1792072990.4844568,
+    "ast_hash": "6562e30025ed7a0aee7a5866f391eb55",
     "semantic_hash": ""
   },
   "backend/ai/proliferation_policy.py": {
@@ -426,9 +426,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/ingest.py": {
-    "mtime": 1792046365.8730083,
-    "seen": 1792046651.7999833,
-    "ast_hash": "f5d64c5a2736d30c25bcb83cf8cc18ff",
+    "mtime": 1792082115.1270552,
+    "seen": 1792082343.626916,
+    "ast_hash": "f3ede8284e2535564c5c5fa205551025",
     "semantic_hash": ""
   },
   "backend/knowledge/mechanic_metadata.py": {
@@ -798,9 +798,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/mana.py": {
-    "mtime": 1792033175.5136802,
-    "seen": 1792034402.3548236,
-    "ast_hash": "bcbec4150d2dc894b4c50e42db612953",
+    "mtime": 1792069327.8588033,
+    "seen": 1792072990.4847455,
+    "ast_hash": "9b5d0b5b82ea18d34079e369324c9772",
     "semantic_hash": ""
   },
   "backend/rules_engine/mana_abilities.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792068239.7534828,
-    "seen": 1792068354.4283552,
-    "ast_hash": "a41ce53b40a9964f7254c53bec388ba1",
+    "mtime": 1792081523.8827834,
+    "seen": 1792081923.8569005,
+    "ast_hash": "154ba89245b82f56639b33489349b50e",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18756,9 +18756,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_phase1_stored_deck_corpus_cli.py": {
-    "mtime": 1792033175.6856773,
-    "seen": 1792034402.357264,
-    "ast_hash": "7e6909e5f49cda0f57efbf2f0391eb0a",
+    "mtime": 1792082115.128055,
+    "seen": 1792082343.6298776,
+    "ast_hash": "4014dff07239a649f67170c7071201f7",
     "semantic_hash": ""
   },
   "docs/testing/current-92a-complete-ci.md": {
@@ -18906,9 +18906,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_cache_recovery.py": {
-    "mtime": 1792046308.660887,
-    "seen": 1792046651.80367,
-    "ast_hash": "363f0378e00b7bfaf6aa22f5c5e9e667",
+    "mtime": 1792082115.128055,
+    "seen": 1792082343.6294715,
+    "ast_hash": "ea187ce492d4a10f762c435169020cc7",
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-post-response-contract.test.mjs": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792068239.7524827,
-    "seen": 1792068354.4283116,
-    "ast_hash": "8427ab5896dc882b2c1051d9afe79bb5",
+    "mtime": 1792082335.8788607,
+    "seen": 1792082343.6320844,
+    "ast_hash": "ca40672933068d23eff861532f49dd88",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -18996,9 +18996,9 @@
     "semantic_hash": ""
   },
   "docs/testing/firefox-native-ui-input.md": {
-    "mtime": 1792062149.9262054,
-    "seen": 1792062265.7790878,
-    "ast_hash": "5c1bbf1e490ba86c331465590a415893",
+    "mtime": 1792081523.8807836,
+    "seen": 1792081923.8564692,
+    "ast_hash": "dd60b49c3eb9a3fb430fa1206d8d10ab",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/interface_scope_compatibility/accepted_phase1_repository_delta.json": {
@@ -19017,6 +19017,36 @@
     "mtime": 1792067176.5779552,
     "seen": 1792068354.4275792,
     "ast_hash": "d88badab9c86d164d70b87c8e66170ef",
+    "semantic_hash": ""
+  },
+  "backend/game_state/copying.py": {
+    "mtime": 1792074145.0557783,
+    "seen": 1792074525.0963132,
+    "ast_hash": "185b042c2ba65d62f6cd3d74623a8af0",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_payment_trial_copy.py": {
+    "mtime": 1792069549.8289144,
+    "seen": 1792072990.4876032,
+    "ast_hash": "8c7fd959843a0f644a8df8ade3199a65",
+    "semantic_hash": ""
+  },
+  "docs/plans/2026-10-15-payment-trial-copy.md": {
+    "mtime": 1792081797.6044118,
+    "seen": 1792081923.8558984,
+    "ast_hash": "f251a833460ccc7d1da4b3ddd77abd5f",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_nested_card_copy.py": {
+    "mtime": 1792073567.1224515,
+    "seen": 1792074525.0992672,
+    "ast_hash": "3b1fc2cc5cdc75fc5e6a0f8e0f5ecc01",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_knowledge_sync_task12.py": {
+    "mtime": 1792082115.128055,
+    "seen": 1792082343.6294994,
+    "ast_hash": "d899e10136ff382f1b304d083cf80d9f",
     "semantic_hash": ""
   }
 }

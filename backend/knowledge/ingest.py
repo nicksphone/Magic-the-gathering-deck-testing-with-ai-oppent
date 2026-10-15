@@ -56,8 +56,8 @@ class KnowledgeIngestor:
         parsed = urlparse(url)
         if parsed.scheme != "https" or parsed.netloc != "api.scryfall.com":
             raise ValueError("Knowledge requests must use the Scryfall API.")
-        # Scryfall's named/search endpoints now require 500ms spacing.
-        interval = max(self.interval, 0.5 if parsed.path in {"/cards/named", "/cards/search"} else 0.1)
+        # Keep the existing conservative named/search floor above the corpus floor.
+        interval = max(self.interval, 0.5 if parsed.path in {"/cards/named", "/cards/search"} else 0.25)
         time.sleep(max(0.0, interval - (time.monotonic() - self._last_request)))
         try:
             for attempt in range(3):
@@ -134,7 +134,15 @@ class KnowledgeIngestor:
         existing = None if force else self.cached(name)
         if existing is not None and not force:
             return "cached"
-        raw = self._get(f"{API}/cards/named", {"exact": name})
+        raw = self._get(f"{API}/cards/named", {"fuzzy": name})
+        canonical_name = raw.get("name")
+        aliases = {canonical_name.casefold()} if isinstance(canonical_name, str) else set()
+        faces = raw.get("card_faces")
+        if raw.get("layout") != "art_series" and raw.get("type_line") != "Card" and isinstance(faces, list):
+            aliases.update(face["name"].casefold() for face in faces
+                           if isinstance(face, dict) and isinstance(face.get("name"), str) and face["name"])
+        if not isinstance(name, str) or not name.strip() or name.strip().casefold() not in aliases:
+            raise ValueError("Canonical response does not match the requested card or a real face.")
         self.sync_payload(raw)
         return "synced"
 

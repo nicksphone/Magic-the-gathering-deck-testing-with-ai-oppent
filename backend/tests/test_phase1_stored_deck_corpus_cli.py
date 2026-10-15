@@ -51,8 +51,8 @@ def test_stored_main_and_side_cli_roundtrip(tmp_path, monkeypatch, capsys, casef
         requests.append(url)
         if request.url.path == '/cards/named':
             assert request.url.host == 'api.scryfall.com'
-            assert set(request.url.params) == {'exact'}
-            body = raw_by_alias[request.url.params['exact'].casefold()]
+            assert set(request.url.params) == {'fuzzy'}
+            body = raw_by_alias[request.url.params['fuzzy'].casefold()]
         else:
             assert url in pages
             body = pages[url]
@@ -126,7 +126,7 @@ def test_stored_main_and_side_cli_roundtrip(tmp_path, monkeypatch, capsys, casef
         summary = sync_cli('first-sync')
         assert summary['synced'] == 2
         assert len(requests) - calls_before == 4  # Two named records and their two official rulings lists.
-        requested = Counter(httpx.URL(url).params['exact'].casefold() for url in requests[calls_before:]
+        requested = Counter(httpx.URL(url).params['fuzzy'].casefold() for url in requests[calls_before:]
                             if httpx.URL(url).path == '/cards/named')
         assert requested == Counter({main_name.casefold(): 1, side_name.casefold(): 1})
         rc, after = report_gap('after')

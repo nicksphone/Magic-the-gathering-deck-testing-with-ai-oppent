@@ -81,11 +81,40 @@ and 35 verified empty ruling lists. An empty verified list is valid; demanding
 a published ruling for every card would manufacture a failure of authentic
 data. See [stored-deck corpus evidence](phase1-stored-deck-corpus-current.md).
 
-The implementation uses exact card-name lookup rather than the plan's proposed
-fuzzy lookup. Named/search endpoints use a 0.5-second minimum interval and
-other endpoints use the configured interval, not the literal proposed
-0.25-second interval for every request. These differences are recorded, not
-silently described as exact conformance.
+The earlier implementation used exact card-name lookup and allowed other
+endpoints below the proposed quarter-second request spacing. The subsequent
+Task 1.2 correction below addresses those two gaps. Named/search requests retain
+their longer 0.5-second minimum, rather than increasing network request rates.
+
+## Task 1.2 Protocol Follow-Up
+
+The corrected sync uses the specified fuzzy endpoint but requires its returned
+canonical name or an allowed real face name to match the requested corpus
+identity before persistence. It cannot silently substitute a nearby typo or
+unrelated card. All endpoints now retain at least 0.25 seconds between requests;
+longer caller intervals, the named/search floor and existing 429 handling remain.
+
+The new 33-case module first reports 23 failures and ten passes. The corrected
+nine-whole-module composition passes all 231 cases in 77.16 seconds, with no
+failures, errors or skips. Two existing modules change only four request operands
+from `exact` to `fuzzy`; their assertions and request counts remain intact.
+The declaration retains real repository, CLI, recovery, face-alias, forced-refresh,
+verified-empty-rulings and learned-field preservation controls. Independent
+source review finds no actionable regression. This is a trusted owned-SQL cohort,
+not a child sandbox, a natural AI game or a live-provider result.
+
+A distinct real-provider check then syncs Lightning Bolt and the front-face name
+Fable of the Mirror-Breaker into a fresh owned database using the corrected
+production ingestor. All four actual API responses return 200, both canonical
+records have verified rulings, and a new-session repetition makes zero requests.
+The source remains unchanged and the closed database has no remaining handles.
+This is two-name protocol evidence, not another full-corpus or live-data run.
+
+The first attempt stopped before test execution because pytest scanned the
+operator's home directory. Its separate failed ledger is preserved; fixing only
+the runner's working directory produced the meaningful RED and GREEN above.
+Final hosted acceptance and the literal handwritten-test-data scope question
+remain open. This correction does not itself sign off Phase 1.
 
 ## Missing-Cache Recovery Qualification
 
