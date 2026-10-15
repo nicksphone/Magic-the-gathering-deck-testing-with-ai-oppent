@@ -6528,9 +6528,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1792033175.944673,
-    "seen": 1792034402.3580637,
-    "ast_hash": "ab90f2145dd88e23279c60acc1c701d3",
+    "mtime": 1792036086.5955513,
+    "seen": 1792036413.7482715,
+    "ast_hash": "e9228b0b36fff96c2e52f3f301669ad0",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -18258,9 +18258,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-drop-response-contract.mjs": {
-    "mtime": 1792033175.945673,
-    "seen": 1792034402.3580673,
-    "ast_hash": "dd22b4560748e4512c760b565d029b3b",
+    "mtime": 1792036049.0971053,
+    "seen": 1792036413.7482767,
+    "ast_hash": "d86679976d04a001ec8c5fcfa4b40cf9",
     "semantic_hash": ""
   },
   "docs/testing/browser-v2-accepted-response-recovery.md": {
@@ -18804,15 +18804,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-vendor-preflight.mjs": {
-    "mtime": 1792035064.8351681,
-    "seen": 1792035223.9274762,
-    "ast_hash": "cd54b9e41d02dd26b2a6efc342a9e1ea",
+    "mtime": 1792036156.2795122,
+    "seen": 1792036413.7482803,
+    "ast_hash": "c60044d8d22d8ac51ff2b6504cc47ff9",
     "semantic_hash": ""
   },
   "frontend/tests/browser-vendor-preflight.test.mjs": {
-    "mtime": 1792035064.6541712,
-    "seen": 1792035223.9274786,
-    "ast_hash": "0fa411b8005f453e7f95dc7623ec7705",
+    "mtime": 1792036156.092515,
+    "seen": 1792036413.7482824,
+    "ast_hash": "8d4948dc727bb7c40994107475ac1b86",
     "semantic_hash": ""
   },
   "frontend/tests/native-browser-service.test.mjs": {
@@ -18828,9 +18828,9 @@
     "semantic_hash": ""
   },
   "docs/testing/native-vendor-browser-ci.md": {
-    "mtime": 1792035462.682686,
-    "seen": 1792035607.0308068,
-    "ast_hash": "67522e6478fee56d7f8cecb0087e2a45",
+    "mtime": 1792036156.2795122,
+    "seen": 1792036413.7494664,
+    "ast_hash": "ece425a4af5c9a8aa5a4805dedcc5563",
     "semantic_hash": ""
   }
 }

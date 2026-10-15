@@ -42,19 +42,32 @@ async function pointer(selector) {
 }
 async function recoverDroppedResponse(s) {
   let dropped=false, dropping=false, enabled=false, timer;
+  let postResponseObserved=false, omittedResponses=0;
   const responseTrace=[], actionUrl=`${api}/matches/${s.id}/action`;
   let resolveDrop, rejectDrop;
   const drop=new Promise((resolve,reject)=>{resolveDrop=resolve;rejectDrop=reject;});
   drop.catch(()=>{}); // A callback may reject before click's CDP acknowledgement.
   b.onIntercept(async e=>{
-    responseTrace.push({method:e.request.method,status:e.responseStatusCode,current:e.request.url===actionUrl});
+    const trace={method:['OPTIONS','POST','GET','HEAD','PUT','PATCH','DELETE'].includes(e.request.method)?e.request.method:'OTHER',
+      status:Number.isInteger(e.responseStatusCode)&&e.responseStatusCode>=100&&e.responseStatusCode<=599?e.responseStatusCode:null,
+      current:e.request.url===actionUrl,command:'continue',continuation:'pending',errorCode:null};
+    if(e.request.method==='OPTIONS')trace.allowOriginMatchesExpected=Boolean(e.responseHeaders?.some(h=>h.name.toLowerCase()==='access-control-allow-origin'&&h.value===origin));
+    if(trace.current&&e.request.method==='POST')postResponseObserved=true;
+    if(responseTrace.length<16)responseTrace.push(trace);else omittedResponses++;
     try {
       if(e.request.method==='POST'&&e.responseStatusCode===200&&e.request.url===actionUrl&&!dropping){
         dropping=true;
+        trace.command='drop';
         await command('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});
+        trace.continuation='ack';
         dropped=true;resolveDrop();
-      }else await command('Fetch.continueResponse',{requestId:e.requestId});
-    }catch(error){rejectDrop(error);}
+      }else {await command('Fetch.continueResponse',{requestId:e.requestId});trace.continuation='ack';}
+    }catch(error){
+      trace.continuation='error';
+      // The driver wraps CDP errors as JSON; never retain its message or data.
+      try {const code=JSON.parse(error.message).code;if(Number.isSafeInteger(code))trace.errorCode=code;}catch{}
+      rejectDrop(error);
+    }
   });
   try {
     await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
@@ -67,7 +80,29 @@ async function recoverDroppedResponse(s) {
     if(Date.now()>=deadline)throw new Error('Current accepted response reconciliation timed out');
     const state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);assert.ok(dropped);
     return state;
-  }catch(error){console.error('DROP_RESPONSE_TRACE',JSON.stringify({dropped,responses:responseTrace}));throw error;}
+  }catch(error){
+    const diagnostic={dropped,postResponseObserved,responses:responseTrace.map(trace=>({...trace})),
+      omittedResponses,uiStatus:'unavailable',ui:null};
+    let diagnosticTimer;
+    try {
+      // Read only booleans, once, after failure; a stuck diagnostic cannot delay cleanup indefinitely.
+      const ui=await Promise.race([evaluate(`(()=>{
+        const alert=document.querySelector('.operation-alert'),text=alert?.textContent||'';
+        return {activeMatch:localStorage.getItem('mtg.activeMatch')===${JSON.stringify(s.id)},
+          renderedMatch:document.querySelector('.battlefield')?.dataset.matchId===${JSON.stringify(s.id)},
+          alert:Boolean(alert),pending:document.body.innerText.includes('Match operation pending'),
+          restoring:document.body.innerText.includes('Restoring saved session'),
+          failedToFetch:text.includes('Failed to fetch'),networkError:text.includes('NetworkError'),loadFailed:text.includes('Load failed')};
+      })()`),new Promise(resolve=>{diagnosticTimer=setTimeout(()=>{diagnostic.uiStatus='timed-out';resolve(null);},1000);})]);
+      if(ui&&typeof ui==='object'){
+        diagnostic.ui={};
+        for(const key of ['activeMatch','renderedMatch','alert','pending','restoring','failedToFetch','networkError','loadFailed'])diagnostic.ui[key]=ui[key]===true;
+        diagnostic.uiStatus='available';
+      }
+    }catch{}finally{clearTimeout(diagnosticTimer);}
+    try {console.error('DROP_RESPONSE_TRACE',JSON.stringify(diagnostic));}catch{}
+    throw error;
+  }
   finally{clearTimeout(timer);if(enabled)await command('Fetch.disable');}
 }
 try {

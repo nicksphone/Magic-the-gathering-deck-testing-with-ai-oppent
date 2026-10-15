@@ -22,8 +22,10 @@ chmod, local host installation, AppArmor change or sysctl workaround is used.
 
 ## Runtime Checks
 
-Preflight checks package ownership, executable identity/version/hash and a real
-DOM nonce. It also checks the browser's `chrome://sandbox` status for its first
+Preflight checks package ownership, executable identity/hash, the running
+process's DevTools product/version and a real DOM nonce. Informational `--version`
+console formatting is not a native-acceptance predicate. It also checks the
+browser's `chrome://sandbox` status for its first
 sandbox layer, PID/network namespaces and seccomp. Chromium describes this as
 the **expected renderer sandbox status**; the JSON explicitly does not claim
 per-renderer kernel attestation. These are runtime prerequisites, not proof of

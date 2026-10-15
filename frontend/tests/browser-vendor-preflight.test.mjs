@@ -117,6 +117,14 @@ test('actual version output must be finite numeric and vendor-specific', () => {
   }
 });
 
+test('runtime version is observed from the actual DevTools endpoint, not CLI text', () => {
+  assert.deepEqual(api('parseDevToolsVersion')('Chrome/155.0.8059.79'), {product: 'Chrome', version: '155.0.8059.79'});
+  assert.deepEqual(api('parseDevToolsVersion')('HeadlessChrome/155.0.8059.79'), {product: 'HeadlessChrome', version: '155.0.8059.79'});
+  for (const bad of [undefined, 'Chrome/PRIVATE', 'Chrome/155.0.1.2\nPRIVATE', 'https://private/155.0.1.2']) {
+    assert.throws(() => api('parseDevToolsVersion')(bad), /VENDOR_VERSION/);
+  }
+});
+
 test('DevToolsActivePort accepts only one bounded numeric port and browser UUID path', () => {
   assert.equal(api('parseDevToolsActivePort')('32123\n/devtools/browser/12345678-1234-1234-1234-123456789abc\n').port, 32123);
   for (const value of ['0\n/devtools/browser/x', '65536\n/devtools/browser/x',

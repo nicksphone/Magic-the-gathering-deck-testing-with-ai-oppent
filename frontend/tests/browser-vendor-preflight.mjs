@@ -60,6 +60,13 @@ export function parseVendorVersion(vendor, text) {
   return match[1];
 }
 
+export function parseDevToolsVersion(text) {
+  const match = typeof text === 'string' && text.length <= 128
+    && text.match(/^([A-Za-z][A-Za-z .-]{0,31})\/([0-9]+(?:\.[0-9]+){2,3})$/);
+  if (!match) fail('VENDOR_VERSION');
+  return {product: match[1], version: match[2]};
+}
+
 export function parseDevToolsActivePort(text) {
   const match = typeof text === 'string' && text.length <= 512
     && text.match(/^([1-9][0-9]{0,4})\n(\/devtools\/browser\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\n?$/);
@@ -144,7 +151,6 @@ async function nativeReport(config, reportFile, env) {
       TMPDIR: path.join(profileRoot, 'tmp'), XDG_CONFIG_HOME: path.join(profileRoot, 'config'),
       XDG_CACHE_HOME: path.join(profileRoot, 'cache'), XDG_DATA_HOME: path.join(profileRoot, 'data'),
       XDG_RUNTIME_DIR: path.join(profileRoot, 'runtime')};
-    report.binary.version = parseVendorVersion(config.vendor, await command(config.binary, ['--version'], childEnvironment));
     const profile = path.join(profileRoot, 'profile');
     child = spawn(config.binary, ['--headless', '--no-first-run', '--no-default-browser-check',
       '--disable-background-networking', '--disable-dev-shm-usage', '--enable-automation', '--lang=en-US',
@@ -178,6 +184,7 @@ async function nativeReport(config, reportFile, env) {
     if (!response.ok) fail('VENDOR_DEVTOOLS');
     const version = await response.json();
     if (version.webSocketDebuggerUrl !== `ws://127.0.0.1:${endpoint.port}${endpoint.browserPath}`) fail('VENDOR_DEVTOOLS');
+    report.binary.runtime = {...parseDevToolsVersion(version.Browser), basis: 'running process DevTools endpoint'};
     process.env.MTG_BROWSER_ORIGIN = origin;
     delete process.env.MTG_FRONTEND_ORIGIN;
     const {openBrowser} = await import('./browser-driver.mjs');
