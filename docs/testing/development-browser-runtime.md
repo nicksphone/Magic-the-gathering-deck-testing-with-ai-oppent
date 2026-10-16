@@ -50,8 +50,25 @@ restriction. A real Git inventory outside source and a fresh owned `/tmp` path
 correct only the runner environment. All 38 affected original checks pass before
 the final full rerun; no product, test assertion or privacy permission changes.
 
-Exact-source hosted acceptance remains separate. Neither the component counts
-nor a successful production build prove that the original browser suite or
-genuine StrictMode probe passed. No local browser, native service or kernel
-capability probe is used for this preparation. Phase 1, native Firefox and the
-complete release remain open.
+Both original shell-wrapper control commands also return zero. They use their
+existing fake service/browser fixtures; this is not local native-browser proof.
+
+## Actual Hosted Result At 5763
+
+Run `38880857267`, attempt 1, completes its frontend job successfully. Its
+browser job `116906982005` first passes the genuine development prerequisite:
+React 18.3.1 reports the required development flags, two renders, two effect
+mounts and one cleanup. The original suite then fails at
+`browser-ui-v2-costs.mjs:61`: its expected held POST response is absent.
+
+The bounded metadata records a continued OPTIONS request and an aborted POST
+37.652 milliseconds after request initiation. A recovery GET aborts separately.
+No WebSocket events or post-action navigations are observed. Thus removing HMR
+does not remove this failure; the cancellation cause remains unproven. Only two
+of the 45 stage headers and 18 of the 501 PASS banners are reached. The Officer
+probe is not reached and is not declared passing.
+
+This change establishes a stable development runtime and a genuine replay
+prerequisite, not a fix for the held-response failure. Native Firefox, Phase 1,
+the latest whole backend and complete release remain separate. No local browser,
+native service or kernel capability probe was used in parent verification.

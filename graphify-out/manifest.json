@@ -5298,9 +5298,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_stack_copies.py": {
-    "mtime": 1792033175.702677,
-    "seen": 1792034402.357544,
-    "ast_hash": "1cc9fc7b23439a655d1c143a6456e017",
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.651675,
+    "ast_hash": "1c571f3c1e8b4372a0134f5f32209cfd",
     "semantic_hash": ""
   },
   "backend/tests/test_stack_target_kinds.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792142702.6307,
-    "seen": 1792142822.0675046,
-    "ast_hash": "a798870dce987dd8f33effe38cc69d1e",
+    "mtime": 1792145539.7931552,
+    "seen": 1792145884.6538243,
+    "ast_hash": "fac562d0997d74296642fa301eca5981",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792140388.5000143,
-    "seen": 1792140508.4203756,
-    "ast_hash": "6607a3ee952128050e95a89c2debfb81",
+    "mtime": 1792145539.7921553,
+    "seen": 1792145884.653767,
+    "ast_hash": "7f3556885ad440172627e5f93d4d7845",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19884,15 +19884,87 @@
     "semantic_hash": ""
   },
   "docs/testing/development-browser-runtime.md": {
-    "mtime": 1792142619.5762296,
-    "seen": 1792142822.067046,
-    "ast_hash": "a939856be09e84c904911c0129bbed9a",
+    "mtime": 1792145557.9248855,
+    "seen": 1792145884.6532943,
+    "ast_hash": "bdf69eea399d8ee4b57716c2d5a3d8c5",
     "semantic_hash": ""
   },
   "frontend/tests/fixtures/ci-development-runtime/probe.html": {
     "mtime": 1792142296.8535209,
     "seen": 1792142822.06782,
     "ast_hash": "0aff6159a97626f737f4f919933f3c86",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/stack_copy_printed_b720/GOBLIN_PROVENANCE.json": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.649722,
+    "ast_hash": "76ffe80a33287b90c9c72285c8b38e79",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/stack_copy_printed_b720/ORIGINAL_CONTRACT.json": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.649725,
+    "ast_hash": "90da3cc4aedbf58288ca8d99127f4b72",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/stack_copy_printed_b720/SOURCES.json": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.6497264,
+    "ast_hash": "0a1772bb41001dcaf20ddde0a0cda896",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/stack_copy_printed_b720/STATE_FIXTURE_PREIMAGE.json": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.649728,
+    "ast_hash": "4816885af56906495a735f49937f791f",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/stack_copy_printed_b720/goblin-arsonist-scryfall-raw.json": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.6497297,
+    "ast_hash": "72a9404d2cab83ce1c280b0dfc874702",
+    "semantic_hash": ""
+  },
+  "backend/tests/stack_copy_printed_b720.py": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.6499817,
+    "ast_hash": "9c0f9f433419f5c7a58fcceb9c715cb5",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_stack_copy_main_binding_protocol_fe026.py": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.6516771,
+    "ast_hash": "e6871232b682f416c1b8a60f1c80e483",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_stack_copy_printed_b720_fidelity.py": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.6516786,
+    "ast_hash": "81b137c4600024f43ea9d153de62479f",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-79-hosted-backend.md": {
+    "mtime": 1792145539.7921553,
+    "seen": 1792145884.653187,
+    "ast_hash": "e406cc79d786398ebb5c3b07072456bb",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-stack-copies-8d715-remaining-printed-facts.md": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.654035,
+    "ast_hash": "25342b82ca91be0ee00b4bdbac4bed01",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-stack-copies-b720-printed-fixtures.md": {
+    "mtime": 1792145644.3535907,
+    "seen": 1792145884.6540372,
+    "ast_hash": "19b0a93e3fbc6c9f0f6b08c2ef43c538",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-stack-copy-main-binding-protocol-fe026.md": {
+    "mtime": 1792145670.8401911,
+    "seen": 1792145884.6540387,
+    "ast_hash": "a9ad81ff2f1ca528bc96c75a408d6bb0",
     "semantic_hash": ""
   }
 }

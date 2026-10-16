@@ -2,6 +2,12 @@
 
 ## Latest Published Browser And Fixture Checks
 
+Exact [`79e215fb` backend CI](current-79-hosted-backend.md) subsequently succeeds:
+29,420 passed calls and 82 setup skips among 29,502 unique identities, plus 111
+separately counted passing subtest reports. Its unchanged Phase 1 source paths
+are byte-identical to `5763e072`; its whole-source result is not transferred to
+later rules, fixture or browser changes. Literal Phase 1 scope remains open.
+
 Exact `0c4129f5` completes frontend and the configured generic browser CI:
 all 45 ordered stages and 501 PASS banners are independently reconciled, with
 all 919 original assertion-call sites preserved. Its backend job remains a
@@ -35,11 +41,14 @@ See [the complete declaration and limits](canonical-stack-target-fixtures.md).
 
 Later `8d715442` browser CI fails its unchanged held-response assertion amid
 an aborted POST and script-initiated reloads; the initial cause is unproven.
-The prepared browser-runtime correction serves prebuilt development assets,
-retains StrictMode and adds a genuine browser replay prerequisite without
-changing application code or the original 45-stage suite. Complete local
-frontend tests, production build and lint pass, but its native replay and
-hosted browser result remain pending. See
+Published `5763e072` serves prebuilt development assets, retains StrictMode and
+passes its genuine browser replay prerequisite: two renders, two effect mounts
+and one cleanup. Complete local frontend tests, production build, lint and both
+shell-wrapper controls pass. Its hosted browser job nevertheless fails the
+same held-response assertion: the POST aborts after 37.652 milliseconds, with
+no observed WebSocket or post-action navigation events. HMR is therefore not
+necessary for that failure; the actual cancellation cause remains unknown.
+The Officer runtime proof is not reached. See
 [the exact change and limits](development-browser-runtime.md).
 
 ## Current e4 Offline Check
