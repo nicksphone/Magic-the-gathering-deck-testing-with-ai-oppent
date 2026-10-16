@@ -1,0 +1,24 @@
+# Published 0c Browser CI
+
+GitHub run `38863018317`, attempt 1, exact source
+`0c4129f58f314ef8813a187ca0be8ea0682bf2e9`, completes browser job
+`116849410289` successfully at 2026-10-16 07:03:21 UTC. Frontend job
+`116849410376` also succeeds. Backend acceptance is a separate job and was
+still running at the independent browser reconciliation.
+
+The terminal browser log matches all 45 ordered stage headers and all 501
+PASS banners against the immutable launcher. Static comparison retains all
+919 original assertion-call AST sites across 66 distinct scenario files.
+These are different measures: banners are not 501 independent programs, and
+static assertion sites are not runtime assertion-execution counts.
+
+This source contains the bounded navigation/Runtime observation changes and
+the reviewed setup-order correction. The actual whole browser result is
+successful; historical failed runs remain preserved, and their earlier abort
+cause is not retroactively declared known.
+
+The configured generic CI explicitly uses its existing `--no-sandbox` mode.
+This does not qualify sandbox-intact Chrome/Brave/Firefox, native Firefox
+input flows, a clean install, LAN trust, Phase 1 or the complete release.
+Only the terminal browser log and public source were reconciled; neither the
+protected synthetic trace nor raw backend job logs were downloaded.

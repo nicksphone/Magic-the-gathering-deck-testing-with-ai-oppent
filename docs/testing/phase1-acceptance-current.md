@@ -5,6 +5,15 @@ Reviewed on 2026-10-15 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The latest [damage/life composition](task13-damage-life-coupled1224-current.md)
+passes 1,224 ordinary cases in 62 whole modules on the fresh locked release
+runtime. It includes every earlier 759-case identity, complete official inputs
+for eight more fixture modules, and the generic source-control correction those
+inputs expose. All 66 affected original test functions and 274 assertion ASTs
+remain. This advances Task 1.3; other handwritten fixture families and the
+literal repository-wide requirement remain unfinished. UI/browser work runs in
+parallel and does not constitute Phase 1 sign-off.
+
 The later exact [`e4f797e6` cold/warm declaration](current-e4-offline-assets-cold-warm.md)
 qualifies committed-seed offline startup on a fresh owned checkout: all 155
 shipped identities hydrate and serve assets without network access, real restart

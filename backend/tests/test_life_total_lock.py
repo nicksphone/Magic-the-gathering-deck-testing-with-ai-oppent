@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.damage_life_printed_79 import canonical_card, canonical_deck_entry, raw_card
 
 import pytest
 
@@ -17,7 +18,7 @@ from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def game():
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=83)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -27,11 +28,7 @@ def game():
 
 
 def add_emperion(state):
-    card = CardInstance(
-        id="emperion", name="Platinum Emperion", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact", "Creature"], power=8, toughness=8,
-        oracle_text="Your life total can't change.",
-    )
+    card = canonical_card("Platinum Emperion", id="emperion", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[card.id] = card
     state.players[1].battlefield.append(card.id)
     return card.id
@@ -55,11 +52,7 @@ def test_life_total_lock_blocks_changes_and_nonzero_payments_but_not_zero_paymen
 def test_locked_life_prevents_conditional_land_payment():
     state = game()
     add_emperion(state)
-    land = CardInstance(
-        id="foundry", name="Sacred Foundry", owner=1, controller=1,
-        zone=Zone.HAND, types=["Land"],
-        oracle_text="As this land enters, you may pay 2 life. If you don't, it enters tapped.",
-    )
+    land = canonical_card("Sacred Foundry", id="foundry", owner=1, controller=1, zone=Zone.HAND)
     state.cards[land.id] = land
     state.players[1].hand.append(land.id)
     assert land_entry_options(state, 1, land) == ["tapped"]
@@ -73,12 +66,7 @@ def test_locked_life_prevents_conditional_land_payment():
 def test_damage_is_still_dealt_and_opponent_lifelink_still_gains_life():
     state = game()
     add_emperion(state)
-    attacker = CardInstance(
-        id="nighthawk", name="Vampire Nighthawk", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=3,
-        keywords=["flying", "deathtouch", "lifelink"], oracle_text="Flying, deathtouch, lifelink",
-        summoning_sick=False,
-    )
+    attacker = canonical_card("Vampire Nighthawk", id="nighthawk", owner=2, controller=2, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[attacker.id] = attacker
     state.players[2].battlefield.append(attacker.id)
     state.attackers = [attacker.id]
@@ -91,11 +79,7 @@ def test_damage_is_still_dealt_and_opponent_lifelink_still_gains_life():
 def test_infect_damage_still_grants_poison_under_life_total_lock():
     state = game()
     add_emperion(state)
-    source = CardInstance(
-        id="glistener", name="Glistener Elf", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
-        keywords=["infect"], oracle_text="Infect",
-    )
+    source = canonical_card("Glistener Elf", id="glistener", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[source.id] = source
     state.players[2].battlefield.append(source.id)
     apply_player_damage(state, 1, 2, source.id)
@@ -105,12 +89,7 @@ def test_infect_damage_still_grants_poison_under_life_total_lock():
 def test_life_payment_cost_can_use_exact_remaining_life_without_lock():
     state = game()
     state.players[1].life = 1
-    card = CardInstance(
-        id="sadist", name="Cruel Sadist", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
-        oracle_text="{B}, {T}, Pay 1 life: Put a +1/+1 counter on Cruel Sadist.",
-        summoning_sick=False,
-    )
+    card = canonical_card("Cruel Sadist", id="sadist", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[card.id] = card
     state.players[1].battlefield.append(card.id)
     state.players[1].mana_pool["B"] = 1
@@ -129,19 +108,8 @@ def test_life_payment_cost_can_use_exact_remaining_life_without_lock():
 
 def test_font_of_agonies_triggers_after_cruel_sadist_life_payment():
     state = game()
-    font = CardInstance(
-        id="font", name="Font of Agonies", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.\n"
-                    "{1}{B}, Remove four blood counters from this enchantment: Destroy target creature.",
-    )
-    sadist = CardInstance(
-        id="sadist", name="Cruel Sadist", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
-        oracle_text="{B}, {T}, Pay 1 life: Put a +1/+1 counter on this creature.\n"
-                    "{2}{B}, {T}, Remove X +1/+1 counters from this creature: It deals X damage to target creature.",
-        summoning_sick=False,
-    )
+    font = canonical_card("Font of Agonies", id="font", owner=1, controller=1, zone=Zone.BATTLEFIELD)
+    sadist = canonical_card("Cruel Sadist", id="sadist", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     for card in (font, sadist):
         state.cards[card.id] = card
         state.players[1].battlefield.append(card.id)
@@ -162,12 +130,7 @@ def test_font_of_agonies_triggers_after_cruel_sadist_life_payment():
 
 def test_each_life_payment_creates_separate_font_trigger():
     state = game()
-    font = CardInstance(
-        id="font", name="Font of Agonies", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.\n"
-                    "{1}{B}, Remove four blood counters from this enchantment: Destroy target creature.",
-    )
+    font = canonical_card("Font of Agonies", id="font", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[font.id] = font
     state.players[1].battlefield.append(font.id)
     assert pay_life(state, 1, 2)
@@ -181,17 +144,8 @@ def test_each_life_payment_creates_separate_font_trigger():
 
 def test_shock_land_life_payment_triggers_font_after_land_enters():
     state = game()
-    font = CardInstance(
-        id="font", name="Font of Agonies", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.\n"
-                    "{1}{B}, Remove four blood counters from this enchantment: Destroy target creature.",
-    )
-    land = CardInstance(
-        id="foundry", name="Sacred Foundry", owner=1, controller=1,
-        zone=Zone.HAND, types=["Land"],
-        oracle_text="As this land enters, you may pay 2 life. If you don't, it enters tapped.",
-    )
+    font = canonical_card("Font of Agonies", id="font", owner=1, controller=1, zone=Zone.BATTLEFIELD)
+    land = canonical_card("Sacred Foundry", id="foundry", owner=1, controller=1, zone=Zone.HAND)
     for card in (font, land):
         state.cards[card.id] = card
     state.players[1].battlefield.append(font.id)
@@ -209,20 +163,10 @@ def test_human_orders_two_payment_triggers_after_activation():
     state.trigger_order_choice_required = True
     state.trigger_order_choice_players = {1}
     for cid in ("font-a", "font-b"):
-        card = CardInstance(
-            id=cid, name="Font of Agonies", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Enchantment"],
-            oracle_text="Whenever you pay life, put that many blood counters on this enchantment.\n"
-                        "{1}{B}, Remove four blood counters from this enchantment: Destroy target creature.",
-        )
+        card = canonical_card("Font of Agonies", id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[cid] = card
         state.players[1].battlefield.append(cid)
-    sadist = CardInstance(
-        id="sadist", name="Cruel Sadist", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
-        oracle_text="{B}, {T}, Pay 1 life: Put a +1/+1 counter on this creature.",
-        summoning_sick=False,
-    )
+    sadist = canonical_card("Cruel Sadist", id="sadist", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[sadist.id] = sadist
     state.players[1].battlefield.append(sadist.id)
     state.players[1].mana_pool["B"] = 1
@@ -245,11 +189,7 @@ def test_human_orders_two_payment_triggers_after_activation():
 
 def test_locked_life_payment_creates_no_font_trigger():
     state = game()
-    font = CardInstance(
-        id="font", name="Font of Agonies", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.",
-    )
+    font = canonical_card("Font of Agonies", id="font", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[font.id] = font
     state.players[1].battlefield.append(font.id)
     add_emperion(state)
@@ -261,20 +201,9 @@ def test_locked_life_payment_creates_no_font_trigger():
 
 def test_withering_boon_additional_life_cost_triggers_font_above_spell():
     state = game()
-    font = CardInstance(
-        id="font", name="Font of Agonies", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.",
-    )
-    boon = CardInstance(
-        id="boon", name="Withering Boon", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost="{1}{B}",
-        oracle_text="As an additional cost to cast this spell, pay 3 life.\nCounter target creature spell.",
-    )
-    creature = CardInstance(
-        id="bear", name="Grizzly Bears", owner=2, controller=2,
-        zone=Zone.HAND, types=["Creature"], mana_cost="{1}{G}", power=2, toughness=2,
-    )
+    font = canonical_card("Font of Agonies", id="font", owner=1, controller=1, zone=Zone.BATTLEFIELD)
+    boon = canonical_card("Withering Boon", id="boon", owner=1, controller=1, zone=Zone.HAND)
+    creature = canonical_card("Grizzly Bears", id="bear", owner=2, controller=2, zone=Zone.HAND)
     state.cards.update({card.id: card for card in (font, boon, creature)})
     state.players[1].battlefield.append(font.id)
     state.players[1].hand.append(boon.id)
@@ -310,16 +239,8 @@ def test_withering_boon_additional_life_cost_triggers_font_above_spell():
 
 def test_type_qualified_counterspell_rejects_noncreature_stack_target():
     state = game()
-    boon = CardInstance(
-        id="boon", name="Withering Boon", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost="{1}{B}",
-        oracle_text="As an additional cost to cast this spell, pay 3 life.\nCounter target creature spell.",
-    )
-    bolt = CardInstance(
-        id="bolt", name="Lightning Bolt", owner=2, controller=2,
-        zone=Zone.STACK, types=["Instant"], mana_cost="{R}",
-        oracle_text="Lightning Bolt deals 3 damage to any target.",
-    )
+    boon = canonical_card("Withering Boon", id="boon", owner=1, controller=1, zone=Zone.HAND)
+    bolt = canonical_card("Lightning Bolt", id="bolt", owner=2, controller=2, zone=Zone.STACK)
     state.cards.update({card.id: card for card in (boon, bolt)})
     state.players[1].hand.append(boon.id)
     state.players[1].mana_pool.update({"B": 1, "C": 1})
@@ -334,11 +255,7 @@ def test_type_qualified_counterspell_rejects_noncreature_stack_target():
 
 def test_additional_cost_uses_the_same_life_payment_legality():
     state = game()
-    spell = CardInstance(
-        id="bolt", name="Lightning Bolt", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost="{R}",
-        oracle_text="Lightning Bolt deals 3 damage to any target.",
-    )
+    spell = canonical_card("Lightning Bolt", id="bolt", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     state.players[1].hand.append(spell.id)
     state.players[1].mana_pool["R"] = 1

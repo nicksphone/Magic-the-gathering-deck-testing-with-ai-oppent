@@ -112,9 +112,14 @@ def validate_legacy_damage_boundary(state, item):
             continue
         total, known = _balance(state, cid, pid)
         if total > known:
+            from rules_engine.stack_engine import _damage_replacement_source_context
+            source_lki, source_controller = _damage_replacement_source_context(state, item, payload)
             replacement_options(state, 'damage_to_player' if pid is not None else 'damage_to_permanent',
                 target_player=pid, target_card_id=cid, source_card_id=item.source_card_id,
-                source_lki=payload.get('__source_lki'), amount=recipient.get('amount'))
+                source_lki=source_lki, source_controller=source_controller,
+                source_context=payload.get('__activation_source_context',
+                    (item.payload or {}).get('__activation_source_context')),
+                amount=recipient.get('amount'))
 
 
 def consume_numeric_prevention_shield(state, source_id, amount, *, target_card_id=None, target_player=None):

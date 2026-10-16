@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1792033175.4856806,
-    "seen": 1792034402.3546774,
-    "ast_hash": "360e47e7a819dcc111a404fc07d820e9",
+    "mtime": 1792134717.7055144,
+    "seen": 1792134906.7251973,
+    "ast_hash": "c6ccfe7d4781cc1338105ee896476814",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
@@ -564,9 +564,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/combat.py": {
-    "mtime": 1792033175.4996805,
-    "seen": 1792034402.3547404,
-    "ast_hash": "9628a6afdd0a814b1586bd3599af248d",
+    "mtime": 1792134717.7055144,
+    "seen": 1792134906.7252748,
+    "ast_hash": "272d0227247a8b7095d8ff879bf8bb04",
     "semantic_hash": ""
   },
   "backend/rules_engine/combat_constraints.py": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/prevention.py": {
-    "mtime": 1792033175.5166802,
-    "seen": 1792034402.3548505,
-    "ast_hash": "ccb5dedb45e604d3f388c59396dfcfc1",
+    "mtime": 1792134717.7055144,
+    "seen": 1792134906.7254007,
+    "ast_hash": "d313f355afad1c1f2d5a2c5c34b20961",
     "semantic_hash": ""
   },
   "backend/rules_engine/priority.py": {
@@ -894,9 +894,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/replacement.py": {
-    "mtime": 1792033175.5166802,
-    "seen": 1792034402.3548603,
-    "ast_hash": "6622bfb358a39137c1894900cc5cdfbc",
+    "mtime": 1792134717.7055144,
+    "seen": 1792134906.7254112,
+    "ast_hash": "b66912604325ead7b87063026e58a7b0",
     "semantic_hash": ""
   },
   "backend/rules_engine/resource_events.py": {
@@ -3666,9 +3666,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_combat_damage_windows.py": {
-    "mtime": 1792033175.642678,
-    "seen": 1792034402.3566,
-    "ast_hash": "17369362866a8bcb6c9b33ea66ae5695",
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.727519,
+    "ast_hash": "d696c2516cc6541b09c339ff37e38349",
     "semantic_hash": ""
   },
   "backend/tests/test_combat_domain_temporary_costs.py": {
@@ -3870,9 +3870,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_damage_trigger_targets.py": {
-    "mtime": 1792033175.649678,
-    "seen": 1792034402.3566966,
-    "ast_hash": "f0696788b50c0ccf5cda6b66f7cdc5bd",
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7276418,
+    "ast_hash": "1e1a5ed0aebe40783d029bb8b2df39f9",
     "semantic_hash": ""
   },
   "backend/tests/test_data_ingest.py": {
@@ -3906,9 +3906,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_death_last_known.py": {
-    "mtime": 1792033175.650678,
-    "seen": 1792034402.3567145,
-    "ast_hash": "9e61c6fbcfb48b5d9deac0fdc8290a2a",
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7276652,
+    "ast_hash": "3aea9c6a7c7fb3c1bb5d1d8a4ad29d3c",
     "semantic_hash": ""
   },
   "backend/tests/test_death_replacement_canonical.py": {
@@ -3978,9 +3978,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_departed_damage_sources.py": {
-    "mtime": 1792033175.6516778,
-    "seen": 1792034402.3567328,
-    "ast_hash": "db67e8cac4688d861e136c86a8dbbe33",
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.727687,
+    "ast_hash": "1f75ed730ce16ce1d243e558fc30e4d2",
     "semantic_hash": ""
   },
   "backend/tests/test_devotion.py": {
@@ -4008,9 +4008,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_divided_damage_resolution.py": {
-    "mtime": 1792033175.6526778,
-    "seen": 1792034402.3567483,
-    "ast_hash": "d9e909213ad505240919fde3580e61df",
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7277057,
+    "ast_hash": "c3e0821329e654d0911816680974ff93",
     "semantic_hash": ""
   },
   "backend/tests/test_domain_costs.py": {
@@ -4482,15 +4482,15 @@
     "semantic_hash": ""
   },
   "backend/tests/test_life_total_lock.py": {
-    "mtime": 1792033175.6716776,
-    "seen": 1792034402.357053,
-    "ast_hash": "7978eb46ccd0477fb07cd0ebc8fd33c6",
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.728071,
+    "ast_hash": "149c5171bc2a3bbb66e898394e406b71",
     "semantic_hash": ""
   },
   "backend/tests/test_lifelink_gain_events.py": {
-    "mtime": 1792033175.6716776,
-    "seen": 1792034402.3570545,
-    "ast_hash": "8567f92cac2f52a0fc484edf55f104cc",
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7280722,
+    "ast_hash": "92e9f8ac55c559c6752eeb88cdf79c3d",
     "semantic_hash": ""
   },
   "backend/tests/test_lightweight_layer_queries.py": {
@@ -5100,9 +5100,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_sacrifice_drain.py": {
-    "mtime": 1792033175.6936772,
-    "seen": 1792034402.35739,
-    "ast_hash": "233adcd4ab4e020847cc6309ba929b62",
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7284703,
+    "ast_hash": "3d59fad741081244a3c186793bc72b7c",
     "semantic_hash": ""
   },
   "backend/tests/test_sacrifice_lookback.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792127083.7744908,
-    "seen": 1792129318.0705175,
-    "ast_hash": "ae3a41c87058e7e98d5e735359c10f82",
+    "mtime": 1792134787.6634703,
+    "seen": 1792134906.7306473,
+    "ast_hash": "2832c10b592beaa9850e42630146a32d",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792127083.7744908,
-    "seen": 1792129318.0704646,
-    "ast_hash": "2e49d0cfea1b7247113488c0cd8b1748",
+    "mtime": 1792134787.6624703,
+    "seen": 1792134906.7305949,
+    "ast_hash": "4e6fc2c34607198a74256cf31e01d53d",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19677,6 +19677,162 @@
     "mtime": 1792132644.3267379,
     "seen": 1792132873.0045583,
     "ast_hash": "4e9268719e8d12b31ca6b97c60d75a2a",
+    "semantic_hash": ""
+  },
+  "backend/tests/damage_life_printed_79.py": {
+    "mtime": 1792134717.7055144,
+    "seen": 1792134906.7255507,
+    "ast_hash": "6a5eb8ca23870648bc78bc569f2207c5",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/ORIGINAL_ASSERT_CONTRACTS.json": {
+    "mtime": 1792134717.7055144,
+    "seen": 1792134906.7260215,
+    "ast_hash": "bc46ce860cd15db1a958be794d90c38e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json": {
+    "mtime": 1792134717.7055144,
+    "seen": 1792134906.726024,
+    "ast_hash": "d46cf04a36ebb622095c6e20284b9a6e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/SOURCES.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.726026,
+    "ast_hash": "1852bbc359f527b830b3629c32ffab76",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/ajani-s-pridemate-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260275,
+    "ast_hash": "c37d127404251492b248ceac3499f8df",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/boon-reflection-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260294,
+    "ast_hash": "ab15f6caf68053f044a597302f43d85b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/boros-swiftblade-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260308,
+    "ast_hash": "eef975aa14eb9008ceae1039ed1f8585",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/cacophony-scamp-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260327,
+    "ast_hash": "b11caade9ca50f4ed13b86d2bcec74a3",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/centaur-courser-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.726034,
+    "ast_hash": "334394d742ff25711094e821b864598b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/cruel-sadist-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260354,
+    "ast_hash": "f17cf440c4db92fbca2f78e09fbd2091",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/everflowing-chalice-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260368,
+    "ast_hash": "2adf49d9eaf04f135acc3128deb5ec9e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/font-of-agonies-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260382,
+    "ast_hash": "b56331a5d888ef30bba54c58dadfc479",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/goblin-chieftain-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260396,
+    "ast_hash": "5a0f5b51f9ecb715296f6e1b39ebbb73",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/havoc-jester-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.726041,
+    "ast_hash": "07c80a5eee4841f4dfa8f39f255c5e5c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/nefarious-lich-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260423,
+    "ast_hash": "d2c017fa1e121d932a1b8bcfd663e8c3",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/popular-egotist-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260437,
+    "ast_hash": "852a8418b9a128f90581f3c8df50ba6e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/the-fall-of-lord-konda-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.726045,
+    "ast_hash": "ae0a0a5ea3cbc89801e3e47b309538fe",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/wall-of-omens-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260463,
+    "ast_hash": "47de07919df1626f9094288e3f286774",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/damage_life_printed_79/withering-boon-scryfall-raw.json": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7260478,
+    "ast_hash": "6174097392b9de9e14aaa7a2b42383b5",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_damage_life_printed_79_fidelity.py": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7276342,
+    "ast_hash": "87116a23f43b198b4a80c9bcf9ddc2a0",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_qualified_player_prevention.py": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.728397,
+    "ast_hash": "f34a188c161fa928e65008e3bcd40bdb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_qualified_player_prevention_grammar.py": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7283983,
+    "ast_hash": "b87153145f8cb8d26f00d24133516a80",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-0c-browser-ci.md": {
+    "mtime": 1792134787.6634703,
+    "seen": 1792134906.730066,
+    "ast_hash": "8f689e95144f9f43013d6d1f23e35f03",
+    "semantic_hash": ""
+  },
+  "docs/testing/qualified-player-prevention-grammar.md": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7306345,
+    "ast_hash": "0969a8a5b344d24a6eb0b6a9810ab75b",
+    "semantic_hash": ""
+  },
+  "docs/testing/qualified-player-prevention.md": {
+    "mtime": 1792134717.7065144,
+    "seen": 1792134906.7306364,
+    "ast_hash": "882a8df75ebcf1b145c1a1cf39d69f7f",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-damage-life-coupled1224-current.md": {
+    "mtime": 1792134787.6624703,
+    "seen": 1792134906.7308273,
+    "ast_hash": "c8e7f4b41903578e91700799befeac60",
     "semantic_hash": ""
   }
 }

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.damage_life_printed_79 import canonical_card, canonical_deck_entry, raw_card
 
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -11,7 +12,7 @@ from rules_engine.prevention import add_player_prevention_shield
 
 
 def game():
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=312)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -21,23 +22,14 @@ def game():
 
 
 def add_nighthawk(state, card_id: str, controller: int = 1):
-    card = CardInstance(
-        id=card_id, name="Vampire Nighthawk", owner=controller, controller=controller,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=3,
-        keywords=["flying", "deathtouch", "lifelink"],
-        oracle_text="Flying, deathtouch, lifelink", summoning_sick=False,
-    )
+    card = canonical_card("Vampire Nighthawk", id=card_id, owner=controller, controller=controller, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[card_id] = card
     state.players[controller].battlefield.append(card_id)
     return card_id
 
 
 def add_pridemate(state):
-    card = CardInstance(
-        id="pridemate", name="Ajani's Pridemate", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-        oracle_text="Whenever you gain life, put a +1/+1 counter on Ajani's Pridemate.",
-    )
+    card = canonical_card("Ajani's Pridemate", id="pridemate", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[card.id] = card
     state.players[1].battlefield.append(card.id)
     return card.id
@@ -87,10 +79,7 @@ def test_one_lifelink_source_damaging_two_blockers_is_one_gain_event():
     blockers = []
     for index in (1, 2):
         cid = f"bear-{index}"
-        bear = CardInstance(
-            id=cid, name="Grizzly Bears", owner=2, controller=2,
-            zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-        )
+        bear = canonical_card("Grizzly Bears", id=cid, owner=2, controller=2, zone=Zone.BATTLEFIELD)
         state.cards[cid] = bear
         state.players[2].battlefield.append(cid)
         blockers.append(cid)
@@ -112,11 +101,7 @@ def test_two_lifelink_sources_create_two_gain_events():
 
 def test_locked_lifelink_controller_gets_no_gain_event():
     state = game()
-    lock = CardInstance(
-        id="emperion", name="Platinum Emperion", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact", "Creature"], power=8, toughness=8,
-        oracle_text="Your life total can't change.",
-    )
+    lock = canonical_card("Platinum Emperion", id="emperion", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[lock.id] = lock
     state.players[1].battlefield.append(lock.id)
     add_pridemate(state)
@@ -128,11 +113,7 @@ def test_locked_lifelink_controller_gets_no_gain_event():
 
 def test_lifelink_gain_uses_alhammarrets_archive_replacement():
     state = game()
-    archive = CardInstance(
-        id="archive", name="Alhammarret's Archive", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact"],
-        oracle_text="If you would gain life, you gain twice that much life instead.",
-    )
+    archive = canonical_card("Alhammarret's Archive", id="archive", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[archive.id] = archive
     state.players[1].battlefield.append(archive.id)
     state.attackers = [add_nighthawk(state, "hawk-1")]
@@ -142,11 +123,7 @@ def test_lifelink_gain_uses_alhammarrets_archive_replacement():
 
 def test_each_lifelink_source_is_replaced_separately():
     state = game()
-    archive = CardInstance(
-        id="archive", name="Alhammarret's Archive", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Legendary", "Artifact"],
-        oracle_text="If you would gain life, you gain twice that much life instead.",
-    )
+    archive = canonical_card("Alhammarret's Archive", id="archive", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[archive.id] = archive
     state.players[1].battlefield.append(archive.id)
     add_pridemate(state)
@@ -164,11 +141,7 @@ def test_human_lifelink_replacement_choice_survives_snapshot_before_sba():
         ("archive", "Alhammarret's Archive", ["Legendary", "Artifact"]),
         ("reflection", "Boon Reflection", ["Enchantment"]),
     ):
-        card = CardInstance(
-            id=cid, name=name, owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=types,
-            oracle_text="If you would gain life, you gain twice that much life instead.",
-        )
+        card = canonical_card(name, id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[cid] = card
         state.players[1].battlefield.append(cid)
     add_pridemate(state)
@@ -196,18 +169,11 @@ def test_lifelink_source_death_waits_for_gain_choice():
         ("archive", "Alhammarret's Archive", ["Legendary", "Artifact"]),
         ("reflection", "Boon Reflection", ["Enchantment"]),
     ):
-        card = CardInstance(
-            id=cid, name=name, owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=types,
-            oracle_text="If you would gain life, you gain twice that much life instead.",
-        )
+        card = canonical_card(name, id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[cid] = card
         state.players[1].battlefield.append(cid)
     attacker = add_nighthawk(state, "hawk-1")
-    blocker = CardInstance(
-        id="blocker", name="Centaur Courser", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=3, toughness=3,
-    )
+    blocker = canonical_card("Centaur Courser", id="blocker", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[blocker.id] = blocker
     state.players[2].battlefield.append(blocker.id)
     state.attackers = [attacker]
@@ -230,11 +196,7 @@ def test_separate_lifelink_sources_resume_both_human_choices():
         ("archive", "Alhammarret's Archive", ["Legendary", "Artifact"]),
         ("reflection", "Boon Reflection", ["Enchantment"]),
     ):
-        card = CardInstance(
-            id=cid, name=name, owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=types,
-            oracle_text="If you would gain life, you gain twice that much life instead.",
-        )
+        card = canonical_card(name, id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[cid] = card
         state.players[1].battlefield.append(cid)
     add_pridemate(state)
@@ -260,19 +222,13 @@ def test_lifelink_gain_replaced_by_draw_resumes_remaining_source():
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
     for cid, name, oracle in (
-        ("reflection", "Boon Reflection", "If you would gain life, you gain twice that much life instead."),
+        ("reflection", "Boon Reflection", raw_card('Boon Reflection')["oracle_text"]),
         (
             "lich", "Nefarious Lich",
-            "If damage would be dealt to you, exile that many cards from your graveyard instead. "
-            "If you can't, you lose the game.\n"
-            "If you would gain life, draw that many cards instead.\n"
-            "When this enchantment leaves the battlefield, you lose the game.",
+            raw_card('Nefarious Lich')["oracle_text"],
         ),
     ):
-        card = CardInstance(
-            id=cid, name=name, owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text=oracle,
-        )
+        card = canonical_card(name, id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[cid] = card
         state.players[1].battlefield.append(cid)
     add_pridemate(state)
@@ -300,11 +256,7 @@ def test_double_strike_lifelink_replaces_each_damage_window_once():
     state = game()
     state.step = Step.DECLARE_BLOCKERS
     state.blockers_declared = True  # Fixture begins in the post-declaration priority window.
-    archive = CardInstance(
-        id="archive", name="Alhammarret's Archive", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Legendary", "Artifact"],
-        oracle_text="If you would gain life, you gain twice that much life instead.",
-    )
+    archive = canonical_card("Alhammarret's Archive", id="archive", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[archive.id] = archive
     state.players[1].battlefield.append(archive.id)
     attacker = add_nighthawk(state, "hawk-1")

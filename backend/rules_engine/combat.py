@@ -769,7 +769,8 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
         target_player=pid,
         combat=True,
     )
-    amount = apply_damage_replacements(state, pid, amount, prevention_locked=prevention_locked)
+    amount = apply_damage_replacements(state, pid, amount, prevention_locked=prevention_locked,
+                                       source_card_id=source_id)
     post, prevented = (amount, 0) if prevention_locked else consume_player_prevention_shield(state, pid, amount)
     if prevented > 0:
         state.log.append(f"{state.players[pid].name} prevents {prevented} damage.")

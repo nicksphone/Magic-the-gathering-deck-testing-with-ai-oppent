@@ -55,6 +55,11 @@ def _matches_phrase(text: str, phrases: tuple[str, ...]) -> bool:
 _PLAYER_DAMAGE_PREVENTION_RE = re.compile(
     r"if a source would deal damage to (?:you|you or (?:a|an|target) (?:permanent|creature) you control|(?:a|an|target) (?:permanent|creature) you control), prevent 1 of that damage"
 )
+_QUALIFIED_PLAYER_DAMAGE_PREVENTION_RE = re.compile(
+    r"if a source an opponent controls would deal damage to "
+    r"(?:you|you or (?:a|an|target) (?:permanent|creature) you control), "
+    r"prevent 1 of that damage\."
+)
 _PERMANENT_DAMAGE_PREVENTION_RE = re.compile(
     r"if a source would deal damage to (?:you or (?:a|an|target) (?:permanent|creature) you control|(?:a|an|target) (?:permanent|creature) you control|(?:a|an|target) permanent you control|(?:a|an|target) creature you control), prevent 1 of that damage"
 )
@@ -85,13 +90,40 @@ _GLOBAL_DAMAGE_DOUBLE_RE = re.compile(
     r'it deals double that damage to that permanent or player instead\.')
 
 
-def _player_damage_candidates(state, target_player, prevention_locked=False, *, amount=None):
+def _player_damage_candidates(state, target_player, prevention_locked=False, *, amount=None,
+        source_card_id=None, source_lki=None, source_controller=None, source_context=None):
     if amount is not None and amount <= 0:
         return []
+
+    def prevention_applies(text):
+        if _PLAYER_DAMAGE_PREVENTION_RE.search(text):
+            return True
+        if not any(_QUALIFIED_PLAYER_DAMAGE_PREVENTION_RE.fullmatch(line.strip())
+                   for line in text.splitlines()):
+            return False
+        from rules_engine.damage_results import damage_source_control
+        if source_context is None:
+            if source_controller is not None and (
+                    type(source_controller) is not int or source_controller not in state.players):
+                return False
+            if source_lki is not None and (not isinstance(source_lki, dict)
+                    or type(source_lki.get('controller')) is not int
+                    or source_lki['controller'] not in state.players):
+                return False
+            source = state.cards.get(source_card_id)
+            # The resolver's active-player fallback is not source-control evidence.
+            if source_controller is None and source_lki is None and (
+                    source is None or source.zone not in {Zone.BATTLEFIELD, Zone.STACK}
+                    or type(source.controller) is not int or source.controller not in state.players):
+                return False
+        controller = damage_source_control(state, source_card_id, source_lki=source_lki,
+            source_controller=source_controller, source_context=source_context)
+        return controller in state.players and controller != target_player
+
     candidates = [(card, text) for card, text in _battlefield_oracle_texts(state)
             if _GLOBAL_DAMAGE_DOUBLE_RE.search(text)
             or (not prevention_locked and card.controller == target_player
-                and _PLAYER_DAMAGE_PREVENTION_RE.search(text))]
+                and prevention_applies(text))]
     if not prevention_locked:
         from rules_engine.prevention import numeric_prevention_options, check_legacy_prevention_boundary
         candidates.extend(numeric_prevention_options(state, target_player=target_player, amount=amount))
@@ -245,7 +277,9 @@ def replacement_options(
         )
     candidates: list[tuple[object, str]] = []
     if event_key in {"damage_to_player", "player_damage"} and target_player in state.players:
-        candidates = _player_damage_candidates(state, target_player, prevention_locked, amount=amount)
+        candidates = _player_damage_candidates(state, target_player, prevention_locked, amount=amount,
+            source_card_id=source_card_id, source_lki=source_lki,
+            source_controller=source_controller, source_context=source_context)
     elif event_key in {"damage_to_permanent", "permanent_damage"} and target_card_id in state.cards:
         candidates = _permanent_damage_candidates(
             state, target_card_id, prevention_locked, source_card_id=source_card_id,
@@ -284,6 +318,7 @@ def apply_damage_replacements(
     max_replacements: int | None = None,
     used_source_ids=None,
     prevention_locked=False,
+    *, source_card_id=None, source_lki=None, source_controller=None, source_context=None,
 ) -> int:
     out = int(amount)
     if target_player is None:
@@ -293,7 +328,9 @@ def apply_damage_replacements(
     requested = replacement_source_id
     applied = 0
     while out > 0 and (max_replacements is None or applied < max_replacements):
-        candidates = _player_damage_candidates(state, target_player, prevention_locked, amount=out)
+        candidates = _player_damage_candidates(state, target_player, prevention_locked, amount=out,
+            source_card_id=source_card_id, source_lki=source_lki,
+            source_controller=source_controller, source_context=source_context)
         available = [(card, text) for card, text in candidates if str(getattr(card, "id", "")) not in used]
         if requested is not None and not any(str(card.id) == str(requested) for card, _ in available):
             from rules_engine.action_validation import ActionRejected

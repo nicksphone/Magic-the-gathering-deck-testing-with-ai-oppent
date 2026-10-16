@@ -262,6 +262,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
             max_replacements=1 if human_chain else None,
             used_source_ids=payload.get('__used_replacement_source_ids'),
             prevention_locked=prevention_locked,
+            source_card_id=source_card_id, source_lki=source_lki, source_context=source_context,
         )
         if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
             return 0

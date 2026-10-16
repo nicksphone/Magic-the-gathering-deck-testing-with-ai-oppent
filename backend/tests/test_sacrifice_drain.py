@@ -1,4 +1,5 @@
 """Sacrifice-triggered targeted drain resolves all printed life changes."""
+from tests.damage_life_printed_79 import canonical_card, canonical_deck_entry, raw_card
 
 from effects.handlers import sacrifice
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -9,24 +10,17 @@ from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def _state(*, human=False, self_sacrifice=False, hexproof=False):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=674)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.trigger_order_choice_required = human
     state.trigger_order_choice_players = {1} if human else set()
-    cards = [CardInstance(
-        "egotist", "Popular Egotist", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        power=3, toughness=2,
-        oracle_text="{1}{B}, Sacrifice another creature or enchantment: Popular Egotist gains indestructible until end of turn. Tap it.\n"
-                    "Whenever you sacrifice a permanent, target opponent loses 1 life and you gain 1 life.",
-    )]
+    cards = [canonical_card("Popular Egotist", id="egotist", owner=1, controller=1, zone=Zone.BATTLEFIELD)]
     if not self_sacrifice:
-        cards.append(CardInstance("elf", "Llanowar Elves", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-                                  power=1, toughness=1, oracle_text="{T}: Add {G}."))
+        cards.append(canonical_card("Llanowar Elves", id="elf", owner=1, controller=1, zone=Zone.BATTLEFIELD))
     if hexproof:
-        cards.append(CardInstance("leyline", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD,
-                                  ["Enchantment"], oracle_text="You have hexproof."))
+        cards.append(canonical_card("Leyline of Sanctity", id="leyline", owner=2, controller=2, zone=Zone.BATTLEFIELD))
     for card in cards:
         state.cards[card.id] = card
         state.players[card.controller].battlefield.append(card.id)
@@ -78,8 +72,7 @@ def test_sacrifice_drain_fizzles_both_life_changes_if_target_becomes_illegal():
     state = checked_action(state, RulesEngine(), 1, {
         "type": "choose_trigger_target", "stack_id": state.stack[-1].id, "target_player": 2,
     })
-    shield = CardInstance("leyline", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD,
-                          ["Enchantment"], oracle_text="You have hexproof.")
+    shield = canonical_card("Leyline of Sanctity", id="leyline", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[shield.id] = shield
     state.players[2].battlefield.append(shield.id)
     assert resolve_top_of_stack(state)

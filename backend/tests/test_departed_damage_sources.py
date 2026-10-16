@@ -1,3 +1,4 @@
+from tests.damage_life_printed_79 import canonical_card, canonical_deck_entry, raw_card
 from game_state.state import CardInstance, MatchFactory, Step, Zone, assign_static_order_on_battlefield_entry
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from effects.handlers import destroy_permanent
@@ -7,25 +8,17 @@ from rules_engine.stack_engine import add_to_stack
 
 
 def _activated_pyromancer(targets=None):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=457)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
-    source = CardInstance(
-        id="pyromancer", name="Prodigal Pyromancer", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{2}{R}",
-        power=1, toughness=1, summoning_sick=False,
-        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
-    )
+    source = canonical_card("Prodigal Pyromancer", id="pyromancer", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     if targets and targets.get("target_card_id") == "wall":
-        wall = CardInstance(
-            id="wall", name="Wall of Omens", owner=2, controller=2,
-            zone=Zone.BATTLEFIELD, types=["Creature"], power=0, toughness=4,
-        )
+        wall = canonical_card("Wall of Omens", id="wall", owner=2, controller=2, zone=Zone.BATTLEFIELD)
         state.cards[wall.id] = wall
         state.players[2].battlefield.append(wall.id)
     RulesEngine().take_action(state, 1, {
@@ -109,18 +102,13 @@ def test_departed_source_color_does_not_follow_returned_incarnation():
 
 
 def test_self_sacrifice_damage_ability_keeps_granted_lifelink():
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=458)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
-    source = CardInstance(
-        id="firebrand", name="Fanatical Firebrand", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{R}",
-        power=1, toughness=1, summoning_sick=False,
-        oracle_text="Haste\n{T}, Sacrifice this creature: It deals 1 damage to any target.",
-    )
+    source = canonical_card("Fanatical Firebrand", id="firebrand", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     source.counters["__eot_keyword_lifelink"] = 1
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
@@ -137,16 +125,11 @@ def test_self_sacrifice_damage_ability_keeps_granted_lifelink():
 
 
 def test_departed_batch_source_uses_one_last_known_lifelink_gain():
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=460)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    source = CardInstance(
-        id="rats", name="Crypt Rats", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{2}{B}",
-        power=1, toughness=1,
-        oracle_text="{X}: Crypt Rats deals X damage to each creature and each player. Spend only black mana on X.",
-    )
+    source = canonical_card("Crypt Rats", id="rats", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     source.counters["__eot_keyword_lifelink"] = 1
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)

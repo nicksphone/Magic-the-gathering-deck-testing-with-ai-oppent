@@ -1,5 +1,19 @@
 # Release Acceptance Status
 
+## Latest Published Browser And Fixture Checks
+
+Exact `0c4129f5` completes frontend and the configured generic browser CI:
+all 45 ordered stages and 501 PASS banners are independently reconciled, with
+all 919 original assertion-call sites preserved. Its backend job remains a
+separate acceptance run; the existing no-sandbox CI mode is not native vendor
+qualification. See [the source-specific result](current-0c-browser-ci.md).
+
+The subsequent canonical damage/life composition passes 1,224 ordinary cases
+in 62 whole modules on the fresh locked release runtime, including all 759
+earlier retained identities. It closes the scoped qualified-prevention and
+fixture gaps, not the remaining Phase 1 requirement or full release. See
+[the combined verification](task13-damage-life-coupled1224-current.md).
+
 ## Current e4 Offline Check
 
 Exact `e4f797e6` passes a fresh cold-start probe for all 155 shipped canonical
