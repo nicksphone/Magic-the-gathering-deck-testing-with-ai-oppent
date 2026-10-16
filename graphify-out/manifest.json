@@ -5886,9 +5886,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1792131556.7974873,
-    "seen": 1792132873.0033765,
-    "ast_hash": "20a8f1f9ce740ee5b5440dd04d707841",
+    "mtime": 1792142296.8535209,
+    "seen": 1792142822.065949,
+    "ast_hash": "10d391487c268fa00a06b3d609580f7f",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -6666,15 +6666,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/run-activated-top-selection.sh": {
-    "mtime": 1792033653.4646876,
-    "seen": 1792034402.3581738,
-    "ast_hash": "10abc88e0bf4dd2910b4fe2723caca1f",
+    "mtime": 1792142296.8535209,
+    "seen": 1792142822.0663233,
+    "ast_hash": "7011814e167386124f3d1cbc6364694f",
     "semantic_hash": ""
   },
   "frontend/tests/run-browser-ci.sh": {
-    "mtime": 1792033954.4136672,
-    "seen": 1792034402.3581755,
-    "ast_hash": "1675b0df504552287995c27c89b4a074",
+    "mtime": 1792142296.8535209,
+    "seen": 1792142822.0663247,
+    "ast_hash": "10b4f5c14e0a2c367bef583eb318c526",
     "semantic_hash": ""
   },
   "frontend/tests/run-ui-action-diagnostics.sh": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792140388.5010145,
-    "seen": 1792140508.4204316,
-    "ast_hash": "78f9c7845313556885f36084f89a14d1",
+    "mtime": 1792142702.6307,
+    "seen": 1792142822.0675046,
+    "ast_hash": "a798870dce987dd8f33effe38cc69d1e",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -19812,9 +19812,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-0c-browser-ci.md": {
-    "mtime": 1792137828.605217,
-    "seen": 1792140508.4198127,
-    "ast_hash": "4bc1cf1c952f8ee422fea655a83b269b",
+    "mtime": 1792142702.6297002,
+    "seen": 1792142822.066953,
+    "ast_hash": "cffb8c758d74e1db3091eaaf9fddff4c",
     "semantic_hash": ""
   },
   "docs/testing/qualified-player-prevention-grammar.md": {
@@ -19857,6 +19857,42 @@
     "mtime": 1792140372.7612638,
     "seen": 1792140508.4196355,
     "ast_hash": "294b9345c5e9a9911b4c0bad67c0e42d",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-development-runtime-proof.mjs": {
+    "mtime": 1792142296.8535209,
+    "seen": 1792142822.0660555,
+    "ast_hash": "ed6798f70c90e0419adc59a2f74fbe8e",
+    "semantic_hash": ""
+  },
+  "frontend/tests/development-frontend-contract.test.mjs": {
+    "mtime": 1792142296.8535209,
+    "seen": 1792142822.0662017,
+    "ast_hash": "4f50fa75abbc9ae8ceaaf171305f7afa",
+    "semantic_hash": ""
+  },
+  "frontend/tests/fixtures/ci-development-runtime/probe.mjs": {
+    "mtime": 1792142296.8535209,
+    "seen": 1792142822.0662193,
+    "ast_hash": "1b49fd5b7ecc8e4ddef174730504186c",
+    "semantic_hash": ""
+  },
+  "frontend/tests/prepare-development-frontend.mjs": {
+    "mtime": 1792142296.8535209,
+    "seen": 1792142822.066303,
+    "ast_hash": "07c0aae4b966b2abe239ff06a509c992",
+    "semantic_hash": ""
+  },
+  "docs/testing/development-browser-runtime.md": {
+    "mtime": 1792142619.5762296,
+    "seen": 1792142822.067046,
+    "ast_hash": "a939856be09e84c904911c0129bbed9a",
+    "semantic_hash": ""
+  },
+  "frontend/tests/fixtures/ci-development-runtime/probe.html": {
+    "mtime": 1792142296.8535209,
+    "seen": 1792142822.06782,
+    "ast_hash": "0aff6159a97626f737f4f919933f3c86",
     "semantic_hash": ""
   }
 }

@@ -110,8 +110,9 @@ start_backend() {
   backend_pid=$!
 }
 
+(cd frontend && NODE_ENV=development VITE_API_BASE_URL=http://127.0.0.1:10199 node tests/prepare-development-frontend.mjs "$scratch/frontend" "$scratch/frontend/vite.ci.config.ts" "$scratch/frontend-dev-ci")
 start_backend
-(cd frontend && exec setsid env VITE_API_BASE_URL=http://127.0.0.1:10199 node "$frontend_deps/vite/bin/vite.js" --config vite.ci.config.ts --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
+(cd frontend && exec setsid env NODE_ENV=development VITE_API_BASE_URL=http://127.0.0.1:10199 node "$frontend_deps/vite/bin/vite.js" preview --mode development --outDir ../frontend-dev-ci --config vite.ci.config.ts --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
 frontend_pid=$!
 
 browser_flags=()
@@ -133,6 +134,7 @@ wait_for_services() {
 }
 
 wait_for_services
+(cd frontend && timeout 30s node tests/browser-development-runtime-proof.mjs)
 if (($#)); then
   echo 'Focused browser scenarios, not the full browser gate'
   for scenario in "$@"; do

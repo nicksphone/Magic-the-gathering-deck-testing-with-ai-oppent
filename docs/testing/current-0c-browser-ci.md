@@ -34,3 +34,18 @@ Its backend job and the earlier `0c` backend remain running at the 07:58 UTC
 observation; no backend artifact or log was downloaded by that watch. The
 same no-sandbox/native-browser and whole-release limitations apply. This
 source-specific pass does not qualify a later selector change automatically.
+
+## Subsequent 8d Held-Response Failure
+
+Exact `8d715442`, run `38871299367`, browser job `116875769446`, fails the
+unchanged `assert.ok(held)` in `browser-ui-v2-costs.mjs`. The bounded native
+history records a canceled POST, development WebSocket closure and subsequent
+script-initiated reloads. It does not establish why the first socket closed or
+which event caused the initial abort; no CORS or server-restart cause is assumed.
+
+The subsequent [development-asset runtime preparation](development-browser-runtime.md)
+removes live HMR from the two browser fixtures while preserving development
+React, actual StrictMode verification and every original scenario. Its full
+frontend package commands pass locally. Genuine replay and whole browser
+acceptance still require the next exact-source hosted run; older successful
+browser ledgers are not substituted for it.

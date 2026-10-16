@@ -33,6 +33,15 @@ actions and assertions; production code and the shared counter helper remain
 unchanged. This advances Phase 1 fixture cleanup, not full release acceptance.
 See [the complete declaration and limits](canonical-stack-target-fixtures.md).
 
+Later `8d715442` browser CI fails its unchanged held-response assertion amid
+an aborted POST and script-initiated reloads; the initial cause is unproven.
+The prepared browser-runtime correction serves prebuilt development assets,
+retains StrictMode and adds a genuine browser replay prerequisite without
+changing application code or the original 45-stage suite. Complete local
+frontend tests, production build and lint pass, but its native replay and
+hosted browser result remain pending. See
+[the exact change and limits](development-browser-runtime.md).
+
 ## Current e4 Offline Check
 
 Exact `e4f797e6` passes a fresh cold-start probe for all 155 shipped canonical
