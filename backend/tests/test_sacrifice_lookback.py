@@ -1,4 +1,5 @@
 """Sacrifice triggers inspect the battlefield immediately before the sacrifice."""
+from tests.rules_printed_facts_e4 import canonical_card, canonical_deck_entry, raw_card, set_printed
 
 import pytest
 
@@ -12,22 +13,15 @@ from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def _state(*, exile_instead=False, human=False):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=673)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.trigger_order_choice_required = human
     state.trigger_order_choice_players = {1} if human else set()
-    cards = [CardInstance(
-        "devil", "Mayhem Devil", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        power=3, toughness=3,
-        oracle_text="Whenever a player sacrifices a permanent, Mayhem Devil deals 1 damage to any target.",
-    )]
+    cards = [canonical_card("Mayhem Devil", id="devil", owner=1, controller=1, zone=Zone.BATTLEFIELD)]
     if exile_instead:
-        cards.append(CardInstance(
-            "rip", "Rest in Peace", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-            oracle_text="If a card or token would be put into a graveyard from anywhere, exile it instead.",
-        ))
+        cards.append(canonical_card("Rest in Peace", id="rip", owner=2, controller=2, zone=Zone.BATTLEFIELD))
     for card in cards:
         state.cards[card.id] = card
         state.players[card.controller].battlefield.append(card.id)
@@ -61,8 +55,7 @@ def test_human_targets_departed_sacrifice_watcher_after_snapshot():
 
 def test_simultaneously_sacrificed_watcher_sees_each_annihilator_sacrifice():
     state = _state()
-    elf = CardInstance("elf", "Llanowar Elves", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-                       power=1, toughness=1, oracle_text="{T}: Add {G}.")
+    elf = canonical_card("Llanowar Elves", id="elf", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[elf.id] = elf
     state.players[1].battlefield.append(elf.id)
     resolve_annihilator(state, 2, {"target_player": 1, "amount": 2})

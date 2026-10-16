@@ -1,4 +1,5 @@
 """Sacrificing for an activated cost has the same departure events as other sacrifices."""
+from tests.rules_printed_facts_e4 import canonical_card, canonical_deck_entry, raw_card, set_printed
 
 import pytest
 
@@ -9,35 +10,19 @@ from rules_engine.stack_engine import resolve_top_of_stack
 
 
 def _game(*, exile_instead=False):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=671)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     cards = [
-        CardInstance(
-            "firebrand", "Fanatical Firebrand", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-            power=1, toughness=1, summoning_sick=False,
-            oracle_text="Haste\n{T}, Sacrifice this creature: It deals 1 damage to any target.",
-        ),
-        CardInstance(
-            "bastion", "Bastion of Remembrance", 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
-            oracle_text="When Bastion of Remembrance enters the battlefield, create a 1/1 white Human Soldier creature token.\n"
-                        "Whenever a creature you control dies, each opponent loses 1 life and you gain 1 life.",
-        ),
-        CardInstance(
-            "devil", "Mayhem Devil", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-            power=3, toughness=3,
-            oracle_text="Whenever a player sacrifices a permanent, Mayhem Devil deals 1 damage to any target.",
-        ),
+        canonical_card("Fanatical Firebrand", id="firebrand", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False),
+        canonical_card("Bastion of Remembrance", id="bastion", owner=1, controller=1, zone=Zone.BATTLEFIELD),
+        canonical_card("Mayhem Devil", id="devil", owner=1, controller=1, zone=Zone.BATTLEFIELD),
     ]
     if exile_instead:
-        cards.append(CardInstance(
-            "rip", "Rest in Peace", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-            oracle_text="When Rest in Peace enters the battlefield, exile all graveyards.\n"
-                        "If a card or token would be put into a graveyard from anywhere, exile it instead.",
-        ))
+        cards.append(canonical_card("Rest in Peace", id="rip", owner=2, controller=2, zone=Zone.BATTLEFIELD))
     for card in cards:
         state.cards[card.id] = card
         state.players[card.controller].battlefield.append(card.id)

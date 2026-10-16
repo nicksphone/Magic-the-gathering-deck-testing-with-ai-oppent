@@ -298,6 +298,15 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
   })();
   return opening;
  }
+ async function requestCollector(channel,until){
+  if(channel.registering)unavailable();
+  if(channel.collector)return;
+  // Fetch and Network share the actual registration, never a provisional ID.
+  const pending=channel.collecting??=native('network.addDataCollector',{dataTypes:['request'],maxEncodedDataSize:8*1024*1024,collectorType:'blob',contexts:[channel.id]},undefined,until,(_ack,result)=>{
+   if(typeof result.collector!=='string'||!result.collector)unavailable();channel.collector=result.collector;
+  });
+  try{await pending;}finally{if(channel.collecting===pending)channel.collecting=null;}
+ }
  async function postData(channel,event,until){
   const request=event.request.request;let held=channel.requests.get(request);if(!held)unavailable();
   if(!held.post){if(!channel.collector)unavailable();held.post=(async()=>bytes((await native('network.getData',{request,dataType:'request',collector:channel.collector,disown:true},undefined,until)).bytes))();}
@@ -419,7 +428,7 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
   }
   function onChildInitialized(callback,destroyed){if(channel.childInitialized||typeof callback!=='function'||destroyed!==undefined&&typeof destroyed!=='function')unavailable();channel.childInitialized=callback;channel.childDestroyed=destroyed;}
   async function armFutureChildren(patterns){
-   healthy();if(channel.initialization||channel.registering||channel.generation||channel.contexts.size!==1||!Array.isArray(patterns)||!patterns.length||patterns.some(p=>!['Request','Response'].includes(p.requestStage)||typeof p.urlPattern!=='string'))unavailable();
+   healthy();if(channel.initialization||channel.registering||channel.collecting||channel.generation||channel.contexts.size!==1||!Array.isArray(patterns)||!patterns.length||patterns.some(p=>!['Request','Response'].includes(p.requestStage)||typeof p.urlPattern!=='string'))unavailable();
    const until=process.hrtime.bigint()+15_000_000_000n,registrations={};channel.registering=true;channel.generation++;
    const noChildren=async()=>{const tree=await native('browsingContext.getTree',{root:channel.id},undefined,until);if(!Array.isArray(tree.contexts)||tree.contexts.length!==1||tree.contexts[0].context!==channel.id||!Array.isArray(tree.contexts[0].children)||tree.contexts[0].children.length||channel.contexts.size!==1||channel.earlyChild)unavailable();};
    async function register(kind,method,params){return native(method,params,undefined,until,(ack,result)=>{
@@ -467,6 +476,7 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
      }
      const normalized=fetchPatterns(params);
      if(channel.intercepts.length>=64)unavailable();
+     await requestCollector(channel,until);
      const result=await native('network.addIntercept',{contexts:[channel.id],phases:['beforeRequestSent','responseStarted']},controller.isArmed&&!controller.current()?controller:undefined,until,(_ack,result)=>{if(typeof result.intercept!=='string'||!result.intercept)unavailable();channel.intercepts.push(result.intercept);channel.patterns=normalized;});
      return result;
     }finally{channel.configuring=false;}
@@ -480,7 +490,7 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
    }
    if(method==='Page.bringToFront'){options(params,[]);if(context!==channel.id)unavailable();return sendNative('browsingContext.activate',{context});}
    if(method==='Network.enable'){
-    if(!channel.collector){const result=await sendNative('network.addDataCollector',{dataTypes:['request'],maxEncodedDataSize:8*1024*1024,collectorType:'blob',contexts:[channel.id]});if(typeof result.collector!=='string'||!result.collector)unavailable();channel.collector=result.collector;}
+    await requestCollector(channel,until);
     return sendNative('session.subscribe',{events:['network.beforeRequestSent','network.responseStarted','network.responseCompleted','network.fetchError'],contexts:[channel.id]});
    }
    if(method==='Page.enable'||method==='Page.setLifecycleEventsEnabled')return sendNative('session.subscribe',{events:['browsingContext.load','browsingContext.domContentLoaded'],contexts:[channel.id]});
@@ -522,7 +532,7 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
   channel.send=text=>{let message;try{message=JSON.parse(text);if(!Number.isSafeInteger(message.id)||message.id<=0)unavailable();}catch(error){fatal(error);return;}void mapped(message.method,message.params,message.sessionId,process.hrtime.bigint()+15_000_000_000n).then(result=>channel.emit({id:message.id,result}),error=>channel.emit({id:message.id,error:{message:error.message}}));};
   channel.close=async()=>{
    if(!channels.has(channel.id))return;
-   if(channel.configuring||channel.registering)throw Error('Firefox channel configuration pending');
+   if(channel.configuring||channel.registering||channel.collecting)throw Error('Firefox channel configuration pending');
    channel.closing=true;
    channel.initialization=null;channel.readyChildren.clear();
    await inputTail; // Admitted gestures retain their original, pre-close deadlines.
@@ -532,7 +542,7 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
    await disableFetch(channel,until);
    if(channel.blockIntercept){await native('network.removeIntercept',{intercept:channel.blockIntercept},undefined,until);channel.blockIntercept=null;channel.blockedURLs=[];}
    for(const script of [...channel.preloads]){await native('script.removePreloadScript',{script},undefined,until);channel.preloads.splice(channel.preloads.indexOf(script),1);}
-   if(channel.collector)await native('network.removeDataCollector',{collector:channel.collector},undefined,until);
+   if(channel.collector){const collector=channel.collector;await native('network.removeDataCollector',{collector},undefined,until,()=>{if(channel.collector===collector)channel.collector=null;});}
    for(const subscription of channel.subscriptions)await native('session.unsubscribe',{subscriptions:[subscription]},undefined,until);
    for(const getter of channel.getters.values())getter.close();
    await native('browsingContext.close',{context:channel.id},undefined,until);channels.delete(channel.id);

@@ -1,6 +1,36 @@
 # Release Acceptance Status
 
+## Current e4 Offline Check
+
+Exact `e4f797e6` passes a fresh cold-start probe for all 155 shipped canonical
+identities with no network, followed by all 73 original warm cases in eight
+whole modules on the same database/cache. Source and the exact restored locked
+runtime remain unchanged; all lifespans and owned resources close. See
+[the current-source execution and limits](current-e4-offline-assets-cold-warm.md).
+Its generic browser CI also independently matches 45 ordered stages and 501
+PASS banners. These are distinct checks; the latest full hosted backend,
+remaining Phase 1 fixture scope and complete release are not declared complete.
+
 ## Canonical Fixture Composition
+
+A later rules/event fixture batch over `e4f797e6` passes all 168 cases in nine
+whole modules, retaining all 112 original identities and 48 strict factual
+comparisons. One isolated Fire // Ice test correction asserts real split faces
+instead of invented modal behavior; the other 363 assertions remain exact.
+This uses the older recorded test environment and does not sign off Phase 1.
+See [the sources, adaptation and limits](task13-rules-events-e4-current.md).
+
+The subsequent fresh locked-runtime composition retains both the earlier
+591-case roster and this 168-case batch: all 759 ordinary cases in 39 whole
+modules pass in 65.60 seconds. Exact reference identities and JUnit agree;
+source/runtime and native denial/closure checks pass. This is not merely a sum
+of older reports, nor the entire hosted backend or Phase 1 acceptance.
+
+The separate Firefox request-collector fix passes its four-module, 142-case
+mocked-protocol declaration after a reviewed cleanup-ownership correction.
+Its normal CI script now includes the new module and independently passes all
+141 cases in that three-module command. Native Firefox remains unqualified.
+See [the exact protocol scope](firefox-fetch-collector-private-preparation.md).
 
 One fresh source-only composition over `672ae625` passes 591 ordinary cases in
 30 whole modules, including the preceding 370 regressions, Sheoldred16, AI166

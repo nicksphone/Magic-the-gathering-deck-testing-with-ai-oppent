@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.rules_printed_facts_e4 import canonical_card, canonical_deck_entry, raw_card, set_printed
 from tests.controlled_basic_game_support import controlled_basic_game
 
 from game_state.state import CardInstance, MatchFactory, StackItem, Zone
@@ -130,7 +131,7 @@ def test_spell_cast_trigger_from_permanent() -> None:
 
 
 def test_named_self_counter_trigger_resolves_without_card_specific_handler() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -138,17 +139,10 @@ def test_named_self_counter_trigger_resolves_without_card_specific_handler() -> 
     source = _put_trigger_creature(
         state,
         1,
-        "Whenever you cast a noncreature spell, put a +1/+1 counter on Sprite Dragon.",
+        raw_card('Sprite Dragon')['oracle_text'],
     )
-    state.cards[source].name = "Sprite Dragon"
-    state.cards["spell-self-counter"] = CardInstance(
-        id="spell-self-counter",
-        name="Opt",
-        owner=1,
-        controller=1,
-        zone=Zone.STACK,
-        types=["Instant"],
-    )
+    set_printed(state.cards[source], 'Sprite Dragon')
+    state.cards["spell-self-counter"] = canonical_card("Opt", id="spell-self-counter", owner=1, controller=1, zone=Zone.STACK)
     emit_event(state, "spell_cast", {"source_card_id": "spell-self-counter", "controller": 1})
 
     trigger = next(item for item in state.stack if item.source_card_id == source)
@@ -210,7 +204,7 @@ def test_upkeep_transform_trigger_reveals_top_type_and_applies_back_face() -> No
 
 
 def test_goblin_guide_attack_trigger_queues_structured_reveal() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -219,9 +213,9 @@ def test_goblin_guide_attack_trigger_queues_structured_reveal() -> None:
     guide = _put_trigger_creature(
         state,
         1,
-        "Whenever Goblin Guide attacks, defending player reveals the top card of their library. If it's a land card, that player puts it into their hand.",
+        raw_card('Goblin Guide')['oracle_text'],
     )
-    state.cards[guide].name = "Goblin Guide"
+    set_printed(state.cards[guide], 'Goblin Guide')
 
     emit_event(state, "attack_declared", {"card_id": guide, "defending_player": 2})
 
@@ -245,7 +239,7 @@ def test_generic_controlled_creature_attack_trigger_still_matches() -> None:
 
 
 def test_prowess_style_noncreature_spell_trigger_grants_temporary_pump() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -255,15 +249,7 @@ def test_prowess_style_noncreature_spell_trigger_grants_temporary_pump() -> None
     state.cards[creature].power = 1
     state.cards[creature].toughness = 1
     spell_id = "spell-1"
-    state.cards[spell_id] = CardInstance(
-        id=spell_id,
-        name="Opt",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Instant"],
-        oracle_text="Draw a card.",
-    )
+    state.cards[spell_id] = canonical_card("Opt", id=spell_id, owner=1, controller=1, zone=Zone.HAND)
     state.players[1].hand.append(spell_id)
     state.players[1].hand.remove(spell_id)
     state.cards[spell_id].zone = Zone.STACK
@@ -401,21 +387,13 @@ def test_state_based_lethal_creatures_emit_one_or_more_trigger_once() -> None:
 
 
 def test_creature_dies_trigger_matches_you_control_clause() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1
     state.players[1].battlefield = ["c1"]
-    state.cards["c1"] = CardInstance(
-        id="c1",
-        name="Grim Haruspex",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        oracle_text="Whenever a nontoken creature you control dies, draw a card.",
-    )
+    state.cards["c1"] = canonical_card("Grim Haruspex", id="c1", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     dead = CardInstance(
         id="dead",
         name="Soldier",
@@ -581,21 +559,13 @@ def test_artifact_and_enchantment_sacrifice_clauses_trigger_from_sacrificed_perm
 
 
 def test_creature_dies_trigger_does_not_match_opponent_creature() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1
     state.players[1].battlefield = ["c1"]
-    state.cards["c1"] = CardInstance(
-        id="c1",
-        name="Grim Haruspex",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        oracle_text="Whenever a creature you control dies, draw a card.",
-    )
+    state.cards["c1"] = canonical_card("Grim Haruspex", id="c1", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     dead = CardInstance(
         id="dead",
         name="Soldier",
@@ -766,31 +736,15 @@ def test_controller_scoped_etb_trigger_does_not_fire_for_opponent_creature() -> 
 
 
 def test_gearhulk_etb_trigger_uses_graveyard_spell_effect() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1
-    source = CardInstance(
-        id="gearhulk",
-        name="Torrential Gearhulk",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Artifact", "Creature"],
-        oracle_text="When Torrential Gearhulk enters the battlefield, you may cast target instant card from your graveyard without paying its mana cost.",
-    )
+    source = canonical_card("Torrential Gearhulk", id="gearhulk", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[source.id] = source
     state.players[1].battlefield = [source.id]
-    spell = CardInstance(
-        id="grave-spell",
-        name="Opt",
-        owner=1,
-        controller=1,
-        zone=Zone.GRAVEYARD,
-        types=["Instant"],
-        oracle_text="Draw a card.",
-    )
+    spell = canonical_card("Opt", id="grave-spell", owner=1, controller=1, zone=Zone.GRAVEYARD)
     state.cards[spell.id] = spell
     state.players[1].graveyard = [spell.id]
 
@@ -865,7 +819,7 @@ def test_create_token_emits_enters_battlefield_for_another_permanent_etb_trigger
 
 
 def test_play_land_emits_landfall_trigger() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -873,15 +827,7 @@ def test_play_land_emits_landfall_trigger() -> None:
     state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].battlefield = ["p1"]
-    state.cards["p1"] = CardInstance(
-        id="p1",
-        name="Lotus Cobra",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        oracle_text="Whenever a land enters the battlefield under your control, add one mana of any color.",
-    )
+    state.cards["p1"] = canonical_card("Lotus Cobra", id="p1", owner=1, controller=1, zone=Zone.BATTLEFIELD)
 
     land_id = state.players[1].hand[0]
     state.cards[land_id].types = ["Land"]

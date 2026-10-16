@@ -5,6 +5,26 @@ Reviewed on 2026-10-15 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The later exact [`e4f797e6` cold/warm declaration](current-e4-offline-assets-cold-warm.md)
+qualifies committed-seed offline startup on a fresh owned checkout: all 155
+shipped identities hydrate and serve assets without network access, real restart
+restores, and all 73 original warm cases pass on the same database/cache. This
+closes that source-specific startup-evidence gap, not the remaining literal
+handwritten-test-data scope, full hosted backend or a selected live deployment.
+
+The following [rules/event fixture batch](task13-rules-events-e4-current.md)
+passes 168 cases across nine whole modules. All original test identities remain;
+the one invalid Fire // Ice modal assertion is replaced by stricter official
+split-face checks in a separate scoped adaptation. Other protocol fixtures
+remain explicit outstanding literal-scope work, not an implied exemption.
+
+The later locked-runtime composition executes all 759 retained cases across
+39 whole modules, including every prior 591-case and new 168-case identity.
+All pass with source/runtime preservation, seven native denial controls and
+owned-resource closure. This establishes the combined fixture result on the
+release dependency versions; the literal requirement and whole hosted backend
+remain separate, rather than being waived by the larger passing count.
+
 ## Observed Integrated Evidence
 
 The subsequent exact [`7d2d77bd` whole hosted run](current-7d-complete-ci.md)

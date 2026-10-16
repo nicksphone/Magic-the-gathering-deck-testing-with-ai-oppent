@@ -1,0 +1,1576 @@
+{
+  "Arboreal Grazer": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 3,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "89ee936d6ae8100f19664ab105633a5de3290230b91447bf0b198119027638e1",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Arcane Signet": {
+    "file": "rules_printed_facts_e4/arcane-signet-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "30de340bd04bea02b3ce6890fa9cb5bc24d5ea63fcd0c78f9f9113bfd4dea5ee",
+    "sha256": "a3f5bf7de108b081db8a97cbeb6714bfcaa3a166564b4a1f69d3bf3b15ffbc91",
+    "steps": []
+  },
+  "Bane of Progress": {
+    "file": "rules_printed_facts_e4/bane-of-progress-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "32664a7fbffaabb8c9afc52c5526742f30792802995143289a4772fd0ff76244",
+    "sha256": "a2815ced8711f50a6f51cd08277c75dc90e203630659ba8d30b81352c10fc7df",
+    "steps": []
+  },
+  "Bastion of Remembrance": {
+    "file": "player_counters.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/color_domain_audit/provenance.json",
+        "file_sha256": "d1cafd160ce9638627922d7d27d01932e6de7d409bdffdfd5c529fa9f62da3b5",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "2703b38419a16a87bb6c022ef9b8b769e604cef39c731e59b3e037d73042b7f2",
+    "sha256": "1a999508fa879730388799cd3ec3b46f2faadfc4a042540967dc31f302746288",
+    "steps": [
+      12
+    ]
+  },
+  "Blood Artist": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 8,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "00cd78368587a1989834deed69cc4a8374462d1f374b5f8cbf8fba69c4809c74",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Call the Cavalry": {
+    "file": "rules_printed_facts_e4/call-the-cavalry-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "62b7c56ad269698dcbc85758d2241f3581692d60d7331c9cecdc775f5834ec12",
+    "sha256": "ef1c2df0900cce64d9e0d1024b0c63f25ee38225740dd3c4b9aab0c203c9938f",
+    "steps": []
+  },
+  "Chrome Host Seedshark": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 18,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "753cf589d67df2f3d05a16e9d226b9d78b8305026d8056b9d6458ce070deb7d6",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Collected Company": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 21,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "606c33757607aa1a5c551e22ee4bdfe79e55f8bba6a5836ad15432dd3731d6aa",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Counterspell": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 23,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Disenchant": {
+    "file": "shuffle_observer_fix/canonical.jsonl",
+    "line": 5,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/shuffle_observer_fix/provenance.json",
+        "file_sha256": "d555d2a3dc2e94e2d628162103ec9ceb06505de1c6351b2c77a60b03dbb546f0",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "1d274ea0f5791f1d1b9b20cc46ffb4df8bafb5abc6ee6355a2c0631679e57ab5",
+    "sha256": "b2940c590f40c0377c5e6abdf5e2459abd4e1c45fdc75fd300b0e450b4e15e71",
+    "steps": []
+  },
+  "Divination": {
+    "file": "global_flash_timing_audit/divination.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/global_flash_timing_audit/provenance.json",
+        "file_sha256": "7ba9fc1ce2c64eba9acf8134039a90a29508080e0380caeeb2c43ff0c5caeb30",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/vraska_full/fixtures/PROVENANCE.json",
+        "file_sha256": "4ca06bb36a8ee650e8c3593f3013636958914b189b0212416b9b01d762143c71",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "1c2a7767c8813505f009f8f7427fe7746ccd90a22592e7137dbdff9ec04c285b",
+    "sha256": "b4027892ddae4183a1107d169a27a6197bf338dec1ce71283575e1d3618036f2",
+    "steps": []
+  },
+  "Dreadhorde Butcher": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 28,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "7ab0c40fcb32015aff0262c0fb09c85ae5c2800e94c41c1434aa9be6ecbd5346",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Drown in the Loch": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 29,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "0838d8fa5e1442a3ac97ae33f355366c27cf937bcdd35e8752a1b2687c51e391",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Elvish Mystic": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 33,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "e3b1286fb601a8b7743ecfe4eaca3f90c387ce5ec95eef5a90e313b1ee58a469",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Fabricate": {
+    "file": "rules_printed_facts_e4/fabricate-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "fb41dbb525743775194c1b6e8afb3b6e920494654d88d000c98a41712721e7f0",
+    "sha256": "5f9c973a226810d259122123f6993726e37f4cf91362120ea12bf995aff0fbed",
+    "steps": []
+  },
+  "Fanatical Firebrand": {
+    "file": "rules_printed_facts_e4/fanatical-firebrand-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "97c6ba9051d5c7bb7e3c4554f22d056159ea923dad9d488adf48eb652d8f2666",
+    "sha256": "185aaed09ba8e39d6efc55876460a3c6985588fbfe1f19b6cadc440a7ac19838",
+    "steps": []
+  },
+  "Fatal Push": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 38,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "1b96838c2a2581e56ba5624b8be9c5841475f2d5ad215a92d6c2791abcda68a8",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Fire // Ice": {
+    "file": "canonical_positive_batch/fire-ice-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/canonical_positive_batch/PROVENANCE.json",
+        "file_sha256": "1f3aef735c08cedcf03f2d26620a5b20ef8a5b1470ff40a3726b00c1f612ae77",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "36fdcbaf95cbc86755acc610a73130ec6f14d9a60a13bf7fb1ca9122d1caf1f4",
+    "sha256": "3edb6afa6d478f386bf6fc64e8a1bb4cc395615c824e65fe1ca9bd6cb366ab97",
+    "steps": []
+  },
+  "Forest": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 39,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Glistening Dawn": {
+    "file": "rules_printed_facts_e4/glistening-dawn-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "2b169a43ea9d2a535402fa50eee300b1e7952dba3cab3d224216772e54f9f88b",
+    "sha256": "d14d4e61b259bdf75445edb7ad38a0c4637c3db2a0dea487266d69dd75d4c1bf",
+    "steps": []
+  },
+  "Go for the Throat": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 41,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "3984bc8ff91d0c5651da60ea896c3be4969c4b8a8304dfb7b235e3acf17ca7c0",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Goblin Guide": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 42,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "db8de8e5192dd44d899d5edd964c4f6a98f212474a5e4789c8ecfea07ff9e973",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Grim Haruspex": {
+    "file": "ai_decisions_canonical_cdba/grim-haruspex-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/ai_decisions_canonical_cdba/grim-haruspex-PROVENANCE.json",
+        "file_sha256": "02576fcb247010894c6c1732bf679e5e0aab85ad075e549cedf69c683c4c0622",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "0a1de1ed005b45bd9582a19aceba75c9be2d2076c7a854084bc0cc815a19da99",
+    "sha256": "5efbfd06276f3bdc9f81f43e58342604f4573cf024852b0e872d96854277d47e",
+    "steps": []
+  },
+  "Grizzly Bears": {
+    "file": "../vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/vraska_full/fixtures/PROVENANCE.json",
+        "file_sha256": "4ca06bb36a8ee650e8c3593f3013636958914b189b0212416b9b01d762143c71",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+    "sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "steps": []
+  },
+  "Harvester of Souls": {
+    "file": "creature_observer_audit/harvester-of-souls.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/creature_observer_audit/provenance.json",
+        "file_sha256": "a4f136d9d4a9c8af25eff52717641339d9fe64183af2a769cced9bc82cd578f5",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/trigger_instruction_prefix/provenance.json",
+        "file_sha256": "02c2e5a12bbc9026683ff465bebc46307335be881077bbc0561e7d822304178d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "42a2503df97552334a3cbac02de6288f32c776d98959df76be2aa45bb5e2ba33",
+    "sha256": "bfca9bf9c8e4ea5feced87e94b12a3f2e9ba7c67bcc6cb0000b969c6e0808440",
+    "steps": []
+  },
+  "Hydroid Krasis": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 47,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "83ad523ef7d2b86cb575fbc240869df5fa369f0a2bbe3a15988f0792c259e129",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 50,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Lay Down Arms": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 54,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "cef8fc90c493ce457e12a004cf1cf96052d621ec736055e1bf1510a91aa76b35",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Leyline of Sanctity": {
+    "file": "shuffle_observer_fix/canonical.jsonl",
+    "line": 2,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/queued_fizzle/provenance.json",
+        "file_sha256": "3390e86bd624798a559f66110d3899491aed4f50889380238d23148e27c1f0c9",
+        "hash_link": [
+          "raw_row_normalized_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/shuffle_observer_fix/provenance.json",
+        "file_sha256": "d555d2a3dc2e94e2d628162103ec9ceb06505de1c6351b2c77a60b03dbb546f0",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "fd5bb6b6f9f5c8c0471710b95306aab8be57ba233b6210d8f22754ae822961b5",
+    "sha256": "b2940c590f40c0377c5e6abdf5e2459abd4e1c45fdc75fd300b0e450b4e15e71",
+    "steps": []
+  },
+  "Light Up the Stage": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 56,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "a356c2d15ed3a3517ac2960c292fb8712a2b62f65efaa96813c80af571ddbd8f",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Lightning Bolt": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 57,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Lithoform Engine": {
+    "file": "creature_observer_fix/lithoform-engine.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/creature_observer_fix/provenance.json",
+        "file_sha256": "c3d26325827ba3d7685b80aa4f11dbad1789045404e64d55cf2b996ad9847cae",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "22a20453f02f46b14f47f273370ce8dc8eea4404af24d5423db320d71cfdc61e",
+    "sha256": "7930e96a947ed3edc2310b8e8ec20e13d2cdb9f2291ccf49b69bd243d7a4c799",
+    "steps": []
+  },
+  "Llanowar Elves": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 58,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Lotus Cobra": {
+    "file": "rules_printed_facts_e4/lotus-cobra-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "72afd73186db0560d7c5377fffcc51bb75197b1559da4eb96b03954d628c1287",
+    "sha256": "360fffa2494468a57802b7f2cbc664a292f614db554126403c5869d5faa94838",
+    "steps": []
+  },
+  "Mayhem Devil": {
+    "file": "rules_printed_facts_e4/mayhem-devil-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "33c51f154073ca006841dc7e64c384501b8bb18980ff5a3d33a88553ff68c36b",
+    "sha256": "5cc3114eeae122c6d023d50dbcda5d5bb602c36b591f3ed86a4f7d12c273fc09",
+    "steps": []
+  },
+  "Memory Deluge": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 62,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "ca78551defc92aef72551b4b03060d3e86bd7f81fa8820c283fe8f9b518f4ac7",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Mountain": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 65,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "a2ab558e22268e0ad7a9815c80a52208101e2c43340d9d8453d6045995aa9a9a",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Mulldrifter": {
+    "file": "rules_printed_facts_e4/mulldrifter-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "3f79a6808246a536be0582687e2728379404dd22188fb4ea477b8b5b12790cc5",
+    "sha256": "a1afe0e26062bc9d906473e247c140f53ac3cc0c37f2b97f42cdbeab32aa1ada",
+    "steps": []
+  },
+  "Mystic Forge": {
+    "file": "rules_printed_facts_e4/mystic-forge-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "74335c82de7761a950ff0cd5ffc23a40d96f2c85a2c9c72c5e5e3562d744a3fb",
+    "sha256": "9e5e56ec1b2059e45bd1774b476bf8dd2847e01c67184483a9757cc98e96849d",
+    "steps": []
+  },
+  "Nissa, Who Shakes the World": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 68,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "656e094c5679b4ca7bf870dfd448c45ec44d561e0ab3391d1a91856f1c460437",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Oath of Nissa": {
+    "file": "rules_printed_facts_e4/oath-of-nissa-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "6f1cd0608c85c5e8f276f6ee30ada7bd7be9cf06a7e8d9e347bc73dc9f9bd023",
+    "sha256": "d054e9b9ee6b1cc70b84c39b5d0e98e11c16f1f27b96ba5dcfcb6b4316392d05",
+    "steps": []
+  },
+  "Opt": {
+    "file": "global_flash_timing_audit/opt.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/canonical_magecraft_audit/provenance.json",
+        "file_sha256": "cc4797a3072b3b932359fad1b33e12eff1d2aa518e33f8f6b96cc69d133e72de",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/global_flash_timing_audit/provenance.json",
+        "file_sha256": "7ba9fc1ce2c64eba9acf8134039a90a29508080e0380caeeb2c43ff0c5caeb30",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "84d5b3c7bb0e8d52594ccd312eaf822182178f46c6691142b45add1424992d03",
+    "sha256": "4c1d4b713ae2884e8475dad6c93239d564eb3edfacec3969615df623d40fa3db",
+    "steps": []
+  },
+  "Pitiless Plunderer": {
+    "file": "rules_printed_facts_e4/pitiless-plunderer-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "2145011e0f9b2284b34ab3c3d909da739d081593571f495161ed70d4f5cd8219",
+    "sha256": "176c638901769d555be5e619d46fe4a547291c610caaedc2c3b9e68f88f3cf05",
+    "steps": []
+  },
+  "Plains": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 70,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "bb36c8b3d7c52e7274ab49ee95993248b8dc616ba4e1702b3d8e33ec107b1b0b",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Prodigal Pyromancer": {
+    "file": "ward.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/basic_land_hooks/provenance.json",
+        "file_sha256": "d714facfccbe398326ebec3a2cd0f982f7365000d078e1c92f4d9e90ca5d5045",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/color_consumer_goldens/provenance.json",
+        "file_sha256": "37aca1647d8b9a423f71cef48642327c0b18ccbe0928f2d485c9ca85f2e3a881",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/soulscar_consumer_audit/provenance.json",
+        "file_sha256": "cd5286902c32c3eaa9b978c96c8a98be273a50624e908e441d41fde07ff1e816",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "b9a366defcc5a35b8433f3909c0ed4ff4a99b40236a937accdcf73bb0e69c402",
+    "sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "steps": [
+      26
+    ]
+  },
+  "Reanimate": {
+    "file": "source_linked_exile/nadu-facts.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/source_linked_exile/provenance.json",
+        "file_sha256": "f7fe1a2494b80b90e1766233daaae7e3df1ef87f121506bc2f2e6fc3db0eeae4",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "5111c5f2d6a4f9dd694c077972f36bd127093e2b750c445d421672944e3c2ccc",
+    "sha256": "0294012420cdfe63ebb65de78f6d8b783d6f160103af1c7360923776de4bd742",
+    "steps": [
+      "Reanimate"
+    ]
+  },
+  "Rest in Peace": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 77,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "e9215ef36ff21ae5277f9e7cef786350d329a975404e757d054b25274ace42b0",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Runeclaw Bear": {
+    "file": "ai_decisions_canonical_cdba/runeclaw-bear-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/ai_decisions_canonical_cdba/PROVENANCE.json",
+        "file_sha256": "a0ff2dc65069c3577e05fcaedf7754d13f2fac4c0c20ceec936acd1200b8af3e",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "fdfc19f2de3e94f98fdcbd4047f394849fcc4e445738bb07d7e2bf17f8e39318",
+    "sha256": "f8b88dbd8f0ba783b974472488baf04d04753772a8d6e196eab470b192cce29e",
+    "steps": []
+  },
+  "Shaman of the Pack": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 83,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "2b0147380dc16b1577cd308d8da03947f0efe76b153e132394f4a7b52e6e25c1",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Shark Typhoon": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 84,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "72cc047facd517447896ed51e59ea42eebfe438ca6c7b2f0099458d9baaec2b2",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Sol Ring": {
+    "file": "creature_observer_fix/sol-ring.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/creature_observer_fix/provenance.json",
+        "file_sha256": "c3d26325827ba3d7685b80aa4f11dbad1789045404e64d55cf2b996ad9847cae",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "77b61b9b0141eb45cf35ae78e9db7ca7c2c69d5cf9c10b50303d98d0518cb773",
+    "sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+    "steps": []
+  },
+  "Soul Warden": {
+    "file": "hand_entry_bookkeeping/canonical.jsonl",
+    "line": 3,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/hand_entry_bookkeeping/provenance.json",
+        "file_sha256": "6f2fba73d7019e957abd11eb720b5bb8f8be76014d25a10192b8093a96f75974",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "aab93dc473e3b17311b364feedfdca3e4cad793ea7ed5197fee8522f5826295d",
+    "sha256": "99a897459c994dedb916a59104c0023cab4e9d96aac274d60fd3f7603c44cfc0",
+    "steps": []
+  },
+  "Sprite Dragon": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 93,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "c23cc6a29c291a8962ad837c65873b5b392dd97a021d9f2cb9f222660737b461",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Stifle": {
+    "file": "counter_native_frames/canonical.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/counter_native_frames/provenance.json",
+        "file_sha256": "2a3c89004304943067edd433281b4671172ce1fcc96eee5ce25bf69d12cf188d",
+        "hash_link": [
+          "raw_row_normalized_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "eccb451a0000ccd2d8209bdbb6e71bf456fb5925d0466f154cf0f19a3047bc11",
+    "sha256": "18ac1342277048fdbb79aa3b69c9727f9f9437e083d7c72defcbe0b4553feb0d",
+    "steps": [
+      "Stifle"
+    ]
+  },
+  "Storm the Festival": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 94,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "535296f9db9ba128a917db929b01069e5876ff3f03e8db7741996eb8410578b6",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Sunfall": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 95,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "72694a1e7ed61b5407796ab600a9ea64de4687f5b407c83cd12c2456a9c72261",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Torrential Gearhulk": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 107,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "10345a188accdeb97137b7799dcdbe2d807ef4655c6c26fb47c67c7bc2bf981d",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Tropical Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 109,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "af71f56ccd187942259be3bd29907c17a0530175226a865c976b2dbccfddef66",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Twincast": {
+    "file": "coupled_targets/twincast.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/canonical_magecraft_audit/provenance.json",
+        "file_sha256": "cc4797a3072b3b932359fad1b33e12eff1d2aa518e33f8f6b96cc69d133e72de",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/coupled_targets/twincast-provenance.json",
+        "file_sha256": "32a164cab5fb4311d2c41ac4f0760f6c3a7752a6d98260a40cb8a2d6b5ca72b2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/heroic_cast_target_contract/provenance.json",
+        "file_sha256": "5a02625957a6da29928f95ada9de42e8b435962b96bb6a444232a4a64fe4c478",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/resolution_conditions/provenance.json",
+        "file_sha256": "53b41192ec7bc38e9e58701b213b36ace075a226b0e6346f0634f6afa0b35cfc",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "49f8af143b774b86f161c1f2c029f0f8e8e91f0d27e05d19c07c7ddeaca2f195",
+    "sha256": "12662d131d174e48af42758b9e8fd3b38ce6701d2de7d88217a527062786014f",
+    "steps": []
+  }
+}

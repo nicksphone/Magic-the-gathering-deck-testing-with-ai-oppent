@@ -2892,9 +2892,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_activated_sacrifice_events.py": {
-    "mtime": 1792033175.6186783,
-    "seen": 1792034402.3562565,
-    "ast_hash": "9df18b0618f18c5561ed7e5f8c57c2a2",
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7888334,
+    "ast_hash": "91907f84013418bccd62bdc8dfb8afa3",
     "semantic_hash": ""
   },
   "backend/tests/test_activated_sacrifice_identity.py": {
@@ -4128,9 +4128,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_events_apnap.py": {
-    "mtime": 1792033175.6556778,
-    "seen": 1792034402.3567984,
-    "ast_hash": "2d1afd1c322e62295199a521cb107b7d",
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7894814,
+    "ast_hash": "5a5b171fe834b6305d74a48e7b93a016",
     "semantic_hash": ""
   },
   "backend/tests/test_expanded_keyword_mechanics.py": {
@@ -4272,9 +4272,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_incubate_rules.py": {
-    "mtime": 1792033175.6626778,
-    "seen": 1792034402.356928,
-    "ast_hash": "acbf59fe3c922202ddd2101ba5172e73",
+    "mtime": 1792125832.6942198,
+    "seen": 1792126155.7896478,
+    "ast_hash": "b71ba609b35308e2b5d114982a2d1b59",
     "semantic_hash": ""
   },
   "backend/tests/test_ineffective_destruction.py": {
@@ -4716,9 +4716,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_named_death_triggers.py": {
-    "mtime": 1792033175.6796775,
-    "seen": 1792034402.3571806,
-    "ast_hash": "c49635fb2b71a899cd3b25e9506c8a8a",
+    "mtime": 1792125832.6942198,
+    "seen": 1792126155.7899642,
+    "ast_hash": "7a1b9728bae92f80b46c96e733b42293",
     "semantic_hash": ""
   },
   "backend/tests/test_nested_mana_life.py": {
@@ -4806,9 +4806,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_oracle_effects.py": {
-    "mtime": 1792033175.6836774,
-    "seen": 1792034402.3572326,
-    "ast_hash": "b57147b4276733417d4f2c8ba3d2b16a",
+    "mtime": 1792125832.6992197,
+    "seen": 1792126155.7900279,
+    "ast_hash": "49248dc3ca2f31aa82deea344dad5027",
     "semantic_hash": ""
   },
   "backend/tests/test_oracle_reminder_boundaries.py": {
@@ -5106,9 +5106,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_sacrifice_lookback.py": {
-    "mtime": 1792033175.6936772,
-    "seen": 1792034402.3573914,
-    "ast_hash": "fddc90c11ddf7bbf6322f937c22f4fe9",
+    "mtime": 1792125832.6942198,
+    "seen": 1792126155.7902243,
+    "ast_hash": "edab057fc70616cb01d0e3d62ed32211",
     "semantic_hash": ""
   },
   "backend/tests/test_sacrifice_team_counters.py": {
@@ -5370,9 +5370,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_target_restrictions.py": {
-    "mtime": 1792033175.705677,
-    "seen": 1792034402.3575957,
-    "ast_hash": "ec0f1362c550d795e0887c458726495c",
+    "mtime": 1792125832.6942198,
+    "seen": 1792126155.7904632,
+    "ast_hash": "817a68153b01937f8e781917ae16746d",
     "semantic_hash": ""
   },
   "backend/tests/test_targeting_advanced.py": {
@@ -5580,9 +5580,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_trigger_power_damage.py": {
-    "mtime": 1792033175.7146769,
-    "seen": 1792034402.357738,
-    "ast_hash": "018f4c66c4c90a6a38b065cf8fe6ebcd",
+    "mtime": 1792125832.6942198,
+    "seen": 1792126155.7906516,
+    "ast_hash": "dcbddec9d3a1e99b5cf72170586d3cdc",
     "semantic_hash": ""
   },
   "backend/tests/test_trigger_target_choices.py": {
@@ -5886,9 +5886,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1792109067.5779903,
-    "seen": 1792110062.7199218,
-    "ast_hash": "b1d9fcb7dabe7e8bf72e9fe57b3d7370",
+    "mtime": 1792125506.6957748,
+    "seen": 1792125650.2058754,
+    "ast_hash": "dc4de93b735aded347b72fa1c00a2ab7",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792120141.0555832,
-    "seen": 1792120316.610983,
-    "ast_hash": "b8ff6563fcd5de2e2a9fd88aaa3a43ff",
+    "mtime": 1792126010.3841958,
+    "seen": 1792126155.7924767,
+    "ast_hash": "3ca129a3d2e7842999c4d3e8dfdec45a",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18870,9 +18870,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/firefox-transport.mjs": {
-    "mtime": 1792061771.5535257,
-    "seen": 1792062265.77824,
-    "ast_hash": "542fd57c9704fb3c568c76c6803fe67d",
+    "mtime": 1792125221.6916447,
+    "seen": 1792125650.2061355,
+    "ast_hash": "00d4891c55599bb8f75b9f4403a7410a",
     "semantic_hash": ""
   },
   "frontend/tests/firefox-transport.test.mjs": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792120141.0545833,
-    "seen": 1792120316.610935,
-    "ast_hash": "96a516c57b53a6d8e91f5842d02e9321",
+    "mtime": 1792126010.3851957,
+    "seen": 1792126155.7924256,
+    "ast_hash": "9f8b2ca5d895f93b307ba218eae9025f",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19527,6 +19527,138 @@
     "mtime": 1792119829.7748253,
     "seen": 1792120316.611161,
     "ast_hash": "a2b1c3bd4a1b01b4def018d2c001ba65",
+    "semantic_hash": ""
+  },
+  "frontend/tests/firefox-fetch-collector.test.mjs": {
+    "mtime": 1792125221.6916447,
+    "seen": 1792125650.2061336,
+    "ast_hash": "297e1a260de5aba6ae7e38c9e00d77bf",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-e4-offline-assets-cold-warm.md": {
+    "mtime": 1792124763.6645234,
+    "seen": 1792125650.206915,
+    "ast_hash": "d8612cdf3bda78eab33bff6fb291ffee",
+    "semantic_hash": ""
+  },
+  "docs/testing/firefox-fetch-collector-private-preparation.md": {
+    "mtime": 1792125532.419336,
+    "seen": 1792125650.2070334,
+    "ast_hash": "2aabd69681beb71d59a409fda0a88e1e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.788433,
+    "ast_hash": "c860a803c077330d3f441b20f1f2a49c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/SOURCES.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.788436,
+    "ast_hash": "fa7350dbada2b795e1fff50518b8b2f5",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/UNCHANGED_FUNCTION_SHA256.json": {
+    "mtime": 1792125832.6992197,
+    "seen": 1792126155.7884378,
+    "ast_hash": "96dd870e65e86938667b3fbfb9451e4a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/arcane-signet-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884395,
+    "ast_hash": "cd9348a89089b7039614a5b3fc834474",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/bane-of-progress-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884412,
+    "ast_hash": "bc013ba09a6d7e1dcddc503c8b752072",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/call-the-cavalry-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884426,
+    "ast_hash": "79ae2cf5989147d001e32cb8b364c1ec",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/fabricate-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.788444,
+    "ast_hash": "eef90d191c725514a940c52ac04c2454",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/fanatical-firebrand-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884457,
+    "ast_hash": "a8dfaa2c15f95bdf29efc7588aee123b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/glistening-dawn-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884471,
+    "ast_hash": "84c2d7b5e08938006e2f6fc9b5ffe2da",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/lotus-cobra-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884486,
+    "ast_hash": "0d2f11f499f85b3b41e6fc1e83d83a53",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/mayhem-devil-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884498,
+    "ast_hash": "7d0e1b880258fde86f8dae6b58e83a35",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/mulldrifter-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884514,
+    "ast_hash": "9755794799c3988d34c180905ddf4b65",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/mystic-forge-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884529,
+    "ast_hash": "e0c139e89cc000a6d12ab7818beae834",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/oath-of-nissa-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.788454,
+    "ast_hash": "6a89d33e44d6f5e6c551a4b614404029",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rules_printed_facts_e4/pitiless-plunderer-scryfall-raw.json": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7884555,
+    "ast_hash": "78303657d2d54a74cfa81a6f2edb8169",
+    "semantic_hash": ""
+  },
+  "backend/tests/rules_printed_facts_e4.py": {
+    "mtime": 1792125832.6932197,
+    "seen": 1792126155.7887836,
+    "ast_hash": "597b0978b937ba0ac91ff6f0b422a515",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_rules_printed_facts_e4_fidelity.py": {
+    "mtime": 1792125832.6942198,
+    "seen": 1792126155.7902207,
+    "ast_hash": "2e74fe6fcc82580e93b21b0a850d75ce",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-rules-events-e4-current.md": {
+    "mtime": 1792126010.3841958,
+    "seen": 1792126155.7926846,
+    "ast_hash": "a568006924a49b786adf1e67d1a3d5b5",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-rules-events-e4-hold.md": {
+    "mtime": 1792126036.6247494,
+    "seen": 1792126155.792687,
+    "ast_hash": "3c9499ea4db484d66ab6b5060a71458d",
     "semantic_hash": ""
   }
 }
