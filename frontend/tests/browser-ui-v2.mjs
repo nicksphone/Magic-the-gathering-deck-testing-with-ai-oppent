@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { openBrowser } from './browser-driver.mjs';
 import { startReviewed } from './review-start.mjs';
-import { continueRequestForPostResponse } from './browser-start-recovery-diagnostics.mjs';
+import { continueRequestForPostResponse, traceStartRecoveryResponses } from './browser-start-recovery-diagnostics.mjs';
 
 // Isolated v2 suite. No dependency on production data or edits to the shared harness.
 const api = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
@@ -63,18 +63,19 @@ async function recoverDroppedResponse(s) {
     rejectDrop(interceptionError);
     rejectInterception(interceptionError);
   }
-  b.onIntercept(async e=>{
+  let requestLifecycle;
+  const interceptionTrace=traceStartRecoveryResponses(command,async(e,observedCommand)=>{
     let settle;
     const pending=new Promise(resolve=>{settle=resolve;});
     pendingInterceptions.add(pending);
     try {
-    let requestCommand=command;
+    let requestCommand=observedCommand;
     if(e.responseStatusCode===undefined&&e.responseErrorReason===undefined){
       const counts=requests[['OPTIONS','POST'].includes(e.request.method)?e.request.method:'OTHER'];
       counts.observed++;
       requestCommand=async(method,params)=>{
         counts.attempted++;counts.pending++;
-        try{const result=await command(method,params);counts.ack++;return result;}
+        try{const result=await observedCommand(method,params);counts.ack++;return result;}
         catch(error){
           counts.error++;
           try{const code=JSON.parse(error.message).code;if(Number.isSafeInteger(code))requests.errorCode=code;}catch{}
@@ -94,10 +95,10 @@ async function recoverDroppedResponse(s) {
       if(e.request.method==='POST'&&e.responseStatusCode===200&&e.request.url===actionUrl&&!dropping){
         dropping=true;
         trace.command='drop';
-        await command('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});
+        await observedCommand('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});
         trace.continuation='ack';
         dropped=true;resolveDrop();
-      }else {await command('Fetch.continueResponse',{requestId:e.requestId});trace.continuation='ack';}
+      }else {await observedCommand('Fetch.continueResponse',{requestId:e.requestId});trace.continuation='ack';}
     }catch(error){
       trace.continuation='error';
       // The driver wraps CDP errors as JSON; never retain its message or data.
@@ -106,8 +107,10 @@ async function recoverDroppedResponse(s) {
     }
     }catch(error){failInterception(error);}
     finally{pendingInterceptions.delete(pending);settle();}
-  });
+  },origin,value=>{requestLifecycle=value;},{backend:api});
+  b.onIntercept(interceptionTrace);
   try {
+    await command('Network.enable');
     await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Request'}]});enabled=true;
     await click('Play Land Forest');
     const deadline=Date.now()+15000;
@@ -127,7 +130,9 @@ async function recoverDroppedResponse(s) {
     if(Date.now()>=deadline)throw new Error('Current accepted response reconciliation timed out');
     return state;
   }catch(error){
+    interceptionTrace.reportFailure();
     const diagnostic={dropped,postResponseObserved,responses:responseTrace.map(trace=>({...trace})),
+      requestLifecycle,
       omittedResponses,requests:{OPTIONS:{...requests.OPTIONS},POST:{...requests.POST},OTHER:{...requests.OTHER},errorCode:requests.errorCode},
       pendingInterceptions:pendingInterceptions.size,uiStatus:'unavailable',ui:null,actionUi:null,
       canonical:{status:'pending',revision:null},runtime:{status:'pending',product:null,protocolVersion:null}};

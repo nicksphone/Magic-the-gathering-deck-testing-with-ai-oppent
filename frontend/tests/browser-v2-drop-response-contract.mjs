@@ -20,16 +20,18 @@ const deferred = () => {
   const promise = new Promise((yes, no) => { resolve = yes; reject = no; });
   return { promise, resolve, reject };
 };
-async function flush() { for (let i=0; i<12; i++) await Promise.resolve(); }
+async function flush() { await new Promise(setImmediate); }
 function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = false, lateReady = false,
   continueError, holdContinue = false, requestError, holdRequest = false, holdStateRead = false, holdDisable = false, uiReadError, holdUiRead = false, logError,
   storedId = 'new-fixture', renderedId = 'new-fixture', alertText = '', pending = false,
   restoring = false, renderedRevision = '0', buttons = [], canonicalRevision = 0,
-  diagnosticReadError, holdDiagnosticRead = false, identityError, holdIdentity = false } = {}) {
+  diagnosticReadError, holdDiagnosticRead = false, identityError, holdIdentity = false,
+  networkError, holdNetwork = false } = {}) {
   const events = [], tasks = [], logs = [], calls = [], state = { id: 'new-fixture', revision: 0 };
   const fail = deferred(), ui = deferred(), continuation = deferred(), uiRead = deferred();
   const stateRead = deferred();
   const disable = deferred();
+  const network = deferred();
   const requestAcks = [];
   const diagnosticReads = [], identityReads = [], diagnosticRead = deferred(), identityRead = deferred();
   let intercept, enabled = false;
@@ -46,6 +48,10 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
     async command(method, params) {
       events.push(method);
       calls.push([method, params]);
+      if (method === 'Network.enable') {
+        if (holdNetwork) await network.promise;
+        if (networkError) throw networkError;
+      }
       if (method === 'Fetch.continueRequest') {
         if (holdRequest) {const ack=deferred();requestAcks.push(ack);await ack.promise;}
         if (requestError) throw requestError;
@@ -79,6 +85,7 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   }
   const context = {
     continueRequestForPostResponse: diagnostics.continueRequestForPostResponse,
+    traceStartRecoveryResponses: diagnostics.traceStartRecoveryResponses,
     assert, AbortController, b: browser, api:'http://fixture.invalid', origin:'http://ui.invalid',
     console:{error(...args) { if (logError) throw logError; logs.push(args); }},
     command: browser.command.bind(browser),
@@ -137,7 +144,8 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   // Consume rejection during deferred probes without changing its eventual value.
   promise.catch(()=>{});
   return {events, state, promise, fail, ui, continuation, uiRead, stateRead, disable, requestAcks, deliver, tasks, logs, calls,
-    diagnosticReads, identityReads, diagnosticRead, identityRead,
+    diagnosticReads, identityReads, diagnosticRead, identityRead, network,
+    observe: message => intercept?.observeBrowserEvent?.(message),
     pause: event => intercept(event),
     completed:()=>completed, advance:ms=>{now=ms;},
     timeout:()=>{now=15000;for (const {fn,ms} of [...timers.values()]) if (ms===15000) fn();},
@@ -776,4 +784,87 @@ test('native Firefox identity cannot probe or fall back to a CDP json/version en
   const browser=await nativeDriver.openBrowser('http://ui.invalid');
   await assert.rejects(browser.browserIdentity(new AbortController().signal),/unavailable on Firefox/);
   await browser.close();assert.equal(closed,true);
+});
+
+test('network observation is acknowledged before interception and the only action click', async () => {
+  const p=protocol({holdNetwork:true});
+  try {
+    await flush();
+    assert.deepEqual(p.events,['Network.enable']);
+    assert.equal(p.completed(),false);
+  } finally {
+    p.network.resolve();p.fail.resolve();await p.promise;
+  }
+  assert.ok(p.events.indexOf('Network.enable')<p.events.indexOf('Fetch.enable'));
+  assert.ok(p.events.indexOf('Fetch.enable')<p.events.indexOf('click'));
+  assert.equal(p.events.filter(event=>event==='click').length,1);
+  assert.equal(p.logs.length,0);
+});
+
+test('failed network subscription preserves the error and never starts the response-drop action', async () => {
+  const error=new Error('PUBLIC network observation unavailable');
+  const p=protocol({networkError:error});p.fail.resolve();
+  await assert.rejects(p.promise,actual=>actual===error);
+  assert.ok(!p.events.includes('Fetch.enable'));
+  assert.ok(!p.events.includes('click'));
+  assert.equal(trace(p).dropped,false);
+});
+
+test('missing POST preserves genuine preflight correlation and CORS failure without inventing delivery', async () => {
+  const p=protocol({lateEvent:true});await flush();
+  const post=privateMarker+'-post',options=privateMarker+'-options';
+  p.observe({method:'Network.requestWillBeSent',params:{requestId:post,timestamp:1,
+    frameId:privateMarker,loaderId:privateMarker,
+    request:{method:'POST',url:'http://fixture.invalid/matches/new-fixture/action',
+      postData:privateMarker,headers:{Authorization:privateMarker}}}});
+  p.observe({method:'Network.requestWillBeSent',params:{requestId:options,timestamp:2,
+    request:{method:'OPTIONS',url:'http://fixture.invalid/matches/new-fixture/action'},
+    initiator:{type:'preflight',requestId:post}}});
+  await p.pause({...pausedRequest('OPTIONS'),networkId:options});
+  p.observe({method:'Network.responseReceived',params:{requestId:options,timestamp:3,response:{status:204}}});
+  p.observe({method:'Network.loadingFinished',params:{requestId:options,timestamp:4}});
+  p.observe({method:'Network.loadingFailed',params:{requestId:post,timestamp:5,
+    canceled:false,errorText:'net::ERR_FAILED',
+    corsErrorStatus:{corsError:'PreflightAllowOriginMismatch',failedParameter:privateMarker}}});
+  p.timeout();await assert.rejects(p.promise,/Current accepted response drop timed out/);
+  const report=trace(p);
+  assert.equal(report.dropped,false);
+  assert.equal(report.postResponseObserved,false);
+  assert.deepEqual(report.requests.POST,{observed:0,attempted:0,ack:0,error:0,pending:0});
+  assert.deepEqual(report.requests.OPTIONS,{observed:1,attempted:1,ack:1,error:0,pending:0});
+  assert.ok(report.requestLifecycle,'The actual missing-POST flow must retain bounded native evidence');
+  const lifecycle=report.requestLifecycle,rows=lifecycle.browserMetadata.events;
+  assert.deepEqual(rows.map(row=>row.event),['request','request','response','finished','failed']);
+  assert.equal(rows[1].initiatorNetworkOrdinal,rows[0].networkOrdinal);
+  assert.equal(lifecycle.responses[0].networkOrdinal,rows[1].networkOrdinal);
+  assert.equal(lifecycle.responses[0].commands[0].acknowledgment,'accepted');
+  assert.equal(rows[2].status,204);
+  assert.equal(rows[4].corsError,'PreflightAllowOriginMismatch');
+  assert.equal(rows[4].errorClass,'net::ERR_FAILED');
+  assert.equal(lifecycle.browserMetadata.outstandingRequests,0);
+  const frozen=p.logs[0][1];
+  p.observe({method:'Network.loadingFailed',params:{requestId:options,errorText:privateMarker}});
+  assert.equal(p.logs[0][1],frozen);
+});
+
+test('missing POST metadata remains bounded and redacts unknown browser failure fields', async () => {
+  const p=protocol({lateEvent:true});await flush();
+  for(let i=0;i<100;i++) {
+    const id=privateMarker+i;
+    p.observe({method:'Network.requestWillBeSent',params:{requestId:id,
+      request:{method:'POST',url:'http://fixture.invalid/matches/new-fixture/action?secret='+privateMarker}}});
+    p.observe({method:'Network.loadingFailed',params:{requestId:id,errorText:privateMarker,
+      blockedReason:privateMarker,corsErrorStatus:{corsError:privateMarker,failedParameter:privateMarker}}});
+  }
+  p.timeout();await assert.rejects(p.promise,/drop timed out/);
+  const report=trace(p);
+  assert.ok(report.requestLifecycle,'The failure path must actually connect the native observer');
+  const metadata=report.requestLifecycle.browserMetadata;
+  assert.equal(metadata.events.length,64);
+  assert.ok(metadata.omittedEvents>0);
+  assert.ok(metadata.requestOverflow>0);
+  assert.ok(metadata.unknownCategories>0);
+  assert.equal(metadata.events.find(row=>row.event==='failed').errorClass,'other');
+  assert.ok(p.logs[0][1].length<24000);
+  assert.equal(p.events.filter(event=>event==='click').length,1);
 });

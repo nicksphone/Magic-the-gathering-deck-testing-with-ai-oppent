@@ -6528,9 +6528,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1792061176.318475,
-    "seen": 1792062265.778208,
-    "ast_hash": "005ea9e0ee6745fc9724491ad4bec856",
+    "mtime": 1792129005.0673113,
+    "seen": 1792129318.069097,
+    "ast_hash": "a1b23dd43be1b60e5bbd149937222872",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792126010.3841958,
-    "seen": 1792126155.7924767,
-    "ast_hash": "3ca129a3d2e7842999c4d3e8dfdec45a",
+    "mtime": 1792127083.7744908,
+    "seen": 1792129318.0705175,
+    "ast_hash": "ae3a41c87058e7e98d5e735359c10f82",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18258,9 +18258,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-drop-response-contract.mjs": {
-    "mtime": 1792061319.8080754,
-    "seen": 1792062265.7782118,
-    "ast_hash": "c48a3f920cffea40fcb2b725bf21fea5",
+    "mtime": 1792129020.6330624,
+    "seen": 1792129318.0691028,
+    "ast_hash": "def9e5f03d0b4beea684a79d4b1d3dea",
     "semantic_hash": ""
   },
   "docs/testing/browser-v2-accepted-response-recovery.md": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792126010.3851957,
-    "seen": 1792126155.7924256,
-    "ast_hash": "9f8b2ca5d895f93b307ba218eae9025f",
+    "mtime": 1792127083.7744908,
+    "seen": 1792129318.0704646,
+    "ast_hash": "2e49d0cfea1b7247113488c0cd8b1748",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19350,9 +19350,9 @@
     "semantic_hash": ""
   },
   "docs/testing/browser-response-metadata.md": {
-    "mtime": 1792110082.3230922,
-    "seen": 1792111086.150876,
-    "ast_hash": "b19830d29085cace247580dbeba1ce3d",
+    "mtime": 1792129183.9524372,
+    "seen": 1792129318.069728,
+    "ast_hash": "eeeba3748b25e91a33262aaaf16deaa6",
     "semantic_hash": ""
   },
   "docs/testing/canonical-transform-draw-fixtures.md": {
@@ -19650,9 +19650,9 @@
     "semantic_hash": ""
   },
   "docs/testing/task13-rules-events-e4-current.md": {
-    "mtime": 1792126010.3841958,
-    "seen": 1792126155.7926846,
-    "ast_hash": "a568006924a49b786adf1e67d1a3d5b5",
+    "mtime": 1792127083.773491,
+    "seen": 1792129318.0707355,
+    "ast_hash": "29a6008ce3c839fbedb6395e333b1869",
     "semantic_hash": ""
   },
   "docs/testing/task13-rules-events-e4-hold.md": {
