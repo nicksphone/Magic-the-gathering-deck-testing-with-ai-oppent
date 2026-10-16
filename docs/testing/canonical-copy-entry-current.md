@@ -81,6 +81,29 @@ requalified against the same corrected production code: five whole modules,
 and do not change any module selected by the 1,837-case declaration. These are
 two actual declarations, not a claimed single 1,865-case run.
 
+## Coupled Frontend Transport Follow-Up
+
+The first hosted frontend run on `0efab0bf` fails at the ordered-target replay
+bridge with `spawnSync python ENOBUFS`. A matching local Node 22.23.3 run
+reproduces the failure. The fixture retains full private snapshots, which must
+not be truncated or removed to make its cross-language transport fit.
+
+The consumer now uses the same finite 32 MiB capture limit as the existing
+loyalty bridge. The producer, all snapshots, original sixteen replay checks,
+application, API client and gameplay code are unchanged. The original script
+then passes, and a fresh full frontend declaration against the corrected
+backend exits zero for test/build/lint in 114.002/6.243/3.078 seconds. All prior
+326 native-group identities and the new twenty controls remain; the interface
+groups pass 170 Firefox and 27 development cases. Source/dependency/runtime
+preservation and 182 known-owned-PID closures are independently checked.
+
+A first local full run correctly rejects an unowned Vite cache write caused by
+an incorrectly recreated dependency namespace. The final run restores the
+previously qualified owned namespace rather than expanding write permissions.
+Both that setup ledger and the original hosted buffer failure remain archived.
+This corrects a test-fixture transport limit, not the independent hosted browser
+response-drop failure; native browser qualification remains open.
+
 ## Limits
 
 Remaining handwritten-data families and the literal Phase 1 acceptance scope

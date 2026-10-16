@@ -10,7 +10,8 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const uiRoot = process.env.MTG_ORDERED_UI_SOURCE || root;
 const python = process.env.MTG_TEST_PYTHON || path.join(root, 'backend/.venv/bin/python');
 const fixture = path.join(root, 'frontend/tests/ordered-target-engine.py');
-const options = {cwd: path.join(root, 'backend'), encoding: 'utf8',
+// Full replay snapshots use the same finite buffer as the loyalty fixture bridge.
+const options = {cwd: path.join(root, 'backend'), encoding: 'utf8', maxBuffer: 32 * 1024 * 1024,
   env: {...process.env, PYTHONDONTWRITEBYTECODE: '1'}};
 const rows = JSON.parse(execFileSync(python, ['-B', fixture], options));
 const require = createRequire(import.meta.url);

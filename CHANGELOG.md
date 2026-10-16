@@ -2,6 +2,10 @@
 
 ## Canonical Copy-Entry Integration - 2026-10-16
 
+- Fix the ordered-target test bridge's synchronous output overflow without
+  dropping full replay snapshots or assertions. A fresh coupled frontend
+  test/build/lint declaration passes against the corrected backend; the separate
+  browser response-drop failure is not claimed fixed.
 - Retain printed/copied characteristics and positional-constructor compatibility;
   carry deliberate copy-entry choices through supported physical, copied-spell
   and loyalty-return routes with once-only detached-token allocation. Reject
