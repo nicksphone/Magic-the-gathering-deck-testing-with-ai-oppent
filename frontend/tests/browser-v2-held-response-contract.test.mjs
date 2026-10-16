@@ -7,7 +7,7 @@ import * as diagnostics from './browser-start-recovery-diagnostics.mjs';
 
 const source = readFileSync(new URL('./browser-ui-v2-costs.mjs', import.meta.url), 'utf8');
 const begin = source.indexOf(' b.onIntercept(');
-const end = source.indexOf("\n await b.command('Fetch.enable'", begin);
+const end = source.indexOf("\n s=await setup('/fixture');", begin);
 assert.ok(begin >= 0 && end > begin, 'Actual held-response callback must be present');
 const frontend = 'http://127.0.0.1:15173';
 const event = changes => ({requestId: 'PRIVATE_FETCH', networkId: 'PRIVATE_NETWORK', resourceType: 'Preflight',
@@ -154,7 +154,7 @@ const privateMarker='PRIVATE_HELD_DATA';
 function sequence({phase='none',holdRequest=false,requestError,clickError,logError,
   holdUi=false,holdCanonical=false,holdRuntime=false,uiError,canonicalError,runtimeError,
   holdCanonicalBody=false,canonicalRevision=0,renderedRevision='0',foreignUrl=false}={}) {
-  const start=source.indexOf(" const s=await setup('/fixture');");
+  const start=source.indexOf(' let s,held,continueHeld;');
   const stop=source.lastIndexOf('\n} finally {await b.close();}');
   assert.ok(start>=0&&stop>start);
   const logs=[],calls=[],loopDelays=[],canonicalReads=[],runtimeReads=[],uiReads=[],callbacks=[],logAttempts=[];

@@ -11,9 +11,10 @@ that the corresponding HTTP exchange succeeded.
 
 The existing response tracer accepts an optional backend origin. The affected
 programs opt in. The shared driver forwards native protocol events
-without consuming command replies or changing Fetch interception. Both programs
-subscribe to Network, Page and Runtime inside their existing cleanup boundary;
-a rejected subscription still closes the owned page and retains its error.
+without consuming command replies or changing Fetch interception. The held-action
+and start-recovery programs subscribe to Network, Page and Runtime inside their
+existing cleanup boundary. The accepted-response-drop flow subscribes to Network.
+A rejected subscription still retains its error and the owned cleanup boundary.
 
 The new history contains only route classes, method/status categories, local
 correlation ordinals, finite failure classifications and navigation/context
@@ -83,3 +84,42 @@ interpreter; it is not relabeled as passing.
 These are diagnostic and protocol checks, not a reproduced native root cause or
 a repair of the failed hosted browser run. A subsequent actual browser run must
 retain its own source, outcome and failure metadata.
+
+## Navigation Follow-Up
+
+Exact `88a62c3a`, job `116831381170`, passes the accepted-response-drop scenario
+but fails the later held-response assertion. Its native trace records a finished
+OPTIONS200, a POST canceled with `net::ERR_ABORTED` after42.719ms, and subsequent
+same-frame navigations with distinct loaders. It records no held POST response.
+Those observations do not prove which code initiated navigation or establish a
+CORS rejection. The first parser's expectation of another drop trace was wrong;
+the corrected reading uses the existing held trace without rerunning the job.
+
+The held observer is now installed before the existing final fixture reload, so
+it can observe the new document and socket rather than guessing their history.
+Interception still starts only after fixture setup returns; no reload, click,
+retry or timer is added. Setup failures preserve the original error without a
+match-specific read of an undefined fixture.
+
+Additional metadata contains only finite native navigation reasons/types and
+frontend-root document initiator categories. A Vite message classification needs
+an observed canonical frontend WebSocket creation and a native101 handshake with
+the exact `vite-hmr` subprotocol. Creation alone does not establish that identity.
+Only known text-message types from bounded4096-byte JSON frames are retained;
+URLs, tokens, paths, headers and payloads are not. The existing64-event limit and
+16-entry identity limits remain, with a separate16-entry socket map and explicit
+overflow counts. No response-body getter or observation command is added.
+
+After independent static reviews, the combined navigation and separately branded
+Firefox realm observer pass383 ordinary cases across nine whole Node modules.
+Removing either helper addition restores the other reviewed postimage exactly.
+The complete configured frontend command passes with the new modules registered
+in normal CI:225 native-related unit cases and170 Firefox protocol/driver cases
+are separate command totals, not actual native-browser results. Build and lint
+also pass. All3674 runtime file bodies, four links and429 directory entries
+remain exact after that command with global bytecode writes disabled. These
+routine Node/Python tests are not a kernel or global I/O confinement certificate.
+
+An actual browser run on the eventual published composition remains necessary.
+Neither this protocol result nor the earlier passing drop scenario repairs or
+explains the historical navigation failure.

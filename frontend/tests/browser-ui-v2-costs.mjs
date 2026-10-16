@@ -42,16 +42,18 @@ try {
  assert.equal(await b.evaluate("document.querySelectorAll('.hand-card.playable').length"),0);
  assert.equal(await b.evaluate("[...document.querySelectorAll('button')].find(e=>e.textContent==='Pass Priority').disabled"),true);
  console.log('PASS v2 AI priority: human viewpoint remains P1, AI hand/actions hidden');
- const s=await setup('/fixture');let held,continueHeld;
+ let s,held,continueHeld;
  let heldTrace,currentUrlSeen=false,otherUrlSeen=false;
  try{
  b.onIntercept(heldTrace=traceStartRecoveryResponses(b.command, async (e,command)=>{
+  if(!s)throw new Error('Held response fixture is not ready');
   if(e.request.url===`${api}/matches/${s.id}/action`)currentUrlSeen=true;else otherUrlSeen=true;
   if(await continueRequestForPostResponse(command,e))return;
   if(e.request.method!=='POST'){await command('Fetch.continueResponse',{requestId:e.requestId});return;}
   held=e;
   continueHeld=()=>command('Fetch.continueResponse',{requestId:e.requestId});
  }, ui, value=>console.error('V2_HELD_RESPONSE_TRACE',JSON.stringify(value)), {backend:api}));
+ s=await setup('/fixture');
  await b.command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Request'}]});
  await b.click('Play Land Forest');
  await b.waitFor("document.body.innerText.includes('Match operation pending')");
@@ -65,6 +67,7 @@ try {
  }catch(error){
   // Publish the failure-time native history before any bounded context reads can yield.
   try{heldTrace?.reportFailure();}catch{}
+  if(!s)throw error;
   try{
    const context={cause:'unknown',held:Boolean(held),currentUrlSeen,otherUrlSeen,
     ui:{status:'pending',activeMatch:null,renderedMatch:null,renderedRevision:null,pending:null,restoring:null,alert:null,controlsDisabled:null,enabledPrefixCount:null},

@@ -23,8 +23,17 @@ const networkErrors = new Set(('net::ERR_FAILED net::ERR_ABORTED net::ERR_TIMED_
 function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal) {
   const front = new URL(frontend).origin, back = new URL(backend).origin;
   const events = [], requests = new Map(), frames = new Map(), loaders = new Map();
+  const bidiContexts = new Map(), bidiRealms = new Map();
+  const sockets = new Map();
+  const reasons = new Set(['formSubmissionGet', 'formSubmissionPost', 'httpHeaderRefresh', 'scriptInitiated',
+    'metaTagRefresh', 'pageBlockInterstitial', 'reload', 'anchorClick']);
+  const navigationTypes = new Set(['reload', 'reloadBypassingCache', 'restore', 'restoreWithPost',
+    'sameDocument', 'differentDocument', 'historySameDocument', 'historyDifferentDocument']);
+  const initiators = new Set(['parser', 'script', 'preload', 'SignedExchange', 'preflight', 'other']);
+  const messageTypes = new Set(['connected', 'update', 'full-reload', 'custom', 'prune', 'error', 'ping']);
   let omittedEvents = 0, unmatchedEvents = 0, invalidEvents = 0;
   let requestOverflow = 0, correlationOverflow = 0, unmatchedInitiators = 0, unknownCategories = 0;
+  let webSocketOverflow = 0, ignoredWebSockets = 0;
   const numeric = value => typeof value === 'number' && Number.isFinite(value) ? value : null;
   const category = (value, known) => {
     if (value === undefined) return null;
@@ -56,6 +65,77 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
   }
   function observe(message) {
     const { method, params = {} } = message;
+    if (message.protocol === 'webdriver-bidi' && message.type === 'event' &&
+        ['script.realmCreated', 'script.realmDestroyed'].includes(method)) {
+      if (method === 'script.realmCreated' && typeof params.type === 'string' && params.type !== 'window') return;
+      const correlation = message.correlation;
+      const identity = value => typeof value === 'string' && value.length > 0 && value.length <= 256;
+      if (!identity(params.realm) || correlation?.realmType !== 'window' ||
+          !identity(correlation.context) || !identity(correlation.top) ||
+          method === 'script.realmCreated' && (params.type !== 'window' || params.context !== correlation.context)) {
+        invalidEvents++; return;
+      }
+      record({ event: method === 'script.realmCreated' ? 'bidi-realm-created' : 'bidi-realm-destroyed',
+        protocol: 'webdriver-bidi', realmOrdinal: ordinal(bidiRealms, params.realm),
+        contextOrdinal: ordinal(bidiContexts, correlation.context), topContextOrdinal: ordinal(bidiContexts, correlation.top),
+        topLevel: correlation.context === correlation.top });
+      return;
+    }
+    if (method === 'Page.frameRequestedNavigation' || method === 'Page.frameStartedNavigating') {
+      if (typeof params.frameId !== 'string' || !params.frameId || params.frameId.length > 256) { invalidEvents++; return; }
+      const frameOrdinal = ordinal(frames, params.frameId);
+      if (method === 'Page.frameRequestedNavigation') {
+        record({event: 'navigation-requested', frameOrdinal, reason: category(params.reason, reasons)});
+      } else {
+        record({event: 'navigation-started', frameOrdinal, loaderOrdinal: ordinal(loaders, params.loaderId),
+          navigationType: category(params.navigationType, navigationTypes)});
+      }
+      return;
+    }
+    if (['Network.webSocketCreated', 'Network.webSocketHandshakeResponseReceived',
+      'Network.webSocketFrameReceived', 'Network.webSocketClosed'].includes(method)) {
+      const id = params.requestId;
+      if (typeof id !== 'string' || !id || id.length > 256) { invalidEvents++; return; }
+      const socket = sockets.get(id);
+      if (method === 'Network.webSocketCreated') {
+        if (socket) { socket.state = 'invalid'; invalidEvents++; return; }
+        let url;
+        try { if (typeof params.url === 'string' && params.url.length <= 4096) url = new URL(params.url); } catch { /* Unowned URL. */ }
+        if (!url || url.origin !== front.replace(/^http/, 'ws') || url.pathname !== '/'
+          || url.username || url.password || url.hash || url.href !== params.url) { ignoredWebSockets++; return; }
+        if (sockets.size >= 16) { webSocketOverflow++; return; }
+        const socketOrdinal = sockets.size + 1;
+        sockets.set(id, {socketOrdinal, state: 'created'});
+        record({event: 'frontend-websocket-created', socketOrdinal, timestamp: numeric(params.timestamp)});
+        return;
+      }
+      if (!socket) { ignoredWebSockets++; return; }
+      if (method === 'Network.webSocketHandshakeResponseReceived') {
+        const headers = params.response?.headers;
+        const entries = headers && typeof headers === 'object' && !Array.isArray(headers) ? Object.entries(headers) : [];
+        const protocol = entries.length <= 128 ? entries.filter(([key]) => key.toLowerCase() === 'sec-websocket-protocol') : [];
+        if (socket.state !== 'created' || params.response?.status !== 101 || protocol.length !== 1
+          || protocol[0][1] !== 'vite-hmr') { socket.state = 'invalid'; invalidEvents++; return; }
+        socket.state = 'open';
+        record({event: 'vite-handshake', socketOrdinal: socket.socketOrdinal, timestamp: numeric(params.timestamp)});
+        return;
+      }
+      if (socket.state !== 'open') { ignoredWebSockets++; return; }
+      if (method === 'Network.webSocketClosed') {
+        socket.state = 'closed';
+        record({event: 'vite-closed', socketOrdinal: socket.socketOrdinal, timestamp: numeric(params.timestamp)});
+        return;
+      }
+      const response = params.response, text = response?.payloadData;
+      if (response?.opcode !== 1 || typeof text !== 'string' || text.length > 4096
+        || new TextEncoder().encode(text).byteLength > 4096) { invalidEvents++; return; }
+      let payload;
+      try { payload = JSON.parse(text); } catch { invalidEvents++; return; }
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) { invalidEvents++; return; }
+      if (!messageTypes.has(payload.type)) { unknownCategories++; return; }
+      record({event: 'vite-message', socketOrdinal: socket.socketOrdinal, timestamp: numeric(params.timestamp), messageType: payload.type});
+      return;
+    }
     if (method === 'Runtime.executionContextsCleared') { record({ event: 'contexts-cleared' }); return; }
     if (method === 'Page.frameNavigated') {
       if (!params.frame || typeof params.frame.id !== 'string' || !params.frame.id || params.frame.id.length > 256) { invalidEvents++; return; }
@@ -72,6 +152,15 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
     const id = params.requestId;
     if (typeof id !== 'string' || !id || id.length > 256) { invalidEvents++; return; }
     if (method === 'Network.requestWillBeSent') {
+      if (params.type === 'Document') {
+        let url;
+        try { if (typeof params.request?.url === 'string' && params.request.url.length <= 4096) url = new URL(params.request.url); } catch { /* Unowned URL. */ }
+        if (url && url.origin === front && url.pathname === '/' && !url.username && !url.password) {
+          record({event: 'document-request', networkOrdinal: networkOrdinal(id),
+            frameOrdinal: ordinal(frames, params.frameId), loaderOrdinal: ordinal(loaders, params.loaderId),
+            timestamp: numeric(params.timestamp), initiator: category(params.initiator?.type, initiators)});
+        }
+      }
       const selected = route(params.request?.url);
       if (!selected || !['GET', 'POST', 'OPTIONS'].includes(params.request?.method)) {
         if (requests.has(id)) {
@@ -114,6 +203,7 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
     observe(message) { try { observe(message); } catch { invalidEvents++; } },
     snapshot() { return { events: structuredClone(events), omittedEvents, unmatchedEvents, invalidEvents,
       requestOverflow, correlationOverflow, unmatchedInitiators, unknownCategories,
+      webSocketOverflow, ignoredWebSockets,
       outstandingRequests: [...requests.values()].filter(request => request.active).length }; },
   };
 }

@@ -345,7 +345,36 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
   for(const id of [...channel.intercepts]){await native('network.removeIntercept',{intercept:id},undefined,until);channel.intercepts.splice(channel.intercepts.indexOf(id),1);}
   await drain(); // Events already received while native removal was pending.
  }
+ function emitRealm(channel,row){try{channel.emit(row);}catch{observerFailed=true;}}
+ function realmEvent(message){
+  const e=message.params;let channel,identity;
+  if(message.method==='script.realmCreated'){
+   if(e?.type!=='window')return;
+   channel=channelFor(e.context);const runtime=channel?.runtime;
+   if(!runtime||runtime.error||!runtime.enabling&&!runtime.subscription)return;
+   if(typeof e.realm!=='string'||!e.realm||e.realm.length>256)throw Error('Invalid owned Firefox realm event');
+   for(const other of channels.values()){
+    const previous=other.runtime?.realms.get(e.realm);
+    if(previous&&(other!==channel||previous.context!==e.context))throw Error('Invalid owned Firefox realm event');
+   }
+   if(!runtime.realms.has(e.realm)&&runtime.realms.size>=64)throw Error('Firefox realm observer limit');
+   identity={context:e.context,top:channel.id,realmType:'window'};runtime.realms.set(e.realm,identity);
+  }else{
+   for(const candidate of channels.values()){
+    const found=candidate.runtime?.realms.get(e?.realm);
+    if(found){channel=candidate;identity=found;break;}
+   }
+   if(!channel)return;
+   channel.runtime.realms.delete(e.realm);
+  }
+  const runtime=channel.runtime;
+  // Native params stay distinct from correlation derived from an observed creation.
+  const row={protocol:'webdriver-bidi',type:'event',method:message.method,params:{realm:e.realm,...(message.method==='script.realmCreated'?{type:'window',context:e.context}:{})},correlation:identity};
+  if(runtime.enabling){if(runtime.events.length>=64)throw Error('Firefox realm observer limit');runtime.events.push(row);}
+  else emitRealm(channel,row);
+ }
  async function event(message){
+  if(message.method==='script.realmCreated'||message.method==='script.realmDestroyed'){realmEvent(message);return;}
   const e=message.params;
   if(message.method==='browsingContext.contextCreated'){
    const channel=channelFor(e.parent);if(!channel)return;
@@ -489,6 +518,23 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
     return {frameId:context,...(result.navigation===null?{}:{loaderId:result.navigation})};
    }
    if(method==='Page.bringToFront'){options(params,[]);if(context!==channel.id)unavailable();return sendNative('browsingContext.activate',{context});}
+   if(method==='Runtime.enable'){
+    options(params,[]);if(context!==channel.id||channel.configuring||channel.registering)unavailable();
+    if(channel.runtime?.error)throw channel.runtime.error;
+    if(channel.runtime?.pending)return channel.runtime.pending;
+    if(channel.runtime?.result)return channel.runtime.result;
+    const runtime={enabling:true,pending:null,result:null,subscription:null,realms:new Map(),events:[],error:null};channel.runtime=runtime;
+    runtime.pending=native('session.subscribe',{events:['script.realmCreated','script.realmDestroyed'],contexts:[channel.id]},undefined,until,(_ack,result)=>{
+     if(typeof result.subscription!=='string'||!result.subscription||result.subscription.length>256)unavailable();
+     runtime.subscription=result.subscription;runtime.result=result;
+    }).then(result=>{
+     runtime.enabling=false;
+     for(const row of runtime.events.splice(0))emitRealm(channel,row);
+     return result;
+    },error=>{runtime.error=error;runtime.events.length=0;runtime.realms.clear();throw error;})
+     .finally(()=>{runtime.enabling=false;runtime.pending=null;});
+    return runtime.pending;
+   }
    if(method==='Network.enable'){
     await requestCollector(channel,until);
     return sendNative('session.subscribe',{events:['network.beforeRequestSent','network.responseStarted','network.responseCompleted','network.fetchError'],contexts:[channel.id]});
@@ -532,7 +578,7 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
   channel.send=text=>{let message;try{message=JSON.parse(text);if(!Number.isSafeInteger(message.id)||message.id<=0)unavailable();}catch(error){fatal(error);return;}void mapped(message.method,message.params,message.sessionId,process.hrtime.bigint()+15_000_000_000n).then(result=>channel.emit({id:message.id,result}),error=>channel.emit({id:message.id,error:{message:error.message}}));};
   channel.close=async()=>{
    if(!channels.has(channel.id))return;
-   if(channel.configuring||channel.registering||channel.collecting)throw Error('Firefox channel configuration pending');
+   if(channel.configuring||channel.registering||channel.collecting||channel.runtime?.enabling)throw Error('Firefox channel configuration pending');
    channel.closing=true;
    channel.initialization=null;channel.readyChildren.clear();
    await inputTail; // Admitted gestures retain their original, pre-close deadlines.
@@ -543,6 +589,7 @@ export function createFirefoxTransport({controller,directory,endpoint,producer,o
    if(channel.blockIntercept){await native('network.removeIntercept',{intercept:channel.blockIntercept},undefined,until);channel.blockIntercept=null;channel.blockedURLs=[];}
    for(const script of [...channel.preloads]){await native('script.removePreloadScript',{script},undefined,until);channel.preloads.splice(channel.preloads.indexOf(script),1);}
    if(channel.collector){const collector=channel.collector;await native('network.removeDataCollector',{collector},undefined,until,()=>{if(channel.collector===collector)channel.collector=null;});}
+   if(channel.runtime?.subscription){const subscription=channel.runtime.subscription;await native('session.unsubscribe',{subscriptions:[subscription]},undefined,until,()=>{if(channel.runtime.subscription===subscription){channel.runtime.subscription=null;channel.runtime.realms.clear();channel.runtime.events.length=0;}});}
    for(const subscription of channel.subscriptions)await native('session.unsubscribe',{subscriptions:[subscription]},undefined,until);
    for(const getter of channel.getters.values())getter.close();
    await native('browsingContext.close',{context:channel.id},undefined,until);channels.delete(channel.id);
