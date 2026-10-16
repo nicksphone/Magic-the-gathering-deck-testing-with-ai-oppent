@@ -7,7 +7,6 @@ const backend = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199';
 const decks = await (await fetch(`${backend}/fixture/start-decks`, { method: 'POST' })).json();
 const browser = await openBrowser('http://127.0.0.1:15173/');
 const { evaluate, waitFor, click, command, close, onIntercept } = browser;
-await command('Network.enable');
 
 async function selectDecks() {
   await evaluate("localStorage.removeItem('mtg.activeMatch')");
@@ -32,7 +31,7 @@ async function startWithDroppedResponses(dropCount) {
   await reviewStart(browser);
   let dropped = 0;
   const attempts = [];
-  onIntercept(traceStartRecoveryResponses(command, async (event, command) => {
+  onIntercept(startWithDroppedResponses.trace = traceStartRecoveryResponses(command, async (event, command) => {
     if (await continueRequestForPostResponse(command, event)) return;
     console.log('Start recovery response', JSON.stringify({ method: event.request.method,
       status: event.responseStatusCode, error: event.responseErrorReason, hasPostData: typeof event.request.postData === 'string', dropped }));
@@ -55,7 +54,7 @@ async function startWithDroppedResponses(dropCount) {
       dropped += 1;
       await command('Fetch.failRequest', { requestId: event.requestId, errorReason: 'Failed' });
     } else await command('Fetch.continueResponse', { requestId: event.requestId });
-  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173'));
+  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', undefined, { backend }));
   await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Request' }] });
   await click('Start Best-of-3 Match');
   return Object.assign(() => dropped, { attempts });
@@ -75,6 +74,9 @@ async function resumeRequestCapture() {
 }
 
 try {
+  await command('Network.enable');
+  await command('Page.enable');
+  await command('Runtime.enable');
   await selectDecks();
   const before = await matchIds();
   const dropped = await startWithDroppedResponses(1);
@@ -153,4 +155,7 @@ try {
   sameIntent(droppedLegacy.attempts, legacy);
   assert.equal(droppedLegacy.attempts.length, 3, 'Reviewed legacy recovery replays the original intent once');
   console.log('PASS legacy unreviewed intent stays manual through reload/check/acknowledge, then recovers its same accepted match/key/payload');
+} catch (error) {
+  try { startWithDroppedResponses.trace?.reportFailure(); } catch { /* Preserve the original scenario result. */ }
+  throw error;
 } finally { await close(); }

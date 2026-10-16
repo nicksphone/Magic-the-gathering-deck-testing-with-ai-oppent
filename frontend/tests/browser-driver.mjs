@@ -266,6 +266,8 @@ export async function openBrowser(url) {
   socket.onmessage = ({ data }) => {
     const message = JSON.parse(data);
     passive?.event(message);
+    try { intercept?.observeBrowserEvent?.(message); }
+    catch { /* Diagnostic hooks cannot consume original replies or Fetch errors. */ }
     if (message.method === 'Fetch.requestPaused') { void intercept?.(message.params); return; }
     const waiter = pending.get(message.id);
     if (!waiter) return;

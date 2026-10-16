@@ -21,7 +21,7 @@ import stat
 # Updated only through an explicit source-binding review, never a wildcard.
 SOURCE_MODULE_PINS = {'backend/main.py': '0e163563dfabf109964588d53a2a56504745b032fd56ec44818d5a95258fec9f',
  'backend/decks/bootstrap.py': 'b968836717698f55e28f0d5b2942209e45ba47d9c67cb3423aa67579274e559b',
- 'backend/card_data/hydration.py': 'a234c5ab0bb4172555a9de8f5a1cbf27bc995a3232b5308bb07d9a6c46c1cc72',
+ 'backend/card_data/hydration.py': '8497ed903beccf72deba05bf5f03b5342c223cd98eb7c68bc86633f8b2455cce',
  'backend/card_data/display.py': 'f7c584f6bccb22696bc3dfa83563248b6253e597ce87e493924088962c9765eb',
  'backend/card_data/placeholders.py': '44a0ba20815a7204ee2f0332bb5dbd30c648140e78b9cee004aca5ad57acf4df',
  'backend/card_data/seed_cards.py': 'cb64ae85690d5239a24895b4ed6ac8a46b5f4c15de64d5bb67192eb187b72c71',

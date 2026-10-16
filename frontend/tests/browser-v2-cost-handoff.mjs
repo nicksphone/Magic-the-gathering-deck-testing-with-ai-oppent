@@ -18,6 +18,7 @@ function protocol({ action = false, oldPending = false, mismatch, status = 200,
   const state = { id: 'published', revision: 0, stack: [],
     players: { 1: player(1), 2: player(2) } };
   let closed = false, posts = 0, startedCastWait = false, apiReads = 0;
+  let subscriptions = 0;
   const selected = { value: '', options: [{ value: 'paid-1', textContent: 'Island', selected: false }],
     dispatchEvent() {}, closest: () => box };
   const target = { value: '', options: [{ value: 'bear-2', textContent: 'Target Grizzly Bears' }],
@@ -60,6 +61,9 @@ function protocol({ action = false, oldPending = false, mismatch, status = 200,
     events.push('old-view/legal/storage');
   });
   const browser = {
+    async command(method) {
+      assert.equal(method, ['Network.enable', 'Page.enable', 'Runtime.enable'][subscriptions++]);
+    },
     async evaluate(expression) {
       if (expression.includes('dataset.matchRevision')) events.push(`sample:${view.revision}:${view.pending}`);
       return vm.runInContext(expression, context);

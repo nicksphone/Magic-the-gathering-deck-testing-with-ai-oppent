@@ -88,7 +88,7 @@ test('default keeps original intended navigation and exact command/error/interce
   const browser = await openBrowser(intended);
   assert.equal(h.state.fetches[0].url, 'http://127.0.0.1:19222/json/new?' + intended);
   assert.deepEqual(h.state.commands.map(row => row.method), ['Runtime.evaluate']);
-  assert.deepEqual(Object.keys(browser), ['command', 'evaluate', 'waitFor', 'click', 'reload', 'onIntercept', 'close']);
+  assert.deepEqual(Object.keys(browser), ['command', 'evaluate', 'waitFor', 'click', 'reload', 'browserIdentity', 'onIntercept', 'close']);
   let paused;
   browser.onIntercept(value => { paused = value; });
   h.state.socket.emit('Fetch.requestPaused', { requestId: 'original-intercept' });

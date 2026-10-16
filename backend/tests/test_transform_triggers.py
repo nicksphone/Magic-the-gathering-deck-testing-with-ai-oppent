@@ -1,16 +1,11 @@
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import MatchFactory, Step, Zone
 from rules_engine.continuous import effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
 from rules_engine.events import emit_event
 from rules_engine.stack_engine import resolve_top_of_stack
-
-
-INQUISITOR_ORACLE = (
-    "When Norn's Inquisitor enters the battlefield, incubate 2.\n"
-    "Whenever a permanent you control transforms into a Phyrexian, put a +1/+1 counter on it."
-)
+from tests.transform_draw_canonical_fixtures import permanent
 
 
 def _state():
@@ -20,10 +15,7 @@ def _state():
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
-    inquisitor = CardInstance(
-        "inquisitor", "Norn's Inquisitor", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        oracle_text=INQUISITOR_ORACLE, type_line="Creature - Phyrexian Knight", power=1, toughness=1,
-    )
+    inquisitor = permanent("inquisitor", "Norn's Inquisitor")
     state.cards[inquisitor.id] = inquisitor
     state.players[1].battlefield.append(inquisitor.id)
     return state
@@ -62,14 +54,7 @@ def test_transform_trigger_requires_control_and_resulting_subtype():
     resolve_effect(state, 2, "transform_card", {"target_card_id": opponent_token.id, "face_index": 1})
     assert not state.stack
 
-    delver = CardInstance(
-        "delver", "Delver of Secrets", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        type_line="Creature - Human Wizard", layout="transform", selected_face_index=0,
-        card_faces=[
-            {"name": "Delver of Secrets", "type_line": "Creature - Human Wizard", "power": "1", "toughness": "1"},
-            {"name": "Insectile Aberration", "type_line": "Creature - Human Insect", "power": "3", "toughness": "2"},
-        ],
-    )
+    delver = permanent("delver", "Delver of Secrets // Insectile Aberration", face_index=0)
     state.cards[delver.id] = delver
     state.players[1].battlefield.append(delver.id)
     resolve_effect(state, 1, "transform_card", {"target_card_id": delver.id, "face_index": 1})

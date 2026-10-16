@@ -15,6 +15,9 @@ async function setup(path) {
  await b.waitFor(`localStorage.getItem('mtg.activeMatch') === ${JSON.stringify(state.id)} && document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(state.id)} && document.querySelector('.battlefield')?.dataset.matchRevision === ${JSON.stringify(String(state.revision))} && !document.body.innerText.includes('Restoring saved session') && !document.body.innerText.includes('Match operation pending') && [...document.querySelectorAll('button')].some(e=>e.textContent==='Resume automatic play')`);return state;
 }
 try {
+ await b.command('Network.enable');
+ await b.command('Page.enable');
+ await b.command('Runtime.enable');
  for(const seat of [1,2]) for(const payment of ['discard','sacrifice']) {
   const s=await setup(`/fixture?face_kind=spell_cost_${seat}`);
   await b.waitFor("document.body.innerText.includes('Cast Bone Shards')");
@@ -48,7 +51,7 @@ try {
   if(e.request.method!=='POST'){await command('Fetch.continueResponse',{requestId:e.requestId});return;}
   held=e;
   continueHeld=()=>command('Fetch.continueResponse',{requestId:e.requestId});
- }, ui, value=>console.error('V2_HELD_RESPONSE_TRACE',JSON.stringify(value))));
+ }, ui, value=>console.error('V2_HELD_RESPONSE_TRACE',JSON.stringify(value)), {backend:api}));
  await b.command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Request'}]});
  await b.click('Play Land Forest');
  await b.waitFor("document.body.innerText.includes('Match operation pending')");
