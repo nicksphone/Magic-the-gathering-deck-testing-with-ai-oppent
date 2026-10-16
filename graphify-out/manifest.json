@@ -378,15 +378,15 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1792153575.3035877,
-    "seen": 1792154616.5440466,
-    "ast_hash": "826d38860191c2f66606c0761f8a854f",
+    "mtime": 1792156586.112742,
+    "seen": 1792156832.1963408,
+    "ast_hash": "05b378872733ca9aae162a695592038d",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1792153575.3035877,
-    "seen": 1792154616.5440493,
-    "ast_hash": "64fb1c5874d489767da1ce1e3489f17d",
+    "mtime": 1792156586.112742,
+    "seen": 1792156832.1963432,
+    "ast_hash": "aadf95abb70cce0a4f6ad138470e6037",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -840,9 +840,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_effects.py": {
-    "mtime": 1792033175.5146801,
-    "seen": 1792034402.3548427,
-    "ast_hash": "b48693ba6cb380519643c4218e4fb3d0",
+    "mtime": 1792156586.112742,
+    "seen": 1792156832.1965373,
+    "ast_hash": "dc3c7fa91eda7f8b4a31d76c59bdb449",
     "semantic_hash": ""
   },
   "backend/rules_engine/oracle_text.py": {
@@ -20193,6 +20193,30 @@
     "mtime": 1792154473.68345,
     "seen": 1792154616.5495474,
     "ast_hash": "0c389565479ef1ce9c191effba23caab",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/graveyard_batch_boundary_bf62/PROVENANCE.json": {
+    "mtime": 1792156586.112742,
+    "seen": 1792156832.1973135,
+    "ast_hash": "778633a2d9808f393ff4fb67ff179dbd",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/graveyard_batch_boundary_bf62/liquimetal-coating.json": {
+    "mtime": 1792156586.112742,
+    "seen": 1792156832.1974866,
+    "ast_hash": "067bea230edc3b30e6c7aa7b267516d8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_temporary_artifact_type.py": {
+    "mtime": 1792156586.112742,
+    "seen": 1792156832.200056,
+    "ast_hash": "85fc1c29b600f25692723e9dd1772299",
+    "semantic_hash": ""
+  },
+  "docs/testing/temporary-artifact-type.md": {
+    "mtime": 1792156586.112742,
+    "seen": 1792156832.2023163,
+    "ast_hash": "f07f0cc658b34de268af4ea0a2338596",
     "semantic_hash": ""
   }
 }

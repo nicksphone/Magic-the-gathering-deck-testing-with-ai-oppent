@@ -3150,6 +3150,12 @@ def temporary_ability_loss(state: MatchState, controller: int, payload: dict) ->
             set_base_stats(state, controller, {**payload, 'target_card_id': card_id, 'resolution_timestamp': stamp})
 
 
+def add_artifact_type_until_end_of_turn(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.type_effects import add_type_effect
+    add_type_effect(state, payload.get('target_card_id'), ['Artifact'],
+                    until_end_of_turn=True, source_card_id=payload.get('__source_card_id'))
+
+
 def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.keyword_effects import add_keyword_effect
     keywords = payload.get('keywords') or ([payload['keyword']] if payload.get('keyword') else [])

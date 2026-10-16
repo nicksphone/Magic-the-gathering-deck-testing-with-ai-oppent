@@ -495,6 +495,18 @@ def compile_additional_cost_draw_instruction(oracle_text: str, card_name: str):
         {'effect_key': key, 'payload': payload} for key, payload in instructions]}
 
 
+def _infer_temporary_artifact_instruction(oracle, action_targets):
+    text = oracle.strip()
+    if not re.match(r'target permanent becomes an artifact\b', text, re.I):
+        return None
+    if not re.fullmatch(
+            r'target permanent becomes an artifact in addition to its other types '
+            r'until end of turn\.', text, re.I):
+        return 'noop', {'__unsupported_instruction': oracle}
+    return 'add_artifact_type_until_end_of_turn', {
+        'target_card_id': action_targets.get('target_card_id')}
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,
@@ -578,6 +590,9 @@ def infer_effect_from_oracle(
                     r'(?:artifact|creature|land|permanent)'
                     r'(?: you control| an opponent controls)?\.?', oracle.strip()):
         return 'untap', {'target_card_id': action_targets.get('target_card_id')}
+    temporary_artifact = _infer_temporary_artifact_instruction(oracle, action_targets)
+    if temporary_artifact is not None:
+        return temporary_artifact
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
     # Whole permanent surfaces contain costs/abilities; activation proxies do not.
     if (not set(getattr(card, 'types', []) or []).intersection(

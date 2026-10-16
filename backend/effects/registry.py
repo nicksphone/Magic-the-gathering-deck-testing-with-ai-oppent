@@ -20,6 +20,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'add_artifact_type_until_end_of_turn': handlers.add_artifact_type_until_end_of_turn,
     'ownership_end_step_draw': resolve_ownership_end_step_draw,
     'reveal_top_conditional': handlers.reveal_top_conditional,
     'attached_token_payment': resolve_attached_token_payment,
