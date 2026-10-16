@@ -4,8 +4,12 @@ import {build} from 'vite';
 
 export function buildDevelopmentFrontend({root, configFile, outDir}) {
   if (process.env.NODE_ENV !== 'development') throw new Error('Development frontend requires NODE_ENV=development');
-  return build({root, configFile, mode: 'development', build: {outDir, minify: false,
+  return build({root, configFile, mode: 'development', build: {outDir, target: 'es2022', minify: false,
     rollupOptions: {input: {application: path.join(root, 'index.html'),
+      attackAll: path.join(root, 'tests/attack-all.html'),
+      humanActions: path.join(root, 'tests/human-actions.html'),
+      interactivePreflight: path.join(root, 'tests/interactive-preflight.html'),
+      simulationPreflight: path.join(root, 'tests/simulation-preflight.html'),
       developmentProof: path.join(root, 'tests/fixtures/ci-development-runtime/probe.html')}}}});
 }
 

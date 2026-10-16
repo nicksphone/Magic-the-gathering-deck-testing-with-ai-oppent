@@ -5,6 +5,7 @@ import path from 'node:path';
 import os from 'node:os';
 import {fileURLToPath} from 'node:url';
 import {stop} from 'esbuild';
+import {createHash} from 'node:crypto';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const implementation = process.env.MTG_DEV_BUILD_IMPLEMENTATION || new URL('./prepare-development-frontend.mjs', import.meta.url).href;
@@ -206,4 +207,64 @@ test('runtime verifier protocol cannot emit proof when page closure fails', asyn
   const result = await runProof({closeFailure: cleanup});
   assert.equal(result.error, cleanup);
   assert.equal(result.output.length, 0);
+});
+
+const originalFixtureRoutes = ['tests/attack-all.html', 'tests/human-actions.html',
+  'tests/interactive-preflight.html', 'tests/simulation-preflight.html'];
+function htmlFiles(directory, relative = '') {
+  return fs.readdirSync(directory, {withFileTypes: true}).flatMap(entry => {
+    const name = path.posix.join(relative, entry.name);
+    return entry.isDirectory() ? htmlFiles(path.join(directory, entry.name), name)
+      : entry.isFile() && entry.name.endsWith('.html') ? [name] : [];
+  });
+}
+for (const route of originalFixtureRoutes) {
+  test(`actual build emits original ${route} and real module chunks, not the SPA fallback`, () => {
+    const asset = output.find(value => value.type === 'asset' && value.fileName === route);
+    assert.ok(asset, `Missing original fixture HTML: ${route}`);
+    const html = fs.readFileSync(path.join(outDir, route), 'utf8');
+    assert.equal(html, String(asset.source));
+    const scripts = [...html.matchAll(/<script\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/g)].map(match => match[1]);
+    assert.ok(scripts.length > 0);
+    for (const script of scripts) {
+      const file = new URL(script, `https://fixture.invalid/${route}`).pathname.slice(1);
+      assert.ok(chunks.some(chunk => chunk.fileName === file), 'HTML must reference a genuine emitted chunk');
+      assert.ok(fs.statSync(path.join(outDir, file)).isFile());
+      assert.match(file, /\.js$/); assert.doesNotMatch(script, /\.tsx?(?:[?#]|$)/);
+    }
+    const expected = ['index.html', ...htmlFiles(path.join(root, 'tests')).map(file => `tests/${file}`)].sort();
+    assert.deepEqual(expected, ['index.html', ...originalFixtureRoutes, 'tests/fixtures/ci-development-runtime/probe.html'].sort());
+    assert.deepEqual(output.filter(value => value.type === 'asset' && value.fileName.endsWith('.html')).map(value => value.fileName).sort(), expected);
+    const browserSources = fs.readdirSync(path.join(root, 'tests')).filter(file => /^browser-.*\.mjs$/.test(file))
+      .map(file => fs.readFileSync(path.join(root, 'tests', file), 'utf8')).join('\n');
+    for (const match of browserSources.matchAll(/\/tests\/[a-zA-Z0-9_./-]+\.html/g)) assert.ok(expected.includes(match[0].slice(1)), 'Existing literal browser HTML route must be built');
+    const entry = chunks.find(chunk => chunk.isEntry && chunk.facadeModuleId === path.join(root, route));
+    const owner = chunks.find(chunk => Object.keys(chunk.modules).some(id => id.endsWith('/react/cjs/react.development.js')));
+    const reaches = (chunk, seen = new Set()) => {
+      if (!chunk || seen.has(chunk.fileName)) return false;
+      if (chunk === owner) return true;
+      seen.add(chunk.fileName);
+      return chunk.imports.some(file => reaches(chunks.find(value => value.fileName === file), seen));
+    };
+    assert.ok(owner && reaches(entry), 'Fixture must share genuine development React');
+    assert.doesNotMatch(html + code, /\/@vite\/client|vite:ws:disconnect|vite-ping|\/@react-refresh/);
+    const officerOutput = (Array.isArray(officer) ? officer : [officer]).flatMap(value => value.output);
+    assert.ok(officerOutput.some(value => value.type === 'asset' && value.fileName === route), 'Nested Officer uses the same complete fixture catalogue');
+  });
+}
+
+
+test('actual simulation fixture retains its unchanged top-level await in the emitted module', () => {
+  const entry = chunks.find(chunk => chunk.isEntry && chunk.facadeModuleId === path.join(root, 'tests/simulation-preflight.html'));
+  assert.ok(entry);
+  assert.match(entry.code, /(?:^|\n)\s*await\s+\w+\.startSimulateBatchJob\(/m);
+  assert.equal(createHash('sha256').update(read('./simulation-preflight.tsx')).digest('hex'), '5992aea422e2fd9d76626039f5e6cffbb6c6bb88761a5d80ac592cc400cddf9d');
+});
+
+test('native default production build target and configuration remain unchanged', async () => {
+  const {resolveConfig} = await import('vite');
+  const config = await resolveConfig({root, configFile: path.join(root, 'vite.config.ts')}, 'build', 'production');
+  assert.deepEqual(config.build.target, ['es2020', 'edge88', 'firefox78', 'chrome87', 'safari14']);
+  assert.equal(createHash('sha256').update(read('../vite.config.ts')).digest('hex'), 'fec71d5fefd160d586ca8b5448d0d0f770f261751c9b2310273a31fe75671514');
+  assert.equal(JSON.parse(read('../package.json')).scripts.build, 'tsc -b && vite build');
 });

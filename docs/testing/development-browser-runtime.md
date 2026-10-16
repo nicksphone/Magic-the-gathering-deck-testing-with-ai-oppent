@@ -77,3 +77,29 @@ The subsequent [bounded transport diagnostic](browser-cors-transport-diagnostic.
 compares four CDP modes without App code or altered original assertions. Its
 protocol and shell-flow checks pass; the actual hosted comparison remains a
 distinct future observation, not an assumed fix for this cancellation.
+
+## Original Fixture Page Coverage
+
+The later `5e8a8509` browser run exposes a separate defect in this development
+build bridge: its original input map emits only the application and replay
+probe. The original attack-all, human-actions, interactive-preflight and
+simulation-preflight HTML pages are absent. Vite preview serves the normal SPA
+fallback for the attack-all URL, so the unchanged browser test cannot find its
+fixture declaration form. This is a harness packaging defect, not evidence that
+the application's attack control is broken.
+
+The corrected native Vite input map emits all six HTML entries. Only this
+development-test build targets ES2022, preserving the simulation fixture's
+pre-existing top-level await; the ordinary production command, Vite config and
+production target are unchanged. No fixture TSX, App code, scenario assertion or
+deadline changes. Four missing-page checks first fail while the original 20
+checks pass. The complete corrected module passes all 26 build/protocol cases,
+including emitted chunks, route-catalogue coverage, shared development React,
+absence of HMR, unchanged await source and default production configuration.
+Actual browser acceptance still requires the next hosted run.
+
+The same `5e8a8509` diagnostic proves its single baseline action succeeds, but
+fails its page-closure observation. The other three transport modes are not
+reached; the initial request-cancellation cause remains unknown. Its saved
+failure does not prevent the original suite from running, which independently
+reaches the missing fixture page described above.
