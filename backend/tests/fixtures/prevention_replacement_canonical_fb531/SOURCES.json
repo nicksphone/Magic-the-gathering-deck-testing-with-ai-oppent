@@ -1,0 +1,119 @@
+{
+  "Alhammarret's Archive": {
+    "file_sha256": "498b8c1c97b465892cdef001231bf1b59c9b9a4f577988906088a920b5a7753a",
+    "id": "4f4187f1-05bd-4db6-a2e7-d677eff588ee",
+    "line": null,
+    "object_sha256": "2399471da8490d26882721b7f436f5c74b804ffb71a857c8cc9b5f7e226c1c60",
+    "oracle_id": "d5c4d36c-54b3-4149-906b-a57a670260fc",
+    "path": "life_conversion/alhammarrets-archive.json",
+    "provenance": {
+      "path": "life_conversion/provenance.json",
+      "sha256": "879000bb1f305955e156cc0e7d798d4bc2b4a21965b09fd9081986d4c3f7e753"
+    },
+    "steps": []
+  },
+  "Ancestral Recall": {
+    "file_sha256": "8e333c217d764d4ea65cab1ce7bffab83a9fbbf926a69dffbebe3f9aaed2a01d",
+    "id": "2398892d-28e9-4009-81ec-0d544af79d2b",
+    "line": null,
+    "object_sha256": "80d68381f7e9328f8016e66311eb9b45292845f021c14f7d7baecbe311fa37e3",
+    "oracle_id": "550c74d4-1fcb-406a-b02a-639a760a4380",
+    "path": "prevention_replacement_canonical_fb531/ancestral-recall.json",
+    "provenance": {
+      "path": "prevention_replacement_canonical_fb531/PROVENANCE.json",
+      "sha256": "a520ef08d0b97c63ce53f65fae20a5109489c46112ce2132298d139baba37a4f"
+    },
+    "steps": []
+  },
+  "Island": {
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+    "line": 50,
+    "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "path": "knowledge_profiles/seed155-scryfall.jsonl",
+    "provenance": {
+      "path": "knowledge_profiles/PROVENANCE.json",
+      "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+    },
+    "steps": []
+  },
+  "Lich": {
+    "file_sha256": "a8a0547d1a1bd5c88f9fec7e199d9188a11bf078d8327541e20d76c611ece469",
+    "id": "d4d7d1fd-4a5e-4cc3-8056-12cae084cc6a",
+    "line": null,
+    "object_sha256": "cfc592585fe81c9c8b51041ee20d0802bb6dab7a9419f06a04a19c71902247ed",
+    "oracle_id": "5b7515f2-7a5a-4e2a-9784-6cbacd768172",
+    "path": "life_conversion/lich.json",
+    "provenance": {
+      "path": "life_conversion/provenance.json",
+      "sha256": "879000bb1f305955e156cc0e7d798d4bc2b4a21965b09fd9081986d4c3f7e753"
+    },
+    "steps": []
+  },
+  "Rest in Peace": {
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+    "line": 77,
+    "object_sha256": "e9215ef36ff21ae5277f9e7cef786350d329a975404e757d054b25274ace42b0",
+    "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+    "path": "knowledge_profiles/seed155-scryfall.jsonl",
+    "provenance": {
+      "path": "knowledge_profiles/PROVENANCE.json",
+      "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+    },
+    "steps": []
+  },
+  "Skullcrack": {
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "7f399983-d70a-4cf3-b76e-bb0c472e7c69",
+    "line": 87,
+    "object_sha256": "b00719e21f56507a8a92d0f047adca9429741a00f438f236221e838cd59f8135",
+    "oracle_id": "a6fc0b0c-9ba2-47f2-ab92-26fd20d0f86d",
+    "path": "knowledge_profiles/seed155-scryfall.jsonl",
+    "provenance": {
+      "path": "knowledge_profiles/PROVENANCE.json",
+      "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+    },
+    "steps": []
+  },
+  "Stinkweed Imp": {
+    "file_sha256": "3a12356ed9fa1de98b56500f5c0bb3a26f3ef6949e549e81184441ba19dab1e9",
+    "id": "2ab08d69-210b-4b06-88a2-45281a1a4e1e",
+    "line": null,
+    "object_sha256": "c954e8f6a8b41adc41bed4162d2d91bc36b8669bd6ff2d6cf7822e1b8065721e",
+    "oracle_id": "e005bc76-4985-4ec6-b9f6-cf6d0d9f5df4",
+    "path": "trigger_instruction_product/stinkweed-imp.json",
+    "provenance": {
+      "path": "trigger_instruction_product/provenance.json",
+      "sha256": "95733b149cb7d3666b20d8f3afa5b8100f08def33ed10ef976974c4dfa342bc5"
+    },
+    "steps": []
+  },
+  "Teferi's Ageless Insight": {
+    "file_sha256": "0735494e12e7204fe5981ce6571dbb75bd07cc21a956f15ed9817465e6ce6bee",
+    "id": "b1a32b7c-9f26-4504-9f8d-379164d69346",
+    "line": null,
+    "object_sha256": "9dff3b1e540b750e5948a4e81373d4d623a2b701b036916e260004bcae3b4942",
+    "oracle_id": "1c9e1f75-73f0-4846-b53f-458a0984b1bb",
+    "path": "prevention_replacement_canonical_fb531/teferis-ageless-insight.json",
+    "provenance": {
+      "path": "prevention_replacement_canonical_fb531/PROVENANCE.json",
+      "sha256": "a520ef08d0b97c63ce53f65fae20a5109489c46112ce2132298d139baba37a4f"
+    },
+    "steps": []
+  },
+  "Thought Reflection": {
+    "file_sha256": "be46dc4724e675d029e095db7e065399de74e1b33b0379fd498e3ac90592128f",
+    "id": "e169e197-5ef4-454d-a31f-fcadedb74cfc",
+    "line": null,
+    "object_sha256": "6450a120fa366c41e6c1092415c858a3b4c04c66fe47296146968f4d85307bb0",
+    "oracle_id": "692a6833-3014-42f6-b1ad-333bb3292c65",
+    "path": "trigger_instruction_audit/thought-reflection.json",
+    "provenance": {
+      "path": "trigger_instruction_audit/provenance.json",
+      "sha256": "40b29b77468eed197ae34be165941b18c52f8b600a319be53cdd4983a91393a5"
+    },
+    "steps": []
+  }
+}

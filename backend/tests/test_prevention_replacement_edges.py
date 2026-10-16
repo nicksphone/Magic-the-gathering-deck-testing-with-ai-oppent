@@ -12,10 +12,14 @@ from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.replacement import replacement_options, replace_die_zone, replace_draw_cards
 from fastapi.testclient import TestClient
 from main import ACTIVE_MATCHES, MatchController, app
+from tests.prevention_replacement_canonical_fb531 import canonical_card, deck_entry
+
+# Named positives use full RAW. Anonymous replacements, tokens, and retagged
+# Island protocol vectors remain explicit noncanonical tests, not a Task1.3 waiver.
 
 
 def _state() -> object:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry("Island", 60)]
     return MatchFactory.from_decks(deck, deck, seed=17)
 
 
@@ -71,26 +75,13 @@ def test_transformed_draw_life_replacements_consume_each_source_once() -> None:
 
 
 def _thought_reflection(state, cid: str) -> None:
-    card = CardInstance(
-        id=cid, name="Thought Reflection", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-        oracle_text="If you would draw a card, draw two cards instead.",
-    )
+    card = canonical_card('Thought Reflection', id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[cid] = card
     state.players[1].battlefield.append(cid)
 
 
 def _draw_step_doubler(state, cid: str, *, archive: bool = False) -> None:
-    card = CardInstance(
-        id=cid,
-        name="Alhammarret's Archive" if archive else "Teferi's Ageless Insight",
-        owner=1, controller=1, zone=Zone.BATTLEFIELD,
-        types=["Artifact"] if archive else ["Enchantment"],
-        oracle_text=(
-            "If you would gain life, you gain twice that much life instead.\n"
-            if archive else ""
-        ) + "If you would draw a card except the first one you draw in each of your draw steps, draw two cards instead.",
-    )
+    card = canonical_card("Alhammarret's Archive" if archive else "Teferi's Ageless Insight", id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[cid] = card
     state.players[1].battlefield.append(cid)
 
@@ -137,11 +128,7 @@ def test_replaced_first_draw_does_not_use_draw_step_exception() -> None:
     state = _state()
     state.step = Step.DRAW
     _draw_step_doubler(state, "insight")
-    dredger = CardInstance(
-        id="stinkweed", name="Stinkweed Imp", owner=1, controller=1,
-        zone=Zone.GRAVEYARD, types=["Creature"],
-        oracle_text="Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
-    )
+    dredger = canonical_card('Stinkweed Imp', id='stinkweed', owner=1, controller=1, zone=Zone.GRAVEYARD)
     state.cards[dredger.id] = dredger
     state.players[1].graveyard.append(dredger.id)
     before = len(state.players[1].hand)
@@ -162,17 +149,7 @@ def test_archive_life_and_draw_replacements_remain_independent() -> None:
     gain_life(state, 1, {"target_player": 1, "amount": 3})
     assert state.players[1].life == before_life + 6
 
-    lich = CardInstance(
-        id="lich", name="Lich", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-        oracle_text=(
-            "As this enchantment enters, you lose life equal to your life total.\n"
-            "You don't lose the game for having 0 or less life.\n"
-            "If you would gain life, draw that many cards instead.\n"
-            "Whenever you're dealt damage, sacrifice that many nontoken permanents. If you can't, you lose the game.\n"
-            "When this enchantment is put into a graveyard from the battlefield, you lose the game."
-        ),
-    )
+    lich = canonical_card('Lich', id='lich', owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[lich.id] = lich
     state.players[1].battlefield.append(lich.id)
     state.players[1].life = 0
@@ -227,11 +204,7 @@ def test_human_stack_choice_between_draw_doublers_is_resumable() -> None:
     state.replacement_choice_players = {1}
     _thought_reflection(state, "reflection-one")
     _thought_reflection(state, "reflection-two")
-    spell = CardInstance(
-        id="ancestral", name="Ancestral Recall", owner=1, controller=1,
-        zone=Zone.STACK, types=["Instant"],
-        oracle_text="Target player draws three cards.",
-    )
+    spell = canonical_card('Ancestral Recall', id='ancestral', owner=1, controller=1, zone=Zone.STACK)
     state.cards[spell.id] = spell
     add_to_stack(state, spell.id, 1, spell.name, "draw_cards", {"target_player": 1, "amount": 3})
     before = len(state.players[1].hand)
@@ -256,11 +229,7 @@ def test_dredge_choices_preserve_draw_replacement_context_across_pause() -> None
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     _thought_reflection(state, "reflection")
-    dredger = CardInstance(
-        id="stinkweed", name="Stinkweed Imp", owner=1, controller=1,
-        zone=Zone.GRAVEYARD, types=["Creature"],
-        oracle_text="Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
-    )
+    dredger = canonical_card('Stinkweed Imp', id='stinkweed', owner=1, controller=1, zone=Zone.GRAVEYARD)
     state.cards[dredger.id] = dredger
     state.players[1].graveyard.append(dredger.id)
     before = len(state.players[1].hand)
@@ -282,11 +251,7 @@ def test_human_draw_replacement_choice_can_select_dredge_or_doubling() -> None:
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
     _thought_reflection(state, "reflection")
-    dredger = CardInstance(
-        id="stinkweed", name="Stinkweed Imp", owner=1, controller=1,
-        zone=Zone.GRAVEYARD, types=["Creature"],
-        oracle_text="Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
-    )
+    dredger = canonical_card('Stinkweed Imp', id='stinkweed', owner=1, controller=1, zone=Zone.GRAVEYARD)
     state.cards[dredger.id] = dredger
     state.players[1].graveyard.append(dredger.id)
     before = len(state.players[1].hand)
@@ -343,7 +308,7 @@ def test_http_draw_step_replacement_choice_resumes() -> None:
     _thought_reflection(state, "reflection-two")
     RulesEngine().next_step(state)
     assert state.pending_replacement_choice is not None
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry("Island", 60)]
     match = MatchController(
         state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={},
         mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck},
@@ -374,15 +339,7 @@ def test_skullcrack_style_turn_restrictions_apply_and_expire_at_cleanup() -> Non
     state = _state()
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    spell = CardInstance(
-        id="skullcrack-style",
-        name="Skullcrack",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Instant"],
-        oracle_text="Skullcrack deals 3 damage to target player. Players can't gain life this turn. Damage can't be prevented this turn.",
-    )
+    spell = canonical_card('Skullcrack', id='skullcrack-style', owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1, {"target_player": 2})
     assert spec.effect.key == "effect_sequence"
@@ -1105,15 +1062,7 @@ def test_destroy_permanent_puts_stolen_creature_into_its_owners_graveyard() -> N
 
 def test_destroy_permanent_respects_die_to_exile_replacement() -> None:
     state = _state()
-    replacement = CardInstance(
-        id="rep",
-        name="Rest in Peace",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Enchantment"],
-        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
-    )
+    replacement = canonical_card('Rest in Peace', id='rep', owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[replacement.id] = replacement
     state.players[1].battlefield.append(replacement.id)
     cid = state.players[1].hand[0]
@@ -1159,15 +1108,7 @@ def test_destroy_permanent_respects_nontoken_die_replacement_variant() -> None:
 
 def test_destroy_permanent_respects_rest_in_peace_for_artifact() -> None:
     state = _state()
-    replacement = CardInstance(
-        id="rep",
-        name="Rest in Peace",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Enchantment"],
-        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
-    )
+    replacement = canonical_card('Rest in Peace', id='rep', owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[replacement.id] = replacement
     state.players[1].battlefield.append(replacement.id)
     cid = state.players[1].hand[0]

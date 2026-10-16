@@ -1,0 +1,29 @@
+{
+  "objects": {
+    "Ancestral Recall": {
+      "completed_utc": "2026-10-16T13:32:42Z",
+      "file": "ancestral-recall.json",
+      "full_unmodified_response": true,
+      "headers_sha256": "a108fd1853bd4cf06ffb675e647531bc77b4dd4f341adb1b9db312b4943253f2",
+      "http_status": 200,
+      "id": "2398892d-28e9-4009-81ec-0d544af79d2b",
+      "oracle_id": "550c74d4-1fcb-406a-b02a-639a760a4380",
+      "sha256": "8e333c217d764d4ea65cab1ce7bffab83a9fbbf926a69dffbebe3f9aaed2a01d",
+      "started_utc": "2026-10-16T13:32:36Z",
+      "url": "https://api.scryfall.com/cards/named?exact=Ancestral%20Recall"
+    },
+    "Teferi's Ageless Insight": {
+      "completed_utc": "2026-10-16T13:32:43Z",
+      "file": "teferis-ageless-insight.json",
+      "full_unmodified_response": true,
+      "headers_sha256": "1f33b46d08619740041d3f24e9d826352e942f32c6bcdb6907fa4269382286e7",
+      "http_status": 200,
+      "id": "b1a32b7c-9f26-4504-9f8d-379164d69346",
+      "oracle_id": "1c9e1f75-73f0-4846-b53f-458a0984b1bb",
+      "sha256": "0735494e12e7204fe5981ce6571dbb75bd07cc21a956f15ed9817465e6ce6bee",
+      "started_utc": "2026-10-16T13:32:42Z",
+      "url": "https://api.scryfall.com/cards/named?exact=Teferi%27s%20Ageless%20Insight"
+    }
+  },
+  "scope": "exact2 official public intake before offline tests; no rulings/images/retries/redirects"
+}

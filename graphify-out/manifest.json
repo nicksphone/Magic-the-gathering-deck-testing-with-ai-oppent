@@ -4896,9 +4896,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_prevention_replacement_edges.py": {
-    "mtime": 1792033175.6856773,
-    "seen": 1792034402.3572774,
-    "ast_hash": "3c6c266348afe7b16db2ddbd76af490a",
+    "mtime": 1792162510.6289282,
+    "seen": 1792162704.8705149,
+    "ast_hash": "60bfc78e37d9d2ef7d1dc201f25d451c",
     "semantic_hash": ""
   },
   "backend/tests/test_printed_suppression_query_reuse.py": {
@@ -6870,9 +6870,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-09-09-ai-knowledge-base.md": {
-    "mtime": 1792161301.0458927,
-    "seen": 1792161448.5957334,
-    "ast_hash": "ae39b4a2661e60db1d7de43c4d5e29c6",
+    "mtime": 1792162584.516692,
+    "seen": 1792162704.8718657,
+    "ast_hash": "46db81762a8a16adf8cb4d928f348aff",
     "semantic_hash": ""
   },
   "docs/plans/casting-trigger-repair-batch.md": {
@@ -20247,6 +20247,48 @@
     "mtime": 1792161301.0448928,
     "seen": 1792161448.5957694,
     "ast_hash": "2676e3e4aebd329b6618cceeaf21add1",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/prevention_replacement_canonical_fb531/PROVENANCE.json": {
+    "mtime": 1792162510.6289282,
+    "seen": 1792162704.8688378,
+    "ast_hash": "eadd2952fabca7d2620dbf5ddcb05641",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/prevention_replacement_canonical_fb531/SOURCES.json": {
+    "mtime": 1792162510.6289282,
+    "seen": 1792162704.8688405,
+    "ast_hash": "9bdea946bb031d1758c9ce0d009fe2d8",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/prevention_replacement_canonical_fb531/ancestral-recall.json": {
+    "mtime": 1792162510.6289282,
+    "seen": 1792162704.8688421,
+    "ast_hash": "fe5ac3da3081e675a79cfe05e009cef4",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/prevention_replacement_canonical_fb531/teferis-ageless-insight.json": {
+    "mtime": 1792162510.6289282,
+    "seen": 1792162704.8688438,
+    "ast_hash": "e8ffe088650aae4368093fa1777a4ebc",
+    "semantic_hash": ""
+  },
+  "backend/tests/prevention_replacement_canonical_fb531.py": {
+    "mtime": 1792162510.6289282,
+    "seen": 1792162704.8692343,
+    "ast_hash": "335edcbf8a00bf4ee85a7ee192d205f3",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_prevention_replacement_fixture_fidelity_fb531.py": {
+    "mtime": 1792162510.6289282,
+    "seen": 1792162704.8705165,
+    "ast_hash": "ffdc8637e5318d25f014a5c4585df11b",
+    "semantic_hash": ""
+  },
+  "docs/testing/prevention-replacement-canonical-fb531.md": {
+    "mtime": 1792162510.9199233,
+    "seen": 1792162704.8727882,
+    "ast_hash": "081c7324eeab869f2e9f2f4ce8175f58",
     "semantic_hash": ""
   }
 }

@@ -10,6 +10,13 @@ this component does not certify the entire backend or all card families.
 UI/browser qualification proceeds in parallel and is not Phase 1 signoff. See
 [RAW occurrence evidence](../testing/activated-raw-occurrence.md).
 
+A separate current-code prevention/replacement fixture migration passes both
+whole modules, 59 ordinary cases including real HTTP startup and persistence.
+All 43 original names and 155 assertions remain; eight named positive families
+now use complete official card data. This is not an aggregate full-suite result
+or a waiver for remaining noncanonical protocols. See
+[fixture evidence](../testing/prevention-replacement-canonical-fb531.md).
+
 ## October 13 Combined Block And Runner Checkpoint
 
 One fresh 41-whole-module composition passes 775 ordinary cases (278.08s),
