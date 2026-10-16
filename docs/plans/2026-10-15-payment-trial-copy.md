@@ -225,3 +225,32 @@ High payment-plan call counts and overlapping cumulative times alone do not
 prove reusable inputs; mutable postconditions and shared search-node budgets
 must not be memoized away. No further cache or search change is authorized by
 the rejected measurements themselves.
+
+## Rejected Atomic String-List Spike
+
+A later helper-only experiment adds an exact-string-list bulk-copy branch,
+retaining memo overrides, custom-memo fallback and the registered destination
+list. It does not change the root copier, histories, search, decisions or caps.
+The five-whole-module semantic/mechanism declaration passes 77 cases, including
+65 unchanged controls. Its earlier one-case RED observes the missing bulk-copy
+mechanism; it is not a gameplay-correctness failure or speed measurement.
+
+One unprofiled batch then performs 60 whole-state copies of the existing public
+hydrated 120-card fixture, with every knowledge snapshot populated: four
+warmups, 20 randomized counterbalanced baseline/candidate pairs and eight
+interleaved baseline/baseline controls. Complete supported values, mutable
+topology, histories, RNG, source preservation and sibling isolation are checked.
+The measured paired median difference is about 0.90% wall and 0.91% CPU, with
+only ten of twenty positive pairs; baseline-control variation reaches 13.27%.
+The preregistered material-gain/noise criteria fail. The spike is rejected,
+without tuning, a timing repeat, product integration or native requalification.
+
+Private immutable evidence is under
+`diagnostics/ci/atomic-field-copy-cdba-REJECTED-20261016-CnenbQbP/` on NFS.
+This does not certify arbitrary root memo/custom-hook behavior or improve the
+incomplete matrix. The next useful diagnostic requires the complete input of
+an actual late payment copy, not another guessed initial-state optimization.
+Any such capture needs a separately reviewed bounded codec, exact historical
+source/runtime, private artifact accounting, unchanged original limits and
+fresh owned-process/lease qualification. No execution is authorized by this
+design note, and a captured copy input would not establish full-chooser replay.

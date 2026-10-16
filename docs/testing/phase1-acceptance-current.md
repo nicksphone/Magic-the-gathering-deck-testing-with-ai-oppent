@@ -168,6 +168,19 @@ literal handwritten-data scope. See [the exact media correction](current-8083-ba
 [Warmaster](canonical-tribal-entry-fixtures.md) and
 [Nissa](task13-ability-model-nissa-fixture-36ce.md).
 
+The separate [Sheoldred draw-fixture correction](canonical-sheoldred-draw-fixtures.md)
+then passes all 16 cases in four whole modules on a fresh parent copy in
+3.07 seconds. It preserves both original names, five assertions and direct
+event/resolution operands while replacing the incomplete named source with
+complete pinned facts. This trusted synthetic pose is not a paid-cast or
+actual-draw certificate. No production or shared helper changes.
+
+The exact published `cdba5196` also completes its configured generic browser
+flow, with independently matched original stages and source assertion sites.
+[That result](current-cdba-browser-ci.md) remains separate from this later
+fixture component, the still-running backend attempt, sandboxed vendor/native
+Firefox acceptance and the unresolved literal test-data scope.
+
 The ingestion module's positive Bolt, Island, Grizzly Bears and Delver fixtures
 now load complete pinned official objects instead of assembling card metadata.
 All 20 existing tests and 88 assertions remain; two expected operands now use

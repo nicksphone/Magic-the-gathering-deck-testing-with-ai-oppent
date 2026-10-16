@@ -4044,9 +4044,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_draw_triggers_no_recursive_draw.py": {
-    "mtime": 1792033175.6526778,
-    "seen": 1792034402.356757,
-    "ast_hash": "9004b0bd7f8dfd97f818ea361c85db1a",
+    "mtime": 1792112377.9456282,
+    "seen": 1792114136.3242295,
+    "ast_hash": "fc4cbe77ccb7aa69181c9cecca260ef2",
     "semantic_hash": ""
   },
   "backend/tests/test_dynamic_activation_modifiers.py": {
@@ -19395,6 +19395,18 @@
     "mtime": 1792110598.3665051,
     "seen": 1792111086.1517704,
     "ast_hash": "4160b65d257649e218c7733ad829b04e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_sheoldred_draw_fixture_fidelity.py": {
+    "mtime": 1792112377.9456282,
+    "seen": 1792114136.3250625,
+    "ast_hash": "4a50f2bae1eebcbb63411db11c34fb64",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-sheoldred-draw-fixtures.md": {
+    "mtime": 1792112377.946628,
+    "seen": 1792114136.3264034,
+    "ast_hash": "b90164dc3c2170c94a8d81bfbd6f3c2d",
     "semantic_hash": ""
   }
 }

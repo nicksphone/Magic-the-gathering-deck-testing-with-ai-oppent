@@ -1,5 +1,16 @@
 # Release Acceptance Status
 
+## October 16 Generic Browser Checkpoint
+
+Exact `cdba5196` completes frontend and the configured generic browser job.
+Independent log/source reconciliation verifies all 45 ordered stages, 501
+PASS banners and preservation of 919 original scenario assertion call sites.
+These are different counts, not interchangeable test totals. The backend job
+remains a separate running acceptance attempt at this review. The generic
+job's existing no-sandbox mode and zero configured native Firefox input flows
+do not qualify the sandboxed vendor matrix or all browsers. Historical failure
+causes remain unknown. See [the exact evidence](current-cdba-browser-ci.md).
+
 ## Published Backend And Latest Browser
 
 Exact `b443db8a` completes the whole CI workflow. Independently reconciled
