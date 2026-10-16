@@ -5886,9 +5886,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1792146991.1880589,
-    "seen": 1792147137.4727404,
-    "ast_hash": "6be084cf3ebe0e9406546d077d086c86",
+    "mtime": 1792157772.7245932,
+    "seen": 1792157981.92048,
+    "ast_hash": "b86cc68398a1dd3ef8eed199a5322d99",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -5898,9 +5898,9 @@
     "semantic_hash": ""
   },
   "frontend/src/api/client.ts": {
-    "mtime": 1792033175.8106751,
-    "seen": 1792034402.35788,
-    "ast_hash": "698fd7e10c6da21e908ee2fceaa3f020",
+    "mtime": 1792157772.7245932,
+    "seen": 1792157981.9204848,
+    "ast_hash": "4b6c37b63fac5d7b3a204fc68f6e3048",
     "semantic_hash": ""
   },
   "frontend/src/api/errors.ts": {
@@ -18852,9 +18852,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-diagnostics.mjs": {
-    "mtime": 1792131556.7934873,
-    "seen": 1792132873.0036058,
-    "ast_hash": "b40c945d778f555dab5fc424d9610b8b",
+    "mtime": 1792157772.7245932,
+    "seen": 1792157981.9207153,
+    "ast_hash": "c7efca87f5588d95ff03c56418d33aa9",
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-diagnostics.test.mjs": {
@@ -19878,9 +19878,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/prepare-development-frontend.mjs": {
-    "mtime": 1792148960.8213396,
-    "seen": 1792149081.6323662,
-    "ast_hash": "6bdddde46022f7291c955e6f7e20b6df",
+    "mtime": 1792157772.7245932,
+    "seen": 1792157981.920871,
+    "ast_hash": "1d414111d6a1ca92c14a7c0ed0f86ac5",
     "semantic_hash": ""
   },
   "docs/testing/development-browser-runtime.md": {
@@ -20217,6 +20217,18 @@
     "mtime": 1792156586.112742,
     "seen": 1792156832.2023163,
     "ast_hash": "f07f0cc658b34de268af4ea0a2338596",
+    "semantic_hash": ""
+  },
+  "frontend/src/api/request-signal-diagnostics.ts": {
+    "mtime": 1792157772.7245932,
+    "seen": 1792157981.920492,
+    "ast_hash": "1fdacaf1c00d20f7a53f39a4583c1752",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-request-signal-diagnostics.test.mjs": {
+    "mtime": 1792157772.7245932,
+    "seen": 1792157981.9207022,
+    "ast_hash": "d611f36fce6e3f5811d4794b33df86e0",
     "semantic_hash": ""
   }
 }

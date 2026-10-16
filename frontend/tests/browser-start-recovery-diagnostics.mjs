@@ -25,6 +25,10 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
   const events = [], requests = new Map(), frames = new Map(), loaders = new Map();
   const bidiContexts = new Map(), bidiRealms = new Map();
   const sockets = new Map();
+  const signalContexts = new Map(), signalRecords = [];
+  let signalContextsSeen = 0, signalContextOverflow = 0, signalInvalid = 0,
+    signalUnknownContext = 0, signalOmitted = 0, signalSeen = false;
+  const signalClasses = new Set(['TimeoutError', 'AbortError', 'TypeError', 'Error', 'other']);
   const reasons = new Set(['formSubmissionGet', 'formSubmissionPost', 'httpHeaderRefresh', 'scriptInitiated',
     'metaTagRefresh', 'pageBlockInterstitial', 'reload', 'anchorClick']);
   const navigationTypes = new Set(['reload', 'reloadBypassingCache', 'restore', 'restoreWithPost',
@@ -65,6 +69,48 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
   }
   function observe(message) {
     const { method, params = {} } = message;
+    if (method === 'Runtime.executionContextCreated') {
+      const c = params.context;
+      if (Number.isSafeInteger(c?.id) && signalContexts.has(c.id)) {
+        signalContexts.delete(c.id); signalInvalid = Math.min(65535, signalInvalid + 1); return;
+      }
+      if (!Number.isSafeInteger(c?.id) || c.id <= 0 || c.origin !== front || c.auxData?.isDefault !== true
+        || typeof c.auxData.frameId !== 'string' || !c.auxData.frameId || c.auxData.frameId.length > 256) return;
+      if (signalContextsSeen >= 16) { signalContextOverflow = Math.min(65535, signalContextOverflow + 1); return; }
+      signalContexts.set(c.id, {ordinal: ++signalContextsSeen, frame: c.auxData.frameId, lastRecord: 0});
+      return;
+    }
+    if (method === 'Runtime.executionContextDestroyed') { signalContexts.delete(params.executionContextId); return; }
+    if (method === 'Runtime.consoleAPICalled') {
+      const args = params.args;
+      if (!Array.isArray(args) || args[0]?.type !== 'string' || args[0].value !== 'MTG_REQUEST_SIGNAL_DIAGNOSTIC') return;
+      signalSeen = true;
+      const context = signalContexts.get(params.executionContextId);
+      if (!context || !frames.has(context.frame)) { signalUnknownContext = Math.min(65535, signalUnknownContext + 1); return; }
+      if (signalRecords.length >= 16) { signalOmitted = Math.min(65535, signalOmitted + 1); return; }
+      let data;
+      try {
+        if (params.type !== 'debug' || args.length !== 2 || args[1]?.type !== 'string'
+          || typeof args[1].value !== 'string' || new TextEncoder().encode(args[1].value).byteLength > 1024) throw Error();
+        data = JSON.parse(args[1].value);
+        const keys = ['phase', 'ordinal', 'route', 'method', 'elapsedMs', 'signalAvailable', 'initialAborted',
+          'signalAborted', 'signalReasonClass', 'errorClass', 'atRecordCap'];
+        if (!data || typeof data !== 'object' || Array.isArray(data) || Object.keys(data).length !== keys.length
+          || Object.keys(data).some(key => !keys.includes(key)) || data.phase !== 'fetch-rejected'
+          || !Number.isInteger(data.ordinal) || data.ordinal < 1 || data.ordinal > 16 || data.ordinal <= context.lastRecord
+          || !['start', 'legal-moves', 'action', 'other'].includes(data.route) || !['GET', 'POST', 'other'].includes(data.method)
+          || !(data.elapsedMs === null || Number.isInteger(data.elapsedMs) && data.elapsedMs >= 0 && data.elapsedMs <= 30000)
+          || typeof data.signalAvailable !== 'boolean' || ![true, false, null].includes(data.initialAborted)
+          || !(data.signalAvailable ? typeof data.signalAborted === 'boolean' : data.signalAborted === null)
+          || data.initialAborted === true && data.signalAborted === false
+          || !(data.signalAborted === true ? signalClasses.has(data.signalReasonClass) : data.signalReasonClass === null)
+          || !signalClasses.has(data.errorClass) || data.atRecordCap !== (data.ordinal === 16)) throw Error();
+      } catch { signalInvalid = Math.min(65535, signalInvalid + 1); return; }
+      context.lastRecord = data.ordinal;
+      const {ordinal: diagnosticOrdinal, ...details} = data;
+      signalRecords.push({...details, diagnosticOrdinal, frameOrdinal: frames.get(context.frame), contextOrdinal: context.ordinal});
+      return;
+    }
     if (message.protocol === 'webdriver-bidi' && message.type === 'event' &&
         ['script.realmCreated', 'script.realmDestroyed'].includes(method)) {
       if (method === 'script.realmCreated' && typeof params.type === 'string' && params.type !== 'window') return;
@@ -136,7 +182,7 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
       record({event: 'vite-message', socketOrdinal: socket.socketOrdinal, timestamp: numeric(params.timestamp), messageType: payload.type});
       return;
     }
-    if (method === 'Runtime.executionContextsCleared') { record({ event: 'contexts-cleared' }); return; }
+    if (method === 'Runtime.executionContextsCleared') { signalContexts.clear(); record({ event: 'contexts-cleared' }); return; }
     if (method === 'Page.frameNavigated') {
       if (!params.frame || typeof params.frame.id !== 'string' || !params.frame.id || params.frame.id.length > 256) { invalidEvents++; return; }
       const parent = params.frame.parentId;
@@ -204,7 +250,12 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
     snapshot() { return { events: structuredClone(events), omittedEvents, unmatchedEvents, invalidEvents,
       requestOverflow, correlationOverflow, unmatchedInitiators, unknownCategories,
       webSocketOverflow, ignoredWebSockets,
-      outstandingRequests: [...requests.values()].filter(request => request.active).length }; },
+      outstandingRequests: [...requests.values()].filter(request => request.active).length,
+      ...(signalSeen ? {requestSignalAttribution: {status: signalRecords.length ? 'observed-partial' : 'unavailable',
+        correlation: 'not-joined-to-native-network-id', records: structuredClone(signalRecords),
+        atRecordCap: signalRecords.length >= 16 || signalRecords.some(row => row.atRecordCap),
+        contextOverflow: signalContextOverflow, invalidRecords: signalInvalid,
+        unknownContext: signalUnknownContext, omittedRecords: signalOmitted}} : {}) }; },
   };
 }
 
