@@ -41,3 +41,33 @@ project NFS archive. Log SHA-256:
 `7f5e2bec3fd68fced630209d0052f01ec1675953b9c46717ba88992176795eb5`.
 Verified report SHA-256:
 `27a5567b55d095828ec594561946c6ec4492637afd2ae746363951182289d0c6`.
+
+## Separate Sandboxed Chrome And Brave Result
+
+The existing native workflow is subsequently dispatched once on the same exact
+`cdba5196` source: run `38835461011`, attempt 1. Brave job `116763479412`
+completes successfully at 01:58:46 UTC; Chrome job `116763479869` at
+01:59:03 UTC on October 16. Each vendor's own log independently contains all
+45 ordered launcher stages and 501 PASS banners, rather than inheriting the
+generic job's counts. Original program bounds and scenario assertions remain.
+
+Both vendors retain `MTG_BROWSER_NO_SANDBOX=0`, pass actual binary/runtime
+identity and DOM preflight, and report an enabled expected renderer sandbox.
+Brave reports the SUID first layer; Chrome reports Namespace, with PID/network
+namespaces and seccomp checks. This is browser-reported status, not per-renderer
+kernel attestation. Each preflight child exits zero, and each enclosing service
+reports exit zero with its control group empty. No local security settings or
+browser installations are changed by this remote qualification.
+
+Only the exact two native jobs' logs and allowlisted metadata artifacts are
+retrieved. Each artifact contains solely bounded `preflight.json` and
+`lifecycle.json`. Parent reconciliation matches their hashes and all five
+declared source bindings to exact published Git blobs. Private immutable
+evidence is under
+`diagnostics/ci/native-cdba-metadata-qualified-20261016-SQlkDGQC/`; report SHA-256:
+`279d7d053fe51e7534550adda4396ccaebb7e0c3268cfabed52255119173e2cb`.
+
+This qualifies the existing full native Chrome/Brave browser cohort on cdba,
+not Firefox, new `uiInput` feature branches, the later fixture-only source,
+whole-backend CI, LAN/trust or the full release. Prior intermittent failure
+causes remain unknown. The generic job's no-sandbox result stays separate.

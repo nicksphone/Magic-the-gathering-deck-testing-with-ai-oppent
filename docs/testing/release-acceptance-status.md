@@ -1,5 +1,16 @@
 # Release Acceptance Status
 
+## October 16 Sandboxed Vendor Checkpoint
+
+Exact `cdba5196` subsequently completes both native Linux Chrome and Brave
+jobs. Each independently matches 45 ordered stages and 501 PASS banners with
+the sandbox enabled, actual source/runtime preflight and an empty enclosing
+control group after exit zero. Parent reconciliation verifies both bounded
+metadata artifacts and their source hashes. The same-source generic browser
+success below remains a distinct no-sandbox result. Backend CI is still
+pending; Firefox, LAN/trust, AI strength and full release remain open. See
+[the exact vendor evidence and limits](current-cdba-browser-ci.md#separate-sandboxed-chrome-and-brave-result).
+
 ## October 16 Generic Browser Checkpoint
 
 Exact `cdba5196` completes frontend and the configured generic browser job.

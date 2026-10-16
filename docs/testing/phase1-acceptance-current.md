@@ -181,6 +181,13 @@ flow, with independently matched original stages and source assertion sites.
 fixture component, the still-running backend attempt, sandboxed vendor/native
 Firefox acceptance and the unresolved literal test-data scope.
 
+The separate native workflow subsequently succeeds for Linux Chrome and Brave
+on that same published cdba source. Both retain enabled sandboxes and complete
+the original launcher with independently matched 45 stages and 501 banners;
+their service receipts prove exit zero and empty control groups. This closes
+that source's vendor-browser acceptance, not the later fixture component,
+Firefox, the pending backend result or the unsigned Phase 1 requirements.
+
 The ingestion module's positive Bolt, Island, Grizzly Bears and Delver fixtures
 now load complete pinned official objects instead of assembling card metadata.
 All 20 existing tests and 88 assertions remain; two expected operands now use
