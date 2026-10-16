@@ -103,3 +103,12 @@ fails its page-closure observation. The other three transport modes are not
 reached; the initial request-cancellation cause remains unknown. Its saved
 failure does not prevent the original suite from running, which independently
 reaches the missing fixture page described above.
+
+The exact follow-up `bf62c2b2` browser job `116944954950` gets past those fixture
+pages. It reaches 465 original PASS console lines, including accepted-response
+reconciliation, real backend restart, lost-start retry and reload recovery.
+It then fails the unchanged manual recovery wait at
+`browser-start-recovery.mjs:121`. The third recovery POST actually returns 200
+and finishes before follow-up requests are canceled; the cause is still
+unproven. This is concrete progress beyond the missing-page failure, not a
+complete 45-stage/501-banner or browser-vendor acceptance claim.

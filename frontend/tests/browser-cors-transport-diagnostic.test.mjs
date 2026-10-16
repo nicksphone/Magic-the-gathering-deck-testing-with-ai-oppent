@@ -110,13 +110,23 @@ test('native Network observer records only the owned action request and typed fa
 function protocol(options = {}) {
   let clock = 0, serial = 0, state, browserState;
   const calls = [], browsers = [], signals = [];
+  const closeSignals = [], closeSleeps = [];
+  let closing = false, closeReads = 0;
   const context = {backend: 'http://127.0.0.1:10199', frontend: 'http://127.0.0.1:15173', usedIds: new Set(),
-    now: () => clock, sleep: async ms => { clock += ms; }, key: () => 'PRIVATE_KEY',
+    now: () => clock, sleep: async ms => { if (closing) closeSleeps.push(ms); clock += ms; }, key: () => 'PRIVATE_KEY',
     async request(location, init = {}) {
       calls.push(location.endsWith('/fixture') ? 'fixture' : location.endsWith('/json/list') ? 'target-list' : 'state');
       if (options.httpFailure) throw new TypeError('PRIVATE_URL_BODY');
       if (location.endsWith('/json/list')) {
-        return {ok: !options.closeHTTPFailure, json: async () => options.targetStillPresent ? [{id: `PRIVATE_TARGET_${serial}`}]: []};
+        closeSignals.push(init.signal); closeReads++;
+        clock += options.closeReadElapsed ?? 0;
+        if (options.closeReadFailure) throw new TypeError('PRIVATE_CLOSE_READ');
+        return {ok: !options.closeHTTPFailure, status: options.closeHTTPFailure ? 503 : 200, json: async () => {
+          clock += options.closeBodyElapsed ?? 0;
+          if (options.closeJSONFailure) throw new SyntaxError('PRIVATE_JSON');
+          if (Object.hasOwn(options, 'listShape')) return options.listShape;
+          return options.targetStillPresent || closeReads <= (options.presentReads ?? 0) ? [{id: `PRIVATE_TARGET_${serial}`}] : [];
+        }};
       }
       if (location.endsWith('/fixture')) {
         state = {id: `PRIVATE_FIXTURE_${++serial}`, active_player: options.invalidPose ? 1 : 2, priority_player: 2,
@@ -157,11 +167,11 @@ function protocol(options = {}) {
           if (options.prematureFulfillment) return {state: 'fulfilled', status: 200, errorClass: null};
           return structuredClone(browserState);
         },
-        async close() { calls.push('close'); if (options.closeFailure) throw new Error('PRIVATE_CLOSE'); },
+        async close() { calls.push('close'); closing = true; clock += options.closeElapsed ?? 0; if (options.closeFailure) throw new Error('PRIVATE_CLOSE'); },
       };
       browsers.push(browser); return browser;
     }};
-  return {context, calls, browsers, signals};
+  return {context, calls, browsers, signals, closeSignals, closeSleeps};
 }
 test('protocol baseline must prove the actual revision and single land transition', async () => {
   const f = protocol(); const row = await runCase('baseline', f.context);
@@ -324,4 +334,108 @@ test('actual Bash native original failure retains its strict exit and cleanup', 
   const result = actualLauncherFlow(143, 23, 'chrome');
   assert.equal(result.status, 23, result.stderr);
   assert.deepEqual(result.events, ['suite-start', 'cleanup:23']);
+});
+
+test('closure observes immediate presence then actual absence after exactly one close', async () => {
+  const f = protocol({presentReads: 2}); const row = await runCase('baseline', f.context);
+  assert.equal(row.baselineValid, true); assert.equal(row.infrastructureError, false);
+  assert.equal(row.pageClosed, true); assert.equal(row.closureReason, 'target-absent');
+  assert.equal(row.closurePolls, 3); assert.equal(row.closureReadHTTPStatus, 200);
+  assert.equal(row.closureListCount, 0); assert.equal(row.closureOwnTargetPresent, false);
+  assert.equal(row.closureElapsedMs, 40);
+  assert.equal(f.calls.filter(x => x === 'close').length, 1);
+  assert.deepEqual(f.closeSleeps, [20, 20]);
+});
+test('closure permanent presence is strict failure at the finite 100-read cap', async () => {
+  const f = protocol({targetStillPresent: true}); const row = await runCase('baseline', f.context);
+  assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+  assert.equal(row.closureReason, 'target-still-present'); assert.equal(row.closurePolls, 100);
+  assert.equal(row.closureListCount, 1); assert.equal(row.closureOwnTargetPresent, true);
+  assert.equal(f.calls.filter(x => x === 'close').length, 1);
+  assert.equal(f.calls.filter(x => x === 'target-list').length, 100);
+  assert.ok(f.closeSleeps.every(ms => ms > 0 && ms <= 20));
+  assert.ok(row.closureElapsedMs < 15000);
+});
+test('closure rejects malformed list or target identities without retry or private data', async () => {
+  for (const listShape of [null, {}, [null], [{id: ''}], [{id: 1}], [{id: 'x'.repeat(257)}],
+    [{id: 'PRIVATE_DUP'}, {id: 'PRIVATE_DUP'}], Array.from({length: 17}, (_, i) => ({id: String(i)}))]) {
+    const f = protocol({listShape}); const row = await runCase('baseline', f.context);
+    assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+    assert.equal(row.closureReason, 'list-shape'); assert.equal(row.closurePolls, 1);
+    assert.equal(row.closureListCount, null); assert.equal(row.closureOwnTargetPresent, null);
+    assert.doesNotMatch(JSON.stringify(row), /PRIVATE_|https?:/);
+  }
+});
+test('closure failed HTTP is fatal after one read with actual finite status', async () => {
+  const f = protocol({closeHTTPFailure: true}); const row = await runCase('baseline', f.context);
+  assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+  assert.equal(row.closureReason, 'list-http'); assert.equal(row.closureReadHTTPStatus, 503);
+  assert.equal(row.closureListCount, null); assert.equal(row.closurePolls, 1);
+  assert.equal(f.closeSleeps.length, 0);
+});
+test('closure close-call time consumes the same deadline before any observation', async () => {
+  const f = protocol({closeElapsed: 14990, targetStillPresent: true}); const row = await runCase('baseline', f.context);
+  assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+  assert.equal(row.closureReason, 'deadline-exhausted'); assert.equal(row.closureElapsedMs, 15000);
+  assert.equal(row.closurePolls, 1); assert.deepEqual(f.closeSleeps, [10]);
+  assert.equal(f.calls.filter(x => x === 'close').length, 1);
+});
+test('closure zero remaining time cannot issue a read or certify absence', async () => {
+  const f = protocol({closeElapsed: 15000}); const row = await runCase('baseline', f.context);
+  assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+  assert.equal(row.closureReason, 'deadline-exhausted'); assert.equal(row.closurePolls, 0);
+  assert.equal(row.closureReadHTTPStatus, null); assert.equal(row.closureOwnTargetPresent, null);
+  assert.equal(f.closeSignals.length, 0);
+});
+test('closure rejection retains fatal classification with no debugger reads or reclose', async () => {
+  const f = protocol({closeFailure: true}); const row = await runCase('baseline', f.context);
+  assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+  assert.equal(row.closureReason, 'close-rejected'); assert.equal(row.closurePolls, 0);
+  assert.equal(f.calls.filter(x => x === 'close').length, 1);
+  assert.doesNotMatch(JSON.stringify(row), /PRIVATE_|https?:/);
+});
+test('closure read and JSON errors remain fatal without retry and expose only typed fields', async () => {
+  for (const option of ['closeReadFailure', 'closeJSONFailure']) {
+    const f = protocol({[option]: true}); const row = await runCase('baseline', f.context);
+    assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+    assert.equal(row.closureReason, 'list-read-failed'); assert.equal(row.closurePolls, 1);
+    assert.equal(row.errorClass, option === 'closeReadFailure' ? 'TypeError' : 'SyntaxError');
+    assert.doesNotMatch(JSON.stringify(row), /PRIVATE_|https?:/);
+  }
+});
+test('closure cannot accept an absent result whose request or body exhausted the budget', async () => {
+  for (const option of ['closeReadElapsed', 'closeBodyElapsed']) {
+    const f = protocol({[option]: 15001}); const row = await runCase('baseline', f.context);
+    assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+    assert.equal(row.closureReason, 'deadline-exhausted'); assert.equal(row.closurePolls, 1);
+    assert.equal(row.closureElapsedMs, 15000); assert.equal(row.closureOwnTargetPresent, null);
+  }
+});
+test('closure read AbortSignals consume only remaining close budget, never a fresh 15 seconds', async () => {
+  const timeout = AbortSignal.timeout, values = [];
+  AbortSignal.timeout = ms => { values.push(ms); return timeout(ms); };
+  try {
+    const f = protocol({closeElapsed: 14000, presentReads: 1}); const row = await runCase('baseline', f.context);
+    assert.equal(row.pageClosed, true); assert.equal(row.closurePolls, 2);
+    assert.deepEqual(values.slice(-2), [1000, 980]);
+    assert.ok(f.closeSignals.every(signal => signal instanceof AbortSignal));
+  } finally { AbortSignal.timeout = timeout; }
+});
+test('closure absence cannot mask rejected disable or missing actual target identity', async () => {
+  const rejected = protocol({failCommand: 'Fetch.disable'});
+  const row = await runCase('baseline', rejected.context);
+  assert.equal(row.infrastructureError, true); assert.equal(row.fetchDisabled, false);
+  assert.equal(row.pageClosed, true); assert.equal(row.closureReason, 'target-absent');
+  const missing = protocol({missingTarget: true}); const other = await runCase('baseline', missing.context);
+  assert.equal(other.infrastructureError, true); assert.equal(other.pageClosed, false);
+  assert.equal(other.closureReason, 'identity-unavailable'); assert.equal(other.closurePolls, 0);
+});
+test('closure expiry between loop check and read cannot admit a one-millisecond fresh request', async () => {
+  const f = protocol(), originalNow = f.context.now;
+  let closingReads = 0;
+  f.context.now = () => originalNow() + (f.calls.includes('close') && ++closingReads > 1 ? 15000 : 0);
+  const row = await runCase('baseline', f.context);
+  assert.equal(row.pageClosed, false); assert.equal(row.infrastructureError, true);
+  assert.equal(row.closureReason, 'deadline-exhausted'); assert.equal(row.closurePolls, 0);
+  assert.equal(f.closeSignals.length, 0);
 });

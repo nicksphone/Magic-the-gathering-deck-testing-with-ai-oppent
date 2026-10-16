@@ -4440,15 +4440,15 @@
     "semantic_hash": ""
   },
   "backend/tests/test_library_permissions.py": {
-    "mtime": 1792033175.6706777,
-    "seen": 1792034402.3570373,
-    "ast_hash": "b5f2282c5e9ddb97e8c3f492552cd5bb",
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.807559,
+    "ast_hash": "99dabb9ecacb513a02cfaa22c9d87303",
     "semantic_hash": ""
   },
   "backend/tests/test_library_search_rules.py": {
-    "mtime": 1792033175.6706777,
-    "seen": 1792034402.3570418,
-    "ast_hash": "7c9369b21c30e7b8e495ead7f20b5c3a",
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.807586,
+    "ast_hash": "bd2565fbc5f9f5e2f2f42e0cb1d8fd27",
     "semantic_hash": ""
   },
   "backend/tests/test_life_conversion.py": {
@@ -4572,9 +4572,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_look_top_select_hand.py": {
-    "mtime": 1792033175.6736774,
-    "seen": 1792034402.357086,
-    "ast_hash": "bc51a730f2b58ec9534f391c8fde66bf",
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.8076391,
+    "ast_hash": "bd8559b3cdbd2a8ece9aa35a6eb23e8e",
     "semantic_hash": ""
   },
   "backend/tests/test_loyalty_counter_costs.py": {
@@ -5406,21 +5406,21 @@
     "semantic_hash": ""
   },
   "backend/tests/test_top_card_choices.py": {
-    "mtime": 1792033175.709677,
-    "seen": 1792034402.3576632,
-    "ast_hash": "92cec26e6081841e9decf04faaecb7ee",
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.8083122,
+    "ast_hash": "4f4c877b531261b05ef70c364542eb74",
     "semantic_hash": ""
   },
   "backend/tests/test_topdeck_lands.py": {
-    "mtime": 1792033175.709677,
-    "seen": 1792034402.3576646,
-    "ast_hash": "21d1610a1c09c1f4adde4bf796fa3a6b",
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.8083136,
+    "ast_hash": "d3c091cfa76f0cbb633f547a8dcc598b",
     "semantic_hash": ""
   },
   "backend/tests/test_topdeck_reveal_creature.py": {
-    "mtime": 1792033175.709677,
-    "seen": 1792034402.357666,
-    "ast_hash": "8595515e8d3979d33d9dc0734d9149fd",
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.808315,
+    "ast_hash": "bf0a7bda05707e81947482b7746aedd6",
     "semantic_hash": ""
   },
   "backend/tests/test_training_canonical_cycling_audit.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792146578.2010403,
-    "seen": 1792147137.4742572,
-    "ast_hash": "d76ba84eb581b974a208ab5fbf8ba8e8",
+    "mtime": 1792151319.408951,
+    "seen": 1792151440.8101213,
+    "ast_hash": "d77f182dc15a5b97510da8098ff75120",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19884,9 +19884,9 @@
     "semantic_hash": ""
   },
   "docs/testing/development-browser-runtime.md": {
-    "mtime": 1792148921.563827,
-    "seen": 1792149081.6331143,
-    "ast_hash": "5570e51fd3e705730fd27a902ce645a0",
+    "mtime": 1792150922.8501492,
+    "seen": 1792151440.8097186,
+    "ast_hash": "ebb9ebe1cbf599527e11d81d3f5957ef",
     "semantic_hash": ""
   },
   "frontend/tests/fixtures/ci-development-runtime/probe.html": {
@@ -19968,21 +19968,171 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-cors-transport-diagnostic.mjs": {
-    "mtime": 1792146991.1880589,
-    "seen": 1792147137.4728496,
-    "ast_hash": "adb8101a25307b1ef121afee737e5b85",
+    "mtime": 1792150304.6557596,
+    "seen": 1792151440.808697,
+    "ast_hash": "25a569f5f821f6869870bea00e64d0cf",
     "semantic_hash": ""
   },
   "frontend/tests/browser-cors-transport-diagnostic.test.mjs": {
-    "mtime": 1792146991.1880589,
-    "seen": 1792147137.4728518,
-    "ast_hash": "d1dff5f47f52c561f52b92c759dd0c40",
+    "mtime": 1792150304.6557596,
+    "seen": 1792151440.808699,
+    "ast_hash": "f822ea60610f54f90ca0d81771a0b933",
     "semantic_hash": ""
   },
   "docs/testing/browser-cors-transport-diagnostic.md": {
-    "mtime": 1792147065.9137754,
-    "seen": 1792147137.4735527,
-    "ast_hash": "5a9bdd052ec2804ea5e3283a55d7e361",
+    "mtime": 1792150922.8501492,
+    "seen": 1792151440.809399,
+    "ast_hash": "4c5d42e2190b75631453919938b5c03e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_canonical_88/PROVENANCE.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.80595,
+    "ast_hash": "2e09fda37de6a3e0249a0b05d6498604",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_canonical_88/buried-alive-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.805953,
+    "ast_hash": "28dd19cfe3408101c25b632159c7e591",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_canonical_88/demonic-tutor-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059552,
+    "ast_hash": "a491dc540c8c89ed2998f02b6fce65e2",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_canonical_88/entomb-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059568,
+    "ast_hash": "0759a69b06bac79da0cadb69ae5bfa5e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_canonical_88/griselbrand-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059585,
+    "ast_hash": "9f1aac100aa2fb034f6627b9133f69b3",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_canonical_88/grizzly-bears-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059602,
+    "ast_hash": "10ba51a9ebd8ab555476faa195fc8a15",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_canonical_88/reanimate-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.805962,
+    "ast_hash": "81f9c79620b3c5d8432ecc8ad64dbfcd",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_canonical_88/thought-knot-seer-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059635,
+    "ast_hash": "3a639a4b8f5926a9199835d01d976dca",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_ranking_vectors/PROVENANCE.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059692,
+    "ast_hash": "d57fd5a5ed5e4800fe9b54758b439327",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_ranking_vectors/brindle-boar-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059707,
+    "ast_hash": "2454d2c93d61ab6f45e4251133af898d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_ranking_vectors/deathbloom-gardener-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059719,
+    "ast_hash": "c1a489af85156df32e47d7f3f4ed5438",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_ranking_vectors/divination-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059735,
+    "ast_hash": "aa5d7cac8b9af32858cc67dbbcdd4b21",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_ranking_vectors/explore-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059747,
+    "ast_hash": "3e99d1bb44693377b11f1207dda2b1bd",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_ranking_vectors/preordain-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059764,
+    "ast_hash": "58f082b6f6f13d6b00ba0f6f4e5b0e1b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_ranking_vectors/tidings-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059778,
+    "ast_hash": "5a8f3a62355b82f645ce77ad93a70be2",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/library_ranking_vectors/wayward-swordtooth-scryfall-raw.json": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8059793,
+    "ast_hash": "f4b1a8215da995071d6d9cf2cf151bfa",
+    "semantic_hash": ""
+  },
+  "backend/tests/library_canonical_fixtures.py": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.8064957,
+    "ast_hash": "7990a73d106749fa7bb2ea61c5c88c69",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_library_capture_family_fidelity.py": {
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.807548,
+    "ast_hash": "891a9ed0f4349ab1e6cc3625a162f95a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_library_fixture_fidelity.py": {
+    "mtime": 1792150286.6590376,
+    "seen": 1792151440.807555,
+    "ast_hash": "860b88d9f88e1a15f0908c9aff62b97d",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_library_mixed_birth_fidelity.py": {
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.8075566,
+    "ast_hash": "8f813427fa8515763097d5fa7d742314",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_library_ranking_vectors.py": {
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.8075604,
+    "ast_hash": "2305c4925d5c1436bf8005b124677ad6",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_library_residual_fixture_fidelity.py": {
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.807582,
+    "ast_hash": "391c0b30ec8318e1ca1ccfa9fee278c7",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_library_snapshot_birth_fidelity.py": {
+    "mtime": 1792150286.6600375,
+    "seen": 1792151440.8075876,
+    "ast_hash": "b74219788be85a0161e24fa8ce76903a",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-8d-hosted-backend.md": {
+    "mtime": 1792150687.5618176,
+    "seen": 1792151440.809632,
+    "ast_hash": "5617499ea21e4c47038b6abd24fd88b3",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-canonical-library-fixtures.md": {
+    "mtime": 1792151319.408951,
+    "seen": 1792151440.8103468,
+    "ast_hash": "5da497f2b45c077ffa6552e12c1f74d2",
     "semantic_hash": ""
   }
 }

@@ -97,6 +97,8 @@ function newRow(mode) {
     browserBeforeRelease: null, browserAfterRelease: null, browserFinal: null,
     releaseAttempted: false, releaseAccepted: false, infrastructureError: false, errorClass: null,
     overflow: false, fetchDisabled: false, callbacksDrained: false, pageClosed: false,
+    closureReason: 'not-started', closureReadHTTPStatus: null, closureListCount: null,
+    closureOwnTargetPresent: null, closurePolls: 0, closureElapsedMs: null,
     callbackPending: null, baselineValid: null, laterMutationNotRuledOut: true};
 }
 
@@ -215,19 +217,48 @@ export async function runCase(mode, {backend, frontend, usedIds,
       catch (error) { row.infrastructureError = true; row.errorClass ??= errorClass(error); }
       try { row.callbacksDrained = await capture.drain(); }
       catch (error) { row.infrastructureError = true; row.errorClass ??= errorClass(error); }
+      const closeStarted = now(), closeDeadline = closeStarted + 15000;
+      row.closureReason = 'close-rejected';
       try {
         await browser.close();
+        row.closureReason = 'identity-unavailable';
         if (!targetId) throw new Error('Diagnostic page identity unavailable');
-        const response = await request(`${browserOrigin}/json/list`, {signal: AbortSignal.timeout(15000)});
-        if (!response.ok) throw new Error('Diagnostic target closure read');
-        const targets = await response.json();
-        if (!Array.isArray(targets) || targets.length > 16
-          || targets.some(target => typeof target?.id !== 'string' || target.id === targetId)) {
+        row.closureReason = 'deadline-exhausted';
+        while (now() < closeDeadline && row.closurePolls < 100) {
+          const closeRemaining = closeDeadline - now();
+          if (closeRemaining <= 0) { row.closureReason = 'deadline-exhausted'; break; }
+          row.closurePolls++;
+          row.closureReason = 'list-read-failed';
+          const signal = AbortSignal.timeout(Math.ceil(closeRemaining));
+          const response = await request(`${browserOrigin}/json/list`, {signal});
+          row.closureReadHTTPStatus = Number.isInteger(response.status) && response.status >= 100 && response.status <= 599 ? response.status : null;
+          if (now() >= closeDeadline) { row.closureReason = 'deadline-exhausted'; break; }
+          row.closureReason = 'list-http';
+          if (!response.ok || row.closureReadHTTPStatus === null) throw new Error('Diagnostic target closure read');
+          row.closureReason = 'list-read-failed';
+          const targets = await response.json();
+          if (now() >= closeDeadline) { row.closureReason = 'deadline-exhausted'; break; }
+          row.closureReason = 'list-shape';
+          if (!Array.isArray(targets) || targets.length > 16
+            || targets.some(target => typeof target?.id !== 'string' || !target.id || target.id.length > 256)
+            || new Set(targets.map(target => target.id)).size !== targets.length) {
+            throw new Error('Diagnostic target closure unavailable');
+          }
+          row.closureListCount = targets.length;
+          row.closureOwnTargetPresent = targets.some(target => target.id === targetId);
+          if (!row.closureOwnTargetPresent) {
+            row.pageClosed = true; row.closureReason = 'target-absent'; break;
+          }
+          row.closureReason = 'target-still-present';
+          if (row.closurePolls < 100 && now() < closeDeadline) await sleep(Math.min(20, closeDeadline - now()));
+        }
+        if (!row.pageClosed) {
+          if (now() >= closeDeadline) row.closureReason = 'deadline-exhausted';
           throw new Error('Diagnostic target closure unavailable');
         }
-        row.pageClosed = true;
       }
       catch (error) { row.infrastructureError = true; row.errorClass ??= errorClass(error); }
+      finally { row.closureElapsedMs = Math.max(0, Math.min(15000, Math.round(now() - closeStarted))); }
       if (capture) {
         row.callbacksDrained = await capture.drain(); row.callbackPending = capture.pending();
         if (!row.callbacksDrained || row.callbackPending) row.infrastructureError = true;

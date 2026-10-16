@@ -1,3 +1,10 @@
+import json
+import random
+
+from card_data.sync import ScryfallSyncService
+from tests.library_canonical_fixtures import (
+    RANKING_NAMES, canonical_card, canonicalize_basics, ranking_raw_card, raw_card, reprint,
+)
 from tests.controlled_basic_game_support import controlled_basic_game
 from effects.registry import resolve_effect
 from ai.agent import AIAgent
@@ -6,32 +13,44 @@ from game_state.serializers import serialize_match_snapshot, deserialize_match_s
 from rules_engine.engine import RulesEngine
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
-from tests.test_death_replacement_canonical import REST_IN_PEACE_ORACLE
-
-CULTIVATE_TEXT = (
-    "Search your library for up to two basic land cards, reveal those cards, "
-    "put one onto the battlefield tapped and the other into your hand, then shuffle."
-)
 
 
-def _state_with_searcher(*, controlled=False) -> object:
-    deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = (controlled_basic_game(deck, deck, seed=11) if controlled else MatchFactory.from_decks(deck, deck, seed=11))
+
+def _canonical_birth_row(name, quantity=1):
+    raw = ranking_raw_card(name) if name in RANKING_NAMES else raw_card(name)
+    cached = ScryfallSyncService._normalize_payload(
+        raw, ScryfallSyncService._extract_remote_image_uri(raw))
+    return {**raw, **cached, 'card_name': raw['name'], 'quantity': quantity,
+            'colors': raw['colors'], 'card_faces': json.loads(cached['card_faces_json'])}
+
+
+def _state_with_searcher(*, controlled=False, library_birth=None) -> object:
+    if library_birth is None:
+        deck = [{"quantity": 60, "card_name": "Forest"}]
+        state = (controlled_basic_game(deck, deck, seed=11) if controlled else MatchFactory.from_decks(deck, deck, seed=11))
+        canonicalize_basics(state)
+        for cid in state.players[1].library:
+            state.cards[cid].types = ["Land"]
+            state.cards[cid].type_line = "Basic Land — Forest"
+    else:
+        assert not controlled
+        # Invert only a local planning shuffle; the real factory still consumes seed 11.
+        permutation = list(range(60))
+        random.Random(11).shuffle(permutation)
+        names = ['Forest'] * 60
+        for position, name in library_birth.items():
+            names[permutation[position - 1]] = name
+        state = MatchFactory.from_decks(
+            [_canonical_birth_row(name) for name in names],
+            [_canonical_birth_row('Forest', 60)], seed=11)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    for cid in state.players[1].library:
-        state.cards[cid].types = ["Land"]
-        state.cards[cid].type_line = "Basic Land — Forest"
     return state
 
 
 def test_entomb_searches_any_card_into_graveyard() -> None:
     state = _state_with_searcher()
-    spell = CardInstance(
-        id="entomb", name="Entomb", owner=1, controller=1, zone=Zone.HAND,
-        types=["Instant"],
-        oracle_text="Search your library for a card, put that card into your graveyard, then shuffle.",
-    )
+    spell = canonical_card("Entomb", id="entomb", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     effect = build_ability_spec(state, spell, 1).effect
     key, payload = effect.key, effect.payload
@@ -48,12 +67,9 @@ def test_entomb_searches_any_card_into_graveyard() -> None:
 def test_demonic_tutor_does_not_reveal_hidden_hand_selection_in_log() -> None:
     state = _state_with_searcher(controlled=True)
     chosen = state.players[1].library[-1]
+    reprint(state, chosen, "Lightning Bolt")
     state.cards[chosen].name = "Lightning Bolt"
-    spell = CardInstance(
-        id="demonic-tutor", name="Demonic Tutor", owner=1, controller=1,
-        zone=Zone.HAND, types=["Sorcery"],
-        oracle_text="Search your library for a card, put that card into your hand, then shuffle.",
-    )
+    spell = canonical_card("Demonic Tutor", id="demonic-tutor", owner=1, controller=1, zone=Zone.HAND)
     effect = build_ability_spec(state, spell, 1).effect
     assert effect.key == "search_library"
     assert effect.payload["contains"] == "card"
@@ -64,17 +80,10 @@ def test_demonic_tutor_does_not_reveal_hidden_hand_selection_in_log() -> None:
 
 
 def test_buried_alive_searches_three_creatures_into_graveyard_with_replacement() -> None:
-    state = _state_with_searcher()
-    spell = CardInstance(
-        id="buried-alive", name="Buried Alive", owner=1, controller=1, zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text="Search your library for up to three creature cards, put them into your graveyard, then shuffle.",
-    )
+    state = _state_with_searcher(library_birth={51: "Grizzly Bears", 52: "Grizzly Bears", 53: "Grizzly Bears"})
+    spell = canonical_card("Buried Alive", id="buried-alive", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     chosen = state.players[1].library[-3:]
-    for cid in chosen:
-        state.cards[cid].types = ["Creature"]
-        state.cards[cid].type_line = "Creature"
     spec = build_ability_spec(state, spell, 1)
     assert spec.effect.key == "search_library"
     assert spec.effect.payload["count"] == 3
@@ -88,26 +97,19 @@ def test_buried_alive_searches_three_creatures_into_graveyard_with_replacement()
     assert set(chosen) <= set(restored.players[1].graveyard)
     assert all(restored.cards[cid].zone == Zone.GRAVEYARD for cid in chosen)
 
-    replaced = _state_with_searcher()
-    replaced.cards["rip"] = CardInstance(
-        id="rip", name="Rest in Peace", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text=REST_IN_PEACE_ORACLE,
-    )
+    replaced = _state_with_searcher(library_birth={53: "Grizzly Bears"})
+    replaced.cards["rip"] = canonical_card("Rest in Peace", id="rip", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     replaced.players[2].battlefield.append("rip")
     creature = replaced.players[1].library[-1]
-    replaced.cards[creature].types = ["Creature"]
-    replaced.cards[creature].type_line = "Creature"
     resolve_effect(replaced, 1, spec.effect.key, {**spec.effect.payload, "selected_card_ids": [creature]})
     assert creature in replaced.players[1].exile
     assert creature not in replaced.players[1].graveyard
     assert replaced.cards[creature].zone == Zone.EXILE
 
-    optional = _state_with_searcher()
+    optional = _state_with_searcher(library_birth={53: "Grizzly Bears"})
     optional.cards["rip"] = replaced.cards["rip"]
     optional.players[2].battlefield.append("rip")
     optional_creature = optional.players[1].library[-1]
-    optional.cards[optional_creature].types = ["Creature"]
-    optional.cards[optional_creature].type_line = "Creature"
     optional.mechanic_choice_players = {1}
     resolve_effect(optional, 1, spec.effect.key, spec.effect.payload)
     ai_action = AIAgent(archetype="Reanimator").choose_action(optional, RulesEngine().legal_moves(optional, 1), 1).action
@@ -123,10 +125,7 @@ def test_http_entomb_choice_moves_selected_card_to_graveyard() -> None:
 
     state = _state_with_searcher()
     state.mechanic_choice_players = {1}
-    effect = build_ability_spec(state, CardInstance(
-        id="entomb", name="Entomb", owner=1, controller=1, zone=Zone.STACK,
-        types=["Instant"], oracle_text="Search your library for a card, put that card into your graveyard, then shuffle.",
-    ), 1).effect
+    effect = build_ability_spec(state, canonical_card("Entomb", id="entomb", owner=1, controller=1, zone=Zone.STACK), 1).effect
     resolve_effect(state, 1, effect.key, effect.payload)
     chosen = state.players[1].library[-1]
     deck = [{"quantity": 60, "card_name": "Forest"}]
@@ -160,6 +159,8 @@ def test_http_entomb_choice_moves_selected_card_to_graveyard() -> None:
 def test_reanimator_ai_entombs_creature_instead_of_mana_fixing_land() -> None:
     state = _state_with_searcher(controlled=True)
     swamp, griselbrand = state.players[1].library[-2:]
+    reprint(state, swamp, "Swamp")
+    reprint(state, griselbrand, "Griselbrand")
     state.cards[swamp].name = "Swamp"
     state.cards[swamp].type_line = "Basic Land — Swamp"
     threat = state.cards[griselbrand]
@@ -168,12 +169,8 @@ def test_reanimator_ai_entombs_creature_instead_of_mana_fixing_land() -> None:
     threat.types = ["Creature"]
     threat.mana_cost = "{4}{B}{B}{B}{B}"
     threat.power = threat.toughness = 7
-    threat.oracle_text = "Flying, lifelink\nPay 7 life: Draw seven cards."
-    state.cards["reanimate"] = CardInstance(
-        id="reanimate", name="Reanimate", owner=1, controller=1, zone=Zone.HAND,
-        types=["Sorcery"], mana_cost="{B}",
-        oracle_text="Put target creature card from a graveyard onto the battlefield under your control. You lose life equal to its mana value.",
-    )
+    threat.oracle_text = raw_card("Griselbrand")["oracle_text"]
+    state.cards["reanimate"] = canonical_card("Reanimate", id="reanimate", owner=1, controller=1, zone=Zone.HAND)
     state.players[1].hand.append("reanimate")
     state.mechanic_choice_players = {1}
     resolve_effect(state, 1, "search_library", {"contains": "card", "count": 1, "destination": "graveyard", "shuffle": True})
@@ -183,10 +180,7 @@ def test_reanimator_ai_entombs_creature_instead_of_mana_fixing_land() -> None:
     restored = deserialize_match_snapshot(serialize_match_snapshot(state))
     assert AIAgent(archetype="Midrange").choose_action(restored, RulesEngine().legal_moves(restored, 1), 1).action["card_ids"] == [griselbrand]
 
-    state.cards["rip"] = CardInstance(
-        id="rip", name="Rest in Peace", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text=REST_IN_PEACE_ORACLE,
-    )
+    state.cards["rip"] = canonical_card("Rest in Peace", id="rip", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.players[2].battlefield.append("rip")
     replacement_decision = AIAgent(archetype="Reanimator").choose_action(state, RulesEngine().legal_moves(state, 1), 1)
     assert griselbrand not in replacement_decision.action["card_ids"]
@@ -195,12 +189,14 @@ def test_reanimator_ai_entombs_creature_instead_of_mana_fixing_land() -> None:
 def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
     state = _state_with_searcher(controlled=True)
     state.mechanic_choice_players = {1}
+    reprint(state, state.players[1].hand[0], "Counterspell")
     state.cards[state.players[1].hand[0]].name = "Counterspell"
     state.cards[state.players[1].hand[0]].mana_cost = "{U}{U}"
     state.cards[state.players[1].hand[0]].types = ["Instant"]
     state.cards[state.players[1].hand[0]].type_line = "Instant"
     swamp, island = state.players[1].library[:2]
     for cid, name in ((swamp, "Swamp"), (island, "Island")):
+        reprint(state, cid, name)
         state.cards[cid].name = name
         state.cards[cid].type_line = f"Basic Land — {name}"
     resolve_effect(state, 1, "search_library", {"contains": "basic_land", "count": 1, "destination": "hand", "shuffle": True})
@@ -223,16 +219,9 @@ def test_ai_search_chooses_needed_color_at_resolution_and_restores() -> None:
 
 
 def test_ai_topdeck_put_chooses_stronger_creature_at_resolution() -> None:
-    state = _state_with_searcher()
+    state = _state_with_searcher(library_birth={48: "Deathbloom Gardener", 50: "Brindle Boar", 52: "Wayward Swordtooth"})
     state.mechanic_choice_players = {1}
     top = state.players[1].library[-6:]
-    for cid, power in ((top[0], 1), (top[2], 2), (top[4], 5)):
-        card = state.cards[cid]
-        card.types = ["Creature"]
-        card.type_line = "Creature — Elf"
-        card.power = power
-        card.toughness = power
-        card.mana_cost = "{2}{G}"
     resolve_effect(state, 1, "topdeck_put_creatures_battlefield", {
         "top_n": 6, "max_creatures": 2, "mv_max": 3, "bottom_any_order": True,
     })
@@ -247,15 +236,7 @@ def test_ai_topdeck_put_chooses_stronger_creature_at_resolution() -> None:
 
 def test_cultivate_inference_splits_canonical_land_destinations() -> None:
     state = _state_with_searcher()
-    spell = CardInstance(
-        id="cultivate",
-        name="Cultivate",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text=CULTIVATE_TEXT,
-    )
+    spell = canonical_card("Cultivate", id="cultivate", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1)
 
@@ -280,15 +261,7 @@ def test_cultivate_inference_splits_canonical_land_destinations() -> None:
 
 def test_migration_path_puts_basic_lands_onto_battlefield_tapped() -> None:
     state = _state_with_searcher()
-    spell = CardInstance(
-        id="migration-path",
-        name="Migration Path",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text="Search your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle.",
-    )
+    spell = canonical_card("Migration Path", id="migration-path", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1)
     resolve_effect(state, 1, spec.effect.key, spec.effect.payload)
@@ -304,15 +277,7 @@ def test_library_search_hides_candidates_until_resolution_and_honors_choice() ->
         state.players[1].library[-2],
         state.players[1].library[-1],
     )
-    spell = CardInstance(
-        id="cultivate-choice",
-        name="Cultivate",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text=CULTIVATE_TEXT,
-    )
+    spell = canonical_card("Cultivate", id="cultivate-choice", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
     assert hints["library_search"]["max_count"] == 2
@@ -341,10 +306,10 @@ def test_cultivate_human_choice_orders_battlefield_then_hand() -> None:
 
     state = _state_with_searcher(controlled=True)
     first, second = state.players[1].library[-2:]
+    reprint(state, first, "Plains")
+    reprint(state, second, "Island")
     state.cards[first].name = "Plains"
-    state.cards[first].type_line = "Basic Land - Plains"
     state.cards[second].name = "Island"
-    state.cards[second].type_line = "Basic Land - Island"
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
     resolve_effect(state, 1, "search_library", {
@@ -359,19 +324,9 @@ def test_cultivate_human_choice_orders_battlefield_then_hand() -> None:
 
 
 def test_library_search_rejects_nonmatching_explicit_selection() -> None:
-    state = _state_with_searcher()
+    state = _state_with_searcher(library_birth={53: "Llanowar Elves"})
     nonbasic = state.players[1].library[-1]
-    state.cards[nonbasic].type_line = "Creature — Elf"
-    state.cards[nonbasic].types = ["Creature"]
-    spell = CardInstance(
-        id="cultivate-invalid",
-        name="Cultivate",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text=CULTIVATE_TEXT,
-    )
+    spell = canonical_card("Cultivate", id="cultivate-invalid", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
     ok, error = validate_cast_choice(hints, {"search_card_ids": [nonbasic]})
@@ -380,29 +335,9 @@ def test_library_search_rejects_nonmatching_explicit_selection() -> None:
 
 
 def test_topdeck_battlefield_tutor_chooses_only_at_resolution() -> None:
-    state = _state_with_searcher()
+    state = _state_with_searcher(library_birth={48: "Deathbloom Gardener", 50: "Brindle Boar", 52: "Wayward Swordtooth"})
     top_ids = state.players[1].library[-6:]
-    for index, cid in enumerate(top_ids):
-        card = state.cards[cid]
-        if index in {0, 2, 4}:
-            card.types = ["Creature"]
-            card.type_line = "Creature — Elf"
-            card.power = 2 + index
-            card.toughness = 2
-            card.mana_cost = "{2}{G}"
-        else:
-            card.types = ["Land"]
-            card.type_line = "Basic Land — Forest"
-            card.mana_cost = ""
-    spell = CardInstance(
-        id="company-choice",
-        name="Collected Company",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Instant"],
-        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
-    )
+    spell = canonical_card("Collected Company", id="company-choice", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
 
     hints = build_cast_hints(state, spell, 1)
@@ -441,15 +376,7 @@ def test_topdeck_battlefield_tutor_rejects_nonmatching_selection() -> None:
     for cid in top_ids:
         state.cards[cid].types = ["Land"]
         state.cards[cid].type_line = "Basic Land — Forest"
-    spell = CardInstance(
-        id="company-invalid-choice",
-        name="Collected Company",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Instant"],
-        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
-    )
+    spell = canonical_card("Collected Company", id="company-invalid-choice", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
     ok, error = validate_cast_choice(hints, {"topdeck_card_ids": [top_ids[0]]})
@@ -465,17 +392,13 @@ def test_company_bottom_order_keeps_spell_unresolved_until_second_choice() -> No
     state = _state_with_searcher(controlled=True)
     top = state.players[1].library[-6:]
     for cid in top[:2]:
+        reprint(state, cid, "Llanowar Elves")
         card = state.cards[cid]
         card.name = "Llanowar Elves"
         card.types = ["Creature"]
-        card.type_line = "Creature - Elf Druid"
         card.mana_cost = "{G}"
         card.power = card.toughness = 1
-    spell = CardInstance(
-        id="company-stack", name="Collected Company", owner=1, controller=1,
-        zone=Zone.STACK, types=["Instant"],
-        oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
-    )
+    spell = canonical_card("Collected Company", id="company-stack", owner=1, controller=1, zone=Zone.STACK)
     state.cards[spell.id] = spell
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
@@ -513,16 +436,12 @@ def test_topdeck_put_uses_resolution_library_and_resumes_stack_after_snapshot() 
     player = state.players[1]
     top = player.library[-5:]
     for cid in top:
+        reprint(state, cid, "Llanowar Elves")
         card = state.cards[cid]
         card.types = ["Creature"]
-        card.type_line = "Creature - Elf"
         card.name = "Llanowar Elves"
         card.mana_cost = "{G}"
-    spell = CardInstance(
-        id="topdeck-spell", name="Storm the Festival", owner=1, controller=1,
-        zone=Zone.STACK, types=["Sorcery"],
-        oracle_text="Look at the top five cards of your library. You may put up to two permanent cards with mana value 5 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
-    )
+    spell = canonical_card("Storm the Festival", id="topdeck-spell", owner=1, controller=1, zone=Zone.STACK)
     state.cards[spell.id] = spell
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
@@ -558,11 +477,8 @@ def test_topdeck_put_may_choose_zero_and_rejects_more_than_limit() -> None:
     from rules_engine.engine import RulesEngine
     import pytest
 
-    state = _state_with_searcher()
+    state = _state_with_searcher(library_birth=dict.fromkeys(range(48, 54), "Llanowar Elves"))
     top = state.players[1].library[-6:]
-    for cid in top:
-        state.cards[cid].types = ["Creature"]
-        state.cards[cid].mana_cost = "{G}"
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
     resolve_effect(state, 1, "topdeck_put_creatures_battlefield", {"top_n": 6, "max_creatures": 2, "mv_max": 3})
@@ -579,6 +495,8 @@ def test_topdeck_creature_mana_value_counts_colorless_symbol() -> None:
     state = _state_with_searcher(controlled=True)
     top = state.players[1].library[-2:]
     costly, eligible = top
+    reprint(state, costly, "Thought-Knot Seer")
+    reprint(state, eligible, "Llanowar Elves")
     state.cards[costly].name = "Thought-Knot Seer"
     state.cards[costly].types = ["Creature"]
     state.cards[costly].mana_cost = "{3}{C}"
@@ -599,6 +517,7 @@ def test_http_topdeck_put_choice_is_offered_only_after_resolution() -> None:
     state = _state_with_searcher(controlled=True)
     top = state.players[1].library[-6:]
     for cid in top:
+        reprint(state, cid, "Llanowar Elves")
         state.cards[cid].types = ["Creature"]
         state.cards[cid].name = "Llanowar Elves"
         state.cards[cid].mana_cost = "{G}"
@@ -637,11 +556,7 @@ def test_library_search_uses_resolution_library_and_resumes_stack_after_snapshot
 
     state = _state_with_searcher()
     player = state.players[1]
-    spell = CardInstance(
-        id="cultivate-stack", name="Cultivate", owner=1, controller=1,
-        zone=Zone.STACK, types=["Sorcery"],
-        oracle_text=CULTIVATE_TEXT,
-    )
+    spell = canonical_card("Cultivate", id="cultivate-stack", owner=1, controller=1, zone=Zone.STACK)
     state.cards[spell.id] = spell
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}

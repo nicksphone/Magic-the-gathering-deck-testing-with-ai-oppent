@@ -1,15 +1,35 @@
+import json
+import random
+
+from card_data.sync import ScryfallSyncService
+from tests.library_canonical_fixtures import canonical_card, canonicalize_basics, raw_card, reprint
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.library_permissions import top_library_creature_for_type
 from rules_engine.move_generator import legal_moves
 
 
-def _base_state():
-    state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Island"}],
-        [{"quantity": 60, "card_name": "Island"}],
-        seed=61,
-    )
+def _base_state(*, forest_birth=False):
+    if forest_birth:
+        def row(name, quantity=1):
+            raw = raw_card(name)
+            cached = ScryfallSyncService._normalize_payload(
+                raw, ScryfallSyncService._extract_remote_image_uri(raw))
+            return {**raw, **cached, 'card_name': raw['name'], 'quantity': quantity,
+                    'colors': raw['colors'], 'card_faces': json.loads(cached['card_faces_json'])}
+
+        permutation = list(range(60))
+        random.Random(61).shuffle(permutation)
+        names = ['Island'] * 60
+        names[permutation[52]] = 'Forest'
+        state = MatchFactory.from_decks([row(name) for name in names], [row('Island', 60)], seed=61)
+    else:
+        state = MatchFactory.from_decks(
+            [{"quantity": 60, "card_name": "Island"}],
+            [{"quantity": 60, "card_name": "Island"}],
+            seed=61,
+        )
+        canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1
@@ -23,32 +43,9 @@ def _base_state():
 
 
 def test_realmwalker_exposes_only_matching_top_creature_as_library_cast() -> None:
-    state = _base_state()
-    walker = CardInstance(
-        id="walker",
-        name="Realmwalker",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        type_line="Creature — Elf Shaman",
-        chosen_creature_type="Elf",
-        oracle_text=(
-            "Changeling As this creature enters, choose a creature type. You may look at "
-            "the top card of your library any time. You may cast creature spells of the "
-            "chosen type from the top of your library."
-        ),
-    )
-    top = CardInstance(
-        id="top-elf",
-        name="Llanowar Elves",
-        owner=1,
-        controller=1,
-        zone=Zone.LIBRARY,
-        types=["Creature"],
-        type_line="Creature — Elf Druid",
-        mana_cost="{U}",
-    )
+    state = _base_state(forest_birth=True)
+    walker = canonical_card("Realmwalker", id="walker", owner=1, controller=1, zone=Zone.BATTLEFIELD, chosen_creature_type="Elf")
+    top = canonical_card("Llanowar Elves", id="top-elf", owner=1, controller=1, zone=Zone.LIBRARY)
     state.cards.update({walker.id: walker, top.id: top})
     state.players[1].battlefield.append(walker.id)
     state.players[1].library.append(top.id)
@@ -68,20 +65,7 @@ def test_realmwalker_exposes_only_matching_top_creature_as_library_cast() -> Non
 
 def test_realmwalker_choice_is_persisted_when_it_enters() -> None:
     state = _base_state()
-    walker = CardInstance(
-        id="walker-choice",
-        name="Realmwalker",
-        owner=1,
-        controller=1,
-        zone=Zone.STACK,
-        types=["Creature"],
-        type_line="Creature — Elf Shaman",
-        oracle_text=(
-            "Changeling As this creature enters, choose a creature type. You may look at "
-            "the top card of your library any time. You may cast creature spells of the "
-            "chosen type from the top of your library."
-        ),
-    )
+    walker = canonical_card("Realmwalker", id="walker-choice", owner=1, controller=1, zone=Zone.STACK)
     state.cards[walker.id] = walker
     from game_state.state import StackItem
     state.stack.append(StackItem(

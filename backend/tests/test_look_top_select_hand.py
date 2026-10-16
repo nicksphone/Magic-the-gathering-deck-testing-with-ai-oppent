@@ -1,3 +1,8 @@
+import json
+import random
+
+from card_data.sync import ScryfallSyncService
+from tests.library_canonical_fixtures import canonical_card, canonicalize_basics, raw_card, reprint
 from card_data.seed_cards import seed_card_payload
 from ai.agent import AIAgent
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -11,21 +16,34 @@ from rules_engine.stack_engine import resolve_top_of_stack
 def test_mana_spent_top_card_selection_is_not_a_draw() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=13)
+    canonicalize_basics(state)
     canonical = seed_card_payload("Memory Deluge")
-    card = CardInstance(
-        id="deluge", name="Memory Deluge", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost=canonical["mana_cost"],
-        oracle_text=canonical["oracle_text"],
-    )
+    card = canonical_card("Memory Deluge", id="deluge", owner=1, controller=1, zone=Zone.HAND)
     spec = build_ability_spec(state, card, 1)
     assert spec.effect.key == "look_top_select_hand"
     assert spec.effect.payload["hand_count"] == 2
     assert spec.effect.payload["top_n_source"] == "mana_spent_to_cast"
 
 
+def _paid_deluge_birth_state():
+    def row(name, quantity=1):
+        raw = raw_card(name)
+        cached = ScryfallSyncService._normalize_payload(
+            raw, ScryfallSyncService._extract_remote_image_uri(raw))
+        return {**raw, **cached, 'card_name': raw['name'], 'quantity': quantity,
+                'colors': raw['colors'], 'card_faces': json.loads(cached['card_faces_json'])}
+
+    permutation = list(range(60))
+    random.Random(17).shuffle(permutation)
+    names = ['Island'] * 60
+    for position, name in zip((46, 47, 48, 49),
+                              ('Island', 'Negate', 'Counterspell', 'Sheoldred, the Apocalypse')):
+        names[permutation[position - 1]] = name
+    return MatchFactory.from_decks([row(name) for name in names], [row('Island', 60)], seed=17)
+
+
 def test_paid_memory_deluge_pauses_for_two_cards_and_resumes_after_snapshot() -> None:
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}]
-    state = MatchFactory.from_decks(deck, deck, seed=17)
+    state = _paid_deluge_birth_state()
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.DRAW
@@ -37,18 +55,8 @@ def test_paid_memory_deluge_pauses_for_two_cards_and_resumes_after_snapshot() ->
         player.battlefield.append(land_id)
         state.cards[land_id].zone = Zone.BATTLEFIELD
     top_ids = list(player.library[-4:])
-    # These synthetic Island copies are repurposed, not captured original stock.
-    state.sideboard_facts = {}
-    for cid, name, cost in zip(top_ids, ("Island", "Negate", "Counterspell", "Sheoldred, the Apocalypse"),
-                               ("", "{1}{U}", "{U}{U}", "{2}{B}{B}")):
-        state.cards[cid].name = name
-        state.cards[cid].mana_cost = cost
     canonical = seed_card_payload("Memory Deluge")
-    deluge = CardInstance(
-        id="deluge", name="Memory Deluge", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost=canonical["mana_cost"],
-        oracle_text=canonical["oracle_text"],
-    )
+    deluge = canonical_card("Memory Deluge", id="deluge", owner=1, controller=1, zone=Zone.HAND)
     state.cards[deluge.id] = deluge
     player.hand.append(deluge.id)
 
@@ -78,8 +86,9 @@ def test_paid_memory_deluge_pauses_for_two_cards_and_resumes_after_snapshot() ->
 
 
 def test_flashback_memory_deluge_looks_at_seven_and_exiles_after_resolution() -> None:
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}]
+    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": raw_card("Island")["oracle_text"]}]
     state = MatchFactory.from_decks(deck, deck, seed=31)
+    canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.DRAW
@@ -91,11 +100,7 @@ def test_flashback_memory_deluge_looks_at_seven_and_exiles_after_resolution() ->
         state.cards[land_id].zone = Zone.BATTLEFIELD
     top_ids = set(player.library[-7:])
     canonical = seed_card_payload("Memory Deluge")
-    deluge = CardInstance(
-        id="deluge-flashback", name="Memory Deluge", owner=1, controller=1,
-        zone=Zone.GRAVEYARD, types=["Instant"], mana_cost=canonical["mana_cost"],
-        oracle_text=canonical["oracle_text"],
-    )
+    deluge = canonical_card("Memory Deluge", id="deluge-flashback", owner=1, controller=1, zone=Zone.GRAVEYARD)
     state.cards[deluge.id] = deluge
     player.graveyard.append(deluge.id)
     before_hand = len(player.hand)
@@ -122,16 +127,13 @@ def test_flashback_memory_deluge_looks_at_seven_and_exiles_after_resolution() ->
 def test_countered_flashback_spell_is_exiled() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck, deck, seed=29)
+    canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.DRAW
     canonical = seed_card_payload("Memory Deluge")
-    deluge = CardInstance(
-        id="deluge", name="Memory Deluge", owner=1, controller=1,
-        zone=Zone.GRAVEYARD, types=["Instant"], mana_cost=canonical["mana_cost"],
-        oracle_text=canonical["oracle_text"],
-    )
+    deluge = canonical_card("Memory Deluge", id="deluge", owner=1, controller=1, zone=Zone.GRAVEYARD)
     state.cards[deluge.id] = deluge
     state.players[1].graveyard.append(deluge.id)
     state.players[1].mana_pool["U"] = 7
@@ -144,8 +146,7 @@ def test_countered_flashback_spell_is_exiled() -> None:
     assert original.payload["__flashback"] is True
     assert stack_object_kind(state, original) == "spell"
     response = seed_card_payload("Negate")
-    negate = CardInstance("negate", "Negate", 2, 2, Zone.HAND, ["Instant"],
-                          mana_cost=response["mana_cost"], oracle_text=response["oracle_text"])
+    negate = canonical_card("Negate", id="negate", owner=2, controller=2, zone=Zone.HAND)
     state.cards[negate.id] = negate
     state.players[2].hand.append(negate.id)
     state.players[2].mana_pool["U"] = 2

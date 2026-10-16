@@ -1,11 +1,21 @@
 # Phase 1 Acceptance Review
 
-Reviewed on 2026-10-15 against the original
+Reviewed on 2026-10-16 against the original
 [Tasks 1.1--1.4](../plans/2026-09-09-ai-knowledge-base.md).
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
-The latest [damage/life composition](task13-damage-life-coupled1224-current.md)
+The latest [canonical library composition](task13-canonical-library-fixtures.md)
+actually passes all 1,541 ordinary cases across 83 whole modules. It retains
+every earlier 1,399-case and every library 150-case identity, counting eight
+overlaps once. All original library 40 functions/249 assertions and stack-copy
+28 functions/145 assertions remain. Complete official data and genuine factory
+capture replace shortened positives without clearing stock checks or changing
+production. Source/runtime preservation and actual owned-resource closure are
+independently verified. Remaining fixture families and the literal requirement
+are still open; browser work and this larger pass do not sign off the phase.
+
+The earlier [damage/life composition](task13-damage-life-coupled1224-current.md)
 passes 1,224 ordinary cases in 62 whole modules on the fresh locked release
 runtime. It includes every earlier 759-case identity, complete official inputs
 for eight more fixture modules, and the generic source-control correction those
@@ -60,6 +70,14 @@ release dependency versions; the literal requirement and whole hosted backend
 remain separate, rather than being waived by the larger passing count.
 
 ## Observed Integrated Evidence
+
+The later exact [`8d715442` hosted backend](current-8d-hosted-backend.md)
+succeeds: independent phase reconciliation verifies 29,604 passed calls and
+82 setup skips across 29,686 unique nodes, plus 111 separately counted passing
+subtest reports. All 1,254 retained component identities pass all three phases.
+Backend production Git objects are identical through `bf62c2b2`; later fixture
+and frontend changes still need their own composed acceptance. This does not
+close the remaining literal handwritten-data requirement or sign off Phase 1.
 
 The later exact [`79e215fb` backend job](current-79-hosted-backend.md) succeeds.
 Independent sanitized-metadata reconciliation verifies 29,420 passed calls and

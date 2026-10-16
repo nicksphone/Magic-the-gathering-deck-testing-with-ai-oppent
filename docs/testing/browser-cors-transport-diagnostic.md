@@ -41,3 +41,36 @@ No actual four-mode browser comparison has run at preparation. These protocol
 results are not a transport fix, native-vendor acceptance or release completion.
 Source/evidence is archived under
 `diagnostics/ci/20261016-cors-deferred-hook-P2-PURE167-PREP-Jason-ppYopzxB/`.
+
+## Actual Baseline And Closure Follow-Up
+
+The exact `5e8a8509` and later `bf62c2b2` browser jobs each execute one baseline
+case: the real action returns 200, the revision advances once, and the selected
+land moves to the battlefield exactly once. Fetch disable and callback drain
+succeed, but the page-closure observation fails. No precise closure failure
+reason was captured. The remaining three modes are not reached, so these are
+not completed four-mode comparisons or evidence of an interception fix.
+
+The correction keeps the existing close call exactly once. Valid target-list
+observations can wait for actual absence within one 15-second deadline starting
+before that call, with at most 100 reads and 20-millisecond sleeps. Each request
+receives only the remaining deadline. Failed HTTP, malformed lists, unavailable
+identity, callback errors, permanent presence and budget exhaustion still fail.
+New output fields contain only bounded closure reasons, HTTP status, counts,
+presence and elapsed time; no target identity or raw error is added.
+
+All 42 earlier controls remain unchanged. The corrected component passes 54
+cases, and the actual unchanged normal native-browser unit command passes 279
+cases across 11 whole modules, retaining all prior 267 identities plus the 12
+new closure controls. Source and release-runtime inventories remain equal and
+the recorded helper processes close. Independent review is clear. This remains
+unit/protocol evidence: no physical browser was run for that local correction.
+
+The separate original suite at `bf62c2b2` reaches 465 literal PASS console lines
+before failing manual start recovery. Its third recovery POST returns 200 and
+finishes; follow-up legal-moves and start requests are canceled. That trace does
+not identify the cancellation cause, and the later closure correction is not
+part of the failed job's source. The private bounded browser-log intake is
+archived under `diagnostics/ci/bf62-browser-parent-terminal-20261016-9MOPWuCB/`;
+the 279-case qualification is under
+`diagnostics/ci/20261016-cors-close15s-normal279-QUALIFIED-Jason-TBY2gVQp/`.
