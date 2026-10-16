@@ -5,12 +5,21 @@ This component is based on published
 instruction to the existing object-bound type-effect engine. It does not add a
 new type layer, change public schemas, or special-case a card name.
 
-The compiler admits the complete instruction "Target permanent becomes an
+At its input boundary, the compiler admits the complete instruction "Target permanent becomes an
 artifact in addition to its other types until end of turn." before reminder
 stripping. Unknown suffixes, including parenthesized instructions, remain
 unsupported rather than granting a partial reward. The handler reuses
 `add_type_effect`; ordinary target validation, retained target references,
 snapshot serialization, copiable values, and cleanup remain shared paths.
+
+A subsequent shared-path review found that activated-ability extraction could
+remove parenthetical text before this compiler was called. The five malformed
+body cases below invoke inference directly; they did not certify that earlier
+extraction boundary. The later [RAW occurrence correction](activated-raw-occurrence.md)
+retains the actual printed body through legal offering and activation, and tests
+unknown parenthesized bodies through both checked and direct engine actions.
+The original 35/219 results below remain historical component evidence, not
+retroactive proof of that later correction.
 
 ## Actual Qualification
 

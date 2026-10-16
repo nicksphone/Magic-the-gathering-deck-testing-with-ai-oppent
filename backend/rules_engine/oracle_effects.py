@@ -2057,18 +2057,52 @@ def _pure_self_graveyard_return_instruction(card, instruction):
 def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
     """Extract simple mana-cost activated abilities from a card surface."""
     out: list[dict[str, Any]] = []
-    raw_matches = list(ACTIVATED_ABILITY_RE.finditer(card.oracle_text or ''))
-    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(without_reminder_text(card.oracle_text or ""))):
+    raw = card.oracle_text or ''
+    normalized, offsets = raw, list(range(len(raw)))
+    while reminders := list(re.finditer(r'\([^()]*\)', normalized)):
+        for reminder in reversed(reminders):
+            start, end = reminder.span()
+            normalized = normalized[:start] + normalized[end:]
+            offsets[start:end] = []
+    if normalized != without_reminder_text(raw):
+        return out
+    # Execution spans use original offsets; normalized text only selects legacy indices.
+    top_level, depth, quote, escaped = [], 0, None, False
+    for char in raw:
+        top_level.append(depth == 0 and quote is None)
+        if depth:
+            depth += (char == '(') - (char == ')')
+        elif quote is not None:
+            if escaped:
+                escaped = False
+            elif char == '\\':
+                escaped = True
+            elif char == quote:
+                quote = None
+        elif char == '(':
+            depth = 1
+        elif char == ')':
+            return out
+        elif char in ('"', '\u201c'):
+            quote = '"' if char == '"' else '\u201d'
+    if depth or quote is not None:
+        return out
+    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(normalized)):
         cost = match.group(1).strip().upper()
         text = match.group(2).strip()
+        separator = normalized.find(':', match.end(1), match.start(2))
+        if separator < 0 or '\n' in normalized[separator+1:match.start(2)]:
+            continue
+        end = offsets[match.end(2)] if match.end(2) < len(offsets) else len(raw)
+        if (not top_level[offsets[match.start(1)]] or not top_level[offsets[separator]]
+                or end < len(raw) and not top_level[end]):
+            continue
+        raw_body = raw[offsets[separator]+1:end].strip()
+        if without_reminder_text(raw_body).strip() != text:
+            continue
         self_return = _pure_self_graveyard_return_instruction(card, text)
         if re.search(r'return\s+this\s+card\s+from\s+your\s+graveyard\b', text, re.I):
-            originals = [raw for raw in raw_matches
-                         if raw[1].strip().upper() == cost
-                         and without_reminder_text(raw[2]).strip() == text]
-            if (self_return is None or not originals
-                    or any(_pure_self_graveyard_return_instruction(card, raw[2]) != self_return
-                           for raw in originals)):
+            if self_return is None or _pure_self_graveyard_return_instruction(card, raw_body) != self_return:
                 continue
         # Mana abilities are handled by the mana source model and should not
         # be duplicated as stack actions here.
@@ -2077,9 +2111,21 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
             continue
         from rules_engine.activation_modifiers import ability_cost_modifier
         modifier = ability_cost_modifier(text)
+        raw_modifier = ability_cost_modifier(raw_body)
+        if modifier:
+            if (raw_modifier is None
+                    or any(raw_modifier[key] != modifier[key] for key in ('amount', 'basis'))
+                    or without_reminder_text(raw_modifier['effect_text']).strip() != modifier['effect_text']):
+                continue
+            raw_effect = raw_modifier['effect_text']
+        else:
+            if raw_modifier is not None or re.search(r'\bthis ability costs\b', raw_body, re.I):
+                continue
+            raw_effect = raw_body
         from rules_engine.costs import parse_activated_cost
         out.append({"index": index, "mana_cost": cost,
                     "text": modifier['effect_text'] if modifier else text,
+                    'raw_body': raw_body, 'raw_effect_text': raw_effect,
                     "activation_zone": 'graveyard' if self_return else 'hand' if parse_activated_cost(cost).discard_source else 'battlefield',
                     "cost_modifier": modifier, "label": f"{cost}: {text}"})
     return out

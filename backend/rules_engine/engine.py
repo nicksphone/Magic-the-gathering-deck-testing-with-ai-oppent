@@ -1332,7 +1332,7 @@ class RulesEngine:
             if x_value < 0 or ("{X}" in cost.upper() and "x_value" not in action_targets):
                 reject("A non-negative X value is required for this activated cost")
                 return
-            proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "name": state.cards[cid].name, "mana_cost": ""})()
+            proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["raw_effect_text"], "name": state.cards[cid].name, "mana_cost": ""})()
             action_targets = enrich_divide_total(proxy, action_targets)
             proxy.source_oracle_text = state.cards[cid].oracle_text
             announcement_spec = build_ability_spec(state, proxy, player_id, action_targets=action_targets, report_unsupported=False)
@@ -1408,6 +1408,8 @@ class RulesEngine:
                                 "__announced_targets": dict(action_targets),
                                 "__ward_trigger_specs": ward_specs,
                                 "__ability_target_text": ability["text"],
+                                "__ability_index": ability["index"],
+                                "__ability_raw_effect_text": ability["raw_effect_text"],
                                 "__activation_source_reference": activation_source_reference,
                                 "__activation_source_origin": activation_source_zone.value,
                                 "__announced_target_references": target_references}

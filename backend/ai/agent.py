@@ -4169,7 +4169,8 @@ class AIAgent:
                 abilities = extract_loyalty_abilities(card) if mtype == "activate_loyalty" else extract_activated_abilities(card)
                 ability = next((item for index, item in enumerate(abilities) if item.get("index", index) == move.get("ability_index")), None)
                 if ability:
-                    allocation_card = SimpleNamespace(oracle_text=ability["text"])
+                    allocation_card = SimpleNamespace(oracle_text=(ability["text"] if mtype == "activate_loyalty"
+                                                                  else ability["raw_effect_text"]))
             targets = enrich_divide_total(allocation_card, targets)
             budget = targets.get("divide_total")
             if budget is None:

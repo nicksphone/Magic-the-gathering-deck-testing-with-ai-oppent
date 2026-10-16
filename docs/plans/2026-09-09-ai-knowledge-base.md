@@ -1,5 +1,15 @@
 # AI Quality + Knowledge Base Implementation Plan
 
+## October 16 Phase 1 Boundary Checkpoint
+
+Phase 1 remains open. The shared activation path now retains complete printed
+occurrence identity through engine, legal-offer and AI consumers, with one
+16-whole-module declaration passing 587 ordinary cases. The canonical fixture
+migrations and rules gaps exposed by them still need their combined acceptance;
+this component does not certify the entire backend or all card families.
+UI/browser qualification proceeds in parallel and is not Phase 1 signoff. See
+[RAW occurrence evidence](../testing/activated-raw-occurrence.md).
+
 ## October 13 Combined Block And Runner Checkpoint
 
 One fresh 41-whole-module composition passes 775 ordinary cases (278.08s),
