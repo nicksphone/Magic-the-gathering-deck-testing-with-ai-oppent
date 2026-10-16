@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1792178903.3110905,
-    "seen": 1792179054.2241595,
-    "ast_hash": "27d5ffe9b2b99d8738bfe195b224ae2d",
+    "mtime": 1792181980.1755965,
+    "seen": 1792182125.1026096,
+    "ast_hash": "49974b784abdd93bffb2d5aaf110ecf0",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792172999.015946,
-    "seen": 1792173121.7095485,
-    "ast_hash": "446925bcc5d8836b934fb064b2bdf455",
+    "mtime": 1792181980.1775966,
+    "seen": 1792182125.1021447,
+    "ast_hash": "94f37e83f64f81245262d55421215538",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -20871,6 +20871,18 @@
     "mtime": 1792178049.998788,
     "seen": 1792179054.2230089,
     "ast_hash": "9e098ab4e3874465a056f383d250ec63",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_phase1_final_data_acceptance.py": {
+    "mtime": 1792181980.145597,
+    "seen": 1792182125.0989735,
+    "ast_hash": "e3b06712618e4b93d15ea448884f8b92",
+    "semantic_hash": ""
+  },
+  "docs/testing/phase1-final-data-acceptance833.md": {
+    "mtime": 1792181980.145597,
+    "seen": 1792182125.1021476,
+    "ast_hash": "fedab8ced16d85f9f362047ffcb4b59e",
     "semantic_hash": ""
   }
 }

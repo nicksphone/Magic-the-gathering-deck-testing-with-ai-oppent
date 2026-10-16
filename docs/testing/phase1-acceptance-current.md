@@ -5,6 +5,14 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The [final data-acceptance component](phase1-final-data-acceptance833.md) now
+passes all 833 ordinary cases across 17 whole modules. It retains all 829
+earlier identities and adds four actual data/CLI/hydration checks, including
+the copied-built-in missing-name case from the original acceptance plan.
+Source/runtime equality and owned-resource closure are verified. The remaining
+literal Task 1.3 fixture scope is still open; this data result does not complete
+Phase 1 or transfer whole-backend, browser or live-deployment qualification.
+
 The current [copy-entry integration](canonical-copy-entry-current.md) also
 advances complete canonical counter fixtures, retained physical characteristics
 and deliberate human/AI choices. Its final declaration actually passes 1,837
@@ -194,7 +202,7 @@ Private immutable metadata evidence is under the project's NFS archive:
 | 1.1: Knowledge model | Fields, repository roundtrip, upsert and queries are implemented and tested. The subsequent domain correction declares the two provenance values and numerical bounds, and validates public repository writes before querying or mutating rows. | SQLite storage is unchanged; this is not DB CHECK enforcement or validation of direct ORM/SQL bypasses. Legacy rows remain readable without rewrite. Historical test-first commit chronology has not been reconstructed. |
 | 1.2: Corpus sync | Real repository ingestion of the complete official shipped corpus, persisted rulings, error accumulation and idempotent CLI behavior are tested. Stored mainboard and sideboard names participate. Missing-cache recovery and later model/repository components are hosted-qualified on their exact sources, including the retained 899-case joins. An actual network sync of the legacy copy qualifies all 158 requested names. The subsequent `7d` whole CI qualifies fuzzy lookup and request spacing; corrected cache recovery repairs 78 copied-data rows, repeats with zero changes and has all 603 retained cases hosted-qualified on exact `8083`. Later `79e215fb` whole backend CI succeeds, including all 899 retained component cases; its Phase 1 source paths remain identical to `5763e072`. | The earlier failed `8083` ledger is preserved, not relabeled. Copied-data qualification does not select a live deployment or authorize migration. |
 | 1.3: Verified offline seed | The production handwritten fallback module is removed; committed official seed data supports tested offline hydration. | The literal requirement of no handwritten Oracle text anywhere in the repository is not met by test fixtures and rule-generated token descriptions. Offline hydration evidence alone is not a deployment-startup certificate. |
-| 1.4: Completeness command | The actual CLI succeeds for the default 149-name corpus. An owned stored-deck mainboard/sideboard expands it to 151 names. The separate real legacy-copy run covers 158 names, rejects pending rulings before sync, then passes with zero-request unchanged repetition. | This is not arbitrary deployment data. CLI success does not itself require every display-cache row, nonblank Oracle text or a local image; the legacy-copy report separately verifies its cache/Oracle fields, but not local images. |
+| 1.4: Completeness command | The actual CLI succeeds for the default 149-name corpus. An owned stored-deck mainboard/sideboard expands it to 151 names. The separate real legacy-copy run covers 158 names, rejects pending rulings before sync, then passes with zero-request unchanged repetition. The fresh 833-case component also checks copied built-ins: a nonexistent name stays missing after genuine mocked 404, while real Farewell passes after in-process CLI sync and repeats with zero requests or row changes. | This is not arbitrary deployment data. CLI success does not itself require every display-cache row, nonblank Oracle text or a local image; the legacy-copy report separately verifies its cache/Oracle fields, but not local images. |
 
 The shipped data checks cover 155 canonical identities, 443 published rulings
 and 35 verified empty ruling lists. An empty verified list is valid; demanding

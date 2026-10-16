@@ -30,6 +30,20 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 16 Final Data Acceptance
+
+The data-acceptance declaration now passes all 833 ordinary cases across 17
+whole modules, with no failures, errors, skips or expected-failure exclusions.
+All 829 earlier identities remain, plus four new end-to-end checks for missing
+built-in names, real CLI sync and idempotence, canonical corpus/rulings joins,
+and actual offline/public hydration. Full source and dependency inventories
+remain unchanged during execution, and owned database/controller resources
+close normally. The preceding failed run is preserved separately. See
+[the exact source and execution boundaries](docs/testing/phase1-final-data-acceptance833.md).
+
+This closes the outstanding final data-run gap, not the literal Task 1.3
+fixture cleanup, complete Phase 1, whole-current-backend CI or release gates.
+
 ## October 16 Response Recovery And Activation Fixtures
 
 The ordered replay-capture correction is published as `7fddf697`; its hosted
