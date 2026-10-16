@@ -1,36 +1,293 @@
 [
   {
+    "object": "card",
     "id": "0770eb6a-4f01-4677-a401-14c1b30692c9",
     "oracle_id": "6b92a5f4-a241-48c8-9aec-c8e9d5b01fa5",
+    "multiverse_ids": [
+      574539
+    ],
+    "mtgo_id": 102594,
+    "arena_id": 82111,
+    "tcgplayer_id": 282763,
+    "cardmarket_id": 671333,
     "name": "The Phasing of Zhalfir",
-    "type_line": "Enchantment \u2014 Saga",
+    "lang": "en",
+    "released_at": "2022-09-09",
+    "uri": "https://api.scryfall.com/cards/0770eb6a-4f01-4677-a401-14c1b30692c9",
+    "scryfall_uri": "https://scryfall.com/card/dmu/59/the-phasing-of-zhalfir?utm_source=api",
+    "layout": "saga",
+    "highres_image": true,
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T05:42:27Z",
+    "image_uris": {
+      "small": "https://cards.scryfall.io/small/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.jpg?1783921347",
+      "normal": "https://cards.scryfall.io/normal/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.jpg?1783921347",
+      "large": "https://cards.scryfall.io/large/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.jpg?1783921347",
+      "png": "https://cards.scryfall.io/png/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.png?1783921347",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.jpg?1783921347",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.jpg?1783921347",
+      "thumb": "https://cards.scryfall.io/thumb/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.webp?1783921347",
+      "grid": "https://cards.scryfall.io/grid/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.webp?1783921347",
+      "display": "https://cards.scryfall.io/display/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.webp?1783921347",
+      "art": "https://cards.scryfall.io/art/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.webp?1783921347",
+      "crop": "https://cards.scryfall.io/crop/front/0/7/0770eb6a-4f01-4677-a401-14c1b30692c9.webp?1783921347"
+    },
     "mana_cost": "{2}{U}{U}",
-    "oracle_text": "Read ahead (Choose a chapter and start with that many lore counters. Add one after your draw step. Skipped chapters don't trigger. Sacrifice after III.)\nI, II \u2014 Another target nonland permanent phases out. It can't phase in for as long as you control this Saga.\nIII \u2014 Destroy all creatures. For each creature destroyed this way, its controller creates a 2/2 black Phyrexian creature token.",
-    "power": null,
-    "toughness": null,
+    "cmc": 4.0,
+    "type_line": "Enchantment — Saga",
+    "oracle_text": "Read ahead (Choose a chapter and start with that many lore counters. Add one after your draw step. Skipped chapters don't trigger. Sacrifice after III.)\nI, II — Another target nonland permanent phases out. It can't phase in for as long as you control this Saga.\nIII — Destroy all creatures. For each creature destroyed this way, its controller creates a 2/2 black Phyrexian creature token.",
     "colors": [
+      "U"
+    ],
+    "color_identity": [
       "U"
     ],
     "keywords": [
       "Read Ahead"
     ],
-    "scryfall_uri": "https://scryfall.com/card/dmu/59/the-phasing-of-zhalfir?utm_source=api",
+    "all_parts": [
+      {
+        "object": "related_card",
+        "id": "0770eb6a-4f01-4677-a401-14c1b30692c9",
+        "component": "combo_piece",
+        "name": "The Phasing of Zhalfir",
+        "type_line": "Enchantment — Saga",
+        "uri": "https://api.scryfall.com/cards/0770eb6a-4f01-4677-a401-14c1b30692c9"
+      },
+      {
+        "object": "related_card",
+        "id": "ba2a7b17-a65a-4c37-bc2b-8be5ff8ce692",
+        "component": "token",
+        "name": "Phyrexian",
+        "type_line": "Token Creature — Phyrexian",
+        "uri": "https://api.scryfall.com/cards/ba2a7b17-a65a-4c37-bc2b-8be5ff8ce692"
+      }
+    ],
+    "legalities": {
+      "standard": "not_legal",
+      "future": "not_legal",
+      "historic": "legal",
+      "timeless": "legal",
+      "gladiator": "legal",
+      "pioneer": "legal",
+      "modern": "legal",
+      "legacy": "legal",
+      "pauper": "not_legal",
+      "vintage": "legal",
+      "penny": "legal",
+      "commander": "legal",
+      "oathbreaker": "legal",
+      "standardbrawl": "not_legal",
+      "brawl": "legal",
+      "competitivebrawl": "legal",
+      "alchemy": "not_legal",
+      "paupercommander": "not_legal",
+      "duel": "legal",
+      "oldschool": "not_legal",
+      "premodern": "not_legal",
+      "predh": "not_legal",
+      "tlr": "not_legal"
+    },
+    "games": [
+      "paper",
+      "arena",
+      "mtgo"
+    ],
+    "reserved": false,
+    "game_changer": false,
+    "foil": true,
+    "nonfoil": true,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "oversized": false,
+    "promo": false,
+    "reprint": false,
+    "variation": false,
+    "set_id": "4e47a6cd-cdeb-4b0f-8f24-cfe1a0127cb3",
     "set": "dmu",
-    "collector_number": "59"
+    "set_name": "Dominaria United",
+    "set_type": "expansion",
+    "set_uri": "https://api.scryfall.com/sets/4e47a6cd-cdeb-4b0f-8f24-cfe1a0127cb3",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admu&unique=prints",
+    "scryfall_set_uri": "https://scryfall.com/sets/dmu?utm_source=api",
+    "rulings_uri": "https://api.scryfall.com/cards/0770eb6a-4f01-4677-a401-14c1b30692c9/rulings",
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A6b92a5f4-a241-48c8-9aec-c8e9d5b01fa5&unique=prints",
+    "collector_number": "59",
+    "digital": false,
+    "rarity": "rare",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "artist": "L.A. Draws",
+    "artist_ids": [
+      "1f22abb8-3873-4e81-93f3-79db5e56dd64"
+    ],
+    "illustration_id": "32d897ff-b4c2-4898-a5d2-2b654fa51617",
+    "border_color": "black",
+    "frame": "2015",
+    "security_stamp": "oval",
+    "full_art": false,
+    "textless": false,
+    "booster": true,
+    "story_spotlight": false,
+    "edhrec_rank": 11108,
+    "penny_rank": 13793,
+    "preview": {
+      "source": "Wizards of the Coast",
+      "source_uri": "https://www.twitch.tv/videos/1565562937",
+      "previewed_at": "2022-08-18"
+    },
+    "prices": {
+      "usd": "0.34",
+      "usd_foil": "0.35",
+      "usd_etched": null,
+      "eur": "0.30",
+      "eur_foil": "0.47",
+      "tix": "0.02"
+    },
+    "related_uris": {
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=574539&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DThe%2BPhasing%2Bof%2BZhalfir",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DThe%2BPhasing%2Bof%2BZhalfir",
+      "edhrec": "https://edhrec.com/route/?cc=The+Phasing+of+Zhalfir"
+    },
+    "purchase_uris": {
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F282763%3Fpage%3D1",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=671333&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "cardhoarder": "https://www.cardhoarder.com/cards/102594?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+    }
   },
   {
-    "id": "5272436e-74f0-44c4-a291-ea8ebc3f1525",
-    "oracle_id": "4b515bb0-f275-4400-8032-3173b799ab40",
-    "name": "Walking Ballista",
-    "type_line": "Artifact Creature \u2014 Construct",
-    "mana_cost": "{X}{X}",
-    "oracle_text": "This creature enters with X +1/+1 counters on it.\n{4}: Put a +1/+1 counter on this creature.\nRemove a +1/+1 counter from this creature: It deals 1 damage to any target.",
-    "power": "0",
-    "toughness": "0",
+    "artist": "Daniel Ljunggren",
+    "artist_ids": [
+      "0fbd4798-76eb-46d5-a5d4-1e3a25870e34"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 484359,
+    "cmc": 0.0,
+    "collector_number": "306",
+    "color_identity": [],
     "colors": [],
+    "digital": false,
+    "edhrec_rank": 425,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "foil": true,
+    "frame": "2015",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "5272436e-74f0-44c4-a291-ea8ebc3f1525",
+    "illustration_id": "9e545f44-8767-4458-8613-5270be9c6548",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T08:08:08Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.webp?1783930088",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.jpg?1783930088",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.jpg?1783930088",
+      "crop": "https://cards.scryfall.io/crop/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.webp?1783930088",
+      "display": "https://cards.scryfall.io/display/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.webp?1783930088",
+      "grid": "https://cards.scryfall.io/grid/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.webp?1783930088",
+      "large": "https://cards.scryfall.io/large/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.jpg?1783930088",
+      "normal": "https://cards.scryfall.io/normal/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.jpg?1783930088",
+      "png": "https://cards.scryfall.io/png/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.png?1783930088",
+      "small": "https://cards.scryfall.io/small/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.jpg?1783930088",
+      "thumb": "https://cards.scryfall.io/thumb/front/5/2/5272436e-74f0-44c4-a291-ea8ebc3f1525.webp?1783930088"
+    },
     "keywords": [],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "not_legal",
+      "commander": "legal",
+      "competitivebrawl": "not_legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "not_legal",
+      "historic": "not_legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "not_legal",
+      "paupercommander": "not_legal",
+      "penny": "not_legal",
+      "pioneer": "banned",
+      "predh": "not_legal",
+      "premodern": "not_legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "not_legal",
+      "tlr": "legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{X}{X}",
+    "mtgo_id": 82646,
+    "multiverse_ids": [
+      489979
+    ],
+    "name": "Walking Ballista",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "4b515bb0-f275-4400-8032-3173b799ab40",
+    "oracle_text": "This creature enters with X +1/+1 counters on it.\n{4}: Put a +1/+1 counter on this creature.\nRemove a +1/+1 counter from this creature: It deals 1 damage to any target.",
+    "oversized": false,
+    "power": "0",
+    "preview": {
+      "previewed_at": "2020-07-23",
+      "source": "Louis-Samuel Deltour",
+      "source_uri": "https://twitter.com/LWIDELTOUW/status/1286401029223919616"
+    },
+    "prices": {
+      "eur": "7.55",
+      "eur_foil": "16.42",
+      "tix": "1.72",
+      "usd": "10.72",
+      "usd_etched": null,
+      "usd_foil": "15.61"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A4b515bb0-f275-4400-8032-3173b799ab40&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/82646?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=484359&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F218628%3Fpage%3D1"
+    },
+    "rarity": "rare",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Walking+Ballista",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=489979&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DWalking%2BBallista",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DWalking%2BBallista"
+    },
+    "released_at": "2020-08-07",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/5272436e-74f0-44c4-a291-ea8ebc3f1525/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/2xm?utm_source=api",
     "scryfall_uri": "https://scryfall.com/card/2xm/306/walking-ballista?utm_source=api",
+    "security_stamp": "oval",
     "set": "2xm",
-    "collector_number": "306"
+    "set_id": "372dafe8-b5d1-4b81-998f-3ae96b59498a",
+    "set_name": "Double Masters",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3A2xm&unique=prints",
+    "set_type": "masters",
+    "set_uri": "https://api.scryfall.com/sets/372dafe8-b5d1-4b81-998f-3ae96b59498a",
+    "story_spotlight": false,
+    "tcgplayer_id": 218628,
+    "textless": false,
+    "toughness": "0",
+    "type_line": "Artifact Creature — Construct",
+    "uri": "https://api.scryfall.com/cards/5272436e-74f0-44c4-a291-ea8ebc3f1525",
+    "variation": false
   }
 ]

@@ -108,7 +108,13 @@ class CardInstance:
     kicker_count: int | None = None
     printed_power: str | None = None
     printed_toughness: str | None = None
+    characteristic_record: dict | None = field(default=None, kw_only=True)
     knowledge_snapshot: dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        if self.characteristic_record is None:
+            from rules_engine.copiable_values import initialize
+            initialize(self)
 
     def __setattr__(self, name, value):
         # Suspend's granted haste ends permanently at the first control loss.
@@ -406,6 +412,8 @@ class MatchFactory:
                     apply_transform_face(card, 0)
                     card.selected_face_index = previous_selection
                     card.printed_characteristics['selected_face_index'] = previous_selection
+                from rules_engine.copiable_values import initialize
+                initialize(card)
                 cards[cid] = card
                 sideboard_inventory[cid] = {'owner': owner, 'stock_key': raw_item['card_name']}
                 player.library.append(cid)

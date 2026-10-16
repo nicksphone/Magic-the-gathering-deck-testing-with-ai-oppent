@@ -8,6 +8,7 @@ from rules_engine.turn_spell_protection import conditional_draw, grant_protectio
 from rules_engine.retained_counter_prohibition import resolve as resolve_counter_prohibition
 from rules_engine.spree import resolve_copy as resolve_spree_copy, offer_change as resolve_spree_target_change
 from rules_engine.end_step_ownership_draw import resolve as resolve_ownership_end_step_draw
+from rules_engine.graveyard_batch_entry import resolve as resolve_graveyard_batch
 from rules_engine.activation_copy import resolve_copy_referred_ability
 
 from collections.abc import Callable
@@ -20,6 +21,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'return_graveyard_permanents_batch': resolve_graveyard_batch,
     'add_artifact_type_until_end_of_turn': handlers.add_artifact_type_until_end_of_turn,
     'ownership_end_step_draw': resolve_ownership_end_step_draw,
     'reveal_top_conditional': handlers.reveal_top_conditional,
@@ -221,10 +223,19 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
     if effect_key == 'permanent_spell_copy_entry':
         from game_state.state import StackItem
         from rules_engine.stack_engine import finish_stack_resolution
-        finish_stack_resolution(state, StackItem(**payload['entry_item']), {
-            **payload['entry_payload'], '__entry_candidates': payload['__entry_candidates'],
-            '__entry_counters_by_id': payload['__entry_counters_by_id'],
-        })
+        from rules_engine.action_validation import ActionRejected
+        from rules_engine.loyalty_instructions import native_frame_matches
+        from rules_engine.entry_copy import PLAN
+        frame = payload.get('entry_item')
+        if (not native_frame_matches(frame, controller) or type(payload.get('entry_payload')) is not dict
+                or frame['payload'].get('__stack_copy_kind') != 'spell'
+                or payload['entry_payload'].get('__copied_card') != frame['payload'].get('__copied_card')
+                or payload['entry_payload'].get('__source_card_id') != frame['source_card_id']
+                or ('__entry_candidates' in payload) != ('__entry_counters_by_id' in payload)):
+            raise ActionRejected('Invalid native copied-permanent continuation')
+        finish_stack_resolution(state, StackItem(**frame), {
+            **payload['entry_payload'], **{key: payload[key] for key in
+                (PLAN, '__entry_choices', '__entry_candidates', '__entry_counters_by_id') if key in payload}})
         return
     if effect_key == "effect_sequence":
         from rules_engine.damage_results import validate_hand_payload, HAND_CONTEXT_KEYS

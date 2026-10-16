@@ -6,13 +6,22 @@ def linked_discard_gaps(text):
     if 'discard' not in text.lower():
         return []
     pattern = r'\bdiscard (?:any number of cards|up to \w+ cards?)\b|\bdiscard (?:all the cards in your hand|your hand), then\b'
-    for line in text.splitlines():
-        surface = re.sub(r'^\s*(?:\u2022\s*|[+\-\u2212]\d+:\s*)', '', line).strip()
+    surfaces = [re.sub(r'^\s*(?:\u2022\s*|[+\-\u2212]\d+:\s*)', '', line).strip()
+                for line in text.splitlines()]
+    entry_pattern = (r'(?:when|whenever) this (?:creature|artifact|enchantment|permanent|'
+                     r'planeswalker|aura|equipment|vehicle|land|battle|token)'
+                     r' enters(?: the battlefield)?, (.+)')
+    entries = [re.fullmatch(entry_pattern, surface, re.I) for surface in surfaces]
+    entry_count = sum(entry is not None for entry in entries)
+    for surface, entry in zip(surfaces, entries):
         if re.search(r'\beach player discards? .+?hand, then draws?\b', surface, re.I):
             if simultaneous_discard_draw_effect(surface) is None:
                 return ['linked discard sequence fidelity']
-        if re.search(pattern, surface, re.I) and linked_discard_effect(surface) is None:
-            return ['linked discard sequence fidelity']
+        if re.search(pattern, surface, re.I):
+            # Unwrap only one complete self-entry clause, never a substring reward.
+            instruction = entry[1] if entry is not None and entry_count == 1 else surface
+            if linked_discard_effect(instruction) is None:
+                return ['linked discard sequence fidelity']
     return []
 
 

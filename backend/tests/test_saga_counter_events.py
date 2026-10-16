@@ -13,11 +13,11 @@ from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import extract_saga_chapters
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
-from tests.test_ai_recurring_engines import add as add_card
+from tests.counter_family_canonical091 import add_card
 from tests.test_counter_prohibitions import source as permanent
 from tests.test_counter_replacements import source as modifier, choose
 from tests.test_restricted_mana import clean
-from tests.test_ward_resolution import add
+from tests.counter_family_canonical091 import add
 
 
 ROWS = {row['name']: row for row in json.loads(

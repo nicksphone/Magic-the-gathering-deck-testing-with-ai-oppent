@@ -567,10 +567,11 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
-        if (control_frame_required or prevention_frame_required or effect_key in {'shuffle_graveyard_into_library', 'search_library', 'put_exiled_card_into_graveyard', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter', 'loyalty_delay_return', 'loyalty_return'}
-                or effect_key == 'effect_sequence' and any(
+        from rules_engine.graveyard_batch_entry import contains_batch_instruction
+        if (control_frame_required or prevention_frame_required or effect_key in {'exile_return_immediate', 'return_graveyard_permanents_batch', 'shuffle_graveyard_into_library', 'search_library', 'put_exiled_card_into_graveyard', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter', 'loyalty_delay_return', 'loyalty_return'}
+                or effect_key == 'effect_sequence' and (contains_batch_instruction(payload) or any(
                     effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter', 'loyalty_sacrifice_return'}
-                    for effect in payload.get('effects', []))):
+                    for effect in payload.get('effects', [])))):
             from dataclasses import asdict
             # Transport the real popped item only where shuffle attribution needs it.
             frame = asdict(item)
@@ -634,6 +635,11 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                 from rules_engine.action_validation import ActionRejected
                 raise ActionRejected('Stale retained next-creature entry packet')
             entry_staged_here = not state.trigger_staging
+            from rules_engine.entry_copy import commit as commit_copies
+            commit_copies(state, payload, [card.id])
+            if card.id in payload.get('__entry_choices', {}):
+                from rules_engine.entry import apply_entry_choice
+                apply_entry_choice(state, item.controller, card, choice=payload['__entry_choices'][card.id])
             if entry_staged_here:
                 state.trigger_staging = True
                 state.trigger_staging_event = 'permanent_entry'
@@ -684,40 +690,67 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
     from dataclasses import asdict
     from copy import deepcopy
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.entry_copy import (
+        PLAN, RESERVATION, _native_copy_candidate, _candidate, _same_native_value, compile_instruction,
+        prepare as prepare_copies, projections, commit as commit_copies)
+    from rules_engine.action_validation import ActionRejected
 
-    copied = payload["__copied_card"]
-    kicker_count = None
-    if '__kicker_count' in payload:
-        from rules_engine.kicker import validate_kicker_count
-        kicker_count = validate_kicker_count(payload['__kicker_count'], payload.get('__kicked', False))
-    types = list(copied.get("types") or [])
-    token = (CardInstance(**{**payload['__entry_candidates'][0], 'zone': Zone.BATTLEFIELD})
-             if '__entry_candidates' in payload else CardInstance(
-        id=state.allocate_object_id(), name=copied["name"], owner=item.controller,
-        controller=item.controller, zone=Zone.BATTLEFIELD, is_token=True,
-        types=list(dict.fromkeys([*types, "Token"])),
-        mana_cost=copied.get("mana_cost") or "", type_line=copied.get("type_line") or "",
-        oracle_text=copied.get("oracle_text") or "", power=copied.get("power"),
-        toughness=copied.get("toughness"), loyalty=copied.get("loyalty"),
-        printed_power=copied.get('printed_power'), printed_toughness=copied.get('printed_toughness'),
-        keywords=list(copied.get("keywords") or []), colors=copied.get("colors"),
-        image_uri=copied.get("image_uri"), layout=copied.get("layout") or "",
-        card_faces=list(copied.get("card_faces") or []),
-        selected_face_index=copied.get("selected_face_index"),
-        bestow_characteristics=deepcopy(copied.get('bestow_characteristics') or {}),
-        summoning_sick=True, entered_turn=state.turn,
-        was_kicked=bool(payload.get('__kicked')),
-        kicker_count=kicker_count,
-    ))
-    token.was_kicked = bool(payload.get('__kicked'))
-    token.kicker_count = kicker_count
-    completion = ({'entry_item': asdict(item), 'entry_payload': payload}
-                  if '__entry_counters_by_id' not in payload else payload)
-    if prepare_counter_entries(state, item.controller, [token], 'permanent_spell_copy_entry',
-                               completion, entry_payload={'x_value': payload.get('x_value', 0),
-                                                          '__kicked': bool(payload.get('__kicked')),
-                                                          **({'__kicker_count': kicker_count} if kicker_count is not None else {})}):
+    copy_entry = compile_instruction(payload['__copied_card'].get('oracle_text') or '') is not None
+    if copy_entry:
+        receipt = item.payload.get(RESERVATION)
+        if receipt is None:
+            token = _native_copy_candidate(asdict(item), state.allocate_object_id(), state.turn)
+            receipt = {'card': asdict(token), 'allocation_next': state.next_object_id}
+            # Retain the real reservation on the popped frame before capturing it.
+            item.payload[RESERVATION] = deepcopy(receipt)
+        frame = asdict(item)
+        if _candidate(state, frame, receipt, committed=True) is not None:
+            return False
+        token = _candidate(state, frame, receipt)
+        if token is None:
+            raise ActionRejected('Invalid native copied-entry reservation')
+        payload = {**payload, RESERVATION: deepcopy(receipt)}
+    elif '__entry_candidates' in payload:
+        token = CardInstance(**{**payload['__entry_candidates'][0], 'zone': Zone.BATTLEFIELD})
+    else:
+        token = _native_copy_candidate(asdict(item), state.allocate_object_id(), state.turn)
+        token.zone = Zone.BATTLEFIELD
+
+    stage_keys = (PLAN, '__entry_choices', '__entry_candidates', '__entry_counters_by_id')
+    completion = {'entry_item': asdict(item),
+                  'entry_payload': {key: deepcopy(value) for key, value in payload.items() if key not in stage_keys},
+                  **{key: deepcopy(payload[key]) for key in stage_keys if key in payload}}
+    projected = {}
+    if copy_entry:
+        if prepare_copies(state, item.controller, [token], 'permanent_spell_copy_entry', completion,
+                          controllers={token.id: item.controller}, candidates={token.id: receipt}):
+            return False
+        projected = projections(state, completion)
+        from rules_engine.entry import pause_for_land_entries
+        if pause_for_land_entries(state, item.controller, [token.id], 'permanent_spell_copy_entry', completion,
+                                  projections={token.id: projected.get(token.id, token)}):
+            return False
+        from rules_engine.graveyard_batch_entry import _entry_seeds
+        seeds = _entry_seeds(state, [projected.get(token.id, token)], controllers={token.id: item.controller})
+        if '__entry_candidates' in payload and not _same_native_value(
+                payload['__entry_candidates'], [asdict(projected.get(token.id, token))]):
+            raise ActionRejected('Copied-entry counters lost their prospective recipient')
+    options = {'x_value': payload.get('x_value', 0), '__kicked': bool(payload.get('__kicked')),
+               **({'__kicker_count': token.kicker_count} if token.kicker_count is not None else {}),
+               **({PLAN: completion[PLAN]} if PLAN in completion else {})}
+    # The existing detached-candidate branch consumes its candidate directly.
+    # Supply the qualified projection and validate it against the original plan.
+    if prepare_counter_entries(state, item.controller, [projected.get(token.id, token)],
+                               'permanent_spell_copy_entry', completion, entry_payload=options,
+                               projections=projected,
+                               **({'entry_payloads': {token.id: {**options, **seeds[token.id]}}} if copy_entry else {})):
         return False
+    if copy_entry:
+        commit_copies(state, completion, [token.id], recipients={token.id: token})
+        from rules_engine.entry import apply_entry_choice
+        apply_entry_choice(state, item.controller, token,
+                           choice=completion.get('__entry_choices', {}).get(token.id, 'tapped'))
+        token.zone = Zone.BATTLEFIELD
     state.cards[token.id] = token
     state.players[item.controller].battlefield.append(token.id)
     if is_aura(token) and not attach_if_legal(state, token.id, payload.get("target_card_id")):

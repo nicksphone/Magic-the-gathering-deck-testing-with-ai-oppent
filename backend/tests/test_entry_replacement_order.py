@@ -11,7 +11,7 @@ from rules_engine.action_validation import checked_action, ActionRejected
 from rules_engine.counter_placement import put_counters
 from rules_engine.engine import RulesEngine
 from rules_engine.move_generator import legal_moves
-from tests.test_ai_recurring_engines import add as add_card
+from tests.counter_family_canonical091 import add_card
 from tests.test_counter_prohibitions import source as permanent
 from tests.test_counter_replacements import source as modifier, choose
 from tests.test_restricted_mana import clean
@@ -100,7 +100,7 @@ def test_incoming_global_counter_ban_is_not_retroactive_to_prepared_entry(incomi
     if incoming:
         card = permanent(state, 'Melira, Sylvok Outcast')
     else:
-        from tests.test_ward_resolution import add
+        from tests.counter_family_canonical091 import add
         card = add(state, 'Grizzly Bears')
         permanent(state, 'Melira, Sylvok Outcast')
     state.pending_entry_counters = [{'controller': 1, 'counter': '-1/-1', 'amount': 1,

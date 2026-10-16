@@ -6,19 +6,20 @@ from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.state_based_actions import apply_state_based_actions
+from tests.draw_canonical_sidecar import canonical_card, deck_entry, reprint
 
 
-DECK = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+DECK = [deck_entry('Island', 60)]
 
 
-def _game(text="Each player draws two cards.", name="Vision Skeins", active_player=1):
+def _game(name="Vision Skeins", active_player=1):
     state = MatchFactory.from_decks(DECK, DECK, seed=291)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = active_player
-    card = CardInstance(
-        id="draw-spell", name=name, owner=1, controller=1,
-        zone=Zone.STACK, types=["Instant"], oracle_text=text,
+    card = canonical_card(
+        name, id="draw-spell", owner=1, controller=1,
+        zone=Zone.STACK,
     )
     return state, card
 
@@ -36,7 +37,7 @@ def test_vision_skeins_draws_active_player_first_even_when_other_player_casts():
 
 
 def test_prosperity_x_draws_both_players_then_simultaneous_deckout():
-    state, card = _game("Each player draws X cards.", "Prosperity")
+    state, card = _game("Prosperity")
     for player in state.players.values():
         player.library = player.library[:1]
     key, payload = infer_effect_from_oracle(state, card, 1, {"x_value": 2})
@@ -65,9 +66,9 @@ def test_one_empty_library_does_not_prevent_other_players_draw():
 
 def test_dredge_choice_resumes_remaining_draws_and_other_player():
     state, card = _game()
-    dredger = CardInstance(
-        id="stinkweed", name="Stinkweed Imp", owner=1, controller=1,
-        zone=Zone.GRAVEYARD, types=["Creature"], oracle_text="Dredge 5",
+    dredger = canonical_card(
+        'Stinkweed Imp', id="stinkweed", owner=1, controller=1,
+        zone=Zone.GRAVEYARD,
     )
     state.cards[dredger.id] = dredger
     state.players[1].graveyard.append(dredger.id)
@@ -92,11 +93,7 @@ def test_vision_skeins_on_stack_draws_game_after_both_libraries_empty():
         player.library.clear()
     cid = state.players[1].hand[0]
     card = state.cards[cid]
-    card.name = "Vision Skeins"
-    card.types = ["Instant"]
-    card.type_line = "Instant"
-    card.mana_cost = "{1}{U}"
-    card.oracle_text = "Each player draws two cards."
+    reprint(card, 'Vision Skeins')
     state.players[1].mana_pool = {"C": 1, "U": 1}
     engine = RulesEngine()
     engine.take_action(state, 1, {"type": "cast_spell", "card_id": cid}, reject_invalid=True)

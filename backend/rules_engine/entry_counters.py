@@ -224,6 +224,59 @@ def entry_counter_context_matches(state, payload):
     """Validate retained objects before a pending entry is allowed to resume."""
     completion = payload.get('entry_completion_payload')
     options = payload.get('entry_options')
+    from rules_engine.entry_copy import PLAN as COPY_PLAN, projections as copy_projections, _same_native_value
+    copy_payload = completion if isinstance(completion, dict) else payload
+    projected = {}
+    if COPY_PLAN in copy_payload:
+        from rules_engine.action_validation import ActionRejected
+        if (type(copy_payload[COPY_PLAN]) is not dict
+                or type(copy_payload[COPY_PLAN].get('entries')) is not list):
+            return False
+        if isinstance(completion, dict) and (not isinstance(options, dict)
+                or options.get(COPY_PLAN) != completion[COPY_PLAN]):
+            return False
+        # Native counter queries temporarily register only their projection.
+        # Validate its detached birth against a query-local view, not that slot.
+        query_state = state
+        candidates = [row for row in copy_payload[COPY_PLAN].get('entries', [])
+                      if type(row) is dict and 'candidate' in row]
+        if candidates:
+            query_state = copy(state)
+            query_state.cards = dict(state.cards)
+            for row in candidates:
+                query_state.cards.pop(row.get('id'), None)
+        try:
+            projected = copy_projections(query_state, copy_payload)
+        except ActionRejected:
+            return False
+        if 'entry_targets' in payload:
+            targets = payload['entry_targets']
+            if type(targets) is not list or any(type(target) is not dict for target in targets):
+                return False
+            rows = copy_payload[COPY_PLAN]['entries']
+            if (any('candidate' in target and type(target['candidate']) is not dict for target in targets)
+                    or any('candidate' in row for row in rows) and (
+                        [target.get('candidate', {}).get('id') for target in targets] != [row['id'] for row in rows])):
+                return False
+            for target in targets:
+                cid = target.get('card_id', target.get('candidate', {}).get('id'))
+                row = next((row for row in rows if row['id'] == cid), None)
+                if row is None:
+                    return False
+                if not _same_native_value(target.get('projection'), asdict(projected[cid]) if cid in projected else None):
+                    return False
+                if 'candidate' in row and not _same_native_value(target.get('candidate'),
+                        asdict(projected[cid]) if cid in projected else row['candidate']['card']):
+                    return False
+                if ('candidate' in row and cid in state.cards
+                        and not _same_native_value(asdict(state.cards[cid]), target['candidate'])):
+                    return False
+    if payload.get('entry_effect') == 'return_graveyard_permanents_batch':
+        from rules_engine.graveyard_batch_entry import plan_matches, PLAN
+        if (not isinstance(completion, dict) or not isinstance(options, dict)
+                or completion.get(PLAN) != options.get(PLAN)
+                or not plan_matches(state, payload.get('entry_completion_controller'), completion)):
+            return False
     if (payload.get('entry_effect') == 'return_permanent_from_graveyard_to_battlefield'
             or isinstance(completion, dict) and ('__loyalty_return_context' in completion
             or completion.get('loyalty_operation') in {'sacrifice_return', 'return'})
@@ -284,6 +337,7 @@ def entry_counter_context_matches(state, payload):
             or {'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
             != context.get('recipient_reference')):
         return False
+    card = projected.get(card.id, card)
     if (intrinsic is None and payload.get('entry_item')
             and any(intrinsic_x_entry_instruction(line) for line in card.oracle_text.splitlines())):
         return False
@@ -402,7 +456,25 @@ def resume_spell_entry(state, controller, payload):
     if card is None or card.zone != Zone.STACK:
         return
     data = deepcopy(payload)
-    if prepare_entry_counters(state, controller, data, card, 'permanent_spell_entry'):
+    from rules_engine.entry_copy import prepare as prepare_copies, projections
+    from rules_engine.entry import pause_for_land_entries
+    if prepare_copies(state, controller, [card], 'permanent_spell_entry', data,
+                      controllers={card.id: controller}):
+        return
+    projected = projections(state, data)
+    if card.id in projected:
+        from rules_engine.graveyard_batch_entry import _entry_seeds
+        data['entry_payload'].update(_entry_seeds(
+            state, [projected[card.id]], controllers={card.id: controller})[card.id])
+    if pause_for_land_entries(state, controller, [card.id], 'permanent_spell_entry', data,
+                              projections=projected):
+        return
+    if prepare_entry_counters(state, controller, data, projected.get(card.id, card), 'permanent_spell_entry'):
+        if '__entry_copy_plan' in data:
+            data['entry_payload']['__entry_copy_plan'] = deepcopy(data['__entry_copy_plan'])
+            data['entry_payload']['entry_item'] = deepcopy(data['entry_item'])
+        if '__entry_choices' in data:
+            data['entry_payload']['__entry_choices'] = deepcopy(data['__entry_choices'])
         finish_stack_resolution(state, StackItem(**data['entry_item']), data['entry_payload'])
 
 

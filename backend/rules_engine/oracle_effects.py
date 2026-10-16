@@ -518,6 +518,14 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    from rules_engine.graveyard_batch_entry import compile_instruction as compile_graveyard_batch
+    from rules_engine.action_validation import ActionRejected
+    try:
+        graveyard_batch = compile_graveyard_batch(card.oracle_text)
+    except ActionRejected:
+        return 'noop', {'__unsupported_instruction': card.oracle_text}
+    if graveyard_batch is not None:
+        return graveyard_batch
     from rules_engine.spree import is_spree, compile_instruction
     if is_spree(card.oracle_text):
         return compile_instruction(card, action_targets)

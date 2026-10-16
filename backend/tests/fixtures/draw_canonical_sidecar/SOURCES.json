@@ -1,0 +1,70 @@
+{
+  "Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+    "kind": "committed complete official object JSONL",
+    "line": 50,
+    "object_sha256": "450bf6448c1ed549fe3d69fe922cb0ffb8d6fa08751875cc873265f89ad95407",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "provenance": "knowledge_profiles/PROVENANCE.json",
+    "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+  },
+  "Narset, Parter of Veils": {
+    "file": "activated_top_selection/narset-parter-of-veils.json",
+    "id": "4e6e5c63-b6e5-4756-bf23-6c6f8669442d",
+    "kind": "committed complete official API response",
+    "oracle_id": "ab26fbe2-e808-48b9-8d0d-3fbb6c3d554f",
+    "provenance": "activated_top_selection/provenance.json",
+    "provenance_sha256": "050b177bb6fe077e35c7da024d5b50a5fb3126aaf3740ab3a69de2a0427220fb",
+    "sha256": "2e25933fc1933d61620e2710551fec00dd8fd0463e68e62616107525c68b1adc"
+  },
+  "Prosperity": {
+    "bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+    "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "file": "draw_canonical_sidecar/prosperity.json",
+    "id": "69ebc3a4-94b8-45aa-a3bf-21cd435ff5cf",
+    "kind": "complete unchanged archived official bulk JSONL row; not original HTTP wire body",
+    "oracle_id": "c586312d-d04a-4bfb-bbb2-b41186ca178e",
+    "sha256": "45908455d5d8c52309c3431d58b4bb4ada86491863f628e73083788a81497644",
+    "source_line": 29742
+  },
+  "Spirit of the Labyrinth": {
+    "bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+    "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "file": "draw_canonical_sidecar/spirit.json",
+    "id": "f44e5128-e146-4e46-b313-a40d82719d1d",
+    "kind": "complete unchanged archived official bulk JSONL row; not original HTTP wire body",
+    "oracle_id": "1463795b-ec0c-44d6-ae1a-55f78d9843ec",
+    "sha256": "3a82dea1bf4aaa6e4cb167c440b51f4a94b80bb54da807ed0b489008de153675",
+    "source_line": 3121
+  },
+  "Stinkweed Imp": {
+    "file": "trigger_instruction_product/stinkweed-imp.json",
+    "id": "2ab08d69-210b-4b06-88a2-45281a1a4e1e",
+    "kind": "committed complete official API response",
+    "oracle_id": "e005bc76-4985-4ec6-b9f6-cf6d0d9f5df4",
+    "provenance": "trigger_instruction_product/provenance.json",
+    "provenance_sha256": "95733b149cb7d3666b20d8f3afa5b8100f08def33ed10ef976974c4dfa342bc5",
+    "sha256": "3a12356ed9fa1de98b56500f5c0bb3a26f3ef6949e549e81184441ba19dab1e9"
+  },
+  "Thought Reflection": {
+    "file": "trigger_instruction_audit/thought-reflection.json",
+    "id": "e169e197-5ef4-454d-a31f-fcadedb74cfc",
+    "kind": "committed complete official API response",
+    "oracle_id": "692a6833-3014-42f6-b1ad-333bb3292c65",
+    "provenance": "trigger_instruction_audit/provenance.json",
+    "provenance_sha256": "40b29b77468eed197ae34be165941b18c52f8b600a319be53cdd4983a91393a5",
+    "sha256": "be46dc4724e675d029e095db7e065399de74e1b33b0379fd498e3ac90592128f"
+  },
+  "Vision Skeins": {
+    "bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+    "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "file": "draw_canonical_sidecar/vision.json",
+    "id": "76999d96-f3fe-421e-9190-e682259e3cdb",
+    "kind": "complete unchanged archived official bulk JSONL row; not original HTTP wire body",
+    "oracle_id": "6d42dff5-97ec-4768-b112-84a3584d0b87",
+    "sha256": "61a162d208e65cf536f8a1e52d4dbd57c9acaef290ccd23d7ba4594b3ad45e95",
+    "source_line": 16419
+  }
+}

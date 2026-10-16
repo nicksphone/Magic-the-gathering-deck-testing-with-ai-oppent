@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-15 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-16 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -29,6 +29,24 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
   passing characterization tests are not proof of correct gameplay.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
+
+## October 16 Canonical Copy-Entry Integration
+
+Canonical counter fixtures, retained printed/copiable characteristics and
+explicit human/AI copy-entry choices are now composed in the integration tree.
+Genuine copied permanent spells and the validated loyalty-return route retain
+their actual source frames and reserve a detached token identity only once.
+An independent review exposed a missing exact-type reference guard after a
+passing 1,801-case composition; its two-line correction has a separate meaningful
+RED and 756-case component pass. The final current declaration actually passes
+all 1,837 ordinary cases across 67 whole modules in 506.04 seconds, including
+every earlier 1,801 identity and the new 36 strict-reference controls. Source,
+runtime and owned-resource closure are independently checked. See
+[the source and acceptance boundaries](docs/testing/canonical-copy-entry-current.md).
+
+This is still Phase 1 work alongside UI integration, not a completed phase or
+release. Remaining handwritten-data scope, full hosted acceptance, physical
+browser checks and the original AI/data and release gates remain open.
 
 ## October 15 Operator And Extraction Corrections
 

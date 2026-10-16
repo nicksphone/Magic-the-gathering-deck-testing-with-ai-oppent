@@ -9,7 +9,7 @@ from rules_engine.action_validation import checked_action, ActionRejected
 from rules_engine.continuous import effective_combat_stats
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
-from tests.test_ai_recurring_engines import add as add_card
+from tests.counter_family_canonical091 import add_card
 from tests.test_counter_prohibitions import source as permanent
 from tests.test_counter_replacements import source as modifier, choose
 from tests.test_restricted_mana import clean

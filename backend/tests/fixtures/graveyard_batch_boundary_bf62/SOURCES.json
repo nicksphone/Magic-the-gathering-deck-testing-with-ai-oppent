@@ -1,0 +1,30 @@
+{
+  "Breeding Pool": {
+    "file": "tests/fixtures/graveyard_batch_boundary_bf62/breeding-pool.json",
+    "line": 0,
+    "raw_row_sha256": "9770aea79712271316eb3f164ae13b675458e74917d7a78a70c579d518f2346d",
+    "sha256": "18b384f23bf164039a556343aebed07b5a05a822233005295bfa7919f1d9afc7",
+    "steps": []
+  },
+  "Liquimetal Coating": {
+    "file": "tests/fixtures/graveyard_batch_boundary_bf62/liquimetal-coating.json",
+    "line": 0,
+    "raw_row_sha256": "a3f85ee1680e3bdc5341546fd88fe8bfbf246b88628824fc59e60897e1c1ea7c",
+    "sha256": "46a05afaabda76ca082479ff42fe92d2d7954c5ff53b672b0c888dd5b613529d",
+    "steps": []
+  },
+  "Progenitus": {
+    "file": "tests/fixtures/graveyard_batch_boundary_bf62/progenitus.json",
+    "line": 0,
+    "raw_row_sha256": "78706a82def157f416d37600424ceb234957f11dd46236e48b7d48aa33f648d3",
+    "sha256": "38f15c9d8d0ffd3aa4aaf2f042465d5291949e92603fdcdc2e70f04e3a38d4f4",
+    "steps": []
+  },
+  "Sculpting Steel": {
+    "file": "tests/fixtures/graveyard_batch_boundary_bf62/sculpting-steel.json",
+    "line": 0,
+    "raw_row_sha256": "2d1ed9af644cee944caf9bed17c8a615d5006d60c36ccad95b9238a33b2a3c22",
+    "sha256": "0e8435da84613b3902c6544162b616dc700fee2df6209221c2b8b65662ab127f",
+    "steps": []
+  }
+}

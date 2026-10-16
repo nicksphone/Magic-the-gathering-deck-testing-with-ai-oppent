@@ -15,7 +15,7 @@ PRINTED = frozenset((
     'name', 'types', 'mana_cost', 'power', 'toughness', 'printed_power',
     'printed_toughness', 'loyalty', 'keywords', 'oracle_text', 'type_line',
     'image_uri', 'card_faces', 'layout', 'selected_face_index', 'colors',
-    'printed_characteristics', 'knowledge_snapshot',
+    'printed_characteristics', 'knowledge_snapshot', 'characteristic_record',
 ))
 RANKING_NAMES = ('Tidings', 'Preordain', 'Explore', 'Deathbloom Gardener',
                  'Brindle Boar', 'Wayward Swordtooth', 'Divination')

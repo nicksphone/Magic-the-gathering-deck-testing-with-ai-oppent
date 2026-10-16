@@ -750,11 +750,8 @@ def copy_linked_exiled_card(state: MatchState, controller: int, payload: dict) -
     source = state.cards[source_id]
     previous_name = source.name
     selected = select_cast_face(state.cards[chosen], 0)
-    from rules_engine.type_effects import copiable_types, rebase_type_effects
-    for field in ("name", "mana_cost", "type_line", "types", "power", "toughness", "printed_power", "printed_toughness", "loyalty", "oracle_text", "keywords", "colors"):
-        source.printed_characteristics.setdefault(field, copiable_types(source) if field == 'types' else copy(getattr(source, field)))
-        setattr(source, field, copy(getattr(selected, field)))
-    rebase_type_effects(source)
+    from rules_engine.copiable_values import apply, values
+    apply(source, values(selected))
     state.log.append(f"{previous_name} becomes a copy of {selected.name}.")
 
 
@@ -1374,17 +1371,23 @@ def exile_return_immediate(state: MatchState, controller: int, payload: dict) ->
             or battlefield_entry_prohibited(state, target)):
         return
     recipient = data['__return_controller']
+    from rules_engine.entry_copy import prepare as prepare_copies, projections, commit as commit_copies
+    if prepare_copies(state, controller, [card], 'exile_return_immediate', data,
+                      controllers={target: recipient}):
+        return
+    projected_cards = projections(state, data)
+    entry_card = projected_cards.get(target, card)
     if pause_for_land_entries(state, controller, [target], 'exile_return_immediate', data,
-                              controllers={target: recipient}):
+                              controllers={target: recipient}, projections=projected_cards):
         return
     from rules_engine.oracle_effects import _parse_count_token
     from rules_engine.continuous import printed_abilities_suppressed
     entry_counts = {}
-    projected = copy.copy(card)
+    projected = copy.copy(entry_card)
     projected.zone, projected.controller = Zone.BATTLEFIELD, recipient
     projection = copy.copy(state)
     projection.cards = {**state.cards, target: projected}
-    clauses = '' if printed_abilities_suppressed(projection, target) else card.oracle_text
+    clauses = '' if printed_abilities_suppressed(projection, target) else entry_card.oracle_text
     for amount, kind in re.findall(
             r'^This (?:creature|artifact|enchantment|permanent) enters with '
             r'(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
@@ -1393,8 +1396,9 @@ def exile_return_immediate(state: MatchState, controller: int, payload: dict) ->
         entry_counts[kind.lower()] = entry_counts.get(kind.lower(), 0) + _parse_count_token(amount.lower())
     data['counters'] = entry_counts
     if prepare_counter_entries(state, controller, [card], 'exile_return_immediate', data,
-                               controllers={target: recipient}):
+                               controllers={target: recipient}, projections=projected_cards):
         return
+    commit_copies(state, data, [target])
     state.players[card.owner].exile.remove(target)
     card.move_to_zone(Zone.BATTLEFIELD)
     card.controller = recipient
@@ -1931,12 +1935,26 @@ def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller
             or not set(effective_types(state, card)) & {'Creature', 'Land', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle'}
             or set(effective_types(state, card)) & {'Instant', 'Sorcery'}):
         return
-    if not prepare_return_entry(state, controller, card, payload):
+    projected = {}
+    copy_return = payload.get('__loyalty_return_context', {}).get('kind') == 'sacrifice'
+    if copy_return:
+        from rules_engine.entry_copy import prepare as prepare_copies, projections, commit as commit_copies
+        if prepare_copies(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield',
+                          payload, controllers={target: controller}):
+            return
+        projected = projections(state, payload)
+    if not prepare_return_entry(state, controller, projected.get(target, card), payload):
         return
-    if prepare_counter_entries(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield', payload):
+    if copy_return:
+        from rules_engine.graveyard_batch_entry import _entry_seeds
+        seeds = _entry_seeds(state, [projected.get(target, card)], controllers={target: controller})
+    if prepare_counter_entries(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield', payload,
+                               **({'projections': projected, 'entry_payloads': seeds} if copy_return else {})):
         return
     from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
     departures = capture_graveyard_departures(state, [target])
+    if copy_return:
+        commit_copies(state, payload, [target])
     apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(target, "tapped"),
                        effect_tapped=payload.get('tapped') is True)
     source_graveyard.graveyard.remove(target)
@@ -2152,6 +2170,9 @@ def _place_searched_card(
 
 
 def create_token(state: MatchState, controller: int, payload: dict) -> None:
+    if not isinstance(payload, dict):
+        from rules_engine.action_validation import ActionRejected
+        raise ActionRejected('Token copy requires retained physical and copiable characteristics')
     from game_state.state import CardInstance
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     from rules_engine.domain import basic_land_type_count
@@ -2276,15 +2297,11 @@ def incubate(state: MatchState, controller: int, payload: dict) -> None:
 
 
 def token_copy_descriptor(target) -> dict:
-    from rules_engine.type_effects import copiable_types
-    return {
-        "name": target.name, "types": list(dict.fromkeys([*copiable_types(target), "Token"])),
-        "mana_cost": target.mana_cost, "type_line": target.type_line,
-        "power": target.power, "toughness": target.toughness,
-        "printed_power": target.printed_power, "printed_toughness": target.printed_toughness,
-        "oracle_text": target.oracle_text, "keywords": list(target.keywords or []),
-        "colors": target.colors or [], "image_uri": target.image_uri,
-    }
+    from rules_engine.copiable_values import values
+    data = values(target)
+    data['types'] = list(dict.fromkeys([*data['types'], 'Token']))
+    data.update(colors=data['colors'] or [], image_uri=target.image_uri)
+    return data
 
 
 def create_token_copy(state: MatchState, controller: int, payload: dict) -> None:

@@ -11,7 +11,7 @@ const supportedMechanicControls = new Set<string>([
   "graveyard_return", "optional_reveal", "discard", "each_player_discard", "cleanup_discard", "mulligan_bottom",
   "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "land_from_hand", "saga_entry", "entry_mode", "note_creature_type",
   "attacking_token_target", "topdeck_reveal_creature", "topdeck_put", "topdeck_bottom_order",
-  "look_top_choose", "look_top_select_hand", "search_library", "combat_damage", "copy_target", "spree_target_change",
+  "look_top_choose", "look_top_select_hand", "search_library", "combat_damage", "copy_target", "spree_target_change", "entry_copy",
   "foretell_from_hand", "choose_revealed_discard", "choose_revealed_exile", "linked_exile_copy",
   "legend_keeper", "exchange_energy_payment", "loyalty_cards", "loyalty_attachment",
 ]);
@@ -333,7 +333,19 @@ export function Controls(props: Props) {
                 {permanent.power !== null && permanent.toughness !== null ? `, ${permanent.power}/${permanent.toughness}` : ""}
                 {Object.entries(permanent.counters ?? {}).map(([name, count]) => `, ${name}: ${count}`).join("")}</span> : null}
             </button>;
-          }) : mechanicMove.kind === "copy_target" || mechanicMove.kind === "spree_target_change" ? (mechanicMove.options ?? []).map((cid) => (
+          }) : mechanicMove.kind === "entry_copy" ? <>
+            {(mechanicMove.options ?? []).map((cid) => {
+              const permanent = Object.values(props.match?.players ?? {}).flatMap(player => player.battlefield).find(card => card.id === cid);
+              return <button type="button" key={cid} data-entry-copy-id={cid} disabled={!permanent}
+                onClick={() => {
+                  if (permanent) props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] });
+                }}>{permanent?.name || "Unavailable permanent"} ({cid})</button>;
+            })}
+            {mechanicMove.min_count === 0 ? <button type="button"
+              onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [] })}>
+              Enter without copying
+            </button> : null}
+          </> : mechanicMove.kind === "copy_target" || mechanicMove.kind === "spree_target_change" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "draw" || mechanicMove.kind === "land_entry" || mechanicMove.kind === "saga_entry" || mechanicMove.kind === "entry_mode" || mechanicMove.kind === "note_creature_type" || mechanicMove.kind === "exchange_energy_payment" || mechanicMove.kind === "loyalty_attachment" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>

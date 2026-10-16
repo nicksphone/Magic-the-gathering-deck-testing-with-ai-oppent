@@ -5,6 +5,15 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The current [copy-entry integration](canonical-copy-entry-current.md) also
+advances complete canonical counter fixtures, retained physical characteristics
+and deliberate human/AI choices. Its final declaration actually passes 1,837
+ordinary cases across 67 whole modules with all previous identities retained.
+The earlier passing 1,801-case composition remains explicitly held for the strict
+reference-type correction found by independent review; the final source includes
+that correction and all 36 new controls. UI work proceeds in parallel; neither
+it nor a larger passing count signs off this phase.
+
 The latest independently executed [RAW/prevention composition](phase1-raw-prevention-composed646.md)
 passes 646 cases across 18 whole modules on exact `a75ce7cf`, retaining all
 earlier 587 RAW and 59 prevention identities in one actual declaration. This

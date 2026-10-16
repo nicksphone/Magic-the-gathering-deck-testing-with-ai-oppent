@@ -81,6 +81,9 @@ def finish_reveal(state, player_id, action):
 
 
 def public_choice(pending):
+    if pending and pending.get('kind') == 'entry_copy':
+        from rules_engine.entry_copy import choice_view
+        return choice_view(pending)
     if pending and pending.get('kind') in {'discard', 'each_player_discard'}:
         return {key: pending[key] for key in
                 ('kind', 'player_id', 'label', 'count', 'min_count') if key in pending}

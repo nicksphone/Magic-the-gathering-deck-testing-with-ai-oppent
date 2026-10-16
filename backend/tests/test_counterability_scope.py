@@ -10,6 +10,7 @@ from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
 from rules_engine.action_validation import checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
+from tests.counterability_canonical_936 import canonical_card, deck_entry
 
 
 CARDS = {row["name"]: row for row in json.loads(
@@ -17,7 +18,7 @@ CARDS = {row["name"]: row for row in json.loads(
 
 
 def state_with_card(name, zone=Zone.STACK, controller=2):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=707)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -34,13 +35,7 @@ def state_with_card(name, zone=Zone.STACK, controller=2):
 def add_card(state, name, zone, controller):
     raw = CARDS[name]
     cid = f"{name}-{len(state.cards)}"
-    types = [kind for kind in ["Creature", "Enchantment", "Instant", "Sorcery"]
-             if kind in raw["type_line"].split()]
-    card = CardInstance(cid, name, controller, controller, zone, types,
-                        mana_cost=raw["mana_cost"], type_line=raw["type_line"],
-                        oracle_text=raw["oracle_text"], colors=raw["colors"],
-                        power=int(raw["power"]) if raw["power"] else None,
-                        toughness=int(raw["toughness"]) if raw["toughness"] else None)
+    card = canonical_card(name, id=cid, owner=controller, controller=controller, zone=zone)
     state.cards[cid] = card
     if zone != Zone.STACK:
         getattr(state.players[controller], zone.value).append(cid)

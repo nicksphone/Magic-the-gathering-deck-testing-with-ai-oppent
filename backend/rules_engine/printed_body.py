@@ -82,6 +82,14 @@ def printed_body_gaps(card):
     """Recognized complete families must account for the entire selected text."""
     text = card.oracle_text or ''
     types = set(card.types or [])
+    if re.search(r'you may have .+ enter as a copy', text, re.I):
+        from rules_engine.entry_copy import compile_instruction
+        from rules_engine.action_validation import ActionRejected
+        try:
+            compiled = compile_instruction(text)
+        except ActionRejected:
+            return ('unsupported complete as-entry copy body',)
+        return () if compiled is not None else ('unsupported complete as-entry copy body',)
     if 'Planeswalker' in types:
         from rules_engine.closed_loyalty import compile_body
         return (() if compile_body(text, card.name) is not None

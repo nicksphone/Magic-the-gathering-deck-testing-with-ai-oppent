@@ -34,9 +34,15 @@ def current(state, cid, ref):
 
 def copiable_lki(state, card):
     from effects.handlers import token_copy_descriptor
+    from rules_engine.action_validation import ActionRejected
     from rules_engine.type_effects import effective_types
-    data = token_copy_descriptor(card)
-    data['loyalty'] = card.loyalty
+    try:
+        data = token_copy_descriptor(card)
+    except ActionRejected:
+        # Every departure captures LKI. Missing copy metadata is not a failed move.
+        return {'reference': reference(card), 'controller': card.controller,
+                'types': list(effective_types(state, card)), 'descriptor': None,
+                'unavailable': 'missing_copiable_characteristics'}
     if card.layout in {'transform', 'modal_dfc', 'double_faced_token'}:
         from rules_engine.action_validation import ActionRejected
         face = card.selected_face_index if card.selected_face_index is not None else 0

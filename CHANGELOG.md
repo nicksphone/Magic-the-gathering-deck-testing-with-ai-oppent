@@ -1,5 +1,23 @@
 # Changelog
 
+## Canonical Copy-Entry Integration - 2026-10-16
+
+- Retain printed/copied characteristics and positional-constructor compatibility;
+  carry deliberate copy-entry choices through supported physical, copied-spell
+  and loyalty-return routes with once-only detached-token allocation. Reject
+  typed-reference aliases before entry commits. The combined 67-whole-module
+  declaration passes all 1,837 ordinary cases in 506.04s; original failures and
+  intermediate review holds remain archived rather than relabeled.
+- Add human copy-selection/decline controls and executable-choice AI selection
+  without changing public options or ranking weights. Real paid HTTP entry and
+  SQLite restoration pass all 16 cases; full frontend tests, build and lint pass.
+  Copied Auras, physical-browser acceptance, Phase 1 and release remain open.
+- Replace further shortened counter fixtures with complete official card data
+  and provenance; keep original test identities, assertions and runtime defaults.
+- Migrate two draw-fixture families without production changes; five whole
+  modules separately pass 28 checks in 4.35s on the corrected backend. This is
+  not folded into the earlier 1,837-case execution.
+
 ## Backend Composition - 2026-10-07
 
 - Compose retained Ray announcing/resolving frames, copied-spell controller

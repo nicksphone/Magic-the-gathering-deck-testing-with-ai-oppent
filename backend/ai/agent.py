@@ -295,6 +295,22 @@ class AIAgent:
         choice = next((move for move in legal_moves if move.get("type") == "choose_mechanic"), None)
         if choice:
             options = list(choice.get("options", []))
+            if choice['kind'] == 'entry_copy':
+                from rules_engine.action_validation import ActionRejected
+                from rules_engine.entry_copy import selected_option
+                executable = []
+                # Eligibility is broader than the currently executable entry forms.
+                for cid in options:
+                    try:
+                        selected_option(state, player_id, {'type': 'choose_mechanic', 'card_ids': [cid]})
+                    except ActionRejected:
+                        continue
+                    executable.append(cid)
+                executable.sort(key=lambda cid: (("Creature" in effective_types(state, state.cards[cid])),
+                                                  mana_value(state.cards[cid].mana_cost), cid))
+                action = {'type': 'choose_mechanic', 'card_ids': executable[:1]}
+                selected_option(state, player_id, action)
+                return AIDecision(action=action, reasoning='Choose an executable entry copy, or keep the original form')
             if choice['kind'] in {'loyalty_cards', 'loyalty_attachment'}:
                 def entry_score(action, *, aura_source=None):
                     from ai.pending_effects import _settle_announced_stack

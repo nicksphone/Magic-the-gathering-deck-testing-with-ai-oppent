@@ -94,6 +94,17 @@ def resolve_annihilator(state, controller: int, payload: dict) -> None:
 
 
 def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
+    pending_copy = state.pending_mechanic_choice
+    if (pending_copy and pending_copy.get('kind') == 'land_entry'
+            and '__entry_copy_plan' in pending_copy.get('effect_payload', {})):
+        from rules_engine.entry_copy import validate_land_choice
+        validate_land_choice(state, player_id, action)
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'entry_copy':
+        from rules_engine.entry_copy import finish_choice
+        return finish_choice(state, player_id, action)
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('graveyard_batch') is True:
+        from rules_engine.graveyard_batch_entry import finish_choice
+        return finish_choice(state, player_id, action)
     if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') in {'loyalty_cards', 'loyalty_attachment'}:
         from rules_engine.loyalty_instructions import finish_choice
         return finish_choice(state, player_id, action)

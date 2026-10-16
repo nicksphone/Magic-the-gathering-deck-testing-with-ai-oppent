@@ -29,6 +29,8 @@ def select_cast_face(card, index=None):
             setattr(proxy, f'printed_{field}', str(value) if value is not None else None)
     proxy.image_uri = face.get("image_uri") or getattr(card, "image_uri", None)
     proxy.selected_face_index = index
+    from rules_engine.copiable_values import record_form
+    record_form(proxy)
     return proxy
 
 
@@ -39,6 +41,8 @@ def apply_cast_face(card, face):
     for field in FACE_FIELDS:
         card.printed_characteristics.setdefault(field, copy(getattr(card, field)))
         setattr(card, field, copy(getattr(face, field)))
+    from rules_engine.copiable_values import record_form
+    record_form(card)
 
 
 def apply_transform_face(card, index):
@@ -48,6 +52,8 @@ def apply_transform_face(card, index):
     for field in FACE_FIELDS:
         card.printed_characteristics.setdefault(field, copy(getattr(front, field)))
         setattr(card, field, copy(getattr(face, field)))
+    from rules_engine.copiable_values import record_form
+    record_form(card)
     from rules_engine.type_effects import rebase_type_effects
     rebase_type_effects(card)
 

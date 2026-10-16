@@ -271,7 +271,10 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(state.mulligan_count.get(player_id, 0) < 7, "Cannot mulligan below zero opening cards")
     elif kind == "choose_mechanic":
         pending = state.pending_mechanic_choice
-        if pending["kind"] == "combat_damage":
+        if pending['kind'] == 'entry_copy':
+            from rules_engine.entry_copy import selected_option
+            selected_option(state, player_id, action)
+        elif pending["kind"] == "combat_damage":
             from rules_engine.combat import valid_damage_assignment
             require(valid_damage_assignment(state, player_id, action), "Invalid combat damage assignment")
         elif pending["kind"] in {"draw", "land_entry", "saga_entry", "note_creature_type", "entry_mode", "exchange_energy_payment", "loyalty_attachment"}:

@@ -1,0 +1,16 @@
+{
+  "body_modified": false,
+  "body_sha256": "418213d937ca862d8d281ec7303c2f7cbdc361d1b5a4208d45ac4270e0c11f50",
+  "curl_exit": 0,
+  "effective_url": "https://api.scryfall.com/cards/named?exact=Purify",
+  "headers_sha256": "87e32b9b50e15a8a8381ad9a9c133043ced2e541eecbb73cc6520328d16b5155",
+  "http_status": 200,
+  "minimum_spacing_seconds": 0.55,
+  "name": "Purify",
+  "redirects_allowed": false,
+  "request_end_utc": "2026-10-16T09:52:34.726496+00:00",
+  "request_start_utc": "2026-10-16T09:52:34.311592+00:00",
+  "requested_url": "https://api.scryfall.com/cards/named?exact=Purify",
+  "retries": 0,
+  "rulings_or_images_fetched": false
+}

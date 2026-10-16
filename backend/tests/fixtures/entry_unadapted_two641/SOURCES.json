@@ -1,0 +1,74 @@
+{
+  "Counterspell": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "line": 23,
+    "provenance": [
+      {
+        "file": "knowledge_profiles/PROVENANCE.json",
+        "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      }
+    ],
+    "raw_row_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e"
+  },
+  "Daretti, Scrap Savant": {
+    "file": "entry_unadapted_two641/daretti-scrap-savant.json",
+    "file_sha256": "4fc9d73aded6d4c3cacd7f72d745f670d032b8ee6c8c36a15ac40204ac3506cc",
+    "line": null,
+    "provenance": [
+      {
+        "file": "entry_unadapted_two641/DARETTI_PROVENANCE.json",
+        "sha256": "3567b3b20d3b26b08eeb793d9e7dc8308c9da965ad721361f540276217b1691c"
+      }
+    ],
+    "raw_row_sha256": "40c721cccd657d51226a787f9b397aad54d19a6c24b94e3adbc232daaec4a570"
+  },
+  "Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "line": 50,
+    "provenance": [
+      {
+        "file": "knowledge_profiles/PROVENANCE.json",
+        "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      }
+    ],
+    "raw_row_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b"
+  },
+  "Lithoform Engine": {
+    "file": "creature_observer_fix/lithoform-engine.json",
+    "file_sha256": "7930e96a947ed3edc2310b8e8ec20e13d2cdb9f2291ccf49b69bd243d7a4c799",
+    "line": null,
+    "provenance": [
+      {
+        "file": "creature_observer_fix/provenance.json",
+        "sha256": "c3d26325827ba3d7685b80aa4f11dbad1789045404e64d55cf2b996ad9847cae"
+      }
+    ],
+    "raw_row_sha256": "22a20453f02f46b14f47f273370ce8dc8eea4404af24d5423db320d71cfdc61e"
+  },
+  "Sculpting Steel": {
+    "file": "graveyard_batch_boundary_bf62/sculpting-steel.json",
+    "file_sha256": "0e8435da84613b3902c6544162b616dc700fee2df6209221c2b8b65662ab127f",
+    "line": null,
+    "provenance": [
+      {
+        "file": "graveyard_batch_boundary_bf62/PROVENANCE.json",
+        "sha256": "341bffb1fb51bc26c7206596c4864e134e007e22ecd831ea2d753766b913eede"
+      }
+    ],
+    "raw_row_sha256": "2d1ed9af644cee944caf9bed17c8a615d5006d60c36ccad95b9238a33b2a3c22"
+  },
+  "Sol Ring": {
+    "file": "creature_observer_fix/sol-ring.json",
+    "file_sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+    "line": null,
+    "provenance": [
+      {
+        "file": "creature_observer_fix/provenance.json",
+        "sha256": "c3d26325827ba3d7685b80aa4f11dbad1789045404e64d55cf2b996ad9847cae"
+      }
+    ],
+    "raw_row_sha256": "77b61b9b0141eb45cf35ae78e9db7ca7c2c69d5cf9c10b50303d98d0518cb773"
+  }
+}

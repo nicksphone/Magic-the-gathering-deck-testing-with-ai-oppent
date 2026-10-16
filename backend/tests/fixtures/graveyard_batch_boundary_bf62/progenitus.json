@@ -1,0 +1,149 @@
+{
+  "arena_id": 93957,
+  "artist": "Jaime Jones",
+  "artist_ids": [
+    "92f6c2c1-fa57-4b52-99c4-0fd866c13dc9"
+  ],
+  "booster": true,
+  "border_color": "black",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "cardmarket_id": 795134,
+  "cmc": 10.0,
+  "collector_number": "244",
+  "color_identity": [
+    "B",
+    "G",
+    "R",
+    "U",
+    "W"
+  ],
+  "colors": [
+    "B",
+    "G",
+    "R",
+    "U",
+    "W"
+  ],
+  "digital": false,
+  "edhrec_rank": 6629,
+  "finishes": [
+    "nonfoil",
+    "foil"
+  ],
+  "flavor_text": "The Soul of the World has returned.",
+  "foil": true,
+  "frame": "2015",
+  "frame_effects": [
+    "legendary"
+  ],
+  "full_art": false,
+  "game_changer": false,
+  "games": [
+    "paper",
+    "arena",
+    "mtgo"
+  ],
+  "highres_image": true,
+  "id": "e77fbc87-d78e-4602-baa0-da9b0d464dfb",
+  "illustration_id": "1fde14ba-e26e-4619-87c3-a2703e38d475",
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T02:17:31Z",
+  "image_uris": {
+    "art": "https://cards.scryfall.io/art/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.webp?1783909051",
+    "art_crop": "https://cards.scryfall.io/art_crop/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.jpg?1783909051",
+    "border_crop": "https://cards.scryfall.io/border_crop/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.jpg?1783909051",
+    "crop": "https://cards.scryfall.io/crop/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.webp?1783909051",
+    "display": "https://cards.scryfall.io/display/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.webp?1783909051",
+    "grid": "https://cards.scryfall.io/grid/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.webp?1783909051",
+    "large": "https://cards.scryfall.io/large/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.jpg?1783909051",
+    "normal": "https://cards.scryfall.io/normal/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.jpg?1783909051",
+    "png": "https://cards.scryfall.io/png/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.png?1783909051",
+    "small": "https://cards.scryfall.io/small/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.jpg?1783909051",
+    "thumb": "https://cards.scryfall.io/thumb/front/e/7/e77fbc87-d78e-4602-baa0-da9b0d464dfb.webp?1783909051"
+  },
+  "keywords": [
+    "Protection"
+  ],
+  "lang": "en",
+  "layout": "normal",
+  "legalities": {
+    "alchemy": "legal",
+    "brawl": "legal",
+    "commander": "legal",
+    "competitivebrawl": "legal",
+    "duel": "legal",
+    "future": "legal",
+    "gladiator": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "legal",
+    "oathbreaker": "legal",
+    "oldschool": "not_legal",
+    "pauper": "not_legal",
+    "paupercommander": "not_legal",
+    "penny": "legal",
+    "pioneer": "legal",
+    "predh": "legal",
+    "premodern": "not_legal",
+    "standard": "legal",
+    "standardbrawl": "legal",
+    "timeless": "legal",
+    "tlr": "not_legal",
+    "vintage": "legal"
+  },
+  "mana_cost": "{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}",
+  "mtgo_id": 133514,
+  "multiverse_ids": [
+    679986
+  ],
+  "name": "Progenitus",
+  "nonfoil": true,
+  "object": "card",
+  "oracle_id": "2d7e00b6-12f0-4b03-82a6-50e3d1b5395e",
+  "oracle_text": "Protection from everything\nIf Progenitus would be put into a graveyard from anywhere, reveal Progenitus and shuffle it into its owner's library instead.",
+  "oversized": false,
+  "penny_rank": 2260,
+  "power": "10",
+  "prices": {
+    "eur": "0.72",
+    "eur_foil": "1.34",
+    "tix": "0.02",
+    "usd": "0.88",
+    "usd_etched": null,
+    "usd_foil": "1.61"
+  },
+  "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A2d7e00b6-12f0-4b03-82a6-50e3d1b5395e&unique=prints",
+  "promo": false,
+  "purchase_uris": {
+    "cardhoarder": "https://www.cardhoarder.com/cards/133514?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+    "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=795134&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+    "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F589457%3Fpage%3D1"
+  },
+  "rarity": "mythic",
+  "related_uris": {
+    "edhrec": "https://edhrec.com/route/?cc=Progenitus",
+    "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=679986&printed=false",
+    "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DProgenitus",
+    "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DProgenitus"
+  },
+  "released_at": "2024-11-15",
+  "reprint": true,
+  "reserved": false,
+  "rulings_uri": "https://api.scryfall.com/cards/e77fbc87-d78e-4602-baa0-da9b0d464dfb/rulings",
+  "scryfall_set_uri": "https://scryfall.com/sets/fdn?utm_source=api",
+  "scryfall_uri": "https://scryfall.com/card/fdn/244/progenitus?utm_source=api",
+  "security_stamp": "oval",
+  "set": "fdn",
+  "set_id": "a7ecb771-d1b6-4dec-8cf5-8d45179f21e0",
+  "set_name": "Foundations",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Afdn&unique=prints",
+  "set_type": "core",
+  "set_uri": "https://api.scryfall.com/sets/a7ecb771-d1b6-4dec-8cf5-8d45179f21e0",
+  "story_spotlight": false,
+  "tcgplayer_id": 589457,
+  "textless": false,
+  "toughness": "10",
+  "type_line": "Legendary Creature — Hydra Avatar",
+  "uri": "https://api.scryfall.com/cards/e77fbc87-d78e-4602-baa0-da9b0d464dfb",
+  "variation": false
+}

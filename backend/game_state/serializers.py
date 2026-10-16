@@ -252,6 +252,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 **({'knowledge_snapshot': copy_snapshot(card.knowledge_snapshot)} if card.knowledge_snapshot else {}),
                 "chosen_creature_type": card.chosen_creature_type,
                 "printed_characteristics": dict(card.printed_characteristics),
+                "characteristic_record": deepcopy(card.characteristic_record),
                 "bestow_characteristics": deepcopy(card.bestow_characteristics),
                 "colors": card.colors,
                 "last_known_battlefield": dict(card.last_known_battlefield),
@@ -331,6 +332,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             layout=str(raw.get("layout") or ""),
             chosen_creature_type=raw.get("chosen_creature_type"),
             printed_characteristics=dict(raw.get("printed_characteristics", {})),
+            characteristic_record=deepcopy({} if raw.get('characteristic_record') is None
+                                           else raw['characteristic_record']),
             bestow_characteristics=deepcopy(raw.get('bestow_characteristics', {})),
             colors=list(raw["colors"]) if raw.get("colors") is not None else None,
             last_known_battlefield=dict(raw.get("last_known_battlefield", {})),

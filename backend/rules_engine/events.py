@@ -1325,9 +1325,14 @@ def _self_entry_transform_clauses(card, oracle):
             yield line.strip(), match[2]
 
 
-def _entry_observer_clause(oracle: str):
+def _entry_observer_clause(oracle: str, *, source_name: str | None = None):
+    reference = r'this (?:creature|permanent|artifact|enchantment|planeswalker|aura|equipment|vehicle|land|battle|token)'
+    if source_name:
+        reference += '|' + re.escape(source_name)
     return re.fullmatch(
-        r"(?:when|whenever) (a|an|another) (nontoken creature|creature|permanent|artifact|enchantment)"
+        r"(?:[a-z][a-z -]*\s*[\u2014\u2013-]\s*)?(?:when|whenever) "
+        r"((?:" + reference + r") or another|a|an|another) "
+        r"(nontoken creature|creature|permanent|artifact|enchantment)"
         r"( you control)? enters(?: the battlefield)?( under your control)?, (.+)",
         oracle.strip(), re.I,
     )
@@ -1365,14 +1370,17 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
     entering_types = set(effective_types(state, entering_card) or [])
     enters_for_controller = entering_card.controller == card.controller
     for line in oracle.splitlines():
-        clause = _entry_observer_clause(line)
+        clause = _entry_observer_clause(line, source_name=card.name)
         if clause:
             another, kind, modern_control, legacy_control, _ = clause.groups()
+            self_or_another = another.lower().endswith(' or another')
+            if self_or_another and entering_id == card.id:
+                return True
             nontoken = kind.lower().startswith('nontoken ')
             if nontoken:
                 kind = kind[len('nontoken '):]
             if ((not modern_control and not legacy_control or enters_for_controller)
-                    and (another.lower() != 'another' or entering_id != card.id)
+                    and (another.lower() != 'another' and not self_or_another or entering_id != card.id)
                     and (not nontoken or not entering_card.is_token)
                     and (kind.lower() == 'permanent' or kind.title() in entering_types)):
                 return True
@@ -1982,6 +1990,21 @@ def _trigger_from_oracle(
             entry = re.fullmatch(r'(?:when|whenever) [^,]+, (.+)', line.strip(), re.I)
             instruction = next_turn_draw_instruction(entry[1]) if entry else None
             if instruction is not None and _matches_enters_battlefield_trigger(state, source, line, payload):
+                observer = _entry_observer_clause(line, source_name=source.name)
+                if observer is not None and (
+                        observer[1].lower().endswith(' or another')
+                        or not re.match(r'(?:when|whenever)\b', observer[0], re.I)):
+                    raw_clauses = [clause.strip() for clause in raw_entry.splitlines()
+                                   if _matches_enters_battlefield_trigger(state, source, clause, payload)]
+                    raw_observer = (_entry_observer_clause(raw_clauses[0], source_name=source.name)
+                                    if len(raw_clauses) == 1 else None)
+                    instruction = next_turn_draw_instruction(raw_observer[5]) if raw_observer else None
+                    if instruction is None:
+                        clause = '\n'.join(raw_clauses) or raw_entry
+                        return {'source_card_id': source_card_id, 'controller': controller,
+                                'label': default_label, 'effect_key': 'noop', 'payload': {
+                                    '__trigger_full_clause': clause,
+                                    '__unsupported_trigger_instruction': clause}}
                 return {'source_card_id': source_card_id, 'controller': controller,
                         'label': default_label, 'effect_key': 'schedule_next_turn_draw',
                         'payload': {**instruction, 'source_card_id': source_card_id}}
@@ -2025,11 +2048,25 @@ def _trigger_from_oracle(
                 return {'source_card_id': source_card_id, 'controller': controller,
                         'label': default_label, 'effect_key': key, 'payload': data}
         entries = [clause for line in oracle.splitlines()
-                   if (clause := _entry_observer_clause(line)) is not None
+                   if (clause := _entry_observer_clause(line, source_name=source.name)) is not None
                    and _matches_enters_battlefield_trigger(state, source, line, payload)]
-        # Paid and loot paths retain their existing choice/cost delegation.
-        if entries and not any(re.search(r'\byou may\b|\bif you do\b|\bdiscard\b', entry[5], re.I)
-                               for entry in entries):
+        extended_observer = any(
+            entry[1].lower().endswith(' or another')
+            or not re.match(r'(?:when|whenever)\b', entry[0], re.I) for entry in entries)
+        if extended_observer and raw_entry is not None:
+            # Never discard an unknown suffix/reminder before compiling this full body.
+            entries = [clause for line in raw_entry.splitlines()
+                       if (clause := _entry_observer_clause(line, source_name=source.name)) is not None
+                       and _matches_enters_battlefield_trigger(state, source, line, payload)]
+            if not entries:
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'noop', 'payload': {
+                            '__trigger_full_clause': raw_entry,
+                            '__unsupported_trigger_instruction': raw_entry}}
+        # Legacy paid and loot paths retain their existing choice/cost delegation.
+        if entries and (extended_observer or not any(
+                re.search(r'\byou may\b|\bif you do\b|\bdiscard\b', entry[5], re.I)
+                for entry in entries)):
             instruction = entries[0][5]
             data = {'__trigger_full_clause': entries[0][0]}
             supported = (len(entries) == 1 and re.fullmatch(
@@ -2338,6 +2375,25 @@ def _trigger_from_oracle(
                                  + r') enters(?: the battlefield)?, (.+)', line.strip(), re.I)
             if entry:
                 self_instructions.append((line.strip(), entry[1]))
+    if (event == 'enters_battlefield' and self_instructions and any(re.search(
+            r'\bdiscard (?:all the cards in your hand|your hand), then\b', body, re.I)
+            for _, body in self_instructions)):
+        from rules_engine.linked_discard import linked_discard_effect
+        # Discovery may normalize text; execution must consume the complete raw clause.
+        entries = []
+        for line in raw_entry.splitlines():
+            candidate = re.fullmatch(self_entry_pattern, without_reminder_text(line).strip(), re.I)
+            if candidate:
+                raw_match = re.fullmatch(self_entry_pattern, line.strip(), re.I)
+                entries.append((line.strip(), raw_match[1] if raw_match else None))
+        instruction = entries[0][1] if len(entries) == 1 else None
+        linked = linked_discard_effect(instruction) if instruction is not None else None
+        key = 'discard_cards' if linked is not None else 'noop'
+        data = ({'self_discard': True, **linked} if linked is not None else
+                {'__unsupported_trigger_instruction': '\n'.join(line for line, _ in entries)})
+        data['__trigger_full_clause'] = '\n'.join(line for line, _ in entries)
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': key, 'payload': data}
     if self_instructions:
         linked = [body for _, body in self_instructions if re.match(
             r'exile target (?:creature|permanent|nonland permanent|artifact|enchantment)'

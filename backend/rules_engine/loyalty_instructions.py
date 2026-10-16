@@ -664,7 +664,8 @@ def prepare_return_entry(state, controller, card, payload):
             state.passed_priority = set()
             return False
     if pause_for_land_entries(state, controller, [card.id],
-                             'return_permanent_from_graveyard_to_battlefield', payload):
+                             'return_permanent_from_graveyard_to_battlefield', payload,
+                             projections={card.id: card}):
         # Reuse the already payload-private loyalty choice view, not a new UI schema.
         if '__loyalty_return_context' in payload:
             state.pending_mechanic_choice.update(kind='loyalty_attachment', graveyard_entry=True,
