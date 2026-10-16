@@ -13,7 +13,8 @@ FIXTURES = Path(__file__).parent / 'fixtures'
 SOURCES = json.loads((FIXTURES / 'stack_copy_printed_b720/SOURCES.json').read_bytes())
 PRINTED_FIELDS = ('name', 'oracle_text', 'mana_cost', 'type_line', 'types', 'power',
     'toughness', 'printed_power', 'printed_toughness', 'loyalty', 'colors', 'keywords',
-    'layout', 'card_faces', 'selected_face_index', 'printed_characteristics', 'image_uri')
+    'layout', 'card_faces', 'selected_face_index', 'printed_characteristics', 'image_uri',
+    'characteristic_record')
 
 
 def raw_card(name):

@@ -1,0 +1,64 @@
+{
+  "Counterspell": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "line": 23,
+    "object_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "provenance": "Complete immutable db4e committed official object; shortlist reuse verified where named; seed155 Counterspell/Island share the same full pinned official source file.",
+    "steps": []
+  },
+  "Elvish Clancaller": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "4da3b0bc-84da-4b85-992b-d0700c97157c",
+    "line": 32,
+    "object_sha256": "24d3c09a3330f04d7c3161f886fed8ede93c6b2dcf2802d60d97cc666a0d807e",
+    "oracle_id": "a8f5440e-5d4b-420a-8cfd-27a3c72be0d2",
+    "provenance": "Complete immutable db4e committed official object; shortlist reuse verified where named; seed155 Counterspell/Island share the same full pinned official source file.",
+    "steps": []
+  },
+  "Grizzly Bears": {
+    "file": "ai_terminal_draw/grizzly-bears.raw.json",
+    "file_sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "line": null,
+    "object_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "provenance": "Complete immutable db4e committed official object; shortlist reuse verified where named; seed155 Counterspell/Island share the same full pinned official source file.",
+    "steps": []
+  },
+  "Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+    "line": 50,
+    "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "provenance": "Complete immutable db4e committed official object; shortlist reuse verified where named; seed155 Counterspell/Island share the same full pinned official source file.",
+    "steps": []
+  },
+  "Llanowar Elves": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "line": 58,
+    "object_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "provenance": "Complete immutable db4e committed official object; shortlist reuse verified where named; seed155 Counterspell/Island share the same full pinned official source file.",
+    "steps": []
+  },
+  "Sangromancer": {
+    "file": "queued_lifecycle/canonical.json",
+    "file_sha256": "e268165b1fed84e45a0586449d1e3a1f526929ba4b519015f80f96aff01422c8",
+    "id": "59f7f84c-d0a8-4204-a68e-93075f2a96b0",
+    "line": null,
+    "object_sha256": "7f14cc99284b51431b281f7c8fc6419bfb3792a215a0bc29a7f24bb7167133f9",
+    "oracle_id": "920445ab-0ac2-4de7-bc1c-f5e58eb4424c",
+    "provenance": "Complete immutable db4e committed official object; shortlist reuse verified where named; seed155 Counterspell/Island share the same full pinned official source file.",
+    "steps": [
+      "Sangromancer"
+    ]
+  }
+}

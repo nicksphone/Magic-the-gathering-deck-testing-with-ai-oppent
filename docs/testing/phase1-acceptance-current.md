@@ -5,6 +5,27 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The older whole-backend failure has an explicit
+[224-call recovery ledger](backend-0efa-regression-recovery.md). The reviewed
+public-inventory correction passes 719 cases across 11 whole modules, including
+all 162 historical failed identities from that cluster, without accepting missing
+or malformed retained records. Complete later-source/backend and protected replay
+acceptance remain separate; local component passes do not sign off this phase.
+
+The latest [copy-stock/cleanup declaration](canonical-copy-cleanup-current.md)
+passes 120 ordinary cases across seven whole modules. It replaces the malformed
+Forest-to-creature stock substitution with genuine canonical birth, preserves
+both original copy test bodies and all six cleanup identities, and retains native
+stock-tamper rejection. The intermediate per-card-only correction is not treated
+as final birth acceptance. This is not a whole-current-backend or Phase 1 sign-off.
+
+The latest [target/discard/Wedding declaration](canonical-target-discard-wedding-current.md)
+passes all 82 ordinary cases across five whole modules, including all three
+original HTTP bodies. Original functions, assertion ASTs and engine actions
+remain. Full source/runtime preservation and actual resource closure pass.
+Remaining fixture families, the literal repository-wide requirement and complete
+current backend acceptance are still open.
+
 The [final data-acceptance component](phase1-final-data-acceptance833.md) now
 passes all 833 ordinary cases across 17 whole modules. It retains all 829
 earlier identities and adds four actual data/CLI/hydration checks, including

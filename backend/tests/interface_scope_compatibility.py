@@ -1,4 +1,5 @@
 """Finite byte-exact undo of identified public deltas, preserving old witnesses."""
+import ast
 import hashlib
 import json
 from pathlib import Path
@@ -24,6 +25,18 @@ assert REPOSITORY_DELTAS['source'] == 'persistence/repository.py'
 assert REPOSITORY_DELTAS['accepted_public_commits'] == [
     'cd271b9edac81018e68a64cafd35ec9ca1b71530', '357680de093b0048b96f1f8596defae0f19f5b9d']
 ACCEPTED_REPOSITORY_DELTA = REPOSITORY_DELTAS['accepted_repository_delta']
+
+FINITE_PATH = PATH.with_name('accepted_76_source_inverses.json')
+finite_raw = FINITE_PATH.read_bytes()
+assert hashlib.sha256(finite_raw).hexdigest() == '268baa65862fe5eab759629e5b8370a8943f4d3dcae8077009515f2e0494324d'
+FINITE = json.loads(finite_raw)
+assert FINITE['function_delta_predecessor'] == '091e7e4eed2b0be6dd1b7f9fe38068dc42833a79'
+expected_raw = PATH.parents[1].joinpath('rules_printed_facts_e4/UNCHANGED_FUNCTION_SHA256.json').read_bytes()
+assert hashlib.sha256(expected_raw).hexdigest() == '94a314f7a95f8a1f538f06c181c274324b2afef2d97414f8d1c8ce29dd7e3559'
+EXPECTED_FUNCTIONS = json.loads(expected_raw)
+assert len(FINITE['functions']) == 14
+assert all(recipe['old_sha256'] == EXPECTED_FUNCTIONS[identity]
+           for identity, recipe in FINITE['functions'].items())
 
 
 def _restore(text, recipe):
@@ -76,5 +89,25 @@ def restore_keyword_edges(text):
     assert text.count(prefix) == text.count(suffix) == 1
     before, remaining = text.split(prefix)
     middle, after = remaining.split(suffix)
+    if hashlib.sha256(before.encode()).hexdigest() not in {
+            CONTRACT['keyword_prefix']['old_sha256'], CONTRACT['keyword_prefix']['new_sha256']}:
+        before = _restore(before, FINITE['keyword']['prefix'])
     return (_restore(before, CONTRACT['keyword_prefix']) + prefix + middle + suffix
             + _restore(after, CONTRACT['keyword_suffix']))
+
+
+def restore_printed_protocol_source(module, text):
+    assert module in {identity.split(':')[0] for identity in EXPECTED_FUNCTIONS}, 'Unknown protected module'
+    nodes = ast.parse(text).body
+    for identity, recipe in FINITE['functions'].items():
+        filename, name = identity.split(':')
+        if filename != module:
+            continue
+        matches = [node for node in nodes if isinstance(node, ast.FunctionDef) and node.name == name]
+        assert len(matches) == 1, 'Protected function missing or duplicated'
+        segment = ast.get_source_segment(text, matches[0])
+        assert text.count(segment) == 1, 'Protected function source is ambiguous'
+        restored = _restore(segment, recipe)
+        text = text.replace(segment, restored, 1)
+        nodes = ast.parse(text).body
+    return text

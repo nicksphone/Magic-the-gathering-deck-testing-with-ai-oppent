@@ -1,6 +1,6 @@
 import pytest
 
-from card_data.seed_cards import seed_card_payload
+from tests.creature_copy_canonical_current import fixture_decks, place
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected
 from rules_engine.engine import RulesEngine
@@ -10,8 +10,8 @@ from rules_engine.state_based_actions import apply_state_based_actions
 
 
 def _state():
-    deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest", "oracle_text": "{T}: Add {G}."}]
-    state = MatchFactory.from_decks(deck, deck, seed=49)
+    deck_a, deck_b = fixture_decks()
+    state = MatchFactory.from_decks(deck_a, deck_b, seed=49)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN
@@ -20,21 +20,7 @@ def _state():
 
 
 def _put(state, player_id: int, name: str) -> str:
-    cid = state.players[player_id].library.pop()
-    card = state.cards[cid]
-    data = seed_card_payload(name) or {}
-    if name == "Reflection of Kiki-Jiki":
-        data = seed_card_payload("Fable of the Mirror-Breaker")["card_faces"][1]
-    card.name = name
-    card.zone = Zone.BATTLEFIELD
-    card.oracle_text = data.get("oracle_text", "{T}: Add {G}.")
-    card.type_line = data.get("type_line", "Basic Land - Forest")
-    card.types = [kind for kind in ("Legendary", "Artifact", "Enchantment", "Creature", "Land") if kind in card.type_line]
-    card.mana_cost = data.get("mana_cost", "")
-    card.power = int(data["power"]) if str(data.get("power", "")).isdigit() else None
-    card.toughness = int(data["toughness"]) if str(data.get("toughness", "")).isdigit() else None
-    state.players[player_id].battlefield.append(cid)
-    return cid
+    return place(state, player_id, name)
 
 
 def _ability_moves(state, source_id):

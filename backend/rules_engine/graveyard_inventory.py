@@ -4,6 +4,7 @@ import hashlib
 
 from game_state.state import CardInstance, MatchState, PlayerState, Zone, object_incarnation
 from rules_engine.alternative_casts import escape_cost, flashback_cost
+from rules_engine.copiable_values import FIELDS, PHYSICAL, _valid
 from rules_engine.events import public_trigger_clause_coverage
 from rules_engine.oracle_effects import complete_stack_instruction_coverage
 from rules_engine.oracle_text import without_reminder_text
@@ -12,7 +13,7 @@ from rules_engine.oracle_text import without_reminder_text
 _SCHEMA_PINS = {
     # Emblems, loyalty permissions and control ledgers require empty defaults below.
     MatchState: '7265c59f3d8a00fa8ff70ec4f64d89143e4ad9a9b2aa8cda527716f667081e37',
-    CardInstance: '3649b2a064848c172953460b68fb7202fc36e33a7c2e0a3149492adad96cd7a8',
+    CardInstance: 'c6cd00f22c8838effbffa7cdd9d19d29fd16f5879346a071a25d5253bceef8e4',
     PlayerState: 'dd8f36bedf446625796592fe8045ce675eb471d167ffe68cedb2124ccae1e973',
 }
 
@@ -41,6 +42,25 @@ def _metadata_covered(value, schema):
         if copy_snapshot(snapshot, semantic=True) != snapshot or tags_for(value).source != 'persisted':
             return False
     return True
+
+
+def _unmodified_characteristics_covered(card):
+    record = card.characteristic_record
+    if (type(record) is not dict or set(record) != {'version', 'physical', 'values'}
+            or type(record['version']) is not int or record['version'] != 1
+            or type(record['physical']) is not dict
+            or set(record['physical']) != set(PHYSICAL)):
+        return False
+    physical = record['physical']
+    retained = {key: physical[key] for key in FIELDS}
+    current = {key: getattr(card, key) for key in FIELDS}
+    # Only unchanged normal-card rules facts are in this coverage domain.
+    return (_valid(record['values']) and _valid(retained) and _valid(current)
+            and record['values'] == retained == current
+            and type(physical['card_faces']) is list and not physical['card_faces']
+            and type(physical['layout']) is str and physical['layout'] == 'normal'
+            and physical['selected_face_index'] is None
+            and (physical['image_uri'] is None or type(physical['image_uri']) is str))
 
 
 def _reviewed_context_covered(state):
@@ -149,6 +169,8 @@ def public_graveyard_inventory(state, actor_id):
                             type(card.kicker_count) is not int or card.kicker_count != 0)
                         or card.granted_flashback or card.foretell_record or card.suspend_haste
                         or card.attached_to or card.chosen_creature_type or card.counters):
+                    return result('unknown', 'uncovered source modification/metadata')
+                if not _unmodified_characteristics_covered(card):
                     return result('unknown', 'uncovered source modification/metadata')
                 reference = {'id': cid, 'owner': card.owner, 'controller': card.controller,
                              'zone': zone.value, 'incarnation': object_incarnation(card),

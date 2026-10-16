@@ -47,6 +47,24 @@ def assert_hand_entry(records, source, seat, expected, aliases):
                'previous_reference': {'incarnation': 0, 'zone_change_sequence': 0},
                'entry_reference': {'incarnation': 0, 'zone_change_sequence': 1}}
     publications = ([('enters_graveyard', [payload])] if expected == Zone.GRAVEYARD else [])
+    if any(event == 'cycle' for event, _ in aliases):
+        completed = [row for row in records if row['event'] == 'nonmana_ability_activated']
+        assert len(completed) == 1
+        row = completed[0]
+        frames = [item for item in row['stack_at_event']
+                  if item['source_card_id'] == source.id and item['effect_key'] == 'cycle_draw']
+        assert len(frames) == 1
+        frame = frames[0]
+        assert type(frame['controller']) is int and frame['controller'] == seat
+        assert frame['label'] == f'{source.name} cycling ability'
+        assert frame['targets'] == [] and frame['payload']['amount'] == 1
+        assert frame['payload']['__announced_stack_kind'] == 'activated'
+        assert frame['payload']['__completed_nonmana_activation'] is True
+        assert not frame['payload'].get('__stack_copy_kind')
+        assert frame in row['state_at_event']['stack']
+        publications.append(('nonmana_ability_activated', [{
+            'controller': seat, 'source_stack_id': frame['id'], 'original_item': frame,
+        }]))
     assert [(row['event'], row['payloads']) for row in records] == publications + aliases
     for row in records:
         snapshot = row['state_at_event']

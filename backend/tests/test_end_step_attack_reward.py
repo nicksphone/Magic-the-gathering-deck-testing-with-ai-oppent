@@ -6,34 +6,20 @@ from rules_engine.continuous import effective_power
 from rules_engine.engine import RulesEngine
 from rules_engine.events import emit_event
 from rules_engine.stack_engine import resolve_top_of_stack
-
-
-FRONT = (
-    "At the beginning of your end step, put an invitation counter on this enchantment. "
-    "If you attacked with two or more creatures this turn, draw a card. Otherwise, "
-    "create a 1/1 white Human creature token. Then if this enchantment has three or more "
-    "invitation counters on it, transform it."
-)
-FACES = [
-    {"name": "Wedding Announcement", "type_line": "Enchantment", "mana_cost": "{2}{W}", "oracle_text": FRONT},
-    {"name": "Wedding Festivity", "type_line": "Enchantment", "oracle_text": "Creatures you control get +1/+1."},
-]
+from tests.wedding_attack_canonical_db4e import WEDDING, canonical_card, deck_entry
 
 
 def _state():
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Plains"}],
-        [{"quantity": 60, "card_name": "Plains"}], seed=73,
+        [deck_entry("Plains", 60)],
+        [deck_entry("Plains", 60)], seed=73,
     )
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.DECLARE_ATTACKERS
-    wedding = CardInstance(
-        id="wedding", name="Wedding Announcement", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text=FRONT,
-        card_faces=FACES, layout="transform", selected_face_index=0,
-    )
+    wedding = canonical_card(WEDDING, id="wedding", owner=1, controller=1,
+                             zone=Zone.BATTLEFIELD)
     state.cards[wedding.id] = wedding
     state.players[1].battlefield.append(wedding.id)
     assign_static_order_on_battlefield_entry(state, wedding.id)
@@ -41,9 +27,8 @@ def _state():
 
 
 def _bear(state, card_id):
-    bear = CardInstance(id=card_id, name="Grizzly Bears", owner=1, controller=1,
-                        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-                        summoning_sick=False)
+    bear = canonical_card("Grizzly Bears", id=card_id, owner=1, controller=1,
+                          zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[card_id] = bear
     state.players[1].battlefield.append(card_id)
     assign_static_order_on_battlefield_entry(state, card_id)

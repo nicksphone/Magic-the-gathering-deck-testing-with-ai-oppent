@@ -40,8 +40,8 @@ def add(state, name, player=1, zone=Zone.BATTLEFIELD, *, cards=CARDS):
     card = CardInstance(id=state.allocate_object_id(), name=name, owner=player, controller=player,
                         zone=zone, types=printed_card_types(raw["type_line"]), type_line=raw["type_line"],
                         mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
-                        power=int(raw["power"]) if raw["power"] is not None else None,
-                        toughness=int(raw["toughness"]) if raw["toughness"] is not None else None,
+                        power=int(raw["power"]) if raw.get("power") is not None else None,
+                        toughness=int(raw["toughness"]) if raw.get("toughness") is not None else None,
                         keywords=raw["keywords"] or [], colors=raw["colors"] or [])
     state.cards[card.id] = card
     getattr(state.players[player], zone.value).append(card.id)

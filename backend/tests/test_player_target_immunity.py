@@ -13,6 +13,7 @@ from rules_engine.targeting import validate_hexproof_shroud_targets
 from tests.test_api_input_contracts import game, persist, rejected
 from tests.test_damage_trigger_targets import _game as damage_trigger_game
 from tests.test_divided_damage_resolution import _setup as divided_damage_game
+from tests.target_discard_canonical_db4e import canonical_card, raw_card, set_printed
 
 
 def _game_with_shield(name: str, oracle: str):
@@ -22,8 +23,10 @@ def _game_with_shield(name: str, oracle: str):
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
-    shield = CardInstance("shield", name, 2, 2, Zone.BATTLEFIELD, ["Enchantment"], oracle_text=oracle)
-    bolt = CardInstance("bolt", "Shock", 1, 1, Zone.HAND, ["Instant"], mana_cost="{R}", oracle_text="Shock deals 2 damage to any target.")
+    shield = canonical_card(name, id="shield", owner=2, controller=2, zone=Zone.BATTLEFIELD)
+    if shield.oracle_text != oracle:
+        raise ValueError("Positive fixture Oracle must match its full pinned row")
+    bolt = canonical_card("Shock", id="bolt", owner=1, controller=1, zone=Zone.HAND)
     state.cards.update({shield.id: shield, bolt.id: bolt})
     state.players[2].battlefield.append(shield.id)
     state.players[1].hand.append(bolt.id)
@@ -34,7 +37,7 @@ def _game_with_shield(name: str, oracle: str):
 def test_leyline_filters_opponent_player_but_allows_controller_and_untargeted_damage():
     state, bolt = _game_with_shield(
         "Leyline of Sanctity",
-        "If this card is in your opening hand, you may begin the game with it on the battlefield.\nYou have hexproof.",
+        raw_card("Leyline of Sanctity")["oracle_text"],
     )
     assert not validate_hexproof_shroud_targets(state, 1, {"target_player": 2})[0]
     assert validate_hexproof_shroud_targets(state, 2, {"target_player": 2})[0]
@@ -45,7 +48,7 @@ def test_leyline_filters_opponent_player_but_allows_controller_and_untargeted_da
 
 
 def test_ivory_mask_shroud_blocks_both_players_from_targeting_its_controller():
-    state, bolt = _game_with_shield("Ivory Mask", "You have shroud.")
+    state, bolt = _game_with_shield("Ivory Mask", raw_card("Ivory Mask")["oracle_text"])
     assert not validate_hexproof_shroud_targets(state, 1, {"target_player": 2})[0]
     assert not validate_hexproof_shroud_targets(state, 2, {"target_player": 2})[0]
     assert {target["id"] for target in build_cast_hints(state, bolt, 1)["player_targets"]} == {1}
@@ -53,7 +56,7 @@ def test_ivory_mask_shroud_blocks_both_players_from_targeting_its_controller():
 
 def test_trigger_options_and_resolution_recheck_player_hexproof():
     state = damage_trigger_game()
-    shield = CardInstance("shield", "Aegis of the Gods", 2, 2, Zone.BATTLEFIELD, ["Creature", "Enchantment"], oracle_text="You have hexproof.", power=2, toughness=1)
+    shield = canonical_card("Aegis of the Gods", id="shield", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[shield.id] = shield
     state.players[2].battlefield.append(shield.id)
     rules = RulesEngine()
@@ -75,7 +78,7 @@ def test_trigger_options_and_resolution_recheck_player_hexproof():
 
 
 def test_cast_target_becomes_illegal_when_player_gains_hexproof():
-    state, bolt = _game_with_shield("Leyline of Sanctity", "You have hexproof.")
+    state, bolt = _game_with_shield("Leyline of Sanctity", raw_card("Leyline of Sanctity")["oracle_text"])
     state.players[2].battlefield.remove("shield")
     state.players[2].hand.append("shield")
     state.cards["shield"].zone = Zone.HAND
@@ -92,8 +95,8 @@ def test_cast_target_becomes_illegal_when_player_gains_hexproof():
 def test_hexproof_player_is_missing_from_http_hints_and_rejected_without_mutation(game):
     client, match = game
     state = match.state
-    shield = CardInstance("shield", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD, ["Enchantment"], oracle_text="You have hexproof.")
-    bolt = CardInstance("bolt", "Shock", 1, 1, Zone.HAND, ["Instant"], mana_cost="{R}", oracle_text="Shock deals 2 damage to any target.")
+    shield = canonical_card("Leyline of Sanctity", id="shield", owner=2, controller=2, zone=Zone.BATTLEFIELD)
+    bolt = canonical_card("Shock", id="bolt", owner=1, controller=1, zone=Zone.HAND)
     state.cards.update({shield.id: shield, bolt.id: bolt})
     state.players[2].battlefield.append(shield.id)
     state.players[1].hand.append(bolt.id)
@@ -108,7 +111,7 @@ def test_hexproof_player_is_missing_from_http_hints_and_rejected_without_mutatio
 def test_divided_damage_omits_newly_hexproof_player_but_keeps_creature_share():
     state = divided_damage_game()
     action = {"type": "cast_spell", "card_id": "pyrotechnics", "targets": {"target_distribution": {"first": 1, "2": 3}}}
-    shield = CardInstance("shield", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD, ["Enchantment"], oracle_text="You have hexproof.")
+    shield = canonical_card("Leyline of Sanctity", id="shield", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[shield.id] = shield
     state.players[2].battlefield.append(shield.id)
     with pytest.raises(ActionRejected):
@@ -126,13 +129,12 @@ def test_divided_damage_omits_newly_hexproof_player_but_keeps_creature_share():
 
 
 @pytest.mark.parametrize("name, oracle", [
-    ("Shock", "Shock deals 2 damage to any target."),
-    ("Lightning Bolt", "Lightning Bolt deals 3 damage to any target."),
+    ("Shock", raw_card("Shock")["oracle_text"]),
+    ("Lightning Bolt", raw_card("Lightning Bolt")["oracle_text"]),
 ])
 def test_ai_does_not_choose_protected_opponent_for_burn_spell(name, oracle):
-    state, bolt = _game_with_shield("Leyline of Sanctity", "You have hexproof.")
-    bolt.name = name
-    bolt.oracle_text = oracle
+    state, bolt = _game_with_shield("Leyline of Sanctity", raw_card("Leyline of Sanctity")["oracle_text"])
+    set_printed(bolt, name)
     state.players[1].hand = [bolt.id]
     moves = RulesEngine().legal_moves(state, 1)
     cast = next(move for move in moves if move.get("card_id") == bolt.id and move["type"] == "cast_spell")
@@ -143,9 +145,9 @@ def test_ai_does_not_choose_protected_opponent_for_burn_spell(name, oracle):
 
 
 def test_ai_can_burn_opposing_creature_behind_player_hexproof():
-    state, bolt = _game_with_shield("Leyline of Sanctity", "You have hexproof.")
+    state, bolt = _game_with_shield("Leyline of Sanctity", raw_card("Leyline of Sanctity")["oracle_text"])
     state.players[1].hand = [bolt.id]
-    bear = CardInstance("bear", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+    bear = canonical_card("Grizzly Bears", id="bear", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[bear.id] = bear
     state.players[2].battlefield.append(bear.id)
     moves = RulesEngine().legal_moves(state, 1)
@@ -159,9 +161,10 @@ def test_ai_can_burn_opposing_creature_behind_player_hexproof():
 
 @pytest.mark.parametrize("defense", ["hexproof", "shroud", "protection from red"])
 def test_battlefield_target_hints_omit_defended_creature(defense):
-    state, bolt = _game_with_shield("Leyline of Sanctity", "You have hexproof.")
+    state, bolt = _game_with_shield("Leyline of Sanctity", raw_card("Leyline of Sanctity")["oracle_text"])
     state.players[1].hand = [bolt.id]
-    bear = CardInstance("bear", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2, keywords=[defense])
+    bear = canonical_card("Grizzly Bears", id="bear", owner=2, controller=2, zone=Zone.BATTLEFIELD)
+    bear.keywords = [defense]  # Original explicit noncanonical defense protocol.
     state.cards[bear.id] = bear
     state.players[2].battlefield.append(bear.id)
     moves = RulesEngine().legal_moves(state, 1)

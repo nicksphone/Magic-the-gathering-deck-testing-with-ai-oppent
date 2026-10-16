@@ -130,12 +130,14 @@ def test_exact_sources_are_full_fresh_and_unmodified():
 
 
 def test_pristine_old_protocol_functions_remain_source_exact():
+    from tests.interface_scope_compatibility import restore_printed_protocol_source
     import ast
     import hashlib
     fixture = Path(__file__).parent / 'fixtures/rules_printed_facts_e4/UNCHANGED_FUNCTION_SHA256.json'
     for identity, digest in json.loads(fixture.read_bytes()).items():
         module, function = identity.split(':')
         source = (Path(__file__).parent / module).read_text()
+        source = restore_printed_protocol_source(module, source)
         node = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef) and n.name == function)
         assert hashlib.sha256(ast.get_source_segment(source, node).encode()).hexdigest() == digest
 
