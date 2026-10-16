@@ -137,12 +137,12 @@ test('held-response handler rejects unexpected request methods instead of treati
   assert.equal(f.reports.length, 1);
 });
 
-test('actual held-response enable captures request stage at the unchanged endpoint', async () => {
+test('actual held-response enable captures response stage at the unchanged endpoint', async () => {
   const calls = [];
   const start = source.indexOf(" await b.command('Fetch.enable'", begin);
   const stop = source.indexOf('\n', start + 1);
   await vm.runInNewContext(`(async()=>{${source.slice(start, stop)}})()`, {b: {command: async (...args) => calls.push(args)}});
-  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [['Fetch.enable', {patterns: [{urlPattern: '*/matches/*/action', requestStage: 'Request'}]}]]);
+  assert.deepEqual(JSON.parse(JSON.stringify(calls)), [['Fetch.enable', {patterns: [{urlPattern: '*/matches/*/action', requestStage: 'Response'}]}]]);
 });
 
 const deferred=()=>{

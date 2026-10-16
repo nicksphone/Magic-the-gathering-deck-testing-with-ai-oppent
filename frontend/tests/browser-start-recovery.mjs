@@ -55,7 +55,7 @@ async function startWithDroppedResponses(dropCount) {
       await command('Fetch.failRequest', { requestId: event.requestId, errorReason: 'Failed' });
     } else await command('Fetch.continueResponse', { requestId: event.requestId });
   }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', undefined, { backend }));
-  await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Request' }] });
+  await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Response' }] });
   await click('Start Best-of-3 Match');
   return Object.assign(() => dropped, { attempts });
 }
@@ -70,7 +70,7 @@ function sameIntent(attempts, pending) {
 }
 
 async function resumeRequestCapture() {
-  await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Request' }] });
+  await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Response' }] });
 }
 
 try {

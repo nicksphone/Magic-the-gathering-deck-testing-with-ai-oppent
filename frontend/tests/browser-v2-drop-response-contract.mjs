@@ -382,10 +382,10 @@ test('request-only timeout retains no fake POST response or request-phase respon
   assert.deepEqual(report.responses, []);
 });
 
-test('actual drop enable captures request stage at the same exact action endpoint', async () => {
+test('actual drop enable captures response stage at the same exact action endpoint', async () => {
   const p = protocol(); p.fail.resolve(); await p.promise;
   assert.deepEqual(JSON.parse(JSON.stringify(p.calls.find(([name]) => name === 'Fetch.enable'))),
-    ['Fetch.enable', {patterns:[{urlPattern:'http://fixture.invalid/matches/new-fixture/action',requestStage:'Request'}]}]);
+    ['Fetch.enable', {patterns:[{urlPattern:'http://fixture.invalid/matches/new-fixture/action',requestStage:'Response'}]}]);
 });
 
 for (const method of ['OPTIONS', 'POST']) {

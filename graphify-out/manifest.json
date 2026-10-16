@@ -4254,9 +4254,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_human_action_safety.py": {
-    "mtime": 1792033175.6606777,
-    "seen": 1792034402.3569005,
-    "ast_hash": "f2934edbcaaa6e2f183ced288a1eec3e",
+    "mtime": 1792176206.6930559,
+    "seen": 1792176452.4047368,
+    "ast_hash": "26149c2b849cbdcaf4e25ba04ebab8f0",
     "semantic_hash": ""
   },
   "backend/tests/test_human_auto_progress.py": {
@@ -6486,9 +6486,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery.mjs": {
-    "mtime": 1792109699.1914728,
-    "seen": 1792110062.720153,
-    "ast_hash": "6ac2085177551fb3f475bd2052837f4d",
+    "mtime": 1792176329.5200047,
+    "seen": 1792176452.4062142,
+    "ast_hash": "46f2f8fec2deb42589aab96243aebb72",
     "semantic_hash": ""
   },
   "frontend/tests/browser-surveil.mjs": {
@@ -6522,15 +6522,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2-costs.mjs": {
-    "mtime": 1792131556.754488,
-    "seen": 1792132873.0036223,
-    "ast_hash": "36b082db72b7dae66d0da4d06af1be6d",
+    "mtime": 1792176329.5200047,
+    "seen": 1792176452.406224,
+    "ast_hash": "2261e4bbec445b41509ad685e57b56a4",
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1792166036.8588524,
-    "seen": 1792166279.9300098,
-    "ast_hash": "2d539aa6954bb5e6be9c74e6882112f4",
+    "mtime": 1792176329.5200047,
+    "seen": 1792176452.4062257,
+    "ast_hash": "b193f7d4ab8f7b66ad8aece9d9d3b647",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -6768,9 +6768,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1792175065.6010659,
-    "seen": 1792175188.8847194,
-    "ast_hash": "69e013aeb9eaac03ad27954843de444f",
+    "mtime": 1792176329.5990033,
+    "seen": 1792176452.4064982,
+    "ast_hash": "5972c4b971b8ba2d9fdf898ba76435e2",
     "semantic_hash": ""
   },
   "README.md": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1792172999.015946,
-    "seen": 1792173121.7099414,
-    "ast_hash": "c5c087e074433417cec1520f42c22755",
+    "mtime": 1792176329.6000035,
+    "seen": 1792176452.4079368,
+    "ast_hash": "8ea20a4a99d0069726680264b0bff556",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -18258,9 +18258,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-drop-response-contract.mjs": {
-    "mtime": 1792129020.6330624,
-    "seen": 1792129318.0691028,
-    "ast_hash": "def9e5f03d0b4beea684a79d4b1d3dea",
+    "mtime": 1792176329.5200047,
+    "seen": 1792176452.4062297,
+    "ast_hash": "e315e9d31e43aeaf8ea71e4725cf9361",
     "semantic_hash": ""
   },
   "docs/testing/browser-v2-accepted-response-recovery.md": {
@@ -18900,9 +18900,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-held-response-contract.test.mjs": {
-    "mtime": 1792131556.754488,
-    "seen": 1792132873.0036306,
-    "ast_hash": "9b064ce88cebb67384f2078387faaf32",
+    "mtime": 1792176329.5200047,
+    "seen": 1792176452.4062316,
+    "ast_hash": "15ad6a7693b7737123ce4fe23b855d9d",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_cache_recovery.py": {
@@ -18912,9 +18912,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-post-response-contract.test.mjs": {
-    "mtime": 1792044363.4585922,
-    "seen": 1792046651.8056011,
-    "ast_hash": "2c0d9a602cf1e024d08dac0d6ee31f3e",
+    "mtime": 1792176329.5200047,
+    "seen": 1792176452.4062123,
+    "ast_hash": "52ee93dec6d7c5b399c281b9c555219f",
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
@@ -20793,6 +20793,42 @@
     "mtime": 1792173215.0921588,
     "seen": 1792173367.0339196,
     "ast_hash": "882957d6c5d0f36973e57ac0fcbba583",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/human_activation_canonical7f/SOURCES.json": {
+    "mtime": 1792176206.6930559,
+    "seen": 1792176452.4031768,
+    "ast_hash": "0f66ac1c0987d27eaf535b724588a8e2",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/human_activation_canonical7f/azure-mage.json": {
+    "mtime": 1792176206.6930559,
+    "seen": 1792176452.4031794,
+    "ast_hash": "5dac11558d2296c4fec156fdf4079515",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/human_activation_canonical7f/oona.json": {
+    "mtime": 1792176206.6930559,
+    "seen": 1792176452.4031813,
+    "ast_hash": "16efdade4ac4dcdc63a146011075ad7d",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_human_activation_fixture_fidelity7f.py": {
+    "mtime": 1792176206.6930559,
+    "seen": 1792176452.404739,
+    "ast_hash": "d0f92c8aa792b80f9781484c42d4212d",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-response-stage-recovery.md": {
+    "mtime": 1792176329.5960035,
+    "seen": 1792176452.4068267,
+    "ast_hash": "0aa8fa0602258e4c7d1d3ddc026eb8a1",
+    "semantic_hash": ""
+  },
+  "docs/testing/human-activation-canonical-7f.md": {
+    "mtime": 1792176206.6930559,
+    "seen": 1792176452.407279,
+    "ast_hash": "c2ebca8852a0f30188dbf2640399c0b1",
     "semantic_hash": ""
   }
 }

@@ -111,7 +111,7 @@ async function recoverDroppedResponse(s) {
   b.onIntercept(interceptionTrace);
   try {
     await command('Network.enable');
-    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Request'}]});enabled=true;
+    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
     await click('Play Land Forest');
     const deadline=Date.now()+15000;
     deadlineExpired=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Current accepted response drop timed out')),15000);});

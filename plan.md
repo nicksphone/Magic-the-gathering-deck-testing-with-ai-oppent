@@ -30,6 +30,22 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 16 Response Recovery And Activation Fixtures
+
+The ordered replay-capture correction is published as `7fddf697`; its hosted
+frontend job passes build, lint and all frontend unit commands. The browser job
+has a separate held-response failure with an unknown abort cause. The recovery
+harness now selects the response stage directly, retaining all original actions,
+payloads, deadlines and checks except four explicitly adapted stage operands.
+Four whole protocol modules pass 129 cases; actual browser CI remains required.
+See [the exact boundary](docs/testing/browser-response-stage-recovery.md).
+
+Three partial activation fixtures now use complete verified records. All five
+original tests and fourteen assertions remain, and both whole modules pass ten
+cases. Unsupported Oona activation remains rejected; this data migration does
+not implement that ability or complete Phase 1. See
+[fixture qualification](docs/testing/human-activation-canonical-7f.md).
+
 ## October 16 Canonical Copy-Entry Integration
 
 Canonical counter fixtures, retained printed/copiable characteristics and

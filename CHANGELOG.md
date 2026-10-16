@@ -2,6 +2,12 @@
 
 ## Canonical Copy-Entry Integration - 2026-10-16
 
+- Intercept accepted browser recovery responses directly, preserving application
+  behavior and existing recovery assertions. Four whole protocol modules pass
+  129 cases; native-browser acceptance is still required.
+- Replace three partial activation fixtures with complete canonical records,
+  preserving all original assertions. Both whole modules pass ten cases;
+  unsupported Oona activation remains explicitly rejected.
 - Fix the ordered-target test bridge's synchronous output overflow without
   dropping full replay snapshots or assertions. A fresh coupled frontend
   test/build/lint declaration passes against the corrected backend; the separate
