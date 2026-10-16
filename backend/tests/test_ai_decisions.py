@@ -5,7 +5,9 @@ from dataclasses import fields
 
 from ai.agent import AIAgent
 from ai.matchup_profiles import profile_for
-from card_data.seed_cards import seed_card_payload
+from tests.ai_decisions_canonical_cdba import (
+    raw_card as seed_card_payload, canonical_card, canonical_deck_entry, set_printed,
+)
 from game_state.state import CardInstance, MatchFactory, MatchState, PlayerState, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack
@@ -46,17 +48,13 @@ def complete_card_bookkeeping(state):
 
 
 def test_ai_materializes_land_only_target_without_creature_target() -> None:
-    deck = [{"quantity": 60, "card_name": "Forest"}]
+    deck = [canonical_deck_entry('Forest', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=81)
     land_id = state.players[1].hand.pop()
     state.players[1].battlefield.append(land_id)
     state.cards[land_id].zone = Zone.BATTLEFIELD
     state.cards[land_id].types = ["Land"]
-    source = CardInstance(
-        id="nissa", name="Nissa, Who Shakes the World", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Planeswalker"], loyalty=5,
-        oracle_text="+1: Put a +1/+1 counter on up to one target land you control. Untap it. It becomes a 0/0 Elemental creature with haste that's still a land.",
-    )
+    source = canonical_card('Nissa, Who Shakes the World', as_instance=True, id="nissa", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     move = {
@@ -71,7 +69,7 @@ def test_ai_materializes_land_only_target_without_creature_target() -> None:
 
 
 def test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability() -> None:
-    forest = {"quantity": 60, "card_name": "Forest", "type_line": "Basic Land — Forest"}
+    forest = canonical_deck_entry('Forest', 60)
     state = MatchFactory.from_decks([forest], [forest], seed=101)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -86,11 +84,7 @@ def test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability() -> None:
         state.cards[land_id].zone = Zone.BATTLEFIELD
     oracle = seed_card_payload("Ugin, the Spirit Dragon")
     assert oracle is not None
-    ugin = CardInstance(
-        id="ugin", name=oracle["name"], owner=1, controller=1,
-        zone=Zone.HAND, types=["Planeswalker"], type_line=oracle["type_line"],
-        mana_cost=oracle["mana_cost"], oracle_text=oracle["oracle_text"], loyalty=7,
-    )
+    ugin = canonical_card(oracle["name"], as_instance=True, id="ugin", owner=1, controller=1, zone=Zone.HAND)
     state.cards[ugin.id] = ugin
     player.hand = [ugin.id]
 
@@ -105,7 +99,7 @@ def test_ai_casts_non_x_permanent_with_x_in_later_loyalty_ability() -> None:
 
 
 def test_ai_uses_board_value_to_choose_x_loyalty_sweep() -> None:
-    deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land — Forest"}]
+    deck = [canonical_deck_entry('Forest', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=103)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -118,14 +112,7 @@ def test_ai_uses_board_value_to_choose_x_loyalty_sweep() -> None:
     def add(name: str, owner: int) -> CardInstance:
         data = seed_card_payload(name)
         assert data is not None
-        card = CardInstance(
-            id=f"{name}-{owner}", name=data["name"], owner=owner, controller=owner,
-            zone=Zone.BATTLEFIELD, mana_cost=data["mana_cost"],
-            oracle_text=data["oracle_text"], type_line=data["type_line"],
-            types=[kind for kind in ("Creature", "Enchantment", "Artifact", "Planeswalker") if kind in data["type_line"]],
-            power=int(data.get("power", 0) or 0), toughness=int(data.get("toughness", 0) or 0),
-            loyalty=int(data.get("loyalty", 0) or 0), colors=data.get("colors"),
-        )
+        card = canonical_card(data["name"], as_instance=True, id=f"{name}-{owner}", owner=owner, controller=owner, zone=Zone.BATTLEFIELD)
         state.cards[card.id] = card
         state.players[owner].battlefield.append(card.id)
         return card
@@ -149,7 +136,7 @@ def test_ai_uses_board_value_to_choose_x_loyalty_sweep() -> None:
 
 
 def test_ai_does_not_force_x_sweep_for_a_single_low_value_threat() -> None:
-    deck = [{"quantity": 60, "card_name": "Forest"}]
+    deck = [canonical_deck_entry('Forest', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=104)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -157,8 +144,8 @@ def test_ai_does_not_force_x_sweep_for_a_single_low_value_threat() -> None:
     state.active_player = state.priority_player = 1
     data = seed_card_payload("Ugin, the Spirit Dragon")
     assert data is not None
-    ugin = CardInstance(id="ugin", name=data["name"], owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Planeswalker"], oracle_text=data["oracle_text"], mana_cost=data["mana_cost"], loyalty=7)
-    mystic = CardInstance(id="mystic", name="Elvish Mystic", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{G}", power=1, toughness=1, colors=["G"])
+    ugin = canonical_card(data["name"], as_instance=True, id="ugin", owner=1, controller=1, zone=Zone.BATTLEFIELD)
+    mystic = canonical_card('Elvish Mystic', as_instance=True, id="mystic", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     for card in (ugin, mystic):
         state.cards[card.id] = card
         state.players[card.controller].battlefield.append(card.id)
@@ -167,16 +154,12 @@ def test_ai_does_not_force_x_sweep_for_a_single_low_value_threat() -> None:
 
 
 def test_ai_announces_only_one_target_for_any_target_damage() -> None:
-    deck = [{"quantity": 60, "card_name": "Forest"}]
+    deck = [canonical_deck_entry('Forest', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=102)
     bolt_data = seed_card_payload("Lightning Bolt")
     assert bolt_data is not None
-    bolt = CardInstance(
-        id="bolt", name=bolt_data["name"], owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost=bolt_data["mana_cost"],
-        oracle_text=bolt_data["oracle_text"],
-    )
-    creature = CardInstance(id="mystic", name="Elvish Mystic", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1)
+    bolt = canonical_card(bolt_data["name"], as_instance=True, id="bolt", owner=1, controller=1, zone=Zone.HAND)
+    creature = canonical_card('Elvish Mystic', as_instance=True, id="mystic", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[bolt.id] = bolt
     state.cards[creature.id] = creature
     state.players[1].hand.append(bolt.id)
@@ -214,32 +197,48 @@ def test_ai_prefers_non_pass_action_when_available() -> None:
 
 
 def test_master_ai_prefers_lethal_line() -> None:
-    deck = [{"quantity": 60, "card_name": "Lightning Bolt"}]
+    deck = [canonical_deck_entry('Lightning Bolt', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    # Trusted initial pooled-mana policy pose, not naturally produced by a tap.
+    state.players[1].mana_pool['R'] = 1
     state.players[2].life = 3
     ai = AIAgent(difficulty="master", archetype="Burn")
     bolt_id = state.players[1].hand[0]
     moves = [
         {"type": "pass_priority"},
-        {"type": "cast_spell", "card_name": "Lightning Bolt", "card_id": bolt_id},
+        {
+            **next(move for move in RulesEngine().legal_moves(state, 1)
+                   if move.get("type") == "cast_spell" and move.get("card_id") == bolt_id),
+            "type": "cast_spell", "card_name": "Lightning Bolt", "card_id": bolt_id,
+        },
     ]
     decision = ai.choose_action(state, moves, 1)
     assert decision.action["type"] == "cast_spell"
 
 
 def test_master_plus_ai_prefers_lethal_line() -> None:
-    deck = [{"quantity": 60, "card_name": "Lightning Bolt"}]
+    deck = [canonical_deck_entry('Lightning Bolt', 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
+    state.step = Step.PRECOMBAT_MAIN
+    state.active_player = state.priority_player = 1
+    # Trusted initial pooled-mana policy pose, not naturally produced by a tap.
+    state.players[1].mana_pool['R'] = 1
     state.players[2].life = 3
     ai = AIAgent(difficulty="master_plus", archetype="Burn")
     bolt_id = state.players[1].hand[0]
     moves = [
         {"type": "pass_priority"},
-        {"type": "cast_spell", "card_name": "Lightning Bolt", "card_id": bolt_id},
+        {
+            **next(move for move in RulesEngine().legal_moves(state, 1)
+                   if move.get("type") == "cast_spell" and move.get("card_id") == bolt_id),
+            "type": "cast_spell", "card_name": "Lightning Bolt", "card_id": bolt_id,
+        },
     ]
     decision = ai.choose_action(state, moves, 1)
     assert decision.action["type"] == "cast_spell"
@@ -324,8 +323,8 @@ def test_control_ai_prefers_card_draw_over_creature_on_empty_stack() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "creature-1": type("C", (), {"types": ["Creature"], "name": "Merfolk Looter", "oracle_text": ""})(),
-            "draw-1": type("C", (), {"types": ["Instant"], "name": "Consider", "oracle_text": "Draw a card."})(),
+            "creature-1": canonical_card('Merfolk Looter'),
+            "draw-1": canonical_card('Consider'),
         }
         stack = []
 
@@ -354,12 +353,12 @@ def test_control_ai_prefers_value_draw_over_idle_hold_up_when_stable() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 1})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}", "keywords": []})(),
-            "draw-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
-            "i1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "i2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "i3": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "i4": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "counter-1": canonical_card('Counterspell'),
+            "draw-1": canonical_card('Memory Deluge'),
+            "i1": canonical_card('Island', tapped=False),
+            "i2": canonical_card('Island', tapped=False),
+            "i3": canonical_card('Island', tapped=False),
+            "i4": canonical_card('Island', tapped=False),
         }
 
     decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
@@ -392,10 +391,10 @@ def test_matchup_profile_boosts_counterspell_score_against_aggro() -> None:
             2: type("P", (), {"life": 16, "hand": [], "battlefield": ["b1"], "mana_pool": {}})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}", "keywords": []})(),
-            "i1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "i2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "i3": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "counter-1": canonical_card('Counterspell'),
+            "i1": canonical_card('Island', tapped=False),
+            "i2": canonical_card('Island', tapped=False),
+            "i3": canonical_card('Island', tapped=False),
             "b1": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": False})(),
         }
 
@@ -434,9 +433,9 @@ def test_ramp_ai_prefers_ramp_spell_over_card_draw_on_early_turn() -> None:
     ]
 
     deck = [
-        {"quantity": 52, "card_name": "Forest"},
-        {"quantity": 4, "card_name": "Cultivate"},
-        {"quantity": 4, "card_name": "Consider"},
+        canonical_deck_entry('Forest', 52),
+        canonical_deck_entry('Cultivate', 4),
+        canonical_deck_entry('Consider', 4),
     ]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
@@ -489,12 +488,12 @@ def test_control_ai_prefers_sweeper_over_draw_when_stabilizing() -> None:
             2: type("P", (), {"life": 18, "hand": [], "battlefield": ["atk-1", "atk-2", "atk-3"], "mana_pool": {}})(),
         }
         cards = {
-            "sweeper-1": type("C", (), {"types": ["Sorcery"], "name": "Supreme Verdict", "oracle_text": "Destroy all creatures.", "mana_cost": "{1}{W}{W}{U}", "keywords": []})(),
-            "draw-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw two cards.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
-            "land-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "land-2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "land-3": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
-            "land-4": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
+            "sweeper-1": canonical_card('Supreme Verdict'),
+            "draw-1": canonical_card('Memory Deluge'),
+            "land-1": canonical_card('Island', tapped=False),
+            "land-2": canonical_card('Island', tapped=False),
+            "land-3": canonical_card('Plains', tapped=False),
+            "land-4": canonical_card('Plains', tapped=False),
             "atk-1": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": False})(),
             "atk-2": type("C", (), {"types": ["Creature"], "name": "2/2", "power": 2, "toughness": 2, "tapped": False})(),
             "atk-3": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False})(),
@@ -555,7 +554,7 @@ def test_board_role_adjusts_pass_bias_for_control_and_aggro_lines() -> None:
             2: type("P", (), {"life": 16, "hand": [], "battlefield": ["b1", "b2"], "mana_pool": {}})(),
         }
         cards = {
-            "c1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell."})(),
+            "c1": canonical_card('Counterspell'),
             "a1": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
             "b1": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
             "b2": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
@@ -571,7 +570,7 @@ def test_board_role_adjusts_pass_bias_for_control_and_aggro_lines() -> None:
             2: type("P", (), {"life": 9, "hand": [], "battlefield": ["b1"], "mana_pool": {}})(),
         }
         cards = {
-            "t1": type("C", (), {"types": ["Creature"], "name": "Goblin Guide", "oracle_text": "", "power": 2, "toughness": 2})(),
+            "t1": canonical_card('Goblin Guide'),
             "a1": type("C", (), {"types": ["Creature"], "power": 4, "toughness": 4, "tapped": False})(),
             "a2": type("C", (), {"types": ["Creature"], "power": 3, "toughness": 3, "tapped": False})(),
             "b1": type("C", (), {"types": ["Creature"], "power": 2, "toughness": 2, "tapped": False})(),
@@ -600,7 +599,7 @@ def test_control_ai_sets_counterspell_stack_target() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell."})(),
+            "counter-1": canonical_card('Counterspell'),
         }
         stack = [type("S", (), {"id": "stack-a", "label": "Lightning Bolt"})()]
 
@@ -708,8 +707,8 @@ def test_control_ai_holds_small_attacker_back_into_larger_blocker_when_not_press
         cards = {
             "atk-1": type("C", (), {"types": ["Creature"], "name": "1/1", "power": 1, "toughness": 1, "keywords": [], "tapped": False})(),
             "blk-1": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "keywords": [], "tapped": False})(),
-            "draw-1": type("C", (), {"types": ["Instant"], "name": "Consider", "oracle_text": "Draw a card.", "mana_cost": "{U}"})(),
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
+            "draw-1": canonical_card('Consider'),
+            "counter-1": canonical_card('Counterspell'),
         }
         attackers = []
         attack_targets = {}
@@ -722,7 +721,7 @@ def test_control_ai_holds_small_attacker_back_into_larger_blocker_when_not_press
 
 
 def test_ai_does_not_counter_its_only_own_spell_on_the_stack() -> None:
-    island = {"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}
+    island = canonical_deck_entry('Island', 60)
     bolt = seed_card_payload("Lightning Bolt")
     assert bolt
     for counter_name in ("Spell Pierce", "Counterspell"):
@@ -738,16 +737,10 @@ def test_ai_does_not_counter_its_only_own_spell_on_the_stack() -> None:
             land_id = state.players[1].library.pop()
             state.cards[land_id].zone = Zone.BATTLEFIELD
             state.players[1].battlefield.append(land_id)
-        own_bolt = CardInstance(
-            "own-bolt", "Lightning Bolt", 1, 1, Zone.STACK, ["Instant"],
-            mana_cost=bolt["mana_cost"], oracle_text=bolt["oracle_text"], type_line=bolt["type_line"],
-        )
+        own_bolt = canonical_card('Lightning Bolt', as_instance=True, id="own-bolt", owner=1, controller=1, zone=Zone.STACK)
         state.cards[own_bolt.id] = own_bolt
         add_to_stack(state, own_bolt.id, 1, own_bolt.name, "deal_damage", {"target_player": 2, "amount": 3})
-        held_counter = CardInstance(
-            "held-counter", counter_name, 1, 1, Zone.HAND, ["Instant"],
-            mana_cost=counter["mana_cost"], oracle_text=counter["oracle_text"], type_line=counter["type_line"],
-        )
+        held_counter = canonical_card(counter_name, as_instance=True, id="held-counter", owner=1, controller=1, zone=Zone.HAND)
         state.cards[held_counter.id] = held_counter
         state.players[1].hand.append(held_counter.id)
         legal = RulesEngine().legal_moves(state, 1)
@@ -755,10 +748,7 @@ def test_ai_does_not_counter_its_only_own_spell_on_the_stack() -> None:
         decision = AIAgent(difficulty="master", archetype="Tempo").choose_action(state, legal, 1)
         assert decision.action["type"] == "pass_priority", (counter_name, decision)
 
-        enemy_counter = CardInstance(
-            "enemy-counter", "Counterspell", 2, 2, Zone.STACK, ["Instant"],
-            mana_cost="{U}{U}", oracle_text="Counter target spell.", type_line="Instant",
-        )
+        enemy_counter = canonical_card('Counterspell', as_instance=True, id="enemy-counter", owner=2, controller=2, zone=Zone.STACK)
         state.cards[enemy_counter.id] = enemy_counter
         opposing_spell = add_to_stack(
             state, enemy_counter.id, 2, enemy_counter.name, "counter_spell",
@@ -772,7 +762,7 @@ def test_ai_does_not_counter_its_only_own_spell_on_the_stack() -> None:
 
 
 def test_control_ai_holds_counter_for_low_impact_creature_but_stops_planeswalker() -> None:
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=935714)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -788,14 +778,10 @@ def test_control_ai_holds_counter_for_low_impact_creature_but_stops_planeswalker
     grazer = seed_card_payload("Arboreal Grazer")
     ugin = seed_card_payload("Ugin, the Spirit Dragon")
     assert counter and grazer and ugin
-    held = CardInstance("held-counter", counter["name"], 1, 1, Zone.HAND, ["Instant"], mana_cost=counter["mana_cost"], oracle_text=counter["oracle_text"])
+    held = canonical_card(counter["name"], as_instance=True, id="held-counter", owner=1, controller=1, zone=Zone.HAND)
     state.cards[held.id] = held
     state.players[1].hand.append(held.id)
-    source = CardInstance(
-        "enemy-spell", grazer["name"], 2, 2, Zone.STACK, ["Creature"],
-        mana_cost=grazer["mana_cost"], oracle_text=grazer["oracle_text"],
-        power=int(grazer["power"]), toughness=int(grazer["toughness"]),
-    )
+    source = canonical_card(grazer["name"], as_instance=True, id="enemy-spell", owner=2, controller=2, zone=Zone.STACK)
     state.cards[source.id] = source
     add_to_stack(state, source.id, 2, source.name, "permanent_spell", {})
     state.priority_player = 1
@@ -805,10 +791,7 @@ def test_control_ai_holds_counter_for_low_impact_creature_but_stops_planeswalker
     assert ai.choose_action(state, legal, 1).action["type"] == "pass_priority"
 
     state.stack.clear()
-    source.name = ugin["name"]
-    source.types = ["Planeswalker"]
-    source.mana_cost = ugin["mana_cost"]
-    source.oracle_text = ugin["oracle_text"]
+    set_printed(source, ugin["name"])
     add_to_stack(state, source.id, 2, source.name, "permanent_spell", {})
     state.priority_player = 1
     decision = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
@@ -817,9 +800,9 @@ def test_control_ai_holds_counter_for_low_impact_creature_but_stops_planeswalker
 
 
 def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
-    from tests.test_ai_recurring_engines import add as add_canonical
+    from tests.ai_decisions_canonical_cdba import add_canonical
 
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=935715)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -834,10 +817,10 @@ def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
     removal = seed_card_payload("Go for the Throat")
     assert payload and removal
     for index in range(2):
-        card = CardInstance(f"counter-{index}", payload["name"], 1, 1, Zone.HAND, ["Instant"], mana_cost=payload["mana_cost"], oracle_text=payload["oracle_text"])
+        card = canonical_card(payload["name"], as_instance=True, id=f"counter-{index}", owner=1, controller=1, zone=Zone.HAND)
         state.cards[card.id] = card
         state.players[1].hand.append(card.id)
-    enemy = CardInstance("enemy-removal", removal["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=removal["mana_cost"], oracle_text=removal["oracle_text"])
+    enemy = canonical_card(removal["name"], as_instance=True, id="enemy-removal", owner=2, controller=2, zone=Zone.STACK)
     state.cards[enemy.id] = enemy
     own_threat = add_canonical(state, 'Sheoldred, the Apocalypse', 1)
     other_threat = add_canonical(state, 'Grim Haruspex', 1)
@@ -854,7 +837,7 @@ def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
     second = ai.choose_action(state, RulesEngine().legal_moves(state, 1), 1)
     assert second.action["type"] == "pass_priority"
 
-    enemy_counter = CardInstance("enemy-counter", payload["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=payload["mana_cost"], oracle_text=payload["oracle_text"])
+    enemy_counter = canonical_card(payload["name"], as_instance=True, id="enemy-counter", owner=2, controller=2, zone=Zone.STACK)
     state.cards[enemy_counter.id] = enemy_counter
     selected = {'target_stack_id': state.stack[-1].id}
     reply = add_to_stack(state, enemy_counter.id, 2, enemy_counter.name, "counter_spell",
@@ -865,7 +848,7 @@ def test_control_ai_does_not_double_counter_same_pending_spell() -> None:
     assert response.action["targets"]["target_stack_id"] == reply.id
 
     state.stack.pop()
-    other = CardInstance("other-removal", removal["name"], 2, 2, Zone.STACK, ["Instant"], mana_cost=removal["mana_cost"], oracle_text=removal["oracle_text"])
+    other = canonical_card(removal["name"], as_instance=True, id="other-removal", owner=2, controller=2, zone=Zone.STACK)
     state.cards[other.id] = other
     selected = {'target_card_id': other_threat.id}
     other_item = add_to_stack(state, other.id, 2, other.name, "destroy_permanent",
@@ -905,9 +888,9 @@ def test_control_ai_targets_most_threatening_stack_spell_with_counter() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
-            "c-small": type("C", (), {"types": ["Instant"], "name": "Opt", "oracle_text": "Scry 1, draw a card.", "mana_cost": "{U}"})(),
-            "c-big": type("C", (), {"types": ["Planeswalker"], "name": "Teferi, Hero of Dominaria", "oracle_text": "+1: Draw a card.", "mana_cost": "{3}{W}{U}"})(),
+            "counter-1": canonical_card('Counterspell'),
+            "c-small": canonical_card('Opt'),
+            "c-big": canonical_card('Teferi, Hero of Dominaria'),
         }
         stack = [
             type("S", (), {"id": "stack-small", "label": "Opt", "source_card_id": "c-small", "controller": 2})(),
@@ -963,13 +946,13 @@ def test_control_ai_mulligans_missing_primary_color_access() -> None:
         mulligan_count = {1: 0}
         players = {1: type("P", (), {"hand": ["l1", "l2", "s1", "s2", "s3", "s4", "s5"]})()}
         cards = {
-            "l1": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
-            "l2": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
-            "s1": Card(["Instant"], "{U}{U}", name="Counterspell"),
-            "s2": Card(["Instant"], "{U}", name="Consider"),
-            "s3": Card(["Instant"], "{1}{U}", name="Memory Deluge"),
-            "s4": Card(["Instant"], "{U}", name="Opt"),
-            "s5": Card(["Instant"], "{2}{U}", name="Negate"),
+            "l1": canonical_card('Mountain'),
+            "l2": canonical_card('Mountain'),
+            "s1": canonical_card('Counterspell'),
+            "s2": canonical_card('Consider'),
+            "s3": canonical_card('Memory Deluge'),
+            "s4": canonical_card('Opt'),
+            "s5": canonical_card('Negate'),
         }
 
     decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
@@ -980,7 +963,7 @@ def test_hybrid_spells_do_not_create_false_opening_color_miss() -> None:
     from types import SimpleNamespace
 
     ai = AIAgent(difficulty="strong", archetype="Aggro")
-    lands = [SimpleNamespace(name="Island", type_line="Basic Land — Island", types=["Land"], oracle_text="{T}: Add {U}.") for _ in range(2)]
+    lands = [canonical_card('Island') for _ in range(2)]
     def spell(cost):
         return SimpleNamespace(name="", type_line="Creature", types=["Creature"],
                                mana_cost=cost, oracle_text="")
@@ -1000,7 +983,7 @@ def test_hybrid_spells_do_not_create_false_opening_color_miss() -> None:
 def test_hybrid_spell_land_demand_is_not_fixed_to_first_color() -> None:
     from game_state.state import MatchFactory
 
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=104)
     spell = state.cards[state.players[1].hand[0]]
     spell.types = ["Creature"]
@@ -1025,11 +1008,11 @@ def test_control_ai_keeps_borderline_two_land_hand_with_real_action() -> None:
         mulligan_count = {1: 0}
         players = {1: type("P", (), {"hand": ["l1", "l2", "s1", "s2", "s3"]})()}
         cards = {
-            "l1": Card(["Land"], name="Island", type_line="Basic Land — Island", oracle_text="{T}: Add {U}."),
-            "l2": Card(["Land"], name="Island", type_line="Basic Land — Island", oracle_text="{T}: Add {U}."),
-            "s1": Card(["Instant"], "{U}", name="Consider", oracle_text="Scry 1, draw a card."),
-            "s2": Card(["Instant"], "{U}{U}", name="Counterspell", oracle_text="Counter target spell."),
-            "s3": Card(["Instant"], "{1}{B}", name="Go for the Throat", oracle_text="Destroy target creature."),
+            "l1": canonical_card('Island'),
+            "l2": canonical_card('Island'),
+            "s1": canonical_card('Consider'),
+            "s2": canonical_card('Counterspell'),
+            "s3": canonical_card('Go for the Throat'),
         }
 
     decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
@@ -1052,11 +1035,11 @@ def test_ramp_ai_keeps_two_land_hand_with_acceleration() -> None:
         mulligan_count = {1: 0}
         players = {1: type("P", (), {"hand": ["l1", "l2", "s1", "s2", "s3"]})()}
         cards = {
-            "l1": Card(["Land"], name="Forest", type_line="Basic Land — Forest", oracle_text="{T}: Add {G}."),
-            "l2": Card(["Land"], name="Forest", type_line="Basic Land — Forest", oracle_text="{T}: Add {G}."),
-            "s1": Card(["Sorcery"], "{1}{G}", name="Cultivate", oracle_text="Search your library for up to two basic land cards."),
-            "s2": Card(["Sorcery"], "{2}{G}{G}", name="Topiary Stomper", oracle_text="When Topiary Stomper enters the battlefield, search your library for a basic land card."),
-            "s3": Card(["Sorcery"], "{1}{G}", name="Explore", oracle_text="Draw a card. You may play an additional land this turn."),
+            "l1": canonical_card('Forest'),
+            "l2": canonical_card('Forest'),
+            "s1": canonical_card('Cultivate'),
+            "s2": canonical_card('Topiary Stomper'),
+            "s3": canonical_card('Explore'),
         }
 
     decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
@@ -1079,10 +1062,10 @@ def test_aggro_ai_mulligans_hand_without_early_pressure() -> None:
         mulligan_count = {1: 0}
         players = {1: type("P", (), {"hand": ["l1", "l2", "l3", "s1", "s2", "s3", "s4"]})()}
         cards = {
-            "l1": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
-            "l2": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
-            "l3": Card(["Land"], name="Mountain", type_line="Basic Land — Mountain", oracle_text="{T}: Add {R}."),
-            "s1": Card(["Sorcery"], "{4}{R}", name="Divination", oracle_text="Draw two cards."),
+            "l1": canonical_card('Mountain'),
+            "l2": canonical_card('Mountain'),
+            "l3": canonical_card('Mountain'),
+            "s1": canonical_card('Divination'),
             "s2": Card(["Sorcery"], "{4}{R}", name="Slow Value", oracle_text="Draw a card."),
             "s3": Card(["Instant"], "{5}{R}", name="Big Setup", oracle_text="Create a token."),
             "s4": Card(["Enchantment"], "{4}{R}", name="Slow Engine", oracle_text="Whenever you cast a spell, draw a card."),
@@ -1127,20 +1110,7 @@ def test_master_ai_casts_big_creature_when_castable() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "big-1": type(
-                "C",
-                (),
-                {
-                    "types": ["Creature"],
-                    "name": "Sheoldred, the Apocalypse",
-                    "oracle_text": "",
-                    "zone": "hand",
-                    "mana_cost": "{2}{B}{B}",
-                    "keywords": [],
-                    "power": 4,
-                    "toughness": 5,
-                },
-            )(),
+            "big-1": canonical_card('Sheoldred, the Apocalypse', zone="hand"),
         }
         stack = []
         winner = None
@@ -1172,20 +1142,7 @@ def test_control_ai_casts_big_creature_on_clear_turn_four_board() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "big-1": type(
-                "C",
-                (),
-                {
-                    "types": ["Creature"],
-                    "name": "Dream Trawler",
-                    "oracle_text": "Flying, lifelink.",
-                    "zone": "hand",
-                    "mana_cost": "{2}{W}{W}{U}{U}",
-                    "keywords": ["Flying", "Lifelink"],
-                    "power": 3,
-                    "toughness": 5,
-                },
-            )(),
+            "big-1": canonical_card('Dream Trawler', zone="hand"),
         }
         stack = []
         winner = None
@@ -1201,10 +1158,14 @@ def test_control_ai_casts_big_creature_on_clear_turn_four_board() -> None:
 
 
 def test_master_ai_uses_deeper_planner_on_complex_midgame_board() -> None:
-    from tests.test_ai_recurring_engines import fixture, add
+    from tests.test_ai_recurring_engines import fixture
+    from tests.ai_decisions_canonical_cdba import add_canonical as add
 
     ai = AIAgent(difficulty="master", archetype="Control")
     state = fixture()
+    # The reused fixture contains only Swamps before its explicit additions.
+    for card in state.cards.values():
+        set_printed(card, 'Swamp')
     state.turn = 6
     for seat in (1, 2):
         for _ in range(6):
@@ -1244,8 +1205,8 @@ def test_ai_targets_highest_threat_creature_not_just_highest_toughness() -> None
             2: type("P", (), {"life": 20, "hand": [], "battlefield": ["bear", "dragon"], "mana_pool": {}})(),
         }
         cards = {
-            "rmv-1": type("C", (), {"types": ["Instant"], "name": "Go for the Throat", "oracle_text": "Destroy target creature.", "tapped": False})(),
-            "bear": type("C", (), {"types": ["Creature"], "name": "Runeclaw Bear", "power": 2, "toughness": 2, "keywords": [], "oracle_text": "", "tapped": False})(),
+            "rmv-1": canonical_card('Go for the Throat', tapped=False),
+            "bear": canonical_card('Runeclaw Bear', tapped=False),
             "dragon": type("C", (), {"types": ["Creature"], "name": "Dragon", "power": 5, "toughness": 5, "keywords": ["Flying"], "oracle_text": "", "tapped": False})(),
         }
 
@@ -1278,9 +1239,9 @@ def test_control_ai_more_proactive_when_opponent_tapped_down() -> None:
             )(),
         }
         cards = {
-            "draw-1": type("C", (), {"types": ["Instant"], "name": "Consider", "oracle_text": "Draw a card.", "mana_cost": "{U}"})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": True})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": True})(),
+            "draw-1": canonical_card('Consider'),
+            "l1": canonical_card('Island', tapped=True),
+            "l2": canonical_card('Island', tapped=True),
         }
 
     decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
@@ -1304,20 +1265,7 @@ def test_control_ai_casts_big_finisher_on_clear_main_phase() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "big-1": type(
-                "C",
-                (),
-                {
-                    "types": ["Creature"],
-                    "name": "Dream Trawler",
-                    "oracle_text": "Flying, lifelink.",
-                    "zone": "hand",
-                    "mana_cost": "{2}{W}{W}{U}{U}",
-                    "keywords": ["Flying", "Lifelink"],
-                    "power": 3,
-                    "toughness": 5,
-                },
-            )(),
+            "big-1": canonical_card('Dream Trawler', zone="hand"),
         }
         stack = []
         winner = None
@@ -1352,11 +1300,11 @@ def test_ai_materializes_x_value_for_x_spells() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": ["enemy-1"], "mana_pool": {}})(),
         }
         cards = {
-            "march-1": type("C", (), {"types": ["Instant"], "name": "March of Otherworldly Light", "oracle_text": "Exile target creature.", "mana_cost": "{X}{W}", "keywords": []})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": ""})(),
-            "l3": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": ""})(),
-            "enemy-1": type("C", (), {"types": ["Creature"], "name": "Topiary Stomper", "power": 4, "toughness": 4})(),
+            "march-1": canonical_card('March of Otherworldly Light'),
+            "l1": canonical_card('Plains', tapped=False),
+            "l2": canonical_card('Island', tapped=False),
+            "l3": canonical_card('Island', tapped=False),
+            "enemy-1": canonical_card('Topiary Stomper'),
         }
         stack = []
 
@@ -1367,8 +1315,8 @@ def test_ai_materializes_x_value_for_x_spells() -> None:
 
 def test_ai_x_value_accounts_for_opponent_static_spell_tax() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Island"}],
-        [{"quantity": 60, "card_name": "Plains"}],
+        [canonical_deck_entry('Island', 60)],
+        [canonical_deck_entry('Plains', 60)],
         seed=972,
     )
     state.pregame_pending = False
@@ -1382,17 +1330,12 @@ def test_ai_x_value_accounts_for_opponent_static_spell_tax() -> None:
     p1.hand.clear()
     for index in range(9):
         land_id = f"x-land-{index}"
-        land = CardInstance(land_id, "Swamp", 1, 1, Zone.BATTLEFIELD, ["Land"], type_line="Basic Land — Swamp")
+        land = canonical_card('Swamp', as_instance=True, id=land_id, owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[land_id] = land
         p1.battlefield.append(land_id)
-    tax = CardInstance(
-        "tax", "Thalia", 2, 2, Zone.BATTLEFIELD, ["Creature"],
-        oracle_text="Noncreature spells cost {1} more to cast.", power=2, toughness=1,
-    )
-    spell = CardInstance(
-        "meathook", "The Meathook Massacre", 1, 1, Zone.HAND, ["Enchantment"],
-        mana_cost="{X}{B}{B}", oracle_text="When The Meathook Massacre enters the battlefield, each creature gets -X/-X until end of turn.",
-    )
+    tax = canonical_card('Thalia, Guardian of Thraben', as_instance=True,
+        id='tax', owner=2, controller=2, zone=Zone.BATTLEFIELD)
+    spell = canonical_card('The Meathook Massacre', as_instance=True, id="meathook", owner=1, controller=1, zone=Zone.HAND)
     state.cards.update({tax.id: tax, spell.id: spell})
     p2.battlefield.append(tax.id)
     p1.hand.append(spell.id)
@@ -1405,7 +1348,7 @@ def test_ai_x_value_accounts_for_opponent_static_spell_tax() -> None:
 
 
 def test_ai_holds_variable_sweeper_without_creatures_to_kill() -> None:
-    deck = [{"quantity": 60, "card_name": "Swamp"}]
+    deck = [canonical_deck_entry('Swamp', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=973)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -1420,10 +1363,7 @@ def test_ai_holds_variable_sweeper_without_creatures_to_kill() -> None:
         state.cards[cid].zone = Zone.BATTLEFIELD
     oracle = seed_card_payload("The Meathook Massacre")
     assert oracle is not None
-    spell = CardInstance(
-        "sweeper", oracle["name"], 1, 1, Zone.HAND, ["Enchantment"],
-        mana_cost=oracle["mana_cost"], type_line=oracle["type_line"], oracle_text=oracle["oracle_text"],
-    )
+    spell = canonical_card(oracle["name"], as_instance=True, id="sweeper", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     player.hand.append(spell.id)
 
@@ -1433,7 +1373,7 @@ def test_ai_holds_variable_sweeper_without_creatures_to_kill() -> None:
         decision = ai.choose_action(state, moves, 1)
         assert decision.action["type"] == "pass_priority"
 
-    threat = CardInstance("large-threat", "Torrential Gearhulk", 2, 2, Zone.BATTLEFIELD, ["Artifact", "Creature"], power=5, toughness=6)
+    threat = canonical_card('Torrential Gearhulk', as_instance=True, id="large-threat", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[threat.id] = threat
     state.players[2].battlefield.append(threat.id)
     for _ in range(3):
@@ -1442,7 +1382,7 @@ def test_ai_holds_variable_sweeper_without_creatures_to_kill() -> None:
 
 
 def test_ai_variable_sweeper_spends_only_enough_to_kill_threat() -> None:
-    deck = [{"quantity": 60, "card_name": "Swamp"}]
+    deck = [canonical_deck_entry('Swamp', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=974)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -1457,11 +1397,8 @@ def test_ai_variable_sweeper_spends_only_enough_to_kill_threat() -> None:
         state.cards[cid].zone = Zone.BATTLEFIELD
     oracle = seed_card_payload("The Meathook Massacre")
     assert oracle is not None
-    spell = CardInstance(
-        "sweeper", oracle["name"], 1, 1, Zone.HAND, ["Enchantment"],
-        mana_cost=oracle["mana_cost"], type_line=oracle["type_line"], oracle_text=oracle["oracle_text"],
-    )
-    threat = CardInstance("threat", "Torrential Gearhulk", 2, 2, Zone.BATTLEFIELD, ["Artifact", "Creature"], power=5, toughness=6)
+    spell = canonical_card(oracle["name"], as_instance=True, id="sweeper", owner=1, controller=1, zone=Zone.HAND)
+    threat = canonical_card('Torrential Gearhulk', as_instance=True, id="threat", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards.update({spell.id: spell, threat.id: threat})
     player.hand.append(spell.id)
     state.players[2].battlefield.append(threat.id)
@@ -1496,8 +1433,8 @@ def test_ai_avoids_casting_x_spells_when_only_x_zero_is_possible() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "xspell-1": canonical_card('Secure the Wastes'),
+            "l1": canonical_card('Plains', tapped=False),
         }
         stack = []
         winner = None
@@ -1535,10 +1472,10 @@ def test_ai_avoids_low_value_secure_the_wastes_early() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "xspell-1": canonical_card('Secure the Wastes'),
+            "l1": canonical_card('Plains', tapped=False),
+            "l2": canonical_card('Plains', tapped=False),
+            "l3": canonical_card('Plains', tapped=False),
         }
         stack = []
         winner = None
@@ -1566,9 +1503,9 @@ def test_ai_rejects_low_impact_x_value_for_token_spells() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "xspell-1": canonical_card('Secure the Wastes'),
+            "l1": canonical_card('Plains', tapped=False),
+            "l2": canonical_card('Plains', tapped=False),
         }
 
     x_value = ai._choose_x_value(complete_card_bookkeeping(FakeState()), 1, "{X}{W}", card=FakeState.cards["xspell-1"])
@@ -1588,11 +1525,11 @@ def test_ai_prefers_positive_x_for_interactive_x_removal() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": ["enemy-1"], "mana_pool": {}})(),
         }
         cards = {
-            "xspell-1": type("C", (), {"types": ["Instant"], "name": "March of Otherworldly Light", "oracle_text": "Exile target nonland permanent with mana value X or less.", "mana_cost": "{X}{W}", "keywords": []})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
-            "l3": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
-            "l4": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "xspell-1": canonical_card('March of Otherworldly Light'),
+            "l1": canonical_card('Plains', tapped=False),
+            "l2": canonical_card('Island', tapped=False),
+            "l3": canonical_card('Island', tapped=False),
+            "l4": canonical_card('Island', tapped=False),
             "enemy-1": type("C", (), {"types": ["Artifact"], "name": "Lockstone", "tapped": False})(),
         }
 
@@ -1613,13 +1550,13 @@ def test_control_ai_prefers_moderate_x_value_over_max_on_stable_board() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l4": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l5": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l6": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "xspell-1": canonical_card('Secure the Wastes'),
+            "l1": canonical_card('Plains', tapped=False),
+            "l2": canonical_card('Plains', tapped=False),
+            "l3": canonical_card('Plains', tapped=False),
+            "l4": canonical_card('Plains', tapped=False),
+            "l5": canonical_card('Plains', tapped=False),
+            "l6": canonical_card('Plains', tapped=False),
         }
         stack = []
         winner = None
@@ -1673,11 +1610,11 @@ def test_ai_uses_log_priors_to_delay_historically_late_noncreature_spells() -> N
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "xspell-1": type("C", (), {"types": ["Instant"], "name": "Secure the Wastes", "oracle_text": "Create X 1/1 white Warrior creature tokens.", "mana_cost": "{X}{W}", "keywords": []})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
-            "l4": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}."})(),
+            "xspell-1": canonical_card('Secure the Wastes'),
+            "l1": canonical_card('Plains', tapped=False),
+            "l2": canonical_card('Plains', tapped=False),
+            "l3": canonical_card('Plains', tapped=False),
+            "l4": canonical_card('Plains', tapped=False),
         }
         stack = []
         winner = None
@@ -1744,12 +1681,12 @@ def test_ai_uses_role_specific_log_priors_when_board_is_stable() -> None:
             2: type("P", (), {"life": 16, "hand": ["x"], "battlefield": ["o1"], "mana_pool": {}})(),
         }
         cards = {
-            "deluge-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Look at the top X cards of your library.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
-            "l3": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
-            "l4": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
-            "o1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "deluge-1": canonical_card('Memory Deluge'),
+            "l1": canonical_card('Island', tapped=False),
+            "l2": canonical_card('Island', tapped=False),
+            "l3": canonical_card('Island', tapped=False),
+            "l4": canonical_card('Island', tapped=False),
+            "o1": canonical_card('Island', tapped=False),
         }
         stack = []
         winner = None
@@ -1786,7 +1723,7 @@ def test_ai_materialize_sets_default_cost_choice_when_options_present() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "spell-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
+            "spell-1": canonical_card('Memory Deluge'),
         }
         stack = []
 
@@ -1814,8 +1751,8 @@ def test_ai_forces_land_drop_on_own_main_phase() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
-            "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "counter-1": canonical_card('Counterspell'),
+            "island-1": canonical_card('Island'),
         }
 
     decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
@@ -1842,9 +1779,9 @@ def test_ai_prefers_blue_source_for_counterspell_setup() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
-            "swamp-1": type("C", (), {"types": ["Land"], "name": "Swamp", "type_line": "Basic Land — Swamp", "oracle_text": "{T}: Add {B}."})(),
-            "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "counter-1": canonical_card('Counterspell'),
+            "swamp-1": canonical_card('Swamp'),
+            "island-1": canonical_card('Island'),
         }
 
     decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
@@ -1871,9 +1808,12 @@ def test_ai_does_not_invent_land_drop_when_legal_moves_omit_it() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
         }
         cards = {
-            "warmaster-1": type("C", (), {"types": ["Creature"], "name": "Elvish Warmaster", "oracle_text": "", "mana_cost": "{1}{G}"})(),
-            "forest-1": type("C", (), {"types": [], "name": "Forest", "type_line": "", "oracle_text": "{T}: Add {G}.", "mana_cost": ""})(),
+            "warmaster-1": canonical_card('Elvish Warmaster'),
+            "forest-1": canonical_card('Forest'),
         }
+        # Deliberate missing-metadata input, derived from complete official facts.
+        cards['forest-1'].types = []
+        cards['forest-1'].type_line = ""
 
     decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] in {move["type"] for move in moves}
@@ -1913,8 +1853,8 @@ def test_ai_forces_legal_land_drop_even_if_land_counter_is_desynced() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
         }
         cards = {
-            "deluge-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}"})(),
-            "island-1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}."})(),
+            "deluge-1": canonical_card('Memory Deluge'),
+            "island-1": canonical_card('Island'),
         }
 
     decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
@@ -1931,14 +1871,17 @@ def test_control_ai_mulligan_counts_land_with_missing_types_from_oracle() -> Non
             1: type("P", (), {"hand": ["l1", "s1", "s2", "s3", "s4", "s5", "s6"]})(),
         }
         cards = {
-            "l1": type("C", (), {"types": [], "name": "Island", "type_line": "", "oracle_text": "{T}: Add {U}.", "mana_cost": ""})(),
-            "s1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "type_line": "Instant", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
-            "s2": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "type_line": "Instant", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}"})(),
-            "s3": type("C", (), {"types": ["Instant"], "name": "March", "type_line": "Instant", "oracle_text": "Exile target.", "mana_cost": "{X}{W}"})(),
-            "s4": type("C", (), {"types": ["Sorcery"], "name": "Supreme Verdict", "type_line": "Sorcery", "oracle_text": "Destroy all creatures.", "mana_cost": "{1}{W}{W}{U}"})(),
-            "s5": type("C", (), {"types": ["Enchantment"], "name": "Shark Typhoon", "type_line": "Enchantment", "oracle_text": "", "mana_cost": "{5}{U}"})(),
-            "s6": type("C", (), {"types": ["Instant"], "name": "Consider", "type_line": "Instant", "oracle_text": "Draw a card.", "mana_cost": "{U}"})(),
+            "l1": canonical_card('Island'),
+            "s1": canonical_card('Counterspell'),
+            "s2": canonical_card('Memory Deluge'),
+            "s3": canonical_card('March of Otherworldly Light'),
+            "s4": canonical_card('Supreme Verdict'),
+            "s5": canonical_card('Shark Typhoon'),
+            "s6": canonical_card('Consider'),
         }
+        # Deliberate missing-metadata input, derived from complete official facts.
+        cards['l1'].types = []
+        cards['l1'].type_line = ""
 
     decision = ai.choose_mulligan_action(complete_card_bookkeeping(FakeState()), 1)
     assert decision.action["type"] == "mulligan"
@@ -1963,8 +1906,11 @@ def test_ai_does_not_treat_mana_creature_as_land_in_forced_land_logic() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 0})(),
         }
         cards = {
-            "elves-1": type("C", (), {"types": [], "name": "Llanowar Elves", "type_line": "", "oracle_text": "{T}: Add {G}.", "mana_cost": "{G}"})(),
+            "elves-1": canonical_card('Llanowar Elves'),
         }
+        # Deliberate missing-metadata input, derived from complete official facts.
+        cards['elves-1'].types = []
+        cards['elves-1'].type_line = ""
 
     decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
     assert decision.action["type"] != "play_land"
@@ -1990,17 +1936,8 @@ def test_tokens_ai_prioritizes_token_enchantment_engine() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 1})(),
         }
         cards = {
-            "adeline-1": type("C", (), {"types": ["Creature"], "name": "Adeline, Resplendent Cathar", "oracle_text": "", "mana_cost": "{1}{W}{W}"})(),
-            "wedding-1": type(
-                "C",
-                (),
-                {
-                    "types": ["Enchantment"],
-                    "name": "Wedding Announcement",
-                    "oracle_text": "At the beginning of your end step, create a 1/1 white Human creature token.",
-                    "mana_cost": "{2}{W}",
-                },
-            )(),
+            "adeline-1": canonical_card('Adeline, Resplendent Cathar'),
+            "wedding-1": canonical_card('Wedding Announcement // Wedding Festivity'),
             "tok-a": type("C", (), {"types": ["Creature"], "name": "Human Token", "power": 1, "toughness": 1, "tapped": False})(),
             "tok-b": type("C", (), {"types": ["Creature"], "name": "Human Token", "power": 1, "toughness": 1, "tapped": False})(),
         }
@@ -2031,8 +1968,8 @@ def test_control_ai_breaks_late_game_main_phase_pass_loop_with_proactive_spell()
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}, "lands_played_this_turn": 1})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}", "keywords": []})(),
-            "teferi-1": type("C", (), {"types": ["Planeswalker"], "name": "Teferi, Hero of Dominaria", "oracle_text": "+1: Draw a card.", "mana_cost": "{3}{W}{U}", "keywords": []})(),
+            "counter-1": canonical_card('Counterspell'),
+            "teferi-1": canonical_card('Teferi, Hero of Dominaria'),
         }
         blocks = {}
         attackers = []
@@ -2066,17 +2003,17 @@ def test_control_ai_deploys_major_threat_instead_of_holding_counter_late() -> No
             2: type("P", (), {"life": 20, "hand": [], "battlefield": ["o1", "o2", "o3"], "mana_pool": {}, "lands_played_this_turn": 1})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}", "keywords": []})(),
-            "threat-1": type("C", (), {"types": ["Creature"], "name": "Dream Trawler", "oracle_text": "Flying, lifelink.", "mana_cost": "{2}{W}{W}{U}{U}", "keywords": ["flying", "lifelink"], "power": 3, "toughness": 5})(),
-            "i1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "i2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "i3": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
-            "i4": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
-            "i5": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "i6": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "o1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False})(),
-            "o2": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False})(),
-            "o3": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False})(),
+            "counter-1": canonical_card('Counterspell'),
+            "threat-1": canonical_card('Dream Trawler'),
+            "i1": canonical_card('Island', tapped=False),
+            "i2": canonical_card('Island', tapped=False),
+            "i3": canonical_card('Plains', tapped=False),
+            "i4": canonical_card('Plains', tapped=False),
+            "i5": canonical_card('Island', tapped=False),
+            "i6": canonical_card('Island', tapped=False),
+            "o1": canonical_card('Island', tapped=False),
+            "o2": canonical_card('Island', tapped=False),
+            "o3": canonical_card('Island', tapped=False),
         }
         blocks = {}
         attackers = []
@@ -2216,11 +2153,7 @@ def test_ai_prefers_preserving_mana_creature_when_other_good_block_exists() -> N
         }
         cards = {
             "atk-3-3": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": True})(),
-            "mana-dork": type(
-                "C",
-                (),
-                {"types": ["Creature"], "name": "Llanowar Elves", "power": 1, "toughness": 1, "tapped": False, "oracle_text": "{T}: Add {G}."},
-            )(),
+            "mana-dork": canonical_card('Llanowar Elves', tapped=False),
             "safe-blocker": type("C", (), {"types": ["Creature"], "name": "4/4", "power": 4, "toughness": 4, "tapped": False})(),
         }
         stack = []
@@ -2249,11 +2182,7 @@ def test_ai_blocks_with_mana_creature_when_it_is_the_only_profitable_assignment(
         }
         cards = {
             "atk-6-6": type("C", (), {"types": ["Creature"], "name": "6/6", "power": 6, "toughness": 6, "tapped": True})(),
-            "mana-dork": type(
-                "C",
-                (),
-                {"types": ["Creature"], "name": "Llanowar Elves", "power": 1, "toughness": 1, "tapped": False, "oracle_text": "{T}: Add {G}."},
-            )(),
+            "mana-dork": canonical_card('Llanowar Elves', tapped=False),
         }
         stack = []
         step = Step.DECLARE_BLOCKERS
@@ -2358,21 +2287,7 @@ def test_tribal_ai_prefers_collected_company_style_spell_over_pass() -> None:
             2: type("P", (), {"life": 18, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "cc-1": type(
-                "C",
-                (),
-                {
-                    "types": ["Instant"],
-                    "name": "Collected Company",
-                    "oracle_text": (
-                        "Look at the top six cards of your library. "
-                        "Put up to two creature cards with mana value 3 or less from among them onto the battlefield. "
-                        "Put the rest on the bottom of your library in any order."
-                    ),
-                    "mana_cost": "{3}{G}",
-                    "keywords": [],
-                },
-            )(),
+            "cc-1": canonical_card('Collected Company'),
         }
         stack = []
         blocks = {}
@@ -2427,7 +2342,7 @@ def test_control_inevitability_planner_prefers_draw_over_pass() -> None:
             )(),
         }
         cards = {
-            "draw-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}"})(),
+            "draw-1": canonical_card('Memory Deluge'),
         }
         stack = []
         blocks = {}
@@ -2483,8 +2398,8 @@ def test_control_inevitability_planner_avoids_counter_on_empty_stack() -> None:
             )(),
         }
         cards = {
-            "ctr-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
-            "draw-1": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}"})(),
+            "ctr-1": canonical_card('Counterspell'),
+            "draw-1": canonical_card('Memory Deluge'),
         }
         stack = []
         blocks = {}
@@ -2515,7 +2430,7 @@ def test_ai_targets_high_threat_enchantment_when_available() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": ["ench-low", "ench-high"], "mana_pool": {}})(),
         }
         cards = {
-            "rem-1": type("C", (), {"types": ["Instant"], "name": "Disenchant", "oracle_text": "Destroy target artifact or enchantment."})(),
+            "rem-1": canonical_card('Disenchant'),
             "ench-low": type("C", (), {"types": ["Enchantment"], "name": "Minor Aura", "oracle_text": "Enchanted creature gets +1/+1.", "controller": 2})(),
             "ench-high": type(
                 "C",
@@ -2556,9 +2471,9 @@ def test_counter_target_prefers_high_impact_artifact_stack_spell() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "counter-1": type("C", (), {"types": ["Instant"], "name": "Counterspell", "oracle_text": "Counter target spell.", "mana_cost": "{U}{U}"})(),
-            "c-small": type("C", (), {"types": ["Instant"], "name": "Opt", "oracle_text": "Scry 1, draw a card.", "mana_cost": "{U}"})(),
-            "c-big": type("C", (), {"types": ["Artifact"], "name": "The One Ring", "oracle_text": "At the beginning of your upkeep, you lose 1 life for each burden counter on The One Ring.\n{T}: Put a burden counter on The One Ring, then draw a card for each burden counter on The One Ring.", "mana_cost": "{4}"})(),
+            "counter-1": canonical_card('Counterspell'),
+            "c-small": canonical_card('Opt'),
+            "c-big": canonical_card('The One Ring'),
         }
         stack = [
             type("S", (), {"id": "stack-small", "label": "Opt", "source_card_id": "c-small", "controller": 2})(),
@@ -2591,9 +2506,9 @@ def test_early_turn_cheap_proactive_cast_over_pass_when_opponent_tapped_low() ->
             2: type("P", (), {"life": 20, "hand": [], "battlefield": ["isl-2"], "mana_pool": {}})(),
         }
         cards = {
-            "delver-1": type("C", (), {"types": ["Creature"], "name": "Delver of Secrets", "oracle_text": "", "mana_cost": "{U}"})(),
-            "isl-1": type("C", (), {"types": ["Land"], "name": "Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "isl-2": type("C", (), {"types": ["Land"], "name": "Island", "oracle_text": "{T}: Add {U}.", "tapped": True})(),
+            "delver-1": canonical_card('Delver of Secrets // Insectile Aberration'),
+            "isl-1": canonical_card('Island', tapped=False),
+            "isl-2": canonical_card('Island', tapped=True),
         }
         stack = []
         blocks = {}
@@ -2756,17 +2671,7 @@ def test_control_cast_bias_engine_tag_path_does_not_crash() -> None:
             2: type("P", (), {"life": 20, "hand": [], "battlefield": [], "mana_pool": {}})(),
         }
         cards = {
-            "engine": type(
-                "C",
-                (),
-                {
-                    "types": ["Enchantment"],
-                    "name": "Rhystic Study",
-                    "mana_cost": "{2}{U}",
-                    "oracle_text": "Whenever an opponent casts a spell, draw a card.",
-                    "card_faces": [],
-                },
-            )(),
+            "engine": canonical_card('Rhystic Study'),
         }
 
     score = ai._cast_bias(complete_card_bookkeeping(FakeState()), {"type": "cast_spell", "card_id": "engine"}, 1)
@@ -3019,9 +2924,9 @@ def test_control_selects_counter_mode_when_stack_is_live() -> None:
                     "mana_cost": "{1}{W}{U}",
                 },
             )(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": ""})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
-            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+            "l1": canonical_card('Island', tapped=False),
+            "l2": canonical_card('Plains', tapped=False),
+            "l3": canonical_card('Plains', tapped=False),
             "enemy-1": type("C", (), {"types": ["Creature"], "name": "Threat", "power": 4, "toughness": 4})(),
         }
         stack = [type("S", (), {"id": "stack-1", "label": "Lightning Bolt", "source_card_id": "bolt", "controller": 2})()]
@@ -3058,9 +2963,9 @@ def test_control_prefers_removal_mode_over_draw_when_opponent_has_board_pressure
             2: type("P", (), {"life": 16, "hand": [], "battlefield": ["enemy-1", "enemy-2"], "mana_pool": {}})(),
         }
         cards = {
-            "l1": type("C", (), {"types": ["Land"], "name": "Island", "tapped": False, "type_line": "Basic Land — Island", "oracle_text": ""})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
-            "l3": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+            "l1": canonical_card('Island', tapped=False),
+            "l2": canonical_card('Plains', tapped=False),
+            "l3": canonical_card('Plains', tapped=False),
             "enemy-1": type("C", (), {"types": ["Creature"], "name": "Threat 1", "power": 3, "toughness": 3})(),
             "enemy-2": type("C", (), {"types": ["Creature"], "name": "Threat 2", "power": 4, "toughness": 4})(),
         }
@@ -3104,13 +3009,13 @@ def test_strategic_planner_considers_beyond_top_four_moves_on_complex_boards() -
             2: type("P", (), {"life": 18, "hand": [], "battlefield": ["b1", "b2", "b3", "b4", "b5", "b6"], "mana_pool": {}})(),
         }
         cards = {
-            "best": type("C", (), {"types": ["Instant"], "name": "Memory Deluge", "oracle_text": "Draw cards.", "mana_cost": "{2}{U}{U}", "keywords": []})(),
-            "a1": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "a2": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "a3": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
-            "a4": type("C", (), {"types": ["Land"], "name": "Plains", "type_line": "Basic Land — Plains", "oracle_text": "{T}: Add {W}.", "tapped": False})(),
-            "a5": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
-            "a6": type("C", (), {"types": ["Land"], "name": "Island", "type_line": "Basic Land — Island", "oracle_text": "{T}: Add {U}.", "tapped": False})(),
+            "best": canonical_card('Memory Deluge'),
+            "a1": canonical_card('Island', tapped=False),
+            "a2": canonical_card('Island', tapped=False),
+            "a3": canonical_card('Plains', tapped=False),
+            "a4": canonical_card('Plains', tapped=False),
+            "a5": canonical_card('Island', tapped=False),
+            "a6": canonical_card('Island', tapped=False),
             "b1": type("C", (), {"types": ["Creature"], "name": "Threat 1", "power": 3, "toughness": 3})(),
             "b2": type("C", (), {"types": ["Creature"], "name": "Threat 2", "power": 3, "toughness": 3})(),
             "b3": type("C", (), {"types": ["Creature"], "name": "Threat 3", "power": 3, "toughness": 3})(),
@@ -3199,8 +3104,8 @@ def test_aggro_selects_token_mode_when_board_is_empty() -> None:
                     "mana_cost": "{2}{W}",
                 },
             )(),
-            "l1": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
-            "l2": type("C", (), {"types": ["Land"], "name": "Plains", "tapped": False, "type_line": "Basic Land — Plains", "oracle_text": ""})(),
+            "l1": canonical_card('Plains', tapped=False),
+            "l2": canonical_card('Plains', tapped=False),
         }
         stack = []
         winner = None

@@ -3030,9 +3030,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_decisions.py": {
-    "mtime": 1792033175.6226783,
-    "seen": 1792034402.3563023,
-    "ast_hash": "d9eb8d18913b1fa5d252b51a022c7568",
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6074524,
+    "ast_hash": "d563541f6856e0bfec1f558be25f515d",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_defensive_responses.py": {
@@ -3522,9 +3522,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_cast_choice_modes.py": {
-    "mtime": 1792033175.638678,
-    "seen": 1792034402.3565264,
-    "ast_hash": "a2a2dc109ca93ad1ab5a2cba743176ed",
+    "mtime": 1792119829.7748253,
+    "seen": 1792120316.607745,
+    "ast_hash": "7617c53277010f53ec67904fabe0a838",
     "semantic_hash": ""
   },
   "backend/tests/test_cast_payment_choices.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792086208.0909967,
-    "seen": 1792088826.5941734,
-    "ast_hash": "8b34fd3e9a09c30f2e0e69307f09977d",
+    "mtime": 1792120141.0555832,
+    "seen": 1792120316.610983,
+    "ast_hash": "b8ff6563fcd5de2e2a9fd88aaa3a43ff",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792110969.6333427,
-    "seen": 1792111086.151547,
-    "ast_hash": "662a39582427eb7b6b582474a57d136d",
+    "mtime": 1792120141.0545833,
+    "seen": 1792120316.610935,
+    "ast_hash": "96a516c57b53a6d8e91f5842d02e9321",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19032,9 +19032,9 @@
     "semantic_hash": ""
   },
   "docs/plans/2026-10-15-payment-trial-copy.md": {
-    "mtime": 1792091029.4033964,
-    "seen": 1792093492.1875873,
-    "ast_hash": "1bbd094f4cf64d23e570eccde0c015f9",
+    "mtime": 1792115068.353835,
+    "seen": 1792120316.6099756,
+    "ast_hash": "57bc42e2507d7d8aff1aacfff2782d1a",
     "semantic_hash": ""
   },
   "backend/tests/test_nested_card_copy.py": {
@@ -19407,6 +19407,126 @@
     "mtime": 1792112377.946628,
     "seen": 1792114136.3264034,
     "ast_hash": "b90164dc3c2170c94a8d81bfbd6f3c2d",
+    "semantic_hash": ""
+  },
+  "backend/tests/ai_decisions_canonical_cdba.py": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6058447,
+    "ast_hash": "e169d177c44e285f0a04b6caaea67daa",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_decisions_canonical_cdba/PROVENANCE.json": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6059737,
+    "ast_hash": "2c851322f57872b2a293158e7bd3c8fc",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_decisions_canonical_cdba/dream-trawler-scryfall-raw.json": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6059756,
+    "ast_hash": "3c2772655cfd73f8dc06c5989e8da37b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_decisions_canonical_cdba/explore-scryfall-raw.json": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6059775,
+    "ast_hash": "67dd53e6f79749a357c1f00af26bdfba",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_decisions_canonical_cdba/grim-haruspex-PROVENANCE.json": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6059792,
+    "ast_hash": "df66f270bac23aafedb334fdeb1cceba",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_decisions_canonical_cdba/grim-haruspex-scryfall-raw.json": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6059806,
+    "ast_hash": "c03840eb2d0b09ac166e32dcf31fad15",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_decisions_canonical_cdba/merfolk-looter-scryfall-raw.json": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6059823,
+    "ast_hash": "05dc64e68adcf13823cb216516ce5a50",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_decisions_canonical_cdba/rhystic-study-scryfall-raw.json": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6059835,
+    "ast_hash": "13d292abfdba4f38c6cc986a6c0ac47a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/ai_decisions_canonical_cdba/runeclaw-bear-scryfall-raw.json": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.6059852,
+    "ast_hash": "3d9a1aa9e1aa5a5ee501b2fd0b4e1a37",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/cast_choice_modes/PROVENANCE.json": {
+    "mtime": 1792119829.7748253,
+    "seen": 1792120316.6061919,
+    "ast_hash": "3d9526834d2d742ce5ba371944b4a50f",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/cast_choice_modes/izzet-charm-scryfall-raw.json": {
+    "mtime": 1792119829.7748253,
+    "seen": 1792120316.6061933,
+    "ast_hash": "8027dff4a8f829d9af82dbd341c7b8fb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_ai_decisions_canonical_cdba_fidelity.py": {
+    "mtime": 1792119829.7718253,
+    "seen": 1792120316.607454,
+    "ast_hash": "3a35421ca272019f49577af87633963f",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_cast_choice_fixture_fidelity.py": {
+    "mtime": 1792119829.7748253,
+    "seen": 1792120316.6077433,
+    "ast_hash": "25571bf64b2917c4039ff818e5941d66",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-cdba-browser-ci.md": {
+    "mtime": 1792116336.1323864,
+    "seen": 1792120316.6104066,
+    "ast_hash": "53ca74d6599783303f749241fc445196",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-ai-cast-coupled591-current.md": {
+    "mtime": 1792120141.0545833,
+    "seen": 1792120316.6111538,
+    "ast_hash": "9ecd10bc7c27d19bfa8e87355803868f",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-ai-decisions-canonical-stage-cdba.md": {
+    "mtime": 1792119829.7728252,
+    "seen": 1792120316.6111555,
+    "ast_hash": "392b88b60fb2db6ccb8a65698c0c0daf",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-ai-decisions-corrective-preconditions-cdba.md": {
+    "mtime": 1792119829.7728252,
+    "seen": 1792120316.611157,
+    "ast_hash": "de47cd90be86de34425b9f886f0831a5",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-ai-decisions-engine-offer-qualification-cdba.md": {
+    "mtime": 1792119829.7728252,
+    "seen": 1792120316.6111584,
+    "ast_hash": "ceced0f00527e7271d1805e10d3bb955",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-ai-decisions-main-phase-stage-cdba.md": {
+    "mtime": 1792119829.7728252,
+    "seen": 1792120316.6111598,
+    "ast_hash": "6cff0af14a1277d6aceea67c7c3f235e",
+    "semantic_hash": ""
+  },
+  "docs/testing/task13-cast-choice-modes-cdba-stage.md": {
+    "mtime": 1792119829.7748253,
+    "seen": 1792120316.611161,
+    "ast_hash": "a2b1c3bd4a1b01b4def018d2c001ba65",
     "semantic_hash": ""
   }
 }

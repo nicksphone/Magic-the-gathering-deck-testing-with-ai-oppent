@@ -1,5 +1,16 @@
 # Release Acceptance Status
 
+## Canonical Fixture Composition
+
+One fresh source-only composition over `672ae625` passes 591 ordinary cases in
+30 whole modules, including the preceding 370 regressions, Sheoldred16, AI166
+and cast-choice39. All original AI/cast assertion ASTs remain; two invalid
+lethal-test setups now use funded main-phase engine offers, with actual checked
+payment and damage controls. Production and frontend behavior are unchanged.
+This is a qualified fixture cohort on the recorded older test environment,
+not whole hosted CI, current hash-locked dependencies, Phase 1 or RC. See
+[the exact source, corrections and limits](task13-ai-cast-coupled591-current.md).
+
 ## October 16 Sandboxed Vendor Checkpoint
 
 Exact `cdba5196` subsequently completes both native Linux Chrome and Brave

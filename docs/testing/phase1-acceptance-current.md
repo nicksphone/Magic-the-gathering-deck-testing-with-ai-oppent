@@ -175,6 +175,19 @@ event/resolution operands while replacing the incomplete named source with
 complete pinned facts. This trusted synthetic pose is not a paid-cast or
 actual-draw certificate. No production or shared helper changes.
 
+The next [AI and cast-choice composition](task13-ai-cast-coupled591-current.md)
+passes all 591 cases in 30 whole modules in 54.67 seconds. It retains the
+previous 370 cases and all 16 draw cases, and adds the whole AI166 and cast39
+declarations. Full official named-card inputs preserve all 94 original AI
+names/180 assertion ASTs and 19 cast-choice names/59 assertions. Two original
+lethal fixtures now explicitly supply legal timing, red mana and the selected
+card's authoritative engine offer; checked payment and real lethal damage
+execute for both difficulties. This repairs invalid fixture assumptions, not
+AI policy. First-boundary fidelity and explicit synthetic/negative vectors do
+not complete the remaining literal repository-wide scope. Source/runtime
+preservation and physical I/O denial are verified on the stated older test
+environment, not the newer hash-locked release environment or whole hosted CI.
+
 The exact published `cdba5196` also completes its configured generic browser
 flow, with independently matched original stages and source assertion sites.
 [That result](current-cdba-browser-ci.md) remains separate from this later

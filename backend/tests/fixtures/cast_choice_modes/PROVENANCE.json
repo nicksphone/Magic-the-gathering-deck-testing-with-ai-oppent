@@ -1,0 +1,21 @@
+{
+  "curl_metadata_sha256": "6d70147ddb9847e9d62d2ca51fb05f2fc816e1672584305daf15180486c55479",
+  "end_utc": "2026-10-16T02:10:08.357603+00:00",
+  "http_status": 200,
+  "id": "15af0592-a1cb-4b1e-b051-dde978939706",
+  "intake_archive": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ci/cast-choice-izzet-official-intake-20261016-onr59u6c",
+  "intake_readback_sha256": "ed73a0a35bb12c38d70f8adcf1dd3037c44f22eb69d853cb5826b94c6d6332bc",
+  "name": "Izzet Charm",
+  "oracle_id": "a07698f6-5ad5-49a3-9da2-f82d407f5cd7",
+  "oracle_modified": false,
+  "provider": "Scryfall",
+  "request_count": 1,
+  "request_url": "https://api.scryfall.com/cards/named?exact=Izzet%20Charm",
+  "response_bytes": 4990,
+  "response_headers_sha256": "bed3cec92e2c83800b3957270e803308070abe202540214dd3a389c39e914b0a",
+  "response_sha256": "08e925516702e32a190f344cf2b239a99670d6018c03071f8551b124466f3353",
+  "retries": 0,
+  "schema": 1,
+  "spacing_before_request_seconds": 0.3000919860205613,
+  "start_utc": "2026-10-16T02:09:53.875648+00:00"
+}
