@@ -2,6 +2,14 @@
 
 ## Canonical Copy-Entry Integration - 2026-10-16
 
+- Replace partial AI allocation fixtures with full canonical facts and native
+  entry-counter preparation. Phantom Nishoba retains printed 0/0 and reaches
+  its intended effective 7/7 through seven counters; all 14 cases pass without
+  changing AI policy or the original allocation assertions.
+- Use the canonical materializer in the read-ahead browser fixture rather than
+  a flattened-row adapter that requires creature-only fields. The original
+  branch and core-entry declaration passes 25 cases; full browser CI remains
+  required. Hosted Chrome now passes the preceding lost/held response scenarios.
 - Intercept accepted browser recovery responses directly, preserving application
   behavior and existing recovery assertions. Four whole protocol modules pass
   129 cases; native-browser acceptance is still required.

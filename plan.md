@@ -40,11 +40,27 @@ payloads, deadlines and checks except four explicitly adapted stage operands.
 Four whole protocol modules pass 129 cases; actual browser CI remains required.
 See [the exact boundary](docs/testing/browser-response-stage-recovery.md).
 
+Hosted Chrome on `e2ecb3d4` now passes the original lost/held response scenarios
+before stopping at the read-ahead fixture. Its legacy flattened-row adapter
+requires power/toughness fields that the full canonical Saga correctly omits.
+The branch now reuses the core tests' canonical loader; all 25 branch/core cases
+pass, with every original browser assertion unchanged. This is not a captured
+HTTP status or a completed browser gate. See
+[the exact fixture correction](docs/testing/browser-read-ahead-canonical-birth-e2ec.md).
+
 Three partial activation fixtures now use complete verified records. All five
 original tests and fourteen assertions remain, and both whole modules pass ten
 cases. Unsupported Oona activation remains rejected; this data migration does
 not implement that ability or complete Phase 1. See
 [fixture qualification](docs/testing/human-activation-canonical-7f.md).
+
+The remaining named AI allocation fixtures now retain full canonical facts.
+Native entry-counter preparation, not a printed-stat override, gives Phantom
+Nishoba its intended effective 7/7 from printed 0/0 and seven counters. Three
+whole modules pass all 14 cases, preserving the original allocation assertions
+and AI calls without production changes. This does not certify the card's
+separate damage-replacement behavior or complete Task 1.3. See
+[the canonical pose](docs/testing/allocation-canonical-7f.md).
 
 ## October 16 Canonical Copy-Entry Integration
 

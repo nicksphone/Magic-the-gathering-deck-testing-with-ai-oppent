@@ -27,3 +27,10 @@ still require native qualification. The hosted `7fddf697` browser failure is
 the held-response assertion, with an unknown abort cause. Its frontend job
 separately passes build, lint and the full frontend unit command after the
 bounded replay-capture correction.
+
+On `e2ecb3d4`, hosted Chrome passes the original dropped-accepted-response and
+held-real-response scenarios. The same run later stops in the read-ahead Saga
+fixture setup; this is not whole-browser success or qualification of unreached
+match-start recovery scenarios. A separate canonical-loader correction has
+25 pure branch/core cases, not HTTP evidence. See
+[the read-ahead scope](browser-read-ahead-canonical-birth-e2ec.md).

@@ -493,7 +493,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         return publish(state, [{'quantity': 60, 'card_name': 'Island'}])
     if face_kind == 'read_ahead_entry':
         from tests.test_spell_entry_counters import ROWS, spell
-        from tests.test_ai_recurring_engines import add as add_card
+        from tests.counter_family_canonical091 import add_card
         from tests.test_counter_replacements import source
         from tests.test_restricted_mana import clean
         state = clean(2)

@@ -1158,9 +1158,9 @@
     "semantic_hash": ""
   },
   "backend/tests/browser_fixture_server.py": {
-    "mtime": 1792033175.5316799,
-    "seen": 1792034402.3549573,
-    "ast_hash": "9650352add22b9340257ce4d4e5d9231",
+    "mtime": 1792178049.9977882,
+    "seen": 1792179054.2182882,
+    "ast_hash": "5da2bcf4c895dad0614aaf4b196c61c2",
     "semantic_hash": ""
   },
   "backend/tests/casting_trigger_browser_fixture.py": {
@@ -2982,9 +2982,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_allocation_contracts.py": {
-    "mtime": 1792033175.6216784,
-    "seen": 1792034402.356289,
-    "ast_hash": "6efd73fba8bce1d94fcfd3898c59fdc3",
+    "mtime": 1792178683.8944309,
+    "seen": 1792179054.2201443,
+    "ast_hash": "7cb25516e210dc3c16a42619682cb0e3",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_beneficial_alternatives.py": {
@@ -6768,9 +6768,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1792176329.5990033,
-    "seen": 1792176452.4064982,
-    "ast_hash": "5972c4b971b8ba2d9fdf898ba76435e2",
+    "mtime": 1792178903.3100905,
+    "seen": 1792179054.2226915,
+    "ast_hash": "bbda342fc18d3de4c95edb336ee60553",
     "semantic_hash": ""
   },
   "README.md": {
@@ -8280,9 +8280,9 @@
     "semantic_hash": ""
   },
   "plan.md": {
-    "mtime": 1792176329.6000035,
-    "seen": 1792176452.4079368,
-    "ast_hash": "8ea20a4a99d0069726680264b0bff556",
+    "mtime": 1792178903.3110905,
+    "seen": 1792179054.2241595,
+    "ast_hash": "27d5ffe9b2b99d8738bfe195b224ae2d",
     "semantic_hash": ""
   },
   "backend/card_data/assets/generic-token-creature.svg": {
@@ -20820,15 +20820,57 @@
     "semantic_hash": ""
   },
   "docs/testing/browser-response-stage-recovery.md": {
-    "mtime": 1792176329.5960035,
-    "seen": 1792176452.4068267,
-    "ast_hash": "0aa8fa0602258e4c7d1d3ddc026eb8a1",
+    "mtime": 1792178090.1340647,
+    "seen": 1792179054.2230124,
+    "ast_hash": "42ef9085a269204730dee63291b02bf8",
     "semantic_hash": ""
   },
   "docs/testing/human-activation-canonical-7f.md": {
     "mtime": 1792176206.6930559,
     "seen": 1792176452.407279,
     "ast_hash": "c2ebca8852a0f30188dbf2640399c0b1",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/allocation_canonical7f/SOURCES.json": {
+    "mtime": 1792178683.893431,
+    "seen": 1792179054.218459,
+    "ast_hash": "58c16383812382ee054ce89edf5d4529",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/allocation_canonical7f/phantom-nishoba.json": {
+    "mtime": 1792178683.893431,
+    "seen": 1792179054.2184606,
+    "ast_hash": "03614de05932fb2110d59a362613a43e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_allocation_entry_pose7f.py": {
+    "mtime": 1792178683.8944309,
+    "seen": 1792179054.2202697,
+    "ast_hash": "c7e6729b1aaeff38e146268b2615bfcf",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_allocation_fixture_fidelity7f.py": {
+    "mtime": 1792178683.8944309,
+    "seen": 1792179054.2202713,
+    "ast_hash": "8439699b067d94adbcc7981a2d6ce62a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_browser_read_ahead_canonical_birth.py": {
+    "mtime": 1792178049.9977882,
+    "seen": 1792179054.2203703,
+    "ast_hash": "2022681628ad1f2938aac88845d02ae8",
+    "semantic_hash": ""
+  },
+  "docs/testing/allocation-canonical-7f.md": {
+    "mtime": 1792178683.8944309,
+    "seen": 1792179054.2229304,
+    "ast_hash": "aa6de245d624289ad56c3e30ae7b25a2",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-read-ahead-canonical-birth-e2ec.md": {
+    "mtime": 1792178049.998788,
+    "seen": 1792179054.2230089,
+    "ast_hash": "9e098ab4e3874465a056f383d250ec63",
     "semantic_hash": ""
   }
 }
