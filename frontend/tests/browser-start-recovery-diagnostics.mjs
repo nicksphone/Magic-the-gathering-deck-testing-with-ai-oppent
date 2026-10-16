@@ -67,8 +67,38 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal,
       return found ? found[1] ?? 'match' : null;
     } catch { return null; }
   }
-  function observe(message) {
+  function observe(message, source) {
     const { method, params = {} } = message;
+    if (['Page.frameDetached', 'Page.frameSubtreeWillBeDetached', 'Inspector.detached',
+      'Inspector.targetCrashed', 'Target.targetDestroyed', 'Target.targetCrashed', 'Target.detachedFromTarget'].includes(method)) {
+      // These are direct owned-page CDP notifications, not child-session or BiDi events.
+      if (message.protocol !== undefined || message.sessionId !== undefined) return;
+      if (method.startsWith('Page.')) {
+        const id = params.frameId;
+        if (typeof id !== 'string' || !id || id.length > 256) { invalidEvents++; return; }
+        const frameOrdinal = frames.get(id) ?? null;
+        record({event: method === 'Page.frameDetached' ? 'frame-detached' : 'frame-subtree-will-detach',
+          frameOrdinal, correlation: frameOrdinal === null ? 'unjoined' : 'joined',
+          ...(method === 'Page.frameDetached' ? {reason: category(params.reason, new Set(['remove', 'swap']))} : {})});
+        if (method === 'Page.frameDetached') {
+          for (const [key, context] of signalContexts) if (context.frame === id) signalContexts.delete(key);
+        }
+      } else if (method.startsWith('Inspector.')) {
+        record({event: method === 'Inspector.detached' ? 'inspector-detached' : 'inspector-target-crashed',
+          ownership: 'owned-page-session'});
+        signalContexts.clear();
+      } else {
+        const id = params.targetId;
+        const owned = typeof id === 'string' && id.length > 0 && id.length <= 256
+          && source?.protocol === 'cdp' && source.targetId === id;
+        record({event: method === 'Target.targetDestroyed' ? 'target-destroyed'
+          : method === 'Target.targetCrashed' ? 'target-crashed' : 'target-detached',
+        ownership: owned ? 'owned' : 'unjoined', ...(method === 'Target.targetCrashed'
+          ? {errorCode: Number.isSafeInteger(params.errorCode) ? params.errorCode : null} : {})});
+        if (owned) signalContexts.clear();
+      }
+      return;
+    }
     if (method === 'Runtime.executionContextCreated') {
       const c = params.context;
       if (Number.isSafeInteger(c?.id) && signalContexts.has(c.id)) {
@@ -235,7 +265,8 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal,
     if (method === 'Network.responseReceived') {
       const status = params.response?.status;
       record({ event: 'response', ...info, timestamp: numeric(params.timestamp),
-        status: Number.isInteger(status) && status >= 100 && status <= 599 ? status : null });
+        status: Number.isInteger(status) && status >= 100 && status <= 599 ? status : null,
+        ...(info.method === 'OPTIONS' || info.route === 'legal-moves' ? {cors: networkCors(params.response?.headers, front)} : {}) });
     } else {
       if (request) request.active = false;
       record({ event: method === 'Network.loadingFailed' ? 'failed' : 'finished', ...info,
@@ -247,7 +278,7 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal,
     }
   }
   return {
-    observe(message) { try { requestSignals?.observe(message); observe(message); } catch { invalidEvents++; } },
+    observe(message, source) { try { requestSignals?.observe(message, source); observe(message, source); } catch { invalidEvents++; } },
     snapshot() { return { events: structuredClone(events), omittedEvents, unmatchedEvents, invalidEvents,
       requestOverflow, correlationOverflow, unmatchedInitiators, unknownCategories,
       webSocketOverflow, ignoredWebSockets,
@@ -263,9 +294,11 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal,
 export function createRequestSignalObserver(frontend, backend) {
   const metadata = browserMetadata(frontend, backend, () => null, () => null);
   const methods = new Set(['Runtime.executionContextCreated', 'Runtime.executionContextDestroyed',
-    'Runtime.executionContextsCleared', 'Runtime.consoleAPICalled', 'Page.frameNavigated']);
+    'Runtime.executionContextsCleared', 'Runtime.consoleAPICalled', 'Page.frameNavigated',
+    'Page.frameDetached', 'Inspector.detached', 'Inspector.targetCrashed',
+    'Target.targetDestroyed', 'Target.targetCrashed', 'Target.detachedFromTarget']);
   return {
-    observe(message) { if (methods.has(message?.method)) metadata.observe(message); },
+    observe(message, source) { if (methods.has(message?.method)) metadata.observe(message, source); },
     // Frame/context ordinals belong to this observer, not the later native trace.
     snapshot() { return metadata.snapshot().requestSignalAttribution; },
   };
@@ -289,6 +322,40 @@ function cors(headers, frontend) {
   return {allowOrigin: !origins.length ? 'absent' : origins.length !== 1 ? 'multiple'
     : origins[0] === frontend ? 'expected' : origins[0] === '*' ? 'wildcard' : 'other',
   contentTypeAllowed: allowed.includes('content-type'), idempotencyKeyAllowed: allowed.includes('idempotency-key')};
+}
+
+function networkCors(headers, frontend) {
+  const unavailable = {allowOrigin: 'unavailable', contentTypeAllowed: null, idempotencyKeyAllowed: null,
+    getAllowed: null, postAllowed: null, methodsWildcard: null, headersWildcard: null, privateNetwork: 'unavailable'};
+  if (!headers || typeof headers !== 'object' || Array.isArray(headers)) return unavailable;
+  const selected = new Map(['access-control-allow-origin', 'access-control-allow-methods',
+    'access-control-allow-headers', 'access-control-allow-private-network'].map(name => [name, []]));
+  let count = 0, selectedCount = 0;
+  for (const key in headers) {
+    if (!Object.hasOwn(headers, key)) continue;
+    const descriptor = Object.getOwnPropertyDescriptor(headers, key), value = descriptor?.value;
+    if (++count > 128 || key.length > 256 || typeof value !== 'string' || value.length > 4096) return unavailable;
+    const values = selected.get(key.toLowerCase());
+    if (values) for (const part of value.split('\n')) {
+      if (++selectedCount > 128) return unavailable;
+      values.push(part.trim());
+    }
+  }
+  const entries = [...selected].flatMap(([name, values]) => values.map(value => ({name, value})));
+  const tokens = (name, lower = false) => {
+    const values = selected.get(name).flatMap(value => value.split(',').map(part => part.trim()));
+    if (values.some(value => !/^[!#$%&'*+.^_`|~0-9a-zA-Z-]+$/.test(value))) return null;
+    return lower ? values.map(value => value.toLowerCase()) : values;
+  };
+  const allowedMethods = tokens('access-control-allow-methods'), allowedHeaders = tokens('access-control-allow-headers', true);
+  const privateNetwork = selected.get('access-control-allow-private-network');
+  return {...cors(entries, frontend),
+    contentTypeAllowed: allowedHeaders?.includes('content-type') ?? null,
+    idempotencyKeyAllowed: allowedHeaders?.includes('idempotency-key') ?? null,
+    getAllowed: allowedMethods?.includes('GET') ?? null, postAllowed: allowedMethods?.includes('POST') ?? null,
+    methodsWildcard: allowedMethods?.includes('*') ?? null, headersWildcard: allowedHeaders?.includes('*') ?? null,
+    privateNetwork: !privateNetwork.length ? 'absent' : privateNetwork.length !== 1 ? 'multiple'
+      : ['true', 'false'].includes(privateNetwork[0]) ? privateNetwork[0] : 'other'};
 }
 
 export function traceStartRecoveryResponses(command, handler, frontend,
@@ -348,6 +415,6 @@ export function traceStartRecoveryResponses(command, handler, frontend,
     }
   };
   traced.reportFailure = reportFailure;
-  if (metadata) traced.observeBrowserEvent = message => metadata.observe(message);
+  if (metadata) traced.observeBrowserEvent = (message, source) => metadata.observe(message, source);
   return traced;
 }
