@@ -268,3 +268,24 @@ test('native default production build target and configuration remain unchanged'
   assert.equal(createHash('sha256').update(read('../vite.config.ts')).digest('hex'), 'fec71d5fefd160d586ca8b5448d0d0f770f261751c9b2310273a31fe75671514');
   assert.equal(JSON.parse(read('../package.json')).scripts.build, 'tsc -b && vite build');
 });
+
+import vm from 'node:vm';
+
+test('actual development app compilation enables the existing request-signal branch and console prefix', async () => {
+  const owners = chunks.filter(chunk => Object.keys(chunk.modules).some(id => id.endsWith('/src/api/client.ts')));
+  assert.equal(owners.length, 1);
+  assert.match(code, /MTG_REQUEST_SIGNAL_DIAGNOSTIC/);
+  const compiled = owners[0].code;
+  const begin = compiled.indexOf('async function req('), end = compiled.indexOf('\nasync function matchReq(', begin);
+  assert.ok(begin >= 0 && end > begin, 'Extract the actual emitted API request function');
+  const calls = [], error = new TypeError('compiled-protocol-only');
+  const request = vm.runInNewContext(compiled.slice(begin, end) + '\nreq;', {
+    API: 'unit-not-a-transport', AbortSignal,
+    requestSignalStart: () => 1, requestSignalAborted: signal => signal.aborted,
+    recordRequestSignal: (...args) => calls.push(args), fetch: async () => { throw error; },
+  });
+  await assert.rejects(request('/matches/unit/action', {method: 'POST'}), value => value === error);
+  assert.equal(calls.length, 1); assert.equal(calls[0][2], error);
+  assert.equal(calls[0][1].signal.aborted, false); assert.equal(calls[0][4], false);
+  // This is the real compiler branch with a protocol-only fetch, not browser acceptance.
+});

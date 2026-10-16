@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { openBrowser } from './browser-driver.mjs';
 import { startReviewed } from './review-start.mjs';
-import { continueRequestForPostResponse, traceStartRecoveryResponses } from './browser-start-recovery-diagnostics.mjs';
+import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
 
 // Isolated v2 suite. No dependency on production data or edits to the shared harness.
 const api = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
@@ -107,7 +107,7 @@ async function recoverDroppedResponse(s) {
     }
     }catch(error){failInterception(error);}
     finally{pendingInterceptions.delete(pending);settle();}
-  },origin,value=>{requestLifecycle=value;},{backend:api});
+  },origin,value=>{requestLifecycle=value;},{backend:api,requestSignals:recoverDroppedResponse.requestSignals});
   b.onIntercept(interceptionTrace);
   try {
     await command('Network.enable');
@@ -197,6 +197,10 @@ async function recoverDroppedResponse(s) {
   }
 }
 try {
+  recoverDroppedResponse.requestSignals=createRequestSignalObserver(origin,api);
+  b.onIntercept(Object.assign(()=>{},{observeBrowserEvent:recoverDroppedResponse.requestSignals.observe}));
+  await command('Page.enable');
+  await command('Runtime.enable');
   await viewport();
   await evaluate("localStorage.removeItem('mtg.activeMatch'); localStorage.removeItem('mtg.pendingStart')");await reload();
   await waitFor("document.querySelector('.workspace-lobby') && document.querySelector('[aria-label=\"Deck A\"] option[value]:not([value=\"\"])')");

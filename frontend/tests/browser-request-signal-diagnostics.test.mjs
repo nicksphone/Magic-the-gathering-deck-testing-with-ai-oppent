@@ -235,3 +235,173 @@ test('throwing init.signal getters are not attributed to fetch before argument c
     assert.equal(fetchCalls, 0); assert.equal(signalReads, throwOnRead); assert.deepEqual(f.logs, []);
   }
 });
+
+// Protocol controls only: use the old real collector for RED, not a missing export.
+import * as signalDiagnostics from './browser-start-recovery-diagnostics.mjs';
+const v2Source = fs.readFileSync(new URL('./browser-ui-v2.mjs', import.meta.url), 'utf8');
+function sharedSignals() {
+  if (signalDiagnostics.createRequestSignalObserver) return signalDiagnostics.createRequestSignalObserver(front, back);
+  let value;
+  const old = traceStartRecoveryResponses(async () => {}, async () => {}, front, next => { value = next; }, {backend: back});
+  return {observe: old.observeBrowserEvent, snapshot() { old.reportFailure(); return value.browserMetadata.requestSignalAttribution; }};
+}
+function sharedFixture() {
+  const shared = sharedSignals();
+  const send = (method, params) => shared.observe({method, params});
+  const context = (id = 3, changes = {}) => send('Runtime.executionContextCreated', {context: {
+    id, origin: front, auxData: {isDefault: true, frameId: 'PRIVATE_FRAME'}, ...changes}});
+  const message = (value = row(), id = 3) => send('Runtime.consoleAPICalled', {type: 'debug', executionContextId: id,
+    args: [{type: 'string', value: tag}, {type: 'string', value: JSON.stringify(value)}], stackTrace: privateValue});
+  send('Page.frameNavigated', {frame: {id: 'PRIVATE_FRAME', loaderId: 'PRIVATE_LOADER'}});
+  const late = () => { let report; const trace = traceStartRecoveryResponses(async () => {}, async () => {}, front,
+    next => { report = next; }, {backend: back, requestSignals: shared}); return {trace, result() { trace.reportFailure(); return report.browserMetadata; }}; };
+  return {shared, send, context, message, late};
+}
+function v2Startup() {
+  const marker = '\ntry {\n', start = v2Source.indexOf(marker) + marker.length;
+  const end = v2Source.indexOf('  await viewport();', start);
+  assert.ok(start >= marker.length && end >= start);
+  return v2Source.slice(start, end);
+}
+test('V2 installs passive signal ownership before original setup and enables only Page/Runtime observations', async () => {
+  const calls = []; let handler;
+  const env = {origin: front, api: back, recoverDroppedResponse() {},
+    createRequestSignalObserver: sharedSignals,
+    b: {onIntercept(value) { calls.push('attach'); handler = value; }},
+    command: async name => { calls.push(name); assert.equal(typeof handler?.observeBrowserEvent, 'function'); }};
+  await vm.runInNewContext('(async()=>{' + v2Startup() + '})()', env);
+  assert.deepEqual(calls, ['attach', 'Page.enable', 'Runtime.enable']);
+  assert.doesNotMatch(v2Startup(), /Fetch\.|reload|fetch\(|setTimeout/);
+});
+test('current context learned before interception remains attributable in the later failure trace', () => {
+  const f = sharedFixture(); f.context(); const late = f.late(); f.message();
+  const value = late.result().requestSignalAttribution;
+  assert.equal(value?.records.length, 1); assert.equal(value.records[0].signalAborted, false); privateFree(value);
+});
+test('shared observation still rejects foreign and nondefault contexts', () => {
+  for (const changes of [{origin: 'https://foreign.invalid'}, {auxData: {isDefault: false, frameId: 'PRIVATE_FRAME'}}]) {
+    const f = sharedFixture(); f.context(3, changes); const late = f.late(); f.message();
+    assert.equal(late.result().requestSignalAttribution?.records.length ?? 0, 0);
+  }
+});
+test('a destroyed shared context cannot attribute a later console record', () => {
+  const f = sharedFixture(); f.context(); f.send('Runtime.executionContextDestroyed', {executionContextId: 3});
+  const late = f.late(); f.message(); assert.equal(late.result().requestSignalAttribution?.records.length ?? 0, 0);
+});
+test('duplicate shared context identity is invalidated rather than silently reused', () => {
+  const f = sharedFixture(); f.context(); f.context(); const late = f.late(); f.message();
+  assert.equal(late.result().requestSignalAttribution?.records.length ?? 0, 0);
+});
+test('clearing shared contexts refuses stale ownership and accepts a genuinely new context', () => {
+  const f = sharedFixture(); f.context(); f.send('Runtime.executionContextsCleared', {});
+  const late = f.late(); f.message(); f.context(4); f.message(row(), 4);
+  const value = late.result().requestSignalAttribution; assert.equal(value?.records.length, 1); assert.equal(value.unknownContext, 1);
+});
+test('shared current context still needs a genuinely observed matching frame', () => {
+  const f = sharedFixture(); f.context(3, {auxData: {isDefault: true, frameId: 'PRIVATE_UNOBSERVED_FRAME'}});
+  const late = f.late(); f.message(); assert.equal(late.result().requestSignalAttribution?.records.length ?? 0, 0);
+});
+test('shared malformed and oversized records are rejected by the existing typed codec', () => {
+  const f = sharedFixture(); f.context(); const late = f.late();
+  f.message(row({raw: privateValue})); f.message(row({route: privateValue.repeat(100)}));
+  const value = late.result().requestSignalAttribution; assert.equal(value?.records.length ?? 0, 0);
+  privateFree(late.result());
+});
+test('shared observer retains the same finite16 record and context limits', () => {
+  const f = sharedFixture(); for (let i = 1; i <= 17; i++) f.context(i);
+  const late = f.late(); for (let i = 1; i <= 16; i++) f.message(row({ordinal: i, atRecordCap: i === 16}), 1);
+  f.message(row(), 17); const value = late.result().requestSignalAttribution;
+  assert.equal(value?.records.length, 16); assert.equal(value.atRecordCap, true); assert.equal(value.contextOverflow, 1);
+});
+test('a shared signal snapshot cannot leak a mutable record back into the private collector', () => {
+  const f = sharedFixture(); f.context(); f.message(); const first = f.late().result().requestSignalAttribution;
+  assert.equal(first?.records.length, 1); first.records[0].route = 'other';
+  assert.equal(f.late().result().requestSignalAttribution.records[0].route, 'action');
+});
+test('shared context forwarding does not consume or reorder the original native failure history', () => {
+  const f = sharedFixture(); f.context(); const late = f.late();
+  const send = (method, params) => late.trace.observeBrowserEvent({method, params});
+  send('Network.requestWillBeSent', {requestId: 'PRIVATE_NET', request: {method: 'POST', url: back + '/matches/private/action'}});
+  send('Runtime.consoleAPICalled', {type: 'debug', executionContextId: 3,
+    args: [{type: 'string', value: tag}, {type: 'string', value: JSON.stringify(row())}]});
+  send('Network.loadingFailed', {requestId: 'PRIVATE_NET', canceled: true, errorText: 'net::ERR_ABORTED'});
+  const value = late.result(); assert.deepEqual(value.events.map(x => x.event), ['request', 'failed']);
+  assert.equal(value.requestSignalAttribution?.records.length, 1); assert.equal(value.omittedEvents, 0); privateFree(value);
+});
+test('observational startup rejection uses the original finally close and preserves the same error', async () => {
+  const error = new Error(privateValue); let closed = 0, startedOriginal = 0;
+  const env = {origin: front, api: back, recoverDroppedResponse() {}, createRequestSignalObserver: sharedSignals,
+    b: {onIntercept() {}, async close() { closed++; }}, command: async name => { if (name === 'Runtime.enable') throw error; },
+    viewport: async () => { startedOriginal++; }};
+  const cleanup = v2Source.slice(v2Source.lastIndexOf('} finally { await b.close(); }'));
+  await assert.rejects(vm.runInNewContext('(async()=>{try {' + v2Startup() + 'await viewport();' + cleanup + '})()', env), value => value === error);
+  assert.equal(closed, 1); assert.equal(startedOriginal, 0);
+});
+
+test('OPTIONS and HTTP200 do not imply a native preflight classification', () => {
+  const f = observer();
+  f.send('Network.requestWillBeSent', {requestId: 'PRIVATE_OPTIONS', type: 'XHR', initiator: {type: 'other'},
+    request: {method: 'OPTIONS', url: back + '/matches/private/action'}});
+  f.send('Network.responseReceived', {requestId: 'PRIVATE_OPTIONS', response: {status: 200}});
+  const rows = f.result().events.filter(value => value.networkOrdinal);
+  assert.deepEqual(rows.map(value => [value.networkType, value.initiatorType]), [['XHR', 'other'], ['XHR', 'other']]);
+  assert.equal(rows[1].status, 200); assert.equal(Object.hasOwn(rows[0], 'preflight'), false);
+  privateFree(rows); assert.deepEqual(f.commands, []);
+});
+
+test('native Preflight and initiator metadata retain their actual triggering request-ID link', () => {
+  const f = observer();
+  f.send('Network.requestWillBeSent', {requestId: 'PRIVATE_PARENT', type: 'Fetch', initiator: {type: 'script'},
+    request: {method: 'POST', url: back + '/matches/private/action'}});
+  f.send('Network.requestWillBeSent', {requestId: 'PRIVATE_PREFLIGHT', type: 'Preflight',
+    initiator: {type: 'preflight', requestId: 'PRIVATE_PARENT', stack: privateValue},
+    request: {method: 'OPTIONS', url: back + '/matches/private/action'}});
+  const rows = f.result().events.filter(value => value.event === 'request');
+  assert.equal(rows[1].networkType, 'Preflight'); assert.equal(rows[1].initiatorType, 'preflight');
+  assert.equal(rows[1].initiatorNetworkOrdinal, rows[0].networkOrdinal);
+  assert.notEqual(rows[1].networkOrdinal, rows[0].networkOrdinal); privateFree(f.result());
+});
+
+test('missing and unknown Network categories stay null or finite other without leaking values', () => {
+  const f = observer();
+  for (const [requestId, fields] of [['PRIVATE_MISSING', {}], ['PRIVATE_UNKNOWN',
+    {type: privateValue, initiator: {type: privateValue}}]]) {
+    f.send('Network.requestWillBeSent', {requestId, ...fields,
+      request: {method: 'POST', url: back + '/matches/private/action'}});
+  }
+  const d = f.result(), rows = d.events.filter(value => value.event === 'request');
+  assert.deepEqual(rows.map(value => [value.networkType, value.initiatorType]), [[null, null], ['other', 'other']]);
+  assert.equal(d.unknownCategories, 2); privateFree(d);
+});
+
+test('Network initiator correlation uses native request IDs, never coincident ordinals', () => {
+  const f = observer();
+  f.send('Network.requestWillBeSent', {requestId: 'PRIVATE_FIRST', type: 'Fetch', initiator: {type: 'script'},
+    request: {method: 'POST', url: back + '/matches/private/action'}});
+  f.send('Network.requestWillBeSent', {requestId: 'PRIVATE_SECOND', type: 'Preflight',
+    initiator: {type: 'preflight', requestId: 'PRIVATE_UNOBSERVED'},
+    request: {method: 'OPTIONS', url: back + '/matches/private/action'}});
+  const d = f.result(), rows = d.events.filter(value => value.event === 'request');
+  assert.equal(rows[1].initiatorType, 'preflight'); assert.equal(rows[1].initiatorNetworkOrdinal, 3);
+  assert.notEqual(rows[1].initiatorNetworkOrdinal, rows[0].networkOrdinal);
+  assert.equal(d.unmatchedInitiators, 1); privateFree(d);
+});
+
+test('an acknowledged error response pause is not an HTTP success or signal-abort certificate', async () => {
+  let report; const commands = [];
+  const trace = traceStartRecoveryResponses(async (...args) => { commands.push(args); },
+    async (event, command) => command('Fetch.continueResponse', {requestId: event.requestId}), front,
+    value => { report = value; }, {backend: back});
+  trace.observeBrowserEvent({method: 'Network.requestWillBeSent', params: {requestId: 'PRIVATE_NET', type: 'Fetch',
+    initiator: {type: 'script'}, request: {method: 'POST', url: back + '/matches/private/action'}}});
+  await trace({requestId: 'PRIVATE_PAUSE', networkId: 'PRIVATE_NET', resourceType: 'Fetch',
+    request: {method: 'POST'}, responseErrorReason: 'Aborted'});
+  trace.observeBrowserEvent({method: 'Network.loadingFailed', params: {requestId: 'PRIVATE_NET',
+    canceled: true, errorText: 'net::ERR_ABORTED'}});
+  trace.reportFailure();
+  assert.equal(report.responses[0].status, null); assert.equal(report.responses[0].responseError, 'Aborted');
+  assert.equal(report.responses[0].commands[0].acknowledgment, 'accepted');
+  assert.equal(report.browserMetadata.events.at(-1).canceled, true);
+  assert.equal(Object.hasOwn(report.browserMetadata, 'requestSignalAttribution'), false);
+  assert.equal(commands.length, 1); privateFree(report);
+});

@@ -5,6 +5,15 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The latest independently executed [RAW/prevention composition](phase1-raw-prevention-composed646.md)
+passes 646 cases across 18 whole modules on exact `a75ce7cf`, retaining all
+earlier 587 RAW and 59 prevention identities in one actual declaration. This
+advances canonical-fixture and changed-source evidence, not the remaining literal
+data scope or complete-phase acceptance. Separately, the older exact
+[B720 hosted backend](current-b720-hosted-backend.md) succeeds with 29,582 passing
+calls and 82 setup skips. Its unchanged Phase 1 paths have source continuity,
+but it is not a whole-backend result for the later composition.
+
 The latest [canonical library composition](task13-canonical-library-fixtures.md)
 actually passes all 1,541 ordinary cases across 83 whole modules. It retains
 every earlier 1,399-case and every library 150-case identity, counting eight

@@ -20,7 +20,7 @@ const networkErrors = new Set(('net::ERR_FAILED net::ERR_ABORTED net::ERR_TIMED_
   + 'net::ERR_NETWORK_CHANGED net::ERR_ADDRESS_UNREACHABLE net::ERR_BLOCKED_BY_CLIENT net::ERR_BLOCKED_BY_RESPONSE '
   + 'net::ERR_EMPTY_RESPONSE').split(' '));
 
-function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal) {
+function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal, requestSignals) {
   const front = new URL(frontend).origin, back = new URL(backend).origin;
   const events = [], requests = new Map(), frames = new Map(), loaders = new Map();
   const bidiContexts = new Map(), bidiRealms = new Map();
@@ -217,6 +217,7 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
       const index = networkOrdinal(id);
       if (index === null || (!requests.has(id) && requests.size >= 16)) { requestOverflow++; return; }
       const info = { networkOrdinal: index, route: selected, method: params.request.method,
+        networkType: category(params.type, resources), initiatorType: category(params.initiator?.type, initiators),
         frameOrdinal: ordinal(frames, params.frameId), loaderOrdinal: ordinal(loaders, params.loaderId) };
       const initiator = params.initiator?.requestId;
       const linked = typeof initiator === 'string' ? networkOrdinal(initiator) : null;
@@ -246,12 +247,12 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
     }
   }
   return {
-    observe(message) { try { observe(message); } catch { invalidEvents++; } },
+    observe(message) { try { requestSignals?.observe(message); observe(message); } catch { invalidEvents++; } },
     snapshot() { return { events: structuredClone(events), omittedEvents, unmatchedEvents, invalidEvents,
       requestOverflow, correlationOverflow, unmatchedInitiators, unknownCategories,
       webSocketOverflow, ignoredWebSockets,
       outstandingRequests: [...requests.values()].filter(request => request.active).length,
-      ...(signalSeen ? {requestSignalAttribution: {status: signalRecords.length ? 'observed-partial' : 'unavailable',
+      ...(requestSignals ? {requestSignalAttribution: requestSignals.snapshot()} : signalSeen ? {requestSignalAttribution: {status: signalRecords.length ? 'observed-partial' : 'unavailable',
         correlation: 'not-joined-to-native-network-id', records: structuredClone(signalRecords),
         atRecordCap: signalRecords.length >= 16 || signalRecords.some(row => row.atRecordCap),
         contextOverflow: signalContextOverflow, invalidRecords: signalInvalid,
@@ -259,10 +260,21 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal)
   };
 }
 
+export function createRequestSignalObserver(frontend, backend) {
+  const metadata = browserMetadata(frontend, backend, () => null, () => null);
+  const methods = new Set(['Runtime.executionContextCreated', 'Runtime.executionContextDestroyed',
+    'Runtime.executionContextsCleared', 'Runtime.consoleAPICalled', 'Page.frameNavigated']);
+  return {
+    observe(message) { if (methods.has(message?.method)) metadata.observe(message); },
+    // Frame/context ordinals belong to this observer, not the later native trace.
+    snapshot() { return metadata.snapshot().requestSignalAttribution; },
+  };
+}
+
 export async function continueRequestForPostResponse(command, event) {
   if (event.responseStatusCode !== undefined || event.responseErrorReason !== undefined) return false;
   if (!methods.has(event.request.method)) throw new Error('Only POST or OPTIONS requests may enter POST-response capture');
-  // Leave genuine preflight untouched; only POST opts into the later response pause.
+  // Do not opt OPTIONS into a response pause; only POST requests one.
   await command('Fetch.continueRequest', {requestId: event.requestId, interceptResponse: event.request.method === 'POST'});
   return true;
 }
@@ -283,7 +295,7 @@ export function traceStartRecoveryResponses(command, handler, frontend,
   report = value => console.error('START_RECOVERY_RESPONSE_TRACE', JSON.stringify(value)), metadataOptions) {
   const responses = [], requests = new Map(), networks = new Map();
   const metadata = metadataOptions ? browserMetadata(frontend, metadataOptions.backend,
-    value => ordinal(networks, value), value => networks.get(value) ?? null) : null;
+    value => ordinal(networks, value), value => networks.get(value) ?? null, metadataOptions.requestSignals) : null;
   let omittedResponses = 0, reported = false, pendingCommands = 0;
   function reportFailure() {
     if (reported) return;

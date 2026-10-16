@@ -6528,9 +6528,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1792129005.0673113,
-    "seen": 1792129318.069097,
-    "ast_hash": "a1b23dd43be1b60e5bbd149937222872",
+    "mtime": 1792166036.8588524,
+    "seen": 1792166279.9300098,
+    "ast_hash": "2d539aa6954bb5e6be9c74e6882112f4",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -18852,9 +18852,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-diagnostics.mjs": {
-    "mtime": 1792157772.7245932,
-    "seen": 1792157981.9207153,
-    "ast_hash": "c7efca87f5588d95ff03c56418d33aa9",
+    "mtime": 1792166036.8588524,
+    "seen": 1792166279.9299927,
+    "ast_hash": "9a264ab11c93351434c17a5304dfc100",
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery-diagnostics.test.mjs": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792151319.408951,
-    "seen": 1792151440.8101213,
-    "ast_hash": "d77f182dc15a5b97510da8098ff75120",
+    "mtime": 1792166117.8725312,
+    "seen": 1792166279.9313364,
+    "ast_hash": "d61606ba2de3abedd407b0209f3df37b",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19866,9 +19866,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/development-frontend-contract.test.mjs": {
-    "mtime": 1792148960.8213396,
-    "seen": 1792149081.6322649,
-    "ast_hash": "8cd61d24b21bf718cab8091fa2b49278",
+    "mtime": 1792166036.8588524,
+    "seen": 1792166279.930037,
+    "ast_hash": "63755e86fcccb86c133005b2603a4eaf",
     "semantic_hash": ""
   },
   "frontend/tests/fixtures/ci-development-runtime/probe.mjs": {
@@ -20226,9 +20226,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-request-signal-diagnostics.test.mjs": {
-    "mtime": 1792157772.7245932,
-    "seen": 1792157981.9207022,
-    "ast_hash": "d611f36fce6e3f5811d4794b33df86e0",
+    "mtime": 1792166036.8588524,
+    "seen": 1792166279.9299793,
+    "ast_hash": "f449888590073f51043df6e084c82aad",
     "semantic_hash": ""
   },
   "backend/tests/test_activated_raw_binding_10bbc.py": {
@@ -20289,6 +20289,24 @@
     "mtime": 1792162510.9199233,
     "seen": 1792162704.8727882,
     "ast_hash": "081c7324eeab869f2e9f2f4ce8175f58",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-v2-selected-signal-context.md": {
+    "mtime": 1792166117.871531,
+    "seen": 1792166279.9306343,
+    "ast_hash": "d62c6a37b73f1db3d9ce4b59797b8ceb",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-b720-hosted-backend.md": {
+    "mtime": 1792166117.870531,
+    "seen": 1792166279.9308434,
+    "ast_hash": "d7db1e837037eb6c8937de356b5a6bc0",
+    "semantic_hash": ""
+  },
+  "docs/testing/phase1-raw-prevention-composed646.md": {
+    "mtime": 1792166117.870531,
+    "seen": 1792166279.93134,
+    "ast_hash": "d40fd4cbd76bc8415f191d2458efbad9",
     "semantic_hash": ""
   }
 }
