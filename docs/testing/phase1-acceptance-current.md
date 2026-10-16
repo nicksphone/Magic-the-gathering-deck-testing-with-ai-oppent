@@ -21,6 +21,14 @@ without inventing zero for unknown data. The separate canonical library-fixture
 migration remains unfinished; this core correction does not waive its failures
 or the literal handwritten-data requirement.
 
+The next [counter-target fixture composition](canonical-stack-target-fixtures.md)
+passes all 1,303 cases in 71 whole modules on current `8d715442` plus that
+test-only component. It retains every earlier 1,254 identity and all four
+original counter tests' 26 assertion ASTs. Complete official printed facts
+replace four local positive constructors; no production or shared helper is
+changed. Other named-card fixtures, the literal data scope and final integrated
+acceptance remain open rather than being inferred from this passing count.
+
 The later exact [`e4f797e6` cold/warm declaration](current-e4-offline-assets-cold-warm.md)
 qualifies committed-seed offline startup on a fresh owned checkout: all 155
 shipped identities hydrate and serve assets without network access, real restart

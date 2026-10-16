@@ -26,6 +26,13 @@ power is derived from its real library-owner context; unresolved power remains
 ineligible. This is not a new HTTP or hosted-backend certificate. See
 [the exact selector evidence and retained intake failure](library-reveal-dynamic-power.md).
 
+The subsequent test-only counter-target composition passes 1,303 ordinary
+cases across 71 whole modules, including every preceding 1,254 identity.
+Canonical Counterspell, Stifle and Negate inputs retain the original tests'
+actions and assertions; production code and the shared counter helper remain
+unchanged. This advances Phase 1 fixture cleanup, not full release acceptance.
+See [the complete declaration and limits](canonical-stack-target-fixtures.md).
+
 ## Current e4 Offline Check
 
 Exact `e4f797e6` passes a fresh cold-start probe for all 155 shipped canonical

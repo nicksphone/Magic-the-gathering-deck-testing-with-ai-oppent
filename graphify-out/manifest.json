@@ -5304,9 +5304,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_stack_target_kinds.py": {
-    "mtime": 1792033175.702677,
-    "seen": 1792034402.357547,
-    "ast_hash": "edfaf538df8007547d03f4162d7d2322",
+    "mtime": 1792140372.7322643,
+    "seen": 1792140508.4182782,
+    "ast_hash": "77b0082056799c0775f8ef5be73a9c18",
     "semantic_hash": ""
   },
   "backend/tests/test_state_inference.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792137610.038808,
-    "seen": 1792137729.645756,
-    "ast_hash": "d2ae54ac0cd9bee003994e6396fa5d2b",
+    "mtime": 1792140388.5010145,
+    "seen": 1792140508.4204316,
+    "ast_hash": "78f9c7845313556885f36084f89a14d1",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792137610.0378082,
-    "seen": 1792137729.6457043,
-    "ast_hash": "d073686065a56c12013978ba95abe3da",
+    "mtime": 1792140388.5000143,
+    "seen": 1792140508.4203756,
+    "ast_hash": "6607a3ee952128050e95a89c2debfb81",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19812,9 +19812,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-0c-browser-ci.md": {
-    "mtime": 1792134787.6634703,
-    "seen": 1792134906.730066,
-    "ast_hash": "8f689e95144f9f43013d6d1f23e35f03",
+    "mtime": 1792137828.605217,
+    "seen": 1792140508.4198127,
+    "ast_hash": "4bc1cf1c952f8ee422fea655a83b269b",
     "semantic_hash": ""
   },
   "docs/testing/qualified-player-prevention-grammar.md": {
@@ -19845,6 +19845,18 @@
     "mtime": 1792137609.9998088,
     "seen": 1792137729.6455395,
     "ast_hash": "fe7325c8e6d2df28ceea4cec885fcd27",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_stack_target_fixture_fidelity.py": {
+    "mtime": 1792140372.7322643,
+    "seen": 1792140508.4182749,
+    "ast_hash": "a9d94770c3a4ebfb0832187d5fc7b052",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-stack-target-fixtures.md": {
+    "mtime": 1792140372.7612638,
+    "seen": 1792140508.4196355,
+    "ast_hash": "294b9345c5e9a9911b4c0bad67c0e42d",
     "semantic_hash": ""
   }
 }

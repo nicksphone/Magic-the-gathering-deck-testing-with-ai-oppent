@@ -1,8 +1,11 @@
-from tests.counter_native_frames import trigger_and_spell
+from copy import deepcopy
+from dataclasses import replace
+
+from tests.counter_native_frames import FACTS, trigger_and_spell
 import pytest
 
 from effects.handlers import counter_ability, counter_spell, counter_spell_unless_pay
-from game_state.state import CardInstance, Zone
+from game_state.state import MatchFactory, Zone
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
@@ -13,14 +16,22 @@ from rules_engine.stack_engine import resolve_top_of_stack
 def _state_with_trigger_and_spell(**options):
     return trigger_and_spell(**options)
 
+
+def _canonical_counter(card_id, name):
+    raw = deepcopy(FACTS[name])
+    sample = MatchFactory.from_decks(
+        [{**raw, 'quantity': 8, 'card_name': raw['name']}], [], seed=100)
+    # Keep a never-drawn template, then retain the original constructor's runtime defaults.
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id=card_id, owner=1, controller=1, zone=Zone.HAND,
+                   instance_order=0, summoning_sick=True)
+
+
 def test_counterspell_targets_only_spells_and_does_not_move_trigger_source():
     state = _state_with_trigger_and_spell()
     trigger_id, spell_id = [item.id for item in state.stack]
     sheoldred_id, bolt_id = [item.source_card_id for item in state.stack]
-    counter = CardInstance(
-        id="counter", name="Counterspell", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost="{U}{U}", oracle_text="Counter target spell.",
-    )
+    counter = _canonical_counter('counter', 'Counterspell')
     state.cards[counter.id] = counter
     assert [item["id"] for item in build_cast_hints(state, counter, 1)["stack_targets"]] == [spell_id]
     counter_spell(state, 1, {"target_stack_id": trigger_id})
@@ -52,11 +63,7 @@ def test_stifle_targets_abilities_not_spells_or_their_sources():
     state = _state_with_trigger_and_spell(activated=True)
     trigger_id, spell_id, activated_id = [item.id for item in state.stack]
     sheoldred_id, bolt_id, ballista_id = [item.source_card_id for item in state.stack]
-    stifle = CardInstance(
-        id="stifle", name="Stifle", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost="{U}",
-        oracle_text="Counter target activated or triggered ability. (Mana abilities can't be targeted.)",
-    )
+    stifle = _canonical_counter('stifle', 'Stifle')
     state.cards[stifle.id] = stifle
     assert [item["id"] for item in build_cast_hints(state, stifle, 1)["stack_targets"]] == [trigger_id, activated_id]
     effect_key, payload = infer_effect_from_oracle(state, stifle, 1, {"target_stack_id": trigger_id})
@@ -76,11 +83,7 @@ def test_negate_only_counters_noncreature_spells():
     trigger_id, spell_id, creature_stack_id = [item.id for item in state.stack]
     sheoldred_id, bolt_id, creature_id = [item.source_card_id for item in state.stack]
     creature = state.cards[creature_id]
-    negate = CardInstance(
-        id="negate", name="Negate", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost="{1}{U}",
-        oracle_text="Counter target noncreature spell.",
-    )
+    negate = _canonical_counter('negate', 'Negate')
     state.cards[negate.id] = negate
     assert [item["id"] for item in build_cast_hints(state, negate, 1)["stack_targets"]] == [spell_id]
     effect_key, payload = infer_effect_from_oracle(state, negate, 1, {"target_stack_id": spell_id})
@@ -98,11 +101,7 @@ def test_negate_cast_path_counters_noncreature_spell():
     state = _state_with_trigger_and_spell()
     trigger_id, spell_id = [item.id for item in state.stack]
     sheoldred_id, bolt_id = [item.source_card_id for item in state.stack]
-    negate = CardInstance(
-        id="negate", name="Negate", owner=1, controller=1,
-        zone=Zone.HAND, types=["Instant"], mana_cost="{1}{U}",
-        oracle_text="Counter target noncreature spell.",
-    )
+    negate = _canonical_counter('negate', 'Negate')
     state.cards[negate.id] = negate
     state.players[1].hand.append(negate.id)
     for _ in range(2):
