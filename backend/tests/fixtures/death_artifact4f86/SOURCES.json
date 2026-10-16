@@ -1,0 +1,222 @@
+{
+  "Arrogant Poet": {
+    "file": "death_artifact4f86/canonical.json",
+    "file_sha256": "f4eb8d0e2893faab462efa17c30ee6d8b3f28f34cbbf3e1a536e599e77335528",
+    "id": "556a0816-83c5-41dc-8546-213b21e2cceb",
+    "line": null,
+    "object_sha256": "55448eab4198227393cf6fcb016b574f354c2b4cf166472618308db6b84cb1bf",
+    "oracle_id": "0b2e9571-0c28-4a8f-9ba7-0147b40290a7",
+    "provenance": {
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "bulk_source": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+      "line": 1695,
+      "no_network_or_modified_rows": true,
+      "source_url": "https://api.scryfall.com/cards/556a0816-83c5-41dc-8546-213b21e2cceb"
+    },
+    "steps": [
+      "Arrogant Poet"
+    ]
+  },
+  "Bastion of Remembrance": {
+    "file": "player_counters.json",
+    "file_sha256": "1a999508fa879730388799cd3ec3b46f2faadfc4a042540967dc31f302746288",
+    "id": "6fe6ccad-e303-48f9-9dfa-0db7c1878031",
+    "line": null,
+    "object_sha256": "2703b38419a16a87bb6c022ef9b8b769e604cef39c731e59b3e037d73042b7f2",
+    "oracle_id": "c7f33cea-2ec8-4081-9208-a5b1d86721b3",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": [
+      12
+    ]
+  },
+  "Doomed Traveler": {
+    "file": "combat_graveyard_caller/canonical.jsonl",
+    "file_sha256": "27ce324c7811574f1334776ccdf561aeaaf87a410019c55a856315409ed0cc6e",
+    "id": "8a03d414-bff9-4aba-8b0a-0ed57982251e",
+    "line": 7,
+    "object_sha256": "613ffa1ea09053877116cc19ed9cba20eea494f6aec9b65961cf862c92b1c8ee",
+    "oracle_id": "a30907c0-fbde-4fd3-a8c7-f304305fcea7",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": []
+  },
+  "Everflowing Chalice": {
+    "file": "damage_life_printed_79/everflowing-chalice-scryfall-raw.json",
+    "file_sha256": "6b3fd0dbf41497cf3c153b0bb5ea4affd5a5253cde9807fb589b7168b0c3bfff",
+    "id": "e4ed0052-d6dd-4f69-8313-10863baefac9",
+    "line": null,
+    "object_sha256": "dc366b085cb5b42f7aeb4108496c046ee5d3684c60a12cacb143e9b87d3d818e",
+    "oracle_id": "0a79237e-0811-4a8a-bd4d-db3ca91bff22",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": []
+  },
+  "Glorious Anthem": {
+    "file": "dynamic_death_quantity_boundaries/canonical.json",
+    "file_sha256": "7c0552e097824ff3cf2d27bcffa2afe9ffd238db7a76e44b2a1979d2c009f955",
+    "id": "17d154d3-7ae5-43ff-9978-d974285e2c89",
+    "line": null,
+    "object_sha256": "929d6ad61f0a4d5972dc7bd683f89b92fcca617d049a6237faa3bccaa4273e8f",
+    "oracle_id": "e3886fe8-9b76-4613-8891-4ec74657c087",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": [
+      "Glorious Anthem"
+    ]
+  },
+  "Grim Haruspex": {
+    "file": "ai_decisions_canonical_cdba/grim-haruspex-scryfall-raw.json",
+    "file_sha256": "5efbfd06276f3bdc9f81f43e58342604f4573cf024852b0e872d96854277d47e",
+    "id": "f5c19b87-e114-46d4-9f6c-c02e838a08dd",
+    "line": null,
+    "object_sha256": "0a1de1ed005b45bd9582a19aceba75c9be2d2076c7a854084bc0cc815a19da99",
+    "oracle_id": "72aef1d8-11df-4bc2-af83-907b05df73a8",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": []
+  },
+  "Grizzly Bears": {
+    "file": "../vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+    "file_sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "line": null,
+    "object_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": []
+  },
+  "Jace, the Mind Sculptor": {
+    "file": "death_artifact4f86/canonical.json",
+    "file_sha256": "f4eb8d0e2893faab462efa17c30ee6d8b3f28f34cbbf3e1a536e599e77335528",
+    "id": "c8817585-0d32-4d56-9142-0d29512e86a9",
+    "line": null,
+    "object_sha256": "3a73bf2f3b208b7e377ba05079dda14e83bbffa62e7ad56ef99ac598c561ffd7",
+    "oracle_id": "7f77a84e-5a4b-4834-aefa-3cecc175ae8e",
+    "provenance": {
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "bulk_source": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+      "line": 19198,
+      "no_network_or_modified_rows": true,
+      "source_url": "https://api.scryfall.com/cards/c8817585-0d32-4d56-9142-0d29512e86a9"
+    },
+    "steps": [
+      "Jace, the Mind Sculptor"
+    ]
+  },
+  "Leyline of the Void": {
+    "file": "death_cycle_ordering/canonical.json",
+    "file_sha256": "82a096075b1577480e7c966f1efdb364edda3966c6a5ad9fdc073dcab836f7b5",
+    "id": "aeaa3aff-608d-4723-bb7c-8daedebe9f36",
+    "line": null,
+    "object_sha256": "27e6e1e44435b5daad9bf8c336024793947ee9e74de9b21c71289446afb17bec",
+    "oracle_id": "f4e32fc1-1b8d-441e-8e76-71f19f98e925",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": [
+      "Leyline of the Void"
+    ]
+  },
+  "Lightning Bolt": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "line": 57,
+    "object_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": []
+  },
+  "Lonely Sandbar": {
+    "file": "death_cycle_ordering/canonical.json",
+    "file_sha256": "82a096075b1577480e7c966f1efdb364edda3966c6a5ad9fdc073dcab836f7b5",
+    "id": "42f8591e-df30-49ec-962c-a75d32e6d9f5",
+    "line": null,
+    "object_sha256": "baf47ee600637e636208b6709935df030b289c1ec8250aac88e0f54ff8a56e06",
+    "oracle_id": "765863c8-1be0-4bb1-9e9c-db7701cffde3",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": [
+      "Lonely Sandbar"
+    ]
+  },
+  "Lorcan, Warlock Collector": {
+    "file": "death_artifact4f86/canonical.json",
+    "file_sha256": "f4eb8d0e2893faab462efa17c30ee6d8b3f28f34cbbf3e1a536e599e77335528",
+    "id": "5f6f90ae-340c-4eb7-b091-58db550be742",
+    "line": null,
+    "object_sha256": "c39d274695726e9db7d2bbda952cd603e8075de6263dffbdd91a3abf528403f5",
+    "oracle_id": "6c87c261-00a8-46f2-92c8-42009a0a2faf",
+    "provenance": {
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "bulk_source": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+      "line": 16313,
+      "no_network_or_modified_rows": true,
+      "source_url": "https://api.scryfall.com/cards/5f6f90ae-340c-4eb7-b091-58db550be742"
+    },
+    "steps": [
+      "Lorcan, Warlock Collector"
+    ]
+  },
+  "Marionette Master": {
+    "file": "death_artifact4f86/canonical.json",
+    "file_sha256": "f4eb8d0e2893faab462efa17c30ee6d8b3f28f34cbbf3e1a536e599e77335528",
+    "id": "dd21a925-c76f-4c1d-b5b8-8d3352730e5f",
+    "line": null,
+    "object_sha256": "7823ba8214ab4234de7f2e415a431c3bed140c5bb76fad44ada35fe11a3e6d83",
+    "oracle_id": "dabbf796-3b88-499e-8839-06fa36fe01ac",
+    "provenance": {
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "bulk_source": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+      "line": 33010,
+      "no_network_or_modified_rows": true,
+      "source_url": "https://api.scryfall.com/cards/dd21a925-c76f-4c1d-b5b8-8d3352730e5f"
+    },
+    "steps": [
+      "Marionette Master"
+    ]
+  },
+  "Memnite": {
+    "file": "deck_service_metadata_6900/memnite-scryfall-raw.json",
+    "file_sha256": "7b177ce7bfcf88d3c1fb931d961ef21b8278b2d42d87c8cc60e8543708561ddf",
+    "id": "975459ba-e1c2-4800-a3fa-5c0cf8ce728f",
+    "line": null,
+    "object_sha256": "be4c74e50738d99083a2f9d458306542c2217005a80ba19ca7d60c0d86ea3c1d",
+    "oracle_id": "7663ac7c-1de3-4250-b96a-fae9dbd66a27",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": []
+  },
+  "Putrid Imp": {
+    "file": "death_artifact4f86/canonical.json",
+    "file_sha256": "f4eb8d0e2893faab462efa17c30ee6d8b3f28f34cbbf3e1a536e599e77335528",
+    "id": "47a929a4-b861-432c-a2f3-3125f8a2665b",
+    "line": null,
+    "object_sha256": "6383b126598c7b796801dd2520df0b0cdf70c9cde28b5ca72bbc03a802a02761",
+    "oracle_id": "7192ff07-9a84-49ad-a40c-ce255ce21544",
+    "provenance": {
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "bulk_source": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+      "line": 17081,
+      "no_network_or_modified_rows": true,
+      "source_url": "https://api.scryfall.com/cards/47a929a4-b861-432c-a2f3-3125f8a2665b"
+    },
+    "steps": [
+      "Putrid Imp"
+    ]
+  },
+  "Rest in Peace": {
+    "file": "activated_sacrifice_identity/canonical.json",
+    "file_sha256": "4a20cfefa830fb6d1bb13f99fb952a238d28f9dbc1efac69a3c807374b42b333",
+    "id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+    "line": null,
+    "object_sha256": "c645d23b51a82f54bc5f3d10dd21dd75130670e631a1f0331b4aa3161e2d4dd9",
+    "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": [
+      "Rest in Peace"
+    ]
+  },
+  "Stinkweed Imp": {
+    "file": "trigger_instruction_product/stinkweed-imp.json",
+    "file_sha256": "3a12356ed9fa1de98b56500f5c0bb3a26f3ef6949e549e81184441ba19dab1e9",
+    "id": "2ab08d69-210b-4b06-88a2-45281a1a4e1e",
+    "line": null,
+    "object_sha256": "c954e8f6a8b41adc41bed4162d2d91bc36b8669bd6ff2d6cf7822e1b8065721e",
+    "oracle_id": "e005bc76-4985-4ec6-b9f6-cf6d0d9f5df4",
+    "provenance": "Existing complete committed official fixture at immutable4f86; exact file/object pins retained.",
+    "steps": []
+  }
+}

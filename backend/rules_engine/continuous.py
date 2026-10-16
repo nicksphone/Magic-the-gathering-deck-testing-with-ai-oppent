@@ -477,12 +477,12 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
         out.update('ward ' + cost.lower() for cost in ward_costs)
         out['ward'] = max(out.get('ward', 0), len(ward_costs))
     # Scryfall's keyword metadata is unique; standalone Oracle instances aren't.
-    printed = Counter(part.strip().lower() for line in without_reminder_text(getattr(card, 'oracle_text', '') or '').splitlines()
+    printed = Counter(part.strip().lower().removesuffix('.') for line in without_reminder_text(getattr(card, 'oracle_text', '') or '').splitlines()
                       for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed', 'flanking', 'undying'}
-                      or re.fullmatch(r'(?:bushido|rampage) \d+', part.strip().lower()))
+                      or re.fullmatch(r'(?:bushido|rampage) \d+|toxic \d+\.?', part.strip().lower()))
     for keyword, amount in printed.items():
         out[keyword] = max(out[keyword], amount)
-    for family in ('bushido', 'rampage'):
+    for family in ('bushido', 'rampage', 'toxic'):
         if any(keyword.startswith(family + ' ') for keyword in out):
             out.pop(family, None)  # Scryfall's family label is not an extra instance.
     from rules_engine.protection import hexproof_variants
@@ -628,7 +628,7 @@ def effective_keywords(state, card_id: str) -> list[str]:
 def _remove_keyword_family(keywords, keyword):
     for present in list(keywords):
         if (present == keyword or keyword == 'hexproof' and present.startswith('hexproof from ')
-                or keyword in {'bushido', 'rampage', 'ward'} and present.startswith(keyword + ' ')):
+                or keyword in {'bushido', 'rampage', 'ward', 'toxic'} and present.startswith(keyword + ' ')):
             keywords.pop(present, None)
 
 

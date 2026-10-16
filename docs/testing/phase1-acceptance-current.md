@@ -13,7 +13,15 @@ Source/runtime equality and owned-resource closure are verified. The remaining
 literal Task 1.3 fixture scope is still open; this data result does not complete
 Phase 1 or transfer whole-backend, browser or live-deployment qualification.
 
-The current [copy-entry integration](canonical-copy-entry-current.md) also
+The later [death/keyword composition](phase1-canonical-death-keywords-current.md)
+passes all 278 ordinary cases across 14 whole modules. Complete official inputs
+retain the original 63 functions and 240 assertion ASTs. The shared toxic baseline
+now precedes layer removals/grants, with final damage consuming resolved counts;
+the removal regression exposed by independent review is included. Source/runtime
+equality and actual resource closure pass. This is not a repository-wide literal
+scope waiver, complete current backend CI or Phase 1 sign-off.
+
+The earlier [copy-entry integration](canonical-copy-entry-current.md) also
 advances complete canonical counter fixtures, retained physical characteristics
 and deliberate human/AI choices. Its final declaration actually passes 1,837
 ordinary cases across 67 whole modules with all previous identities retained.

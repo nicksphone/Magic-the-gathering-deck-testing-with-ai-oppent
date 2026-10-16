@@ -6,6 +6,7 @@ from ai.agent import AIAgent
 from effects.handlers import deal_damage
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from game_state.serializers import serialize_match_snapshot, deserialize_match_snapshot, serialize_match
+from tests.test_keyword_zone4f86_fidelity import deck_entry, materialize
 from rules_engine.combat import _mark_creature_damage, _deal_unblocked_damage, declare_attackers, combat_damage
 from rules_engine.continuous import effective_toughness
 from rules_engine.engine import RulesEngine
@@ -17,15 +18,24 @@ from rules_engine.state_based_actions import apply_state_based_actions
 
 @pytest.fixture
 def state():
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+    deck = [deck_entry("Island", 60)]
     state = MatchFactory.from_decks(deck, deck, seed=3)
     state.pregame_pending = False
     state.step = Step.PRECOMBAT_MAIN
     return state
 
 
-def card(state, cid, name, controller=1, zone=Zone.BATTLEFIELD, types=None, **kwargs):
-    obj = CardInstance(id=cid, name=name, owner=controller, controller=controller, zone=zone, types=types or ["Creature"], **kwargs)
+def card(state, cid, name, controller=1, zone=Zone.BATTLEFIELD, types=None,
+         keyword_vector=None, **kwargs):
+    if name in {"Elf Token", "Draw replacement fixture"}:
+        # Deliberate generated-token/parser vectors, not official named positives.
+        obj = CardInstance(id=cid, name=name, owner=controller, controller=controller,
+                           zone=zone, types=types or ["Creature"], **kwargs)
+    else:
+        obj = materialize(cid, name, controller, controller, zone, **kwargs)
+        if keyword_vector is not None:
+            # This parameterized vector deliberately substitutes wither for infect.
+            obj.keywords = keyword_vector
     state.cards[cid] = obj
     if zone != Zone.STACK:
         getattr(state.players[controller], zone.value).append(cid)
@@ -33,7 +43,7 @@ def card(state, cid, name, controller=1, zone=Zone.BATTLEFIELD, types=None, **kw
 
 
 def test_infect_combat_gives_poison_and_ten_counters_lose(state):
-    agent = card(state, "infect", "Blighted Agent", power=1, toughness=1, keywords=["infect"])
+    agent = card(state, "infect", "Blighted Agent")
     assert _deal_unblocked_damage(state, "player:2", 10, agent.id) == 10
     assert state.players[2].life == 20
     assert state.players[2].poison == 10
@@ -42,7 +52,7 @@ def test_infect_combat_gives_poison_and_ten_counters_lose(state):
 
 
 def test_noncombat_infect_uses_post_prevention_damage(state):
-    card(state, "infect", "Blighted Agent", power=1, toughness=1, keywords=["infect"])
+    card(state, "infect", "Blighted Agent")
     state.players[2].prevent_damage_shield = 1
     deal_damage(state, 1, {"target_player": 2, "amount": 3, "__source_card_id": "infect"})
     assert state.players[2].poison == 2
@@ -51,8 +61,8 @@ def test_noncombat_infect_uses_post_prevention_damage(state):
 
 @pytest.mark.parametrize("keyword", ["infect", "wither"])
 def test_counter_damage_can_kill_indestructible_with_zero_toughness(state, keyword):
-    card(state, "source", "Blighted Agent", power=1, toughness=1, keywords=[keyword])
-    target = card(state, "target", "Darksteel Myr", controller=2, power=0, toughness=1, keywords=["indestructible"])
+    card(state, "source", "Blighted Agent", keyword_vector=[keyword])
+    target = card(state, "target", "Darksteel Myr", controller=2)
     _mark_creature_damage(state, target.id, 1, source_id="source")
     assert target.counters["-1/-1"] == 1
     assert "__damage_marked" not in target.counters
@@ -61,9 +71,9 @@ def test_counter_damage_can_kill_indestructible_with_zero_toughness(state, keywo
 
 
 def test_mixed_infect_and_normal_blockers_keep_damage_sources(state):
-    attacker = card(state, "attacker", "Wall of Frost", power=0, toughness=7)
-    card(state, "infect", "Blighted Agent", controller=2, power=1, toughness=1, keywords=["infect"])
-    card(state, "normal", "Grizzly Bears", controller=2, power=2, toughness=2)
+    attacker = card(state, "attacker", "Wall of Frost")
+    card(state, "infect", "Blighted Agent", controller=2)
+    card(state, "normal", "Grizzly Bears", controller=2)
     state.attackers = [attacker.id]
     state.blocks = {attacker.id: ["infect", "normal"]}
     combat_damage(state)
@@ -79,9 +89,9 @@ def test_poison_persists_and_is_exposed(state):
 
 
 def test_ninjutsu_is_ability_and_enters_tapped_attacking_same_defender(state):
-    attacker = card(state, "attacker", "Grizzly Bears", power=2, toughness=2, summoning_sick=False)
-    ninja = card(state, "ninja", "Ninja of the Deep Hours", zone=Zone.HAND, power=2, toughness=2, mana_cost="{3}{U}", oracle_text="Ninjutsu {1}{U}")
-    card(state, "prowess", "Monastery Swiftspear", power=1, toughness=2, oracle_text="Prowess")
+    attacker = card(state, "attacker", "Grizzly Bears", summoning_sick=False)
+    ninja = card(state, "ninja", "Ninja of the Deep Hours", zone=Zone.HAND)
+    card(state, "prowess", "Monastery Swiftspear")
     state.step = Step.DECLARE_BLOCKERS
     state.blockers_declared = True
     state.attackers = [attacker.id]
@@ -99,8 +109,8 @@ def test_ninjutsu_is_ability_and_enters_tapped_attacking_same_defender(state):
 
 
 def test_ninjutsu_rejects_blocked_attacker_before_paying(state):
-    attacker = card(state, "attacker", "Grizzly Bears", power=2, toughness=2)
-    ninja = card(state, "ninja", "Ninja of the Deep Hours", zone=Zone.HAND, oracle_text="Ninjutsu {1}{U}")
+    attacker = card(state, "attacker", "Grizzly Bears")
+    ninja = card(state, "ninja", "Ninja of the Deep Hours", zone=Zone.HAND)
     state.step = Step.DECLARE_BLOCKERS
     state.blockers_declared = True
     state.attackers = [attacker.id]
@@ -112,9 +122,9 @@ def test_ninjutsu_rejects_blocked_attacker_before_paying(state):
 
 
 def test_annihilator_uses_stack_and_defender_choice_survives_snapshot(state):
-    attacker = card(state, "crusher", "Ulamog's Crusher", power=8, toughness=8, summoning_sick=False, oracle_text="Annihilator 2 (Whenever this creature attacks, defending player sacrifices two permanents.)")
-    card(state, "land-a", "Island", controller=2, types=["Land"])
-    card(state, "land-b", "Forest", controller=2, types=["Land"])
+    attacker = card(state, "crusher", "Ulamog's Crusher", summoning_sick=False)
+    card(state, "land-a", "Island", controller=2)
+    card(state, "land-b", "Forest", controller=2)
     state.step = Step.DECLARE_ATTACKERS
     declare_attackers(state, [attacker.id])
     assert len(state.stack) == 1
@@ -133,10 +143,10 @@ def test_annihilator_uses_stack_and_defender_choice_survives_snapshot(state):
 
 
 def test_ai_annihilator_keeps_lands_over_expendable_permanents(state):
-    card(state, "land-a", "Island", controller=2, types=["Land"])
-    card(state, "land-b", "Forest", controller=2, types=["Land"])
-    card(state, "small", "Elvish Mystic", controller=2, types=["Creature"], power=1, toughness=1)
-    card(state, "large", "Craw Wurm", controller=2, types=["Creature"], power=6, toughness=4)
+    card(state, "land-a", "Island", controller=2)
+    card(state, "land-b", "Forest", controller=2)
+    card(state, "small", "Elvish Mystic", controller=2)
+    card(state, "large", "Craw Wurm", controller=2)
     card(state, "token", "Elf Token", controller=2, types=["Creature", "Token"], power=1, toughness=1)
     from rules_engine.keyword_actions import resolve_annihilator
 
@@ -150,9 +160,9 @@ def test_ai_annihilator_keeps_lands_over_expendable_permanents(state):
 
 
 def test_escape_requires_and_exiles_other_graveyard_cards(state):
-    ox = card(state, "ox", "Ox of Agonas", zone=Zone.GRAVEYARD, mana_cost="{3}{R}{R}", power=4, toughness=2, oracle_text="Escape\u2014{R}{R}, Exile eight other cards from your graveyard.\nThis creature escapes with a +1/+1 counter on it.")
+    ox = card(state, "ox", "Ox of Agonas", zone=Zone.GRAVEYARD)
     for index in range(8):
-        card(state, f"fuel-{index}", "Mountain", zone=Zone.GRAVEYARD, types=["Land"])
+        card(state, f"fuel-{index}", "Mountain", zone=Zone.GRAVEYARD)
     state.players[1].mana_pool["R"] = 2
     engine = RulesEngine()
     move = next(move for move in engine.legal_moves(state, 1) if move["type"] == "cast_spell" and move["card_id"] == ox.id)
@@ -166,9 +176,9 @@ def test_escape_requires_and_exiles_other_graveyard_cards(state):
 
 
 def test_invalid_escape_exile_selection_is_rejected_without_payment(state):
-    ox = card(state, "ox", "Ox of Agonas", zone=Zone.GRAVEYARD, mana_cost="{3}{R}{R}", oracle_text="Escape\u2014{R}{R}, Exile eight other cards from your graveyard.")
+    ox = card(state, "ox", "Ox of Agonas", zone=Zone.GRAVEYARD)
     for index in range(8):
-        card(state, f"fuel-{index}", "Mountain", zone=Zone.GRAVEYARD, types=["Land"])
+        card(state, f"fuel-{index}", "Mountain", zone=Zone.GRAVEYARD)
     state.players[1].mana_pool["R"] = 2
     RulesEngine().take_action(state, 1, {"type": "cast_spell", "card_id": ox.id, "from_graveyard": True, "escape_exile_ids": [ox.id] * 8})
     assert state.players[1].mana_pool["R"] == 2
@@ -176,7 +186,7 @@ def test_invalid_escape_exile_selection_is_rejected_without_payment(state):
 
 
 def test_prototype_changes_spell_and_permanent_then_restores_on_leaving(state):
-    creature = card(state, "prototype", "Phyrexian Fleshgorger", zone=Zone.HAND, types=["Artifact", "Creature"], mana_cost="{7}", power=7, toughness=5, oracle_text="Prototype {1}{B}{B} \u2014 3/3\nMenace, lifelink")
+    creature = card(state, "prototype", "Phyrexian Fleshgorger", zone=Zone.HAND)
     state.players[1].mana_pool["B"] = 3
     engine = RulesEngine()
     assert any(move["type"] == "cast_spell" and move["card_id"] == creature.id for move in engine.legal_moves(state, 1))
@@ -200,7 +210,7 @@ def test_draw_step_uses_supported_draw_replacement(state):
 
 
 def test_dredge_is_optional_and_requires_enough_library_cards(state):
-    imp = card(state, "imp", "Stinkweed Imp", zone=Zone.GRAVEYARD, power=1, toughness=2, oracle_text="Dredge 5")
+    imp = card(state, "imp", "Stinkweed Imp", zone=Zone.GRAVEYARD)
     state.turn = 3
     state.step = Step.UPKEEP
     engine = RulesEngine()
@@ -215,7 +225,7 @@ def test_dredge_is_optional_and_requires_enough_library_cards(state):
 
 
 def test_dredge_cannot_replace_draw_with_insufficient_library(state):
-    imp = card(state, "imp", "Stinkweed Imp", zone=Zone.GRAVEYARD, oracle_text="Dredge 5")
+    imp = card(state, "imp", "Stinkweed Imp", zone=Zone.GRAVEYARD)
     state.players[1].library = state.players[1].library[:4]
     state.turn = 3
     state.step = Step.UPKEEP
@@ -226,9 +236,9 @@ def test_dredge_cannot_replace_draw_with_insufficient_library(state):
 
 
 def test_dredge_spell_continuation_survives_snapshot_and_finishes_once(state):
-    imp = card(state, "imp", "Stinkweed Imp", zone=Zone.GRAVEYARD, oracle_text="Dredge 5")
+    imp = card(state, "imp", "Stinkweed Imp", zone=Zone.GRAVEYARD)
     # Deliberately composed effects exercise continuation, not Revitalize's text.
-    spell = card(state, "spell", "Revitalize", zone=Zone.STACK, types=["Instant"], mana_cost="{1}{W}")
+    spell = card(state, "spell", "Revitalize", zone=Zone.STACK)
     add_to_stack(state, spell.id, 1, spell.name, "effect_sequence", {"effects": [
         {"effect_key": "draw_cards", "payload": {"amount": 2}},
         {"effect_key": "gain_life", "payload": {"amount": 3}},
@@ -248,14 +258,14 @@ def test_dredge_spell_continuation_survives_snapshot_and_finishes_once(state):
 
 
 def test_toxic_adds_poison_without_replacing_life_loss(state):
-    card(state, "toxic", "Skrelv, Defector Mite", power=1, toughness=1, oracle_text="Toxic 1")
+    card(state, "toxic", "Skrelv, Defector Mite")
     _deal_unblocked_damage(state, "player:2", 1, "toxic")
     assert (state.players[2].life, state.players[2].poison) == (19, 1)
 
 
 def test_ninjutsu_remains_available_after_damage_without_second_damage(state):
-    attacker = card(state, "attacker", "Ornithopter", power=0, toughness=2)
-    ninja = card(state, "ninja", "Ninja of the Deep Hours", zone=Zone.HAND, power=2, toughness=2, oracle_text="Ninjutsu {1}{U}")
+    attacker = card(state, "attacker", "Ornithopter")
+    ninja = card(state, "ninja", "Ninja of the Deep Hours", zone=Zone.HAND)
     state.players[1].mana_pool["U"] = 2
     state.attackers = [attacker.id]
     state.attack_targets = {attacker.id: "player:2"}
@@ -276,7 +286,7 @@ def test_ninjutsu_remains_available_after_damage_without_second_damage(state):
 
 
 def test_nested_draw_sequences_preserve_all_remaining_effects(state):
-    card(state, "imp", "Stinkweed Imp", zone=Zone.GRAVEYARD, oracle_text="Dredge 5")
+    card(state, "imp", "Stinkweed Imp", zone=Zone.GRAVEYARD)
     from effects.registry import resolve_effect
     resolve_effect(state, 1, "effect_sequence", {"effects": [
         {"effect_key": "effect_sequence", "payload": {"effects": [
@@ -295,8 +305,8 @@ def test_nested_draw_sequences_preserve_all_remaining_effects(state):
 
 
 def test_blocked_attacker_without_trample_does_not_hit_player_when_blocker_leaves(state):
-    attacker = card(state, "attacker", "Grizzly Bears", power=2, toughness=2)
-    blocker = card(state, "blocker", "Ornithopter", controller=2, zone=Zone.GRAVEYARD, power=0, toughness=2)
+    attacker = card(state, "attacker", "Grizzly Bears")
+    blocker = card(state, "blocker", "Ornithopter", controller=2, zone=Zone.GRAVEYARD)
     state.attackers = [attacker.id]
     state.blocks = {attacker.id: [blocker.id]}
     combat_damage(state)
@@ -306,9 +316,9 @@ def test_blocked_attacker_without_trample_does_not_hit_player_when_blocker_leave
 def test_escape_is_available_with_empty_hand(state):
     from rules_engine.costs import collect_cost_options, check_cost_option_available
     state.players[1].hand = []
-    ox = card(state, "ox", "Ox of Agonas", zone=Zone.GRAVEYARD, mana_cost="{3}{R}{R}", oracle_text="Escape\u2014{R}{R}, Exile eight other cards from your graveyard.")
+    ox = card(state, "ox", "Ox of Agonas", zone=Zone.GRAVEYARD)
     for index in range(8):
-        card(state, f"fuel-{index}", "Mountain", zone=Zone.GRAVEYARD, types=["Land"])
+        card(state, f"fuel-{index}", "Mountain", zone=Zone.GRAVEYARD)
     state.players[1].mana_pool["R"] = 2
     option = collect_cost_options(state, 1, ox)[0]
     assert check_cost_option_available(state, 1, ox, option)

@@ -10,23 +10,12 @@ from rules_engine.events import emit_event
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.stack_engine import finish_stack_resolution, resolve_top_of_stack
 from rules_engine.zone_actions import discard_selected
+from tests.death_artifact_canonical4f86 import canonical_card, raw_card, set_printed
 
 
-LORCAN_ORACLE = (
-    "Flying\n"
-    "Whenever a creature card is put into an opponent's graveyard from anywhere, "
-    "you may pay life equal to its mana value. If you do, put it onto the battlefield "
-    "under your control. It's a Warlock in addition to its other types.\n"
-    "If a Warlock you control would die, exile it instead."
-)
-REST_IN_PEACE_ORACLE = (
-    "When this enchantment enters, exile all graveyards.\n"
-    "If a card or token would be put into a graveyard from anywhere, exile it instead."
-)
-LEYLINE_OF_THE_VOID_ORACLE = (
-    "If this card is in your opening hand, you may begin the game with it on the battlefield.\n"
-    "If a card would be put into an opponent's graveyard from anywhere, exile it instead."
-)
+LORCAN_ORACLE = raw_card('Lorcan, Warlock Collector')['oracle_text']
+REST_IN_PEACE_ORACLE = raw_card('Rest in Peace')['oracle_text']
+LEYLINE_OF_THE_VOID_ORACLE = raw_card('Leyline of the Void')['oracle_text']
 
 
 def _leyline_state():
@@ -34,10 +23,9 @@ def _leyline_state():
     state = MatchFactory.from_decks(deck, deck, seed=41)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    state.cards["leyline"] = CardInstance(
-        id="leyline", name="Leyline of the Void", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
-        oracle_text=LEYLINE_OF_THE_VOID_ORACLE,
+    state.cards["leyline"] = canonical_card(
+        "Leyline of the Void", id="leyline", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD,
     )
     state.players[1].battlefield.append("leyline")
     return state
@@ -52,10 +40,9 @@ def test_opponent_graveyard_replacement_uses_owner_not_controller() -> None:
     assert state.cards[own_card].zone == Zone.GRAVEYARD
     assert state.cards[opposing_card].zone == Zone.EXILE
 
-    stolen = CardInstance(
-        id="stolen", name="Grizzly Bears", owner=2, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature — Bear",
-        power=2, toughness=2, counters={"__damage_marked": 2},
+    stolen = canonical_card(
+        "Grizzly Bears", id="stolen", owner=2, controller=1,
+        zone=Zone.BATTLEFIELD, counters={"__damage_marked": 2},
     )
     state.cards[stolen.id] = stolen
     state.players[1].battlefield.append(stolen.id)
@@ -80,10 +67,9 @@ def test_opponent_card_replacement_applies_to_resolved_spells_only_for_opponent(
     state = _leyline_state()
     for owner in (1, 2):
         cid = f"bolt-{owner}"
-        state.cards[cid] = CardInstance(
-            id=cid, name="Lightning Bolt", owner=owner, controller=owner,
-            zone=Zone.STACK, types=["Instant"], type_line="Instant",
-            oracle_text="Lightning Bolt deals 3 damage to any target.",
+        state.cards[cid] = canonical_card(
+            "Lightning Bolt", id=cid, owner=owner, controller=owner,
+            zone=Zone.STACK,
         )
         item = StackItem(
             id=f"item-{cid}", source_card_id=cid, controller=owner,
@@ -95,10 +81,9 @@ def test_opponent_card_replacement_applies_to_resolved_spells_only_for_opponent(
 
 def test_opponent_card_replacement_applies_before_source_leaves_in_same_batch() -> None:
     state = _leyline_state()
-    state.cards["anthem"] = CardInstance(
-        id="anthem", name="Glorious Anthem", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
-        oracle_text="Creatures you control get +1/+1.",
+    state.cards["anthem"] = canonical_card(
+        "Glorious Anthem", id="anthem", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD,
     )
     state.players[2].battlefield.append("anthem")
 
@@ -113,10 +98,9 @@ def _rest_in_peace_state():
     state = MatchFactory.from_decks(deck, deck, seed=37)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    state.cards["rip"] = CardInstance(
-        id="rip", name="Rest in Peace", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
-        oracle_text=REST_IN_PEACE_ORACLE,
+    state.cards["rip"] = canonical_card(
+        "Rest in Peace", id="rip", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD,
     )
     state.players[1].battlefield.append("rip")
     return state
@@ -128,10 +112,7 @@ def test_rest_in_peace_exiles_a_dying_creature() -> None:
     state.players[2].battlefield.append(cid)
     card = state.cards[cid]
     card.zone = Zone.BATTLEFIELD
-    card.types = ["Creature"]
-    card.name = "Grizzly Bears"
-    card.type_line = "Creature — Bear"
-    card.power = card.toughness = 2
+    set_printed(card, 'Grizzly Bears')
     card.counters["+1/+1"] = 1
     card.counters["__damage_marked"] = 3
 
@@ -162,10 +143,9 @@ def test_rest_in_peace_exiles_itself_when_destroyed() -> None:
 
 def test_rest_in_peace_exiles_simultaneously_destroyed_enchantments() -> None:
     state = _rest_in_peace_state()
-    state.cards["anthem"] = CardInstance(
-        id="anthem", name="Glorious Anthem", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
-        oracle_text="Creatures you control get +1/+1.",
+    state.cards["anthem"] = canonical_card(
+        "Glorious Anthem", id="anthem", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD,
     )
     state.players[1].battlefield.append("anthem")
 
@@ -180,10 +160,9 @@ def test_rest_in_peace_exiles_a_resolved_or_countered_spell() -> None:
 
     state = _rest_in_peace_state()
     for card_id, countered in (("resolved", False), ("countered", True)):
-        card = CardInstance(
-            id=card_id, name="Lightning Bolt", owner=2, controller=2,
-            zone=Zone.STACK, types=["Instant"], type_line="Instant",
-            oracle_text="Lightning Bolt deals 3 damage to any target.",
+        card = canonical_card(
+            "Lightning Bolt", id=card_id, owner=2, controller=2,
+            zone=Zone.STACK,
         )
         state.cards[card_id] = card
         item = add_to_stack(
@@ -223,25 +202,16 @@ def test_rest_in_peace_replaces_cycling_and_discard_cost_moves() -> None:
     state.players[1].mana_pool["U"] = 1
     cycler = state.players[1].hand[0]
     card = state.cards[cycler]
-    card.name = "Lonely Sandbar"
-    card.types = ["Land"]
-    card.type_line = "Land"
-    card.oracle_text = "This land enters tapped.\n{T}: Add {U}.\nCycling {U} ({U}, Discard this card: Draw a card.)"
+    set_printed(card, 'Lonely Sandbar')
 
     RulesEngine().take_action(state, 1, {"type": "cycle_card", "card_id": cycler})
 
     assert card.zone == Zone.EXILE
     assert state.stack and state.stack[-1].effect_key == "cycle_draw"
 
-    state.cards["imp"] = CardInstance(
-        id="imp", name="Putrid Imp", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature — Zombie Imp",
-        power=1, toughness=1,
-        oracle_text=(
-            "Discard a card: This creature gains flying until end of turn.\n"
-            "Threshold — As long as there are seven or more cards in your graveyard, "
-            "this creature gets +1/+1 and can't block."
-        ),
+    state.cards["imp"] = canonical_card(
+        "Putrid Imp", id="imp", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD,
     )
     state.players[1].battlefield.append("imp")
     discarded = state.players[1].hand[0]
@@ -254,15 +224,8 @@ def test_rest_in_peace_exiles_dredge_mill_and_zero_loyalty_planeswalker() -> Non
     dredger = state.players[1].hand.pop()
     state.players[1].graveyard.append(dredger)
     card = state.cards[dredger]
-    card.name = "Stinkweed Imp"
-    card.type_line = "Creature — Imp"
-    card.types = ["Creature"]
+    set_printed(card, 'Stinkweed Imp')
     card.zone = Zone.GRAVEYARD
-    card.oracle_text = (
-        "Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\n"
-        "Dredge 5 (If you would draw a card, you may mill five cards instead. "
-        "If you do, return this card from your graveyard to your hand.)"
-    )
     milled = list(state.players[1].library[-5:])
 
     resolve_dredge(state, 1, {"target_player": 1, "dredge_card_id": dredger})
@@ -271,11 +234,11 @@ def test_rest_in_peace_exiles_dredge_mill_and_zero_loyalty_planeswalker() -> Non
     assert all(state.cards[cid].zone == Zone.EXILE for cid in milled)
     assert all(cid in state.players[1].exile for cid in milled)
 
-    state.cards["jace"] = CardInstance(
-        id="jace", name="Jace, the Mind Sculptor", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Planeswalker"],
-        type_line="Legendary Planeswalker — Jace", loyalty=0,
+    state.cards["jace"] = canonical_card(
+        "Jace, the Mind Sculptor", id="jace", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD,
     )
+    state.cards["jace"].loyalty = 0
     state.players[2].battlefield.append("jace")
     apply_state_based_actions(state)
     assert state.cards["jace"].zone == Zone.EXILE
@@ -291,14 +254,12 @@ def test_real_subtype_replacement_applies_before_simultaneous_source_death() -> 
         ("lorcan", "Lorcan, Warlock Collector", "Legendary Creature — Devil", 6, 6, LORCAN_ORACLE),
         (
             "poet", "Arrogant Poet", "Creature — Human Warlock", 2, 1,
-            "Whenever this creature attacks, you may pay 2 life. If you do, it gains flying until end of turn.",
+            raw_card('Arrogant Poet')['oracle_text'],
         ),
         ("bears", "Grizzly Bears", "Creature — Bear", 2, 2, ""),
     ):
-        state.cards[cid] = CardInstance(
-            id=cid, name=name, owner=1, controller=1, zone=Zone.BATTLEFIELD,
-            types=["Creature"], type_line=type_line, power=power,
-            toughness=toughness, oracle_text=oracle,
+        state.cards[cid] = canonical_card(
+            name, id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD,
             counters={"__damage_marked": toughness},
         )
         state.players[1].battlefield.append(cid)

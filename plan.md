@@ -30,6 +30,24 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
 
+## October 16 Canonical Death And Layered Toxic
+
+The composed death/artifact and keyword/reset declaration passes all 278 ordinary
+cases in 14 whole modules, including every earlier 54/224 identity and all 63
+original functions' 240 assertions. Complete official fixtures replace shortened
+real-card inputs. The generic toxic correction counts printed numeric instances
+before layer removals/grants; damage consumes the final counts instead of adding
+removed abilities back. Source/runtime preservation and actual owned-resource
+closure are independently checked. See
+[the exact composition and remaining limits](docs/testing/phase1-canonical-death-keywords-current.md).
+
+The published `db4e0758` frontend and browser jobs have separately completed
+successfully. Its backend job was still running when this record was written;
+that older CI result is not transferred to the new production change. Passive
+browser diagnostic contracts pass 406 cases in 11 whole modules, without changing
+application requests, recovery actions or timing bounds. Earlier abort causes,
+physical vendor acceptance and the remaining Phase 1 fixture scope stay open.
+
 ## October 16 Final Data Acceptance
 
 The data-acceptance declaration now passes all 833 ordinary cases across 17

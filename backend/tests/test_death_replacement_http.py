@@ -6,24 +6,21 @@ import main
 from game_state.state import Zone
 from persistence.db import engine
 from persistence.repository import Repository
-from tests.test_api_input_contracts import add_card, game, persist
+from tests.test_api_input_contracts import game, persist
+from tests.death_artifact_canonical4f86 import add_card
 from tests.test_death_replacement_canonical import LEYLINE_OF_THE_VOID_ORACLE, REST_IN_PEACE_ORACLE
 
 
 def test_rest_in_peace_damage_death_and_spell_zone_survive_http_restore(game):
     client, match = game
     add_card(
-        match, "rip", "Rest in Peace", Zone.BATTLEFIELD, ["Enchantment"],
-        text=REST_IN_PEACE_ORACLE,
+        match, "rip", "Rest in Peace", Zone.BATTLEFIELD,
     )
     add_card(
-        match, "traveler", "Doomed Traveler", Zone.BATTLEFIELD, ["Creature"],
-        text="When this creature dies, create a 1/1 white Spirit creature token with flying.",
-        power=1, toughness=1, owner=2,
+        match, "traveler", "Doomed Traveler", Zone.BATTLEFIELD, owner=2,
     )
     add_card(
-        match, "bolt", "Lightning Bolt", Zone.HAND, ["Instant"], cost="{R}",
-        text="Lightning Bolt deals 3 damage to any target.",
+        match, "bolt", "Lightning Bolt", Zone.HAND,
     )
     match.state.players[1].mana_pool["R"] = 1
     persist(match)
@@ -65,8 +62,7 @@ def test_rest_in_peace_damage_death_and_spell_zone_survive_http_restore(game):
 def test_rest_in_peace_entry_exiles_existing_graveyards_via_http(game):
     client, match = game
     add_card(
-        match, "rip", "Rest in Peace", Zone.HAND, ["Enchantment"], cost="{1}{W}",
-        text=REST_IN_PEACE_ORACLE,
+        match, "rip", "Rest in Peace", Zone.HAND,
     )
     buried = []
     for player in match.state.players.values():
@@ -107,12 +103,10 @@ def test_rest_in_peace_entry_exiles_existing_graveyards_via_http(game):
 def test_opponent_card_graveyard_replacement_survives_http_restore(game):
     client, match = game
     add_card(
-        match, "leyline", "Leyline of the Void", Zone.BATTLEFIELD, ["Enchantment"],
-        text=LEYLINE_OF_THE_VOID_ORACLE,
+        match, "leyline", "Leyline of the Void", Zone.BATTLEFIELD,
     )
     add_card(
-        match, "bolt", "Lightning Bolt", Zone.HAND, ["Instant"], cost="{R}",
-        text="Lightning Bolt deals 3 damage to any target.", owner=2,
+        match, "bolt", "Lightning Bolt", Zone.HAND, owner=2,
     )
     match.state.players[2].mana_pool["R"] = 1
     match.state.priority_player = 2

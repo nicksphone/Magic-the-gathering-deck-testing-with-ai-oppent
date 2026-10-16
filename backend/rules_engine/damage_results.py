@@ -4,7 +4,7 @@ import re
 from contextlib import contextmanager
 from contextvars import ContextVar
 
-from rules_engine.continuous import has_keyword
+from rules_engine.continuous import effective_keyword_counts, has_keyword
 from rules_engine.replacement import player_cant_lose_life
 
 
@@ -235,6 +235,11 @@ def queue_damage_counters(state, controller, effect_key, payload):
         resolve_effect(state, controller, effect_key, payload)
 
 
+def _toxic_value(state, source_id):
+    return sum(int(match[1]) * count for keyword, count in effective_keyword_counts(state, source_id).items()
+               if (match := re.fullmatch(r'toxic (\d+)', keyword)))
+
+
 def apply_player_damage(state, player_id: int, amount: int, source_id: str | None, *, combat: bool = False,
                         source_lki: dict | None = None, controller=None, counter_is_effect=False, source_context=None) -> None:
     """Apply consequences of damage after replacements and prevention."""
@@ -248,7 +253,7 @@ def apply_player_damage(state, player_id: int, amount: int, source_id: str | Non
     if not infect and not player_cant_lose_life(state, player_id):
         player.life -= amount
     if combat and source_id in state.cards:
-        toxic = sum(int(value) for value in re.findall(r"\btoxic\s+(\d+)", state.cards[source_id].oracle_text, re.IGNORECASE))
+        toxic = _toxic_value(state, source_id)
         if toxic:
             poison += toxic
             if infect:
