@@ -5886,9 +5886,9 @@
     "semantic_hash": ""
   },
   "frontend/package.json": {
-    "mtime": 1792142296.8535209,
-    "seen": 1792142822.065949,
-    "ast_hash": "10d391487c268fa00a06b3d609580f7f",
+    "mtime": 1792146991.1880589,
+    "seen": 1792147137.4727404,
+    "ast_hash": "6be084cf3ebe0e9406546d077d086c86",
     "semantic_hash": ""
   },
   "frontend/src/App.tsx": {
@@ -6672,9 +6672,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/run-browser-ci.sh": {
-    "mtime": 1792142296.8535209,
-    "seen": 1792142822.0663247,
-    "ast_hash": "10b4f5c14e0a2c367bef583eb318c526",
+    "mtime": 1792146991.1880589,
+    "seen": 1792147137.473129,
+    "ast_hash": "7a27b3ee09933e84e9957dffbefe965d",
     "semantic_hash": ""
   },
   "frontend/tests/run-ui-action-diagnostics.sh": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792145539.7921553,
-    "seen": 1792145884.653767,
-    "ast_hash": "7f3556885ad440172627e5f93d4d7845",
+    "mtime": 1792146578.2010403,
+    "seen": 1792147137.4742572,
+    "ast_hash": "d76ba84eb581b974a208ab5fbf8ba8e8",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19884,9 +19884,9 @@
     "semantic_hash": ""
   },
   "docs/testing/development-browser-runtime.md": {
-    "mtime": 1792145557.9248855,
-    "seen": 1792145884.6532943,
-    "ast_hash": "bdf69eea399d8ee4b57716c2d5a3d8c5",
+    "mtime": 1792147016.3996246,
+    "seen": 1792147137.4738553,
+    "ast_hash": "2aeca6d6edb142677b1fc70aa59a7975",
     "semantic_hash": ""
   },
   "frontend/tests/fixtures/ci-development-runtime/probe.html": {
@@ -19944,9 +19944,9 @@
     "semantic_hash": ""
   },
   "docs/testing/current-79-hosted-backend.md": {
-    "mtime": 1792145539.7921553,
-    "seen": 1792145884.653187,
-    "ast_hash": "e406cc79d786398ebb5c3b07072456bb",
+    "mtime": 1792146047.3174016,
+    "seen": 1792147137.4737606,
+    "ast_hash": "3f2e03cd73539fd44b6cdec1c51cf44f",
     "semantic_hash": ""
   },
   "docs/testing/task13-stack-copies-8d715-remaining-printed-facts.md": {
@@ -19962,9 +19962,27 @@
     "semantic_hash": ""
   },
   "docs/testing/task13-stack-copy-main-binding-protocol-fe026.md": {
-    "mtime": 1792145670.8401911,
-    "seen": 1792145884.6540387,
-    "ast_hash": "a9ad81ff2f1ca528bc96c75a408d6bb0",
+    "mtime": 1792146578.1940405,
+    "seen": 1792147137.4745026,
+    "ast_hash": "4c1ad53e41d850b51a60411cafd5cf0a",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-cors-transport-diagnostic.mjs": {
+    "mtime": 1792146991.1880589,
+    "seen": 1792147137.4728496,
+    "ast_hash": "adb8101a25307b1ef121afee737e5b85",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-cors-transport-diagnostic.test.mjs": {
+    "mtime": 1792146991.1880589,
+    "seen": 1792147137.4728518,
+    "ast_hash": "d1dff5f47f52c561f52b92c759dd0c40",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-cors-transport-diagnostic.md": {
+    "mtime": 1792147065.9137754,
+    "seen": 1792147137.4735527,
+    "ast_hash": "5a9bdd052ec2804ea5e3283a55d7e361",
     "semantic_hash": ""
   }
 }

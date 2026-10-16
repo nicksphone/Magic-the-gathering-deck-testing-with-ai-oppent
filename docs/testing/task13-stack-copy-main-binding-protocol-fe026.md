@@ -70,3 +70,17 @@ the larger failed ledger is preserved separately under
 `diagnostics/ci/task13-parent74-stack1399-5763-HOLD-20261016-gzht9tkp/`.
 Neither result closes remaining canonical fixtures, Phase 1, hosted-current
 acceptance or the full release.
+
+The subsequent reviewed private-harness correction admits only those 15 exact
+negative fixtures' temporary link creation/unlink operations. SQL aliases,
+through-link writes, foreign/source/runtime paths and all other native fences
+remain rejected; protocol TDD changes 23 failures/19 passes into 42 passes.
+The unchanged 74-whole-module declaration then passes all **1,399 cases** in
+166.51 seconds, with 67 warnings and no errors, skips or unexpected denials.
+Independent JUnit reconciliation verifies all ordered identities and all 15
+previously blocked negative cases. Source/runtime remain unchanged, and actual
+database/backup/owner-lock closure is verified before release at
+10:26:15.537259 UTC. This is a corrected local component qualification, not a
+rewrite of the failed ledger or whole hosted acceptance. The new evidence is
+separately archived under
+`diagnostics/ci/task13-parent74-stack1399-symlink-QUALIFIED-20261016-0v3f8cen/`.

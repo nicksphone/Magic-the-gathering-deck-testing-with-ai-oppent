@@ -146,6 +146,13 @@ if (($#)); then
   done
   exit 0
 fi
+# CORS transport diagnostic: ordinary hosted CDP only.
+cors_diagnostic_status=0
+if [[ -z "${MTG_BROWSER_VENDOR:-}" ]]; then
+  (cd frontend && MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 45s node tests/browser-cors-transport-diagnostic.mjs) || cors_diagnostic_status=$?
+else
+  printf '%s\n' 'CORS_TRANSPORT_DIAGNOSTIC [{"classification":"not-applicable","reason":"native-vendor-scope"}]'
+fi
 echo 'Browser CI: async readiness helper'
 (cd frontend && timeout 30s node tests/browser-driver-async.mjs)
 echo 'Browser CI: competitive table v2'
@@ -277,3 +284,7 @@ if [[ "${GITHUB_ACTIONS:-}" == true && -z "${MTG_CATHAR_ARCHIVE:-}" ]]; then
 fi
 MTG_TEST_PYTHON="$python_bin" MTG_CHROMIUM="$browser" \
   MTG_FRONTEND_DEPS="$frontend_deps" node frontend/tests/browser-cathar.mjs
+# Propagate diagnostic failure only after the unchanged full browser suite.
+if [[ "$cors_diagnostic_status" -ne 0 ]]; then
+  exit "$cors_diagnostic_status"
+fi

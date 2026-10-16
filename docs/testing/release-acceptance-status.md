@@ -39,6 +39,13 @@ actions and assertions; production code and the shared counter helper remain
 unchanged. This advances Phase 1 fixture cleanup, not full release acceptance.
 See [the complete declaration and limits](canonical-stack-target-fixtures.md).
 
+The next [canonical stack-copy composition](task13-stack-copy-main-binding-protocol-fe026.md)
+passes all 1,399 cases in 74 whole modules, retaining the previous 1,303
+identities and every original stack-copy action/assertion. The earlier 15
+intentional-symlink fixture denials are preserved as a failed harness ledger;
+the reviewed finite correction reruns every case successfully. Other fixture
+families and complete Phase 1 acceptance remain open.
+
 Later `8d715442` browser CI fails its unchanged held-response assertion amid
 an aborted POST and script-initiated reloads; the initial cause is unproven.
 Published `5763e072` serves prebuilt development assets, retains StrictMode and

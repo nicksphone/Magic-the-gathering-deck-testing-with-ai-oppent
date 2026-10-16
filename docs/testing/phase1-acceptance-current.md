@@ -29,6 +29,16 @@ replace four local positive constructors; no production or shared helper is
 changed. Other named-card fixtures, the literal data scope and final integrated
 acceptance remain open rather than being inferred from this passing count.
 
+The next [stack-copy fixture composition](task13-stack-copy-main-binding-protocol-fe026.md)
+passes all 1,399 cases in 74 whole modules, retaining the preceding 1,303
+identities. Complete real-card data replaces the remaining positive stack-copy
+constructors without changing their original 28 functions or 145 assertions.
+A legitimate preloaded-application binding is preserved instead of assuming
+process-global absence. The earlier 15 temporary-symlink harness denials remain
+archived; the reviewed finite correction reruns every unchanged test. This
+advances canonical fixture cleanup without signing off the literal repository
+requirement or the complete phase.
+
 The later exact [`e4f797e6` cold/warm declaration](current-e4-offline-assets-cold-warm.md)
 qualifies committed-seed offline startup on a fresh owned checkout: all 155
 shipped identities hydrate and serve assets without network access, real restart

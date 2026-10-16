@@ -72,3 +72,8 @@ This change establishes a stable development runtime and a genuine replay
 prerequisite, not a fix for the held-response failure. Native Firefox, Phase 1,
 the latest whole backend and complete release remain separate. No local browser,
 native service or kernel capability probe was used in parent verification.
+
+The subsequent [bounded transport diagnostic](browser-cors-transport-diagnostic.md)
+compares four CDP modes without App code or altered original assertions. Its
+protocol and shell-flow checks pass; the actual hosted comparison remains a
+distinct future observation, not an assumed fix for this cancellation.
