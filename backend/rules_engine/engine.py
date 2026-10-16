@@ -402,6 +402,8 @@ class RulesEngine:
         return False
 
     def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False, effect_cast: bool = False, suspend_cast: bool = False) -> None:
+        from rules_engine.activation_copy import record_activation_complete
+
         def reject(reason: str) -> None:
             if reject_invalid:
                 from rules_engine.action_validation import ActionRejected
@@ -1278,7 +1280,7 @@ class RulesEngine:
             player.hand.remove(cid)
             put_into_graveyard(state, cid)
             state.log.append(f"{player.name} cycles {card.name}.")
-            add_to_stack(
+            activated_item = add_to_stack(
                 state,
                 source_card_id=cid,
                 controller=player_id,
@@ -1291,6 +1293,7 @@ class RulesEngine:
                     else {"amount": 1}
                 ),
             )
+            record_activation_complete(state, activated_item)
             # Discard is a cost event, but its triggered abilities are put on
             # the stack after the cycling ability and therefore above it.
             emit_event(state, "discard", {"card_id": cid, "controller": player_id})
@@ -1420,7 +1423,7 @@ class RulesEngine:
             if (activation_source_zone == Zone.BATTLEFIELD and state.cards[cid].zone != Zone.BATTLEFIELD
                     and state.cards[cid].last_known_battlefield):
                 resolved_payload["__source_lki"] = dict(state.cards[cid].last_known_battlefield)
-            add_to_stack(
+            activated_item = add_to_stack(
                 state,
                 source_card_id=cid,
                 controller=player_id,
@@ -1429,6 +1432,7 @@ class RulesEngine:
                 effect_key=resolved.effect.key,
                 payload=resolved_payload,
             )
+            record_activation_complete(state, activated_item)
 
         elif kind == "activate_loyalty":
             from rules_engine.loyalty_timing import can_activate_loyalty_in_current_timing
@@ -1537,7 +1541,7 @@ class RulesEngine:
             if not state.trigger_staging:
                 state.trigger_staging = True
                 state.trigger_staging_event = "cast_or_activate"
-            add_to_stack(
+            activated_item = add_to_stack(
                 state,
                 source_card_id=cid,
                 controller=player_id,
@@ -1554,6 +1558,9 @@ class RulesEngine:
                 })
                 if state.pending_replacement_choice:
                     state.pending_replacement_choice['activation_controller'] = player_id
+                    state.pending_replacement_choice['activation_stack_id'] = activated_item.id
+            if not state.pending_replacement_choice:
+                record_activation_complete(state, activated_item)
 
         elif kind == "crew":
             vehicle_id = action.get("card_id")
@@ -1590,12 +1597,13 @@ class RulesEngine:
                     return
                 from rules_engine.resource_events import tap_permanents
                 tap_permanents(state, selected)
-                add_to_stack(
+                activated_item = add_to_stack(
                     state, source_card_id=vehicle_id, controller=player_id,
                     label=f"{vehicle.name} crew", effect_key="crew_vehicle",
                     payload={"card_id": vehicle_id, "effect_timestamp": object_incarnation(vehicle),
                              "crew_card_ids": selected}, is_spell=False,
                 )
+                record_activation_complete(state, activated_item)
                 state.log.append(f"{player.name} taps {len(selected)} creature(s) to crew {vehicle.name}.")
                 if crew_staging:
                     from rules_engine.events import flush_staged_triggers
@@ -1629,14 +1637,21 @@ class RulesEngine:
             announced = {'target_card_id': target_id}
             target_references = capture_announced_target_references(state, announced)
             grant_capture = _capture_grants(state, announced, target_references, stack_kind='activated')
+            equip_staging = not state.trigger_staging
+            if equip_staging:
+                state.trigger_staging = True
+                state.trigger_staging_event = 'ability_activation'
             if not auto_pay_cost(state, player_id, equip_cost, card_name=state.cards[cid].name,
                                  payment_kind="activation", payment_types=set(effective_types(state, state.cards[cid])),
                                  ability_kind="equip", source_card_id=cid, target_card_id=target_id):
+                if equip_staging:
+                    state.staged_triggers.clear()
+                    state.trigger_staging = False
                 reject("Cannot pay equipment cost")
                 state.log.append(f"{player.name} cannot pay equip cost for {state.cards[cid].name}.")
                 apply_state_based_actions(state)
                 return
-            add_to_stack(state, cid, player_id, f"{state.cards[cid].name} equip", "equip_attachment", {
+            activated_item = add_to_stack(state, cid, player_id, f"{state.cards[cid].name} equip", "equip_attachment", {
                 "equipment_id": cid, "target_card_id": target_id,
                 "source_timestamp": object_incarnation(state.cards[cid]),
                 "target_timestamp": object_incarnation(target),
@@ -1645,6 +1660,7 @@ class RulesEngine:
                 '__granted_target_capture': grant_capture,
                 "__ability_target_text": "Attach this Equipment to target creature you control.",
             }, is_spell=False)
+            record_activation_complete(state, activated_item)
 
         elif kind == "block":
             if getattr(state, "blockers_declared", False):

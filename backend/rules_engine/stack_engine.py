@@ -748,6 +748,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     if next_pending:
         if pending.get('continuation_controller'):
             next_pending['continuation_controller'] = pending['continuation_controller']
+        if pending.get('activation_stack_id'):
+            next_pending['activation_stack_id'] = pending['activation_stack_id']
         next_pending.setdefault('counter_continuation_queue', []).extend(counter_queue)
     queue = list(pending.get("draw_continuation_queue") or [])
     if not queue and pending.get("remaining_draws"):
@@ -761,6 +763,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     if next_pending:
         if pending.get('continuation_controller'):
             next_pending['continuation_controller'] = pending['continuation_controller']
+        if pending.get('activation_stack_id'):
+            next_pending['activation_stack_id'] = pending['activation_stack_id']
         if pending.get('activation_controller'):
             next_pending['activation_controller'] = pending['activation_controller']
         next_pending.setdefault("draw_continuation_queue", []).extend(queue)
@@ -776,6 +780,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     if next_pending:
         if pending.get('continuation_controller'):
             next_pending['continuation_controller'] = pending['continuation_controller']
+        if pending.get('activation_stack_id'):
+            next_pending['activation_stack_id'] = pending['activation_stack_id']
         if pending.get("combat_damage_needs_sba"):
             next_pending["combat_damage_needs_sba"] = True
         if pending.get("resolving_item"):
@@ -786,6 +792,12 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     if pending.get("combat_damage_needs_sba") and not (state.pending_mechanic_choice or state.pending_replacement_choice):
         from rules_engine.state_based_actions import apply_state_based_actions
         apply_state_based_actions(state)
+    if not (state.pending_mechanic_choice or state.pending_replacement_choice) and pending.get('activation_stack_id'):
+        from rules_engine.activation_copy import record_activation_complete
+        item = next((item for item in state.stack if item.id == pending['activation_stack_id']), None)
+        if item is None or item.controller != pending.get('activation_controller'):
+            raise ValueError('Paused activation lost its actual announced item')
+        record_activation_complete(state, item)
     if not state.pending_mechanic_choice and not state.pending_trigger_order and not state.pending_replacement_choice:
         state.priority_player = int(pending.get('activation_controller') or state.active_player)
         state.passed_priority = set()

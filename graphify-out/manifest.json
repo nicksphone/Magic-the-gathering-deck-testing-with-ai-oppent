@@ -378,15 +378,15 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1792137609.9998088,
-    "seen": 1792137729.6402314,
-    "ast_hash": "1c4055d17daa9aaab5c531a05daedfaa",
+    "mtime": 1792153575.3035877,
+    "seen": 1792154616.5440466,
+    "ast_hash": "826d38860191c2f66606c0761f8a854f",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
-    "mtime": 1792033175.4866807,
-    "seen": 1792034402.3546796,
-    "ast_hash": "abd06cda85a9da82166bcdb43567b2f8",
+    "mtime": 1792153575.3035877,
+    "seen": 1792154616.5440493,
+    "ast_hash": "64fb1c5874d489767da1ce1e3489f17d",
     "semantic_hash": ""
   },
   "backend/game_state/__init__.py": {
@@ -678,9 +678,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/engine.py": {
-    "mtime": 1792033175.5056803,
-    "seen": 1792034402.354776,
-    "ast_hash": "705493f8ef555c0f3f7c81d54568822b",
+    "mtime": 1792153575.3035877,
+    "seen": 1792154616.5441625,
+    "ast_hash": "6968d7587d377fe3ea57fb26913dbc72",
     "semantic_hash": ""
   },
   "backend/rules_engine/entry.py": {
@@ -696,9 +696,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/events.py": {
-    "mtime": 1792105791.2536366,
-    "seen": 1792105930.9022162,
-    "ast_hash": "5eeb92468fa40c07a011f347cf7f1ec2",
+    "mtime": 1792153575.3035877,
+    "seen": 1792154616.5441682,
+    "ast_hash": "f877150fc92f494d229f02f77a0624b4",
     "semantic_hash": ""
   },
   "backend/rules_engine/flashback_grants.py": {
@@ -726,9 +726,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_actions.py": {
-    "mtime": 1792033175.5096803,
-    "seen": 1792034402.3547943,
-    "ast_hash": "d9b741003598bfcdd628134d29939a12",
+    "mtime": 1792153575.3035877,
+    "seen": 1792154616.544185,
+    "ast_hash": "887963f2337bd54cc7bc67a66c43bb14",
     "semantic_hash": ""
   },
   "backend/rules_engine/keyword_effects.py": {
@@ -930,9 +930,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/stack_engine.py": {
-    "mtime": 1792033175.51868,
-    "seen": 1792034402.3548775,
-    "ast_hash": "d558ff3a253a360928f81ca9c7474918",
+    "mtime": 1792153575.3035877,
+    "seen": 1792154616.5442777,
+    "ast_hash": "b980215b4ddc46848d6509771f32026b",
     "semantic_hash": ""
   },
   "backend/rules_engine/state_based_actions.py": {
@@ -10404,9 +10404,9 @@
     "semantic_hash": ""
   },
   "backend/rules_engine/paid_triggers.py": {
-    "mtime": 1792033175.51568,
-    "seen": 1792034402.3548474,
-    "ast_hash": "c76dcb98a8be98b7e9265a15ef1af2ef",
+    "mtime": 1792153575.3035877,
+    "seen": 1792154616.544244,
+    "ast_hash": "575b99ce4bbac02b501b0149bf5db4bb",
     "semantic_hash": ""
   },
   "backend/tests/activated_handland_http_fixture_server.py": {
@@ -20133,6 +20133,66 @@
     "mtime": 1792151319.408951,
     "seen": 1792151440.8103468,
     "ast_hash": "5da497f2b45c077ffa6552e12c1f74d2",
+    "semantic_hash": ""
+  },
+  "backend/rules_engine/activation_copy.py": {
+    "mtime": 1792153575.3035877,
+    "seen": 1792154616.5440931,
+    "ast_hash": "f6ec38ba1938f79bee96009b7a5a046a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/oracle_effects_positive_8d/PROVENANCE.json": {
+    "mtime": 1792153575.3045876,
+    "seen": 1792154616.5455265,
+    "ast_hash": "b195b03733b46b0c44fe0c1175ad8396",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/oracle_effects_positive_8d/open-the-vaults.json": {
+    "mtime": 1792153575.3045876,
+    "seen": 1792154616.5455284,
+    "ast_hash": "02d09347751b9c8d72bcd5948b7dcb6b",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/oracle_effects_positive_8d/rings-of-brighthearth.json": {
+    "mtime": 1792153575.3045876,
+    "seen": 1792154616.5455298,
+    "ast_hash": "a60b7206a4330b63806af9cb08616bca",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/oracle_effects_positive_8d/steel-hellkite.json": {
+    "mtime": 1792153575.3045876,
+    "seen": 1792154616.5455317,
+    "ast_hash": "1bfabc1593202f7cb807fc4dfa1209aa",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/oracle_effects_positive_8d/vindicate.json": {
+    "mtime": 1792153575.3045876,
+    "seen": 1792154616.5455332,
+    "ast_hash": "3175b493cd7e8770ed9b9843c19bae6f",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/rings_activation_native_5763/SOURCES.json": {
+    "mtime": 1792153575.3045876,
+    "seen": 1792154616.5456486,
+    "ast_hash": "5890e265fefb83583d9a2fe257c2ede9",
+    "semantic_hash": ""
+  },
+  "backend/tests/rings_activation_native_support_5763.py": {
+    "mtime": 1792153575.3045876,
+    "seen": 1792154616.5460007,
+    "ast_hash": "0d826590bc72051fcc8549d1537efef2",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_rings_activation_copy_native.py": {
+    "mtime": 1792153575.3045876,
+    "seen": 1792154616.5473802,
+    "ast_hash": "d04068b5d7fcd4aebd34203089be6241",
+    "semantic_hash": ""
+  },
+  "docs/testing/rings-completed-activation-5763.md": {
+    "mtime": 1792154473.68345,
+    "seen": 1792154616.5495474,
+    "ast_hash": "0c389565479ef1ce9c191effba23caab",
     "semantic_hash": ""
   }
 }

@@ -1,0 +1,180 @@
+{
+  "Humility": {
+    "file": "fixtures/ability_suppression.json",
+    "steps": [
+      4
+    ],
+    "line": null,
+    "file_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+    "row_sha256": "586e309da67450dbb398893f7ebd70eb870078543d923d6f5fe9f21ab86de824"
+  },
+  "Dress Down": {
+    "file": "fixtures/ability_suppression.json",
+    "steps": [
+      5
+    ],
+    "line": null,
+    "file_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+    "row_sha256": "273a25b40b214a80a113b9b8020479fe8b3354f4706ccee8fb7f821e84af444d"
+  },
+  "Trading Post": {
+    "file": "fixtures/activation_payment_choices/trading-post.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "c04ea5e753eabb9d3a59faff3ce84274a7d0d4946a4cf080b6af971cf0df5fe4",
+    "row_sha256": "5dc502a3f12b60c1edd50cd90ac2b0155561695ebed870771e2b0c5884cee49c"
+  },
+  "March of the Machines": {
+    "file": "fixtures/agent_self_entry/facts.json",
+    "steps": [
+      3
+    ],
+    "line": null,
+    "file_sha256": "27c507f0e9aafc8fc68d3d8c7267833223031eaaf6e690fbbe63a582af5ff2e3",
+    "row_sha256": "6ce85b97d85120075196a0cd944c875cb273571d26cee749da4e56b9a64e8d39"
+  },
+  "Stifle": {
+    "file": "fixtures/agent_self_entry/stifle.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "6bb0888de9ca032e119d301db6381d0351ed76932d8ef4f8158a47ec50e5301f",
+    "row_sha256": "eccb451a0000ccd2d8209bdbb6e71bf456fb5925d0466f154cf0f19a3047bc11"
+  },
+  "Grizzly Bears": {
+    "file": "fixtures/ai_terminal_draw/grizzly-bears.raw.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "row_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0"
+  },
+  "Lithoform Engine": {
+    "file": "fixtures/archangel_pair/lithoform-engine.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "6f081d1bb65daf160e0032663827881603c9886ddc128e29e62b061961d1cbfb",
+    "row_sha256": "108d4fb2bb06c061fd687dbe9f48488fbeab15d63637cdcb8cb6c1708333b38f"
+  },
+  "Unsummon": {
+    "file": "fixtures/archangel_pair/unsummon.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "e993dc0c93d30a6c75b064a9d8e247f9bd094ae24257c5cec6362309c26bd1d3",
+    "row_sha256": "9904776f9599d4653f265300e1f2837a8ec9f0426d915feea23df95ce31dcc41"
+  },
+  "Prodigal Pyromancer": {
+    "file": "fixtures/basic_land_hooks/provenance.json",
+    "steps": [
+      3,
+      "row"
+    ],
+    "line": null,
+    "file_sha256": "d714facfccbe398326ebec3a2cd0f982f7365000d078e1c92f4d9e90ca5d5045",
+    "row_sha256": "9d7d9042fe7a298b075e2dbf9696c1d9d4c83b75acfb9056e1813c950ecd14a6"
+  },
+  "Renewed Faith": {
+    "file": "fixtures/canonical_cycle_self/cards.json",
+    "steps": [
+      1
+    ],
+    "line": null,
+    "file_sha256": "f9d53d8a03c95ce036bc53661c6f74aac1c32348d15ee28a0c334b8db410300b",
+    "row_sha256": "0041277c54251f1600096c40af93308281c303977e16b0ccd0c8ffbb59a6e34d"
+  },
+  "Sol Ring": {
+    "file": "fixtures/cast_resources/canonical.json",
+    "steps": [
+      "data",
+      11
+    ],
+    "line": null,
+    "file_sha256": "6c9deba3541b9033aca090ead1564cdb3b671570a3b4ba96cbf7540a1e01f17d",
+    "row_sha256": "9a853303438b951345852b85abc3d9dfdc2821e5705b187dfbfbcd75cc0ebbca"
+  },
+  "Elspeth, Sun's Champion": {
+    "file": "fixtures/counter_prohibitions.json",
+    "steps": [
+      9
+    ],
+    "line": null,
+    "file_sha256": "94fe0b7a42c358835cc4abf1f1e231c5096798a32de7de61a34c5a21d4cdc448",
+    "row_sha256": "c7ef0e1335a143c6d4fcc41ce57154715b5a5e12aaddb28ea6b53b4ccceb81ed"
+  },
+  "Doubling Season": {
+    "file": "fixtures/counter_replacements.json",
+    "steps": [
+      0
+    ],
+    "line": null,
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "row_sha256": "48d11ad8319007d1369a4a651831596491be1f764ecd3f895ddfc00602774107"
+  },
+  "Vorinclex, Monstrous Raider": {
+    "file": "fixtures/counter_replacements.json",
+    "steps": [
+      1
+    ],
+    "line": null,
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "row_sha256": "3d221622ff522a353f5179081dd77be7c6848c5c0fcd55d03967223f780c4c76"
+  },
+  "Lae'zel, Vlaakith's Champion": {
+    "file": "fixtures/counter_replacements.json",
+    "steps": [
+      3
+    ],
+    "line": null,
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "row_sha256": "821e47c6ab3b5f8f57476c78f989e58b3ef4ab9151a798caaf69b7296fcde2c6"
+  },
+  "Ninja of the Deep Hours": {
+    "file": "fixtures/ninjutsu_canonical/ninja-of-the-deep-hours.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "d5c28c0171ed64bf41b2435a9edcf4ebcef7cc5d121e27996c74b9a1a8f41b0f",
+    "row_sha256": "dcc4a474eed74f584b37e9b61830b2dc6bcd7afcd4fdca0e0653162485fa6642"
+  },
+  "Smuggler's Copter": {
+    "file": "fixtures/trigger_instruction_product/copter.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "ac9f098693e540e0b5f7996d069f3bbf9b81fa4eb511703ec5d77c50c83faba1",
+    "row_sha256": "abd2323352fd64c957abe258e3e6d485610dcee670ba6641d4e1f667d0550e93"
+  },
+  "Shadowspear": {
+    "file": "fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "steps": [],
+    "line": 138,
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "row_sha256": "ca6c23152fa213f3f522c4c1337df1a54e11d105331b457548909fb2abff2a38"
+  },
+  "Shuko": {
+    "file": "fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "steps": [],
+    "line": 140,
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "row_sha256": "c03c5ce80d463778b03fb5c8fc482de82a3a808fb7d41b134d205d77ad86ac59"
+  },
+  "Rings of Brighthearth": {
+    "file": "fixtures/oracle_effects_positive_8d/rings-of-brighthearth.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "3405a77d30471442d68cceb9421c33d235b1a5cc0fe431ea1bcfedf848492acb",
+    "row_sha256": "b97eb2d2f051bc4f8c7e2fa41731d5aa256a86f6433d9909a5edf0bbfbc3725e"
+  },
+  "Return the Favor": {
+    "file": "../../audit/gate2-spree-http/fixtures/spree_http/canonical.json",
+    "steps": [
+      "Return the Favor"
+    ],
+    "line": null,
+    "file_sha256": "3b79a12db0e94a34377b26fcdb9dd9bf54c77c44fab0aa036456f007fb4bb2e4",
+    "row_sha256": "dfa6e474e0f7149162cc610515d967483976e24d183704ef8396b673cde417fe"
+  },
+  "Vindicate": {
+    "file": "fixtures/oracle_effects_positive_8d/vindicate.json",
+    "steps": [],
+    "line": null,
+    "file_sha256": "f2a8274eff30900f86f160dfb2b7e03a3e2e9ab29837afbe584cde5b474a2408",
+    "row_sha256": "f488f3bb45edc92e57c949ab90d36dfc553e1b0827bb4a7ec57db21597ea002c"
+  }
+}

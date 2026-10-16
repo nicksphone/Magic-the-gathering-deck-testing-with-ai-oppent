@@ -19,6 +19,7 @@ def ninjutsu_attackers(state, player_id: int) -> list[str]:
 
 
 def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
+    from rules_engine.activation_copy import record_activation_complete
     from rules_engine.events import emit_event
     from rules_engine.stack_engine import add_to_stack
     card_id = action.get("card_id")
@@ -30,8 +31,17 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     card = state.cards[card_id]
     source_sequence = card.zone_change_sequence
     cost = ninjutsu_cost(card)
-    if not cost or not auto_pay_cost(state, player_id, cost, card_name=card.name,
+    if not cost:
+        return False
+    staged_here = not state.trigger_staging
+    if staged_here:
+        state.trigger_staging = True
+        state.trigger_staging_event = 'ability_activation'
+    if not auto_pay_cost(state, player_id, cost, card_name=card.name,
             payment_kind='activation', payment_types=set(effective_types(state, card)), source_card_id=card_id, ability_kind='ninjutsu'):
+        if staged_here:
+            state.staged_triggers.clear()
+            state.trigger_staging = False
         return False
     returned = state.cards[return_id]
     target = state.attack_targets.get(return_id, f"player:{3-player_id}")
@@ -41,8 +51,9 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     returned.move_to_zone(Zone.HAND)
     state.attackers.remove(return_id)
     state.attack_targets.pop(return_id, None)
-    add_to_stack(state, card_id, player_id, f"{card.name} ninjutsu", "ninjutsu",
+    activated_item = add_to_stack(state, card_id, player_id, f"{card.name} ninjutsu", "ninjutsu",
                  {"attack_target": target, "__source_zone_sequence": source_sequence}, is_spell=False)
+    record_activation_complete(state, activated_item)
     return True
 
 

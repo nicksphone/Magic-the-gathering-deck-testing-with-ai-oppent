@@ -676,6 +676,9 @@ def _collect_graveyard_entry_triggers(state, payload):
 
 
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if event == 'nonmana_ability_activated':
+        from rules_engine.activation_copy import collect_activation_copy_triggers
+        return collect_activation_copy_triggers(state, payload)
     if event == 'enters_graveyard':
         return _collect_graveyard_entry_triggers(state, payload)
     if event == 'becomes_tapped':

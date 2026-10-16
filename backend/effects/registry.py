@@ -8,6 +8,7 @@ from rules_engine.turn_spell_protection import conditional_draw, grant_protectio
 from rules_engine.retained_counter_prohibition import resolve as resolve_counter_prohibition
 from rules_engine.spree import resolve_copy as resolve_spree_copy, offer_change as resolve_spree_target_change
 from rules_engine.end_step_ownership_draw import resolve as resolve_ownership_end_step_draw
+from rules_engine.activation_copy import resolve_copy_referred_ability
 
 from collections.abc import Callable
 
@@ -74,6 +75,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "counter_ability": handlers.counter_ability,
     "copy_spell": handlers.copy_spell,
     "copy_ability": handlers.copy_ability,
+    "copy_referred_ability": resolve_copy_referred_ability,
     "exile": handlers.exile_permanent,
     "exile_return_immediate": handlers.exile_return_immediate,
     "exile_return_batch": handlers.exile_return_batch,

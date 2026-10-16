@@ -891,18 +891,23 @@ def counter_ability(state: MatchState, controller: int, payload: dict) -> None:
             if payload.get("uncounterable") or (item.payload or {}).get("uncounterable"):
                 state.log.append(f"{item.label} can't be countered.")
                 return
+            from rules_engine.activation_copy import retain_countered_activation
+            retain_countered_activation(state, item)
             state.stack.pop(i)
             state.log.append(f"{item.label} was countered.")
             return
 
 
-def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect_label: str):
-    target_stack_id = payload.get("target_stack_id")
-    if not target_stack_id:
-        return
-    item = next((x for x in state.stack if x.id == target_stack_id), None)
-    if item is None:
-        return
+def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect_label: str, *, retained_item=None):
+    if retained_item is None:
+        target_stack_id = payload.get("target_stack_id")
+        if not target_stack_id:
+            return
+        item = next((x for x in state.stack if x.id == target_stack_id), None)
+        if item is None:
+            return
+    else:
+        item = retained_item
     copied_payload = copy.deepcopy(item.payload or {})
     copied_payload.pop("__last_target_ids", None)
     for key in list(copied_payload):

@@ -66,7 +66,11 @@ def compile_paid_instruction(state, source, controller, instruction, event_paylo
             return None
         data['keywords'] = [keyword.title() for keyword in data.get('keywords', [])]
     else:
-        return None
+        from rules_engine.activation_copy import paid_copy_body
+        copy_body = paid_copy_body(body, event_payload)
+        if copy_body is None:
+            return None
+        key, data = copy_body
     return key, {**data, '__may': True, '__optional_payment_cost': cost.upper(),
                  '__optional_payment_instruction': instruction}
 
