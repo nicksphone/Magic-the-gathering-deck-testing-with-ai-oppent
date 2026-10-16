@@ -1,0 +1,33 @@
+{
+  "Azure Mage": {
+    "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_source": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+    "file": "human_activation_canonical7f/azure-mage.json",
+    "file_sha256": "b34e54e5fb25270c83b9b0a301d084e0e01ce79bb97cfb9c71b7bc93b21889f4",
+    "id": "e5a7ed36-a552-4d46-929a-48f34ae9279a",
+    "kind": "complete unchanged archived official bulk JSONL row, not original HTTP wire response",
+    "oracle_id": "bbf9fd47-10e1-4749-b06f-4fe72200afc7",
+    "source_line": 28254
+  },
+  "Oona, Queen of the Fae": {
+    "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_source": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+    "file": "human_activation_canonical7f/oona.json",
+    "file_sha256": "733e8337aede3e36c31d530e0d75085512c4d8668a9fa3ad5704b65cf418acba",
+    "id": "fbea42c8-6e9f-499d-9d26-401536afd5c2",
+    "kind": "complete unchanged archived official bulk JSONL row, not original HTTP wire response",
+    "oracle_id": "6052822d-47a2-4d69-a32d-40cdd600d7a9",
+    "source_line": 14450
+  },
+  "Prodigal Pyromancer": {
+    "file": "ward.json",
+    "file_sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+    "index": 26,
+    "kind": "existing committed full official API object; provenance hash-linked",
+    "object_sha256": "b9a366defcc5a35b8433f3909c0ed4ff4a99b40236a937accdcf73bb0e69c402",
+    "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd",
+    "provenance": "basic_land_hooks/provenance.json",
+    "provenance_sha256": "d714facfccbe398326ebec3a2cd0f982f7365000d078e1c92f4d9e90ca5d5045"
+  }
+}
