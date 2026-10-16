@@ -8,11 +8,23 @@ all 919 original assertion-call sites preserved. Its backend job remains a
 separate acceptance run; the existing no-sandbox CI mode is not native vendor
 qualification. See [the source-specific result](current-0c-browser-ci.md).
 
+The later exact `b7201869` generic browser job also independently completes
+45 ordered stages and 501 PASS banners, with the same 919 assertion sites.
+Its backend remains a separate running acceptance attempt at that checkpoint;
+the result is not transferred to subsequent code changes. See
+[the later terminal evidence](current-0c-browser-ci.md#subsequent-b720-checkpoint).
+
 The subsequent canonical damage/life composition passes 1,224 ordinary cases
 in 62 whole modules on the fresh locked release runtime, including all 759
 earlier retained identities. It closes the scoped qualified-prevention and
 fixture gaps, not the remaining Phase 1 requirement or full release. See
 [the combined verification](task13-damage-life-coupled1224-current.md).
+
+The following library selector correction passes one 66-whole-module cohort of
+1,254 cases, including every preceding 1,224 identity. Complete printed `*`
+power is derived from its real library-owner context; unresolved power remains
+ineligible. This is not a new HTTP or hosted-backend certificate. See
+[the exact selector evidence and retained intake failure](library-reveal-dynamic-power.md).
 
 ## Current e4 Offline Check
 

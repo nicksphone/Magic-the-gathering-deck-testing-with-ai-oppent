@@ -378,9 +378,9 @@
     "semantic_hash": ""
   },
   "backend/effects/handlers.py": {
-    "mtime": 1792134717.7055144,
-    "seen": 1792134906.7251973,
-    "ast_hash": "c6ccfe7d4781cc1338105ee896476814",
+    "mtime": 1792137609.9998088,
+    "seen": 1792137729.6402314,
+    "ast_hash": "1c4055d17daa9aaab5c531a05daedfaa",
     "semantic_hash": ""
   },
   "backend/effects/registry.py": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792134787.6634703,
-    "seen": 1792134906.7306473,
-    "ast_hash": "2832c10b592beaa9850e42630146a32d",
+    "mtime": 1792137610.038808,
+    "seen": 1792137729.645756,
+    "ast_hash": "d2ae54ac0cd9bee003994e6396fa5d2b",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792134787.6624703,
-    "seen": 1792134906.7305949,
-    "ast_hash": "4e6fc2c34607198a74256cf31e01d53d",
+    "mtime": 1792137610.0378082,
+    "seen": 1792137729.6457043,
+    "ast_hash": "d073686065a56c12013978ba95abe3da",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19833,6 +19833,18 @@
     "mtime": 1792134787.6624703,
     "seen": 1792134906.7308273,
     "ast_hash": "c8e7f4b41903578e91700799befeac60",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_library_reveal_dynamic_power.py": {
+    "mtime": 1792137609.9998088,
+    "seen": 1792137729.6432238,
+    "ast_hash": "b64fae2fb221af3f28f6c2087f8bc130",
+    "semantic_hash": ""
+  },
+  "docs/testing/library-reveal-dynamic-power.md": {
+    "mtime": 1792137609.9998088,
+    "seen": 1792137729.6455395,
+    "ast_hash": "fe7325c8e6d2df28ceea4cec885fcd27",
     "semantic_hash": ""
   }
 }

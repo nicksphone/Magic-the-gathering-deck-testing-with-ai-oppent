@@ -22,3 +22,15 @@ This does not qualify sandbox-intact Chrome/Brave/Firefox, native Firefox
 input flows, a clean install, LAN trust, Phase 1 or the complete release.
 Only the terminal browser log and public source were reconciled; neither the
 protected synthetic trace nor raw backend job logs were downloaded.
+
+## Subsequent b720 Checkpoint
+
+Run `38866253264`, attempt 1, exact
+`b7201869f52b4de4fa36f5959718986c02dbf93a`, also completes browser job
+`116859658108` successfully at 2026-10-16 07:40:29 UTC. Independent terminal
+reconciliation again matches all 45 ordered headers, 501 PASS banners, 66
+scenario files and 919 original assertion-call sites. Frontend succeeds too.
+Its backend job and the earlier `0c` backend remain running at the 07:58 UTC
+observation; no backend artifact or log was downloaded by that watch. The
+same no-sandbox/native-browser and whole-release limitations apply. This
+source-specific pass does not qualify a later selector change automatically.

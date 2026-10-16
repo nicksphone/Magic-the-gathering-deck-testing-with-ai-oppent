@@ -14,6 +14,13 @@ remain. This advances Task 1.3; other handwritten fixture families and the
 literal repository-wide requirement remain unfinished. UI/browser work runs in
 parallel and does not constitute Phase 1 sign-off.
 
+A subsequent [library-power selector correction](library-reveal-dynamic-power.md)
+passes all 1,254 cases in 66 whole modules, retaining every earlier 1,224
+identity. It derives genuine characteristic-defined power in the library
+without inventing zero for unknown data. The separate canonical library-fixture
+migration remains unfinished; this core correction does not waive its failures
+or the literal handwritten-data requirement.
+
 The later exact [`e4f797e6` cold/warm declaration](current-e4-offline-assets-cold-warm.md)
 qualifies committed-seed offline startup on a fresh owned checkout: all 155
 shipped identities hydrate and serve assets without network access, real restart

@@ -3507,10 +3507,12 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
             continue
         if "power_max" in payload:
             try:
-                printed_power = int(card.power)
+                # A library CDA can define power; incomplete metadata stays ineligible.
+                power = (effective_combat_stats(state, cid)[0]
+                         if card.power is None else int(card.power))
             except (TypeError, ValueError):
                 continue
-            if printed_power > int(payload["power_max"]):
+            if power is None or power > int(payload["power_max"]):
                 continue
         eligible.append(cid)
     if (controller in state.mechanic_choice_players
@@ -3533,7 +3535,8 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
     def value(cid: str) -> tuple[int, int]:
         card = state.cards[cid]
         try:
-            power = int(card.power or 0)
+            power = int(card.power if card.power is not None
+                        else effective_combat_stats(state, cid)[0] or 0)
         except (TypeError, ValueError):
             power = 0
         return mana_value(card.mana_cost or ""), power
