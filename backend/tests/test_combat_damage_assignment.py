@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.combat_canonical_022 import canonical_card, canonical_entry
 
 from unittest.mock import patch
 
@@ -18,7 +19,7 @@ from persistence.repository import Repository
 
 
 def _state():
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_entry("Island", 60)]
     state = MatchFactory.from_decks(deck, deck, seed=73)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -29,12 +30,9 @@ def _state():
     return state
 
 
-def _creature(state, cid: str, owner: int, name: str, power: int, toughness: int, keywords=(), oracle_text="") -> None:
-    card = CardInstance(
-        id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
-        types=["Creature"], power=power, toughness=toughness,
-        keywords=list(keywords), oracle_text=oracle_text, summoning_sick=False,
-    )
+def _creature(state, cid: str, owner: int, name: str) -> None:
+    card = canonical_card(name, id=cid, owner=owner, controller=owner,
+                          zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[cid] = card
     state.players[owner].battlefield.append(cid)
 
@@ -61,8 +59,8 @@ def _finish_shared_blocker_choice(state):
 def test_simultaneous_combat_deaths_use_shared_state_actions() -> None:
     state = _state()
     state.mechanic_choice_players = set()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "giant", 2, "Hill Giant", 3, 3)
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'giant', 2, 'Hill Giant')
     state.attackers = ["courser"]
     state.blocks = {"courser": ["giant"]}
 
@@ -76,9 +74,9 @@ def test_simultaneous_combat_deaths_use_shared_state_actions() -> None:
 
 def test_multi_blocked_attacker_can_assign_all_damage_to_later_blocker_after_snapshot() -> None:
     state = _state()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
-    _creature(state, "giant", 2, "Hill Giant", 3, 3)
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
+    _creature(state, 'giant', 2, 'Hill Giant')
     state.attackers = ["courser"]
     state.blocks = {"courser": ["bears", "giant"]}
 
@@ -105,9 +103,9 @@ def test_multi_blocked_attacker_can_assign_all_damage_to_later_blocker_after_sna
 
 def test_palace_guard_controller_chooses_which_attacker_takes_its_one_damage() -> None:
     state = _state()
-    _creature(state, "elves", 1, "Llanowar Elves", 1, 1)
-    _creature(state, "mystic", 1, "Elvish Mystic", 1, 1)
-    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    _creature(state, 'elves', 1, 'Llanowar Elves')
+    _creature(state, 'mystic', 1, 'Elvish Mystic')
+    _creature(state, 'guard', 2, 'Palace Guard')
     state.attackers = ["elves", "mystic"]
     combat.declare_blockers(state, {"elves": ["guard"], "mystic": ["guard"]})
     _enter_damage(state)
@@ -125,10 +123,9 @@ def test_palace_guard_controller_chooses_which_attacker_takes_its_one_damage() -
 def test_trample_player_damage_triggers_ohran_frostfang() -> None:
     state = _state()
     state.mechanic_choice_players = set()
-    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
-              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
-    _creature(state, "monstrosaur", 1, "Charging Monstrosaur", 5, 5, keywords=["trample", "haste"])
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
+    _creature(state, 'frostfang', 1, 'Ohran Frostfang')
+    _creature(state, 'monstrosaur', 1, 'Charging Monstrosaur')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
     state.attackers = ["monstrosaur"]
     state.blocks = {"monstrosaur": ["bears"]}
 
@@ -141,9 +138,8 @@ def test_trample_player_damage_triggers_ohran_frostfang() -> None:
 def test_other_creatures_combat_damage_does_not_trigger_shadowmage_infiltrator() -> None:
     state = _state()
     state.mechanic_choice_players = set()
-    _creature(state, "infiltrator", 1, "Shadowmage Infiltrator", 1, 3,
-              oracle_text="Fear\nWhenever this creature deals combat damage to a player, you may draw a card.")
-    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
+    _creature(state, 'infiltrator', 1, 'Shadowmage Infiltrator')
+    _creature(state, 'bears', 1, 'Grizzly Bears')
     state.attackers = ["bears"]
 
     combat.combat_damage(state)
@@ -155,8 +151,7 @@ def test_other_creatures_combat_damage_does_not_trigger_shadowmage_infiltrator()
 def test_shadowmage_infiltrator_still_triggers_on_its_own_combat_damage() -> None:
     state = _state()
     state.mechanic_choice_players = set()
-    _creature(state, "infiltrator", 1, "Shadowmage Infiltrator", 1, 3,
-              oracle_text="Fear\nWhenever this creature deals combat damage to a player, you may draw a card.")
+    _creature(state, 'infiltrator', 1, 'Shadowmage Infiltrator')
     state.attackers = ["infiltrator"]
 
     combat.combat_damage(state)
@@ -168,8 +163,8 @@ def test_shadowmage_infiltrator_still_triggers_on_its_own_combat_damage() -> Non
 def test_blocker_damage_emits_combat_event_with_actual_amount() -> None:
     state = _state()
     state.mechanic_choice_players = set()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
     state.attackers = ["courser"]
     state.blocks = {"courser": ["bears"]}
 
@@ -186,10 +181,9 @@ def test_simultaneous_player_hits_offer_one_trigger_order_choice() -> None:
     state.mechanic_choice_players = set()
     state.trigger_order_choice_required = True
     state.trigger_order_choice_players = {1}
-    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
-              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
-    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
+    _creature(state, 'frostfang', 1, 'Ohran Frostfang')
+    _creature(state, 'bears', 1, 'Grizzly Bears')
+    _creature(state, 'courser', 1, 'Centaur Courser')
     state.attackers = ["bears", "courser"]
 
     combat.combat_damage(state)
@@ -211,13 +205,11 @@ def test_damage_and_death_triggers_share_one_order_choice() -> None:
     state.mechanic_choice_players = set()
     state.trigger_order_choice_required = True
     state.trigger_order_choice_players = {1}
-    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
-              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
-    _creature(state, "haruspex", 1, "Grim Haruspex", 3, 2,
-              oracle_text="Morph {B}\nWhenever another nontoken creature you control dies, draw a card.")
-    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "giant", 2, "Hill Giant", 3, 3)
+    _creature(state, 'frostfang', 1, 'Ohran Frostfang')
+    _creature(state, 'haruspex', 1, 'Grim Haruspex')
+    _creature(state, 'bears', 1, 'Grizzly Bears')
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'giant', 2, 'Hill Giant')
     state.attackers = ["bears", "courser"]
     state.blocks = {"courser": ["giant"]}
 
@@ -230,12 +222,10 @@ def test_damage_and_death_triggers_share_one_order_choice() -> None:
 def test_combat_damage_triggers_from_both_controllers_use_apnap_order() -> None:
     state = _state()
     state.mechanic_choice_players = set()
-    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
-              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
-    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "phage", 2, "Phage the Untouchable", 4, 4,
-              oracle_text="Whenever Phage deals combat damage to a creature, destroy that creature. It can't be regenerated.")
+    _creature(state, 'frostfang', 1, 'Ohran Frostfang')
+    _creature(state, 'bears', 1, 'Grizzly Bears')
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'phage', 2, 'Phage the Untouchable')
     state.attackers = ["bears", "courser"]
     state.blocks = {"courser": ["phage"]}
 
@@ -247,9 +237,8 @@ def test_combat_damage_triggers_from_both_controllers_use_apnap_order() -> None:
 def test_staged_combat_triggers_survive_snapshot_before_flush() -> None:
     state = _state()
     state.trigger_staging = True
-    _creature(state, "frostfang", 1, "Ohran Frostfang", 2, 6,
-              oracle_text="Attacking creatures you control have deathtouch.\nWhenever a creature you control deals combat damage to a player, draw a card.")
-    _creature(state, "bears", 1, "Grizzly Bears", 2, 2)
+    _creature(state, 'frostfang', 1, 'Ohran Frostfang')
+    _creature(state, 'bears', 1, 'Grizzly Bears')
     from rules_engine.events import emit_event
     emit_event(state, "combat_damage_dealt", {"source_card_id": "bears", "target_player": 2, "amount": 2})
     assert not state.stack
@@ -271,9 +260,8 @@ def test_staged_combat_triggers_survive_snapshot_before_flush() -> None:
 def test_doomed_traveler_own_death_trigger_survives_combat_zone_change() -> None:
     state = _state()
     state.mechanic_choice_players = set()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "traveler", 2, "Doomed Traveler", 1, 1,
-              oracle_text="When this creature dies, create a 1/1 white Spirit creature token with flying.")
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'traveler', 2, 'Doomed Traveler')
     state.attackers = ["courser"]
     state.blocks = {"courser": ["traveler"]}
 
@@ -295,8 +283,7 @@ def test_doomed_traveler_own_death_trigger_survives_combat_zone_change() -> None
 
 def test_doomed_traveler_own_death_trigger_survives_state_based_action() -> None:
     state = _state()
-    _creature(state, "traveler", 1, "Doomed Traveler", 1, 1,
-              oracle_text="When this creature dies, create a 1/1 white Spirit creature token with flying.")
+    _creature(state, 'traveler', 1, 'Doomed Traveler')
     state.cards["traveler"].counters["__damage_marked"] = 1
 
     from rules_engine.state_based_actions import apply_state_based_actions
@@ -308,8 +295,8 @@ def test_doomed_traveler_own_death_trigger_survives_state_based_action() -> None
 
 def test_all_attackers_use_pre_damage_power_when_first_hit_changes_a_continuous_value() -> None:
     state = _state()
-    _creature(state, "first", 1, "Centaur Courser", 3, 3)
-    _creature(state, "second", 1, "Grizzly Bears", 2, 2)
+    _creature(state, 'first', 1, 'Centaur Courser')
+    _creature(state, 'second', 1, 'Grizzly Bears')
     state.attackers = ["first", "second"]
     original_power = combat.effective_power
 
@@ -325,8 +312,8 @@ def test_all_attackers_use_pre_damage_power_when_first_hit_changes_a_continuous_
 
 def test_trample_cannot_spill_before_assigning_lethal_to_blocker() -> None:
     state = _state()
-    _creature(state, "monstrosaur", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
+    _creature(state, 'monstrosaur', 1, 'Charging Monstrosaur')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
     state.attackers = ["monstrosaur"]
     state.blocks = {"monstrosaur": ["bears"]}
     _enter_damage(state)
@@ -345,9 +332,9 @@ def test_trample_cannot_spill_before_assigning_lethal_to_blocker() -> None:
 
 def test_trample_counts_another_attacker_assigned_to_the_same_palace_guard() -> None:
     state = _state()
-    _creature(state, "elf", 1, "Llanowar Elves", 1, 1)
-    _creature(state, "trampler", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    _creature(state, 'elf', 1, 'Llanowar Elves')
+    _creature(state, 'trampler', 1, 'Charging Monstrosaur')
+    _creature(state, 'guard', 2, 'Palace Guard')
     state.attackers = ["elf", "trampler"]
     combat.declare_blockers(state, {"elf": ["guard"], "trampler": ["guard"]})
     _enter_damage(state)
@@ -361,9 +348,9 @@ def test_trample_counts_another_attacker_assigned_to_the_same_palace_guard() -> 
 
 def test_two_tramplers_are_validated_as_one_controller_assignment_and_can_restart() -> None:
     state = _state()
-    _creature(state, "first", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "second", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    _creature(state, 'first', 1, 'Charging Monstrosaur')
+    _creature(state, 'second', 1, 'Charging Monstrosaur')
+    _creature(state, 'guard', 2, 'Palace Guard')
     state.attackers = ["first", "second"]
     combat.declare_blockers(state, {"first": ["guard"], "second": ["guard"]})
     _enter_damage(state)
@@ -395,9 +382,9 @@ def test_two_tramplers_are_validated_as_one_controller_assignment_and_can_restar
 
 def test_other_attacker_deathtouch_assignment_satisfies_trample_lethal() -> None:
     state = _state()
-    _creature(state, "rats", 1, "Typhoid Rats", 1, 1, ["deathtouch"])
-    _creature(state, "trampler", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    _creature(state, 'rats', 1, 'Typhoid Rats')
+    _creature(state, 'trampler', 1, 'Charging Monstrosaur')
+    _creature(state, 'guard', 2, 'Palace Guard')
     state.attackers = ["rats", "trampler"]
     combat.declare_blockers(state, {"rats": ["guard"], "trampler": ["guard"]})
     _enter_damage(state)
@@ -411,9 +398,9 @@ def test_other_attacker_deathtouch_assignment_satisfies_trample_lethal() -> None
 
 def test_ai_second_trampler_spills_after_first_assigned_lethal_to_shared_blocker() -> None:
     state = _state()
-    _creature(state, "first", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "second", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    _creature(state, 'first', 1, 'Charging Monstrosaur')
+    _creature(state, 'second', 1, 'Charging Monstrosaur')
+    _creature(state, 'guard', 2, 'Palace Guard')
     state.attackers = ["first", "second"]
     combat.declare_blockers(state, {"first": ["guard"], "second": ["guard"]})
     _enter_damage(state)
@@ -431,9 +418,9 @@ def test_ai_second_trampler_spills_after_first_assigned_lethal_to_shared_blocker
 
 def test_banding_blocker_lets_defender_assign_attackers_damage() -> None:
     state = _state()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "hero", 2, "Benalish Hero", 1, 1, ["banding"])
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'hero', 2, 'Benalish Hero')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
     state.attackers = ["courser"]
     combat.declare_blockers(state, {"courser": ["hero", "bears"]})
     _enter_damage(state)
@@ -452,9 +439,9 @@ def test_banding_blocker_lets_defender_assign_attackers_damage() -> None:
 
 def test_banding_attacker_lets_active_player_assign_multi_blockers_damage() -> None:
     state = _state()
-    _creature(state, "hero", 1, "Benalish Hero", 1, 1, ["banding"])
-    _creature(state, "elf", 1, "Llanowar Elves", 1, 1)
-    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    _creature(state, 'hero', 1, 'Benalish Hero')
+    _creature(state, 'elf', 1, 'Llanowar Elves')
+    _creature(state, 'guard', 2, 'Palace Guard')
     state.attackers = ["hero", "elf"]
     combat.declare_blockers(state, {"hero": ["guard"], "elf": ["guard"]})
     _enter_damage(state)
@@ -473,8 +460,8 @@ def test_banding_attacker_lets_active_player_assign_multi_blockers_damage() -> N
 
 def test_ai_defender_with_banding_blocks_trample_to_life() -> None:
     state = _state()
-    _creature(state, "trampler", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "hero", 2, "Benalish Hero", 1, 1, ["banding"])
+    _creature(state, 'trampler', 1, 'Charging Monstrosaur')
+    _creature(state, 'hero', 2, 'Benalish Hero')
     state.attackers = ["trampler"]
     combat.declare_blockers(state, {"trampler": ["hero"]})
     _enter_damage(state)
@@ -487,12 +474,12 @@ def test_ai_defender_with_banding_blocks_trample_to_life() -> None:
 
 def test_restart_preserves_other_players_banding_damage_assignment() -> None:
     state = _state()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "first", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "second", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "hero", 2, "Benalish Hero", 1, 1, ["banding"])
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
-    _creature(state, "guard", 2, "Palace Guard", 1, 4, oracle_text="Palace Guard can block any number of creatures.")
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'first', 1, 'Charging Monstrosaur')
+    _creature(state, 'second', 1, 'Charging Monstrosaur')
+    _creature(state, 'hero', 2, 'Benalish Hero')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
+    _creature(state, 'guard', 2, 'Palace Guard')
     state.attackers = ["courser", "first", "second"]
     combat.declare_blockers(state, {
         "courser": ["hero", "bears"], "first": ["guard"], "second": ["guard"],
@@ -517,12 +504,9 @@ def test_restart_preserves_other_players_banding_damage_assignment() -> None:
 
 def test_trample_assignment_to_planeswalker_reduces_loyalty() -> None:
     state = _state()
-    _creature(state, "monstrosaur", 1, "Charging Monstrosaur", 5, 5, ["trample", "haste"])
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
-    walker = CardInstance(
-        id="teferi", name="Teferi, Hero of Dominaria", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Planeswalker"], loyalty=4,
-    )
+    _creature(state, 'monstrosaur', 1, 'Charging Monstrosaur')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
+    walker = canonical_card('Teferi, Hero of Dominaria', id='teferi', owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[walker.id] = walker
     state.players[2].battlefield.append(walker.id)
     state.attackers = ["monstrosaur"]
@@ -541,9 +525,9 @@ def test_trample_assignment_to_planeswalker_reduces_loyalty() -> None:
 
 def test_double_strike_requests_fresh_assignment_in_regular_step() -> None:
     state = _state()
-    _creature(state, "swiftblade", 1, "Boros Swiftblade", 1, 2, ["double strike"])
-    _creature(state, "omens", 2, "Wall of Omens", 0, 4)
-    _creature(state, "runes", 2, "Wall of Runes", 0, 4)
+    _creature(state, 'swiftblade', 1, 'Boros Swiftblade')
+    _creature(state, 'omens', 2, 'Wall of Omens')
+    _creature(state, 'runes', 2, 'Wall of Runes')
     state.attackers = ["swiftblade"]
     state.blocks = {"swiftblade": ["omens", "runes"]}
     _enter_damage(state)
@@ -566,9 +550,9 @@ def test_double_strike_requests_fresh_assignment_in_regular_step() -> None:
 
 def test_ai_prioritizes_killing_more_threatening_blocker() -> None:
     state = _state()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
-    _creature(state, "giant", 2, "Hill Giant", 3, 3)
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
+    _creature(state, 'giant', 2, 'Hill Giant')
     state.attackers = ["courser"]
     state.blocks = {"courser": ["bears", "giant"]}
     _enter_damage(state)
@@ -578,9 +562,9 @@ def test_ai_prioritizes_killing_more_threatening_blocker() -> None:
 
 def test_damage_choice_rejects_wrong_actor_unknown_recipient_and_stale_step() -> None:
     state = _state()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
-    _creature(state, "giant", 2, "Hill Giant", 3, 3)
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
+    _creature(state, 'giant', 2, 'Hill Giant')
     state.attackers = ["courser"]
     state.blocks = {"courser": ["bears", "giant"]}
     _enter_damage(state)
@@ -603,13 +587,13 @@ def test_damage_choice_rejects_wrong_actor_unknown_recipient_and_stale_step() ->
 
 def test_http_damage_choice_rejects_bad_split_without_mutating_saved_match() -> None:
     state = _state()
-    _creature(state, "courser", 1, "Centaur Courser", 3, 3)
-    _creature(state, "bears", 2, "Grizzly Bears", 2, 2)
-    _creature(state, "giant", 2, "Hill Giant", 3, 3)
+    _creature(state, 'courser', 1, 'Centaur Courser')
+    _creature(state, 'bears', 2, 'Grizzly Bears')
+    _creature(state, 'giant', 2, 'Hill Giant')
     state.attackers = ["courser"]
     state.blocks = {"courser": ["bears", "giant"]}
     _enter_damage(state)
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_entry("Island", 60)]
     match = MatchController(
         state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"},
         ai={1: AIAgent(), 2: AIAgent()}, mode="human_vs_human",

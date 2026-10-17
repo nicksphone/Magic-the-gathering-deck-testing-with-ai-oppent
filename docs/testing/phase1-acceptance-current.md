@@ -5,6 +5,22 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The latest [retained canonical composition](canonical-timing-planes-combat2260.md)
+passes all 2,260 ordinary cases across 66 whole modules, retaining the complete
+earlier 1,973 prefix and all 287 nonoverlapping timing, planeswalker and combat
+identities. All 6,780 phases, source/runtime preservation and owned-resource
+closure pass. No production code changes. This is actual combined fixture
+acceptance, not whole-backend, literal-scope or Phase 1 completion.
+
+The later [timing, planeswalker and combat component](canonical-timing-planes-combat406.md)
+passes all 406 cases across 12 whole modules, including the complete original
+mixed HTTP modules. All 1,218 phases, source/runtime preservation and owned
+resource closure pass. This is not a rerun of the earlier 1,973-case declaration.
+A separate, unpromoted human-mana continuation candidate times out at 900
+seconds; it has no terminal passing count and remains unqualified. It is not
+part of this fixture composition. Neither UI work nor these fixture results
+complete Phase 1.
+
 The latest [canonical bounce/life composition](canonical-bounce-life-composed1973.md)
 passes all 1,973 ordinary cases across 56 whole modules, retaining every earlier
 1,831 identity and the complete reviewed 93-case bounce and 49-case life-cost

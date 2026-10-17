@@ -1,3 +1,4 @@
+from tests.combat_canonical_022 import canonical_card, canonical_entry
 from ai.agent import AIAgent
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine import combat
@@ -5,8 +6,8 @@ from rules_engine import combat
 
 def test_master_block_search_prevents_lethal_damage_when_trade_is_available() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=66,
     )
     state.pregame_pending = False
@@ -14,8 +15,8 @@ def test_master_block_search_prevents_lethal_damage_when_trade_is_available() ->
     state.step = Step.DECLARE_BLOCKERS
     state.active_player = 1
     state.priority_player = 2
-    state.players[2].life = 4
-    attacker = CardInstance("attacker", "Hill Giant", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=5, toughness=5)
+    state.players[2].life = 3
+    attacker = canonical_card('Hill Giant', id='attacker', owner=1, controller=1, zone=Zone.BATTLEFIELD)
     blocker = CardInstance("blocker", "Bear", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
     state.cards[attacker.id] = attacker
     state.cards[blocker.id] = blocker
@@ -34,8 +35,8 @@ def test_master_block_search_prevents_lethal_damage_when_trade_is_available() ->
 
 def test_large_board_fallback_blocks_legal_band_member_not_unblockable_flyer() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=664,
     )
     state.pregame_pending = False
@@ -44,19 +45,15 @@ def test_large_board_fallback_blocks_legal_band_member_not_unblockable_flyer() -
     state.active_player = 1
     state.priority_player = 2
     state.players[2].life = 5
-    for cid, name, owner, power, toughness, keywords in (
-        ("hero", "Benalish Hero", 1, 1, 1, ["banding"]),
-        ("angel", "Serra Angel", 1, 4, 4, ["flying", "vigilance"]),
-        ("elf-1", "Llanowar Elves", 1, 1, 1, []),
-        ("elf-2", "Llanowar Elves", 1, 1, 1, []),
-        ("elf-3", "Llanowar Elves", 1, 1, 1, []),
-        ("bears", "Grizzly Bears", 2, 2, 2, []),
+    for (cid, name, owner) in (
+        ('hero', 'Benalish Hero', 1),
+        ('angel', 'Serra Angel', 1),
+        ('elf-1', 'Llanowar Elves', 1),
+        ('elf-2', 'Llanowar Elves', 1),
+        ('elf-3', 'Llanowar Elves', 1),
+        ('bears', 'Grizzly Bears', 2),
     ):
-        card = CardInstance(
-            id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
-            types=["Creature"], power=power, toughness=toughness,
-            keywords=keywords, summoning_sick=False,
-        )
+        card = canonical_card(name, id=cid, owner=owner, controller=owner, zone=Zone.BATTLEFIELD, summoning_sick=False)
         state.cards[cid] = card
         state.players[owner].battlefield.append(cid)
     state.attackers = ["hero", "angel", "elf-1", "elf-2", "elf-3"]
@@ -74,8 +71,8 @@ def test_large_board_fallback_blocks_legal_band_member_not_unblockable_flyer() -
 
 def test_large_board_fallback_uses_three_blockers_when_required() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=665,
     )
     state.pregame_pending = False
@@ -84,23 +81,19 @@ def test_large_board_fallback_uses_three_blockers_when_required() -> None:
     state.active_player = 1
     state.priority_player = 2
     state.players[2].life = 7
-    guile = CardInstance(
-        id="guile", name="Guile", owner=1, controller=1, zone=Zone.BATTLEFIELD,
-        types=["Creature"], power=6, toughness=6, summoning_sick=False,
-        oracle_text="This creature can't be blocked except by three or more creatures.",
-    )
+    guile = canonical_card('Guile', id='guile', owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[guile.id] = guile
     state.players[1].battlefield.append(guile.id)
     state.attackers = [guile.id]
     for index in range(4):
         cid = f"elf-{index}"
-        card = CardInstance(cid, "Llanowar Elves", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1, summoning_sick=False)
+        card = canonical_card('Llanowar Elves', id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
         state.cards[cid] = card
         state.players[1].battlefield.append(cid)
         state.attackers.append(cid)
     for index in range(3):
         cid = f"bears-{index}"
-        card = CardInstance(cid, "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+        card = canonical_card('Grizzly Bears', id=cid, owner=2, controller=2, zone=Zone.BATTLEFIELD)
         state.cards[cid] = card
         state.players[2].battlefield.append(cid)
 
@@ -116,8 +109,8 @@ def test_large_board_fallback_uses_three_blockers_when_required() -> None:
 
 def test_small_board_search_can_leave_three_blocker_attacker_unblocked() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=666,
     )
     state.pregame_pending = False
@@ -125,15 +118,12 @@ def test_small_board_search_can_leave_three_blocker_attacker_unblocked() -> None
     state.step = Step.DECLARE_BLOCKERS
     state.active_player = 1
     state.priority_player = 2
-    state.cards["guile"] = CardInstance(
-        "guile", "Guile", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=6, toughness=6,
-        oracle_text="This creature can't be blocked except by three or more creatures.",
-    )
+    state.cards["guile"] = canonical_card('Guile', id='guile', owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.players[1].battlefield.append("guile")
     state.attackers = ["guile"]
     for index in range(2):
         cid = f"bears-{index}"
-        state.cards[cid] = CardInstance(cid, "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
+        state.cards[cid] = canonical_card('Grizzly Bears', id=cid, owner=2, controller=2, zone=Zone.BATTLEFIELD)
         state.players[2].battlefield.append(cid)
 
     choice = AIAgent(difficulty="master", archetype="Control")._search_block_assignments(
@@ -146,8 +136,8 @@ def test_small_board_search_can_leave_three_blocker_attacker_unblocked() -> None
 
 def test_master_block_search_avoids_safe_life_chump_block() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=661,
     )
     state.pregame_pending = False
@@ -156,7 +146,7 @@ def test_master_block_search_avoids_safe_life_chump_block() -> None:
     state.active_player = 1
     state.priority_player = 2
     state.players[2].life = 20
-    attacker = CardInstance("attacker-safe", "Hill Giant", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=4, toughness=4)
+    attacker = canonical_card('Hill Giant', id='attacker-safe', owner=1, controller=1, zone=Zone.BATTLEFIELD)
     blocker = CardInstance("blocker-token", "Soldier", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1)
     state.cards[attacker.id] = attacker
     state.cards[blocker.id] = blocker
@@ -175,8 +165,8 @@ def test_master_block_search_avoids_safe_life_chump_block() -> None:
 
 def test_master_block_search_uses_effective_anthem_stats() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=662,
     )
     state.pregame_pending = False
@@ -207,8 +197,8 @@ def test_master_block_search_uses_effective_anthem_stats() -> None:
 
 def test_block_search_uses_blocker_controller_when_attacker_has_priority() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=663,
     )
     state.pregame_pending = False
@@ -236,8 +226,8 @@ def test_block_search_uses_blocker_controller_when_attacker_has_priority() -> No
 
 def test_ai_does_not_choose_hidden_library_cards_before_search_resolves() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=67,
     )
     state.pregame_pending = False
@@ -262,21 +252,13 @@ def test_ai_does_not_choose_hidden_library_cards_before_search_resolves() -> Non
 
 def test_ai_materializes_graveyard_spell_target_for_recursion() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=68,
     )
     state.pregame_pending = False
     spell_id = "impulse"
-    state.cards[spell_id] = CardInstance(
-        spell_id,
-        "Impulse",
-        1,
-        1,
-        Zone.GRAVEYARD,
-        ["Instant"],
-        mana_cost="{2}{U}",
-    )
+    state.cards[spell_id] = canonical_card('Impulse', id=spell_id, owner=1, controller=1, zone=Zone.GRAVEYARD)
     state.players[1].graveyard.append(spell_id)
     move = {
         "type": "cast_spell",
@@ -292,8 +274,8 @@ def test_ai_materializes_graveyard_spell_target_for_recursion() -> None:
 
 def test_master_attack_search_avoids_throwing_small_creature_into_large_blocker() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [canonical_entry("Forest", 60)],
+        [canonical_entry("Forest", 60)],
         seed=69,
     )
     state.pregame_pending = False

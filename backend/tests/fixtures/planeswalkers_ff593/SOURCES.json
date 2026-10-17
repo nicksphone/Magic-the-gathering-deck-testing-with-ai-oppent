@@ -1,0 +1,31 @@
+{
+  "base": "ff593d5171fb2f427970f123fe68cf1798e25b1c",
+  "cards": {
+    "Island": {
+      "fields": 60,
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "line": 50,
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "row_sha256": "450bf6448c1ed549fe3d69fe922cb0ffb8d6fa08751875cc873265f89ad95407"
+    },
+    "Teferi, Time Raveler": {
+      "fields": 63,
+      "id": "662fe50f-d75c-422c-8c6c-1f9b5c4ba21f",
+      "line": 146,
+      "oracle_id": "ae7604bb-4818-45a3-960c-cf3d83f15964",
+      "row_sha256": "07eadb682e59c64f05386d54898eb62591b35b4ada7cf3158efa2fd17dacb420"
+    },
+    "Ugin, the Spirit Dragon": {
+      "fields": 66,
+      "id": "9c017fa9-7021-417a-9c2e-3df409644fcf",
+      "line": 110,
+      "oracle_id": "eecb3047-a563-441a-9175-200421981ac3",
+      "row_sha256": "a7eaf555f3ec52827474274c5bf4eceadcc5afa29988b82530f35cd9b546062f"
+    }
+  },
+  "file": "knowledge_profiles/seed155-scryfall.jsonl",
+  "provenance": "knowledge_profiles/PROVENANCE.json",
+  "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+  "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+  "source": "Existing complete official collection objects, zero network requests"
+}

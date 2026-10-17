@@ -2886,9 +2886,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_activated_ability_timing.py": {
-    "mtime": 1792033175.6186783,
-    "seen": 1792034402.3562489,
-    "ast_hash": "58c41684e5e1919d952b8bd4dcbe793b",
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.6817667,
+    "ast_hash": "2dff9552fdd4a2139e9e1c81a83539c1",
     "semantic_hash": ""
   },
   "backend/tests/test_activated_sacrifice_events.py": {
@@ -3012,9 +3012,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_combat_search.py": {
-    "mtime": 1792033175.6226783,
-    "seen": 1792034402.3562977,
-    "ast_hash": "838ff34346c6767c05cc6a0d2049752d",
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6818256,
+    "ast_hash": "4649d6d39468559a9c215281c2c5635b",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_combat_setup.py": {
@@ -3660,9 +3660,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_combat_damage_assignment.py": {
-    "mtime": 1792033175.642678,
-    "seen": 1792034402.3565989,
-    "ast_hash": "311efec8544370de69ef11b310eb366a",
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.682177,
+    "ast_hash": "390e27b8d41f8f2b382d0c641ac9e242",
     "semantic_hash": ""
   },
   "backend/tests/test_combat_damage_windows.py": {
@@ -3852,9 +3852,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_cycling.py": {
-    "mtime": 1792033175.6486778,
-    "seen": 1792034402.3566868,
-    "ast_hash": "ba472a602a6f88a4c8a6fab2abc2752a",
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.682286,
+    "ast_hash": "454ae176fe0afda7ba760a1bdf8347ed",
     "semantic_hash": ""
   },
   "backend/tests/test_damage_counter_replacements.py": {
@@ -4866,9 +4866,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_planeswalkers.py": {
-    "mtime": 1792033175.6856773,
-    "seen": 1792034402.3572686,
-    "ast_hash": "30d0352d2b0388c670b33b83b66ba6d1",
+    "mtime": 1792208686.5978115,
+    "seen": 1792210544.6830947,
+    "ast_hash": "76dd22722d13905f36912a3f89d3c118",
     "semantic_hash": ""
   },
   "backend/tests/test_player_counters.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792205494.1119094,
-    "seen": 1792205655.106177,
-    "ast_hash": "2e35e3ef235a1cf1453803fdf09a2cd4",
+    "mtime": 1792209761.2883184,
+    "seen": 1792210544.6856132,
+    "ast_hash": "8989954612d4449833284640bfe32c44",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -21333,6 +21333,180 @@
     "mtime": 1792204504.195702,
     "seen": 1792205655.1060162,
     "ast_hash": "bf247a5a286232c7f4ccdb27faec3ed5",
+    "semantic_hash": ""
+  },
+  "backend/tests/combat_canonical_022.py": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.679895,
+    "ast_hash": "6ab9be99716aeaa928f27d310cb3e902",
+    "semantic_hash": ""
+  },
+  "backend/tests/cycling_timing_canonical_022758.py": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.679913,
+    "ast_hash": "5475d0f85cacfc7a1c7ec3d2e0b13bbb",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/PROVENANCE.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6802971,
+    "ast_hash": "03877e7d9fe70039cb0e7ad550a39635",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/SOURCES.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6802993,
+    "ast_hash": "56694c57bf830602fdf5c62edf1bb941",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/charging-monstrosaur.raw.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6803007,
+    "ast_hash": "601d7c9861ff6456e433dc300fc86a44",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/guile.raw.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6803026,
+    "ast_hash": "39cfc7fcf30f05ed76af824a0e098c67",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/hill-giant.raw.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6803043,
+    "ast_hash": "c6013070f806332b40ae282d874eff20",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/ohran-frostfang.raw.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.680306,
+    "ast_hash": "1665183cd6ad65fd138b4fc44e6b1317",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/phage-the-untouchable.raw.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6803076,
+    "ast_hash": "bb8cb675b3feb91b73b9cf18081affb9",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/shadowmage-infiltrator.raw.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6803095,
+    "ast_hash": "bcdb4d72125ed83d23ced0742945a824",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/typhoid-rats.raw.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.680311,
+    "ast_hash": "a0de79107ba11dd6e4d24757aee490a1",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/combat_assignment022/wall-of-runes.raw.json": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6803126,
+    "ast_hash": "17ee47ae28ef769d985cba2ef80b7afa",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/cycling_timing_022758/BULK_PROVENANCE.json": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.6804328,
+    "ast_hash": "8d597086fe715bd7d73180b45ea84ab8",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/cycling_timing_022758/SOURCES.json": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.6804345,
+    "ast_hash": "35caae872079e49176bca6dbbd58b87d",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/cycling_timing_022758/URZA_PROVENANCE.json": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.6804361,
+    "ast_hash": "bc87a97ed07abb3cbb8bc9672c2015b0",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/cycling_timing_022758/ash-barrens.json": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.680438,
+    "ast_hash": "0c46dfc6b676c90f9e19bcc14e26434e",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/cycling_timing_022758/lonely-sandbar.json": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.6804395,
+    "ast_hash": "2066e2a5738f45a69f8abc417ed78112",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/cycling_timing_022758/urzas-armor.json": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.680441,
+    "ast_hash": "e216f69567691d45579be7199161daa2",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/planeswalkers_ff593/SOURCES.json": {
+    "mtime": 1792208686.5978115,
+    "seen": 1792210544.6812556,
+    "ast_hash": "1ff5efeb7690dbf2b1ebf5f395ce87ee",
+    "semantic_hash": ""
+  },
+  "backend/tests/planeswalkers_canonical_ff593.py": {
+    "mtime": 1792208686.5978115,
+    "seen": 1792210544.6816905,
+    "ast_hash": "dc14b848f0b0cd04fbffe766a9c5f12c",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_combat_canonical_022_fidelity.py": {
+    "mtime": 1792208686.6068113,
+    "seen": 1792210544.6821737,
+    "ast_hash": "25c871264adaeb29be7929b3778c698b",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_cycling_prevention_armor_022758.py": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.6822877,
+    "ast_hash": "b1faceca88ef0a6847b1beac2451d27e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_cycling_timing_022758_fidelity.py": {
+    "mtime": 1792207652.7731216,
+    "seen": 1792210544.6822891,
+    "ast_hash": "b60c73da1edd009a5a3e0374624658ce",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_planeswalkers_ff593_fidelity.py": {
+    "mtime": 1792208686.5978115,
+    "seen": 1792210544.6830964,
+    "ast_hash": "9e815b3543f796896572bcb89d4fa2e8",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_planeswalkers_real_loyalty_ff593_fidelity.py": {
+    "mtime": 1792208686.5978115,
+    "seen": 1792210544.6830978,
+    "ast_hash": "eaccda272620e4d89fad201a7db9d58c",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-timing-planes-combat406.md": {
+    "mtime": 1792209761.2873185,
+    "seen": 1792210544.6848245,
+    "ast_hash": "c790208fb952f23fcc741d47ab4e12e3",
+    "semantic_hash": ""
+  },
+  "docs/testing/cycling-timing-canonical-022758.md": {
+    "mtime": 1792209861.84568,
+    "seen": 1792210544.6850917,
+    "ast_hash": "753c41779933df440da4c2784a40d049",
+    "semantic_hash": ""
+  },
+  "docs/testing/phase1-combat-canonical022-stage.md": {
+    "mtime": 1792209857.2497551,
+    "seen": 1792210544.6856167,
+    "ast_hash": "04852376a041a7e5415e74f6407fd178",
+    "semantic_hash": ""
+  },
+  "docs/testing/planeswalkers-canonical-ff593.md": {
+    "mtime": 1792209857.2497551,
+    "seen": 1792210544.6856298,
+    "ast_hash": "d3f70976fae3ab8b5b4a1448442744e4",
     "semantic_hash": ""
   }
 }

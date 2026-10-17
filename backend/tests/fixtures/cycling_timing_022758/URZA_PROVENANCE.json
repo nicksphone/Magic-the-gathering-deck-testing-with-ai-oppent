@@ -1,0 +1,8 @@
+{
+  "UTC": "2026-10-17T02:47:37.388842+00:00",
+  "no_authentication_or_credentials": true,
+  "official_raw_complete_before_any_new_test": true,
+  "raw_sha256": "0db6445cafa47ce714bde4b4fd51337ed9f1e941427c21533aa32038bfa46472",
+  "response": 200,
+  "url": "https://api.scryfall.com/cards/named?exact=Urza%27s%20Armor"
+}
