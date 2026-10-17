@@ -346,6 +346,48 @@ def interruption_fields(evidence, public):
     return {'interruption_diagnostics_status': 'degraded'}
 
 
+def _completed_phase_diagnostics(evidence, source, commit):
+    """Observe complete report rows only; never infer terminal test coverage."""
+    try:
+        public = PublicDefinitions(source, commit)
+        path = evidence / 'phases.jsonl'
+        if has_symlink_component(path) or (path.exists() and not path.is_file()):
+            raise MetadataError('EVIDENCE_NOT_REGULAR')
+        if not path.exists():
+            raise MetadataError('EVIDENCE_MISSING')
+        with path.open('r', encoding='utf-8', newline='') as stream:
+            text = stream.read()
+        if not text or not text.endswith('\n'):
+            raise MetadataError('EVIDENCE_JSON_INVALID')
+        phases = [json_value(line) for line in text.split('\n')[:-1]]
+        safe_phases = []
+        for row in phases:
+            if type(row) is not dict:
+                raise MetadataError('EVIDENCE_TYPE_INVALID')
+            identity = node(row['nodeid'])
+            if type(row['phase']) is not str or row['phase'] not in ('setup', 'call', 'teardown'):
+                raise MetadataError('PHASE_INVALID')
+            if type(row['outcome']) is not str or row['outcome'] not in ('passed', 'failed', 'skipped'):
+                raise MetadataError('OUTCOME_INVALID')
+            safe_phases.append({'nodeid_sha256': identity, 'phase': row['phase'],
+                                'outcome': row['outcome'], 'xfail_marker': 'wasxfail' in row})
+        failures = [{'nodeid_sha256': node(row['nodeid']), 'phase': row['phase'],
+                     'public_test': public.resolve(row['nodeid'])}
+                    for row in phases if row['outcome'] == 'failed']
+        return {'status': 'available', 'nonfinal': True, 'phases': safe_phases,
+                'failures': failures, 'timing': phase_timing(phases, public)}
+    except MetadataError as error:
+        candidate = error.args[0] if error.args else None
+        code = candidate if type(candidate) is str and candidate in ERROR_CODES else 'METADATA_INTERNAL_ERROR'
+    except (OSError, UnicodeError):
+        code = 'EVIDENCE_IO_ERROR'
+    except (KeyError, TypeError, ValueError, SyntaxError):
+        code = 'EVIDENCE_TYPE_INVALID'
+    except Exception:
+        code = 'METADATA_INTERNAL_ERROR'
+    return {'status': 'unavailable', 'nonfinal': True, 'error_codes': [code]}
+
+
 def build_metadata(evidence, source):
     document = empty_metadata()
     try:
@@ -359,9 +401,15 @@ def build_metadata(evidence, source):
             raise MetadataError('SOURCE_COMMIT_MISMATCH')
         document['source_commit'] = commit
         document.update(runtime_version_fields(evidence))
-        exit_text = read_text(evidence, 'pytest-exit-code.txt').strip()
-        if not re.fullmatch(r'[0-9]{1,3}', exit_text) or int(exit_text) > 255:
-            raise MetadataError('EXIT_CODE_INVALID')
+        try:
+            exit_text = read_text(evidence, 'pytest-exit-code.txt').strip()
+            if not re.fullmatch(r'[0-9]{1,3}', exit_text) or int(exit_text) > 255:
+                raise MetadataError('EXIT_CODE_INVALID')
+        except MetadataError as error:
+            if error.args not in (('EVIDENCE_MISSING',), ('EXIT_CODE_INVALID',)):
+                raise
+            document['partial_diagnostics'] = _completed_phase_diagnostics(evidence, source, commit)
+            raise
         exitcode = int(exit_text)
         document['pytest_exit_code'] = exitcode
 

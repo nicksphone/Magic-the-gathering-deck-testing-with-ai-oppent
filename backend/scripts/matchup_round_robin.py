@@ -262,6 +262,398 @@ def write_private_game(directory, ordinal, result, raw_log):
                 raw_sha256=hashlib.sha256(raw_bytes).hexdigest(), record_sha256=hashlib.sha256(payload).hexdigest())
 
 
+def comparison_gate_totals(legacy_totals):
+    """NEW fixed-game aggregate; the legacy non-long timeout total is unchanged."""
+    keys = {'timeouts', 'long_game_timeouts', 'stall_streaks', 'invalid_targets',
+            'cost_failures', 'additional_cost_failures'}
+    if (type(legacy_totals) is not dict or set(legacy_totals) != keys
+            or any(type(value) is not int or value < 0 for value in legacy_totals.values())):
+        raise ValueError('Complete typed legacy anomaly counters required')
+    result = dict(legacy_totals)
+    result['timeouts'] += result['long_game_timeouts']
+    return result
+
+
+def fixed_game_counters(raw_log, tick_timeout):
+    """Legacy gate semantics over ONLY a complete accepted raw game log."""
+    from analytics.decision_quality import parse_trace_row
+    from analytics.replay_tools import classify_timeout_state
+    from analytics.service import AnalyticsService
+    if type(tick_timeout) is not bool or type(raw_log) is not list or any(type(line) is not str for line in raw_log):
+        raise ValueError('Complete raw game log and actual tick-timeout flag required')
+    counts = Counter(dict.fromkeys(('timeouts', 'long_game_timeouts', 'stall_streaks',
+        'invalid_targets', 'cost_failures', 'additional_cost_failures',
+        'passed_with_options', 'missed_land_windows', 'repeated_error_bursts'), 0))
+    classification = classify_timeout_state(raw_log, tick_timeout)
+    if tick_timeout:
+        counts['long_game_timeouts' if classification == 'timeout_long_game' else 'timeouts'] += 1
+    payloads, malformed = parse_trace_row({'log': raw_log})
+    if malformed:
+        raise ValueError('Malformed accepted trace cannot certify gate counters')
+    streak = 0
+    for payload in payloads:
+        action = payload.get('action')
+        if (type(action) is not dict or type(payload.get('stall_actionable_options')) is not bool
+                or type(payload.get('legal_has_land')) is not bool):
+            raise ValueError('Incomplete legacy gate trace observation')
+        passed = action.get('type') == 'pass_priority'
+        if passed and payload['stall_actionable_options']:
+            counts['passed_with_options'] += 1
+            streak += 1
+        else:
+            streak = 0
+        if payload['legal_has_land'] and action.get('type') != 'play_land':
+            counts['missed_land_windows'] += 1
+    counts['stall_streaks'] = int(streak >= 3)
+    AnalyticsService._scan_log_for_anomalies(None, raw_log, counts, Counter())
+    return dict(counts)
+
+
+def preflight_game_record(result, raw_log, budget):
+    """Bound the exact writer envelope before the existing unbounded encoders."""
+    from analytics.resource_budget import checked_json
+    budget.checked_result(result)
+    limit = min(budget.limits['result_json_bytes'], budget.limits['snapshot_json_bytes'])
+    raw = checked_json(raw_log, limit, 'result_json', separators=(',', ':'))
+    envelope = dict(schema_version=1, result=result, raw_log=raw_log,
+                    raw_sha256=hashlib.sha256(raw.encode('ascii')).hexdigest())
+    budget.checked_result(envelope)
+    return checked_json(envelope, limit, 'result_json', separators=(',', ':'))
+
+
+def measurement_runtime_identity():
+    """Actual interpreter/prefix content, not an operator-supplied version label."""
+    import sys
+    root = Path(sys.prefix)
+    files, links, directories = {}, {}, ['.']
+    for path in sorted(root.rglob('*')):
+        name = path.relative_to(root).as_posix()
+        if path.is_symlink():
+            links[name] = os.readlink(path)
+        elif path.is_file():
+            files[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+        elif path.is_dir():
+            directories.append(name)
+        else:
+            raise ValueError('Nonordinary measured runtime input')
+    binary = hashlib.sha256(Path(sys.executable).resolve().read_bytes()).hexdigest()
+    return dict(sha256=digest(dict(files=files, links=links, directories=directories,
+        python=binary, version=sys.version)), files=len(files), symlinks=len(links),
+        directories_including_root=len(directories), python_executable_sha256=binary)
+
+
+def verify_measurement_callable(function, relative, binding, backend):
+    """Strict loaded code/globals identity against compile-only ordinary source."""
+    import sys
+    import types
+    module = sys.modules.get(getattr(function, '__module__', None))
+    path = Path(backend) / relative
+    if (relative not in binding['backend_files'] or not hasattr(function, '__code__')
+            or module is None or function.__globals__ is not vars(module)
+            or Path(function.__code__.co_filename).resolve() != path
+            or hashlib.sha256(path.read_bytes()).hexdigest() != binding['backend_files'][relative]):
+        raise ValueError('Actual loaded callable differs from measured source')
+    pending = [compile(path.read_bytes(), str(path), 'exec', dont_inherit=True, optimize=sys.flags.optimize)]
+    matches = []
+    while pending:
+        code = pending.pop()
+        if code.co_qualname == function.__qualname__:
+            matches.append(code)
+        pending.extend(item for item in code.co_consts if isinstance(item, types.CodeType))
+    if len(matches) != 1 or matches[0] != function.__code__:
+        raise ValueError('Loaded executable code is not the pinned source definition')
+
+
+def verify_measurement_partition(binding, backend, partition, approved_sha256, configuration, activation_check):
+    """Recompute reviewed function/data inverses; invoke a source-bound arm control."""
+    import textwrap
+    allowed = {'task2.3', 'task3.2', 'task4.1', 'task4.2', 'task4.3', 'task4.5'}
+    if (type(partition) is not dict or set(partition) != {'schema_version', 'arm',
+            'configuration', 'controlled_files', 'features', 'activation_control'}
+            or type(partition['schema_version']) is not int or partition['schema_version'] != 1
+            or type(partition['arm']) is not str or not 0 < len(partition['arm']) <= 64
+            or digest(partition) != approved_sha256
+            or canonical_bytes(configuration) != canonical_bytes(partition['configuration'])):
+        raise ValueError('Reviewed exact source/configuration partition required')
+    verify_source_binding(binding, backend)
+    features = partition['features']
+    if type(features) is not dict or not features or not set(features) <= allowed:
+        raise ValueError('Explicit supported experimental feature hunks required')
+    controlled, edits, used = dict(binding['backend_files']), {}, set()
+    controlled_configuration = deepcopy(configuration)
+    for feature, hunks in features.items():
+        if type(hunks) is not list or not hunks:
+            raise ValueError('No whole-file experimental exemption')
+        for hunk in hunks:
+            if (type(hunk) is not dict or set(hunk) != {'path', 'kind', 'qualified_name', 'reference', 'active'}
+                    or hunk['path'] not in controlled and hunk['path'] != '@configuration'
+                    or hunk['path'] != '@configuration' and not hunk['path'].startswith(('ai/', 'knowledge/'))
+                    or hunk['kind'] not in ('python', 'json')
+                    or type(hunk['qualified_name']) is not str or not hunk['qualified_name']):
+                raise ValueError('Finite policy hunks only; rules/metrics stay controlled')
+            if hunk['path'] == '@configuration' and (hunk['kind'] != 'json'
+                    or hunk['qualified_name'] != 'input_sha256.priors'
+                    or not any(item['path'] == 'ai/data/log_priors.json' for item in hunks)):
+                raise ValueError('Only the consumed experimental priors digest may normalize in configuration')
+            identity = hunk['path'], hunk['qualified_name']
+            if any(identity[0] == p and (identity[1] == q or identity[1].startswith(q + '.')
+                                        or q.startswith(identity[1] + '.')) for p, q in used):
+                raise ValueError('Overlapping experimental hunks')
+            used.add(identity)
+            edits.setdefault(hunk['path'], []).append(hunk)
+    for path, hunks in edits.items():
+        kinds = {h['kind'] for h in hunks}
+        if len(kinds) != 1:
+            raise ValueError('Mixed file partition types')
+        if path == '@configuration':
+            tree = controlled_configuration
+        else:
+            text = (Path(backend) / path).read_text(encoding='utf-8')
+            tree = ast.parse(text) if hunks[0]['kind'] == 'python' else json.loads(text)
+        for hunk in hunks:
+            names = hunk['qualified_name'].split('.')
+            parent = tree
+            if hunk['kind'] == 'python':
+                for name in names:
+                    matches = [(i, node) for i, node in enumerate(parent.body)
+                        if getattr(node, 'name', None) == name
+                        or isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == name
+                        or isinstance(node, ast.Assign) and len(node.targets) == 1
+                           and isinstance(node.targets[0], ast.Name) and node.targets[0].id == name]
+                    if len(matches) != 1:
+                        raise ValueError('Unique qualified AST hunk required')
+                    owner, index, node = parent, matches[0][0], matches[0][1]
+                    parent = node
+                active = ast.parse(textwrap.dedent(hunk['active'])).body
+                reference = ast.parse(textwrap.dedent(hunk['reference'])).body
+                if (len(active) != 1 or len(reference) != 1
+                        or type(node) not in (ast.FunctionDef, ast.AsyncFunctionDef, ast.Assign, ast.AnnAssign)
+                        or ast.dump(node) != ast.dump(active[0]) or type(reference[0]) is not type(node)):
+                    raise ValueError('Actual complete experimental AST differs')
+                owner.body[index] = reference[0]
+            else:
+                for name in names[:-1]:
+                    if type(parent) is not dict or name not in parent:
+                        raise ValueError('Explicit existing JSON key required')
+                    parent = parent[name]
+                if (type(parent) is not dict or names[-1] not in parent
+                        or canonical_bytes(parent[names[-1]]) != canonical_bytes(hunk['active'])):
+                    raise ValueError('Actual experimental data differs')
+                parent[names[-1]] = deepcopy(hunk['reference'])
+        if path != '@configuration':
+            controlled[path] = (hashlib.sha256(ast.dump(tree, include_attributes=False).encode()).hexdigest()
+                                if hunks[0]['kind'] == 'python' else digest(tree))
+    if canonical_bytes(controlled) != canonical_bytes(partition['controlled_files']):
+        raise ValueError('Undeclared controlled source/input difference')
+    identity = partition['activation_control']
+    if (type(identity) is not dict or set(identity) != {'path', 'qualname'}
+            or identity['path'] not in binding['backend_files'] or not callable(activation_check)
+            or getattr(activation_check, '__qualname__', None) != identity['qualname']):
+        raise ValueError('Genuine source-bound activation control required')
+    verify_measurement_callable(activation_check, identity['path'], binding, backend)
+    feature_hashes = {key: digest(value) for key, value in features.items()}
+    activation = activation_check(deepcopy(configuration), dict(feature_hashes))
+    expected = dict(configuration_sha256=digest(configuration), features=feature_hashes)
+    if canonical_bytes(activation) != canonical_bytes(expected):
+        raise ValueError('Actual activation control did not verify this arm')
+    verify_source_binding(binding, backend)
+    return dict(controlled_policy_sha256=digest(dict(files=controlled, configuration=controlled_configuration)),
+                experimental_features=feature_hashes,
+                engine_rules_sha256=digest({p: v for p, v in controlled.items()
+                    if p.startswith(('rules_engine/', 'game_state/'))}),
+                metric_definitions_sha256=digest({p: v for p, v in controlled.items()
+                    if p in ('analytics/decision_quality.py', 'analytics/replay_tools.py', 'analytics/service.py',
+                             'scripts/baseline_report.py', 'scripts/matchup_round_robin.py')}),
+                activation=activation)
+
+
+def run_fixed_game_measurement(export, seed_tokens, *, selected_pair, selected_token,
+        difficulty, max_ticks, limits, private_directory, source_binding, partition,
+        partition_sha256, activation_check, artifact_guard, oracle_path, log_priors_path):
+    """Opt-in fixed probe, NOT BO3; requires a reviewed external artifact charger."""
+    from analytics.resource_budget import ResourceBudget, RESOURCE_LIMITS, checked_json, checked_text
+    if not callable(artifact_guard):
+        raise ValueError('Approved external artifact guard required before execution')
+    if (type(limits) is not dict or set(limits) != set(RESOURCE_LIMITS)
+            or any(type(v) is not int or not 0 <= v <= RESOURCE_LIMITS[k] for k, v in limits.items())
+            or difficulty not in ('casual', 'strong', 'master')
+            or type(max_ticks) is not int or max_ticks <= 0):
+        raise ValueError('Complete bounded fixed-game execution configuration required')
+    budget = ResourceBudget(limits)  # Both mirrors AND their packaging share this one deadline.
+    source_binding = deepcopy(source_binding)
+    checked_json(dict(export=export, partition=partition, source_binding=source_binding),
+                 limits['request_json_bytes'], 'request_json')
+    source_before = verify_source_binding(source_binding, BACKEND)
+    checked_json(export, limits['request_json_bytes'], 'request_json')
+    rows = validate_export(export)
+    admit_execution_rows(rows)  # Full builtin admission precedes ANY probe selection.
+    schedule = build_schedule(rows, seed_tokens)
+    if (type(selected_pair) is not list or len(selected_pair) != 2 or selected_pair != sorted(set(selected_pair))
+            or type(selected_token) is not int or selected_token not in seed_tokens):
+        raise ValueError('Explicit exact canonical pair and admitted token required')
+    selected = [s for s in schedule if [s['deck_a'], s['deck_b']] == selected_pair and s['seed_token'] == selected_token]
+    if len(selected) != 2 or [s['deck_a_seat'] for s in selected] != [1, 2]:
+        raise ValueError('Probe must select exactly two actual mirrored games')
+    from ai.deck_analysis import guess_archetype
+    from scripts.regression_matrix_replay import run_game
+    from analytics.decision_quality import build_trace_payload
+    from scripts.baseline_report import package_measurement
+    by_name = {r['name']: r for r in rows}
+    runtime_before = measurement_runtime_identity()
+    configuration = dict(difficulty=difficulty, max_ticks=max_ticks, limits=dict(limits), runtime=runtime_before,
+        lifetime='arm_pair_token_two_fixed_games', starting_player=1, sideboard_mode='fixed_no_swaps',
+        export_sha256=digest(export), corpus_sha256=export['corpus_sha256'],
+        full_schedule_sha256=digest(schedule), selected=selected,
+        effective_archetypes={r['name']: guess_archetype(r['mainboard']) for r in rows})
+    configuration['roster'] = [dict(name=n, archetype=configuration['effective_archetypes'][n],
+                                   content_sha256=digest(by_name[n])) for n in selected_pair]
+    inputs = {}
+    input_values = {}
+    for key, value in (('oracle', oracle_path), ('priors', log_priors_path)):
+        with Path(value).open('rb') as handle:
+            raw = handle.read(limits['request_json_bytes'] + 1)
+        if len(raw) > limits['request_json_bytes']:
+            from analytics.resource_budget import SimulationResourceLimit
+            raise SimulationResourceLimit('request_json')
+        inputs[key] = dict(sha256=hashlib.sha256(raw).hexdigest(), path=str(Path(value).resolve()))
+        input_values[key] = json.loads(raw)
+    if Path(log_priors_path).resolve() != BACKEND / 'ai/data/log_priors.json':
+        raise ValueError('Report priors must be the actual agent loader input')
+    from scripts.oracle_corpus_report import collect_corpus
+    corpus = collect_corpus()
+    oracle = input_values['oracle']
+    cards = oracle.get('cards') if type(oracle) is dict else None
+    if (export['corpus_sha256'] != digest(corpus) or type(cards) is not list
+            or any(type(c) is not dict or type(c.get('name')) is not str
+                   or type(c.get('copies')) is not int or type(c.get('cached')) is not bool
+                   or type(c.get('status')) is not str for c in cards)):
+        raise ValueError('Complete source-derived Oracle corpus coverage required')
+    actual = {c['name'].casefold(): {k: c.get(k) for k in ('name', 'copies', 'decks', 'sources')} for c in cards}
+    unique, weighted = Counter(), Counter()
+    for card in cards:
+        unique[card['status']] += 1
+        weighted[card['status']] += card['copies']
+    if (len(actual) != len(cards) or canonical_bytes(actual) != canonical_bytes(corpus)
+            or dict(unique) != oracle.get('status_unique') or dict(weighted) != oracle.get('status_weighted')):
+        raise ValueError('Oracle corpus names/copies/status aggregates differ from actual complete source')
+    configuration['input_sha256'] = {k: v['sha256'] for k, v in inputs.items()}
+    checked_json(configuration, limits['request_json_bytes'], 'request_json')
+    provenance = verify_measurement_partition(source_binding, BACKEND, partition,
+        partition_sha256, configuration, activation_check)
+    from ai.agent import AIAgent
+    from ai.log_priors import load_log_priors
+    for function, path in ((run_game, 'scripts/regression_matrix_replay.py'),
+            (build_trace_payload, 'analytics/decision_quality.py'),
+            (guess_archetype, 'ai/deck_analysis.py'), (AIAgent.__init__, 'ai/agent.py'),
+            (load_log_priors, 'ai/log_priors.py'), (collect_corpus, 'scripts/oracle_corpus_report.py')):
+        verify_measurement_callable(function, path, source_binding, BACKEND)
+    if AIAgent._log_priors_cache is not None and canonical_bytes(AIAgent._log_priors_cache) != canonical_bytes(load_log_priors()):
+        raise ValueError('Agent priors cache differs from the actual pinned loader input')
+    directory = Path(private_directory)
+    directory.mkdir(mode=0o700, parents=False, exist_ok=False)
+    games, game_rows, game_records, legacy = [], [], [], Counter()
+    original_rows = deepcopy(rows)
+    def write(name, value, *, jsonl=False):
+        budget.check_deadline()
+        text = checked_json(value, limits['result_json_bytes'], 'result_json', separators=(',', ':'))
+        data = (text + ('\n' if jsonl else '')).encode('ascii')
+        path = directory / name
+        artifact_guard(path, len(data))
+        with path.open('xb') as handle:
+            handle.write(data); handle.flush(); os.fsync(handle.fileno())
+        if path.read_bytes() != data:
+            raise OSError('Fixed measurement readback differs')
+        budget.check_deadline()
+        return dict(bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+    try:
+        for ordinal, scheduled in enumerate(selected, 1):
+            budget.check_deadline()
+            one, two = [by_name[scheduled[key]] for key in ('seat_one', 'seat_two')]
+            boards = deepcopy([one['mainboard'], two['mainboard']])
+            checked_json(dict(boards=boards, configuration=configuration), limits['request_json_bytes'], 'request_json')
+            raw_delivery = []
+            def before_encode(result, raw):
+                preflight_game_record(result, raw, budget)
+            def record(result, raw):
+                encoded = preflight_game_record(result, raw, budget)
+                artifact_guard(directory / f'game-{ordinal:02d}.json', len(encoded.encode('ascii')))
+                written_result = deepcopy(result)
+                receipt = write_private_game(directory, ordinal, result, raw)
+                game_records.append(dict(ordinal=ordinal, coordinate=deepcopy(scheduled),
+                    receipt=deepcopy(receipt), result=written_result))
+                raw_delivery.append(list(raw))
+                budget.check_deadline()
+                return receipt
+            record.before_encode = before_encode
+            def trace(state, pid, legal, action, decision):
+                return build_trace_payload(state, pid, legal, action, getattr(decision, 'reasoning', ''),
+                    knowledge_usage=getattr(decision, 'knowledge_usage', None))
+            try:
+                result = run_game(*boards, scheduled['root_seed'], difficulty, max_ticks,
+                    starting_player=1, trace_builder=trace, budget=budget, record_game=record)
+                check_fixed_boards([one['mainboard'], two['mainboard']], boards)
+                check_fixed_boards(original_rows, rows)
+                status = (result.get('stop_reason') or ('timeout' if result['winner'] is None
+                          else 'draw' if result['winner'] == 0 else 'resolved'))
+                complete = result.get('evidence') is not None and len(raw_delivery) == 1
+                games.append(dict(scheduled, status=status, winner=result['winner'],
+                    evidence_complete=complete, result={k: v for k, v in result.items() if k != 'log'}))
+                if status not in ('resolved', 'timeout') or not complete:
+                    break
+                raw = raw_delivery[0]
+                counters = fixed_game_counters(raw, status == 'timeout')
+                legacy.update(counters)
+                game_rows.append(dict(deck_a=one['name'], deck_b=two['name'], deck_a_id=one.get('id'),
+                    deck_b_id=two.get('id'), deck_a_archetype=configuration['effective_archetypes'][one['name']],
+                    deck_b_archetype=configuration['effective_archetypes'][two['name']], log=raw,
+                    pair_a=scheduled['deck_a'], pair_b=scheduled['deck_b'], seed_token=selected_token,
+                    root_seed=scheduled['root_seed'], deck_a_seat=scheduled['deck_a_seat'], starting_player=1,
+                    winner=result['winner'], turns=result['turn'], ticks=result['ticks'],
+                    termination_status='resolved' if status == 'resolved' else __import__(
+                        'analytics.replay_tools', fromlist=['classify_timeout_state']).classify_timeout_state(raw, True),
+                    evidence=result['evidence'], counters=counters))
+            except Exception as error:
+                name = checked_text(type(error).__name__, limits['error_utf8_bytes'], 'error_utf8')
+                from analytics.resource_budget import SimulationResourceLimit
+                failure = dict(scheduled, status='resource_limit' if isinstance(error, SimulationResourceLimit)
+                               else 'execution_error', winner=None,
+                               evidence_complete=False, error_type=name)
+                if len(games) == ordinal:
+                    games[-1] = failure
+                else:
+                    games.append(failure)
+                break
+    finally:
+        closure = source_closure(source_binding, BACKEND, source_before)
+    all_complete = closure['equal'] and len(game_rows) == len(selected)
+    legacy_totals = {k: int(legacy[k]) for k in ('timeouts', 'long_game_timeouts', 'stall_streaks',
+        'invalid_targets', 'cost_failures', 'additional_cost_failures')}
+    gate = dict(decks=[dict(name=n, archetype=configuration['effective_archetypes'][n]) for n in selected_pair],
+                totals=comparison_gate_totals(legacy_totals))
+    output_files = {}
+    output_files['comparison-gate.json'] = write('comparison-gate.json', gate)
+    output_files['legacy-gate.json'] = write('legacy-gate.json', dict(totals=dict(legacy),
+        complete=all_complete, counter_definition='unchanged_legacy_timeouts_exclude_long'))
+    # Each exact row is independently bounded; no unbounded joined JSONL string.
+    for index, row in enumerate(game_rows):
+        output_files[f'row-{index:02d}.jsonl'] = write(f'row-{index:02d}.jsonl', row, jsonl=True)
+    production = dict(configuration=configuration, partition=provenance, arm=partition['arm'],
+        partition_sha256=partition_sha256, inputs=inputs, source=closure, selected=selected,
+        full_schedule_sha256=digest(schedule), excluded_coordinates=[s for s in schedule if s not in selected],
+        rows=game_rows, games=games, game_records=game_records, legacy_totals=legacy_totals, complete=all_complete,
+        attempted_games=len(games), not_run_games=len(selected)-len(games),
+        budget_identity=id(budget), budget_deadline=budget.deadline,
+        snapshot_boundary='not_exercised_no_snapshot_operation', output_files=dict(output_files))
+    producer_file = write('producer.json', production)
+    package = package_measurement(production, directory=directory, oracle_path=oracle_path,
+        log_priors_path=log_priors_path, budget=budget, artifact_guard=artifact_guard)
+    if not source_closure(source_binding, BACKEND, source_before)['equal']:
+        raise ValueError('Source changed during packaging; no final delivery')
+    if measurement_runtime_identity() != runtime_before:
+        raise ValueError('Runtime changed during execution/packaging; no final delivery')
+    return dict(production=production, producer_file=producer_file, package=package)
+
+
 def run_round_robin(export, seed_tokens, *, difficulty, max_ticks, limits, private_directory, source_binding=None):
     """Actual execution requires an external IO/resource approval; no implicit DB."""
     source_before = verify_source_binding(source_binding, BACKEND)

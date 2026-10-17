@@ -340,6 +340,9 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
 
 def _record_game_evidence(result, raw_log, record_game):
     """The writer's return is a receipt, never an alternate game outcome."""
+    before_encode = getattr(record_game, 'before_encode', None)
+    if before_encode is not None:
+        before_encode(result, raw_log)
     raw = json.dumps(raw_log, ensure_ascii=True, separators=(',', ':'), allow_nan=False).encode('utf-8')
     try:
         receipt = record_game(json.loads(json.dumps(result)), list(raw_log))

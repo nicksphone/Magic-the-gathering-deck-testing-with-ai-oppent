@@ -1008,9 +1008,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/baseline_report.py": {
-    "mtime": 1792203544.768112,
-    "seen": 1792204041.1097689,
-    "ast_hash": "e581286a8bf54b5316e3a4fd55a9997a",
+    "mtime": 1792227076.0741827,
+    "seen": 1792227489.4635212,
+    "ast_hash": "d6b5db82c78b1923261290b581b32e32",
     "semantic_hash": ""
   },
   "backend/scripts/benchmark_ai_decisions.py": {
@@ -1128,9 +1128,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/regression_matrix_replay.py": {
-    "mtime": 1792033175.52968,
-    "seen": 1792034402.3549426,
-    "ast_hash": "45a3406058bd104a44c2614c684446dc",
+    "mtime": 1792227076.0741827,
+    "seen": 1792227489.4635768,
+    "ast_hash": "d6c60537a4a7f30c4cc8cf2c723b1506",
     "semantic_hash": ""
   },
   "backend/scripts/sync_all_card_knowledge.py": {
@@ -16326,9 +16326,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/ci_backend_metadata.py": {
-    "mtime": 1792033175.403682,
-    "seen": 1792034402.354136,
-    "ast_hash": "64081728603124dcc8abf3d63c09954d",
+    "mtime": 1792226597.4615288,
+    "seen": 1792227489.4626462,
+    "ast_hash": "9113da47fe4cc1cabbef23c2ddeef337",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_privacy.py": {
@@ -17688,9 +17688,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/matchup_round_robin.py": {
-    "mtime": 1792033175.52768,
-    "seen": 1792034402.3549314,
-    "ast_hash": "f63f077393a5aafd4e3372322d81911f",
+    "mtime": 1792227076.0741827,
+    "seen": 1792227489.4635525,
+    "ast_hash": "5254bccfbef170aa8993eef705f87bce",
     "semantic_hash": ""
   },
   "backend/tests/test_matchup_game_quality_source.py": {
@@ -21675,6 +21675,60 @@
     "mtime": 1792220073.5707107,
     "seen": 1792220204.027204,
     "ast_hash": "9bbd114c9dafff04de8397e4fb38978d",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_backend_metadata_partial.py": {
+    "mtime": 1792226597.4615288,
+    "seen": 1792227489.4626815,
+    "ast_hash": "6ff32e4a3ad5691468175d6543c2126a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_baseline_measurement_package.py": {
+    "mtime": 1792227076.0741827,
+    "seen": 1792227489.465833,
+    "ast_hash": "73e6e33c3148f3dedd072bf0751b34e2",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_baseline_raw_receipts_p2.py": {
+    "mtime": 1792227076.0741827,
+    "seen": 1792227489.465835,
+    "ast_hash": "ff1a40a82dc2ed052bb565099ba545c6",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_baseline_sample_outcomes_p2.py": {
+    "mtime": 1792227076.0761826,
+    "seen": 1792227489.4658422,
+    "ast_hash": "f484840a7119718f6b7434f603a8ccc5",
+    "semantic_hash": ""
+  },
+  "docs/testing/baseline-fixed-measurement-protocol-a32.md": {
+    "mtime": 1792227076.0741827,
+    "seen": 1792227489.4685497,
+    "ast_hash": "084d291f8eb0cde6a02ea93ee489ffbd",
+    "semantic_hash": ""
+  },
+  "docs/testing/baseline-raw-receipts-p2-a32.md": {
+    "mtime": 1792227076.0751827,
+    "seen": 1792227489.4685512,
+    "ast_hash": "1160d3c99cf4986570bfc5448385fbc4",
+    "semantic_hash": ""
+  },
+  "docs/testing/baseline-sample-outcomes-p2-a32.md": {
+    "mtime": 1792227076.0761826,
+    "seen": 1792227489.4685526,
+    "ast_hash": "1cee049003cf9c47c8c27d76253236d9",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-backend-partial-phase-diagnostics-current86.md": {
+    "mtime": 1792226597.4615288,
+    "seen": 1792227489.468688,
+    "ast_hash": "50243f0113d182d8da15f120cabba9d4",
+    "semantic_hash": ""
+  },
+  "docs/testing/fixed-measurement-current272.md": {
+    "mtime": 1792227357.8893108,
+    "seen": 1792227489.4690225,
+    "ast_hash": "8b1a08301f2cb88f3e6b77cd03eb591f",
     "semantic_hash": ""
   }
 }

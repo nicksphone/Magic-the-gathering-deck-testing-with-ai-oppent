@@ -301,6 +301,215 @@ def render_report(report: dict[str, Any]) -> str:
     return json.dumps(report, indent=2, sort_keys=True) + "\n"
 
 
+def package_measurement(production, *, directory, oracle_path, log_priors_path, budget, artifact_guard):
+    """Package current closed fixed-game files; never run, retry or repair a game."""
+    from analytics.resource_budget import checked_json
+    from scripts.matchup_round_robin import canonical_bytes, digest
+    if (not callable(artifact_guard) or type(production) is not dict
+            or production.get('budget_identity') != id(budget)
+            or production.get('budget_deadline') != budget.deadline):
+        raise ValueError('Actual same-budget producer and external artifact guard required')
+    budget.check_deadline()
+    directory = Path(directory)
+    limits = budget.limits
+    def read(path, maximum):
+        with Path(path).open('rb') as handle:
+            raw = handle.read(maximum + 1)
+        if len(raw) > maximum:
+            from analytics.resource_budget import SimulationResourceLimit
+            raise SimulationResourceLimit('result_json')
+        return raw
+    producer = read(directory / 'producer.json', limits['result_json_bytes'])
+    if canonical_bytes(json.loads(producer)) != canonical_bytes(production):
+        raise ValueError('Producer file differs from the actual delivery')
+    input_hashes = {}
+    for key, path in (('oracle', oracle_path), ('priors', log_priors_path)):
+        raw = read(path, limits['request_json_bytes'])
+        actual = hashlib.sha256(raw).hexdigest()
+        if actual != production['inputs'][key]['sha256']:
+            raise ValueError('Actual measured input changed before packaging')
+        input_hashes[str(path)] = actual
+    observed = {}
+    for name, receipt in production['output_files'].items():
+        raw = read(directory / name, limits['result_json_bytes'] + 1)
+        if len(raw) != receipt['bytes'] or hashlib.sha256(raw).hexdigest() != receipt['sha256']:
+            raise ValueError('Actual closed writer output differs')
+        observed[name] = raw
+    sample_fields = ('deck_a', 'deck_b', 'seed_token', 'deck_a_seat', 'evidence_complete', 'status', 'winner')
+
+    def result_outcome(result):
+        if (type(result) is not dict or 'winner' not in result
+                or result['winner'] is not None and (type(result['winner']) is not int or result['winner'] not in (0, 1, 2))
+                or result.get('stop_reason') is not None and type(result['stop_reason']) is not str):
+            raise ValueError('Typed genuine result outcome required')
+        winner = result['winner']
+        return dict(winner=winner, status=result.get('stop_reason') or (
+            'timeout' if winner is None else 'draw' if winner == 0 else 'resolved'))
+
+    def validate_game_records():
+        budget.check_deadline()
+        if (directory.resolve(strict=True) != directory.absolute()
+                or any(path.is_symlink() for path in (directory, *directory.parents))):
+            raise ValueError('Ordinary private record directory required')
+        records = production.get('game_records')
+        if (type(records) is not list or len(records) > len(production['games'])
+                or production['complete'] and len(records) != len(production['selected'])):
+            raise ValueError('Actual full writer receipts required')
+        if type(production['games']) is not list or len(production['games']) > len(production['selected']):
+            raise ValueError('Only actually attempted scheduled samples may be published')
+        for index, sample in enumerate(production['games']):
+            coordinate = production['selected'][index]
+            if (type(sample) is not dict or not set(sample_fields) <= set(sample)
+                    or type(sample['evidence_complete']) is not bool):
+                raise ValueError('Typed complete published sample fields required')
+            expected = {key: coordinate[key] for key in sample_fields[:4]}
+            if 'result' in sample:
+                actual = sample['result']
+                expected.update(result_outcome(actual), evidence_complete=actual.get('evidence') is not None)
+                if not expected['evidence_complete'] and expected['status'] in ('resolved', 'timeout', 'draw'):
+                    raise ValueError('Unavailable evidence cannot certify a completed outcome')
+            else:
+                if (sample['status'] not in ('resource_limit', 'execution_error')
+                        or type(sample.get('error_type')) is not str or not sample['error_type']):
+                    raise ValueError('Receiptless exception remains explicitly unavailable')
+                expected.update(winner=None, status=sample['status'], evidence_complete=False)
+            if (canonical_bytes({key: sample[key] for key in sample_fields}) != canonical_bytes(expected)
+                    or sample['evidence_complete'] and index >= len(records)):
+                raise ValueError('Published sample differs from its actual coordinate/outcome/evidence')
+        names, identities, row_index = set(), set(), 0
+        maximum = min(limits['result_json_bytes'], limits['snapshot_json_bytes'])
+        for index, binding in enumerate(records):
+            budget.check_deadline()
+            if (type(binding) is not dict or set(binding) != {'ordinal', 'coordinate', 'receipt', 'result'}
+                    or type(binding['ordinal']) is not int or binding['ordinal'] != index + 1
+                    or index >= len(production['selected'])
+                    or canonical_bytes(binding['coordinate']) != canonical_bytes(production['selected'][index])):
+                raise ValueError('Writer ordinal/coordinate differs from the actual sample')
+            sample, receipt = production['games'][index], binding['receipt']
+            coordinate = production['selected'][index]
+            if (type(sample) is not dict or not set(coordinate) <= set(sample)
+                    or canonical_bytes({key: sample[key] for key in coordinate}) != canonical_bytes(coordinate)
+                    or type(receipt) is not dict or set(receipt) != {
+                        'reference', 'complete', 'bytes', 'raw_sha256', 'record_sha256'}
+                    or receipt['complete'] is not True or type(receipt['bytes']) is not int
+                    or type(receipt['reference']) is not str
+                    or receipt['reference'] != f'game-{index + 1:02d}.json'):
+                raise ValueError('Genuine complete writer receipt/sample join required')
+            path = directory / receipt['reference']
+            fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+            try:
+                before = os.fstat(fd)
+                if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1 or before.st_uid != os.getuid():
+                    raise ValueError('Distinct ordinary raw record required')
+                if before.st_size > maximum:
+                    from analytics.resource_budget import SimulationResourceLimit
+                    raise SimulationResourceLimit('result_json')
+                with os.fdopen(fd, 'rb', closefd=False) as handle:
+                    raw = handle.read(maximum + 1)
+                after = os.fstat(fd)
+                current = path.lstat()
+                identity = before.st_dev, before.st_ino
+                if (len(raw) != before.st_size or len(raw) > maximum
+                        or (after.st_dev, after.st_ino, after.st_size) != (*identity, len(raw))
+                        or (current.st_dev, current.st_ino) != identity or stat.S_ISLNK(current.st_mode)
+                        or identity in identities):
+                    raise ValueError('Raw record identity/content changed during read')
+                identities.add(identity)
+            finally:
+                os.close(fd)
+            envelope = json.loads(raw)
+            if (type(envelope) is not dict or set(envelope) != {'schema_version', 'result', 'raw_log', 'raw_sha256'}
+                    or type(envelope['schema_version']) is not int or envelope['schema_version'] != 1
+                    or type(envelope['result']) is not dict or type(envelope['raw_log']) is not list
+                    or any(type(line) is not str for line in envelope['raw_log'])):
+                raise ValueError('Complete actual writer envelope required')
+            raw_log = checked_json(envelope['raw_log'], maximum, 'result_json', separators=(',', ':')).encode('ascii')
+            raw_sha = hashlib.sha256(raw_log).hexdigest()
+            if (canonical_bytes(envelope) != raw or hashlib.sha256(raw).hexdigest() != receipt['record_sha256']
+                    or envelope['raw_sha256'] != raw_sha or receipt['raw_sha256'] != raw_sha
+                    or receipt['bytes'] != len(raw_log)
+                    or canonical_bytes(envelope['result']) != canonical_bytes(binding['result'])):
+                raise ValueError('Actual raw/result bytes differ from the retained writer receipt')
+            evidence = {key: receipt[key] for key in ('reference', 'complete', 'bytes', 'raw_sha256')}
+            if sample['evidence_complete']:
+                expected_result = {key: value for key, value in binding['result'].items() if key != 'log'}
+                expected_result['evidence'] = evidence
+                if (canonical_bytes(sample.get('result')) != canonical_bytes(expected_result)
+                        or canonical_bytes({key: sample[key] for key in ('winner', 'status')})
+                           != canonical_bytes(result_outcome(envelope['result']))):
+                    raise ValueError('Actual result differs from its completed sample')
+                if sample['status'] in ('resolved', 'timeout'):
+                    if row_index >= len(production['rows']):
+                        raise ValueError('Raw record lacks its report row')
+                    row = production['rows'][row_index]
+                    if (canonical_bytes(json.loads(observed[f'row-{row_index:02d}.jsonl'])) != canonical_bytes(row)
+                            or canonical_bytes(row.get('log')) != canonical_bytes(envelope['raw_log'])
+                            or row.get('evidence') != evidence or row.get('winner') != binding['result']['winner']
+                            or row.get('turns') != binding['result']['turn'] or row.get('ticks') != binding['result']['ticks']
+                            or any(row.get(key) != value for key, value in {
+                                'deck_a': coordinate['seat_one'], 'deck_b': coordinate['seat_two'],
+                                'pair_a': coordinate['deck_a'], 'pair_b': coordinate['deck_b'],
+                                'seed_token': coordinate['seed_token'], 'root_seed': coordinate['root_seed'],
+                                'deck_a_seat': coordinate['deck_a_seat'], 'starting_player': 1}.items())):
+                        raise ValueError('Raw record/report row join differs')
+                    row_index += 1
+            names.add(receipt['reference'])
+        if (row_index != len(production['rows'])
+                or names != {path.name for path in directory.iterdir() if path.name.startswith('game-')}):
+            raise ValueError('Unjoined or missing actual raw record/report row')
+
+    rows = [observed[f'row-{index:02d}.jsonl'] for index in range(len(production['rows']))]
+    games_path = directory / 'all-games.jsonl'
+    artifact_guard(games_path, sum(map(len, rows)))
+    with games_path.open('xb') as handle:
+        for row in rows:
+            handle.write(row)
+        handle.flush(); os.fsync(handle.fileno())
+    with games_path.open('rb') as handle:
+        if any(handle.read(len(row)) != row for row in rows) or handle.read(1):
+            raise OSError('JSONL copy readback differs')
+    report = build_report(oracle_path=Path(oracle_path), gate_path=directory/'comparison-gate.json',
+                          log_priors_path=Path(log_priors_path), games_jsonl_path=games_path)
+    config, source, partition = (production[k] for k in ('configuration', 'source', 'partition'))
+    measurement = dict(schema_version=1, source_base_commit=source['source_base_commit'],
+        backend_before_sha256=source['before_sha256'], backend_after_sha256=source['after_sha256'],
+        corpus_sha256=config['corpus_sha256'], export_sha256=config['export_sha256'],
+        metric_definitions_sha256=partition['metric_definitions_sha256'],
+        report_sha256=digest(report), engine_rules_sha256=partition['engine_rules_sha256'],
+        controlled_policy_sha256=partition['controlled_policy_sha256'],
+        experimental_features=partition['experimental_features'],
+        policy_configuration_sha256=digest({k: partition[k] for k in
+            ('controlled_policy_sha256', 'experimental_features')}),
+        difficulty=config['difficulty'], max_ticks=config['max_ticks'], limits=config['limits'],
+        sideboard_mode='fixed_no_swaps', schedule_kind='fixed_games', roster=config['roster'],
+        seeds=[production['selected'][0]['seed_token']], seats=[1, 2], complete=production['complete'],
+        status='completed_schedule' if production['complete'] else 'stopped', planned_games=2,
+        attempted_games=production['attempted_games'], not_run_games=production['not_run_games'],
+        samples=[{key: game[key] for key in sample_fields} for game in production['games']])
+    package = dict(report=report, measurement=measurement)
+    validate_game_records()  # After report construction, immediately before eligibility.
+    try:
+        _comparison_admit(package)
+        eligible = True
+    except (ValueError, TypeError, KeyError, OverflowError, RecursionError):
+        eligible = False  # Missing observations remain diagnostic, never invented zeroes.
+    budget.checked_result(package)
+    raw = checked_json(package, limits['result_json_bytes'], 'result_json', separators=(',', ':')).encode('ascii')
+    output = directory / 'package.json'
+    artifact_guard(output, len(raw))
+    validate_game_records()
+    with output.open('xb') as handle:
+        handle.write(raw); handle.flush(); os.fsync(handle.fileno())
+    if read(output, limits['result_json_bytes']) != raw:
+        raise OSError('Comparison package readback differs')
+    for path, expected in input_hashes.items():
+        if hashlib.sha256(read(path, limits['request_json_bytes'])).hexdigest() != expected:
+            raise ValueError('Measured input changed during packaging')
+    budget.check_deadline()
+    validate_game_records()  # The external package charge/write cannot hide a later mutation.
+    return dict(eligible=eligible, package=package, bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
+
+
 def _comparison_digest(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'),
                                      allow_nan=False).encode('utf-8')).hexdigest()
