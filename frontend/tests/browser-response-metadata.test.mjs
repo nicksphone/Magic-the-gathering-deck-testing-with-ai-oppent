@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
-import { traceStartRecoveryResponses } from './browser-start-recovery-diagnostics.mjs';
+import { traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
 
 const frontend = 'http://127.0.0.1:15173';
 const backend = 'http://127.0.0.1:10199';
@@ -274,10 +274,11 @@ function scenarioInitialization(name, rejectAt) {
   let closed = 0, enteredScenario = false;
   const browser = { command: async method => {
     calls.push(method); if (method === rejectAt) throw primary;
-  }, close: async () => { closed++; } };
+  }, close: async () => { closed++; }, onIntercept() {} };
   const result = vm.runInNewContext(`(async () => { ${source.slice(begin, scenario)}
     enterScenario(); ${source.slice(finalization)} })()`,
   { browser, ui: frontend, openBrowser: async () => browser,
+    backend, process: {env: {MTG_FRONTEND_ORIGIN: frontend}}, createRequestSignalObserver,
     enterScenario: () => { enteredScenario = true; } });
   return { result, calls, primary, closed: () => closed, enteredScenario: () => enteredScenario };
 }

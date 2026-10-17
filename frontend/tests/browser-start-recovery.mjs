@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { openBrowser } from './browser-driver.mjs';
 import { reviewStart } from './review-start.mjs';
-import { continueRequestForPostResponse, traceStartRecoveryResponses } from './browser-start-recovery-diagnostics.mjs';
+import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
 
 const backend = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199';
 const decks = await (await fetch(`${backend}/fixture/start-decks`, { method: 'POST' })).json();
@@ -54,7 +54,7 @@ async function startWithDroppedResponses(dropCount) {
       dropped += 1;
       await command('Fetch.failRequest', { requestId: event.requestId, errorReason: 'Failed' });
     } else await command('Fetch.continueResponse', { requestId: event.requestId });
-  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', undefined, { backend }));
+  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', undefined, { backend, requestSignals: startWithDroppedResponses.requestSignals }));
   await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Response' }] });
   await click('Start Best-of-3 Match');
   return Object.assign(() => dropped, { attempts });
@@ -74,6 +74,8 @@ async function resumeRequestCapture() {
 }
 
 try {
+  startWithDroppedResponses.requestSignals = createRequestSignalObserver(process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', backend);
+  onIntercept(Object.assign(() => {}, { observeBrowserEvent: startWithDroppedResponses.requestSignals.observe }));
   await command('Network.enable');
   await command('Page.enable');
   await command('Runtime.enable');

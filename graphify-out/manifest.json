@@ -6486,9 +6486,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-start-recovery.mjs": {
-    "mtime": 1792176329.5200047,
-    "seen": 1792176452.4062142,
-    "ast_hash": "46f2f8fec2deb42589aab96243aebb72",
+    "mtime": 1792216728.529616,
+    "seen": 1792216881.6278434,
+    "ast_hash": "d3efbb6206cf9b5d21bf91c324236e12",
     "semantic_hash": ""
   },
   "frontend/tests/browser-surveil.mjs": {
@@ -19344,9 +19344,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-response-metadata.test.mjs": {
-    "mtime": 1792109685.8936934,
-    "seen": 1792110062.7201357,
-    "ast_hash": "1cab0ee04f35e426c34ec25387a6493c",
+    "mtime": 1792216728.529616,
+    "seen": 1792216881.6278257,
+    "ast_hash": "9aa8eedf367981b97923777cecb6c8b2",
     "semantic_hash": ""
   },
   "docs/testing/browser-response-metadata.md": {
@@ -21609,6 +21609,24 @@
     "mtime": 1792212759.2521403,
     "seen": 1792215100.267911,
     "ast_hash": "ea5d68379f96ee31215b9505d8addfe3",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-start-signal-enrollment.test.mjs": {
+    "mtime": 1792216728.529616,
+    "seen": 1792216881.6278453,
+    "ast_hash": "45c9da148f3983eadd4da5c2eba1ddb7",
+    "semantic_hash": ""
+  },
+  "docs/testing/start-recovery-signal-enrollment-a7.md": {
+    "mtime": 1792216728.529616,
+    "seen": 1792216881.6294267,
+    "ast_hash": "fa6198104fa86714c77b77e797fe458d",
+    "semantic_hash": ""
+  },
+  "docs/testing/start-signal-enrollment-current317.md": {
+    "mtime": 1792216728.608615,
+    "seen": 1792216881.6294286,
+    "ast_hash": "b06d78172def6285bee0268a5a1dc3fc",
     "semantic_hash": ""
   }
 }
