@@ -5,6 +5,14 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The latest [canonical bounce/life composition](canonical-bounce-life-composed1973.md)
+passes all 1,973 ordinary cases across 56 whole modules, retaining every earlier
+1,831 identity and the complete reviewed 93-case bounce and 49-case life-cost
+components. All 5,919 phases and the outer wrapper pass. Full source/runtime
+preservation and actual owned-resource closure pass with unchanged native
+permissions and no runner repairs. This advances Task 1.3; remaining literal
+fixtures, newly exposed rules gaps and final whole-source acceptance remain open.
+
 The latest [canonical AI/domain composition](canonical-ai-domain-composed1831.md)
 passes all 1,831 ordinary cases in 50 whole modules, including every earlier
 1,491 identity and the independently verified 320 AI and 20 domain identities.

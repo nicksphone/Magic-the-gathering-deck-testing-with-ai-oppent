@@ -1,0 +1,22 @@
+{
+  "base": "aa7fdc6250a0770f225ec8c704740b709f03527d",
+  "cards": {
+    "Brazen Borrower // Petty Theft": {
+      "id": "25d309d6-9e56-441e-bd29-5c903d5221bf",
+      "line": 13,
+      "oracle_id": "c7b044c3-3cfa-407e-bf20-2875e8e04b7b",
+      "row_sha256": "5f3cdc8aaaca6372f702eaf6aa4995be9052ee320c0405f048203a6f3799ae76"
+    },
+    "Supreme Verdict": {
+      "id": "3892f1c5-937e-4ef4-b6f9-e0c0ded070d0",
+      "line": 96,
+      "oracle_id": "0230de18-8d15-4cfa-9d42-7ccddd9f9570",
+      "row_sha256": "fb33914ee6ec01b341ca9d60ee60fc9cda93c538ee36c97a776832bb81d17a3d"
+    }
+  },
+  "file": "knowledge_profiles/seed155-scryfall.jsonl",
+  "provenance": "knowledge_profiles/PROVENANCE.json",
+  "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+  "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+  "source": "Scryfall complete official parents reused unchanged from immutable AA7"
+}

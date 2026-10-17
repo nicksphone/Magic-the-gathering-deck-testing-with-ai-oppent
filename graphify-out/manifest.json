@@ -2940,9 +2940,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_additional_costs.py": {
-    "mtime": 1792033175.6206784,
-    "seen": 1792034402.3562765,
-    "ast_hash": "40b4b852124742bcc736f021deedb36a",
+    "mtime": 1792204504.1947021,
+    "seen": 1792205655.1022713,
+    "ast_hash": "765f480ea03ba613b1034f8a50308774",
     "semantic_hash": ""
   },
   "backend/tests/test_additive_mana.py": {
@@ -3450,9 +3450,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_bounce_rules.py": {
-    "mtime": 1792033175.635678,
-    "seen": 1792034402.35647,
-    "ast_hash": "6e5f749f39f5f7333688dbdee439e360",
+    "mtime": 1792204504.1897023,
+    "seen": 1792205655.1025145,
+    "ast_hash": "86f4a850205dbd35da23a6bebb939855",
     "semantic_hash": ""
   },
   "backend/tests/test_builtin_cold_import.py": {
@@ -4908,9 +4908,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_priority_stack.py": {
-    "mtime": 1792033175.6866772,
-    "seen": 1792034402.3572836,
-    "ast_hash": "a3cd9d91948219f101e1907fd3749b7d",
+    "mtime": 1792204504.1897023,
+    "seen": 1792205655.1036608,
+    "ast_hash": "91bf8849254d9de1275173e6e12e1d92",
     "semantic_hash": ""
   },
   "backend/tests/test_priority_stops.py": {
@@ -5604,9 +5604,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_variable_life_cost_audit.py": {
-    "mtime": 1792033175.7156768,
-    "seen": 1792034402.3577535,
-    "ast_hash": "a665d1d2fadf7477bf5fb7baeba93a21",
+    "mtime": 1792204504.195702,
+    "seen": 1792205655.1042647,
+    "ast_hash": "3b33acafa6fd6d7263f17648a17b3090",
     "semantic_hash": ""
   },
   "backend/tests/test_variable_mana.py": {
@@ -6768,9 +6768,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1792203869.9278896,
-    "seen": 1792204041.1142278,
-    "ast_hash": "15f402d7658f56f2fc9574efd65f3ca7",
+    "mtime": 1792205494.1119094,
+    "seen": 1792205655.1049843,
+    "ast_hash": "cdae9d0cb1ece846820d2c08699f64b4",
     "semantic_hash": ""
   },
   "README.md": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792200392.517632,
-    "seen": 1792200520.48545,
-    "ast_hash": "e030aa8d855df27b4ad2d767f12f91e3",
+    "mtime": 1792205494.1119094,
+    "seen": 1792205655.106177,
+    "ast_hash": "2e35e3ef235a1cf1453803fdf09a2cd4",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -21267,6 +21267,72 @@
     "mtime": 1792203914.1141798,
     "seen": 1792204041.114759,
     "ast_hash": "da438ff9cfe78a6bd0d7c609f9e377cc",
+    "semantic_hash": ""
+  },
+  "backend/tests/bounce_stack_canonical_aa7.py": {
+    "mtime": 1792204504.1897023,
+    "seen": 1792205655.1003084,
+    "ast_hash": "52a166c4d2d84fa43b4b2fff6149e172",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/bounce_stack_aa7/SOURCES.json": {
+    "mtime": 1792204504.1897023,
+    "seen": 1792205655.100645,
+    "ast_hash": "3b17ad7a99fb37cf3ea4af4237e386ec",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/life_cost_022758/SOURCES.json": {
+    "mtime": 1792204504.1947021,
+    "seen": 1792205655.1015468,
+    "ast_hash": "75684837a10594f20c28cffb0ac88b8c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/life_cost_022758/TOXIC_PROVENANCE.json": {
+    "mtime": 1792204504.1947021,
+    "seen": 1792205655.1015484,
+    "ast_hash": "dc17c56de556b10a78c8bc339324b471",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/life_cost_022758/toxic-deluge.json": {
+    "mtime": 1792204504.1947021,
+    "seen": 1792205655.10155,
+    "ast_hash": "97ae1426e944ba3d5f0b4ab93c531f7f",
+    "semantic_hash": ""
+  },
+  "backend/tests/life_cost_canonical_022758.py": {
+    "mtime": 1792204504.1947021,
+    "seen": 1792205655.1021361,
+    "ast_hash": "7287c8216d62523ca540f3378bfdf6fb",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_bounce_stack_aa7_fidelity.py": {
+    "mtime": 1792204504.1897023,
+    "seen": 1792205655.102516,
+    "ast_hash": "78991761cbcfd098882cea320c8687d4",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_life_cost_022758_fidelity.py": {
+    "mtime": 1792204504.1947021,
+    "seen": 1792205655.103321,
+    "ast_hash": "d175eac969a916a949ba4055d3e919a6",
+    "semantic_hash": ""
+  },
+  "docs/testing/bounce-stack-canonical-aa7.md": {
+    "mtime": 1792204504.1897023,
+    "seen": 1792205655.1053634,
+    "ast_hash": "3d831c18ec43b690689537384cdbc4a0",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-bounce-life-composed1973.md": {
+    "mtime": 1792205494.1099095,
+    "seen": 1792205655.1054235,
+    "ast_hash": "4f6f3f47d4a822a41d84d4be2d05218f",
+    "semantic_hash": ""
+  },
+  "docs/testing/life-cost-canonical-022758.md": {
+    "mtime": 1792204504.195702,
+    "seen": 1792205655.1060162,
+    "ast_hash": "bf247a5a286232c7f4ccdb27faec3ed5",
     "semantic_hash": ""
   }
 }

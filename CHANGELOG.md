@@ -1,5 +1,18 @@
 # Changelog
 
+## Canonical Bounce And Life-Cost Acceptance - 2026-10-17
+
+- Replace affected real-card bounce/stack and life-cost fixtures with complete
+  official inputs and genuine factory capture. Retain all original 24 functions,
+  83 assertions, actions and resources; strengthen the independent selected-face
+  oracle without changing production code.
+- Pass one exact 56-whole-module, 1,973-case declaration retaining all prior
+  1,831 identities. All 5,919 phases pass, wrapper exit 0; permissions, game/AI
+  budgets and original denial controls remain unchanged.
+- Verify full source/runtime preservation and physical owned-resource closure.
+  Earlier failed ledgers remain immutable. Remaining fixtures, mana human-choice
+  continuation, complete backend CI and Phase 1 are not declared complete.
+
 ## Bound Baseline Comparison - 2026-10-17
 
 - Add opt-in report comparison with explicit fixed-game schedules, controlled

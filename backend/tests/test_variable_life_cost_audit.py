@@ -14,6 +14,7 @@ from rules_engine.state_based_actions import apply_state_based_actions
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from ai.agent import AIAgent
 from effects.handlers import put_green_creature_from_hand, return_permanent_to_hand
+from tests.life_cost_canonical_022758 import canonical_card
 
 
 def _toxic_deluge_game():
@@ -23,11 +24,9 @@ def _toxic_deluge_game():
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
-    spell = CardInstance(
-        id="deluge", name="Toxic Deluge", owner=1, controller=1,
-        zone=Zone.HAND, types=["Sorcery"], mana_cost="{2}{B}",
-        oracle_text="As an additional cost to cast this spell, pay X life.\n"
-                    "All creatures get -X/-X until end of turn.",
+    spell = canonical_card(
+        'Toxic Deluge', id="deluge", owner=1, controller=1,
+        zone=Zone.HAND,
     )
     state.cards[spell.id] = spell
     state.players[1].hand.append(spell.id)
@@ -108,9 +107,8 @@ def test_zero_x_is_legal_and_does_not_pay_life():
 
 def test_variable_life_payment_trigger_is_above_spell():
     state, spell = _toxic_deluge_game()
-    font = CardInstance(id="font", name="Font of Agonies", owner=1, controller=1,
-                        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-                        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.")
+    font = canonical_card('Font of Agonies', id="font", owner=1, controller=1,
+                          zone=Zone.BATTLEFIELD)
     state.cards[font.id] = font
     state.players[1].battlefield.append(font.id)
     state = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell.id, "targets": {"x_value": 2}})
@@ -121,9 +119,8 @@ def test_variable_life_payment_trigger_is_above_spell():
 
 def test_life_total_lock_allows_zero_x_but_not_positive_x():
     state, spell = _toxic_deluge_game()
-    lock = CardInstance(id="lock", name="Platinum Emperion", owner=1, controller=1,
-                        zone=Zone.BATTLEFIELD, types=["Artifact", "Creature"], power=8, toughness=8,
-                        oracle_text="Your life total can't change.")
+    lock = canonical_card('Platinum Emperion', id="lock", owner=1, controller=1,
+                          zone=Zone.BATTLEFIELD)
     state.cards[lock.id] = lock
     state.players[1].battlefield.append(lock.id)
     assert build_cast_hints(state, spell, 1)["x_value_max"] == 0
@@ -135,9 +132,8 @@ def test_life_total_lock_allows_zero_x_but_not_positive_x():
 
 def test_temporary_pt_modifier_does_not_follow_bounced_creature():
     state, spell = _toxic_deluge_game()
-    spider = CardInstance(id="spider", name="Giant Spider", owner=2, controller=2,
-                          zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{3}{G}",
-                          power=2, toughness=4, oracle_text="Reach")
+    spider = canonical_card('Giant Spider', id="spider", owner=2, controller=2,
+                            zone=Zone.BATTLEFIELD)
     state.cards[spider.id] = spider
     state.players[2].battlefield.append(spider.id)
     state = checked_action(state, RulesEngine(), 1, {"type": "cast_spell", "card_id": spell.id, "targets": {"x_value": 2}})

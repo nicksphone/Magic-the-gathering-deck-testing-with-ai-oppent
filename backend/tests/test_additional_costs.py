@@ -3,6 +3,7 @@ from __future__ import annotations
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from effects.handlers import sacrifice
 from rules_engine.engine import RulesEngine
+from tests.life_cost_canonical_022758 import canonical_card
 
 
 def test_discard_additional_cost_is_paid() -> None:
@@ -46,14 +47,12 @@ def test_sacrifice_additional_cost_respects_die_replacement() -> None:
     engine = RulesEngine()
 
     p1 = state.players[1]
-    replacement = CardInstance(
+    replacement = canonical_card(
+        'Rest in Peace',
         id="rep",
-        name="Rest in Peace",
         owner=1,
         controller=1,
         zone=Zone.BATTLEFIELD,
-        types=["Enchantment"],
-        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
     )
     state.cards[replacement.id] = replacement
     p1.battlefield.append(replacement.id)

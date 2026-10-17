@@ -3,6 +3,7 @@ from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
 from rules_engine.oracle_effects import infer_effect_from_oracle
+from tests.bounce_stack_canonical_aa7 import canonical_card
 
 
 def _state_with_target() -> tuple[object, str]:
@@ -33,14 +34,12 @@ def test_bounce_inference_exposes_nonland_permanent_targets() -> None:
     state.players[1].battlefield.remove(target_id)
     state.players[2].battlefield.append(target_id)
     state.cards[target_id].controller = 2
-    spell = CardInstance(
+    spell = canonical_card(
+        'Brazen Borrower // Petty Theft', face_index=1,
         id="petty-theft",
-        name="Petty Theft",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Instant"],
-        oracle_text="Return target nonland permanent an opponent controls to its owner's hand.",
     )
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
@@ -65,14 +64,12 @@ def test_bounce_returns_stolen_permanent_to_owner_hand_and_clears_control() -> N
 
 def test_bounce_ability_spec_is_not_marked_as_oracle_fallback() -> None:
     state, target_id = _state_with_target()
-    spell = CardInstance(
+    spell = canonical_card(
+        'Brazen Borrower // Petty Theft', face_index=1,
         id="petty-theft-spec",
-        name="Petty Theft",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Instant"],
-        oracle_text="Return target nonland permanent an opponent controls to its owner's hand.",
     )
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1, {"target_card_id": target_id})
@@ -82,14 +79,12 @@ def test_bounce_ability_spec_is_not_marked_as_oracle_fallback() -> None:
 
 def test_bounce_rejects_card_outside_current_target_candidates() -> None:
     state, _ = _state_with_target()
-    spell = CardInstance(
+    spell = canonical_card(
+        'Brazen Borrower // Petty Theft', face_index=1,
         id="petty-theft-invalid",
-        name="Petty Theft",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Instant"],
-        oracle_text="Return target nonland permanent an opponent controls to its owner's hand.",
     )
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
