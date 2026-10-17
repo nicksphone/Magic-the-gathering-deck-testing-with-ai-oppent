@@ -1,5 +1,17 @@
 # Changelog
 
+## Bound Baseline Comparison - 2026-10-17
+
+- Add opt-in report comparison with explicit fixed-game schedules, controlled
+  data/source identities, consistent Oracle summaries and strict metric checks.
+  Preserve original report construction, CLI behavior and original test bytes.
+- Pass all 155 ordinary cases in both whole modules, including the genuine
+  original CLI subprocess; retain the earlier denied-child and admission-defect
+  ledgers. Verify source/runtime preservation and owned-resource closure.
+- Treat receipts as declarations requiring authentic producer evidence, not
+  proof of gameplay or AI improvement. Real matched measurements, remaining
+  canonical fixtures, full backend acceptance and Phase 1 remain open.
+
 ## Canonical AI And Domain Acceptance - 2026-10-17
 
 - Replace affected AI information/draw and domain positive fixtures with complete

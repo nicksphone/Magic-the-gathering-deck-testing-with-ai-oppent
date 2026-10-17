@@ -2,6 +2,12 @@
 
 ## Latest Published Browser And Fixture Checks
 
+The later published [`022758e6` browser job](current-022-browser-ci.md) and
+frontend job both succeed. Its backend job remains a separate running attempt
+at the recorded observation. This is the configured hosted compatibility lane,
+not native vendor qualification or proof that the older aborted-read cause was
+fixed. Remaining Phase 1 work and release acceptance remain open.
+
 Exact [`79e215fb` backend CI](current-79-hosted-backend.md) subsequently succeeds:
 29,420 passed calls and 82 setup skips among 29,502 unique identities, plus 111
 separately counted passing subtest reports. Its unchanged Phase 1 source paths

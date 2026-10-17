@@ -6,9 +6,15 @@ except ImportError:  # pragma: no cover - direct script execution
     import _bootstrap  # noqa: F401
 
 import argparse
+import hashlib
 import json
+import os
+import stat
+import sys
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Iterator
+from itertools import combinations
+from fractions import Fraction
 from pathlib import Path
 from typing import Any
 
@@ -295,6 +301,276 @@ def render_report(report: dict[str, Any]) -> str:
     return json.dumps(report, indent=2, sort_keys=True) + "\n"
 
 
+def _comparison_digest(value: Any) -> str:
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'),
+                                     allow_nan=False).encode('utf-8')).hexdigest()
+
+
+def _comparison_require(condition: bool, reason: str) -> None:
+    if not condition:
+        raise ValueError(reason)
+
+
+def _comparison_count(value: Any) -> bool:
+    return type(value) is int and 0 <= value <= 2**63 - 1
+
+
+def _comparison_hex(value: Any, length: int = 64) -> bool:
+    return type(value) is str and len(value) == length and all(c in '0123456789abcdef' for c in value)
+
+
+def _comparison_admit(package: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Validate an explicit fixed-game receipt, not the authenticity of gameplay."""
+    from analytics.resource_budget import RESOURCE_LIMITS
+
+    require = _comparison_require
+    count = _comparison_count
+    require(type(package) is dict and set(package) == {'report', 'measurement'}, 'package_shape')
+    report, measurement = package['report'], package['measurement']
+    keys = {'schema_version', 'source_base_commit', 'backend_before_sha256', 'backend_after_sha256',
+            'corpus_sha256', 'export_sha256', 'metric_definitions_sha256', 'report_sha256',
+            'engine_rules_sha256', 'controlled_policy_sha256', 'experimental_features',
+            'policy_configuration_sha256',
+            'difficulty', 'max_ticks', 'limits', 'sideboard_mode', 'schedule_kind', 'roster',
+            'seeds', 'seats', 'complete', 'status', 'planned_games', 'attempted_games',
+            'not_run_games', 'samples'}
+    require(type(measurement) is dict and set(measurement) == keys, 'measurement_shape')
+    require(type(measurement['schema_version']) is int and measurement['schema_version'] == 1,
+            'measurement_version')
+    require(_comparison_hex(measurement['source_base_commit'], 40)
+            and all(_comparison_hex(measurement[key]) for key in keys if key.endswith('_sha256'))
+            and measurement['backend_before_sha256'] == measurement['backend_after_sha256'],
+            'source_or_digest_binding')
+    features = measurement['experimental_features']
+    require(type(features) is dict and features and set(features) <= {
+            'task2.3', 'task3.2', 'task4.1', 'task4.2', 'task4.3', 'task4.5'}
+            and all(_comparison_hex(value) for value in features.values())
+            and measurement['policy_configuration_sha256'] == _comparison_digest({
+                'controlled_policy_sha256': measurement['controlled_policy_sha256'],
+                'experimental_features': features}), 'experimental_configuration')
+    require(type(report) is dict and _comparison_digest(report) == measurement['report_sha256'],
+            'report_digest')
+    require(set(report) == {'win_rates_by_archetype_pair', 'anomalies',
+            'decision_quality_by_archetype', 'oracle_status_counts', 'card_cache_completeness',
+            'log_priors', 'unavailable_metrics'} and report['unavailable_metrics'] == {}
+            and type(report['unavailable_metrics']) is dict, 'report_unavailable')
+    oracle, cache, priors = (report[key] for key in ('oracle_status_counts', 'card_cache_completeness', 'log_priors'))
+    require(type(oracle) is dict and set(oracle) == {'unique', 'weighted'}
+            and all(type(row) is dict and all(type(key) is str and count(value)
+                    for key, value in row.items()) for row in oracle.values()), 'oracle_summary')
+    require(type(cache) is dict and set(cache) == {'cached_cards', 'total_cards', 'missing_cards',
+            'completeness_percent'} and all(count(cache[key]) for key in ('cached_cards', 'total_cards', 'missing_cards'))
+            and cache['total_cards'] > 0 and cache['cached_cards'] + cache['missing_cards'] == cache['total_cards']
+            and type(cache['completeness_percent']) in (int, float)
+            and cache['completeness_percent'] == round(cache['cached_cards'] / cache['total_cards'] * 100, 2),
+            'cache_summary')
+    unique, weighted = oracle['unique'], oracle['weighted']
+    require(sum(unique.values()) == cache['total_cards'] and set(unique) == set(weighted)
+            and all(unique[key] > 0 and weighted[key] >= unique[key] for key in unique),
+            'oracle_coverage')
+    require(type(priors) is dict and set(priors) == {'cards', 'samples'} and count(priors['cards'])
+            and type(priors['samples']) is dict and set(priors['samples']) == {'games', 'logs'}
+            and all(count(value) for value in priors['samples'].values()), 'priors_summary')
+    require(measurement['schedule_kind'] == 'fixed_games'
+            and measurement['sideboard_mode'] == 'fixed_no_swaps'
+            and measurement['difficulty'] in ('casual', 'strong', 'master')
+            and count(measurement['max_ticks']) and measurement['max_ticks'] > 0,
+            'unsupported_measurement_contract')
+    limits = measurement['limits']
+    require(type(limits) is dict and set(limits) == set(RESOURCE_LIMITS)
+            and all(count(value) and value <= RESOURCE_LIMITS[key] for key, value in limits.items()),
+            'resource_contract')
+    roster, seeds, seats = (measurement[key] for key in ('roster', 'seeds', 'seats'))
+    require(type(roster) is list and 2 <= len(roster) <= 100
+            and type(seeds) is list and 1 <= len(seeds) <= 1000
+            and all(count(seed) for seed in seeds) and len(set(seeds)) == len(seeds)
+            and type(seats) is list and len(seats) == 2
+            and all(type(seat) is int for seat in seats) and seats == [1, 2], 'roster_seeds_seats')
+    decks = {}
+    for row in roster:
+        require(type(row) is dict and set(row) == {'name', 'archetype', 'content_sha256'}
+                and all(type(row[key]) is str and 0 < len(row[key]) <= 128
+                        and row[key] == row[key].strip() for key in ('name', 'archetype'))
+                and ' vs ' not in row['archetype']
+                and _comparison_hex(row['content_sha256']) and row['name'] not in decks, 'roster_row')
+        decks[row['name']] = row['archetype']
+    planned = len(roster) * (len(roster)-1) * len(seeds)
+    require(planned <= 100000 and measurement['complete'] is True
+            and measurement['status'] == 'completed_schedule'
+            and all(count(measurement[key]) for key in ('planned_games', 'attempted_games', 'not_run_games'))
+            and measurement['planned_games'] == measurement['attempted_games'] == planned
+            and measurement['not_run_games'] == 0, 'incomplete_schedule')
+    expected = {(a, b, seed, seat) for a, b in combinations(sorted(decks), 2)
+                for seed in seeds for seat in seats}
+    samples = measurement['samples']
+    require(type(samples) is list and len(samples) == planned, 'sample_coverage')
+    seen, outcomes = set(), defaultdict(Counter)
+    for row in samples:
+        require(type(row) is dict and set(row) == {'deck_a', 'deck_b', 'seed_token', 'deck_a_seat',
+                'evidence_complete', 'status', 'winner'} and type(row['deck_a']) is str
+                and type(row['deck_b']) is str and count(row['seed_token'])
+                and type(row['deck_a_seat']) is int and row['deck_a_seat'] in (1, 2)
+                and row['evidence_complete'] is True, 'sample_shape')
+        key = row['deck_a'], row['deck_b'], row['seed_token'], row['deck_a_seat']
+        require(key in expected and key not in seen, 'sample_identity')
+        seen.add(key)
+        require((row['status'] == 'resolved' and type(row['winner']) is int and row['winner'] in (1, 2))
+                or (row['status'] == 'timeout' and row['winner'] is None), 'sample_outcome')
+        archetypes = decks[row['deck_a']], decks[row['deck_b']]
+        pair = tuple(sorted(archetypes))
+        totals = outcomes[pair]
+        totals['games'] += 1
+        if row['status'] == 'timeout':
+            totals['timeouts'] += 1
+        else:
+            winner_is_a = row['winner'] == row['deck_a_seat']
+            # Mirror archetypes retain the existing reporter's player-one orientation.
+            if archetypes[0] == archetypes[1]:
+                winner_is_a = row['winner'] == 1
+            elif archetypes != pair:
+                winner_is_a = not winner_is_a
+            totals['wins_a' if winner_is_a else 'wins_b'] += 1
+    anomalies, quality = report['anomalies'], report['decision_quality_by_archetype']
+    require(type(anomalies) is dict and set(anomalies) == set(ANOMALY_KEYS)
+            and all(count(value) for value in anomalies.values()), 'anomaly_counts')
+    require(type(quality) is dict and set(quality) == set(decks.values())
+            and all(type(row) is dict and set(row) == set(DECISION_QUALITY_METRICS)
+                    and all(count(value) for value in row.values()) for row in quality.values()),
+            'quality_counts')
+    pairs = report['win_rates_by_archetype_pair']
+    require(type(pairs) is dict and set(pairs) == {f'{a} vs {b}' for a, b in outcomes}, 'pair_coverage')
+    for (a, b), totals in outcomes.items():
+        pair = pairs[f'{a} vs {b}']
+        require(type(pair) is dict and set(pair) == {'archetype_a', 'archetype_b', 'games',
+                'resolved_games', 'timeouts', 'wins_a', 'wins_b', 'win_rate_a', 'win_rate_b',
+                'wilson_ci_a', 'wilson_ci_b'} and pair['archetype_a'] == a and pair['archetype_b'] == b,
+                'pair_shape')
+        resolved = totals['wins_a'] + totals['wins_b']
+        require(resolved > 0 and all(count(pair[key]) and pair[key] == totals[key]
+                for key in ('games', 'timeouts', 'wins_a', 'wins_b'))
+                and count(pair['resolved_games']) and pair['resolved_games'] == resolved, 'pair_counts')
+        for side in ('a', 'b'):
+            wins = pair[f'wins_{side}']
+            require(type(pair[f'win_rate_{side}']) in (int, float)
+                    and pair[f'win_rate_{side}'] == round(wins / resolved * 100, 2)
+                    and _comparison_digest(pair[f'wilson_ci_{side}']) == _comparison_digest(
+                        AnalyticsService._wilson_interval(wins, resolved)), 'pair_rates')
+    require(anomalies['timeouts'] == sum(row['timeouts'] for row in outcomes.values()), 'timeout_total')
+    return report, measurement
+
+
+def compare_reports(before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
+    """Compare bound report artifacts only; never certify AI strength or play games."""
+    try:
+        old, old_binding = _comparison_admit(before)
+        new, new_binding = _comparison_admit(after)
+        differing_source = {'source_base_commit', 'backend_before_sha256', 'backend_after_sha256',
+                            'report_sha256', 'samples', 'experimental_features', 'policy_configuration_sha256'}
+        _comparison_require(all(_comparison_digest(old_binding[key]) == _comparison_digest(new_binding[key])
+                                for key in old_binding if key not in differing_source), 'incomparable_inputs')
+        _comparison_require(set(old_binding['experimental_features']) == set(new_binding['experimental_features']),
+                            'different_experimental_features')
+        _comparison_require(all(_comparison_digest(old[key]) == _comparison_digest(new[key])
+                                for key in ('oracle_status_counts', 'card_cache_completeness', 'log_priors')),
+                            'changed_data_summaries')
+    except (ValueError, TypeError, KeyError, OverflowError, RecursionError):
+        return {'schema_version': 1, 'status': 'unavailable', 'reason': 'invalid_or_incomparable_evidence'}
+    deltas = []
+    totals = [Counter(), Counter()]
+    for ordinal, archetype in enumerate(sorted(old['decision_quality_by_archetype'])):
+        for metric in DECISION_QUALITY_METRICS:
+            left, right = (report['decision_quality_by_archetype'][archetype][metric] for report in (old, new))
+            totals[0][metric] += left
+            totals[1][metric] += right
+            deltas.append(dict(group='quality', archetype_ordinal=ordinal, metric=metric,
+                               before=left, after=right, delta=right-left))
+    for metric in ANOMALY_KEYS:
+        left, right = (report['anomalies'][metric] for report in (old, new))
+        deltas.append(dict(group='anomalies', metric=metric, before=left, after=right, delta=right-left))
+    pair_deltas = []
+    for ordinal, key in enumerate(sorted(old['win_rates_by_archetype_pair'])):
+        left, right = (report['win_rates_by_archetype_pair'][key] for report in (old, new))
+        exact_delta = 100 * (Fraction(right['wins_a'], right['resolved_games'])
+                             - Fraction(left['wins_a'], left['resolved_games']))
+        delta = round(float(exact_delta), 2)
+        pair_deltas.append(dict(pair_ordinal=ordinal, delta_percentage_points_a=delta,
+                                delta_percentage_points_b=-delta, moved_over_fifteen=abs(exact_delta) > 15))
+    flags = [row for row in pair_deltas if row['moved_over_fifteen']]
+    regressions = [row for row in deltas if row['delta'] > 0]
+    no_increase = lambda *metrics: all(totals[1][key] <= totals[0][key] for key in metrics)
+    decrease = lambda key: totals[1][key] < totals[0][key]
+    anomaly_no_increase = lambda *metrics: all(new['anomalies'][key] <= old['anomalies'][key] for key in metrics)
+
+    def archetype_spread(report):
+        wins, games = Counter(), Counter()
+        for row in report['win_rates_by_archetype_pair'].values():
+            for side in ('a', 'b'):
+                archetype = row[f'archetype_{side}']
+                wins[archetype] += row[f'wins_{side}']
+                games[archetype] += row['resolved_games']
+        rates = [Fraction(wins[key], games[key]) for key in games]
+        return max(rates) - min(rates)
+
+    spread_no_increase = archetype_spread(new) <= archetype_spread(old)
+    def provenance(binding):
+        return dict(source_base_commit=binding['source_base_commit'], backend_sha256=binding['backend_before_sha256'],
+                    engine_rules_sha256=binding['engine_rules_sha256'],
+                    controlled_policy_sha256=binding['controlled_policy_sha256'],
+                    policy_configuration_sha256=binding['policy_configuration_sha256'],
+                    experimental_features=dict(binding['experimental_features']))
+
+    return dict(schema_version=1, status='comparable', scope='declared_fixed_game_schedule_only',
+                provenance=dict(before=provenance(old_binding), after=provenance(new_binding)),
+                counter_deltas=deltas, regressions=regressions, pair_deltas=pair_deltas, pair_flags=flags,
+                criteria=dict(p2_nonregression=no_increase('bad_blocks', 'lethal_misses'),
+                    p3_nonregression=anomaly_no_increase('timeouts', 'stall_streaks')
+                                     and no_increase('stall_streaks'),
+                    p4_lethal_decrease=decrease('lethal_misses'),
+                    p4_unused_mana_decrease=decrease('unused_mana_passes'),
+                    p4_unexplained_pass_decrease=None,
+                    p4_order_nonregression=no_increase('missed_land_drops', 'unused_mana_passes')
+                                           and spread_no_increase,
+                    final_metrics=decrease('lethal_misses') and decrease('bad_blocks')
+                                  and anomaly_no_increase('timeouts') and not flags and not regressions),
+                unavailable_criteria=['unexplained_pass_priority_clusters'],
+                interpretation='artifact validation, not authentic execution, full BO3 coverage or AI strength')
+
+
+def _comparison_main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description='Compare two explicitly bound baseline report packages')
+    parser.add_argument('--before', required=True)
+    parser.add_argument('--after', required=True)
+    args = parser.parse_args(argv)
+
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            _comparison_require(key not in result, 'duplicate_json_key')
+            result[key] = value
+        return result
+
+    def read(path):
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        try:
+            info = os.fstat(fd)
+            _comparison_require(stat.S_ISREG(info.st_mode) and info.st_size <= 1048576,
+                                'comparison_input_bound')
+            with os.fdopen(fd, 'rb', closefd=False) as stream:
+                payload = stream.read(1048577)
+        finally:
+            os.close(fd)
+        _comparison_require(len(payload) <= 1048576, 'comparison_input_bound')
+        return json.loads(payload, object_pairs_hook=unique_object,
+                          parse_constant=lambda value: _comparison_require(False, 'nonfinite_json'))
+
+    try:
+        result = compare_reports(read(args.before), read(args.after))
+    except (OSError, ValueError, TypeError, RecursionError):
+        result = {'schema_version': 1, 'status': 'unavailable', 'reason': 'invalid_or_incomparable_evidence'}
+    print(render_report(result), end='')
+    return 0 if result['status'] == 'comparable' and result['criteria']['final_metrics'] else 2
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Combine baseline gate artifacts into one deterministic report")
     parser.add_argument("--oracle", required=True, help="Path to oracle_corpus_report JSON")
@@ -305,6 +581,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    arguments = sys.argv[1:] if argv is None else argv
+    if arguments and arguments[0] == 'compare':
+        return _comparison_main(arguments[1:])
     args = parse_args(argv)
     report = build_report(
         oracle_path=Path(args.oracle),

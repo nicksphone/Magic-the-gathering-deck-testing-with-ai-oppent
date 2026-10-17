@@ -44,6 +44,14 @@ bad-block result. Later measurements need comparable definitions, source,
 seed/seat schedules and explicit unavailable counters; do not manufacture a
 zero to make an A/B comparison pass.
 
+The additive [bound baseline comparator](ai-baseline-report-comparison.md) now
+passes all 155 cases in both whole reporter modules, including the unchanged
+original CLI subprocess. It validates explicit controlled-input declarations and
+complete fixed-game outcome ledgers without changing the original reporter.
+This is tooling acceptance, not an actual A/B measurement: authentic producer
+packages, matched gameplay, metric reconciliation and the stated phase exit
+criteria remain required.
+
 ## Next Acceptance Milestones
 
 1. Integrate independently reviewed corrections while retaining the published

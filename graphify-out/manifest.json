@@ -1008,9 +1008,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/baseline_report.py": {
-    "mtime": 1792033175.5206802,
-    "seen": 1792034402.3549042,
-    "ast_hash": "d5ff91159d0f6de654b2211cde7c8cf8",
+    "mtime": 1792203544.768112,
+    "seen": 1792204041.1097689,
+    "ast_hash": "e581286a8bf54b5316e3a4fd55a9997a",
     "semantic_hash": ""
   },
   "backend/scripts/benchmark_ai_decisions.py": {
@@ -6768,9 +6768,9 @@
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
-    "mtime": 1792200392.521632,
-    "seen": 1792200520.4843361,
-    "ast_hash": "a6b7a2e87be7f56209c4e507a1c2bb01",
+    "mtime": 1792203869.9278896,
+    "seen": 1792204041.1142278,
+    "ast_hash": "15f402d7658f56f2fc9574efd65f3ca7",
     "semantic_hash": ""
   },
   "README.md": {
@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792147167.9940374,
-    "seen": 1792149081.6335633,
-    "ast_hash": "5f505b74d14666e9a07dfb381a0e859c",
+    "mtime": 1792203914.11518,
+    "seen": 1792204041.1154096,
+    "ast_hash": "a73b9c7cdf66b7fceb83b7c7d8512b36",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -18078,9 +18078,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-plan-acceptance-progress.md": {
-    "mtime": 1792053935.7437394,
-    "seen": 1792055384.2255347,
-    "ast_hash": "07fcebcc0d6237f1e3014c8f3d1c6ae1",
+    "mtime": 1792203869.9308896,
+    "seen": 1792204041.1144226,
+    "ast_hash": "5e62cdc25c53ffee29771684730591a1",
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
@@ -21249,6 +21249,24 @@
     "mtime": 1792200392.517632,
     "seen": 1792200520.484704,
     "ast_hash": "1d9faf1b24a6783cc50ae28acea490ec",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_baseline_report_comparison.py": {
+    "mtime": 1792203544.768112,
+    "seen": 1792204041.1119125,
+    "ast_hash": "d408b3d66bd68341d6082c98122dc3aa",
+    "semantic_hash": ""
+  },
+  "docs/testing/ai-baseline-report-comparison.md": {
+    "mtime": 1792203869.9248896,
+    "seen": 1792204041.114369,
+    "ast_hash": "9682604089f4bcf0afc5f32141674377",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-022-browser-ci.md": {
+    "mtime": 1792203914.1141798,
+    "seen": 1792204041.114759,
+    "ast_hash": "da438ff9cfe78a6bd0d7c609f9e377cc",
     "semantic_hash": ""
   }
 }
