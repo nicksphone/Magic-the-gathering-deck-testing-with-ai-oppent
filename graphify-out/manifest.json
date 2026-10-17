@@ -4632,9 +4632,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_manual_mana_tap.py": {
-    "mtime": 1792033175.6766775,
-    "seen": 1792034402.3571181,
-    "ast_hash": "5a324c46587d3d111e9f483050c03e94",
+    "mtime": 1792229374.1425824,
+    "seen": 1792229568.7861333,
+    "ast_hash": "840fc0d69f592f0e1d8e3487950dfdaf",
     "semantic_hash": ""
   },
   "backend/tests/test_mass_exile_rules.py": {
@@ -21729,6 +21729,84 @@
     "mtime": 1792227357.8893108,
     "seen": 1792227489.4690225,
     "ast_hash": "8b1a08301f2cb88f3e6b77cd03eb591f",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/PROVENANCE.json": {
+    "mtime": 1792229374.1425824,
+    "seen": 1792229568.7841952,
+    "ast_hash": "3b108942c2d5ad1a80079ef7a54b532a",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/SOURCES.json": {
+    "mtime": 1792229374.1425824,
+    "seen": 1792229568.7841983,
+    "ast_hash": "e9713fa0af3eb6fdd4a2d07fd6fd8518",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/forest.raw.json": {
+    "mtime": 1792229374.1425824,
+    "seen": 1792229568.7842004,
+    "ast_hash": "0fd9cf4eef3678817ce20224805fdc25",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/gilded-lotus.raw.json": {
+    "mtime": 1792229374.1435823,
+    "seen": 1792229568.784202,
+    "ast_hash": "11e9a2df162d251e87803663d43c9bc8",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/island.raw.json": {
+    "mtime": 1792229374.1435823,
+    "seen": 1792229568.7842035,
+    "ast_hash": "add7252a4115f38c5bfb3f4486864b8c",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/llanowar-tribe.raw.json": {
+    "mtime": 1792229374.1435823,
+    "seen": 1792229568.784205,
+    "ast_hash": "ff522c1e83991a5dbc209b848c6ae0b0",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/mountain.raw.json": {
+    "mtime": 1792229374.1435823,
+    "seen": 1792229568.7842064,
+    "ast_hash": "43a6dd05c985f2ee6178a797d9247af8",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/sol-ring.raw.json": {
+    "mtime": 1792229374.1435823,
+    "seen": 1792229568.7842078,
+    "ast_hash": "f1ce898613a68b6a77eb3c441268cae6",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/manual_mana_a227/watery-grave.raw.json": {
+    "mtime": 1792229374.1435823,
+    "seen": 1792229568.7842093,
+    "ast_hash": "819d9eeccb22de2687c546479ed4e3b9",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_manual_mana_a227_fidelity.py": {
+    "mtime": 1792229374.1435823,
+    "seen": 1792229568.786131,
+    "ast_hash": "1fda4c4f5ca55b644f6fc1d0f8de939a",
+    "semantic_hash": ""
+  },
+  "docs/testing/manual-mana-canonical-a227-prep.md": {
+    "mtime": 1792229374.1435823,
+    "seen": 1792229568.7888033,
+    "ast_hash": "6eb4a4eb7584d21c5fb8ff1c0b396dc6",
+    "semantic_hash": ""
+  },
+  "docs/testing/manual-mana-canonical-a227-red79-fixture-prep.md": {
+    "mtime": 1792229374.1425824,
+    "seen": 1792229568.7888048,
+    "ast_hash": "d2fa326b04c8d5761fb316d390e7d6dd",
+    "semantic_hash": ""
+  },
+  "docs/testing/manual-mana-canonical-qualified79.md": {
+    "mtime": 1792229476.0398765,
+    "seen": 1792229568.7888062,
+    "ast_hash": "aefcab63c84232a6dbc307439cc3a37c",
     "semantic_hash": ""
   }
 }

@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "scope": "manual-mana DATA plus NEW-test PREP only; no source migration or gameplay qualification",
+  "base": "a2273b061ad3d729e53fad6686453ad02126d80c",
+  "new_intake_requests": 2,
+  "network_during_future_offline_tests": false,
+  "objects": {
+    "Forest": {
+      "kind": "complete_existing_committed_collection_row",
+      "commit": "a2273b061ad3d729e53fad6686453ad02126d80c",
+      "source": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "source_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "line": 39,
+      "row_sha256": "d522e1272ee59bd6e931587330fddb769f83136a8532561129a69bdeff4129ce",
+      "provenance": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+      "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+    },
+    "Island": {
+      "kind": "complete_existing_committed_collection_row",
+      "commit": "a2273b061ad3d729e53fad6686453ad02126d80c",
+      "source": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "source_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "line": 50,
+      "row_sha256": "450bf6448c1ed549fe3d69fe922cb0ffb8d6fa08751875cc873265f89ad95407",
+      "provenance": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+      "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+    },
+    "Mountain": {
+      "kind": "complete_existing_committed_collection_row",
+      "commit": "a2273b061ad3d729e53fad6686453ad02126d80c",
+      "source": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "source_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "line": 65,
+      "row_sha256": "23f04babd4cf6bddbdfd550d85b9692cdccdecae124809fd1ff54c64c40d64ee",
+      "provenance": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+      "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+    },
+    "Sol Ring": {
+      "kind": "complete_existing_committed_official_response",
+      "commit": "a2273b061ad3d729e53fad6686453ad02126d80c",
+      "source": "backend/tests/fixtures/creature_observer_fix/sol-ring.json",
+      "source_sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+      "provenance": "backend/tests/fixtures/creature_observer_fix/provenance.json",
+      "provenance_sha256": "c3d26325827ba3d7685b80aa4f11dbad1789045404e64d55cf2b996ad9847cae",
+      "record": {
+        "name": "Sol Ring",
+        "file": "sol-ring.json",
+        "sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+        "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+        "url": "https://api.scryfall.com/cards/named?exact=Sol%20Ring",
+        "request_start_utc": "2026-10-06T19:38:45.967733+00:00",
+        "complete_raw_response_preserved": true
+      }
+    },
+    "Gilded Lotus": {
+      "kind": "complete_frozen_own_official_intake_reuse_not_current_Git",
+      "original_archive": "diagnostics/ci/mana-system-fb775-CANONICAL153-148P5F-STAGE-20261017-XzeoWCwa",
+      "original_source_map_sha256": "c67c619e49ed5914275a3a380dce756c27a36a61c919c8fee63bb5bff21793a4",
+      "original_provenance_sha256": "1c7f94b73a88b8733a16a88a239c3c24fe7f8cc13d24da7c3c68f9c1ac659137",
+      "record": {
+        "intake": {
+          "RAW_keywords": [],
+          "URL": "https://api.scryfall.com/cards/named?exact=Gilded+Lotus",
+          "ended_UTC": "2026-10-17T04:58:04.977164+00:00",
+          "fields": 67,
+          "fixture": "mana_system_fb775/gilded-lotus.raw.json",
+          "headers_sha256": "0e798899e215358e63f6d820753c9105aa35edef9b0732fba3438a789c9d02aa",
+          "http_status": 200,
+          "id": "28e619e6-ecc1-49c3-8fa9-ce42becdb9ba",
+          "minimum_request_start_spacing_seconds": 0.3,
+          "name": "Gilded Lotus",
+          "no_auth_no_retries": true,
+          "oracle_id": "9a02a9a7-39d9-4763-85d3-747a0540b60b",
+          "response_bytes": 5013,
+          "response_sha256": "4467e360a1d46fd510c9a379ef9776e42528fb9663c239054da861cbcd02a2d5",
+          "started_UTC": "2026-10-17T04:58:04.569360+00:00"
+        },
+        "kind": "actual_public_API"
+      }
+    },
+    "Llanowar Tribe": {
+      "kind": "genuine_exact_official_API_full_response",
+      "URL": "https://api.scryfall.com/cards/named?exact=Llanowar%20Tribe",
+      "started_UTC": "2026-10-17T07:24:58.338430666Z",
+      "ended_UTC": "2026-10-17T07:25:03.761757158Z",
+      "http_status": 200,
+      "TLS_verify_result": 0,
+      "response_sha256": "e3da1b3ec268bd0f4b4805c5d5faa3eeb09c3bbcd0d20473bab5abd1e2db15d1",
+      "response_bytes": 5072,
+      "headers_sha256": "9ce3dfbb3739ec8720e4533f23ad40300c68ab66ebeea11a68b01c14feccd7b5",
+      "id": "407c1b95-dc0c-4154-a441-fe25537df45c",
+      "oracle_id": "cfd0f0e6-1bbf-4450-97d2-c54907abb7e4",
+      "fields": 66,
+      "no_auth_no_retries": true,
+      "new_requests": 1
+    },
+    "Watery Grave": {
+      "kind": "genuine_exact_official_API_full_response",
+      "URL": "https://api.scryfall.com/cards/named?exact=Watery%20Grave",
+      "started_UTC": "2026-10-17T07:25:04.116265414Z",
+      "ended_UTC": "2026-10-17T07:25:04.475483264Z",
+      "http_status": 200,
+      "TLS_verify_result": 0,
+      "response_sha256": "15a3b4397c943105b5fbfa4747ac1ca68da97325f9efe82c3143733f9b4b1800",
+      "response_bytes": 5006,
+      "headers_sha256": "07813e2af25b6a16cbb80818d49a9c29e63a140b41857ed74ca13d1c3832b190",
+      "id": "5525d6a6-e532-4047-9da4-bfae7927fecc",
+      "oracle_id": "fc9ec820-4245-4a96-b009-5308a818ca58",
+      "fields": 63,
+      "no_auth_no_retries": true,
+      "new_requests": 1
+    }
+  }
+}
