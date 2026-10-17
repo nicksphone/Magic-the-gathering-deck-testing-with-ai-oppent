@@ -1,5 +1,6 @@
 from __future__ import annotations
 from tests.controlled_basic_game_support import controlled_basic_game
+from tests.static_layers_canonical_a32 import NAMES, canonical_state, place_named
 
 from game_state.state import MatchFactory, Step, Zone
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -9,7 +10,11 @@ from rules_engine.engine import RulesEngine
 from rules_engine.state_based_actions import apply_state_based_actions
 
 
-def _setup_creature(state, player_id: int, name: str, power: int, toughness: int, keywords: list[str] | None = None) -> str:
+def _setup_creature(state, player_id: int, name: str, power: int | None = None, toughness: int | None = None, keywords: list[str] | None = None) -> str:
+    if name in NAMES:
+        if power is not None or toughness is not None or keywords is not None:
+            raise ValueError('Canonical printed facts are not fixture overrides')
+        return place_named(state, player_id, name)
     p = state.players[player_id]
     cid = p.hand[0]
     p.hand.remove(cid)
@@ -57,13 +62,12 @@ def test_other_creatures_you_control_get_bonus_excludes_source() -> None:
 
 def test_tribal_static_buff_applies_to_subtype() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck)
+    state = canonical_state(deck, deck, scene='tribal')
     state.pregame_pending = False
     state.kept_hands = {1, 2}
 
     _setup_permanent(state, 1, "Elvish Anthem", "Enchantment", "Elves you control get +1/+1.")
-    elf = _setup_creature(state, 1, "Llanowar Elves", 1, 1, [])
-    state.cards[elf].type_line = "Creature - Elf Druid"
+    elf = _setup_creature(state, 1, 'Llanowar Elves')
     beast = _setup_creature(state, 1, "Bear", 2, 2, [])
     state.cards[beast].type_line = "Creature - Bear"
 
@@ -75,12 +79,12 @@ def test_tribal_static_buff_applies_to_subtype() -> None:
 
 def test_become_base_power_toughness_static_sets_are_parsed() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck)
+    state = canonical_state(deck, deck, scene='base')
     state.pregame_pending = False
     state.kept_hands = {1, 2}
 
     _setup_permanent(state, 1, "Humility Field", "Enchantment", "Creatures you control become 1/1.")
-    creature = _setup_creature(state, 1, "Hill Giant", 4, 4, [])
+    creature = _setup_creature(state, 1, 'Hill Giant')
 
     assert effective_power(state, creature) == 1
     assert effective_toughness(state, creature) == 1
@@ -88,13 +92,12 @@ def test_become_base_power_toughness_static_sets_are_parsed() -> None:
 
 def test_subject_specific_base_pt_set_only_applies_to_matching_creatures() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck)
+    state = canonical_state(deck, deck, scene='subtype')
     state.pregame_pending = False
     state.kept_hands = {1, 2}
 
     _setup_permanent(state, 1, "Elf Ward", "Enchantment", "Elves you control become 1/1.")
-    elf = _setup_creature(state, 1, "Llanowar Elves", 1, 1, [])
-    state.cards[elf].type_line = "Creature - Elf Druid"
+    elf = _setup_creature(state, 1, 'Llanowar Elves')
     human = _setup_creature(state, 1, "Knight", 3, 3, [])
     state.cards[human].type_line = "Creature - Human Knight"
 
@@ -162,15 +165,12 @@ def test_opponent_static_minus_kills_x1_creature() -> None:
 
 def test_state_actions_repeat_when_a_lord_dies_and_its_buff_disappears() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck, seed=9)
+    state = canonical_state(deck, deck, scene='lords', seed=9)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
 
-    lord = _setup_creature(state, 1, "Elvish Clancaller", 1, 1)
-    state.cards[lord].type_line = "Creature - Elf Warrior"
-    state.cards[lord].oracle_text = "Other Elf creatures you control get +1/+1."
-    elf = _setup_creature(state, 1, "Llanowar Elves", 1, 1)
-    state.cards[elf].type_line = "Creature - Elf Druid"
+    lord = _setup_creature(state, 1, 'Elvish Clancaller')
+    elf = _setup_creature(state, 1, 'Llanowar Elves')
     state.cards[lord].counters["-1/-1"] = 1
     state.cards[elf].counters["-1/-1"] = 1
 
@@ -184,19 +184,15 @@ def test_state_actions_repeat_when_a_lord_dies_and_its_buff_disappears() -> None
 
 def test_cascading_death_triggers_share_one_order_choice_after_restore() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = controlled_basic_game(deck, deck, seed=9)
+    state = canonical_state(deck, deck, scene='cascade', seed=9)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.trigger_order_choice_required = True
     state.trigger_order_choice_players = {1}
 
-    lord = _setup_creature(state, 1, "Elvish Clancaller", 1, 1)
-    state.cards[lord].type_line = "Creature - Elf Warrior"
-    state.cards[lord].oracle_text = "Other Elf creatures you control get +1/+1."
-    elf = _setup_creature(state, 1, "Llanowar Elves", 1, 1)
-    state.cards[elf].type_line = "Creature - Elf Druid"
-    watcher = _setup_creature(state, 1, "Grim Haruspex", 3, 2)
-    state.cards[watcher].oracle_text = "Whenever another nontoken creature you control dies, draw a card."
+    lord = _setup_creature(state, 1, 'Elvish Clancaller')
+    elf = _setup_creature(state, 1, 'Llanowar Elves')
+    watcher = _setup_creature(state, 1, 'Grim Haruspex')
     state.cards[lord].counters["-1/-1"] = 1
     state.cards[elf].counters["-1/-1"] = 1
 
@@ -336,13 +332,11 @@ def test_self_scales_from_other_creatures_you_control() -> None:
 
 def test_characteristic_defined_pt_counts_distinct_graveyard_card_types() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck)
+    state = canonical_state(deck, deck, scene='cda')
     state.pregame_pending = False
     state.kept_hands = {1, 2}
 
-    scaler = _setup_creature(state, 1, "Tarmogoyf", 0, 1, [])
-    state.cards[scaler].power = "*"
-    state.cards[scaler].oracle_text = "Tarmogoyf's power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1."
+    scaler = _setup_creature(state, 1, 'Tarmogoyf')
     p1 = state.players[1]
     for card_type in ("Artifact", "Instant"):
         cid = p1.library.pop()

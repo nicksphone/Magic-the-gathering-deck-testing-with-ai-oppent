@@ -3762,9 +3762,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_continuous_static_effects.py": {
-    "mtime": 1792033175.645678,
-    "seen": 1792034402.3566353,
-    "ast_hash": "676bd1be2d3c40d92a82282b6309a91d",
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2644234,
+    "ast_hash": "68450b9d0d9948a0569cb48ff0fdc780",
     "semantic_hash": ""
   },
   "backend/tests/test_continuous_static_order.py": {
@@ -4356,9 +4356,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_land_entry_choice.py": {
-    "mtime": 1792033175.6676776,
-    "seen": 1792034402.3569906,
-    "ast_hash": "a7242ad2bc661819c69dfb49f07defc1",
+    "mtime": 1792212337.001742,
+    "seen": 1792215100.2649906,
+    "ast_hash": "46954030e1772b9cf47b7a13eb9c257f",
     "semantic_hash": ""
   },
   "backend/tests/test_land_entry_history.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792209761.2883184,
-    "seen": 1792210544.6856132,
-    "ast_hash": "8989954612d4449833284640bfe32c44",
+    "mtime": 1792214970.9432476,
+    "seen": 1792215100.267725,
+    "ast_hash": "27b887667ca98c446fc4d2b50c6bef53",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -21486,9 +21486,9 @@
     "semantic_hash": ""
   },
   "docs/testing/canonical-timing-planes-combat406.md": {
-    "mtime": 1792209761.2873185,
-    "seen": 1792210544.6848245,
-    "ast_hash": "c790208fb952f23fcc741d47ab4e12e3",
+    "mtime": 1792211169.5877647,
+    "seen": 1792215100.267013,
+    "ast_hash": "9c1ee79e6a608c0ef2f807546c91a34e",
     "semantic_hash": ""
   },
   "docs/testing/cycling-timing-canonical-022758.md": {
@@ -21507,6 +21507,108 @@
     "mtime": 1792209857.2497551,
     "seen": 1792210544.6856298,
     "ast_hash": "d3f70976fae3ab8b5b4a1448442744e4",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/land_entry_a32/SOURCES.json": {
+    "mtime": 1792212337.001742,
+    "seen": 1792215100.263194,
+    "ast_hash": "2c8c94626e279522f8fb4440bcb848f5",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/static_layers_a32/PROVENANCE.json": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2636492,
+    "ast_hash": "56d3125a42046e4d28dece5400c57144",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/static_layers_a32/SOURCES.json": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2636511,
+    "ast_hash": "9f3a1237e73286c2946d30d92beedfff",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/static_layers_a32/elvish-clancaller.raw.json": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2636533,
+    "ast_hash": "2aff08165e0f61c46941ae465e809501",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/static_layers_a32/grim-haruspex.raw.json": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2636554,
+    "ast_hash": "c03840eb2d0b09ac166e32dcf31fad15",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/static_layers_a32/hill-giant.raw.json": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2636569,
+    "ast_hash": "c6013070f806332b40ae282d874eff20",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/static_layers_a32/llanowar-elves.raw.json": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2636585,
+    "ast_hash": "67539d4dda89f35e30d01b1e1cfacc46",
+    "semantic_hash": ""
+  },
+  "backend/tests/fixtures/static_layers_a32/tarmogoyf.raw.json": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2636597,
+    "ast_hash": "589bedad8573e0fdfaf501862b66d3a3",
+    "semantic_hash": ""
+  },
+  "backend/tests/land_entry_canonical_a32.py": {
+    "mtime": 1792212337.001742,
+    "seen": 1792215100.263833,
+    "ast_hash": "4096c0b1770763909f0381240b321a0b",
+    "semantic_hash": ""
+  },
+  "backend/tests/static_layers_canonical_a32.py": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.263927,
+    "ast_hash": "0b25a71549c4f42f20e6788cc2dfa597",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_land_entry_a32_fidelity.py": {
+    "mtime": 1792212337.001742,
+    "seen": 1792215100.2649887,
+    "ast_hash": "69b6a0c545fc3cfb2ce75350e7365286",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_static_layers_canonical_a32_fidelity.py": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.2657351,
+    "ast_hash": "5985b031429b554511c5424b34aff95a",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-static-land-entry243.md": {
+    "mtime": 1792215004.4656563,
+    "seen": 1792215100.2670074,
+    "ast_hash": "e6fb104f2355a881ed765341c1e089ab",
+    "semantic_hash": ""
+  },
+  "docs/testing/canonical-timing-planes-combat2260.md": {
+    "mtime": 1792211645.7657647,
+    "seen": 1792215100.2670112,
+    "ast_hash": "481ecbdca4bc2d42eaa744203c6e64fe",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-a32-hosted-browser.md": {
+    "mtime": 1792210922.5919442,
+    "seen": 1792215100.267203,
+    "ast_hash": "1d4d4245d6bb8eb83e05ab67d0146d11",
+    "semantic_hash": ""
+  },
+  "docs/testing/land-entry-canonical-a32.md": {
+    "mtime": 1792212337.001742,
+    "seen": 1792215100.2675185,
+    "ast_hash": "108885c0ca2f6f57ff141f0087e888ae",
+    "semantic_hash": ""
+  },
+  "docs/testing/static-layers-canonical-a32-stage.md": {
+    "mtime": 1792212759.2521403,
+    "seen": 1792215100.267911,
+    "ast_hash": "ea5d68379f96ee31215b9505d8addfe3",
     "semantic_hash": ""
   }
 }

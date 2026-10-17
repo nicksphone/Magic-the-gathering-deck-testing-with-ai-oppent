@@ -5,6 +5,13 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The later [static-effect/land-entry component](canonical-static-land-entry243.md)
+passes all 243 cases across six whole modules, including the corrected
+independent types/keywords oracle. All 729 phases, source/runtime preservation
+and scoped resource closure pass, with no production change. Its 25 original
+test definitions and 103 assertion ASTs remain. This is separate from the
+earlier 2,260-case declaration, not a passing larger union or Phase 1 sign-off.
+
 The latest [retained canonical composition](canonical-timing-planes-combat2260.md)
 passes all 2,260 ordinary cases across 66 whole modules, retaining the complete
 earlier 1,973 prefix and all 287 nonoverlapping timing, planeswalker and combat

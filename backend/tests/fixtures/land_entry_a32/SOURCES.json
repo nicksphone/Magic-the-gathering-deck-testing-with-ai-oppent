@@ -1,0 +1,71 @@
+{
+  "base": "a32dbd0d67586d5f6e4d5dcea2ec8860ff9ee550",
+  "cards": {
+    "Font of Agonies": {
+      "fields": 66,
+      "file": "damage_life_printed_79/font-of-agonies-scryfall-raw.json",
+      "id": "d7c02aec-4a89-4ccc-8525-6f979c10d799",
+      "line": null,
+      "object_sha256": "de0c426c3951f227d0151797b4e826d5609c60f3e86ecb465e7972bb97d25c86",
+      "oracle_id": "ab44c6fe-6a66-42f0-9e75-8b25641e1f13",
+      "provenance": [
+        {
+          "file": "damage_life_printed_79/PROVENANCE.json",
+          "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+        },
+        {
+          "file": "damage_life_printed_79/SOURCES.json",
+          "sha256": "4daf9ce1010ef72ddf860e472461340b421c614bdd9c6b359dbe7eaea57eb822"
+        }
+      ],
+      "sha256": "b13ec5bacaa3571df66d6a2cb97846bc25a633678ce83b17f110a3d9dd958f20"
+    },
+    "Island": {
+      "fields": 60,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "line": 50,
+      "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "provenance": [
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+    },
+    "Lightning Bolt": {
+      "fields": 66,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "line": 57,
+      "object_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "provenance": [
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+    },
+    "Sacred Foundry": {
+      "fields": 63,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "a7758cc6-4e18-48a5-8720-5f42b5cd9d31",
+      "line": 79,
+      "object_sha256": "504c58cc035a95cfee6c4fa290de889f6237de5dc08fb47aa6088d5d6caf427f",
+      "oracle_id": "45181cb8-2090-4471-ba90-e5a8f04d525f",
+      "provenance": [
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+    }
+  },
+  "oracle_modified": false,
+  "reuse": "complete previously verified public official objects, no new HTTP/intake"
+}
