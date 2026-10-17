@@ -3,6 +3,8 @@ from unittest.mock import patch
 
 import pytest
 
+from tests.ai_information76_canonical import canonical_card, deck_entry
+
 from ai.agent import AIAgent
 from ai.information import decision_view, is_unknown
 from ai.pending_effects import planning_copy, settled_public_position
@@ -16,8 +18,7 @@ def draw_position(seat):
     state = bare_state(seat)
     state.turn = 10
     # Existing printed Divination fixture, not a competitive deck claim.
-    card = CardInstance('draw', 'Divination', seat, seat, Zone.HAND, ['Sorcery'],
-                        mana_cost='{2}{U}', oracle_text='Draw two cards.')
+    card = canonical_card('Divination', id='draw', owner=seat, controller=seat, zone=Zone.HAND)
     state.cards[card.id] = card
     state.players[seat].hand.append(card.id)
     state.players[seat].mana_pool.update({'U': 3})
@@ -67,8 +68,7 @@ def test_existing_strict_projection_still_rejects_raw_hidden_draws(seat):
 def test_actual_announced_counterspell_prevents_projected_draw(seat):
     state, _, _ = draw_position(seat)
     opponent = 3-seat
-    counter = CardInstance('counter', 'Counterspell', opponent, opponent, Zone.HAND, ['Instant'],
-                           mana_cost='{U}{U}', oracle_text='Counter target spell.')
+    counter = canonical_card('Counterspell', id='counter', owner=opponent, controller=opponent, zone=Zone.HAND)
     state.cards[counter.id] = counter
     state.players[opponent].hand.append(counter.id)
     state.players[opponent].mana_pool['U'] = 2
@@ -107,7 +107,7 @@ def test_opposing_draw_increases_only_opaque_opponent_hand_count(seat):
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('already_drawn,expected', [(0, 1), (1, 0)])
 def test_public_count_uses_real_draw_restrictions(seat, already_drawn, expected):
-    from tests.test_static_ability_suppression import add
+    from tests.ai_information76_canonical import add_restriction as add
     state, _, _ = draw_position(seat)
     add(state, 'Spirit of the Labyrinth', 3-seat)
     state.draws_this_turn[seat] = already_drawn

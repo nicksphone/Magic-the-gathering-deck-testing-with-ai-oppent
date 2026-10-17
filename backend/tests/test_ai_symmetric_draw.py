@@ -4,24 +4,20 @@ from ai.agent import AIAgent
 from game_state.state import MatchFactory, Step
 import pytest
 
+from tests.ai_information76_canonical import deck_entry, symmetric_deck
 
-DECK = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+
+DECK = [deck_entry('Island', 60)]
 
 
-def _position():
-    state = MatchFactory.from_decks(DECK, DECK, seed=318)
+def _position(card_name='Vision Skeins'):
+    state = MatchFactory.from_decks(symmetric_deck(card_name, 318), DECK, seed=318)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 2
     state.priority_player = 1
     state.step = Step.END_STEP
     cid = state.players[1].hand[0]
-    card = state.cards[cid]
-    card.name = "Vision Skeins"
-    card.types = ["Instant"]
-    card.type_line = "Instant"
-    card.mana_cost = "{1}{U}"
-    card.oracle_text = "Each player draws two cards."
     moves = [{"type": "cast_spell", "card_id": cid}, {"type": "pass_priority"}]
     return state, moves
 
@@ -50,13 +46,8 @@ def test_ai_avoids_symmetric_draw_that_only_decks_itself():
 
 
 def test_ai_checks_x_draw_against_both_library_sizes():
-    state, moves = _position()
+    state, moves = _position('Prosperity')
     cid = moves[0]["card_id"]
-    card = state.cards[cid]
-    card.name = "Prosperity"
-    card.types = ["Sorcery"]
-    card.mana_cost = "{X}{U}"
-    card.oracle_text = "Each player draws X cards."
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
     state.players[1].mana_pool = {"C": 5, "U": 1}

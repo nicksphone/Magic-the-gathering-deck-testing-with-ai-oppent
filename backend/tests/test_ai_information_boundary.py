@@ -3,6 +3,8 @@ from unittest.mock import patch
 
 import pytest
 
+from tests.ai_information76_canonical import canonical_card, deck_entry
+
 from ai.agent import AIAgent, AIDecision
 from ai.information import decision_view
 from game_state.state import CardInstance, Zone
@@ -18,10 +20,8 @@ from rules_engine.stack_engine import add_to_stack
 def test_all_agent_paths_receive_only_their_allowed_information(seat, style, difficulty):
     state = bare_state(seat)
     other = 3-seat
-    own = CardInstance('own', 'Lightning Bolt', seat, seat, Zone.HAND, ['Instant'],
-                       mana_cost='{R}', oracle_text='Lightning Bolt deals 3 damage to any target.')
-    hidden = CardInstance('hidden', 'Counterspell', other, other, Zone.HAND, ['Instant'],
-                          mana_cost='{U}{U}', oracle_text='Counter target spell.')
+    own = canonical_card('Lightning Bolt', id='own', owner=seat, controller=seat, zone=Zone.HAND)
+    hidden = canonical_card('Counterspell', id='hidden', owner=other, controller=other, zone=Zone.HAND)
     state.cards[own.id] = own
     state.cards[hidden.id] = hidden
     state.players[seat].hand.append(own.id)
@@ -49,10 +49,8 @@ def test_all_agent_paths_receive_only_their_allowed_information(seat, style, dif
 def counter_position(seat=1):
     state = bare_state(seat)
     other = 3-seat
-    bolt = CardInstance('bolt', 'Lightning Bolt', seat, seat, Zone.HAND, ['Instant'],
-                        mana_cost='{R}', oracle_text='Lightning Bolt deals 3 damage to any target.')
-    counter = CardInstance('counter', 'Counterspell', other, other, Zone.HAND, ['Instant'],
-                           mana_cost='{U}{U}', oracle_text='Counter target spell.')
+    bolt = canonical_card('Lightning Bolt', id='bolt', owner=seat, controller=seat, zone=Zone.HAND)
+    counter = canonical_card('Counterspell', id='counter', owner=other, controller=other, zone=Zone.HAND)
     for card in [bolt, counter]:
         state.cards[card.id] = card
         state.players[card.owner].hand.append(card.id)
@@ -72,10 +70,9 @@ def test_real_decisions_ignore_unexposed_hand_and_library_identity(seat, style, 
     first = AIAgent(archetype=style, difficulty=difficulty).choose_action(state, moves, seat)
     assert serialize_match_snapshot(state) == before
     # Counterspell -> canonical basic Island; no public observation has changed.
-    hidden.name = 'Island'
-    hidden.types = ['Land']
-    hidden.mana_cost = ''
-    hidden.oracle_text = '{T}: Add {U}.'
+    hidden = canonical_card('Island', id=hidden.id, owner=hidden.owner,
+                            controller=hidden.controller, zone=hidden.zone)
+    state.cards[hidden.id] = hidden
     for player in state.players.values():
         player.library.reverse()
     after = serialize_match_snapshot(state)
@@ -146,7 +143,7 @@ def test_hidden_faces_and_custom_metadata_do_not_survive_the_information_boundar
 
 @pytest.mark.parametrize('seat', [1, 2])
 def test_foretold_owner_can_still_inspect_their_real_card_and_cast_cost(seat):
-    from tests.test_foretell import setup
+    from tests.ai_information76_canonical import foretell_setup as setup
     from rules_engine.action_validation import checked_action
     state, cid = setup(seat=seat)
     state = checked_action(state, RulesEngine(), seat, {'type': 'foretell', 'card_id': cid})

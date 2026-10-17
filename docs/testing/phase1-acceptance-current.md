@@ -5,10 +5,21 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
-The subsequent public regression union executes all 1,491 cases in 40 whole
+The latest [canonical AI/domain composition](canonical-ai-domain-composed1831.md)
+passes all 1,831 ordinary cases in 50 whole modules, including every earlier
+1,491 identity and the independently verified 320 AI and 20 domain identities.
+All 5,493 phase reports pass; pytest and the wrapper both exit 0. The reviewed
+profile records exactly four still-denied pytest symlink callbacks and all six
+original negative probes without widening native permissions. Source/runtime
+preservation and physical owned-resource closure pass, with no runner connection
+repairs. This closes the local combined I/O-profile gap on that composition,
+not remaining literal fixture scope, complete protected CI or Phase 1.
+
+The earlier public regression union executes all 1,491 cases in 40 whole
 modules: all tests and 4,473 phase reports pass in 467.32 seconds. The outer
 wrapper returns 3 for four denied link attempts, whose exact operands/frames
-remain unobserved; this is not a clean I/O-qualified combined gate. Source/runtime
+were not captured in that original run; it is not relabeled as a clean gate.
+Source/runtime
 preservation and physical resource closure pass, without runner connection
 repairs. The protected original-input cases remain CI-only, and remaining
 handwritten fixture families are still open. See the

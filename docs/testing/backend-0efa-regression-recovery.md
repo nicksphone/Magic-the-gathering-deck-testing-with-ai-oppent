@@ -48,3 +48,17 @@ clean composed gate. Source/runtime equality and physical resource closure pass;
 there are zero runner connection repairs. The complete published-backend and
 protected replay results remain separate. None of these results signs off Phase 1
 or the release.
+
+## Later Qualified Public Composition
+
+The [canonical AI/domain composition](canonical-ai-domain-composed1831.md)
+retains every one of those 1,491 identities and adds the disjoint, independently
+executed AI320 and Domain20 cohorts. The resulting 50 whole modules actually
+pass all 1,831 cases and all 5,493 phase reports, with pytest and wrapper exit 0.
+The four exact optional pytest symlink callbacks are still denied, not admitted
+or ignored; actual code/global binding and finite callback checks distinguish
+them from unexpected attempts. Original SQL permissions, negative probes and
+900-second bounds remain unchanged. Full source/runtime preservation and actual
+owned-resource closure pass with zero runner connection repairs. The older
+wrapper-3 ledger remains immutable. This new local component result is not a
+whole-backend, protected-input, browser or Phase 1 certificate.

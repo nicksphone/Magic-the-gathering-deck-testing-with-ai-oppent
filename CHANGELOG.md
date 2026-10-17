@@ -1,5 +1,19 @@
 # Changelog
 
+## Canonical AI And Domain Acceptance - 2026-10-17
+
+- Replace affected AI information/draw and domain positive fixtures with complete
+  official inputs and genuine factory capture, retaining original actions,
+  resources, seeds, budgets and assertion ASTs. No production code changes.
+- Pass the exact disjoint 1,831-case, 50-whole-module composition with all 5,493
+  phases passing and wrapper exit 0. Preserve native denial of all links while
+  recognizing only four verified pytest callbacks as expected denials; original
+  SQL roles and six negative probes remain unchanged.
+- Verify complete source/runtime preservation, zero connection repairs and
+  physical owned-resource closure. Earlier failed ledgers remain unchanged;
+  protected backend, browser recovery, literal fixture scope and Phase 1 remain
+  open rather than being inferred from this passing component.
+
 ## Canonical Copy-Entry Integration - 2026-10-16
 
 - Replace partial AI allocation fixtures with full canonical facts and native
