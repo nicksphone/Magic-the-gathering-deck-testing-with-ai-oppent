@@ -45,7 +45,7 @@ test('actual start OPTIONS XHR request continues unmodified with no POST body re
   const f = await fixture();
   await f.invoke(f.pause('OPTIONS'));
   assert.deepEqual(plain(f.calls), [
-    ['Fetch.enable', {patterns: [{urlPattern: '*/matches/start', requestStage: 'Response'}]}],
+    ['Fetch.enable', {patterns: [{urlPattern: '*/matches/start', requestStage: 'Request'}]}],
     ['Fetch.continueRequest', {requestId: 'PRIVATE_FETCH', interceptResponse: false}],
   ]);
   assert.equal(f.dropped(), 0);
@@ -103,11 +103,11 @@ test('actual nonaccepted POST response is captured but not dropped', async () =>
   ]);
 });
 
-test('actual resumeRequestCapture enables only Response stage at the unchanged start endpoint', async () => {
+test('actual resumeRequestCapture enables Request stage for POST response opt-in at the unchanged start endpoint', async () => {
   const f = await fixture();
   await f.resume();
   assert.deepEqual(plain(f.calls), Array.from({length:2}, () =>
-    ['Fetch.enable', {patterns: [{urlPattern: '*/matches/start', requestStage: 'Response'}]}]));
+    ['Fetch.enable', {patterns: [{urlPattern: '*/matches/start', requestStage: 'Request'}]}]));
 });
 
 test('actual start request continuation error is observed and is not an accepted POST attempt', async () => {

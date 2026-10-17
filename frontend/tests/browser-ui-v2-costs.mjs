@@ -54,7 +54,7 @@ try {
   continueHeld=()=>command('Fetch.continueResponse',{requestId:e.requestId});
  }, ui, value=>console.error('V2_HELD_RESPONSE_TRACE',JSON.stringify(value)), {backend:api}));
  s=await setup('/fixture');
- await b.command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Response'}]});
+ await b.command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Request'}]});
  await b.click('Play Land Forest');
  await b.waitFor("document.body.innerText.includes('Match operation pending')");
  assert.equal(await b.evaluate("[...document.querySelectorAll('#table fieldset,#match-controls fieldset')].every(e=>e.disabled)"),true);
