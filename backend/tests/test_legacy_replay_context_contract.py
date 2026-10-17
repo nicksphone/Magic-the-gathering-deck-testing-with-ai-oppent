@@ -31,6 +31,28 @@ LKI = {
 }
 
 
+PRE_LKI = {
+    'loyalty': None,
+    '__copiable_lki': deepcopy(LKI),
+    'characteristic_record': {
+        'version': 1,
+        'physical': {
+            'name': 'Public Bear', 'mana_cost': '{1}{G}', 'type_line': 'Creature - Bear',
+            'types': ['Creature'], 'power': 2, 'toughness': 2,
+            'printed_power': '2', 'printed_toughness': '2', 'loyalty': None,
+            'oracle_text': '', 'keywords': [], 'colors': ['G'],
+            'card_faces': [], 'layout': '', 'selected_face_index': None, 'image_uri': None,
+        },
+        'values': {
+            'name': 'Public Bear', 'mana_cost': '{1}{G}', 'type_line': 'Creature - Bear',
+            'types': ['Creature'], 'power': 2, 'toughness': 2,
+            'printed_power': '2', 'printed_toughness': '2', 'loyalty': None,
+            'oracle_text': '', 'keywords': [], 'colors': ['G'],
+        },
+    },
+}
+
+
 def public_pre():
     source = CardInstance('source', 'Shock', 1, 1, Zone.HAND, types=['Instant'],
                           mana_cost='{R}', oracle_text='Shock deals 2 damage to any target.',
@@ -101,7 +123,7 @@ def test_pre_capture_is_detached_from_mutable_actual_and_pre_state():
     receipt = {'pid': 1, 'action': deepcopy(row['action'])}
     lki = producer('_capture_legacy_pre_step')(state, receipt, 'victim', context)
     assert context['history'] == {'1': ['R'], '2': []}
-    assert lki == LKI
+    assert lki == PRE_LKI
     context['departed_lki']['victim'] = lki
     expected_before = canonical(context)
     actual = serialize_match_snapshot(state)
@@ -113,7 +135,7 @@ def test_pre_capture_is_detached_from_mutable_actual_and_pre_state():
     state.cards['victim'].battlefield_incarnation = 99
     assert canonical(context) == expected_before
     assert context['binding'] == BINDING
-    assert context['departed_lki']['victim'] == LKI
+    assert context['departed_lki']['victim'] == PRE_LKI
 
 
 @pytest.mark.parametrize('field', ['history', 'history_known', 'source_id', 'binding', 'departed_lki'])
@@ -215,7 +237,7 @@ def test_public_death_lki_requires_exact_pre_evidence(corruption):
     context = producer('_legacy_replay_context')(row, pre_state)
     lki = producer('_capture_legacy_pre_step')(
         pre_state, {'pid': 2, 'action': {'type': 'pass_priority'}}, 'victim', context)
-    assert lki == LKI
+    assert lki == PRE_LKI
     context['departed_lki']['victim'] = lki
     # Independently declared old death reference and current committed reference.
     _, legacy = public_pre()

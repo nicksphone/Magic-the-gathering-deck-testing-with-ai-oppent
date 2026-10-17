@@ -65,14 +65,17 @@ def _assert_legacy_snapshot_parity(actual, historical, original, history, histor
                 assert key not in old['payload']
                 current['payload'].pop(key)
     for cid, lki in departed_lki.items():
-        for current, raw in [(actual['cards'][cid], original['cards'][cid]), *[
+        for current, raw, observation in [(actual['cards'][cid], original['cards'][cid], False), *[
                 (actual['card_observations'][seat][cid],
-                 original['card_observations'][seat][cid]) for seat in ('1', '2')]]:
-            assert current['last_known_battlefield']['loyalty'] == lki['descriptor']['loyalty']
-            assert canonical(current['last_known_battlefield']['__copiable_lki']) == canonical(lki)
+                 original['card_observations'][seat][cid], True) for seat in ('1', '2')]]:
+            assert canonical(current['last_known_battlefield']['loyalty']) == canonical(lki['loyalty'])
+            assert canonical(current['last_known_battlefield']['__copiable_lki']) == canonical(lki['__copiable_lki'])
+            assert canonical(current['characteristic_record']) == canonical(lki['characteristic_record'])
             for key in ('loyalty', '__copiable_lki'):
                 if key not in raw['last_known_battlefield']:
                     current['last_known_battlefield'].pop(key)
+            if observation and 'characteristic_record' not in raw:
+                current.pop('characteristic_record')
     for seat, observations in actual['card_observations'].items():
         for cid, current in observations.items():
             raw = original['card_observations'].get(seat, {}).get(cid)
@@ -162,19 +165,10 @@ def _capture_legacy_pre_step(state, receipt, victim_id, context):
         assert not any(victim_before.counters.get('__crew_added_' + kind.lower())
                        for kind in victim_before.types)
         assert list(effective_types(state, victim_before)) == victim_before.types
-        descriptor = {key: deepcopy(getattr(victim_before, key)) for key in (
-            'name', 'mana_cost', 'type_line', 'power', 'toughness', 'printed_power',
-            'printed_toughness', 'oracle_text', 'keywords', 'colors', 'image_uri', 'loyalty')}
-        descriptor['types'] = list(dict.fromkeys([*victim_before.types, 'Token']))
-        descriptor['colors'] = deepcopy(victim_before.colors or [])
-        if victim_before.layout in {'transform', 'modal_dfc', 'double_faced_token'}:
-            face = victim_before.selected_face_index if victim_before.selected_face_index is not None else 0
-            assert len(victim_before.card_faces) == 2 and type(face) is int and face in (0, 1)
-            descriptor.update(card_faces=deepcopy(victim_before.card_faces),
-                              layout='double_faced_token', selected_face_index=face)
-        return {'reference': [object_incarnation(victim_before), victim_before.zone_change_sequence],
-                'controller': victim_before.controller, 'types': list(victim_before.types),
-                'descriptor': descriptor}
+        from tests.legacy_lki_pre_expectation import expected_legacy_copiable_lki
+        return {'loyalty': deepcopy(victim_before.loyalty),
+                '__copiable_lki': expected_legacy_copiable_lki(victim_before),
+                'characteristic_record': deepcopy(victim_before.characteristic_record)}
     return None
 
 
@@ -224,10 +218,15 @@ def test_private_legacy_adapter_rejects_independent_protocol_corruption(monkeypa
     if corruption == 'colors':
         monkeypatch.setattr('rules_engine.turn_spell_protection.card_color_symbols', lambda *args: set())
     elif corruption == 'descriptor':
-        from effects import handlers
-        original = handlers.token_copy_descriptor
-        monkeypatch.setattr(handlers, 'token_copy_descriptor',
-                            lambda card: {**original(card), 'mana_cost': 'incorrect'})
+        from tests.legacy_descriptor_corruption import corrupt_serialized_copy_descriptors
+        original = serialize_match_snapshot
+        descriptor_mutations = 0
+        def wrong_descriptor(state):
+            nonlocal descriptor_mutations
+            snapshot = deepcopy(original(state))
+            descriptor_mutations += corrupt_serialized_copy_descriptors(snapshot)
+            return snapshot
+        monkeypatch.setattr(__name__ + '.serialize_match_snapshot', wrong_descriptor)
     elif corruption == 'observation':
         original = serialize_match_snapshot
         def missing_default(state):
@@ -259,6 +258,8 @@ def test_private_legacy_adapter_rejects_independent_protocol_corruption(monkeypa
         monkeypatch.setattr(__name__ + '.serialize_match_snapshot', wrong_protocol_type)
     with pytest.raises(AssertionError):
         test_exact_captured_resolution_preserves_original_trace_and_proves_loss()
+    if corruption == 'descriptor':
+        assert descriptor_mutations > 0
 
 
 def test_rank_materialization_and_profit_diagnostics_are_root_pure_and_private():

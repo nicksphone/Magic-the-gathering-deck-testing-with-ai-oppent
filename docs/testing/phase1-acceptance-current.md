@@ -5,6 +5,15 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The subsequent public regression union executes all 1,491 cases in 40 whole
+modules: all tests and 4,473 phase reports pass in 467.32 seconds. The outer
+wrapper returns 3 for four denied link attempts, whose exact operands/frames
+remain unobserved; this is not a clean I/O-qualified combined gate. Source/runtime
+preservation and physical resource closure pass, without runner connection
+repairs. The protected original-input cases remain CI-only, and remaining
+handwritten fixture families are still open. See the
+[regression recovery boundary](backend-0efa-regression-recovery.md).
+
 The older whole-backend failure has an explicit
 [224-call recovery ledger](backend-0efa-regression-recovery.md). The reviewed
 public-inventory correction passes 719 cases across 11 whole modules, including

@@ -9558,9 +9558,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_natural_heat_target_audit.py": {
-    "mtime": 1792033175.6796775,
-    "seen": 1792034402.3571837,
-    "ast_hash": "b4497f69f68d83bf9c120cca1aa7d293",
+    "mtime": 1792194731.8934238,
+    "seen": 1792194866.698271,
+    "ast_hash": "92016d409374bfa29a1c866a0e4fc419",
     "semantic_hash": ""
   },
   "backend/tests/test_release_token_media_packaging.py": {
@@ -16296,9 +16296,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_legacy_replay_context_contract.py": {
-    "mtime": 1792033175.6696775,
-    "seen": 1792034402.3570187,
-    "ast_hash": "f45fe344ff72cc954807a8d0033d62a4",
+    "mtime": 1792192761.0103905,
+    "seen": 1792192909.0005336,
+    "ast_hash": "ab4c722a180eda8d5f7b0d65c9b7f33d",
     "semantic_hash": ""
   },
   "backend/tests/test_loyalty_animation_spelling_boundary.py": {
@@ -21108,9 +21108,9 @@
     "semantic_hash": ""
   },
   "docs/testing/backend-0efa-regression-recovery.md": {
-    "mtime": 1792191443.1454427,
-    "seen": 1792191630.0320888,
-    "ast_hash": "d610f3bf13bab3ffce2c04dab4302d00",
+    "mtime": 1792194733.851392,
+    "seen": 1792194866.6999223,
+    "ast_hash": "2261c4ae7f7b4bf2cf392d279f714845",
     "semantic_hash": ""
   },
   "docs/testing/canonical-copy-cleanup-current.md": {
@@ -21165,6 +21165,36 @@
     "mtime": 1792189666.6761146,
     "seen": 1792191630.0331922,
     "ast_hash": "67ee2f44cb97c36b3df6b2622c136314",
+    "semantic_hash": ""
+  },
+  "backend/tests/legacy_lki_pre_expectation.py": {
+    "mtime": 1792192761.0103905,
+    "seen": 1792192908.9994457,
+    "ast_hash": "5a60b3484967ddf26131e2164ac51d7e",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_public_legacy_lki_protocol.py": {
+    "mtime": 1792192761.0103905,
+    "seen": 1792192909.0009212,
+    "ast_hash": "135d3e45e52efd323dff91e7004fe758",
+    "semantic_hash": ""
+  },
+  "docs/testing/public-legacy-lki-expectation.md": {
+    "mtime": 1792194733.851392,
+    "seen": 1792194866.7007763,
+    "ast_hash": "d1248005331ea6a3aed5c6e56deef85c",
+    "semantic_hash": ""
+  },
+  "backend/tests/legacy_descriptor_corruption.py": {
+    "mtime": 1792194731.8934238,
+    "seen": 1792194866.6969755,
+    "ast_hash": "43cadb2de8743f343b89cc39cd484379",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_public_legacy_descriptor_corruption.py": {
+    "mtime": 1792194731.8934238,
+    "seen": 1792194866.6984386,
+    "ast_hash": "e41dbddea9868acd44d2acf4b4eb1b6f",
     "semantic_hash": ""
   }
 }
