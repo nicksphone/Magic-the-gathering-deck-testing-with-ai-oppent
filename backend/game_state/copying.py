@@ -1,7 +1,8 @@
 """Selective simulation copies with one memo and explicit history retention."""
-from copy import deepcopy, _keep_alive
+from copy import deepcopy, _keep_alive, _deepcopy_dispatch, dispatch_table
+from types import GetSetDescriptorType
 
-from game_state.state import CardInstance, Zone
+from game_state.state import CardInstance, MatchState, Zone
 
 
 _immutable_card_types = frozenset((str, int, float, bool, type(None), Zone))
@@ -17,6 +18,23 @@ def copy_match_state(state, *, memo=None, include_history=True, _field_copier=No
     elif type(log) is list and all(type(entry) is str for entry in log):
         memo.setdefault(id(log), log.copy())
     copy_field = _copy_card_field if _field_copier is None else _field_copier
+    root_attributes = None
+    hooks = ('__deepcopy__', '__getstate__', '__setstate__', '__reduce__',
+             '__reduce_ex__', '__getnewargs__', '__getnewargs_ex__',
+             '__getattr__', '__getattribute__', '__new__')
+    if (type(state) is MatchState and MatchState.__bases__ == (object,)
+            and type(MatchState.__dict__.get('__dict__')) is GetSetDescriptorType
+            and not any(name in MatchState.__dict__ for name in hooks)
+            and MatchState not in _deepcopy_dispatch and MatchState not in dispatch_table):
+        attributes = vars(state)
+        if (type(attributes) is dict and not any(name in attributes for name in hooks)
+                and id(state) not in memo and id(attributes) not in memo):
+            root_attributes = attributes
+            result = object.__new__(MatchState)
+            root_dictionary = {}
+            # Card metadata may reach either root before the Card prepass ends.
+            memo[id(state)] = result
+            memo[id(attributes)] = root_dictionary
     # Explicit attribute-dictionary overrides and subclasses retain deepcopy's
     # contract. Ordinary cards can bypass immutable-field reconstruction.
     cards = [card for card in getattr(state, 'cards', {}).values()
@@ -31,6 +49,17 @@ def copy_match_state(state, *, memo=None, include_history=True, _field_copier=No
             key: value if type(value) in _immutable_card_types else copy_field(value, memo)
             for key, value in card.__dict__.items()
         })
+    if root_attributes is not None:
+        # Exact sets can have registered protocols which the Card copier bypasses.
+        copy_root_field = (deepcopy if set in dispatch_table or set in _deepcopy_dispatch
+                           else _copy_card_field)
+        for key, value in root_attributes.items():
+            child = copy_root_field(value, memo)
+            root_dictionary[copy_root_field(key, memo)] = child
+        # deepcopy updates the new instance dictionary; aliases retain a distinct D.
+        result.__dict__.update(root_dictionary)
+        _keep_alive(root_attributes, memo)
+        _keep_alive(state, memo)
     return deepcopy(state, memo)
 
 

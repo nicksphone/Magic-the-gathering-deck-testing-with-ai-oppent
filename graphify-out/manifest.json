@@ -19020,9 +19020,9 @@
     "semantic_hash": ""
   },
   "backend/game_state/copying.py": {
-    "mtime": 1792074145.0557783,
-    "seen": 1792074525.0963132,
-    "ast_hash": "185b042c2ba65d62f6cd3d74623a8af0",
+    "mtime": 1792218646.6349428,
+    "seen": 1792218847.6544182,
+    "ast_hash": "b4414444828a9b6b234b1357a64420fa",
     "semantic_hash": ""
   },
   "backend/tests/test_payment_trial_copy.py": {
@@ -21627,6 +21627,36 @@
     "mtime": 1792216728.608615,
     "seen": 1792216881.6294286,
     "ast_hash": "b06d78172def6285bee0268a5a1dc3fc",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_root_copy_preallocation_protocol.py": {
+    "mtime": 1792218646.6359427,
+    "seen": 1792218847.658146,
+    "ast_hash": "f5a9d7b6a919b9557c9eda73480a06a2",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_root_copy_registered_set_protocol.py": {
+    "mtime": 1792218646.6359427,
+    "seen": 1792218847.6581478,
+    "ast_hash": "013b3d76c69393656ef32aa9379c0568",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_root_metadata_copy_contract.py": {
+    "mtime": 1792218646.6349428,
+    "seen": 1792218847.6581495,
+    "ast_hash": "8d9c6b04bc04d883913a080c66167b18",
+    "semantic_hash": ""
+  },
+  "docs/testing/root-metadata-copy-contract.md": {
+    "mtime": 1792218646.6359427,
+    "seen": 1792218847.6604452,
+    "ast_hash": "1aee0f6327b2759f2bb29bba28e8690e",
+    "semantic_hash": ""
+  },
+  "docs/testing/shared-copy-payment-current194.md": {
+    "mtime": 1792218646.7199414,
+    "seen": 1792218847.660483,
+    "ast_hash": "1d2c38309c1fcebd8ef9edaa0e3b6c9e",
     "semantic_hash": ""
   }
 }
