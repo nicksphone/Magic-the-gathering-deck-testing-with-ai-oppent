@@ -32,6 +32,15 @@ SCRIPTS = privacy.SCRIPTS
 SENTINEL = privacy.SENTINEL
 
 
+def _public_environment_probe(source, repository):
+    return ('import json, os, sys\n'
+            'from pathlib import Path\n'
+            "assert set(os.environ) <= {'PATH', 'LANG', 'LC_CTYPE'}\n"
+            f'source_roots = [Path(p).resolve() for p in {(str(source), str(repository))!r}]\n'
+            'assert not any(Path(p).resolve().is_relative_to(root) for p in sys.path for root in source_roots)\n'
+            "print(json.dumps({'nonfinal': True, 'environment_clean': 1}), flush=True)\n")
+
+
 def load(name):
     path = SCRIPTS / (name + '.py')
     if not path.is_file():
@@ -396,10 +405,7 @@ class PublisherBoundaryTests(unittest.TestCase):
             '() { if [[ -e /proc/self/fd/5 ]]; then printf "%s" '
             + SENTINEL + ' >&5; return 24; fi; builtin command "$@"; }')
         script = self.fixture.source / '.github/scripts/ci_backend_progress.py'
-        script.write_text('import json, os, sys\n'
-            "assert set(os.environ) <= {'PATH', 'LANG', 'LC_CTYPE'}\n"
-            "assert not any('backend' in p or 'scripts' in p for p in sys.path)\n"
-            "print(json.dumps({'nonfinal': True, 'environment_clean': 1}), flush=True)\n")
+        script.write_text(_public_environment_probe(self.fixture.source, SCRIPTS.parents[1]))
         result, evidence, elapsed = self.run_progress('pass')
         self.assertEqual(result.returncode, 0)
         self.assertEqual(json.loads((self.fixture.root / 'public.jsonl').read_text()),
@@ -466,6 +472,53 @@ class PublisherBoundaryTests(unittest.TestCase):
         self.assertEqual(workflow.count('permissions:'), 1)
         self.assertNotIn('contents: write', workflow)
         self.assertNotIn('actions: write', workflow)
+
+
+class PublicProbePathTests(unittest.TestCase):
+    def test_real_probe_allows_runtime_names_but_rejects_source_and_alias_paths(self):
+        with tempfile.TemporaryDirectory(prefix='ci-progress-path-protocol-') as directory:
+            root = Path(directory)
+            source = root / 'source'
+            repository = root / 'repository'
+            (source / 'backend').mkdir(parents=True)
+            (source / '.github/scripts').mkdir(parents=True)
+            (repository / 'backend').mkdir(parents=True)
+            (repository / '.github/scripts').mkdir(parents=True)
+            alias = root / 'outside-alias'
+            alias.symlink_to(source / 'backend', target_is_directory=True)
+            repository_alias = root / 'repository-alias'
+            repository_alias.symlink_to(repository / '.github/scripts', target_is_directory=True)
+            # These are public path operands, not new/altered runtime installations.
+            vectors = (
+                ('backend_runtime', root / 'backend-venv/lib/python3.12/site-packages', True),
+                ('scripts_runtime', root / 'scripts-runtime/lib/python3.12/site-packages', True),
+                ('sibling_prefix', root / 'source-extra', True),
+                ('source_root', source, False),
+                ('backend_source', source / 'backend', False),
+                ('scripts_source', source / '.github/scripts', False),
+                ('source_alias', alias, False),
+                ('repository_root', repository, False),
+                ('repository_backend', repository / 'backend', False),
+                ('repository_scripts', repository / '.github/scripts', False),
+                ('repository_alias', repository_alias, False),
+            )
+            probe = _public_environment_probe(source, repository)
+            for label, entry, admitted in vectors:
+                with self.subTest(vector=label):
+                    code = f'import sys\nsys.path.append({str(entry)!r})\n' + probe
+                    result = subprocess.run(
+                        [sys.executable, '-I', '-B', '-c', code], cwd=root,
+                        env={'PATH': os.defpath, 'LANG': 'C.UTF-8'},
+                        capture_output=True, text=True, timeout=10)
+                    if admitted:
+                        self.assertEqual(result.returncode, 0)
+                        self.assertEqual(result.stderr, '')
+                        self.assertEqual(json.loads(result.stdout),
+                                         {'nonfinal': True, 'environment_clean': 1})
+                    else:
+                        self.assertEqual(result.returncode, 1)
+                        self.assertEqual(result.stdout, '')
+                        self.assertTrue(result.stderr.endswith('AssertionError\n'))
 
 
 if __name__ == '__main__':

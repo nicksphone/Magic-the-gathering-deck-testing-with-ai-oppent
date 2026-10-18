@@ -24,6 +24,17 @@ source is3779 plus only the three diagnostic paths. No raw backend log or privat
 trace is read or published. This candidate is not yet a hosted root-cause fix;
 the next hosted result remains required.
 
+Hosted run39158296435 then supplies one safe hashed selftest failure identifier,
+mapping to the publisher environment probe. Its broad path-word ban incorrectly
+rejects the workflow's legitimate `backend-venv` directory. The test-only fix
+uses canonical containment for both actual source roots instead, preserving
+the environment/sentinel/output checks. A whole31 baseline records all30 old
+methods passing and one new method with six failing subtests; the corrected31
+passes. The full22-module270 suite passes in104.760 seconds with all12 finality
+checks true. The production runner and permissions are unchanged. Hosted
+confirmation and the separate browser interception failure remain open; these
+local results are not Phase1 sign-off.
+
 The October18 [Temporary Lockdown birth correction](temporary-lockdown-current163-static-prep.md)
 passes41 ordinary cases in four whole modules, after the paired baseline
 records37 passes and four new fidelity failures. All32 original cases pass both

@@ -16542,9 +16542,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_backend_ci_progress.py": {
-    "mtime": 1792344084.3097694,
-    "seen": 1792344299.0847468,
-    "ast_hash": "6a1466c0bc9c6c8792586aa7ada8b823",
+    "mtime": 1792353330.2119555,
+    "seen": 1792353896.6059,
+    "ast_hash": "f3fd5b059013e1edde6470dc5a1068ee",
     "semantic_hash": ""
   },
   "backend/tests/test_guard_canary_scope.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792350271.5590637,
-    "seen": 1792350649.1864314,
-    "ast_hash": "12538d7f5599226f61fc6e403d3685aa",
+    "mtime": 1792353816.3777742,
+    "seen": 1792353896.612535,
+    "ast_hash": "5f093a3a3a1ecc1107387365c346e298",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -22440,9 +22440,9 @@
     "semantic_hash": ""
   },
   "docs/testing/backend-sharded-ci.md": {
-    "mtime": 1792350271.5580637,
-    "seen": 1792350649.1855075,
-    "ast_hash": "b1b311af0f882cb7b5cde1d6ec6c5df5",
+    "mtime": 1792353816.3767743,
+    "seen": 1792353896.6117182,
+    "ast_hash": "4f468563981252079461346b21778a14",
     "semantic_hash": ""
   },
   ".github/scripts/ci_selftest_annotations.py": {
@@ -22476,9 +22476,9 @@
     "semantic_hash": ""
   },
   "docs/testing/copy-stack-current160-canonical.md": {
-    "mtime": 1792350509.7198567,
-    "seen": 1792350649.1858094,
-    "ast_hash": "da6b83335d9fa9859409ba567d8914d8",
+    "mtime": 1792351060.5500505,
+    "seen": 1792353896.6119802,
+    "ast_hash": "27c05f85f9f8ff0170a8193eec0e6749",
     "semantic_hash": ""
   }
 }

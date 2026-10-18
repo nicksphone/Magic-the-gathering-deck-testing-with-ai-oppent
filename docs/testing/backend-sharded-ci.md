@@ -56,6 +56,31 @@ only synthetic public header bytes. No game logs, protected trace, secret,
 private-input preparation, upload or artifact permission is added. This is a
 diagnostic change, not a claimed fix for the unknown hosted failure.
 
+## Publisher Path Probe Correction
+
+The hashed annotation from hosted run39158296435 identifies
+`PublisherBoundaryTests.test_clean_environment_has_no_private_inputs_or_backend_pythonpath`.
+Its synthetic probe rejected any sys.path string containing `backend` or
+`scripts`, including the workflow's legitimate `backend-venv` site-packages.
+The production publisher already uses its captured interpreter with a clean
+environment and `-I -B`. No runner, environment policy, loader or deadline is
+changed by this correction.
+
+The test now checks canonical containment against both its synthetic source
+and the actual imported repository. Eleven public path operands exercise
+legitimate runtime names, a similarly prefixed sibling, both source roots and
+their direct/aliased children. The original probe with these controls runs31
+methods: all30 originals pass, while the new method records six failing subtest
+entries. The corrected whole31 passes; the complete22-whole-module270 suite
+also passes in104.760 seconds, retaining the original269 ordered subsequence.
+All12 source/runtime/resource finality checks pass. The environment allowlist,
+private-input sentinel and exact public-output assertions remain unchanged.
+
+This is a test-oracle correction, not evidence of an actual hosted source leak.
+The hosted annotation identifies the failed parent, not its detailed operands;
+raw backend logs and the protected trace were not inspected. Confirmation on
+the next hosted source remains required, as does full backend acceptance.
+
 ## Collection And Four Sessions
 
 `backend-reference` runs the existing metadata/operator controls, then the full
