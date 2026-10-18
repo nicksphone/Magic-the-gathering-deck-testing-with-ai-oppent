@@ -5,6 +5,17 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The October18 [browser filter capability correction](browser-fetch-filter-capability.md)
+passes all116 cases in three whole frontend contract modules. Its unchanged
+baseline passes109 and fails seven genuine new expectations; all108 inherited
+cases pass both times. The drivers expose an explicit per-page transport
+capability, and recovery requests a native Fetch resource-type filter only on
+CDP. Firefox retains its existing interception contract. Source/runtime/resource
+closure checks pass, but these mock/driver tests are not whole-browser evidence.
+Hosted run39161755968 has passed frontend and backend-reference checks; its
+four workers and separate browser job were still running when this correction
+was prepared. Whole-backend and real-browser confirmation remain open.
+
 The October18 [sharded CI candidate](backend-sharded-ci.md) is published in
 commit `3779aae4`. A clean local run passes all260 selftests in21 whole modules,
 including the real public-toy E2E check, in104.676 seconds. Source, runtime and

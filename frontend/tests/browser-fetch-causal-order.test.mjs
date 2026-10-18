@@ -125,7 +125,8 @@ test('actual UI caller captures after-first metadata only after its existing fai
   const event = pause({responseStatusCode: undefined, responseErrorReason: 'Failed'});
   const command = async method => { calls.push(method); if (method === 'Fetch.continueResponse') throw primary; };
   const context = {api: back, origin: front, traceStartRecoveryResponses, continueRequestForPostResponse, command,
-    b: {onIntercept(value) { trace = value; }, async browserIdentity() { reads.push('runtime'); return {product: 'Chrome/155.0.8059.85', protocolVersion: '1.3'}; }},
+    b: {supportsFetchResourceTypeFilter: true,
+      onIntercept(value) { trace = value; }, async browserIdentity() { reads.push('runtime'); return {product: 'Chrome/155.0.8059.85', protocolVersion: '1.3'}; }},
     click: async () => { trace.observeBrowserEvent({method: 'Fetch.requestPaused', params: event}, owner); await trace(event); },
     evaluate: async () => ({activeMatch: true, renderedMatch: true, renderedRevision: '0', enabledPrefixCount: 0}),
     waitFor: async () => assert.fail('No recovery predicate after native rejection'),

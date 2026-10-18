@@ -183,6 +183,7 @@ export async function openBrowser(url) {
   await command('Page.getFrameTree');
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
   return {command, evaluate, waitFor, click, reload, enableOwnedIframeInterception, assertInterceptionHealthy,
+    get supportsFetchResourceTypeFilter() { return nativePage === null; },
     waitForInterceptions, onIntercept: handler => { intercept = handler; }, async close() {
       let diagnosticError;
       try {

@@ -326,3 +326,85 @@ for(const name of ['./browser-ui-v2.mjs','./browser-ui-redesign.mjs','./browser-
   }
  });
 }
+
+// Use the actual driver return objects, never a source projection of the getter.
+for (const name of ['./browser-driver.mjs', './release-owned/browser-driver.mjs']) {
+  test(`${name}: actual CDP page exposes a readonly true filter capability bound to that page`, async t => {
+    const driver = await loadDriver(name);
+    await ownTrace(t);
+    const previousOrigin = process.env.MTG_BROWSER_ORIGIN;
+    process.env.MTG_BROWSER_ORIGIN = 'http://runtime.invalid';
+    t.after(() => {
+      if (previousOrigin === undefined) delete process.env.MTG_BROWSER_ORIGIN;
+      else process.env.MTG_BROWSER_ORIGIN = previousOrigin;
+    });
+    const commands = [], requests = [];
+    let closed = 0;
+    class Socket {
+      constructor(url) {
+        assert.equal(url, 'ws://runtime.invalid');
+        queueMicrotask(() => this.onopen?.());
+      }
+      send(raw) {
+        const message = JSON.parse(raw); commands.push(message);
+        const result = message.method === 'Runtime.evaluate' ? {result: {value: true}} : {};
+        queueMicrotask(() => this.onmessage({data: JSON.stringify({id: message.id, result})}));
+      }
+      close() { closed++; }
+    }
+    const previousSocket = globalThis.WebSocket;
+    globalThis.WebSocket = Socket;
+    t.after(() => { globalThis.WebSocket = previousSocket; });
+    t.mock.method(globalThis, 'fetch', async (url, options) => {
+      requests.push([url, options]);
+      if (url === 'http://runtime.invalid/json/new?http://ui.invalid') {
+        assert.equal(options.method, 'PUT');
+        return {json: async () => ({id: 'owned-cdp-capability', webSocketDebuggerUrl: 'ws://runtime.invalid'})};
+      }
+      assert.equal(url, 'http://runtime.invalid/json/close/owned-cdp-capability');
+      return {};
+    });
+    const page = await driver.openBrowser('http://ui.invalid');
+    try {
+      const descriptor = Object.getOwnPropertyDescriptor(page, 'supportsFetchResourceTypeFilter');
+      assert.equal(typeof descriptor?.get, 'function', 'Capability must be an own readonly getter');
+      assert.equal(descriptor.set, undefined);
+      const before = [commands.length, requests.length];
+      assert.equal(page.supportsFetchResourceTypeFilter, true);
+      assert.equal(descriptor.get.call({}), true);
+      assert.throws(() => { page.supportsFetchResourceTypeFilter = false; }, TypeError);
+      const laterTransport = fixture();
+      driver.configureFirefoxTransport(laterTransport.transport);
+      assert.equal(page.supportsFetchResourceTypeFilter, true, 'A later global binding cannot change this CDP page');
+      assert.deepEqual(laterTransport.opened, []);
+      assert.deepEqual([commands.length, requests.length], before, 'Reading capability must not issue a command or probe');
+    } finally {
+      await page.close();
+    }
+    assert.equal(closed, 1);
+    assert.equal(requests.length, 2);
+  });
+
+  test(`${name}: actual bound Firefox page exposes a readonly false filter capability without CDP fallback`, async t => {
+    const driver = await loadDriver(name), f = fixture();
+    await ownTrace(t);
+    const fetcher = t.mock.method(globalThis, 'fetch', () => { throw Error('No CDP discovery for a bound Firefox page'); });
+    driver.configureFirefoxTransport(f.transport);
+    const page = await driver.openBrowser('http://ui.invalid');
+    try {
+      const descriptor = Object.getOwnPropertyDescriptor(page, 'supportsFetchResourceTypeFilter');
+      assert.equal(typeof descriptor?.get, 'function', 'Capability must be an own readonly getter');
+      assert.equal(descriptor.set, undefined);
+      const before = f.commands.length;
+      assert.equal(page.supportsFetchResourceTypeFilter, false);
+      assert.equal(descriptor.get.call({supportsFetchResourceTypeFilter: true}), false);
+      assert.throws(() => { page.supportsFetchResourceTypeFilter = true; }, TypeError);
+      assert.equal(f.commands.length, before);
+      assert.equal(fetcher.mock.callCount(), 0);
+    } finally {
+      await page.close();
+    }
+    assert.deepEqual(f.opened, ['http://ui.invalid']);
+    assert.equal(f.closed, 1);
+  });
+}

@@ -26,7 +26,8 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   storedId = 'new-fixture', renderedId = 'new-fixture', alertText = '', pending = false,
   restoring = false, renderedRevision = '0', buttons = [], canonicalRevision = 0,
   diagnosticReadError, holdDiagnosticRead = false, identityError, holdIdentity = false,
-  networkError, holdNetwork = false } = {}) {
+  networkError, holdNetwork = false,
+  browserCapabilities = {supportsFetchResourceTypeFilter: true} } = {}) {
   const events = [], tasks = [], logs = [], calls = [], state = { id: 'new-fixture', revision: 0 };
   const fail = deferred(), ui = deferred(), continuation = deferred(), uiRead = deferred();
   const stateRead = deferred();
@@ -38,6 +39,7 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   let now = 0, sequence = 0; const timers = new Map();
   const timeout = new Error('Current accepted response was not dropped');
   const browser = {
+    ...browserCapabilities,
     async browserIdentity(signal) {
       identityReads.push(signal);
       if (holdIdentity) await identityRead.promise;
@@ -383,7 +385,9 @@ test('request-only timeout retains no fake POST response or request-phase respon
 });
 
 test('actual drop enable captures response stage at the same exact action endpoint', async () => {
-  const p = protocol(); p.fail.resolve(); await p.promise;
+  const p = protocol({browserCapabilities: {supportsFetchResourceTypeFilter: false},
+    identityError: new Error('CDP browser identity unavailable on Firefox transport')});
+  p.fail.resolve(); await p.promise;
   assert.deepEqual(JSON.parse(JSON.stringify(p.calls.find(([name]) => name === 'Fetch.enable'))),
     ['Fetch.enable', {patterns:[{urlPattern:'http://fixture.invalid/matches/new-fixture/action',requestStage:'Response'}]}]);
 });
@@ -868,3 +872,52 @@ test('missing POST metadata remains bounded and redacts unknown browser failure 
   assert.ok(p.logs[0][1].length<24000);
   assert.equal(p.events.filter(event=>event==='click').length,1);
 });
+
+// New transport-capability protocols; these VM fixtures are not browser evidence.
+for (const [name, supported, expectedPattern] of [
+  ['CDP', true, {urlPattern: 'http://fixture.invalid/matches/new-fixture/action',
+    requestStage: 'Response', resourceType: 'Fetch'}],
+  ['Firefox-compatible', false, {urlPattern: 'http://fixture.invalid/matches/new-fixture/action',
+    requestStage: 'Response'}],
+]) {
+  test(`${name} capability selects the exact pattern without bypassing drop or reconciliation`, async () => {
+    const p = protocol({browserCapabilities: {supportsFetchResourceTypeFilter: supported},
+      lateUi: true, ...(supported ? {} : {
+        identityError: new Error('CDP browser identity unavailable on Firefox transport'),
+      })});
+    await flush();
+    p.fail.resolve(); await flush();
+    const waitingForReconciliation = !p.completed();
+    p.ui.resolve();
+    const state = await p.promise;
+    assert.deepEqual(JSON.parse(JSON.stringify(p.calls.find(([method]) => method === 'Fetch.enable'))),
+      ['Fetch.enable', {patterns: [expectedPattern]}]);
+    assert.equal(waitingForReconciliation, true);
+    assert.equal(state.revision, 1);
+    assert.equal(p.events.filter(event => event === 'Fetch.failRequest').length, 1);
+    assert.equal(p.events.filter(event => event === 'drop-fulfilled').length, 1);
+    assert.equal(p.events.filter(event => event === 'click').length, 1);
+    assert.equal(p.events.filter(event => event === 'Fetch.disable').length, 1);
+    assert.ok(p.events.indexOf('Fetch.disable') > p.events.indexOf('drop-fulfilled'));
+    assert.equal(p.diagnosticReads.length, 0); assert.equal(p.identityReads.length, 0);
+    assert.equal(p.logs.length, 0);
+  });
+}
+
+for (const [name, browserCapabilities] of [
+  ['absent', {}],
+  ['non-boolean', {supportsFetchResourceTypeFilter: 'false'}],
+]) {
+  test(`${name} filter capability is fatal before any enable or action click`, async () => {
+    const p = protocol({browserCapabilities, lateEvent: true});
+    await flush();
+    const rejectedBeforeDeadline = p.completed();
+    p.timeout(); // Settle the old missing-feature path without a real clock or retry.
+    await assert.rejects(p.promise);
+    assert.equal(rejectedBeforeDeadline, true, 'Unknown capability must reject before the drop deadline');
+    assert.ok(!p.events.some(event => event.endsWith('.enable')));
+    assert.ok(!p.events.includes('click'));
+    assert.ok(!p.events.includes('Fetch.failRequest'));
+    assert.ok(!p.events.includes('canonical-state-read'));
+  });
+}

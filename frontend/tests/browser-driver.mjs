@@ -327,6 +327,7 @@ export async function openBrowser(url) {
   }
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
   return {command, evaluate, waitFor, click, reload,
+    get supportsFetchResourceTypeFilter() { return nativePage === null; },
     ...(nativePage ? {uiInput:nativePage.uiInput} : {}),
     async browserIdentity(signal) {
       if (nativePage) throw new Error('CDP browser identity unavailable on Firefox transport');

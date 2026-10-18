@@ -43,6 +43,8 @@ async function pointer(selector) {
   for(const type of ['mousePressed','mouseReleased']) await command('Input.dispatchMouseEvent',{type,...p,button:'left',clickCount:1});
 }
 async function recoverDroppedResponse(s) {
+  const supportsFetchResourceTypeFilter=b.supportsFetchResourceTypeFilter;
+  if(typeof supportsFetchResourceTypeFilter!=='boolean')throw new TypeError('Explicit boolean Fetch resource-type capability required');
   let dropped=false, dropping=false, enabled=false, timer;
   let deadlineExpired, disabling=false;
   const pendingInterceptions=new Set();
@@ -119,7 +121,7 @@ async function recoverDroppedResponse(s) {
   try {
     await command('Network.enable');
     interceptionTrace.observeControl?.('Fetch.enable','sent');
-    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
+    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response',...(supportsFetchResourceTypeFilter?{resourceType:'Fetch'}:{})}]});enabled=true;
     interceptionTrace.observeControl?.('Fetch.enable','accepted');
     await click('Play Land Forest');
     const deadline=Date.now()+15000;
