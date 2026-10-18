@@ -6246,9 +6246,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-driver.mjs": {
-    "mtime": 1792355634.3643525,
-    "seen": 1792355776.582888,
-    "ast_hash": "a55e56d7cbff6f0321fb9f95c03886ef",
+    "mtime": 1792356463.2465456,
+    "seen": 1792356671.888791,
+    "ast_hash": "b5c11d54cb75f9a3b475a6047343d973",
     "semantic_hash": ""
   },
   "frontend/tests/browser-effect-casts.mjs": {
@@ -15540,9 +15540,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/browser-driver.mjs": {
-    "mtime": 1792355634.3643525,
-    "seen": 1792355776.5831368,
-    "ast_hash": "11c5487be6cc416647f9b1dd326aec15",
+    "mtime": 1792356463.2475455,
+    "seen": 1792356671.8890707,
+    "ast_hash": "8cbdb4089e7c46e9bcb6220b7643e3f3",
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/browser-native-human-bo3-seat2.mjs": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792355634.4343512,
-    "seen": 1792355776.5843952,
-    "ast_hash": "b9839b297e77a9f24c1446dd1eb6d915",
+    "mtime": 1792356528.1054664,
+    "seen": 1792356671.890401,
+    "ast_hash": "7b9e3f49a2eb08971ad3c4328315221a",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -22482,9 +22482,9 @@
     "semantic_hash": ""
   },
   "docs/testing/browser-fetch-filter-capability.md": {
-    "mtime": 1792355634.4343512,
-    "seen": 1792355776.5836148,
-    "ast_hash": "339fad93fd2cd4798d3edd6d1377f0a1",
+    "mtime": 1792356528.1054664,
+    "seen": 1792356671.889553,
+    "ast_hash": "1e537122d10d078abc3f7bd7bb6d11d0",
     "semantic_hash": ""
   }
 }

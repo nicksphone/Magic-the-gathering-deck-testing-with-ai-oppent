@@ -182,8 +182,8 @@ export async function openBrowser(url) {
   await command('Page.setLifecycleEventsEnabled', {enabled: true});
   await command('Page.getFrameTree');
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
-  return {command, evaluate, waitFor, click, reload, enableOwnedIframeInterception, assertInterceptionHealthy,
-    get supportsFetchResourceTypeFilter() { return nativePage === null; },
+  // Capability metadata must not change the enumerable command surface.
+  return Object.defineProperty({command, evaluate, waitFor, click, reload, enableOwnedIframeInterception, assertInterceptionHealthy,
     waitForInterceptions, onIntercept: handler => { intercept = handler; }, async close() {
       let diagnosticError;
       try {
@@ -208,7 +208,7 @@ export async function openBrowser(url) {
         socket.close();
         await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) });
       }
-    }};
+    }}, 'supportsFetchResourceTypeFilter', {get() { return nativePage === null; }});
   } catch (error) {
     if (nativePage) {
       try { await nativePage.close(); }

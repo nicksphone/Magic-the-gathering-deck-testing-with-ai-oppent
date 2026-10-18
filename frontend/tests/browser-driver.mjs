@@ -326,14 +326,14 @@ export async function openBrowser(url) {
     await passive.snapshot('navigation');
   }
   await waitFor(`location.origin === ${JSON.stringify(new URL(url).origin)} && document.readyState !== 'loading'`, 30000);
-  return {command, evaluate, waitFor, click, reload,
-    get supportsFetchResourceTypeFilter() { return nativePage === null; },
+  // Capability metadata must not change the enumerable command surface.
+  return Object.defineProperty({command, evaluate, waitFor, click, reload,
     ...(nativePage ? {uiInput:nativePage.uiInput} : {}),
     async browserIdentity(signal) {
       if (nativePage) throw new Error('CDP browser identity unavailable on Firefox transport');
       return readBrowserIdentity(origin, signal);
     },
-    onIntercept: handler => { intercept = handler; }, ...(passive ? { passiveCdp: passive.status } : {}), async close() { if (passive) await passive.close(); if (nativePage) await nativePage.close(); else { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); } }};
+    onIntercept: handler => { intercept = handler; }, ...(passive ? { passiveCdp: passive.status } : {}), async close() { if (passive) await passive.close(); if (nativePage) await nativePage.close(); else { socket.close(); await fetch(`${origin}/json/close/${page.id}`, { signal: AbortSignal.timeout(15000) }); } }}, 'supportsFetchResourceTypeFilter', {get() { return nativePage === null; }});
   } catch (error) {
     if (passive) await passive.close();
     if (nativePage) {

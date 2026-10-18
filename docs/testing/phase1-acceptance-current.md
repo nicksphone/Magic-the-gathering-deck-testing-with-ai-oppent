@@ -16,6 +16,16 @@ Hosted run39161755968 has passed frontend and backend-reference checks; its
 four workers and separate browser job were still running when this correction
 was prepared. Whole-backend and real-browser confirmation remain open.
 
+The subsequent full frontend job for `1a4beb3e` fails its unit step. A missed
+enumerability contract is then reproduced locally without reading raw frontend
+or backend logs: the same147-case baseline passes146 and fails the unchanged
+passive-observer command-key assertion. Making the own capability getters
+non-enumerable preserves that interface and passes all147 in four whole
+modules, without changing tests. Full frontend and browser confirmation remain
+required. The prior03fdf browser job reaches a separate linked-discard search
+choice failure, rather than the earlier response-drop timeout; that scenario
+is not certified by this local correction.
+
 The October18 [sharded CI candidate](backend-sharded-ci.md) is published in
 commit `3779aae4`. A clean local run passes all260 selftests in21 whole modules,
 including the real public-toy E2E check, in104.676 seconds. Source, runtime and
