@@ -5,6 +5,16 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+Candidate `d9d53d94` passes hosted frontend and backend-reference. Its browser
+fails an earlier accepted-response-drop probe before reaching linked-discard;
+backend workers are still running at this checkpoint. The subsequent
+[fixture-only corrections](ci-fixture-regressions-current.md) preserve native
+engine contracts rather than relaxing them. The separate whole94 AI module and
+five-whole-module241 adapter/Jailer suite both pass with full resource closure;
+they are not combined into a fabricated335-case invocation. Remaining mixed-IO
+and whole-backend CI requirements are stated separately. The broader250-case
+diagnostic times out and is explicitly not counted as a pass.
+
 Hosted run39165296802 on `ba001450` passes the full frontend job, including
 build/lint/the canonical unit command, and backend-reference. Whole-backend
 execution and the real browser remain separate. Earlier run39161755968's

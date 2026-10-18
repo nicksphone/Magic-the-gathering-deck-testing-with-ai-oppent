@@ -441,7 +441,7 @@ def test_ramp_ai_prefers_ramp_spell_over_card_draw_on_early_turn() -> None:
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.turn = 3
-    state.step = "precombat_main"
+    state.step = Step.PRECOMBAT_MAIN
     state.active_player = 1
     state.priority_player = 1
     state.winner = None

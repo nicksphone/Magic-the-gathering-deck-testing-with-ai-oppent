@@ -3,7 +3,6 @@ import ast
 from copy import deepcopy
 import hashlib
 from pathlib import Path
-from types import SimpleNamespace
 
 import pytest
 
@@ -18,11 +17,11 @@ from rules_engine.restrictions import can_cast_in_current_timing
 from rules_engine.type_effects import effective_types
 from tests.test_compleated_loyalty_full import RAW, act, clean, raw_card, settle
 from test_soulless_jailer_query_contract import add, position, pure_scope, rows
-from tests.controlled_basic_game_support import controlled_basic_game
+from tests.test_ui_synthetic_stock_publication import assert_native_scene_stock
 
 
 def original_compleated_fixture():
-    """Project the full controlled fixture with unknown stock from its birth."""
+    """Project the actual canonical Factory birth without the server's IO."""
     path = Path(__file__).with_name('browser_fixture_server.py')
     tree = ast.parse(path.read_text())
     function = next(node for node in tree.body
@@ -31,20 +30,31 @@ def original_compleated_fixture():
     function.decorator_list = []
     publications = []
 
-    def publish(state, deck, *, capture_original_stock):
-        assert capture_original_stock is False
-        publications.append((state, deck))
+    def publish(state, deck, *, capture_original_stock=True, mainboards=None):
+        assert capture_original_stock is True
+        boards = {1: deck, 2: deck} if mainboards is None else mainboards
+        assert boards == state.starting_decks and deck == boards[1]
+        publications.append((state, deck, boards))
         return state
 
-    namespace = {'MatchFactory': SimpleNamespace(from_decks=controlled_basic_game),
-                 'Step': Step, 'publish': publish}
+    namespace = {'MatchFactory': MatchFactory, 'Step': Step, 'publish': publish}
     exec(compile(ast.Module(body=[function], type_ignores=[]), str(path), 'exec'), namespace)
     state = namespace['fixture'](face_kind='compleated_payment')
     assert len(publications) == 1 and publications[0][0] is state
-    assert publications[0][1] == [{'quantity': 60, 'card_name': 'Island'}]
+    boards = publications[0][2]
+    assert publications[0][1] == boards[1]
+    assert sorted(row['card_name'] for row in boards[1] for _ in range(row['quantity'])) == (
+        ['Island'] * 59 + [RAW['name']])
+    assert [row['card_name'] for row in boards[2] for _ in range(row['quantity'])] == ['Island'] * 60
+    assert_native_scene_stock(state, 'compleated_payment')
     card, = [card for card in state.cards.values() if card.name == RAW['name']]
     assert card.zone == Zone.HAND and card.controller == 1
-    assert card.types == ['Legendary', 'Planeswalker']
+    assert card.types == ['Planeswalker']
+    assert card.id == 'p1-060' and card.owner == 1
+    assert (card.type_line, card.oracle_text, card.mana_cost, card.loyalty) == (
+        RAW['type_line'], RAW['oracle_text'], RAW['mana_cost'], int(RAW['loyalty']))
+    assert card.colors == RAW['colors'] and card.layout == RAW['layout']
+    assert card.card_faces == (RAW.get('card_faces') or []) and card.selected_face_index is None
     assert not any(player.battlefield for player in state.players.values())
     return state, card
 
@@ -53,7 +63,7 @@ def original_compleated_fixture():
 def test_original_fixture_compleated_payment_admission(boundary):
     state, card = original_compleated_fixture()
     before = serialize_match_snapshot(state)
-    assert effective_types(state, card) == ['Legendary', 'Planeswalker']
+    assert effective_types(state, card) == ['Planeswalker']
     # The public typed query stays strict; callers must project its domain.
     assert spell_cast_prohibited(state, 1, card.zone,
                                  spell_types=('Legendary', 'Planeswalker')) is True

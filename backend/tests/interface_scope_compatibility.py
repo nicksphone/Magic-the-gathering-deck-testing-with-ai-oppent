@@ -39,6 +39,33 @@ assert all(recipe['old_sha256'] == EXPECTED_FUNCTIONS[identity]
            for identity, recipe in FINITE['functions'].items())
 
 
+SMOTHERING_IDENTITY = 'test_events_apnap.py:test_sacrifice_emits_sacrifice_trigger_for_creature'
+# Source-hash normalization ONLY. The obsolete constructor stays inert text.
+SMOTHERING_INVERSE = {
+    'old_sha256': 'df7f2d08b8579ed6fe545a1582ba388d9cebb3afbbb337a619a113b83412cfe9',
+    'new_sha256': '7969f39952949ec76c0010735c8f2ae41a7b25639e33ad2b479e36d1a63b4b29',
+    'hunks': [{
+        'start': 7, 'end': 13,
+        'new': ('    state.cards["p1"] = smothering_card(\n'
+                '        id="p1",\n'
+                '        owner=1,\n'
+                '        controller=1,\n'
+                '        zone=Zone.BATTLEFIELD,\n'
+                '    )\n'),
+        'old': ('    state.cards["p1"] = CardInstance(\n'
+                '        id="p1",\n'
+                '        name="Blood Artist",\n'
+                '        owner=1,\n'
+                '        controller=1,\n'
+                '        zone=Zone.BATTLEFIELD,\n'
+                '        types=["Creature"],\n'
+                '        oracle_text="Whenever another creature you control is sacrificed, draw a card.",\n'
+                '    )\n'),
+    }],
+}
+assert SMOTHERING_INVERSE['old_sha256'] == EXPECTED_FUNCTIONS[SMOTHERING_IDENTITY]
+
+
 def _restore(text, recipe):
     if hashlib.sha256(text.encode()).hexdigest() == recipe['old_sha256']:
         return text
@@ -99,7 +126,8 @@ def restore_keyword_edges(text):
 def restore_printed_protocol_source(module, text):
     assert module in {identity.split(':')[0] for identity in EXPECTED_FUNCTIONS}, 'Unknown protected module'
     nodes = ast.parse(text).body
-    for identity, recipe in FINITE['functions'].items():
+    recipes = {**FINITE['functions'], SMOTHERING_IDENTITY: SMOTHERING_INVERSE}
+    for identity, recipe in recipes.items():
         filename, name = identity.split(':')
         if filename != module:
             continue

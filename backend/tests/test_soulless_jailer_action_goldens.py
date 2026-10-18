@@ -239,10 +239,11 @@ def test_real_creature_graveyard_cast_enters_through_stack_while_jailer(rows, ex
     assert state.players[seat].mana_pool['B'] == before_b - 1
     assert card not in state.players[seat].graveyard
     assert state.cards[card].zone_change_sequence == 1
+    stack_sequence = state.cards[card].zone_change_sequence
     state = resolve_top(state)
     assert state.cards[card].zone == Zone.BATTLEFIELD
-    # Spell entry assigns a fresh BF incarnation; this route keeps the STACK sequence.
-    assert state.cards[card].zone_change_sequence == 1
+    # STACK -> BATTLEFIELD is another real zone change, with a fresh incarnation.
+    assert state.cards[card].zone_change_sequence == stack_sequence + 1
     assert state.cards[card].battlefield_incarnation > 0
     assert card in state.players[seat].battlefield
     assert state.cards[jailer].zone == Zone.BATTLEFIELD
@@ -285,9 +286,11 @@ def test_real_announced_noncreature_method_rejects_before_cost_then_actual_remov
     assert len(state.graveyard_permission_uses) == len(before_uses) + 1
     assert next(iter(state.graveyard_permission_uses)).endswith(
         ':Enchantment' if method == 'bestow' else ':Artifact')
+    stack_sequence = state.cards[card].zone_change_sequence
+    assert stack_sequence == 1
     state = resolve_top(state)
     assert state.cards[card].zone == Zone.BATTLEFIELD
-    assert state.cards[card].zone_change_sequence == 1
+    assert state.cards[card].zone_change_sequence == stack_sequence + 1
     assert state.cards[card].battlefield_incarnation > 0
     assert state.cards[card].attached_to == (host if method == 'bestow' else None)
     assert state.cards[card].oracle_text == raw['oracle_text']

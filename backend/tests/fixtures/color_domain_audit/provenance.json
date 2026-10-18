@@ -308,12 +308,41 @@
   },
   {
     "source": "backend/tests/fixtures/conditional_static.json",
-    "source_sha256": "4b23bf399643da1704f43322e3c8e61420ba1c480f7ff0200c6f6fb90199450c",
+    "source_sha256": "1998c377ed918e3052d8044c697be65ecb49b277e56b9ebfbc5e94786ef160a9",
     "row": {
+      "object": "card",
       "id": "187ebb67-1bdd-4a9c-aeeb-554e7580ce24",
       "oracle_id": "cf3b79cc-ce97-48e9-a578-625e323d1b62",
+      "multiverse_ids": [
+        599066
+      ],
+      "mtgo_id": 107873,
+      "tcgplayer_id": 457448,
+      "cardmarket_id": 688755,
       "name": "Mystic Enforcer",
+      "lang": "en",
+      "released_at": "2023-01-13",
+      "uri": "https://api.scryfall.com/cards/187ebb67-1bdd-4a9c-aeeb-554e7580ce24",
+      "scryfall_uri": "https://scryfall.com/card/dmr/192/mystic-enforcer?utm_source=api",
+      "layout": "normal",
+      "highres_image": true,
+      "image_status": "highres_scan",
+      "image_updated_at": "2026-07-13T04:53:48Z",
+      "image_uris": {
+        "small": "https://cards.scryfall.io/small/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.jpg?1783918428",
+        "normal": "https://cards.scryfall.io/normal/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.jpg?1783918428",
+        "large": "https://cards.scryfall.io/large/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.jpg?1783918428",
+        "png": "https://cards.scryfall.io/png/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.png?1783918428",
+        "art_crop": "https://cards.scryfall.io/art_crop/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.jpg?1783918428",
+        "border_crop": "https://cards.scryfall.io/border_crop/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.jpg?1783918428",
+        "thumb": "https://cards.scryfall.io/thumb/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.webp?1783918428",
+        "grid": "https://cards.scryfall.io/grid/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.webp?1783918428",
+        "display": "https://cards.scryfall.io/display/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.webp?1783918428",
+        "art": "https://cards.scryfall.io/art/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.webp?1783918428",
+        "crop": "https://cards.scryfall.io/crop/front/1/8/187ebb67-1bdd-4a9c-aeeb-554e7580ce24.webp?1783918428"
+      },
       "mana_cost": "{2}{G}{W}",
+      "cmc": 4.0,
       "type_line": "Creature — Human Nomad Mystic",
       "oracle_text": "Protection from black\nThreshold — As long as there are seven or more cards in your graveyard, this creature gets +3/+3 and has flying.",
       "power": "3",
@@ -322,11 +351,100 @@
         "G",
         "W"
       ],
+      "color_identity": [
+        "G",
+        "W"
+      ],
       "keywords": [
         "Protection",
         "Threshold"
       ],
-      "scryfall_uri": "https://scryfall.com/card/dmr/192/mystic-enforcer?utm_source=api"
+      "legalities": {
+        "standard": "not_legal",
+        "future": "not_legal",
+        "historic": "not_legal",
+        "timeless": "not_legal",
+        "gladiator": "not_legal",
+        "pioneer": "not_legal",
+        "modern": "legal",
+        "legacy": "legal",
+        "pauper": "not_legal",
+        "vintage": "legal",
+        "penny": "not_legal",
+        "commander": "legal",
+        "oathbreaker": "legal",
+        "standardbrawl": "not_legal",
+        "brawl": "not_legal",
+        "competitivebrawl": "not_legal",
+        "alchemy": "not_legal",
+        "paupercommander": "not_legal",
+        "duel": "legal",
+        "oldschool": "not_legal",
+        "premodern": "legal",
+        "predh": "legal",
+        "tlr": "not_legal"
+      },
+      "games": [
+        "paper",
+        "mtgo"
+      ],
+      "reserved": false,
+      "game_changer": false,
+      "foil": true,
+      "nonfoil": true,
+      "finishes": [
+        "nonfoil",
+        "foil"
+      ],
+      "oversized": false,
+      "promo": false,
+      "reprint": true,
+      "variation": false,
+      "set_id": "ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+      "set": "dmr",
+      "set_name": "Dominaria Remastered",
+      "set_type": "masters",
+      "set_uri": "https://api.scryfall.com/sets/ca4c2884-e539-4b7f-980d-5d6a50220f2a",
+      "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Admr&unique=prints",
+      "scryfall_set_uri": "https://scryfall.com/sets/dmr?utm_source=api",
+      "rulings_uri": "https://api.scryfall.com/cards/187ebb67-1bdd-4a9c-aeeb-554e7580ce24/rulings",
+      "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Acf3b79cc-ce97-48e9-a578-625e323d1b62&unique=prints",
+      "collector_number": "192",
+      "digital": false,
+      "rarity": "uncommon",
+      "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+      "artist": "Gary Ruddell",
+      "artist_ids": [
+        "086111c7-93f0-4bab-b339-6fe1c00d693c"
+      ],
+      "illustration_id": "e56d5336-aa37-414c-9ff3-c406cc9d8fdb",
+      "border_color": "black",
+      "frame": "2015",
+      "full_art": false,
+      "textless": false,
+      "booster": true,
+      "story_spotlight": false,
+      "edhrec_rank": 28746,
+      "penny_rank": 10251,
+      "prices": {
+        "usd": "0.11",
+        "usd_foil": "0.21",
+        "usd_etched": null,
+        "eur": "0.14",
+        "eur_foil": "0.26",
+        "tix": "0.04"
+      },
+      "related_uris": {
+        "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=599066&printed=false",
+        "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DMystic%2BEnforcer",
+        "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DMystic%2BEnforcer",
+        "edhrec": "https://edhrec.com/route/?cc=Mystic+Enforcer"
+      },
+      "purchase_uris": {
+        "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F457448%3Fpage%3D1",
+        "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=688755&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+        "cardhoarder": "https://www.cardhoarder.com/cards/107873?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+      }
     }
   },
   {

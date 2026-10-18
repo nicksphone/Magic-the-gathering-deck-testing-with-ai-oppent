@@ -333,3 +333,34 @@ print(json.dumps(serialize_match_snapshot(s),sort_keys=True))
         text=True, capture_output=True, cwd=ROOT, check=True)
     assert json.loads(result.stdout) == json.loads(json.dumps(before))
     assert serialize_match_snapshot(state) == before
+
+
+def test_full_conditional_receipts_preserve_original_typed_color_operands():
+    fields = ('id', 'oracle_id', 'name', 'mana_cost', 'type_line', 'oracle_text', 'power', 'toughness', 'colors', 'keywords', 'scryfall_uri')
+    expected = {
+        'Etched Champion': (67,
+            'fa9ed51013b68d9e70888cb2ee8cf4d948f57210016d164cb5180137f77bfbb7',
+            '02823839ba520c2003201e565e11c60c6eeca84f7c286e90288e2bbf48ec1146'),
+        'Savannah Lions': (68,
+            'd252b45b8c68e2a5bb6c93ed9e200c46a4f8c07f37277799fed00e01a282957d',
+            '4f63e62ecb0ea832696b9098cbfd7678fb14e1de31fedf0b143356c819ba9809'),
+        'Abzan Kin-Guard': (66,
+            '96625b91f5306879f3057d185021fd901e0437965fc131ae83629340f03476cf',
+            '6bf19a15e9d1db09bfc1b4a1f607e6ba4e209f9d7652da494d9730bef3b77e07'),
+    }
+    actual = {entry['row']['name']: entry for entry in RECEIPTS
+              if entry['source'] == 'tests/fixtures/conditional_static.json'}
+    assert set(actual) == set(expected)
+    for name, (count, old_digest, full_digest) in expected.items():
+        row = actual[name]['row']
+        assert row['object'] == 'card' and len(row) == count
+        projected = {key: row[key] for key in fields}
+        assert hashlib.sha256(json.dumps(projected, sort_keys=True,
+            separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()).hexdigest() == old_digest
+        assert hashlib.sha256(json.dumps(row, sort_keys=True,
+            separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()).hexdigest() == full_digest
+        # A numeric stat is not the same typed operand as its printed string.
+        changed = deepcopy(projected)
+        changed['power'] = int(changed['power'])
+        assert hashlib.sha256(json.dumps(changed, sort_keys=True,
+            separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()).hexdigest() != old_digest

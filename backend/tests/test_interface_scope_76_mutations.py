@@ -110,9 +110,11 @@ def test_all_forty_six_untouched_functions_keep_original_mutation_rejection(monk
     module, name = identity.split(':')
     path = TESTS / module
     source = path.read_text()
-    segment = function(source, name)
+    current_segment = function(source, name)
+    segment = function(normalize(module, source), name)
     assert digest(segment) == EXPECTED[identity]
-    changed = source.replace(segment, segment + '\n    assert True  # unauthorized\n', 1)
+    changed = source.replace(current_segment, current_segment + '\n    assert True  # unauthorized\n', 1)
+    assert changed != source
     read_text = Path.read_text
     with monkeypatch.context() as patch:
         patch.setattr(Path, 'read_text', lambda self, *a, **k:

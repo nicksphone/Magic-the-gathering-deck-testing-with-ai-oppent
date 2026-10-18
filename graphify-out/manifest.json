@@ -1632,15 +1632,15 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/color_consumer_goldens/provenance.json": {
-    "mtime": 1792033175.5566795,
-    "seen": 1792034402.3552396,
-    "ast_hash": "f23d329c986abe9e7c4b95b825f689ef",
+    "mtime": 1792361965.281031,
+    "seen": 1792362168.5452907,
+    "ast_hash": "8e31fce1e16b5522a972b9120fb0cf43",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/color_domain_audit/provenance.json": {
-    "mtime": 1792033175.5566795,
-    "seen": 1792034402.3552413,
-    "ast_hash": "cf6221bf4125af80512be51bf565eb35",
+    "mtime": 1792362129.4982762,
+    "seen": 1792362168.5452933,
+    "ast_hash": "bd1bd6269f6a6ad64712705a9694123a",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/combat_ability_provenance.json": {
@@ -3030,9 +3030,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_ai_decisions.py": {
-    "mtime": 1792119829.7718253,
-    "seen": 1792120316.6074524,
-    "ast_hash": "d563541f6856e0bfec1f558be25f515d",
+    "mtime": 1792361965.274031,
+    "seen": 1792362168.5469239,
+    "ast_hash": "fc0c88a8b03ffa4f3f9d6c745dc2c9a0",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_defensive_responses.py": {
@@ -3618,9 +3618,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_color_consumer_goldens.py": {
-    "mtime": 1792033175.641678,
-    "seen": 1792034402.3565884,
-    "ast_hash": "1df15c6eca3659cce6120e7236b85d50",
+    "mtime": 1792361965.281031,
+    "seen": 1792362168.547272,
+    "ast_hash": "c6ace9f0ee2adba0d61ec81c81b80cda",
     "semantic_hash": ""
   },
   "backend/tests/test_color_domain_audit.py": {
@@ -4428,9 +4428,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_legendary_channels.py": {
-    "mtime": 1792033175.6696775,
-    "seen": 1792034402.35703,
-    "ast_hash": "be062f58b9508d972fcdf80abba9f779",
+    "mtime": 1792361965.281031,
+    "seen": 1792362168.5479145,
+    "ast_hash": "87ec80122f849ec766ec2ff814fa8279",
     "semantic_hash": ""
   },
   "backend/tests/test_lethal_keyword_query.py": {
@@ -16572,9 +16572,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_soulless_jailer_action_goldens.py": {
-    "mtime": 1792033175.698677,
-    "seen": 1792034402.3574998,
-    "ast_hash": "e9be82ae8c6f97ba0583efe91fe0327d",
+    "mtime": 1792361965.281031,
+    "seen": 1792362168.5485415,
+    "ast_hash": "1bf49bedf2ac3a0061ac845bd21ae401",
     "semantic_hash": ""
   },
   "backend/tests/test_soulless_jailer_cost_method_admission.py": {
@@ -16596,9 +16596,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_spell_type_caller_projection.py": {
-    "mtime": 1792033175.701677,
-    "seen": 1792034402.357541,
-    "ast_hash": "c87a12384130837364fc685304e44f1f",
+    "mtime": 1792362696.4877696,
+    "seen": 1792362999.1454847,
+    "ast_hash": "2fe50ed98902953b540ec416292d8a0a",
     "semantic_hash": ""
   },
   "backend/tests/test_suspend_composition_owned_reload.py": {
@@ -17172,9 +17172,9 @@
     "semantic_hash": ""
   },
   "backend/tests/interface_scope_compatibility.py": {
-    "mtime": 1792190899.207912,
-    "seen": 1792191630.029044,
-    "ast_hash": "851363ee5617b987021d1fc1e67e6b5a",
+    "mtime": 1792362696.4877696,
+    "seen": 1792362999.1436467,
+    "ast_hash": "4caab4e88cec47f7ead626d4c7985cab",
     "semantic_hash": ""
   },
   "backend/tests/test_import_identity_sql_guard.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792360873.6764028,
-    "seen": 1792361009.5219572,
-    "ast_hash": "2e9c4ca8af46c42d46fb75999dd066cf",
+    "mtime": 1792362213.3648696,
+    "seen": 1792362999.1475716,
+    "ast_hash": "9ba23a5387aa4871e391f143ff569bf7",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -21066,9 +21066,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_interface_scope_76_mutations.py": {
-    "mtime": 1792190899.207912,
-    "seen": 1792191630.0300436,
-    "ast_hash": "00d3752279e5f3f5be79c93f42cf95dd",
+    "mtime": 1792362696.4877696,
+    "seen": 1792362999.144677,
+    "ast_hash": "da38e4b59443ac5cc8a46de4faed9a15",
     "semantic_hash": ""
   },
   "backend/tests/test_recurring_add_optional_stats.py": {
@@ -22521,6 +22521,18 @@
     "mtime": 1792360710.1991572,
     "seen": 1792361009.521794,
     "ast_hash": "aca3b2be49f03565d32fcd4130b2a992",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_smothering_source_inverse.py": {
+    "mtime": 1792362696.4877696,
+    "seen": 1792362999.145434,
+    "ast_hash": "dca096a34495fe1fa0ac2f540c7de574",
+    "semantic_hash": ""
+  },
+  "docs/testing/ci-fixture-regressions-current.md": {
+    "mtime": 1792362748.8068926,
+    "seen": 1792362999.1468916,
+    "ast_hash": "b59abb4452318b04e0f325517170a97b",
     "semantic_hash": ""
   }
 }
