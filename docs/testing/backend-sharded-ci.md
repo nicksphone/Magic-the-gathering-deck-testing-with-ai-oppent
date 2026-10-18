@@ -25,12 +25,36 @@ public synthetic stand-in. The seven runner tools and full runtime admission
 are genuine. No real protected trace is read or published.
 
 Each declaration has independent actual waits, source/runtime/system checks,
-owned process/group closure and physical lock release. The last release is
-2026-10-18T17:17:28.298867Z. These are trusted-public-source functional checks,
-not an inherited child audit or universal OS sandbox. The combined local tree
-statically contains21 modules/260 methods; there is no claimed combined260 run.
+owned process/group closure and physical lock release. A later clean run of
+published commit3779 passes all260 methods in21 whole modules in104.676 seconds.
+The diagnostic candidate below then passes all269 in22 whole modules in104.129
+seconds, retaining the original260 ordered subsequence and all nine new methods.
+Its focused nine-method declaration also passes separately. All12 source,
+runtime, system and resource finality checks pass; physical release is
+2026-10-18T19:01:46.364016Z. These are trusted-public-source functional checks,
+not an inherited child audit or universal OS sandbox. The immutable tested
+source is3779 plus the three diagnostic paths, not the entire later worktree.
 Hosted artifact transport, real private bootstrap, the complete backend and
 Phase1/release acceptance remain open.
+
+## Safe Selftest Failure Identifiers
+
+Hosted run39150193523 fails at the metadata selftests before private preparation
+or backend collection; the backend workers do not run. Its cause is not yet
+established. The reference step now forwards the original public selftest bytes
+and adds bounded annotations containing only FAIL/ERROR and the SHA256 of an
+anchored unittest parent ID. Subtest values, messages and paths are not included.
+Exact discovery-import error IDs are recognized; arbitrary diagnostic text is
+not exported as an identifier. The helper bounds partial lines at4096 bytes and
+unique status/parent notices at512, failing on overflow or IO errors.
+
+The original unittest discovery command and remaining deadline are retained.
+The timeout wraps both pipeline stages, PIPESTATUS is captured immediately,
+and a nonzero unittest exit stays primary. A helper failure also fails the step
+when unittest succeeds. The tests cover genuine Bash/helper pipelines using
+only synthetic public header bytes. No game logs, protected trace, secret,
+private-input preparation, upload or artifact permission is added. This is a
+diagnostic change, not a claimed fix for the unknown hosted failure.
 
 ## Collection And Four Sessions
 

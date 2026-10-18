@@ -53,7 +53,14 @@ jobs:
         timeout-minutes: 330
         run: |
           remaining=$(python .github/scripts/ci_backend_shards.py remaining)
-          timeout --signal=TERM --kill-after=15s "${remaining}s" python -m unittest discover -s .github/scripts/tests -v
+          timeout --signal=TERM --kill-after=15s "${remaining}s" bash --noprofile --norc -c '
+            set +e
+            python -m unittest discover -s .github/scripts/tests -v 2>&1 |
+              python -u .github/scripts/ci_selftest_annotations.py
+            statuses=("${PIPESTATUS[@]}")
+            if ((statuses[0] != 0)); then exit "${statuses[0]}"; fi
+            exit "${statuses[1]}"
+          '
       - name: Operator file-only boundary regressions
         timeout-minutes: 330
         run: |

@@ -1572,5 +1572,23 @@
     "raw_row_sha256": "49f8af143b774b86f161c1f2c029f0f8e8e91f0d27e05d19c07c7ddeaca2f195",
     "sha256": "12662d131d174e48af42758b9e8fd3b38ce6701d2de7d88217a527062786014f",
     "steps": []
+  },
+  "Temporary Lockdown": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 101,
+    "steps": [],
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "raw_row_sha256": "dafc7a16957b8da2ccfa8b83752bfe01691a0c4ef65fa92cf7a039abc0381fcf",
+    "provenance_status": "seed155_official_batch_provenance",
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "card_name_present": false,
+        "hash_link": [
+          "snapshot_sha256"
+        ]
+      }
+    ]
   }
 }

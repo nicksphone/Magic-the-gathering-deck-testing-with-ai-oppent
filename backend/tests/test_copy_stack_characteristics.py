@@ -1,13 +1,16 @@
 """A surviving spell copy keeps its cast surface after the card changes zones."""
+from copy import deepcopy
+from dataclasses import replace
 import json
 from pathlib import Path
 
 import pytest
 
 from ai.agent import AIAgent
+from card_data.sync import ScryfallSyncService
 from effects.handlers import copy_spell, counter_spell, counter_spell_unless_pay
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
@@ -19,9 +22,18 @@ SPLITS = {row["name"]: row for row in json.loads((FIXTURES / "split_cards.json")
 COUNTERS = {row["name"]: row for row in json.loads((FIXTURES / "copy_counters.json").read_text())}
 
 
+def _deck_entry(raw, quantity):
+    raw = deepcopy(raw)
+    normalized = ScryfallSyncService._normalize_payload(raw, ScryfallSyncService._extract_remote_image_uri(raw))
+    faces = [{**face, **native} for face, native in zip(
+        raw.get("card_faces", []), json.loads(normalized["card_faces_json"]))]
+    return {**raw, **normalized, "card_name": raw["name"], "quantity": quantity,
+            "colors": [color for color in normalized["colors"].split(",") if color], "card_faces": faces}
+
+
 def surviving_copy(name="Bonecrusher Giant // Stomp", face=1):
     raw = FACES.get(name) or SPLITS[name]
-    deck = [{"quantity": 60, "card_name": name, **raw, "oracle_text": raw["card_faces"][0]["oracle_text"]}]
+    deck = [_deck_entry(raw, 60)]
     state = MatchFactory.from_decks(deck, deck, seed=151)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -47,9 +59,10 @@ def surviving_copy(name="Bonecrusher Giant // Stomp", face=1):
 
 def add_counter(state, name):
     raw = COUNTERS[name]
-    card = CardInstance("counter", name, 1, 1, Zone.HAND, ["Instant"],
-                        mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
-                        type_line=raw["type_line"], colors=raw["colors"])
+    sample = MatchFactory.from_decks([_deck_entry(raw, 8)], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    card = replace(template, id="counter", owner=1, controller=1, zone=Zone.HAND,
+                   instance_order=0, summoning_sick=True)
     state.cards[card.id] = card
     state.players[1].hand.append(card.id)
     return card

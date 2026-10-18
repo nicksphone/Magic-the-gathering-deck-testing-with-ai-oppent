@@ -106,7 +106,7 @@ TIBALT = 'Valki, God of Lies // Tibalt, Cosmic Impostor'
 def controller_position(seat):
     path = Path(__file__).parent / 'fixtures/modal_spell_faces.json'
     data = path.read_bytes()
-    assert hashlib.sha256(data).hexdigest() == 'b42872610ae3f6c5a29974b23deb8f033cd86cc0c285e34a2bfa08d969432081'
+    assert hashlib.sha256(data).hexdigest() == 'ffb6877741439134938257c07262d58dcfd56050eb221211e20d8c6e7de7b332'
     tibalt = json.loads(data)[TIBALT]
     # Declared noncanonical static-grammar witness, born before normal stock capture.
     protocol = {'name': PROTOCOL, 'type_line': 'Enchantment', 'mana_cost': '{1}',

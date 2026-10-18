@@ -572,7 +572,7 @@ try {
   await waitFor("window.fixtureState.stack.some(item => item.label === 'Appetite for Brains')");
   await click("Resolve Stack");
   await waitFor("window.fixtureState.pending_mechanic_choice?.kind === 'choose_revealed_exile'");
-  assert.deepEqual(await evaluate("[...[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand to exile')).querySelectorAll('label')].map(label => label.textContent.trim())"), ["Serra Angel (Creature - Angel)"]);
+  assert.deepEqual(await evaluate("[...[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand to exile')).querySelectorAll('label')].map(label => label.textContent.trim())"), ["Serra Angel (Creature \u2014 Angel)"]);
   await evaluate("[...document.querySelectorAll('.block-panel')].find(p => p.textContent.includes('Choose a card from the revealed hand to exile')).querySelector('input[type=checkbox]').click()");
   await click("Confirm Selection");
   await waitFor("window.fixtureState.pending_mechanic_choice === null && window.fixtureState.stack.length === 0");

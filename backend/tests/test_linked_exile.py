@@ -1,4 +1,4 @@
-from card_data.seed_cards import seed_card_payload
+from copy import deepcopy
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Zone, assign_static_order_on_battlefield_entry
@@ -10,6 +10,7 @@ from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.linked_exile import flush_linked_exile_returns
 from tests.browser_positive83_canonical import entry
+from tests.rules_printed_facts_e4 import raw_card
 
 
 def _state():
@@ -17,11 +18,15 @@ def _state():
     state = MatchFactory.from_decks(deck, deck, seed=621)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    printed = seed_card_payload("Temporary Lockdown")
+    printed = raw_card("Temporary Lockdown")
     assert printed is not None
     source = CardInstance(
         "lockdown", printed["name"], 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
         mana_cost=printed["mana_cost"], oracle_text=printed["oracle_text"],
+        type_line=printed["type_line"], colors=deepcopy(printed["colors"]),
+        keywords=deepcopy(printed["keywords"]), layout=printed["layout"],
+        card_faces=deepcopy(printed.get("card_faces", [])),
+        image_uri=printed["image_uris"]["normal"],
     )
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)

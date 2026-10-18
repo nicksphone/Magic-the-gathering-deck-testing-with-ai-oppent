@@ -5,12 +5,46 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
-The October18 [sharded CI candidate](backend-sharded-ci.md) passes all259
-selftests in20 whole modules, retaining the original251 and adding eight
-capacity-admission regressions. Its separate real public-toy E2E check also
-passes. The reviewed13 CI paths are integrated locally; no combined260,
-hosted/private-bootstrap, whole-backend or Phase1 completion claim follows.
-These changes enable the pending broad acceptance run rather than replace it.
+The October18 [sharded CI candidate](backend-sharded-ci.md) is published in
+commit `3779aae4`. A clean local run passes all260 selftests in21 whole modules,
+including the real public-toy E2E check, in104.676 seconds. Source, runtime and
+resource closure checks pass. This does not reproduce the hosted environment:
+GitHub run39150193523 fails at the metadata selftests before private-input
+preparation or backend collection. Its backend workers never run. Frontend
+build/lint/unit passes; the separate browser run stops at a stale Serra Angel
+label expectation. The corrected canonical em-dash golden is integrated locally
+but has no corrected browser result yet. Hosted CI and whole-backend acceptance
+remain open; no Phase1 completion follows from the local260.
+
+The subsequent bounded, hashed selftest diagnostics pass their whole nine-method
+module and the complete269-method/22-whole-module suite in104.129 seconds.
+The original260 remain an exact ordered subsequence; no failures, errors, skips
+or XF are reported, and all12 source/runtime/resource checks pass. The tested
+source is3779 plus only the three diagnostic paths. No raw backend log or private
+trace is read or published. This candidate is not yet a hosted root-cause fix;
+the next hosted result remains required.
+
+The October18 [Temporary Lockdown birth correction](temporary-lockdown-current163-static-prep.md)
+passes41 ordinary cases in four whole modules, after the paired baseline
+records37 passes and four new fidelity failures. All32 original cases pass both
+times; their gameplay bodies and assertions are unchanged. Complete pinned facts
+now reach the original constructor before capture. The strict dependent table
+digest is updated to the exact new bytes, without relaxing its consumer. Each
+stage passes25 finite denial controls; the candidate has zero SQL connections,
+all123 pytest phases passed and clean source/runtime/resource checks. Five paths
+are integrated, including the explanatory document. Live-browser transitive
+callers, the remaining helper families and whole-source acceptance remain open.
+
+The October18 [surviving-copy fixture correction](copy-stack-current160-canonical.md)
+passes47 ordinary cases in three whole modules in88.57 seconds. The immediate
+baseline runs27 cases with13 passes and14 new fidelity failures; all10 original
+cases pass. The candidate includes those27 plus the complete20-case strict
+manifest consumer. Its sole digest adaptation is computed from the new table,
+not a bypass. Seven complete official objects reach the native normalizer and
+Factory before capture; original gameplay bodies and assertions remain. All15
+source/runtime/resource checks pass, and seven paths are integrated. No47-case
+baseline or combined whole-backend run is claimed. Broader table consumers,
+HTTP/browser producers, recurring-engine helpers and final acceptance remain open.
 
 The October18 [Jace retained-parent repair](transformed-jace-birth-prep.md)
 passes23 ordinary cases in two whole modules in17.28 seconds, including all12
