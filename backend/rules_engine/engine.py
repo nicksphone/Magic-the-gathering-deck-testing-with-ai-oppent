@@ -1,5 +1,6 @@
 from __future__ import annotations
 from rules_engine.type_effects import effective_types
+from rules_engine.mana_continuation import action_boundary
 
 
 from game_state.state import MatchState, StackItem, Step, TURN_STEPS, Zone, assign_static_order_on_battlefield_entry, draw_card, pregame_actor, object_incarnation
@@ -26,6 +27,157 @@ from rules_engine.ward import capture_ward_triggers
 from rules_engine.zone_actions import put_into_graveyard
 from rules_engine.attachments import attachment_target_is_legal, is_aura
 from effects.registry import resolve_effect
+
+
+def _finish_prepared_cast(state, player_id, data, *, stage, live=None, reject_invalid=True):
+    from rules_engine.action_validation import ActionRejected
+    from rules_engine.alternative_casts import validate_escape_exiles
+    from rules_engine.card_faces import leave_exile
+    from rules_engine.costs import CostOption
+    from game_state.serializers import _card_from_snapshot
+
+    def reject(reason):
+        if reject_invalid:
+            raise ActionRejected(reason)
+
+    cid = data['source']['card_id']
+    card, player = state.cards[cid], state.players[player_id]
+    if live is None:
+        chosen = CostOption(**data['chosen'])
+        face_card = _card_from_snapshot(data['face_card'], state.players)
+        printed_face_card = _card_from_snapshot(data['printed_face_card'], state.players) if card.card_faces else card
+    else:
+        chosen, face_card, printed_face_card = live
+    action_targets, target_references = data['action_targets'], data['target_references']
+    ward_specs, grant_capture = data['ward_specs'], data['grant_capture']
+    selected_face_index, x_value = data['selected_face_index'], data['x_value']
+    bestowed = data['bestowed']
+    from_graveyard, from_exile, from_library = (data[key] for key in
+        ('from_graveyard', 'from_exile', 'from_library'))
+    escape_ids = list(data['escape_ids'])
+    escape_payment_goal = data['has_escape_condition'] or None
+    exile_references = {key: tuple(ref) for key, ref in data['exile_references'].items()}
+    frozen_cost_choice, payment_details = data['frozen_cost_choice'], data['payment_details']
+    cost_staging = stage['owned']
+    spell_cost_context: dict = {}
+    if escape_payment_goal is not None:
+        escape_ids = validate_escape_exiles(state, player_id, cid, chosen.exile_graveyard,
+                                           data['escape_selected'])
+        if escape_ids is None:
+            reject('Invalid escape exile selection after mana payment')
+            return
+    if any((object_incarnation(state.cards[selected]), state.cards[selected].zone_change_sequence) != reference
+           for selected, reference in exile_references.items()):
+        reject('A selected hand-exile object changed before payment')
+        return
+    if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value,
+                                  choice=frozen_cost_choice, context=spell_cost_context):
+        if cost_staging:
+            state.staged_triggers.clear()
+            state.trigger_staging = False
+        reject("Cannot pay additional casting costs")
+        state.log.append(f"{player.name} failed additional costs for {card.name}.")
+        apply_state_based_actions(state)
+        return
+    from copy import copy
+    effect_surface = copy(face_card)
+    effect_surface.paid_cost_context = spell_cost_context
+    ability = build_spell_spec(state, effect_surface, player_id, action_targets=action_targets)
+    effect_key, payload = ability.effect.key, ability.effect.payload
+    payload["__announced_targets"] = dict(action_targets)
+    payload['__announced_target_references'] = target_references
+    payload['__granted_target_capture'] = grant_capture
+    payload['mana_spent'] = payment_details.get('mana_spent', 0)
+    if payment_details.get('resource_payment') is not None:
+        payload['__casting_resource_payment'] = payment_details['resource_payment']
+    payload['__kicked'] = chosen.kicked
+    if chosen.kicker_count is not None:
+        from rules_engine.kicker import validate_kicker_count
+        payload['__kicker_count'] = validate_kicker_count(chosen.kicker_count, chosen.kicked)
+    payload["__ward_trigger_specs"] = ward_specs
+    payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)
+    payload["snow_mana_colors"] = payment_details.get("snow_mana_colors", {})
+    if "Planeswalker" in effective_types(state, face_card) and "compleated" in face_card.oracle_text.lower():
+        payload["__phyrexian_life_symbols"] = payment_details.get("phyrexian_life_symbols", 0)
+    if effect_key == "look_top_select_hand":
+        payload["mana_spent_to_cast"] = payment_details.get('mana_spent', 0)
+    if x_value > 0:
+        payload.setdefault("x_value", x_value)
+
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    departures = capture_graveyard_departures(state, escape_ids)
+    for exile_id in escape_ids:
+        player.graveyard.remove(exile_id)
+        player.exile.append(exile_id)
+        state.cards[exile_id].move_to_zone(Zone.EXILE)
+    emit_graveyard_departures(state, departures)
+    if casting_method(chosen.id) == "prototype":
+        from rules_engine.alternative_casts import apply_prototype
+        apply_prototype(card)
+    from rules_engine.card_faces import apply_cast_face
+    if bestowed:
+        # Apply the selected printed face before bestow's type effect.
+        apply_cast_face(card, _select_face_for_cast(card, selected_face_index))
+        from rules_engine.bestow import begin_bestow
+        begin_bestow(card)
+    else:
+        apply_cast_face(card, printed_face_card)
+    if casting_method(chosen.id) == "escape":
+        payload["__escaped"] = True
+    if casting_method(chosen.id) == "flashback":
+        payload["__flashback"] = True
+    from rules_engine.alternative_casts import has_aftermath
+    if from_graveyard and has_aftermath(face_card):
+        payload["__aftermath"] = True
+    from rules_engine.foretell import record
+    was_foretold = bool(record(card))
+    if from_exile:
+        leave_exile(state, cid)
+    else:
+        departures = capture_graveyard_departures(state, [cid]) if from_graveyard else []
+        (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
+    player.exile_play_until.pop(cid, None)
+    card.move_to_zone(Zone.STACK)
+    from rules_engine.prevention import has_numeric_prevention_instruction
+    if has_numeric_prevention_instruction(effect_key, payload):
+        payload['__prevention_source_reference'] = {
+            'incarnation': object_incarnation(card),
+            'zone_change_sequence': card.zone_change_sequence,
+        }
+    control_source_reference = None
+    if (effect_key == 'temporary_control_instruction'
+            or effect_key == 'effect_sequence' and any(
+                effect.get('effect_key') == 'temporary_control_instruction'
+                for effect in payload.get('effects', []))):
+        control_source_reference = {
+            'incarnation': object_incarnation(card),
+            'zone_change_sequence': card.zone_change_sequence,
+        }
+    if chosen.graveyard_permission_key:
+        from rules_engine.graveyard_permissions import record_graveyard_permission
+        record_graveyard_permission(state, chosen.graveyard_permission_key)
+    if not from_exile:
+        emit_graveyard_departures(state, departures)
+    if from_exile and was_foretold:
+        card.was_foretold = True
+        payload['__was_foretold'] = True
+    card.was_kicked = chosen.kicked
+    card.kicker_count = chosen.kicker_count
+    card.controller = player_id
+    state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
+    if chosen.kicked:
+        state.kicked_spells_cast_this_turn[player_id] = state.kicked_spells_cast_this_turn.get(player_id, 0) + 1
+    announced_item = add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
+    if control_source_reference is not None:
+        announced_item.payload['__control_source_frame'] = {
+            'stack_id': announced_item.id,
+            'source_card_id': announced_item.source_card_id,
+            'cast_controller': announced_item.controller,
+            'label': announced_item.label,
+            'source_reference': control_source_reference,
+        }
+
+    return True
 
 
 class RulesEngine:
@@ -401,6 +553,7 @@ class RulesEngine:
                 return True
         return False
 
+    @action_boundary
     def take_action(self, state: MatchState, player_id: int, action: dict, *, reject_invalid: bool = False, effect_cast: bool = False, suspend_cast: bool = False) -> None:
         from rules_engine.activation_copy import record_activation_complete
 
@@ -665,10 +818,11 @@ class RulesEngine:
                                 item["payload"]["lifelink_total"] = int(item["payload"].get("lifelink_total", 0)) + dealt
                                 break
                 from rules_engine.stack_engine import resume_paused_resolution
+                mana_owned = state.mana_continuation is not None
                 resume_paused_resolution(state, pending)
                 if not (pending.get("batch_damage") or pending.get("resume_kind") == "damage_batch"):
                     apply_state_based_actions(state)
-                if not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
+                if not mana_owned and not state.pending_replacement_choice and not state.pending_trigger_order and not state.pending_mechanic_choice:
                     state.priority_player = state.active_player
                     state.passed_priority = set()
                 return
@@ -876,51 +1030,9 @@ class RulesEngine:
                     return
 
         elif kind == "tap_lands_bulk":
-            from rules_engine.action_validation import ActionRejected, validate_tap
-            try:
-                validate_tap(state, player_id, action)
-            except ActionRejected as error:
-                reject(str(error))
-                return
-            land_name = str(action.get("land_name", "")).strip().lower()
-            count = max(0, int(action.get("count", 0)))
-            if land_name and count > 0:
-                tapped = 0
-                produced = None
-                produced_total = 0
-                for cid in list(player.battlefield):
-                    card = state.cards[cid]
-                    if tapped >= count:
-                        break
-                    if not land_can_produce_mana(state, cid, free_only=False):
-                        continue
-                    if card.name.strip().lower() != land_name:
-                        continue
-                    colors = land_mana_colors(card, state)
-                    if action.get("color") and action["color"] not in colors:
-                        continue
-                    color = action.get("color") or next(color for color in "UBRGWC" if color in colors)
-                    amount = land_mana_amount(state, player_id, cid, color)
-                    from rules_engine.mana_abilities import preferred_free_spec
-                    spec = preferred_free_spec(state, card, color, amount, tap_only=True)
-                    if spec is None:
-                        reject('Cannot select mana ability')
-                        return
-                    from rules_engine.mana_abilities import activate_mana_ability
-                    if not activate_mana_ability(state, player_id, cid, spec[0], color):
-                        reject('Cannot pay mana ability costs')
-                        return
-                    produced = color
-                    produced_total += amount
-                    tapped += 1
-                if tapped != count:
-                    reject('Cannot pay all requested mana ability costs')
-                    return
-                if tapped > 0 and produced:
-                    state.log.append(
-                        f"{player.name} taps {tapped}x {action.get('land_name')} for "
-                        f"{produced_total} {produced}."
-                    )
+            from rules_engine.mana_continuation import bulk_mana
+            bulk_mana(state, player_id, action)
+            return  # Each completed activation owns its post-bonus SBA boundary.
 
         elif kind == "cast_spell":
             cid = action["card_id"]
@@ -1104,27 +1216,47 @@ class RulesEngine:
                     if not exhaustive:
                         frozen_cost_choice[key] = selected_cost_cards[key]
                         reserved_cost_cards.update(selected_cost_cards[key])
-                adjusted_cost = chosen.mana_cost
-                cost_staging = not state.trigger_staging
-                if cost_staging:
-                    state.trigger_staging = True
-                    state.trigger_staging_event = "spell_cast"
+                from dataclasses import asdict
+                from copy import deepcopy
+                from game_state.serializers import _card_snapshot
+                from rules_engine.mana_continuation import prepared_cast, reference
                 payment_details: dict = {}
-                paid = auto_pay_cost(
-                    state, player_id, adjusted_cost, is_land=("Land" in effective_types(state, face_card)),
-                    card_name=face_card.name, x_value=x_value, spell_types=set(effective_types(state, face_card)),
-                    oracle_text=face_card.oracle_text or "",
-                    spell_is_aura=bestowed or is_aura(face_card),
-                    spell_kicked=chosen.kicked,
-                    hybrid_choices=action.get("hybrid_choices"),
-                    reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
-                    payment_details=payment_details,
-                    source_card_id=cid, target_card_id=action_targets.get("target_card_id"),
-                    cast_resource_card=face_card, resource_choices=action.get('resource_payment'),
-                    reserved_card_ids=reserved_cost_cards,
-                    additional_generic_reduction=len(selected_cost_cards.get('exile_card_ids', [])) * chosen.hand_exile_generic_reduction,
-                    post_payment_condition=escape_payment_goal,
-                )
+                cast_data = {
+                    'source': reference(card), 'chosen': asdict(chosen),
+                    'face_card': _card_snapshot(face_card),
+                    'printed_face_card': _card_snapshot(printed_face_card),
+                    'action_targets': deepcopy(action_targets), 'target_references': deepcopy(target_references),
+                    'ward_specs': deepcopy(ward_specs), 'grant_capture': deepcopy(grant_capture),
+                    'selected_face_index': selected_face_index, 'x_value': x_value,
+                    'bestowed': bestowed, 'from_graveyard': from_graveyard,
+                    'from_exile': from_exile, 'from_library': from_library, 'effect_cast': effect_cast,
+                    'escape_ids': list(escape_ids), 'escape_selected': deepcopy(action.get('escape_exile_ids')),
+                    'has_escape_condition': escape_payment_goal is not None,
+                    'exile_references': deepcopy(exile_references),
+                    'frozen_cost_choice': deepcopy(frozen_cost_choice),
+                    'payment_details': payment_details, 'payment_contract': None,
+                }
+                adjusted_cost = chosen.mana_cost
+                with prepared_cast(state, player_id, cast_data) as cast_frame:
+                    cost_staging = not state.trigger_staging
+                    if cost_staging:
+                        state.trigger_staging = True
+                        state.trigger_staging_event = "spell_cast"
+                    paid = auto_pay_cost(
+                        state, player_id, adjusted_cost, is_land=("Land" in effective_types(state, face_card)),
+                        card_name=face_card.name, x_value=x_value, spell_types=set(effective_types(state, face_card)),
+                        oracle_text=face_card.oracle_text or "",
+                        spell_is_aura=bestowed or is_aura(face_card),
+                        spell_kicked=chosen.kicked,
+                        hybrid_choices=action.get("hybrid_choices"),
+                        reserved_life=chosen.pay_life + (x_value if chosen.pay_life_x else 0),
+                        payment_details=payment_details,
+                        source_card_id=cid, target_card_id=action_targets.get("target_card_id"),
+                        cast_resource_card=face_card, resource_choices=action.get('resource_payment'),
+                        reserved_card_ids=reserved_cost_cards,
+                        additional_generic_reduction=len(selected_cost_cards.get('exile_card_ids', [])) * chosen.hand_exile_generic_reduction,
+                        post_payment_condition=escape_payment_goal,
+                    )
                 if not paid:
                     if cost_staging:
                         state.staged_triggers.clear()
@@ -1133,123 +1265,9 @@ class RulesEngine:
                     state.log.append(f"{player.name} cannot pay mana cost for {card.name}.")
                     apply_state_based_actions(state)
                     return
-                spell_cost_context: dict = {}
-                if escape_payment_goal is not None:
-                    escape_ids = validate_escape_exiles(state, player_id, cid, chosen.exile_graveyard,
-                                                       action.get('escape_exile_ids'))
-                    if escape_ids is None:
-                        reject('Invalid escape exile selection after mana payment')
-                        return
-                if any((object_incarnation(state.cards[selected]), state.cards[selected].zone_change_sequence) != reference
-                       for selected, reference in exile_references.items()):
-                    reject('A selected hand-exile object changed before payment')
+                if not _finish_prepared_cast(state, player_id, cast_data, stage=cast_frame['stage'],
+                        live=(chosen, face_card, printed_face_card), reject_invalid=reject_invalid):
                     return
-                if not apply_additional_costs(state, player_id, chosen, cid, x_value=x_value,
-                                              choice=frozen_cost_choice, context=spell_cost_context):
-                    if cost_staging:
-                        state.staged_triggers.clear()
-                        state.trigger_staging = False
-                    reject("Cannot pay additional casting costs")
-                    state.log.append(f"{player.name} failed additional costs for {card.name}.")
-                    apply_state_based_actions(state)
-                    return
-                from copy import copy
-                effect_surface = copy(face_card)
-                effect_surface.paid_cost_context = spell_cost_context
-                ability = build_spell_spec(state, effect_surface, player_id, action_targets=action_targets)
-                effect_key, payload = ability.effect.key, ability.effect.payload
-                payload["__announced_targets"] = dict(action_targets)
-                payload['__announced_target_references'] = target_references
-                payload['__granted_target_capture'] = grant_capture
-                payload['mana_spent'] = payment_details.get('mana_spent', 0)
-                if payment_details.get('resource_payment') is not None:
-                    payload['__casting_resource_payment'] = payment_details['resource_payment']
-                payload['__kicked'] = chosen.kicked
-                if chosen.kicker_count is not None:
-                    from rules_engine.kicker import validate_kicker_count
-                    payload['__kicker_count'] = validate_kicker_count(chosen.kicker_count, chosen.kicked)
-                payload["__ward_trigger_specs"] = ward_specs
-                payload["snow_mana_spent"] = payment_details.get("snow_mana_spent", 0)
-                payload["snow_mana_colors"] = payment_details.get("snow_mana_colors", {})
-                if "Planeswalker" in effective_types(state, face_card) and "compleated" in face_card.oracle_text.lower():
-                    payload["__phyrexian_life_symbols"] = payment_details.get("phyrexian_life_symbols", 0)
-                if effect_key == "look_top_select_hand":
-                    payload["mana_spent_to_cast"] = payment_details.get('mana_spent', 0)
-                if x_value > 0:
-                    payload.setdefault("x_value", x_value)
-
-                from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
-                departures = capture_graveyard_departures(state, escape_ids)
-                for exile_id in escape_ids:
-                    player.graveyard.remove(exile_id)
-                    player.exile.append(exile_id)
-                    state.cards[exile_id].move_to_zone(Zone.EXILE)
-                emit_graveyard_departures(state, departures)
-                if casting_method(chosen.id) == "prototype":
-                    from rules_engine.alternative_casts import apply_prototype
-                    apply_prototype(card)
-                from rules_engine.card_faces import apply_cast_face
-                if bestowed:
-                    # Apply the selected printed face before bestow's type effect.
-                    apply_cast_face(card, _select_face_for_cast(card, selected_face_index))
-                    from rules_engine.bestow import begin_bestow
-                    begin_bestow(card)
-                else:
-                    apply_cast_face(card, printed_face_card)
-                if casting_method(chosen.id) == "escape":
-                    payload["__escaped"] = True
-                if casting_method(chosen.id) == "flashback":
-                    payload["__flashback"] = True
-                from rules_engine.alternative_casts import has_aftermath
-                if from_graveyard and has_aftermath(face_card):
-                    payload["__aftermath"] = True
-                from rules_engine.foretell import record
-                was_foretold = bool(record(card))
-                if from_exile:
-                    leave_exile(state, cid)
-                else:
-                    departures = capture_graveyard_departures(state, [cid]) if from_graveyard else []
-                    (player.graveyard if from_graveyard else player.hand if not from_library else player.library).remove(cid)
-                player.exile_play_until.pop(cid, None)
-                card.move_to_zone(Zone.STACK)
-                from rules_engine.prevention import has_numeric_prevention_instruction
-                if has_numeric_prevention_instruction(effect_key, payload):
-                    payload['__prevention_source_reference'] = {
-                        'incarnation': object_incarnation(card),
-                        'zone_change_sequence': card.zone_change_sequence,
-                    }
-                control_source_reference = None
-                if (effect_key == 'temporary_control_instruction'
-                        or effect_key == 'effect_sequence' and any(
-                            effect.get('effect_key') == 'temporary_control_instruction'
-                            for effect in payload.get('effects', []))):
-                    control_source_reference = {
-                        'incarnation': object_incarnation(card),
-                        'zone_change_sequence': card.zone_change_sequence,
-                    }
-                if chosen.graveyard_permission_key:
-                    from rules_engine.graveyard_permissions import record_graveyard_permission
-                    record_graveyard_permission(state, chosen.graveyard_permission_key)
-                if not from_exile:
-                    emit_graveyard_departures(state, departures)
-                if from_exile and was_foretold:
-                    card.was_foretold = True
-                    payload['__was_foretold'] = True
-                card.was_kicked = chosen.kicked
-                card.kicker_count = chosen.kicker_count
-                card.controller = player_id
-                state.spells_cast_this_turn[player_id] = int(state.spells_cast_this_turn.get(player_id, 0) or 0) + 1
-                if chosen.kicked:
-                    state.kicked_spells_cast_this_turn[player_id] = state.kicked_spells_cast_this_turn.get(player_id, 0) + 1
-                announced_item = add_to_stack(state, source_card_id=cid, controller=player_id, label=card.name, effect_key=effect_key, payload=payload)
-                if control_source_reference is not None:
-                    announced_item.payload['__control_source_frame'] = {
-                        'stack_id': announced_item.id,
-                        'source_card_id': announced_item.source_card_id,
-                        'cast_controller': announced_item.controller,
-                        'label': announced_item.label,
-                        'source_reference': control_source_reference,
-                    }
 
         elif kind == "cycle_card":
             cid = action.get("card_id")

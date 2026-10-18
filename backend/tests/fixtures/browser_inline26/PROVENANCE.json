@@ -1,0 +1,305 @@
+{
+  "canonical_jsonl_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+  "compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "kind": "exact full line reuse from previously verified official bulk; no API/network",
+  "missing_exact_names": [],
+  "network_requests": 0,
+  "old_manifest_entries_preserved": 22,
+  "records": {
+    "Appetite for Brains": {
+      "id": "58f20b88-7b48-4d3b-b836-c7aef71cd337",
+      "local_line": 22,
+      "oracle_id": "4ffc16e0-1778-4aba-ade3-58146c800f5f",
+      "source_line": 12010,
+      "source_line_sha256": "63b9804d29e9ab16a7c24de4672ea7891ee0f6c03d8e00b1412c668659428792"
+    },
+    "Bala Ged Recovery // Bala Ged Sanctuary": {
+      "id": "c5cb3052-358d-44a7-8cfd-cd31b236494a",
+      "local_line": 40,
+      "oracle_id": "d2075f58-b0e9-4e85-b7e6-0523a27a1d5b",
+      "source_line": 31656,
+      "source_line_sha256": "4594256135e3393fffd0f0627846a0960fc71fe52d6fd651dbc5d35e3a8d4208"
+    },
+    "Benalish Hero": {
+      "id": "a14ba3be-f7cb-47e5-b6c4-d09cfd3cac34",
+      "local_line": 21,
+      "oracle_id": "4c81cfb7-8765-4e28-ae33-4287fa9a86cc",
+      "source_line": 11506,
+      "source_line_sha256": "d56b3b6c08366eabb9cb57c7e7312755acc902fb1da2160d09003299a582ef03"
+    },
+    "Bonecrusher Giant // Stomp": {
+      "id": "b5b71cd2-de35-451f-b16e-2e3936169407",
+      "local_line": 41,
+      "oracle_id": "d6d72f5f-8f5d-4180-b514-f22ff5482902",
+      "source_line": 32419,
+      "source_line_sha256": "68a2f3695929baad7acedd63744233c2bf3e7c49aa9b98981d118b2b51a500b6"
+    },
+    "Boros Swiftblade": {
+      "id": "6135a9f2-e86d-4a34-857e-adea3c722fea",
+      "local_line": 13,
+      "oracle_id": "377e4dad-866b-4e02-8c10-072bf7f000be",
+      "source_line": 8287,
+      "source_line_sha256": "4d3d50562de52450237b2a1d174acfbe425832ea428760f3c93fb760be4f505e"
+    },
+    "Centaur Courser": {
+      "id": "e8b67ee8-3189-4426-8b1a-b540267768fd",
+      "local_line": 9,
+      "oracle_id": "2f5bf099-2e01-4e1c-9ebf-0ce0ac66939e",
+      "source_line": 7032,
+      "source_line_sha256": "4aa539f9ee335bd8d3a92d4e6f4a50997466a0db4745ed8ce42db74b0cd14176"
+    },
+    "Charging Monstrosaur": {
+      "id": "d5222448-95d1-4b63-ab76-d5060febcf38",
+      "local_line": 5,
+      "oracle_id": "21dd60d5-76c8-469e-8c4e-112e377d2d59",
+      "source_line": 5102,
+      "source_line_sha256": "62ac6d2f9247345f7bdc928c2e1256ec841294191be807c9c04af4659968a67c"
+    },
+    "Coercion": {
+      "id": "8c0459ca-1646-46a0-9fc2-709b321bb41f",
+      "local_line": 26,
+      "oracle_id": "68413337-ddb9-46f8-8c8e-f3d2d672c652",
+      "source_line": 15651,
+      "source_line_sha256": "48d848293a5244aad5ff6f73cada43aaf7e99b1366819c8e5fbd2610974d976b"
+    },
+    "Counterspell": {
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "local_line": 39,
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "source_line": 30747,
+      "source_line_sha256": "55dbf2a71104f8c4309fd842e3f5d6e4096800637ece6d932d28a32cafef98db"
+    },
+    "Cryptic Command": {
+      "id": "30f6fca9-003b-4f6b-9d6e-1e88adda4155",
+      "local_line": 32,
+      "oracle_id": "a3e51a35-09df-4189-b131-08a21e6a557d",
+      "source_line": 24699,
+      "source_line_sha256": "1ed08b8dacc15dc41b36823dfde467237d3ea7964d8f3c80c2b33f70f548a1b1"
+    },
+    "Delirium Skeins": {
+      "id": "64b0d9e7-4a0f-4f07-99ae-31c3c9f0037a",
+      "local_line": 28,
+      "oracle_id": "7397036f-8114-47cc-b52f-c532a6845d16",
+      "source_line": 17383,
+      "source_line_sha256": "9719c5a4679f9f662c544dff17a99f017cbfd4fe4991856dc738bb55e8691b31"
+    },
+    "Despise": {
+      "id": "64216ce3-945e-42d8-9127-cf11c687da67",
+      "local_line": 35,
+      "oracle_id": "b13b40f1-1b1f-40e8-989b-ef24dc05007a",
+      "source_line": 26675,
+      "source_line_sha256": "67a05f46fa1e2188c28a480d0d7e76aac23a7412026115de80f08b319a8f177e"
+    },
+    "Duress": {
+      "id": "34c3a894-ee75-4db9-a69f-711bb3cc150a",
+      "local_line": 10,
+      "oracle_id": "33d405ea-7a9a-4970-b70f-9c05d90dd6f0",
+      "source_line": 7713,
+      "source_line_sha256": "93e3af3615fc96a69c3ae88c70c41b686112b2b6a208be9075b24209ab978f06"
+    },
+    "Elvish Mystic": {
+      "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+      "local_line": 15,
+      "oracle_id": "3f3b2c10-21f8-4e13-be83-4ef3fa36e123",
+      "source_line": 9512,
+      "source_line_sha256": "8904df6ec1e4b18c84ca5c13c01b6c37babf68efce8290e09e33626f580abbff"
+    },
+    "Everflowing Chalice": {
+      "id": "e4ed0052-d6dd-4f69-8313-10863baefac9",
+      "local_line": 4,
+      "oracle_id": "0a79237e-0811-4a8a-bd4d-db3ca91bff22",
+      "source_line": 1597,
+      "source_line_sha256": "b512d8ef27c80e3df777703f84f6183c9f57f84b1cf4c7f20c5c596d6b562e8e"
+    },
+    "Fire // Ice": {
+      "id": "18303862-4726-4136-814f-157aa7006579",
+      "local_line": 34,
+      "oracle_id": "ae92942b-919c-4ea9-b693-85fcef765d5a",
+      "source_line": 26268,
+      "source_line_sha256": "1c1dca9ee0723476d2c80a24a109e49e1ecd81a0f673a92462e869b7ad54cdba"
+    },
+    "Gollum, Silent Slinker // Meager Meal": {
+      "id": "6cfaa182-3fec-4907-8814-b4d29c33cec3",
+      "local_line": 2,
+      "oracle_id": "0296d57e-e5b9-456f-bb21-eb584adefb4c",
+      "source_line": 426,
+      "source_line_sha256": "44d61a8d7eca52549cd5ca12961893f58b8160d84bb4cc61056ac2c9a03641ed"
+    },
+    "Hill Giant": {
+      "id": "14c2be6a-9ca6-4d3a-8dd0-db4ea40799f8",
+      "local_line": 11,
+      "oracle_id": "342199e0-15b6-4824-83da-25caef2592b3",
+      "source_line": 7777,
+      "source_line_sha256": "7278c29c3e7fe48fd5251930df1df553c5773e2199738a183d895ec3a0fc1952"
+    },
+    "Icehide Golem": {
+      "id": "b2671c36-96fa-49e3-90dc-52820b2c8a62",
+      "local_line": 8,
+      "oracle_id": "29b925e9-1e98-471c-9b23-e0372ac86485",
+      "source_line": 6242,
+      "source_line_sha256": "460838ba218c6a83ea80f808a7b21808ac0675df8325c52c6ad37de386b1bdbd"
+    },
+    "Inquisition of Kozilek": {
+      "id": "17f38740-20fd-4097-90f8-f0c2c2ff7281",
+      "local_line": 14,
+      "oracle_id": "395611fa-aec2-4c9e-92c3-70cf95cc00f4",
+      "source_line": 8573,
+      "source_line_sha256": "7e276e418930d4380c95263d994793a6b8f06d9eeedc1d1aa075fb43ffac5ad6"
+    },
+    "Izzet Charm": {
+      "id": "15af0592-a1cb-4b1e-b051-dde978939706",
+      "local_line": 31,
+      "oracle_id": "a07698f6-5ad5-49a3-9da2-f82d407f5cd7",
+      "source_line": 24165,
+      "source_line_sha256": "303f8d3c263a76a9be362f3b3a592407ada7a56c0a4c8f7d8c551b594edcf464"
+    },
+    "Jace, the Mind Sculptor": {
+      "id": "c8817585-0d32-4d56-9142-0d29512e86a9",
+      "local_line": 29,
+      "oracle_id": "7f77a84e-5a4b-4834-aefa-3cecc175ae8e",
+      "source_line": 19198,
+      "source_line_sha256": "38808c1cd0dbafeff766fc04a862f5fcb5b252a6f473d29b195f6e2fb0eeed4e"
+    },
+    "Lava Spike": {
+      "id": "79c21c1f-eaa4-454d-a1c7-b41466d0a428",
+      "local_line": 6,
+      "oracle_id": "2837888c-bfa8-4955-9334-0605ad409f7e",
+      "source_line": 6029,
+      "source_line_sha256": "3ede28ca4c3de4cbf1f9711b588b94a6c61ab70672a45a4e286be6e82b710645"
+    },
+    "Leyline of Sanctity": {
+      "id": "be8b1acf-dd87-42ca-ad19-c27d21066030",
+      "local_line": 19,
+      "oracle_id": "492e0e6c-8c27-4376-938b-f8a8b6205810",
+      "source_line": 10973,
+      "source_line_sha256": "d7fafdf03d30c936df3128a1850be392336df3ebc3f726218795a389ce90fc33"
+    },
+    "Mayhem Devil": {
+      "id": "674f3a8a-4552-4289-b92a-06ce158f115c",
+      "local_line": 17,
+      "oracle_id": "4709f11c-aef8-45ac-b2bf-e640c568dfac",
+      "source_line": 10666,
+      "source_line_sha256": "c891ef8e4924534f5df05564d2ffe5aecf6a17639bb2d29093684360c82d70a4"
+    },
+    "Mutagenic Growth": {
+      "id": "2e0861a2-1858-47af-8154-20a977c2b298",
+      "local_line": 38,
+      "oracle_id": "c17b9e5b-58b6-4ccf-8283-945ba77429e7",
+      "source_line": 29130,
+      "source_line_sha256": "4dbbfe06f3ce290f22664bd024f6c4a90171c26d0d2785e57e0e66fce4ecc9fa"
+    },
+    "Palace Guard": {
+      "id": "51e73c28-bf82-413e-bec2-adbb52fa6993",
+      "local_line": 23,
+      "oracle_id": "5c92f375-ae6a-4be5-a499-ab87d6bdc49b",
+      "source_line": 13911,
+      "source_line_sha256": "1a75145aa4ca0598a4189e27765a57ad12cf59b68869289f40542b0f0049d3c0"
+    },
+    "Prodigal Pyromancer": {
+      "id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+      "local_line": 7,
+      "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd",
+      "source_line": 6237,
+      "source_line_sha256": "f14a776b92113e72d9980eaa3b49f43bfb716ff7bdf597b1bb7b7313bf05460d"
+    },
+    "Realmwalker": {
+      "id": "52733829-27b7-40ec-a897-cabab35b3729",
+      "local_line": 37,
+      "oracle_id": "b81eaa2f-0554-41c6-bdf6-d1cb73b8f56f",
+      "source_line": 27684,
+      "source_line_sha256": "b62e44a8fef4157863d64ecdae5e9f110fc1739ababbe7b8c36636301c04630c"
+    },
+    "Reclamation Sage": {
+      "id": "1918ea65-ab7f-4d40-97fd-a656c892a2a1",
+      "local_line": 3,
+      "oracle_id": "032ec6e2-6cc3-4a97-9cc7-3233f5e11904",
+      "source_line": 520,
+      "source_line_sha256": "0968e2d1cfba5cf8cfd2f48d5f361803f8ba799ca66e2713247770a6173e93ba"
+    },
+    "Sacred Foundry": {
+      "id": "a7758cc6-4e18-48a5-8720-5f42b5cd9d31",
+      "local_line": 16,
+      "oracle_id": "45181cb8-2090-4471-ba90-e5a8f04d525f",
+      "source_line": 10369,
+      "source_line_sha256": "c8d0e7320c28c85821a8699787cc935c4c16331b5f90462ee61021b7c0d325e9"
+    },
+    "Serra Angel": {
+      "id": "b8c5e74c-96e7-4a1f-93b7-14d776fe4b2d",
+      "local_line": 20,
+      "oracle_id": "4b7ac066-e5c7-43e6-9e7e-2739b24a905d",
+      "source_line": 11336,
+      "source_line_sha256": "8d2e77815724fdf236461dd9c1ae3822076ec4f9bbffcc029fd8dc0b0f32019d"
+    },
+    "Shock": {
+      "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+      "local_line": 33,
+      "oracle_id": "a9d288b8-cdc1-4e55-a0c9-d6edfc95e65d",
+      "source_line": 25558,
+      "source_line_sha256": "a56d51e597b58a93063c6b7fdef69f85f8422166994fb981fa250f7b335c4e4b"
+    },
+    "Smuggler's Copter": {
+      "id": "2680ed41-da35-475a-9d80-ae2f4686feed",
+      "local_line": 18,
+      "oracle_id": "49136bdc-bc50-49a2-999a-1ef9c16ea130",
+      "source_line": 10957,
+      "source_line_sha256": "e2a6a35a3b20c3102ef0550350bb22e26ff2f8aea48b906b82548e195be7a004"
+    },
+    "Snow-Covered Forest": {
+      "id": "ca17acea-f079-4e53-8176-a2f5c5c408a1",
+      "local_line": 24,
+      "oracle_id": "5f0d3be8-e63e-4ade-ae58-6b0c14f2ce6d",
+      "source_line": 14253,
+      "source_line_sha256": "e19728064d866d045f930ce3ccd500a8e535236841ecc2782196c4ab92dcef59"
+    },
+    "Spectral Procession": {
+      "id": "9964629e-d79e-46e4-b3fd-e7d1759cbc60",
+      "local_line": 12,
+      "oracle_id": "376271a6-80f0-47a6-990a-5ec5517aae42",
+      "source_line": 8258,
+      "source_line_sha256": "67925f56e42478a409eb0b616ea3bb56610daa56ae046521d9f5c0c18283a7a6"
+    },
+    "Spring // Mind": {
+      "id": "6431d464-1f2b-42c4-ad38-67b7d0984080",
+      "local_line": 27,
+      "oracle_id": "6dd7e861-7ae2-49e6-a9ab-8fd761939e22",
+      "source_line": 16507,
+      "source_line_sha256": "aa3e1e5f6c3981598f1ce563e363e71a1352fe974b6ebdad620f1afba2600ccc"
+    },
+    "Tamiyo, Compleated Sage": {
+      "id": "222a736e-d819-452d-aeda-eb848c4b2302",
+      "local_line": 1,
+      "oracle_id": "021b4745-4a15-462c-a6b0-2dee1dc9d196",
+      "source_line": 348,
+      "source_line_sha256": "56001ab07d6505b5e044d12647450522d78bbcddecb1092cc6a2da9841f5bfbd"
+    },
+    "Thoughtseize": {
+      "id": "b281a308-ab6b-47b6-bec7-632c9aaecede",
+      "local_line": 42,
+      "oracle_id": "edd8d1e8-be43-4c38-bb3a-83081fbaf0b5",
+      "source_line": 35933,
+      "source_line_sha256": "8fe537c7c98f196b199bc05b7a810115520625074e21eee059534fcd1b4bb6e5"
+    },
+    "Ulamog, the Infinite Gyre": {
+      "id": "9464a820-65de-44f2-9895-46a35e8621a0",
+      "local_line": 36,
+      "oracle_id": "b817bc56-9b4d-4c50-bafa-3c652b99578f",
+      "source_line": 27677,
+      "source_line_sha256": "6dae38f0580e9577d7ca45eea5cb2db8783c907757bfb3361f8b218a9123e8b5"
+    },
+    "Valki, God of Lies // Tibalt, Cosmic Impostor": {
+      "id": "ea7e4c65-b4c4-4795-9475-3cba71c50ea5",
+      "local_line": 30,
+      "oracle_id": "907ae517-22d5-4ac7-bc3a-3f4d5eaeeb57",
+      "source_line": 21737,
+      "source_line_sha256": "c5a910082cdd977d0ba52ff71467ec7b09ef6ae3e176e53dee8e5dcfc635c9f3"
+    },
+    "Wandering Archaic // Explore the Vastlands": {
+      "id": "18a2bdc8-b705-4eb5-b3a5-ff2e2ab8f312",
+      "local_line": 25,
+      "oracle_id": "6556c4c0-b10d-4208-821b-0c0a49abd188",
+      "source_line": 15212,
+      "source_line_sha256": "b9499b00a4de88c5d81e0751bb53934509c80a9aa6378fc5324ec9018689d571"
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz"
+}

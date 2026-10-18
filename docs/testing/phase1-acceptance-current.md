@@ -5,6 +5,171 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The October18 [sharded CI candidate](backend-sharded-ci.md) passes all259
+selftests in20 whole modules, retaining the original251 and adding eight
+capacity-admission regressions. Its separate real public-toy E2E check also
+passes. The reviewed13 CI paths are integrated locally; no combined260,
+hosted/private-bootstrap, whole-backend or Phase1 completion claim follows.
+These changes enable the pending broad acceptance run rather than replace it.
+
+The October18 [Jace retained-parent repair](transformed-jace-birth-prep.md)
+passes23 ordinary cases in two whole modules in17.28 seconds, including all12
+originals and11 new controls. The same V3 baseline records17 passes and six
+genuine fidelity failures. All nine original bodies and28 assertion ASTs remain;
+complete printed-front fields reach the native constructor before capture, and
+mutable RAW faces/colors are detached. Source/runtime/system/resource checks
+pass, and all2400 selected backend files match the integrated candidate. Earlier
+new-test alias-cleanup and capture-coverage assumptions are preserved separately;
+no product or serializer fix is inferred from those test errors. Scene cards
+remain outside original stock. Full Jace ability, remaining helper reductions,
+literal/protocol scope and whole-source acceptance are not certified.
+
+The October18 [mini-Factory admission repair](canonical-mini-factory58-static-prep.md)
+passes747 ordinary cases in six whole modules, in741.25 seconds, with all2241
+phases passed. The same baseline records631 passes and116 new full-input
+fidelity failures; all587 original cases and44 independent controls pass both
+times. Three tables now supply58 complete official row occurrences covering53
+printings before the original Factory helpers. Existing printed operands were
+already correct; this is incomplete-record admission, not116 Oracle defects.
+The candidate exercises116 owned SQLite connections and52 self-pipe socket
+constructors with no repairs or unexpected IO, and clean source/runtime/resource
+closure. Five tested paths are integrated; all2399 selected backend files match
+the executed candidate. Appended scene cards are not recaptured as original
+stock. Remaining helper reductions, literal/protocol scope, live browsers and
+whole-backend acceptance remain open; this is not Phase1 sign-off.
+
+The October18 [mass-exile operand repair](canonical-mass-exile-operand-prep.md)
+passes all20 cases in two whole modules, including both original cases and
+18 unchanged fidelity controls. The baseline records3 passes and17 factual
+assertion failures in8.80 seconds; the repaired source passes in13.70 seconds.
+Complete official Final Judgment replaces an incomplete fixture mislabeled
+Farewell, while both original nodes and all five assertions remain. Genuine
+121-object native stock and a consistent hand pose are checked without retagging
+or recapturing stock. All2398 selected backend files match the executed source;
+source/runtime/resource checks and independent review pass. Four tested files
+are integrated locally. This is parser-input qualification, not paid casting,
+Farewell modal support, anonymous protocol coverage or Phase1 sign-off.
+
+The October18 [shared basic-birth repair](browser-basicbirth3-canonical-prep.md)
+passes64 cases in four whole modules after the same baseline records60 passes
+and four genuine full-input fidelity failures. All50 original cases pass both
+times; all25 original definitions and112 assertion ASTs remain. Three helper
+deck assignments now supply complete pinned Swamp/Plains before Factory birth,
+without retagging or recapturing stock. The candidate passes in104.93 seconds
+with real owned HTTP/SQLite and clean source/runtime/resource checks. Its five
+tested paths are integrated locally. Named additions and broader delegated
+fixture scope remain open; this is not Phase1 sign-off.
+
+On October 18 the original 20-whole-module regression declaration passes all549
+ordinary cases on the frozen current backend, in1584.39 seconds, within its
+unchanged2400-second bound. The exact original ordered549 identities remain;
+all16 corrected Bolt owner cases and the original60 cast/payment cases pass.
+Source2395, qualified runtime3674 and system inputs remain unchanged, with all
+native10/private boundaries and physical closure checks passing. Release is
+recorded at `2026-10-18T11:48:53.329485Z`. This completes the held declaration,
+not an aggregate with the separate event/player100, live browsers, whole backend
+or Phase1.
+
+The October 18 [event/release and sacrifice-fixture repair](canonical-smothering-sacrifice-T57-prep.md)
+is now qualified within one seven-whole-module100-case run. It replaces four
+shortened or incorrect positive setups with complete official records, including
+genuine Smothering Abomination for the sacrifice-draw scenario rather than an
+invented Blood Artist ability. Static checks retain all 50 original test
+definitions and 135 assertion ASTs; eight new both-seat mechanism controls join
+the inherited fidelity checks. All73 cases from its five whole modules pass
+within the combined100, including both-seat real sacrifice-draw controls.
+No production rules code changed. On October 18 the user
+approved a new, separately named coordination lock; the old protected path
+remains absent and untouched. All previous execution grants are void. The
+new epoch serializes reviewed native runs. The combined100 passes in114.82
+seconds, with all300 phases passed,56 owned SQLite connections,28 self-pipe
+socket constructors, no connection repairs, and clean source/runtime/resource
+checks. The one exactly bound optional pytest link remains denied; its genuine
+fallback is recorded separately from unexpected IO, which is empty. Physical
+release is `2026-10-18T12:11:32.782365Z`. This is not whole-phase acceptance.
+
+The separate [player/planeswalker fixture migration](player-planeswalker-canonical-PREP83.md)
+is also qualified in that same combined100. Four genuine card identities
+use complete pinned records; all five original test definitions and 14 assertion
+ASTs remain. Teferi's RAW and code both specify printed loyalty4; an incorrect
+old description of printed5 is corrected, not treated as a rules-engine fix.
+All27 cases in its two whole modules pass, including real HTTP/SQLite behavior.
+This is not a separate27-case run or whole-phase sign-off. Remaining positive
+fixture repairs, literal/protocol scope and final whole-backend acceptance stay
+open.
+
+The [remaining inline browser-fixture repair](browser-inline26-canonical-prep.md)
+now passes 183 ordinary cases in nine whole modules on the frozen current
+backend and qualified runtime, in 122.93 seconds. This includes the inherited
+96, all 57 new full-RAW fidelity cases, all eight strict source-authority cases
+within that inherited cohort, and the whole 30-case stock module. The repaired
+26 inline/default groups use 53 complete official records before native birth;
+the 56 delegated groups remain open. Original node names, gameplay, restore and
+privacy checks remain. An explicit publisher opt-out is labeled negative
+protocol coverage, not a positive fixture. The first same-sized run's 166 passes
+and 17 failures are preserved: a new assertion incorrectly indexed the legacy
+override dictionary instead of the retained physical-name record. Correcting
+that helper and the stale manifest pin changes no production rules code.
+All 183 ordered identities pass with no errors, skips or unexpected IO; source,
+runtime and resource closure checks pass. This is native fixture/serializer
+qualification, not live-browser, HTTP, whole-backend or Phase 1 sign-off.
+
+The October 17 [counter and paid-life fixture correction](canonical-counter-life-fixtures-t57.md)
+passes all 12 cases in three whole modules after an unchanged baseline records
+eight passes and four genuine printing failures. Complete verified Spell Pierce,
+Font of Agonies, Withering Boon, Bears and Bolt facts precede the original
+consumers; all seven definitions and 28 assertion ASTs remain. Four tested
+file postimages are integrated locally with no production change. The original
+prelaunch administrative stop is preserved separately. Remaining positive
+fixtures, literal scope and whole-source acceptance are still open.
+
+The October 17 [counter-response fixture correction](canonical-counter-response-fixtures-t57.md)
+passes all 23 cases in three whole modules after an unchanged baseline records
+19 passes and four genuine printed-fact failures. Both original modules retain
+their definitions, assertions, actions and resources; complete pinned Counterspell
+facts now reach their real checked consumers. The three tested file postimages
+are integrated locally, with no production change. This closes another bounded
+positive-fixture batch, not the remaining literal scope or whole-source acceptance.
+
+The October 17 [browser-fixture contract correction](canonical-browser-fixture96-current.md)
+passes all 96 cases in seven whole modules, after an unchanged 88-case baseline
+records 57 passes and 31 failures. It preserves all original 36 identities,
+qualifies complete factual inputs and pre-birth Company stock, repairs the Rats
+projection without clearing inventory, and retains strict modified-source
+rejection. Eleven tested postimages are integrated locally, with no production
+rules change. This closes that bounded fixture batch, not remaining genuine-card
+fixtures, the literal scope question or final whole-source acceptance.
+
+The October 17 [canonical mana-system component](canonical-mana-system-current.md)
+passes all 118 cases in two whole modules, including the unchanged original 37
+tests and 81 factual controls. Six positive setup regions use verified complete
+records before factory birth. Its nine test/data paths are integrated locally,
+with no production change or combined larger pass inferred. The initial helper
+argument error and preceding six genuine fidelity failures remain separate
+ledgers. Other fixture migrations and literal repository scope remain open.
+
+The October 17 [combat/sacrifice fixture component](canonical-combat-sacrifice-current.md)
+passes all 80 cases in three whole modules after nine genuine printed-fact
+baseline failures, retaining all 43 original cases and their assertions. Its
+twelve test/data/documentation paths are integrated locally; this is not a
+larger combined-source pass. The other confirmed control/target/view/cache and
+browser-producer migrations remain separate unfinished batches. These
+confirmed families are not an exhaustive remaining repository inventory.
+
+The October 17 [canonical layer/copy/manual-mana composition](canonical-layer-copy-manual191-current.md)
+passes all 191 cases in six whole modules on the frozen current-source
+composition over `83a0f359`. All 573 setup/call/teardown reports pass, and all
+3,711 declared non-graph integration files match the tested source. This closes
+another bounded positive-fixture batch; it does not establish zero remaining
+hand-maintained Oracle text across the repository or whole-source acceptance.
+The integration remains uncommitted pending broader checks.
+
+Phase 1's original exit criteria are the knowledge model, canonical ingestion,
+verified offline seed and corpus-completeness gate. Browser compatibility and
+automatic-payment continuation are separate program/release obligations, not
+additional data-phase exit criteria. Their failures remain open without being
+used to redefine Phase 1 or to waive its remaining literal fixture requirement.
+
 The later [static-effect/land-entry component](canonical-static-land-entry243.md)
 passes all 243 cases across six whole modules, including the corrected
 independent types/keywords oracle. All 729 phases, source/runtime preservation

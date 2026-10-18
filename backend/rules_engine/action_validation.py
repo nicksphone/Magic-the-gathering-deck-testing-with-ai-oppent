@@ -160,17 +160,6 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
     pending = state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order
     if not state.pregame_pending and not pending:
         require(state.priority_player == player_id, "This player does not have priority")
-    moves = rules.legal_moves(state, player_id)
-    available = [move for move in moves if move["type"] == kind]
-    if kind == 'cast_spell':
-        from rules_engine.ability_model import unsupported_spell_reason
-        source = state.cards.get(action.get('card_id'))
-        if source is not None and source.owner == player_id and source.zone != Zone.LIBRARY:
-            reason = unsupported_spell_reason(source, {**action.get('targets', {}), **{
-                key: action[key] for key in ('selected_face_index',) if key in action}})
-            require(reason is None, reason or '')
-        bestowed = casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow'
-        available = [move for move in available if (move.get('cast_variant') == 'bestow') == bestowed]
     if kind in {"tap_land_for_mana", "tap_lands_bulk", "tap_nonland_for_mana", 'activate_mana_ability'}:
         require(not state.pregame_pending and not pending, "Mana actions cannot interrupt a pending choice")
         require(state.step != Step.CLEANUP or state.cleanup_repeat_required, "No mana actions during ordinary cleanup")
@@ -232,6 +221,17 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                     require(all(len(bundle) <= 1 for bundle in view.get('base_output_bundles', [])),
                             'Announce the complete mixed mana vector; use activate_mana_ability')
         return
+    moves = rules.legal_moves(state, player_id)
+    available = [move for move in moves if move["type"] == kind]
+    if kind == 'cast_spell':
+        from rules_engine.ability_model import unsupported_spell_reason
+        source = state.cards.get(action.get('card_id'))
+        if source is not None and source.owner == player_id and source.zone != Zone.LIBRARY:
+            reason = unsupported_spell_reason(source, {**action.get('targets', {}), **{
+                key: action[key] for key in ('selected_face_index',) if key in action}})
+            require(reason is None, reason or '')
+        bestowed = casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow'
+        available = [move for move in available if (move.get('cast_variant') == 'bestow') == bestowed]
     # Declaring no attackers is legal even when the move generator has none.
     if kind == "attack" and not action["attackers"]:
         require(state.step == Step.DECLARE_ATTACKERS and state.active_player == player_id and not state.attackers_declared, "Not an attacker declaration window")

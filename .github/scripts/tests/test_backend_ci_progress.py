@@ -446,10 +446,26 @@ class PublisherBoundaryTests(unittest.TestCase):
 
     def test_workflow_optin_does_not_add_upload_or_permissions(self):
         workflow = (SCRIPTS.parent / 'workflows/ci.yml').read_text()
-        self.assertEqual(workflow.count("MTG_CI_PROGRESS: '1'"), 1)
+        reference = workflow.split('  backend-reference:\n', 1)[1].split('  backend-workers:\n', 1)[0]
+        workers = workflow.split('  backend-workers:\n', 1)[1].split('  backend:\n', 1)[0]
+        self.assertEqual(workflow.count("MTG_CI_PROGRESS: '1'"), 2)
+        for job, role in ((reference, 'reference'), (workers, 'worker')):
+            with self.subTest(role=role):
+                self.assertEqual(job.count("MTG_CI_PROGRESS: '1'"), 1)
+                self.assertIn('MTG_CI_SHARD_ROLE: ' + role + '\n', job)
+                self.assertEqual(job.count('bash .github/scripts/run-backend-ci.sh 5>&1'), 1)
         self.assertIn('bash .github/scripts/run-backend-ci.sh 5>&1', workflow)
-        self.assertEqual(workflow.count('uses: actions/upload-artifact@'), 1)
+        self.assertEqual(workflow.count('uses: actions/upload-artifact@'), 4)
+        uploads = [step for step in workflow.split('      - ') if 'uses: actions/upload-artifact@' in step]
+        self.assertEqual([step.split('\n', 1)[0] for step in uploads], [
+            'name: Upload exact public plan only', 'name: Upload backend metadata',
+            'name: Upload one bounded public worker envelope only',
+            'name: Upload successful bounded four-session qualification only'])
+        self.assertTrue(all('outputs.evidence' not in step for step in uploads))
         self.assertIn('permissions:\n  contents: read\n', workflow)
+        self.assertEqual(workflow.count('permissions:'), 1)
+        self.assertNotIn('contents: write', workflow)
+        self.assertNotIn('actions: write', workflow)
 
 
 if __name__ == '__main__':

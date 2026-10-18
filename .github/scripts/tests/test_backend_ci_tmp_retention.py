@@ -14,12 +14,29 @@ import unittest
 SCRIPTS = Path(__file__).resolve().parents[1]
 
 
-def runner_options():
+def runner_command():
+    """Read the actual literal array and legacy producer; never execute Bash."""
     script = (SCRIPTS / 'run-backend-ci.sh').read_text()
-    command = re.search(r'^/usr/bin/env --default-signal=INT python -m pytest (.*?)\\\n  3>&-', script, re.M | re.S)
-    if command is None:
-        raise AssertionError('Backend pytest command not found')
-    return shlex.split(command.group(1).replace('\\\n', ' '))
+    arrays = re.findall(r'^pytest_args=\(([^\n]*)\)$', script, re.M)
+    launches = re.findall(
+        r'^if \[\[ "\$shard_role" == legacy \]\]; then\n  ([^\n]*)\n'
+        r'    3>&- >"\$work/pytest-output" 2>&1 &\nelse$', script, re.M)
+    if len(arrays) != 1 or len(launches) != 1:
+        raise AssertionError('Unbound or ambiguous backend legacy producer')
+    if any(character in arrays[0] for character in '$`\\\r'):
+        raise AssertionError('Backend pytest array is not literal')
+    arguments = shlex.split(arrays[0])
+    if arguments[:2] != ['-m', 'pytest'] or not launches[0].endswith('\\'):
+        raise AssertionError('Backend pytest array/launch binding changed')
+    launch = shlex.split(launches[0][:-1])
+    if launch[-2:] != ['python', '${pytest_args[@]}'] or launch.count('python') != 1:
+        raise AssertionError('Legacy producer does not expand the declared array')
+    return launch[:-1] + arguments
+
+
+def runner_options():
+    command = runner_command()
+    return command[command.index('python') + 3:]
 
 
 class ScratchRetentionTests(unittest.TestCase):

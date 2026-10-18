@@ -648,7 +648,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             from rules_engine.card_faces import apply_day_night_entry
             apply_day_night_entry(state, card)
             battlefield_player.battlefield.append(card.id)
-            card.zone = Zone.BATTLEFIELD
+            card.move_to_zone(Zone.BATTLEFIELD)
             card.summoning_sick = True
             card.entered_turn = state.turn
             if "Planeswalker" in effective_types(state, card) and card.loyalty is not None:
@@ -822,6 +822,10 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     elif pending.get("resolving_item"):
         item = StackItem(**pending["resolving_item"])
         finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
+    if state.mana_continuation is not None and not (state.pending_mechanic_choice or state.pending_replacement_choice):
+        from rules_engine.mana_continuation import resume
+        resume(state, pending)
+        return
     if pending.get("combat_damage_needs_sba") and not (state.pending_mechanic_choice or state.pending_replacement_choice):
         from rules_engine.state_based_actions import apply_state_based_actions
         apply_state_based_actions(state)

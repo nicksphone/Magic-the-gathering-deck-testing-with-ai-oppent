@@ -6,6 +6,7 @@ from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, can_pay_with_pool_and_lands, hybrid_payment_symbols, land_mana_amount, mana_value
 import pytest
+from tests.mana_remaining_current191 import from_scene as mana_match, take as mana_take
 
 
 def test_restricted_x_and_fixed_generic_have_distinct_payment_colors() -> None:
@@ -293,7 +294,7 @@ def test_checked_cast_requires_valid_affordable_per_symbol_hybrid_choices() -> N
 
 def test_hybrid_choices_are_exposed_for_exile_and_top_library_casts() -> None:
     deck = [{"quantity": 60, "card_name": "Plains"}]
-    state = MatchFactory.from_decks(deck, deck, seed=106)
+    state = mana_match(deck, deck, seed=106, scene='realmwalker')
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
@@ -305,23 +306,11 @@ def test_hybrid_choices_are_exposed_for_exile_and_top_library_casts() -> None:
         player.battlefield.append(cid)
     exile_id = player.library.pop()
     exiled = state.cards[exile_id]
-    exiled.name, exiled.types, exiled.type_line = "Spectral Procession", ["Sorcery"], "Sorcery"
-    exiled.mana_cost = "{2/W}{2/W}{2/W}"
-    exiled.oracle_text = "Create three 1/1 white Spirit creature tokens with flying."
     exiled.zone = Zone.EXILE
     player.exile.append(exile_id)
     player.exile_play_until[exile_id] = state.turn
-    walker = CardInstance(
-        id="walker-hybrid", name="Realmwalker", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature - Shapeshifter",
-        chosen_creature_type="Kithkin",
-        oracle_text="You may cast creature spells of the chosen type from the top of your library.",
-    )
-    state.cards[walker.id] = walker
-    player.battlefield.append(walker.id)
+    walker = mana_take(state, 'Realmwalker', chosen_creature_type='Kithkin')
     top = state.cards[player.library[-1]]
-    top.name, top.types, top.type_line = "Figure of Destiny", ["Creature"], "Creature — Kithkin"
-    top.mana_cost = "{R/W}"
     moves = RulesEngine().legal_moves(state, 1)
     exile_move = next(move for move in moves if move.get("card_id") == exile_id and move.get("from_exile"))
     library_move = next(move for move in moves if move.get("card_id") == top.id and move.get("from_library"))
@@ -375,19 +364,12 @@ def test_pestilent_souleater_activated_phyrexian_choice() -> None:
     from rules_engine.continuous import has_keyword
     from rules_engine.stack_engine import resolve_top_of_stack
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=110)
+    state = mana_match(deck, deck, seed=110, scene='souleater')
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
-    source = CardInstance(
-        id="pestilent-souleater", name="Pestilent Souleater", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact", "Creature"],
-        oracle_text="{B/P}: Pestilent Souleater gains infect until end of turn.",
-        power=3, toughness=3,
-    )
-    state.cards[source.id] = source
-    state.players[1].battlefield.append(source.id)
+    source = mana_take(state, 'Pestilent Souleater')
     move = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == source.id and move["type"] == "activate_ability")
     assert move["hybrid_symbols"] == [{"symbol": "B/P", "choices": ["B", "P"]}]
     action = {"type": "activate_ability", "card_id": source.id, "ability_index": move["ability_index"]}
@@ -409,7 +391,6 @@ def test_pestilent_souleater_activated_phyrexian_choice() -> None:
     assert paid_mana.players[1].life == 20
     assert paid_mana.players[1].mana_pool["B"] == 0
     paid_mana.players[1].battlefield.remove(source.id)
-    paid_mana.players[1].graveyard.append(source.id)
     paid_mana.cards[source.id].move_to_zone(Zone.GRAVEYARD)
     assert resolve_top_of_stack(paid_mana)
     assert "__eot_keyword_infect" not in paid_mana.cards[source.id].counters
@@ -426,23 +407,13 @@ def test_compleated_uses_announced_phyrexian_life_choice_on_entry() -> None:
         ("G", {"C": 2, "G": 2, "U": 1}, 5),
     ):
         deck = [{"quantity": 60, "card_name": "Island"}]
-        state = MatchFactory.from_decks(deck, deck, seed=924)
+        state = mana_match(deck, deck, seed=924, scene='tamiyo')
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         source = state.cards[state.players[1].hand[0]]
-        # The synthetic Island is repurposed; original-stock capture is unknown.
-        state.sideboard_facts = {}
-        source.name = "Tamiyo, Compleated Sage"
-        source.types = ["Legendary", "Planeswalker"]
-        source.mana_cost = "{2}{G}{G/U/P}{U}"
-        source.loyalty = 5
-        source.oracle_text = (
-            "Compleated ({G/U/P} can be paid with {G}, {U}, or 2 life. "
-            "If life was paid, this planeswalker enters with two fewer loyalty counters.)\n"
-            "+1: Tap up to one target artifact or creature. It doesn't untap during its controller's next untap step."
-        )
+        # Full Tamiyo facts and stock were captured by the one genuine birth.
         state.players[1].mana_pool.update(pool)
         action = {"type": "cast_spell", "card_id": source.id, "cost_choice": {"id": "base"}, "hybrid_choices": [branch]}
         cast = checked_action(state, RulesEngine(), 1, action)
@@ -470,28 +441,15 @@ def test_mutagenic_growth_phyrexian_life_trigger_is_above_spell() -> None:
     from rules_engine.stack_engine import resolve_top_of_stack
 
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck, seed=108)
+    state = mana_match(deck, deck, seed=108, scene='font')
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     spell_id = state.players[1].hand[0]
     spell = state.cards[spell_id]
-    spell.name, spell.types, spell.type_line = "Mutagenic Growth", ["Instant"], "Instant"
-    spell.mana_cost = "{G/P}"
-    spell.oracle_text = "Target creature gets +2/+2 until end of turn."
-    creature = CardInstance(
-        id="elf-phyrexian", name="Llanowar Elves", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
-    )
-    font = CardInstance(
-        id="font-phyrexian", name="Font of Agonies", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"],
-        oracle_text="Whenever you pay life, put that many blood counters on this enchantment.",
-    )
-    for card in (creature, font):
-        state.cards[card.id] = card
-        state.players[1].battlefield.append(card.id)
+    creature = mana_take(state, 'Llanowar Elves')
+    font = mana_take(state, 'Font of Agonies')
     move = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == spell_id and move["type"] == "cast_spell")
     assert move["cost_options"][0]["hybrid_symbols"] == [{"symbol": "G/P", "choices": ["G", "P"]}]
     danger = deepcopy(state)
@@ -533,20 +491,9 @@ def test_generic_reduction_applies_after_monocolored_hybrid_choice(monkeypatch) 
 
 def test_nonland_single_color_source_is_used_before_flexible_land() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=96)
-    fountain = CardInstance(
-        id="fountain", name="Hallowed Fountain", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Land"], type_line="Land - Plains Island",
-        oracle_text="{T}: Add {W} or {U}.",
-    )
-    diamond = CardInstance(
-        id="diamond", name="Marble Diamond", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact"], type_line="Artifact",
-        oracle_text="{T}: Add {W}.",
-    )
-    for card in (fountain, diamond):
-        state.cards[card.id] = card
-        state.players[1].battlefield.append(card.id)
+    state = mana_match(deck, deck, seed=96, scene='fountain')
+    fountain = mana_take(state, 'Hallowed Fountain')
+    diamond = mana_take(state, 'Marble Diamond')
 
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -554,9 +501,6 @@ def test_nonland_single_color_source_is_used_before_flexible_land() -> None:
     state.priority_player = 1
     spell_id = state.players[1].hand[0]
     spell = state.cards[spell_id]
-    spell.name = "Lavinia, Azorius Renegade"
-    spell.types = ["Creature", "Legendary"]
-    spell.mana_cost = "{W}{U}"
     assert any(move["type"] == "cast_spell" and move.get("card_id") == spell_id
                for move in RulesEngine().legal_moves(state, 1))
     assert can_pay_with_pool_and_lands(state, 1, "{W}{U}")
@@ -567,14 +511,8 @@ def test_nonland_single_color_source_is_used_before_flexible_land() -> None:
 
 def test_multi_mana_source_surplus_pays_generic_cost() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=97)
-    lotus = CardInstance(
-        id="lotus", name="Gilded Lotus", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact"], type_line="Artifact",
-        oracle_text="{T}: Add three mana of any one color.",
-    )
-    state.cards[lotus.id] = lotus
-    state.players[1].battlefield.append(lotus.id)
+    state = mana_match(deck, deck, seed=97, scene='lotus')
+    lotus = mana_take(state, 'Gilded Lotus')
     assert can_pay_with_pool_and_lands(state, 1, "{W}{2}")
     assert auto_pay_cost(state, 1, "{W}{2}")
     assert lotus.tapped

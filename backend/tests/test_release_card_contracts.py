@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from types import SimpleNamespace
 
 from card_data.hydration import hydrate_deck_cards
 from game_state.state import CardInstance, MatchFactory, Zone
 from game_state.serializers import serialize_match, serialize_match_snapshot, deserialize_match_snapshot
 from rules_engine.continuous import effective_power, effective_toughness
+from tests.static_layers_canonical_a32 import entry as canonical_entry
 
 
 def test_live_hydration_matches_diagnostic_faces_and_preserves_zero_stats():
@@ -57,7 +59,10 @@ def test_characteristic_stats_and_unknown_stats_are_not_fabricated():
     cid = state.players[1].library.pop()
     state.players[1].graveyard.append(cid)
     state.cards[cid].zone = Zone.GRAVEYARD
-    goyf = CardInstance(id="goyf", name="Tarmogoyf", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Creature"], oracle_text="Tarmogoyf's power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1.")
+    template = MatchFactory.from_decks([{**canonical_entry("Tarmogoyf"), "quantity": 8}], [], seed=0)
+    goyf = replace(next(card for card in template.cards.values() if card.zone == Zone.LIBRARY),
+                   id="goyf", owner=1, controller=1, zone=Zone.BATTLEFIELD,
+                   instance_order=0, summoning_sick=True)
     unknown = CardInstance(id="unknown", name="Wood Elemental", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Creature"])
     state.cards.update({goyf.id: goyf, unknown.id: unknown})
     state.players[1].battlefield.extend([goyf.id, unknown.id])

@@ -8,30 +8,68 @@ permissions:
   contents: read
 
 jobs:
-  backend:
-    runs-on: ubuntu-latest
+  backend-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    outputs:
+      artifact_id: ${{ steps.upload.outputs.artifact-id }}
+      plan_sha256: ${{ steps.seal.outputs.plan_sha256 }}
     steps:
+      - name: Start absolute work deadline
+        timeout-minutes: 1
+        run: |
+          /usr/bin/python3 -I -B - <<'PYTHON'
+          import os, time
+          with open(os.environ['GITHUB_ENV'], 'a') as stream:
+              stream.write(f'MTG_CI_WORK_DEADLINE={time.monotonic() + 19800:.6f}\n')
+          PYTHON
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 5
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        timeout-minutes: 5
         with:
-          python-version: '3.12'
-      - name: Install backend dependencies
-        run: python -m pip install -r backend/requirements.txt
+          python-version: '3.12.3'
       - name: Backend runner capacity admission
+        timeout-minutes: 330
         env:
           MTG_CI_CAPACITY_SCOPE: backend-sdk-cleanup
-        run: python .github/scripts/ci_backend_capacity.py
-      - name: Backend metadata reporter tests
-        run: python -m unittest discover -s .github/scripts/tests -v
-      - name: Operator file-only boundary regressions
         run: |
-          python ops/caddy/test_runtime_dist_boundary.py
-          python ops/caddy/test_runtime_inventory.py
-          python -m pytest -q -p no:cacheprovider ops/caddy/test_startup_diagnostic.py
-      - name: Backend tests
-        id: backend_tests
+          remaining=$(python .github/scripts/ci_backend_shards.py remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python .github/scripts/ci_backend_capacity.py
+      - name: Admit platform and install complete hashed application closure
+        timeout-minutes: 330
+        run: |
+          set -euo pipefail
+          helper=.github/scripts/ci_backend_shards.py
+          python "$helper" platform
+          remaining=$(python "$helper" remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python -m venv "$RUNNER_TEMP/backend-venv"
+          py="$RUNNER_TEMP/backend-venv/bin/python"
+          remaining=$(python "$helper" remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" "$py" -m pip install --require-hashes --only-binary=:all: --no-cache-dir -r backend/requirements-py312-linux.lock
+          "$py" "$helper" runtime "$RUNNER_TEMP/application-runtime.json"
+          printf '%s\n' "$RUNNER_TEMP/backend-venv/bin" >> "$GITHUB_PATH"
+      - name: Backend metadata reporter tests
+        timeout-minutes: 330
+        run: |
+          remaining=$(python .github/scripts/ci_backend_shards.py remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python -m unittest discover -s .github/scripts/tests -v
+      - name: Operator file-only boundary regressions
+        timeout-minutes: 330
+        run: |
+          set -euo pipefail
+          remaining=$(python .github/scripts/ci_backend_shards.py remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python ops/caddy/test_runtime_dist_boundary.py
+          remaining=$(python .github/scripts/ci_backend_shards.py remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python ops/caddy/test_runtime_inventory.py
+          remaining=$(python .github/scripts/ci_backend_shards.py remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python -m pytest -q -p no:cacheprovider ops/caddy/test_startup_diagnostic.py
+      - name: Full unfiltered collection-only reference
+        id: execution
+        timeout-minutes: 340
         env:
           MTG_CI_PROGRESS: '1'
+          MTG_CI_SHARD_ROLE: reference
           MTG_HEAT_WITNESS_01: ${{ secrets.MTG_HEAT_WITNESS_01 }}
           MTG_HEAT_WITNESS_02: ${{ secrets.MTG_HEAT_WITNESS_02 }}
           MTG_HEAT_WITNESS_03: ${{ secrets.MTG_HEAT_WITNESS_03 }}
@@ -46,12 +84,111 @@ jobs:
           MTG_HEAT_WITNESS_12: ${{ secrets.MTG_HEAT_WITNESS_12 }}
           MTG_HEAT_WITNESS_13: ${{ secrets.MTG_HEAT_WITNESS_13 }}
         run: |
-          bash .github/scripts/run-backend-ci.sh 5>&1
+          status=0
+          bash .github/scripts/run-backend-ci.sh 5>&1 || status=$?
+          printf 'runner_exit=%s\n' "$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+      - name: Export bounded collection-only plan
+        id: seal
+        timeout-minutes: 3
+        env:
+          BACKEND_EVIDENCE: ${{ steps.execution.outputs.evidence }}
+          RUNNER_EXIT: ${{ steps.execution.outputs.runner_exit }}
+        run: |
+          mkdir "$RUNNER_TEMP/public-reference"
+          timeout --signal=TERM --kill-after=2s 120s python .github/scripts/ci_backend_shards.py export-reference "$BACKEND_EVIDENCE" "$RUNNER_TEMP/public-reference/plan.json" "$RUNNER_EXIT"
+      - name: Upload exact public plan only
+        id: upload
+        timeout-minutes: 5
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backend-reference-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ steps.seal.outputs.plan_sha256 }}
+          path: ${{ runner.temp }}/public-reference/plan.json
+          if-no-files-found: error
+          retention-days: 7
+
+  backend-workers:
+    needs: backend-reference
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
+    steps:
+      - name: Start absolute work deadline
+        timeout-minutes: 1
+        run: |
+          /usr/bin/python3 -I -B - <<'PYTHON'
+          import os, time
+          with open(os.environ['GITHUB_ENV'], 'a') as stream:
+              stream.write(f'MTG_CI_WORK_DEADLINE={time.monotonic() + 19800:.6f}\n')
+          PYTHON
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 5
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        timeout-minutes: 5
+        with:
+          python-version: '3.12.3'
+      - name: Backend runner capacity admission
+        timeout-minutes: 330
+        env:
+          MTG_CI_CAPACITY_SCOPE: backend-sdk-cleanup
+        run: |
+          remaining=$(python .github/scripts/ci_backend_shards.py remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python .github/scripts/ci_backend_capacity.py
+      - name: Admit platform and install complete hashed application closure
+        timeout-minutes: 330
+        run: |
+          set -euo pipefail
+          helper=.github/scripts/ci_backend_shards.py
+          python "$helper" platform
+          remaining=$(python "$helper" remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" python -m venv "$RUNNER_TEMP/backend-venv"
+          py="$RUNNER_TEMP/backend-venv/bin/python"
+          remaining=$(python "$helper" remaining)
+          timeout --signal=TERM --kill-after=15s "${remaining}s" "$py" -m pip install --require-hashes --only-binary=:all: --no-cache-dir -r backend/requirements-py312-linux.lock
+          "$py" "$helper" runtime "$RUNNER_TEMP/application-runtime.json"
+          printf '%s\n' "$RUNNER_TEMP/backend-venv/bin" >> "$GITHUB_PATH"
+      - name: Download exact same-run reference artifact ID
+        timeout-minutes: 5
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          artifact-ids: ${{ needs.backend-reference.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/shard-reference
+      - name: Exact assigned whole modules, serial
+        id: execution
+        timeout-minutes: 340
+        env:
+          MTG_CI_PROGRESS: '1'
+          MTG_CI_SHARD_ROLE: worker
+          MTG_CI_SHARD: ${{ matrix.shard }}
+          MTG_CI_REFERENCE_DIR: ${{ runner.temp }}/shard-reference
+          MTG_HEAT_WITNESS_01: ${{ secrets.MTG_HEAT_WITNESS_01 }}
+          MTG_HEAT_WITNESS_02: ${{ secrets.MTG_HEAT_WITNESS_02 }}
+          MTG_HEAT_WITNESS_03: ${{ secrets.MTG_HEAT_WITNESS_03 }}
+          MTG_HEAT_WITNESS_04: ${{ secrets.MTG_HEAT_WITNESS_04 }}
+          MTG_HEAT_WITNESS_05: ${{ secrets.MTG_HEAT_WITNESS_05 }}
+          MTG_HEAT_WITNESS_06: ${{ secrets.MTG_HEAT_WITNESS_06 }}
+          MTG_HEAT_WITNESS_07: ${{ secrets.MTG_HEAT_WITNESS_07 }}
+          MTG_HEAT_WITNESS_08: ${{ secrets.MTG_HEAT_WITNESS_08 }}
+          MTG_HEAT_WITNESS_09: ${{ secrets.MTG_HEAT_WITNESS_09 }}
+          MTG_HEAT_WITNESS_10: ${{ secrets.MTG_HEAT_WITNESS_10 }}
+          MTG_HEAT_WITNESS_11: ${{ secrets.MTG_HEAT_WITNESS_11 }}
+          MTG_HEAT_WITNESS_12: ${{ secrets.MTG_HEAT_WITNESS_12 }}
+          MTG_HEAT_WITNESS_13: ${{ secrets.MTG_HEAT_WITNESS_13 }}
+        run: |
+          status=0
+          bash .github/scripts/run-backend-ci.sh 5>&1 || status=$?
+          printf 'runner_exit=%s\n' "$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
       - name: Generate backend metadata
         id: backend_metadata
         if: ${{ always() }}
+        timeout-minutes: 3
         env:
-          BACKEND_EVIDENCE: ${{ steps.backend_tests.outputs.evidence }}
+          BACKEND_EVIDENCE: ${{ steps.execution.outputs.evidence }}
         run: |
           metadata=$(mktemp -d "$RUNNER_TEMP/mtg-backend-metadata-XXXXXX" 2>/dev/null) || {
             printf 'CI_BACKEND_METADATA_SETUP_ERROR\n' >&2
@@ -62,19 +199,115 @@ jobs:
             exit 2
           }
           status=0
-          python .github/scripts/ci_backend_metadata.py "$BACKEND_EVIDENCE" "$GITHUB_WORKSPACE" \
+          timeout --signal=TERM --kill-after=2s 120s python .github/scripts/ci_backend_metadata.py "$BACKEND_EVIDENCE" "$GITHUB_WORKSPACE" \
             "$metadata/backend-metadata.json" 2>/dev/null > "$metadata/reporter.log" 2>&1 || status=$?
           if ((status != 0)); then
             printf 'CI_BACKEND_METADATA_FAILED\n' >&2
             exit "$status"
           fi
           printf 'CI_BACKEND_METADATA_READY\n'
-      - name: Upload backend metadata
+      - name: Bound exact diagnostic metadata JSON
+        id: diagnostic_bound
         if: ${{ always() && steps.backend_metadata.outputs.metadata_file != '' }}
+        timeout-minutes: 3
+        env:
+          METADATA_FILE: ${{ steps.backend_metadata.outputs.metadata_file }}
+        run: |
+          timeout --signal=TERM --kill-after=2s 120s python .github/scripts/ci_backend_shards.py diagnostic-file "$METADATA_FILE"
+      - name: Upload backend metadata
+        if: ${{ always() && steps.diagnostic_bound.outcome == 'success' }}
+        timeout-minutes: 5
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: backend-metadata-${{ github.sha }}-${{ github.run_attempt }}
+          name: backend-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-${{ matrix.shard }}
           path: ${{ steps.backend_metadata.outputs.metadata_file }}
+          if-no-files-found: error
+          retention-days: 7
+      - name: Admit strict successful worker envelope
+        id: seal
+        if: ${{ success() && steps.execution.outcome == 'success' && steps.backend_metadata.outcome == 'success' && steps.diagnostic_bound.outcome == 'success' }}
+        timeout-minutes: 3
+        env:
+          BACKEND_EVIDENCE: ${{ steps.execution.outputs.evidence }}
+          METADATA_FILE: ${{ steps.backend_metadata.outputs.metadata_file }}
+          RUNNER_EXIT: ${{ steps.execution.outputs.runner_exit }}
+          METADATA_EXIT: ${{ steps.backend_metadata.outcome == 'success' && '0' || '' }}
+          SHARD: ${{ matrix.shard }}
+        run: |
+          mkdir "$RUNNER_TEMP/public-worker"
+          timeout --signal=TERM --kill-after=2s 120s python .github/scripts/ci_backend_shards.py export-worker "$RUNNER_TEMP/shard-reference/plan.json" "$BACKEND_EVIDENCE" "$METADATA_FILE" "$SHARD" "$RUNNER_EXIT" "$METADATA_EXIT" "$RUNNER_TEMP/public-worker/worker.json"
+      - name: Upload one bounded public worker envelope only
+        if: ${{ success() && steps.seal.outcome == 'success' }}
+        timeout-minutes: 5
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backend-worker-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-${{ matrix.shard }}
+          path: ${{ runner.temp }}/public-worker/worker.json
+          if-no-files-found: error
+          retention-days: 7
+
+  backend:
+    if: ${{ always() }}
+    needs: [backend-reference, backend-workers]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Require actual prerequisite job success
+        env:
+          REFERENCE_RESULT: ${{ needs.backend-reference.result }}
+          WORKERS_RESULT: ${{ needs.backend-workers.result }}
+        run: |
+          test "$REFERENCE_RESULT" = success && test "$WORKERS_RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        timeout-minutes: 3
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        timeout-minutes: 3
+        with:
+          python-version: '3.12.3'
+      - name: Download exact reference
+        timeout-minutes: 3
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          artifact-ids: ${{ needs.backend-reference.outputs.artifact_id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/final-reference
+      - name: Download exact worker 0
+        timeout-minutes: 3
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: backend-worker-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-0
+          path: ${{ runner.temp }}/final-workers/0
+      - name: Download exact worker 1
+        timeout-minutes: 3
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: backend-worker-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-1
+          path: ${{ runner.temp }}/final-workers/1
+      - name: Download exact worker 2
+        timeout-minutes: 3
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: backend-worker-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-2
+          path: ${{ runner.temp }}/final-workers/2
+      - name: Download exact worker 3
+        timeout-minutes: 3
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: backend-worker-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-3
+          path: ${{ runner.temp }}/final-workers/3
+      - name: Exact assigned and global Counter/order qualification
+        timeout-minutes: 3
+        env:
+          REFERENCE_JOB_RESULT: ${{ needs.backend-reference.result }}
+          WORKERS_JOB_RESULT: ${{ needs.backend-workers.result }}
+        run: |
+          timeout --signal=TERM --kill-after=2s 120s python .github/scripts/ci_backend_shards.py join "$RUNNER_TEMP/final-reference" "$RUNNER_TEMP/final-workers" "$RUNNER_TEMP/backend-qualified.json"
+      - name: Upload successful bounded four-session qualification only
+        timeout-minutes: 5
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: backend-qualified-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}
+          path: ${{ runner.temp }}/backend-qualified.json
           if-no-files-found: error
           retention-days: 7
 

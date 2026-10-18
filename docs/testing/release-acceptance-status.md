@@ -1,6 +1,255 @@
 # Release Acceptance Status
 
+## Local Sharded CI Candidate
+
+On October18 the full20-whole-module CI selftest declaration passes259 ordinary
+methods in82.873 seconds, including all251 inherited methods and eight new
+capacity checks. The unchanged new module on the old source exposes the exact
+job-admission and workflow-ordering regression. Reference and each worker now
+admit capacity before application installation, without broadening SDK deletion
+authority or falsifying the job identity.
+
+A separate whole public-toy module passes one real E2E method in20.276 seconds:
+reference collection, four genuine worker sessions, exact five-node coverage and
+rejection of a deliberately failed worker. Source/runtime/system preservation
+and physical closure pass independently for both declarations. The13 reviewed
+CI postimages are integrated locally, preserving the complete original metadata
+test module, private-input boundaries and frontend/browser workflow suffix.
+
+This is not an executed aggregate260, hosted artifact/private bootstrap,
+whole-backend, Phase1 or release pass. A hosted run on the published combined
+candidate remains required. See `backend-sharded-ci.md`.
+
+## Retained-Parent Fixture Qualification
+
+The October18 Jace fixture component passes23 ordinary cases in two whole
+modules, in17.28 seconds, after the same V3 baseline records17 passes and six
+new full-input/alias fidelity failures. All12 original cases pass both sources;
+their bodies, actions and28 assertion ASTs remain. Constructor inputs now retain
+complete printed-front facts before native capture and detach mutable RAW data.
+All15 source/runtime/system/native/resource checks pass, with physical release
+at `2026-10-18T16:19:28.154473Z`. Three tested paths are integrated; all2400
+selected backend files equal the executed candidate.
+
+Earlier new-test cleanup and expected stock-coverage errors remain separate
+ledgers. Genuine unregistered scene events still invalidate capture coverage;
+no stock recapture, serializer or production-rule change was made. Full Jace
+ability, back-face art, live browsers, whole-backend and Phase1 acceptance remain
+open. See `transformed-jace-birth-prep.md`.
+
+## Mini-Factory Full-Input Qualification
+
+On October18 six whole modules pass all747 ordinary cases in741.25 seconds,
+with all2241 phases passed and no errors or skips. The same baseline records
+631 passes and116 new full-input failures, while all587 originals and44 new
+independent controls pass both sources. Three fixture tables now retain58 full
+official rows covering53 printings before the unchanged Factory helpers. No
+production rules code changed and no116-Oracle-defect claim is made.
+
+The candidate uses116 owned SQLite connections and52 self-pipe socket
+constructors, with no connection repairs, unexpected IO or current-link attempts.
+Full source/runtime/system and physical-closure checks pass; release is
+`2026-10-18T14:53:53.401610Z`. Five tested paths are integrated and all2399
+selected backend files equal the executed source. This is a bounded fixture
+qualification, not original-stock expansion, live-browser, whole-backend,
+Phase1 or release acceptance. See `canonical-mini-factory58-static-prep.md`.
+
+The October18 [mass-exile operand repair](canonical-mass-exile-operand-prep.md)
+passes20 cases in two whole modules after the same baseline records3 passes
+and17 factual-fidelity failures. Both original cases and all five assertion
+ASTs remain; the candidate passes in13.70 seconds with complete Final Judgment
+facts and genuine native121-object stock. All2398 selected backend files match
+the executed source after integration, and native/source/runtime/resource
+checks pass. This is a bounded parser-fixture repair, not paid casting,
+Farewell modal support, whole-backend, Phase1 or release acceptance.
+
+## Shared Basic-Input Repair
+
+The three shared helper births now supply full canonical Swamp/Plains before
+the original Factory calls. Four whole modules pass64 cases in104.93 seconds,
+after the same baseline records60PASS/4 full-input fidelity FAIL with all50
+old cases passing. All192 candidate phases pass with14 owned SQL connections,
+6 self-pipe socket constructors, no repairs or unexpected IO, and clean source,
+runtime and resource closure. Physical release is12:29:46.872480Z on October18.
+The five tested paths are integrated locally; no production rules change,
+named-addition certification, whole56-group claim or Phase1 sign-off follows.
+See `browser-basicbirth3-canonical-prep.md`.
+
+## Completed Mixed Fixture Declaration
+
+The separate seven-whole-module100-case declaration passes in114.82 seconds
+on October18:73 event/release/sacrifice cases and27 player/planeswalker cases,
+with all300 setup/call/teardown phases passed. It exercises56 owned SQLite
+connections and28 self-pipe socket constructors, not pairs, without runner
+connection repairs. Full source/runtime/system checks and resource closure pass;
+physical release is `2026-10-18T12:11:32.782365Z`.
+
+The current pytest helper's exact optional current-link attempt remains denied
+and takes its genuine fallback. Separate accounting records that one bound
+expected denial; no link permission or game/test assertion is relaxed. The25
+native denial controls separately pass before the100-case execution. Fake-frame
+protocol controls are labeled separately and are not native or game acceptance.
+
+This qualifies the already-integrated event/player fixture changes, not the
+whole backend, live browsers or Phase1. Shared basic births are separately
+qualified above; named-card reductions and parser-fixture corrections remain.
+
+## Completed Held Regression Declaration
+
+The original20-whole-module declaration now passes all549 ordinary cases in
+1584.39 seconds, on the same frozen current backend used for the separate183
+fixture qualification. Original ordered identities and the2400-second bound
+remain unchanged. All16 corrected Bolt owner cases, original60 cast/payment
+cases, mana, creature-entry/copy and combat/sacrifice regressions pass. Source,
+runtime and system hashes, native/private guards and owned-resource checks
+remain clean; physical release is `2026-10-18T11:48:53.329485Z`.
+
+This is one completed549 declaration, not an aggregate with separate runs or
+whole-backend/Phase1 acceptance. The separately qualified mixed event/player100,
+remaining positive fixtures, native browsers, measured AI work and release gates
+remain required. See `cast-publication-alias-controls549.md`.
+
+## Latest Local Canonical Fixture Qualification
+
+On October 18 nine whole browser-fixture modules pass all183 ordinary cases
+in122.93 seconds on the frozen current backend and qualified runtime. This
+includes all57 new full-RAW controls, the whole30 stock module and all eight
+unchanged source-authority cases in the inherited96. Original gameplay,
+restore and privacy assertions remain. The first166PASS/17FAIL run is preserved;
+its new test helper read the wrong native printed-name representation, now
+corrected without a production rules change. Source/runtime equality, native
+and private boundaries, ordered case identity and physical closure all pass.
+
+This is fixture/serializer qualification, not live-browser, HTTP, full-backend
+or Phase1 sign-off. Event/player100 and the original549 regression declaration
+are separately qualified above. The delegated56 browser groups
+and all other unproved release requirements remain open. See
+`browser-inline26-canonical-prep.md` and `phase1-acceptance-current.md`.
+
+## Latest Local CI Closeout Correction
+
+The October 18 runner correction saves pytest's actual exit status before waiting
+for diagnostic processes. It bounds shutdown of its owned pressure watcher,
+output sink, progress reporter and logger, verifies process ownership before
+signaling, and fails CI on forced or incomplete closeout without rewriting the
+test result. A naturally failed progress reporter cannot be masked by a later
+successful logger exit. Gameplay arguments, private-input handling and the
+existing disk sampler remain unchanged.
+
+Four whole stdlib CI-control modules pass all 66 checks on the isolated candidate
+in 73.036 seconds, then independently on the local integration in 72.980 seconds.
+Both declarations have zero failures, errors or skips, unchanged CI source and
+equal owned-resource inventories. These are separate synthetic runner controls,
+not backend game cases or a passing hosted CI run. The earlier six-hour
+cancellation's cause remains unproven. On October 18 the user approved a new,
+separately named native-test coordination lock. The old protected path remains
+absent and untouched, all prior execution grants are void, and new reviewed
+runs are serialized by exact lock identity. Pending fixture migrations remain
+unverified until their actual whole-module runs complete. Phase 1 and release
+acceptance remain open.
+
+## Latest Local Casting Integration
+
+The [two-line alias and entry correction](cast-publication-alias-controls549.md)
+is integrated with its canonical RAW and verified regressions. Separate actual
+runs pass eight new controls, 60 unchanged cast/payment cases, 16 corrected
+native-plan owner regressions and 135 unchanged cases in seven whole neighbor
+modules, including both HTTP bestow cases. The 135-case run has 405 passed phases,
+16 owned SQL connections, clean native/private boundaries and actual physical
+release at `2026-10-17T19:36:36.736261Z`. No aggregate pass, current hosted/backend,
+remaining-payment-owner, native-browser, Phase 1 or release completion is inferred.
+
 ## Latest Published Browser And Fixture Checks
+
+On October 17, exact published `83a0f359` completes its native Linux Chrome
+job (`117379661177`) successfully, while its separate Brave job
+(`117379661363`) fails. Both belong to run `39026925999`; neither outcome
+qualifies the later uncommitted backend composition or native Firefox. The
+Brave trace records an OPTIONS response-error callback followed by a second
+`Fetch.continueResponse` returning `InvalidInterceptionId`. That observation
+does not establish the underlying cancellation cause or a browser fix.
+Allowlisted metadata records an empty enclosing control group for both jobs.
+
+Verified public metadata and the completed Brave log are archived under
+`diagnostics/ci/native83-CHROME-PASS-BRAVE-FAIL-ACTUAL-20261017-114447/`
+in the project NFS archive. No protected backend trace is published as part of
+this browser evidence.
+
+The later [passive Fetch-order diagnostics](browser-fetch-causal-order-protocol.md)
+pass all 287 mock protocol checks, including eight new controls and all 279
+unchanged checks. The tested five-path change is integrated locally after exact
+postimage comparison. It records bounded event/command/session ordering and a
+post-failure delta without changing requests, continuations, assertions or
+deadlines. The cooperative mock I/O fence is not native OS isolation. No new
+Chrome, Brave or Firefox execution has occurred, and the underlying browser
+failure cause remains unknown; this is diagnostic readiness, not a browser fix.
+
+The separate ordinary CI run `39022655672` finishes unsuccessfully on the same
+published source. Its frontend job succeeds, its browser job fails, and its
+backend job is cancelled at 15:50:59 UTC after exceeding the execution-time
+limit. Only the allowlisted metadata artifact was retrieved, not raw backend
+logs or the protected trace. The nonfinal artifact retains 91,784 completed
+phase reports: 30,521 passed calls, 19 failed calls and 82 skipped setups. It has
+no terminal pytest exit or complete collection audit, so none of these counts
+is a whole-backend pass. The failed calls map to browser frame, counter-fixture
+birth and modal cost-view contracts. The later
+[96-case fixture correction](canonical-browser-fixture96-current.md) passes the
+retained original identities plus complete factual/source-admission controls,
+closing the reproduced stale binding and fixture defects on that local source.
+It is not a completed rerun of the hosted backend. Safe metadata is archived at
+`diagnostics/ci/backend83-CANCELLED-SAFE-METADATA-20261017-mqy01hc1/`.
+
+Separately, the [current canonical layer/copy/manual-mana component](canonical-layer-copy-manual191-current.md)
+passes 191 cases in six whole modules on a frozen integration over `83a0f359`.
+The [corrected cast-payment component](canonical-autocast-payment-current.md)
+passes all 60 original checked-cast/manual-choice regressions, including the
+four formerly failing automatic-cast cases, and separately all 249 and 35
+original neighbor cases. The paid-prefix typing defect found by independent
+review now has four failing-before/passing-after regressions and a complete
+43-case owner/codec/reference pass. The corrected code is integrated locally;
+its current 345-case combined attempt times out at 900 seconds with no final
+passing count. The separate current-source declaration then actually passes
+all 60 original cases in 182.61 seconds, retaining the original 300-second bound,
+native/private guards, source/runtime/system preservation and resource closure.
+Source/runtime preservation and owned-resource closure also pass for the
+timed-out attempt; no gameplay or performance cause is inferred from it.
+Remaining automatic-payment
+owners and whole-backend verification stay open. These are distinct
+source-specific results, not Phase 1 or release sign-off.
+Final independent review additionally identifies two continuation-validation
+defects: repeated reusable paid sources and same-color captured tap bonuses.
+Six genuine both-seat regressions fail in the native validator before the
+minimal correction and pass afterward in 38.26 seconds, with no fixture errors
+in either final declaration. The reviewed correction and exact five test/data/
+production postimages are integrated locally. The separate post-correction
+60-case gate passes all 60 cases in 181.76 seconds under its original
+300-second bound, with exact source/runtime checks and owned-resource closure.
+The complete 549-case combined declaration finishes with 533 passes and 16
+failures in 1,374.43 seconds, with no errors or skips and verified source/runtime
+preservation and physical closure. All failures are in the new independent Bolt
+setup before casting: the seeded card is already in hand, not in the library.
+A test-only correction retains its native hand object and all 16 cases' later
+payment/target/restore/privacy/replay assertions. That whole module then runs
+and retains 16 failures in 96.04 seconds at the later expected red-pool amount,
+after reaching a genuine pause. Native-plan observations must distinguish a
+different selected plan from a payment defect; no production fix or weakened
+oracle is inferred. A later eight-case publication declaration records four
+genuine Bolt restoration-cache failures after payment and four NEW Prototype
+setup failures caused by paid Salves legitimately changing public observation
+facts. The latter do not qualify a Prototype publication defect. No production
+alias fix or passing larger union is claimed. Both earlier failed declarations
+are preserved, not relabeled as combined acceptance.
+
+The [combat/sacrifice fixture migration](canonical-combat-sacrifice-current.md)
+also passes its complete 80-case component after nine meaningful fidelity
+failures on the unchanged baseline. It is integrated locally without changing
+original assertions or production code; a larger combined result is not inferred.
+
+The [canonical mana-system migration](canonical-mana-system-current.md) then
+passes all 118 cases across its two whole modules, retaining all 37 original
+tests and 175 assertion ASTs. All nine test/data postimages are integrated
+locally. This closes another bounded positive-fixture batch, not the other
+fixture migrations, literal Phase 1 scope or a combined current-backend result.
 
 The later published [`022758e6` browser job](current-022-browser-ci.md) and
 frontend job both succeed. Its backend job remains a separate running attempt

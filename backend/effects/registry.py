@@ -2,7 +2,7 @@ from __future__ import annotations
 from rules_engine.flashback_grants import resolve_grant
 from rules_engine.exchange_energy import resolve as resolve_exchange_energy
 from rules_engine.attached_token_payment import resolve as resolve_attached_token_payment
-from rules_engine.land_animation import resolve_self_land_animation
+from rules_engine.land_animation import resolve_self_land_animation, resolve_self_creature_change
 from rules_engine.temporary_characteristics import resolve_temporary_characteristics
 from rules_engine.turn_spell_protection import conditional_draw, grant_protection
 from rules_engine.retained_counter_prohibition import resolve as resolve_counter_prohibition
@@ -34,6 +34,7 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     'grant_turn_spell_protection': grant_protection,
     'temporary_creature_characteristics': resolve_temporary_characteristics,
     'animate_self_land': resolve_self_land_animation,
+    'change_self_creature_characteristics': resolve_self_creature_change,
     'set_combat_cost': handlers.set_combat_cost,
     'temporary_ability_loss': handlers.temporary_ability_loss,
     'set_base_stats': handlers.set_base_stats,

@@ -107,11 +107,20 @@ async function recoverDroppedResponse(s) {
     }
     }catch(error){failInterception(error);}
     finally{pendingInterceptions.delete(pending);settle();}
-  },origin,value=>{requestLifecycle=value;},{backend:api,requestSignals:recoverDroppedResponse.requestSignals});
+  },origin,value=>{
+    // Partition the same bounded snapshot; preserve the legacy Network event-list schema.
+    if(value.causal&&value.browserMetadata){
+      value.causal.events=value.browserMetadata.events.filter(row=>row.event.startsWith('fetch-'));
+      value.browserMetadata.events=value.browserMetadata.events.filter(row=>!row.event.startsWith('fetch-'));
+    }
+    requestLifecycle=value;
+  },{backend:api,requestSignals:recoverDroppedResponse.requestSignals,causal:true});
   b.onIntercept(interceptionTrace);
   try {
     await command('Network.enable');
+    interceptionTrace.observeControl?.('Fetch.enable','sent');
     await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
+    interceptionTrace.observeControl?.('Fetch.enable','accepted');
     await click('Play Land Forest');
     const deadline=Date.now()+15000;
     deadlineExpired=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Current accepted response drop timed out')),15000);});
@@ -124,7 +133,9 @@ async function recoverDroppedResponse(s) {
     // Repeat because callbacks can arrive while a previous snapshot is settling.
     while(pendingInterceptions.size)await Promise.race([interceptionFailed,deadlineExpired,Promise.all([...pendingInterceptions])]);
     disabling=true;
+    interceptionTrace.observeControl?.('Fetch.disable','sent');
     await Promise.race([interceptionFailed,deadlineExpired,command('Fetch.disable')]);enabled=false;
+    interceptionTrace.observeControl?.('Fetch.disable','accepted');
     while(pendingInterceptions.size)await Promise.race([interceptionFailed,deadlineExpired,Promise.all([...pendingInterceptions])]);
     if(interceptionError)throw interceptionError;
     if(Date.now()>=deadline)throw new Error('Current accepted response reconciliation timed out');
@@ -184,12 +195,16 @@ async function recoverDroppedResponse(s) {
         },1000);
       })]);
     }finally{collecting=false;clearTimeout(diagnosticTimer);diagnosticAbort.abort();}
-    try {console.error('DROP_RESPONSE_TRACE',JSON.stringify(diagnostic));}catch{}
+    try {
+      diagnostic.requestLifecycleFinal=interceptionTrace.captureFinal?.()??null;
+      console.error('DROP_RESPONSE_TRACE',JSON.stringify(diagnostic));
+    }catch{}
     throw error;
   }
   finally{
     try{
       if(enabled&&!disabling){
+        interceptionTrace.observeControl?.('Fetch.disable','sent');
         const cleanup=command('Fetch.disable');
         if(deadlineExpired)await Promise.race([cleanup,deadlineExpired.catch(()=>{})]);else await cleanup;
       }

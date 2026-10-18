@@ -3,24 +3,26 @@ import os
 import importlib.util
 from pathlib import Path
 import signal
+import shlex
 import subprocess
 import sys
 import tempfile
 import unittest
 
+from test_backend_ci_tmp_retention import runner_command
+
 SCRIPTS = Path(__file__).resolve().parents[1]
 
 
 def producer_prefix():
-    line = next(line for line in (SCRIPTS / 'run-backend-ci.sh').read_text().splitlines()
-                if 'python -m pytest -vv' in line)
-    return line.split('python -m pytest', 1)[0]
+    command = runner_command()
+    return shlex.join(command[:command.index('python')]) + ' '
 
 
 class EarlyStorageInterruptTests(unittest.TestCase):
     def test_native_producer_restores_int_without_changing_pytest_arguments(self):
         self.assertEqual(producer_prefix(), '/usr/bin/env --default-signal=INT ')
-        script = (SCRIPTS / 'run-backend-ci.sh').read_text()
+        script = shlex.join(runner_command())
         self.assertIn('python -m pytest -vv --tb=short -ra -p no:cacheprovider -p ci_backend_evidence -p ci_backend_snapshot_cleanup -o tmp_path_retention_policy=failed', script)
 
     def test_actual_slow_pytest_startup_is_interrupted_before_configure(self):

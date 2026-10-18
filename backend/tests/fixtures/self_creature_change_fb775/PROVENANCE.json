@@ -1,0 +1,123 @@
+{
+  "new_intake": {
+    "actual_url": "https://api.scryfall.com/cards/named?exact=Song%20of%20the%20Dryads",
+    "bytes": 5213,
+    "elapsed_seconds": 1.8981722299940884,
+    "end_UTC": "2026-10-17T06:08:05.488948+00:00",
+    "fields": 64,
+    "headers_sha256": "48567d0107a1e35d03baf72d62fa88be093c1ad6e8ba2ab988e44eb961815136",
+    "id": "161e66e3-0339-495c-bd06-0a799a254906",
+    "no_auth": true,
+    "oracle_id": "7c3944fa-7c86-4979-85a9-86196aa94594",
+    "rate_policy": "one request; at most4/s; no requests during offline gates",
+    "requests": 1,
+    "retries": 0,
+    "sha256": "1dae64a5da9c46d39a38dae5e153883fb802e9ede0c0635227fc8f41475e053c",
+    "start_UTC": "2026-10-17T06:08:03.590775+00:00",
+    "status": 200,
+    "url": "https://api.scryfall.com/cards/named?exact=Song%20of%20the%20Dryads"
+  },
+  "no_network_during_offline": true,
+  "reused_complete_bodies": {
+    "Battlegrowth": {
+      "fields": 64,
+      "file": "multicharacteristic_audit/battlegrowth.json",
+      "id": "2b34e76b-86b3-464e-93e7-c3f2074028fb",
+      "oracle_id": "650bf82e-7f83-470c-bf4a-34281bfe9341",
+      "sha256": "106e851583c858cd5b530e9bd25a77f6579754a745c5352269a5d2c548a637a3"
+    },
+    "Clone": {
+      "fields": 66,
+      "file": "archangel_pair/clone.json",
+      "id": "5e648262-3b9b-4c58-8e29-48356e3cb064",
+      "oracle_id": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "sha256": "a52bfd09d4766a39e97d4a81e9c91c225e3959a149436910a9f371b4d2c66926"
+    },
+    "Cloudshift": {
+      "fields": 65,
+      "file": "temporary_control_audit/cloudshift.json",
+      "id": "6dc0c976-26d2-40c9-a571-c370e9139d1d",
+      "oracle_id": "6879f5ce-7a1b-4606-bad1-885779b0d456",
+      "sha256": "a6477d60b641d708f9447b8f53637a6701b02531fce76c6b04f9cb0fc6ded47b"
+    },
+    "Figure of Destiny": {
+      "fields": 66,
+      "file": "canonical_hydration/figure-of-destiny-scryfall-raw.json",
+      "id": "6d779966-4bd4-4315-8b45-d3a4492f2bb2",
+      "oracle_id": "cd51cc2d-0d39-4aba-b0ea-70e8118149bc",
+      "sha256": "861c21c299816724a667c392cc37d4182da2a52496e1cb7da5f6cf39a97edaeb"
+    },
+    "Forest": {
+      "fields": 60,
+      "file": "archangel_pair/forest.json",
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "sha256": "9fd13936ddd26f08cc2aea5fb57b427ec3297e56040ed5d9fc74f566baf837cc"
+    },
+    "Giant Growth": {
+      "fields": 66,
+      "file": "bloodtithe_resource_debuff/giant-growth.json",
+      "id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900",
+      "oracle_id": "5748ebf1-24e3-499d-ab7c-c2cebd462a24",
+      "sha256": "215621f582dde88013d5065eedf856e1e0f53098fb21076f75e6b094346b5195"
+    },
+    "Humility": {
+      "fields": 62,
+      "file": "creature_observer_fix/humility.json",
+      "id": "55ad6a45-a840-45ba-89ad-066e20e983f3",
+      "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+      "sha256": "eb68a098b4bd6de1d3c02afe60e37461a5c8268108132b0d3351119a50de8b49"
+    },
+    "Leyline of Anticipation": {
+      "fields": 62,
+      "file": "global_flash_timing_audit/leyline-of-anticipation.json",
+      "id": "f57bdaa1-ce8a-4103-8598-fee751e65a53",
+      "oracle_id": "9dc65ffe-17fc-4280-b4bd-78073ac7e12b",
+      "sha256": "ef29f3f72a77d201848b0cabbf33824d25e076e8bd5b9f6ba3fc1ac7656c5455"
+    },
+    "Lithoform Engine": {
+      "fields": 66,
+      "file": "creature_observer_fix/lithoform-engine.json",
+      "id": "6683416a-5820-4cd0-b28a-60a53239e9ef",
+      "oracle_id": "0bf299da-1854-4153-baea-3cee2eb01ee8",
+      "sha256": "7930e96a947ed3edc2310b8e8ec20e13d2cdb9f2291ccf49b69bd243d7a4c799"
+    },
+    "Naturalize": {
+      "fields": 65,
+      "file": "soulscar_protection_boundaries/naturalize.json",
+      "id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+      "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+      "sha256": "15b8dfe1ff13351ba7f0f8f42457498685a162e68c064bd73b7d5fc893f7fc7b"
+    },
+    "Ray of Command": {
+      "fields": 64,
+      "file": "temporary_control_audit/ray-of-command.json",
+      "id": "7ca8a427-5c20-4650-bbb5-9895e4f2c009",
+      "oracle_id": "adf41d29-403d-4936-9689-3148d103e700",
+      "sha256": "248cfd0304564ff17db62ba40276d2735622e6366d1635920563292863fed75b"
+    },
+    "Song of the Dryads": {
+      "fields": 64,
+      "file": "self_creature_change_fb775/song-of-the-dryads.raw.json",
+      "id": "161e66e3-0339-495c-bd06-0a799a254906",
+      "oracle_id": "7c3944fa-7c86-4979-85a9-86196aa94594",
+      "sha256": "1dae64a5da9c46d39a38dae5e153883fb802e9ede0c0635227fc8f41475e053c"
+    },
+    "Turn to Frog": {
+      "fields": 63,
+      "file": "multicharacteristic_audit/turn-to-frog.json",
+      "id": "5c2410cc-4094-48c4-a219-b4fc385b3746",
+      "oracle_id": "74c4c1e2-c50d-4c8f-889a-0d5674dc6d67",
+      "sha256": "d32c6444bdbc354d4fdc3152c8cbf8a83240e08f5a8f281836e5e81ecaf78423"
+    },
+    "Unsummon": {
+      "fields": 62,
+      "file": "archangel_pair/unsummon.json",
+      "id": "ddad9f16-52d5-49de-82b0-b1a5294a9c44",
+      "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561",
+      "sha256": "e993dc0c93d30a6c75b064a9d8e247f9bd094ae24257c5cec6362309c26bd1d3"
+    }
+  },
+  "rules_source": "https://magic.wizards.com/en/news/feature/double-masters-2022-release-notes-2022-06-24#Figure-of-Destiny",
+  "source_root": "frozen keyword correction source, no movingW intake"
+}

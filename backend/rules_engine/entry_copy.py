@@ -8,7 +8,7 @@ from rules_engine.type_effects import effective_types
 
 PLAN = '__entry_copy_plan'
 RESERVATION = '__entry_copy_candidate'
-BODY = re.compile(r'You may have this artifact enter as a copy of any artifact on the battlefield\.', re.I)
+BODY = re.compile(r'You may have this (?P<kind>artifact|creature) enter as a copy of any (?P=kind) on the battlefield\.', re.I)
 
 
 def compile_instruction(raw):
@@ -19,10 +19,14 @@ def compile_instruction(raw):
     return None
 
 
-def _options(state):
+def _options(state, clause):
+    match = BODY.fullmatch(clause.strip()) if type(clause) is str else None
+    if match is None:
+        raise ActionRejected('Invalid complete as-entry copy clause')
+    kind = match['kind'].capitalize()
     return [cid for seat in state.players.values() for cid in seat.battlefield
             if cid in state.cards and state.cards[cid].zone.value == 'battlefield'
-            and state.cards[cid].controller == seat.id and 'Artifact' in effective_types(state, cid)]
+            and state.cards[cid].controller == seat.id and kind in effective_types(state, cid)]
 
 
 def _frame(payload):
@@ -171,7 +175,7 @@ def plan_matches(state, payload):
         if choice['id'] is None:
             if choice != {'id': None, 'reference': None, 'values': None}:
                 return False
-        elif (choice['id'] not in _options(state)
+        elif (choice['id'] not in _options(state, row['clause'])
                 or not reference_matches(state, choice['id'], choice['reference'])
                 or choice['values'] != values(state.cards[choice['id']])):
             return False
@@ -201,10 +205,12 @@ def prepare(state, controller, cards, effect_key, payload, *, controllers, candi
     for row in data[PLAN]['entries']:
         if row['clause'] is None or row['choice'] is not None:
             continue
-        options = _options(state)
+        options = _options(state, row['clause'])
+        noun = BODY.fullmatch(row['clause'].strip())['kind'].lower()
+        article = 'an' if noun == 'artifact' else 'a'
         state.pending_mechanic_choice = {'kind': 'entry_copy', 'player_id': row['controller'],
             'entry_card_id': row['id'], 'count': 1, 'min_count': 0,
-            'options': options, 'label': 'You may choose an artifact to copy as this permanent enters',
+            'options': options, 'label': f'You may choose {article} {noun} to copy as this permanent enters',
             'effect_key': effect_key, 'effect_payload': data,
             'resolving_item': deepcopy(data[PLAN]['frame'])}
         state.priority_player = row['controller']
@@ -273,7 +279,7 @@ def selected_option(state, actor, action):
     row = next((r for r in plan['entries'] if r['id'] == pending['entry_card_id']), None)
     if (pending.get('resolving_item') != plan['frame'] or row is None
             or row['controller'] != actor or row['choice'] is not None or row['clause'] is None
-            or pending.get('options') != _options(state)):
+            or pending.get('options') != _options(state, row['clause'])):
         raise ActionRejected('Invalid entry-copy continuation')
     if (set(action) - {'type', 'choice_id', 'card_ids', 'damage_assignment'}
             or action.get('damage_assignment') is not None):

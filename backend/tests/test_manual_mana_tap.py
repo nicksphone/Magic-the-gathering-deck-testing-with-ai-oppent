@@ -5,25 +5,31 @@ import json
 from pathlib import Path
 import random
 
-from tests.controlled_basic_game_support import controlled_basic_game
-
+from effects import handlers
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import ActionRejected, checked_action
 from game_state.serializers import serialize_card_view, serialize_match_snapshot
 from card_data.token_definitions import named_artifact_token
+from rules_engine.card_types import printed_card_types
 from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands, nonland_mana_outputs
 import pytest
 
 
 def _manual_row(name, quantity):
-    data = Path(__file__).parent / 'fixtures/manual_mana_a227'
+    if name in ('Treasure', 'Llanowar Elves'):
+        base = Path(__file__).resolve().parents[1]
+        data = base / 'tests/fixtures/manual_mana_leftovers_a227'
+        source_sha = '2605e1204bf1b414d98799f0f9eaac73a10ffd41c13f116217513250e36f1cdf'
+    else:
+        data = base = Path(__file__).parent / 'fixtures/manual_mana_a227'
+        source_sha = 'e450c68b67cb25498e80c245962502715477bb9c903a4a77d931682ae1b5bcb8'
     sources = (data / 'SOURCES.json').read_bytes()
-    assert hashlib.sha256(sources).hexdigest() == 'e450c68b67cb25498e80c245962502715477bb9c903a4a77d931682ae1b5bcb8'
+    assert hashlib.sha256(sources).hexdigest() == source_sha
     sources = json.loads(sources)
-    assert hashlib.sha256((data / sources['provenance_file']).read_bytes()).hexdigest() == sources['provenance_sha256']
+    assert hashlib.sha256((base / sources['provenance_file']).read_bytes()).hexdigest() == sources['provenance_sha256']
     pin = sources['objects'][name]
-    body = (data / pin['file']).read_bytes()
+    body = (base / pin['file']).read_bytes()
     assert len(body) == pin['bytes'] and hashlib.sha256(body).hexdigest() == pin['sha256']
     raw = json.loads(body)
     assert raw['object'] == 'card' and raw['name'] == name and len(raw) == pin['fields']
@@ -75,12 +81,7 @@ def test_tap_lands_bulk_adds_mana_and_taps_requested_count() -> None:
 
 
 def _mana_game(*named_sources):
-    if named_sources:
-        state = MatchFactory.from_decks(*_manual_decks(named_sources), seed=8)
-    else:
-        # Existing synthetic Treasure/Mana Creature protocol poses remain UNWAIVED.
-        deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest", "oracle_text": "{T}: Add {G}."}]
-        state = controlled_basic_game(deck, deck, seed=8)
+    state = MatchFactory.from_decks(*_manual_decks(named_sources), seed=8)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN
@@ -88,17 +89,26 @@ def _mana_game(*named_sources):
     return state
 
 
+def _manual_treasure(state):
+    raw = _manual_row('Treasure', 1)
+    seed = named_artifact_token('Treasure')
+    assert seed['scryfall_id'] == raw['id']
+    assert all(seed[key] == raw[key] for key in ('name', 'type_line', 'oracle_text'))
+    before = set(state.cards)
+    handlers.create_token(state, 1, {
+        **raw, 'amount': 1,
+        'types': [*printed_card_types(raw['type_line']), 'Token'],
+        'power': raw.get('power'), 'toughness': raw.get('toughness'),
+        'printed_power': raw.get('power'), 'printed_toughness': raw.get('toughness'),
+    })
+    added = set(state.cards) - before
+    assert len(added) == 1
+    return added.pop()
+
+
 def test_manual_treasure_mana_sacrifices_token_and_persists_pool() -> None:
     state = _mana_game()
-    cid = state.players[1].library.pop()
-    token = state.cards[cid]
-    token.name = "Treasure"
-    token.types = ["Artifact", "Token"]
-    token.type_line = "Token Artifact - Treasure"
-    token.oracle_text = named_artifact_token("Treasure")["oracle_text"]
-    token.is_token = True
-    token.zone = Zone.BATTLEFIELD
-    state.players[1].battlefield.append(cid)
+    cid = _manual_treasure(state)
     assert serialize_card_view(state, cid)["mana_source_colors"] == list("BGRUW")
     result = checked_action(state, RulesEngine(), 1, {"type": "tap_nonland_for_mana", "card_id": cid, "color": "U"})
     assert result.players[1].mana_pool["U"] == 1
@@ -109,12 +119,9 @@ def test_manual_treasure_mana_sacrifices_token_and_persists_pool() -> None:
 
 
 def test_manual_creature_mana_requires_ready_source_and_valid_color() -> None:
-    state = _mana_game()
+    state = _mana_game('Llanowar Elves')
     cid = state.players[1].library.pop()
     creature = state.cards[cid]
-    creature.name = "Mana Creature"
-    creature.types = ["Creature"]
-    creature.oracle_text = "{T}: Add {G}."
     creature.zone = Zone.BATTLEFIELD
     creature.summoning_sick = True
     state.players[1].battlefield.append(cid)
@@ -160,14 +167,7 @@ def test_fixed_multi_mana_sources_produce_printed_amount(name, types, text, colo
 
 def test_one_flexible_source_cannot_pay_two_distinct_colored_pips() -> None:
     state = _mana_game()
-    cid = state.players[1].library.pop()
-    source = state.cards[cid]
-    source.name = "Treasure"
-    source.types = ["Artifact", "Token"]
-    source.oracle_text = named_artifact_token("Treasure")["oracle_text"]
-    source.zone = Zone.BATTLEFIELD
-    source.is_token = True
-    state.players[1].battlefield.append(cid)
+    cid = _manual_treasure(state)
     assert not can_pay_with_pool_and_lands(state, 1, "{R}{G}")
     before = serialize_match_snapshot(state)
     assert not auto_pay_cost(state, 1, "{R}{G}")

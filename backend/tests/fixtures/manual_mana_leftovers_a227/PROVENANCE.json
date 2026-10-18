@@ -1,0 +1,61 @@
+{
+  "Forest": {
+    "file": "tests/fixtures/manual_mana_a227/forest.raw.json",
+    "original_SOURCES_sha256": "e450c68b67cb25498e80c245962502715477bb9c903a4a77d931682ae1b5bcb8",
+    "sha256": "d522e1272ee59bd6e931587330fddb769f83136a8532561129a69bdeff4129ce"
+  },
+  "Llanowar Elves": {
+    "file": "tests/fixtures/static_layers_a32/llanowar-elves.raw.json",
+    "full_object_equals_seed155_line": 58,
+    "provenance_file": "tests/fixtures/static_layers_a32/PROVENANCE.json",
+    "provenance_sha256": "86b5c544dde1bb874ab3f451a1c194d3baee3038e13f6da4276a8acc519efa16",
+    "seed155_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "sha256": "1333c60e71d06955083e05567066319c7883f19bb7bc42f9ea3bb920270a3d83",
+    "source_map_file": "tests/fixtures/static_layers_a32/SOURCES.json",
+    "source_map_sha256": "e576308cfa2da6a4d1df29c00555906c9d75672ea8f0e556b4177e915be31889"
+  },
+  "Treasure": {
+    "archive_receipt": {
+      "NFS": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ci/manual-leftovers-Treasure-RAW-intake-a227-20261017-ny5zgu7g",
+      "all_member_bytes_modes_uid_gid_equal": true,
+      "archive_sha256": "0bae8f2f48a04f2f84560c8cd318bc6557ddb75eea726b6603dfef40ae8dd272",
+      "before_any_project_test_execution": true,
+      "one_request_no_retry": true,
+      "provenance_sha256": "17095ade49981044a6d4fc6c6a9e5177caea3ffd88e7d0cbbeaabe041cad4bb6",
+      "receipt_sha256": "cff5b0bcff92f129b7e564ca93c5eb5830511ef7bc58ddd5031daba92b286760",
+      "response_sha256": "c27b1805f7ba3ed13f16f85a0ee042c839f98d81763448578011ff9ac7f5faf2",
+      "scope": "One exact public token ID GET; full response, not projected token seed",
+      "verified_members": 8
+    },
+    "intake": {
+      "HTTP_status": 200,
+      "TLS_verify_result": 0,
+      "URL": "https://api.scryfall.com/cards/03992f88-7a15-4234-9bed-b7617d7ff09c",
+      "auth_or_private_input": false,
+      "before_any_project_import_test_or_offline_gate": true,
+      "complete_RAW_preserved": true,
+      "curl_exit": 0,
+      "ended_UTC": "2026-10-17T09:30:07.494530319Z",
+      "fields": 59,
+      "headers_sha256": "2459d8f27d84f5c0000f551f08ea098e66d441c915150760437a9785bb94cca1",
+      "id": "03992f88-7a15-4234-9bed-b7617d7ff09c",
+      "name": "Treasure",
+      "native_seed_ID_matches": true,
+      "oracle_id": "3c549374-6c37-42e0-8d88-a8555d46732d",
+      "redirects": 0,
+      "requests": 1,
+      "response_bytes": 94191,
+      "response_sha256": "c27b1805f7ba3ed13f16f85a0ee042c839f98d81763448578011ff9ac7f5faf2",
+      "retries": 0,
+      "scope": "One exact public token ID GET; full response, not projected token seed",
+      "started_UTC": "2026-10-17T09:30:05.546524828Z"
+    },
+    "native_seed_file": "card_data/builtin_token_seed.json",
+    "native_seed_full_rules_match": true,
+    "native_seed_sha256": "9a42fddd41167cccc0e931f49bfbe437a03032670ee819c6277408f83d0b7200"
+  },
+  "new_intake_requests": 1,
+  "predecessor_source": "/home/nick/.hermes/cache/scratch/mtg-manual-leftovers-a227-NEWRED-PREP-9_7nxxn8/inputs/PREDECESSOR_SOURCE_FREEZE.json",
+  "scope": "NEW tests/data PREP only; original three inline protocols remain UNWAIVED",
+  "test_collection_or_execution": false
+}

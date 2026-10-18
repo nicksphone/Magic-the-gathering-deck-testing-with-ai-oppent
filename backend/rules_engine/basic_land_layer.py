@@ -113,9 +113,28 @@ def _resolve(rows):
     from rules_engine.card_types import CARD_TYPES, CREATURE_SUBTYPES
     from rules_engine.land_types import LAND_TYPES, BASIC_TYPES, land_type_instructions, _split_line
     from rules_engine.attached_characteristics import attached_compound, AttachedEffect
+
+    phrases = sorted((tuple(kind.split()) for kind in CREATURE_SUBTYPES if ' ' in kind),
+                     key=len, reverse=True)
+
+    def subtype_atoms(words):
+        words = [part for word in words for part in word.split()]
+        atoms, index = [], 0
+        while index < len(words):
+            phrase = next((parts for parts in phrases
+                           if tuple(word.lower() for word in words[index:index + len(parts)]) == parts), ())
+            length = len(phrase) or 1
+            atoms.append(' '.join(words[index:index + length]))
+            index += length
+        return atoms
+
+    def display_subtype(kind):
+        return ' '.join('-'.join(part.capitalize() for part in word.split('-'))
+                        for word in kind.split())
+
     by_id = {row[0]: row for row in rows}
     types = {row[0]: list(row[4]) for row in rows}
-    subtypes = {row[0]: _split_line(row[1])[1] for row in rows}
+    subtypes = {row[0]: subtype_atoms(_split_line(row[1])[1]) for row in rows}
     for row in rows:
         if set(row[4]) & {'Creature', 'Kindred', 'Tribal'} and any(
                 re.fullmatch(r'changeling\.?', line.strip(), re.I)
@@ -199,7 +218,7 @@ def _resolve(rows):
                 types[cid] = [kind for kind in types[cid] if kind not in instruction]
             elif operation == 'creature_subtypes':
                 subtypes[cid] = [word for word in subtypes[cid] if word.lower() not in CREATURE_SUBTYPES]
-                subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *(word.capitalize() for word in instruction)]))
+                subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *(display_subtype(word) for word in instruction)]))
             elif operation == 'replace':
                 types[cid], subtypes[cid] = ['Land'], [instruction] if isinstance(instruction, str) else []
                 lost.add(cid)
@@ -219,15 +238,18 @@ def _resolve(rows):
                 subtypes[cid] = list(dict.fromkeys([*subtypes[cid], *values]))
     lines = {}
     for cid, row in by_id.items():
+        # Correlate only the final view; later type regain must retain prior operations.
+        visible = (subtypes[cid] if set(types[cid]) & {'Creature', 'Kindred', 'Tribal'} else
+                   [word for word in subtypes[cid] if word.lower() not in CREATURE_SUBTYPES])
         if cid in replaced | creature_replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8]):
             supertypes = [word for word in _split_line(row[1])[0].split()
                           if word in {'Basic', 'Legendary', 'Snow', 'World', 'Ongoing'}]
-            prefix = ' '.join([*supertypes, *(kind for kind in types[cid] if kind in CARD_TYPES)])
+            prefix = ' '.join([*supertypes, *(kind for kind in types[cid] if kind in CARD_TYPES or kind == 'Tribal')])
         else:
             prefix = _split_line(row[1])[0] or 'Land'
         if (cid in replaced | creature_replaced or any(operation == 'creature_subtypes' for _, operation, _ in row[8])
-                or 'Land' in types[cid] and subtypes[cid] != _split_line(row[1])[1]):
-            lines[cid] = prefix + (' \u2014 ' + ' '.join(subtypes[cid]) if subtypes[cid] else '')
+                or 'Land' in types[cid] and visible != _split_line(row[1])[1]):
+            lines[cid] = prefix + (' \u2014 ' + ' '.join(visible) if visible else '')
     changed_types = {cid: tuple(values) for cid, values in types.items() if tuple(values) != by_id[cid][4]}
     return (MappingProxyType(lines), frozenset(lost), MappingProxyType(changed_types), frozenset(colorless),
             tuple(started))

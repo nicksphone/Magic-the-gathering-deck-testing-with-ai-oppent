@@ -1,0 +1,51 @@
+{
+  "base": "frozen T57, no moving W",
+  "cards": {
+    "Blood Artist": {
+      "fields": 66,
+      "id": "b5275d76-2947-4219-be21-614c7421614a",
+      "line": 8,
+      "object_sha256": "00cd78368587a1989834deed69cc4a8374462d1f374b5f8cbf8fba69c4809c74",
+      "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+      "provenance": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+      "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+      "row_byte_sha256": "438fe3bd5fa30f66e8394e73c5559843397bc6e6ed6499f2a84128bfb2600f44",
+      "source": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "source_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+    },
+    "Rest in Peace": {
+      "fields": 64,
+      "id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+      "line": 77,
+      "object_sha256": "e9215ef36ff21ae5277f9e7cef786350d329a975404e757d054b25274ace42b0",
+      "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+      "provenance": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+      "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+      "row_byte_sha256": "178b922e9a1cb518513cc37c705d56e522a524fb706e7d4f8d0adc7666c08722",
+      "source": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "source_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+    },
+    "Tarmogoyf": {
+      "fields": 67,
+      "id": "8be5ee47-8f8a-4e3c-b1a1-9ca0e1fdec7f",
+      "line": 99,
+      "object_sha256": "3d92a36b55a5c0eca2e35f75f24e4d9c5c446c2cb90d107c5d365c7f6e0490e1",
+      "oracle_id": "45900b2f-f6a9-4c42-9642-008f3c1cf6dd",
+      "provenance": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+      "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+      "row_byte_sha256": "e60a747f71098f55a4690c20c6558219f209b54760c137a4afbe8af1da9d87d9",
+      "source": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "source_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+    }
+  },
+  "no_network": true,
+  "status": "PREP_ONLY_UNEXECUTED",
+  "unchanged_materializers_and_admissions": {
+    "backend/tests/fixtures/rules_printed_facts_e4/SOURCES.json": "e0abed762c6d486303522d33aa0a9f4a01cad9914f3d639e8d5e8bc384cd07cb",
+    "backend/tests/fixtures/static_layers_a32/PROVENANCE.json": "86b5c544dde1bb874ab3f451a1c194d3baee3038e13f6da4276a8acc519efa16",
+    "backend/tests/fixtures/static_layers_a32/SOURCES.json": "e576308cfa2da6a4d1df29c00555906c9d75672ea8f0e556b4177e915be31889",
+    "backend/tests/fixtures/static_layers_a32/tarmogoyf.raw.json": "e60a747f71098f55a4690c20c6558219f209b54760c137a4afbe8af1da9d87d9",
+    "backend/tests/rules_printed_facts_e4.py": "45641f3d0be691a6f24ba944bd098f1693dfcefcbadb54a8e406a4299829bbaf",
+    "backend/tests/static_layers_canonical_a32.py": "026f35649d3fbb77fb28284e75b4f906dccad070c24355b7c023dd160e666f75"
+  }
+}

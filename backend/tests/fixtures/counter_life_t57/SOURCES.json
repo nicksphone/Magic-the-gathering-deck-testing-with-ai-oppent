@@ -1,0 +1,100 @@
+{
+  "format": 1,
+  "no_new_network": true,
+  "objects": {
+    "Font of Agonies": {
+      "display_uri": "/card-images/placeholder-enchantment-font-of-agonies-enchantment.svg",
+      "file": "fixtures/damage_life_printed_79/font-of-agonies-scryfall-raw.json",
+      "file_sha256": "b13ec5bacaa3571df66d6a2cb97846bc25a633678ce83b17f110a3d9dd958f20",
+      "id": "d7c02aec-4a89-4ccc-8525-6f979c10d799",
+      "line": null,
+      "materializer": "tests.damage_life_printed_79.canonical_card",
+      "object_sha256": "de0c426c3951f227d0151797b4e826d5609c60f3e86ecb465e7972bb97d25c86",
+      "oracle_id": "ab44c6fe-6a66-42f0-9e75-8b25641e1f13",
+      "provenance": [
+        {
+          "file": "fixtures/damage_life_printed_79/PROVENANCE.json",
+          "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+        }
+      ],
+      "source_kind": "actual_exact_HTTP200_full_raw_before_offline"
+    },
+    "Grizzly Bears": {
+      "display_uri": "/card-images/placeholder-creature-grizzly-bears-creature-bear.svg",
+      "file": "fixtures/../vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+      "file_sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "line": null,
+      "materializer": "tests.damage_life_printed_79.canonical_card",
+      "object_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "provenance": [
+        {
+          "file": "vraska_full/fixtures/PROVENANCE.json",
+          "sha256": "4ca06bb36a8ee650e8c3593f3013636958914b189b0212416b9b01d762143c71"
+        }
+      ],
+      "source_kind": "full_shape_raw_hash_linked_provenance"
+    },
+    "Lightning Bolt": {
+      "display_uri": "/card-images/placeholder-spell-lightning-bolt-instant.svg",
+      "file": "fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "line": 57,
+      "materializer": "tests.damage_life_printed_79.canonical_card",
+      "object_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "provenance": [
+        {
+          "file": "fixtures/day_night_apnap_canonical/PROVENANCE.json",
+          "sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe"
+        },
+        {
+          "file": "fixtures/knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        },
+        {
+          "file": "fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+          "sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d"
+        }
+      ],
+      "source_kind": "seed155_official_batch_provenance"
+    },
+    "Spell Pierce": {
+      "display_uri": "/card-images/card-1.jpg",
+      "file": "fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "8dd4374f-0301-4b2e-bc99-2cd19568cb3b",
+      "line": 91,
+      "materializer": "tests.ai_decisions_canonical_cdba.canonical_card(as_instance=True)",
+      "object_sha256": "a721c8adfea2c54b42d3ac381f3ae4fd044b6aef39898e6514ac7ab67ae9eb8c",
+      "oracle_id": "d64b0848-0193-4025-ba62-63ecd8fb9f50",
+      "provenance": [
+        {
+          "file": "fixtures/knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "source_kind": "retained_complete_API_object_in_compacted_seed155_not_HTTP_wire_body"
+    },
+    "Withering Boon": {
+      "display_uri": "/card-images/placeholder-spell-withering-boon-instant.svg",
+      "file": "fixtures/damage_life_printed_79/withering-boon-scryfall-raw.json",
+      "file_sha256": "e3ae4734b5f38b21573946d8a191382fbcaf44120765a7a53e61f880f0113eb6",
+      "id": "6e6499cb-6073-4c94-8c82-47f489094df5",
+      "line": null,
+      "materializer": "tests.damage_life_printed_79.canonical_card",
+      "object_sha256": "8620d5ef7601193fb7acb86576ae7ea0bc4d0a07571e2ae3b02c8e90682c8bbc",
+      "oracle_id": "6d87415b-0618-48e1-9510-320c4611ecda",
+      "provenance": [
+        {
+          "file": "fixtures/damage_life_printed_79/PROVENANCE.json",
+          "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+        }
+      ],
+      "source_kind": "actual_exact_HTTP200_full_raw_before_offline"
+    }
+  },
+  "scope": "five admitted complete normal-layout official objects; display-only paths are existing materializer contracts, not RAW art facts"
+}

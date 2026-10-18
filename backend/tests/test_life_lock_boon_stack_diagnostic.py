@@ -2,25 +2,22 @@
 import pytest
 
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import CardInstance, StackItem, Zone
+from game_state.state import StackItem, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.targeting import stack_object_kind
 from tests.test_life_total_lock import game
+from tests.damage_life_printed_79 import canonical_card
 
 
 def paid_position(seat, *, creature=True):
     state = game()
     opponent = 3 - seat
-    font = CardInstance('font', 'Font of Agonies', seat, seat, Zone.BATTLEFIELD, ['Enchantment'],
-                        oracle_text='Whenever you pay life, put that many blood counters on this enchantment.')
-    boon = CardInstance('boon', 'Withering Boon', seat, seat, Zone.HAND, ['Instant'], mana_cost='{1}{B}',
-                        oracle_text='As an additional cost to cast this spell, pay 3 life.\nCounter target creature spell.')
-    spell = (CardInstance('bear', 'Grizzly Bears', opponent, opponent, Zone.HAND,
-                         ['Creature'], mana_cost='{1}{G}', power=2, toughness=2) if creature else
-             CardInstance('bolt', 'Lightning Bolt', opponent, opponent, Zone.HAND,
-                          ['Instant'], mana_cost='{R}', oracle_text='Lightning Bolt deals 3 damage to any target.'))
+    font = canonical_card('Font of Agonies', id='font', owner=seat, controller=seat, zone=Zone.BATTLEFIELD)
+    boon = canonical_card('Withering Boon', id='boon', owner=seat, controller=seat, zone=Zone.HAND)
+    spell = (canonical_card('Grizzly Bears', id='bear', owner=opponent, controller=opponent, zone=Zone.HAND) if creature else
+             canonical_card('Lightning Bolt', id='bolt', owner=opponent, controller=opponent, zone=Zone.HAND))
     state.cards.update({c.id: c for c in (font, boon, spell)})
     state.players[seat].battlefield.append(font.id)
     state.players[seat].hand.append(boon.id)

@@ -12,13 +12,14 @@ from rules_engine.engine import RulesEngine
 from rules_engine.opening_hand import can_begin_on_battlefield
 from rules_engine.targeting import player_target_immunity
 from tests.test_api_input_contracts import game, persist, snapshot
+from tests.browser_positive83_canonical import entry
 
 
 CARDS = {row["name"]: row for row in json.loads((Path(__file__).parent / "fixtures" / "opening_hand.json").read_text())}
 
 
 def opening_game(starter=1):
-    deck = [{"quantity": 60, "card_name": "Plains"}]
+    deck = [entry('Plains', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=54)
     state.active_player = state.priority_player = starter
     return state

@@ -1,0 +1,30 @@
+{
+  "UTC": "2026-10-17T14:41:33.194676+00:00",
+  "bulk_archive_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "bulk_updated_at": "2026-09-27T09:01:57.616+00:00",
+  "decompressed_bytes_verified": 203114006,
+  "http_requests": 0,
+  "line_limit_bytes": 2097152,
+  "public_bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "raw_lines_retained_unmodified": true,
+  "rows_verified": 38690,
+  "selected": {
+    "Karplusan Forest": {
+      "fields": 67,
+      "file": "mana_two_p2_T57/karplusan-forest.raw.json",
+      "id": "67198b97-bac2-480f-aea8-12841e8884de",
+      "oracle_id": "bd912666-f37f-4767-af6f-9e6d0fcccacf",
+      "oracle_text": "{T}: Add {C}.\n{T}: Add {R} or {G}. This land deals 1 damage to you.",
+      "sha256": "89fccda9e63cb9daa31fa854fa804b316d8ac459d33ce23689b162394fe2ab6c"
+    },
+    "Wild Growth": {
+      "fields": 64,
+      "file": "mana_two_p2_T57/wild-growth.raw.json",
+      "id": "47260e7c-29bf-46f1-a029-9da7bbb418b5",
+      "oracle_id": "706ae742-1807-44b7-a4fa-f2e26f61519a",
+      "oracle_text": "Enchant land\nWhenever enchanted land is tapped for mana, its controller adds an additional {G}.",
+      "sha256": "f719a52e0a85fe31979867341ee142e7762e4a319a7a27fec2ed4422f415f2b0"
+    }
+  },
+  "source_receipt": "backend/tests/fixtures/cost_reservation_overlap/provenance.json"
+}

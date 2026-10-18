@@ -6,10 +6,11 @@ import pytest
 
 from ai.agent import AIAgent
 from game_state.serializers import serialize_match_snapshot
-from game_state.state import CardInstance, Zone
+from game_state.state import Zone
 from rules_engine.action_validation import checked_action
 from tests.test_ai_pending_deployment import observed
 from tests.test_ai_search_prefix import bare_state, actor_correct_reference
+from tests.library_canonical_fixtures import canonical_card
 
 
 def position(seat, counter=False):
@@ -21,8 +22,8 @@ def position(seat, counter=False):
     state.players[seat].mana_pool.update({'B': 2})
     if counter:
         opponent = 3-seat
-        response = CardInstance('counter', 'Counterspell', opponent, opponent, Zone.HAND, ['Instant'],
-                                mana_cost='{U}{U}', oracle_text='Counter target spell.')
+        response = canonical_card('Counterspell', id='counter', owner=opponent,
+                                  controller=opponent, zone=Zone.HAND)
         state.cards[response.id] = response
         state.players[opponent].hand.append(response.id)
         state.players[opponent].mana_pool.update({'U': 2})

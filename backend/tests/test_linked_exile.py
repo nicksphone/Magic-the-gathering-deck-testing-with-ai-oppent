@@ -9,10 +9,11 @@ from rules_engine.events import emit_event
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.linked_exile import flush_linked_exile_returns
+from tests.browser_positive83_canonical import entry
 
 
 def _state():
-    deck = [{"quantity": 60, "card_name": "Plains"}]
+    deck = [entry('Plains', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=621)
     state.pregame_pending = False
     state.kept_hands = {1, 2}

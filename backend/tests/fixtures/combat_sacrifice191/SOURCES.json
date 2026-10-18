@@ -1,0 +1,127 @@
+{
+  "objects": {
+    "Elvish Mystic": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+      "line": 33,
+      "oracle_id": "3f3b2c10-21f8-4e13-be83-4ef3fa36e123",
+      "provenance": [
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "row_sha256": "0be0da882b1656e1b50a7a5ab8720114b3302eb2ccf547eb0420457a410e32a2"
+    },
+    "Forest": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+      "line": 39,
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "provenance": [
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "row_sha256": "d522e1272ee59bd6e931587330fddb769f83136a8532561129a69bdeff4129ce"
+    },
+    "Hallowed Fountain": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "b7285986-7e08-4969-86ef-452dc5bfdd9f",
+      "line": 44,
+      "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea",
+      "provenance": [
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "row_sha256": "82010bcc7d4121ddd1135504820c6884c7c551b1db46cf5b25e1190f3a780d2c"
+    },
+    "Island": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "line": 50,
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "provenance": [
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "row_sha256": "450bf6448c1ed549fe3d69fe922cb0ffb8d6fa08751875cc873265f89ad95407"
+    },
+    "Llanowar Elves": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+      "line": 58,
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "provenance": [
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        }
+      ],
+      "row_sha256": "1333c60e71d06955083e05567066319c7883f19bb7bc42f9ea3bb920270a3d83"
+    },
+    "Mazirek, Kraul Death Priest": {
+      "file": "combat_sacrifice191/mazirek.raw.json",
+      "file_sha256": "419889dacbf0620257cd4d601dce4d5723e003b3da13c4095c05c03041e1cf00",
+      "id": "940ae3c2-7ac2-412b-afd0-c8b0099bc3aa",
+      "line": null,
+      "oracle_id": "e0420f2c-d578-421e-ae75-e7dc5f70661a",
+      "provenance": [
+        {
+          "file": "combat_sacrifice191/MAZIREK_PROVENANCE.json",
+          "sha256": "188af5d466bd156da8b956e11bc5023ebcc958dc3fea35b4dc6070d97020689f"
+        },
+        {
+          "file": "combat_sacrifice191/mazirek.headers.json",
+          "sha256": "db7dd0ec22831ef0a6a213311127cfe7221d8665eba9469b3f5c67a90050da97"
+        }
+      ]
+    },
+    "Palace Guard": {
+      "file": "combat_sacrifice191/palace-guard.raw.json",
+      "file_sha256": "f4efe3b563620f38d33823c946c497a333098cb3c49ddec97d5cbbd355afe41b",
+      "id": "51e73c28-bf82-413e-bec2-adbb52fa6993",
+      "line": null,
+      "oracle_id": "5c92f375-ae6a-4be5-a499-ab87d6bdc49b",
+      "provenance": [
+        {
+          "file": "combat_sacrifice191/PALACE_GUARD_PROVENANCE.json",
+          "sha256": "f37ac22e82eaf891320d5fa9eead9c7d35ddc080f26a77c8e2d4bd07bd8661d0"
+        },
+        {
+          "file": "combat_sacrifice191/palace-guard.headers.json",
+          "sha256": "fde8c5e4f89d8d7977853d0dfd9162492db13b5a09290ee0bf754318ef430704"
+        }
+      ]
+    },
+    "Sol Ring": {
+      "file": "manual_mana_a227/sol-ring.raw.json",
+      "file_sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+      "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "line": null,
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "provenance": [
+        {
+          "file": "manual_mana_a227/SOURCES.json",
+          "sha256": "e450c68b67cb25498e80c245962502715477bb9c903a4a77d931682ae1b5bcb8"
+        },
+        {
+          "file": "manual_mana_a227/PROVENANCE.json",
+          "sha256": "6f4454e0b034b640f6f1965184833a90ce8f10d4a67b13ea4e22493b8a2eefc3"
+        }
+      ]
+    }
+  },
+  "schema": 1,
+  "scope": "Only the two assigned printed-positive fixture families, no protocol waiver"
+}

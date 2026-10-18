@@ -658,11 +658,12 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         deck = [{"quantity": 60, "card_name": "Bonecrusher Giant // Stomp"}]
         return publish(state, deck)
     if face_kind == "attacking_token_target":
+        from tests.browser_positive83_canonical import card as printed_card, entry
         from game_state.state import assign_static_order_on_battlefield_entry
         from rules_engine.combat import declare_attackers
         from rules_engine.stack_engine import resolve_top_of_stack
 
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=935)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -670,17 +671,14 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.active_player = state.priority_player = 1
         state.step = Step.DECLARE_ATTACKERS
         cards = [
-            CardInstance("adeline", "Adeline, Resplendent Cathar", 1, 1, Zone.BATTLEFIELD,
-                         ["Creature"], power=2, toughness=4, oracle_text=(
-                             "Vigilance\nAdeline's power is equal to the number of creatures you control.\n"
-                             "Whenever you attack, for each opponent, create a 1/1 white Human creature token "
-                             "that's tapped and attacking that player or a planeswalker they control."),
-                         summoning_sick=False),
-            CardInstance("bear", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD,
-                         ["Creature"], power=2, toughness=2, summoning_sick=False),
-            CardInstance("teferi", "Teferi, Hero of Dominaria", 2, 2, Zone.BATTLEFIELD,
-                         ["Planeswalker"], loyalty=1),
+            printed_card("Adeline, Resplendent Cathar", id="adeline", owner=1, controller=1,
+                         zone=Zone.BATTLEFIELD, summoning_sick=False),
+            printed_card("Grizzly Bears", id="bear", owner=1, controller=1,
+                         zone=Zone.BATTLEFIELD, summoning_sick=False),
+            printed_card("Teferi, Hero of Dominaria", id="teferi", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD),
         ]
+        cards[2].loyalty = 1  # Current scene pose, not printed starting loyalty.
         for card in cards:
             state.cards[card.id] = card
             state.players[card.controller].battlefield.append(card.id)
@@ -689,12 +687,11 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         resolve_top_of_stack(state)
         return publish(state, deck)
     if face_kind == "linked_copy_x":
-        import json
-        from card_data.seed_cards import seed_card_payload
+        from tests.browser_positive83_canonical import card as printed_card, entry
         from game_state.state import assign_static_order_on_battlefield_entry
         from rules_engine.linked_exile import record_linked_exile
 
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=934)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -702,30 +699,19 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         state.players[1].mana_pool["B"] = 2
-        face = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())[
-            "Valki, God of Lies // Tibalt, Cosmic Impostor"
-        ]["card_faces"][0]
-        source = CardInstance(
-            "linked-valki", face["name"], 1, 1, Zone.BATTLEFIELD, ["Creature"],
-            mana_cost=face["mana_cost"], oracle_text=face["oracle_text"],
-            type_line=face["type_line"], power=int(face["power"]), toughness=int(face["toughness"]),
-        )
+        source = printed_card('Valki, God of Lies // Tibalt, Cosmic Impostor', id='linked-valki', owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[source.id] = source
         state.players[1].battlefield.append(source.id)
         assign_static_order_on_battlefield_entry(state, source.id)
-        printed = seed_card_payload("Elvish Mystic")
-        held = CardInstance(
-            "linked-mystic", printed["name"], 2, 2, Zone.EXILE, ["Creature"],
-            mana_cost=printed["mana_cost"], oracle_text=printed["oracle_text"],
-            type_line=printed["type_line"], power=int(printed["power"]), toughness=int(printed["toughness"]),
-        )
+        held = printed_card('Elvish Mystic', id='linked-mystic', owner=2, controller=2, zone=Zone.EXILE)
         state.cards[held.id] = held
         state.players[2].exile.append(held.id)
         record_linked_exile(state, source.id, source.effect_timestamp, [held.id], Zone.HAND)
         return publish(state, deck)
     if face_kind == "modal_copy_target":
+        from tests.browser_positive83_canonical import card as printed_card, entry
         from effects.handlers import copy_spell
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=933)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -734,20 +720,15 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.mechanic_choice_players = {1, 2}
         destroy = "Destroy target artifact"
         damage = "Kolaghan's Command deals 2 damage to any target"
-        spell = CardInstance(
-            id="modal-command", name="Kolaghan's Command", owner=1, controller=1,
-            zone=Zone.STACK, types=["Instant"], mana_cost="{1}{B}{R}",
-            oracle_text="Choose two —\n• Return target creature card from your graveyard to your hand.\n"
-                        "• Target player discards a card.\n• Destroy target artifact.\n"
-                        "• Kolaghan's Command deals 2 damage to any target.",
-        )
+        spell = printed_card("Kolaghan's Command", id="modal-command", owner=1, controller=1,
+                             zone=Zone.STACK)
         state.cards[spell.id] = spell
-        for cid, name, types, power, toughness in (
-            ("modal-ring", "Sol Ring", ["Artifact"], None, None),
-            ("modal-spare", "Sol Ring", ["Artifact"], None, None),
-            ("modal-bear", "Grizzly Bears", ["Creature"], 2, 2),
+        for cid, name in (
+            ("modal-ring", "Sol Ring"),
+            ("modal-spare", "Sol Ring"),
+            ("modal-bear", "Grizzly Bears"),
         ):
-            card = CardInstance(cid, name, 2, 2, Zone.BATTLEFIELD, types, power=power, toughness=toughness)
+            card = printed_card(name, id=cid, owner=2, controller=2, zone=Zone.BATTLEFIELD)
             state.cards[cid] = card
             state.players[2].battlefield.append(cid)
         state.stack.append(StackItem(
@@ -768,23 +749,19 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         copy_spell(state, 1, {"target_stack_id": "original-command", "may_choose_new_targets": True})
         return publish(state, deck)
     if face_kind == "divided_copy_target":
+        from tests.browser_positive83_canonical import card as printed_card, entry
         from effects.handlers import copy_spell
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=932)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.mechanic_choice_players = {1, 2}
-        spell = CardInstance(
-            id="pyrotechnics", name="Pyrotechnics", owner=1, controller=1,
-            zone=Zone.STACK, types=["Sorcery"], mana_cost="{4}{R}",
-            oracle_text="Pyrotechnics deals 4 damage divided as you choose among any number of targets.",
-        )
-        bear = CardInstance(
-            id="divided-bear", name="Grizzly Bears", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-        )
+        spell = printed_card("Pyrotechnics", id="pyrotechnics", owner=1, controller=1,
+                             zone=Zone.STACK)
+        bear = printed_card("Grizzly Bears", id="divided-bear", owner=1, controller=1,
+                            zone=Zone.BATTLEFIELD)
         state.cards[spell.id] = spell
         state.cards[bear.id] = bear
         state.players[1].battlefield.append(bear.id)
@@ -798,19 +775,17 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         copy_spell(state, 2, {"target_stack_id": "original-pyrotechnics", "may_choose_new_targets": True})
         return publish(state, deck)
     if face_kind == "copy_target":
+        from tests.browser_positive83_canonical import card as printed_card, entry
         from effects.handlers import copy_spell
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=931)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.mechanic_choice_players = {1, 2}
-        bolt = CardInstance(
-            id="copied-bolt", name="Lightning Bolt", owner=1, controller=1,
-            zone=Zone.STACK, types=["Instant"], mana_cost="{R}",
-            oracle_text="Lightning Bolt deals 3 damage to any target.",
-        )
+        bolt = printed_card("Lightning Bolt", id="copied-bolt", owner=1, controller=1,
+                            zone=Zone.STACK)
         state.cards[bolt.id] = bolt
         state.stack.append(StackItem(
             id="original-bolt", source_card_id=bolt.id, controller=1,
@@ -821,8 +796,9 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         copy_spell(state, 2, {"target_stack_id": "original-bolt", "may_choose_new_targets": True})
         return publish(state, deck)
     if face_kind in {"snow_payment", "non_snow_payment"}:
-        deck = [{"quantity": 60, "card_name": "Forest"}]
-        state = MatchFactory.from_decks(deck, deck, seed=930)
+        from tests.browser_positive83_canonical import scene_decks
+        deck, opponent = scene_decks(930, "Forest", {1: {53: "Snow-Covered Forest" if face_kind == "snow_payment" else "Forest", 60: "Icehide Golem"}})
+        state = MatchFactory.from_decks(deck, opponent, seed=930)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
@@ -830,76 +806,51 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.mechanic_choice_players = {1, 2}
         land_id = state.players[1].library.pop()
         land = state.cards[land_id]
-        land.name = "Snow-Covered Forest" if face_kind == "snow_payment" else "Forest"
-        land.type_line = "Basic Snow Land - Forest" if face_kind == "snow_payment" else "Basic Land - Forest"
         land.zone = Zone.BATTLEFIELD
         state.players[1].battlefield.append(land_id)
-        spell = state.cards[state.players[1].hand[0]]
-        spell.name = "Icehide Golem"
-        spell.types, spell.type_line = ["Artifact", "Creature"], "Snow Artifact Creature - Golem"
-        spell.mana_cost, spell.power, spell.toughness = "{S}", 2, 2
-        spell.oracle_text = "({S} can be paid with one mana from a snow source.)"
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind == "compleated_payment":
-        deck = [{"quantity": 60, "card_name": "Island"}]
-        state = MatchFactory.from_decks(deck, deck, seed=925)
+        from tests.browser_positive83_canonical import scene_decks
+        deck, opponent = scene_decks(925, "Island", {1: {60: "Tamiyo, Compleated Sage"}})
+        state = MatchFactory.from_decks(deck, opponent, seed=925)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         state.mechanic_choice_players = {1, 2}
         state.players[1].mana_pool.update({"C": 2, "G": 2, "U": 1})
-        spell = state.cards[state.players[1].hand[0]]
-        spell.name = "Tamiyo, Compleated Sage"
-        spell.types, spell.type_line = ["Legendary", "Planeswalker"], "Legendary Planeswalker - Tamiyo"
-        spell.mana_cost, spell.loyalty = "{2}{G}{G/U/P}{U}", 5
-        spell.oracle_text = (
-            "Compleated ({G/U/P} can be paid with {G}, {U}, or 2 life. "
-            "If life was paid, this planeswalker enters with two fewer loyalty counters.)\n"
-            "+1: Tap up to one target artifact or creature. It doesn't untap during its controller's next untap step.\n"
-            "-X: Exile target nonland permanent card with mana value X from your graveyard. Create a token that's a copy of that card.\n"
-            "-7: Create Tamiyo's Notebook, a legendary colorless artifact token with \"Spells you cast cost {2} less to cast\" and \"{T}: Draw a card.\""
-        )
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind == "phyrexian_ability":
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=923)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         state.mechanic_choice_players = {1, 2}
-        source = CardInstance(
-            id="pestilent-souleater", name="Pestilent Souleater", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Artifact", "Creature"],
-            oracle_text="{B/P}: Pestilent Souleater gains infect until end of turn.",
-            power=3, toughness=3,
-        )
+        source = printed_card("Pestilent Souleater", id="pestilent-souleater", owner=1,
+                              controller=1, zone=Zone.BATTLEFIELD)
         state.cards[source.id] = source
         state.players[1].battlefield.append(source.id)
         return publish(state, deck)
     if face_kind == "phyrexian_payment":
-        deck = [{"quantity": 60, "card_name": "Forest"}]
-        state = MatchFactory.from_decks(deck, deck, seed=922)
+        from tests.browser_positive83_canonical import card as printed_card, scene_decks
+        deck, opponent = scene_decks(922, "Forest", {1: {60: "Mutagenic Growth"}})
+        state = MatchFactory.from_decks(deck, opponent, seed=922)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         state.mechanic_choice_players = {1, 2}
-        spell = state.cards[state.players[1].hand[0]]
-        spell.name, spell.types, spell.type_line = "Mutagenic Growth", ["Instant"], "Instant"
-        spell.mana_cost = "{G/P}"
-        spell.oracle_text = "Target creature gets +2/+2 until end of turn."
-        creature = CardInstance(
-            id="phyrexian-target", name="Llanowar Elves", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
-        )
+        creature = printed_card('Llanowar Elves', id='phyrexian-target', owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[creature.id] = creature
         state.players[1].battlefield.append(creature.id)
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind == "hybrid_payment":
-        deck = [{"quantity": 60, "card_name": "Plains"}]
-        state = MatchFactory.from_decks(deck, deck, seed=921)
+        from tests.browser_positive83_canonical import scene_decks
+        deck, opponent = scene_decks(921, "Plains", {1: {60: "Spectral Procession"}})
+        state = MatchFactory.from_decks(deck, opponent, seed=921)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
@@ -909,94 +860,53 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             cid = state.players[1].library.pop()
             state.cards[cid].zone = Zone.BATTLEFIELD
             state.players[1].battlefield.append(cid)
-        spell = state.cards[state.players[1].hand[0]]
-        spell.name = "Spectral Procession"
-        spell.types, spell.type_line = ["Sorcery"], "Sorcery"
-        spell.mana_cost = "{2/W}{2/W}{2/W}"
-        spell.oracle_text = "Create three 1/1 white Spirit creature tokens with flying."
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind in {"thoughtseize", "duress", "inquisition", "despise", "appetite"}:
-        deck = [{"quantity": 60, "card_name": "Swamp"}]
-        state = MatchFactory.from_decks(deck, deck, seed=920)
+        from tests.browser_positive83_canonical import scene_decks
+        name = {
+            "thoughtseize": "Thoughtseize", "duress": "Duress",
+            "inquisition": "Inquisition of Kozilek", "despise": "Despise",
+            "appetite": "Appetite for Brains",
+        }[face_kind]
+        opponent_slots = {60: "Forest", 59: "Lightning Bolt", 58: "Llanowar Elves"}
+        if face_kind in {"inquisition", "appetite"}:
+            opponent_slots[57] = "Serra Angel"
+        elif face_kind == "despise":
+            opponent_slots[57] = "Jace, the Mind Sculptor"
+        deck, opponent = scene_decks(920, "Swamp", {1: {60: name}, 2: opponent_slots})
+        state = MatchFactory.from_decks(deck, opponent, seed=920)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         state.mechanic_choice_players = {1, 2}
         state.players[1].mana_pool["B"] = 1
-        spell = state.cards[state.players[1].hand[0]]
-        spell.name = {
-            "thoughtseize": "Thoughtseize", "duress": "Duress",
-            "inquisition": "Inquisition of Kozilek", "despise": "Despise",
-            "appetite": "Appetite for Brains",
-        }[face_kind]
-        spell.types, spell.type_line, spell.mana_cost = ["Sorcery"], "Sorcery", "{B}"
-        spell.oracle_text = {
-            "thoughtseize": "Target player reveals their hand. You choose a nonland card from it. "
-                            "That player discards that card. You lose 2 life.",
-            "duress": "Target opponent reveals their hand. You choose a noncreature, nonland card from it. "
-                      "That player discards that card.",
-            "inquisition": "Target player reveals their hand. You choose a nonland card from it with mana value 3 or less. "
-                           "That player discards that card.",
-            "despise": "Target opponent reveals their hand. You choose a creature or planeswalker card from it. "
-                       "That player discards that card.",
-            "appetite": "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater "
-                        "and exile that card.",
-        }[face_kind]
-        hand = state.players[2].hand
-        forest = state.cards[hand[0]]
-        forest.name, forest.types, forest.type_line = "Forest", ["Land"], "Basic Land - Forest"
-        bolt = state.cards[hand[1]]
-        bolt.name, bolt.types, bolt.type_line, bolt.mana_cost = "Lightning Bolt", ["Instant"], "Instant", "{R}"
-        bolt.oracle_text = "Lightning Bolt deals 3 damage to any target."
-        elf = state.cards[hand[2]]
-        elf.name, elf.types, elf.type_line, elf.mana_cost = "Llanowar Elves", ["Creature"], "Creature - Elf Druid", "{G}"
-        elf.power, elf.toughness, elf.oracle_text = 1, 1, "{T}: Add {G}."
-        fourth = state.cards[hand[3]]
-        if face_kind in {"inquisition", "appetite"}:
-            fourth.name, fourth.types, fourth.type_line, fourth.mana_cost = (
-                "Serra Angel", ["Creature"], "Creature - Angel", "{3}{W}{W}",
-            )
-        elif face_kind == "despise":
-            fourth.name, fourth.types, fourth.type_line, fourth.mana_cost = (
-                "Jace, the Mind Sculptor", ["Planeswalker"], "Legendary Planeswalker - Jace", "{2}{U}{U}",
-            )
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind == "revealed_discard":
-        deck = [{"quantity": 60, "card_name": "Swamp"}]
-        state = MatchFactory.from_decks(deck, deck, seed=919)
+        from tests.browser_positive83_canonical import scene_decks
+        deck, opponent = scene_decks(919, "Swamp", {1: {60: "Coercion"}})
+        state = MatchFactory.from_decks(deck, opponent, seed=919)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         state.mechanic_choice_players = {1, 2}
         state.players[1].mana_pool.update({"B": 1, "C": 2})
-        spell = state.cards[state.players[1].hand[0]]
-        spell.name = "Coercion"
-        spell.types = ["Sorcery"]
-        spell.type_line = "Sorcery"
-        spell.mana_cost = "{2}{B}"
-        spell.oracle_text = "Target opponent reveals their hand. You choose a card from it. That player discards that card."
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind == "each_player_discard":
-        deck = [{"quantity": 60, "card_name": "Swamp"}]
-        state = MatchFactory.from_decks(deck, deck, seed=818)
+        from tests.browser_positive83_canonical import scene_decks
+        deck, opponent = scene_decks(818, "Swamp", {1: {60: "Delirium Skeins"}})
+        state = MatchFactory.from_decks(deck, opponent, seed=818)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.PRECOMBAT_MAIN
         state.mechanic_choice_players = {1, 2}
         state.players[1].mana_pool.update({"B": 1, "C": 2})
-        spell_id = state.players[1].hand[0]
-        spell = state.cards[spell_id]
-        spell.name = "Delirium Skeins"
-        spell.types = ["Sorcery"]
-        spell.type_line = "Sorcery"
-        spell.mana_cost = "{2}{B}"
-        spell.oracle_text = "Each player discards three cards."
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind == "modal_same_kind":
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=914)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1005,30 +915,20 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.step = Step.PRECOMBAT_MAIN
         state.players[2].mana_pool.update({"B": 1, "R": 1, "C": 1})
         cards = (
-            CardInstance(id="kolaghan", name="Kolaghan's Command", owner=2, controller=2,
-                         zone=Zone.HAND, types=["Instant"], mana_cost="{1}{B}{R}",
-                         oracle_text=("Choose two —\n"
-                                      "• Return target creature card from your graveyard to your hand.\n"
-                                      "• Target player discards a card.\n"
-                                      "• Destroy target artifact.\n"
-                                      "• Kolaghan's Command deals 2 damage to any target.")),
-            CardInstance(id="ring", name="Sol Ring", owner=1, controller=1,
-                         zone=Zone.BATTLEFIELD, types=["Artifact"], oracle_text="{T}: Add {C}{C}."),
-            CardInstance(id="bear", name="Grizzly Bears", owner=1, controller=1,
-                         zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2),
-            CardInstance(id="elf-grave", name="Llanowar Elves", owner=2, controller=2,
-                         zone=Zone.GRAVEYARD, types=["Creature"], power=1, toughness=1),
-            CardInstance(id="bear-grave", name="Grizzly Bears", owner=2, controller=2,
-                         zone=Zone.GRAVEYARD, types=["Creature"], power=2, toughness=2),
-            CardInstance(id="opponent-grave", name="Grizzly Bears", owner=1, controller=1,
-                         zone=Zone.GRAVEYARD, types=["Creature"], power=2, toughness=2),
+            printed_card("Kolaghan's Command", id='kolaghan', owner=2, controller=2, zone=Zone.HAND),
+            printed_card('Sol Ring', id='ring', owner=1, controller=1, zone=Zone.BATTLEFIELD),
+            printed_card('Grizzly Bears', id='bear', owner=1, controller=1, zone=Zone.BATTLEFIELD),
+            printed_card('Llanowar Elves', id='elf-grave', owner=2, controller=2, zone=Zone.GRAVEYARD),
+            printed_card('Grizzly Bears', id='bear-grave', owner=2, controller=2, zone=Zone.GRAVEYARD),
+            printed_card('Grizzly Bears', id='opponent-grave', owner=1, controller=1, zone=Zone.GRAVEYARD),
         )
         for card in cards:
             state.cards[card.id] = card
             getattr(state.players[card.owner], card.zone.value).append(card.id)
         return publish(state, deck)
     if face_kind == "modal_two_targets":
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=913)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1036,16 +936,9 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.step = Step.PRECOMBAT_MAIN
         state.players[2].mana_pool["U"] = 4
         cards = (
-            CardInstance(id="cryptic", name="Cryptic Command", owner=2, controller=2,
-                         zone=Zone.HAND, types=["Instant"], mana_cost="{1}{U}{U}{U}",
-                         oracle_text=("Choose two —\n• Counter target spell.\n"
-                                      "• Return target permanent to its owner's hand.\n"
-                                      "• Tap all creatures your opponents control.\n• Draw a card.")),
-            CardInstance(id="bolt", name="Lightning Bolt", owner=1, controller=1,
-                         zone=Zone.STACK, types=["Instant"], mana_cost="{R}",
-                         oracle_text="Lightning Bolt deals 3 damage to any target."),
-            CardInstance(id="forest", name="Forest", owner=1, controller=1,
-                         zone=Zone.BATTLEFIELD, types=["Land"], type_line="Basic Land — Forest"),
+            printed_card('Cryptic Command', id='cryptic', owner=2, controller=2, zone=Zone.HAND),
+            printed_card('Lightning Bolt', id='bolt', owner=1, controller=1, zone=Zone.STACK),
+            printed_card('Forest', id='forest', owner=1, controller=1, zone=Zone.BATTLEFIELD),
         )
         for card in cards:
             state.cards[card.id] = card
@@ -1054,28 +947,21 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.stack.append(StackItem("bolt-stack", "bolt", 1, "Lightning Bolt", "deal_damage", {"target_player": 2, "amount": 3, '__announced_stack_kind': 'spell'}))
         return publish(state, deck)
     if face_kind == "modal_targetless":
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=912)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.players[2].mana_pool.update({"U": 1, "R": 1})
-        card = CardInstance(
-            id="izzet-charm", name="Izzet Charm", owner=2, controller=2,
-            zone=Zone.HAND, types=["Instant"], mana_cost="{U}{R}",
-            oracle_text=(
-                "Choose one —\n"
-                "• Counter target noncreature spell unless its controller pays {2}.\n"
-                "• Izzet Charm deals 2 damage to target creature.\n"
-                "• Draw two cards, then discard two cards."
-            ),
-        )
+        card = printed_card('Izzet Charm', id='izzet-charm', owner=2, controller=2, zone=Zone.HAND)
         state.cards[card.id] = card
         state.players[2].hand.append(card.id)
         return publish(state, deck)
     if face_kind == "player_hexproof":
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=911)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1083,20 +969,18 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.step = Step.PRECOMBAT_MAIN
         state.players[1].mana_pool["R"] = 1
         cards = (
-            CardInstance(id="bolt", name="Shock", owner=1, controller=1, zone=Zone.HAND,
-                         types=["Instant"], mana_cost="{R}", oracle_text="Shock deals 2 damage to any target."),
-            CardInstance(id="shield", name="Leyline of Sanctity", owner=2, controller=2,
-                         zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text="You have hexproof."),
-            CardInstance(id="bear", name="Grizzly Bears", owner=2, controller=2,
-                         zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2),
+            printed_card('Shock', id='bolt', owner=1, controller=1, zone=Zone.HAND),
+            printed_card('Leyline of Sanctity', id='shield', owner=2, controller=2, zone=Zone.BATTLEFIELD),
+            printed_card('Grizzly Bears', id='bear', owner=2, controller=2, zone=Zone.BATTLEFIELD),
         )
         for card in cards:
             state.cards[card.id] = card
             getattr(state.players[card.controller], card.zone.value).append(card.id)
         return publish(state, deck)
     if face_kind == "damage_trigger":
+        from tests.browser_positive83_canonical import card as printed_card, entry
         from effects.handlers import sacrifice
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=603)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1105,14 +989,9 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.trigger_order_choice_required = True
         state.trigger_order_choice_players = {1}
         cards = (
-            CardInstance(id="devil", name="Mayhem Devil", owner=1, controller=1,
-                         zone=Zone.BATTLEFIELD, types=["Creature"], power=3, toughness=3,
-                         oracle_text="Whenever a player sacrifices a permanent, this creature deals 1 damage to any target."),
-            CardInstance(id="chalice", name="Everflowing Chalice", owner=1, controller=1,
-                         zone=Zone.BATTLEFIELD, types=["Artifact"]),
-            CardInstance(id="elf", name="Llanowar Elves", owner=2, controller=2,
-                         zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
-                         oracle_text="{T}: Add {G}."),
+            printed_card('Mayhem Devil', id='devil', owner=1, controller=1, zone=Zone.BATTLEFIELD),
+            printed_card('Everflowing Chalice', id='chalice', owner=1, controller=1, zone=Zone.BATTLEFIELD),
+            printed_card('Llanowar Elves', id='elf', owner=2, controller=2, zone=Zone.BATTLEFIELD),
         )
         for card in cards:
             state.cards[card.id] = card
@@ -1120,7 +999,8 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         sacrifice(state, 1, {"target_card_id": "chalice"})
         return publish(state, deck)
     if face_kind == "variable_life_x":
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=46)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1128,25 +1008,22 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.step = Step.PRECOMBAT_MAIN
         state.players[2].mana_pool.update({"B": 1, "C": 2})
         cards = [
-            CardInstance(id="deluge", name="Toxic Deluge", owner=2, controller=2,
-                         zone=Zone.HAND, types=["Sorcery"], mana_cost="{2}{B}",
-                         oracle_text="As an additional cost to cast this spell, pay X life.\nAll creatures get -X/-X until end of turn."),
-            CardInstance(id="own-four", name="Giant Spider", owner=2, controller=2,
-                         zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=4, oracle_text="Reach"),
-            CardInstance(id="their-two", name="Grizzly Bears", owner=1, controller=1,
-                         zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2),
+            printed_card("Toxic Deluge", id="deluge", owner=2, controller=2,
+                         zone=Zone.HAND),
+            printed_card("Giant Spider", id="own-four", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD),
+            printed_card("Grizzly Bears", id="their-two", owner=1, controller=1,
+                         zone=Zone.BATTLEFIELD),
         ]
         for card in cards:
             state.cards[card.id] = card
             getattr(state.players[card.owner], card.zone.value).append(card.id)
         return publish(state, deck)
     if face_kind in {"conditional_land", "conditional_land_effect"}:
-        import json
+        from tests.browser_positive83_canonical import entry
         from effects.handlers import put_land_from_hand
-        seed = json.loads((Path(__file__).resolve().parents[1] / "card_data/builtin_oracle_seed.json").read_text())["cards"]["Sacred Foundry"]
-        deck = [{"quantity": 1, "card_name": seed["name"], "type_line": seed["type_line"], "oracle_text": seed["oracle_text"]},
-                {"quantity": 59, "card_name": "Island", "type_line": "Basic Land - Island"}]
-        opponent = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        deck = [entry("Sacred Foundry", 1), entry("Island", 59)]
+        opponent = [entry("Island", 60)]
         state = MatchFactory.from_decks(opponent, deck, seed=45)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1159,57 +1036,52 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             state.cards[cid].zone = Zone.HAND
         if face_kind == "conditional_land_effect":
             put_land_from_hand(state, 2, {"land_id": cid, "tapped": False})
-        return publish(state, deck)
+        return publish(state, deck, mainboards={1: opponent, 2: deck})
     if face_kind == "draw_cap":
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=37)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
-        spirit = CardInstance(
-            id="draw-spirit", name="Spirit of the Labyrinth", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Enchantment", "Creature"],
-            oracle_text="Each player can't draw more than one card each turn.",
-            power=3, toughness=1,
-        )
-        spell = CardInstance(
-            id="draw-divination", name="Divination", owner=2, controller=2,
-            zone=Zone.HAND, types=["Sorcery"], mana_cost="{2}{U}",
-            oracle_text="Draw two cards.",
-        )
+        spirit = printed_card("Spirit of the Labyrinth", id="draw-spirit", owner=1, controller=1,
+                              zone=Zone.BATTLEFIELD)
+        spell = printed_card("Divination", id="draw-divination", owner=2, controller=2,
+                             zone=Zone.HAND)
         state.cards.update({spirit.id: spirit, spell.id: spell})
         state.players[1].battlefield.append(spirit.id)
         state.players[2].hand.append(spell.id)
         state.players[2].mana_pool.update({"C": 2, "U": 1})
         return publish(state, deck)
     if face_kind == "nonland_mana":
+        from tests.browser_positive83_canonical import card as printed_card, entry
         from card_data.token_definitions import named_artifact_token
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=36)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         sources = (
-            CardInstance(id="mana-creature", name="Llanowar Elves", owner=2, controller=2,
-                         zone=Zone.BATTLEFIELD, types=["Creature"], oracle_text="{T}: Add {G}.",
-                         power=1, toughness=1, summoning_sick=False),
+            printed_card("Llanowar Elves", id="mana-creature", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD, summoning_sick=False),
             CardInstance(id="mana-treasure", name="Treasure", owner=2, controller=2,
                          zone=Zone.BATTLEFIELD, types=["Artifact", "Token"], is_token=True,
                          oracle_text=named_artifact_token("Treasure")["oracle_text"]),
-            CardInstance(id="mana-ring", name="Sol Ring", owner=2, controller=2,
-                         zone=Zone.BATTLEFIELD, types=["Artifact"], oracle_text="{T}: Add {C}{C}."),
-            CardInstance(id="mana-lotus", name="Gilded Lotus", owner=2, controller=2,
-                         zone=Zone.BATTLEFIELD, types=["Artifact"], oracle_text="{T}: Add three mana of any one color."),
+            printed_card("Sol Ring", id="mana-ring", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD),
+            printed_card("Gilded Lotus", id="mana-lotus", owner=2, controller=2,
+                         zone=Zone.BATTLEFIELD),
         )
         for card in sources:
             state.cards[card.id] = card
             state.players[2].battlefield.append(card.id)
         return publish(state, deck)
     if face_kind == "draw_replacement":
+        from tests.browser_positive83_canonical import card as printed_card, entry
         from effects.registry import resolve_effect
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=35)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1218,94 +1090,65 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.step = Step.DRAW
         state.replacement_choice_required = True
         state.replacement_choice_players = {2}
-        reflection = CardInstance(
-            id="reflection", name="Thought Reflection", owner=2, controller=2,
-            zone=Zone.BATTLEFIELD, types=["Enchantment"],
-            oracle_text="If you would draw a card, draw two cards instead.",
-        )
-        dredger = CardInstance(
-            id="stinkweed", name="Stinkweed Imp", owner=2, controller=2,
-            zone=Zone.GRAVEYARD, types=["Creature"],
-            oracle_text="Flying\nWhenever this creature deals combat damage to a creature, destroy that creature.\nDredge 5 (If you would draw a card, you may mill five cards instead. If you do, return this card from your graveyard to your hand.)",
-        )
+        reflection = printed_card("Thought Reflection", id="reflection", owner=2, controller=2,
+                                  zone=Zone.BATTLEFIELD)
+        dredger = printed_card("Stinkweed Imp", id="stinkweed", owner=2, controller=2,
+                               zone=Zone.GRAVEYARD)
         state.cards.update({reflection.id: reflection, dredger.id: dredger})
         state.players[2].battlefield.append(reflection.id)
         state.players[2].graveyard.append(dredger.id)
         resolve_effect(state, 2, "draw_cards", {"amount": 1})
         return publish(state, deck)
     if face_kind == "company":
+        from tests.browser_positive83_canonical import card as printed_card, company_decks
         from rules_engine.ability_model import build_ability_spec
         from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
-        deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
-        state = MatchFactory.from_decks(deck, deck, seed=34)
+        deck_a, deck_b = company_decks()
+        state = MatchFactory.from_decks(deck_a, deck_b, seed=34)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.replacement_choice_required = True
         state.replacement_choice_players = {2}
-        for cid, name in zip(state.players[2].library[-6:],
-            ["Grizzly Bears", "Llanowar Elves", "Island", "Plains", "Swamp", "Mountain"]):
-            card = state.cards[cid]
-            card.name = name
-            if name in {"Grizzly Bears", "Llanowar Elves"}:
-                card.types = ["Creature"]
-                card.type_line = "Creature"
-                card.mana_cost = "{1}{G}" if name == "Grizzly Bears" else "{G}"
-                card.power = card.toughness = 2 if name == "Grizzly Bears" else 1
-            else:
-                card.types = ["Land"]
-                card.type_line = f"Basic Land - {name}"
-        spell = CardInstance(
-            id="company", name="Collected Company", owner=2, controller=2,
-            zone=Zone.STACK, types=["Instant"],
-            oracle_text="Look at the top six cards of your library. Put up to two creature cards with mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
-        )
+        spell = printed_card("Collected Company", id="company", owner=2, controller=2,
+                             zone=Zone.STACK)
         state.cards[spell.id] = spell
         spec = build_ability_spec(state, spell, 2)
         add_to_stack(state, spell.id, 2, spell.name, spec.effect.key, spec.effect.payload)
         resolve_top_of_stack(state)
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck_a, mainboards={1: deck_a, 2: deck_b})
     if face_kind == "iteration":
+        from tests.browser_positive83_canonical import scene_decks
         from effects.registry import resolve_effect
-        deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
-        state = MatchFactory.from_decks(deck, deck, seed=32)
+        deck, opponent = scene_decks(32, "Forest", {2: {51: "Lightning Bolt", 52: "Counterspell", 53: "Llanowar Elves"}})
+        state = MatchFactory.from_decks(deck, opponent, seed=32)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.replacement_choice_required = True
         state.replacement_choice_players = {2}
-        for cid, name, cost, types in zip(state.players[2].library[-3:],
-            ["Lightning Bolt", "Counterspell", "Llanowar Elves"],
-            ["{R}", "{U}{U}", "{G}"], [["Instant"], ["Instant"], ["Creature"]]):
-            card = state.cards[cid]
-            card.name, card.mana_cost, card.types = name, cost, types
         resolve_effect(state, 2, "look_top_choose", {"top_n": 3})
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind == "search":
+        from tests.browser_positive83_canonical import scene_decks
         from effects.registry import resolve_effect
-        deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
-        state = MatchFactory.from_decks(deck, deck, seed=33)
+        deck, opponent = scene_decks(33, "Forest", {2: {52: "Llanowar Elves", 53: "Grizzly Bears"}})
+        state = MatchFactory.from_decks(deck, opponent, seed=33)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.replacement_choice_required = True
         state.replacement_choice_players = {2}
-        for cid, name, cost, power in zip(state.players[2].library[-2:],
-            ["Llanowar Elves", "Grizzly Bears"], ["{G}", "{1}{G}"], [1, 2]):
-            card = state.cards[cid]
-            card.name, card.mana_cost, card.types = name, cost, ["Creature"]
-            card.type_line = "Creature"
-            card.power = card.toughness = power
         resolve_effect(state, 2, "search_library", {"contains": "creature", "destination": "hand", "count": 1, "shuffle": True})
-        return publish(state, deck, capture_original_stock=False)
+        return publish(state, deck, mainboards={1: deck, 2: opponent})
     if face_kind in {"bo3", "bo3_sideboard", "bo3_draw"}:
-        deck = ([{"quantity": 45, "card_name": "Island", "type_line": "Basic Land - Island"},
-                 {"quantity": 15, "card_name": "Mountain", "type_line": "Basic Land - Mountain"}]
+        from tests.browser_positive83_canonical import entry, raw_card
+        deck = ([entry("Island", 45), entry("Mountain", 15)]
                 if face_kind == "bo3_sideboard" else
-                [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}])
+                [entry("Island", 60)])
         state = MatchFactory.from_decks(deck, deck, seed=31)
         state.winner = 2 if face_kind == "bo3_sideboard" else (0 if face_kind == "bo3_draw" else 1)
         state.score = {1: 0, 2: 1} if face_kind == "bo3_sideboard" else {1: 1, 2: 0}
@@ -1316,26 +1159,21 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         if face_kind == "bo3_draw":
             match.play_draw_chooser = 2
         if face_kind == "bo3_sideboard":
-            match.sideboards[1] = [{"quantity": 15, "card_name": "Forest"}]
+            match.sideboards[1] = [entry("Forest", 15)]
         with Session(engine) as session:
             repo = Repository(session)
             if face_kind == "bo3_sideboard":
                 # Exercise real hydration without an incidental Scryfall request
                 # exceeding the browser's action timeout on an empty cache.
-                import json
-                rows = json.loads((Path(__file__).parent / "fixtures/sideboard_basics.json").read_text())
-                for row in rows:
-                    repo.upsert_card({
-                        **{key: row[key] for key in ("name", "scryfall_id", "oracle_text", "mana_cost", "type_line", "layout")},
-                        "colors": ",".join(row["colors"]),
-                        "image_uri": "/card-images/generic-token-creature.svg",
-                    })
+                from card_data.sync import ScryfallSyncService
+                for name in ("Island", "Mountain", "Forest"):
+                    repo.upsert_card(ScryfallSyncService._normalize_payload(
+                        raw_card(name), "/card-images/generic-token-creature.svg"))
             _persist_active_match(repo, match)
         return get_match(state.id)
     if face_kind in {"trigger", "cast_trigger"}:
-        import json
-        rows = json.loads((Path(__file__).parent / "fixtures/permanent_spell_context.json").read_text())
-        deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=17)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1351,55 +1189,35 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             ("ring", "Sol Ring", 2, Zone.BATTLEFIELD),
             ("copter", "Smuggler's Copter", 1, Zone.BATTLEFIELD),
         ):
-            row = rows[name]
-            card = CardInstance(
-                id=cid, name=name, owner=owner, controller=owner, zone=zone,
-                types=row["type_line"].split(" — ")[0].split(),
-                type_line=row["type_line"], oracle_text=row["oracle_text"],
-                mana_cost=row["mana_cost"],
-                power=int(row["power"]) if row["power"] else None,
-                toughness=int(row["toughness"]) if row["toughness"] else None,
-            )
+            card = printed_card(name, id=cid, owner=owner, controller=owner, zone=zone)
             state.cards[cid] = card
             getattr(state.players[owner], zone.value).append(cid)
         return publish(state, deck)
     if face_kind == "alternative_target":
-        from card_data.seed_cards import seed_card_payload
+        from tests.browser_positive83_canonical import card as printed_card, entry
 
-        deck = [{"quantity": 60, "card_name": "Mountain"}]
+        deck = [entry("Mountain", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=23)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 2
         state.step = Step.PRECOMBAT_MAIN
         state.players[2].mana_pool["R"] = 1
-        spell = CardInstance(
-            id="lava-spike", name="Lava Spike", owner=2, controller=2, zone=Zone.HAND,
-            types=["Sorcery"], mana_cost="{R}",
-            oracle_text="Lava Spike deals 3 damage to target player or planeswalker.",
-        )
-        walker = CardInstance(
-            id="teferi", name="Teferi, Hero of Dominaria", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Planeswalker"], loyalty=4,
-            type_line="Legendary Planeswalker — Teferi",
-            oracle_text=seed_card_payload("Teferi, Hero of Dominaria")["oracle_text"],
-        )
+        spell = printed_card('Lava Spike', id='lava-spike', owner=2, controller=2, zone=Zone.HAND)
+        walker = printed_card('Teferi, Hero of Dominaria', id='teferi', owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards.update({spell.id: spell, walker.id: walker})
         state.players[2].hand.append(spell.id)
         state.players[1].battlefield.append(walker.id)
         return publish(state, deck)
     if face_kind == "first_strike_window":
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=37)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.DECLARE_BLOCKERS
-        swiftblade = CardInstance(
-            id="swiftblade", name="Boros Swiftblade", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=2,
-            keywords=["double strike"], oracle_text="Double strike",
-        )
+        swiftblade = printed_card('Boros Swiftblade', id='swiftblade', owner=1, controller=1, zone=Zone.BATTLEFIELD)
         state.cards[swiftblade.id] = swiftblade
         state.players[1].battlefield.append(swiftblade.id)
         state.attackers = [swiftblade.id]
@@ -1408,7 +1226,8 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.blockers_declared = True
         return publish(state, deck)
     if face_kind == "combat_damage_assignment":
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=83)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1416,22 +1235,20 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.active_player = state.priority_player = 1
         state.step = Step.DECLARE_BLOCKERS
         state.blockers_declared = True
-        for cid, name, owner, power, toughness in (
-            ("courser", "Centaur Courser", 1, 3, 3),
-            ("bears", "Grizzly Bears", 2, 2, 2),
-            ("giant", "Hill Giant", 2, 3, 3),
+        for cid, name, owner in (
+            ("courser", "Centaur Courser", 1),
+            ("bears", "Grizzly Bears", 2),
+            ("giant", "Hill Giant", 2),
         ):
-            card = CardInstance(
-                id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
-                types=["Creature"], power=power, toughness=toughness, summoning_sick=False,
-            )
+            card = printed_card(name, id=cid, owner=owner, controller=owner, zone=Zone.BATTLEFIELD, summoning_sick=False)
             state.cards[cid] = card
             state.players[owner].battlefield.append(cid)
         state.attackers = ["courser"]
         state.blocks = {"courser": ["bears", "giant"]}
         return publish(state, deck)
     if face_kind == "shared_trample":
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=89)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1439,23 +1256,20 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.active_player = state.priority_player = 1
         state.step = Step.DECLARE_BLOCKERS
         state.blockers_declared = True
-        for cid, name, owner, power, toughness, keywords, oracle in (
-            ("first", "Charging Monstrosaur", 1, 5, 5, ["trample", "haste"], "Trample, haste"),
-            ("second", "Charging Monstrosaur", 1, 5, 5, ["trample", "haste"], "Trample, haste"),
-            ("guard", "Palace Guard", 2, 1, 4, [], "Palace Guard can block any number of creatures."),
+        for cid, name, owner in (
+            ("first", "Charging Monstrosaur", 1),
+            ("second", "Charging Monstrosaur", 1),
+            ("guard", "Palace Guard", 2),
         ):
-            card = CardInstance(
-                id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
-                types=["Creature"], power=power, toughness=toughness,
-                keywords=keywords, oracle_text=oracle, summoning_sick=False,
-            )
+            card = printed_card(name, id=cid, owner=owner, controller=owner, zone=Zone.BATTLEFIELD, summoning_sick=False)
             state.cards[cid] = card
             state.players[owner].battlefield.append(cid)
         state.attackers = ["first", "second"]
         state.blocks = {"first": ["guard"], "second": ["guard"]}
         return publish(state, deck)
     if face_kind == "banding_damage":
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=97)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1463,55 +1277,46 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
         state.active_player = state.priority_player = 1
         state.step = Step.DECLARE_BLOCKERS
         state.blockers_declared = True
-        for cid, name, owner, power, toughness, keywords in (
-            ("courser", "Centaur Courser", 1, 3, 3, []),
-            ("hero", "Benalish Hero", 2, 1, 1, ["banding"]),
-            ("bears", "Grizzly Bears", 2, 2, 2, []),
+        for cid, name, owner in (
+            ("courser", "Centaur Courser", 1),
+            ("hero", "Benalish Hero", 2),
+            ("bears", "Grizzly Bears", 2),
         ):
-            card = CardInstance(
-                id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
-                types=["Creature"], power=power, toughness=toughness,
-                keywords=keywords, summoning_sick=False,
-            )
+            card = printed_card(name, id=cid, owner=owner, controller=owner, zone=Zone.BATTLEFIELD, summoning_sick=False)
             state.cards[cid] = card
             state.players[owner].battlefield.append(cid)
         state.attackers = ["courser"]
         state.blocks = {"courser": ["hero", "bears"]}
         return publish(state, deck)
     if face_kind == "attacking_band":
-        deck = [{"quantity": 60, "card_name": "Island"}]
+        from tests.browser_positive83_canonical import card as printed_card, entry
+        deck = [entry("Island", 60)]
         state = MatchFactory.from_decks(deck, deck, seed=99)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
         state.active_player = state.priority_player = 1
         state.step = Step.DECLARE_ATTACKERS
-        for cid, name, owner, power, toughness, keywords in (
-            ("hero", "Benalish Hero", 1, 1, 1, ["banding"]),
-            ("angel", "Serra Angel", 1, 4, 4, ["flying", "vigilance"]),
-            ("elf", "Llanowar Elves", 1, 1, 1, []),
-            ("bears", "Grizzly Bears", 2, 2, 2, []),
+        for cid, name, owner in (
+            ("hero", "Benalish Hero", 1),
+            ("angel", "Serra Angel", 1),
+            ("elf", "Llanowar Elves", 1),
+            ("bears", "Grizzly Bears", 2),
         ):
-            card = CardInstance(
-                id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
-                types=["Creature"], power=power, toughness=toughness,
-                keywords=keywords, summoning_sick=False,
-            )
+            card = printed_card(name, id=cid, owner=owner, controller=owner, zone=Zone.BATTLEFIELD, summoning_sick=False)
             state.cards[cid] = card
             state.players[owner].battlefield.append(cid)
         return publish(state, deck)
     if modal or face_kind:
-        import json
+        from tests.browser_positive83_canonical import card as printed_card, entry
         if face_kind == "split":
-            raw = json.loads((Path(__file__).parent / "fixtures/split_cards.json").read_text())[0]
+            name = "Fire // Ice"
         elif face_kind == "aftermath":
-            raw = json.loads((Path(__file__).parent / "fixtures/aftermath_cards.json").read_text())[0]
+            name = "Spring // Mind"
         elif face_kind in {"multi_adventure", "multi_adventure_copy"}:
-            raw = json.loads((Path(__file__).parent / "fixtures/multi_target_adventure.json").read_text())
+            name = "Gollum, Silent Slinker // Meager Meal"
         else:
             name = {"land": "Bala Ged Recovery // Bala Ged Sanctuary", "adventure": "Bonecrusher Giant // Stomp"}.get(face_kind, "Wandering Archaic // Explore the Vastlands")
-            raw = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())[name]
-        characteristics = {**raw, "oracle_text": raw["card_faces"][0]["oracle_text"]} if face_kind in {"split", "aftermath"} else {**raw["card_faces"][0], "layout": raw["layout"], "card_faces": raw["card_faces"]}
-        deck = [{"quantity": 60, "card_name": raw["name"], **characteristics}]
+        deck = [entry(name, 60)]
         state = MatchFactory.from_decks(deck, deck, seed=9)
         state.pregame_pending = False
         state.kept_hands = {1, 2}
@@ -1527,8 +1332,7 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
             state.players[2].mana_pool["R"] = 4
         if face_kind == "split":
             state.players[2].mana_pool.update({"C": 1, "R": 1, "U": 1})
-            island = CardInstance("split-target-island", "Island", 1, 1, Zone.BATTLEFIELD,
-                                  ["Land"], type_line="Basic Land — Island", oracle_text="{T}: Add {U}.")
+            island = printed_card('Island', id='split-target-island', owner=1, controller=1, zone=Zone.BATTLEFIELD)
             state.cards[island.id] = island
             state.players[1].battlefield.append(island.id)
         if face_kind in {"multi_adventure", "multi_adventure_copy"}:
@@ -1551,7 +1355,8 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
                 })
                 copy_spell(state, 2, {"target_stack_id": state.stack[-1].id, "may_choose_new_targets": True})
         return publish(state, deck)
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
+    from tests.browser_positive83_canonical import card as printed_card, entry
+    deck = [entry("Island", 60)]
     state = MatchFactory.from_decks(deck, deck, seed=15)
     if pregame:
         state.kept_hands = {1}
@@ -1564,19 +1369,41 @@ def fixture(pregame: bool = False, modal: bool = False, modal_mana: int = 3, fac
     state.players[2].hand = []
     state.players[2].mana_pool.update({"G": 3, "R": 3})
 
-    def add(cid, name, zone, types, cost="", text="", power=None, toughness=None, type_line=""):
-        card = CardInstance(id=cid, name=name, owner=2, controller=2, zone=zone, types=types, mana_cost=cost, oracle_text=text, power=power, toughness=toughness, type_line=type_line.replace(" - ", " \u2014 "), summoning_sick=False)
+    def add(cid, name, zone):
+        card = printed_card(name, id=cid, owner=2, controller=2, zone=zone, summoning_sick=False)
         state.cards[cid] = card
         getattr(state.players[2], zone.value).append(cid)
         return card
 
-    add("forest", "Forest", Zone.HAND, ["Land"], type_line="Basic Land - Forest")
-    add("pyromancer", "Prodigal Pyromancer", Zone.BATTLEFIELD, ["Creature"], "{2}{R}", "{T}: Prodigal Pyromancer deals 1 damage to any target.", 1, 1)
-    add("bear", "Grizzly Bears", Zone.BATTLEFIELD, ["Creature"], "{1}{G}", power=2, toughness=2)
-    add("copter", "Smuggler's Copter", Zone.BATTLEFIELD, ["Artifact"], "{2}", "Flying\nCrew 1", 3, 3, "Artifact - Vehicle")
-    add("shock", "Shock", Zone.EXILE, ["Instant"], "{R}", "Shock deals 2 damage to any target.")
+    add("forest", "Forest", Zone.HAND)
+    add("pyromancer", "Prodigal Pyromancer", Zone.BATTLEFIELD)
+    add("bear", "Grizzly Bears", Zone.BATTLEFIELD)
+    add("copter", "Smuggler's Copter", Zone.BATTLEFIELD)
+    add("shock", "Shock", Zone.EXILE)
     state.players[2].exile_play_until["shock"] = state.turn
-    walker = add("walker", "Realmwalker", Zone.BATTLEFIELD, ["Creature"], "{2}{G}", "You may cast creature spells of the chosen type from the top of your library.", 2, 3)
+    walker = add("walker", "Realmwalker", Zone.BATTLEFIELD)
+    walker.chosen_creature_type = "Elf"
+    add("elf", "Llanowar Elves", Zone.LIBRARY)
+    return publish(state, deck)
+    state.pregame_pending = False
+    state.active_player = state.priority_player = 2
+    state.step = Step.PRECOMBAT_MAIN
+    state.players[2].hand = []
+    state.players[2].mana_pool.update({"G": 3, "R": 3})
+
+    def add(cid, name, zone):
+        card = printed_card(name, id=cid, owner=2, controller=2, zone=zone, summoning_sick=False)
+        state.cards[cid] = card
+        getattr(state.players[2], zone.value).append(cid)
+        return card
+
+    add("forest", "Forest", Zone.HAND)
+    add("pyromancer", "Prodigal Pyromancer", Zone.BATTLEFIELD)
+    add("bear", "Grizzly Bears", Zone.BATTLEFIELD)
+    add("copter", "Smuggler's Copter", Zone.BATTLEFIELD)
+    add("shock", "Shock", Zone.EXILE)
+    state.players[2].exile_play_until["shock"] = state.turn
+    walker = add("walker", "Realmwalker", Zone.BATTLEFIELD)
     walker.chosen_creature_type = "Elf"
     add("elf", "Llanowar Elves", Zone.LIBRARY, ["Creature"], "{G}", "{T}: Add {G}.", 1, 1, "Creature - Elf Druid")
     return publish(state, deck)
@@ -1597,14 +1424,14 @@ def fixture_history():
     return {'matches': len(ACTIVE_MATCHES)}
 
 
-def publish(state, deck, *, capture_original_stock=True):
+def publish(state, deck, *, capture_original_stock=True, mainboards=None):
     if type(capture_original_stock) is not bool:
         raise TypeError('capture_original_stock must be bool')
     # Explicitly repurposed Factory cards cannot certify original printed stock.
     if capture_original_stock is False:
         state.sideboard_facts = {}
     ACTIVE_MATCHES.clear()
-    ACTIVE_MATCHES[state.id] = MatchController(state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={1: AIAgent(), 2: AIAgent()}, mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck}, sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False, match_complete=False, best_of=3)
+    ACTIVE_MATCHES[state.id] = MatchController(state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={1: AIAgent(), 2: AIAgent()}, mode="human_vs_human", deck_ids=(None, None), mainboards={1: deck, 2: deck} if mainboards is None else mainboards, sideboards={1: [], 2: []}, game_number=1, current_game_recorded=False, match_complete=False, best_of=3)
     with Session(engine) as session:
         _persist_active_match(Repository(session), ACTIVE_MATCHES[state.id])
     return get_match(state.id)

@@ -20,7 +20,7 @@ const networkErrors = new Set(('net::ERR_FAILED net::ERR_ABORTED net::ERR_TIMED_
   + 'net::ERR_NETWORK_CHANGED net::ERR_ADDRESS_UNREACHABLE net::ERR_BLOCKED_BY_CLIENT net::ERR_BLOCKED_BY_RESPONSE '
   + 'net::ERR_EMPTY_RESPONSE').split(' '));
 
-function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal, requestSignals) {
+function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal, requestSignals, causal = false) {
   const front = new URL(frontend).origin, back = new URL(backend).origin;
   const events = [], requests = new Map(), frames = new Map(), loaders = new Map();
   const bidiContexts = new Map(), bidiRealms = new Map();
@@ -38,13 +38,24 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal,
   let omittedEvents = 0, unmatchedEvents = 0, invalidEvents = 0;
   let requestOverflow = 0, correlationOverflow = 0, unmatchedInitiators = 0, unknownCategories = 0;
   let webSocketOverflow = 0, ignoredWebSockets = 0;
+  let localOrdinal = 0;
   const numeric = value => typeof value === 'number' && Number.isFinite(value) ? value : null;
   const category = (value, known) => {
     if (value === undefined) return null;
     if (known.has(value)) return value;
     unknownCategories++; return 'other';
   };
-  function record(row) { if (events.length < 64) events.push(row); else omittedEvents++; }
+  function record(row) {
+    if (events.length >= 64) {
+      // Passive additions cannot displace the original first-64 Network/Page observations.
+      const disposable = causal && !row.event.startsWith('fetch-')
+        ? events.findIndex(event => event.event.startsWith('fetch-')) : -1;
+      omittedEvents++;
+      if (disposable < 0) return;
+      events.splice(disposable, 1);
+    }
+    events.push(causal ? {...row, localOrdinal: ++localOrdinal} : row);
+  }
   function ordinal(map, value) {
     if (typeof value !== 'string' || !value || value.length > 256) return null;
     if (!map.has(value)) {
@@ -278,6 +289,8 @@ function browserMetadata(frontend, backend, networkOrdinal, knownNetworkOrdinal,
     }
   }
   return {
+    recordDiagnosticEvent: record,
+    eventWatermark: () => localOrdinal,
     observe(message, source) { try { requestSignals?.observe(message, source); observe(message, source); } catch { invalidEvents++; } },
     snapshot() { return { events: structuredClone(events), omittedEvents, unmatchedEvents, invalidEvents,
       requestOverflow, correlationOverflow, unmatchedInitiators, unknownCategories,
@@ -361,13 +374,69 @@ function networkCors(headers, frontend) {
 export function traceStartRecoveryResponses(command, handler, frontend,
   report = value => console.error('START_RECOVERY_RESPONSE_TRACE', JSON.stringify(value)), metadataOptions) {
   const responses = [], requests = new Map(), networks = new Map();
+  const causal = metadataOptions?.causal === true;
   const metadata = metadataOptions ? browserMetadata(frontend, metadataOptions.backend,
-    value => ordinal(networks, value), value => networks.get(value) ?? null, metadataOptions.requestSignals) : null;
+    value => ordinal(networks, value), value => networks.get(value) ?? null, metadataOptions.requestSignals, causal) : null;
   let omittedResponses = 0, reported = false, pendingCommands = 0;
+  const owners = new Map(), sessions = new Map(), scopedRequests = new Map(), wirePauses = new WeakMap();
+  let enableGeneration = 0, generationState = 'unknown', unknownBindings = 0, wirePausesSeen = 0;
+  let activeCallbacks = 0, firstFailureEventCount = null;
+  const unknown = () => { unknownBindings = Math.min(65535, unknownBindings + 1); };
+  const token = value => typeof value === 'string' && value.length > 0 && value.length <= 256;
+  const summary = () => ({owners: owners.size, sessions: sessions.size, requests: scopedRequests.size,
+    enableGeneration, generationState, unknownBindings, nativeWireCommandIdentity: 'unknown'});
+  function record(row) {
+    if (causal) try { metadata.recordDiagnosticEvent(row); } catch { unknown(); }
+  }
+  function observeControl(method, acknowledgment) {
+    if (!['Fetch.enable', 'Fetch.disable'].includes(method) || !['sent', 'accepted'].includes(acknowledgment)) return;
+    if (method === 'Fetch.enable' && acknowledgment === 'sent') {
+      enableGeneration = enableGeneration !== null && enableGeneration < 16 ? enableGeneration + 1 : null;
+      generationState = 'enable-pending';
+    } else if (method === 'Fetch.enable' && generationState === 'enable-pending') generationState = 'enabled';
+    else if (method === 'Fetch.disable' && acknowledgment === 'sent') generationState = 'disable-pending';
+    else if (method === 'Fetch.disable' && generationState === 'disable-pending') generationState = 'disabled';
+    else { unknown(); return; }
+    record({event: 'fetch-control', method, acknowledgment, enableGeneration, generationState});
+  }
+  function observePause(message, source) {
+    if (message?.method !== 'Fetch.requestPaused' || !message.params || typeof message.params !== 'object') return;
+    // Only a direct owned-page transport supplies ownership; Network events cannot supply it.
+    const native = message.protocol === undefined && source?.protocol === 'cdp' && token(source.targetId);
+    const ownerOrdinal = native ? ordinal(owners, source.targetId) : null;
+    const sessionScope = !native ? 'unknown' : message.sessionId === undefined ? 'direct'
+      : token(message.sessionId) ? 'child' : 'unknown';
+    const sessionOrdinal = sessionScope === 'child' && ownerOrdinal !== null
+      ? ordinal(sessions, JSON.stringify([ownerOrdinal, message.sessionId])) : null;
+    const binding = {ownerOrdinal, sessionScope, sessionOrdinal,
+      provenance: native && ownerOrdinal !== null && (sessionScope === 'direct' || sessionOrdinal !== null)
+        ? 'owned-wire-event' : 'unjoined'};
+    if (wirePausesSeen < 16) { wirePauses.set(message.params, binding); wirePausesSeen++; }
+    else unknown();
+  }
+  function pauseIdentity(event, row) {
+    const binding = wirePauses.get(event) ?? {ownerOrdinal: null, sessionScope: 'unknown',
+      sessionOrdinal: null, provenance: 'unjoined'};
+    wirePauses.delete(event);
+    const joined = binding.provenance === 'owned-wire-event' && enableGeneration !== null
+      && enableGeneration > 0 && token(event?.requestId);
+    const scopedRequestOrdinal = joined ? ordinal(scopedRequests, JSON.stringify([
+      binding.ownerOrdinal, binding.sessionScope, binding.sessionOrdinal, enableGeneration, event.requestId])) : null;
+    if (scopedRequestOrdinal === null) unknown();
+    const identity = {...binding, pauseOrdinal: omittedResponses === 0 ? responses.length : null,
+      enableGeneration, generationState, scopedRequestOrdinal};
+    record({event: 'fetch-pause', ...identity, resourceType: row.resourceType,
+      stage: event?.responseErrorReason !== undefined ? 'response-error'
+        : event?.responseStatusCode !== undefined ? 'response' : 'request',
+      statusPresent: event?.responseStatusCode !== undefined, errorPresent: event?.responseErrorReason !== undefined});
+    return identity;
+  }
   function reportFailure() {
     if (reported) return;
     reported = true;
+    if (causal) firstFailureEventCount = metadata.eventWatermark();
     try { report({responses: structuredClone(responses), omittedResponses, pendingCommands,
+      ...(causal ? {causal: summary(), activeCallbacks, firstFailureEventCount} : {}),
       ...(metadata ? { browserMetadata: metadata.snapshot() } : {})}); } catch { /* Preserve the original failure. */ }
   }
   function ordinal(map, value) {
@@ -386,14 +455,29 @@ export function traceStartRecoveryResponses(command, handler, frontend,
       responseError: event?.responseErrorReason === undefined ? null : errors.has(event.responseErrorReason) ? event.responseErrorReason : 'other',
       cors: cors(event?.responseHeaders, frontend), commands: [], omittedCommands: 0};
     if (responses.length < 16) responses.push(row); else omittedResponses++;
+    let identity;
+    if (causal) { activeCallbacks++; try { identity = pauseIdentity(event, row); } catch { unknown(); } }
     async function observedCommand(method, ...args) {
       const observation = {method: commands.has(method) ? method : 'other', acknowledgment: 'pending', errorCode: null};
       if (row.commands.length < 8) row.commands.push(observation); else row.omittedCommands++;
+      const commandOrdinal = row.commands.length + row.omittedCommands;
+      let requestIdBinding = 'unknown';
+      if (causal) try {
+        const id = Object.getOwnPropertyDescriptor(args[0] ?? {}, 'requestId')?.value;
+        if (token(id)) requestIdBinding = method === 'Network.getRequestPostData'
+          ? id === event.networkId ? 'network' : 'mismatch' : id === event.requestId ? 'fetch' : 'mismatch';
+      } catch { unknown(); }
+      const recordCommand = acknowledgment => {
+        if (commandOrdinal <= 8) record({event: 'fetch-command', ...identity,
+          commandOrdinal, method: observation.method, acknowledgment, errorCode: observation.errorCode, requestIdBinding});
+      };
+      recordCommand('sent');
       pendingCommands++;
       try {
         const result = await command(method, ...args);
         pendingCommands--;
         observation.acknowledgment = 'accepted';
+        recordCommand('accepted');
         return result;
       } catch (error) {
         pendingCommands--;
@@ -404,6 +488,7 @@ export function traceStartRecoveryResponses(command, handler, frontend,
             if (Number.isSafeInteger(code)) observation.errorCode = code;
           }
         } catch { /* Diagnostic parsing cannot replace the native failure. */ }
+        recordCommand('error');
         reportFailure();
         throw error;
       }
@@ -413,8 +498,25 @@ export function traceStartRecoveryResponses(command, handler, frontend,
       reportFailure();
       throw error;
     }
+    finally {
+      if (causal) { activeCallbacks--; record({event: 'fetch-callback-end', ...identity}); }
+    }
   };
   traced.reportFailure = reportFailure;
-  if (metadata) traced.observeBrowserEvent = (message, source) => metadata.observe(message, source);
+  if (metadata) traced.observeBrowserEvent = (message, source) => {
+    if (causal) try { observePause(message, source); } catch { unknown(); }
+    metadata.observe(message, source);
+  };
+  if (causal) {
+    traced.observeControl = (method, acknowledgment) => { try { observeControl(method, acknowledgment); } catch { unknown(); } };
+    traced.captureFinal = () => {
+      const snapshot = metadata.snapshot();
+      return {capture: 'point-in-time-after-failure-reads', firstFailureEventCount,
+        events: firstFailureEventCount === null ? [] : snapshot.events.filter(row => row.localOrdinal > firstFailureEventCount),
+        omittedEvents: snapshot.omittedEvents, omittedResponses, pendingCommands, activeCallbacks,
+        causal: summary(), nativeWireCommandIdentity: 'unknown',
+        ...(snapshot.requestSignalAttribution ? {requestSignalAttribution: snapshot.requestSignalAttribution} : {})};
+    };
+  }
   return traced;
 }

@@ -1,0 +1,15 @@
+{
+  "body_bytes": 5102,
+  "body_sha256": "ff0cec752805b3545a3399925b3fc3189163a0940c2fed1d280e3b9909d80786",
+  "complete_response_not_rewritten": true,
+  "contains_exact_sacrifice_creature_draw_clause": true,
+  "curl_exit": 0,
+  "end_UTC": "2026-10-17T19:35:10.783887256Z",
+  "http_status": 200,
+  "id": "aac33238-e4bd-4c72-aecc-9905232c3ab4",
+  "name": "Smothering Abomination",
+  "no_code_tests_or_gameplay_qualification": true,
+  "oracle_id": "c3db28e5-6162-4642-a1c9-a7ace0737950",
+  "start_UTC": "2026-10-17T19:35:09.538117667Z",
+  "url": "https://api.scryfall.com/cards/named?exact=Smothering%20Abomination"
+}

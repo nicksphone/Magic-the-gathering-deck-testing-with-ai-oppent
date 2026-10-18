@@ -94,7 +94,8 @@ def refresh_type_effects(card):
 def add_type_effect(state, card_id, types, *, until_end_of_turn=False, timestamp=None, source_card_id=None,
                     creature_subtypes=None, colors=None):
     card = state.cards.get(card_id)
-    if card is None or card.zone != Zone.BATTLEFIELD or not types:
+    if (card is None or card.zone != Zone.BATTLEFIELD
+            or not types and (type(types) is not list or creature_subtypes is None)):
         return
     if card.type_effect_base is None and '__crew_until_turn' in card.counters:
         card.type_effect_base = copiable_types(card)

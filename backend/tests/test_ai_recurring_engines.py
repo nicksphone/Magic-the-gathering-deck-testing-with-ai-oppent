@@ -13,6 +13,7 @@ from game_state.serializers import serialize_match_snapshot, deserialize_match_s
 from rules_engine.card_types import printed_card_types
 from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import checked_action
+from tests.browser_positive83_canonical import entry
 
 
 CARDS = {card["name"]: card for card in json.loads(
@@ -20,7 +21,7 @@ CARDS = {card["name"]: card for card in json.loads(
 
 
 def fixture():
-    deck = [{"quantity": 60, "card_name": "Swamp"}]
+    deck = [entry('Swamp', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=941)
     state.pregame_pending = False
     state.kept_hands = {1, 2}

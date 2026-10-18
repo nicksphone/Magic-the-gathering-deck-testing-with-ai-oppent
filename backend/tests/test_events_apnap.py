@@ -1,6 +1,7 @@
 from __future__ import annotations
 from tests.rules_printed_facts_e4 import canonical_card, canonical_deck_entry, raw_card, set_printed
 from tests.controlled_basic_game_support import controlled_basic_game
+from tests.smothering_sacrifice_T57 import smothering_card
 
 from game_state.state import CardInstance, MatchFactory, StackItem, Zone
 from rules_engine.events import emit_event
@@ -846,14 +847,11 @@ def test_sacrifice_emits_sacrifice_trigger_for_creature() -> None:
     state.kept_hands = {1, 2}
     state.active_player = 1
     state.players[1].battlefield = ["p1", "c1"]
-    state.cards["p1"] = CardInstance(
+    state.cards["p1"] = smothering_card(
         id="p1",
-        name="Blood Artist",
         owner=1,
         controller=1,
         zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        oracle_text="Whenever another creature you control is sacrificed, draw a card.",
     )
     state.cards["c1"] = CardInstance(
         id="c1",

@@ -69,6 +69,113 @@ def serialize_card_view(state: MatchState, cid: str) -> dict:
     }
 
 
+def _card_snapshot(card):
+    from knowledge.service import copy_snapshot
+    return {
+        "id": card.id,
+        "name": card.name,
+        "owner": card.owner,
+        "controller": card.controller,
+        "zone": card.zone.value,
+        **({'control_effect_base': card.control_effect_base,
+            'control_effects': deepcopy(card.control_effects)}
+           if card.control_effect_base is not None else {}),
+        "types": list(card.types),
+        "is_token": is_token_card(card),
+        "mana_cost": card.mana_cost,
+        "power": card.power,
+        "toughness": card.toughness,
+        "printed_power": card.printed_power,
+        "printed_toughness": card.printed_toughness,
+        "loyalty": card.loyalty,
+        "tapped": card.tapped,
+        "summoning_sick": card.summoning_sick,
+        "entered_turn": card.entered_turn,
+        "counters": dict(card.counters),
+        "counter_timestamps": dict(card.counter_timestamps),
+        "keywords": list(card.keywords),
+        "oracle_text": card.oracle_text,
+        "type_line": card.type_line,
+        "image_uri": card.image_uri,
+        "keyword_effects": deepcopy(card.keyword_effects),
+        "base_stat_effects": deepcopy(card.base_stat_effects),
+        "type_effects": deepcopy(card.type_effects),
+        "type_effect_base": deepcopy(card.type_effect_base),
+        "attached_to": card.attached_to,
+        "static_order": card.static_order,
+        "effect_timestamp": card.effect_timestamp,
+        "battlefield_incarnation": card.battlefield_incarnation,
+        "instance_order": card.instance_order,
+        "zone_change_sequence": card.zone_change_sequence,
+        "card_faces": list(card.card_faces),
+        "layout": card.layout,
+        "exile_face_down": card.exile_face_down,
+        "foretell_record": deepcopy(card.foretell_record),
+        "suspend_haste": deepcopy(card.suspend_haste),
+        "granted_flashback": deepcopy(card.granted_flashback),
+        "was_foretold": card.was_foretold,
+        "was_kicked": card.was_kicked,
+        **({'kicker_count': card.kicker_count} if card.kicker_count is not None else {}),
+        "selected_face_index": card.selected_face_index,
+        **({'knowledge_snapshot': copy_snapshot(card.knowledge_snapshot)} if card.knowledge_snapshot else {}),
+        "chosen_creature_type": card.chosen_creature_type,
+        "printed_characteristics": dict(card.printed_characteristics),
+        "characteristic_record": deepcopy(card.characteristic_record),
+        "bestow_characteristics": deepcopy(card.bestow_characteristics),
+        "colors": card.colors,
+        "last_known_battlefield": dict(card.last_known_battlefield),
+    }
+
+
+def _card_from_snapshot(raw, players):
+    from knowledge.service import copy_snapshot
+    from rules_engine.keyword_effects import restore_keyword_effects
+    if 'kicker_count' in raw:
+        from rules_engine.kicker import validate_kicker_count
+        validate_kicker_count(raw['kicker_count'], raw.get('was_kicked', False))
+    card = CardInstance(
+        id=str(raw["id"]), name=str(raw["name"]), owner=int(raw["owner"]),
+        controller=int(raw["controller"]), zone=Zone(raw["zone"]),
+        types=list(raw.get("types", [])), is_token=bool(raw.get("is_token", is_token_card(raw))),
+        mana_cost=str(raw.get("mana_cost", "")),
+        power=raw.get("power"), toughness=raw.get("toughness"), loyalty=raw.get("loyalty"),
+        printed_power=raw.get('printed_power'), printed_toughness=raw.get('printed_toughness'),
+        tapped=bool(raw.get("tapped", False)), summoning_sick=bool(raw.get("summoning_sick", True)),
+        entered_turn=int(raw.get("entered_turn", 0)), counters=dict(raw.get("counters", {})),
+        counter_timestamps={str(key): int(value) for key, value in raw.get('counter_timestamps', {}).items()},
+        keywords=list(raw.get("keywords", [])), keyword_effects=restore_keyword_effects(raw), oracle_text=str(raw.get("oracle_text", "")),
+        base_stat_effects=deepcopy(raw.get('base_stat_effects', [])),
+        type_effects=deepcopy(raw.get('type_effects', [])),
+        type_effect_base=deepcopy(raw.get('type_effect_base')),
+        type_line=str(raw.get("type_line", "")), image_uri=raw.get("image_uri"),
+        attached_to=raw.get("attached_to"), static_order=int(raw.get("static_order", 0)),
+        effect_timestamp=int(raw.get("effect_timestamp", raw.get("static_order", 0))),
+        battlefield_incarnation=raw.get("battlefield_incarnation"),
+        zone_change_sequence=int(raw.get("zone_change_sequence", 0)),
+        instance_order=int(raw.get("instance_order", 0)), card_faces=list(raw.get("card_faces", [])),
+        selected_face_index=raw.get("selected_face_index"),
+        knowledge_snapshot=copy_snapshot(raw.get('knowledge_snapshot', {}), semantic=True),
+        layout=str(raw.get("layout") or ""),
+        chosen_creature_type=raw.get("chosen_creature_type"),
+        printed_characteristics=dict(raw.get("printed_characteristics", {})),
+        characteristic_record=deepcopy({} if raw.get('characteristic_record') is None
+                                       else raw['characteristic_record']),
+        bestow_characteristics=deepcopy(raw.get('bestow_characteristics', {})),
+        colors=list(raw["colors"]) if raw.get("colors") is not None else None,
+        last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
+        exile_face_down=bool(raw.get("exile_face_down", False)),
+        foretell_record=deepcopy(raw.get('foretell_record', {})),
+        suspend_haste=deepcopy(raw.get('suspend_haste', {})),
+        granted_flashback=deepcopy(raw.get('granted_flashback', {})),
+        was_foretold=bool(raw.get('was_foretold', False)),
+        was_kicked=bool(raw.get('was_kicked', False)),
+        kicker_count=raw.get('kicker_count'),
+    )
+    from rules_engine.control_effects import restore_control_effects
+    restore_control_effects(raw, card, players)
+    return card
+
+
 def serialize_match_snapshot(state: MatchState) -> dict:
     """Serialize all mutable rules state needed to resume a match."""
     from ai.sideboard_facts import copy_facts
@@ -173,6 +280,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "replacement_choice_players": sorted(state.replacement_choice_players),
         "mechanic_choice_players": sorted(state.mechanic_choice_players),
         "pending_replacement_choice": state.pending_replacement_choice,
+        "mana_continuation": deepcopy(state.mana_continuation),
         "trigger_order_choice_required": state.trigger_order_choice_required,
         "trigger_order_choice_players": sorted(state.trigger_order_choice_players),
         "pending_trigger_order": state.pending_trigger_order,
@@ -202,63 +310,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
             }
             for pid, player in state.players.items()
         },
-        "cards": {
-            cid: {
-                "id": card.id,
-                "name": card.name,
-                "owner": card.owner,
-                "controller": card.controller,
-                "zone": card.zone.value,
-                **({'control_effect_base': card.control_effect_base,
-                    'control_effects': deepcopy(card.control_effects)}
-                   if card.control_effect_base is not None else {}),
-                "types": list(card.types),
-                "is_token": is_token_card(card),
-                "mana_cost": card.mana_cost,
-                "power": card.power,
-                "toughness": card.toughness,
-                "printed_power": card.printed_power,
-                "printed_toughness": card.printed_toughness,
-                "loyalty": card.loyalty,
-                "tapped": card.tapped,
-                "summoning_sick": card.summoning_sick,
-                "entered_turn": card.entered_turn,
-                "counters": dict(card.counters),
-                "counter_timestamps": dict(card.counter_timestamps),
-                "keywords": list(card.keywords),
-                "oracle_text": card.oracle_text,
-                "type_line": card.type_line,
-                "image_uri": card.image_uri,
-                "keyword_effects": deepcopy(card.keyword_effects),
-                "base_stat_effects": deepcopy(card.base_stat_effects),
-                "type_effects": deepcopy(card.type_effects),
-                "type_effect_base": deepcopy(card.type_effect_base),
-                "attached_to": card.attached_to,
-                "static_order": card.static_order,
-                "effect_timestamp": card.effect_timestamp,
-                "battlefield_incarnation": card.battlefield_incarnation,
-                "instance_order": card.instance_order,
-                "zone_change_sequence": card.zone_change_sequence,
-                "card_faces": list(card.card_faces),
-                "layout": card.layout,
-                "exile_face_down": card.exile_face_down,
-                "foretell_record": deepcopy(card.foretell_record),
-                "suspend_haste": deepcopy(card.suspend_haste),
-                "granted_flashback": deepcopy(card.granted_flashback),
-                "was_foretold": card.was_foretold,
-                "was_kicked": card.was_kicked,
-                **({'kicker_count': card.kicker_count} if card.kicker_count is not None else {}),
-                "selected_face_index": card.selected_face_index,
-                **({'knowledge_snapshot': copy_snapshot(card.knowledge_snapshot)} if card.knowledge_snapshot else {}),
-                "chosen_creature_type": card.chosen_creature_type,
-                "printed_characteristics": dict(card.printed_characteristics),
-                "characteristic_record": deepcopy(card.characteristic_record),
-                "bestow_characteristics": deepcopy(card.bestow_characteristics),
-                "colors": card.colors,
-                "last_known_battlefield": dict(card.last_known_battlefield),
-            }
-            for cid, card in state.cards.items()
-        },
+        "cards": {cid: _card_snapshot(card) for cid, card in state.cards.items()},
         "stack": [
             {
                 "id": item.id,
@@ -275,6 +327,7 @@ def serialize_match_snapshot(state: MatchState) -> dict:
 
 
 def deserialize_match_snapshot(payload: dict) -> MatchState:
+    from knowledge.service import copy_snapshot
     from rules_engine.kicker import validate_kicker_count
     for item in payload.get('stack', []):
         data = item.get('payload', {})
@@ -300,55 +353,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
             setattr(player, key, int(raw.get(key, getattr(player, key))))
         players[player.id] = player
 
-    cards = {}
-    from knowledge.service import copy_snapshot
-    from rules_engine.keyword_effects import restore_keyword_effects
-    for cid, raw in payload["cards"].items():
-        if 'kicker_count' in raw:
-            from rules_engine.kicker import validate_kicker_count
-            validate_kicker_count(raw['kicker_count'], raw.get('was_kicked', False))
-        cards[cid] = CardInstance(
-            id=str(raw["id"]), name=str(raw["name"]), owner=int(raw["owner"]),
-            controller=int(raw["controller"]), zone=Zone(raw["zone"]),
-            types=list(raw.get("types", [])), is_token=bool(raw.get("is_token", is_token_card(raw))),
-            mana_cost=str(raw.get("mana_cost", "")),
-            power=raw.get("power"), toughness=raw.get("toughness"), loyalty=raw.get("loyalty"),
-            printed_power=raw.get('printed_power'), printed_toughness=raw.get('printed_toughness'),
-            tapped=bool(raw.get("tapped", False)), summoning_sick=bool(raw.get("summoning_sick", True)),
-            entered_turn=int(raw.get("entered_turn", 0)), counters=dict(raw.get("counters", {})),
-            counter_timestamps={str(key): int(value) for key, value in raw.get('counter_timestamps', {}).items()},
-            keywords=list(raw.get("keywords", [])), keyword_effects=restore_keyword_effects(raw), oracle_text=str(raw.get("oracle_text", "")),
-            base_stat_effects=deepcopy(raw.get('base_stat_effects', [])),
-            type_effects=deepcopy(raw.get('type_effects', [])),
-            type_effect_base=deepcopy(raw.get('type_effect_base')),
-            type_line=str(raw.get("type_line", "")), image_uri=raw.get("image_uri"),
-            attached_to=raw.get("attached_to"), static_order=int(raw.get("static_order", 0)),
-            effect_timestamp=int(raw.get("effect_timestamp", raw.get("static_order", 0))),
-            battlefield_incarnation=raw.get("battlefield_incarnation"),
-            zone_change_sequence=int(raw.get("zone_change_sequence", 0)),
-            instance_order=int(raw.get("instance_order", 0)), card_faces=list(raw.get("card_faces", [])),
-            selected_face_index=raw.get("selected_face_index"),
-            knowledge_snapshot=copy_snapshot(raw.get('knowledge_snapshot', {}), semantic=True),
-            layout=str(raw.get("layout") or ""),
-            chosen_creature_type=raw.get("chosen_creature_type"),
-            printed_characteristics=dict(raw.get("printed_characteristics", {})),
-            characteristic_record=deepcopy({} if raw.get('characteristic_record') is None
-                                           else raw['characteristic_record']),
-            bestow_characteristics=deepcopy(raw.get('bestow_characteristics', {})),
-            colors=list(raw["colors"]) if raw.get("colors") is not None else None,
-            last_known_battlefield=dict(raw.get("last_known_battlefield", {})),
-            exile_face_down=bool(raw.get("exile_face_down", False)),
-            foretell_record=deepcopy(raw.get('foretell_record', {})),
-            suspend_haste=deepcopy(raw.get('suspend_haste', {})),
-            granted_flashback=deepcopy(raw.get('granted_flashback', {})),
-            was_foretold=bool(raw.get('was_foretold', False)),
-            was_kicked=bool(raw.get('was_kicked', False)),
-            kicker_count=raw.get('kicker_count'),
-        )
-
-    from rules_engine.control_effects import restore_control_effects
-    for cid, card in cards.items():
-        restore_control_effects(payload['cards'][cid], card, players)
+    cards = {cid: _card_from_snapshot(raw, players)
+             for cid, raw in payload["cards"].items()}
 
     state = MatchState(
         id=str(payload["id"]), players=players, cards=cards,
@@ -477,6 +483,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.pending_trigger_order = payload.get("pending_trigger_order")
     state.pending_mechanic_choice = payload.get("pending_mechanic_choice")
     state.rng.setstate(_tupleize(payload["rng_state"]))
+    from rules_engine.mana_continuation import validate
+    state.mana_continuation = validate(state, payload.get('mana_continuation'))
     return state
 
 

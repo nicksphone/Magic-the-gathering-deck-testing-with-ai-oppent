@@ -1,0 +1,52 @@
+{
+  "schema": 1,
+  "kind": "existing_frozen_public_intake_transfer_NO_NEW_GET",
+  "Halley_receipt_sha256": "8b38cf8880aeb4aad3f0c2276e787b8417dd0caf4ccd9053f38bfc14a512f393",
+  "intake": {
+    "name": "Pestilent Souleater",
+    "URL": "https://api.scryfall.com/cards/named?exact=Pestilent+Souleater",
+    "started_UTC": "2026-10-17T04:58:02.926014+00:00",
+    "ended_UTC": "2026-10-17T04:58:03.294648+00:00",
+    "http_status": 200,
+    "response_bytes": 5626,
+    "response_sha256": "77003d589fedc8640f03c4049f4c1d80bc68d863a147124e5afeab45b5721e47",
+    "headers_sha256": "2273c45454eeaa9e9e46ea6b2bef0d3c2506ef343587c8326406d9b71a899457",
+    "id": "a069cc07-55eb-4ddb-a548-cbf463d078d3",
+    "oracle_id": "c4779671-2a01-4eef-847c-ede36091fc4a",
+    "fields": 66,
+    "fixture": "mana_system_fb775/pestilent-souleater.raw.json",
+    "RAW_keywords": [],
+    "minimum_request_start_spacing_seconds": 0.3,
+    "no_auth_no_retries": true
+  },
+  "RAW_bytes_equal_inherited_NFS": true,
+  "body_sha256": "77003d589fedc8640f03c4049f4c1d80bc68d863a147124e5afeab45b5721e47",
+  "remaining21": "Complete Git83 objects and exact positions pinned in SOURCES.json; inherited canonical source provenance, not newly fetched/wire-attested by this author.",
+  "reused_source_files": {
+    "backend/tests/fixtures/ai_terminal_draw/grizzly-bears.raw.json": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "backend/tests/fixtures/announced_target_references/kolaghans-command.json": "8249904617e543a1be45500c2632e0774bc154f967238212823a0f7c1d1e5e88",
+    "backend/tests/fixtures/announced_target_references/pyrotechnics.json": "886ef57e0d05ec223e7a9b6b0de07f5b6ac282043f889fbf14e871d4b22a5286",
+    "backend/tests/fixtures/draw_canonical_sidecar/spirit.json": "3a82dea1bf4aaa6e4cb167c440b51f4a94b80bb54da807ed0b489008de153675",
+    "backend/tests/fixtures/keyword_zone4f86/canonical.jsonl": "b5303e0f2f061ba0c4179d9d6af29034526e7237e470dda3a41eeec5228d1bf8",
+    "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "backend/tests/fixtures/library_ranking_vectors/divination-scryfall-raw.json": "6b2e4f894aa39e9d498b8f4b57b8aae11d78093bd954e34357c9c52ed411a174",
+    "backend/tests/fixtures/life_cost_022758/toxic-deluge.json": "8b5eb1380748e877f2db6567a22f98693f07912122fcc6993cbd0c3b06ed836f",
+    "backend/tests/fixtures/manual_mana_a227/gilded-lotus.raw.json": "4467e360a1d46fd510c9a379ef9776e42528fb9663c239054da861cbcd02a2d5",
+    "backend/tests/fixtures/manual_mana_a227/sol-ring.raw.json": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+    "backend/tests/fixtures/trigger_instruction_audit/thought-reflection.json": "be46dc4724e675d029e095db7e065399de74e1b33b0379fd498e3ac90592128f",
+    "backend/tests/fixtures/trigger_instruction_product/stinkweed-imp.json": "3a12356ed9fa1de98b56500f5c0bb3a26f3ef6949e549e81184441ba19dab1e9"
+  },
+  "inherited_companion_metadata": {
+    "backend/tests/fixtures/ai_terminal_draw/PROVENANCE.json": "0b70668291db34d57ba9614b247d4ea942d17d60e93aff810b266464e6008b29",
+    "backend/tests/fixtures/draw_canonical_sidecar/SOURCES.json": "d0d1208fdfa97a4ee270fd22373a60b2f444d7c27e8be00f4c4b28452d0a3e1c",
+    "backend/tests/fixtures/keyword_zone4f86/SOURCES.json": "d728f61499dea3e3c03027c5df0c1689d0445c6a66f9240d55a808a48d460c2e",
+    "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+    "backend/tests/fixtures/library_ranking_vectors/PROVENANCE.json": "af841adc2418f6247a6dafc08c2e242b94c4d775ad8ecc94ce3981329a9e4a04",
+    "backend/tests/fixtures/life_cost_022758/SOURCES.json": "9739e307c7839509b60d2aa0ea58c61bd969c5ccfdb058385c0f36cdff1d8923",
+    "backend/tests/fixtures/manual_mana_a227/PROVENANCE.json": "6f4454e0b034b640f6f1965184833a90ce8f10d4a67b13ea4e22493b8a2eefc3",
+    "backend/tests/fixtures/manual_mana_a227/SOURCES.json": "e450c68b67cb25498e80c245962502715477bb9c903a4a77d931682ae1b5bcb8",
+    "backend/tests/fixtures/trigger_instruction_audit/provenance.json": "40b29b77468eed197ae34be165941b18c52f8b600a319be53cdd4983a91393a5",
+    "backend/tests/fixtures/trigger_instruction_product/provenance.json": "95733b149cb7d3666b20d8f3afa5b8100f08def33ed10ef976974c4dfa342bc5"
+  },
+  "provenance_limits": "Companion metadata retained where present; no new HTTP claims for Git83 reused bodies. Full source/object SHA and exact IDs remain authoritative bounded input bindings."
+}

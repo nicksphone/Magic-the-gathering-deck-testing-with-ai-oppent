@@ -9,11 +9,12 @@ import pytest
 from ai.agent import AIAgent
 from ai.pending_effects import planning_copy
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import CardInstance, Zone
+from game_state.state import Zone
 from rules_engine.action_validation import checked_action
 from rules_engine.engine import RulesEngine
 from tests.test_ai_pending_deployment import observed
 from tests.test_ai_search_prefix import bare_state
+from tests.library_canonical_fixtures import canonical_card
 
 
 @pytest.mark.parametrize('seat', [1, 2])
@@ -58,8 +59,8 @@ def test_real_counter_response_is_negative_and_score_offset_invariant(seat):
     state.players[seat].hand.append(card.id)
     state.players[seat].mana_pool.update({'B': 2})
     opponent = 3-seat
-    counter = CardInstance('counter', 'Counterspell', opponent, opponent, Zone.HAND, ['Instant'],
-                           mana_cost='{U}{U}', oracle_text='Counter target spell.')
+    counter = canonical_card('Counterspell', id='counter', owner=opponent,
+                             controller=opponent, zone=Zone.HAND)
     state.cards[counter.id] = counter
     state.players[opponent].hand.append(counter.id)
     state.players[opponent].mana_pool.update({'U': 2})

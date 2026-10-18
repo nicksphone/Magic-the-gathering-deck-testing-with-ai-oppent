@@ -11,6 +11,19 @@ percentage. The five
 phases in [the AI plan](../plans/2026-09-09-ai-knowledge-base.md) are a subproject;
 they do not replace the three release gates in [plan.md](../../plan.md).
 
+The October 17 tactical-consumer baseline executes all 16 new both-seat cases:
+12 fail on missing role/compiled-route consumption, while four missing-profile
+privacy and native-legality controls pass. There are no fixture errors or
+skips; the source-only native boundary and source/runtime preservation pass.
+The baseline takes 26.15 seconds, with physical release at 16:32:18.270887 UTC.
+The corrected isolated candidate then executes the same 16 cases: all pass in
+35.47 seconds under the original 300-second bound, with exact native-boundary,
+source/runtime and physical-closure checks. Five existing AI consumers and one
+advice helper now use actual tags or compiled routes. The candidate is not yet
+integrated; affected whole-module neighbors and matched comparisons remain
+required. This wiring result does not establish improved play strength, a
+matched A/B result or Phase 2 completion.
+
 ## Implementation And Acceptance Are Different
 
 | Phase | Existing implementation or observed evidence | Required acceptance still open |

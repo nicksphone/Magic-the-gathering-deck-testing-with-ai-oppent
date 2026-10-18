@@ -1,0 +1,745 @@
+{
+  "bulk_reuse_provenance": "backend/tests/fixtures/browser_inline26/PROVENANCE.json",
+  "cards": {
+    "Adeline, Resplendent Cathar": {
+      "fields": 67,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "1de30c12-2011-495a-be25-f7a46b23e142",
+      "location": [
+        "line",
+        2
+      ],
+      "object_sha256": "92c21b50fd8db2a5cafadc851d9378be2adc6d84215f9aa458408367a9300d78",
+      "oracle_id": "38515f89-348b-4cf3-b7bd-1f6fe4ce2fba",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Appetite for Brains": {
+      "fields": 63,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "58f20b88-7b48-4d3b-b836-c7aef71cd337",
+      "location": [
+        "line",
+        22
+      ],
+      "object_sha256": "02a0e2e8b44e48ae25f88ca00a5ebb17d5b78e99cf70cdb90bc3d82355573fc4",
+      "oracle_id": "4ffc16e0-1778-4aba-ade3-58146c800f5f",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Bala Ged Recovery // Bala Ged Sanctuary": {
+      "fields": 60,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "c5cb3052-358d-44a7-8cfd-cd31b236494a",
+      "location": [
+        "line",
+        40
+      ],
+      "object_sha256": "2d6dd3d1b0ed3fbf8b9646297c432a5f7246c3b2cdd9f9a9d03bdc5d34154c75",
+      "oracle_id": "d2075f58-b0e9-4e85-b7e6-0523a27a1d5b",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Benalish Hero": {
+      "fields": 64,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "a14ba3be-f7cb-47e5-b6c4-d09cfd3cac34",
+      "location": [
+        "line",
+        21
+      ],
+      "object_sha256": "356d1650da2b8e59dfa746ecc75ced900b52fd4ca8aa7ecbb9dc4f8be8a9c720",
+      "oracle_id": "4c81cfb7-8765-4e28-ae33-4287fa9a86cc",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Bonecrusher Giant // Stomp": {
+      "fields": 67,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "b5b71cd2-de35-451f-b16e-2e3936169407",
+      "location": [
+        "line",
+        41
+      ],
+      "object_sha256": "d4d02d17fad14ea9b121cc0e98393366c358ad1cb304350b737a6cfbf695793b",
+      "oracle_id": "d6d72f5f-8f5d-4180-b514-f22ff5482902",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Boros Swiftblade": {
+      "fields": 66,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "6135a9f2-e86d-4a34-857e-adea3c722fea",
+      "location": [
+        "line",
+        13
+      ],
+      "object_sha256": "818014cfaae1ae4ab856bec3d70e8d568906a86c4b5a9f26bfe68c0b12bdbe6e",
+      "oracle_id": "377e4dad-866b-4e02-8c10-072bf7f000be",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Centaur Courser": {
+      "fields": 66,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "e8b67ee8-3189-4426-8b1a-b540267768fd",
+      "location": [
+        "line",
+        9
+      ],
+      "object_sha256": "67467ef18e552ac0e345e90709274fd93ac64af148194edfb9c7eb7e17b86187",
+      "oracle_id": "2f5bf099-2e01-4e1c-9ebf-0ce0ac66939e",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Charging Monstrosaur": {
+      "fields": 67,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "d5222448-95d1-4b63-ab76-d5060febcf38",
+      "location": [
+        "line",
+        5
+      ],
+      "object_sha256": "97a15d38cc5bc35c6fc158715b82052123e716cfa9bf88d09646bbb6e5231f16",
+      "oracle_id": "21dd60d5-76c8-469e-8c4e-112e377d2d59",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Coercion": {
+      "fields": 62,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "8c0459ca-1646-46a0-9fc2-709b321bb41f",
+      "location": [
+        "line",
+        26
+      ],
+      "object_sha256": "0fd22c37c4e37fc6c5107cd11803b77f6bc165837a7988a7029e087907fe90b0",
+      "oracle_id": "68413337-ddb9-46f8-8c8e-f3d2d672c652",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Collected Company": {
+      "fields": 64,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "cfa7b456-7e83-4587-a875-9b35fde318c2",
+      "location": [
+        "line",
+        21
+      ],
+      "object_sha256": "606c33757607aa1a5c551e22ee4bdfe79e55f8bba6a5836ad15432dd3731d6aa",
+      "oracle_id": "0bbcb563-09b3-499d-a9cc-3a6d7501dd81",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Counterspell": {
+      "fields": 62,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "location": [
+        "line",
+        39
+      ],
+      "object_sha256": "fe9513a8443f2f78ceb48e835c4e81d5b6d6eb995581683c73dfff9acecdb6b9",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Cryptic Command": {
+      "fields": 65,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "30f6fca9-003b-4f6b-9d6e-1e88adda4155",
+      "location": [
+        "line",
+        32
+      ],
+      "object_sha256": "fc9c7da365cf96777fcc285fcbc741fb1ad98e2627f063013618ead70897ac2a",
+      "oracle_id": "a3e51a35-09df-4189-b131-08a21e6a557d",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Delirium Skeins": {
+      "fields": 64,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "64b0d9e7-4a0f-4f07-99ae-31c3c9f0037a",
+      "location": [
+        "line",
+        28
+      ],
+      "object_sha256": "855545b5c0588bbda58107c514b2cc42506723fd0efa23aeb9883ee86e2bcaf0",
+      "oracle_id": "7397036f-8114-47cc-b52f-c532a6845d16",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Despise": {
+      "fields": 65,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "64216ce3-945e-42d8-9127-cf11c687da67",
+      "location": [
+        "line",
+        35
+      ],
+      "object_sha256": "ac5ec6ffabce1f60ab5174586dc4fd1f26c0fffb4a3d669617d2071f59a605ca",
+      "oracle_id": "b13b40f1-1b1f-40e8-989b-ef24dc05007a",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Divination": {
+      "fields": 64,
+      "file_sha256": "6b2e4f894aa39e9d498b8f4b57b8aae11d78093bd954e34357c9c52ed411a174",
+      "id": "cb3b35b8-f321-46d8-a441-6b9a6efa9021",
+      "location": [],
+      "object_sha256": "6b2e4f894aa39e9d498b8f4b57b8aae11d78093bd954e34357c9c52ed411a174",
+      "oracle_id": "273b339c-964b-4a18-8eb5-ceb8abcdfd9e",
+      "path": "backend/tests/fixtures/library_ranking_vectors/divination-scryfall-raw.json"
+    },
+    "Duress": {
+      "fields": 65,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "34c3a894-ee75-4db9-a69f-711bb3cc150a",
+      "location": [
+        "line",
+        10
+      ],
+      "object_sha256": "d876d46ff0f3e17b78814f2942b605f0516dd8608dabc8aadf4f3474122636cd",
+      "oracle_id": "33d405ea-7a9a-4970-b70f-9c05d90dd6f0",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Elvish Mystic": {
+      "fields": 69,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+      "location": [
+        "line",
+        15
+      ],
+      "object_sha256": "8cb57acbfbd6bd7da4f045fe6f558a8eda8aa6177a6f87859fe6810c832be375",
+      "oracle_id": "3f3b2c10-21f8-4e13-be83-4ef3fa36e123",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Everflowing Chalice": {
+      "fields": 65,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "e4ed0052-d6dd-4f69-8313-10863baefac9",
+      "location": [
+        "line",
+        4
+      ],
+      "object_sha256": "5fd26184081ea25765cc5c3ad2769689d65e4752d3d27ab912331d9825cd00e5",
+      "oracle_id": "0a79237e-0811-4a8a-bd4d-db3ca91bff22",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Fire // Ice": {
+      "fields": 62,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "18303862-4726-4136-814f-157aa7006579",
+      "location": [
+        "line",
+        34
+      ],
+      "object_sha256": "0ca740bbc3dc520898d7bdc9fdaf4b086e1da8d709db243e65c23482c4f8e6b8",
+      "oracle_id": "ae92942b-919c-4ea9-b693-85fcef765d5a",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Forest": {
+      "fields": 61,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+      "location": [
+        "line",
+        39
+      ],
+      "object_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Giant Spider": {
+      "fields": 65,
+      "file_sha256": "b5303e0f2f061ba0c4179d9d6af29034526e7237e470dda3a41eeec5228d1bf8",
+      "id": "213c9202-b6f4-43ab-b57f-b97a1da5e263",
+      "location": [
+        "line",
+        8
+      ],
+      "object_sha256": "de7818a2d16ccad301e855ecb6fb120d336bb51e98c4c7fd31c510b3fe7010f7",
+      "oracle_id": "e740ce2f-2134-473c-afa1-1b6d2d1e38ef",
+      "path": "backend/tests/fixtures/keyword_zone4f86/canonical.jsonl"
+    },
+    "Gilded Lotus": {
+      "fields": 67,
+      "file_sha256": "4467e360a1d46fd510c9a379ef9776e42528fb9663c239054da861cbcd02a2d5",
+      "id": "28e619e6-ecc1-49c3-8fa9-ce42becdb9ba",
+      "location": [],
+      "object_sha256": "992699cd17bf410a35cdce1ca42997e62b21b5037dd2b173748610592226e798",
+      "oracle_id": "9a02a9a7-39d9-4763-85d3-747a0540b60b",
+      "path": "backend/tests/fixtures/manual_mana_a227/gilded-lotus.raw.json"
+    },
+    "Gollum, Silent Slinker // Meager Meal": {
+      "fields": 68,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "6cfaa182-3fec-4907-8814-b4d29c33cec3",
+      "location": [
+        "line",
+        2
+      ],
+      "object_sha256": "ef83d60e12d50493779e583eec372707f94f7e392efa5c9516c64d3ce72d9948",
+      "oracle_id": "0296d57e-e5b9-456f-bb21-eb584adefb4c",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Grizzly Bears": {
+      "fields": 66,
+      "file_sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "location": [],
+      "object_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "path": "backend/tests/fixtures/ai_terminal_draw/grizzly-bears.raw.json"
+    },
+    "Hill Giant": {
+      "fields": 65,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "14c2be6a-9ca6-4d3a-8dd0-db4ea40799f8",
+      "location": [
+        "line",
+        11
+      ],
+      "object_sha256": "c4a3be7ac537fc8bd2db7cf42e14752b6cd330e6f8b58bec68d6b82a25d17e64",
+      "oracle_id": "342199e0-15b6-4824-83da-25caef2592b3",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Icehide Golem": {
+      "fields": 66,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "b2671c36-96fa-49e3-90dc-52820b2c8a62",
+      "location": [
+        "line",
+        8
+      ],
+      "object_sha256": "d6711d86f070295628f54bf2489ae7a3c82903bee9dc642794146fc3d252fbdd",
+      "oracle_id": "29b925e9-1e98-471c-9b23-e0372ac86485",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Inquisition of Kozilek": {
+      "fields": 63,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "17f38740-20fd-4097-90f8-f0c2c2ff7281",
+      "location": [
+        "line",
+        14
+      ],
+      "object_sha256": "c96f0a2bf443715ab484ea38fdb3028ef95b5be415c7414aa4e05326da2950df",
+      "oracle_id": "395611fa-aec2-4c9e-92c3-70cf95cc00f4",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Island": {
+      "fields": 60,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "location": [
+        "line",
+        50
+      ],
+      "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Izzet Charm": {
+      "fields": 63,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "15af0592-a1cb-4b1e-b051-dde978939706",
+      "location": [
+        "line",
+        31
+      ],
+      "object_sha256": "b59c985a662f9a701083a1c34d3ab020ed46ec427bf690f7d6d64be27d4ed641",
+      "oracle_id": "a07698f6-5ad5-49a3-9da2-f82d407f5cd7",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Jace, the Mind Sculptor": {
+      "fields": 64,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "c8817585-0d32-4d56-9142-0d29512e86a9",
+      "location": [
+        "line",
+        29
+      ],
+      "object_sha256": "3a73bf2f3b208b7e377ba05079dda14e83bbffa62e7ad56ef99ac598c561ffd7",
+      "oracle_id": "7f77a84e-5a4b-4834-aefa-3cecc175ae8e",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Kolaghan's Command": {
+      "fields": 64,
+      "file_sha256": "8249904617e543a1be45500c2632e0774bc154f967238212823a0f7c1d1e5e88",
+      "id": "a0dab027-a475-481b-b012-b6a76e21e494",
+      "location": [],
+      "object_sha256": "005d05a2a53f8fdacdabb759943dfd1d0b2be178af2ee456fa6f2c802869fcbb",
+      "oracle_id": "45f1e957-09f0-4d46-8e32-238f26060a87",
+      "path": "backend/tests/fixtures/announced_target_references/kolaghans-command.json"
+    },
+    "Lava Spike": {
+      "fields": 62,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "79c21c1f-eaa4-454d-a1c7-b41466d0a428",
+      "location": [
+        "line",
+        6
+      ],
+      "object_sha256": "58ee743a0407d178167858ec0e813b9dca0af2d47f9f1d8af55dd031d4b98c9f",
+      "oracle_id": "2837888c-bfa8-4955-9334-0605ad409f7e",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Leyline of Sanctity": {
+      "fields": 64,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "be8b1acf-dd87-42ca-ad19-c27d21066030",
+      "location": [
+        "line",
+        19
+      ],
+      "object_sha256": "fd5bb6b6f9f5c8c0471710b95306aab8be57ba233b6210d8f22754ae822961b5",
+      "oracle_id": "492e0e6c-8c27-4376-938b-f8a8b6205810",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Lightning Bolt": {
+      "fields": 66,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "location": [
+        "line",
+        57
+      ],
+      "object_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Llanowar Elves": {
+      "fields": 71,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+      "location": [
+        "line",
+        58
+      ],
+      "object_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Mayhem Devil": {
+      "fields": 67,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "674f3a8a-4552-4289-b92a-06ce158f115c",
+      "location": [
+        "line",
+        17
+      ],
+      "object_sha256": "16ff57c652dd7ef369954b7716d4108bf2e0864da5d37c5135b528f7de26501f",
+      "oracle_id": "4709f11c-aef8-45ac-b2bf-e640c568dfac",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Mountain": {
+      "fields": 60,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "85177bd7-6c50-48da-b692-ae5fe7bd357c",
+      "location": [
+        "line",
+        65
+      ],
+      "object_sha256": "a2ab558e22268e0ad7a9815c80a52208101e2c43340d9d8453d6045995aa9a9a",
+      "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Mutagenic Growth": {
+      "fields": 63,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "2e0861a2-1858-47af-8154-20a977c2b298",
+      "location": [
+        "line",
+        38
+      ],
+      "object_sha256": "4cc1c39c4e1f6da40b325d6d80a4ba7f211d47c92539007f6b088e7ff379b3c3",
+      "oracle_id": "c17b9e5b-58b6-4ccf-8283-945ba77429e7",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Palace Guard": {
+      "fields": 65,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "51e73c28-bf82-413e-bec2-adbb52fa6993",
+      "location": [
+        "line",
+        23
+      ],
+      "object_sha256": "546cf721cd294a3a9dbf219fd56f87b8f917c0582d71e3714d0e50887442483a",
+      "oracle_id": "5c92f375-ae6a-4be5-a499-ab87d6bdc49b",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Pestilent Souleater": {
+      "fields": 66,
+      "file_sha256": "77003d589fedc8640f03c4049f4c1d80bc68d863a147124e5afeab45b5721e47",
+      "id": "a069cc07-55eb-4ddb-a548-cbf463d078d3",
+      "location": [],
+      "object_sha256": "ce311a2415339c67e6e2db5f10506ed4b1b2a2b7c86a201133d6aa0ba4398ee9",
+      "oracle_id": "c4779671-2a01-4eef-847c-ede36091fc4a",
+      "path": "backend/tests/fixtures/browser_positive83/pestilent-souleater.raw.json"
+    },
+    "Plains": {
+      "fields": 60,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "09ac862f-0a51-44dd-b86f-9412b8218b13",
+      "location": [
+        "line",
+        70
+      ],
+      "object_sha256": "bb36c8b3d7c52e7274ab49ee95993248b8dc616ba4e1702b3d8e33ec107b1b0b",
+      "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Prodigal Pyromancer": {
+      "fields": 66,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+      "location": [
+        "line",
+        7
+      ],
+      "object_sha256": "b9a366defcc5a35b8433f3909c0ed4ff4a99b40236a937accdcf73bb0e69c402",
+      "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Pyrotechnics": {
+      "fields": 64,
+      "file_sha256": "886ef57e0d05ec223e7a9b6b0de07f5b6ac282043f889fbf14e871d4b22a5286",
+      "id": "51893dd5-e70f-44bb-85d4-e31480ba84d6",
+      "location": [],
+      "object_sha256": "320ad2a3d811d8019baa079056d4ce7d90e464d3cae0c46a9b59932b9a9f1eb6",
+      "oracle_id": "794b9ddf-1660-441f-9cc2-a0f5d4d0cf22",
+      "path": "backend/tests/fixtures/announced_target_references/pyrotechnics.json"
+    },
+    "Realmwalker": {
+      "fields": 66,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "52733829-27b7-40ec-a897-cabab35b3729",
+      "location": [
+        "line",
+        37
+      ],
+      "object_sha256": "7b9298fe78b7e9db44fd80d0603274210cf08207127363b81fb3785d31b8ba82",
+      "oracle_id": "b81eaa2f-0554-41c6-bdf6-d1cb73b8f56f",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Reclamation Sage": {
+      "fields": 66,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "1918ea65-ab7f-4d40-97fd-a656c892a2a1",
+      "location": [
+        "line",
+        3
+      ],
+      "object_sha256": "17f6219d119d07ab0eaa06a9c4ca9f0f9d5f4e90da6b4912037a2502c6aadc0e",
+      "oracle_id": "032ec6e2-6cc3-4a97-9cc7-3233f5e11904",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Sacred Foundry": {
+      "fields": 63,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "a7758cc6-4e18-48a5-8720-5f42b5cd9d31",
+      "location": [
+        "line",
+        16
+      ],
+      "object_sha256": "c51d221e2c8cbe964b81692116d9293cf25bad8b57812e8c2b56f9a4b397465f",
+      "oracle_id": "45181cb8-2090-4471-ba90-e5a8f04d525f",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Serra Angel": {
+      "fields": 66,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "b8c5e74c-96e7-4a1f-93b7-14d776fe4b2d",
+      "location": [
+        "line",
+        20
+      ],
+      "object_sha256": "c4db702f81d92880abb48c0dc1170bb863c8666ce5b5087c7dde8e0c49c61e97",
+      "oracle_id": "4b7ac066-e5c7-43e6-9e7e-2739b24a905d",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Shock": {
+      "fields": 66,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+      "location": [
+        "line",
+        33
+      ],
+      "object_sha256": "b86fd670efc807e5afdac1b0b6ef861870a6be97fe9501427c02f8a529b15eaf",
+      "oracle_id": "a9d288b8-cdc1-4e55-a0c9-d6edfc95e65d",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Smuggler's Copter": {
+      "fields": 65,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "2680ed41-da35-475a-9d80-ae2f4686feed",
+      "location": [
+        "line",
+        18
+      ],
+      "object_sha256": "b5cfd0ee57a4bd384fca58455d24f0533c53402bb25f460b1e9bbe1737503e4f",
+      "oracle_id": "49136bdc-bc50-49a2-999a-1ef9c16ea130",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Snow-Covered Forest": {
+      "fields": 63,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "ca17acea-f079-4e53-8176-a2f5c5c408a1",
+      "location": [
+        "line",
+        24
+      ],
+      "object_sha256": "52173db9b79ea4b6cc2fc5c2dc25228060eb382043ea1cf249e98379da1eb382",
+      "oracle_id": "5f0d3be8-e63e-4ade-ae58-6b0c14f2ce6d",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Sol Ring": {
+      "fields": 65,
+      "file_sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+      "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "location": [],
+      "object_sha256": "77b61b9b0141eb45cf35ae78e9db7ca7c2c69d5cf9c10b50303d98d0518cb773",
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "path": "backend/tests/fixtures/manual_mana_a227/sol-ring.raw.json"
+    },
+    "Spectral Procession": {
+      "fields": 65,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "9964629e-d79e-46e4-b3fd-e7d1759cbc60",
+      "location": [
+        "line",
+        12
+      ],
+      "object_sha256": "a414366e103276003ad05f2fcd54f0e4b3a58f94caac22deae40d5be9a96036c",
+      "oracle_id": "376271a6-80f0-47a6-990a-5ec5517aae42",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Spirit of the Labyrinth": {
+      "fields": 67,
+      "file_sha256": "3a82dea1bf4aaa6e4cb167c440b51f4a94b80bb54da807ed0b489008de153675",
+      "id": "f44e5128-e146-4e46-b313-a40d82719d1d",
+      "location": [],
+      "object_sha256": "9c6f4592d33b7e022e0ccd7e1dfcc1fcf524e90bad89d24d7a124d88f9c020d3",
+      "oracle_id": "1463795b-ec0c-44d6-ae1a-55f78d9843ec",
+      "path": "backend/tests/fixtures/draw_canonical_sidecar/spirit.json"
+    },
+    "Spring // Mind": {
+      "fields": 62,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "6431d464-1f2b-42c4-ad38-67b7d0984080",
+      "location": [
+        "line",
+        27
+      ],
+      "object_sha256": "149df85dea1df4e2e8445bce29eb84b01b1a66430f1a7bd27f028cd33cc1d74c",
+      "oracle_id": "6dd7e861-7ae2-49e6-a9ab-8fd761939e22",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Stinkweed Imp": {
+      "fields": 63,
+      "file_sha256": "3a12356ed9fa1de98b56500f5c0bb3a26f3ef6949e549e81184441ba19dab1e9",
+      "id": "2ab08d69-210b-4b06-88a2-45281a1a4e1e",
+      "location": [],
+      "object_sha256": "c954e8f6a8b41adc41bed4162d2d91bc36b8669bd6ff2d6cf7822e1b8065721e",
+      "oracle_id": "e005bc76-4985-4ec6-b9f6-cf6d0d9f5df4",
+      "path": "backend/tests/fixtures/trigger_instruction_product/stinkweed-imp.json"
+    },
+    "Swamp": {
+      "fields": 60,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "b233b117-9369-45c1-80c5-cc857386b6be",
+      "location": [
+        "line",
+        97
+      ],
+      "object_sha256": "cbe60bb5325532b7363da9bbe4b7b035a8d89cb129f72272f4f3aeffae5c36d6",
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Tamiyo, Compleated Sage": {
+      "fields": 67,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "222a736e-d819-452d-aeda-eb848c4b2302",
+      "location": [
+        "line",
+        1
+      ],
+      "object_sha256": "34bd4bbbfa1665fbbaa0fe0e7cd012344125d1fa106d0b39c6dd52e35ce88812",
+      "oracle_id": "021b4745-4a15-462c-a6b0-2dee1dc9d196",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Teferi, Hero of Dominaria": {
+      "fields": 66,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "5d10b752-d9cb-419d-a5c4-d4ee1acb655e",
+      "location": [
+        "line",
+        100
+      ],
+      "object_sha256": "41d7b9bf8bd192b82472ed60b779993ed7f8f759105db9e019a5c3d809535cd7",
+      "oracle_id": "f2f165b6-ef0a-42ad-9352-ba68be8248b0",
+      "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl"
+    },
+    "Thought Reflection": {
+      "fields": 65,
+      "file_sha256": "be46dc4724e675d029e095db7e065399de74e1b33b0379fd498e3ac90592128f",
+      "id": "e169e197-5ef4-454d-a31f-fcadedb74cfc",
+      "location": [],
+      "object_sha256": "6450a120fa366c41e6c1092415c858a3b4c04c66fe47296146968f4d85307bb0",
+      "oracle_id": "692a6833-3014-42f6-b1ad-333bb3292c65",
+      "path": "backend/tests/fixtures/trigger_instruction_audit/thought-reflection.json"
+    },
+    "Thoughtseize": {
+      "fields": 64,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "b281a308-ab6b-47b6-bec7-632c9aaecede",
+      "location": [
+        "line",
+        42
+      ],
+      "object_sha256": "32ec2bd736607e3936cca345045a6ae30c5b35961cb3d6137240055c2dd835bc",
+      "oracle_id": "edd8d1e8-be43-4c38-bb3a-83081fbaf0b5",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Toxic Deluge": {
+      "fields": 65,
+      "file_sha256": "8b5eb1380748e877f2db6567a22f98693f07912122fcc6993cbd0c3b06ed836f",
+      "id": "de5afccc-8d42-4bd6-b068-b9ea2361655e",
+      "location": [],
+      "object_sha256": "ab3757e543501afd52ca3c4315fca46cd732f2d2709ea8d66419923342fa4383",
+      "oracle_id": "afaef788-34d1-460b-b884-9d7ae6ddeb18",
+      "path": "backend/tests/fixtures/life_cost_022758/toxic-deluge.json"
+    },
+    "Ulamog, the Infinite Gyre": {
+      "fields": 67,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "9464a820-65de-44f2-9895-46a35e8621a0",
+      "location": [
+        "line",
+        36
+      ],
+      "object_sha256": "5158dc6d8a5f70e09c45fe95024d7a5e8a8566befd2d6108fb63d702e430ed63",
+      "oracle_id": "b817bc56-9b4d-4c50-bafa-3c652b99578f",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Valki, God of Lies // Tibalt, Cosmic Impostor": {
+      "fields": 62,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "ea7e4c65-b4c4-4795-9475-3cba71c50ea5",
+      "location": [
+        "line",
+        30
+      ],
+      "object_sha256": "d80ea2f2f24553eab6a38eed713e7db353ad3d366192e07ca9fdb68d418b574e",
+      "oracle_id": "907ae517-22d5-4ac7-bc3a-3f4d5eaeeb57",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    },
+    "Wandering Archaic // Explore the Vastlands": {
+      "fields": 60,
+      "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+      "id": "18a2bdc8-b705-4eb5-b3a5-ff2e2ab8f312",
+      "location": [
+        "line",
+        25
+      ],
+      "object_sha256": "e94ed773682cbf84f8df5443f6297b5a7773c8431862b5fd9c634f7c9e85585b",
+      "oracle_id": "6556c4c0-b10d-4208-821b-0c0a49abd188",
+      "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl"
+    }
+  },
+  "missing_full_RAW": [],
+  "schema": 1,
+  "scope": "Preserve original22 complete admissions; add42 unmodified full lines from previously pinned official bulk for ALL26 inline/default groups. No new network, invented records, retags or runtime qualification.",
+  "source_root_not_runtime_path": "Repository-relative pointers; no scratch path used at runtime.",
+  "status": "ALL64_FULL_RAW_AVAILABLE_STATIC_ONLY"
+}

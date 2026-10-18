@@ -56,10 +56,13 @@ def validate_sdk(path, protected):
 
 def preflight(env):
     expected = dict(GITHUB_ACTIONS='true', RUNNER_ENVIRONMENT='github-hosted',
-        RUNNER_OS='Linux', RUNNER_ARCH='X64', GITHUB_JOB='backend',
+        RUNNER_OS='Linux', RUNNER_ARCH='X64',
         GITHUB_REPOSITORY='nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent',
         MTG_CI_CAPACITY_SCOPE='backend-sdk-cleanup')
-    if any(env.get(key) != value for key, value in expected.items()):
+    job = env.get('GITHUB_JOB')
+    if (any(env.get(key) != value for key, value in expected.items())
+            or type(job) is not str
+            or job not in ('backend', 'backend-reference', 'backend-workers')):
         raise CapacityError('hosted-backend-context')
     if not ubuntu24():
         raise CapacityError('runner-image')

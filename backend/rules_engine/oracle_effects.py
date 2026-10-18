@@ -601,6 +601,10 @@ def infer_effect_from_oracle(
     temporary_artifact = _infer_temporary_artifact_instruction(oracle, action_targets)
     if temporary_artifact is not None:
         return temporary_artifact
+    from rules_engine.land_animation import compile_self_creature_change
+    self_change = compile_self_creature_change(state, card, oracle)
+    if self_change is not None:
+        return self_change
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
     # Whole permanent surfaces contain costs/abilities; activation proxies do not.
     if (not set(getattr(card, 'types', []) or []).intersection(

@@ -262,22 +262,62 @@ class WorkflowPublicationTests(unittest.TestCase):
         workflow = (SCRIPTS.parent / 'workflows/ci.yml').read_text()
         steps = workflow.split('      - ')
         uploads = [step for step in steps if 'uses: actions/upload-artifact@' in step]
-        self.assertEqual(len(uploads), 1, 'A broad raw diagnostic upload still exists')
-        upload = uploads[0]
-        self.assertIn('name: Upload backend metadata\n', upload)
-        self.assertIn('path: ${{ steps.backend_metadata.outputs.metadata_file }}\n', upload)
-        self.assertNotIn('steps.backend_tests.outputs.evidence', upload)
+        expected = [
+            ('Upload exact public plan only', '${{ runner.temp }}/public-reference/plan.json',
+             'backend-reference-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ steps.seal.outputs.plan_sha256 }}'),
+            ('Upload backend metadata', '${{ steps.backend_metadata.outputs.metadata_file }}',
+             'backend-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-${{ matrix.shard }}'),
+            ('Upload one bounded public worker envelope only', '${{ runner.temp }}/public-worker/worker.json',
+             'backend-worker-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}-${{ matrix.shard }}'),
+            ('Upload successful bounded four-session qualification only', '${{ runner.temp }}/backend-qualified.json',
+             'backend-qualified-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.sha }}-${{ needs.backend-reference.outputs.plan_sha256 }}'),
+        ]
+        self.assertEqual(len(uploads), len(expected), 'Unexpected artifact publication definition')
+        for upload, (label, path, artifact_name) in zip(uploads, expected):
+            with self.subTest(upload=label):
+                self.assertTrue(upload.startswith('name: ' + label + '\n'))
+                self.assertIn('          path: ' + path + '\n', upload)
+                self.assertIn('          name: ' + artifact_name + '\n', upload)
+                self.assertEqual(upload.count('          path: '), 1)
+                self.assertIn('uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02', upload)
+                self.assertIn('if-no-files-found: error\n', upload)
+                for forbidden in ('outputs.evidence', 'reporter.log', 'runner.log', 'pytest.log', '.jsonl', '*'):
+                    self.assertNotIn(forbidden, upload)
+        self.assertIn("if: ${{ always() && steps.diagnostic_bound.outcome == 'success' }}", uploads[1])
+        self.assertIn("if: ${{ success() && steps.seal.outcome == 'success' }}", uploads[2])
+        final = workflow.split('  backend:\n', 1)[1].split('  frontend:\n', 1)[0]
+        self.assertIn('if: ${{ always() }}', final)
+        self.assertIn('needs: [backend-reference, backend-workers]', final)
+        self.assertIn('test "$REFERENCE_RESULT" = success && test "$WORKERS_RESULT" = success', final)
+        self.assertNotIn('backend-diagnostic-', final)
         self.assertNotIn('continue-on-error:', workflow)
         self.assertIn('if-no-files-found: error\n', upload)
 
     def test_reporter_tests_precede_the_only_secret_bearing_step(self):
         workflow = (SCRIPTS.parent / 'workflows/ci.yml').read_text()
-        self.assertIn('      - name: Backend metadata reporter tests\n', workflow)
-        self.assertLess(workflow.index('name: Backend metadata reporter tests'),
-                        workflow.index('name: Backend tests'))
+        reference = workflow.split('  backend-reference:\n', 1)[1].split('  backend-workers:\n', 1)[0]
+        workers = workflow.split('  backend-workers:\n', 1)[1].split('  backend:\n', 1)[0]
+        self.assertIn('      - name: Backend metadata reporter tests\n', reference)
+        self.assertIn('python -m unittest discover -s .github/scripts/tests -v', reference)
+        self.assertLess(reference.index('name: Backend metadata reporter tests'),
+                        reference.index('name: Full unfiltered collection-only reference'))
+        self.assertIn('needs: backend-reference\n', workers)
+        self.assertIn('fail-fast: false\n', workers)
+        self.assertIn('shard: [0, 1, 2, 3]\n', workers)
         secret_steps = [step for step in workflow.split('      - ') if '${{ secrets.' in step]
-        self.assertEqual(len(secret_steps), 1)
-        self.assertTrue(secret_steps[0].startswith('name: Backend tests\n'))
+        self.assertEqual(len(secret_steps), 2)
+        for step, label, role in zip(secret_steps,
+                ('Full unfiltered collection-only reference', 'Exact assigned whole modules, serial'),
+                ('reference', 'worker')):
+            with self.subTest(role=role):
+                self.assertTrue(step.startswith('name: ' + label + '\n'))
+                self.assertIn('MTG_CI_SHARD_ROLE: ' + role + '\n', step)
+                self.assertEqual(step.count('${{ secrets.'), 13)
+                self.assertEqual(step.count('          MTG_HEAT_WITNESS_'), 13)
+                for number in range(1, 14):
+                    key = f'MTG_HEAT_WITNESS_{number:02d}'
+                    self.assertIn('          ' + key + ': ${{ secrets.' + key + ' }}\n', step)
+                self.assertIn('bash .github/scripts/run-backend-ci.sh 5>&1', step)
 
 
 if __name__ == '__main__':

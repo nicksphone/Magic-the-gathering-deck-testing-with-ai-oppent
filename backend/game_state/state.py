@@ -313,6 +313,7 @@ class MatchState:
     replacement_choice_players: set[int] = field(default_factory=set)
     mechanic_choice_players: set[int] = field(default_factory=set)
     pending_replacement_choice: dict | None = None
+    mana_continuation: dict | None = None
     trigger_order_choice_required: bool = False
     trigger_order_choice_players: set[int] = field(default_factory=set)
     trigger_staging: bool = False
@@ -637,15 +638,11 @@ def _infer_loyalty(name: str, loyalty: str | int | None = None, types: list[str]
 
 def _infer_keywords(oracle_text: str) -> list[str]:
     from rules_engine.oracle_text import without_reminder_text
+    from rules_engine.protection import PROTECTION_CLAUSE_RE, extract_protection_keywords, hexproof_variants
     text = without_reminder_text(oracle_text or "").lower()
-    out: list[str] = []
-    if re.search(r"(?:^|[\n,])\s*training\b", text):
-        out.append("training")
-    # "Bands with other" is distinct from ordinary banding even though card
-    # data sources may classify both under the broad Banding keyword.
-    if re.search(r"(?:^|\n)\s*banding\b|,\s*banding\b", text):
-        out.append("banding")
-    for kw in [
+    keywords = [
+        "training",
+        "banding",
         "trample",
         "first strike",
         "double strike",
@@ -676,10 +673,16 @@ def _infer_keywords(oracle_text: str) -> list[str]:
         "desertwalk",
         "wasteswalk",
         "legendary landwalk",
-    ]:
-        if re.search(r'(?:^|[,\n])\s*' + re.escape(kw) + r'(?=\s*(?:[,\n.]|$))', text):
-            out.append(kw)
-    from rules_engine.protection import extract_protection_keywords
-    for clause in re.findall(r"(?:^|[,\n])\s*protection from ([^.;,\n]+)", text):
-        out.extend(extract_protection_keywords('protection from ' + clause))
+    ]
+    standalone: list[str] = []
+    for line in text.splitlines():
+        parts = [part.strip() for part in line.strip().removesuffix('.').split(',')]
+        # A comma inside an instruction is not an innate keyword boundary.
+        if all(part in keywords or PROTECTION_CLAUSE_RE.fullmatch(part) or hexproof_variants(part)
+               for part in parts):
+            standalone.extend(parts)
+    out = [keyword for keyword in keywords if keyword in standalone]
+    for clause in standalone:
+        if PROTECTION_CLAUSE_RE.fullmatch(clause):
+            out.extend(extract_protection_keywords(clause))
     return out

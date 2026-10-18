@@ -1,12 +1,14 @@
 from effects.registry import resolve_effect
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.ability_model import build_ability_spec
+from tests.browser_positive83_canonical import entry
+from tests.mass_exile_canonical_fixture import final_judgment_entry, final_judgment_in_hand
 
 
 def test_exile_all_creatures_preserves_ownership_and_emits_leave_event() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [entry("Forest", 60)],
+        [entry("Forest", 60)],
         seed=61,
     )
     state.pregame_pending = False
@@ -24,21 +26,13 @@ def test_exile_all_creatures_preserves_ownership_and_emits_leave_event() -> None
 
 def test_farewell_style_text_uses_exile_not_destroy() -> None:
     state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
+        [entry("Forest", 60), final_judgment_entry()],
+        [entry("Forest", 60)],
         seed=62,
     )
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    spell = CardInstance(
-        id="farewell",
-        name="Farewell",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text="Exile all creatures.",
-    )
+    spell = final_judgment_in_hand(state)
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1)
     assert spec.effect.key == "exile_all_creatures"
