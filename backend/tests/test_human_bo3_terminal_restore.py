@@ -8,17 +8,21 @@ from fastapi.testclient import TestClient
 import main
 from game_state.serializers import serialize_match_snapshot
 from tests.test_api_input_contracts import snapshot
+from persistence.db import DATABASE_PATH
+from tests.human_bo3_series_fixture import native_human_bo3_series
 
 
-def test_native_completed_series_survives_cold_read_without_sql_mutation():
+def test_native_completed_series_survives_cold_read_without_sql_mutation(native_human_bo3_series):
     root = Path(__file__).resolve().parents[2]
-    evidence = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE']) / 'interactive'
+    terminal, database = native_human_bo3_series()
+    assert database == DATABASE_PATH.resolve()
+    evidence = terminal.parent
     native = json.loads((evidence / 'terminal.json').read_text())
     mid = native['view']['id']
     assert native['view']['match_complete'] and max(native['view']['score'].values()) == 2
     child = subprocess.run([sys.executable, str(Path(__file__).with_name('human_bo3_cold_worker.py')), mid], cwd=root / 'backend',
         env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'}, capture_output=True, text=True, timeout=60)
-    out = Path(os.environ['MTG_HUMAN_BO3_EVIDENCE']) / 'terminal-restore'
+    out = evidence.parent / 'terminal-restore'
     out.mkdir(parents=True, exist_ok=True)
     (out / 'completed-cold.stderr').write_text(child.stderr)
     assert child.returncode == 0, child.stderr

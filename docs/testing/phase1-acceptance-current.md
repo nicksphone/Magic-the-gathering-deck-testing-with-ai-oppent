@@ -5,6 +5,31 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+Hosted run39165296802 on `ba001450` passes the full frontend job, including
+build/lint/the canonical unit command, and backend-reference. Whole-backend
+execution and the real browser remain separate. Earlier run39161755968's
+sanitized worker2 metadata reports119 call failures, no collection errors,
+and56 setup skips, which are not passes. No raw backend output or protected
+trace was read. The [inventory schema correction](graveyard-inventory-mana-continuation-review.md)
+addresses the118 failing cases in that inventory cluster and passes a338-case local run;
+a separate142-case follow-up also passes. The first local baseline additionally
+exposed18 missing-output-binding failures, preserved separately from semantic
+defects. The remaining BO3 test-order dependency is being removed by reusing
+its genuine producer in the consuming worker, without fabricating a terminal
+state or publishing private evidence. Real BO3 and final CI confirmation are
+still required; local mock/AST plumbing checks cannot certify games. The four
+completed workers of run39161755968 together report228 failed calls and82 setup
+skips, with no collection errors. Reviewed, source-validated sanitized JSON
+identifies additional AI, fixture-fidelity and search failures outside the
+initial worker2 cluster. Those remain separate triage, not a whole-backend pass.
+
+The full23-module CI selftest command now passes275 methods in107.524 seconds,
+including the unchanged original270 and five new BO3 mock/AST wiring controls.
+All source/runtime/resource finality checks pass. This does not run the new BO3
+game layout. The linked-discard browser candidate also checks an independently
+prescribed60-plus4 option domain, backed by two both-seat paid core witnesses
+inside the142-case follow-up; its real browser result is still required.
+
 The October18 [browser filter capability correction](browser-fetch-filter-capability.md)
 passes all116 cases in three whole frontend contract modules. Its unchanged
 baseline passes109 and fails seven genuine new expectations; all108 inherited
@@ -12,9 +37,10 @@ cases pass both times. The drivers expose an explicit per-page transport
 capability, and recovery requests a native Fetch resource-type filter only on
 CDP. Firefox retains its existing interception contract. Source/runtime/resource
 closure checks pass, but these mock/driver tests are not whole-browser evidence.
-Hosted run39161755968 has passed frontend and backend-reference checks; its
-four workers and separate browser job were still running when this correction
-was prepared. Whole-backend and real-browser confirmation remain open.
+Hosted run39161755968 passes frontend and backend-reference, but its four
+workers and separate browser job ultimately fail. The initial capability
+correction was prepared while those jobs were running. Whole-backend and
+real-browser confirmation remain open.
 
 The subsequent full frontend job for `1a4beb3e` fails its unit step. A missed
 enumerability contract is then reproduced locally without reading raw frontend

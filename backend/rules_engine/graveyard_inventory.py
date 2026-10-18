@@ -12,7 +12,7 @@ from rules_engine.oracle_text import without_reminder_text
 
 _SCHEMA_PINS = {
     # Emblems, loyalty permissions and control ledgers require empty defaults below.
-    MatchState: '7265c59f3d8a00fa8ff70ec4f64d89143e4ad9a9b2aa8cda527716f667081e37',
+    MatchState: '6781fbd7d6aa55cfb6d6b9aee82506ba9f824d0603ef60fe733263a982551867',
     CardInstance: 'c6cd00f22c8838effbffa7cdd9d19d29fd16f5879346a071a25d5253bceef8e4',
     PlayerState: 'dd8f36bedf446625796592fe8045ce675eb471d167ffe68cedb2124ccae1e973',
 }
@@ -106,7 +106,8 @@ def public_graveyard_inventory(state, actor_id):
         'numeric_prevention_shields',
         'cleanup_pending', 'cleanup_repeat_required',
     )
-    if any(getattr(state, key, None) for key in context_fields):
+    # None alone is inactive; even an empty continuation cannot certify coverage.
+    if state.mana_continuation is not None or any(getattr(state, key, None) for key in context_fields):
         return result('unknown', 'uncovered continuation/effect context')
     if not _reviewed_context_covered(state):
         return result('unknown', 'uncovered reviewed permission/protection context')

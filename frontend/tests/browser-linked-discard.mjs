@@ -35,10 +35,33 @@ for (const seat of [1, 2]) for (const [index, name] of ['Rites of Spring', 'Tola
       await waitFor("document.body.innerText.includes('Search your library (you may fail to find a matching card)')");
       const state = await (await fetch(`${api}/matches/${fixture.id}`)).json();
       assert.equal(state.pending_mechanic_choice.count, 2);
+      // Native 60-card stock after the opening hand is returned, then four scene births.
+      const expectedSearchIds = [
+        ...Array.from({length:53}, (_, index) => `p${seat}-${String(index+1).padStart(3,'0')}`),
+        ...Array.from({length:7}, (_, index) => `p${seat}-${String(60-index).padStart(3,'0')}`),
+        ...Array.from({length:4}, (_, index) => `00000000-0000-0000-0000-${String(index+5).padStart(12,'0')}`),
+      ];
+      const legalResponse = await fetch(`${api}/matches/${fixture.id}/legal-moves?player_id=${seat}`);
+      assert.equal(legalResponse.status, 200);
+      const legal = await legalResponse.json();
+      assert.equal(legal.player_id, seat);
+      assert.equal(legal.revision, state.revision);
+      assert.equal(legal.moves.length, 1);
+      const search = legal.moves[0];
+      assert.equal(search.type, 'choose_mechanic');
+      assert.equal(search.kind, 'search_library');
+      assert.equal(search.player_id, seat);
+      assert.equal(search.count, 2);
+      assert.equal(search.min_count, 0);
+      assert.deepEqual(search.options, expectedSearchIds);
+      assert.equal(new Set(search.options).size, expectedSearchIds.length);
+      assert.deepEqual(search.option_labels, Object.fromEntries(expectedSearchIds.map(cid => [cid, 'Swamp'])));
+      assert.deepEqual(search.option_type_lines, Object.fromEntries(expectedSearchIds.map(cid => [cid, 'Basic Land \u2014 Swamp'])));
       await evaluate(`(() => {
         const panel = [...document.querySelectorAll('.block-panel')].find(panel => panel.textContent.includes('Search your library'));
         const boxes = [...panel.querySelectorAll('input[type="checkbox"]')];
-        if (boxes.length !== 4) throw new Error('Wrong basic-land search choices');
+        if (boxes.length !== ${expectedSearchIds.length}) throw new Error('Wrong basic-land search choices');
+        if (boxes.some(box => box.closest('label')?.textContent.trim() !== 'Swamp (Basic Land \u2014 Swamp)')) throw new Error('Wrong basic-land search labels');
         boxes[0].click();
       })()`);
       await waitFor(ready('Confirm Selection')); await click('Confirm Selection');
@@ -47,6 +70,7 @@ for (const seat of [1, 2]) for (const [index, name] of ['Rites of Spring', 'Tola
     const final = await (await fetch(`${api}/matches/${fixture.id}`)).json();
     assert.equal(final.players[String(seat)].hand.length, index === 1 ? 3 : 2);
     assert.equal(final.players[String(3-seat)].hand.length, fixture.players[String(3-seat)].hand.length);
+    if (!index) assert.equal(final.players[String(seat)].hand.some(card => card.id === `p${seat}-001`), true);
     if (!index) assert.equal(final.log.filter(line => line.includes('shuffles their library')).length, 1);
     assert.equal(final.players[String(seat)].graveyard.some(card => card.name === name), true);
     console.log(`PASS seat ${seat}: ${name}, actual cast, owned discard/search, choice reload and linked result`);
