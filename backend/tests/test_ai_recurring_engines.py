@@ -1,4 +1,5 @@
 """Canonical public-board payoffs; fixture states are not competitive decks."""
+from copy import deepcopy
 import json
 from pathlib import Path
 from unittest.mock import patch
@@ -43,7 +44,12 @@ def add(state, name, player=1, zone=Zone.BATTLEFIELD, *, cards=CARDS):
                         mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
                         power=int(raw["power"]) if raw.get("power") is not None else None,
                         toughness=int(raw["toughness"]) if raw.get("toughness") is not None else None,
-                        keywords=raw["keywords"] or [], colors=raw["colors"] or [])
+                        keywords=deepcopy(raw["keywords"] or []), colors=deepcopy(raw["colors"] or []),
+                        printed_power=raw.get("printed_power", str(raw["power"]) if raw.get("power") is not None else None),
+                        printed_toughness=raw.get("printed_toughness", str(raw["toughness"]) if raw.get("toughness") is not None else None),
+                        loyalty=int(raw["loyalty"]) if raw.get("loyalty") is not None else None,
+                        layout=raw.get("layout") or "", card_faces=deepcopy(raw.get("card_faces") or []),
+                        selected_face_index=raw.get("selected_face_index"), image_uri=raw.get("image_uri"))
     state.cards[card.id] = card
     getattr(state.players[player], zone.value).append(card.id)
     return card
