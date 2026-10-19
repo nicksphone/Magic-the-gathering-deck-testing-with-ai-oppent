@@ -45,7 +45,7 @@ def roster():
 
 
 def fake_engine(namespace, *, winner=1, action_error=False):
-    player = SimpleNamespace(hand=[], battlefield=[], life=20, mana_pool={}, lands_played_this_turn=0)
+    player = SimpleNamespace(name='Protocol player', hand=[], battlefield=[], life=20, mana_pool={}, lands_played_this_turn=0)
     state = SimpleNamespace(winner=None, turn=1, step='precombat_main', active_player=1,
         priority_player=1, pregame_pending=False, cards={}, players={1: player, 2: copy.deepcopy(player)},
         stack=[], log=['RAW-ID initial'])
@@ -303,7 +303,8 @@ class RoundRobinProtocolTests(unittest.TestCase):
                         stall_actionable_options=False, bad_blocks=0, redundant_removal_casts=None)
         bindings = {
             'analytics.resource_budget': SimpleNamespace(ResourceBudget=ResourceBudget, RESOURCE_LIMITS=RESOURCE_LIMITS),
-            'scripts.regression_matrix_replay': SimpleNamespace(run_game=self.replay['run_game'], run_match=self.replay['run_match']),
+            'scripts.regression_matrix_replay': SimpleNamespace(run_game=self.replay['run_game'], run_match=self.replay['run_match'],
+                contextual_trace=builtins.__import__('scripts.regression_matrix_replay', fromlist=['contextual_trace']).contextual_trace),
             'analytics.decision_quality': SimpleNamespace(build_trace_payload=trace,
                 summarize_trace_rows=quality['summarize_trace_rows'], DECISION_QUALITY_METRICS=quality['_TRACE_METRICS']),
             'analytics.service': SimpleNamespace(AnalyticsService=service['AnalyticsService']),

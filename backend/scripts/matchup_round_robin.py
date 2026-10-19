@@ -495,7 +495,8 @@ def run_fixed_game_measurement(export, seed_tokens, *, selected_pair, selected_t
     if len(selected) != 2 or [s['deck_a_seat'] for s in selected] != [1, 2]:
         raise ValueError('Probe must select exactly two actual mirrored games')
     from ai.deck_analysis import guess_archetype
-    from scripts.regression_matrix_replay import run_game
+    from ai.log_priors import _opponent_archetype
+    from scripts.regression_matrix_replay import run_game, contextual_trace
     from analytics.decision_quality import build_trace_payload
     from scripts.baseline_report import package_measurement
     by_name = {r['name']: r for r in rows}
@@ -543,6 +544,7 @@ def run_fixed_game_measurement(export, seed_tokens, *, selected_pair, selected_t
     from ai.agent import AIAgent
     from ai.log_priors import load_log_priors
     for function, path in ((run_game, 'scripts/regression_matrix_replay.py'),
+            (contextual_trace, 'scripts/regression_matrix_replay.py'),
             (build_trace_payload, 'analytics/decision_quality.py'),
             (guess_archetype, 'ai/deck_analysis.py'), (AIAgent.__init__, 'ai/agent.py'),
             (load_log_priors, 'ai/log_priors.py'), (collect_corpus, 'scripts/oracle_corpus_report.py')):
@@ -588,6 +590,12 @@ def run_fixed_game_measurement(export, seed_tokens, *, selected_pair, selected_t
             def trace(state, pid, legal, action, decision):
                 return build_trace_payload(state, pid, legal, action, getattr(decision, 'reasoning', ''),
                     knowledge_usage=getattr(decision, 'knowledge_usage', None))
+            opponents = {1: configuration['effective_archetypes'].get(two['name']),
+                         2: configuration['effective_archetypes'].get(one['name'])}
+            if (all(row['classification_status'] == 'resolved' for row in (one, two))
+                    and all(_opponent_archetype({'opponent_archetype': label}) is not None
+                            for label in opponents.values())):
+                trace = contextual_trace(trace, opponents)
             try:
                 result = run_game(*boards, scheduled['root_seed'], difficulty, max_ticks,
                     starting_player=1, trace_builder=trace, budget=budget, record_game=record)
@@ -618,6 +626,14 @@ def run_fixed_game_measurement(export, seed_tokens, *, selected_pair, selected_t
                 failure = dict(scheduled, status='resource_limit' if isinstance(error, SimulationResourceLimit)
                                else 'execution_error', winner=None,
                                evidence_complete=False, error_type=name)
+                if isinstance(error, SimulationResourceLimit):
+                    dimension = getattr(error, 'dimension', None)
+                    if type(dimension) is str and dimension in {
+                        'deadline', 'action_log', 'game_log', 'game_log_entries',
+                        'batch_log', 'batch_log_entries', 'trace_entry', 'trace_scalar',
+                        'trace_nodes', 'trace_depth', 'result_json', 'request_json', 'error_utf8',
+                    }:
+                        failure['resource_limit_dimension'] = dimension
                 if len(games) == ordinal:
                     games[-1] = failure
                 else:
@@ -668,9 +684,14 @@ def run_round_robin(export, seed_tokens, *, difficulty, max_ticks, limits, priva
     if any(type(value) is not int or value < 0 or value > RESOURCE_LIMITS[key] for key, value in limits.items()):
         raise ValueError('Limits may not widen the shared policy')
     admit_execution_rows(rows)
-    from scripts.regression_matrix_replay import run_game, run_match
+    from scripts.regression_matrix_replay import run_game, run_match, contextual_trace
+    from ai.deck_analysis import guess_archetype
+    from ai.log_priors import _opponent_archetype
     from analytics.decision_quality import build_trace_payload, summarize_trace_rows, DECISION_QUALITY_METRICS
     from analytics.service import AnalyticsService
+    for function, path in ((contextual_trace, 'scripts/regression_matrix_replay.py'),
+                           (guess_archetype, 'ai/deck_analysis.py')):
+        verify_measurement_callable(function, path, source_binding, BACKEND)
     directory = Path(private_directory)
     directory.mkdir(mode=0o700, parents=False, exist_ok=False)
     manifest = dict(export_sha256=digest(export), input_export_base_commit=export['source_commit'],
@@ -683,6 +704,18 @@ def run_round_robin(export, seed_tokens, *, difficulty, max_ticks, limits, priva
                         sideboard_cards=sum(card['quantity'] for card in row['sideboard'])) for row in rows],
                     source_scope='explicit current ordinary backend binding; file provenance, not live CodeRef authority',
                     backend_before_sha256=source_before)
+    effective_archetypes = {}
+    for row in rows:
+        if row['classification_status'] != 'resolved':
+            continue
+        try:
+            label = guess_archetype(deepcopy(row['mainboard']))
+        except Exception:
+            # Metadata failure must not preempt the existing native game route.
+            continue
+        if type(label) is str:
+            effective_archetypes[row['name']] = label
+    manifest['effective_archetypes'] = effective_archetypes
     by_name = {row['name']: row for row in rows}
     original_rows = deepcopy(rows)
     original_export = canonical_bytes(export)
@@ -702,6 +735,11 @@ def run_round_robin(export, seed_tokens, *, difficulty, max_ticks, limits, priva
             def trace(state, pid, legal, action, decision):
                 return build_trace_payload(state, pid, legal, action, getattr(decision, 'reasoning', ''),
                                            knowledge_usage=getattr(decision, 'knowledge_usage', None))
+            opponents = {1: effective_archetypes.get(two['name']), 2: effective_archetypes.get(one['name'])}
+            if (all(row['classification_status'] == 'resolved' for row in (one, two))
+                    and all(_opponent_archetype({'opponent_archetype': label}) is not None
+                            for label in opponents.values())):
+                trace = contextual_trace(trace, opponents)
             def record(result, raw):
                 nonlocal ordinal
                 ordinal += 1
