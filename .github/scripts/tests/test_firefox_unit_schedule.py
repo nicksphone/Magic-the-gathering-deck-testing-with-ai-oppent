@@ -17,6 +17,8 @@ class FirefoxUnitScheduleTests(unittest.TestCase):
             'tests/firefox-runtime-observer.test.mjs',
             'tests/firefox-disabled-bootstrap.test.mjs',
             'tests/firefox-bootstrap-failure-cleanup.test.mjs',
+            'tests/firefox-release-owned-launcher-contract.test.mjs',
+            'tests/firefox-launcher-listener-readiness.test.mjs',
         ])
 
 

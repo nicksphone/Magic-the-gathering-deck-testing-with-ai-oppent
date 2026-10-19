@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { createServer } from 'node:net';
+import { createConnection, createServer } from 'node:net';
 import { createServer as createHTTPServer } from 'node:http';
 import { mkdir, readFile, writeFile, readdir, readlink, lstat, stat, statfs, realpath, symlink } from 'node:fs/promises';
 import { openSync, closeSync } from 'node:fs';
@@ -10,6 +10,9 @@ import { fileURLToPath } from 'node:url';
 import { runNativeHumanBo3 } from './browser-native-human-bo3.mjs';
 import { runNativeHumanBo3Seat2 } from './browser-native-human-bo3-seat2.mjs';
 import {runPaidBuiltCases, runBuiltRecovery, runBuiltOrigins} from './browser-current-paid-acceptance.mjs';
+import {configureFirefoxTransport} from './browser-driver.mjs';
+import {createEnrollment, createFirefoxTransport} from '../firefox-transport.mjs';
+import {createWireTrace} from '../firefox-wire-trace.mjs';
 
 process.umask(0o077);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -23,11 +26,22 @@ assert.equal(await realpath(ownedRoot), ownedRoot, 'Owned root must not traverse
 assert.equal(typeof qualifiedCommit, 'string', 'MTG_BROWSER_QUALIFIED_COMMIT is required');
 assert.equal(qualifiedCommit.length, 40, 'Exact Git commit length required');
 assert.match(qualifiedCommit, /^[0-9a-f]{40}$/, 'Exact lowercase Git commit required');
-assert.equal(process.env.MTG_BROWSER_NO_SANDBOX, '1', 'Exact isolated test-only Chrome launch contract');
+const browserVendor = process.env.MTG_BROWSER_VENDOR || 'chrome';
+assert.ok(['chrome', 'firefox'].includes(browserVendor), 'Explicit supported release-owned browser required');
+assert.equal(process.env.MTG_BROWSER_NO_SANDBOX, browserVendor === 'firefox' ? '0' : '1',
+  'Retain isolated Chrome contract; Firefox must retain its sandbox');
+const firefoxExecutables = browserVendor === 'firefox'
+  ? JSON.parse(await readFile(path.join(project, 'runner/executable-pins.json'), 'utf8')) : null;
 const out = path.join(project, 'evidence/native-browser');
-const python = '/tmp/mtg-fresh-deps-restored-dVBzUV/venv/bin/python';
-const deps = '/home/nick/mtg-deck-testing-lab/frontend/node_modules';
+const python = browserVendor === 'firefox' ? firefoxExecutables.python?.path : '/tmp/mtg-fresh-deps-restored-dVBzUV/venv/bin/python';
+const deps = browserVendor === 'firefox' ? process.env.MTG_FRONTEND_DEPS : '/home/nick/mtg-deck-testing-lab/frontend/node_modules';
 const chrome = '/snap/chromium/3551/usr/lib/chromium-browser/chrome';
+const firefox = firefoxExecutables?.firefox?.path;
+if (browserVendor === 'firefox') for (const file of [python, deps, firefox]) {
+  assert.equal(typeof file, 'string', 'Separate pinned Firefox runtime intake required');
+  assert.ok(path.isAbsolute(file) && path.resolve(file) === file);
+}
+const bodyCacheDirectory = path.join(out, 'firefox-body-cache');
 const db = path.join(project, 'runtime/sql/api.db');
 const viteConfig = path.join(root, 'frontend/.native-browser-vite.config.mjs');
 const digest = data => createHash('sha256').update(data).digest('hex');
@@ -36,6 +50,7 @@ const roleCounts = new Map();
 const allocations = new Set();
 const ports = {};
 let backend, failure, watchdog, hardDeadline, rejectInterrupted, hostileServer, budgetWatch;
+let enrollment, firefoxTransport, firefoxWire;
 let budgetChecking = false, fuserChecking = false;
 let backendReady = false;
 let shuttingDown = false, closureProven = false;
@@ -245,7 +260,7 @@ async function allocate() {
   } finally { await new Promise(resolve => s.close(resolve)); allocations.delete(s); }
 }
 function authorizeChild(label, executable, args, cwd) {
-  const limits = {build: 1, preview: 1, chromium: 1, backend: 32, ledger: 31,
+  const limits = {build: 1, preview: 1, [browserVendor === 'firefox' ? 'firefox' : 'chromium']: 1, backend: 32, ledger: 31,
     'restart-fuser': 31, 'closure-fuser': 1};
   assert.ok(Object.hasOwn(limits, label), `Undeclared child role: ${label}`);
   const count = (roleCounts.get(label) ?? 0) + 1;
@@ -253,8 +268,11 @@ function authorizeChild(label, executable, args, cwd) {
   const vite = path.join(deps, 'vite/bin/vite.js');
   if (label === 'backend') {
     assert.equal(executable, python); assert.equal(cwd, path.join(root, 'backend'));
-    assert.deepEqual(args, ['-m', 'uvicorn', 'tests.current_built_browser_server:app',
-      '--host', '127.0.0.1', '--port', String(ports.backend)]);
+    assert.deepEqual(args, browserVendor === 'firefox'
+      ? ['-m', 'uvicorn', 'tests.firefox_body_cache_app:create_app', '--factory',
+        '--host', '127.0.0.1', '--port', String(ports.backend)]
+      : ['-m', 'uvicorn', 'tests.current_built_browser_server:app',
+        '--host', '127.0.0.1', '--port', String(ports.backend)]);
   } else if (label === 'ledger') {
     assert.equal(executable, python); assert.equal(cwd, path.join(root, 'backend'));
     assert.equal(args.length, 3); assert.equal(args[0], path.join(root, 'backend/tests/current_built_browser_server.py'));
@@ -269,6 +287,10 @@ function authorizeChild(label, executable, args, cwd) {
     assert.equal(executable, process.execPath); assert.equal(cwd, path.join(root, 'frontend'));
     assert.deepEqual(args, [vite, 'preview', '--config', viteConfig, '--host', '127.0.0.1',
       '--port', String(ports.frontend), '--strictPort']);
+  } else if (label === 'firefox') {
+    assert.equal(executable, firefox); assert.equal(cwd, root);
+    assert.deepEqual(args, ['--headless', '--no-remote', '--profile', path.join(out, 'profile'),
+      '--remote-debugging-port', String(ports.cdp), 'about:blank']);
   } else {
     assert.equal(executable, chrome); assert.equal(cwd, root);
     assert.deepEqual(args, ['--headless', '--no-first-run', '--disable-dev-shm-usage',
@@ -292,6 +314,15 @@ function ownedEnvironment(executable, env) {
       XDG_CONFIG_HOME: path.join(out, 'config'), XDG_CACHE_HOME: path.join(out, 'cache'),
       XDG_DATA_HOME: path.join(out, 'data'), XDG_STATE_HOME: path.join(out, 'state'),
       XDG_RUNTIME_DIR: path.join(out, 'runtime'), CHROME_CONFIG_HOME: path.join(out, 'config')});
+  }
+  if (browserVendor === 'firefox' && executable === firefox) {
+    for (const name of Object.keys(own)) if (name.startsWith('SNAP') || name.startsWith('MOZ_') ||
+      ['DBUS_SESSION_BUS_ADDRESS', 'DISPLAY', 'WAYLAND_DISPLAY',
+        'LD_PRELOAD', 'LD_LIBRARY_PATH', 'LD_AUDIT', 'LD_DEBUG', 'MOZILLA_FIVE_HOME'].includes(name)) delete own[name];
+    Object.assign(own, {HOME: path.join(out, 'home'),
+      XDG_CONFIG_HOME: path.join(out, 'config'), XDG_CACHE_HOME: path.join(out, 'cache'),
+      XDG_DATA_HOME: path.join(out, 'data'), XDG_STATE_HOME: path.join(out, 'state'),
+      XDG_RUNTIME_DIR: path.join(out, 'runtime')});
   }
   return own;
 }
@@ -388,11 +419,57 @@ async function ready(url, child) {
   }
   assert.fail(`Service readiness deadline: ${url}`);
 }
+async function readyFirefoxListener(child) {
+  const end = Date.now() + 90000;
+  const check = () => {
+    if (failure) throw failure;
+    assert.ok(!shuttingDown, 'No Firefox listener readiness during shutdown');
+    assert.ok(children.includes(child) && child.label === 'firefox', 'Actual owned Firefox child required');
+    assert.equal(child.exitCode, null, 'Firefox exited before listener readiness');
+    assert.equal(child.signalCode, null, 'Firefox signaled before listener readiness');
+    const remaining = end - Date.now();
+    assert.ok(remaining > 0, 'Firefox listener readiness deadline');
+    return remaining;
+  };
+  for (;;) {
+    const remaining = check();
+    const connected = await new Promise((resolve, reject) => {
+      let socket, connected = false, probeError;
+      try {
+        socket = createConnection({host: '127.0.0.1', port: ports.cdp});
+        socket.once('close', () => probeError ? reject(probeError) : resolve(connected));
+        socket.once('connect', () => { connected = true; socket.destroy(); });
+        socket.once('error', error => {
+          if (error.code !== 'ECONNREFUSED') probeError = error;
+          socket.destroy();
+        });
+        socket.once('timeout', () => socket.destroy());
+        socket.setTimeout(Math.min(1000, remaining));
+      } catch (error) {
+        if (!socket) { reject(error); return; }
+        probeError = error;
+        socket.destroy();
+      }
+    });
+    const left = check();
+    if (connected) return;
+    await new Promise(resolve => setTimeout(resolve, Math.min(100, left)));
+  }
+}
 async function startBackend() {
   assert.ok(!shuttingDown && !failure, 'No backend restart after shutdown');
   backendReady = false;
-  backend = start('backend', python, ['-m', 'uvicorn', 'tests.current_built_browser_server:app',
-    '--host', '127.0.0.1', '--port', String(ports.backend)], path.join(root, 'backend'), {
+  backend = start('backend', python, browserVendor === 'firefox'
+    ? ['-m', 'uvicorn', 'tests.firefox_body_cache_app:create_app', '--factory',
+      '--host', '127.0.0.1', '--port', String(ports.backend)]
+    : ['-m', 'uvicorn', 'tests.current_built_browser_server:app',
+      '--host', '127.0.0.1', '--port', String(ports.backend)], path.join(root, 'backend'), {
+    ...(browserVendor === 'firefox' ? {
+      MTG_RELEASE_BODY_CACHE_ROOT: bodyCacheDirectory,
+      MTG_RELEASE_BODY_CACHE_ENROLLMENT: path.join(bodyCacheDirectory, 'enrollment.json'),
+      MTG_BROKER_RUN_NONCE: enrollment.bindings.run_nonce,
+      MTG_BROKER_SOURCE_BINDING: enrollment.bindings.source_binding,
+    } : {}),
     MTG_BUILT_BACKEND_PORT: String(ports.backend),
     MTG_BUILT_PAGE_ORIGIN: `http://127.0.0.1:${ports.frontend}`,
     MTG_TRUSTED_ORIGINS: `http://127.0.0.1:${ports.frontend}`,
@@ -408,6 +485,14 @@ async function startBackend() {
     && owner.owner_fd !== null && owner.admissions_open && owner.backups.length === 1);
   assert.equal(owner.backups[0].verified_by_successful_lifespan, true);
   backendReady = true;
+}
+function currentBackendIdentity() {
+  assert.ok(backend && Number.isSafeInteger(backend.pid) && backend.pid > 0,
+    'Current owned backend PID required');
+  assert.equal(backend.exitCode, null); assert.equal(backend.signalCode, null);
+  assert.ok(Number.isSafeInteger(backend.startTicks) && backend.startTicks > 0,
+    'Current owned backend start identity required');
+  return {pid: backend.pid, start: String(backend.startTicks)};
 }
 async function readLedger(mid) {
   assert.ok(!shuttingDown && !failure, 'No ledger child during shutdown');
@@ -433,7 +518,8 @@ async function restartBackend(mid) {
     closedDBBefore: before, fuser, ledger, UTC: new Date().toISOString() }, null, 2));
   return ledger;
 }
-async function closedReceipt() {
+async function closedReceipt({requireOwnedIdentity = true} = {}) {
+  assert.equal(typeof requireOwnedIdentity, 'boolean', 'Typed owned-identity finality required');
   assert.equal(allocations.size, 0, 'All temporary port allocations must close');
   const storage = await storageInventory({closed: true});
   assert.equal(storage.receipts.length, children.filter(c => c.label === 'backend').length);
@@ -466,10 +552,18 @@ async function closedReceipt() {
     await new Promise(resolve => s.close(resolve));
   }
   const fuser = await checkFuser('closure-fuser');
+  const ownedPids = new Set(children.map(child => child.pid));
+  const unknownOwnedIdentities = [...new Set([...inaccessible.filter(pid => ownedPids.has(pid)),
+    ...unreadableFDs.filter(row => ownedPids.has(row.pid)).map(row => row.pid)])];
   const receipt = { refs, inaccessible, unreadableFDs, journals, fuser, storage,
+    requireOwnedIdentity, unknownOwnedIdentities,
+    ownedIdentityQualified: requireOwnedIdentity && unknownOwnedIdentities.length === 0,
+    identityScope: requireOwnedIdentity ? 'strict tracked-owned identities; not universal ancestry'
+      : 'legacy Chrome closure; NOT strict owned-identity qualification',
     processes: children.map(c => ({ label: c.label, pid: c.pid, exit: c.exitCode, signal: c.signalCode })),
     inputScope: 'reviewed file hashes, not generated media/full-tree equality', UTC: new Date().toISOString() };
   await writeFile(path.join(out, 'CLOSURE.json'), JSON.stringify(receipt, null, 2));
+  if (requireOwnedIdentity) assert.deepEqual(unknownOwnedIdentities, [], 'UNKNOWN_CHILD_IDENTITY: owned closure unproven');
   assert.deepEqual(refs, []); assert.deepEqual(journals, []);
   assert.ok(children.every(c => c.exitCode !== null || c.signalCode !== null), 'All tracked children must exit');
   const serverReceipts=(await readdir(out)).filter(n => /^server-closure-\d+\.json$/.test(n));
@@ -485,12 +579,22 @@ async function closedReceipt() {
   await checkPins();
   await writeFile(path.join(out, 'OUTPUT-BOUNDS.json'), JSON.stringify(await outputBudget(), null, 2));
 }
+// Capture validated mode once; partial startup/cleanup cannot weaken finality.
+closedReceipt = closedReceipt.bind(undefined, Object.freeze({requireOwnedIdentity: browserVendor === 'firefox'}));
 
 assert.equal(process.argv.length, 2);
 const grant=JSON.parse(await readFile(path.join(project,'runner/EXECUTION-GRANT.json'),'utf8'));
 assert.deepEqual(grant,{root:project,source:root,commit:status.pin,scope:'built-app-40paid-3recovery-3BO3-4origin',explicit_parent_grant:true,seconds:2400});
 const cohort=JSON.parse(await readFile(path.join(project,'runner/cohort.json'),'utf8'));
 assert.equal(cohort.length,40);
+if (browserVendor === 'firefox') {
+  for (const [runnerName, sourceName] of [['cohort.json', 'current-built-cohort.json'],
+    ['recovery-fixtures.json', 'current-built-recovery-fixtures.json']]) {
+    assert.equal(digest(await readFile(path.join(project, 'runner', runnerName))),
+      digest(await readFile(path.join(root, 'frontend/tests/release-owned/fixtures', sourceName))),
+      'Actual owned fixture input must equal its pinned public source');
+  }
+}
 process.env.MTG_CDP_DIAGNOSTIC_DIR=path.join(out,'cdp-observations');
 const fixtureToken=(await readFile(path.join(project,'runner/fixture-token'),'utf8')).trim();
 assert.match(fixtureToken,/^[0-9a-f]{64}$/);
@@ -499,6 +603,7 @@ for(const [name,hash] of Object.entries(runnerPins)) assert.equal(digest(await r
 const externalPins=JSON.parse(await readFile(path.join(project,'runner/external-readonly-pins.json'),'utf8'));
 for(const [file,hash] of Object.entries(externalPins)) assert.equal(digest(await readFile(file)),hash,file);
 const execPins=JSON.parse(await readFile(path.join(project,'runner/executable-pins.json'),'utf8'));
+if (firefoxExecutables) assert.deepEqual(firefoxExecutables, execPins, 'Selected Firefox runtime bindings changed during pin validation');
 assert.equal(process.execPath,execPins.node.path);
 for(const row of Object.values(execPins)) {
   assert.equal(await realpath(row.path), row.realpath, `Executable target changed: ${row.path}`);
@@ -521,7 +626,8 @@ const site=path.join(runtimeRoot,'lib/python3.12/site-packages');
 for(const directory of await readdir(site)) if(directory.endsWith('.dist-info')) {const m=await readFile(path.join(site,directory,'METADATA'),'utf8');const name=m.match(/^Name: (.+)$/m)?.[1];const version=m.match(/^Version: (.+)$/m)?.[1];if(name&&version) installed.set(name.toLowerCase().replace(/[-_.]+/g,'-'),version);}
 for(const row of versions) assert.equal(installed.get(row.name.toLowerCase().replace(/[-_.]+/g,'-')),row.version,row.name);
 assert.ok((await stat(python)).isFile() && ((await stat(python)).mode & 0o111), 'Parent-qualified pinned recovery interpreter required; no unreviewed substitution');
-assert.ok((await lstat(chrome)).isFile() || (await lstat(chrome)).isSymbolicLink(), 'Existing cached Chromium required');
+const nativeExecutable = browserVendor === 'firefox' ? firefox : chrome;
+assert.ok((await lstat(nativeExecutable)).isFile() || (await lstat(nativeExecutable)).isSymbolicLink(), 'Pinned native executable required');
 assert.ok((await lstat(path.join(deps,'vite/bin/vite.js'))).isFile());
 assert.equal(await readFile(path.join(project, '.built-browser-owned'), 'utf8'), root);
 for (let p = root;; p = path.dirname(p)) { assert.equal((await lstat(p)).isSymbolicLink(), false); if (p === '/') break; }
@@ -584,11 +690,21 @@ try {
   async function hashTree(directory,base){for(const entry of await readdir(directory,{withFileTypes:true})){const file=path.join(directory,entry.name);if(entry.isDirectory())await hashTree(file,base);else if(entry.isFile()){builtBytes+=(await stat(file)).size;assert.ok(builtBytes<=128*1024*1024,'Built dist exceeds 128 MiB');built[path.relative(base,file)]=digest(await readFile(file));}else assert.fail('Built asset symlink');}}
   await hashTree(dist,dist);assert.ok(built['index.html']);assert.ok(Object.keys(built).length<=2048,'Built asset count');
   await writeFile(path.join(out,'BUILD-PINS.json'),JSON.stringify(built,null,2));
+  if (browserVendor === 'firefox') {
+    await mkdir(bodyCacheDirectory, {mode: 0o700});
+    await mkdir(path.join(out, 'profile'), {mode: 0o700});
+    enrollment = createEnrollment({directory: bodyCacheDirectory,
+      sourceBinding: digest(await readFile(path.join(project, 'runner/source-pins.json'))),
+      apiOrigin: api, frontendOrigin: frontend});
+  }
   await startBackend();
   const vite=start('preview',process.execPath,[path.join(deps,'vite/bin/vite.js'),'preview','--config',viteConfig,'--host','127.0.0.1','--port',String(ports.frontend),'--strictPort'],path.join(root,'frontend'));
   hostileServer=createHTTPServer((request,response)=>{if(request.method!=='GET'||!['/','/null'].includes(request.url)){response.writeHead(404).end();return;}response.setHeader('Content-Type','text/html');response.end('<!doctype html><title>Owned Origin control</title><body>Owned Origin control</body>');});
   await new Promise((resolve,reject)=>{hostileServer.once('error',reject);hostileServer.listen(ports.hostile,'127.0.0.1',resolve);});
-  const chromium = start('chromium', chrome, ['--headless', '--no-first-run', '--disable-dev-shm-usage',
+  const chromium = browserVendor === 'firefox'
+    ? start('firefox', firefox, ['--headless', '--no-remote', '--profile', path.join(out, 'profile'),
+      '--remote-debugging-port', String(ports.cdp), 'about:blank'], root)
+    : start('chromium', chrome, ['--headless', '--no-first-run', '--disable-dev-shm-usage',
     '--disable-background-networking', '--no-default-browser-check', '--password-store=basic',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost',
     '--no-sandbox',
@@ -598,9 +714,18 @@ try {
   chromium.budgetIdentity = Object.freeze({pid: chromium.pid,
     startTicks: chromeStat.slice(chromeStat.lastIndexOf(')') + 2).split(/\s+/)[19],
     exe: await realpath(`/proc/${chromium.pid}/exe`)});
-  assert.equal(chromium.budgetIdentity.exe, await realpath(chrome), 'Actual cached Chrome identity');
-  await writeFile(path.join(out, 'chrome-native-identity.json'), JSON.stringify(chromium.budgetIdentity));
-  await ready(frontend, vite); await ready(`http://127.0.0.1:${ports.cdp}/json/version`, chromium);
+  assert.equal(chromium.budgetIdentity.exe, await realpath(nativeExecutable), 'Actual pinned native identity');
+  await writeFile(path.join(out, browserVendor === 'firefox' ? 'firefox-native-identity.json' : 'chrome-native-identity.json'), JSON.stringify(chromium.budgetIdentity));
+  await ready(frontend, vite);
+  if (browserVendor === 'firefox') {
+    await readyFirefoxListener(chromium);
+    firefoxWire = createWireTrace(process.env.MTG_CDP_DIAGNOSTIC_DIR);
+    firefoxTransport = createFirefoxTransport({controller: enrollment, directory: bodyCacheDirectory,
+      endpoint: `ws://127.0.0.1:${ports.cdp}/session`, producer: currentBackendIdentity,
+      pageOrigins: [frontend, `http://127.0.0.1:${ports.hostile}`], observe: row => firefoxWire.record(row)});
+    await firefoxTransport.ready();
+    configureFirefoxTransport(firefoxTransport);
+  } else await ready(`http://127.0.0.1:${ports.cdp}/json/version`, chromium);
   const served = {};
   for (const [name, hash] of Object.entries(built)) {
     assert.ok(!failure && !shuttingDown);
@@ -624,12 +749,13 @@ try {
   for (const mode of ['human_vs_human', 'player_vs_ai']) {
     assert.ok(!failure);
     const maxMilliseconds = mode === 'human_vs_human' ? 900000 : 1200000;
-    status.episodes.push(await deadline(runNativeHumanBo3({ mode, api, frontend, out, restartBackend,
+    const episode = () => deadline(runNativeHumanBo3({ mode, api, frontend, out, restartBackend,
       maxMilliseconds,
       assertAlive: () => { assert.ok(!failure); assert.equal(backend.exitCode, null); } }),
-    maxMilliseconds, `${mode} episode`));
+    maxMilliseconds, `${mode} episode`);
+    status.episodes.push(await (enrollment ? enrollment.withEnrolledBodyEpisode(mode, episode) : episode()));
   }
-  status.episodes.push(await deadline(runNativeHumanBo3Seat2({mode: 'player_vs_ai',
+  const seat2Episode = () => deadline(runNativeHumanBo3Seat2({mode: 'player_vs_ai',
     api, frontend, out, maxMilliseconds: 1200000,
     restartBackend: async mid => {
       const ledger = await restartBackend(mid);
@@ -637,26 +763,57 @@ try {
       return ledger;
     },
     assertAlive: () => { assert.ok(!failure); assert.equal(backend.exitCode, null); }}),
-    1200000, 'player_vs_ai seat2 reversed whole decks episode'));
+    1200000, 'player_vs_ai seat2 reversed whole decks episode');
+  status.episodes.push(await (enrollment
+    ? enrollment.withEnrolledBodyEpisode('player_vs_ai-seat2', seat2Episode) : seat2Episode()));
   })()]);
 } catch (error) { failure ??= error; }
 finally {
   shuttingDown = true;
+  const cleanupFailures = [];
   clearTimeout(watchdog);
   clearInterval(budgetWatch);
-  if(hostileServer) {try{hostileServer.closeAllConnections();await new Promise(resolve=>hostileServer.close(resolve));}catch(error){failure??=error;}}
+  if (firefoxTransport) {
+    try {
+      await deadline(firefoxTransport.close(), 15000, 'Firefox transport closure');
+      assert.ok(!firefoxTransport.observerFailed, 'Native wire observer failed');
+    } catch (error) { cleanupFailures.push(error); failure ??= error; }
+  }
+  if (typeof firefoxWire !== 'undefined' && firefoxWire?.failed) {
+    const error = new Error('Native wire metadata publication failed');
+    cleanupFailures.push(error); failure ??= error;
+  }
+  if(hostileServer) {try{hostileServer.closeAllConnections();await new Promise(resolve=>hostileServer.close(resolve));}catch(error){cleanupFailures.push(error);failure??=error;}}
   try { await deadline(Promise.all([...allocations].map(async s => {
     await new Promise(resolve => s.close(resolve)); allocations.delete(s);
-  })), 1000, 'Temporary listener closure'); } catch (error) { failure ??= error; }
+  })), 1000, 'Temporary listener closure'); } catch (error) { cleanupFailures.push(error); failure ??= error; }
   await Promise.all([...children].reverse().map(async c => {
-    try { await stop(c); } catch (error) { failure ??= error; }
+    try { await stop(c); } catch (error) { cleanupFailures.push(error); failure ??= error; }
   }));
+  if (enrollment) {
+    if (typeof bodyCacheDirectory !== 'undefined') {
+      try {
+        assert.deepEqual((await readdir(bodyCacheDirectory)).sort(), ['enrollment.json'],
+          'Genuine backend cache shutdown must leave only the owned disabled publication');
+      } catch (error) { cleanupFailures.push(error); failure ??= error; }
+    }
+    try { enrollment.close(); } catch (error) { cleanupFailures.push(error); failure ??= error; }
+    if (typeof bodyCacheDirectory !== 'undefined') {
+      try { assert.deepEqual(await readdir(bodyCacheDirectory), [], 'Firefox cache closure unproven'); }
+      catch (error) { cleanupFailures.push(error); failure ??= error; }
+    }
+  }
   try { await deadline(closedReceipt(), 8000, 'OS closure'); closureProven = true; }
-  catch (error) { failure ??= error; }
-  status.elapsedMilliseconds = Date.now() - started; status.failure = failure?.stack;
+  catch (error) { cleanupFailures.push(error); failure ??= error; }
+  status.elapsedMilliseconds = Date.now() - started; status.failure = failure?.stack ?? (failure ? String(failure) : undefined);
+  if (cleanupFailures.length) status.cleanupFailures = cleanupFailures;
   status.closureProven = closureProven;
   status.success = !failure && status.episodes.length === 3 && status.paid?.length===40 && status.recovery?.length===3 && status.origins?.length===4;
-  await writeFile(path.join(out, 'RESULT.json'), JSON.stringify(status, null, 2));
+  await writeFile(path.join(out, 'RESULT.json'), JSON.stringify(status, (_key, value) =>
+    value && typeof value === 'object' && typeof value.stack === 'string' && typeof value.message === 'string'
+      ? {name: value.name, message: value.message, stack: value.stack,
+        ...(value.cause === undefined ? {} : {cause: value.cause}),
+        ...(Array.isArray(value.errors) ? {errors: value.errors} : {})} : value, 2));
   console.log(`TERMINAL success=${status.success} UTC=${new Date().toISOString()} evidence=${out}`);
   if (closureProven) clearTimeout(hardDeadline);
   else {

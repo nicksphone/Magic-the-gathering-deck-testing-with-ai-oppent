@@ -1,0 +1,16 @@
+[
+  {
+    "id": "recovery-lost-response",
+    "kind": "brain",
+    "seat": 1,
+    "reverse": false,
+    "cold": false
+  },
+  {
+    "id": "recovery-overlap-stale",
+    "kind": "brain",
+    "seat": 1,
+    "reverse": false,
+    "cold": false
+  }
+]

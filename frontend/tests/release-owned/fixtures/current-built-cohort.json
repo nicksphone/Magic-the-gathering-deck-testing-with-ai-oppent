@@ -1,0 +1,282 @@
+[
+  {
+    "id": "sunc-1-creature-0",
+    "kind": "sunc",
+    "seat": 1,
+    "mode": "creature",
+    "cold": false
+  },
+  {
+    "id": "sunc-1-creature-1",
+    "kind": "sunc",
+    "seat": 1,
+    "mode": "creature",
+    "cold": true
+  },
+  {
+    "id": "sunc-1-player-0",
+    "kind": "sunc",
+    "seat": 1,
+    "mode": "player",
+    "cold": false
+  },
+  {
+    "id": "sunc-1-player-1",
+    "kind": "sunc",
+    "seat": 1,
+    "mode": "player",
+    "cold": true
+  },
+  {
+    "id": "sunc-2-creature-0",
+    "kind": "sunc",
+    "seat": 2,
+    "mode": "creature",
+    "cold": false
+  },
+  {
+    "id": "sunc-2-creature-1",
+    "kind": "sunc",
+    "seat": 2,
+    "mode": "creature",
+    "cold": true
+  },
+  {
+    "id": "sunc-2-player-0",
+    "kind": "sunc",
+    "seat": 2,
+    "mode": "player",
+    "cold": false
+  },
+  {
+    "id": "sunc-2-player-1",
+    "kind": "sunc",
+    "seat": 2,
+    "mode": "player",
+    "cold": true
+  },
+  {
+    "id": "brain-1-0-0",
+    "kind": "brain",
+    "seat": 1,
+    "reverse": false,
+    "cold": false
+  },
+  {
+    "id": "brain-1-0-1",
+    "kind": "brain",
+    "seat": 1,
+    "reverse": false,
+    "cold": true
+  },
+  {
+    "id": "brain-1-1-0",
+    "kind": "brain",
+    "seat": 1,
+    "reverse": true,
+    "cold": false
+  },
+  {
+    "id": "brain-1-1-1",
+    "kind": "brain",
+    "seat": 1,
+    "reverse": true,
+    "cold": true
+  },
+  {
+    "id": "brain-2-0-0",
+    "kind": "brain",
+    "seat": 2,
+    "reverse": false,
+    "cold": false
+  },
+  {
+    "id": "brain-2-0-1",
+    "kind": "brain",
+    "seat": 2,
+    "reverse": false,
+    "cold": true
+  },
+  {
+    "id": "brain-2-1-0",
+    "kind": "brain",
+    "seat": 2,
+    "reverse": true,
+    "cold": false
+  },
+  {
+    "id": "brain-2-1-1",
+    "kind": "brain",
+    "seat": 2,
+    "reverse": true,
+    "cold": true
+  },
+  {
+    "id": "march-1-empty-0",
+    "kind": "march",
+    "seat": 1,
+    "pitch": "empty",
+    "cold": false
+  },
+  {
+    "id": "march-1-empty-1",
+    "kind": "march",
+    "seat": 1,
+    "pitch": "empty",
+    "cold": true
+  },
+  {
+    "id": "march-1-one-0",
+    "kind": "march",
+    "seat": 1,
+    "pitch": "one",
+    "cold": false
+  },
+  {
+    "id": "march-1-one-1",
+    "kind": "march",
+    "seat": 1,
+    "pitch": "one",
+    "cold": true
+  },
+  {
+    "id": "march-1-two-reverse-click-0",
+    "kind": "march",
+    "seat": 1,
+    "pitch": "two-reverse-click",
+    "cold": false
+  },
+  {
+    "id": "march-1-two-reverse-click-1",
+    "kind": "march",
+    "seat": 1,
+    "pitch": "two-reverse-click",
+    "cold": true
+  },
+  {
+    "id": "march-2-empty-0",
+    "kind": "march",
+    "seat": 2,
+    "pitch": "empty",
+    "cold": false
+  },
+  {
+    "id": "march-2-empty-1",
+    "kind": "march",
+    "seat": 2,
+    "pitch": "empty",
+    "cold": true
+  },
+  {
+    "id": "march-2-one-0",
+    "kind": "march",
+    "seat": 2,
+    "pitch": "one",
+    "cold": false
+  },
+  {
+    "id": "march-2-one-1",
+    "kind": "march",
+    "seat": 2,
+    "pitch": "one",
+    "cold": true
+  },
+  {
+    "id": "march-2-two-reverse-click-0",
+    "kind": "march",
+    "seat": 2,
+    "pitch": "two-reverse-click",
+    "cold": false
+  },
+  {
+    "id": "march-2-two-reverse-click-1",
+    "kind": "march",
+    "seat": 2,
+    "pitch": "two-reverse-click",
+    "cold": true
+  },
+  {
+    "id": "pair-1-base",
+    "kind": "pair",
+    "seat": 1,
+    "choice": "base",
+    "cold": false
+  },
+  {
+    "id": "pair-1-kicker_1",
+    "kind": "pair",
+    "seat": 1,
+    "choice": "kicker_1",
+    "cold": false
+  },
+  {
+    "id": "pair-1-kicker_2",
+    "kind": "pair",
+    "seat": 1,
+    "choice": "kicker_2",
+    "cold": false
+  },
+  {
+    "id": "pair-1-kicker_1_2",
+    "kind": "pair",
+    "seat": 1,
+    "choice": "kicker_1_2",
+    "cold": false
+  },
+  {
+    "id": "pair-2-base",
+    "kind": "pair",
+    "seat": 2,
+    "choice": "base",
+    "cold": false
+  },
+  {
+    "id": "pair-2-kicker_1",
+    "kind": "pair",
+    "seat": 2,
+    "choice": "kicker_1",
+    "cold": false
+  },
+  {
+    "id": "pair-2-kicker_2",
+    "kind": "pair",
+    "seat": 2,
+    "choice": "kicker_2",
+    "cold": false
+  },
+  {
+    "id": "pair-2-kicker_1_2",
+    "kind": "pair",
+    "seat": 2,
+    "choice": "kicker_1_2",
+    "cold": false
+  },
+  {
+    "id": "single-1-base",
+    "kind": "single",
+    "seat": 1,
+    "choice": "base",
+    "cold": false
+  },
+  {
+    "id": "single-1-kicker",
+    "kind": "single",
+    "seat": 1,
+    "choice": "kicker",
+    "cold": false
+  },
+  {
+    "id": "single-2-base",
+    "kind": "single",
+    "seat": 2,
+    "choice": "base",
+    "cold": false
+  },
+  {
+    "id": "single-2-kicker",
+    "kind": "single",
+    "seat": 2,
+    "choice": "kicker",
+    "cold": false
+  }
+]
