@@ -50,8 +50,10 @@ class BodyCache:
         value, identity = record
         keys = {'schema_version','generation','enabled','episode','run_nonce','source_binding','api_origin','frontend_origin','publisher_uid','pid','start_ticks','native_top_context','armed_ns','expires_ns'}
         if (not isinstance(value, dict) or set(value) != keys or type(value['schema_version']) is not int or value['schema_version'] != 1
-                or type(value['generation']) is not int or not 1 <= value['generation'] <= 6 or type(value['enabled']) is not bool
-                or value['episode'] not in ('human_vs_human','player_vs_ai','player_vs_ai-seat2')
+                or type(value['generation']) is not int or not 0 <= value['generation'] <= 6 or type(value['enabled']) is not bool
+                or (value['generation'] == 0 and (value['enabled'] is not False or value['episode'] is not None
+                    or value['native_top_context'] is not None or value['armed_ns'] != '0' or value['expires_ns'] != '0'))
+                or (value['generation'] != 0 and value['episode'] not in ('human_vs_human','player_vs_ai','player_vs_ai-seat2'))
                 or type(value['publisher_uid']) is not int or value['publisher_uid'] != os.getuid()
                 or any(type(value[k]) is not int or not 0 < value[k] <= 9007199254740991 for k in ('pid','start_ticks'))
                 or any(not isinstance(value[k], str) or not value[k].isascii() or not value[k].isdecimal()
@@ -63,9 +65,12 @@ class BodyCache:
                 or (not value['enabled'] and value['native_top_context'] is not None)):
             raise Unavailable('ENROLLMENT_CONTROL_SCHEMA')
         expected_ms = 900000 if value['episode'] == 'human_vs_human' else 1200000
-        if int(value['expires_ns']) - int(value['armed_ns']) != expected_ms * 1000000:
+        if value['generation'] != 0 and int(value['expires_ns']) - int(value['armed_ns']) != expected_ms * 1000000:
             raise Unavailable('ENROLLMENT_CLOCK')
-        if value['generation'] < self.control_generation or (value['generation'] == self.control_generation and self.control_identity != identity):
+        initial_bootstrap = (value['generation'] == 0 and self.control_generation == 0
+                             and self.control_identity is None and self.publisher is None)
+        if value['generation'] < self.control_generation or (value['generation'] == self.control_generation
+                and self.control_identity != identity and not initial_bootstrap):
             raise Unavailable('ENROLLMENT_GENERATION')
         publisher = (value['publisher_uid'], value['pid'], value['start_ticks'])
         actual_start = Path('/proc/'+str(value['pid'])+'/stat').read_text().rsplit(')',1)[1].split()[19]
