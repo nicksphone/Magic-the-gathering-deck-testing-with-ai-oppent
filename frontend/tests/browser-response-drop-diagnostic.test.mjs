@@ -9,7 +9,7 @@ import * as diagnostics from './browser-source-diagnostic.mjs';
 const helperUrl = new URL('./browser-source-diagnostic.mjs', import.meta.url);
 const uiUrl = new URL('./browser-ui-v2.mjs', import.meta.url);
 const prefix = '::error title=Browser response drop failure::';
-const oldUiSha = '7123f8ce9561cc91bc31009e0e96d9adef7ab88df7247c4a405d0d96f73f7705';
+const oldUiSha = '96ba5fe35b9a020daff4aaebd10e2787e287be9619d8d161460b9a4ab6a68558';
 const oldImport = "import { observeUiV2Failures } from './browser-source-diagnostic.mjs';";
 const newImport = "import { observeUiV2Failures, reportUiV2DropFailure } from './browser-source-diagnostic.mjs';";
 const reportCall = '      reportUiV2DropFailure(diagnostic);\n';

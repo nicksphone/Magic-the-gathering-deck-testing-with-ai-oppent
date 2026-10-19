@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { openBrowser } from './browser-driver.mjs';
 import { reviewStart } from './review-start.mjs';
 import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
+import { reportStartRecoveryFailure } from './browser-source-diagnostic.mjs';
 
 const backend = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199';
 const decks = await (await fetch(`${backend}/fixture/start-decks`, { method: 'POST' })).json();
@@ -54,7 +55,10 @@ async function startWithDroppedResponses(dropCount) {
       dropped += 1;
       await command('Fetch.failRequest', { requestId: event.requestId, errorReason: 'Failed' });
     } else await command('Fetch.continueResponse', { requestId: event.requestId });
-  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', undefined,
+  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', value => {
+    startWithDroppedResponses.failureSnapshot = value;
+    console.error('START_RECOVERY_RESPONSE_TRACE', JSON.stringify(value));
+  },
   { backend, requestSignals: startWithDroppedResponses.requestSignals, causal: true }));
   await observeFetchControl('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Request' }] });
   await click('Start Best-of-3 Match');
@@ -168,5 +172,6 @@ try {
   console.log('PASS legacy unreviewed intent stays manual through reload/check/acknowledge, then recovers its same accepted match/key/payload');
 } catch (error) {
   try { startWithDroppedResponses.trace?.reportFailure(); } catch { /* Preserve the original scenario result. */ }
+  try { reportStartRecoveryFailure(startWithDroppedResponses.failureSnapshot); } catch { /* Preserve the original scenario result. */ }
   throw error;
 } finally { await close(); }

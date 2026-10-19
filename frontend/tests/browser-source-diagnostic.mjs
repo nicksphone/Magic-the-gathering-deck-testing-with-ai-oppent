@@ -77,3 +77,66 @@ export function reportUiV2DropFailure(diagnostic) {
     writeSync(2, `\n::error title=Browser response drop failure::${body}\n`);
   } catch { /* Annotation failure must not replace the original failure. */ }
 }
+
+export function startRecoveryFailureMetadata(snapshot) {
+  const fixed = {schema: 1, program: 'browser-start-recovery.mjs', scope: 'latest-existing-trace'};
+  if (snapshot === null || snapshot === undefined) return {...fixed, available: false,
+    responses: null, commands: null, latest: null, pending_commands: null, active_callbacks: null, control: null};
+  try {
+    const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+    const count = value => Number.isSafeInteger(value) && value >= 0;
+    if (!record(snapshot)) return null;
+    const {responses, omittedResponses, pendingCommands, activeCallbacks, causal} = snapshot;
+    if (!Array.isArray(responses) || responses.length > 16 || !count(omittedResponses)
+        || !count(pendingCommands) || !count(activeCallbacks) || !record(causal)) return null;
+    const {generationState, enableGeneration} = causal;
+    if (!['unknown', 'enable-pending', 'enabled', 'disable-pending', 'disabled'].includes(generationState)
+        || (enableGeneration !== null && (!Number.isInteger(enableGeneration)
+          || enableGeneration < 0 || enableGeneration > 16))) return null;
+    const responseCounts = {retained: responses.length, omitted: omittedResponses,
+      options: 0, post: 0, other: 0, http_200: 0, without_status: 0};
+    const commandCounts = {retained: 0, omitted: 0, pending: 0, accepted: 0, error: 0};
+    let latest = null;
+    for (let index = 0; index < responses.length; index++) {
+      const row = responses[index];
+      if (!record(row)) return null;
+      const {method, status, commands, omittedCommands} = row;
+      if (!['OPTIONS', 'POST', 'other'].includes(method)
+          || (status !== null && (!Number.isInteger(status) || status < 100 || status > 599))
+          || !Array.isArray(commands) || commands.length > 8 || !count(omittedCommands)) return null;
+      if (method === 'OPTIONS') responseCounts.options++;
+      else if (method === 'POST') responseCounts.post++;
+      else responseCounts.other++;
+      if (status === 200) responseCounts.http_200++;
+      if (status === null) responseCounts.without_status++;
+      commandCounts.retained += commands.length;
+      commandCounts.omitted += omittedCommands;
+      if (!count(commandCounts.omitted)) return null;
+      latest = {method, status, command: null, ack: null, error_code: null};
+      for (let commandIndex = 0; commandIndex < commands.length; commandIndex++) {
+        const observation = commands[commandIndex];
+        if (!record(observation)) return null;
+        const {method: command, acknowledgment, errorCode} = observation;
+        if (!['Network.getRequestPostData', 'Fetch.continueRequest', 'Fetch.continueResponse',
+          'Fetch.failRequest', 'other'].includes(command)
+            || !['pending', 'accepted', 'error'].includes(acknowledgment)
+            || (errorCode !== null && !Number.isSafeInteger(errorCode))) return null;
+        commandCounts[acknowledgment]++;
+        latest = {method, status, command, ack: acknowledgment, error_code: errorCode};
+      }
+    }
+    return {...fixed, available: true, responses: responseCounts, commands: commandCounts, latest,
+      pending_commands: pendingCommands, active_callbacks: activeCallbacks,
+      control: {state: generationState, enable_generation: enableGeneration}};
+  } catch { return null; }
+}
+
+export function reportStartRecoveryFailure(snapshot) {
+  try {
+    const record = startRecoveryFailureMetadata(snapshot);
+    if (!record) return;
+    const body = JSON.stringify(record);
+    if (body.length > 768) return;
+    writeSync(2, `\n::error title=Browser start recovery failure::${body}\n`);
+  } catch { /* Annotation failure must not replace the original failure. */ }
+}
