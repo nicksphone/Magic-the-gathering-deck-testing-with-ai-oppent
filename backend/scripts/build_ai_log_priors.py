@@ -219,6 +219,9 @@ def _export_native_matrix_training(*, root: Path, contract: Path, inventory: Pat
             ("8c844e5705dd653fe036fac87d552c9d31f69182bc38b8df5ca102ecbf5ffc59",
              "d29588861eb7a471ae3616fd79a4591c4b56050cc4ef9d1fe9db0e7ee3228b10",
              "68f2d13b6922d4329f9f1a3c9d0064c47cf6933bce94434ecb66f7592cbf2fb7"),
+            ("8c844e5705dd653fe036fac87d552c9d31f69182bc38b8df5ca102ecbf5ffc59",
+             "d29588861eb7a471ae3616fd79a4591c4b56050cc4ef9d1fe9db0e7ee3228b10",
+             "1c9ecff41a97544329d81ac1188b7cb345ad491fac1159a31b7b4e48a25b64e2"),
         }
         require(current_context_layout or binding["backend_files"].get("scripts/matchup_round_robin.py") ==
                 "9061cc3b92c136a6d44bd3bb9b3ecef3297dde125f04e18ccb36e49cabb0775b", "unsupported_native_layout_epoch")
