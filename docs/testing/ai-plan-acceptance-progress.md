@@ -19,10 +19,18 @@ The baseline takes 26.15 seconds, with physical release at 16:32:18.270887 UTC.
 The corrected isolated candidate then executes the same 16 cases: all pass in
 35.47 seconds under the original 300-second bound, with exact native-boundary,
 source/runtime and physical-closure checks. Five existing AI consumers and one
-advice helper now use actual tags or compiled routes. The candidate is not yet
-integrated; affected whole-module neighbors and matched comparisons remain
+advice helper now use actual tags or compiled routes. At that historical
+boundary the candidate was not yet integrated; affected whole-module neighbors
+and matched comparisons remained
 required. This wiring result does not establish improved play strength, a
 matched A/B result or Phase 2 completion.
+
+The subsequent [current tactical-consumer integration](phase2-tactical-consumer-integration-current.md)
+replays the unchanged sixteen cases on current source, then passes 483 ordinary
+cases in twenty whole modules, including all original mixed-ASGI cases and a
+genuine seeded head-to-head game. The five consumers and advice helper are now
+composed in the owned development source. Final published-source CI and matched
+quality acceptance remain open; no strength improvement is inferred.
 
 ## Implementation And Acceptance Are Different
 

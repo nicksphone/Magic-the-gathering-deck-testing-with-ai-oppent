@@ -2346,19 +2346,27 @@ class AIAgent:
         for bid in blocker_ids if selected_ids is None else sorted(selected_ids):
             blk = state.cards.get(bid)
             if blk:
-                blk_text = (getattr(blk, "oracle_text", "") or "").lower()
-                mana_source = (("{t}" in blk_text or "(t)" in blk_text)
-                               and ("add " in blk_text or "adds " in blk_text))
+                tags = self._spell_tags(blk)
+                native_mana, suppressed = None, False
                 if selected_ids is not None:
                     from rules_engine.mana import repeatable_nonland_mana_outputs
                     from rules_engine.continuous import printed_abilities_suppressed
                     try:
-                        if repeatable_nonland_mana_outputs(blk, state=state):
-                            mana_source = True
-                        elif printed_abilities_suppressed(state, bid):
-                            mana_source = False
+                        native_mana = repeatable_nonland_mana_outputs(blk, state=state)
+                        if not native_mana:
+                            suppressed = printed_abilities_suppressed(state, bid)
                     except (KeyError, TypeError, ValueError):
                         pass
+                if 'ramp' in tags and native_mana:
+                    mana_source = True
+                else:
+                    blk_text = (getattr(blk, "oracle_text", "") or "").lower()
+                    mana_source = (("{t}" in blk_text or "(t)" in blk_text)
+                                   and ("add " in blk_text or "adds " in blk_text))
+                    if native_mana:
+                        mana_source = True
+                    elif suppressed:
+                        mana_source = False
                 if mana_source:
                     mana_penalty += 3.5
         return profitable + lethal_pressure + arche_bonus - mana_penalty
@@ -2488,7 +2496,7 @@ class AIAgent:
         from rules_engine.ability_model import unsupported_spell_reason
         from rules_engine.oracle_effects import infer_effect_from_oracle
         from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
-        from knowledge.service import tags_for
+        from knowledge.service import _answer_route_for, tags_for
 
         options = collect_cost_options(state, player_id, source)
         if len(options) != 1:
@@ -2537,6 +2545,8 @@ class AIAgent:
         if effect not in {'destroy_permanent', 'exile', 'return_permanent_to_hand'}:
             return None
         card = state.cards[cid]
+        if _answer_route_for(card, effect, source.controller) is None:
+            return None
         major = self._printed_major_threat(state, card)
         if major is None or recurring_engine_value(state, cid) or repeatable_mana_value(state, cid):
             return None
@@ -5101,6 +5111,7 @@ class AIAgent:
         return best[1]
 
     def _choose_x_value(self, state: MatchState, player_id: int, mana_cost: str, card=None, restricted_x_color: str | None = None) -> int:
+        tags = self._spell_tags(card) if card is not None else set()
         pool_total = sum((state.players[player_id].mana_pool or {}).values())
         untapped_lands = sum(
             1
@@ -5121,7 +5132,15 @@ class AIAgent:
                 scored.append((self._score_x_value(state, player_id, card, mana_cost, x, upper, floor), x))
         if not scored:
             text = _oracle_text(card)
-            interactive_x = any(k in text for k in ["target", "destroy", "exile", "counter", "tap"])
+            # Positive roles classify known interactions; other X bodies keep legacy probing.
+            interactive_x = (
+                'counter' in tags and 'counter target' in text
+                or 'removal' in tags and ('destroy target' in text or 'exile target' in text)
+                or 'burn' in tags and 'target' in text
+                and ('deal x damage' in text or 'deals x damage' in text)
+            )
+            if not interactive_x:
+                interactive_x = any(k in text for k in ["target", "destroy", "exile", "counter", "tap"])
             if interactive_x:
                 for x in range(1, upper + 1):
                     if can_pay_with_pool_and_lands(
@@ -5143,6 +5162,7 @@ class AIAgent:
 
     def _score_x_value(self, state: MatchState, player_id: int, card, mana_cost: str, x_value: int, upper: int, floor: int) -> float:
         text = _oracle_text(card)
+        tags = self._spell_tags(card) if card is not None else set()
         turn = int(getattr(state, "turn", 1) or 1)
         opp_id = 1 if player_id == 2 else 2
         opp = state.players[opp_id]
@@ -5172,7 +5192,7 @@ class AIAgent:
                 and effective_toughness(state, cid) <= x_value
             )
             score += defeated - lost - 0.35 * x_value
-        elif "create x" in text and "token" in text:
+        elif 'token' in tags and "create x" in text and "token" in text:
             # Token makers should scale with pressure, but seasoned pilots avoid
             # dumping the entire mana pool into low-value early boards.
             score += x_value * 0.75
@@ -5193,7 +5213,7 @@ class AIAgent:
                     score += min(1.4, x_value * 0.25)
                 elif turn < 6 and opp_life > 10:
                     score -= max(0.0, (x_value - 2) * 0.3)
-        elif "draw x" in text:
+        elif 'draw' in tags and "draw x" in text:
             score += x_value * 0.55
             if self.archetype in {"Control", "Counter-heavy"}:
                 score += 0.7 if x_value >= 2 else -0.5
@@ -5211,7 +5231,8 @@ class AIAgent:
             lost = sum(1 for cid in me.battlefield if cid in state.cards and "Creature" in effective_types(state, state.cards[cid])
                        and effective_toughness(state, cid) <= x_value)
             score += 3.0 * (defeated - lost) - 0.25 * x_value
-        elif "deal x damage" in text or "deals x damage" in text or "lose x life" in text:
+        elif ('removal' in tags and ("deal x damage" in text or "deals x damage" in text)
+              or "lose x life" in text):
             opp_life = int(getattr(opp, "life", 20) or 20)
             score += x_value * 0.85
             if opp_life <= x_value:
@@ -5231,16 +5252,18 @@ class AIAgent:
 
     def _minimum_useful_x_value(self, state: MatchState, player_id: int, card, mana_cost: str) -> int:
         text = _oracle_text(card)
+        tags = self._spell_tags(card) if card is not None else set()
         turn = int(getattr(state, "turn", 1) or 1)
-        if "create x" in text and "token" in text:
+        if 'token' in tags and "create x" in text and "token" in text:
             return 3 if self.archetype in {"Control", "Counter-heavy"} and turn < 7 else 2
-        if "draw x" in text:
+        if 'draw' in tags and "draw x" in text:
             return 3 if turn < 6 else 2
         if "mill x" in text or "search your library for x" in text:
             return 2
         if "x damage to each creature and each player" in text:
             return 1
-        if "deals x damage" in text or "deal x damage" in text or "lose x life" in text:
+        if ('removal' in tags and ("deals x damage" in text or "deal x damage" in text)
+                or "lose x life" in text):
             opp_id = 1 if player_id == 2 else 2
             opp_life = int(getattr(state.players.get(opp_id), "life", 20) or 20)
             return 1 if opp_life <= 3 else 2

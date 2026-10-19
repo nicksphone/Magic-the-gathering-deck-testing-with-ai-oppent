@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1792371909.0,
-    "seen": 1792375114.7941544,
-    "ast_hash": "e79471ea1c77ab5eb418d642b1490ca1",
+    "mtime": 1792392800.4404886,
+    "seen": 1792392955.847703,
+    "ast_hash": "0829f1bc5561ecc0ff458934dbcd0770",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -17550,9 +17550,9 @@
     "semantic_hash": ""
   },
   "backend/knowledge/service.py": {
-    "mtime": 1792371909.0,
-    "seen": 1792375114.7943256,
-    "ast_hash": "913dafb86d54f03604a133bec6ef6f37",
+    "mtime": 1792392800.4434886,
+    "seen": 1792392955.8478684,
+    "ast_hash": "a487550a0334a92fe8a2904b895f03a1",
     "semantic_hash": ""
   },
   "backend/tests/test_ai_knowledge_natural_smoke.py": {
@@ -18078,9 +18078,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-plan-acceptance-progress.md": {
-    "mtime": 1792371909.0,
-    "seen": 1792375114.800248,
-    "ast_hash": "e543416e6bc65a186ea67c0925d8441f",
+    "mtime": 1792392859.6194437,
+    "seen": 1792392955.8534167,
+    "ast_hash": "302914eebe2bf59bd35d2fb0ecbccd2c",
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
@@ -22635,6 +22635,12 @@
     "mtime": 1792390378.6014826,
     "seen": 1792390515.1686747,
     "ast_hash": "29859739c6b0d662bc2af242b5f60ba4",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_phase2_consumer_inputs_t57.py": {
+    "mtime": 1792392800.4444885,
+    "seen": 1792392955.8517997,
+    "ast_hash": "19e066c4489cabb0bf8aa56d8523e161",
     "semantic_hash": ""
   }
 }

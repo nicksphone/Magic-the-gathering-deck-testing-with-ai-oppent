@@ -341,3 +341,27 @@ def estimate_for(card):
     return ThreatEstimate(entry['tier'], tuple(AnswerRoute(route['effect_key'], route['target_zone'],
                          route['targeted'], tuple(route['conditions'])) for route in entry['routes']),
                          tuple(entry['limits']), play_value, context)
+
+
+def _answer_route_for(card, effect_key, source_controller):
+    """Printed advice after native target checks, never target permission."""
+    if effect_key not in {'destroy_permanent', 'exile', 'return_permanent_to_hand'}:
+        return None
+    estimate = estimate_for(card)
+    if estimate is None:
+        return None
+    required = 'actual_effect_target_domain_and_current_rules_must_be_checked'
+    for route in estimate.routes:
+        if (not isinstance(route, AnswerRoute) or route.effect_key != effect_key
+                or route.target_zone != 'battlefield' or route.targeted is not True
+                or type(route.conditions) is not tuple
+                or any(type(condition) is not str for condition in route.conditions)):
+            continue
+        conditions = set(route.conditions)
+        if (required not in conditions
+                or conditions - {required, 'targeter_is_controller'}
+                or 'targeter_is_controller' in conditions
+                and getattr(card, 'controller', None) != source_controller):
+            continue
+        return route
+    return None
