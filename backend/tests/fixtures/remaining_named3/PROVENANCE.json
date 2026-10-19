@@ -1,0 +1,35 @@
+{
+  "archaic_existing_loader": "tests.browser_positive83_canonical.raw_card",
+  "archaic_existing_sources_sha256": "cb515e9c199a4dba208e3a9c22af8bec840dcc265aeffe9b453706d39d56f994",
+  "archaic_object_sha256": "e94ed773682cbf84f8df5443f6297b5a7773c8431862b5fd9c634f7c9e85585b",
+  "canonical_jsonl_sha256": "f51e63c91d84cf830281c0db0d1e7a0d4ef7379616475084611fbc0ac5190bec",
+  "cards": [
+    {
+      "bulk_line": 1789,
+      "fields": 62,
+      "full_object_unchanged": true,
+      "id": "daa2a273-488f-4285-a069-ad159ad2d393",
+      "line_sha256_including_newline": "eba412dd97f2c814506ee420d6cbcdb9afae397544442997a708680809f29d13",
+      "local_line": 1,
+      "name": "Graveyard Trespasser // Graveyard Glutton",
+      "object_sha256": "77c9fd283e58c6650278be652c07941bf4a81f257bc3bd68cb430c0c4634d4e9",
+      "oracle_id": "0bbd6cad-9b6f-45a6-9f2e-d7b4853586ae",
+      "scryfall_uri": "https://scryfall.com/card/mid/104/graveyard-trespasser-graveyard-glutton?utm_source=api"
+    },
+    {
+      "bulk_line": 32558,
+      "fields": 67,
+      "full_object_unchanged": true,
+      "id": "27855a38-a682-4f97-ad22-ac625e86faec",
+      "line_sha256_including_newline": "fb027929123946b6a8008bb64da3854f64ede063e910d9b706bae6d0cfabdfc6",
+      "local_line": 2,
+      "name": "Behold the Multiverse",
+      "object_sha256": "f8eecc1825a7f51ad8bfc43a23bea8b9c4697e70cb026f6666e147dd62641646",
+      "oracle_id": "d7d2f701-77df-4169-bf98-0d51d6886e9b",
+      "scryfall_uri": "https://scryfall.com/card/khm/46/behold-the-multiverse?utm_source=api"
+    }
+  ],
+  "status": "EXISTING_PUBLIC_BULK_REUSE_NO_NETWORK",
+  "upstream_bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "upstream_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

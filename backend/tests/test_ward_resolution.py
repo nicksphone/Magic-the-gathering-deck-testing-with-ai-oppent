@@ -12,13 +12,14 @@ from rules_engine.action_validation import checked_action, ActionRejected
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.ward import parse_ward_cost, ward_instances, payment_cards, mark_stack_targets
-from tests.test_ai_recurring_engines import add as add_card
+from tests.remaining_named_birth_fixtures import bind_add
 from tests.test_restricted_mana import clean
 
 CARDS = {r['name']: r for r in json.loads((Path(__file__).parent / 'fixtures' / 'ward.json').read_text())}
 for row in CARDS.values():
     for field in ('power', 'toughness', 'keywords', 'colors'):
         row.setdefault(field, None)
+add_card = bind_add(CARDS, 'Graveyard Trespasser')
 
 
 def add(state, name, player=1, zone=Zone.BATTLEFIELD):
