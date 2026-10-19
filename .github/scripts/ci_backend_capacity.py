@@ -106,17 +106,35 @@ def preflight(env):
     print('CI_BACKEND_CAPACITY_READY cleanup=fixed-unused-sdks', flush=True)
 
 
+REJECTION_REASONS = frozenset((
+    'runner-path', 'sdk-path', 'protected-overlap', 'hosted-backend-context',
+    'runner-image', 'workspace-binding', 'sdk-identity', 'sdk-cleanup-timeout',
+    'sdk-cleanup', 'sdk-remains', 'byte-floor', 'arguments',
+    'filesystem-observation',
+))
+
+
+def report_rejection(reason):
+    reason = reason if type(reason) is str and reason in REJECTION_REASONS else 'unknown'
+    annotation = '::error title=Backend capacity rejection::' + json.dumps(
+        dict(schema=1, reason=reason, exit_code=2), separators=(',', ':'))
+    try:
+        print(annotation, file=sys.stderr, flush=True)
+    except (OSError, ValueError):
+        pass  # Optional annotation transport cannot replace the legacy rejection.
+    print('CI_BACKEND_CAPACITY_REJECTED reason=' + reason, flush=True)
+    return 2
+
+
 def main():
     try:
         if sys.argv[1:]:
             raise CapacityError('arguments')
         preflight(os.environ)
     except CapacityError as error:
-        print('CI_BACKEND_CAPACITY_REJECTED reason=' + str(error), flush=True)
-        return 2
+        return report_rejection(str(error))
     except OSError:
-        print('CI_BACKEND_CAPACITY_REJECTED reason=filesystem-observation', flush=True)
-        return 2
+        return report_rejection('filesystem-observation')
     return 0
 
 
