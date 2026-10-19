@@ -14,7 +14,8 @@ permissions:
 jobs:
   native:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    # The service still has 45 minutes; setup and finalization need their own reserve.
+    timeout-minutes: 60
     defaults:
       run:
         shell: bash

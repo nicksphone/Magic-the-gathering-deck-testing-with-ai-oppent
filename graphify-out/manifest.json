@@ -18822,9 +18822,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/native-browser.yml": {
-    "mtime": 1792415174.0,
-    "seen": 1792417283.4642413,
-    "ast_hash": "a66f03eed8ba9d6a8f429d4e7c4b04d7",
+    "mtime": 1792426890.3286588,
+    "seen": 1792427061.4437995,
+    "ast_hash": "8464e59d28c47145a46b6c6965afa9d2",
     "semantic_hash": ""
   },
   "docs/testing/native-vendor-browser-ci.md": {
@@ -22683,6 +22683,18 @@
     "mtime": 1792425324.0787332,
     "seen": 1792425714.386253,
     "ast_hash": "fbbe96570f0b37f92731516f343a0329",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_native_workflow_budget.py": {
+    "mtime": 1792426879.114851,
+    "seen": 1792427061.437938,
+    "ast_hash": "8881ec08c1b22cc3698ecd53a6a8bd77",
+    "semantic_hash": ""
+  },
+  "docs/testing/native-ci-job-budget.md": {
+    "mtime": 1792426917.993185,
+    "seen": 1792427061.444898,
+    "ast_hash": "5ff5beb143d343d3c7fde187049665c0",
     "semantic_hash": ""
   }
 }
