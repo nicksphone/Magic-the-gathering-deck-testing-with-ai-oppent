@@ -60,3 +60,19 @@ can prevent the later program from executing and must not be called its pass.
 Ordinary CI test/scenario declarations remain unchanged; runtime installation
 is updated as described above. No retry, recovery workaround, application
 change or protocol-method substitution is introduced.
+
+## Separate Cost-Overlap ASGI Role
+
+The workflow also runs all four opt-in cost-overlap HTTP cases in a separate
+committed-backend archive. The original fixture failed all four setups because
+its memory-only database could not acquire the current file-backed capacity
+owner. Only the fixture now uses a fresh per-case local SQLite file and genuine
+application lifespan; the four test bodies and all rejection/root/database
+assertions are unchanged. Existing file-byte comparisons now execute too.
+
+The job enables the opt-in only for this isolated whole module, using the same
+locked application runtime. Both source-default and configured-default database
+paths must remain absent. Four exact ordinary JUnit cases and four atomic422
+reports are required; no private trace, live API server, or additional provider
+is used. This does not activate the other opt-in suspend HTTP cohort or replace
+the full backend/browser gates.

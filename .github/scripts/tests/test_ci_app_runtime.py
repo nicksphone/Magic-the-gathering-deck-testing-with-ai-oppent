@@ -21,6 +21,21 @@ fi
 
 
 class AppRuntimeTests(unittest.TestCase):
+    def test_cost_overlap_has_a_separate_whole_module_owned_database_role(self):
+        source = (ROOT / '.github/workflows/browser-recovery-localization.yml').read_text()
+        self.assertIn('\n  cost-overlap-asgi:\n', source)
+        role = source.split('\n  cost-overlap-asgi:\n', 1)[1]
+        for required in ("python-version: '3.12.3'", 'runs-on: ubuntu-24.04',
+                         'bash .github/scripts/install-ci-app-runtime.sh',
+                         'git archive HEAD backend', 'MTG_COST_OVERLAP_HTTP=1',
+                         'MTG_COST_OVERLAP_ROOT="$scratch/source/backend"',
+                         'MTG_DATABASE_PATH="$scratch/runtime/unused-default.db"',
+                         'tests/test_spell_cost_overlap_http_investigation.py',
+                         'len(cases) == 4', "summary['qualified_cases'] = len(cases)"):
+            self.assertIn(required, role)
+        self.assertNotIn(' -k ', role)
+        self.assertNotIn(' -m ', role.split('pytest', 1)[1])
+
     def test_all_python_fixture_jobs_use_the_existing_locked_closure(self):
         source = (ROOT / '.github/workflows/ci.yml').read_text()
         sections = [source.split('\n  frontend:\n', 1)[1].split('\n  browser:\n', 1)[0],
