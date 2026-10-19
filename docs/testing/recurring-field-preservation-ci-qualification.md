@@ -21,9 +21,17 @@ The protected trace stays private and is only consumed through existing CI.
 The retained caller invoice has 178 test modules and four support/server
 modules. Current source bindings are refreshed; three test modules changed
 legitimately since the invoice and are not reverted. Ordinary CI is not proof
-that all support functions or routes execute. Twelve opt-in suspend-hook cases
-remain unqualified if skipped; activation needs its actual hook prerequisite.
-Ordinary no-sandbox Chrome CI does not qualify native Chrome, Brave or Firefox.
+that all support functions or routes execute. The 12 suspend-hook cases are explicitly activated after source review confirms
+both production hooks are already installed. Their obsolete module-level skip
+condition and unused `os` import are removed; all four test bodies, assertions
+and parameter decorators remain byte-identical. Two cases use the existing
+fixed fresh-process serializer and actual-agent/legal-move replay, not an
+external agent/provider. Current CI must report all 12 cases with passed setup,
+call and teardown phases and no XF; collection or earlier skipped runs do not
+qualify them. The children inherit the existing CI environment; this is not a
+new child-isolation guarantee. Existing CI child execution is reused without
+a local role or permission change. Ordinary no-sandbox Chrome CI does not qualify native
+Chrome, Brave or Firefox.
 No reduction of the full 182-path obligation or original project scope follows.
 
 This branch changes no workflow, permissions, dependencies, rules engine,
