@@ -5,6 +5,7 @@ import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import os from 'node:os';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 
 const implementation = process.env.MTG_CORS_IMPLEMENTATION || new URL('./browser-cors-transport-diagnostic.mjs', import.meta.url).href;
 const {patternsFor, continueRequest, interception, runCase, diagnostic} = await import(implementation);
@@ -261,7 +262,24 @@ test('source never requests response bodies via CDP and prints typed records bef
   assert.ok(source.indexOf("console.error('CORS_TRANSPORT_DIAGNOSTIC'") < source.indexOf("throw new Error('CORS transport diagnostic failed"));
 });
 test('ordinary-only launcher hook preserves the entire original program by byte inverse', () => {
-  const source = fs.readFileSync(new URL('./run-browser-ci.sh', import.meta.url), 'utf8');
+  let source = fs.readFileSync(new URL('./run-browser-ci.sh', import.meta.url), 'utf8');
+  // Undo only the separately tested program-reporting layer before the old hash.
+  let wrapped = 0;
+  source = source.replace(/run_browser_program ("[a-z0-9._-]+"|"\$scenario") (timeout \d+s )?(node|bash) ("tests\/\$scenario"|(?:frontend\/)?tests\/[a-z0-9._-]+)/g,
+    (_match, label, deadline = '', executable, operand) => {
+      assert.equal(label.slice(1, -1), operand.replaceAll('"', '').split('/').at(-1));
+      wrapped += 1;
+      return `${deadline}${executable} ${operand}`;
+    });
+  assert.equal(wrapped, 73);
+  for (const [added, original] of [
+    ['source "$root/frontend/tests/browser-program-diagnostic.sh"\n\n', ''],
+    ['  if ((status)); then report_browser_bootstrap_failure "$status" "${1:-1}" || :; fi\n', ''],
+    ['trap \'cleanup "$LINENO"\' EXIT', 'trap cleanup EXIT'],
+  ]) {
+    assert.equal(source.split(added).length, 2);
+    source = source.replace(added, original);
+  }
   const begin = source.indexOf('# CORS transport diagnostic: ordinary hosted CDP only.\n');
   const end = source.indexOf("echo 'Browser CI: async readiness helper'", begin);
   assert.ok(begin >= 0 && end > begin);
@@ -295,6 +313,7 @@ printf 'diagnostic\\n' >> "$CASE_REPORT"
 exit "$DIAGNOSTIC_STATUS"
 `, {mode: 0o700});
     const script = `set -euo pipefail
+source "$DIAGNOSTIC_HELPER"
 trap 'status=$?; printf "cleanup:%s\\n" "$status" >> "$CASE_REPORT"; exit "$status"' EXIT
 ${hook}
 printf 'suite-start\\n' >> "$CASE_REPORT"
@@ -303,7 +322,8 @@ printf 'suite-end\\n' >> "$CASE_REPORT"
 ${footer}`;
     const result = spawnSync('/bin/bash', ['-c', script], {cwd: root, encoding: 'utf8', timeout: 5000,
       env: {...process.env, PATH: `${root}/bin:/usr/bin:/bin`, CASE_REPORT: `${root}/events`,
-        DIAGNOSTIC_STATUS: String(diagnosticStatus), ORIGINAL_STATUS: String(originalStatus), MTG_BROWSER_VENDOR: vendor}});
+        DIAGNOSTIC_STATUS: String(diagnosticStatus), ORIGINAL_STATUS: String(originalStatus), MTG_BROWSER_VENDOR: vendor,
+        DIAGNOSTIC_HELPER: fileURLToPath(new URL('./browser-program-diagnostic.sh', import.meta.url))}});
     return {...result, events: fs.readFileSync(path.join(root, 'events'), 'utf8').trim().split('\n')};
   } finally { fs.rmSync(root, {recursive: true}); }
 }

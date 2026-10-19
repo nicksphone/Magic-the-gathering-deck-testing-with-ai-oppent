@@ -1,27 +1,30 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const source = readFileSync(new URL('./run-browser-ci.sh', import.meta.url), 'utf8');
+const diagnosticHelper = fileURLToPath(new URL('./browser-program-diagnostic.sh', import.meta.url));
 
 function select(env = {}) {
   const selection = source.match(/# Select the browser before starting services\.\n([\s\S]*?)\n# The harness owns/);
   assert.ok(selection, 'browser selection must precede service startup');
   const script = `set -euo pipefail
+source "$DIAGNOSTIC_HELPER"
 command() {
   if [[ "$2" == google-chrome && "$HAS_CHROME" == 1 ]]; then printf '/usr/bin/google-chrome\\n'; return; fi
   if [[ "$2" == chromium ]]; then printf '/usr/bin/chromium\\n'; return; fi
   return 1
 }
 node() {
-  [[ "$1" == frontend/tests/browser-vendor-preflight.mjs && "$2" == --check-config && "$3" == "$MTG_CHROME" ]]
+  [[ "$1" == frontend/tests/browser-vendor-preflight.mjs && "$2" == --check-config && "$3" == "$MTG_CHROME" ]] || return 99
   return "$CONFIG_STATUS"
 }
 ${selection[1]}
 printf '%s\\n' "$browser"`;
   return spawnSync('/bin/bash', ['-c', script], {
-    env: { HAS_CHROME: '1', CONFIG_STATUS: '0', ...env }, encoding: 'utf8', timeout: 5000,
+    env: { HAS_CHROME: '1', CONFIG_STATUS: '0', ...env, DIAGNOSTIC_HELPER: diagnosticHelper }, encoding: 'utf8', timeout: 5000,
   });
 }
 
