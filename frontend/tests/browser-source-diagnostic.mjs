@@ -37,3 +37,43 @@ export function observeUiV2Failures() {
     } catch { /* Best effort only; default uncaught-exception handling remains intact. */ }
   });
 }
+
+export function uiV2DropFailureMetadata(diagnostic) {
+  try {
+    const {dropped, postResponseObserved, responses, omittedResponses, canonical} = diagnostic ?? {};
+    const retained = Array.isArray(responses) ? responses.length : -1;
+    const {status, revision} = canonical ?? {};
+    if (typeof dropped !== 'boolean' || typeof postResponseObserved !== 'boolean'
+        || !Number.isInteger(retained) || retained < 0 || retained > 16
+        || !Number.isSafeInteger(omittedResponses) || omittedResponses < 0
+        || !['available', 'pending', 'unavailable', 'timed-out'].includes(status)
+        || (status === 'available' ? !Number.isSafeInteger(revision) || revision < 0 : revision !== null)) return null;
+    const counts = {retained, omitted: omittedResponses, options_200: 0, current_post_200: 0,
+      continue_ack: 0, drop_ack: 0, error: 0, pending: 0};
+    for (let index = 0; index < retained; index++) {
+      const {method, status: code, current, command, continuation} = responses[index] ?? {};
+      if (!['OPTIONS', 'POST', 'GET', 'HEAD', 'PUT', 'PATCH', 'DELETE', 'OTHER'].includes(method)
+          || (code !== null && (!Number.isInteger(code) || code < 100 || code > 599))
+          || typeof current !== 'boolean' || !['continue', 'drop'].includes(command)
+          || !['ack', 'error', 'pending'].includes(continuation)) return null;
+      if (method === 'OPTIONS' && code === 200) counts.options_200++;
+      if (method === 'POST' && code === 200 && current) counts.current_post_200++;
+      if (continuation === 'ack') {
+        if (command === 'continue') counts.continue_ack++; else counts.drop_ack++;
+      } else counts[continuation]++;
+    }
+    return {schema: 1, program: 'browser-ui-v2.mjs', stage: 'response-drop', dropped,
+      post_response_observed: postResponseObserved, responses: counts, canonical: {status, revision}};
+  } catch { return null; }
+}
+
+export function reportUiV2DropFailure(diagnostic) {
+  try {
+    const record = uiV2DropFailureMetadata(diagnostic);
+    if (!record) return;
+    const body = JSON.stringify(record);
+    // Every projected string is fixed ASCII, so length also bounds UTF-8 bytes.
+    if (body.length > 512) return;
+    writeSync(2, `\n::error title=Browser response drop failure::${body}\n`);
+  } catch { /* Annotation failure must not replace the original failure. */ }
+}
