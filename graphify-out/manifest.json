@@ -6528,9 +6528,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1792415174.0,
-    "seen": 1792417283.4639952,
-    "ast_hash": "1e255cc00f30199ec623f3e489fe4f84",
+    "mtime": 1792421234.1004324,
+    "seen": 1792421456.0448399,
+    "ast_hash": "47fe06791c8184afe6d4ec09b4cb6f73",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -10188,9 +10188,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1792420833.8161938,
-    "seen": 1792420973.2165613,
-    "ast_hash": "8bb9f2069d48f94ae4eb8b5c8ce8912f",
+    "mtime": 1792421759.1546009,
+    "seen": 1792421925.283848,
+    "ast_hash": "68077b8586d4b1a6a1443eca61a481dd",
     "semantic_hash": ""
   },
   "ai-performance-plan.md": {
@@ -22662,15 +22662,21 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_browser_program_diagnostic.mjs": {
-    "mtime": 1792420948.65625,
-    "seen": 1792420973.2106562,
-    "ast_hash": "950baa98436a43263e789e121ef27393",
+    "mtime": 1792421759.153601,
+    "seen": 1792421925.2781048,
+    "ast_hash": "c984934bcb4464ac7b714a0f19ffb4c0",
     "semantic_hash": ""
   },
   "frontend/tests/browser-program-diagnostic.sh": {
     "mtime": 1792418807.238971,
     "seen": 1792419160.2903783,
     "ast_hash": "19da6e5eeed8cc01b9d906256c82fc7a",
+    "semantic_hash": ""
+  },
+  "frontend/tests/browser-source-diagnostic.mjs": {
+    "mtime": 1792421784.1941803,
+    "seen": 1792421925.283545,
+    "ast_hash": "822c2ec81a9faaab43eec3de3cdd8209",
     "semantic_hash": ""
   }
 }

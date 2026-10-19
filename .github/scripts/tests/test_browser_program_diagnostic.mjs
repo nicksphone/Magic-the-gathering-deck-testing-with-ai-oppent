@@ -115,7 +115,7 @@ const locatedError = (frames, message = 'PRIVATE_ERROR_BODY') => {
   return error;
 };
 const sourceRecord = (source_line = null, error_class = 'Error') =>
-  ({schema: 1, program, source_line, error_class});
+  ({schema: 1, program, reported_line: source_line, error_class, location_verified: false});
 
 test('source metadata selects the first exact public program frame', async () => {
   const {uiV2FailureMetadata} = await sourceDiagnostic();
@@ -210,4 +210,24 @@ throw error;`;
   assert.equal(frames.length, 1);
   assert.deepEqual(JSON.parse(frames[0].slice(sourcePrefix.length)), sourceRecord(35));
   assert.equal(observed.stderr.replace(`\n${frames[0]}\n`, ''), baseline.stderr);
+});
+
+test('native top-level async frames retain the public callsite', async () => {
+  const {uiV2FailureMetadata} = await sourceDiagnostic();
+  assert.deepEqual(uiV2FailureMetadata(locatedError([`    at async ${uiSource}:37:8`])), sourceRecord(37));
+});
+
+test('changing category getters cannot bypass the finite output enum', async () => {
+  const {uiV2FailureMetadata} = await sourceDiagnostic();
+  const error = locatedError([]);
+  let reads = 0;
+  Object.defineProperty(error, 'name', {get() { return ++reads === 1 ? 'Error' : 'PRIVATE_CHANGED_CLASS'; }});
+  assert.deepEqual(uiV2FailureMetadata(error), sourceRecord());
+});
+
+test('ambiguous cached header prefixes are labeled unverified rather than execution proof', async () => {
+  const {uiV2FailureMetadata} = await sourceDiagnostic();
+  const error = locatedError([`    at ${uiSource}:38:1`], `safe\n    at ${uiSource}:999:1`);
+  error.message = 'safe';
+  assert.deepEqual(uiV2FailureMetadata(error), sourceRecord(999));
 });
