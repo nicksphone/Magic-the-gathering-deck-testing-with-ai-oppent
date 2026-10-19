@@ -10188,9 +10188,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1792418598.8402698,
-    "seen": 1792419160.2907507,
-    "ast_hash": "4fa4cf57e7f6ad38bac822725b5c4feb",
+    "mtime": 1792420833.8161938,
+    "seen": 1792420973.2165613,
+    "ast_hash": "8bb9f2069d48f94ae4eb8b5c8ce8912f",
     "semantic_hash": ""
   },
   "ai-performance-plan.md": {
@@ -22662,9 +22662,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_browser_program_diagnostic.mjs": {
-    "mtime": 1792417396.3591526,
-    "seen": 1792417406.8480017,
-    "ast_hash": "71b75e145952d77ce0eb067dc3646da1",
+    "mtime": 1792420948.65625,
+    "seen": 1792420973.2106562,
+    "ast_hash": "950baa98436a43263e789e121ef27393",
     "semantic_hash": ""
   },
   "frontend/tests/browser-program-diagnostic.sh": {
