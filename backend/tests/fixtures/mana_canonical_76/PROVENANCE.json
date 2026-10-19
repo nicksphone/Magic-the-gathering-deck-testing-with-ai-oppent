@@ -1,0 +1,289 @@
+{
+  "base": "76b0befd7b3aed9365c7a5c5b9d20faafa77ef02",
+  "bulk": {
+    "rows": {
+      "Battlefield Forge": {
+        "id": "ef7d3676-b1db-4329-9201-18f8a6c54ea6",
+        "line": 16162,
+        "oracle_id": "6b75b94e-83b7-457e-ac41-7ca90b5a59aa",
+        "sha256": "5a3822df854dfb05bb8152666e8fcffd713911ddd400e55bb6fd233fcfbb1f81"
+      },
+      "Boreal Druid": {
+        "id": "473d3633-6dc7-4026-a50e-3ea76b9e8c20",
+        "line": 7122,
+        "oracle_id": "2fcc69ff-8ab5-4e14-afe3-db892049a872",
+        "sha256": "b2c965973af54cbac3039d0aa9f5c8f1baec48c72a81204dadf20d8d916ac2b8"
+      },
+      "Gilded Lotus": {
+        "id": "28e619e6-ecc1-49c3-8fa9-ce42becdb9ba",
+        "line": 23193,
+        "oracle_id": "9a02a9a7-39d9-4763-85d3-747a0540b60b",
+        "sha256": "6067e55a89d47d4f730edaead2b6693498d24236f29dacd4467376907c2f0e00"
+      },
+      "Lavinia, Azorius Renegade": {
+        "id": "197bf3f4-c0df-4082-97a1-902ceabbdd3f",
+        "line": 19511,
+        "oracle_id": "81ba3a33-0e04-4f68-9a42-1dd717733b57",
+        "sha256": "2cf9d47c29bf39c363e93f2cf0503200665fba739ec26537d5d950230d124245"
+      },
+      "Llanowar Tribe": {
+        "id": "407c1b95-dc0c-4154-a441-fe25537df45c",
+        "line": 31318,
+        "oracle_id": "cfd0f0e6-1bbf-4450-97d2-c54907abb7e4",
+        "sha256": "d650976355753ef8a407771342d7bf1bdf604f3da42a6f2b0b8730215d6a665e"
+      },
+      "Marble Diamond": {
+        "id": "0930f71c-c3c8-4bdd-8468-6a61349cc8ca",
+        "line": 21812,
+        "oracle_id": "910488bf-66ab-415e-973b-1262b2ab7454",
+        "sha256": "af99f2a373e4fb4f34ea41356f7e8e52cb242b01f2846dad9783e81e3ed0481d"
+      },
+      "Mind Stone": {
+        "id": "b30a8f92-ce42-4b27-a893-bcf97fde228d",
+        "line": 30353,
+        "oracle_id": "c97361b5-af16-4a7b-af85-a429dbaf4ad2",
+        "sha256": "a1c3b990bff799b0794aca0dd18e01b1b1b9457862d3dd87e5450d22d6cc21de"
+      },
+      "Mutagenic Growth": {
+        "id": "2e0861a2-1858-47af-8154-20a977c2b298",
+        "line": 29130,
+        "oracle_id": "c17b9e5b-58b6-4ccf-8283-945ba77429e7",
+        "sha256": "4dbbfe06f3ce290f22664bd024f6c4a90171c26d0d2785e57e0e66fce4ecc9fa"
+      },
+      "Pestilent Souleater": {
+        "id": "a069cc07-55eb-4ddb-a548-cbf463d078d3",
+        "line": 29593,
+        "oracle_id": "c4779671-2a01-4eef-847c-ede36091fc4a",
+        "sha256": "c57bf1b62e94c2ce2d6cc24dd4f24696d38319ca88e6eadf091ab996e8046b22"
+      },
+      "Snow-Covered Forest": {
+        "id": "ca17acea-f079-4e53-8176-a2f5c5c408a1",
+        "line": 14253,
+        "oracle_id": "5f0d3be8-e63e-4ade-ae58-6b0c14f2ce6d",
+        "sha256": "e19728064d866d045f930ce3ccd500a8e535236841ecc2782196c4ab92dcef59"
+      },
+      "Sol Ring": {
+        "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+        "line": 16083,
+        "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+        "sha256": "4e7fd88f687d291b0fcbfeea5fab1fa829cfa01127df70d764d289cc09be0608"
+      },
+      "Stomping Ground": {
+        "id": "1ee8255a-44f6-4faa-9843-15432bf751ea",
+        "line": 3361,
+        "oracle_id": "16052b52-ade1-406f-a06b-ce7ea607fb63",
+        "sha256": "13c05d93422bb7fa68273a292d047d0c18640bab3b1a61d7d94a12331d85ad13"
+      },
+      "Watery Grave": {
+        "id": "5525d6a6-e532-4047-9da4-bfae7927fecc",
+        "line": 38171,
+        "oracle_id": "fc9ec820-4245-4a96-b009-5308a818ca58",
+        "sha256": "b4500c70ebd22e5e4516e2ff954b5cc97dcc52ff001404b57c5f8bba58995eb7"
+      }
+    },
+    "sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "source_basename": "oracle-cards-20260927090157.jsonl.gz",
+    "source_public_provenance": "backend/card_data/mh3_catalog_seed_provenance.json",
+    "unmodified_raw_lines": true
+  },
+  "existing_provenance": [
+    "canonical_hydration/PROVENANCE.json",
+    "compleated_loyalty_full/provenance.json",
+    "damage_life_printed_79/PROVENANCE.json",
+    "library_canonical_88/PROVENANCE.json"
+  ],
+  "network_requests": 0,
+  "objects": {
+    "Battlefield Forge": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "ef7d3676-b1db-4329-9201-18f8a6c54ea6",
+      "line": 5,
+      "object_sha256": "4e2dfb62d8fd4c40ea2418d0f08dd8b0f8d81d976a52fba4bef9d624c4a31a95",
+      "oracle_id": "6b75b94e-83b7-457e-ac41-7ca90b5a59aa"
+    },
+    "Boreal Druid": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "473d3633-6dc7-4026-a50e-3ea76b9e8c20",
+      "line": 2,
+      "object_sha256": "9b5da26f86fd3a9094b1447d9035bb0554cf6a6689cf4686b63682298f2917f0",
+      "oracle_id": "2fcc69ff-8ab5-4e14-afe3-db892049a872"
+    },
+    "Counterspell": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "line": 23,
+      "object_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5"
+    },
+    "Figure of Destiny": {
+      "file": "canonical_hydration/figure-of-destiny-scryfall-raw.json",
+      "id": "6d779966-4bd4-4315-8b45-d3a4492f2bb2",
+      "line": null,
+      "object_sha256": "a2aef866ff5d9cc3cf870511b3616e712df9ae01785777e3769463dcdc376462",
+      "oracle_id": "cd51cc2d-0d39-4aba-b0ea-70e8118149bc"
+    },
+    "Font of Agonies": {
+      "file": "damage_life_printed_79/font-of-agonies-scryfall-raw.json",
+      "id": "d7c02aec-4a89-4ccc-8525-6f979c10d799",
+      "line": null,
+      "object_sha256": "de0c426c3951f227d0151797b4e826d5609c60f3e86ecb465e7972bb97d25c86",
+      "oracle_id": "ab44c6fe-6a66-42f0-9e75-8b25641e1f13"
+    },
+    "Forest": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+      "line": 39,
+      "object_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6"
+    },
+    "Gilded Lotus": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "28e619e6-ecc1-49c3-8fa9-ce42becdb9ba",
+      "line": 8,
+      "object_sha256": "8177794a54b8c5c870c7d440a5ac3098037ad34398daf4af8e8e7d546de49897",
+      "oracle_id": "9a02a9a7-39d9-4763-85d3-747a0540b60b"
+    },
+    "Hallowed Fountain": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "b7285986-7e08-4969-86ef-452dc5bfdd9f",
+      "line": 44,
+      "object_sha256": "a485a9bf2414483f808d198984bb8dccfd75e6838877fd39720f035902f34952",
+      "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea"
+    },
+    "Island": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "line": 50,
+      "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373"
+    },
+    "Lavinia, Azorius Renegade": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "197bf3f4-c0df-4082-97a1-902ceabbdd3f",
+      "line": 6,
+      "object_sha256": "69ba52c14756ac287969aa6c529268d95f38ded7e4bb1ff8252c76aab5dd78cb",
+      "oracle_id": "81ba3a33-0e04-4f68-9a42-1dd717733b57"
+    },
+    "Llanowar Elves": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+      "line": 58,
+      "object_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3"
+    },
+    "Llanowar Tribe": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "407c1b95-dc0c-4154-a441-fe25537df45c",
+      "line": 12,
+      "object_sha256": "865468d56bb4dc3a4fc0fdd7dc792203407277ca46f856a1787cd23e217fe206",
+      "oracle_id": "cfd0f0e6-1bbf-4450-97d2-c54907abb7e4"
+    },
+    "Marble Diamond": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "0930f71c-c3c8-4bdd-8468-6a61349cc8ca",
+      "line": 7,
+      "object_sha256": "a198d3d0585efb0ca8daa572e2a2d56a0b04a7fbce73b2583c74a20799e0c276",
+      "oracle_id": "910488bf-66ab-415e-973b-1262b2ab7454"
+    },
+    "Mind Stone": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "b30a8f92-ce42-4b27-a893-bcf97fde228d",
+      "line": 11,
+      "object_sha256": "58a1448d3fe6431ebda0f0d8946e2c28d50c0a18521e60baa8f08880e93a4609",
+      "oracle_id": "c97361b5-af16-4a7b-af85-a429dbaf4ad2"
+    },
+    "Mountain": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "85177bd7-6c50-48da-b692-ae5fe7bd357c",
+      "line": 65,
+      "object_sha256": "a2ab558e22268e0ad7a9815c80a52208101e2c43340d9d8453d6045995aa9a9a",
+      "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685"
+    },
+    "Mutagenic Growth": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "2e0861a2-1858-47af-8154-20a977c2b298",
+      "line": 9,
+      "object_sha256": "4cc1c39c4e1f6da40b325d6d80a4ba7f211d47c92539007f6b088e7ff379b3c3",
+      "oracle_id": "c17b9e5b-58b6-4ccf-8283-945ba77429e7"
+    },
+    "Pestilent Souleater": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "a069cc07-55eb-4ddb-a548-cbf463d078d3",
+      "line": 10,
+      "object_sha256": "a50eea49bfd9c6ef50b0e62d10b7d8a79d588f487ac8379423ae1da91fef7a42",
+      "oracle_id": "c4779671-2a01-4eef-847c-ede36091fc4a"
+    },
+    "Plains": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "09ac862f-0a51-44dd-b86f-9412b8218b13",
+      "line": 70,
+      "object_sha256": "bb36c8b3d7c52e7274ab49ee95993248b8dc616ba4e1702b3d8e33ec107b1b0b",
+      "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99"
+    },
+    "Realmwalker": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "52733829-27b7-40ec-a897-cabab35b3729",
+      "line": 75,
+      "object_sha256": "0a15b77d77786ab39bd78c533b4ebc13e4379a851e729159c6737710c3065cb8",
+      "oracle_id": "b81eaa2f-0554-41c6-bdf6-d1cb73b8f56f"
+    },
+    "Snow-Covered Forest": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "ca17acea-f079-4e53-8176-a2f5c5c408a1",
+      "line": 3,
+      "object_sha256": "52173db9b79ea4b6cc2fc5c2dc25228060eb382043ea1cf249e98379da1eb382",
+      "oracle_id": "5f0d3be8-e63e-4ade-ae58-6b0c14f2ce6d"
+    },
+    "Sol Ring": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "line": 4,
+      "object_sha256": "ff26917d2e41e3f85a3b2d4268e0ef1b2673cbabab2a27ec04162181cb5dae00",
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487"
+    },
+    "Spectral Procession": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "9964629e-d79e-46e4-b3fd-e7d1759cbc60",
+      "line": 90,
+      "object_sha256": "1197b0485db795c43ebf60a0664eb98f1ae9f50930127a53b0b1ff15667f8533",
+      "oracle_id": "376271a6-80f0-47a6-990a-5ec5517aae42"
+    },
+    "Stomping Ground": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "1ee8255a-44f6-4faa-9843-15432bf751ea",
+      "line": 1,
+      "object_sha256": "68162ffc1449b5c431fe6e51db3693c3565cdf0efa6f42df3bbe9d2fc22e09f7",
+      "oracle_id": "16052b52-ade1-406f-a06b-ce7ea607fb63"
+    },
+    "Swamp": {
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "b233b117-9369-45c1-80c5-cc857386b6be",
+      "line": 97,
+      "object_sha256": "cbe60bb5325532b7363da9bbe4b7b035a8d89cb129f72272f4f3aeffae5c36d6",
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68"
+    },
+    "Tamiyo, Compleated Sage": {
+      "file": "compleated_loyalty_full/tamiyo.raw.json",
+      "id": "222a736e-d819-452d-aeda-eb848c4b2302",
+      "line": null,
+      "object_sha256": "ff389c0b181c900c3c6f50049434d54637df43ffd94ee46aaa2c429ba1744dcf",
+      "oracle_id": "021b4745-4a15-462c-a6b0-2dee1dc9d196"
+    },
+    "Watery Grave": {
+      "file": "mana_canonical_76/official-bulk13.jsonl",
+      "id": "5525d6a6-e532-4047-9da4-bfae7927fecc",
+      "line": 13,
+      "object_sha256": "08fd0cb5d97b23830d831a86da29514dbb700e8b4046f1c5d722c4a28718bebf",
+      "oracle_id": "fc9ec820-4245-4a96-b009-5308a818ca58"
+    }
+  },
+  "scope": "Complete retained official objects; no rules-engine or real-game certificate",
+  "source_files": {
+    "canonical_hydration/figure-of-destiny-scryfall-raw.json": "861c21c299816724a667c392cc37d4182da2a52496e1cb7da5f6cf39a97edaeb",
+    "compleated_loyalty_full/tamiyo.raw.json": "dcbfd8d6648620cf3a466af951b7db1aee9b40f9fa0956edc9c0aba1a2dbea55",
+    "damage_life_printed_79/font-of-agonies-scryfall-raw.json": "b13ec5bacaa3571df66d6a2cb97846bc25a633678ce83b17f110a3d9dd958f20",
+    "knowledge_profiles/seed155-scryfall.jsonl": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "mana_canonical_76/official-bulk13.jsonl": "d2dd8459b2d07db047372eb7493cc7e40f243d40b7e8901b4b70a3e8c39624de"
+  },
+  "tamiyo_http_status": "Not recorded by original sidecar; not inferred"
+}

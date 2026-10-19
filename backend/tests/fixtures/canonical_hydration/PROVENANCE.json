@@ -1,0 +1,49 @@
+{
+  "minimum_request_spacing_seconds": 0.6,
+  "purpose": "Complete unmodified canonical hydration test fixtures; not a gameplay or rules certification",
+  "records": [
+    {
+      "bytes": 5353,
+      "canonical_parent": "Figure of Destiny",
+      "file": "figure-of-destiny-scryfall-raw.json",
+      "http_status": 200,
+      "oracle_id": "cd51cc2d-0d39-4aba-b0ea-70e8118149bc",
+      "oracle_modified": false,
+      "requested_name": "Figure of Destiny",
+      "scryfall_id": "6d779966-4bd4-4315-8b45-d3a4492f2bb2",
+      "sha256": "861c21c299816724a667c392cc37d4182da2a52496e1cb7da5f6cf39a97edaeb",
+      "url": "https://api.scryfall.com/cards/named?exact=Figure+of+Destiny",
+      "utc_completed": "2026-10-15T21:29:53.142261+00:00",
+      "utc_started": "2026-10-15T21:29:47.791967+00:00"
+    },
+    {
+      "bytes": 8080,
+      "canonical_parent": "Valki, God of Lies // Tibalt, Cosmic Impostor",
+      "file": "valki-scryfall-raw.json",
+      "http_status": 200,
+      "oracle_id": "907ae517-22d5-4ac7-bc3a-3f4d5eaeeb57",
+      "oracle_modified": false,
+      "requested_name": "Valki, God of Lies",
+      "scryfall_id": "ea7e4c65-b4c4-4795-9475-3cba71c50ea5",
+      "sha256": "ae2bb42378419e9b961eff2f27c7a4c2b7b4ec4af0b72dc3ce7bf4b8a7f87f86",
+      "url": "https://api.scryfall.com/cards/named?exact=Valki%2C+God+of+Lies",
+      "utc_completed": "2026-10-15T21:29:54.204298+00:00",
+      "utc_started": "2026-10-15T21:29:53.742458+00:00"
+    },
+    {
+      "bytes": 5145,
+      "canonical_parent": "Ruination Guide",
+      "file": "ruination-guide-scryfall-raw.json",
+      "http_status": 200,
+      "oracle_id": "3394ce74-c352-4ae1-a7bb-f6ef8ac1c810",
+      "oracle_modified": false,
+      "requested_name": "Ruination Guide",
+      "scryfall_id": "f0bdbe64-d985-4bc5-bb1d-4cbf12ef60b2",
+      "sha256": "6ea0ba3ff8ffee7604b34eee796a2a54bb78028e6def9b48e060449b8dbff067",
+      "url": "https://api.scryfall.com/cards/named?exact=Ruination+Guide",
+      "utc_completed": "2026-10-15T21:29:55.221201+00:00",
+      "utc_started": "2026-10-15T21:29:54.804461+00:00"
+    }
+  ],
+  "source": "Scryfall public exact-name API"
+}

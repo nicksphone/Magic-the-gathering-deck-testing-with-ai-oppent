@@ -7,23 +7,12 @@ from game_state.serializers import deserialize_match_snapshot, serialize_match_s
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.events import flush_staged_triggers, resume_trigger_order
 from rules_engine.stack_engine import resolve_top_of_stack
+from tests.death_artifact_canonical4f86 import canonical_card, raw_card
 
 
-MASTER_ORACLE = (
-    "Fabricate 3 (When this creature enters, put three +1/+1 counters on it or create "
-    "three 1/1 colorless Servo artifact creature tokens.)\n"
-    "Whenever an artifact you control is put into a graveyard from the battlefield, "
-    "target opponent loses life equal to this creature's power."
-)
-CHALICE_ORACLE = (
-    "Multikicker {2} (You may pay an additional {2} any number of times as you cast this spell.)\n"
-    "This artifact enters with a charge counter on it for each time it was kicked.\n"
-    "{T}: Add {C} for each charge counter on this artifact."
-)
-RIP_ORACLE = (
-    "When this enchantment enters, exile all graveyards.\n"
-    "If a card or token would be put into a graveyard from anywhere, exile it instead."
-)
+MASTER_ORACLE = raw_card('Marionette Master')['oracle_text']
+CHALICE_ORACLE = raw_card('Everflowing Chalice')['oracle_text']
+RIP_ORACLE = raw_card('Rest in Peace')['oracle_text']
 
 
 def _state(with_replacement=False):
@@ -31,19 +20,18 @@ def _state(with_replacement=False):
     state = MatchFactory.from_decks(deck, deck, seed=602)
     state.pregame_pending = False
     cards = [
-        CardInstance(
-            "master", "Marionette Master", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-            power=1, toughness=3, oracle_text=MASTER_ORACLE, counters={"+1/+1": 2},
+        canonical_card(
+            "Marionette Master", id="master", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, counters={"+1/+1": 2},
         ),
-        CardInstance(
-            "chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD, ["Artifact"],
-            oracle_text=CHALICE_ORACLE, counters={"charge": 1},
+        canonical_card(
+            "Everflowing Chalice", id="chalice", owner=1, controller=1,
+            zone=Zone.BATTLEFIELD, counters={"charge": 1},
         ),
     ]
     if with_replacement:
-        cards.append(CardInstance(
-            "rip", "Rest in Peace", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-            oracle_text=RIP_ORACLE,
+        cards.append(canonical_card(
+            "Rest in Peace", id="rip", owner=2, controller=2, zone=Zone.BATTLEFIELD,
         ))
     for card in cards:
         state.cards[card.id] = card
@@ -77,9 +65,8 @@ def test_exile_replacement_does_not_trigger_artifact_graveyard_clause(move):
 
 def test_simultaneous_wipe_uses_departing_trigger_source_and_artifact():
     state = _state()
-    memnite = CardInstance(
-        "memnite", "Memnite", 1, 1, Zone.BATTLEFIELD, ["Artifact", "Creature"],
-        type_line="Artifact Creature — Construct", power=1, toughness=1,
+    memnite = canonical_card(
+        "Memnite", id="memnite", owner=1, controller=1, zone=Zone.BATTLEFIELD,
     )
     state.cards[memnite.id] = memnite
     state.players[1].battlefield.append(memnite.id)
@@ -94,9 +81,9 @@ def test_simultaneous_wipe_uses_departing_trigger_source_and_artifact():
 
 def test_opponents_artifact_does_not_trigger_marionette_master():
     state = _state()
-    artifact = CardInstance(
-        "opposing-chalice", "Everflowing Chalice", 2, 2, Zone.BATTLEFIELD,
-        ["Artifact"], oracle_text=CHALICE_ORACLE,
+    artifact = canonical_card(
+        "Everflowing Chalice", id="opposing-chalice", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD,
     )
     state.cards[artifact.id] = artifact
     state.players[2].battlefield.append(artifact.id)
@@ -115,6 +102,7 @@ def test_prior_departure_cannot_trigger_on_later_artifact_death():
 
 
 def _add_merchant(state):
+    # Existing named protocol vector; its canonical/literal scope is unresolved.
     merchant = CardInstance(
         "merchant", "Merchant of Venom", 1, 1, Zone.BATTLEFIELD, ["Creature"],
         type_line="Creature — Cat Warlock", power=1, toughness=1,
@@ -173,9 +161,9 @@ def test_exiled_sacrifice_still_triggers_merchant_only():
 def test_opponent_sacrifice_triggers_merchant():
     state = _state()
     _add_merchant(state)
-    artifact = CardInstance(
-        "opposing-chalice", "Everflowing Chalice", 2, 2, Zone.BATTLEFIELD,
-        ["Artifact"], oracle_text=CHALICE_ORACLE,
+    artifact = canonical_card(
+        "Everflowing Chalice", id="opposing-chalice", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD,
     )
     state.cards[artifact.id] = artifact
     state.players[2].battlefield.append(artifact.id)

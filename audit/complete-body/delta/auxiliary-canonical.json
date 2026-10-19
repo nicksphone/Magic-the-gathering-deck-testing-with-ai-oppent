@@ -1,0 +1,545 @@
+{
+  "Boon of Safety": {
+    "arena_id": 80155,
+    "artist": "Robin Olausson",
+    "artist_ids": [
+      "adb9ad6d-6173-454b-8b50-a102b182548b"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 652151,
+    "cmc": 1.0,
+    "collector_number": "4",
+    "color_identity": [
+      "W"
+    ],
+    "colors": [
+      "W"
+    ],
+    "digital": false,
+    "edhrec_rank": 7110,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "flavor_text": "\"Saving a stranger's life is an excellent recruitment method. Luckily, peril is so easy to come by.\"\n\u2014Falco Spara",
+    "foil": true,
+    "frame": "2015",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo",
+      "arena"
+    ],
+    "highres_image": true,
+    "id": "2069310a-9fb6-41b7-bbd5-849e3df05632",
+    "illustration_id": "9ce53b73-2d94-4008-987c-9e91e71c600b",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T06:12:42Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.webp?1783923162",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.jpg?1783923162",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.jpg?1783923162",
+      "crop": "https://cards.scryfall.io/crop/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.webp?1783923162",
+      "display": "https://cards.scryfall.io/display/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.webp?1783923162",
+      "grid": "https://cards.scryfall.io/grid/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.webp?1783923162",
+      "large": "https://cards.scryfall.io/large/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.jpg?1783923162",
+      "normal": "https://cards.scryfall.io/normal/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.jpg?1783923162",
+      "png": "https://cards.scryfall.io/png/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.png?1783923162",
+      "small": "https://cards.scryfall.io/small/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.jpg?1783923162",
+      "thumb": "https://cards.scryfall.io/thumb/front/2/0/2069310a-9fb6-41b7-bbd5-849e3df05632.webp?1783923162"
+    },
+    "keywords": [
+      "Scry"
+    ],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "legal",
+      "commander": "legal",
+      "competitivebrawl": "legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "legal",
+      "historic": "legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "legal",
+      "paupercommander": "legal",
+      "penny": "not_legal",
+      "pioneer": "legal",
+      "predh": "not_legal",
+      "premodern": "not_legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "legal",
+      "tlr": "legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{W}",
+    "mtgo_id": 98227,
+    "multiverse_ids": [
+      555205
+    ],
+    "name": "Boon of Safety",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "34f0beae-a8e2-4474-9f7f-4735d3f26863",
+    "oracle_text": "Put a shield counter on target creature. (If it would be dealt damage or destroyed, remove a shield counter from it instead.)\nScry 1.",
+    "oversized": false,
+    "penny_rank": 10521,
+    "preview": {
+      "previewed_at": "2022-04-14",
+      "source": "Wizards of the Coast",
+      "source_uri": "https://twitter.com/mtgjp/status/1514536607764070402"
+    },
+    "prices": {
+      "eur": "0.19",
+      "eur_foil": "0.21",
+      "tix": "0.03",
+      "usd": "0.28",
+      "usd_etched": null,
+      "usd_foil": "0.36"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A34f0beae-a8e2-4474-9f7f-4735d3f26863&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/98227?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=652151&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F269046%3Fpage%3D1"
+    },
+    "rarity": "common",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Boon+of+Safety",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=555205&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DBoon%2Bof%2BSafety",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DBoon%2Bof%2BSafety"
+    },
+    "released_at": "2022-04-29",
+    "reprint": false,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/2069310a-9fb6-41b7-bbd5-849e3df05632/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/snc?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/snc/4/boon-of-safety?utm_source=api",
+    "set": "snc",
+    "set_id": "df837242-8c15-42e4-b049-c933a02dc501",
+    "set_name": "Streets of New Capenna",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Asnc&unique=prints",
+    "set_type": "expansion",
+    "set_uri": "https://api.scryfall.com/sets/df837242-8c15-42e4-b049-c933a02dc501",
+    "story_spotlight": false,
+    "tcgplayer_id": 269046,
+    "textless": false,
+    "type_line": "Instant",
+    "uri": "https://api.scryfall.com/cards/2069310a-9fb6-41b7-bbd5-849e3df05632",
+    "variation": false,
+    "watermark": "brokers"
+  },
+  "Executioner's Capsule": {
+    "artist": "Warren Mahy",
+    "artist_ids": [
+      "002c739e-aa1f-4c1d-921b-37cb2d1b1c5b"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 486434,
+    "cmc": 1.0,
+    "collector_number": "92",
+    "color_identity": [
+      "B"
+    ],
+    "colors": [
+      "B"
+    ],
+    "digital": false,
+    "edhrec_rank": 7196,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "flavor_text": "There is always a moment of trepidation before opening a message capsule, for fear of the judgment that might be contained within.",
+    "foil": true,
+    "frame": "2015",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "032ea333-96e1-4ad8-8947-21d6bc3a9f91",
+    "illustration_id": "63406ef2-21e0-4113-94cf-69bbe55047cb",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T08:09:41Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.webp?1783930181",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.jpg?1783930181",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.jpg?1783930181",
+      "crop": "https://cards.scryfall.io/crop/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.webp?1783930181",
+      "display": "https://cards.scryfall.io/display/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.webp?1783930181",
+      "grid": "https://cards.scryfall.io/grid/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.webp?1783930181",
+      "large": "https://cards.scryfall.io/large/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.jpg?1783930181",
+      "normal": "https://cards.scryfall.io/normal/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.jpg?1783930181",
+      "png": "https://cards.scryfall.io/png/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.png?1783930181",
+      "small": "https://cards.scryfall.io/small/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.jpg?1783930181",
+      "thumb": "https://cards.scryfall.io/thumb/front/0/3/032ea333-96e1-4ad8-8947-21d6bc3a9f91.webp?1783930181"
+    },
+    "keywords": [],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "not_legal",
+      "commander": "legal",
+      "competitivebrawl": "not_legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "not_legal",
+      "historic": "not_legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "legal",
+      "paupercommander": "legal",
+      "penny": "legal",
+      "pioneer": "not_legal",
+      "predh": "legal",
+      "premodern": "not_legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "not_legal",
+      "tlr": "legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{B}",
+    "mtgo_id": 82218,
+    "multiverse_ids": [
+      489765
+    ],
+    "name": "Executioner's Capsule",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "c9cd266c-7ecf-4beb-b9da-69b88f33abd3",
+    "oracle_text": "{1}{B}, {T}, Sacrifice this artifact: Destroy target nonblack creature.",
+    "oversized": false,
+    "penny_rank": 3501,
+    "prices": {
+      "eur": "0.11",
+      "eur_foil": "0.18",
+      "tix": "0.03",
+      "usd": "0.31",
+      "usd_etched": null,
+      "usd_foil": "0.19"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Ac9cd266c-7ecf-4beb-b9da-69b88f33abd3&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/82218?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=486434&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F219528%3Fpage%3D1"
+    },
+    "rarity": "common",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Executioner%27s+Capsule",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=489765&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DExecutioner%2527s%2BCapsule",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DExecutioner%2527s%2BCapsule"
+    },
+    "released_at": "2020-08-07",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/032ea333-96e1-4ad8-8947-21d6bc3a9f91/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/2xm?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/2xm/92/executioners-capsule?utm_source=api",
+    "set": "2xm",
+    "set_id": "372dafe8-b5d1-4b81-998f-3ae96b59498a",
+    "set_name": "Double Masters",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3A2xm&unique=prints",
+    "set_type": "masters",
+    "set_uri": "https://api.scryfall.com/sets/372dafe8-b5d1-4b81-998f-3ae96b59498a",
+    "story_spotlight": false,
+    "tcgplayer_id": 219528,
+    "textless": false,
+    "type_line": "Artifact",
+    "uri": "https://api.scryfall.com/cards/032ea333-96e1-4ad8-8947-21d6bc3a9f91",
+    "variation": false
+  },
+  "Imprisoned in the Moon": {
+    "artist": "Ryan Alexander Lee",
+    "artist_ids": [
+      "f4d194b4-958a-4830-8d87-1a84e0b9ffbc"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 805725,
+    "cmc": 3.0,
+    "collector_number": "69",
+    "color_identity": [
+      "U"
+    ],
+    "colors": [
+      "U"
+    ],
+    "digital": false,
+    "edhrec_rank": 764,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "flavor_text": "Only one vault was great enough to hold Emrakul.",
+    "foil": true,
+    "frame": "2015",
+    "frame_effects": [
+      "enchantment"
+    ],
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "0d150547-09f5-45ce-a825-89944b066bd4",
+    "illustration_id": "72e37375-3bd9-471a-aabe-7321b716d670",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T02:02:41Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.webp?1783908161",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.jpg?1783908161",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.jpg?1783908161",
+      "crop": "https://cards.scryfall.io/crop/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.webp?1783908161",
+      "display": "https://cards.scryfall.io/display/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.webp?1783908161",
+      "grid": "https://cards.scryfall.io/grid/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.webp?1783908161",
+      "large": "https://cards.scryfall.io/large/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.jpg?1783908161",
+      "normal": "https://cards.scryfall.io/normal/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.jpg?1783908161",
+      "png": "https://cards.scryfall.io/png/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.png?1783908161",
+      "small": "https://cards.scryfall.io/small/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.jpg?1783908161",
+      "thumb": "https://cards.scryfall.io/thumb/front/0/d/0d150547-09f5-45ce-a825-89944b066bd4.webp?1783908161"
+    },
+    "keywords": [
+      "Enchant"
+    ],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "legal",
+      "brawl": "legal",
+      "commander": "legal",
+      "competitivebrawl": "legal",
+      "duel": "legal",
+      "future": "legal",
+      "gladiator": "legal",
+      "historic": "legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "legal",
+      "paupercommander": "legal",
+      "penny": "legal",
+      "pioneer": "legal",
+      "predh": "not_legal",
+      "premodern": "not_legal",
+      "standard": "legal",
+      "standardbrawl": "legal",
+      "timeless": "legal",
+      "tlr": "legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{2}{U}",
+    "mtgo_id": 135518,
+    "multiverse_ids": [
+      685895
+    ],
+    "name": "Imprisoned in the Moon",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "339a7418-9a29-4eae-a3c2-ea590d175936",
+    "oracle_text": "Enchant creature, land, or planeswalker\nEnchanted permanent is a colorless land with \"{T}: Add {C}\" and loses all other card types and abilities.",
+    "oversized": false,
+    "penny_rank": 7634,
+    "prices": {
+      "eur": "0.18",
+      "eur_foil": "0.18",
+      "tix": "0.04",
+      "usd": "0.36",
+      "usd_etched": null,
+      "usd_foil": "0.39"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A339a7418-9a29-4eae-a3c2-ea590d175936&unique=prints",
+    "produced_mana": [
+      "C"
+    ],
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/135518?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=805725&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F609791%3Fpage%3D1"
+    },
+    "rarity": "common",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Imprisoned+in+the+Moon",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=685895&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DImprisoned%2Bin%2Bthe%2BMoon",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DImprisoned%2Bin%2Bthe%2BMoon"
+    },
+    "released_at": "2025-01-24",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/0d150547-09f5-45ce-a825-89944b066bd4/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/inr?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/inr/69/imprisoned-in-the-moon?utm_source=api",
+    "set": "inr",
+    "set_id": "b9618c8c-9f31-4b42-9798-2991893c27bf",
+    "set_name": "Innistrad Remastered",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Ainr&unique=prints",
+    "set_type": "masters",
+    "set_uri": "https://api.scryfall.com/sets/b9618c8c-9f31-4b42-9798-2991893c27bf",
+    "story_spotlight": false,
+    "tcgplayer_id": 609791,
+    "textless": false,
+    "type_line": "Enchantment \u2014 Aura",
+    "uri": "https://api.scryfall.com/cards/0d150547-09f5-45ce-a825-89944b066bd4",
+    "variation": false
+  },
+  "Peek": {
+    "artist": "Adam Rex",
+    "artist_ids": [
+      "445bd2fb-4a70-4599-87a4-83cf5979fc56"
+    ],
+    "booster": true,
+    "border_color": "black",
+    "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+    "cardmarket_id": 16258,
+    "cmc": 1.0,
+    "collector_number": "94",
+    "color_identity": [
+      "U"
+    ],
+    "colors": [
+      "U"
+    ],
+    "digital": false,
+    "edhrec_rank": 4493,
+    "finishes": [
+      "nonfoil",
+      "foil"
+    ],
+    "flavor_text": "Sometimes you have to read between the minds.",
+    "foil": true,
+    "frame": "2003",
+    "full_art": false,
+    "game_changer": false,
+    "games": [
+      "paper",
+      "mtgo"
+    ],
+    "highres_image": true,
+    "id": "869a6c06-eae5-418e-9a5c-26598a929416",
+    "illustration_id": "9b985b80-c209-41fb-b5f1-aa1038789311",
+    "image_status": "highres_scan",
+    "image_updated_at": "2026-07-13T11:44:14Z",
+    "image_uris": {
+      "art": "https://cards.scryfall.io/art/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.webp?1783943054",
+      "art_crop": "https://cards.scryfall.io/art_crop/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.jpg?1783943054",
+      "border_crop": "https://cards.scryfall.io/border_crop/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.jpg?1783943054",
+      "crop": "https://cards.scryfall.io/crop/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.webp?1783943054",
+      "display": "https://cards.scryfall.io/display/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.webp?1783943054",
+      "grid": "https://cards.scryfall.io/grid/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.webp?1783943054",
+      "large": "https://cards.scryfall.io/large/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.jpg?1783943054",
+      "normal": "https://cards.scryfall.io/normal/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.jpg?1783943054",
+      "png": "https://cards.scryfall.io/png/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.png?1783943054",
+      "small": "https://cards.scryfall.io/small/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.jpg?1783943054",
+      "thumb": "https://cards.scryfall.io/thumb/front/8/6/869a6c06-eae5-418e-9a5c-26598a929416.webp?1783943054"
+    },
+    "keywords": [],
+    "lang": "en",
+    "layout": "normal",
+    "legalities": {
+      "alchemy": "not_legal",
+      "brawl": "legal",
+      "commander": "legal",
+      "competitivebrawl": "legal",
+      "duel": "legal",
+      "future": "not_legal",
+      "gladiator": "legal",
+      "historic": "legal",
+      "legacy": "legal",
+      "modern": "legal",
+      "oathbreaker": "legal",
+      "oldschool": "not_legal",
+      "pauper": "legal",
+      "paupercommander": "legal",
+      "penny": "not_legal",
+      "pioneer": "not_legal",
+      "predh": "legal",
+      "premodern": "legal",
+      "standard": "not_legal",
+      "standardbrawl": "not_legal",
+      "timeless": "legal",
+      "tlr": "legal",
+      "vintage": "legal"
+    },
+    "mana_cost": "{U}",
+    "mtgo_foil_id": 27493,
+    "mtgo_id": 27492,
+    "multiverse_ids": [
+      130903
+    ],
+    "name": "Peek",
+    "nonfoil": true,
+    "object": "card",
+    "oracle_id": "873abbf4-c9b5-4b8f-8cd0-613cf3b9b1d5",
+    "oracle_text": "Look at target player's hand.\nDraw a card.",
+    "oversized": false,
+    "penny_rank": 2138,
+    "prices": {
+      "eur": "0.44",
+      "eur_foil": "6.35",
+      "tix": "0.03",
+      "usd": "0.41",
+      "usd_etched": null,
+      "usd_foil": "11.50"
+    },
+    "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A873abbf4-c9b5-4b8f-8cd0-613cf3b9b1d5&unique=prints",
+    "promo": false,
+    "purchase_uris": {
+      "cardhoarder": "https://www.cardhoarder.com/cards/27492?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+      "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=16258&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+      "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F15243%3Fpage%3D1"
+    },
+    "rarity": "common",
+    "related_uris": {
+      "edhrec": "https://edhrec.com/route/?cc=Peek",
+      "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=130903&printed=false",
+      "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DPeek",
+      "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DPeek"
+    },
+    "released_at": "2007-07-13",
+    "reprint": true,
+    "reserved": false,
+    "rulings_uri": "https://api.scryfall.com/cards/869a6c06-eae5-418e-9a5c-26598a929416/rulings",
+    "scryfall_set_uri": "https://scryfall.com/sets/10e?utm_source=api",
+    "scryfall_uri": "https://scryfall.com/card/10e/94/peek?utm_source=api",
+    "set": "10e",
+    "set_id": "a66a6124-0d81-488d-b080-91f5ba7fbad0",
+    "set_name": "Tenth Edition",
+    "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3A10e&unique=prints",
+    "set_type": "core",
+    "set_uri": "https://api.scryfall.com/sets/a66a6124-0d81-488d-b080-91f5ba7fbad0",
+    "story_spotlight": false,
+    "tcgplayer_id": 15243,
+    "textless": false,
+    "type_line": "Instant",
+    "uri": "https://api.scryfall.com/cards/869a6c06-eae5-418e-9a5c-26598a929416",
+    "variation": false
+  }
+}

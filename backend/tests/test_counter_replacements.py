@@ -16,11 +16,11 @@ from rules_engine.engine import RulesEngine
 from rules_engine.events import emit_event
 from rules_engine.move_generator import legal_moves
 from rules_engine.stack_engine import resolve_top_of_stack
-from tests.test_ai_recurring_engines import add as add_card
+from tests.counter_family_canonical091 import add_card
 from tests.test_counter_prohibitions import source as ban
 from tests.test_player_counters import source as experience_source
 from tests.test_restricted_mana import clean
-from tests.test_ward_resolution import add
+from tests.counter_family_canonical091 import add
 
 
 ROWS = {r['name']: r for r in json.loads((Path(__file__).parent / 'fixtures/counter_replacements.json').read_text())}

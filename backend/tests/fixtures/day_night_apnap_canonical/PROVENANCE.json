@@ -1,0 +1,36 @@
+{
+  "existing_cathar": {
+    "file": "../knowledge_profiles/seed155-scryfall.jsonl",
+    "id": "0dbac7ce-a6fa-466e-b6ba-173cf2dec98e",
+    "name": "Brutal Cathar // Moonrage Brute",
+    "provenance_file": "../knowledge_profiles/PROVENANCE.json",
+    "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+  },
+  "new_cards": [
+    {
+      "canonical_uri": "https://api.scryfall.com/cards/0784b6f0-9ebf-43d2-ba0f-a6bc93ba0c48",
+      "downloaded_at": "2026-10-15T22:56:27.331237+00:00",
+      "file": "phyrexian-arena-scryfall-raw.json",
+      "full_unmodified_https_response": true,
+      "name": "Phyrexian Arena",
+      "oracle_id": "ee579a32-a048-4335-b966-231ba731cdea",
+      "scryfall_id": "0784b6f0-9ebf-43d2-ba0f-a6bc93ba0c48",
+      "sha256": "68fe7fdd9f842cc679b34fec3c69e3b2201e54e4a6e9dbd2f2f0486e43f4023f",
+      "source_url": "https://api.scryfall.com/cards/named?exact=Phyrexian%20Arena"
+    },
+    {
+      "canonical_uri": "https://api.scryfall.com/cards/0e896a87-2a93-488c-a0c9-0bed8404da44",
+      "downloaded_at": "2026-10-15T22:56:27.331430+00:00",
+      "file": "corruption-of-towashi-scryfall-raw.json",
+      "full_unmodified_https_response": true,
+      "name": "Corruption of Towashi",
+      "oracle_id": "242c39b4-5ef0-469a-a852-738f79d93bd6",
+      "scryfall_id": "0e896a87-2a93-488c-a0c9-0bed8404da44",
+      "sha256": "9eecdd8eb4e08a9363414acfefae08e4cfb7180825f01a07396c7b781156d170",
+      "source_url": "https://api.scryfall.com/cards/named?exact=Corruption%20of%20Towashi"
+    }
+  ],
+  "offline_projection": "production ScryfallSyncService normalization with explicit display-only image operand; actual physical front via apply_transform_face; complete raw never truncated",
+  "schema_version": 1
+}

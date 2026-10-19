@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { openBrowser } from './browser-driver.mjs';
 import { startReviewed } from './review-start.mjs';
+import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
 
 // Isolated v2 suite. No dependency on production data or edits to the shared harness.
 const api = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
@@ -11,12 +12,12 @@ assert.ok(evidence, 'Set MTG_UI_EVIDENCE to local scratch');
 assert.ok(process.env.MTG_BROWSER_ORIGIN, 'Explicit owned Chromium origin required');
 await mkdir(evidence, {recursive:true});
 const b = await openBrowser(origin);
-const {evaluate, command, waitFor, click, reload} = b;
+const {evaluate, command, waitFor, click, reload, uiInput} = b;
 await command('Page.bringToFront');
 const results = [];
 const record = async message => { results.push(message); console.log('PASS '+message); await writeFile(`${evidence}/v2-checks.json`,JSON.stringify(results,null,2)); };
 async function viewport(width=1440,height=1000) { await command('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false}); }
-async function key(key) { for(const type of ['keyDown','keyUp']) await command('Input.dispatchKeyEvent',{type,key,code:key,windowsVirtualKeyCode:({Enter:13,Escape:27,Tab:9})[key], ...(key==='Enter'&&type==='keyDown'?{text:'\r'}:{})}); }
+async function key(key) { if(uiInput) return uiInput.pressKey(...arguments); for(const type of ['keyDown','keyUp']) await command('Input.dispatchKeyEvent',{type,key,code:key,windowsVirtualKeyCode:({Enter:13,Escape:27,Tab:9})[key], ...(key==='Enter'&&type==='keyDown'?{text:'\r'}:{})}); }
 async function fit() { assert.ok(await evaluate('document.documentElement.scrollWidth <= innerWidth + 1'),'Unintended page-wide overflow'); }
 async function shot(name, selector) {
   await evaluate('document.activeElement?.blur()'); await key('Escape');
@@ -25,10 +26,11 @@ async function shot(name, selector) {
   await writeFile(`${evidence}/${name}.png`,Buffer.from(image.data,'base64'));
 }
 async function setup(path) {
+  await waitFor("!document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Restoring saved session')");
   const response=await fetch(api+path,{method:'POST'});assert.equal(response.status,200);
   const state=await response.json();
   await evaluate(`localStorage.setItem('mtg.activeMatch',${JSON.stringify(state.id)})`);await reload();
-  await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Restoring saved session') && [...document.querySelectorAll('button')].some(e=>e.textContent==='Resume automatic play')");
+  await waitFor(`localStorage.getItem('mtg.activeMatch') === ${JSON.stringify(state.id)} && document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(state.id)} && document.querySelector('.battlefield')?.dataset.matchRevision === ${JSON.stringify(String(state.revision))} && !document.body.innerText.includes('Restoring saved session') && !document.body.innerText.includes('Match operation pending') && [...document.querySelectorAll('button')].some(e=>e.textContent==='Resume automatic play')`);
   return state;
 }
 async function select(selector,value) {
@@ -36,10 +38,186 @@ async function select(selector,value) {
 }
 async function pointer(selector) {
   const p=await evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)});e.scrollIntoView({block:'center',inline:'center'});const r=e.getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+  if(uiInput) return uiInput.clickAt(p);
   await command('Input.dispatchMouseEvent',{type:'mouseMoved',...p});
   for(const type of ['mousePressed','mouseReleased']) await command('Input.dispatchMouseEvent',{type,...p,button:'left',clickCount:1});
 }
+async function recoverDroppedResponse(s) {
+  const supportsFetchResourceTypeFilter=b.supportsFetchResourceTypeFilter;
+  if(typeof supportsFetchResourceTypeFilter!=='boolean')throw new TypeError('Explicit boolean Fetch resource-type capability required');
+  let dropped=false, dropping=false, enabled=false, timer;
+  let deadlineExpired, disabling=false;
+  const pendingInterceptions=new Set();
+  let postResponseObserved=false, omittedResponses=0;
+  const responseTrace=[], actionUrl=`${api}/matches/${s.id}/action`;
+  const requests={OPTIONS:{observed:0,attempted:0,ack:0,error:0,pending:0},
+    POST:{observed:0,attempted:0,ack:0,error:0,pending:0},
+    OTHER:{observed:0,attempted:0,ack:0,error:0,pending:0},errorCode:null};
+  let resolveDrop, rejectDrop;
+  const drop=new Promise((resolve,reject)=>{resolveDrop=resolve;rejectDrop=reject;});
+  drop.catch(()=>{}); // A callback may reject before click's CDP acknowledgement.
+  let interceptionError, rejectInterception;
+  const interceptionFailed=new Promise((_,reject)=>{rejectInterception=reject;});
+  interceptionFailed.catch(()=>{});
+  function failInterception(error) {
+    // A later callback failure must remain fatal after the drop promise has fulfilled.
+    interceptionError??=error;
+    rejectDrop(interceptionError);
+    rejectInterception(interceptionError);
+  }
+  let requestLifecycle;
+  const interceptionTrace=traceStartRecoveryResponses(command,async(e,observedCommand)=>{
+    let settle;
+    const pending=new Promise(resolve=>{settle=resolve;});
+    pendingInterceptions.add(pending);
+    try {
+    let requestCommand=observedCommand;
+    if(e.responseStatusCode===undefined&&e.responseErrorReason===undefined){
+      const counts=requests[['OPTIONS','POST'].includes(e.request.method)?e.request.method:'OTHER'];
+      counts.observed++;
+      requestCommand=async(method,params)=>{
+        counts.attempted++;counts.pending++;
+        try{const result=await observedCommand(method,params);counts.ack++;return result;}
+        catch(error){
+          counts.error++;
+          try{const code=JSON.parse(error.message).code;if(Number.isSafeInteger(code))requests.errorCode=code;}catch{}
+          throw error;
+        }finally{counts.pending--;}
+      };
+    }
+    try {if(await continueRequestForPostResponse(requestCommand,e))return;}
+    catch(error){failInterception(error);return;}
+    const trace={method:['OPTIONS','POST','GET','HEAD','PUT','PATCH','DELETE'].includes(e.request.method)?e.request.method:'OTHER',
+      status:Number.isInteger(e.responseStatusCode)&&e.responseStatusCode>=100&&e.responseStatusCode<=599?e.responseStatusCode:null,
+      current:e.request.url===actionUrl,command:'continue',continuation:'pending',errorCode:null};
+    if(e.request.method==='OPTIONS')trace.allowOriginMatchesExpected=Boolean(e.responseHeaders?.some(h=>h.name.toLowerCase()==='access-control-allow-origin'&&h.value===origin));
+    if(trace.current&&e.request.method==='POST')postResponseObserved=true;
+    if(responseTrace.length<16)responseTrace.push(trace);else omittedResponses++;
+    try {
+      if(e.request.method==='POST'&&e.responseStatusCode===200&&e.request.url===actionUrl&&!dropping){
+        dropping=true;
+        trace.command='drop';
+        await observedCommand('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});
+        trace.continuation='ack';
+        dropped=true;resolveDrop();
+      }else {await observedCommand('Fetch.continueResponse',{requestId:e.requestId});trace.continuation='ack';}
+    }catch(error){
+      trace.continuation='error';
+      // The driver wraps CDP errors as JSON; never retain its message or data.
+      try {const code=JSON.parse(error.message).code;if(Number.isSafeInteger(code))trace.errorCode=code;}catch{}
+      failInterception(error);
+    }
+    }catch(error){failInterception(error);}
+    finally{pendingInterceptions.delete(pending);settle();}
+  },origin,value=>{
+    // Partition the same bounded snapshot; preserve the legacy Network event-list schema.
+    if(value.causal&&value.browserMetadata){
+      value.causal.events=value.browserMetadata.events.filter(row=>row.event.startsWith('fetch-'));
+      value.browserMetadata.events=value.browserMetadata.events.filter(row=>!row.event.startsWith('fetch-'));
+    }
+    requestLifecycle=value;
+  },{backend:api,requestSignals:recoverDroppedResponse.requestSignals,causal:true});
+  b.onIntercept(interceptionTrace);
+  try {
+    await command('Network.enable');
+    interceptionTrace.observeControl?.('Fetch.enable','sent');
+    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
+    interceptionTrace.observeControl?.('Fetch.enable','accepted');
+    await click('Play Land Forest');
+    const deadline=Date.now()+15000;
+    deadlineExpired=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('Current accepted response drop timed out')),15000);});
+    await Promise.race([drop,deadlineExpired]);
+    const remaining=deadline-Date.now();
+    if(remaining<=0)throw new Error('Current accepted response reconciliation timed out');
+    await Promise.race([interceptionFailed,deadlineExpired,waitFor(`localStorage.getItem('mtg.activeMatch') === ${JSON.stringify(s.id)} && document.querySelector('.battlefield')?.dataset.matchId === ${JSON.stringify(s.id)} && document.querySelector('.battlefield')?.dataset.matchRevision === '1' && document.querySelector('.operation-alert') && !document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Restoring saved session') && ![...document.querySelectorAll('button')].some(e=>e.textContent.startsWith('Play Land Forest'))`,remaining)]);
+    if(Date.now()>=deadline)throw new Error('Current accepted response reconciliation timed out');
+    const state=await Promise.race([interceptionFailed,deadlineExpired,(async()=>await(await fetch(`${api}/matches/${s.id}`)).json())()]);assert.equal(state.revision,1);assert.ok(dropped);
+    // Repeat because callbacks can arrive while a previous snapshot is settling.
+    while(pendingInterceptions.size)await Promise.race([interceptionFailed,deadlineExpired,Promise.all([...pendingInterceptions])]);
+    disabling=true;
+    interceptionTrace.observeControl?.('Fetch.disable','sent');
+    await Promise.race([interceptionFailed,deadlineExpired,command('Fetch.disable')]);enabled=false;
+    interceptionTrace.observeControl?.('Fetch.disable','accepted');
+    while(pendingInterceptions.size)await Promise.race([interceptionFailed,deadlineExpired,Promise.all([...pendingInterceptions])]);
+    if(interceptionError)throw interceptionError;
+    if(Date.now()>=deadline)throw new Error('Current accepted response reconciliation timed out');
+    return state;
+  }catch(error){
+    interceptionTrace.reportFailure();
+    const diagnostic={dropped,postResponseObserved,responses:responseTrace.map(trace=>({...trace})),
+      requestLifecycle,
+      omittedResponses,requests:{OPTIONS:{...requests.OPTIONS},POST:{...requests.POST},OTHER:{...requests.OTHER},errorCode:requests.errorCode},
+      pendingInterceptions:pendingInterceptions.size,uiStatus:'unavailable',ui:null,actionUi:null,
+      canonical:{status:'pending',revision:null},runtime:{status:'pending',product:null,protocolVersion:null}};
+    let diagnosticTimer, collecting=true, uiDone=false;
+    const diagnosticAbort=new AbortController();
+    // All failure-only reads share the original diagnostic budget, never a second recovery deadline.
+    const readUi=async()=>{
+      try{
+      const ui=await evaluate(`(()=>{
+        const alert=document.querySelector('.operation-alert'),text=alert?.textContent||'';
+        return {activeMatch:localStorage.getItem('mtg.activeMatch')===${JSON.stringify(s.id)},
+          renderedMatch:document.querySelector('.battlefield')?.dataset.matchId===${JSON.stringify(s.id)},
+          renderedRevision:document.querySelector('.battlefield')?.dataset.matchRevision,
+          enabledPrefixCount:[...document.querySelectorAll('button')].filter(b=>b.textContent.trim().startsWith('Play Land Forest')&&!b.matches(':disabled')).length,
+          alert:Boolean(alert),pending:document.body.innerText.includes('Match operation pending'),
+          restoring:document.body.innerText.includes('Restoring saved session'),
+          failedToFetch:text.includes('Failed to fetch'),networkError:text.includes('NetworkError'),loadFailed:text.includes('Load failed')};
+      })()`);
+      if(collecting&&ui&&typeof ui==='object'){
+        diagnostic.ui={};
+        for(const key of ['activeMatch','renderedMatch','alert','pending','restoring','failedToFetch','networkError','loadFailed'])diagnostic.ui[key]=ui[key]===true;
+        diagnostic.actionUi={enabledPrefixCount:Number.isSafeInteger(ui.enabledPrefixCount)&&ui.enabledPrefixCount>=0?ui.enabledPrefixCount:null,
+          renderedRevision:typeof ui.renderedRevision==='string'&&/^(0|[1-9]\d*)$/.test(ui.renderedRevision)&&Number.isSafeInteger(Number(ui.renderedRevision))?Number(ui.renderedRevision):null};
+        diagnostic.uiStatus='available';
+      }
+      }catch{}finally{uiDone=true;}
+    };
+    const readCanonical=async()=>{
+      try{
+        const response=await fetch(`${api}/matches/${s.id}`,{method:'GET',signal:diagnosticAbort.signal});
+        if(!response.ok)throw new Error('Diagnostic state unavailable');
+        const state=await response.json();
+        if(!Number.isSafeInteger(state?.revision)||state.revision<0)throw new Error('Diagnostic revision unavailable');
+        if(collecting)diagnostic.canonical={status:'available',revision:state.revision};
+      }catch{if(collecting)diagnostic.canonical.status='unavailable';}
+    };
+    const readRuntime=async()=>{
+      try{
+        const identity=await b.browserIdentity(diagnosticAbort.signal);
+        if(collecting)diagnostic.runtime={status:'available',product:identity.product,protocolVersion:identity.protocolVersion};
+      }catch{if(collecting)diagnostic.runtime.status='unavailable';}
+    };
+    try{
+      await Promise.race([Promise.all([readUi(),readCanonical(),readRuntime()]),new Promise(resolve=>{
+        diagnosticTimer=setTimeout(()=>{
+          if(!uiDone)diagnostic.uiStatus='timed-out';
+          for(const key of ['canonical','runtime'])if(diagnostic[key].status==='pending')diagnostic[key].status='timed-out';
+          resolve();
+        },1000);
+      })]);
+    }finally{collecting=false;clearTimeout(diagnosticTimer);diagnosticAbort.abort();}
+    try {
+      diagnostic.requestLifecycleFinal=interceptionTrace.captureFinal?.()??null;
+      console.error('DROP_RESPONSE_TRACE',JSON.stringify(diagnostic));
+    }catch{}
+    throw error;
+  }
+  finally{
+    try{
+      if(enabled&&!disabling){
+        interceptionTrace.observeControl?.('Fetch.disable','sent');
+        const cleanup=command('Fetch.disable');
+        if(deadlineExpired)await Promise.race([cleanup,deadlineExpired.catch(()=>{})]);else await cleanup;
+      }
+    }finally{clearTimeout(timer);}
+  }
+}
 try {
+  recoverDroppedResponse.requestSignals=createRequestSignalObserver(origin,api);
+  b.onIntercept(Object.assign(()=>{},{observeBrowserEvent:recoverDroppedResponse.requestSignals.observe}));
+  await command('Page.enable');
+  await command('Runtime.enable');
   await viewport();
   await evaluate("localStorage.removeItem('mtg.activeMatch'); localStorage.removeItem('mtg.pendingStart')");await reload();
   await waitFor("document.querySelector('.workspace-lobby') && document.querySelector('[aria-label=\"Deck A\"] option[value]:not([value=\"\"])')");
@@ -119,11 +297,19 @@ try {
   assert.ok(await evaluate("document.querySelector('.inspection-faces details').open"));
   const faceShot=await command('Page.captureScreenshot',{format:'png'});await writeFile(`${evidence}/after-face-inspection.png`,Buffer.from(faceShot.data,'base64'));await key('Escape');
   await record('Available multi-face metadata inspectable by keyboard without changing the chosen legal cast');
-  await setup('/fixture?face_kind=scry');
+  const scryState = await setup('/fixture?face_kind=scry');
   assert.ok(await evaluate("document.querySelector('.choice-notice').textContent.includes('Choice required')"));
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(e=>e.textContent==='Pass Priority').disabled"),true);
+  const scryRevision = await evaluate("document.querySelector('.battlefield').dataset.matchRevision");
   await shot('after-pending-choice','#match-controls');await click('Confirm Selection');
-  await waitFor("!document.querySelector('.choice-notice') || !document.body.innerText.includes('Confirm Selection')");
+  await waitFor(`document.querySelector('.battlefield')?.dataset.matchRevision !== ${JSON.stringify(scryRevision)} && !document.body.innerText.includes('Match operation pending') && document.body.innerText.includes('Order the remaining cards')`);
+  for (const name of ['Twiddle', 'Impede Momentum', 'Grizzly Bears']) await click(name);
+  const orderRevision = await evaluate("document.querySelector('.battlefield').dataset.matchRevision");
+  await click('Confirm Order');
+  await waitFor(`document.querySelector('.battlefield')?.dataset.matchRevision !== ${JSON.stringify(orderRevision)} && !document.body.innerText.includes('Match operation pending') && !document.body.innerText.includes('Confirm Selection') && !document.body.innerText.includes('Confirm Order')`);
+  const scryFinal = await (await fetch(`${api}/matches/${scryState.id}`)).json();
+  assert.equal(scryFinal.pending_mechanic_choice, null);
+  assert.ok(scryFinal.players['2'].hand.some(card => card.name === 'Twiddle'));
   await record('Pending canonical scry prevents pass and remains actionable in command surface');
   const cast=await setup('/fixture');await click('Cast Llanowar Elves');await waitFor("document.querySelector('.stack-item')?.textContent.includes('Llanowar Elves')");
   assert.ok((await(await fetch(`${api}/matches/${cast.id}`)).json()).stack.length>0);await shot('after-stack-response','#match-controls');
@@ -133,10 +319,6 @@ try {
   await waitFor("!document.body.innerText.includes('Match operation pending') && ![...document.querySelectorAll('button')].some(e=>e.textContent.startsWith('Play Land Forest'))");
   let state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);await reload();await waitFor("document.querySelector('[data-match-revision=\"1\"]')");
   await record('Double intent applies once; full-page reload restores persisted revision');
-  s=await setup('/fixture');let dropped=false;
-  b.onIntercept(async e=>{if(e.request.method==='POST'&&e.responseStatusCode===200&&!dropped){dropped=true;await command('Fetch.failRequest',{requestId:e.requestId,errorReason:'Failed'});}else await command('Fetch.continueResponse',{requestId:e.requestId});});
-  await command('Fetch.enable',{patterns:[{urlPattern:'*/matches/*/action',requestStage:'Response'}]});await click('Play Land Forest');
-  await waitFor("document.querySelector('.operation-alert') && !document.body.innerText.includes('Match operation pending')");await command('Fetch.disable');
-  state=await(await fetch(`${api}/matches/${s.id}`)).json();assert.equal(state.revision,1);assert.ok(dropped);await shot('after-reconciled-failure');
+  s=await setup('/fixture');await recoverDroppedResponse(s);await shot('after-reconciled-failure');
   await record('Dropped accepted HTTP response surfaces error and reconciles server revision without replay');
 } finally { await b.close(); }

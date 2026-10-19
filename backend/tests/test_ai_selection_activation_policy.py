@@ -1,5 +1,6 @@
 """Canonical paid selection through the installed production AI consumer."""
 import json
+from copy import deepcopy
 from math import comb
 from pathlib import Path
 import pickle
@@ -43,10 +44,12 @@ def relocate(state, name, seat, zone):
     return card
 
 
-def position(seat=1, scenario='favorable'):
+def position(seat=1, scenario='favorable', *, additional_own_rows=None):
     eligible = scenario != 'ineligible'
-    own = [row('recruitment-officer', 1), row('savannah-lions', 24 if eligible else 0),
+    own = [row('recruitment-officer', 1), *([row('savannah-lions', 24)] if eligible else []),
            row('plains', 24), row('serra-angel', 8), row('counterspell', 1), row('opt', 4)]
+    if additional_own_rows is not None:
+        own.extend(deepcopy(additional_own_rows))
     opp = [row('plains', 24), row('serra-angel', 8), row('lightning-bolt', 1)]
     state = MatchFactory.from_decks(own if seat == 1 else opp, opp if seat == 1 else own, seed=321)
     state.pregame_pending = False

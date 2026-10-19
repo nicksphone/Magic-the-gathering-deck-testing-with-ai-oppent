@@ -18,6 +18,7 @@ from tests.test_activation_modifiers import board
 from tests.test_ai_recurring_engines import add as raw_add
 from tests.test_surveil_mill import add, resolve
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/kicker.json').read_text())}
 
@@ -144,8 +145,7 @@ def test_ai_materializes_useful_kicker_and_preserves_mana_when_redundant(seat, d
 def test_http_provenance_survives_restore_and_wrong_branch_target_rejected(game, seat):
     client, controller = game
     state, spell, target = setup('Fight with Fire', seat)
-    state.id = controller.state.id
-    controller.state = state
+    adopt_fixture_state(controller, state)
     persist(controller)
     rejected(client, controller, {'type': 'cast_spell', 'card_id': spell.id,
               'cost_choice': {'id': 'base'}, 'targets': {'target_player': 3-seat}}, seat)

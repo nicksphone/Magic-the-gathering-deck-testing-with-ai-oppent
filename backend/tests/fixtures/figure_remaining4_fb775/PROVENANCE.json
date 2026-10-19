@@ -1,0 +1,194 @@
+{
+  "new_intake": false,
+  "predecessor": "figure-upgrade-fb775-47STAGE-43P4F-20261017-gZL16BZf",
+  "sources": {
+    "Battlegrowth": {
+      "fields": 64,
+      "file": "tests/fixtures/multicharacteristic_audit/battlegrowth.json",
+      "id": "2b34e76b-86b3-464e-93e7-c3f2074028fb",
+      "line": null,
+      "oracle_id": "650bf82e-7f83-470c-bf4a-34281bfe9341",
+      "row_sha256": "12a304df645811ce74bf6af6169344d9d8eff4b823c139dce997e2a2c95f2156",
+      "sha256": "106e851583c858cd5b530e9bd25a77f6579754a745c5352269a5d2c548a637a3",
+      "steps": []
+    },
+    "Clone": {
+      "fields": 66,
+      "file": "tests/fixtures/archangel_pair/clone.json",
+      "id": "5e648262-3b9b-4c58-8e29-48356e3cb064",
+      "line": null,
+      "oracle_id": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "row_sha256": "50dfc26a28f4c929fd14c6461f233e4cde81b7a1691978297b17e79eb94cafe6",
+      "sha256": "a52bfd09d4766a39e97d4a81e9c91c225e3959a149436910a9f371b4d2c66926",
+      "steps": []
+    },
+    "Cloudshift": {
+      "fields": 65,
+      "file": "tests/fixtures/temporary_control_audit/cloudshift.json",
+      "id": "6dc0c976-26d2-40c9-a571-c370e9139d1d",
+      "line": null,
+      "oracle_id": "6879f5ce-7a1b-4606-bad1-885779b0d456",
+      "row_sha256": "fffec07762fa85c33e2a51eea360b168b950fac50d019d334c841b1541b26a6f",
+      "sha256": "a6477d60b641d708f9447b8f53637a6701b02531fce76c6b04f9cb0fc6ded47b",
+      "steps": []
+    },
+    "Figure of Destiny": {
+      "fields": 66,
+      "file": "tests/fixtures/canonical_hydration/figure-of-destiny-scryfall-raw.json",
+      "id": "6d779966-4bd4-4315-8b45-d3a4492f2bb2",
+      "line": null,
+      "oracle_id": "cd51cc2d-0d39-4aba-b0ea-70e8118149bc",
+      "row_sha256": "a2aef866ff5d9cc3cf870511b3616e712df9ae01785777e3769463dcdc376462",
+      "sha256": "861c21c299816724a667c392cc37d4182da2a52496e1cb7da5f6cf39a97edaeb",
+      "steps": []
+    },
+    "Forest": {
+      "fields": 60,
+      "file": "tests/fixtures/archangel_pair/forest.json",
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "line": null,
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "row_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0",
+      "sha256": "9fd13936ddd26f08cc2aea5fb57b427ec3297e56040ed5d9fc74f566baf837cc",
+      "steps": []
+    },
+    "Giant Growth": {
+      "fields": 66,
+      "file": "tests/fixtures/bloodtithe_resource_debuff/giant-growth.json",
+      "id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900",
+      "line": null,
+      "oracle_id": "5748ebf1-24e3-499d-ab7c-c2cebd462a24",
+      "row_sha256": "18f2faf654870be2899040951edce2ecba32a835e2b12a8906e57e1e43ac8b49",
+      "sha256": "215621f582dde88013d5065eedf856e1e0f53098fb21076f75e6b094346b5195",
+      "steps": []
+    },
+    "Humility": {
+      "fields": 62,
+      "file": "tests/fixtures/creature_observer_fix/humility.json",
+      "id": "55ad6a45-a840-45ba-89ad-066e20e983f3",
+      "line": null,
+      "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+      "row_sha256": "b7a0f114aa0f7d1084ca4e9dfae0244a28ca4c691f211b7857d03732efd3d1c6",
+      "sha256": "eb68a098b4bd6de1d3c02afe60e37461a5c8268108132b0d3351119a50de8b49",
+      "steps": []
+    },
+    "Leyline of Anticipation": {
+      "fields": 62,
+      "file": "tests/fixtures/global_flash_timing_audit/leyline-of-anticipation.json",
+      "id": "f57bdaa1-ce8a-4103-8598-fee751e65a53",
+      "line": null,
+      "oracle_id": "9dc65ffe-17fc-4280-b4bd-78073ac7e12b",
+      "row_sha256": "a97ecfefa77554abb02425ec07a17766529f974795c65e59901db6533d264e83",
+      "sha256": "ef29f3f72a77d201848b0cabbf33824d25e076e8bd5b9f6ba3fc1ac7656c5455",
+      "steps": []
+    },
+    "Liquimetal Coating": {
+      "fields": 62,
+      "file": "tests/fixtures/graveyard_batch_boundary_bf62/liquimetal-coating.json",
+      "id": "f631447c-36e3-4d82-a658-19c9767a216b",
+      "line": null,
+      "oracle_id": "f4bdc551-c2eb-4a34-a3e3-b4a017c925af",
+      "row_sha256": "a3f85ee1680e3bdc5341546fd88fe8bfbf246b88628824fc59e60897e1c1ea7c",
+      "sha256": "46a05afaabda76ca082479ff42fe92d2d7954c5ff53b672b0c888dd5b613529d",
+      "steps": []
+    },
+    "Lithoform Engine": {
+      "fields": 66,
+      "file": "tests/fixtures/creature_observer_fix/lithoform-engine.json",
+      "id": "6683416a-5820-4cd0-b28a-60a53239e9ef",
+      "line": null,
+      "oracle_id": "0bf299da-1854-4153-baea-3cee2eb01ee8",
+      "row_sha256": "22a20453f02f46b14f47f273370ce8dc8eea4404af24d5423db320d71cfdc61e",
+      "sha256": "7930e96a947ed3edc2310b8e8ec20e13d2cdb9f2291ccf49b69bd243d7a4c799",
+      "steps": []
+    },
+    "Naturalize": {
+      "fields": 65,
+      "file": "tests/fixtures/soulscar_protection_boundaries/naturalize.json",
+      "id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+      "line": null,
+      "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+      "row_sha256": "e258427286b91ad2886605a921c5c3385535ae5f58dd493415db55ed5decf6fd",
+      "sha256": "15b8dfe1ff13351ba7f0f8f42457498685a162e68c064bd73b7d5fc893f7fc7b",
+      "steps": []
+    },
+    "Nissa, Who Shakes the World": {
+      "fields": 68,
+      "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "f857bbe4-5619-4733-a0c7-69700f2ef4f3",
+      "line": 68,
+      "oracle_id": "5aa3abf1-d56b-4f42-8c84-7e5a2c15ee0f",
+      "row_sha256": "656e094c5679b4ca7bf870dfd448c45ec44d561e0ab3391d1a91856f1c460437",
+      "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "steps": []
+    },
+    "Ray of Command": {
+      "fields": 64,
+      "file": "tests/fixtures/temporary_control_audit/ray-of-command.json",
+      "id": "7ca8a427-5c20-4650-bbb5-9895e4f2c009",
+      "line": null,
+      "oracle_id": "adf41d29-403d-4936-9689-3148d103e700",
+      "row_sha256": "c492bde44acfcbb87848ce3ff50d8ac83e0e572b8a18deadb6424c30177d7748",
+      "sha256": "248cfd0304564ff17db62ba40276d2735622e6366d1635920563292863fed75b",
+      "steps": []
+    },
+    "Sculpting Steel": {
+      "fields": 64,
+      "file": "tests/fixtures/graveyard_batch_boundary_bf62/sculpting-steel.json",
+      "id": "d1958f01-77e9-4976-b7f8-f9b62aa78edc",
+      "line": null,
+      "oracle_id": "6c85271c-c711-49b0-a72e-9e576c33714d",
+      "row_sha256": "2d1ed9af644cee944caf9bed17c8a615d5006d60c36ccad95b9238a33b2a3c22",
+      "sha256": "0e8435da84613b3902c6544162b616dc700fee2df6209221c2b8b65662ab127f",
+      "steps": []
+    },
+    "Sol Ring": {
+      "fields": 65,
+      "file": "tests/fixtures/creature_observer_fix/sol-ring.json",
+      "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "line": null,
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "row_sha256": "77b61b9b0141eb45cf35ae78e9db7ca7c2c69d5cf9c10b50303d98d0518cb773",
+      "sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+      "steps": []
+    },
+    "Song of the Dryads": {
+      "fields": 64,
+      "file": "tests/fixtures/self_creature_change_fb775/song-of-the-dryads.raw.json",
+      "id": "161e66e3-0339-495c-bd06-0a799a254906",
+      "line": null,
+      "oracle_id": "7c3944fa-7c86-4979-85a9-86196aa94594",
+      "row_sha256": "7884cf6d5dcd4017981c6ea07b99d38cd0c7363fa58c295555eac22b44c9cdfd",
+      "sha256": "1dae64a5da9c46d39a38dae5e153883fb802e9ede0c0635227fc8f41475e053c",
+      "steps": []
+    },
+    "Turn to Frog": {
+      "fields": 63,
+      "file": "tests/fixtures/multicharacteristic_audit/turn-to-frog.json",
+      "id": "5c2410cc-4094-48c4-a219-b4fc385b3746",
+      "line": null,
+      "oracle_id": "74c4c1e2-c50d-4c8f-889a-0d5674dc6d67",
+      "row_sha256": "06822013e6fa564c5bd4d8a1e6a2961e51eb6431d74dee8360872797b3fcdec0",
+      "sha256": "d32c6444bdbc354d4fdc3152c8cbf8a83240e08f5a8f281836e5e81ecaf78423",
+      "steps": []
+    },
+    "Unsummon": {
+      "fields": 62,
+      "file": "tests/fixtures/archangel_pair/unsummon.json",
+      "id": "ddad9f16-52d5-49de-82b0-b1a5294a9c44",
+      "line": null,
+      "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561",
+      "row_sha256": "9904776f9599d4653f265300e1f2837a8ec9f0426d915feea23df95ce31dcc41",
+      "sha256": "e993dc0c93d30a6c75b064a9d8e247f9bd094ae24257c5cec6362309c26bd1d3",
+      "steps": []
+    }
+  },
+  "status": "REUSE_ONLY_PREP_NOT_GAMEPLAY_QUALIFICATION",
+  "upstream_provenance_files": {
+    "tests/fixtures/graveyard_batch_boundary_bf62/SOURCES.json": "876c1749f72c210197a1989c4cce4a045c50d9bc9222b11a64cc9abf60dbed1a",
+    "tests/fixtures/graveyard_batch_native_bf62/SOURCES.json": "7ca9ad36f835f7ce7c017e80ef926a237b8823497bfe04f6a9eac0fc55fe6441",
+    "tests/fixtures/knowledge_profiles/PROVENANCE.json": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+    "tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+    "tests/fixtures/self_creature_change_fb775/PROVENANCE.json": "36159687665654803cd9c687c16456628f16b8adcb45394b043a291e8ce44cf4"
+  }
+}

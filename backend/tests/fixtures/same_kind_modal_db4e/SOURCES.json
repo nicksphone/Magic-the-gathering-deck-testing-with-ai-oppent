@@ -1,0 +1,66 @@
+{
+  "base": "db4e0758a5a1d755abc964e7f40b0286783506e5",
+  "records": {
+    "Grizzly Bears": {
+      "field_count": 66,
+      "file": "vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+      "file_sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+      "format": "json",
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "object_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "oracle_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "retrieved_at_if_present": null,
+      "source": "https://api.scryfall.com/cards/409f9b88-f03e-40b6-9883-68c14c37c0de"
+    },
+    "Island": {
+      "field_count": 60,
+      "file": "fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "format": "jsonl",
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "oracle_sha256": "a6050f1a6c1f21586486a1e21aa8be9bc41340fa0beb2ae1a5952cf26b7f4a57",
+      "retrieved_at_if_present": null,
+      "source": "https://api.scryfall.com/cards/1335d293-3dd2-4f13-bd2c-22181f4528ee"
+    },
+    "Kolaghan's Command": {
+      "field_count": 64,
+      "file": "fixtures/announced_target_references/kolaghans-command.json",
+      "file_sha256": "8249904617e543a1be45500c2632e0774bc154f967238212823a0f7c1d1e5e88",
+      "format": "json",
+      "id": "a0dab027-a475-481b-b012-b6a76e21e494",
+      "object_sha256": "005d05a2a53f8fdacdabb759943dfd1d0b2be178af2ee456fa6f2c802869fcbb",
+      "oracle_id": "45f1e957-09f0-4d46-8e32-238f26060a87",
+      "oracle_sha256": "9ab2ebab0808428b7947588000c59a452e4fdc414b587b43c3afe672752a9e54",
+      "retrieved_at_if_present": null,
+      "source": "https://api.scryfall.com/cards/a0dab027-a475-481b-b012-b6a76e21e494"
+    },
+    "Llanowar Elves": {
+      "field_count": 71,
+      "file": "fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "format": "jsonl",
+      "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+      "object_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "oracle_sha256": "9231ec8ed88e95d1df0ea928fdee13d6d3a0f8c2edfba8d1a59f03d364edfed3",
+      "retrieved_at_if_present": null,
+      "source": "https://api.scryfall.com/cards/6a0b230b-d391-4998-a3f7-7b158a0ec2cd"
+    },
+    "Sol Ring": {
+      "field_count": 65,
+      "file": "fixtures/creature_observer_fix/sol-ring.json",
+      "file_sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+      "format": "json",
+      "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "object_sha256": "77b61b9b0141eb45cf35ae78e9db7ca7c2c69d5cf9c10b50303d98d0518cb773",
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "oracle_sha256": "8310b06afdea748af91bd3f1f23206140bba9309ef34fbd71e3211a8c3542d58",
+      "retrieved_at_if_present": null,
+      "source": "https://api.scryfall.com/cards/8ee443cc-e17a-493b-9c93-1f9e141a30e4"
+    }
+  },
+  "reuse_only_no_intake": true
+}

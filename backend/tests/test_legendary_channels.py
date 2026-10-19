@@ -13,6 +13,7 @@ from rules_engine.continuous import effective_keywords
 from tests.test_activation_modifiers import board
 from tests.test_ai_recurring_engines import add as raw_add, resolve
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/legendary_channels.json').read_text())}
 LANDS = [name for name, row in ROWS.items() if 'Channel' in row['keywords']]
@@ -91,6 +92,11 @@ def test_bounce_union_targets_noncreatures_but_not_lands_and_rechecks(seat):
 @pytest.mark.parametrize('decision', ['search', 'decline'])
 def test_opponent_search_is_owned_optional_and_accepts_typed_nonbasic_land(seat, decision):
     state = board(seat)
+    native_basic_ids = [f'p{3-seat}-{copy:03d}' for copy in (*range(1, 54), *range(60, 53, -1))]
+    assert state.players[3-seat].library == native_basic_ids
+    assert [(state.cards[cid].name, state.cards[cid].type_line, state.cards[cid].owner,
+             state.cards[cid].controller, state.cards[cid].zone) for cid in native_basic_ids] == [
+        ('Swamp', 'Basic Land \u2014 Swamp', 3-seat, 3-seat, Zone.LIBRARY)] * 60
     source = add(state, 'Boseiju, Who Endures', seat, Zone.HAND)
     target = add(state, 'Mind Stone', 3-seat)
     dual = add(state, 'Hallowed Fountain', 3-seat, Zone.LIBRARY)
@@ -109,7 +115,7 @@ def test_opponent_search_is_owned_optional_and_accepts_typed_nonbasic_land(seat,
     result = choice(result, 3-seat, [decision])
     if decision == 'search':
         assert result.pending_mechanic_choice['kind'] == 'search_library'
-        assert result.pending_mechanic_choice['options'] == [dual.id]
+        assert result.pending_mechanic_choice['options'] == native_basic_ids + [dual.id]
         result = choice(result, 3-seat, [dual.id])
         # The searched shock land has its own entry replacement choice.
         if result.pending_mechanic_choice:
@@ -327,6 +333,11 @@ def test_wrong_or_stale_graveyard_choice_is_rejected_atomically(seat):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_optional_search_decline_does_not_shuffle_but_failed_find_does(seat):
     state = board(seat)
+    native_basic_ids = [f'p{3-seat}-{copy:03d}' for copy in (*range(1, 54), *range(60, 53, -1))]
+    assert state.players[3-seat].library == native_basic_ids
+    assert [(state.cards[cid].name, state.cards[cid].type_line, state.cards[cid].owner,
+             state.cards[cid].controller, state.cards[cid].zone) for cid in native_basic_ids] == [
+        ('Swamp', 'Basic Land \u2014 Swamp', 3-seat, 3-seat, Zone.LIBRARY)] * 60
     source = add(state, 'Boseiju, Who Endures', seat, Zone.HAND)
     target = add(state, 'Mind Stone', 3-seat)
     state.players[seat].mana_pool.update(C=1, G=1)
@@ -334,6 +345,12 @@ def test_optional_search_decline_does_not_shuffle_but_failed_find_does(seat):
     result = resolve_to_choice(activate(state, source, target_card_id=target.id))
     declined = choice(deserialize_match_snapshot(serialize_match_snapshot(result)), 3-seat, ['decline'])
     accepted = choice(result, 3-seat, ['search'])
+    assert accepted.pending_mechanic_choice['kind'] == 'search_library'
+    assert accepted.pending_mechanic_choice['player_id'] == 3-seat
+    assert accepted.pending_mechanic_choice['options'] == native_basic_ids
+    assert accepted.pending_mechanic_choice['count'] == 1
+    assert accepted.pending_mechanic_choice['min_count'] == 0
+    accepted = choice(accepted, 3-seat, [])  # Genuine optional fail-to-find still shuffles.
     assert not any('shuffles their library' in line for line in declined.log)
     assert sum('shuffles their library' in line for line in accepted.log) == 1
     assert not accepted.pending_mechanic_choice
@@ -347,12 +364,11 @@ def test_sqlite_restores_owned_mill_return_without_milling_twice(game, seat):
     from persistence.repository import Repository
     client, controller = game
     state = board(seat)
-    state.id = controller.state.id
     source = add(state, 'Takenuma, Abandoned Mire', seat, Zone.HAND)
     target = add(state, 'Grizzly Bears', seat, Zone.LIBRARY)
     state.players[seat].mana_pool.update(C=3, B=1)
     state.mechanic_choice_players = {1, 2}
-    controller.state = state
+    adopt_fixture_state(controller, state)
     persist(controller)
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat, 'action': action(source)})
     assert response.status_code == 200, response.text

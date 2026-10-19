@@ -1,6 +1,7 @@
 from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
 from effects.handlers import counter_spell_unless_pay
 from rules_engine.oracle_effects import infer_effect_from_oracle, inspect_target_hints
+from tests.ai_decisions_canonical_cdba import canonical_card
 
 
 def _state_with_stack(target_types: list[str], target_oracle: str = ""):
@@ -35,22 +36,19 @@ def _state_with_stack(target_types: list[str], target_oracle: str = ""):
             controller=2,
             label="Target Spell",
             effect_key="noop",
-            payload={},
+            payload={"__announced_stack_kind": "spell"},
         )
     )
     return state
 
 
 def _spell_pierce(state):
-    return CardInstance(
+    return canonical_card(
+        "Spell Pierce", as_instance=True,
         id="pierce",
-        name="Spell Pierce",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Instant"],
-        mana_cost="{U}",
-        oracle_text="Counter target noncreature spell unless its controller pays {2}.",
     )
 
 

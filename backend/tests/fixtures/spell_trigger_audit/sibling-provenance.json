@@ -1,0 +1,24 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "offline": true,
+  "facts_modified": false,
+  "fixture_sha256": "9bd7f14b101a44a490df36e3e54f1d8a15030ffe91019b1fef14ac67a43c3c75",
+  "rows": [
+    {
+      "name": "Resounding Roar",
+      "id": "217bf237-a758-4500-b221-5e88fed9d0fc",
+      "oracle_id": "40ad5a52-37ad-4524-be06-9e263a907d31"
+    },
+    {
+      "name": "Slice and Dice",
+      "id": "dad077c9-abc7-4296-a5d1-9441aa6c38c0",
+      "oracle_id": "463fc961-d34e-4f40-b383-5b78a0fcb5c8"
+    },
+    {
+      "name": "Krosan Tusker",
+      "id": "0a368f72-cc88-4f32-aad4-22d92c4d032d",
+      "oracle_id": "82406175-63b3-4972-be8b-db0e70c908cb"
+    }
+  ]
+}

@@ -13,6 +13,7 @@ from tests.test_activation_modifiers import board
 from tests.test_ai_recurring_engines import add as raw_add
 from tests.test_surveil_mill import add, resolve
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']:row for row in json.loads((Path(__file__).parent/'fixtures/variable_spell_costs.json').read_text())}
 NAMES = ["Kaervek's Spite", 'Sickening Dreams']
@@ -186,8 +187,7 @@ def test_authorized_free_cast_keeps_mandatory_nonmana_payment(seat, name):
 def test_http_payment_contract_and_atomic_rejection(game, seat, name):
     client, controller = game
     state, spell, hand, own, _ = setup(name, seat)
-    state.id = controller.state.id
-    controller.state = state
+    adopt_fixture_state(controller, state)
     persist(controller)
     payload = action(spell, seat, hand, 2)
     bad = json.loads(json.dumps(payload))

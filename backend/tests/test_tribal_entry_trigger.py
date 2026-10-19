@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone, assign_static_order_on_battlefield_entry
 from rules_engine.continuous import effective_power, has_keyword
@@ -5,13 +7,10 @@ from rules_engine.engine import RulesEngine
 from rules_engine.events import emit_event
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.stack_engine import resolve_top_of_stack
+from tests.canonical_positive_fixtures import raw_card
 
 
-ORACLE = (
-    "Whenever one or more other Elves you control enter, create a 1/1 green Elf Warrior creature token. "
-    "This ability triggers only once each turn.\n"
-    "{5}{G}{G}: Elves you control get +2/+2 and gain deathtouch until end of turn."
-)
+ORACLE = raw_card('Elvish Warmaster')['oracle_text']
 
 
 def _state():
@@ -19,11 +18,13 @@ def _state():
     state = MatchFactory.from_decks(deck, deck, seed=87)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    source = CardInstance(
-        id="watcher", name="Elvish Warmaster", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature — Elf Warrior",
-        oracle_text=ORACLE, power=2, toughness=2,
-    )
+    raw = raw_card('Elvish Warmaster')
+    materialized = MatchFactory.from_decks(
+        [{**raw, 'quantity': 8, 'card_name': raw['name']}], [], seed=87)
+    # Take a never-drawn template, retaining the original trusted fixture pose.
+    template = next(card for card in materialized.cards.values() if card.zone == Zone.LIBRARY)
+    source = replace(template, id='watcher', owner=1, controller=1, zone=Zone.BATTLEFIELD,
+                     instance_order=0, summoning_sick=True)
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     assign_static_order_on_battlefield_entry(state, source.id)

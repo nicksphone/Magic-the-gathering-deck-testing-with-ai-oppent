@@ -1,3 +1,8 @@
+import json
+import random
+
+from card_data.sync import ScryfallSyncService
+from tests.library_canonical_fixtures import canonical_card, canonicalize_basics, ranking_raw_card, raw_card, reprint
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
@@ -6,30 +11,30 @@ from ai.agent import AIAgent
 from rules_engine.engine import RulesEngine
 
 
+def _iteration_birth_state(top_names=('Preordain', 'Divination', 'Explore')):
+    def row(name, quantity=1):
+        raw = raw_card(name) if name == 'Forest' else ranking_raw_card(name)
+        cached = ScryfallSyncService._normalize_payload(
+            raw, ScryfallSyncService._extract_remote_image_uri(raw))
+        return {**raw, **cached, 'card_name': raw['name'], 'quantity': quantity,
+                'colors': raw['colors'], 'card_faces': json.loads(cached['card_faces_json'])}
+
+    # Arrange data before the real shuffle without advancing the game's RNG.
+    permutation = list(range(60))
+    random.Random(21).shuffle(permutation)
+    names = ['Forest'] * 60
+    for position, name in zip((51, 52, 53), top_names):
+        names[permutation[position - 1]] = name
+    return MatchFactory.from_decks([row(name) for name in names], [row('Forest', 60)], seed=21)
+
+
 def test_top_three_hand_exile_bottom_choice_has_temporary_play_permission() -> None:
-    state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}],
-        seed=21,
-    )
+    state = _iteration_birth_state()
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     player = state.players[1]
     ids = player.library[-3:]
-    values = ["{1}", "{3}", "{2}"]
-    for cid, cost in zip(ids, values):
-        state.cards[cid].mana_cost = cost
-        state.cards[cid].types = ["Sorcery"]
-        state.cards[cid].oracle_text = "Draw a card."
-    spell = CardInstance(
-        id="iteration",
-        name="Expressive Iteration",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text="Look at the top three cards of your library. Put one of them into your hand, one on the bottom of your library, and one into exile. You may play the card exiled this way this turn.",
-    )
+    spell = canonical_card("Expressive Iteration", id="iteration", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1)
     assert spec.effect.key == "look_top_choose"
@@ -42,17 +47,10 @@ def test_top_three_hand_exile_bottom_choice_has_temporary_play_permission() -> N
 
 
 def test_ai_top_three_choice_uses_resolution_time_cards() -> None:
-    state = MatchFactory.from_decks(
-        [{"quantity": 60, "card_name": "Forest"}],
-        [{"quantity": 60, "card_name": "Forest"}], seed=21,
-    )
+    state = _iteration_birth_state(('Tidings', 'Preordain', 'Explore'))
     state.pregame_pending = False
     state.mechanic_choice_players = {1}
     ids = state.players[1].library[-3:]
-    for cid, cost in zip(ids, ("{5}", "{1}", "{2}")):
-        state.cards[cid].types = ["Sorcery"]
-        state.cards[cid].mana_cost = cost
-        state.cards[cid].oracle_text = "Draw a card."
     resolve_effect(state, 1, "look_top_choose", {"top_n": 3})
     assert state.pending_mechanic_choice["kind"] == "look_top_choose"
     action = AIAgent(archetype="Control").choose_action(state, RulesEngine().legal_moves(state, 1), 1).action
@@ -71,19 +69,12 @@ def test_top_three_choice_accepts_explicit_human_order() -> None:
         [{"quantity": 60, "card_name": "Forest"}],
         seed=22,
     )
+    canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     player = state.players[1]
     ids = player.library[-3:]
-    spell = CardInstance(
-        id="iteration-explicit",
-        name="Expressive Iteration",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text="Look at the top three cards of your library. Put one of them into your hand, one on the bottom of your library, and one into exile. You may play the card exiled this way this turn.",
-    )
+    spell = canonical_card("Expressive Iteration", id="iteration-explicit", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
     assert hints["top_choice"] == {"top_n": 3}
@@ -108,21 +99,10 @@ def test_expressive_iteration_wording_with_exile_verb_is_structured() -> None:
         [{"quantity": 60, "card_name": "Forest"}],
         seed=24,
     )
+    canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    spell = CardInstance(
-        id="iteration-modern-wording",
-        name="Expressive Iteration",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text=(
-            "Look at the top three cards of your library. Put one of them into your hand, "
-            "put one of them on the bottom of your library, and exile one of them. "
-            "You may play the exiled card this turn."
-        ),
-    )
+    spell = canonical_card("Expressive Iteration", id="iteration-modern-wording", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
 
     spec = build_ability_spec(state, spell, 1)
@@ -137,17 +117,10 @@ def test_top_three_choice_rejects_duplicate_or_missing_cards() -> None:
         [{"quantity": 60, "card_name": "Forest"}],
         seed=23,
     )
+    canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    spell = CardInstance(
-        id="iteration-invalid",
-        name="Expressive Iteration",
-        owner=1,
-        controller=1,
-        zone=Zone.HAND,
-        types=["Sorcery"],
-        oracle_text="Look at the top three cards of your library. Put one of them into your hand, one on the bottom of your library, and one into exile. You may play the card exiled this way this turn.",
-    )
+    spell = canonical_card("Expressive Iteration", id="iteration-invalid", owner=1, controller=1, zone=Zone.HAND)
     state.cards[spell.id] = spell
     hints = build_cast_hints(state, spell, 1)
     ids = state.players[1].library[-3:]
@@ -181,14 +154,11 @@ def test_iteration_uses_resolution_library_and_turn_after_stack_resume() -> None
         [{"quantity": 60, "card_name": "Forest"}],
         [{"quantity": 60, "card_name": "Forest"}], seed=25,
     )
+    canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     player = state.players[1]
-    spell = CardInstance(
-        id="iteration-stack", name="Expressive Iteration", owner=1, controller=1,
-        zone=Zone.STACK, types=["Sorcery"],
-        oracle_text="Look at the top three cards of your library. Put one of them into your hand, put one of them on the bottom of your library, and exile one of them. You may play the exiled card this turn.",
-    )
+    spell = canonical_card("Expressive Iteration", id="iteration-stack", owner=1, controller=1, zone=Zone.STACK)
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1)
     assert "play_exiled_until" not in spec.effect.payload
@@ -220,6 +190,7 @@ def test_http_iteration_choice_exposes_ordered_options_at_resolution() -> None:
         [{"quantity": 60, "card_name": "Forest"}],
         [{"quantity": 60, "card_name": "Forest"}], seed=26,
     )
+    canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.replacement_choice_required = True

@@ -28,6 +28,17 @@ def local_path(value: str | Path, *, existing: bool = True) -> Path:
         raise ValueError("symlinks and noncanonical paths are not allowed")
     if resolved == Path(__file__).resolve().parents[1] / "mtg_lab.db":
         raise ValueError("source-relative application database is forbidden; use an isolated copy")
+    return _canonical_local_path(path, existing=existing)
+
+
+def _canonical_local_path(value: str | Path, *, existing: bool = True) -> Path:
+    """Shared path safety, not an offline maintenance default-DB allowance."""
+    path = Path(value)
+    if not path.is_absolute():
+        raise ValueError("an absolute local path is required")
+    resolved = path.resolve()
+    if resolved != path:
+        raise ValueError("symlinks and noncanonical paths are not allowed")
     mounts = []
     for line in Path("/proc/self/mountinfo").read_text().splitlines():
         left, right = line.split(" - ", 1)
@@ -101,6 +112,8 @@ def prune_jobs(database, *, max_age_seconds=None, keep=None, now=None,
         conn.execute("PRAGMA trusted_schema=OFF")
         conn.execute("PRAGMA foreign_keys=ON")
         conn.execute("BEGIN IMMEDIATE" if apply else "BEGIN")
+        if apply and conn.execute("SELECT 1 FROM sqlite_schema WHERE type='table' AND lower(name) IN ('resourcecapacity','resourcereservation')").fetchone():
+            raise ValueError('Accounted database requires owned retirement; retry identities must be retained')
         if conn.execute("SELECT 1 FROM sqlite_schema WHERE type='trigger' AND lower(tbl_name)=?", (TABLE,)).fetchone():
             raise ValueError("job table has triggers; refusing maintenance")
         if conn.execute("PRAGMA foreign_key_check").fetchone():

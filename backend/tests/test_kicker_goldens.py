@@ -18,6 +18,7 @@ from tests.test_ai_recurring_engines import add as raw_add
 from tests.test_permanent_kicker import ROWS as PERMANENTS
 from tests.test_surveil_mill import add, resolve
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {c['name']: c for c in json.loads((Path(__file__).parent / 'fixtures/kicker_goldens.json').read_text())}
 SPELLS = [name for name, row in ROWS.items() if 'Kicker' in row['keywords']]
@@ -175,9 +176,7 @@ def test_http_canonical_payment_and_sqlite_restore(game, seat, name, kicked):
     from sqlmodel import Session
     client, controller = game
     state, spell, artifact, _, target = setup(name, seat)
-    state.id = controller.state.id
-    controller.state = state
-    persist(controller)
+    adopt_fixture_state(controller, state)
     moves = client.get(f'/matches/{state.id}/legal-moves?player_id={seat}').json()['moves']
     move = next(m for m in moves if m.get('card_id') == spell.id)
     option = next(o for o in move['cost_options'] if o['id'] == 'kicker')

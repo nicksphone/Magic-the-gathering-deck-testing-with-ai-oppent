@@ -56,11 +56,55 @@ def mana_ability_specs(card, state=None, *, entering=False):
     if not lost and current == line:
         return rows
     rows = [] if lost else list(rows)
-    for _, cost, effect in _printed_specs('', current, '', 'Land' in effective_types(state, card)):
-        if not any(existing_cost == cost and existing_effect == effect
-                   for _, existing_cost, existing_effect in rows):
-            rows.append((max((row[0] for row in rows), default=-1) + 1, cost, effect))
+    if lost or current != line:
+        for _, cost, effect in _printed_specs('', current, '', 'Land' in effective_types(state, card)):
+            if not any(existing_cost == cost and existing_effect == effect
+                       for _, existing_cost, existing_effect in rows):
+                rows.append((max((row[0] for row in rows), default=-1) + 1, cost, effect))
+    if state is not None and card.zone == Zone.BATTLEFIELD and lost:
+        from rules_engine.basic_land_layer import GrantedManaLandReplacement, permanent_land_replacement
+        from rules_engine.continuous import printed_abilities_suppressed
+        for source_id in (cid for player in state.players.values() for cid in player.battlefield):
+            source = state.cards[source_id]
+            if source.zone != Zone.BATTLEFIELD or source.attached_to != card.id:
+                continue
+            replacement = permanent_land_replacement(source.oracle_text)
+            if isinstance(replacement, GrantedManaLandReplacement) and not printed_abilities_suppressed(state, source.id):
+                effect = 'Add {' + replacement.granted_mana + '}.'
+                if not any(cost == '{T}' and existing == effect for _, cost, existing in rows):
+                    rows.append((max((row[0] for row in rows), default=-1) + 1, '{T}', effect))
     return tuple(rows)
+
+
+def _mana_self_damage_instruction(card, spec):
+    """Bind a complete original tap-mana/self-damage clause, not a stripped prefix."""
+    import re
+    from rules_engine.oracle_effects import ACTIVATED_ABILITY_RE
+    from rules_engine.mana import fixed_mana_vector, fixed_mana_alternatives
+    if spec[1] != '{T}':
+        return None
+    text = card.oracle_text or ''
+    matches = list(ACTIVATED_ABILITY_RE.finditer(text))
+    if not 0 <= spec[0] < len(matches):
+        return None
+    original = matches[spec[0]]
+    line_start = text.rfind('\n', 0, original.start()) + 1
+    if text[line_start:original.start()].strip():
+        return None
+    effect = original[2].strip()
+    if original[1].strip() != spec[1] or effect != spec[2]:
+        return None
+    match = re.fullmatch(
+        r'(.+?\.)\s+(?:this land|' + re.escape(card.name) +
+        r') deals ([1-9][0-9]*) damage to you\.', effect, re.I)
+    if match is None or (fixed_mana_vector(match[1]) is None
+                         and fixed_mana_alternatives(match[1]) is None):
+        return None
+    try:
+        amount = int(match[2])
+    except ValueError:
+        return None
+    return match[1], amount
 
 
 def _raw_output_vectors(state, card, spec):
@@ -68,6 +112,9 @@ def _raw_output_vectors(state, card, spec):
     from rules_engine.costs import parse_activated_cost
     from rules_engine.mana import _nonland_mana_effect_outputs, _counter_mana_replacement, fixed_mana_vector, fixed_mana_alternatives
     _, _, effect = spec
+    linked = _mana_self_damage_instruction(card, spec)
+    if linked is not None:
+        effect = linked[0]
     rule = ability_spending_rule(spec)
     if rule and rule.get('unsupported'):
         return []
@@ -218,6 +265,9 @@ def multiplied_outputs(state, card, outputs):
 
 
 def source_ready(state, card, spec=None):
+    from rules_engine.paid_triggers import resolution_mana_ability_allowed
+    if not resolution_mana_ability_allowed(state, card, spec):
+        return False
     from rules_engine.continuous import printed_abilities_suppressed, has_keyword
     from rules_engine.costs import parse_activated_cost
     needs_tap = spec is None or parse_activated_cost(spec[1]).tap_source
@@ -241,6 +291,8 @@ def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTE
     from rules_engine.costs import activated_cost_available, parse_activated_cost
     outputs = {}
     for spec in mana_ability_specs(card, state):
+        if _mana_self_damage_instruction(card, spec) is not None:
+            continue  # Side effects require a real copied-state payment trial.
         if not ignore_readiness and not source_ready(state, card, spec):
             continue
         if payment_context is not UNFILTERED and not eligible(ability_spending_rule(spec), payment_context):
@@ -259,11 +311,14 @@ def free_outputs(state, card, *, ignore_readiness=False, payment_context=UNFILTE
 def tap_only_outputs(state, card, *, ignore_readiness=False):
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     from rules_engine.continuous import printed_abilities_suppressed
+    from rules_engine.paid_triggers import resolution_mana_ability_allowed
     if printed_abilities_suppressed(state, card.id, include_land_types=False) or (not ignore_readiness and not source_ready(state, card)):
         return {}
     outputs = {}
     for spec in mana_ability_specs(card, state):
         if parse_activated_cost(spec[1]) == ActivatedCost(tap_source=True):
+            if not resolution_mana_ability_allowed(state, card, spec):
+                continue
             for color, bundle, _ in _output_options(state, card, spec, UNFILTERED):
                 amount = bundle.get(color, 0)
                 if amount > 0:
@@ -271,7 +326,7 @@ def tap_only_outputs(state, card, *, ignore_readiness=False):
     return outputs
 
 
-def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UNFILTERED):
+def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UNFILTERED, include_free=False):
     from rules_engine.costs import ActivatedCost, parse_activated_cost
     from rules_engine.mana import mana_activation_is_free
     bundled = needs_mana_bundles(state)
@@ -291,7 +346,9 @@ def paid_candidates(state, player_id, excluded_sources=(), *, payment_context=UN
             changing_cost = cost.sacrifice_creatures or cost.discard_cards or cost.discard_source
             if not (tap_only or self_sacrifice or cost.supported and changing_cost):
                 continue
-            if mana_activation_is_free(state, cid, cost.mana_cost) and not (bundled and changing_cost):
+            if (not include_free and mana_activation_is_free(state, cid, cost.mana_cost)
+                    and not (bundled and changing_cost)
+                    and _mana_self_damage_instruction(card, spec) is None):
                 continue
             for color, bundle, _ in _output_options(state, card, spec, payment_context):
                 if sum(bundle.values()) > 0:
@@ -303,13 +360,21 @@ def activate_mana_ability(state, player_id, source_id, ability_index, color, *, 
     card = state.cards.get(source_id)
     if card is None:
         return False
-    with mana_tap_scope(state, card) as captured:
-        result = _activate_mana_ability(state, player_id, source_id, ability_index, color,
-            payment_choices=payment_choices, hybrid_choices=hybrid_choices, output_bundle=output_bundle,
-            excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
-    if result:
-        resolve_mana_triggers(state, captured)
-    return result
+    from rules_engine.mana_continuation import activation, ManaPaymentPaused
+    with activation(state, player_id, source_id, ability_index, color) as frame:
+        try:
+            with mana_tap_scope(state, card) as captured:
+                result = _activate_mana_ability(state, player_id, source_id, ability_index, color,
+                    payment_choices=payment_choices, hybrid_choices=hybrid_choices, output_bundle=output_bundle,
+                    excluded_sources=excluded_sources, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
+        except ManaPaymentPaused:
+            if frame is not None:
+                from copy import deepcopy
+                frame['captured_bonus'] = deepcopy(captured)
+            raise
+        if result:
+            resolve_mana_triggers(state, captured)
+        return result
 
 
 def _activate_mana_ability(state, player_id, source_id, ability_index, color, *, payment_choices=None, hybrid_choices=None, output_bundle=None, excluded_sources=(), reserved_card_ids=(), protected_life=0):
@@ -372,6 +437,10 @@ def _activate_mana_ability(state, player_id, source_id, ability_index, color, *,
         add_mana_to_pool(state, player_id, component, amount, source_id=source_id, ability_effect=spec[2])
     state.log.append(f'{state.players[player_id].name} activates {card.name} for '
                      + ', '.join(f'{amount} {component}' for component, amount in vector.items()) + '.')
+    linked = _mana_self_damage_instruction(card, spec)
+    if linked is not None:
+        from rules_engine.mana_continuation import linked_damage
+        linked_damage(state, player_id, source_id, linked[1], vector)
     return True
 
 
@@ -462,6 +531,8 @@ def free_mana_options(state, card, *, ignore_readiness=False, payment_context=UN
     from rules_engine.mana import mana_activation_is_free
     options = []
     for spec in mana_ability_specs(card, state):
+        if _mana_self_damage_instruction(card, spec) is not None:
+            continue
         cost = parse_activated_cost(spec[1])
         if not ignore_readiness and not source_ready(state, card, spec):
             continue
@@ -483,6 +554,8 @@ def preferred_free_spec(state, card, color, amount, *, payment_context=UNFILTERE
     from rules_engine.mana import mana_activation_is_free
     candidates = []
     for spec in mana_ability_specs(card, state):
+        if not tap_only and _mana_self_damage_instruction(card, spec) is not None:
+            continue
         cost = parse_activated_cost(spec[1])
         if not source_ready(state, card, spec):
             continue

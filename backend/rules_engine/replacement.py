@@ -2,32 +2,38 @@ from __future__ import annotations
 from rules_engine.type_effects import effective_types
 
 import re
+from dataclasses import dataclass
+
+from game_state.state import Zone, object_incarnation
 
 from rules_engine.continuous import effect_timestamp, printed_abilities_suppressed
 from rules_engine.card_types import is_token_card
+from rules_engine.query_context import rule_query_scope
 
 
 def _battlefield_oracle_texts(state, controller: int | None = None, *, text_filter=None):
     ordered: list[tuple[tuple[int, int, int, str], object, str]] = []
-    battlefield_index = _battlefield_position_map(state)
-    for pid in state.players:
-        for cid in state.players[pid].battlefield:
-            card = state.cards[cid]
-            text = (card.oracle_text or '').lower()
-            if text_filter is not None and not text_filter(text):
-                continue
-            if printed_abilities_suppressed(state, cid):
-                continue
-            if controller is not None and card.controller != controller:
-                continue
-            order_key = (
-                -effect_timestamp(card),
-                -int(getattr(card, "entered_turn", 0) or 0),
-                -int(battlefield_index.get(cid, 0) or 0),
-                -int(getattr(card, "instance_order", 0) or 0),
-                str(cid),
-            )
-            ordered.append((order_key, card, text))
+    # Construction is readonly; end reuse before yielding to mutating callers.
+    with rule_query_scope(state):
+        battlefield_index = _battlefield_position_map(state)
+        for pid in state.players:
+            for cid in state.players[pid].battlefield:
+                card = state.cards[cid]
+                text = (card.oracle_text or '').lower()
+                if text_filter is not None and not text_filter(text):
+                    continue
+                if printed_abilities_suppressed(state, cid):
+                    continue
+                if controller is not None and card.controller != controller:
+                    continue
+                order_key = (
+                    -effect_timestamp(card),
+                    -int(getattr(card, "entered_turn", 0) or 0),
+                    -int(battlefield_index.get(cid, 0) or 0),
+                    -int(getattr(card, "instance_order", 0) or 0),
+                    str(cid),
+                )
+                ordered.append((order_key, card, text))
     for _, card, text in sorted(ordered, key=lambda item: item[0]):
         yield card, text
 
@@ -48,6 +54,11 @@ def _matches_phrase(text: str, phrases: tuple[str, ...]) -> bool:
 
 _PLAYER_DAMAGE_PREVENTION_RE = re.compile(
     r"if a source would deal damage to (?:you|you or (?:a|an|target) (?:permanent|creature) you control|(?:a|an|target) (?:permanent|creature) you control), prevent 1 of that damage"
+)
+_QUALIFIED_PLAYER_DAMAGE_PREVENTION_RE = re.compile(
+    r"if a source an opponent controls would deal damage to "
+    r"(?:you|you or (?:a|an|target) (?:permanent|creature) you control), "
+    r"prevent 1 of that damage\."
 )
 _PERMANENT_DAMAGE_PREVENTION_RE = re.compile(
     r"if a source would deal damage to (?:you or (?:a|an|target) (?:permanent|creature) you control|(?:a|an|target) (?:permanent|creature) you control|(?:a|an|target) permanent you control|(?:a|an|target) creature you control), prevent 1 of that damage"
@@ -79,11 +90,45 @@ _GLOBAL_DAMAGE_DOUBLE_RE = re.compile(
     r'it deals double that damage to that permanent or player instead\.')
 
 
-def _player_damage_candidates(state, target_player, prevention_locked=False):
-    return [(card, text) for card, text in _battlefield_oracle_texts(state)
+def _player_damage_candidates(state, target_player, prevention_locked=False, *, amount=None,
+        source_card_id=None, source_lki=None, source_controller=None, source_context=None):
+    if amount is not None and amount <= 0:
+        return []
+
+    def prevention_applies(text):
+        if _PLAYER_DAMAGE_PREVENTION_RE.search(text):
+            return True
+        if not any(_QUALIFIED_PLAYER_DAMAGE_PREVENTION_RE.fullmatch(line.strip())
+                   for line in text.splitlines()):
+            return False
+        from rules_engine.damage_results import damage_source_control
+        if source_context is None:
+            if source_controller is not None and (
+                    type(source_controller) is not int or source_controller not in state.players):
+                return False
+            if source_lki is not None and (not isinstance(source_lki, dict)
+                    or type(source_lki.get('controller')) is not int
+                    or source_lki['controller'] not in state.players):
+                return False
+            source = state.cards.get(source_card_id)
+            # The resolver's active-player fallback is not source-control evidence.
+            if source_controller is None and source_lki is None and (
+                    source is None or source.zone not in {Zone.BATTLEFIELD, Zone.STACK}
+                    or type(source.controller) is not int or source.controller not in state.players):
+                return False
+        controller = damage_source_control(state, source_card_id, source_lki=source_lki,
+            source_controller=source_controller, source_context=source_context)
+        return controller in state.players and controller != target_player
+
+    candidates = [(card, text) for card, text in _battlefield_oracle_texts(state)
             if _GLOBAL_DAMAGE_DOUBLE_RE.search(text)
             or (not prevention_locked and card.controller == target_player
-                and _PLAYER_DAMAGE_PREVENTION_RE.search(text))]
+                and prevention_applies(text))]
+    if not prevention_locked:
+        from rules_engine.prevention import numeric_prevention_options, check_legacy_prevention_boundary
+        candidates.extend(numeric_prevention_options(state, target_player=target_player, amount=amount))
+        check_legacy_prevention_boundary(state, candidates, target_player=target_player)
+    return sorted(candidates, key=lambda pair: -effect_timestamp(pair[0]))
 
 
 def _draw_doubler_applies(state, target_player: int, text: str) -> bool:
@@ -113,12 +158,59 @@ def replacement_source_used(used_source_ids, event: str, source_id: str) -> bool
     return source_id in used or f"{event}:{source_id}" in used
 
 
-def _permanent_damage_candidates(state, target_card_id, prevention_locked=False):
+@dataclass(frozen=True)
+class NoncombatDamageCounterClause:
+    noncombat: bool
+    source_controller: str
+    recipient: str
+    quantity: str
+    counter_type: str
+
+
+def noncombat_damage_counter_clause(text: str) -> NoncombatDamageCounterClause | None:
+    """Recognize one complete Oracle ability paragraph, never a substring."""
+    if not isinstance(text, str):
+        return None
+    body = ' '.join(text.casefold().split())
+    if body != ('if a source you control would deal noncombat damage to a creature '
+                'an opponent controls, put that many -1/-1 counters on that creature instead.'):
+        return None
+    return NoncombatDamageCounterClause(True, 'you', 'opposing_creature', 'that_many', '-1/-1')
+
+
+def _noncombat_damage_counter_candidates(state, source_card_id, target_card_id, *,
+        amount=None, source_lki=None, source_controller=None, combat=False, source_context=None):
+    if combat or (amount is not None and amount <= 0) or target_card_id not in state.cards:
+        return []
+    if source_card_id not in state.cards and not source_lki:
+        return []
+    if (source_controller not in state.players and source_card_id not in state.cards
+            and (not isinstance(source_lki, dict) or source_lki.get('controller') not in state.players)):
+        return []
+    from game_state.state import Zone
+    from rules_engine.damage_results import damage_source_control
+    controller = damage_source_control(state, source_card_id, source_lki=source_lki,
+        source_context=source_context, source_controller=source_controller)
+    if controller is None:
+        return []
+    target = state.cards[target_card_id]
+    if (target.zone != Zone.BATTLEFIELD or 'Creature' not in effective_types(state, target)
+            or controller == target.controller):
+        return []
+    return [(card, text) for card, text in _battlefield_oracle_texts(state, controller=controller)
+            if any(noncombat_damage_counter_clause(paragraph) is not None
+                   for paragraph in text.splitlines())]
+
+
+def _permanent_damage_candidates(state, target_card_id, prevention_locked=False, *,
+        source_card_id=None, source_lki=None, source_controller=None, amount=None, combat=True, source_context=None):
     from copy import copy
     from game_state.state import Zone
     from rules_engine.named_counters import shield_applied_in_event
     target = state.cards[target_card_id]
     if target.zone != Zone.BATTLEFIELD:
+        return []
+    if amount is not None and amount <= 0:
         return []
     candidates = [
         (card, text) for card, text in _battlefield_oracle_texts(state)
@@ -128,12 +220,28 @@ def _permanent_damage_candidates(state, target_card_id, prevention_locked=False)
             or (not prevention_locked and _PERMANENT_DAMAGE_PREVENTION_RE.search(text)
                 and ('creature you control' not in text or 'Creature' in effective_types(state, target)))))
     ]
+    candidates.extend(_noncombat_damage_counter_candidates(
+        state, source_card_id, target_card_id, amount=amount, source_lki=source_lki,
+        source_controller=source_controller, combat=combat, source_context=source_context))
+    if not combat and not prevention_locked:
+        from rules_engine.protection import protection_match_reason
+        source = state.cards.get(source_card_id)
+        reason = protection_match_reason(state, target_card_id, source, source_lki=source_lki, source_context=source_context)
+        if reason is not None and (source is not None or source_lki is not None or reason == 'everything'):
+            protection = copy(target)
+            protection.id = f'protection:{target.id}'
+            protection.name = f'{target.name} protection'
+            candidates.append((protection, 'protection'))
     if target.counters.get('shield', 0) > 0 or shield_applied_in_event(state, target_card_id):
         source = copy(target)
         source.id = f'shield-counter:{target.id}'
         source.name = f'{target.name} shield counter'
         source.effect_timestamp = target.counter_timestamps.get('shield', effect_timestamp(target))
         candidates.append((source, 'shield-counter'))
+    if not prevention_locked:
+        from rules_engine.prevention import numeric_prevention_options, check_legacy_prevention_boundary
+        candidates.extend(numeric_prevention_options(state, target_card_id=target_card_id, amount=amount))
+        check_legacy_prevention_boundary(state, candidates, target_card_id=target_card_id)
     return sorted(candidates, key=lambda pair: -effect_timestamp(pair[0]))
 
 
@@ -144,6 +252,8 @@ def replacement_options(
     target_card_id: str | None = None,
     source_card_id: str | None = None,
     combat: bool = False,
+    *, amount: int | None = None, source_lki: dict | None = None,
+    source_controller: int | None = None, source_context=None,
 ) -> list[dict]:
     """Return applicable replacement sources in deterministic choice order.
 
@@ -167,9 +277,15 @@ def replacement_options(
         )
     candidates: list[tuple[object, str]] = []
     if event_key in {"damage_to_player", "player_damage"} and target_player in state.players:
-        candidates = _player_damage_candidates(state, target_player, prevention_locked)
+        candidates = _player_damage_candidates(state, target_player, prevention_locked, amount=amount,
+            source_card_id=source_card_id, source_lki=source_lki,
+            source_controller=source_controller, source_context=source_context)
     elif event_key in {"damage_to_permanent", "permanent_damage"} and target_card_id in state.cards:
-        candidates = _permanent_damage_candidates(state, target_card_id, prevention_locked)
+        candidates = _permanent_damage_candidates(
+            state, target_card_id, prevention_locked, source_card_id=source_card_id,
+            source_lki=source_lki, source_controller=source_controller, amount=amount, combat=combat, source_context=source_context)
+        if amount is not None and amount <= 0:
+            candidates = []
     elif event_key in {"life_gain", "gain_life"} and target_player in state.players:
         candidates = _life_gain_candidates(state, target_player)
     elif event_key in {"card_draw", "draw"} and target_player in state.players:
@@ -202,23 +318,33 @@ def apply_damage_replacements(
     max_replacements: int | None = None,
     used_source_ids=None,
     prevention_locked=False,
+    *, source_card_id=None, source_lki=None, source_controller=None, source_context=None,
 ) -> int:
     out = int(amount)
     if target_player is None:
         return out
-    candidates = _player_damage_candidates(state, target_player, prevention_locked)
     used: set[str] = set(used_source_ids or [])
     used.discard(str(replacement_source_id))
     requested = replacement_source_id
     applied = 0
     while out > 0 and (max_replacements is None or applied < max_replacements):
+        candidates = _player_damage_candidates(state, target_player, prevention_locked, amount=out,
+            source_card_id=source_card_id, source_lki=source_lki,
+            source_controller=source_controller, source_context=source_context)
         available = [(card, text) for card, text in candidates if str(getattr(card, "id", "")) not in used]
+        if requested is not None and not any(str(card.id) == str(requested) for card, _ in available):
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Damage replacement source is no longer applicable')
         chosen = _choose_replacement_candidate(state, available, requested, "damage to player")
         if chosen is None:
             break
         used.add(str(getattr(chosen, "id", "")))
         text = next(text for card, text in available if card.id == chosen.id)
-        out = out * 2 if _GLOBAL_DAMAGE_DOUBLE_RE.search(text) else max(0, out - 1)
+        if text == 'numeric-prevention':
+            from rules_engine.prevention import consume_numeric_prevention_shield
+            out, _ = consume_numeric_prevention_shield(state, str(chosen.id), out, target_player=target_player)
+        else:
+            out = out * 2 if _GLOBAL_DAMAGE_DOUBLE_RE.search(text) else max(0, out - 1)
         applied += 1
         requested = None
     return out
@@ -232,19 +358,26 @@ def apply_permanent_damage_replacements(
     max_replacements: int | None = None,
     used_source_ids=None,
     prevention_locked=False,
+    *, source_card_id=None, source_lki=None, source_controller=None, combat=True, source_context=None,
 ) -> int:
     out = int(amount)
     if target_card_id not in state.cards:
         return out
     target = state.cards[target_card_id]
-    candidates = _permanent_damage_candidates(state, target_card_id, prevention_locked)
     used: set[str] = set(used_source_ids or [])
     # A selected effect is about to be applied, not already applied.
     used.discard(str(replacement_source_id))
     requested = replacement_source_id
     applied = 0
     while out > 0 and (max_replacements is None or applied < max_replacements):
-        available = [(card, text) for card, text in candidates if str(getattr(card, "id", "")) not in used]
+        candidates = _permanent_damage_candidates(
+            state, target_card_id, prevention_locked, source_card_id=source_card_id,
+            source_lki=source_lki, source_controller=source_controller, amount=out, combat=combat, source_context=source_context)
+        available = [(card, text) for card, text in candidates
+                     if not replacement_source_used(used, 'damage_to_permanent', str(card.id))]
+        if requested is not None and not any(str(card.id) == str(requested) for card, _ in available):
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Damage replacement source is no longer applicable')
         if requested is None:
             # Free static reductions first: they may avoid spending a counter.
             available.sort(key=lambda pair: str(pair[0].id).startswith('shield-counter:'))
@@ -252,7 +385,20 @@ def apply_permanent_damage_replacements(
         if chosen is None:
             break
         used.add(str(getattr(chosen, "id", "")))
-        if str(chosen.id) == f'shield-counter:{target_card_id}':
+        conversion = _noncombat_damage_counter_candidates(
+            state, source_card_id, target_card_id, amount=out, source_lki=source_lki,
+            source_controller=source_controller, combat=combat, source_context=source_context)
+        if any(card.id == chosen.id for card, _ in conversion):
+            replace_noncombat_damage_to_creature(
+                state, source_card_id, target_card_id, out, source_lki=source_lki,
+                source_controller=source_controller, replacement_source_id=str(chosen.id), source_context=source_context)
+            out = 0
+        elif str(chosen.id).startswith('numeric-prevention:'):
+            from rules_engine.prevention import consume_numeric_prevention_shield
+            out, _ = consume_numeric_prevention_shield(state, str(chosen.id), out, target_card_id=target_card_id)
+        elif str(chosen.id) == f'protection:{target_card_id}':
+            out = 0
+        elif str(chosen.id) == f'shield-counter:{target_card_id}':
             from rules_engine.named_counters import apply_shield_damage
             apply_shield_damage(state, target_card_id)
             if not prevention_locked:
@@ -270,7 +416,7 @@ def replace_noncombat_damage_to_creature(
     source_card_id: str | None,
     target_card_id: str | None,
     amount: int,
-    *, source_lki: dict | None = None,
+    *, source_lki: dict | None = None, source_controller=None, replacement_source_id=None, source_context=None,
 ) -> object | None:
     """Apply source-controlled noncombat damage replacement to a creature.
 
@@ -278,25 +424,16 @@ def replace_noncombat_damage_to_creature(
     amount. The replacement is applied once, and the resulting counters are
     checked by the normal state-based action path in the caller.
     """
-    if not target_card_id or target_card_id not in state.cards:
-        return None
     from rules_engine.damage_results import damage_controller, queue_damage_counters
-    if source_card_id not in state.cards and not source_lki:
+    candidates = _noncombat_damage_counter_candidates(
+        state, source_card_id, target_card_id, amount=amount, source_lki=source_lki,
+        source_controller=source_controller, source_context=source_context)
+    if not candidates:
         return None
-    controller = damage_controller(state, source_card_id, source_lki)
+    controller = source_controller if source_controller in state.players else damage_controller(
+        state, source_card_id, source_lki)
     target = state.cards[target_card_id]
-    if "Creature" not in (effective_types(state, target) or []) or controller == target.controller or amount <= 0:
-        return None
-    candidates = [
-        (card, text)
-        for card, text in _battlefield_oracle_texts(state, controller=controller)
-        if (
-            "would deal noncombat damage to a creature an opponent controls" in text
-            or "would deal noncombat damage to a creature your opponent controls" in text
-            or "would deal noncombat damage to target creature an opponent controls" in text
-        )
-    ]
-    chosen = _choose_replacement_candidate(state, candidates, None, f"noncombat damage to {target.name}")
+    chosen = _choose_replacement_candidate(state, candidates, replacement_source_id, f"noncombat damage to {target.name}")
     if chosen is None:
         return None
     queue_damage_counters(state, controller, 'add_counters', {'target_card_id': target_card_id,
@@ -509,6 +646,68 @@ def graveyard_destination(state, target) -> str:
         _graveyard_exile_applies(card, text, target)
         for card, text in _battlefield_oracle_texts(state)
     ) else "graveyard"
+
+
+@dataclass(frozen=True)
+class GraveyardEntryPlan:
+    card_id: str
+    origin: Zone
+    owner: int
+    controller: int
+    incarnation: int
+    sequence: int
+    destination: Zone
+    replacement_source_id: str | None = None
+    source_incarnation: int | None = None
+    source_sequence: int | None = None
+    reveal_shuffle: bool = False
+
+
+def _printed_self_graveyard_shuffle(state, card) -> bool:
+    if printed_abilities_suppressed(state, card.id):
+        return False
+    reference = rf'(?:{re.escape(card.name)}|this card|this creature|this permanent)'
+    pattern = re.compile(
+        rf'if {reference} would be put into a graveyard from anywhere, '
+        rf'reveal {reference} and shuffle (?:it|{reference}) into its owner\'s library instead\.', re.I)
+    return any(pattern.fullmatch(line.strip()) for line in (card.oracle_text or '').splitlines())
+
+
+def graveyard_entry_plans(state, card_id: str) -> tuple[GraveyardEntryPlan, ...]:
+    """Describe candidates before entry, without executing or choosing an effect."""
+    card = state.cards[card_id]
+    base = dict(card_id=card.id, origin=card.zone, owner=card.owner,
+                controller=card.controller, incarnation=object_incarnation(card),
+                sequence=card.zone_change_sequence)
+    if card.zone == Zone.BATTLEFIELD:
+        sources = _die_zone_candidates(state, card)
+    else:
+        sources = [(source, text) for source, text in _battlefield_oracle_texts(state)
+                   if _graveyard_exile_applies(source, text, card)]
+    out = [GraveyardEntryPlan(
+        **base, destination=Zone.EXILE, replacement_source_id=source.id,
+        source_incarnation=object_incarnation(source), source_sequence=source.zone_change_sequence)
+        for source, _ in sources]
+    if _printed_self_graveyard_shuffle(state, card):
+        out.append(GraveyardEntryPlan(
+            **base, destination=Zone.LIBRARY, replacement_source_id=card.id,
+            source_incarnation=object_incarnation(card), source_sequence=card.zone_change_sequence,
+            reveal_shuffle=True))
+    return tuple(out) or (GraveyardEntryPlan(**base, destination=Zone.GRAVEYARD),)
+
+
+def select_graveyard_entry_plan(state, card_id: str, replacement_source_id=None) -> GraveyardEntryPlan:
+    from rules_engine.action_validation import ActionRejected
+    plans = graveyard_entry_plans(state, card_id)
+    if replacement_source_id is not None:
+        chosen = next((p for p in plans if p.replacement_source_id == replacement_source_id), None)
+        if chosen is None:
+            raise ActionRejected('Unavailable graveyard replacement source')
+        return chosen
+    if len({p.destination for p in plans}) > 1:
+        raise ActionRejected('Announce the competing graveyard replacement source')
+    # Preserve legacy same-destination exile selection, without query logging.
+    return plans[0]
 
 
 def _graveyard_exile_applies(source, text: str, target) -> bool:

@@ -1,11 +1,34 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from types import SimpleNamespace
 
 from card_data.hydration import hydrate_deck_cards
+from card_data.sync import ScryfallSyncService
 from game_state.serializers import deserialize_match_snapshot, serialize_card_view, serialize_match_snapshot
 from game_state.state import MatchFactory
 from rules_engine.colors import card_color_names
+
+
+def _canonical_raw(name: str) -> dict:
+    fixtures = Path(__file__).parent / "fixtures"
+    if name == "Skewer the Critics":
+        return next(json.loads(line) for line in
+                    (fixtures / "knowledge_profiles/seed155-scryfall.jsonl").read_text().splitlines()
+                    if json.loads(line)["name"] == name)
+    filename = {
+        "Figure of Destiny": "figure-of-destiny",
+        "Valki, God of Lies // Tibalt, Cosmic Impostor": "valki",
+        "Ruination Guide": "ruination-guide",
+    }[name] + "-scryfall-raw.json"
+    return json.loads((fixtures / "canonical_hydration" / filename).read_bytes())
+
+
+def _cached_canonical(name: str) -> SimpleNamespace:
+    # Display-only override; no image download or placeholder write in the mapper.
+    return SimpleNamespace(**ScryfallSyncService._normalize_payload(
+        _canonical_raw(name), "/card-images/canonical-hydration-fixture.svg"))
 
 
 class _Repo:
@@ -17,17 +40,7 @@ class _Repo:
 
 
 def test_hydration_preserves_cached_noncreature_type_before_match_factory() -> None:
-    row = SimpleNamespace(
-        name="Skewer the Critics",
-        oracle_text="Skewer the Critics deals 3 damage to any target.",
-        mana_cost="{2}{R}",
-        type_line="Sorcery",
-        power=None,
-        toughness=None,
-        loyalty=None,
-        image_uri="/card-images/skewer.jpg",
-        card_faces_json="[]",
-    )
+    row = _cached_canonical("Skewer the Critics")
     deck = [{"quantity": 1, "card_name": "Skewer the Critics"}]
 
     hydrated = hydrate_deck_cards(_Repo([row]), deck)
@@ -52,11 +65,7 @@ def test_match_factory_does_not_invent_stats_for_unknown_cards() -> None:
 
 
 def test_cached_hybrid_colors_survive_live_hydration_and_snapshot() -> None:
-    row = SimpleNamespace(
-        name="Figure of Destiny", oracle_text="{R/W}: This creature becomes a Kithkin Spirit.",
-        mana_cost="{R/W}", type_line="Creature — Kithkin", colors="R,W",
-        power="1", toughness="1", loyalty=None, image_uri=None, card_faces_json="[]",
-    )
+    row = _cached_canonical("Figure of Destiny")
     hydrated = hydrate_deck_cards(_Repo([row]), [{"quantity": 1, "card_name": "Figure of Destiny"}])
     state = MatchFactory.from_decks(hydrated, hydrated, seed=7)
     figure = next(card for card in state.cards.values() if card.name == "Figure of Destiny")
@@ -68,18 +77,20 @@ def test_cached_hybrid_colors_survive_live_hydration_and_snapshot() -> None:
 
 
 def test_missing_color_metadata_uses_hybrid_cost_but_devoid_is_colorless() -> None:
-    figure = SimpleNamespace(mana_cost="{R/W}", oracle_text="", colors=None, card_faces=[])
-    guide = SimpleNamespace(mana_cost="{2}{U}", oracle_text="Devoid (This card has no color.)", colors=None, card_faces=[])
+    figure_raw = _canonical_raw("Figure of Destiny")
+    guide_raw = _canonical_raw("Ruination Guide")
+    # Deliberate missing-metadata protocol: Figure also omits Oracle; Guide is
+    # a newly chosen canonical example, not an identification of the old stub.
+    figure = SimpleNamespace(mana_cost=figure_raw["mana_cost"], oracle_text="", colors=None, card_faces=[])
+    guide = SimpleNamespace(mana_cost=guide_raw["mana_cost"], oracle_text=guide_raw["oracle_text"], colors=None, card_faces=[])
 
     assert card_color_names(figure) == {"red", "white"}
     assert card_color_names(guide) == set()
 
 
 def test_selected_modal_face_uses_its_own_canonical_colors() -> None:
-    card = SimpleNamespace(
-        name="Valki, God of Lies // Tibalt, Cosmic Impostor", colors=None, mana_cost="{1}{B}",
-        card_faces=[{"colors": ["B"]}, {"colors": ["B", "R"]}], selected_face_index=0,
-    )
+    card = SimpleNamespace(**_canonical_raw("Valki, God of Lies // Tibalt, Cosmic Impostor"))
+    card.selected_face_index = 0
 
     assert card_color_names(card) == {"black"}
     card.selected_face_index = 1

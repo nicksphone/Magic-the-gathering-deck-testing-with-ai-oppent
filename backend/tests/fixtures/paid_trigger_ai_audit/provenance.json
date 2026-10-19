@@ -1,0 +1,44 @@
+{
+  "canonical_jsonl_sha256": "8b1506eb5130d646464eaadc4fa5fc280a99d0813dbb84ea38538c8bd108caaa",
+  "facts_modified": false,
+  "http_requests": 0,
+  "rows": {
+    "Counterspell": {
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "raw_sha256": "fe9513a8443f2f78ceb48e835c4e81d5b6d6eb995581683c73dfff9acecdb6b9"
+    },
+    "Drake Haven": {
+      "id": "e2502a3a-2c1d-490e-b958-969dfc7f875a",
+      "oracle_id": "86d3def3-53fa-4cad-bb25-d3275af1e3f5",
+      "raw_sha256": "660e754dda9930c04aba6d4d1e42fe9b16fc00802b9f68c2b27dfd684b777986"
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "raw_sha256": "3dc84687094c5831a9901fbbaa489f78006bdaf0275fffda1c5f8985df8b3a37"
+    },
+    "Lightning Bolt": {
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "raw_sha256": "faad8b64b05be249244f0fec337a2745c81e2cece5aae154536f5aa358e56f3e"
+    },
+    "Lonely Sandbar": {
+      "id": "42f8591e-df30-49ec-962c-a75d32e6d9f5",
+      "oracle_id": "765863c8-1be0-4bb1-9e9c-db7701cffde3",
+      "raw_sha256": "baf47ee600637e636208b6709935df030b289c1ec8250aac88e0f54ff8a56e06"
+    },
+    "Lunar Mystic": {
+      "id": "c8a32b4b-4b8d-40e0-9166-06a678fd6e06",
+      "oracle_id": "9652f79c-3060-4e9c-9623-0ebe4ab4094c",
+      "raw_sha256": "5023d1f84df2a9dc87c2fcb29a74484318e6fa72bcf10ca0a185bc17b2daafbd"
+    },
+    "Swamp": {
+      "id": "b7387103-1df1-4fd0-9e91-1544509792c7",
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "raw_sha256": "acd8b971986fbf6fa6d55e931a8249cc5f84700cf8218978e32ba67ec0a98c2e"
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

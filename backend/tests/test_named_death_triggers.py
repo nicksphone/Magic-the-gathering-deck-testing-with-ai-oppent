@@ -1,4 +1,5 @@
 """Printed card names in death triggers are self-references, not card-specific rules."""
+from tests.rules_printed_facts_e4 import canonical_card, canonical_deck_entry, raw_card, set_printed
 
 import pytest
 
@@ -12,24 +13,18 @@ from rules_engine.state_based_actions import apply_state_based_actions
 
 
 def _state(*, human=False, shield=False):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=672)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.trigger_order_choice_required = human
     state.trigger_order_choice_players = {1} if human else set()
     cards = [
-        CardInstance(
-            "artist", "Blood Artist", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-            power=0, toughness=1,
-            oracle_text="Whenever Blood Artist or another creature dies, target player loses 1 life and you gain 1 life.",
-        ),
-        CardInstance("elf", "Llanowar Elves", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1,
-                     oracle_text="{T}: Add {G}."),
+        canonical_card("Blood Artist", id="artist", owner=1, controller=1, zone=Zone.BATTLEFIELD),
+        canonical_card("Llanowar Elves", id="elf", owner=2, controller=2, zone=Zone.BATTLEFIELD),
     ]
     if shield:
-        cards.append(CardInstance("leyline", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-                                  oracle_text="You have hexproof."))
+        cards.append(canonical_card("Leyline of Sanctity", id="leyline", owner=2, controller=2, zone=Zone.BATTLEFIELD))
     for card in cards:
         state.cards[card.id] = card
         state.players[card.controller].battlefield.append(card.id)
@@ -78,8 +73,7 @@ def test_named_death_trigger_fizzles_entire_drain_if_target_becomes_illegal():
     state = checked_action(state, RulesEngine(), 1, {
         "type": "choose_trigger_target", "stack_id": state.stack[-1].id, "target_player": 2,
     })
-    shield = CardInstance("leyline", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-                          oracle_text="You have hexproof.")
+    shield = canonical_card("Leyline of Sanctity", id="leyline", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[shield.id] = shield
     state.players[2].battlefield.append(shield.id)
     assert resolve_top_of_stack(state)
@@ -100,11 +94,7 @@ def test_dying_blood_artist_sees_every_creature_in_simultaneous_wipe():
 
 def test_two_departing_blood_artists_each_see_the_whole_wipe():
     state = _state()
-    second = CardInstance(
-        "artist2", "Blood Artist", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        power=0, toughness=1,
-        oracle_text="Whenever Blood Artist or another creature dies, target player loses 1 life and you gain 1 life.",
-    )
+    second = canonical_card("Blood Artist", id="artist2", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[second.id] = second
     state.players[1].battlefield.append(second.id)
     destroy_all_creatures(state, 2, {})
@@ -114,11 +104,7 @@ def test_two_departing_blood_artists_each_see_the_whole_wipe():
 
 def test_departing_another_creature_watcher_excludes_its_own_death():
     state = _state()
-    watcher = CardInstance(
-        "plunderer", "Pitiless Plunderer", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        power=1, toughness=4,
-        oracle_text="Whenever another creature you control dies, create a Treasure token.",
-    )
+    watcher = canonical_card("Pitiless Plunderer", id="plunderer", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[watcher.id] = watcher
     state.players[1].battlefield.append(watcher.id)
     destroy_all_creatures(state, 2, {})
@@ -128,11 +114,7 @@ def test_departing_another_creature_watcher_excludes_its_own_death():
 def test_simultaneous_death_watchers_use_apnap_order_across_controllers():
     state = _state()
     state.active_player = 1
-    second = CardInstance(
-        "opposing-artist", "Blood Artist", 2, 2, Zone.BATTLEFIELD, ["Creature"],
-        power=0, toughness=1,
-        oracle_text="Whenever Blood Artist or another creature dies, target player loses 1 life and you gain 1 life.",
-    )
+    second = canonical_card("Blood Artist", id="opposing-artist", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[second.id] = second
     state.players[2].battlefield.append(second.id)
     destroy_all_creatures(state, 2, {})
@@ -151,10 +133,7 @@ def test_state_based_simultaneous_lethal_deaths_preserve_departing_watcher():
 
 def test_graveyard_exile_replacement_prevents_simultaneous_death_triggers():
     state = _state()
-    replacement = CardInstance(
-        "rip", "Rest in Peace", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-        oracle_text="If a card or token would be put into a graveyard from anywhere, exile it instead.",
-    )
+    replacement = canonical_card("Rest in Peace", id="rip", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[replacement.id] = replacement
     state.players[2].battlefield.append(replacement.id)
     destroy_all_creatures(state, 2, {})
@@ -164,11 +143,7 @@ def test_graveyard_exile_replacement_prevents_simultaneous_death_triggers():
 
 def test_departing_nontoken_watcher_sees_other_nontoken_but_not_itself_or_token():
     state = _state()
-    watcher = CardInstance(
-        "harvester", "Harvester of Souls", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        power=5, toughness=5,
-        oracle_text="Deathtouch\nWhenever another nontoken creature dies, you may draw a card.",
-    )
+    watcher = canonical_card("Harvester of Souls", id="harvester", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     token = CardInstance("soldier-token", "Soldier", 2, 2, Zone.BATTLEFIELD, ["Creature"],
                          power=1, toughness=1, is_token=True)
     for card in (watcher, token):

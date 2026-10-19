@@ -1,0 +1,31 @@
+HTTP/2 200 
+date: Thu, 08 Oct 2026 02:22:16 GMT
+content-type: application/json; charset=utf-8
+access-control-allow-headers: Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With
+access-control-allow-methods: GET, POST, DELETE, OPTIONS
+access-control-allow-origin: *
+access-control-max-age: 300
+cache-control: public, max-age=172800
+content-disposition: inline
+content-transfer-encoding: binary
+etag: W/"6edbf4daf732ace889ef435c5de77706"
+nel: {"report_to":"heroku-nel","response_headers":["Via"],"max_age":3600,"success_fraction":0.01,"failure_fraction":0.1}
+referrer-policy: strict-origin-when-cross-origin
+report-to: {"group":"heroku-nel","endpoints":[{"url":"https://nel.heroku.com/reports?s=m4JR%2BNe8wfAUD2t40hA9%2FbDGvnA%2FWaEImAEep7po7XE%3D\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\u0026ts=1791392414"}],"max_age":3600}
+reporting-endpoints: heroku-nel="https://nel.heroku.com/reports?s=m4JR%2BNe8wfAUD2t40hA9%2FbDGvnA%2FWaEImAEep7po7XE%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1791392414"
+server: cloudflare
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+vary: Accept,Accept-Encoding
+via: 2.0 heroku-router
+x-action-cache: MISS
+x-content-type-options: nosniff
+x-download-options: noopen
+x-frame-options: DENY
+x-permitted-cross-domain-policies: none
+x-robots-tag: none
+x-scryfall-card: https://scryfall.com/card/2xm/109/thoughtseize?utm_source=api
+x-scryfall-card-image: https://cards.scryfall.io/large/front/b/2/b281a308-ab6b-47b6-bec7-632c9aaecede.jpg?1783930173
+x-xss-protection: 1; mode=block
+cf-cache-status: HIT
+cf-ray: a471ad4b5f709858-LHR
+

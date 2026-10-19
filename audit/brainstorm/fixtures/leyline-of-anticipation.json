@@ -1,0 +1,128 @@
+{
+  "object": "card",
+  "id": "f57bdaa1-ce8a-4103-8598-fee751e65a53",
+  "oracle_id": "9dc65ffe-17fc-4280-b4bd-78073ac7e12b",
+  "multiverse_ids": [
+    567543
+  ],
+  "tcgplayer_id": 273504,
+  "cardmarket_id": 661803,
+  "name": "Leyline of Anticipation",
+  "lang": "en",
+  "released_at": "2022-06-10",
+  "uri": "https://api.scryfall.com/cards/f57bdaa1-ce8a-4103-8598-fee751e65a53",
+  "scryfall_uri": "https://scryfall.com/card/clb/726/leyline-of-anticipation?utm_source=api",
+  "layout": "normal",
+  "highres_image": true,
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T06:01:09Z",
+  "image_uris": {
+    "small": "https://cards.scryfall.io/small/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.jpg?1783922469",
+    "normal": "https://cards.scryfall.io/normal/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.jpg?1783922469",
+    "large": "https://cards.scryfall.io/large/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.jpg?1783922469",
+    "png": "https://cards.scryfall.io/png/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.png?1783922469",
+    "art_crop": "https://cards.scryfall.io/art_crop/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.jpg?1783922469",
+    "border_crop": "https://cards.scryfall.io/border_crop/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.jpg?1783922469",
+    "thumb": "https://cards.scryfall.io/thumb/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.webp?1783922469",
+    "grid": "https://cards.scryfall.io/grid/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.webp?1783922469",
+    "display": "https://cards.scryfall.io/display/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.webp?1783922469",
+    "art": "https://cards.scryfall.io/art/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.webp?1783922469",
+    "crop": "https://cards.scryfall.io/crop/front/f/5/f57bdaa1-ce8a-4103-8598-fee751e65a53.webp?1783922469"
+  },
+  "mana_cost": "{2}{U}{U}",
+  "cmc": 4.0,
+  "type_line": "Enchantment",
+  "oracle_text": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nYou may cast spells as though they had flash.",
+  "colors": [
+    "U"
+  ],
+  "color_identity": [
+    "U"
+  ],
+  "keywords": [],
+  "legalities": {
+    "standard": "not_legal",
+    "future": "not_legal",
+    "historic": "legal",
+    "timeless": "legal",
+    "gladiator": "legal",
+    "pioneer": "legal",
+    "modern": "legal",
+    "legacy": "legal",
+    "pauper": "not_legal",
+    "vintage": "legal",
+    "penny": "legal",
+    "commander": "legal",
+    "oathbreaker": "legal",
+    "standardbrawl": "not_legal",
+    "brawl": "legal",
+    "competitivebrawl": "legal",
+    "alchemy": "not_legal",
+    "paupercommander": "not_legal",
+    "duel": "legal",
+    "oldschool": "not_legal",
+    "premodern": "not_legal",
+    "predh": "legal",
+    "tlr": "not_legal"
+  },
+  "games": [
+    "paper"
+  ],
+  "reserved": false,
+  "game_changer": false,
+  "foil": false,
+  "nonfoil": true,
+  "finishes": [
+    "nonfoil"
+  ],
+  "oversized": false,
+  "promo": false,
+  "reprint": true,
+  "variation": false,
+  "set_id": "5e4c3fe8-fd57-4b20-ad56-c03790a16cea",
+  "set": "clb",
+  "set_name": "Commander Legends: Battle for Baldur's Gate",
+  "set_type": "draft_innovation",
+  "set_uri": "https://api.scryfall.com/sets/5e4c3fe8-fd57-4b20-ad56-c03790a16cea",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Aclb&unique=prints",
+  "scryfall_set_uri": "https://scryfall.com/sets/clb?utm_source=api",
+  "rulings_uri": "https://api.scryfall.com/cards/f57bdaa1-ce8a-4103-8598-fee751e65a53/rulings",
+  "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3A9dc65ffe-17fc-4280-b4bd-78073ac7e12b&unique=prints",
+  "collector_number": "726",
+  "digital": false,
+  "rarity": "rare",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "artist": "Charles Urbach",
+  "artist_ids": [
+    "507c67d2-1514-40ab-b7cb-a9f3b96a08e8"
+  ],
+  "illustration_id": "daf6bd54-9384-49c5-8e59-dbf355cb7e1e",
+  "border_color": "black",
+  "frame": "2015",
+  "security_stamp": "oval",
+  "full_art": false,
+  "textless": false,
+  "booster": false,
+  "story_spotlight": false,
+  "edhrec_rank": 745,
+  "penny_rank": 4643,
+  "prices": {
+    "usd": "6.24",
+    "usd_foil": null,
+    "usd_etched": null,
+    "eur": "5.23",
+    "eur_foil": null,
+    "tix": null
+  },
+  "related_uris": {
+    "gatherer": "https://gatherer.wizards.com/Pages/Card/Details.aspx?multiverseid=567543&printed=false",
+    "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DLeyline%2Bof%2BAnticipation",
+    "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DLeyline%2Bof%2BAnticipation",
+    "edhrec": "https://edhrec.com/route/?cc=Leyline+of+Anticipation"
+  },
+  "purchase_uris": {
+    "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F273504%3Fpage%3D1",
+    "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=661803&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+    "cardhoarder": "https://www.cardhoarder.com/cards?affiliate_id=scryfall&data%5Bsearch%5D=Leyline+of+Anticipation&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall"
+  }
+}

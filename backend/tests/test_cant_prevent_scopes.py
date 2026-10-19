@@ -102,6 +102,6 @@ def test_prevention_lock_suppresses_impossible_replacement_choices() -> None:
         state, "damage_to_player", target_player=1, source_card_id=source.id,
     ) == []
     before = state.players[1].life
-    deal_damage(state, 2, {"target_player": 1, "amount": 3, "__source_card_id": source.id, "__replacement_source_id": first.id})
+    deal_damage(state, 2, {"target_player": 1, "amount": 3, "__source_card_id": source.id})
     assert state.players[1].life == before - 3
     assert state.pending_replacement_choice is None

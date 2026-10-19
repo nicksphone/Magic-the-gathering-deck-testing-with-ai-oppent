@@ -4,6 +4,19 @@ root=$(cd "$(dirname "$0")/../.." && pwd -P)
 cd "$root"
 test "$(realpath "$(git rev-parse --show-toplevel)")" = "$root"
 
+# Select the browser before starting services.
+browser="${MTG_CHROME:-}"
+if [[ -z "$browser" ]]; then
+  if [[ -n "${MTG_BROWSER_VENDOR:-}" ]]; then
+    echo 'Native browser mode requires MTG_CHROME; automatic fallback is disabled.' >&2
+    exit 2
+  fi
+  browser=$(command -v google-chrome || command -v chromium)
+fi
+if [[ -n "${MTG_BROWSER_VENDOR:-}" ]]; then
+  node frontend/tests/browser-vendor-preflight.mjs --check-config "$browser"
+fi
+
 # The harness owns fixed loopback ports; concurrent runs must not share them.
 exec 9>"${TMPDIR:-/tmp}/mtg-browser-ci.lock"
 if ! flock -n 9; then
@@ -93,15 +106,15 @@ VITE
 cd "$scratch"
 
 start_backend() {
-  (cd "$scratch/backend" && exec setsid "$python_bin" -m uvicorn tests.ui_v2_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
+  (cd "$scratch/backend" && exec setsid env MTG_TRUSTED_ORIGINS=http://127.0.0.1:15173 "$python_bin" -m uvicorn tests.ui_v2_fixture_server:app --host 127.0.0.1 --port 10199) >"$scratch/backend.log" 2>&1 &
   backend_pid=$!
 }
 
+(cd frontend && NODE_ENV=development VITE_API_BASE_URL=http://127.0.0.1:10199 node tests/prepare-development-frontend.mjs "$scratch/frontend" "$scratch/frontend/vite.ci.config.ts" "$scratch/frontend-dev-ci")
 start_backend
-(cd frontend && exec setsid env VITE_API_BASE_URL=http://127.0.0.1:10199 node "$frontend_deps/vite/bin/vite.js" --config vite.ci.config.ts --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
+(cd frontend && exec setsid env NODE_ENV=development VITE_API_BASE_URL=http://127.0.0.1:10199 node "$frontend_deps/vite/bin/vite.js" preview --mode development --outDir ../frontend-dev-ci --config vite.ci.config.ts --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
 frontend_pid=$!
 
-browser=$(command -v google-chrome || command -v chromium)
 browser_flags=()
 if [[ "${MTG_BROWSER_NO_SANDBOX:-}" == 1 ]]; then browser_flags+=(--no-sandbox); fi
 setsid "$browser" --headless --disable-dev-shm-usage --no-first-run "${browser_flags[@]}" \
@@ -121,6 +134,7 @@ wait_for_services() {
 }
 
 wait_for_services
+(cd frontend && timeout 30s node tests/browser-development-runtime-proof.mjs)
 if (($#)); then
   echo 'Focused browser scenarios, not the full browser gate'
   for scenario in "$@"; do
@@ -131,6 +145,13 @@ if (($#)); then
     (cd frontend && timeout 300s node "tests/$scenario")
   done
   exit 0
+fi
+# CORS transport diagnostic: ordinary hosted CDP only.
+cors_diagnostic_status=0
+if [[ -z "${MTG_BROWSER_VENDOR:-}" ]]; then
+  (cd frontend && MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 45s node tests/browser-cors-transport-diagnostic.mjs) || cors_diagnostic_status=$?
+else
+  printf '%s\n' 'CORS_TRANSPORT_DIAGNOSTIC [{"classification":"not-applicable","reason":"native-vendor-scope"}]'
 fi
 echo 'Browser CI: async readiness helper'
 (cd frontend && timeout 30s node tests/browser-driver-async.mjs)
@@ -156,6 +177,7 @@ echo 'Browser CI: action scenarios'
 (cd frontend && timeout 90s node tests/browser-land-types.mjs)
 (cd frontend && timeout 300s node tests/browser-human-actions.mjs)
 (cd frontend && timeout 120s node tests/browser-ordered-targets.mjs)
+(cd frontend && timeout 120s node tests/browser-distinct-permanents.mjs)
 (cd frontend && timeout 120s node tests/browser-ordered-modifiers.mjs)
 (cd frontend && timeout 120s node tests/browser-ordered-copy.mjs)
 (cd frontend && timeout 180s node tests/browser-linked-damage.mjs)
@@ -262,3 +284,7 @@ if [[ "${GITHUB_ACTIONS:-}" == true && -z "${MTG_CATHAR_ARCHIVE:-}" ]]; then
 fi
 MTG_TEST_PYTHON="$python_bin" MTG_CHROMIUM="$browser" \
   MTG_FRONTEND_DEPS="$frontend_deps" node frontend/tests/browser-cathar.mjs
+# Propagate diagnostic failure only after the unchanged full browser suite.
+if [[ "$cors_diagnostic_status" -ne 0 ]]; then
+  exit "$cors_diagnostic_status"
+fi

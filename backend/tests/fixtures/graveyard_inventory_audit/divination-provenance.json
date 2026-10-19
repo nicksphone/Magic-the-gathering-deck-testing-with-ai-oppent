@@ -1,0 +1,8 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "file": "divination.json",
+  "sha256": "c7e97ec83cb179f7e460982b8e88c3cc10738c45841e3462af93ecd51a5dc5ca",
+  "id": "cb3b35b8-f321-46d8-a441-6b9a6efa9021",
+  "selection": "Full official original JSONL line, byte verified before offline qualification; no Oracle edits"
+}

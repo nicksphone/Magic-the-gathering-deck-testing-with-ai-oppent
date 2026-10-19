@@ -1,0 +1,202 @@
+{
+  "Altar of the Brood": {
+    "file": "tests/fixtures/graveyard_batch_native_bf62/altar-of-the-brood.json",
+    "line": 0,
+    "raw_row_sha256": "5f075bd8edc853ae3b823667ebd8a3db8731caf7939e99cc234e13b8e9f34d00",
+    "sha256": "843b9c56b08371034ace68a89aac0f1553df4f3e9f3e49b9ba6c2c0f080d4bcc",
+    "steps": []
+  },
+  "Counterspell": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 23,
+    "raw_row_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Desecrated Tomb": {
+    "file": "tests/fixtures/graveyard_batch_native_bf62/desecrated-tomb.json",
+    "line": 0,
+    "raw_row_sha256": "204be0762ddbea45d2b8a5fe57a45b7a0eaf1f0c3c85f45f7870c3cd7ba6f447",
+    "sha256": "80c323e3de20ee1ea4748a591927f21898a0e579a38477d6193717df8c452b1e",
+    "steps": []
+  },
+  "Doubling Season": {
+    "file": "tests/fixtures/counter_replacements.json",
+    "line": 0,
+    "raw_row_sha256": "48d11ad8319007d1369a4a651831596491be1f764ecd3f895ddfc00602774107",
+    "sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "steps": [
+      0
+    ]
+  },
+  "Eidolon of Blossoms": {
+    "file": "tests/fixtures/graveyard_batch_native_bf62/eidolon-of-blossoms.json",
+    "line": 0,
+    "raw_row_sha256": "6faa0ae5f7b5dce4f91714655af522d908aab856b58b128f55d3b9d3eae1dfa1",
+    "sha256": "515e31839799a1e1893d4df5c821b7f2855e549bbe0f4c1eab9aaea7d2396b5f",
+    "steps": []
+  },
+  "Forest": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 39,
+    "raw_row_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Grizzly Bears": {
+    "file": "tests/fixtures/../vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+    "line": null,
+    "raw_row_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+    "sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "steps": []
+  },
+  "Hardened Scales": {
+    "file": "tests/fixtures/counter_replacements.json",
+    "line": 0,
+    "raw_row_sha256": "f18315da3060bb6dd1eb22fd5f03fc1dca5378767a12fa92a26f4b94ecdc716a",
+    "sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "steps": [
+      4
+    ]
+  },
+  "Island": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 50,
+    "raw_row_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Llanowar Elves": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 58,
+    "raw_row_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Oath of Nissa": {
+    "file": "tests/fixtures/rules_printed_facts_e4/oath-of-nissa-scryfall-raw.json",
+    "line": null,
+    "raw_row_sha256": "6f1cd0608c85c5e8f276f6ee30ada7bd7be9cf06a7e8d9e347bc73dc9f9bd023",
+    "sha256": "d054e9b9ee6b1cc70b84c39b5d0e98e11c16f1f27b96ba5dcfcb6b4316392d05",
+    "steps": []
+  },
+  "Open the Vaults": {
+    "file": "tests/fixtures/oracle_effects_positive_8d/open-the-vaults.json",
+    "line": 0,
+    "raw_row_sha256": "9924203f79e7d4f464c3e2a30493867647b389998bda927989f04cc9ec71373d",
+    "sha256": "63ecee11189985ca5f54312d2236c4ff14237013576add301d62330b39442913",
+    "steps": []
+  },
+  "Ornithopter": {
+    "file": "tests/fixtures/attached_characteristics/ornithopter.json",
+    "line": 0,
+    "raw_row_sha256": "788edcd8a8935486b580b7547075d30b5b1b413d1ab0b6ce827c886060aa7efa",
+    "sha256": "95f8fbf0378f3ee81838a6483669df62476253a530a96852e10784aa46ce001b",
+    "steps": []
+  },
+  "Ossification": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 69,
+    "raw_row_sha256": "1a84a185cca93d6e90eac3b920ddf0ee0cc9cadee5fff4a06c5ddd4a5c155be2",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Plains": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 70,
+    "raw_row_sha256": "bb36c8b3d7c52e7274ab49ee95993248b8dc616ba4e1702b3d8e33ec107b1b0b",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Quintorius, Field Historian": {
+    "file": "tests/fixtures/graveyard_batch_native_bf62/quintorius-field-historian.json",
+    "line": 0,
+    "raw_row_sha256": "5ea90d358c5c95ceaed5030ed8e0482fc42503d0f7ba5d7f58dc8914d0b906ab",
+    "sha256": "db69aa34285660be8cfc756667ab9b73c9a5324c2ca8fcc4594ddadf0afd7f48",
+    "steps": []
+  },
+  "Rancor": {
+    "file": "tests/fixtures/attached_characteristics/rancor.json",
+    "line": 0,
+    "raw_row_sha256": "dcff023ed43c2d7930f761e93732ee30fd560c64fb51633a2010168800c04d5b",
+    "sha256": "44cb142c9d39c679da519460c6fd44cbafcac76ea6dd4e3c04b267dd14c5cd88",
+    "steps": []
+  },
+  "Rest in Peace": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 77,
+    "raw_row_sha256": "e9215ef36ff21ae5277f9e7cef786350d329a975404e757d054b25274ace42b0",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Shark Typhoon": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 84,
+    "raw_row_sha256": "72cc047facd517447896ed51e59ea42eebfe438ca6c7b2f0099458d9baaec2b2",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Slippery Bogle": {
+    "file": "tests/fixtures/graveyard_batch_native_bf62/slippery-bogle.json",
+    "line": 0,
+    "raw_row_sha256": "0b9ce6d04126efdfd49c3c999be742a215b2867bd25b0d5b208320e77b0f699f",
+    "sha256": "fb1308fe9b6ac1dc5ee5ff1978ebae305b04e9c332619c663247aa5336400a38",
+    "steps": []
+  },
+  "Sol Ring": {
+    "file": "tests/fixtures/creature_observer_fix/sol-ring.json",
+    "line": null,
+    "raw_row_sha256": "77b61b9b0141eb45cf35ae78e9db7ca7c2c69d5cf9c10b50303d98d0518cb773",
+    "sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+    "steps": []
+  },
+  "Soul Warden": {
+    "file": "tests/fixtures/hand_entry_bookkeeping/canonical.jsonl",
+    "line": 3,
+    "raw_row_sha256": "aab93dc473e3b17311b364feedfdca3e4cad793ea7ed5197fee8522f5826295d",
+    "sha256": "99a897459c994dedb916a59104c0023cab4e9d96aac274d60fd3f7603c44cfc0",
+    "steps": []
+  },
+  "Soulless Jailer": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 141,
+    "raw_row_sha256": "26025af1c44114dd4e5013eaa935c7923cc01dc8b4c1c3c4413732268ff3299f",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "The Weatherseed Treaty": {
+    "file": "tests/fixtures/graveyard_batch_native_bf62/the-weatherseed-treaty.json",
+    "line": 0,
+    "raw_row_sha256": "d2236116628112fde01cfdf72a88fbd1fa248a4cbc9488fecd21bb1e2bfad486",
+    "sha256": "2083b3b3d49263d2569560270274712c9a107645b3692766a47e85b2b3004446",
+    "steps": []
+  },
+  "Torrential Gearhulk": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 107,
+    "raw_row_sha256": "10345a188accdeb97137b7799dcdbe2d807ef4655c6c26fb47c67c7bc2bf981d",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Triskelion": {
+    "file": "tests/fixtures/graveyard_batch_native_bf62/triskelion.json",
+    "line": 0,
+    "raw_row_sha256": "278eef40fdbf2ae62d545b55b77461920b1728583ed828d4c8d13839dca56e6b",
+    "sha256": "ac427d644b188adb49a5c230a4218fffe6a19f9cc361693b0c43429ade86e666",
+    "steps": []
+  },
+  "Twincast": {
+    "file": "tests/fixtures/coupled_targets/twincast.json",
+    "line": null,
+    "raw_row_sha256": "49f8af143b774b86f161c1f2c029f0f8e8e91f0d27e05d19c07c7ddeaca2f195",
+    "sha256": "12662d131d174e48af42758b9e8fd3b38ce6701d2de7d88217a527062786014f",
+    "steps": []
+  },
+  "Urza's Saga": {
+    "file": "tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 149,
+    "raw_row_sha256": "bb496958b8520b2f17220b400b7c021c3f34000ed9bd0a18bf07fa0bb0e0bb86",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  }
+}

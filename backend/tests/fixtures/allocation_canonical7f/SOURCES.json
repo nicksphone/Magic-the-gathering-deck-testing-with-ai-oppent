@@ -1,0 +1,43 @@
+{
+  "Grizzly Bears": {
+    "file": "../vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+    "file_sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "kind": "committed complete official object, existing library provenance",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "provenance": "library_canonical_88/PROVENANCE.json",
+    "provenance_sha256": "2c2750acb82ff6746cfbb4cb49c6118f276e9129fd2c819cbc2b5187e0b22f76"
+  },
+  "Phantom Nishoba": {
+    "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_source": "knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+    "file": "allocation_canonical7f/phantom-nishoba.json",
+    "file_sha256": "2923d341d0d0ddd61a54dac45cc31bbbd1bee5d1eaada9eb9dbe560098fd1c7f",
+    "id": "2281a21b-fc68-46ad-b340-eb13ca0165ec",
+    "kind": "unchanged complete official archived bulk JSONL row, not wire response",
+    "oracle_id": "e43e06fb-52b7-4f38-8fac-f31973b043f7",
+    "source_line": 34403
+  },
+  "Prodigal Pyromancer": {
+    "file": "ward.json",
+    "file_sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+    "index": 26,
+    "kind": "committed complete official object, hash-linked provenance",
+    "object_sha256": "b9a366defcc5a35b8433f3909c0ed4ff4a99b40236a937accdcf73bb0e69c402",
+    "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd",
+    "provenance": "basic_land_hooks/provenance.json",
+    "provenance_sha256": "d714facfccbe398326ebec3a2cd0f982f7365000d078e1c92f4d9e90ca5d5045"
+  },
+  "Pyrotechnics": {
+    "file": "ward.json",
+    "file_sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "id": "51893dd5-e70f-44bb-85d4-e31480ba84d6",
+    "index": 28,
+    "kind": "committed complete official object, hash-linked provenance",
+    "object_sha256": "2420d079bb39d7a050f943866df392eb90e6be9da2b0db62c5aea4196d9a3db1",
+    "oracle_id": "794b9ddf-1660-441f-9cc2-a0f5d4d0cf22",
+    "provenance": "basic_land_hooks/provenance.json",
+    "provenance_sha256": "d714facfccbe398326ebec3a2cd0f982f7365000d078e1c92f4d9e90ca5d5045"
+  }
+}

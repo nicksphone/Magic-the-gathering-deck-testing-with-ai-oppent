@@ -198,10 +198,10 @@ def test_gearhulk_target_then_cast_choice_survives_both_resolution_stages(seat, 
 
 @pytest.mark.parametrize('seat', [1, 2])
 def test_http_saved_cast_permission_and_duplicate_rejection(game, seat):
+    from tests.fixture_state_support import adopt_fixture_state
     client, controller = game
     state, card = permission(seat)
-    state.id = controller.state.id
-    controller.state = state
+    adopt_fixture_state(controller, state)
     persist(controller)
     rejected(client, controller, {'type': 'cast_spell', 'card_id': card.id,
                                  'from_graveyard': True, 'targets': {}}, seat)

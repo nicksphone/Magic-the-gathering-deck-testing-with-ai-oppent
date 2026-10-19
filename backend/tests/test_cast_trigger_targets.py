@@ -49,6 +49,10 @@ def test_cast_trigger_survives_countering_source_spell():
     from effects.handlers import counter_spell
     counter_spell(game, 2, {"target_stack_id": game.stack[0].id})
     assert game.cards[ulamog].zone == Zone.GRAVEYARD
+    assert game.stack[-1].effect_key == "shuffle_graveyard_into_library"
+    resolve_top_of_stack(game)
+    assert game.cards[copter].zone == Zone.BATTLEFIELD
+    assert game.stack[-1].effect_key == "destroy_permanent"
     resolve_top_of_stack(game)
     assert game.cards[copter].zone == Zone.GRAVEYARD
     assert game.cards[ring].zone == Zone.BATTLEFIELD

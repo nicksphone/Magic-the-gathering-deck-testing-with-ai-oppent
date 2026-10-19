@@ -1,5 +1,4 @@
-"""Opt-in production probe requires the separately reviewed agent hook proposal."""
-import os
+"""Production Suspend policy and fresh-process replay through actual agent hooks."""
 import json
 import subprocess
 import sys
@@ -11,10 +10,6 @@ from game_state.serializers import serialize_match_snapshot
 from game_state.state import Zone
 from tests.test_ai_suspend_policy import agent, moves
 from tests.test_suspend_lifecycle import setup, ready, restore, act, CARDS, add
-
-pytestmark = pytest.mark.skipif(os.environ.get('MTG_SUSPEND_HOOK_PROBE') != '1',
-                              reason='Separate parent-owned agent hook is not applied')
-
 
 @pytest.mark.parametrize('seat', [1, 2])
 @pytest.mark.parametrize('name', ['Rift Bolt', 'Errant Ephemeron', 'Ancestral Vision'])

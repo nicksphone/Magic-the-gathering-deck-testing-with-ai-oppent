@@ -1,6 +1,5 @@
 """Printed Scryfall fixtures exercise opening actions, not invented card effects."""
-import json
-from pathlib import Path
+from copy import deepcopy
 
 import pytest
 
@@ -12,13 +11,15 @@ from rules_engine.engine import RulesEngine
 from rules_engine.opening_hand import can_begin_on_battlefield
 from rules_engine.targeting import player_target_immunity
 from tests.test_api_input_contracts import game, persist, snapshot
+from tests.browser_positive83_canonical import entry
+from tests.opening_printed_canonical import raw_cards
 
 
-CARDS = {row["name"]: row for row in json.loads((Path(__file__).parent / "fixtures" / "opening_hand.json").read_text())}
+CARDS = raw_cards()
 
 
 def opening_game(starter=1):
-    deck = [{"quantity": 60, "card_name": "Plains"}]
+    deck = [entry('Plains', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=54)
     state.active_player = state.priority_player = starter
     return state
@@ -31,7 +32,8 @@ def add_opening(state, name, pid=1):
         id=cid, name=name, owner=pid, controller=pid, zone=Zone.HAND,
         types=[kind for kind in ("Enchantment", "Land") if kind in raw["type_line"]],
         type_line=raw["type_line"], mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
-        colors=raw["colors"],
+        colors=deepcopy(raw["colors"]), keywords=deepcopy(raw["keywords"]),
+        layout=raw["layout"], card_faces=deepcopy(raw.get("card_faces", [])),
     )
     state.players[pid].hand.append(cid)
     return cid

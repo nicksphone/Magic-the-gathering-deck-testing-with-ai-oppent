@@ -1,0 +1,125 @@
+name: Browser Recovery Localization
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/browser-recovery-localization.yml
+      - .github/scripts/install-ci-app-runtime.sh
+      - backend/requirements-py312-linux.lock
+      - backend/tests/test_spell_cost_overlap_http_investigation.py
+
+permissions:
+  contents: read
+
+jobs:
+  browser-localization:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.3'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install existing ordinary-browser dependencies
+        run: |
+          bash .github/scripts/install-ci-app-runtime.sh
+          npm --prefix frontend ci
+      - name: Record observed browser and runtime versions
+        run: |
+          google-chrome --version
+          node --version
+          python -c 'import json,sys; from importlib.metadata import version; print(json.dumps({"python":sys.version,"packages":{name:version(name) for name in ("fastapi","pydantic","starlette","httpx","uvicorn")}}))'
+          cat "$RUNNER_TEMP/ci-app-runtime.json"
+      - name: Fresh archived-source offline asset probe, not browser qualification
+        run: |
+          set -euo pipefail
+          scratch="$RUNNER_TEMP/offline-asset-probe"
+          test ! -e "$scratch" && test ! -L "$scratch"
+          mkdir -m 700 "$scratch"
+          mkdir "$scratch/source" "$scratch/runtime"
+          git archive HEAD backend | tar -x -C "$scratch/source"
+          test ! -e "$scratch/runtime/probe.db" && test ! -L "$scratch/runtime/probe.db"
+          cd "$scratch/source/backend"
+          MTG_DATABASE_PATH="$scratch/runtime/probe.db" \
+            timeout --signal=TERM --kill-after=15s 300s python -B -m tests.release_agent.offline_probe
+      - name: Focused transport and start recovery, not the full UI suite
+        env:
+          MTG_BROWSER_NO_SANDBOX: '1'
+          MTG_KEEP_TEST_ARTIFACTS: '1'
+          MTG_FRONTEND_ORIGIN: http://127.0.0.1:15173
+          MTG_BACKEND_ORIGIN: http://127.0.0.1:10199
+          MTG_BROWSER_ORIGIN: http://127.0.0.1:19222
+        run: |
+          set -euo pipefail
+          status=0
+          timeout --signal=TERM --kill-after=15s 720s bash frontend/tests/run-browser-ci.sh \
+            browser-cors-transport-diagnostic.mjs browser-start-recovery.mjs || status=$?
+          closure_status=0
+          if ports=$(ss -H -ltn '( sport = :10199 or sport = :15173 or sport = :19222 )'); then
+            if [[ -n "$ports" ]]; then
+              closure_status=1
+            fi
+          else
+            closure_status=1
+          fi
+          if ((closure_status)); then
+            echo 'Localization port closure check failed; no foreign process will be signaled.' >&2
+          fi
+          if ((status)); then exit "$status"; fi
+          exit "$closure_status"
+
+  cost-overlap-asgi:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.3'
+      - name: Install the admitted application closure
+        run: bash .github/scripts/install-ci-app-runtime.sh
+      - name: Four opt-in ASGI cases in fresh archived source, not a live server
+        run: |
+          set -euo pipefail
+          scratch="$RUNNER_TEMP/cost-overlap-asgi"
+          test ! -e "$scratch" && test ! -L "$scratch"
+          mkdir -m 700 "$scratch"
+          mkdir "$scratch/source" "$scratch/runtime" "$scratch/evidence"
+          git archive HEAD backend | tar -x -C "$scratch/source"
+          cd "$scratch/source/backend"
+          PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 MTG_COST_OVERLAP_HTTP=1 \
+            MTG_COST_OVERLAP_ROOT="$scratch/source/backend" \
+            MTG_COST_OVERLAP_EVIDENCE="$scratch/evidence" \
+            MTG_DATABASE_PATH="$scratch/runtime/unused-default.db" \
+            timeout --signal=TERM --kill-after=15s 180s python -B -m pytest -vv \
+              -p no:cacheprovider --basetemp "$scratch/runtime/basetemp" \
+              --junitxml="$scratch/evidence/junit.xml" \
+              tests/test_spell_cost_overlap_http_investigation.py
+          python - "$scratch" <<'PYTHON'
+          import json, sys, xml.etree.ElementTree as ET
+          from pathlib import Path
+          root = Path(sys.argv[1])
+          cases = ET.parse(root / 'evidence/junit.xml').findall('.//testcase')
+          expected = {f'test_http_source_overlap_is_controlled_rejection_with_atomic_root_and_db[{name}-{seat}]'
+                      for name in ('Village Rites', 'Tormenting Voice') for seat in (1, 2)}
+          assert len(cases) == 4 and {case.get('name') for case in cases} == expected
+          assert all(not list(case) for case in cases)
+          reports = sorted((root / 'evidence').glob('http-cost-overlap-*.json'))
+          assert len(reports) == 4
+          for report in reports:
+              data = json.loads(report.read_text())
+              assert data['status'] == 422
+              assert all(data[key] is True for key in ('root_unchanged', 'controller_unchanged',
+                                                       'database_unchanged', 'source_still_in_hand'))
+          assert not (root / 'source/backend/mtg_lab.db').exists()
+          assert not (root / 'runtime/unused-default.db').exists()
+          summary = {'transport': 'local ASGI TestClient', 'live_server': False}
+          summary['qualified_cases'] = len(cases)
+          print('COST_OVERLAP_ASGI_ACCEPTANCE', json.dumps(summary, sort_keys=True))
+          PYTHON

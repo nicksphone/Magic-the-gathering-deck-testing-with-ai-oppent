@@ -1,0 +1,34 @@
+{
+  "native_seed_file": "card_data/builtin_token_seed.json",
+  "native_seed_sha256": "9a42fddd41167cccc0e931f49bfbe437a03032670ee819c6277408f83d0b7200",
+  "objects": {
+    "Forest": {
+      "bytes": 5441,
+      "fields": 61,
+      "file": "tests/fixtures/manual_mana_a227/forest.raw.json",
+      "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "sha256": "d522e1272ee59bd6e931587330fddb769f83136a8532561129a69bdeff4129ce"
+    },
+    "Llanowar Elves": {
+      "bytes": 5680,
+      "fields": 71,
+      "file": "tests/fixtures/static_layers_a32/llanowar-elves.raw.json",
+      "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "sha256": "1333c60e71d06955083e05567066319c7883f19bb7bc42f9ea3bb920270a3d83"
+    },
+    "Treasure": {
+      "bytes": 94191,
+      "fields": 59,
+      "file": "tests/fixtures/manual_mana_leftovers_a227/treasure.raw.json",
+      "id": "03992f88-7a15-4234-9bed-b7617d7ff09c",
+      "oracle_id": "3c549374-6c37-42e0-8d88-a8555d46732d",
+      "sha256": "c27b1805f7ba3ed13f16f85a0ee042c839f98d81763448578011ff9ac7f5faf2"
+    }
+  },
+  "provenance_file": "tests/fixtures/manual_mana_leftovers_a227/PROVENANCE.json",
+  "provenance_sha256": "ff66d62c6b1d4f8765f6814c1314a9c2c02866b2067aca184a3c437fce328f7f",
+  "schema": 1,
+  "scope": "Full RAW reference only, not game fixture qualification"
+}

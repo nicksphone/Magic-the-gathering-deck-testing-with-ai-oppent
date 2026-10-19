@@ -1,4 +1,5 @@
 """Targeted damage triggers choose a legal recipient when put on the stack."""
+from tests.damage_life_printed_79 import canonical_card, canonical_deck_entry, raw_card
 
 import pytest
 from pydantic import ValidationError
@@ -12,8 +13,8 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 
 
-def _game(*, human=True, source_name="Mayhem Devil", source_oracle="Whenever a player sacrifices a permanent, this creature deals 1 damage to any target.", opponent_life=20):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+def _game(*, human=True, source_name="Mayhem Devil", source_oracle=None, opponent_life=20):
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=603)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -21,16 +22,9 @@ def _game(*, human=True, source_name="Mayhem Devil", source_oracle="Whenever a p
     state.trigger_order_choice_players = {1} if human else set()
     state.players[2].life = opponent_life
     cards = [
-        CardInstance(
-            "devil", source_name, 1, 1, Zone.BATTLEFIELD, ["Creature"],
-            type_line="Creature — Devil", power=3, toughness=3,
-            oracle_text=source_oracle,
-        ),
-        CardInstance("chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD, ["Artifact"]),
-        CardInstance(
-            "elf", "Llanowar Elves", 2, 2, Zone.BATTLEFIELD, ["Creature"],
-            type_line="Creature — Elf Druid", power=1, toughness=1, oracle_text="{T}: Add {G}.",
-        ),
+        canonical_card(source_name, id="devil", owner=1, controller=1, zone=Zone.BATTLEFIELD),
+        canonical_card("Everflowing Chalice", id="chalice", owner=1, controller=1, zone=Zone.BATTLEFIELD),
+        canonical_card("Llanowar Elves", id="elf", owner=2, controller=2, zone=Zone.BATTLEFIELD),
     ]
     for card in cards:
         state.cards[card.id] = card
@@ -79,10 +73,7 @@ def test_human_mayhem_devil_can_target_a_player_and_reject_bad_choice():
 
 def test_human_mayhem_devil_can_target_planeswalker_loyalty():
     state = _game()
-    walker = CardInstance(
-        "teferi", "Teferi, Hero of Dominaria", 2, 2, Zone.BATTLEFIELD,
-        ["Planeswalker"], loyalty=4,
-    )
+    walker = canonical_card("Teferi, Hero of Dominaria", id="teferi", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[walker.id] = walker
     state.players[2].battlefield.append(walker.id)
     rules = RulesEngine()
@@ -131,7 +122,7 @@ def test_unattended_damage_trigger_kills_opposing_creature_unless_player_is_leth
 def test_havoc_jester_uses_the_same_printed_sacrifice_damage_path():
     state = _game(
         source_name="Havoc Jester",
-        source_oracle="Whenever you sacrifice a permanent, this creature deals 1 damage to any target.",
+        source_oracle=raw_card('Havoc Jester')['oracle_text'],
     )
     moves = RulesEngine().legal_moves(state, 1)
     assert "elf" in {move.get("target_card_id") for move in moves}

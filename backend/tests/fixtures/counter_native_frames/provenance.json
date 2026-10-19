@@ -1,0 +1,127 @@
+{
+  "bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "cards": {
+    "Volatile Stormdrake": {
+      "id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+      "oracle_id": "08d64b16-9221-4532-890c-d5cdbf181e28",
+      "canonical_fullrow_sha256": "42670ff083c39f3ca25e8aff4b2432970f986db325520657a067879313cb503d"
+    },
+    "Drown in the Loch": {
+      "id": "eb7b9762-740b-4c1c-a411-20dbf023aea5",
+      "oracle_id": "0f264e5b-264e-4e97-9a8d-8ae1d6a286ce",
+      "canonical_fullrow_sha256": "004e4efbc8b2329f5a58f2ab04f676c7e399e438ba9b22a9d79169ee0f517be7"
+    },
+    "Tormod's Crypt": {
+      "id": "752bf493-5839-47e8-95f2-6d8201907428",
+      "oracle_id": "1573f7f9-672c-421a-b1ac-3d0d8aea59ca",
+      "canonical_fullrow_sha256": "4dba08d2220eaab3dd9a153215e7c32181121ff05173b890466861e130e2f68c"
+    },
+    "Hapless Researcher": {
+      "id": "22ed0ee7-6749-4f38-8e53-c11b46b17e5d",
+      "oracle_id": "240a349a-79f8-4e11-9a05-a78148e70a62",
+      "canonical_fullrow_sha256": "5aaf5329eb1feebdfab9e953f231dbbc0e143d59f68ce5aa9004eb382e9f55fa"
+    },
+    "Raging Goblin": {
+      "id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b",
+      "canonical_fullrow_sha256": "b084c49cbd337b82de4f5051f1dec661250e61df2c697a79c4994adfe10bf453"
+    },
+    "Last Word": {
+      "id": "139d2ece-f656-4cac-8d77-b0f083f76c70",
+      "oracle_id": "33d6a17a-0112-4d4f-a24a-0769360408a8",
+      "canonical_fullrow_sha256": "4767dd1da53f97c43bbc5515e1d8034150baf6b19d320ad7d947621ceb36d708"
+    },
+    "Negate": {
+      "id": "52d58fe4-6070-4022-9cd7-c35a11b44525",
+      "oracle_id": "3407fe41-fdd3-4119-8f70-4bc4590a379f",
+      "canonical_fullrow_sha256": "90d37bb8ead523ea99cf40dff8eeb4187dd55f400a32ce4769c1001dc943b92c"
+    },
+    "Sheoldred, the Apocalypse": {
+      "id": "d67be074-cdd4-41d9-ac89-0a0456c4e4b2",
+      "oracle_id": "34f34409-326d-4994-a0ea-1a69aa278f03",
+      "canonical_fullrow_sha256": "76a1903ff27a3c534200c9334b4a3f6864a49811c900d1c833d9b15533b1a0e9"
+    },
+    "Elvish Mystic": {
+      "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+      "oracle_id": "3f3b2c10-21f8-4e13-be83-4ef3fa36e123",
+      "canonical_fullrow_sha256": "8cb57acbfbd6bd7da4f045fe6f558a8eda8aa6177a6f87859fe6810c832be375"
+    },
+    "Lightning Bolt": {
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "canonical_fullrow_sha256": "faad8b64b05be249244f0fec337a2745c81e2cece5aae154536f5aa358e56f3e"
+    },
+    "Walking Ballista": {
+      "id": "5272436e-74f0-44c4-a291-ea8ebc3f1525",
+      "oracle_id": "4b515bb0-f275-4400-8032-3173b799ab40",
+      "canonical_fullrow_sha256": "d2eed6c53a96bca60b6d468981be6f05aaa2f6bc0fbd9d258437fc0077a57cf5"
+    },
+    "Rakdos Charm": {
+      "id": "64b67170-1602-4050-80c0-ade2a6cac211",
+      "oracle_id": "5e62b51d-faec-4aa0-9504-cf2c282d08ea",
+      "canonical_fullrow_sha256": "b45caa1a82c7c3510028d290ee51daddbb84b7a38248f5726bc0f650ccd62c32"
+    },
+    "Vedalken Orrery": {
+      "id": "44067327-6fe3-4222-b591-6d14d0e360d7",
+      "oracle_id": "60d640a4-032b-4279-ac75-8f200ca776fb",
+      "canonical_fullrow_sha256": "0633859050cec072965cf73365751aa9fff7cb9ab81b0a7a707238a8ca6b3554"
+    },
+    "Cryptic Command": {
+      "id": "30f6fca9-003b-4f6b-9d6e-1e88adda4155",
+      "oracle_id": "a3e51a35-09df-4189-b131-08a21e6a557d",
+      "canonical_fullrow_sha256": "fc9c7da365cf96777fcc285fcbc741fb1ad98e2627f063013618ead70897ac2a"
+    },
+    "Torrential Gearhulk": {
+      "id": "92872fea-2fb4-4154-815e-cad9d966e60f",
+      "oracle_id": "a6395447-677d-4c39-8eda-2d57e527c94e",
+      "canonical_fullrow_sha256": "b457c8490050aa6947cc3c02b90741f5983f93569b6bc98e26100b099f06e7d4"
+    },
+    "Burst Lightning": {
+      "id": "aec5d380-d354-4750-931a-6c91853e2edc",
+      "oracle_id": "ac2086fe-98ee-4280-9c7c-c5c2d6548a8b",
+      "canonical_fullrow_sha256": "af664186c2abab3ea74641e74d084c46c7506cb27d30447fa7a38d6b55d8298b"
+    },
+    "Ray of Command": {
+      "id": "7ca8a427-5c20-4650-bbb5-9895e4f2c009",
+      "oracle_id": "adf41d29-403d-4936-9689-3148d103e700",
+      "canonical_fullrow_sha256": "8215bc1fcfff31e854bfc5471bdeaab55530d3506bab4def4cfbe01dd2c1b8cf"
+    },
+    "Secure the Wastes": {
+      "id": "83a01121-e5cd-45ba-97c2-7bd7d50158e6",
+      "oracle_id": "b2347910-d6c6-4681-8316-7ef27056485c",
+      "canonical_fullrow_sha256": "39543c0e14bbe2988114d145797d5e1f98d8e33acc11e1007ce39a5687384d34"
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "canonical_fullrow_sha256": "3dc84687094c5831a9901fbbaa489f78006bdaf0275fffda1c5f8985df8b3a37"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "canonical_fullrow_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0"
+    },
+    "Stifle": {
+      "id": "616d1b20-61c1-4d39-a9b5-ad9fd61699e4",
+      "oracle_id": "b3b00911-ece7-4484-bc36-f211ce72b6cc",
+      "canonical_fullrow_sha256": "eccb451a0000ccd2d8209bdbb6e71bf456fb5925d0466f154cf0f19a3047bc11"
+    },
+    "Rod of Ruin": {
+      "id": "9a0e90b8-bc38-4e1c-92ca-ac562cc57e31",
+      "oracle_id": "c29a04ab-4e14-45d8-a993-3fffd0e2f6eb",
+      "canonical_fullrow_sha256": "51e03bf3f055788a342f8482300573496dc24aab2e9a534bd8286cc246b3ef66"
+    },
+    "Counterspell": {
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "canonical_fullrow_sha256": "fe9513a8443f2f78ceb48e835c4e81d5b6d6eb995581683c73dfff9acecdb6b9"
+    },
+    "Abjure": {
+      "id": "fbad9449-d09c-4fd0-b2ad-2aa3a29e03bf",
+      "oracle_id": "dd97e457-07eb-4918-b780-ae7ff42a37e7",
+      "canonical_fullrow_sha256": "f93390d12a421038e7436f6deeabca0bb6a6e730dfe7ac579142799ef2464d82"
+    }
+  },
+  "scope": "Full unchanged canonical rows; fixture-zone/mana setup explicit, no fabricated Oracle"
+}

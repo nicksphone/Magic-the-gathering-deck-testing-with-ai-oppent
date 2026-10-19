@@ -29,6 +29,8 @@ def select_cast_face(card, index=None):
             setattr(proxy, f'printed_{field}', str(value) if value is not None else None)
     proxy.image_uri = face.get("image_uri") or getattr(card, "image_uri", None)
     proxy.selected_face_index = index
+    from rules_engine.copiable_values import record_form
+    record_form(proxy)
     return proxy
 
 
@@ -39,6 +41,8 @@ def apply_cast_face(card, face):
     for field in FACE_FIELDS:
         card.printed_characteristics.setdefault(field, copy(getattr(card, field)))
         setattr(card, field, copy(getattr(face, field)))
+    from rules_engine.copiable_values import record_form
+    record_form(card)
 
 
 def apply_transform_face(card, index):
@@ -48,6 +52,8 @@ def apply_transform_face(card, index):
     for field in FACE_FIELDS:
         card.printed_characteristics.setdefault(field, copy(getattr(front, field)))
         setattr(card, field, copy(getattr(face, field)))
+    from rules_engine.copiable_values import record_form
+    record_form(card)
     from rules_engine.type_effects import rebase_type_effects
     rebase_type_effects(card)
 
@@ -86,17 +92,19 @@ def exile_permission(state, player_id, card_id, face_index=0):
 
 
 def ordinary_exile_permission(state, player_id, card_id, face_index=0):
+    from rules_engine.source_linked_exile import permissions
     player = state.players[player_id]
     temporary = card_id in player.exile and player.exile_play_until.get(card_id, 0) >= state.turn
-    return temporary or (state.adventure_permissions.get(card_id) == player_id and face_index == 0)
+    return temporary or (state.adventure_permissions.get(card_id) == player_id and face_index == 0) or bool(permissions(state, player_id, card_id))
 
 
 def exile_candidates(state, player_id):
+    from rules_engine.source_linked_exile import candidates
     return list(dict.fromkeys(state.players[player_id].exile + [
         cid for cid, pid in state.adventure_permissions.items()
         if pid == player_id and cid in state.cards and state.cards[cid].zone == Zone.EXILE
     ] + [cid for cid, card in state.cards.items() if card.zone == Zone.EXILE
-         and card.foretell_record.get('player_id') == player_id]))
+         and card.foretell_record.get('player_id') == player_id] + candidates(state, player_id)))
 
 
 def leave_exile(state, card_id):

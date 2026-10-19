@@ -1,0 +1,89 @@
+name: Native Linux Browsers
+
+on:
+  workflow_dispatch:
+  # Bootstrap this workflow on a branch before it exists on the default branch.
+  push:
+    paths:
+      - .github/workflows/native-browser.yml
+      - frontend/tests/browser-vendor-preflight.mjs
+
+permissions:
+  contents: read
+
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - vendor: chrome
+            executable: /opt/google/chrome/chrome
+          - vendor: brave
+            executable: /opt/brave.com/brave/brave
+    env:
+      MTG_BROWSER_VENDOR: ${{ matrix.vendor }}
+      MTG_CHROME: ${{ matrix.executable }}
+      MTG_BROWSER_NO_SANDBOX: '0'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install app dependencies
+        run: |
+          python -m pip install -r backend/requirements.txt
+          npm --prefix frontend ci
+      - name: Protect vendor installation directories on the disposable runner
+        run: |
+          test ! -L /opt
+          sudo install -d -o root -g root -m 0755 /opt
+          if [[ "$MTG_BROWSER_VENDOR" == chrome ]]; then
+            test ! -L /opt/google
+            test ! -L /opt/google/chrome
+            sudo install -d -o root -g root -m 0755 /opt/google /opt/google/chrome
+          fi
+      - name: Reinstall official Chrome package from its signed repository
+        if: matrix.vendor == 'chrome'
+        run: |
+          curl -fsSLo "$RUNNER_TEMP/google-linux-key.pub" https://dl.google.com/linux/linux_signing_key.pub
+          gpg --batch --show-keys --with-colons "$RUNNER_TEMP/google-linux-key.pub" | grep '^fpr:::::::::EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796:' >/dev/null
+          gpg --batch --dearmor < "$RUNNER_TEMP/google-linux-key.pub" | sudo tee /usr/share/keyrings/mtg-google-chrome.gpg >/dev/null
+          printf '%s\n' 'deb [arch=amd64 signed-by=/usr/share/keyrings/mtg-google-chrome.gpg,EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796] https://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/mtg-google-chrome.list >/dev/null
+          sudo apt-get update
+          sudo apt-get install -y --reinstall google-chrome-stable
+      - name: Install official Brave package
+        if: matrix.vendor == 'brave'
+        run: |
+          sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
+          sudo curl -fsSLo /etc/apt/sources.list.d/brave-browser-release.sources https://brave-browser-apt-release.s3.brave.com/brave-browser.sources
+          sudo apt-get update
+          sudo apt-get install -y brave-browser
+      # Vendor package installation, not ad-hoc helper chmod, restores file modes.
+      # Preflight still rejects wrong ownership/modes and never substitutes Chromium.
+      - name: Secure native preflight and complete browser suite
+        env:
+          MTG_NATIVE_REPORT_DIR: ${{ runner.temp }}/native-${{ matrix.vendor }}
+        run: |
+          mkdir -m 700 "$MTG_NATIVE_REPORT_DIR"
+          bash .github/scripts/run-native-browser-ci.sh
+      - name: Upload allowlisted native metadata
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: native-${{ matrix.vendor }}-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/native-${{ matrix.vendor }}/preflight.json
+            ${{ runner.temp }}/native-${{ matrix.vendor }}/lifecycle.json
+          if-no-files-found: error
+          retention-days: 7

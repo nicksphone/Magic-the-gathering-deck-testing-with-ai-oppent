@@ -1,0 +1,32 @@
+{
+  "source": "Scryfall official public API before offline qualification",
+  "cards": [
+    {
+      "name": "Lithoform Engine",
+      "file": "lithoform-engine.json",
+      "sha256": "7930e96a947ed3edc2310b8e8ec20e13d2cdb9f2291ccf49b69bd243d7a4c799",
+      "oracle_id": "0bf299da-1854-4153-baea-3cee2eb01ee8",
+      "url": "https://api.scryfall.com/cards/named?exact=Lithoform%20Engine",
+      "request_start_utc": "2026-10-06T19:38:44.680766+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "name": "Sol Ring",
+      "file": "sol-ring.json",
+      "sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487",
+      "url": "https://api.scryfall.com/cards/named?exact=Sol%20Ring",
+      "request_start_utc": "2026-10-06T19:38:45.967733+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "name": "Humility",
+      "file": "humility.json",
+      "sha256": "eb68a098b4bd6de1d3c02afe60e37461a5c8268108132b0d3351119a50de8b49",
+      "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+      "url": "https://api.scryfall.com/cards/named?exact=Humility",
+      "request_start_utc": "2026-10-06T19:38:46.194156+00:00",
+      "complete_raw_response_preserved": true
+    }
+  ]
+}

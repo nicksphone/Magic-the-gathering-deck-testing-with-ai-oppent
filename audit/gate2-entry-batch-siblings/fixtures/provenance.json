@@ -1,0 +1,67 @@
+{
+  "bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "unchanged_full_rows": 12,
+  "cards": {
+    "Doubling Season": {
+      "id": "f2c4f80e-84a0-463b-82c3-5c6503809351",
+      "oracle_id": "01546b7d-a233-4176-8843-d732074dc5b6",
+      "canonical_fullrow_sha256": "48d11ad8319007d1369a4a651831596491be1f764ecd3f895ddfc00602774107"
+    },
+    "Collected Company": {
+      "id": "cfa7b456-7e83-4587-a875-9b35fde318c2",
+      "oracle_id": "0bbcb563-09b3-499d-a9cc-3a6d7501dd81",
+      "canonical_fullrow_sha256": "2809237bf68d1577b7623d580d03c7ec888aa03fb8b5e7288130f1d369e07743"
+    },
+    "Hopeful Eidolon": {
+      "id": "4c69995b-ef31-4635-8d5a-b31f73993364",
+      "oracle_id": "13c1ca1e-cd17-49ef-bc31-97bff99ec1e3",
+      "canonical_fullrow_sha256": "635cf259edb24e97bae5811fe5082981904d2e57cd0ea1f0dc05266aa478849a"
+    },
+    "Branching Evolution": {
+      "id": "c0f1a736-8b12-4f58-a031-bf1733f65c51",
+      "oracle_id": "28fe909b-06e0-424c-9f75-c824a25f5865",
+      "canonical_fullrow_sha256": "9ab0b2803ea12ebc487626917025b379931b6c7d99300b456dd910a7171e53a5"
+    },
+    "Raging Goblin": {
+      "id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b",
+      "canonical_fullrow_sha256": "b084c49cbd337b82de4f5051f1dec661250e61df2c697a79c4994adfe10bf453"
+    },
+    "Renata, Called to the Hunt": {
+      "id": "2b27e6b2-13ad-42b2-a121-70935913723d",
+      "oracle_id": "6761b077-7a89-42c9-93ab-675fe4231564",
+      "canonical_fullrow_sha256": "7d22bd9f08097ac9f4e79bdf56e0117a11919cf9baaf1fe2d25c28e0f3565f9d"
+    },
+    "Cloudshift": {
+      "id": "6dc0c976-26d2-40c9-a571-c370e9139d1d",
+      "oracle_id": "6879f5ce-7a1b-4606-bad1-885779b0d456",
+      "canonical_fullrow_sha256": "95a643522f2758c4d33c44bd632acc99afcee652f543461b7dee9a3b1a292cd1"
+    },
+    "Hardened Scales": {
+      "id": "99cfd1a8-49fd-4cc0-96f2-f9f159ce5d55",
+      "oracle_id": "a1f3da21-af6d-450e-bf0b-985d158418e6",
+      "canonical_fullrow_sha256": "f18315da3060bb6dd1eb22fd5f03fc1dca5378767a12fa92a26f4b94ecdc716a"
+    },
+    "Temporary Lockdown": {
+      "id": "82b3088f-7b49-45e9-b447-129a597ceb75",
+      "oracle_id": "b21c99b3-b975-4428-9c9a-326ded2fa8dc",
+      "canonical_fullrow_sha256": "e31769334619fa798750fee703e147a752dc71e13f51dc45b63b5e0963b5229c"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "canonical_fullrow_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0"
+    },
+    "Zombify": {
+      "id": "dc798e6f-13c4-457c-b052-b7b65bc83cfe",
+      "oracle_id": "bb95db4d-5017-4121-bf79-d68476602d8c",
+      "canonical_fullrow_sha256": "4cc6d72c88b053913de5f0f7097f23c5632dab6f7cb1e243e0c9fa1b9d1a042b"
+    },
+    "Naturalize": {
+      "id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+      "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+      "canonical_fullrow_sha256": "40d2d038908dec986d029379a3a1d7973c6abd2c56526fb60e796e8c6b438c1e"
+    }
+  }
+}

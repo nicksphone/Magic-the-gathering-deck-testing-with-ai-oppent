@@ -1,0 +1,89 @@
+{
+  "base": "022758e64debeeab8b8e698cce2cd76d35ba82d5",
+  "cards": {
+    "Font of Agonies": {
+      "fields": 66,
+      "file": "damage_life_printed_79/font-of-agonies-scryfall-raw.json",
+      "id": "d7c02aec-4a89-4ccc-8525-6f979c10d799",
+      "line": null,
+      "object_sha256": "de0c426c3951f227d0151797b4e826d5609c60f3e86ecb465e7972bb97d25c86",
+      "oracle_id": "ab44c6fe-6a66-42f0-9e75-8b25641e1f13",
+      "provenance": [
+        {
+          "file": "damage_life_printed_79/SOURCES.json",
+          "sha256": "b55061b126f552e9711260a03f3f542bcc3c5d4bb3c97ce90d192c8124519d08"
+        },
+        {
+          "file": "damage_life_printed_79/PROVENANCE.json",
+          "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+        }
+      ],
+      "sha256": "b13ec5bacaa3571df66d6a2cb97846bc25a633678ce83b17f110a3d9dd958f20"
+    },
+    "Giant Spider": {
+      "fields": 65,
+      "file": "keyword_zone4f86/canonical.jsonl",
+      "id": "213c9202-b6f4-43ab-b57f-b97a1da5e263",
+      "line": 8,
+      "object_sha256": "de7818a2d16ccad301e855ecb6fb120d336bb51e98c4c7fd31c510b3fe7010f7",
+      "oracle_id": "e740ce2f-2134-473c-afa1-1b6d2d1e38ef",
+      "provenance": [
+        {
+          "file": "keyword_zone4f86/SOURCES.json",
+          "sha256": "d728f61499dea3e3c03027c5df0c1689d0445c6a66f9240d55a808a48d460c2e"
+        }
+      ],
+      "sha256": "b5303e0f2f061ba0c4179d9d6af29034526e7237e470dda3a41eeec5228d1bf8"
+    },
+    "Platinum Emperion": {
+      "fields": 67,
+      "file": "life_conversion/platinum-emperion.json",
+      "id": "71b03143-9e85-4061-88e6-ad621f75ec3b",
+      "line": null,
+      "object_sha256": "e0fafaa064e66dc7143f5614780ef77f168fdb76590cda5bffd361f94d2a28ee",
+      "oracle_id": "bcd2f70c-36c2-44b2-9d4b-1000e9bb62b6",
+      "provenance": [
+        {
+          "file": "damage_life_printed_79/SOURCES.json",
+          "sha256": "b55061b126f552e9711260a03f3f542bcc3c5d4bb3c97ce90d192c8124519d08"
+        },
+        {
+          "file": "life_conversion/provenance.json",
+          "sha256": "879000bb1f305955e156cc0e7d798d4bc2b4a21965b09fd9081986d4c3f7e753"
+        }
+      ],
+      "sha256": "15977716fbc596d2b5b4631a15e91b9f37f6ada18d700439e6254745fa4962fc"
+    },
+    "Rest in Peace": {
+      "fields": 64,
+      "file": "mass_exile_product/rest-in-peace.json",
+      "id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+      "line": null,
+      "object_sha256": "de0838e7b01b6fbe4436b262c598446b3941b5c74ef3c69cf789a39d04d50086",
+      "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+      "provenance": [
+        {
+          "file": "mass_exile_product/provenance.json",
+          "sha256": "a99edb6d7f719efd4eb9db98653b70b465266c6ba457a441f5bedda1d5144548"
+        }
+      ],
+      "sha256": "84b5dd614bb82cd1f736b38b93f2a1be0efd94da777d1897fe612756a6cd85b7"
+    },
+    "Toxic Deluge": {
+      "fields": 65,
+      "file": "life_cost_022758/toxic-deluge.json",
+      "id": "de5afccc-8d42-4bd6-b068-b9ea2361655e",
+      "line": null,
+      "object_sha256": "ab3757e543501afd52ca3c4315fca46cd732f2d2709ea8d66419923342fa4383",
+      "oracle_id": "afaef788-34d1-460b-b884-9d7ae6ddeb18",
+      "provenance": [
+        {
+          "file": "life_cost_022758/TOXIC_PROVENANCE.json",
+          "sha256": "00fb68fde0595f1e23a70d7cb2941247eea11cb5d0f2836c12aaa2ce5c2f5366"
+        }
+      ],
+      "sha256": "8b5eb1380748e877f2db6567a22f98693f07912122fcc6993cbd0c3b06ed836f"
+    }
+  },
+  "source": "complete existing official Scryfall objects reused unchanged; zero network requests"
+}

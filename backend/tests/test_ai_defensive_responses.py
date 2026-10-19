@@ -15,6 +15,7 @@ from tests.test_ai_recurring_engines import fixture, add, CARDS
 from tests.test_pending_removal import CARDS as REMOVAL
 from tests.test_devotion import ROWS as DEVOTION
 from tests.test_api_input_contracts import game, persist
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads(
     (Path(__file__).parent / 'fixtures/defensive_responses.json').read_text())}
@@ -263,12 +264,10 @@ def test_http_response_payment_restore_and_actual_outcome(game, seat, spell):
     state, source, threat, guard = board(seat, spell, ready=spell != 'Counterspell')
     if spell == 'Counterspell':
         state = announce_pump(state, threat, seat)
-    state.id = match.state.id
-    match.state = state
     match.controllers = {1: 'ai', 2: 'ai'}
     match.ai = {pid: AIAgent('master', archetype='Control') for pid in (1, 2)}
     match.best_of = 1
-    persist(match)
+    adopt_fixture_state(match, state)
     before_mana = dict(state.players[seat].mana_pool)
     response = client.post(f'/matches/{state.id}/autoplay?ticks=1')
     assert response.status_code == 200, response.text

@@ -1,0 +1,26 @@
+{
+  "forest": {
+    "raw_sha256": "b017c987ba63f9d1e957eb4abd4ac4ca830753315b4b29a885bfc5e038ed9a44",
+    "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "source": "official exact-name API static intake outside all game gates"
+  },
+  "swamp": {
+    "raw_sha256": "4c799e1c5170e492b7631ea7e96d8356b9cae9bed0645f104434c1095a568b4a",
+    "id": "b233b117-9369-45c1-80c5-cc857386b6be",
+    "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+    "source": "official exact-name API static intake outside all game gates"
+  },
+  "mountain": {
+    "raw_sha256": "a92fe191ac7038da46e8e5f8143a0f1d2ff53f3b5302bdf34de9df9a99e5321a",
+    "id": "85177bd7-6c50-48da-b692-ae5fe7bd357c",
+    "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+    "source": "official exact-name API static intake outside all game gates"
+  },
+  "lightning-bolt": {
+    "raw_sha256": "e5c62f8029d332d232605077fcdd73549f7383fdc8f610da97c071b242e3d787",
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "source": "official exact-name API static intake outside all game gates"
+  }
+}

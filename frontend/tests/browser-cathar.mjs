@@ -97,6 +97,7 @@ async function ready(url, child, owned = false) {
 function startBackend() {
   backend = start('backend', python, ['-m', 'uvicorn', 'tests.cathar_fixture_server:app', '--host', '127.0.0.1', '--port', String(ports.backend)], path.join(runtime, 'backend'), {
     MTG_CATHAR_FIXTURE_ROOT: runtime, MTG_CATHAR_FIXTURE_TOKEN: token,
+    MTG_TRUSTED_ORIGINS: frontend,
   });
   return ready(`${api}/fixture/cathar/status`, backend, true);
 }

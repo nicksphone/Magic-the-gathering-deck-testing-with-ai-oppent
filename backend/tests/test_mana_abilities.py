@@ -176,6 +176,7 @@ def test_ai_casts_with_paid_resources_without_proactive_mana_floating(seat, diff
 
 
 from tests.test_api_input_contracts import game, persist
+from tests.fixture_state_support import adopt_fixture_state
 
 
 @pytest.mark.parametrize('seat', [1, 2])
@@ -185,9 +186,8 @@ def test_http_paid_choice_validation_and_sqlite_resume(game, seat):
     from persistence.db import engine
     from persistence.repository import Repository
     client, controller = game
-    match_id = controller.state.id
-    controller.state = state = paid_position(seat)
-    state.id = match_id
+    state = paid_position(seat)
+    adopt_fixture_state(controller, state)
     persist(controller)
     source = next(card for card in state.cards.values() if card.name.startswith('Nykthos'))
     url = f'/matches/{state.id}'

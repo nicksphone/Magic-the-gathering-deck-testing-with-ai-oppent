@@ -1,0 +1,706 @@
+{
+  "Ajani's Pridemate": {
+    "file": "damage_life_printed_79/ajani-s-pridemate-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "dc8dac697cdc2c3eb1cd405bd9861b45cef3ff844c807afbffc9f486eadb61a7",
+    "sha256": "166959ab61c19db39af33dc48ddf9542d73a8b8a81f6cb692b14eb92237e59ad",
+    "steps": []
+  },
+  "Alhammarret's Archive": {
+    "file": "life_conversion/alhammarrets-archive.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/life_conversion/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "879000bb1f305955e156cc0e7d798d4bc2b4a21965b09fd9081986d4c3f7e753"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "2399471da8490d26882721b7f436f5c74b804ffb71a857c8cc9b5f7e226c1c60",
+    "sha256": "498b8c1c97b465892cdef001231bf1b59c9b9a4f577988906088a920b5a7753a",
+    "steps": []
+  },
+  "Boon Reflection": {
+    "file": "damage_life_printed_79/boon-reflection-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "d6d17e94afaf6b79cc80860cf40a09b247c44c08ab14f3ac596433c46084406b",
+    "sha256": "2023700cc2abc3b60d3475933373448715fc03d1616242674c9442633abc2d01",
+    "steps": []
+  },
+  "Boros Swiftblade": {
+    "file": "damage_life_printed_79/boros-swiftblade-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "a9cfb675b3daa6a4f0b04ecabcdeaeb8b26ec4ec3b7cef21a269c0a73eee0163",
+    "sha256": "d9517edf90068d9ecb3c72e11d44be9709dee38fcc71239d2f1981a41f8c5d49",
+    "steps": []
+  },
+  "Cacophony Scamp": {
+    "file": "damage_life_printed_79/cacophony-scamp-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "d153f245712252f77542c2e5742701e0be753a7d44eabeb86c4cfa29e96434ae",
+    "sha256": "34be8a79bbdfcd6be2d5342bca70794577f36df8ef461721287ec4b9fc60cab7",
+    "steps": []
+  },
+  "Centaur Courser": {
+    "file": "damage_life_printed_79/centaur-courser-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "67756d56702c63adc2ea7be770d2b1ed2876b3b5994b5c396e9550709d0937a5",
+    "sha256": "0c81a637f5d88d0f885c11c1439e4bf1fb82749877b037215a52a13ad753a8cb",
+    "steps": []
+  },
+  "Cruel Sadist": {
+    "file": "damage_life_printed_79/cruel-sadist-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "44c69d16377ec8e01a519720484e6a5385bcd15864801e6944fce851fbed9e84",
+    "sha256": "1bd2d2078fe38b51e59ebecd6fb44353dfcde76173f434645efc2655d7d87fb7",
+    "steps": []
+  },
+  "Crypt Rats": {
+    "file": "ai_terminal_draw/crypt-rats.raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/ai_terminal_draw/PROVENANCE.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "0b70668291db34d57ba9614b247d4ea942d17d60e93aff810b266464e6008b29"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "f9d26cee84d63b6e4cf08d09970d84af0cbba03f705a7909a8bae0b0b57f225c",
+    "sha256": "a0337f0db28bf0b3a82073d59eef869bf517b800720f9339437858d06fcba70d",
+    "steps": []
+  },
+  "Everflowing Chalice": {
+    "file": "damage_life_printed_79/everflowing-chalice-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "dc366b085cb5b42f7aeb4108496c046ee5d3684c60a12cacb143e9b87d3d818e",
+    "sha256": "6b3fd0dbf41497cf3c153b0bb5ea4affd5a5253cde9807fb589b7168b0c3bfff",
+    "steps": []
+  },
+  "Fanatical Firebrand": {
+    "file": "rules_printed_facts_e4/fanatical-firebrand-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "97c6ba9051d5c7bb7e3c4554f22d056159ea923dad9d488adf48eb652d8f2666",
+    "sha256": "185aaed09ba8e39d6efc55876460a3c6985588fbfe1f19b6cadc440a7ac19838",
+    "steps": []
+  },
+  "Font of Agonies": {
+    "file": "damage_life_printed_79/font-of-agonies-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "de0c426c3951f227d0151797b4e826d5609c60f3e86ecb465e7972bb97d25c86",
+    "sha256": "b13ec5bacaa3571df66d6a2cb97846bc25a633678ce83b17f110a3d9dd958f20",
+    "steps": []
+  },
+  "Forest": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 39,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Glistener Elf": {
+    "file": "counter_prohibitions.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/soulscar_consumer_audit/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "cd5286902c32c3eaa9b978c96c8a98be273a50624e908e441d41fde07ff1e816"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "57391b08ef097233809dd00df1a70f2f5452f6e8d2e918914c335d6353d28505",
+    "sha256": "94fe0b7a42c358835cc4abf1f1e231c5096798a32de7de61a34c5a21d4cdc448",
+    "steps": [
+      4
+    ]
+  },
+  "Glorious Anthem": {
+    "file": "human_flow_audit/canonical.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/human_flow_audit/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "1da0508fdb878d89839e8773ae9c2f0657715a173a32fe68fd0199c34cca4f1d"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "e9439012af42e92817cb86ea27db6fadc23c278e6832f8834176352a5b560fb1",
+    "sha256": "b6aded73ee431f8eb5639f5557776b0b99ee9d4a71ddb2dd154ed2724e3a9cbf",
+    "steps": [
+      "Glorious Anthem"
+    ]
+  },
+  "Goblin Chieftain": {
+    "file": "damage_life_printed_79/goblin-chieftain-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "4dd44cea16a3f551b815d6f2aff7eedd661ca95b709551266cd02ae6aee95bbe",
+    "sha256": "b23298f226b8bc17534b7f197478f80b604231381e45844d40af65fcad66c406",
+    "steps": []
+  },
+  "Grizzly Bears": {
+    "file": "../vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/vraska_full/fixtures/PROVENANCE.json",
+        "file_sha256": "4ca06bb36a8ee650e8c3593f3013636958914b189b0212416b9b01d762143c71",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+    "sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "steps": []
+  },
+  "Havoc Jester": {
+    "file": "damage_life_printed_79/havoc-jester-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "356bfdff6d41a119f8c27e0191df8845046648b53616bca94a501cc30b92c097",
+    "sha256": "d027c8611c4fd168107fb7c7e9a398524971c17436810f54fd656cc8bf0c81dd",
+    "steps": []
+  },
+  "Heartfire Hero": {
+    "file": "death_cycle_ordering/canonical.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/death_cycle_ordering/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "b5e384aae07d3b0167676e3daa4ee1d00a9f8990339eef4ff272943b8b71b189"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "4304be72eebe56143704b34cafb506e0dca99c4cf42757e0919976ddf66dc1c1",
+    "sha256": "82a096075b1577480e7c966f1efdb364edda3966c6a5ad9fdc073dcab836f7b5",
+    "steps": [
+      "Heartfire Hero"
+    ]
+  },
+  "Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 50,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Ivory Mask": {
+    "file": "suspend_canonical/ivory-mask.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/suspend_canonical/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "51872f00d18acbdb52d0dac66578ac755a164bf029a12ba80f51057af31c0eb8"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "0b730901771f170d153ec95e9968f80a20a781f341e33928104619fb1ff4d988",
+    "sha256": "108c3e712d362721bb1f3ced5df1c8d378b3afa839632eb06801197f2e31c3e4",
+    "steps": []
+  },
+  "Leyline of Sanctity": {
+    "file": "shuffle_observer_fix/canonical.jsonl",
+    "line": 2,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/queued_fizzle/provenance.json",
+        "file_sha256": "3390e86bd624798a559f66110d3899491aed4f50889380238d23148e27c1f0c9",
+        "hash_link": [
+          "raw_row_normalized_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/shuffle_observer_fix/provenance.json",
+        "file_sha256": "d555d2a3dc2e94e2d628162103ec9ceb06505de1c6351b2c77a60b03dbb546f0",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "fd5bb6b6f9f5c8c0471710b95306aab8be57ba233b6210d8f22754ae822961b5",
+    "sha256": "b2940c590f40c0377c5e6abdf5e2459abd4e1c45fdc75fd300b0e450b4e15e71",
+    "steps": []
+  },
+  "Lightning Bolt": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 57,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Llanowar Elves": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 58,
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "seed155_official_batch_provenance",
+    "raw_row_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Mayhem Devil": {
+    "file": "rules_printed_facts_e4/mayhem-devil-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/rules_printed_facts_e4/PROVENANCE.json",
+        "file_sha256": "be9df5145fd4f18cf663a9a80b955296bb289db8fdf77d938fedddc0cdb1a2de"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline_tests",
+    "raw_row_sha256": "33c51f154073ca006841dc7e64c384501b8bb18980ff5a3d33a88553ff68c36b",
+    "sha256": "5cc3114eeae122c6d023d50dbcda5d5bb602c36b591f3ed86a4f7d12c273fc09",
+    "steps": []
+  },
+  "Nefarious Lich": {
+    "file": "damage_life_printed_79/nefarious-lich-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "1689516b8303ada8338682148a39fc48de7bb5994764f76b0ce419dfb10234e9",
+    "sha256": "e77ebdf98b47aaab5508443823832957bc2d0431e0547d1d1cb49a01a9308388",
+    "steps": []
+  },
+  "Platinum Emperion": {
+    "file": "life_conversion/platinum-emperion.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/life_conversion/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "879000bb1f305955e156cc0e7d798d4bc2b4a21965b09fd9081986d4c3f7e753"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "e0fafaa064e66dc7143f5614780ef77f168fdb76590cda5bffd361f94d2a28ee",
+    "sha256": "15977716fbc596d2b5b4631a15e91b9f37f6ada18d700439e6254745fa4962fc",
+    "steps": []
+  },
+  "Popular Egotist": {
+    "file": "damage_life_printed_79/popular-egotist-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "d11d8268424b17f598b6dc9b54f2012d30539e88fdf2e654f42ef5032787f1c7",
+    "sha256": "6b17caccb8f225a488e49dbdddefbf90543756d6248e859b72413d55671948fa",
+    "steps": []
+  },
+  "Prodigal Pyromancer": {
+    "file": "ward.json",
+    "line": null,
+    "provenance": [
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/basic_land_hooks/provenance.json",
+        "file_sha256": "d714facfccbe398326ebec3a2cd0f982f7365000d078e1c92f4d9e90ca5d5045",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/color_consumer_goldens/provenance.json",
+        "file_sha256": "72322a94413a7a32589a264678cd5b10e99d4faa07a7b3227f54b9d454d30b0c",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/soulscar_consumer_audit/provenance.json",
+        "file_sha256": "cd5286902c32c3eaa9b978c96c8a98be273a50624e908e441d41fde07ff1e816",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "provenance_status": "full_shape_raw_hash_linked_provenance",
+    "raw_row_sha256": "b9a366defcc5a35b8433f3909c0ed4ff4a99b40236a937accdcf73bb0e69c402",
+    "sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "steps": [
+      26
+    ]
+  },
+  "Protection of the Hekma": {
+    "file": "shuffle_observer_fix/canonical.jsonl",
+    "line": 6,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/shuffle_observer_fix/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "d555d2a3dc2e94e2d628162103ec9ceb06505de1c6351b2c77a60b03dbb546f0"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "273b357127be7312fbaad83438f0821b673126639e04d6cafd2993e7f3808828",
+    "sha256": "b2940c590f40c0377c5e6abdf5e2459abd4e1c45fdc75fd300b0e450b4e15e71",
+    "steps": []
+  },
+  "Pyrotechnics": {
+    "file": "ward.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/basic_land_hooks/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "d714facfccbe398326ebec3a2cd0f982f7365000d078e1c92f4d9e90ca5d5045"
+      },
+      {
+        "file": "backend/tests/fixtures/color_consumer_goldens/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "72322a94413a7a32589a264678cd5b10e99d4faa07a7b3227f54b9d454d30b0c"
+      },
+      {
+        "file": "backend/tests/fixtures/soulscar_consumer_audit/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "cd5286902c32c3eaa9b978c96c8a98be273a50624e908e441d41fde07ff1e816"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "2420d079bb39d7a050f943866df392eb90e6be9da2b0db62c5aea4196d9a3db1",
+    "sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+    "steps": [
+      28
+    ]
+  },
+  "Sacred Foundry": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 79,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe"
+      },
+      {
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      {
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d"
+      }
+    ],
+    "provenance_status": "seed155_official_batch_reuse",
+    "raw_row_sha256": "504c58cc035a95cfee6c4fa290de889f6237de5dc08fb47aa6088d5d6caf427f",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "Shock": {
+    "file": "multicast_audit/canonical.jsonl",
+    "line": 8,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/multicast_audit/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "7b9ebcfa65028bb5f152b033366447f337f82f65c302a9a44a834067d3d96a40"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "b86fd670efc807e5afdac1b0b6ef861870a6be97fe9501427c02f8a529b15eaf",
+    "sha256": "684a4f7215a8d3020a3d8993b2c9a37eff851860e5650c9307af905307735d99",
+    "steps": []
+  },
+  "Teferi, Hero of Dominaria": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "line": 100,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe"
+      },
+      {
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      {
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d"
+      }
+    ],
+    "provenance_status": "seed155_official_batch_reuse",
+    "raw_row_sha256": "41d7b9bf8bd192b82472ed60b779993ed7f8f759105db9e019a5c3d809535cd7",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "steps": []
+  },
+  "The Fall of Lord Konda // Fragment of Konda": {
+    "file": "damage_life_printed_79/the-fall-of-lord-konda-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "5cf6f3aa8ac72ea64811690c3f8dd3e33c7952a273330b121041cb75c05f7022",
+    "sha256": "ee6066b6709f72a6e1b9139d99c8cc84377453eb51c640665a7b55dfd1291117",
+    "steps": []
+  },
+  "Vampire Nighthawk": {
+    "file": "soulscar_consumer_audit/vampire-nighthawk.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/soulscar_consumer_audit/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "cd5286902c32c3eaa9b978c96c8a98be273a50624e908e441d41fde07ff1e816"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "933ee04b53a783821e714a5381755808cc3e78c90d596707ec2f199d2405a847",
+    "sha256": "083bf98d6178082c2655d798ca145fef500c2254608e7287b73c42e1657bdb9e",
+    "steps": []
+  },
+  "Wall of Omens": {
+    "file": "damage_life_printed_79/wall-of-omens-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "ea0cda9c3e004ca1e639bdd13efc1fda1357e84ea74666c3ce23102c1b394744",
+    "sha256": "0348ca0404320373d3b599ab900def0a1ea22e061eb75b4bdba7b2d8a5cde78b",
+    "steps": []
+  },
+  "Withering Boon": {
+    "file": "damage_life_printed_79/withering-boon-scryfall-raw.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/damage_life_printed_79/PROVENANCE.json",
+        "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      }
+    ],
+    "provenance_status": "actual_exact_HTTP200_full_raw_before_offline",
+    "raw_row_sha256": "8620d5ef7601193fb7acb86576ae7ea0bc4d0a07571e2ae3b02c8e90682c8bbc",
+    "sha256": "e3ae4734b5f38b21573946d8a191382fbcaf44120765a7a53e61f880f0113eb6",
+    "steps": []
+  },
+  "Youthful Knight": {
+    "file": "queued_sequence/canonical.json",
+    "line": null,
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/queued_sequence/provenance.json",
+        "link": "raw_file_or_normalized_row_SHA_present",
+        "sha256": "e1aeeb882d1b18e46c60dfb6f3199db7e828e73bd23af878625412bcb25ad3e5"
+      }
+    ],
+    "provenance_status": "full_raw_with_hash_linked_provenance_review_admission",
+    "raw_row_sha256": "e0a32611feb2e6d38c4fb6da9a703cf9433ce0933aba5f5ff34f3a3aa7f99785",
+    "sha256": "2bf3e0c554d3086fe2ca20e71312b18e67641441fc45dfb7884e8fa8c3f924bb",
+    "steps": [
+      "Youthful Knight"
+    ]
+  }
+}

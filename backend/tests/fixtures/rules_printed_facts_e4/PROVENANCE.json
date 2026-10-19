@@ -1,0 +1,1783 @@
+{
+  "source": "Scryfall official exact named endpoint",
+  "oracle_modified": false,
+  "full_response_bytes_preserved": true,
+  "requests": [
+    {
+      "requested_name": "Arcane Signet",
+      "url": "https://api.scryfall.com/cards/named?exact=Arcane+Signet",
+      "started_utc": "2026-10-16T04:07:42.362910+00:00",
+      "start_monotonic": 456378.020356041,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Arcane+Signet",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:42 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"a3f5bf7de108b081db8a97cbeb6714bf\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=n9j%2FrcsjdKkS7QkCETGEm0q4BqrEasbxVJvFNBT437s%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792073199\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=n9j%2FrcsjdKkS7QkCETGEm0q4BqrEasbxVJvFNBT437s%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792073199\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/frc/20/arcane-signet?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/c/6/c6b6117c-faab-4bbb-b851-07bd8061ef03.jpg?1789644435"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "HIT"
+        ],
+        [
+          "CF-RAY",
+          "a4b432ba19c69833-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:42.456165+00:00",
+      "bytes": 5082,
+      "sha256": "a3f5bf7de108b081db8a97cbeb6714bfcaa3a166564b4a1f69d3bf3b15ffbc91",
+      "file": "arcane-signet-scryfall-raw.json",
+      "scryfall_id": "c6b6117c-faab-4bbb-b851-07bd8061ef03",
+      "oracle_id": "0bc7f093-bef0-4f1a-852c-4b75ebf54838",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Bane of Progress",
+      "url": "https://api.scryfall.com/cards/named?exact=Bane+of+Progress",
+      "started_utc": "2026-10-16T04:07:42.673031+00:00",
+      "start_monotonic": 456378.330478139,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Bane+of+Progress",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:43 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"a2815ced8711f50a6f51cd08277c75dc\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=F7j38vNqIKdnusKi443a6VO3ntLlVaaBWgcs5o5WkLk%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792123662\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=F7j38vNqIKdnusKi443a6VO3ntLlVaaBWgcs5o5WkLk%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792123662\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/ecc/99/bane-of-progress?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/5/4/54c98a43-d358-4bb5-ba65-dff25c2f12ea.jpg?1783904550"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b432bbf81a438f-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:43.019137+00:00",
+      "bytes": 5090,
+      "sha256": "a2815ced8711f50a6f51cd08277c75dc90e203630659ba8d30b81352c10fc7df",
+      "file": "bane-of-progress-scryfall-raw.json",
+      "scryfall_id": "54c98a43-d358-4bb5-ba65-dff25c2f12ea",
+      "oracle_id": "51f9a6cc-8eb2-44ed-a2d9-913ac514ad67",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Call the Cavalry",
+      "url": "https://api.scryfall.com/cards/named?exact=Call+the+Cavalry",
+      "started_utc": "2026-10-16T04:07:43.021483+00:00",
+      "start_monotonic": 456378.678926455,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Call+the+Cavalry",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:43 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"ef1c2df0900cce64d9e0d1024b0c63f2\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=AnaKjpHv8A%2FVBHqEd8D%2FHpnk9m1%2Fk09Q60kdR44MgCA%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792123663\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=AnaKjpHv8A%2FVBHqEd8D%2FHpnk9m1%2Fk09Q60kdR44MgCA%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792123663\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/gnt/10/call-the-cavalry?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/5/f/5ffd9de5-c0b9-4d41-ab11-c77ce6f67c60.jpg?1783933991"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b432be2802bebc-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:43.464879+00:00",
+      "bytes": 5458,
+      "sha256": "ef1c2df0900cce64d9e0d1024b0c63f25ee38225740dd3c4b9aab0c203c9938f",
+      "file": "call-the-cavalry-scryfall-raw.json",
+      "scryfall_id": "5ffd9de5-c0b9-4d41-ab11-c77ce6f67c60",
+      "oracle_id": "855b168b-e514-4a43-8bbe-7f1df40031ae",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Fabricate",
+      "url": "https://api.scryfall.com/cards/named?exact=Fabricate",
+      "started_utc": "2026-10-16T04:07:43.467077+00:00",
+      "start_monotonic": 456379.124517784,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Fabricate",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:43 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"5f9c973a226810d259122123f6993726\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=drfcKYT1v4Q4aw819aNH9eLczLNsKrQx7bpKpAGscDQ%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792091399\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=drfcKYT1v4Q4aw819aNH9eLczLNsKrQx7bpKpAGscDQ%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792091399\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/hop/9/fabricate?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/4/4/44e49332-b1e1-4b88-b508-516b55c67a1d.jpg?1783942335"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "HIT"
+        ],
+        [
+          "CF-RAY",
+          "a4b432c0ea69942a-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:43.574507+00:00",
+      "bytes": 4981,
+      "sha256": "5f9c973a226810d259122123f6993726e37f4cf91362120ea12bf995aff0fbed",
+      "file": "fabricate-scryfall-raw.json",
+      "scryfall_id": "44e49332-b1e1-4b88-b508-516b55c67a1d",
+      "oracle_id": "422e1869-134f-463d-9fa1-86b66a998b3e",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Fanatical Firebrand",
+      "url": "https://api.scryfall.com/cards/named?exact=Fanatical+Firebrand",
+      "started_utc": "2026-10-16T04:07:43.777192+00:00",
+      "start_monotonic": 456379.434640121,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Fanatical+Firebrand",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:44 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"185aaed09ba8e39d6efc55876460a3c6\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=P369LxjdVldRoIb9F9%2BiaJOSUQuD6yZcY2SoTpO23IA%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792123664\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=P369LxjdVldRoIb9F9%2BiaJOSUQuD6yZcY2SoTpO23IA%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792123664\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/fdn/195/fanatical-firebrand?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/d/1/d1296316-7781-4e98-95e6-7020648be6a5.jpg?1783909067"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b432c2dfd6d922-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:44.124808+00:00",
+      "bytes": 5290,
+      "sha256": "185aaed09ba8e39d6efc55876460a3c6985588fbfe1f19b6cadc440a7ac19838",
+      "file": "fanatical-firebrand-scryfall-raw.json",
+      "scryfall_id": "d1296316-7781-4e98-95e6-7020648be6a5",
+      "oracle_id": "d36e11f1-6ab3-4273-8114-a8fbbe21c1c3",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Glistening Dawn",
+      "url": "https://api.scryfall.com/cards/named?exact=Glistening+Dawn",
+      "started_utc": "2026-10-16T04:07:44.126955+00:00",
+      "start_monotonic": 456379.784396106,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Glistening+Dawn",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:44 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"d14d4e61b259bdf75445edb7ad38a0c4\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=P369LxjdVldRoIb9F9%2BiaJOSUQuD6yZcY2SoTpO23IA%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792123664\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=P369LxjdVldRoIb9F9%2BiaJOSUQuD6yZcY2SoTpO23IA%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792123664\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/mom/187/glistening-dawn?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/5/4/5443f4f6-a549-4912-a919-69e3570a9933.jpg?1783916968"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b432c5095f8e49-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:44.519049+00:00",
+      "bytes": 5742,
+      "sha256": "d14d4e61b259bdf75445edb7ad38a0c4637c3db2a0dea487266d69dd75d4c1bf",
+      "file": "glistening-dawn-scryfall-raw.json",
+      "scryfall_id": "5443f4f6-a549-4912-a919-69e3570a9933",
+      "oracle_id": "13ee85c3-a16a-41ac-bbaa-c7549c700a03",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Lotus Cobra",
+      "url": "https://api.scryfall.com/cards/named?exact=Lotus+Cobra",
+      "started_utc": "2026-10-16T04:07:44.521330+00:00",
+      "start_monotonic": 456380.178771966,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Lotus+Cobra",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:44 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"360fffa2494468a57802b7f2cbc664a2\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=P369LxjdVldRoIb9F9%2BiaJOSUQuD6yZcY2SoTpO23IA%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792123664\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=P369LxjdVldRoIb9F9%2BiaJOSUQuD6yZcY2SoTpO23IA%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792123664\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/znr/193/lotus-cobra?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/a/4/a4b759f0-901f-4be3-93fa-224609b08d48.jpg?1783929336"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b432c789541520-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:44.911895+00:00",
+      "bytes": 5195,
+      "sha256": "360fffa2494468a57802b7f2cbc664a292f614db554126403c5869d5faa94838",
+      "file": "lotus-cobra-scryfall-raw.json",
+      "scryfall_id": "a4b759f0-901f-4be3-93fa-224609b08d48",
+      "oracle_id": "8ad91f64-ccab-4edc-bd54-b2ee9267d614",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Mayhem Devil",
+      "url": "https://api.scryfall.com/cards/named?exact=Mayhem+Devil",
+      "started_utc": "2026-10-16T04:07:44.914037+00:00",
+      "start_monotonic": 456380.571478344,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Mayhem+Devil",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:45 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"5cc3114eeae122c6d023d50dbcda5d5b\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=0g0MfvbSSApD9myD4kWc9NpmYsVqlvjJiiMneNEsJfQ%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792123665\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=0g0MfvbSSApD9myD4kWc9NpmYsVqlvjJiiMneNEsJfQ%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792123665\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/eoc/121/mayhem-devil?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/6/7/674f3a8a-4552-4289-b92a-06ce158f115c.jpg?1783906026"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b432c9f9b11b03-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:45.312629+00:00",
+      "bytes": 5166,
+      "sha256": "5cc3114eeae122c6d023d50dbcda5d5bb602c36b591f3ed86a4f7d12c273fc09",
+      "file": "mayhem-devil-scryfall-raw.json",
+      "scryfall_id": "674f3a8a-4552-4289-b92a-06ce158f115c",
+      "oracle_id": "4709f11c-aef8-45ac-b2bf-e640c568dfac",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Mulldrifter",
+      "url": "https://api.scryfall.com/cards/named?exact=Mulldrifter",
+      "started_utc": "2026-10-16T04:07:45.314899+00:00",
+      "start_monotonic": 456380.972340779,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Mulldrifter",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:45 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"a1afe0e26062bc9d906473e247c140f5\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=0g0MfvbSSApD9myD4kWc9NpmYsVqlvjJiiMneNEsJfQ%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792123665\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=0g0MfvbSSApD9myD4kWc9NpmYsVqlvjJiiMneNEsJfQ%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792123665\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/ecc/67/mulldrifter?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/3/d/3de308cc-14ac-407e-99e7-568572ecd0e7.jpg?1783904564"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b432cc7e266401-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:45.683302+00:00",
+      "bytes": 4969,
+      "sha256": "a1afe0e26062bc9d906473e247c140f53ac3cc0c37f2b97f42cdbeab32aa1ada",
+      "file": "mulldrifter-scryfall-raw.json",
+      "scryfall_id": "3de308cc-14ac-407e-99e7-568572ecd0e7",
+      "oracle_id": "24d0f5e7-0d9e-4b76-900e-a7274e80312d",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Mystic Forge",
+      "url": "https://api.scryfall.com/cards/named?exact=Mystic+Forge",
+      "started_utc": "2026-10-16T04:07:45.685598+00:00",
+      "start_monotonic": 456381.343039664,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Mystic+Forge",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:45 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"9e5e56ec1b2059e45bd1774b476bf8dd\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=QA4965Knp%2F1Gg6tnzauoo45%2FXVvvr73iu3UMV%2BWYb8s%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792009168\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=QA4965Knp%2F1Gg6tnzauoo45%2FXVvvr73iu3UMV%2BWYb8s%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792009168\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/cmm/964/mystic-forge?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/b/c/bc0de77a-c503-4000-9eb5-aa28a5e91082.jpg?1783915403"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "HIT"
+        ],
+        [
+          "Age",
+          "114497"
+        ],
+        [
+          "CF-RAY",
+          "a4b432cec804ef44-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:45.901958+00:00",
+      "bytes": 4994,
+      "sha256": "9e5e56ec1b2059e45bd1774b476bf8dd2847e01c67184483a9757cc98e96849d",
+      "file": "mystic-forge-scryfall-raw.json",
+      "scryfall_id": "bc0de77a-c503-4000-9eb5-aa28a5e91082",
+      "oracle_id": "994bc16d-fdc6-475c-96df-beeb4d5aa03e",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Oath of Nissa",
+      "url": "https://api.scryfall.com/cards/named?exact=Oath+of+Nissa",
+      "started_utc": "2026-10-16T04:07:45.995716+00:00",
+      "start_monotonic": 456381.653159932,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Oath+of+Nissa",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:46 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"d054e9b9ee6b1cc70b84c39b5d0e98e1\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=8cU9hz5HUXGBIw4LIqNT5Ezt2wT%2BIfC7%2BgcSDVVd%2Bos%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792123666\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=8cU9hz5HUXGBIw4LIqNT5Ezt2wT%2BIfC7%2BgcSDVVd%2Bos%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792123666\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/ogw/140/oath-of-nissa?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/6/1/613513ea-55dd-4ae8-93b2-247e468112a6.jpg?1783937900"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b432d0bfcdc4fe-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:46.419383+00:00",
+      "bytes": 5236,
+      "sha256": "d054e9b9ee6b1cc70b84c39b5d0e98e11c16f1f27b96ba5dcfcb6b4316392d05",
+      "file": "oath-of-nissa-scryfall-raw.json",
+      "scryfall_id": "613513ea-55dd-4ae8-93b2-247e468112a6",
+      "oracle_id": "c4efdbab-711d-4269-9b24-b05d36f7e5c7",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    },
+    {
+      "requested_name": "Pitiless Plunderer",
+      "url": "https://api.scryfall.com/cards/named?exact=Pitiless+Plunderer",
+      "started_utc": "2026-10-16T04:07:46.421601+00:00",
+      "start_monotonic": 456382.079042001,
+      "request_headers": {
+        "User-Agent": "MTGDeckTestingLab-CanonicalFixtureAudit/1.0 (offline regression fixture intake)",
+        "Accept": "application/json"
+      },
+      "status": 200,
+      "response_url": "https://api.scryfall.com/cards/named?exact=Pitiless+Plunderer",
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 04:07:46 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"176c638901769d555be5e619d46fe4a5\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=M8qzIReXgehbYVVbBmOrlz0L5b01LzpcfMor%2FiJXFy4%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1791982910\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=M8qzIReXgehbYVVbBmOrlz0L5b01LzpcfMor%2FiJXFy4%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1791982910\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/lcc/208/pitiless-plunderer?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/5/b/5b5cd187-857a-44dd-8595-a52857a0b753.jpg?1783913869"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "HIT"
+        ],
+        [
+          "CF-RAY",
+          "a4b432d35bd57e86-LHR"
+        ]
+      ],
+      "finished_utc": "2026-10-16T04:07:46.509781+00:00",
+      "bytes": 5628,
+      "sha256": "176c638901769d555be5e619d46fe4a547291c610caaedc2c3b9e68f88f3cf05",
+      "file": "pitiless-plunderer-scryfall-raw.json",
+      "scryfall_id": "5b5cd187-857a-44dd-8595-a52857a0b753",
+      "oracle_id": "a784481f-eccb-4112-bb38-04a659319660",
+      "full_raw_preserved": true,
+      "identity_verified": true
+    }
+  ],
+  "requested_names": [
+    "Arcane Signet",
+    "Bane of Progress",
+    "Call the Cavalry",
+    "Fabricate",
+    "Fanatical Firebrand",
+    "Glistening Dawn",
+    "Lotus Cobra",
+    "Mayhem Devil",
+    "Mulldrifter",
+    "Mystic Forge",
+    "Oath of Nissa",
+    "Pitiless Plunderer"
+  ],
+  "max_requests": 30,
+  "request_count": 12,
+  "spacing_minimum_seconds": 0.3,
+  "elapsed_seconds": 4.176843961991835,
+  "automatic_retry": false,
+  "complete": true
+}

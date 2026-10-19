@@ -2,7 +2,7 @@
 import pytest
 
 from ai.agent import AIAgent
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import Step, Zone
 from game_state.serializers import serialize_match_snapshot
 from tests.test_ai_opaque_selection_horizon import ROWS
@@ -17,7 +17,7 @@ def position(seat, name='Memory Deluge', lands=7, flashback=True):
     state.step = Step.UPKEEP
     cards = dict(ROWS)
     for key in ('Island', 'Counterspell'):
-        raw = fallback_card_payload(key)
+        raw = seed_card_payload(key)
         assert raw is not None
         cards[key] = {**raw, 'power': None, 'toughness': None,
                       'keywords': raw.get('keywords', []), 'colors': raw.get('colors', [])}

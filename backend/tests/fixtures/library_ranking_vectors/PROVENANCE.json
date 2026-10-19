@@ -1,0 +1,69 @@
+{
+  "Oracle_modified": false,
+  "complete_object_count": 7,
+  "network_requests": 0,
+  "objects": {
+    "Brindle Boar": {
+      "bulk_row": 4334,
+      "file": "brindle-boar-scryfall-raw.json",
+      "id": "a30b4a78-afdd-4067-810e-1fa0ddf8fb0e",
+      "oracle_id": "1c4f6893-4e83-4756-b324-1de0d06ea2c4",
+      "sha256": "197c42ea40df28dfc346797337886271cacd6594d451e4974ebf1427407e48ba",
+      "size": 4896
+    },
+    "Deathbloom Gardener": {
+      "bulk_row": 1903,
+      "file": "deathbloom-gardener-scryfall-raw.json",
+      "id": "88dee3d1-0496-40ea-b208-7362a932f531",
+      "oracle_id": "0c7f9701-c39e-4f14-844a-15f2e3c41ca9",
+      "sha256": "71542a84906ef3d3b88ccc96d6de559c2c75b3b5da7e64f1358a987cd9b68307",
+      "size": 4998
+    },
+    "Divination": {
+      "bulk_row": 5879,
+      "file": "divination-scryfall-raw.json",
+      "id": "cb3b35b8-f321-46d8-a441-6b9a6efa9021",
+      "oracle_id": "273b339c-964b-4a18-8eb5-ceb8abcdfd9e",
+      "sha256": "6b2e4f894aa39e9d498b8f4b57b8aae11d78093bd954e34357c9c52ed411a174",
+      "size": 4780
+    },
+    "Explore": {
+      "bulk_row": 27801,
+      "file": "explore-scryfall-raw.json",
+      "id": "ab9dbf0b-2c1d-463c-b675-ff711c282e56",
+      "oracle_id": "b8f566ea-8283-4afa-9ac8-737e26419283",
+      "sha256": "e4f7342225d2b644dc12b53e6ecf8e320c42b6f11f00c44d822defe6ec2ad669",
+      "size": 5035
+    },
+    "Preordain": {
+      "bulk_row": 25927,
+      "file": "preordain-scryfall-raw.json",
+      "id": "dd29a0e5-c1de-4e8a-8866-715e9f9cde1f",
+      "oracle_id": "ac641490-ca14-48d7-8cc4-b69ce984befa",
+      "sha256": "89ca20521f360903433cc3eaf7258e873ff8b94baf8085b0d394e339233db961",
+      "size": 4811
+    },
+    "Tidings": {
+      "bulk_row": 17239,
+      "file": "tidings-scryfall-raw.json",
+      "id": "6a123f44-0a72-46d0-a73d-b4ab01b6c2df",
+      "oracle_id": "72897780-094d-4a21-8b1c-419a9defd2fb",
+      "sha256": "1fc031ea28aa3628b734388b3b02bf47ba8b6a9413224e0313ba0f6688224fa3",
+      "size": 4849
+    },
+    "Wayward Swordtooth": {
+      "bulk_row": 8439,
+      "file": "wayward-swordtooth-scryfall-raw.json",
+      "id": "95a5d742-187a-4eba-82e4-7a4cc5c4e6f3",
+      "oracle_id": "3875aef0-3102-4fbf-be90-e4139f7a2348",
+      "sha256": "37595effdcf800101fb5f5f0a894085ca052e40d5030f84b6e7a65cb6383f7c8",
+      "size": 5497
+    }
+  },
+  "original_HTTP_wire_body_claim": false,
+  "schema_version": 1,
+  "serialization": "full raw object; sorted keys compact UTF8 no LF; exact normalized-object hash from verified primary bulk",
+  "source_bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "source_rows_scanned": 38690
+}

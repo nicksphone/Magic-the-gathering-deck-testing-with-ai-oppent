@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { openBrowser } from './browser-driver.mjs';
+import { openBrowser, waitForApiState } from './browser-driver.mjs';
 
 const backend = 'http://127.0.0.1:10199';
 for (const seat of [1, 2]) {
@@ -32,7 +32,8 @@ for (const seat of [1, 2]) {
     await choose('P');
     await click('Submit Attackers');
     await waitFor("!document.querySelector('[aria-label=\"Attack payment 1 for Gorm the Great\"]')");
-    const paid = await getState();
+    const paid = await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > before.revision);
+    await waitFor("!document.body.textContent.includes('Match operation pending')");
     assert.equal(paid.players[String(seat)].life, 18);
     assert.equal(paid.attackers.length, 1);
     for (let i = 0; i < 4 && (await getState()).step !== 'declare_blockers'; i++) {
@@ -60,6 +61,8 @@ for (const seat of [1, 2]) {
     await selectBlockers(2);
     await click('Submit Blocks');
     await waitFor("[...document.querySelectorAll('h3')].every(node => node.textContent !== 'Declare Blockers')");
+    await waitForApiState(`${backend}/matches/${fixture.id}`, state => state.revision > blocking.revision);
+    await waitFor("!document.body.textContent.includes('Match operation pending')");
     assert.equal((await getState()).blocks[paid.attackers[0]].length, 2);
     console.log(`PASS seat ${seat}: deliberate Phyrexian choice, atomic unaffordable retry and minimum blocker requirements via App/API`);
   } finally {

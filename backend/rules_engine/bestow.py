@@ -36,7 +36,9 @@ def end_bestow(card):
 
 
 def bestow_cast_view(card):
+    from copy import deepcopy
     view = copy(card)
+    view.characteristic_record = deepcopy(getattr(card, 'characteristic_record', {}))
     view.bestow_characteristics = dict(getattr(card, 'bestow_characteristics', {}))
     begin_bestow(view)
     return view

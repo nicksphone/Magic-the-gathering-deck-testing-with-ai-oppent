@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { openBrowser } from './browser-driver.mjs';
 import { reviewStart } from './review-start.mjs';
+import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
 
 const backend = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199';
 const decks = await (await fetch(`${backend}/fixture/start-decks`, { method: 'POST' })).json();
 const browser = await openBrowser('http://127.0.0.1:15173/');
 const { evaluate, waitFor, click, command, close, onIntercept } = browser;
-await command('Network.enable');
 
 async function selectDecks() {
   await evaluate("localStorage.removeItem('mtg.activeMatch')");
@@ -31,7 +31,8 @@ async function startWithDroppedResponses(dropCount) {
   await reviewStart(browser);
   let dropped = 0;
   const attempts = [];
-  onIntercept(async (event) => {
+  onIntercept(startWithDroppedResponses.trace = traceStartRecoveryResponses(command, async (event, command) => {
+    if (await continueRequestForPostResponse(command, event)) return;
     console.log('Start recovery response', JSON.stringify({ method: event.request.method,
       status: event.responseStatusCode, error: event.responseErrorReason, hasPostData: typeof event.request.postData === 'string', dropped }));
     if (event.request.method !== 'POST') {
@@ -53,8 +54,9 @@ async function startWithDroppedResponses(dropCount) {
       dropped += 1;
       await command('Fetch.failRequest', { requestId: event.requestId, errorReason: 'Failed' });
     } else await command('Fetch.continueResponse', { requestId: event.requestId });
-  });
-  await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Response' }] });
+  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', undefined,
+  { backend, requestSignals: startWithDroppedResponses.requestSignals, causal: true }));
+  await observeFetchControl('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Request' }] });
   await click('Start Best-of-3 Match');
   return Object.assign(() => dropped, { attempts });
 }
@@ -68,16 +70,29 @@ function sameIntent(attempts, pending) {
   }
 }
 
+async function observeFetchControl(method, params) {
+  const trace = startWithDroppedResponses.trace;
+  trace?.observeControl?.(method, 'sent');
+  const result = await command(method, params);
+  trace?.observeControl?.(method, 'accepted');
+  return result;
+}
+
 async function resumeRequestCapture() {
-  await command('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Response' }] });
+  await observeFetchControl('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Request' }] });
 }
 
 try {
+  startWithDroppedResponses.requestSignals = createRequestSignalObserver(process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', backend);
+  onIntercept(Object.assign(() => {}, { observeBrowserEvent: startWithDroppedResponses.requestSignals.observe }));
+  await command('Network.enable');
+  await command('Page.enable');
+  await command('Runtime.enable');
   await selectDecks();
   const before = await matchIds();
   const dropped = await startWithDroppedResponses(1);
   await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')", 75000);
-  await command('Fetch.disable');
+  await observeFetchControl('Fetch.disable');
   const after = await matchIds();
   assert.equal(dropped(), 1);
   sameIntent(dropped.attempts);
@@ -89,14 +104,14 @@ try {
   const beforeReload = await matchIds();
   const droppedTwice = await startWithDroppedResponses(2);
   await waitFor("document.querySelector('[role=alert]') && !document.body.innerText.includes('Match operation pending') && !!localStorage.getItem('mtg.pendingStart')");
-  await command('Fetch.disable');
+  await observeFetchControl('Fetch.disable');
   assert.equal(droppedTwice(), 2);
   const reloadIntent = await evaluate("JSON.parse(localStorage.getItem('mtg.pendingStart'))");
   assert.equal(reloadIntent.review.exploratoryAcknowledged, true);
   await resumeRequestCapture();
   await command('Page.reload');
   await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Restoring saved session') && !localStorage.getItem('mtg.pendingStart')");
-  await command('Fetch.disable');
+  await observeFetchControl('Fetch.disable');
   const afterReload = await matchIds();
   assert.equal(afterReload.size, beforeReload.size + 1);
   assert.equal(afterReload.has(await evaluate("localStorage.getItem('mtg.activeMatch')")), true);
@@ -108,14 +123,14 @@ try {
   const beforeClickRetry = await matchIds();
   const droppedForClick = await startWithDroppedResponses(2);
   await waitFor("document.querySelector('[role=alert]') && !document.body.innerText.includes('Match operation pending') && !!localStorage.getItem('mtg.pendingStart')");
-  await command('Fetch.disable');
+  await observeFetchControl('Fetch.disable');
   assert.equal(droppedForClick(), 2);
   const clickIntent = await evaluate("JSON.parse(localStorage.getItem('mtg.pendingStart'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Start Best-of-3 Match').disabled"), true);
   await resumeRequestCapture();
   await click('Recover pending match start');
   await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')");
-  await command('Fetch.disable');
+  await observeFetchControl('Fetch.disable');
   const afterClickRetry = await matchIds();
   assert.equal(afterClickRetry.size, beforeClickRetry.size + 1);
   assert.equal(afterClickRetry.has(await evaluate("localStorage.getItem('mtg.activeMatch')")), true);
@@ -127,7 +142,7 @@ try {
   const beforeLegacy = await matchIds();
   const droppedLegacy = await startWithDroppedResponses(2);
   await waitFor("document.querySelector('[role=alert]') && !document.body.innerText.includes('Match operation pending') && !!localStorage.getItem('mtg.pendingStart')");
-  await command('Fetch.disable');
+  await observeFetchControl('Fetch.disable');
   assert.equal(droppedLegacy(), 2);
   const legacy = await evaluate("(() => {const pending=JSON.parse(localStorage.getItem('mtg.pendingStart'));delete pending.review;localStorage.setItem('mtg.pendingStart',JSON.stringify(pending));return pending;})()");
   await resumeRequestCapture();
@@ -144,11 +159,14 @@ try {
   assert.equal(droppedLegacy.attempts.length, 2, 'Check and acknowledgement alone must not replay');
   await click(recoverLabel);
   await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')");
-  await command('Fetch.disable');
+  await observeFetchControl('Fetch.disable');
   const afterLegacy = await matchIds();
   assert.equal(afterLegacy.size, beforeLegacy.size + 1);
   assert.equal(afterLegacy.has(await evaluate("localStorage.getItem('mtg.activeMatch')")), true);
   sameIntent(droppedLegacy.attempts, legacy);
   assert.equal(droppedLegacy.attempts.length, 3, 'Reviewed legacy recovery replays the original intent once');
   console.log('PASS legacy unreviewed intent stays manual through reload/check/acknowledge, then recovers its same accepted match/key/payload');
+} catch (error) {
+  try { startWithDroppedResponses.trace?.reportFailure(); } catch { /* Preserve the original scenario result. */ }
+  throw error;
 } finally { await close(); }

@@ -59,7 +59,7 @@ def _matches(state, card, subject):
         return {'Artifact', 'Creature'} <= types
     if subject == 'snow lands':
         return 'Land' in types and 'Snow' in effective_type_line(state, card).split('—', 1)[0].split()
-    subtypes = creature_types(card)
+    subtypes = creature_types(card, state)
     if subject in SUBTYPES:
         kind, subtype = SUBTYPES[subject]
         return kind in types and subtype in subtypes

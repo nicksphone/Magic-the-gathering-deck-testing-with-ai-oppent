@@ -1,0 +1,122 @@
+{
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[distinct_object_limits-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[distinct_object_limits-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[enemy_target_atomic-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[enemy_target_atomic-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[first_land-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[first_land-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[first_nonland-1]": {
+    "effective_seed": 1163,
+    "fixture_input_override": false,
+    "original_seed": 1163
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[first_nonland-2]": {
+    "effective_seed": 507,
+    "fixture_input_override": false,
+    "original_seed": 507
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[new_incarnation-1]": {
+    "effective_seed": 20735,
+    "fixture_input_override": true,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[new_incarnation-2]": {
+    "effective_seed": 10551,
+    "fixture_input_override": true,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[non_sorcery_atomic-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[non_sorcery_atomic-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[one_object_limit-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[one_object_limit-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[paid_setup-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[paid_setup-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[real_shock_entry-1]": {
+    "effective_seed": 1968,
+    "fixture_input_override": false,
+    "original_seed": 1968
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[real_shock_entry-2]": {
+    "effective_seed": 567,
+    "fixture_input_override": false,
+    "original_seed": 567
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[standalone_zero_equip-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[standalone_zero_equip-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[trigger_replay-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[trigger_replay-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[turn_reset-1]": {
+    "effective_seed": 7,
+    "fixture_input_override": false,
+    "original_seed": 7
+  },
+  "tests/test_paid_nadu.py::test_actual_paid_canonical_nadu_shuko[turn_reset-2]": {
+    "effective_seed": 361,
+    "fixture_input_override": false,
+    "original_seed": 361
+  }
+}

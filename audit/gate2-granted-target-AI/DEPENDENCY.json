@@ -1,0 +1,10 @@
+{
+  "path": "audit/gate2-granted-target",
+  "upstream_archive_sha256": "35b209fbf3061360c2e9da84c7acb634e5b2a0fac2d5d8ee30f4c044b4f5146f",
+  "files": {
+    "nadu_support.py": "417e6a458ce4b4337eeac802b19d22cf53017f25747eae7898c6aad48ed0145c",
+    "nadu-facts.json": "0294012420cdfe63ebb65de78f6d8b783d6f160103af1c7360923776de4bd742",
+    "witnesses.json": "65b0bc6724dc9f9e5dea8429d6adab5cd0cfd852707f6b41fdcdeb4d28d2560f"
+  },
+  "shared_dependency_once_not_duplicate_inside_AI": true
+}

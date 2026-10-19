@@ -1,0 +1,11 @@
+{
+  "files": {
+    "boomerang.json": "ad2d4ad0136574d6c4d2d533b1ae4fa1cbc3ed097a6b4205fd3566898977537f",
+    "nadu-facts.json": "0294012420cdfe63ebb65de78f6d8b783d6f160103af1c7360923776de4bd742",
+    "payment-facts.json": "9363fcad6ae30163aec89d88a1f4b7f81995b9ab65fe2a13af0207022f84bab4"
+  },
+  "frozen_composition": "source-linked-ai-over-c7-qualified398-20261009",
+  "oracle_bulk": "oracle-cards-20260927090157.jsonl.gz",
+  "oracle_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "scope": "Byte-identical audited full canonical inputs; no Oracle rewrite or new intake."
+}

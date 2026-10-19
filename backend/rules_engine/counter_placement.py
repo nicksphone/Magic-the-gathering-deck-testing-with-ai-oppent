@@ -30,6 +30,10 @@ def parse_counter_prohibition(clause, name=''):
 
 
 def unsupported_counter_prohibitions(oracle_text):
+    # The existing full modal producer owns removal plus retained prohibition.
+    from rules_engine.modal_entry import compile_instruction
+    if compile_instruction((oracle_text or '').strip()) is not None:
+        return False
     static = {value.strip() for value in re.split(r'[.\n]', _static_text_from_oracle(oracle_text))}
     for clause in re.split(r'[.\n]', without_reminder_text(oracle_text).lower()):
         clause = clause.strip()
@@ -41,6 +45,9 @@ def unsupported_counter_prohibitions(oracle_text):
 
 
 def counter_placement_forbidden(state, kind, *, target_player=None, target_card_id=None):
+    from rules_engine.retained_counter_prohibition import forbidden
+    if forbidden(state, target_player=target_player, target_card_id=target_card_id):
+        return True
     from rules_engine.continuous import printed_abilities_suppressed
     target = state.cards.get(target_card_id)
     if target is not None and not any(target.id in player.battlefield for player in state.players.values()):
@@ -79,7 +86,7 @@ def counter_placement_forbidden(state, kind, *, target_player=None, target_card_
     return False
 
 
-def put_counters(state, kind, amount, *, target_player=None, target_card_id=None, placement_checked=False, emit_events=True):
+def put_counters(state, kind, amount, *, target_player=None, target_card_id=None, placement_checked=False, emit_events=True, _event_receipts=None):
     """Return actual counters placed; internal damage/buff markers are not counters.
 
     Scalar replacements and replacement ordering are supplied by callers.
@@ -115,8 +122,12 @@ def put_counters(state, kind, amount, *, target_player=None, target_card_id=None
         before = int(target.counters.get(key, 0))
         target.counters[key] = before + amount
         if key == '__lore' and emit_events:
-            from rules_engine.events import emit_event
-            emit_event(state, 'saga_lore_added', {
+            packet = {
                 'card_id': target.id, 'old_lore': before, 'new_lore': before + amount,
-            })
+            }
+            if _event_receipts is None:
+                from rules_engine.events import emit_event
+                emit_event(state, 'saga_lore_added', packet)
+            else:
+                _event_receipts.append(packet)
     return amount

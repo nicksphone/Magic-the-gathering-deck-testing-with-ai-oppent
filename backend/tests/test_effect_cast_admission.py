@@ -125,11 +125,11 @@ def test_zero_mana_spent_free_deluge_does_not_look_at_four_cards(seat):
 
 @pytest.mark.parametrize('seat', [1, 2])
 def test_api_cannot_forge_effect_permission(game, seat):
+    from tests.fixture_state_support import adopt_fixture_state
     client, controller = game
     state = board(seat)
-    state.id = controller.state.id
     spell = add(state, 'Lightning Bolt', seat, Zone.GRAVEYARD)
-    controller.state = state
+    adopt_fixture_state(controller, state)
     persist(controller)
     rejected(client, controller, {'type': 'cast_spell', 'card_id': spell.id,
         'from_graveyard': True, 'effect_cast': True}, seat)

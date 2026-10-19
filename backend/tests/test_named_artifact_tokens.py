@@ -1,6 +1,7 @@
+from tests.controlled_basic_game_support import controlled_basic_game
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
@@ -11,7 +12,7 @@ from rules_engine.state_based_actions import apply_state_based_actions
 
 def _state():
     deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest", "oracle_text": "{T}: Add {G}."}]
-    state = MatchFactory.from_decks(deck, deck, seed=37)
+    state = controlled_basic_game(deck, deck, seed=37)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN
@@ -25,7 +26,7 @@ def _put(state, name: str) -> str:
     card.name = name
     card.zone = Zone.BATTLEFIELD
     if name != "Forest":
-        data = fallback_card_payload(name)
+        data = seed_card_payload(name)
         card.oracle_text = data["oracle_text"]
         card.type_line = data["type_line"]
         card.types = [kind for kind in ("Artifact", "Creature") if kind in card.type_line]

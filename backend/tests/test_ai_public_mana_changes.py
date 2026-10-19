@@ -15,6 +15,7 @@ from rules_engine.mana import can_pay_with_pool_and_lands
 from tests.test_variable_mana import clean
 from tests.test_ai_recurring_engines import add as add_card, resolve
 from tests.test_api_input_contracts import game, persist
+from tests.fixture_state_support import adopt_fixture_state
 
 CARDS = {}
 for name in ('land_types', 'ward', 'attached_scaling', 'aura_costs', 'variable_mana', 'public_foretell', 'quoted_entry'):
@@ -238,13 +239,11 @@ def test_live_autoplay_decisions_and_sqlite_resume(game, case, seat):
     from persistence.repository import Repository
     from sqlmodel import Session
     client, controller = game
-    match_id = controller.state.id
     state, source, held = setup(case, seat)
-    state.id = match_id
-    controller.state = state
     controller.controllers = {seat: 'ai', 3-seat: 'human'}
     controller.ai[seat] = AIAgent(difficulty='master', archetype='Control')
-    persist(controller)
+    adopt_fixture_state(controller, state)
+    match_id = state.id
     url = f'/matches/{match_id}'
     response = client.post(url+'/autoplay', params={'ticks': 1})
     assert response.status_code == 200, response.text

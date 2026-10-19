@@ -1,0 +1,100 @@
+{
+  "decks": {
+    "Mono Red Aggro": [
+      {
+        "quantity": 4,
+        "card_name": "Monastery Swiftspear"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Soul-Scar Mage"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Kumano Faces Kakkazan"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Lightning Bolt"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Lava Spike"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Rift Bolt"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Skewer the Critics"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Shock"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Light Up the Stage"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Skullcrack"
+      },
+      {
+        "quantity": 20,
+        "card_name": "Mountain"
+      }
+    ],
+    "Burn": [
+      {
+        "quantity": 4,
+        "card_name": "Goblin Guide"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Eidolon of the Great Revel"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Monastery Swiftspear"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Lightning Bolt"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Lava Spike"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Rift Bolt"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Boros Charm"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Skullcrack"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Shock"
+      },
+      {
+        "quantity": 16,
+        "card_name": "Mountain"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Plains"
+      },
+      {
+        "quantity": 4,
+        "card_name": "Plateau"
+      }
+    ]
+  }
+}

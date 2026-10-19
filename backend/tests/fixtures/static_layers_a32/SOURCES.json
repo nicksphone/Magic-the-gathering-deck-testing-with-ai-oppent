@@ -1,0 +1,50 @@
+{
+  "Elvish Clancaller": {
+    "file": "static_layers_a32/elvish-clancaller.raw.json",
+    "file_sha256": "75a4f4ffd27fef197a9e87e610bf68d0f7e3c13471f3de74c1edd0b1b2a5e41a",
+    "id": "4da3b0bc-84da-4b85-992b-d0700c97157c",
+    "line": null,
+    "oracle_id": "a8f5440e-5d4b-420a-8cfd-27a3c72be0d2",
+    "raw_sha256": "75a4f4ffd27fef197a9e87e610bf68d0f7e3c13471f3de74c1edd0b1b2a5e41a"
+  },
+  "Forest": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+    "line": 39,
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "raw_sha256": "d522e1272ee59bd6e931587330fddb769f83136a8532561129a69bdeff4129ce"
+  },
+  "Grim Haruspex": {
+    "file": "static_layers_a32/grim-haruspex.raw.json",
+    "file_sha256": "5efbfd06276f3bdc9f81f43e58342604f4573cf024852b0e872d96854277d47e",
+    "id": "f5c19b87-e114-46d4-9f6c-c02e838a08dd",
+    "line": null,
+    "oracle_id": "72aef1d8-11df-4bc2-af83-907b05df73a8",
+    "raw_sha256": "5efbfd06276f3bdc9f81f43e58342604f4573cf024852b0e872d96854277d47e"
+  },
+  "Hill Giant": {
+    "file": "static_layers_a32/hill-giant.raw.json",
+    "file_sha256": "869aef4e953041c120e763204e507901780fa2f5f30ac6560dd1f74351788861",
+    "id": "14c2be6a-9ca6-4d3a-8dd0-db4ea40799f8",
+    "line": null,
+    "oracle_id": "342199e0-15b6-4824-83da-25caef2592b3",
+    "raw_sha256": "869aef4e953041c120e763204e507901780fa2f5f30ac6560dd1f74351788861"
+  },
+  "Llanowar Elves": {
+    "file": "static_layers_a32/llanowar-elves.raw.json",
+    "file_sha256": "1333c60e71d06955083e05567066319c7883f19bb7bc42f9ea3bb920270a3d83",
+    "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "line": null,
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "raw_sha256": "1333c60e71d06955083e05567066319c7883f19bb7bc42f9ea3bb920270a3d83"
+  },
+  "Tarmogoyf": {
+    "file": "static_layers_a32/tarmogoyf.raw.json",
+    "file_sha256": "e60a747f71098f55a4690c20c6558219f209b54760c137a4afbe8af1da9d87d9",
+    "id": "8be5ee47-8f8a-4e3c-b1a1-9ca0e1fdec7f",
+    "line": null,
+    "oracle_id": "45900b2f-f6a9-4c42-9642-008f3c1cf6dd",
+    "raw_sha256": "e60a747f71098f55a4690c20c6558219f209b54760c137a4afbe8af1da9d87d9"
+  }
+}

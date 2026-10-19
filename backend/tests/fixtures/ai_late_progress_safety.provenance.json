@@ -1,0 +1,28 @@
+{
+  "cards": {
+    "Forest": {
+      "canonical_fullrowSHA": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0",
+      "canonical_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "exact_printing": false,
+      "join_scope": "seed",
+      "runtime_id": "f169dfb2-e4c8-46e9-8591-e51bb82da082",
+      "seed_membership": true
+    },
+    "Archangel of Wrath": {
+      "canonical_fullrowSHA": "8a9f1d3250031ffcc273e64300e874e6da4dafcbba04bf96f15ac13f2e11baf6",
+      "canonical_id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+      "exact_printing": true,
+      "join_scope": "seed",
+      "runtime_id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+      "seed_membership": true
+    },
+    "Atraxa, Grand Unifier": {
+      "canonical_fullrowSHA": "68faa7b11dbf8c3fbf34fbea36387dd6b29973fcdf6e1e9f5af29c0961908401",
+      "canonical_id": "4a1f905f-1d55-4d02-9d24-e58070793d3f",
+      "exact_printing": true,
+      "join_scope": "seed",
+      "runtime_id": "4a1f905f-1d55-4d02-9d24-e58070793d3f",
+      "seed_membership": true
+    }
+  }
+}

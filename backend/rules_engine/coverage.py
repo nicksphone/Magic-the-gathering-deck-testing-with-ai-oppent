@@ -3,6 +3,42 @@ from __future__ import annotations
 import re
 
 
+_UNSUPPORTED_RESOLUTION_PATTERNS = (
+    ('extra-turn scheduling', re.compile(r'\b(?:take|takes) (?:an?|one|two|three|\d+) extra turns?\b', re.I)),
+    ('extra-phase scheduling', re.compile(r'\badditional (?:combat|main) phase\b', re.I)),
+    ('turn-ending procedure', re.compile(r'\bend the turn\b', re.I)),
+    ('player-turn control', re.compile(r'\byou control target player during\b', re.I)),
+    ('top-library reorder and optional shuffle', re.compile(
+        r'\bput them back in any order\.\s*you may shuffle\b', re.I)),
+    ('top-library reorder procedure', re.compile(
+        r'\blook at the top\b.+?\bput them back in any order\b', re.I | re.S)),
+)
+
+
+def unsupported_resolution_clauses(text: str, *, card_name: str = '') -> list[str]:
+    """Bounded observed gaps, not proof that other clauses are executable."""
+    from rules_engine.oracle_effects import _extract_modes, _infer_closed_damage_instruction
+    body = text or ''
+    previews = [{'mode_text': mode} for mode in _extract_modes(body)] or [{}]
+    out = []
+    for preview in previews:
+        compiled = _infer_closed_damage_instruction(body, card_name, preview)
+        if compiled is not None and '__unsupported_instruction' in compiled[1]:
+            out.append('unsupported closed damage instruction')
+            break
+    from rules_engine.oracle_text import without_reminder_text
+    text = without_reminder_text(body)
+    from rules_engine.turn_scheduler import instruction
+    if instruction(text):
+        return out
+    # A whole activated schema may follow its printed cost on a permanent.
+    text = '\n'.join(line for line in text.splitlines()
+                     if not (':' in line and instruction(line.split(':', 1)[1])))
+    from rules_engine.library_reorder import reorder_clause
+    return out + [name for name, pattern in _UNSUPPORTED_RESOLUTION_PATTERNS if pattern.search(text)
+                  and not (name.startswith('top-library reorder') and reorder_clause(text))]
+
+
 _UNSUPPORTED_PATTERNS = (
     ('controller-linked damage targets', re.compile(
         r'damage to target (?:player(?: or planeswalker)?|planeswalker)[^.]*'
@@ -55,19 +91,127 @@ def combat_coverage_details(oracle_text: str, card_faces: list[dict] | None = No
             for index, name, text in variants for row in combat_clause_coverage(text, name)]
 
 
-def static_coverage_details(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '') -> list[dict]:
+def static_coverage_details(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = "") -> list[dict]:
     from rules_engine.continuous import conditional_static_clause_coverage
-    variants = [(None, card_name, oracle_text or ''),
-                *((index, str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
+    from rules_engine.closed_loyalty import ABILITY, compile_body
+    variants = [(None, card_name, oracle_text or ""),
+                *((index, str(face.get("name") or card_name), str(face.get("oracle_text") or ""))
                   for index, face in enumerate(card_faces or []) if isinstance(face, dict))]
-    return [{**row, 'face_index': index, 'face_name': name}
-            for index, name, text in variants for row in conditional_static_clause_coverage(text, name)]
+    result = []
+    for index, name, text in variants:
+        compiled = compile_body(text, name)
+        companions = {line.lower().rstrip(".") for line in compiled["companions"]} if compiled else set()
+        rows = conditional_static_clause_coverage(text, name)
+        rows = [row for row in rows if row["clause"].lower().rstrip(".") not in companions]
+        if compiled is None and any(ABILITY.fullmatch(line.strip().replace("\u2212", "-"))
+                                    for line in text.splitlines()):
+            rows.append({"clause": text, "reasons": ["unsupported complete loyalty body"]})
+        result.extend({**row, "face_index": index, "face_name": name} for row in rows)
+    return result
 
 
-def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '') -> list[str]:
+def _paid_body_admission(oracle_text, metadata, card_name, card_faces):
+    """Sourced complete bodies with paid goldens, not keyword-wide support."""
+    if not isinstance(metadata, dict):
+        return set()
+    sources = metadata.get('card_data_sources')
+    name = metadata.get('card_name') or metadata.get('name')
+    if (not isinstance(sources, list) or not sources
+            or any(source not in ('offline_seed', 'cache', 'local_knowledge') for source in sources)
+            or not isinstance(name, str) or not name or name != card_name
+            or metadata.get('oracle_text') != oracle_text
+            or metadata.get('layout') not in ('', 'normal')
+            or card_faces or metadata.get('card_faces')):
+        return set()
+    from card_data.hydration import ready_for_match
+    if not ready_for_match(metadata):
+        return set()
+    # Raw text is closed: an unknown parenthetical suffix is not reminder text.
+    body = re.sub(r'\s+', ' ', oracle_text).strip()
+    search = re.fullmatch(
+        r'Domain\s*[\u2014-]\s*Create a 3/3 green Beast creature token '
+        r'for each basic land type among lands you control\. '
+        r'\{1\}\{G\}, Discard this card: (Search your library for a basic land card, '
+        r'reveal it, put it into your hand, then shuffle\. You gain 3 life\.)', body, re.I)
+    if (search and metadata.get('type_line') == 'Sorcery'
+            and metadata.get('mana_cost') == '{6}{G}'):
+        from rules_engine.oracle_effects import compile_search_life_instruction
+        compiled = compile_search_life_instruction(search[1])
+        if (compiled is not None and compiled[0] == 'effect_sequence'
+                and [part['effect_key'] for part in compiled[1]['effects']] == ['search_library', 'gain_life']
+                and compiled[1]['effects'][1]['payload'] == {'amount': 3}):
+            return {'domain'}
+    if (metadata.get('type_line') == 'Enchantment'
+            and metadata.get('mana_cost') == '{5}{W}' and re.fullmatch(
+                r'Flash Domain\s*[\u2014-]\s*This spell costs \{1\} less to cast '
+                r'for each basic land type among lands you control\. '
+                r'When this enchantment enters, exile target nonland permanent an opponent controls '
+                r'until this enchantment leaves the battlefield\.', body, re.I)):
+        return {'domain'}
+    if (metadata.get('type_line') == 'Instant'
+            and metadata.get('mana_cost') == '{R}{R}'):
+        from rules_engine.linked_targets import linked_damage_instruction
+        if linked_damage_instruction(body, name) == {'ordinary_amount': 1, 'landfall_amount': 3}:
+            return {'controller-linked damage targets', 'conditional land-entry damage'}
+    reminder = (
+        r' \(Create an Incubator token with X \+1/\+1 counters on it and '
+        r'"\{2\}: Transform this token\." It transforms into a 0/0 Phyrexian artifact creature\.\)')
+    if (metadata.get('type_line') == 'Sorcery'
+            and metadata.get('mana_cost') == '{3}{W}{W}' and re.fullmatch(
+                r'Exile all creatures\. Incubate X, where X is the number of creatures '
+                r'exiled this way\.' + reminder, body, re.I)):
+        return {'incubate'}
+    if (re.fullmatch(r'Creature [\u2014-] Phyrexian Shark', str(metadata.get('type_line') or ''))
+            and metadata.get('mana_cost') == '{2}{U}' and re.fullmatch(
+                r'Flying Whenever you cast a noncreature spell, incubate X, '
+                r"where X is that spell's mana value\." + reminder, body, re.I)):
+        return {'incubate'}
+    return set()
+
+
+def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None = None, *, card_name: str = '', canonical_context: dict | None = None) -> list[str]:
     """Known gaps only; an empty result is not rules certification."""
+    # Close the full typed printed surface before delegating a known-gap label.
+    # This binding supplies compiler identity fields, not an executable game object.
+    from types import SimpleNamespace
+    from rules_engine.card_types import printed_card_types
+    from card_data.hydration import ready_for_match
+    from rules_engine.oracle_text import without_reminder_text
+    from rules_engine.printed_body import normalized_body
+    from rules_engine.printed_body import complete_bestow_surface as bestow_surface
+    from rules_engine.printed_body import complete_keyword_surface as keyword_surface
+
+    def typed_surface(name, text, family):
+        context = canonical_context
+        if (not isinstance(context, dict) or card_faces or context.get('card_faces')
+                or context.get('layout') not in ('', 'normal')
+                or (context.get('card_name') or context.get('name')) != name
+                or context.get('oracle_text') != text or not ready_for_match(context)):
+            return None
+        types = printed_card_types(str(context.get('type_line') or ''))
+        normalized = normalized_body(text, family)
+        if normalized is None:
+            return None
+        return SimpleNamespace(name=name, oracle_text=normalized, types=types,
+                               id='coverage-binding', incarnation=0, zone_change_sequence=0)
+
+    def complete_bestow_surface(name, text):
+        return bestow_surface(typed_surface(name, text, 'bestow'))
+
+    def complete_keyword_surface(name, text):
+        return any(keyword_surface(typed_surface(name, text, family), family)
+                   for family in ('turn_protection', 'exchange'))
+
     texts = [oracle_text or "", *(str(face.get("oracle_text") or "") for face in card_faces or [] if isinstance(face, dict))]
     out = [name for name, pattern in _UNSUPPORTED_PATTERNS if any(pattern.search(value) for value in texts)]
+    if 'suspend' in out:
+        from rules_engine.suspend import diagnostic_surface_admitted
+        if diagnostic_surface_admitted(oracle_text, canonical_context, card_name=card_name, card_faces=card_faces):
+            out.remove('suspend')
+    out.extend(gap for name, value in [(card_name, oracle_text or ''),
+               *((str(face.get('name') or card_name), str(face.get('oracle_text') or ''))
+                 for face in card_faces or [] if isinstance(face, dict))]
+               for gap in unsupported_resolution_clauses(value, card_name=name))
     from rules_engine.affinity import affinity_clauses
     if any(affinity_clauses(text)[2] for text in texts):
         out.append('unsupported affinity clause')
@@ -108,10 +252,22 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
             out.append('kicked-cast trigger fidelity')
             break
     if 'kicker' in out:
-        from rules_engine.kicker import kicker_surfaces, permanent_kicker
-        kicker_texts = [text for text in texts if re.search(r'\bkicker\b', text, re.I)]
-        if all(kicker_surfaces(text) is not None or permanent_kicker(text) is not None for text in kicker_texts):
+        from rules_engine.kicker import kicker_surfaces, permanent_kicker, paired_permanent_kicker
+        kicker_variants = [(name, text) for name, text in variants if re.search(r'\bkicker\b', text, re.I)]
+        if all(kicker_surfaces(text) is not None or permanent_kicker(text) is not None
+               or ((card := typed_surface(name, text, 'kicker')) is not None
+                   and paired_permanent_kicker(card) is not None)
+               for name, text in kicker_variants):
             out.remove('kicker')
+    if 'bestow' in out:
+        bestow_variants = [(name, text) for name, text in variants if re.search(r'\bbestow\b', text, re.I)]
+        if bestow_variants and all(complete_bestow_surface(name, text) for name, text in bestow_variants):
+            out.remove('bestow')
+    if 'keyword counter variant fidelity' in out:
+        keyword_variants = [(name, text) for name, text in variants
+                            if re.search(r'\bhexproof from\b|\btrample over planeswalkers\b', text, re.I)]
+        if keyword_variants and all(complete_keyword_surface(name, text) for name, text in keyword_variants):
+            out.remove('keyword counter variant fidelity')
     from rules_engine.activation_modifiers import activation_modifier_gaps
     from rules_engine.combat_constraints import static_clauses
     from rules_engine.hooks import spell_cost_modifier
@@ -185,8 +341,10 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     if any(re.search(r'\bif .+counters?.+(?:player|yourself|you (?:would )?get)\b', text, re.I) for text in texts):
         out.append('player-counter replacement fidelity')
     from rules_engine.counter_replacements import counter_modifier
+    from rules_engine.replacement import noncombat_damage_counter_clause
     replacement_lines = [line for text in texts for line in without_reminder_text(text).splitlines()
-                         if re.match(r'if\b', line, re.I) and re.search(r'\bcounters?\b.*instead', line, re.I)]
+                         if re.match(r'if\b', line, re.I) and re.search(r'\bcounters?\b.*instead', line, re.I)
+                         and noncombat_damage_counter_clause(line) is None]
     if replacement_lines:
         out.append('counter replacement route fidelity')
         if any(counter_modifier(line) is None for line in replacement_lines):
@@ -214,7 +372,8 @@ def known_unsupported_mechanics(oracle_text: str, card_faces: list[dict] | None 
     from rules_engine.graveyard_permissions import permission_gaps
     for name, text in variants:
         out.extend(permission_gaps(text, name))
-    return list(dict.fromkeys(out))
+    admitted = _paid_body_admission(oracle_text, canonical_context, card_name, card_faces)
+    return list(dict.fromkeys(reason for reason in out if reason not in admitted))
 
 
 def deck_pair_coverage(deck_a: list[dict], deck_b: list[dict]) -> dict:
@@ -229,6 +388,6 @@ def deck_pair_coverage(deck_a: list[dict], deck_b: list[dict]) -> dict:
                  str(item.get('oracle_text') or ''), item.get('card_faces'), card_name=str(item.get('card_name') or ''))) else {})}
             for label, deck in (("A", deck_a), ("B", deck_b))
             for item in deck
-            if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or ""), item.get("card_faces"), card_name=str(item.get('card_name') or '')))
+            if (mechanics := known_unsupported_mechanics(str(item.get("oracle_text") or ""), item.get("card_faces"), card_name=str(item.get('card_name') or ''), canonical_context=item))
         ],
     }

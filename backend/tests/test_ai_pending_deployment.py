@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.ai_information76_canonical import canonical_card, deck_entry
+
 from ai.agent import AIAgent
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, Zone
@@ -40,8 +42,7 @@ def test_horizon_keeps_actual_counter_response_value_and_original_stack(seat):
     state.players[seat].hand.append(card.id)
     state.players[seat].mana_pool.update({'B': 2})
     opponent = 3-seat
-    counter = CardInstance('counter', 'Counterspell', opponent, opponent, Zone.HAND, ['Instant'],
-                           mana_cost='{U}{U}', oracle_text='Counter target spell.')
+    counter = canonical_card('Counterspell', id='counter', owner=opponent, controller=opponent, zone=Zone.HAND)
     state.cards[counter.id] = counter
     state.players[opponent].hand.append(counter.id)
     state.players[opponent].mana_pool.update({'U': 2})
@@ -61,8 +62,7 @@ def test_horizon_keeps_actual_counter_response_value_and_original_stack(seat):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_pending_hidden_library_change_is_not_a_known_forecast(seat):
     state = bare_state(seat)
-    draw = CardInstance('draw', 'Divination', seat, seat, Zone.HAND, ['Sorcery'],
-                        mana_cost='{2}{U}', oracle_text='Draw two cards.')
+    draw = canonical_card('Divination', id='draw', owner=seat, controller=seat, zone=Zone.HAND)
     state.cards[draw.id] = draw
     state.players[seat].hand.append(draw.id)
     state.players[seat].mana_pool.update({'U': 3})

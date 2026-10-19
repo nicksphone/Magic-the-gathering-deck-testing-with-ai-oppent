@@ -1,0 +1,16 @@
+{
+  "bytes": 5749,
+  "canonical_name": "Norn's Inquisitor",
+  "file": "norns-inquisitor-scryfall-raw.json",
+  "http_status": 200,
+  "oracle_id": "89a59a6d-e9d4-405c-8518-4da86dae30d1",
+  "oracle_modified": false,
+  "response_content_type": "application/json; charset=utf-8",
+  "response_headers_sha256": "3eed459208307362a40780bbca28b5b519eb3c7e487dac377cd3b9c928ee956a",
+  "scryfall_id": "d387b608-ba4e-49c8-bd81-37594290a352",
+  "sha256": "3532ccffbb2549addfef0dcaf88f16925ae7c76d895ae822ef0c6bd44f506de0",
+  "source": "Scryfall public exact-name API",
+  "url": "https://api.scryfall.com/cards/named?exact=Norn%27s+Inquisitor",
+  "utc_completed": "2026-10-15T23:44:03.190033+00:00",
+  "utc_started": "2026-10-15T23:44:01.963579+00:00"
+}

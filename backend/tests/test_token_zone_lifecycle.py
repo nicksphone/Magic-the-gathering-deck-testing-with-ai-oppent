@@ -14,6 +14,7 @@ from rules_engine.card_types import is_token_card
 from rules_engine.costs import activated_cost_available, apply_activated_costs
 from rules_engine.move_generator import legal_moves
 from tests.test_death_replacement_canonical import REST_IN_PEACE_ORACLE
+from tests.death_artifact_canonical4f86 import canonical_card
 
 
 def _state(with_replacement: bool):
@@ -22,10 +23,8 @@ def _state(with_replacement: bool):
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     if with_replacement:
-        state.cards["rip"] = CardInstance(
-            id="rip", name="Rest in Peace", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
-            oracle_text=REST_IN_PEACE_ORACLE,
+        state.cards["rip"] = canonical_card(
+            "Rest in Peace", id="rip", owner=1, controller=1, zone=Zone.BATTLEFIELD,
         )
         state.players[1].battlefield.append("rip")
     create_token(state, 2, {"name": "Soldier", "power": 1, "toughness": 1})
@@ -35,13 +34,9 @@ def _state(with_replacement: bool):
 
 def test_token_in_graveyard_ceases_to_exist_at_next_state_based_check():
     state, token_id = _state(False)
-    state.cards["bastion"] = CardInstance(
-        id="bastion", name="Bastion of Remembrance", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Enchantment"], type_line="Enchantment",
-        oracle_text=(
-            "When this enchantment enters, create a 1/1 white Human Soldier creature token.\n"
-            "Whenever a creature you control dies, each opponent loses 1 life and you gain 1 life."
-        ),
+    state.cards["bastion"] = canonical_card(
+        "Bastion of Remembrance", id="bastion", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD,
     )
     state.players[2].battlefield.append("bastion")
     destroy_permanent(state, 1, {"target_card_id": token_id})
@@ -114,10 +109,9 @@ def test_token_identity_survives_type_changes_and_legacy_snapshots():
     restored = deserialize_match_snapshot(serialize_match_snapshot(state))
     assert is_token_card(restored.cards[token_id])
     assert serialize_card_view(restored, token_id)["is_token"] is True
-    restored.cards["haruspex"] = CardInstance(
-        id="haruspex", name="Grim Haruspex", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=3, toughness=2,
-        oracle_text="Morph {B}\nWhenever another nontoken creature you control dies, draw a card.",
+    restored.cards["haruspex"] = canonical_card(
+        "Grim Haruspex", id="haruspex", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD,
     )
     restored.players[2].battlefield.append("haruspex")
     destroy_permanent(restored, 1, {"target_card_id": token_id})
@@ -136,10 +130,8 @@ def test_bounced_token_cannot_pay_discard_cost_or_be_put_into_play():
     return_permanent_to_hand(state, 1, {"target_card_id": token_id})
     assert state.players[2].hand == [token_id]
 
-    state.cards["imp"] = CardInstance(
-        id="imp", name="Putrid Imp", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1,
-        oracle_text="Discard a card: This creature gains flying until end of turn.",
+    state.cards["imp"] = canonical_card(
+        "Putrid Imp", id="imp", owner=2, controller=2, zone=Zone.BATTLEFIELD,
     )
     state.players[2].battlefield.append("imp")
     assert not activated_cost_available(state, 2, "imp", "Discard a card")

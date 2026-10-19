@@ -18,6 +18,7 @@ from tests.test_ai_recurring_engines import add as raw_add
 from tests.test_declaration_limits import add as limit_card
 from tests.test_conditional_combat import lose
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 CARDS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/combat_minimums.json').read_text())}
 
@@ -238,12 +239,10 @@ def test_http_rejection_and_sqlite_resume_of_both_families(game, seat):
     from persistence.repository import Repository
     client, match = game
     state, attacker, guards = board(seat)
-    state.id = match.state.id
     zero_mana(state)
     add(state, "Norn's Annex", 3-seat)
     attack_step(state, seat)
-    match.state = state
-    persist(match)
+    adopt_fixture_state(match, state)
     action = {'type': 'attack', 'attackers': [attacker.id]}
     rejected(client, match, action, seat)
     response = client.post(f'/matches/{state.id}/action', json={'player_id': seat, 'action': {**action, 'hybrid_choices': ['P']}})

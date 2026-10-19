@@ -1,0 +1,17 @@
+{
+  "intake": "Exact previously qualified official RAW dependency; no network or new facts.",
+  "objects": {
+    "Ox of Agonas": {
+      "file": "fixtures/expanded_keyword_canonical/ox-of-agonas.json",
+      "file_sha256": "51783c3a2788b954d6a8fde8b82b7b7933f163db4af759460c18672e212b40ec",
+      "id": "00c46d18-064e-403a-bf39-ec655d78390a",
+      "object_sha256": "c18dbac80f9650a1d747a0a14b036907e912cf358f241dda6ba9673c8cd7ea0d",
+      "oracle_id": "22113051-c971-4108-953b-95356d21323a",
+      "provenance": "official9_intake_NFS_verified",
+      "selector": null
+    }
+  },
+  "source_archive": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/diagnostics/ci/ox-entry-ENTRY-P2-pure230-STRICT3-20261016-HcvevrAW/closed-source-all-stages.tar.gz",
+  "source_archive_sha256": "bf3e2168d8ed63d4b8c0b097efd0b6a2945a1f0b6317ad9fea41ace6b98705ac",
+  "source_member": "owned/source/backend/tests/fixtures/expanded_keyword_canonical/ox-of-agonas.json"
+}

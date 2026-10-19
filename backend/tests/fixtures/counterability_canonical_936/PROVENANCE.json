@@ -1,0 +1,30 @@
+{
+  "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "committed_parent_provenance": "backend/tests/fixtures/counter_native_frames/provenance.json",
+  "committed_parent_provenance_sha256": "2a3c89004304943067edd433281b4671172ce1fcc96eee5ce25bf69d12cf188d",
+  "extraction_utc": "2026-10-16T15:02:19.872227+00:00",
+  "kind": "complete existing archived Scryfall Oracle bulk rows; no new HTTP",
+  "no_rules_or_data_inference": true,
+  "objects": {
+    "Allosaurus Shepherd": {
+      "bytes": 5159,
+      "canonical_object_sha256": "62e6ccf460acb95220127a31cf87f6b8606a5450ddbffe03f6766e8cafaa0aef",
+      "file": "allosaurus-shepherd.json",
+      "id": "7afa0ee5-a0b8-472e-9991-09402ddb5de3",
+      "oracle_id": "98295bdc-db58-4e1f-ad4c-63092aea207e",
+      "raw_line_sha256": "bcc9bb1a0fd6c79941ec37c6674faaeecc7be35582fa08e930a4ccc8f260cbc8",
+      "source_line": 22911
+    },
+    "Destiny Spinner": {
+      "bytes": 5025,
+      "canonical_object_sha256": "d6ef0c7d186645c6d1157038715a94d93e71cf890765f5e2939c238c7b6abbbc",
+      "file": "destiny-spinner.json",
+      "id": "2cc3804b-3304-4add-81b4-0482bfed8074",
+      "oracle_id": "7dd189f8-a23f-4b43-b0ef-fb174a9664ba",
+      "raw_line_sha256": "680f5524499a25d8a827f8b39f98bbbfa897f280f7d931433b079cc8dea8a152",
+      "source_line": 18947
+    }
+  },
+  "unmodified_raw_line_bytes": true
+}

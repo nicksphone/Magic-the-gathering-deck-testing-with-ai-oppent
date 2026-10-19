@@ -1,0 +1,41 @@
+{
+  "canonical_sha256": "ac6e12073bcad5da4dc8893ecdc03c5e583166c65fc4dfe27470ea9631f62201",
+  "engine_execution_certified": false,
+  "facts_modified": false,
+  "intake_before_tests": true,
+  "official_card_sources": {
+    "Aggravated Assault": "https://media.wizards.com/2023/downloads/WOE_Release_Notes_9S5bvPQTjRwh/EN_MTGWOE_ReleaseNotes_20230518.pdf",
+    "Time Warp": "https://media.wizards.com/2021/downloads/STX_Release_Notes/EN_MTGSTX_FAQ_04122021.pdf"
+  },
+  "official_release_wording_may_differ_from_current_oracle": true,
+  "official_rules_url": "https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt",
+  "raw_provider": "Scryfall archived bulk; official release notes corroborate mechanics, not identical serialization",
+  "rows": {
+    "Aggravated Assault": {
+      "id": "c99c5707-d5f2-4675-bfca-e801e6b0f627",
+      "oracle_id": "20129459-a386-41eb-899d-1aede3427300",
+      "raw_sha256": "46e6dc140d82b810687d7f724f5457eb2a81f45f8a614fafc63b208a36c57b10",
+      "source_line": 4851
+    },
+    "Grizzly Bears": {
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "raw_sha256": "b18887a25ea64587ccdc5382aeedcf356c8a81aec76282c7652d4e704cdca6d2",
+      "source_line": 3179
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "raw_sha256": "d748be7ca3497689c356bd7d41fea708f6883aa88affe8985813540337135769",
+      "source_line": 26902
+    },
+    "Time Warp": {
+      "id": "7c46dd99-8af8-4cf2-9f98-734f73d9c456",
+      "oracle_id": "dbd6a94b-62ff-4a10-9d52-bdd90b26e425",
+      "raw_sha256": "2363c6cca27dcd734aed36deaed331ed9b7f186fcc5de2f86216d26d5e15224f",
+      "source_line": 33165
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

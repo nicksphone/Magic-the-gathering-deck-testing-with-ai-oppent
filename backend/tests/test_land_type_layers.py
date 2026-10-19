@@ -212,13 +212,12 @@ def test_http_land_entry_removed_abilities_and_sqlite_restore(game, seat, name):
     from persistence.repository import Repository
     from sqlmodel import Session
     client, controller = game
-    match_id = controller.state.id
-    controller.state = state = clean()
-    state.id = match_id
+    state = clean()
     state.active_player = state.priority_player = seat
     add(state, 'Blood Moon', seat)
     land = add_card(state, name, seat, Zone.HAND, cards=CARDS)
-    persist(controller)
+    from tests.fixture_state_support import adopt_fixture_state
+    adopt_fixture_state(controller, state)
     url = f'/matches/{state.id}'
     response = client.post(url+'/action', json={'player_id': seat, 'action': {
         'type': 'play_land', 'card_id': land.id}})

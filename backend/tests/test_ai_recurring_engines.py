@@ -1,4 +1,5 @@
 """Canonical public-board payoffs; fixture states are not competitive decks."""
+from copy import deepcopy
 import json
 from pathlib import Path
 from unittest.mock import patch
@@ -13,6 +14,7 @@ from game_state.serializers import serialize_match_snapshot, deserialize_match_s
 from rules_engine.card_types import printed_card_types
 from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import checked_action
+from tests.browser_positive83_canonical import entry
 
 
 CARDS = {card["name"]: card for card in json.loads(
@@ -20,7 +22,7 @@ CARDS = {card["name"]: card for card in json.loads(
 
 
 def fixture():
-    deck = [{"quantity": 60, "card_name": "Swamp"}]
+    deck = [entry('Swamp', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=941)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -40,9 +42,14 @@ def add(state, name, player=1, zone=Zone.BATTLEFIELD, *, cards=CARDS):
     card = CardInstance(id=state.allocate_object_id(), name=name, owner=player, controller=player,
                         zone=zone, types=printed_card_types(raw["type_line"]), type_line=raw["type_line"],
                         mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
-                        power=int(raw["power"]) if raw["power"] is not None else None,
-                        toughness=int(raw["toughness"]) if raw["toughness"] is not None else None,
-                        keywords=raw["keywords"] or [], colors=raw["colors"] or [])
+                        power=int(raw["power"]) if raw.get("power") is not None else None,
+                        toughness=int(raw["toughness"]) if raw.get("toughness") is not None else None,
+                        keywords=deepcopy(raw["keywords"] or []), colors=deepcopy(raw["colors"] or []),
+                        printed_power=raw.get("printed_power", str(raw["power"]) if raw.get("power") is not None else None),
+                        printed_toughness=raw.get("printed_toughness", str(raw["toughness"]) if raw.get("toughness") is not None else None),
+                        loyalty=int(raw["loyalty"]) if raw.get("loyalty") is not None else None,
+                        layout=raw.get("layout") or "", card_faces=deepcopy(raw.get("card_faces") or []),
+                        selected_face_index=raw.get("selected_face_index"), image_uri=raw.get("image_uri"))
     state.cards[card.id] = card
     getattr(state.players[player], zone.value).append(card.id)
     return card

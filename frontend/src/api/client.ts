@@ -3,6 +3,7 @@ import { HttpResponseError, httpErrorMessage } from "./errors";
 import { apiBase, cardMediaUrl } from "./routing";
 import { parseAiDebugHands, parseLegalMoves, parseMatchState, parseSavedMatches } from "./match-contract";
 import { parseBatchJobStatus, parseSimulationCoverage } from "./simulation-contract";
+import { recordRequestSignal, requestSignalAborted, requestSignalStart } from "./request-signal-diagnostics";
 
 const configuredApi = import.meta.env.VITE_API_BASE_URL;
 const API = apiBase(configuredApi);
@@ -45,7 +46,9 @@ export type DeckImportResponse = {
 };
 
 export type ResolvedCardMetadata = {
-  id: string;
+  id?: string | number;
+  card_data_sources?: string[];
+  match_ready?: boolean;
   scryfall_id: string;
   name: string;
   oracle_text?: string;
@@ -190,11 +193,23 @@ export type DiagnosticGamePage = {
 };
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...init,
-    signal: init?.signal ?? AbortSignal.timeout(30000),
-  });
+  const diagnosticEnabled = import.meta.env.VITE_REQUEST_SIGNAL_DIAGNOSTICS === "1";
+  const diagnosticStarted = diagnosticEnabled ? requestSignalStart() : null;
+  let requestOptions: RequestInit | undefined;
+  let initialAborted: boolean | null = null;
+  let fetchArgumentsReady = false;
+  let res: Response;
+  try {
+    // Keep URL, option getters and the selected signal in their original order.
+    res = await fetch(`${API}${path}`, (requestOptions = {
+      headers: { "Content-Type": "application/json" },
+      ...init,
+      signal: init?.signal ?? AbortSignal.timeout(30000),
+    }, initialAborted = diagnosticEnabled ? requestSignalAborted(requestOptions.signal) : null, fetchArgumentsReady = true, requestOptions));
+  } catch (error) {
+    if (diagnosticEnabled && fetchArgumentsReady) recordRequestSignal(path, requestOptions, error, diagnosticStarted, initialAborted);
+    throw error;
+  }
   if (!res.ok) {
     const txt = await res.text();
     throw new HttpResponseError(httpErrorMessage(txt, res.status), res.status);

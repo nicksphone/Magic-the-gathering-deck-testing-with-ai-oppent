@@ -10,7 +10,7 @@ from rules_engine.mana import mana_source_outputs
 from rules_engine.query_context import rule_query_scope
 from rules_engine.type_effects import effective_types
 from tests.test_basic_land_layer_goldens import add, position, setter, CARDS
-from tests.test_type_effect_lifecycle import animate
+from tests.type_effect_animation_support import animate
 
 
 def test_complete_generic_instruction_not_card_name_or_substring():

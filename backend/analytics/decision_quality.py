@@ -7,8 +7,10 @@ from collections.abc import Iterable
 from typing import Any
 
 from analytics.decision_taxonomy import has_actionable_move, has_meaningful_move
+from rules_engine.action_validation import checked_action
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
+from rules_engine.type_effects import effective_types
 from game_state.state import MatchState, Zone
 
 
@@ -59,7 +61,7 @@ def _battlefield_snapshot(state: Any, pid: int) -> list[dict[str, Any]]:
         {
             "id": cid,
             "name": state.cards[cid].name,
-            "types": list(getattr(state.cards[cid], "types", []) or []),
+            "types": effective_types(state, cid),
             "tapped": bool(getattr(state.cards[cid], "tapped", False)),
             "power": effective_power(state, cid),
             "toughness": effective_toughness(state, cid),
@@ -92,7 +94,7 @@ def _lethal_attack_available(state: Any, pid: int, legal_moves: list[dict[str, A
     if _step_key(state.step) != "declare_attackers":
         return False
     opponent_pid = 1 if pid == 2 else 2
-    if any("Creature" in state.cards[cid].types for cid in state.players[opponent_pid].battlefield):
+    if any("Creature" in effective_types(state, cid) for cid in state.players[opponent_pid].battlefield):
         return False
     attack_move = next((move for move in legal_moves if move.get("type") == "attack"), None)
     if attack_move is None:
@@ -113,7 +115,7 @@ def _lethal_attack_available(state: Any, pid: int, legal_moves: list[dict[str, A
         if simulated_state.winner is not None:
             return simulated_state.winner == pid
         if any(
-            "Creature" in simulated_state.cards[cid].types
+            "Creature" in effective_types(simulated_state, cid)
             for cid in simulated_state.players[opponent_pid].battlefield
         ):
             return None
@@ -138,11 +140,13 @@ def _simulate_block_line(
     pid: int,
     action: dict[str, Any],
 ) -> tuple[Any, dict[str, list[str]]] | None:
-    simulated_state = copy.deepcopy(state)
     engine = RulesEngine()
-    if not any(move.get("type") == "block" for move in engine.legal_moves(simulated_state, pid)):
-        return None
-    engine.take_action(simulated_state, pid, action)
+    declaration = copy.deepcopy(action)
+    declaration["blocks"] = {
+        attacker: [blockers] if isinstance(blockers, str) else blockers
+        for attacker, blockers in declaration["blocks"].items()
+    }
+    simulated_state = checked_action(state, engine, pid, declaration)
     accepted_blocks = {
         attacker_id: list(blocker_ids)
         for attacker_id, blocker_ids in simulated_state.blocks.items()
@@ -215,12 +219,31 @@ def _validated_bad_blocks(state: Any, pid: int, action: dict[str, Any]) -> int |
     )
 
 
+def _anonymous_knowledge_usage(value: Any) -> dict[str, Any] | None:
+    """Optional diagnostics only: reject identities and unknown counter schemas."""
+    if type(value) is not dict or set(value) != {'persisted', 'fallback', 'opaque', 'fallback_reasons'}:
+        return None
+    counts = {key: value[key] for key in ('persisted', 'fallback', 'opaque')}
+    if any(type(count) is not int or not 0 <= count < 2 ** 31 for count in counts.values()):
+        return None
+    reasons = value['fallback_reasons']
+    if type(reasons) is not dict or not set(reasons) <= {'missing', 'shape', 'face', 'surface'}:
+        return None
+    if any(type(count) is not int or not 0 <= count < 2 ** 31 for count in reasons.values()):
+        return None
+    if sum(reasons.values()) != counts['fallback']:
+        return None
+    return {**counts, 'fallback_reasons': dict(reasons)}
+
+
 def build_trace_payload(
     state: Any,
     pid: int,
     legal_moves: list[dict[str, Any]],
     action: dict[str, Any],
     reasoning: str = "",
+    *,
+    knowledge_usage: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Capture authoritative decision evidence before mutating match state."""
     opponent_pid = 1 if pid == 2 else 2
@@ -232,7 +255,7 @@ def build_trace_payload(
         and _step_key(state.step) in {"precombat_main", "postcombat_main"}
         and not state.stack
     )
-    return {
+    payload = {
         "trace": True,
         "pid": pid,
         "turn": state.turn,
@@ -255,6 +278,10 @@ def build_trace_payload(
         "action": compact_action(action),
         "reasoning": reasoning,
     }
+    usage = _anonymous_knowledge_usage(knowledge_usage)
+    if usage is not None:
+        payload['knowledge_usage'] = usage
+    return payload
 
 
 def _stack_snapshot(state: Any) -> list[dict]:

@@ -1,0 +1,11 @@
+{
+  "source": "Official Scryfall public API; direct HTTPS; no keys or paid service",
+  "request_url": "https://api.scryfall.com/cards/named?exact=Ninja%20of%20the%20Deep%20Hours",
+  "retrieval_start_utc": "2026-10-06T05:28:54Z",
+  "retrieval_end_utc": "2026-10-06T05:29:00Z",
+  "http_status": 200,
+  "curl_exit": 0,
+  "response_sha256": "d5c28c0171ed64bf41b2435a9edcf4ebcef7cc5d121e27996c74b9a1a8f41b0f",
+  "fixture_body": "ninja-of-the-deep-hours.json",
+  "transformation": "None; exact response body copied unchanged"
+}

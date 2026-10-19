@@ -1,0 +1,137 @@
+{
+  "bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_records": 38690,
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "cards": {
+    "Abrupt Decay": {
+      "canonical_hash": "bf530057d9f81737c4dd2c7078a7401c3cfd4f1de5515903cd7e1ebcf3b2ec1b",
+      "file": "Abrupt_Decay.json",
+      "id": "a8e328c6-3a84-49cf-a1a3-1d1e5373d274",
+      "join": "exact printing",
+      "oracle_id": "1c747fe2-289e-492a-a846-aa77707e2dc3",
+      "requested_id": "a8e328c6-3a84-49cf-a1a3-1d1e5373d274"
+    },
+    "Battlegrowth": {
+      "canonical_hash": "c52a704a59cb355ec8d611557f7d2619c9c37150da5958262994e3f9fa395778",
+      "file": "Battlegrowth.json",
+      "id": "2b34e76b-86b3-464e-93e7-c3f2074028fb",
+      "join": "unique-name representative",
+      "oracle_id": "650bf82e-7f83-470c-bf4a-34281bfe9341",
+      "requested_id": null
+    },
+    "Dress Down": {
+      "canonical_hash": "e50409c06eb42f164ca6998eb2fff3d6e367658d95e5d88da24a0b2b286ebf86",
+      "file": "Dress_Down.json",
+      "id": "04f9f061-67b8-4427-9fcb-b3ccfee8fc5d",
+      "join": "exact printing",
+      "oracle_id": "c1cbbda0-e02b-4b9c-8669-ea87ca629520",
+      "requested_id": "04f9f061-67b8-4427-9fcb-b3ccfee8fc5d"
+    },
+    "Dynavolt Tower": {
+      "canonical_hash": "ea26ea2a4d3af7af1bf920cba3706292e3e08436cf9be21dbada34700e508044",
+      "file": "Dynavolt_Tower.json",
+      "id": "c45fd2ae-0f91-47ca-99bd-22ddf946df9f",
+      "join": "unique-name representative",
+      "oracle_id": "59f56dd9-cc82-4f0d-a522-0d8ed274fa40",
+      "requested_id": null
+    },
+    "Forest": {
+      "canonical_hash": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0",
+      "file": "Forest.json",
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "join": "unique-name representative",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "requested_id": "f169dfb2-e4c8-46e9-8591-e51bb82da082"
+    },
+    "Frogify": {
+      "canonical_hash": "4d5664458fb20532ef79afd6c3018b83b009b55b794c3a9653ee2470e970e9cb",
+      "file": "Frogify.json",
+      "id": "d89be5f5-75d4-42a0-81e9-5da5bf868e73",
+      "join": "unique-name representative",
+      "oracle_id": "32249228-e300-4865-b977-5e1f285d02f2",
+      "requested_id": null
+    },
+    "Growth Spiral": {
+      "canonical_hash": "bc0c15431b51230dd70adf999d7abbb03d43780c17d6d28082afd3190fe34c87",
+      "file": "Growth_Spiral.json",
+      "id": "1e10e2b4-9639-41ae-8b8e-253224d3d513",
+      "join": "unique-name representative",
+      "oracle_id": "34bcc217-dd91-45a0-90d7-a94d02f1f317"
+    },
+    "Intangible Virtue": {
+      "canonical_hash": "a542d41bfa505ed84867e843d1facd315fd46c33356e5341d7d6f564328f2296",
+      "file": "Intangible_Virtue.json",
+      "id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77",
+      "join": "exact printing",
+      "oracle_id": "d21c3c8f-d105-4ba9-bf69-e5f26f0f8ec5",
+      "requested_id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77"
+    },
+    "Leyline Binding": {
+      "canonical_hash": "a9068017128cbd9d3844ce5c7745e995e431c2ad2780573a5ffd860cc3d4be61",
+      "file": "Leyline_Binding.json",
+      "id": "3c3ac3dd-35db-447f-8674-37b4680a1ef7",
+      "join": "exact printing",
+      "oracle_id": "b49642f6-20bd-468d-9dac-e578f9ac3091",
+      "requested_id": "3c3ac3dd-35db-447f-8674-37b4680a1ef7"
+    },
+    "Leyline of Sanctity": {
+      "canonical_hash": "fd5bb6b6f9f5c8c0471710b95306aab8be57ba233b6210d8f22754ae822961b5",
+      "file": "Leyline_of_Sanctity.json",
+      "id": "be8b1acf-dd87-42ca-ad19-c27d21066030",
+      "join": "unique-name representative",
+      "oracle_id": "492e0e6c-8c27-4376-938b-f8a8b6205810",
+      "requested_id": null
+    },
+    "Lightning Bolt": {
+      "canonical_hash": "faad8b64b05be249244f0fec337a2745c81e2cece5aae154536f5aa358e56f3e",
+      "file": "Lightning_Bolt.json",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "join": "unique-name representative",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "requested_id": "77c6fa74-5543-42ac-9ead-0e890b188e99"
+    },
+    "Long Goodbye": {
+      "canonical_hash": "d7e12af9104a5711d9c2d2b247078d68461a20b3403102cbd5ea373a7fef4740",
+      "file": "Long_Goodbye.json",
+      "id": "c3896705-bbd2-4ffb-a590-ee78e0eabdc5",
+      "join": "exact printing",
+      "oracle_id": "9d63ba8a-a5cd-4fdb-bba3-95612be0077c",
+      "requested_id": "c3896705-bbd2-4ffb-a590-ee78e0eabdc5"
+    },
+    "Monastery Swiftspear": {
+      "canonical_hash": "56a8c91d623e980dd75c9744f80a51716d503a8d7a3e6e8698931e6899e56c2f",
+      "file": "Monastery_Swiftspear.json",
+      "id": "d6bfa227-4309-40ed-952c-279595eab17e",
+      "join": "exact printing",
+      "oracle_id": "dafd2713-d1bc-474b-b390-d2ff20b5375e",
+      "requested_id": "d6bfa227-4309-40ed-952c-279595eab17e"
+    },
+    "Suncleanser": {
+      "canonical_hash": "85411b480f87089ea55e466d60b00d05575f1dd07ad67c9ff73790d614e431df",
+      "file": "Suncleanser.json",
+      "id": "3644df41-b690-4581-ac7d-c85cec75411f",
+      "join": "exact printing",
+      "oracle_id": "437661f7-a32f-45c9-a006-05a1e38ee8d9",
+      "requested_id": "3644df41-b690-4581-ac7d-c85cec75411f"
+    },
+    "Sylvan Safekeeper": {
+      "canonical_hash": "320296234768fcee986e9477b25c235c39d48908e18337f2953ada888c98c5af",
+      "file": "Sylvan_Safekeeper.json",
+      "id": "83036e21-21ea-4324-aa07-11757f80c417",
+      "join": "exact printing",
+      "oracle_id": "bddf8f4a-3149-4dd6-a9e5-7747e7e45a1c",
+      "requested_id": "83036e21-21ea-4324-aa07-11757f80c417"
+    },
+    "Toph, Earthbending Master": {
+      "canonical_hash": "ef9bfe668fbc6ee5e7c8bcd9fd66ae6220e36068eb73b1ec11abfe6101b8c86b",
+      "file": "Toph_Earthbending_Master.json",
+      "id": "22d1b078-9175-45ab-8fbe-ed4af2abde1f",
+      "join": "exact printing",
+      "oracle_id": "ad5d3e7e-bf8c-4fa3-a81e-1523aec2585f",
+      "requested_id": "22d1b078-9175-45ab-8fbe-ed4af2abde1f"
+    }
+  },
+  "expanded_bytes": 203114006,
+  "join_policy": "exact retained/qualified-fixture printing where present; otherwise unique exact root name English representative, NOT same-printing claim; no Oracle edits",
+  "seed_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037"
+}

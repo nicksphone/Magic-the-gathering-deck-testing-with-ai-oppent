@@ -2,6 +2,19 @@ import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from
 import { selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { CardArt } from "./CardArt";
+import { TriggerOrderPicker } from "./TriggerOrderPicker";
+
+// Includes engine-supported generic selections not yet listed in LegalMove.kind.
+const supportedMechanicControls = new Set<string>([
+  "effect_cast", "suspend_cast", "scry", "scry_top_order", "surveil", "surveil_top_order", "hand_top_order",
+  "proliferate", "ward_payment", "ward_cost_cards", "counter_payment", "optional_search",
+  "graveyard_return", "optional_reveal", "discard", "each_player_discard", "cleanup_discard", "mulligan_bottom",
+  "opening_hand", "opening_hand_exile", "sacrifice", "draw", "land_entry", "land_from_hand", "saga_entry", "entry_mode", "note_creature_type",
+  "attacking_token_target", "topdeck_reveal_creature", "topdeck_put", "topdeck_bottom_order",
+  "look_top_choose", "look_top_select_hand", "search_library", "combat_damage", "copy_target", "spree_target_change", "entry_copy",
+  "foretell_from_hand", "choose_revealed_discard", "choose_revealed_exile", "linked_exile_copy",
+  "legend_keeper", "exchange_energy_payment", "loyalty_cards", "loyalty_attachment",
+]);
 
 type Props = {
   decks: DeckRecord[];
@@ -11,6 +24,8 @@ type Props = {
   setSelectedB: (id: number) => void;
   startMode: NonNullable<MatchState["mode"]>;
   setStartMode: (mode: NonNullable<MatchState["mode"]>) => void;
+  humanSeat: 1 | 2;
+  setHumanSeat: (seat: 1 | 2) => void;
   difficulty: string;
   setDifficulty: (d: string) => void;
   bestOf: number;
@@ -63,10 +78,10 @@ export function Controls(props: Props) {
   const [bottomCards, setBottomCards] = useState<string[]>([]);
   useEffect(() => setBottomCards([]), [props.match?.id, pregameActor, bottomCount]);
   const mechanicMove = props.legalMoves.find((move) => move.type === "choose_mechanic");
-  const variableDiscard = mechanicMove?.kind === "discard" && mechanicMove.min_count === 0;
+  const optionalCardSelection = ["discard", "land_from_hand", "loyalty_cards"].includes(mechanicMove?.kind ?? "") && mechanicMove?.min_count === 0;
   const [mechanicSelections, setMechanicSelections] = useState<string[]>([]);
   const [damageAmounts, setDamageAmounts] = useState<Record<string, number>>({});
-  const mechanicKey = `${mechanicMove?.kind}:${mechanicMove?.player_id}:${mechanicMove?.stage}:${mechanicMove?.source_id}:${mechanicMove?.target_slot_number}:${mechanicMove?.min_count}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}:${mechanicMove?.inspected_cards?.map(card => card.id).join(",")}`;
+  const mechanicKey = `${props.match?.id}:${props.match?.game_number}:${mechanicMove?.kind}:${mechanicMove?.player_id}:${mechanicMove?.stage}:${mechanicMove?.source_id}:${mechanicMove?.target_slot_number}:${mechanicMove?.min_count}:${mechanicMove?.count}:${mechanicMove?.options?.join(",")}:${mechanicMove?.inspected_cards?.map(card => card.id).join(",")}`;
   useEffect(() => setMechanicSelections([]), [mechanicKey]);
   useEffect(() => setDamageAmounts({}), [mechanicKey]);
   const mechanicPaused = Boolean(mechanicMove || props.match?.pending_mechanic_choice);
@@ -148,6 +163,7 @@ export function Controls(props: Props) {
   const humanSeats = [1, 2].filter((pid) => props.match?.controllers?.[String(pid)] === "human");
   const selectedSbPlayer = humanSeats.includes(sbPlayer) ? sbPlayer : humanSeats[0];
   const sideboardInventory = props.match?.sideboarding?.[String(selectedSbPlayer)];
+  const unfinishedSideboardPlayers = humanSeats.filter((pid) => props.match?.sideboarding?.[String(pid)]?.applied !== true);
   useEffect(() => { setSbOut(""); setSbIn(""); }, [selectedSbPlayer]);
   const gamesNeeded = props.match?.games_needed ?? Math.floor((props.match?.best_of ?? 3) / 2) + 1;
   const p1Score = props.match?.score?.["1"] ?? 0;
@@ -156,7 +172,7 @@ export function Controls(props: Props) {
   const sideboardStatus = betweenGames ? (humanSeats.length ? "Sideboarding open" : "No human sideboarding") : matchComplete ? "Match complete" : "Sideboarding locked";
   const stackSize = props.match?.stack?.length ?? 0;
   const currentController = props.match?.controllers?.[String(props.actingPlayerId ?? props.match?.priority_player ?? 1)] ?? "human";
-  const interruptWindowLive = props.responseCountdown !== null;
+  const interruptWindowLive = !props.autoResponsePaused && props.responseCountdown !== null;
   const replacementPaused = replacementMoves.length > 0 || Boolean(props.match?.pending_replacement_choice);
   const triggerOrderPaused = triggerOrderMoves.length > 0 || Boolean(props.match?.pending_trigger_order);
   const aiSeries = props.match?.mode === 'ai_vs_ai'
@@ -188,7 +204,7 @@ export function Controls(props: Props) {
       <h2>{props.match ? "Command the turn" : "Choose your matchup"}</h2>
       <details className="match-setup" open={!props.match}><summary>Match setup</summary>
       <div className="row">
-        <label className="setup-seat"><span>Seat 01 <small>Your opening list</small></span><select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
+        <label className="setup-seat"><span>Seat 01 <small>Deck A</small></span><select aria-label="Deck A" value={props.selectedA ?? ""} onChange={(e) => props.setSelectedA(Number(e.target.value))}>
           <option value="">Deck A</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -196,7 +212,7 @@ export function Controls(props: Props) {
             </option>
           ))}
         </select></label>
-        <label className="setup-seat"><span>Seat 02 <small>The other side of the table</small></span><select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
+        <label className="setup-seat"><span>Seat 02 <small>Deck B</small></span><select aria-label="Deck B" value={props.selectedB ?? ""} onChange={(e) => props.setSelectedB(Number(e.target.value))}>
           <option value="">Deck B</option>
           {props.decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -216,6 +232,13 @@ export function Controls(props: Props) {
           <option value="ai_vs_ai">AI vs AI</option>
           <option value="human_vs_human">Human vs Human</option>
         </select></label>
+        {props.startMode === "player_vs_ai" ? <label className="setup-setting">Human seat<select aria-label="Human seat" value={props.humanSeat ?? 1} onChange={(e) => {
+          const seat = e.currentTarget.value;
+          if (seat === "1" || seat === "2") props.setHumanSeat(Number(seat) as 1 | 2);
+        }}>
+          <option value={1}>Seat 1 (Deck A)</option>
+          <option value={2}>Seat 2 (Deck B)</option>
+        </select></label> : null}
         <label className="setup-setting">AI difficulty<select aria-label="AI difficulty" value={props.difficulty} onChange={(e) => props.setDifficulty(e.target.value)}>
           <option value="casual">Casual</option>
           <option value="strong">Strong</option>
@@ -262,14 +285,17 @@ export function Controls(props: Props) {
         <div className="block-panel">
           <h3>{mechanicMove.label ?? "Choose a draw replacement"} (P{mechanicMove.player_id})</h3>
           {mechanicMove.inspected_cards?.length ? <section aria-label="Privately inspected cards">
-            <p>Inspected cards. Only qualifying cards below can be selected.</p>
+            <p>{mechanicMove.kind === "optional_reveal" ? "This card remains on top. You may reveal it, even if it will not transform the source, or decline without revealing it." : "Inspected cards. Only qualifying cards below can be selected."}</p>
             {mechanicMove.inspected_cards.map((card) => <details key={card.id} className="cast-card-box">
-              <summary>{card.name} {card.mana_cost} {mechanicMove.options?.includes(card.id) ? "(selectable)" : "(not selectable)"}</summary>
+              <summary>{card.name} {card.mana_cost} {mechanicMove.kind === "optional_reveal" ? "(privately inspected)" : mechanicMove.options?.includes(card.id) ? "(selectable)" : "(not selectable)"}</summary>
               <div style={{ maxWidth: 180 }}><CardArt uri={card.image_uri} name={card.name} /></div>
               <p>{card.type_line}</p><p>{card.oracle_text}</p>
             </details>)}
           </section> : null}
-          {mechanicMove.kind === "combat_damage" ? <>
+          {!supportedMechanicControls.has(mechanicMove.kind ?? "") ? <p role="alert">
+            Unsupported mechanic choice: {typeof mechanicMove.kind === "string" && mechanicMove.kind ? mechanicMove.kind : "(missing or invalid kind)"}. No control is implemented
+            for this choice. Do not advance while this action is required.
+          </p> : mechanicMove.kind === "combat_damage" ? <>
             <p>Assign exactly {mechanicMove.count} damage in the {mechanicMove.stage} damage step.</p>
             {(mechanicMove.options ?? []).map((target) => <label key={target}>
               {mechanicMove.option_labels?.[target] ?? target} ({target})
@@ -294,29 +320,52 @@ export function Controls(props: Props) {
             {mechanicMove.can_restart ? <button onClick={() => props.onChooseMechanic(mechanicMove.player_id!, {
               type: "choose_mechanic", choice_id: "restart",
             })}>Restart Damage Assignments</button> : null}
-          </> : mechanicMove.kind === "effect_cast" || mechanicMove.kind === "ward_payment" || mechanicMove.kind === "counter_payment" || mechanicMove.kind === "optional_search" || (mechanicMove.options?.length === 1 && mechanicMove.options[0] === "__none__") ? (mechanicMove.options ?? []).map((cid) => (
+          </> : mechanicMove.kind === "optional_reveal" || mechanicMove.kind === "effect_cast" || mechanicMove.kind === "ward_payment" || mechanicMove.kind === "counter_payment" || mechanicMove.kind === "optional_search" || (mechanicMove.options?.length === 1 && mechanicMove.options[0] === "__none__") ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
           )) : mechanicMove.kind === "attacking_token_target" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>Attack {mechanicMove.option_labels?.[cid] ?? cid}</button>
-          )) : mechanicMove.kind === "draw" || mechanicMove.kind === "land_entry" || mechanicMove.kind === "saga_entry" ? (mechanicMove.options ?? []).map((cid) => (
+          )) : mechanicMove.kind === "legend_keeper" ? (mechanicMove.options ?? []).map((cid) => {
+            const permanent = Object.values(props.match?.players ?? {}).flatMap(player => player.battlefield).find(card => card.id === cid);
+            return <button type="button" key={cid} data-legend-keeper-id={cid}
+              onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>
+              Keep {mechanicMove.option_labels?.[cid] ?? cid} ({cid})
+              {permanent ? <span> - {permanent.tapped ? "Tapped" : "Untapped"}{permanent.summoning_sick ? ", summoning sick" : ""}
+                {permanent.power !== null && permanent.toughness !== null ? `, ${permanent.power}/${permanent.toughness}` : ""}
+                {Object.entries(permanent.counters ?? {}).map(([name, count]) => `, ${name}: ${count}`).join("")}</span> : null}
+            </button>;
+          }) : mechanicMove.kind === "entry_copy" ? <>
+            {(mechanicMove.options ?? []).map((cid) => {
+              const permanent = Object.values(props.match?.players ?? {}).flatMap(player => player.battlefield).find(card => card.id === cid);
+              return <button type="button" key={cid} data-entry-copy-id={cid} disabled={!permanent}
+                onClick={() => {
+                  if (permanent) props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] });
+                }}>{permanent?.name || "Unavailable permanent"} ({cid})</button>;
+            })}
+            {mechanicMove.min_count === 0 ? <button type="button"
+              onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [] })}>
+              Enter without copying
+            </button> : null}
+          </> : mechanicMove.kind === "copy_target" || mechanicMove.kind === "spree_target_change" ? (mechanicMove.options ?? []).map((cid) => (
+            <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
+          )) : mechanicMove.kind === "draw" || mechanicMove.kind === "land_entry" || mechanicMove.kind === "saga_entry" || mechanicMove.kind === "entry_mode" || mechanicMove.kind === "note_creature_type" || mechanicMove.kind === "exchange_energy_payment" || mechanicMove.kind === "loyalty_attachment" ? (mechanicMove.options ?? []).map((cid) => (
             <button key={cid} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", choice_id: cid })}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
-          )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" || ["scry_top_order", "surveil_top_order"].includes(mechanicMove.kind ?? "") ? <>
-            <p>{mechanicMove.kind === "look_top_choose" ? "Pick a hand card, then an exile card, then the bottom cards in order." : ["scry_top_order", "surveil_top_order"].includes(mechanicMove.kind ?? "") ? "Pick the remaining cards in order, topmost first." : "Pick the bottom cards in order, bottommost first."}</p>
+          )) : mechanicMove.kind === "look_top_choose" || mechanicMove.kind === "topdeck_bottom_order" || ["scry_top_order", "surveil_top_order", "hand_top_order"].includes(mechanicMove.kind ?? "") ? <>
+            <p>{mechanicMove.kind === "look_top_choose" ? "Pick a hand card, then an exile card, then the bottom cards in order." : ["scry_top_order", "surveil_top_order", "hand_top_order"].includes(mechanicMove.kind ?? "") ? "Pick the remaining cards in order, topmost first." : "Pick the bottom cards in order, bottommost first."}</p>
             {(mechanicMove.options ?? []).map((cid) => (
               <button key={cid} disabled={mechanicSelections.includes(cid)} onClick={() => setMechanicSelections((selected) => [...selected, cid])}>{mechanicMove.option_labels?.[cid] ?? cid}</button>
             ))}
-            <p>{mechanicSelections.map((cid, index) => `${mechanicMove.kind === "look_top_choose" ? index === 0 ? "Hand" : index === 1 ? "Exile" : `Bottom ${index - 1}` : `${["scry_top_order", "surveil_top_order"].includes(mechanicMove.kind ?? "") ? "Top" : "Bottom"} ${index + 1}`}: ${mechanicMove.option_labels?.[cid] ?? cid}`).join(" | ")}</p>
+            <p>{mechanicSelections.map((cid, index) => `${mechanicMove.kind === "look_top_choose" ? index === 0 ? "Hand" : index === 1 ? "Exile" : `Bottom ${index - 1}` : `${["scry_top_order", "surveil_top_order", "hand_top_order"].includes(mechanicMove.kind ?? "") ? "Top" : "Bottom"} ${index + 1}`}: ${mechanicMove.option_labels?.[cid] ?? cid}`).join(" | ")}</p>
             <button onClick={() => setMechanicSelections([])}>Reset Order</button>
             <button disabled={mechanicSelections.length !== mechanicMove.count} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Order</button>
           </> : <>
-            <p>{mechanicMove.kind === "surveil" ? "Choose any cards for your graveyard, bottommost first. Choose none to keep all." : mechanicMove.kind === "scry" ? "Choose any cards to put on the bottom, bottommost first. Choose none to keep all." : mechanicMove.kind === "proliferate" ? "Choose any number of permanents or players, including none. Each gets another counter of every kind it already has." : mechanicMove.min_count === mechanicMove.count && mechanicMove.count ? `Select exactly ${mechanicMove.count} card(s).` : variableDiscard || mechanicMove.kind === "topdeck_put" || mechanicMove.kind === "search_library" ? `Select up to ${mechanicMove.count} card(s).` : `Select exactly ${mechanicMove.count} card(s).`}</p>
+            <p>{mechanicMove.kind === "surveil" ? "Choose any cards for your graveyard, bottommost first. Choose none to keep all." : mechanicMove.kind === "scry" ? "Choose any cards to put on the bottom, bottommost first. Choose none to keep all." : mechanicMove.kind === "proliferate" ? "Choose any number of permanents or players, including none. Each gets another counter of every kind it already has." : mechanicMove.min_count === mechanicMove.count && mechanicMove.count ? `Select exactly ${mechanicMove.count} card(s).` : optionalCardSelection || mechanicMove.kind === "topdeck_put" || mechanicMove.kind === "search_library" ? `Select up to ${mechanicMove.count} card(s).` : `Select exactly ${mechanicMove.count} card(s).`}</p>
             {(mechanicMove.options ?? []).map((cid) => <label key={cid}>
               <input type="checkbox" checked={mechanicSelections.includes(cid)} onChange={(event) => setMechanicSelections((selected) => event.target.checked ? [...selected, cid] : selected.filter((id) => id !== cid))} />
               {mechanicMove.option_labels?.[cid] ?? cid}
               {mechanicMove.option_type_lines?.[cid] ? <small> ({mechanicMove.option_type_lines[cid]})</small> : null}
             </label>)}
             {(mechanicMove.kind === "search_library" || mechanicMove.kind === "mulligan_bottom" || ["scry", "surveil"].includes(mechanicMove.kind ?? "")) && mechanicSelections.length > 0 ? <p>Selection order{mechanicMove.kind === "mulligan_bottom" || ["scry", "surveil"].includes(mechanicMove.kind ?? "") ? " (bottom-most first)" : ""}: {mechanicSelections.map((cid) => mechanicMove.option_labels?.[cid] ?? cid).join(" then ")}</p> : null}
-            <button disabled={mechanicSelections.length < (mechanicMove.min_count ?? 0) || (variableDiscard || ["topdeck_put", "search_library", "proliferate", "scry", "surveil"].includes(mechanicMove.kind ?? "") ? mechanicSelections.length > (mechanicMove.count ?? 0) : mechanicSelections.length !== mechanicMove.count)} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Selection</button>
+            <button disabled={mechanicSelections.length < (mechanicMove.min_count ?? 0) || (optionalCardSelection || ["topdeck_put", "search_library", "proliferate", "scry", "surveil"].includes(mechanicMove.kind ?? "") ? mechanicSelections.length > (mechanicMove.count ?? 0) : mechanicSelections.length !== mechanicMove.count)} onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: mechanicSelections })}>Confirm Selection</button>
           </>}
         </div>
       ) : null}
@@ -350,7 +399,14 @@ export function Controls(props: Props) {
               ? ` (${props.match.pending_trigger_order.event.replace(/_/g, " ")})`
               : ""}.
           </p>
-          <div className="row">
+          {(triggerOrderMoves[0].trigger_order?.length ?? 0) > 6 ? (
+            <TriggerOrderPicker
+              key={JSON.stringify([props.match?.id, props.match?.revision, props.match?.pending_trigger_order?.current_controller, triggerOrderMoves[0].trigger_order])}
+              ids={triggerOrderMoves[0].trigger_order ?? []}
+              labels={triggerOrderMoves[0].trigger_labels}
+              onChoose={props.onChooseTriggerOrder}
+            />
+          ) : <div className="row">
             {triggerOrderMoves.map((move, index) => (
               <button
                 key={`trigger-order-${index}-${(move.trigger_order ?? []).join("-")}`}
@@ -359,7 +415,7 @@ export function Controls(props: Props) {
                 {(move.trigger_labels ?? move.trigger_order ?? []).join(" -> ") || "Use trigger order"}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
       ) : null}
       {triggerTargetMoves.length > 0 ? (
@@ -670,7 +726,10 @@ export function Controls(props: Props) {
       {betweenGames ? (
         <div className="sideboard-panel">
           <h3>Between Games</h3>
-          <p className="status-line">Game complete. Human-controlled seats may sideboard once before the next game.</p>
+          <p className="status-line">Each human seat must submit sideboard swaps or confirm no swaps before the next game.</p>
+          {unfinishedSideboardPlayers.length > 0 ? <p className="status-line" role="status">
+            Waiting for {unfinishedSideboardPlayers.map((pid) => `P${pid}`).join(", ")} to finish sideboarding.
+          </p> : null}
           <div className="row">
             {humanSeats.length > 0 ? <>
               <select aria-label="Sideboarding player" value={selectedSbPlayer} onChange={(e) => setSbPlayer(Number(e.target.value))}>
@@ -679,11 +738,14 @@ export function Controls(props: Props) {
               <button disabled={sideboardInventory?.applied} onClick={() => props.onApplySideboard(selectedSbPlayer, parseDeckLines(sbOut), parseDeckLines(sbIn))}>
                 {sideboardInventory?.applied ? "Sideboard Applied" : "Apply Sideboard Swaps"}
               </button>
-            </> : <span className="status-line">AI sideboarding strategy is not implemented.</span>}
+              <button disabled={sideboardInventory?.applied} onClick={() => props.onApplySideboard(selectedSbPlayer, [], [])}>
+                Confirm No Swaps
+              </button>
+            </> : <span className="status-line">AI sideboarding is handled automatically.</span>}
             {props.match?.next_play_draw_chooser && props.match.controllers?.[String(props.match.next_play_draw_chooser)] === "human" ? <>
-              <button onClick={() => props.onNextGame(true)}>P{props.match.next_play_draw_chooser} Play First</button>
-              <button onClick={() => props.onNextGame(false)}>P{props.match.next_play_draw_chooser} Draw First</button>
-            </> : <button onClick={() => props.onNextGame()}>Start Next Game (AI chooses play)</button>}
+              <button disabled={unfinishedSideboardPlayers.length > 0} onClick={() => props.onNextGame(true)}>P{props.match.next_play_draw_chooser} Play First</button>
+              <button disabled={unfinishedSideboardPlayers.length > 0} onClick={() => props.onNextGame(false)}>P{props.match.next_play_draw_chooser} Draw First</button>
+            </> : <button disabled={unfinishedSideboardPlayers.length > 0} onClick={() => props.onNextGame()}>Start Next Game (AI chooses play)</button>}
           </div>
           {sideboardInventory ? <div className="sideboard-inventory">
             <details><summary>Current mainboard ({sideboardInventory.mainboard.reduce((n, card) => n + card.quantity, 0)})</summary>

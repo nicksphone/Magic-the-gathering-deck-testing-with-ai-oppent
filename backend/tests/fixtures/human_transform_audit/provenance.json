@@ -1,0 +1,18 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "records_scanned": 38690,
+  "facts_modified": false,
+  "http_requests": 0,
+  "canonical_sha256": "d5f3d85b5ede1e70b0572a75f5b0059df273d372ed84255b42092f4dc5423743",
+  "ids": {
+    "Shock": {
+      "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+      "oracle_id": "a9d288b8-cdc1-4e55-a0c9-d6edfc95e65d"
+    },
+    "Delver of Secrets // Insectile Aberration": {
+      "id": "6904ea20-e504-47da-95a0-08739fdde260",
+      "oracle_id": "edd531b9-f615-4399-8c8c-1c5e18c4acbf"
+    }
+  }
+}

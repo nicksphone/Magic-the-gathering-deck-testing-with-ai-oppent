@@ -1,4 +1,6 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
+from tests.target_discard_canonical_db4e import canonical_card, raw_card, set_printed
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,7 +16,7 @@ from rules_engine.stack_engine import resolve_top_of_stack
 
 def _state():
     deck = [{"quantity": 60, "card_name": "Swamp"}]
-    state = MatchFactory.from_decks(deck, deck, seed=919)
+    state = controlled_basic_game(deck, deck, seed=919)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
@@ -23,11 +25,7 @@ def _state():
     state.players[1].mana_pool = {"B": 1, "C": 2}
     spell_id = state.players[1].hand[0]
     card = state.cards[spell_id]
-    card.name = "Coercion"
-    card.mana_cost = "{2}{B}"
-    card.types = ["Sorcery"]
-    card.type_line = "Sorcery"
-    card.oracle_text = "Target opponent reveals their hand. You choose a card from it. That player discards that card."
+    set_printed(card, "Coercion")
     return state, spell_id
 
 
@@ -75,11 +73,9 @@ def test_ai_values_revealed_cards_for_opponents_archetype():
     state, spell_id = _state()
     counter_id, bolt_id = state.players[2].hand[:2]
     counter = state.cards[counter_id]
-    counter.name, counter.types, counter.type_line = "Counterspell", ["Instant"], "Instant"
-    counter.mana_cost, counter.oracle_text = "{U}{U}", "Counter target spell."
+    set_printed(counter, "Counterspell")
     bolt = state.cards[bolt_id]
-    bolt.name, bolt.types, bolt.type_line = "Lightning Bolt", ["Instant"], "Instant"
-    bolt.mana_cost, bolt.oracle_text = "{R}", "Lightning Bolt deals 3 damage to any target."
+    set_printed(bolt, "Lightning Bolt")
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
     })
@@ -122,29 +118,24 @@ def test_coercion_reveals_options_only_during_casters_choice():
 def _selective_state(name: str, oracle: str):
     state, spell_id = _state()
     spell = state.cards[spell_id]
-    spell.name = name
-    spell.mana_cost = "{B}"
-    spell.oracle_text = oracle
+    set_printed(spell, name)
+    if spell.oracle_text != oracle:
+        raise ValueError("Positive fixture Oracle must match its full pinned row")
     state.players[1].mana_pool = {"B": 1}
     hand = state.players[2].hand
     forest = state.cards[hand[0]]
-    forest.name, forest.types, forest.type_line = "Forest", ["Land"], "Basic Land - Forest"
+    set_printed(forest, "Forest")
     bolt = state.cards[hand[1]]
-    bolt.name, bolt.types, bolt.type_line = "Lightning Bolt", ["Instant"], "Instant"
-    bolt.mana_cost = "{R}"
-    bolt.oracle_text = "Lightning Bolt deals 3 damage to any target."
+    set_printed(bolt, "Lightning Bolt")
     elf = state.cards[hand[2]]
-    elf.name, elf.types, elf.type_line = "Llanowar Elves", ["Creature"], "Creature - Elf Druid"
-    elf.mana_cost, elf.power, elf.toughness = "{G}", 1, 1
-    elf.oracle_text = "{T}: Add {G}."
+    set_printed(elf, "Llanowar Elves")
     return state, spell_id, {"forest": hand[0], "bolt": hand[1], "elf": hand[2]}
 
 
 def test_thoughtseize_filters_lands_then_loses_life_after_discard_choice():
     state, spell_id, cards = _selective_state(
         "Thoughtseize",
-        "Target player reveals their hand. You choose a nonland card from it. "
-        "That player discards that card. You lose 2 life.",
+        raw_card("Thoughtseize")["oracle_text"],
     )
     for targets in ({}, {"target_player": 3}):
         with pytest.raises(ActionRejected):
@@ -178,8 +169,7 @@ def test_thoughtseize_filters_lands_then_loses_life_after_discard_choice():
 def test_duress_filters_creatures_and_lands_without_life_loss():
     state, spell_id, cards = _selective_state(
         "Duress",
-        "Target opponent reveals their hand. You choose a noncreature, nonland card from it. "
-        "That player discards that card.",
+        raw_card("Duress")["oracle_text"],
     )
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
@@ -195,13 +185,11 @@ def test_duress_filters_creatures_and_lands_without_life_loss():
 def test_inquisition_filters_by_type_and_mana_value_across_snapshot():
     state, spell_id, cards = _selective_state(
         "Inquisition of Kozilek",
-        "Target player reveals their hand. You choose a nonland card from it with mana value 3 or less. "
-        "That player discards that card.",
+        raw_card("Inquisition of Kozilek")["oracle_text"],
     )
     expensive_id = state.players[2].hand[3]
     expensive = state.cards[expensive_id]
-    expensive.name, expensive.types, expensive.type_line = "Serra Angel", ["Creature"], "Creature - Angel"
-    expensive.mana_cost = "{3}{W}{W}"
+    set_printed(expensive, "Serra Angel")
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
     })
@@ -219,13 +207,11 @@ def test_inquisition_filters_by_type_and_mana_value_across_snapshot():
 def test_despise_offers_creature_or_planeswalker_only():
     state, spell_id, cards = _selective_state(
         "Despise",
-        "Target opponent reveals their hand. You choose a creature or planeswalker card from it. "
-        "That player discards that card.",
+        raw_card("Despise")["oracle_text"],
     )
     walker_id = state.players[2].hand[3]
     walker = state.cards[walker_id]
-    walker.name, walker.types, walker.type_line = "Jace, the Mind Sculptor", ["Planeswalker"], "Legendary Planeswalker - Jace"
-    walker.mana_cost = "{2}{U}{U}"
+    set_printed(walker, "Jace, the Mind Sculptor")
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
     })
@@ -241,14 +227,12 @@ def test_appetite_exiles_only_expensive_revealed_card_across_snapshot():
 
     state, spell_id, cards = _selective_state(
         "Appetite for Brains",
-        "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+        raw_card("Appetite for Brains")["oracle_text"],
     )
     expensive_id = state.players[2].hand[3]
     expensive = state.cards[expensive_id]
-    expensive.name, expensive.types, expensive.type_line = "Serra Angel", ["Creature"], "Creature - Angel"
-    expensive.mana_cost = "{3}{W}{W}"
-    caress = CardInstance("caress", "Liliana's Caress", 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
-                          oracle_text="Whenever an opponent discards a card, that player loses 2 life.")
+    set_printed(expensive, "Serra Angel")
+    caress = canonical_card("Liliana's Caress", id="caress", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[caress.id] = caress
     state.players[1].battlefield.append(caress.id)
     with pytest.raises(ActionRejected):
@@ -279,7 +263,7 @@ def test_appetite_exiles_only_expensive_revealed_card_across_snapshot():
 def test_appetite_with_no_expensive_cards_reveals_but_does_not_exile():
     state, spell_id, _ = _selective_state(
         "Appetite for Brains",
-        "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+        raw_card("Appetite for Brains")["oracle_text"],
     )
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
@@ -293,13 +277,12 @@ def test_appetite_with_no_expensive_cards_reveals_but_does_not_exile():
 def test_appetite_fizzles_when_its_only_target_gains_hexproof():
     state, spell_id, _ = _selective_state(
         "Appetite for Brains",
-        "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+        raw_card("Appetite for Brains")["oracle_text"],
     )
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
     })
-    shield = CardInstance("shield", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-                          oracle_text="You have hexproof.")
+    shield = canonical_card("Leyline of Sanctity", id="shield", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[shield.id] = shield
     state.players[2].battlefield.append(shield.id)
     assert resolve_top_of_stack(state)
@@ -311,13 +294,11 @@ def test_appetite_fizzles_when_its_only_target_gains_hexproof():
 def test_ai_completes_revealed_exile_choice():
     state, spell_id, _ = _selective_state(
         "Appetite for Brains",
-        "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+        raw_card("Appetite for Brains")["oracle_text"],
     )
     expensive_id = state.players[2].hand[3]
     expensive = state.cards[expensive_id]
-    expensive.name, expensive.types, expensive.type_line, expensive.mana_cost = (
-        "Serra Angel", ["Creature"], "Creature - Angel", "{3}{W}{W}",
-    )
+    set_printed(expensive, "Serra Angel")
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
     })
@@ -332,8 +313,7 @@ def test_ai_completes_revealed_exile_choice():
 def test_thoughtseize_loses_life_even_when_target_has_only_lands():
     state, spell_id, _ = _selective_state(
         "Thoughtseize",
-        "Target player reveals their hand. You choose a nonland card from it. "
-        "That player discards that card. You lose 2 life.",
+        raw_card("Thoughtseize")["oracle_text"],
     )
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 1},
@@ -347,11 +327,7 @@ def test_thoughtseize_loses_life_even_when_target_has_only_lands():
 def test_thoughtseize_reveals_lands_and_loses_life_when_no_card_qualifies():
     state, spell_id = _state()
     spell = state.cards[spell_id]
-    spell.name, spell.mana_cost = "Thoughtseize", "{B}"
-    spell.oracle_text = (
-        "Target player reveals their hand. You choose a nonland card from it. "
-        "That player discards that card. You lose 2 life."
-    )
+    set_printed(spell, "Thoughtseize")
     state.players[1].mana_pool = {"B": 1}
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
@@ -366,14 +342,12 @@ def test_thoughtseize_reveals_lands_and_loses_life_when_no_card_qualifies():
 def test_thoughtseize_does_not_lose_life_if_sole_target_turns_illegal():
     state, spell_id, _ = _selective_state(
         "Thoughtseize",
-        "Target player reveals their hand. You choose a nonland card from it. "
-        "That player discards that card. You lose 2 life.",
+        raw_card("Thoughtseize")["oracle_text"],
     )
     state = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": spell_id, "targets": {"target_player": 2},
     })
-    shield = CardInstance("shield", "Leyline of Sanctity", 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-                          oracle_text="You have hexproof.")
+    shield = canonical_card("Leyline of Sanctity", id="shield", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[shield.id] = shield
     state.players[2].battlefield.append(shield.id)
     assert resolve_top_of_stack(state)

@@ -8,6 +8,7 @@ from game_state.serializers import serialize_match_snapshot
 from game_state.state import Zone
 from rules_engine import continuous
 from rules_engine.mana_abilities import multiplied_outputs, mana_multiplier_clause
+from rules_engine.query_context import rule_query_scope
 from tests.test_mana_abilities import add
 from tests.test_static_ability_suppression import add as add_suppression
 from tests.test_variable_mana import clean
@@ -36,7 +37,7 @@ def test_only_matching_sources_need_suppression_queries(seat, multiplier):
     add(state, 'Mana Reflection', 3-seat)
     before = serialize_match_snapshot(state)
     expected = reference(state, land, {'G': 1, 'U': 2})
-    with patch.object(continuous, 'printed_abilities_suppressed',
+    with rule_query_scope(state), patch.object(continuous, 'printed_abilities_suppressed',
                       wraps=continuous.printed_abilities_suppressed) as suppression:
         assert multiplied_outputs(state, land, {'G': 1, 'U': 2}) == expected
         assert suppression.call_count == int(multiplier is not None)

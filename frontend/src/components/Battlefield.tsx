@@ -78,6 +78,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     ? authoritativeMoves : [], [humanActor, suspendOwner, actingPlayerId, authoritativeMoves]);
   const p1 = match.players[String(viewerSeat)];
   const p2 = match.players[String(opponentSeat)];
+  const p1Emblems = (match.emblems ?? []).filter(emblem => emblem.controller === viewerSeat);
+  const p2Emblems = (match.emblems ?? []).filter(emblem => emblem.controller === opponentSeat);
   const p1Groups = useMemo(() => groupBattlefield(p1.battlefield), [p1.battlefield]);
   const p2Groups = useMemo(() => groupBattlefield(p2.battlefield), [p2.battlefield]);
   const p1ManaPool = useMemo(() => manaPoolPips(p1.mana_pool, p1.snow_mana_pool), [p1.mana_pool, p1.snow_mana_pool]);
@@ -246,9 +248,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     };
   }
 
-  function zoneTray(seat: number, zone: "graveyard" | "exile", cards: typeof p1.graveyard, count: number) {
+  function zoneTray(seat: number, zone: "graveyard" | "exile" | "emblems", cards: typeof p1.graveyard, count: number) {
     return <details className="graveyard-tray">
-      <summary aria-label={`Player ${seat} ${zone}`}>{zone === "graveyard" ? "GY" : "EX"} {count}</summary>
+      <summary aria-label={`Player ${seat} ${zone}`}>{zone === "graveyard" ? "GY" : zone === "exile" ? "EX" : "Emblems"} {count}</summary>
       <div className="graveyard-tray-list">
         {cards.length ? cards.map((card) => <button
           key={card.id}
@@ -260,6 +262,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           onClick={event => { previewOrigin.current = event.currentTarget; setPinnedPreview(previewFromCard(card)); }}
         >
           {card.name}{card.mana_cost ? <small>{card.mana_cost}</small> : null}
+          {zone === "emblems" ? <small>{card.oracle_text}</small> : null}
         </button>) : count === 0 ? <span>Empty</span> : null}
         {count > cards.length ? <span>{count - cards.length} face-down card(s)</span> : null}
       </div>
@@ -293,11 +296,14 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       (!costChoice[cardId] || candidate.cost_options?.some((option) => option.id === costChoice[cardId])));
     const selectedModes = Array.isArray(t.mode_texts) ? t.mode_texts as string[] : [];
     const modeTargets = (t.mode_targets ?? {}) as Record<string, Record<string, unknown>>;
-    const announced = move?.target_hints?.choose_two_modes && selectedModes.length === 2
+    const perModeSelection = (move?.target_hints?.choose_two_modes && selectedModes.length === 2)
+      || (move?.target_hints?.choose_one_or_more_modes && selectedModes.length > 0);
+    const announced = perModeSelection
       ? { ...t, target_card_id: undefined, target_player: undefined, target_stack_id: undefined,
           mode_targets: Object.fromEntries(selectedModes.map((mode) => [mode, modeTargets[mode] ?? {}])) }
       : t;
     const optionId = costChoice[cardId] || move?.cost_options?.[0]?.id;
+    const option = move?.cost_options?.find(candidate => candidate.id === optionId);
     const symbols = move?.cost_options?.find((option) => option.id === optionId)?.hybrid_symbols ?? [];
     const branches = symbols.map((_, index) => hybridChoice[`${cardId}:${selectedFaceIndex ?? 0}:${optionId}:${index}`] ?? "");
     onCardAction(viewerSeat, {
@@ -308,6 +314,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
         id: optionId,
         discard_card_ids: costCards[`${cardId}:${optionId}:discard_card_ids`],
         sacrifice_card_ids: costCards[`${cardId}:${optionId}:sacrifice_card_ids`],
+        ...(option?.hand_exile_color ? { exile_card_ids: costCards[`${cardId}:${optionId}:exile_card_ids`] ?? [] } : {}),
       } : undefined,
       hybrid_choices: branches.length && branches.every(Boolean) ? branches : undefined,
       selected_face_index: selectedFaceIndex,
@@ -326,7 +333,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   }
 
   return (
-    <section className={`panel battlefield ${battlefieldDensityClass}`} data-match-revision={match.revision}>
+    <section className={`panel battlefield ${battlefieldDensityClass}`} data-match-id={match.id} data-match-revision={match.revision}>
       {manaMoves.length > 0 ? <details className="zone-tray">
         <summary>Mana abilities ({manaMoves.length})</summary>
         {manaMoves.map(move => <ManualManaOutput key={`${match.revision}:${move.card_id}-mana-${move.ability_index}`}
@@ -363,6 +370,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           <span>Library {p2.library_count}</span>
           {zoneTray(opponentSeat, "graveyard", p2.graveyard, p2.graveyard_count)}
           {zoneTray(opponentSeat, "exile", p2.exile, p2.exile_count)}
+          {p2Emblems.length ? zoneTray(opponentSeat, "emblems", p2Emblems, p2Emblems.length) : null}
           <span>Hand {p2.hand_count}</span>
           {Object.entries(p2.counters ?? {}).filter(([, amount]) => amount > 0).map(([kind, amount]) => (
             <span key={kind} data-player-counter={`${opponentSeat}-${kind}`}>{kind[0].toUpperCase() + kind.slice(1)} {amount}</span>
@@ -447,6 +455,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
           <span>Library {p1.library_count}</span>
           {zoneTray(viewerSeat, "graveyard", p1.graveyard, p1.graveyard_count)}
           {zoneTray(viewerSeat, "exile", p1.exile, p1.exile_count)}
+          {p1Emblems.length ? zoneTray(viewerSeat, "emblems", p1Emblems, p1Emblems.length) : null}
           <span>Hand {p1.hand_count}</span>
           {Object.entries(p1.counters ?? {}).filter(([, amount]) => amount > 0).map(([kind, amount]) => (
             <span key={kind} data-player-counter={`${viewerSeat}-${kind}`}>{kind[0].toUpperCase() + kind.slice(1)} {amount}</span>
@@ -589,20 +598,43 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               const hints = move.target_hints;
               const targetText = move.ability_label ?? "";
               const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
+              const permanentTargets = [...new Map([
+                ...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []),
+                ...(hints?.land_targets ?? []), ...(hints?.permanent_targets ?? []),
+              ].map((target) => [target.id, target])).values()];
+              const requiresX = Boolean(move.ability_x_cost || hints?.requires_x_value);
+              const xValue = Number(targets[key]?.x_value ?? 0);
+              const xMax = move.ability_x_cost && move.ability_x_sign === -1
+                ? Math.max(0, p1.battlefield.find(card => card.id === move.card_id)?.loyalty ?? 0)
+                : hints?.x_value_max;
               return (
                 <div key={key} className="cast-card-box">
                   <button
+                    disabled={requiresX && (!Number.isInteger(xValue) || xValue < 0 || (xMax !== undefined && xValue > xMax))}
                     onClick={() =>
                       onCardAction(viewerSeat, {
                         type: "activate_loyalty",
                         card_id: move.card_id,
                         ability_index: move.ability_index,
-                        targets: targets[key] ?? {},
+                        targets: { ...targets[key], ...(requiresX ? { x_value: xValue } : {}) },
                       })
                     }
                   >
                     {move.card_name}: {move.ability_label}
                   </button>
+                  {requiresX ? (
+                    <input
+                      type="number"
+                      min={0}
+                      max={xMax}
+                      aria-label={`${move.card_name} loyalty X value`}
+                      value={xValue}
+                      onChange={(e) => setTargets((prev) => ({
+                        ...prev,
+                        [key]: { ...prev[key], x_value: Number(e.target.value) || 0 },
+                      }))}
+                    />
+                  ) : null}
                   {hints?.player_targets?.length ? (
                     <select
                       onChange={(e) =>
@@ -621,7 +653,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       ))}
                     </select>
                   ) : null}
-                  {hints?.creature_targets?.length || hints?.planeswalker_targets?.length ? (
+                  {permanentTargets.length ? (
                     <select
                       onChange={(e) =>
                         setTargets((prev) => ({
@@ -632,13 +664,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                       value={String(targets[key]?.target_card_id ?? "")}
                     >
                       <option value="">Target Permanent</option>
-                      {(hints.creature_targets ?? []).map((t) => (
-                        <option key={`${key}-c-${t.id}`} value={t.id}>
-                          {t.name}
-                        </option>
-                      ))}
-                      {(hints.planeswalker_targets ?? []).map((t) => (
-                        <option key={`${key}-pw-${t.id}`} value={t.id}>
+                      {permanentTargets.map((t) => (
+                        <option key={`${key}-target-${t.id}`} value={t.id}>
                           {t.name}
                         </option>
                       ))}
@@ -704,7 +731,6 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const faceCastMoves = cardCastMoves.filter((m) => (m.selected_face_index ?? 0) === selectedFaceIndex);
             const castCostOptions = [...new Map(faceCastMoves.flatMap((m) => m.cost_options ?? []).map((option) => [option.id, option])).values()];
             const move = faceCastMoves.find((m) => !costChoice[card.id] || m.cost_options?.some((option) => option.id === costChoice[card.id])) ?? faceCastMoves[0];
-            const cycleMove = cycleMoves.find((m) => m.card_id === card.id);
             const foretellMove = foretellMoves.find((m) => m.card_id === card.id);
             const foretellControl = foretellMove ? <button onClick={() => onCardAction(viewerSeat, { type: "foretell", card_id: card.id })}>
               Foretell {card.name} ({foretellMove.mana_cost})
@@ -715,6 +741,21 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               Suspend {card.name} ({suspendMove.mana_cost}; {suspendMove.time_counters} time counter{suspendMove.time_counters === 1 ? "" : "s"})
             </button> : null;
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
+            const cycleMove = cardCycleMoves.find((m) => m.x_value === cycleChoices[card.id]) ?? cardCycleMoves[0];
+            const cycleControl = cycleMove ? <>
+              {cardCycleMoves.some((m) => m.x_value !== undefined) ? (
+                <select
+                  aria-label={`Cycling X for ${card.name}`}
+                  value={cycleMove.x_value}
+                  onChange={(e) => setCycleChoices((prev) => ({ ...prev, [card.id]: Number(e.target.value) }))}
+                >
+                  {cardCycleMoves.map((m) => <option key={`${card.id}-x-${m.x_value}`} value={m.x_value}>{`X=${m.x_value}`}</option>)}
+                </select>
+              ) : null}
+              <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleMove.x_value ?? 0 })}>
+                Cycle {card.name} {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
+              </button>
+            </> : null;
             const cardLandMoves = playLandMoves.filter((m) => m.card_id === card.id);
             const landControls = cardLandMoves.map((landMove, index) => <button key={`${card.id}-land-${landMove.selected_face_index ?? 0}-${landMove.entry_choice ?? "normal"}-${index}`}
               onClick={() => onCardAction(viewerSeat, { type: "play_land", card_id: card.id, selected_face_index: landMove.selected_face_index, from_exile: landMove.from_exile, from_graveyard: landMove.from_graveyard, graveyard_permission_key: landMove.graveyard_permission_key, entry_choice: landMove.entry_choice })}>
@@ -735,21 +776,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   onMouseLeave={() => setHoverPreview(null)}
                 >
                   {handFace(card)}
-                  {landControls.length ? landControls : cycleMove ? (
-                    <>
-                    {cardCycleMoves.some((m) => m.x_value !== undefined) ? (
-                      <select
-                        value={cycleChoices[card.id] ?? 0}
-                        onChange={(e) => setCycleChoices((prev) => ({ ...prev, [card.id]: Number(e.target.value) || 0 }))}
-                      >
-                        {cardCycleMoves.map((m) => <option key={`${card.id}-x-${m.x_value}`} value={m.x_value}>{`X=${m.x_value}`}</option>)}
-                      </select>
-                    ) : null}
-                    <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
-                      Cycle {card.name} {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
-                    </button>
-                    </>
-                  ) : (
+                  {landControls.length ? landControls : cycleControl ?? (
                     <button disabled>
                       {card.types.includes("Land") ? `${card.name} · ${landPlayHint(match, viewerSeat)}`
                         : `${card.name} ${card.mana_cost ? `(${card.mana_cost}) ` : ""}(not castable)`}
@@ -776,17 +803,35 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const incompleteLinkedPair = Boolean(linkedPairs && linkedPairIndex < 0);
             const distinctTargets = Boolean(hints?.required_distinct_target_count);
             const orderedCount = hints?.required_distinct_target_count ?? hints?.required_target_instance_count ?? 0;
+            const orderedCandidates = hints?.creature_targets ?? hints?.permanent_targets ?? [];
+            const orderedTargetKind = hints?.creature_targets !== undefined ? "creature" : "permanent";
             const orderedTargets = Array.isArray(targets[card.id]?.target_card_ids)
               ? targets[card.id].target_card_ids as string[] : [];
             const incompleteOrderedTargets = orderedCount > 0 && (
               orderedTargets.length !== orderedCount || !orderedTargets.every(Boolean)
               || (distinctTargets && new Set(orderedTargets).size !== orderedCount)
-              || orderedTargets.some(id => !hints?.creature_targets?.some(target => target.id === id))
+              || orderedTargets.some(id => !orderedCandidates.some(target => target.id === id))
             );
             const targetText = card.card_faces?.[selectedFaceIndex]?.oracle_text ?? card.oracle_text ?? "";
             const chosenModes = targets[card.id]?.mode_texts;
             const selectedModeTexts = Array.isArray(chosenModes) ? chosenModes as string[] : [];
-            const perModeSelected = Boolean(hints?.choose_two_modes && selectedModeTexts.length === 2);
+            const multipleModes = Boolean(hints?.choose_two_modes || hints?.choose_one_or_more_modes);
+            const offeredModes = hints?.available_modes ?? hints?.modes ?? [];
+            const incompleteModes = multipleModes && (
+              selectedModeTexts.length < (hints?.choose_two_modes ? 2 : 1)
+              || selectedModeTexts.length > (hints?.choose_two_modes ? 2 : offeredModes.length)
+              || new Set(selectedModeTexts).size !== selectedModeTexts.length
+              || selectedModeTexts.some(mode => !offeredModes.includes(mode))
+            );
+            const perModeSelected = multipleModes && !incompleteModes;
+            const selectedModeTargets = (targets[card.id]?.mode_targets ?? {}) as Record<string, Record<string, unknown>>;
+            const incompleteSpreeTargets = Boolean(hints?.choose_one_or_more_modes && perModeSelected
+              && selectedModeTexts.some(mode => !hints.mode_target_hints?.[mode]?.stack_targets?.some(
+                option => option.id === selectedModeTargets[mode]?.target_stack_id)));
+            const modeBaseCost = selectedCostId === undefined ? undefined : hints?.mode_base_mana_costs?.[selectedCostId];
+            const incompleteSpreeCosts = Boolean(hints?.choose_one_or_more_modes && perModeSelected
+              && (modeBaseCost === undefined || selectedModeTexts.some(
+                mode => hints.mode_additional_mana_costs?.[mode] === undefined)));
             const chosenMode = targets[card.id]?.mode_text;
             const targetingText = Array.isArray(chosenModes) && chosenModes.length
               ? chosenModes.join(" ") : typeof chosenMode === "string" && chosenMode ? chosenMode : targetText;
@@ -797,13 +842,22 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
               ...(hints?.graveyard_card_targets ?? []), ...(hints?.graveyard_creature_targets ?? []), ...(hints?.graveyard_permanent_targets ?? []),
             ].map((target) => [target.id, target])).values()];
+            const boundedTargets = Array.isArray(targets[card.id]?.target_card_ids)
+              ? targets[card.id].target_card_ids as string[] : [];
+            const incompleteBoundedTargets = Boolean(hints?.up_to_target_count && hints.up_to_target_count > 1 && (
+              targets[card.id]?.target_card_id || boundedTargets.length > hints.up_to_target_count
+              || new Set(boundedTargets).size !== boundedTargets.length
+              || boundedTargets.some(id => !alternativeTargets.some(target => target.id === id))
+            ));
             const showAlternativeSelect = Boolean(!perModeSelected && hints?.single_target_alternative && hints?.player_targets?.length && alternativeTargets.length);
             const payments = [
-              { key: 'discard_card_ids', count: (selectedCost?.discard_cards ?? 0) + (selectedCost?.discard_x ? Math.max(0, Number(targets[card.id]?.x_value ?? 0)) : 0), candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost' },
-              { key: 'sacrifice_card_ids', count: selectedCost?.sacrifice_creatures ?? 0, candidates: selectedCost?.sacrifice_card_ids ?? [], label: 'Sacrifice for cost' },
+              { key: 'discard_card_ids', count: (selectedCost?.discard_cards ?? 0) + (selectedCost?.discard_x ? Math.max(0, Number(targets[card.id]?.x_value ?? 0)) : 0), candidates: selectedCost?.discard_card_ids ?? [], label: 'Discard for cost', optional: false },
+              { key: 'sacrifice_card_ids', count: selectedCost?.sacrifice_creatures ?? 0, candidates: selectedCost?.sacrifice_card_ids ?? [], label: 'Sacrifice for cost', optional: false },
+              { key: 'exile_card_ids', count: 0, candidates: selectedCost?.exile_card_ids ?? [], label: 'Exile from hand for cost', optional: Boolean(selectedCost?.hand_exile_color) },
             ];
-            const incompleteCostCards = payments.some(payment => payment.count > 0 &&
-              ((costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.length ?? 0) !== payment.count ||
+            const incompleteCostCards = payments.some(payment => (payment.count > 0 || payment.optional) &&
+              ((!payment.optional && (costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.length ?? 0) !== payment.count) ||
+                new Set(costCards[`${card.id}:${selectedCostId}:${payment.key}`] ?? []).size !== (costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.length ?? 0) ||
                 costCards[`${card.id}:${selectedCostId}:${payment.key}`]?.some(id => !payment.candidates.includes(id))));
             const selectedManaCost = move.cost_options?.find((option) => option.id === selectedCostId)?.mana_cost ?? move.mana_cost;
             const selectedAuraTarget = String(targets[card.id]?.target_card_id ?? "");
@@ -811,6 +865,9 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const hybridSymbols = move.cost_options?.find((option) => option.id === selectedCostId)?.hybrid_symbols ?? [];
             const chosenHybridBranches = hybridSymbols.map((_, index) => hybridChoice[`${card.id}:${selectedFaceIndex}:${selectedCostId}:${index}`] ?? "");
             const incompleteHybridChoice = chosenHybridBranches.some(Boolean) && !chosenHybridBranches.every(Boolean);
+            const displayedManaCost = hints?.choose_one_or_more_modes && perModeSelected && !incompleteSpreeCosts
+              ? modeBaseCost + selectedModeTexts.map(mode => hints.mode_additional_mana_costs?.[mode]).join('')
+              : selectedManaCost;
             return (
               <div
                 key={card.id}
@@ -827,16 +884,12 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {foretellControl}
                 {suspendControl}
                 <button
-                  disabled={incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteLinkedPair || duplicateResources}
+                  disabled={incompleteModes || incompleteSpreeTargets || incompleteSpreeCosts || incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteBoundedTargets || incompleteLinkedPair || duplicateResources}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
-                  Cast {move.card_name ?? card.name} {selectedManaCost ? `(${selectedManaCost})` : ""}
+                  Cast {move.card_name ?? card.name} {displayedManaCost ? `(${displayedManaCost})` : ""}
                 </button>
-                {cycleMove ? (
-                  <button onClick={() => onCardAction(viewerSeat, { type: "cycle_card", card_id: card.id, x_value: cycleChoices[card.id] ?? cycleMove.x_value ?? 0 })}>
-                    Cycle {cycleMove.mana_cost ? `(${cycleMove.mana_cost})` : ""}
-                  </button>
-                ) : null}
+                {cycleControl}
                 {faceNames.length > 1 ? (
                   <select
                     value={selectedFaceIndex}
@@ -880,10 +933,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   onChange={choice => setResourceChoices(previous => ({...previous,
                     [`${card.id}:${selectedFaceIndex}:${selectedCostId}`]: choice}))} /> : null}
                 {selectedCost?.sacrifice_all ? <p>Additional cost: sacrifice all permanents you control.</p> : null}
-                {payments.filter(payment => payment.count > 0).map(payment => {
+                {payments.filter(payment => payment.count > 0 || payment.optional).map(payment => {
                   const key = `${card.id}:${selectedCostId}:${payment.key}`;
                   return <label key={key}>
-                    {payment.label}: choose {payment.count}
+                    {payment.label}: {payment.optional ? `choose any number (including zero); reduce generic cost by ${selectedCost?.hand_exile_generic_reduction} per card` : `choose ${payment.count}`}
                     <select multiple aria-label={`${payment.label} ${card.name}`}
                       value={costCards[key] ?? []}
                       onChange={event => setCostCards(previous => ({ ...previous,
@@ -957,10 +1010,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   </select>
                 ) : null}
                 {hints?.modes?.length ? (
-                  hints.choose_two_modes ? (
+                  multipleModes ? (
                     <select
                       aria-label="Spell modes"
                       multiple
+                      value={selectedModeTexts}
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
@@ -1050,11 +1104,13 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   />
                 ) : null}
                 {orderedCount > 0 ? <fieldset>
-                  <legend>{distinctTargets ? `Choose ${orderedCount} different creatures` : `Choose ${orderedCount} targets; the same creature may be chosen again`}</legend>
+                  <legend>{distinctTargets ? `Choose ${orderedCount} different ${orderedTargetKind}s` : `Choose ${orderedCount} targets; the same creature may be chosen again`}</legend>
                   {Array.from({ length: orderedCount }, (_, index) => <label key={index}>
-                    Target {index + 1}: {distinctTargets
+                    Target {index + 1}: {hints?.ordered_counter_amounts
                       ? `${hints?.ordered_counter_amounts?.[index]} ${hints?.ordered_counter_type} counters`
-                      : `${hints?.ordered_creature_modifiers?.[index]?.power}/${hints?.ordered_creature_modifiers?.[index]?.toughness} until end of turn`}
+                      : hints?.ordered_creature_modifiers
+                        ? `${hints.ordered_creature_modifiers[index]?.power}/${hints.ordered_creature_modifiers[index]?.toughness} until end of turn`
+                        : null}
                     <select aria-label={`Target ${index + 1} for ${card.name}`}
                       value={orderedTargets[index] ?? ""}
                       onChange={event => {
@@ -1066,8 +1122,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                           return { ...previous, [card.id]: { ...previous[card.id], target_card_id: undefined, target_card_ids: selected } };
                         });
                       }}>
-                      <option value="">Choose creature</option>
-                      {(hints?.creature_targets ?? []).map(target => <option key={target.id} value={target.id}
+                      <option value="">Choose {orderedTargetKind}</option>
+                      {orderedCandidates.map(target => <option key={target.id} value={target.id}
                         disabled={distinctTargets && orderedTargets.some((id, slot) => slot !== index && id === target.id)}>{target.name} ({target.id.slice(-6)})</option>)}
                     </select>
                   </label>)}
@@ -1076,11 +1132,14 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   hints?.up_to_target_count && hints.up_to_target_count > 1 ? (
                     <select
                       multiple
+                      aria-label={`Choose up to ${hints.up_to_target_count} targets for ${card.name}`}
+                      value={boundedTargets}
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
                           [card.id]: {
                             ...prev[card.id],
+                            target_card_id: undefined,
                             target_card_ids: Array.from(e.target.selectedOptions).map((o) => o.value),
                           },
                         }))

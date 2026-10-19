@@ -25,6 +25,8 @@ CLAIM = 'Explicit canonical Suspend composition fixture; no historical-game clai
 
 def owned(match_id, cid):
     match = main.ACTIVE_MATCHES.get(match_id)
+    if match is None:
+        match = main._load_saved_match(match_id)
     if match is None or CLAIM not in match.state.log:
         raise HTTPException(404, 'Unknown owned composition fixture')
     card = match.state.cards.get(cid)

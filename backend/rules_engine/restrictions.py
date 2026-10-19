@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.card_types import CARD_TYPES
 from rules_engine.type_effects import effective_types
 
 import re
@@ -104,9 +105,27 @@ def can_activate_in_current_timing(state, ability_text: str, player_id: int) -> 
     return True
 
 
+def has_global_flash_permission(state, player_id: int) -> bool:
+    """Recognized unconditional static grant; not a zone or priority permission."""
+    from rules_engine.continuous import _static_oracle_text, printed_abilities_suppressed
+
+    for player in state.players.values():
+        for cid in player.battlefield:
+            source = state.cards.get(cid)
+            if (source is None or source.zone != Zone.BATTLEFIELD
+                    or source.controller != player_id
+                    or printed_abilities_suppressed(state, cid)):
+                continue
+            if any(line.strip() == "you may cast spells as though they had flash."
+                   for line in _static_oracle_text(source).splitlines()):
+                return True
+    return False
+
+
 def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution: bool = False) -> tuple[bool, str]:
-    from rules_engine.graveyard_permissions import zone_cast_prohibited, graveyard_only_cast
-    if zone_cast_prohibited(state, player_id, getattr(card, 'zone', None)):
+    from rules_engine.graveyard_permissions import spell_cast_prohibited, graveyard_only_cast
+    if spell_cast_prohibited(state, player_id, getattr(card, 'zone', None),
+                             spell_types=tuple(sorted(set(effective_types(state, card)) & CARD_TYPES))):
         return False, 'A battlefield ability prohibits casting from this zone.'
     if getattr(card, 'zone', None) != Zone.GRAVEYARD and graveyard_only_cast(card):
         return False, 'This card may be cast only from its graveyard.'
@@ -120,7 +139,15 @@ def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution
     is_active = state.active_player == player_id
     opponent_turn = state.active_player != player_id
     types = {str(value) for value in (effective_types(state, card) or [])}
-    has_flash = "flash" in {str(value).lower() for value in (getattr(card, "keywords", []) or [])} or "flash" in text
+    from rules_engine.loyalty_instructions import timing
+    loyalty_allowed, loyalty_flash = timing(state, card, player_id)
+    if not loyalty_allowed:
+        return False, 'An opponent restricts casting to sorcery timing.'
+    from rules_engine.oracle_text import without_reminder_text
+    has_flash = ("flash" in {str(value).lower() for value in (getattr(card, "keywords", []) or [])}
+                 or any(part.strip().rstrip('.') == "flash"
+                        for line in without_reminder_text(text).splitlines()
+                        for part in line.split(',')))
     in_combat = step in {
         Step.BEGIN_COMBAT,
         Step.DECLARE_ATTACKERS,
@@ -135,7 +162,8 @@ def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution
     # clauses, which exposed ordinary sorceries/creatures as legal casts in
     # every priority window.
     non_instant_spell = bool(types & {"Sorcery", "Creature", "Artifact", "Enchantment", "Planeswalker", "Battle"})
-    if non_instant_spell and "Instant" not in types and not has_flash and not during_resolution:
+    if (non_instant_spell and "Instant" not in types and not has_flash
+            and not during_resolution and not loyalty_flash and not has_global_flash_permission(state, player_id)):
         if not (is_active and step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and not state.stack):
             return (False, "Cast only at sorcery speed.")
 
@@ -145,6 +173,8 @@ def can_cast_in_current_timing(state, card, player_id: int, *, during_resolution
         return (False, "Cast only during an opponent's turn.")
     if "only during combat" in text and not in_combat:
         return (False, "Cast only during combat.")
+    if "only during combat on your turn" in text and not is_active:
+        return (False, "Cast only during combat on your turn.")
     if "only during your upkeep" in text and not (is_active and in_upkeep):
         return (False, "Cast only during your upkeep.")
     if "cast only any time you could cast a sorcery" in text:

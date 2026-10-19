@@ -1,0 +1,10 @@
+{
+  "facts_modified": false,
+  "fixture_sha256": "e28e6d2178e40b3a6f10d104dbc621341736bac5ce28e460d33ed1a2aa1c4473",
+  "http_requests": 0,
+  "id": "7de1dfcf-f2e7-4c7c-8b00-c5d30a2d3f98",
+  "name": "Mirari",
+  "oracle_id": "8f6a2fce-719e-4745-80d3-aabce5c9bafa",
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

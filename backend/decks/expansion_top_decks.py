@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from decks.builtin_decks import BUILTIN_DECKS
+from decks.catalog import historical_entry
 
 
 def _entry(
@@ -122,8 +123,8 @@ EXPANSION_TOP_DECKS: list[dict] = [
         "event_name": "Pro Tour Thunder Junction",
         "player_name": "Yoshihiko Ikawa",
         "finish": "1st",
-        "decklist_source_url": "https://mtgdecks.net/Standard/domain-ramp-decklist-by-yoshihiko-ikawa-2021543",
-        "event_source_url": "https://magic.wizards.com/en/news/mtg-arena/mtg-arena-announcements-april-29-2024",
+        "decklist_source_url": "https://magic.gg/news/pro-tour-thunder-junction-top-8-players-and-decks",
+        "event_source_url": "https://magic.gg/events/pro-tour-thunder-junction",
         "deck_text": OTJ_DOMAIN_RAMP,
         "reference_builtin": None,
     },
@@ -131,6 +132,7 @@ EXPANSION_TOP_DECKS: list[dict] = [
     _entry("DSK", "Duskmourn: House of Horror", 2024, "Tempo", "Tempo"),
     _entry("FDN", "Foundations", 2024, "White Weenie", "Aggro"),
     _entry("DFT", "Aetherdrift", 2025, "Mono Red Aggro", "Aggro"),
+    historical_entry("MH3", "Modern Horizons 3", 2024),
 ]
 
 

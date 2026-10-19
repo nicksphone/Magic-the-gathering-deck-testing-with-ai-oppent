@@ -13,6 +13,10 @@ from rules_engine.zone_actions import put_into_graveyard, move_spell_from_stack
 
 
 def add_to_stack(state: MatchState, source_card_id: str, controller: int, label: str, effect_key: str, payload: dict, targets: list[str] | None = None, *, is_spell: bool = True) -> StackItem:
+    if type(is_spell) is not bool:
+        from rules_engine.action_validation import ActionRejected
+        raise ActionRejected('Stack publication requires a native boolean kind')
+    payload = {**payload, '__announced_stack_kind': 'spell' if is_spell else 'activated'}
     from rules_engine.bestow import is_bestowed
     from game_state.state import object_incarnation
     source = state.cards.get(source_card_id)
@@ -35,11 +39,14 @@ def add_to_stack(state: MatchState, source_card_id: str, controller: int, label:
         state.trigger_staging = True
         state.trigger_staging_event = "cast_or_activate"
     if is_spell:
+        from rules_engine.turn_spell_protection import record_spell_colors
+        record_spell_colors(state, source, controller)
         emit_event(
             state,
             "spell_cast",
             {
                 "source_card_id": source_card_id,
+                "source_stack_id": item.id,
                 "controller": controller,
                 "label": label,
                 "stack_payload": dict(payload or {}),
@@ -85,12 +92,12 @@ def _replacement_context(state: MatchState, item: StackItem) -> tuple[str, int |
     return None
 
 
-def _legal_divided_damage_targets(state: MatchState, item: StackItem, card, announced: dict) -> dict:
+def _legal_divided_damage_targets(state: MatchState, item: StackItem, card, announced: dict, *, hint_card=None) -> dict:
     """Recheck each announced recipient without reallocating its fixed damage."""
     from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
-    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
+    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets, stack_object_kind
 
-    hints = build_cast_hints(state, card, item.controller, announced)
+    hints = build_cast_hints(state, card if hint_card is None else hint_card, item.controller, announced)
     legal = {}
     for target_id, amount in (announced.get("target_distribution") or {}).items():
         single = {**announced, "target_distribution": {target_id: amount}, "divide_total": amount}
@@ -98,11 +105,88 @@ def _legal_divided_damage_targets(state: MatchState, item: StackItem, card, anno
             allowed = {str(target["id"]) for target in hints.get("player_targets", [])}
             if str(target_id) not in allowed or int(target_id) not in state.players:
                 continue
-        if (validate_cast_choice(hints, single)[0]
-                and validate_protection_targets(state, card, single)[0]
-                and validate_hexproof_shroud_targets(state, item.controller, single, card)[0]):
+        from rules_engine.targeting import announced_target_reference_matches
+        current = (str(target_id) in {'1', '2'} or announced_target_reference_matches(
+            state, (item.payload or {}).get('__announced_target_references'),
+            ('target_distribution', target_id), target_id))
+        if (current and validate_cast_choice(hints, single)[0]
+                and validate_protection_targets(state, card, single, source_lki=(item.payload or {}).get('__source_lki'))[0]
+                and validate_hexproof_shroud_targets(state, item.controller, single, card,
+                    source_lki=(item.payload or {}).get('__source_lki'), source_kind=stack_object_kind(state, item))[0]):
             legal[target_id] = amount
     return legal
+
+
+def _damage_replacement_source_context(state: MatchState, item: StackItem, selected_payload: dict):
+    """Project query inputs without conflating ability control with source control."""
+    from rules_engine.targeting import stack_object_kind
+    source_lki = selected_payload.get('__source_lki', (item.payload or {}).get('__source_lki'))
+    # A spell copy is a spell in its own right; its physical source may have departed.
+    source_controller = item.controller if stack_object_kind(state, item) == 'spell' else None
+    return source_lki, source_controller
+
+
+def _validate_damage_activation_source(state: MatchState, item: StackItem) -> None:
+    """Validate native battlefield damage provenance, not arbitrary storage authenticity."""
+    payload = item.payload or {}
+    from rules_engine.damage_results import validate_hand_payload
+    context = validate_hand_payload(state, payload, source_card_id=item.source_card_id)
+    if '__activation_source_origin' in payload and (
+            type(payload['__activation_source_origin']) is not str
+            or payload['__activation_source_origin'] not in {'hand', 'battlefield', 'graveyard'}):
+        from rules_engine.action_validation import ActionRejected
+        raise ActionRejected('Unknown native activation origin')
+    if context is not None:
+        if item.source_card_id not in state.cards:
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('HAND activation target hints require a real source instance')
+        return
+    if ('__activation_source_reference' not in payload or '__ability_target_text' not in payload
+            or payload.get('__trigger_event') or payload.get('__stack_copy_kind') in ('spell', 'triggered')):
+        return  # Legacy frames, spells and triggers have separate producer contracts.
+    pending = [(item.effect_key, payload)]
+    packets = []
+    damage = False
+    while pending:
+        key, data = pending.pop()
+        if not isinstance(data, dict):
+            continue
+        packets.append(data)
+        if key == 'conditional_instruction':
+            key = data.get('effect_key')
+        damage |= key in {'deal_damage', 'deal_damage_multi', 'deal_damage_batch',
+                         'deal_damage_to_controller', 'damage_each_creature',
+                         'damage_each_creature_and_player', 'linked_landfall_damage'}
+        if key == 'effect_sequence':
+            pending.extend((effect.get('effect_key'), effect.get('payload'))
+                           for effect in data.get('effects', []) if isinstance(effect, dict))
+    if not damage:
+        return
+    from rules_engine.action_validation import ActionRejected
+    from game_state.state import object_incarnation
+    reference = payload['__activation_source_reference']
+    if (not isinstance(reference, dict)
+            or set(reference) != {'incarnation', 'zone_change_sequence'}
+            or any(type(value) is not int or value < 0 for value in reference.values())):
+        raise ActionRejected('Malformed native damage activation source reference')
+    source = state.cards.get(item.source_card_id)
+    if payload.get('__activation_source_origin') == 'graveyard':
+        return  # Existing graveyard producer has a separate source contract.
+    for packet in packets:
+        if '__source_lki' not in packet:
+            continue
+        lki = packet['__source_lki']
+        if (not isinstance(lki, dict)
+                or type(lki.get('controller')) is not int or lki['controller'] not in state.players
+                or type(lki.get('battlefield_incarnation')) is not int
+                or lki['battlefield_incarnation'] < 0
+                or lki['battlefield_incarnation'] != reference['incarnation']):
+            raise ActionRejected('Malformed retained damage activation battlefield LKI')
+    same_live_object = (source is not None and source.zone == Zone.BATTLEFIELD
+                        and object_incarnation(source) == reference['incarnation']
+                        and source.zone_change_sequence == reference['zone_change_sequence'])
+    if not same_live_object and '__source_lki' not in payload:
+        raise ActionRejected('Departed native damage activation source requires retained battlefield LKI')
 
 
 def resolve_top_of_stack(state: MatchState) -> bool:
@@ -111,6 +195,48 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     if not state.stack:
         return False
     item = state.stack[-1]
+    _validate_damage_activation_source(state, item)
+    from rules_engine.prevention import has_numeric_prevention_instruction, validate_prevention_item
+    prevention_frame_required = has_numeric_prevention_instruction(item.effect_key, item.payload or {})
+    if prevention_frame_required:
+        validate_prevention_item(state, item)
+    control_frame_required = (
+        item.effect_key == 'temporary_control_instruction'
+        or item.effect_key == 'effect_sequence' and any(
+            isinstance(effect, dict) and effect.get('effect_key') == 'temporary_control_instruction'
+            for effect in (item.payload or {}).get('effects', [])))
+    if control_frame_required:
+        from rules_engine.action_validation import ActionRejected
+        receipt = (item.payload or {}).get('__control_source_frame')
+        if (not isinstance(receipt, dict)
+                or set(receipt) != {'stack_id', 'source_card_id', 'cast_controller', 'label', 'source_reference'}
+                or not isinstance(receipt['stack_id'], str) or not receipt['stack_id']
+                or receipt['source_card_id'] != item.source_card_id
+                or not isinstance(receipt['source_card_id'], str) or not receipt['source_card_id']
+                or type(receipt['cast_controller']) is not int or receipt['cast_controller'] not in state.players
+                or not isinstance(receipt['label'], str) or not receipt['label']):
+            raise ActionRejected('Malformed retained control source frame')
+        reference = receipt['source_reference']
+        if (not isinstance(reference, dict)
+                or set(reference) != {'incarnation', 'zone_change_sequence'}
+                or any(type(value) is not int or value < 0 for value in reference.values())):
+            raise ActionRejected('Malformed retained control source reference')
+        copy_kind = (item.payload or {}).get('__stack_copy_kind')
+        if copy_kind is not None and copy_kind != 'spell':
+            raise ActionRejected('Unknown control source copy kind')
+        # Copies retain announcing provenance, not their new resolving identity.
+        if not (item.payload or {}).get('__stack_copy_kind') and (
+                receipt['stack_id'] != item.id or receipt['cast_controller'] != item.controller):
+            raise ActionRejected('Control source frame does not match announced item')
+    from rules_engine.targeting import validate_announced_target_references, announced_target_reference_matches
+    references = (item.payload or {}).get('__announced_target_references')
+    if '__announced_target_references' in (item.payload or {}):
+        validate_announced_target_references((item.payload or {}).get('__announced_targets') or {}, references)
+
+    def same_targets(selected, prefix=()):
+        return (selected.get('target_card_id') is None or announced_target_reference_matches(
+            state, references, (*prefix, 'target_card_id'), selected['target_card_id']))
+
     from rules_engine.targeting import stack_source_card, stack_object_kind
     card = stack_source_card(state, item)
     if item.effect_key == 'conditional_instruction':
@@ -136,6 +262,16 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                     + sum(bool(announced.get(key)) for key in ("target_card_id", "target_player", "target_stack_id")))
     target_count += sum(sum(choice.get(key) is not None for key in ("target_card_id", "target_player", "target_stack_id"))
                         for choice in (announced.get("mode_targets") or {}).values())
+    if (item.effect_key == 'effect_sequence' and target_count == 1
+            and announced.get('target_card_id') and item.payload.get('target_restrictions')):
+        from rules_engine.oracle_effects import _target_card_matches_restrictions
+        target = state.cards.get(announced['target_card_id'])
+        legal = (same_targets(announced) and target is not None and target.zone == Zone.BATTLEFIELD
+                 and _target_card_matches_restrictions(state, target, item.payload['target_restrictions'],
+                    item.controller, x_value=int(item.payload.get('x_value', 0) or 0)))
+        if not legal:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
     from rules_engine.bestow import is_bestowed, end_bestow
     if card is not None and is_bestowed(card) and stack_object_kind(state, item) == 'spell':
         from game_state.state import object_incarnation
@@ -147,73 +283,107 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         legal = (attachment_target_is_legal(state, card, target_id)
                  and (incarnation is None or target is not None
                       and [object_incarnation(target), target.zone_change_sequence] == incarnation)
-                 and validate_hexproof_shroud_targets(state, item.controller, {'target_card_id': target_id}, card)[0])
+                 and validate_hexproof_shroud_targets(state, item.controller, {'target_card_id': target_id}, card, source_kind=stack_object_kind(state, item))[0])
         if not legal:
             end_bestow(card)
             item.payload.pop('target_card_id', None)
             item.payload.pop('__announced_targets', None)
+            item.payload.pop('__announced_target_references', None)
             if item.payload.get('__copied_card'):
                 item.payload['__copied_card'] = {**item.payload['__copied_card'],
                     'types': list(effective_types(state, card)), 'type_line': card.type_line, 'bestow_characteristics': {}}
             announced, target_count = {}, 0
             state.log.append(f'{item.label} ceases to be bestowed and resolves as a creature.')
-    if card and item.payload.get("__ability_target_text") and target_count == 1:
+    target_source = card
+    source_lki = item.payload.get('__source_lki')
+    if card and item.payload.get("__ability_target_text"):
         from copy import copy
+        target_source = copy(card)
+        target_source.oracle_text = item.payload["__ability_target_text"]
+        target_source.mana_cost = ''
+        if source_lki is not None:
+            target_source.controller = int(source_lki["controller"])
+            target_source.types = list(source_lki["types"])
+            target_source.colors = list(source_lki.get("colors", []))
+            target_source.card_faces = []
+            # Nested hint filters must also use this receipt, never new-object layers.
+            target_source._retained_source_lki = source_lki
+    targeted_frame = card is not None and (stack_object_kind(state, item) == 'spell'
+                                           or bool(item.payload.get('__ability_target_text')))
+    if card and item.payload.get("__ability_target_text") and target_count == 1:
         from rules_engine.oracle_effects import inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_protection_targets, validate_hexproof_shroud_targets
-
-        source = copy(card)
-        source.oracle_text = item.payload["__ability_target_text"]
-        source_lki = item.payload.get("__source_lki")
-        if source_lki is not None:
-            source.controller = int(source_lki["controller"])
-            source.types = list(source_lki["types"])
-            source.colors = list(source_lki.get("colors", []))
-            source.card_faces = []
-        hints = inspect_target_hints(state, source, item.controller, announced)
-        legal = (validate_cast_targets(hints, announced)[0]
-                 and validate_protection_targets(state, source, announced)[0]
-                 and validate_hexproof_shroud_targets(state, item.controller, announced, source)[0])
+        hints = inspect_target_hints(state, target_source, item.controller, announced, source_kind=stack_object_kind(state, item))
+        # A captured source belongs to the old object, not a same-ID reentry.
+        legal = (same_targets(announced) and validate_cast_targets(hints, announced)[0]
+                 and validate_protection_targets(state, card, announced, source_lki=source_lki)[0]
+                 and validate_hexproof_shroud_targets(state, item.controller, announced, card, source_lki=source_lki, source_kind=stack_object_kind(state, item))[0])
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
     legal_distribution = None
     legal_effects = None
-    if card and card.zone == Zone.STACK and item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
-        legal_distribution = _legal_divided_damage_targets(state, item, card, announced)
+    legal_return_targets = None
+    if targeted_frame and item.effect_key == 'exile_return_batch':
+        from rules_engine.oracle_effects import inspect_target_hints
+        from rules_engine.targeting import validate_cast_targets, validate_protection_targets, validate_hexproof_shroud_targets
+        hints = inspect_target_hints(state, target_source, item.controller, announced, source_kind=stack_object_kind(state, item))
+        hints.pop('required_distinct_target_count', None)
+        legal_return_targets = []
+        for index, cid in enumerate(announced.get('target_card_ids') or []):
+            selected = {'target_card_id': cid}
+            if (announced_target_reference_matches(state, references, ('target_card_ids', index), cid)
+                    and validate_cast_targets(hints, selected)[0]
+                    and validate_protection_targets(state, card, selected, source_lki=source_lki)[0]
+                    and validate_hexproof_shroud_targets(state, item.controller, selected, card,
+                        source_lki=source_lki, source_kind=stack_object_kind(state, item))[0]):
+                legal_return_targets.append(cid)
+        if not legal_return_targets:
+            state.stack.pop()
+            return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
+    elif targeted_frame and item.effect_key == "deal_damage_multi" and announced.get("target_distribution"):
+        legal_distribution = _legal_divided_damage_targets(state, item, card, announced, hint_card=target_source)
         if not legal_distribution:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
     elif item.effect_key == 'linked_landfall_damage':
         from rules_engine.linked_targets import legal_linked_recipients
         legal_recipients = legal_linked_recipients(state, item)
+        instances = item.payload['target_instances']
+        paths = ([('target_card_ids', 0), ('target_card_ids', 1)]
+                 if 'target_card_ids' in announced else [None, ('target_card_id',)])
+        legal_recipients = [packet for packet in legal_recipients if packet['kind'] == 'player'
+            or announced_target_reference_matches(state, references,
+                paths[instances.index(packet)], packet['id'])]
         if not legal_recipients:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
-    elif card and card.zone == Zone.STACK and (
+    elif targeted_frame and (
             item.payload.get('__ordered_distinct_targets') or item.payload.get('__ordered_target_instances')):
         from game_state.state import object_incarnation
         from rules_engine.oracle_effects import inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
-        hints = inspect_target_hints(state, card, item.controller, announced)
+        hints = inspect_target_hints(state, target_source, item.controller, announced, source_kind=stack_object_kind(state, item))
         hints.pop('required_distinct_target_count', None)
         hints.pop('required_target_instance_count', None)
         legal_effects = []
-        for effect in item.payload.get('effects', []):
+        for index, effect in enumerate(item.payload.get('effects', [])):
             packet = effect['payload']
             target = state.cards.get(packet['target_card_id'])
             selected = {'target_card_id': packet['target_card_id']}
             if (target is not None and target.zone == Zone.BATTLEFIELD
+                    and announced_target_reference_matches(state, references,
+                        ('target_card_ids', index), packet['target_card_id'])
                     and object_incarnation(target) == packet['__target_incarnation']
                     and target.zone_change_sequence == packet['__target_zone_sequence']
                     and validate_cast_targets(hints, selected)[0]
-                    and validate_protection_targets(state, card, selected)[0]
-                    and validate_hexproof_shroud_targets(state, item.controller, selected, card)[0]):
+                    and validate_protection_targets(state, card, selected, source_lki=source_lki)[0]
+                    and validate_hexproof_shroud_targets(state, item.controller, selected, card, source_lki=source_lki, source_kind=stack_object_kind(state, item))[0]):
                 legal_effects.append(effect)
         if not legal_effects:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, '__failed_to_resolve': True})
-    elif card and card.zone == Zone.STACK and target_count > 0 and item.effect_key == "effect_sequence" and announced.get("mode_texts") and (target_count > 1 or announced.get("mode_targets")):
+    elif targeted_frame and target_count > 0 and item.effect_key == "effect_sequence" and announced.get("mode_texts") and (target_count > 1 or announced.get("mode_targets")):
         from rules_engine.oracle_effects import inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
 
@@ -227,35 +397,36 @@ def resolve_top_of_stack(state: MatchState) -> bool:
                 legal_effects.append(effect)
                 continue
             targets = {"mode_text": mode_text, **selected}
-            hints = inspect_target_hints(state, card, item.controller, targets)
-            legal = (validate_cast_targets(hints, targets)[0]
-                     and validate_protection_targets(state, card, targets)[0]
-                     and validate_hexproof_shroud_targets(state, item.controller, targets, card)[0])
+            hints = inspect_target_hints(state, target_source, item.controller, targets, source_kind=stack_object_kind(state, item))
+            prefix = ('mode_targets', mode_text) if announced.get('mode_targets') else ()
+            legal = (same_targets(selected, prefix) and validate_cast_targets(hints, targets)[0]
+                     and validate_protection_targets(state, card, targets, source_lki=source_lki)[0]
+                     and validate_hexproof_shroud_targets(state, item.controller, targets, card, source_lki=source_lki, source_kind=stack_object_kind(state, item))[0])
             if legal:
                 any_legal_target = True
                 legal_effects.append(effect)
         if not any_legal_target:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
-    elif (card and card.zone == Zone.STACK and item.effect_key == "effect_sequence"
+    elif (targeted_frame and item.effect_key == "effect_sequence"
           and target_count > 1 and not announced.get("mode_texts")
           and not announced.get("target_card_ids") and not announced.get("target_distribution")):
         from rules_engine.oracle_effects import clause_target_assignments, inspect_target_hints
         from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
 
         effects = item.payload.get("effects", [])
-        selections = clause_target_assignments(state, card, item.controller, announced, effects)
+        selections = clause_target_assignments(state, target_source, item.controller, announced, effects)
         if selections is not None and any(selections):
-            hints = inspect_target_hints(state, card, item.controller, announced)
+            hints = inspect_target_hints(state, target_source, item.controller, announced, source_kind=stack_object_kind(state, item))
             legal_effects = []
             any_legal_target = False
             for effect, selected in zip(effects, selections):
                 if not selected:
                     legal_effects.append(effect)
                     continue
-                legal = (validate_cast_targets(hints, selected)[0]
-                         and validate_protection_targets(state, card, selected)[0]
-                         and validate_hexproof_shroud_targets(state, item.controller, selected, card)[0])
+                legal = (same_targets(selected) and validate_cast_targets(hints, selected)[0]
+                         and validate_protection_targets(state, card, selected, source_lki=source_lki)[0]
+                         and validate_hexproof_shroud_targets(state, item.controller, selected, card, source_lki=source_lki, source_kind=stack_object_kind(state, item))[0])
                 if legal:
                     any_legal_target = True
                     legal_effects.append(effect)
@@ -265,19 +436,26 @@ def resolve_top_of_stack(state: MatchState) -> bool:
     elif card and card.zone == Zone.STACK and target_count == 1:
         from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
         from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
-        legal = (validate_cast_choice(build_cast_hints(state, card, item.controller, announced), announced)[0]
+        legal = (same_targets(announced)
+                 and validate_cast_choice(build_cast_hints(state, card, item.controller, announced, source_kind=stack_object_kind(state, item)), announced)[0]
                  and validate_protection_targets(state, card, announced)[0]
-                 and validate_hexproof_shroud_targets(state, item.controller, announced, card)[0])
+                 and validate_hexproof_shroud_targets(state, item.controller, announced, card, source_kind=stack_object_kind(state, item))[0])
         if not legal:
             state.stack.pop()
             return finish_stack_resolution(state, item, {**item.payload, "__failed_to_resolve": True})
     if item.effect_key in {'landfall_alternative', 'linked_landfall_damage'}:
         from rules_engine.landfall import require_known_history
         require_known_history(state, item.controller)
+    from rules_engine.prevention import validate_legacy_damage_boundary
+    validate_legacy_damage_boundary(state, item)
+    if item.effect_key == 'attached_token_payment':
+        from rules_engine.attached_token_payment import prepare
+        prepare(state, item)
     if (item.payload or {}).get("__may"):
         is_trigger = bool(item.payload.get("__trigger_event"))
         choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
-        if is_trigger and getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players) and not item.payload.get("__may_decided"):
+        paid_optional = bool(item.payload.get('__optional_payment_cost'))
+        if is_trigger and (paid_optional or (getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players))) and not item.payload.get("__may_decided"):
             state.pending_trigger_order = {
                 "phase": "optional", "event": item.payload["__trigger_event"],
                 "current_stack_id": item.id, "current_controller": item.controller,
@@ -302,12 +480,24 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         and context is not None
     ):
         event, target_player, target_card_id = context
+        selected_payload = item.payload or {}
+        if item.effect_key == 'conditional_instruction':
+            from rules_engine.conditional_instructions import selected_instruction
+            _, selected_payload = selected_instruction(state, item.controller, selected_payload)
+        source_lki = selected_payload.get('__source_lki', (item.payload or {}).get('__source_lki'))
+        source_controller = item.controller
+        if event in {'damage_to_permanent', 'damage_to_player'}:
+            source_lki, source_controller = _damage_replacement_source_context(state, item, selected_payload)
         options = replacement_options(
             state,
             event,
             target_player=target_player,
             target_card_id=target_card_id,
             source_card_id=item.source_card_id,
+            amount=selected_payload.get('amount') if event == 'damage_to_permanent' else None,
+            source_lki=source_lki,
+            source_controller=source_controller, combat=False,
+            source_context=selected_payload.get('__activation_source_context', (item.payload or {}).get('__activation_source_context')),
         )
         used = {str(value) for value in ((item.payload or {}).get("__used_replacement_source_ids") or [])}
         options = [
@@ -331,6 +521,8 @@ def resolve_top_of_stack(state: MatchState) -> bool:
             return False
     state.stack.pop()
     payload = dict(item.payload or {})
+    if legal_return_targets is not None:
+        payload['target_card_ids'] = legal_return_targets
     if item.effect_key == 'linked_landfall_damage':
         payload['legal_recipients'] = legal_recipients
     if legal_effects is not None:
@@ -347,6 +539,12 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         state.trigger_staging_event = 'stack_resolution'
         item.payload['__resolution_stage_owned'] = True
         payload['__resolution_stage_owned'] = True
+    if payload.get('__optional_payment_cost'):
+        from rules_engine.paid_triggers import pay_optional
+        from rules_engine.action_validation import ActionRejected
+        if not pay_optional(state, item):
+            raise ActionRejected('Cannot pay optional trigger cost')
+        payload['__optional_payment_paid'] = item.payload['__optional_payment_paid']
     if payload.get("__once_on_accept"):
         state.trigger_once_seen_this_turn.add(str(payload["__once_on_accept"]))
     effect_key = item.effect_key
@@ -369,6 +567,21 @@ def resolve_top_of_stack(state: MatchState) -> bool:
         from rules_engine.suspend import resolve_trigger
         resolve_trigger(state, item.controller, effect_key, payload)
     else:
+        from rules_engine.graveyard_batch_entry import contains_batch_instruction
+        if (control_frame_required or prevention_frame_required or effect_key in {'exile_return_immediate', 'return_graveyard_permanents_batch', 'shuffle_graveyard_into_library', 'search_library', 'put_exiled_card_into_graveyard', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter', 'loyalty_delay_return', 'loyalty_return'}
+                or effect_key == 'effect_sequence' and (contains_batch_instruction(payload) or any(
+                    effect.get('effect_key') in {'shuffle_graveyard_into_library', 'search_library', 'set_next_creature_entry_counter', 'bind_creature_spell_entry_counter', 'loyalty_sacrifice_return'}
+                    for effect in payload.get('effects', [])))):
+            from dataclasses import asdict
+            # Transport the real popped item only where shuffle attribution needs it.
+            frame = asdict(item)
+            frame['payload'].pop('__resolving_item', None)
+            payload['__resolving_item'] = frame
+            if effect_key == 'effect_sequence':
+                payload['effects'] = [
+                    {**effect, 'payload': {**effect.get('payload', {}), '__one_shot_child_position': index}}
+                    if effect.get('effect_key') == 'set_next_creature_entry_counter' else effect
+                    for index, effect in enumerate(payload.get('effects', []))]
         resolve_effect(state, item.controller, effect_key, payload)
     pending_choice = state.pending_mechanic_choice or state.pending_replacement_choice
     if pending_choice:
@@ -417,7 +630,16 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             if '__entry_counters_ready' not in payload:
                 from rules_engine.entry_counters import begin_spell_entry
                 return begin_spell_entry(state, item, payload)
+            from rules_engine.entry_counters import next_entry_commit_matches
+            if not next_entry_commit_matches(state, item, payload):
+                from rules_engine.action_validation import ActionRejected
+                raise ActionRejected('Stale retained next-creature entry packet')
             entry_staged_here = not state.trigger_staging
+            from rules_engine.entry_copy import commit as commit_copies
+            commit_copies(state, payload, [card.id])
+            if card.id in payload.get('__entry_choices', {}):
+                from rules_engine.entry import apply_entry_choice
+                apply_entry_choice(state, item.controller, card, choice=payload['__entry_choices'][card.id])
             if entry_staged_here:
                 state.trigger_staging = True
                 state.trigger_staging_event = 'permanent_entry'
@@ -426,7 +648,7 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
             from rules_engine.card_faces import apply_day_night_entry
             apply_day_night_entry(state, card)
             battlefield_player.battlefield.append(card.id)
-            card.zone = Zone.BATTLEFIELD
+            card.move_to_zone(Zone.BATTLEFIELD)
             card.summoning_sick = True
             card.entered_turn = state.turn
             if "Planeswalker" in effective_types(state, card) and card.loyalty is not None:
@@ -452,6 +674,8 @@ def finish_stack_resolution(state: MatchState, item: StackItem, payload: dict) -
                         from rules_engine.state_based_actions import apply_state_based_actions
                         apply_state_based_actions(state)
                     return True
+            from rules_engine.source_linked_exile import commit_entry
+            commit_entry(state, card)
             emit_event(state, "enters_battlefield", {"card_id": card.id, "controller": card.controller, "x_value": max(0, int(payload.get("x_value", 0) or 0))})
     if entry_staged_here or payload.get('__resolution_stage_owned'):
         from rules_engine.state_based_actions import apply_state_based_actions
@@ -466,32 +690,67 @@ def _finish_permanent_spell_copy(state: MatchState, item: StackItem, payload: di
     from dataclasses import asdict
     from copy import deepcopy
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.entry_copy import (
+        PLAN, RESERVATION, _native_copy_candidate, _candidate, _same_native_value, compile_instruction,
+        prepare as prepare_copies, projections, commit as commit_copies)
+    from rules_engine.action_validation import ActionRejected
 
-    copied = payload["__copied_card"]
-    types = list(copied.get("types") or [])
-    token = (CardInstance(**{**payload['__entry_candidates'][0], 'zone': Zone.BATTLEFIELD})
-             if '__entry_candidates' in payload else CardInstance(
-        id=state.allocate_object_id(), name=copied["name"], owner=item.controller,
-        controller=item.controller, zone=Zone.BATTLEFIELD, is_token=True,
-        types=list(dict.fromkeys([*types, "Token"])),
-        mana_cost=copied.get("mana_cost") or "", type_line=copied.get("type_line") or "",
-        oracle_text=copied.get("oracle_text") or "", power=copied.get("power"),
-        toughness=copied.get("toughness"), loyalty=copied.get("loyalty"),
-        printed_power=copied.get('printed_power'), printed_toughness=copied.get('printed_toughness'),
-        keywords=list(copied.get("keywords") or []), colors=copied.get("colors"),
-        image_uri=copied.get("image_uri"), layout=copied.get("layout") or "",
-        card_faces=list(copied.get("card_faces") or []),
-        selected_face_index=copied.get("selected_face_index"),
-        bestow_characteristics=deepcopy(copied.get('bestow_characteristics') or {}),
-        summoning_sick=True, entered_turn=state.turn,
-        was_kicked=bool(payload.get('__kicked')),
-    ))
-    completion = ({'entry_item': asdict(item), 'entry_payload': payload}
-                  if '__entry_counters_by_id' not in payload else payload)
-    if prepare_counter_entries(state, item.controller, [token], 'permanent_spell_copy_entry',
-                               completion, entry_payload={'x_value': payload.get('x_value', 0),
-                                                          '__kicked': bool(payload.get('__kicked'))}):
+    copy_entry = compile_instruction(payload['__copied_card'].get('oracle_text') or '') is not None
+    if copy_entry:
+        receipt = item.payload.get(RESERVATION)
+        if receipt is None:
+            token = _native_copy_candidate(asdict(item), state.allocate_object_id(), state.turn)
+            receipt = {'card': asdict(token), 'allocation_next': state.next_object_id}
+            # Retain the real reservation on the popped frame before capturing it.
+            item.payload[RESERVATION] = deepcopy(receipt)
+        frame = asdict(item)
+        if _candidate(state, frame, receipt, committed=True) is not None:
+            return False
+        token = _candidate(state, frame, receipt)
+        if token is None:
+            raise ActionRejected('Invalid native copied-entry reservation')
+        payload = {**payload, RESERVATION: deepcopy(receipt)}
+    elif '__entry_candidates' in payload:
+        token = CardInstance(**{**payload['__entry_candidates'][0], 'zone': Zone.BATTLEFIELD})
+    else:
+        token = _native_copy_candidate(asdict(item), state.allocate_object_id(), state.turn)
+        token.zone = Zone.BATTLEFIELD
+
+    stage_keys = (PLAN, '__entry_choices', '__entry_candidates', '__entry_counters_by_id')
+    completion = {'entry_item': asdict(item),
+                  'entry_payload': {key: deepcopy(value) for key, value in payload.items() if key not in stage_keys},
+                  **{key: deepcopy(payload[key]) for key in stage_keys if key in payload}}
+    projected = {}
+    if copy_entry:
+        if prepare_copies(state, item.controller, [token], 'permanent_spell_copy_entry', completion,
+                          controllers={token.id: item.controller}, candidates={token.id: receipt}):
+            return False
+        projected = projections(state, completion)
+        from rules_engine.entry import pause_for_land_entries
+        if pause_for_land_entries(state, item.controller, [token.id], 'permanent_spell_copy_entry', completion,
+                                  projections={token.id: projected.get(token.id, token)}):
+            return False
+        from rules_engine.graveyard_batch_entry import _entry_seeds
+        seeds = _entry_seeds(state, [projected.get(token.id, token)], controllers={token.id: item.controller})
+        if '__entry_candidates' in payload and not _same_native_value(
+                payload['__entry_candidates'], [asdict(projected.get(token.id, token))]):
+            raise ActionRejected('Copied-entry counters lost their prospective recipient')
+    options = {'x_value': payload.get('x_value', 0), '__kicked': bool(payload.get('__kicked')),
+               **({'__kicker_count': token.kicker_count} if token.kicker_count is not None else {}),
+               **({PLAN: completion[PLAN]} if PLAN in completion else {})}
+    # The existing detached-candidate branch consumes its candidate directly.
+    # Supply the qualified projection and validate it against the original plan.
+    if prepare_counter_entries(state, item.controller, [projected.get(token.id, token)],
+                               'permanent_spell_copy_entry', completion, entry_payload=options,
+                               projections=projected,
+                               **({'entry_payloads': {token.id: {**options, **seeds[token.id]}}} if copy_entry else {})):
         return False
+    if copy_entry:
+        commit_copies(state, completion, [token.id], recipients={token.id: token})
+        from rules_engine.entry import apply_entry_choice
+        apply_entry_choice(state, item.controller, token,
+                           choice=completion.get('__entry_choices', {}).get(token.id, 'tapped'))
+        token.zone = Zone.BATTLEFIELD
     state.cards[token.id] = token
     state.players[item.controller].battlefield.append(token.id)
     if is_aura(token) and not attach_if_legal(state, token.id, payload.get("target_card_id")):
@@ -522,6 +781,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     if next_pending:
         if pending.get('continuation_controller'):
             next_pending['continuation_controller'] = pending['continuation_controller']
+        if pending.get('activation_stack_id'):
+            next_pending['activation_stack_id'] = pending['activation_stack_id']
         next_pending.setdefault('counter_continuation_queue', []).extend(counter_queue)
     queue = list(pending.get("draw_continuation_queue") or [])
     if not queue and pending.get("remaining_draws"):
@@ -535,6 +796,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     if next_pending:
         if pending.get('continuation_controller'):
             next_pending['continuation_controller'] = pending['continuation_controller']
+        if pending.get('activation_stack_id'):
+            next_pending['activation_stack_id'] = pending['activation_stack_id']
         if pending.get('activation_controller'):
             next_pending['activation_controller'] = pending['activation_controller']
         next_pending.setdefault("draw_continuation_queue", []).extend(queue)
@@ -550,6 +813,8 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     if next_pending:
         if pending.get('continuation_controller'):
             next_pending['continuation_controller'] = pending['continuation_controller']
+        if pending.get('activation_stack_id'):
+            next_pending['activation_stack_id'] = pending['activation_stack_id']
         if pending.get("combat_damage_needs_sba"):
             next_pending["combat_damage_needs_sba"] = True
         if pending.get("resolving_item"):
@@ -557,9 +822,19 @@ def resume_paused_resolution(state: MatchState, pending: dict) -> None:
     elif pending.get("resolving_item"):
         item = StackItem(**pending["resolving_item"])
         finish_stack_resolution(state, item, {**item.payload, "__source_card_id": item.source_card_id})
+    if state.mana_continuation is not None and not (state.pending_mechanic_choice or state.pending_replacement_choice):
+        from rules_engine.mana_continuation import resume
+        resume(state, pending)
+        return
     if pending.get("combat_damage_needs_sba") and not (state.pending_mechanic_choice or state.pending_replacement_choice):
         from rules_engine.state_based_actions import apply_state_based_actions
         apply_state_based_actions(state)
+    if not (state.pending_mechanic_choice or state.pending_replacement_choice) and pending.get('activation_stack_id'):
+        from rules_engine.activation_copy import record_activation_complete
+        item = next((item for item in state.stack if item.id == pending['activation_stack_id']), None)
+        if item is None or item.controller != pending.get('activation_controller'):
+            raise ValueError('Paused activation lost its actual announced item')
+        record_activation_complete(state, item)
     if not state.pending_mechanic_choice and not state.pending_trigger_order and not state.pending_replacement_choice:
         state.priority_player = int(pending.get('activation_controller') or state.active_player)
         state.passed_priority = set()

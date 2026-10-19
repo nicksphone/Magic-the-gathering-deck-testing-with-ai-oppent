@@ -2,18 +2,18 @@ from __future__ import annotations
 
 import pytest
 
-from card_data.fallback_cards import fallback_card_payload
-from game_state.state import CardInstance, Zone
+from game_state.state import Zone
 from rules_engine.action_validation import ActionRejected, require_declared_targets
 from rules_engine.prevention import add_card_prevention_shield
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.targeting import single_player_permanent_alternative
 from tests.test_api_input_contracts import game, persist, snapshot
+from tests.player_planeswalker_canonical import canonical_card, canonical_spell, spell_case
 
 
 @pytest.fixture(params=[
-    ("Lava Spike", "{R}", "Lava Spike deals 3 damage to target player or planeswalker."),
-    ("Skullcrack", "{1}{R}", "Players can't gain life this turn. Damage can't be prevented this turn. Skullcrack deals 3 damage to target player or planeswalker."),
+    spell_case("Lava Spike"),
+    spell_case("Skullcrack"),
 ])
 def spell_data(request):
     return request.param
@@ -26,9 +26,8 @@ def test_alternative_parser_excludes_qualified_and_multiple_targets() -> None:
 
 
 def test_any_target_rejects_dual_player_and_permanent_declaration() -> None:
-    bolt = CardInstance(
-        id="bolt", name="Lightning Bolt", owner=1, controller=1, zone=Zone.HAND,
-        types=["Instant"], oracle_text="Lightning Bolt deals 3 damage to any target.",
+    bolt = canonical_card(
+        "Lightning Bolt", id="bolt", owner=1, controller=1, zone=Zone.HAND,
     )
     with pytest.raises(ActionRejected, match="exactly one"):
         require_declared_targets(bolt, {}, {"target_player": 2, "target_card_id": "mystic"}, 1, spell=True)
@@ -43,17 +42,14 @@ def _setup(game, spell_data):
     state = match.state
     name, mana_cost, oracle_text = spell_data
     state.players[1].mana_pool["R"] = 2
-    spike = CardInstance(
-        id="burn-spell", name=name, owner=1, controller=1, zone=Zone.HAND,
-        types=["Instant"] if name == "Skullcrack" else ["Sorcery"],
-        type_line="Instant" if name == "Skullcrack" else "Sorcery — Arcane",
-        mana_cost=mana_cost, oracle_text=oracle_text,
+    spike = canonical_spell(
+        (name, mana_cost, oracle_text), id="burn-spell", owner=1, controller=1, zone=Zone.HAND,
     )
-    walker = CardInstance(
-        id="teferi", name="Teferi, Hero of Dominaria", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Planeswalker"], type_line="Legendary Planeswalker — Teferi",
-        loyalty=4, oracle_text=fallback_card_payload("Teferi, Hero of Dominaria")["oracle_text"],
+    walker = canonical_card(
+        "Teferi, Hero of Dominaria", id="teferi", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD,
     )
+    walker.loyalty = 4  # Original scene value also matches the pinned printed loyalty.
     state.cards.update({spike.id: spike, walker.id: walker})
     state.players[1].hand.append(spike.id)
     state.players[2].battlefield.append(walker.id)

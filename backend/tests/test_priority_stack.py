@@ -4,11 +4,12 @@ from game_state.state import CardInstance, MatchFactory, Step, Zone
 from effects.handlers import counter_spell
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
+from tests.bounce_stack_canonical_aa7 import canonical_card
 
 
 def test_stack_resolves_after_priority_passes() -> None:
-    deck_a = [{**fallback_card_payload('Lightning Bolt'), "quantity": 60, "card_name": "Lightning Bolt"}]
+    deck_a = [{**seed_card_payload('Lightning Bolt'), "quantity": 60, "card_name": "Lightning Bolt"}]
     deck_b = [{"quantity": 60, "card_name": "Island"}]
     state = MatchFactory.from_decks(deck_a, deck_b)
     engine = RulesEngine()
@@ -29,7 +30,7 @@ def test_stack_resolves_after_priority_passes() -> None:
 
 def test_casting_player_retains_priority_for_additional_spell() -> None:
     deck_a = [
-        {**fallback_card_payload('Lightning Bolt'), "quantity": 30, "card_name": "Lightning Bolt"},
+        {**seed_card_payload('Lightning Bolt'), "quantity": 30, "card_name": "Lightning Bolt"},
         {"quantity": 30, "card_name": "Mountain"},
     ]
     deck_b = [{"quantity": 60, "card_name": "Island"}]
@@ -83,7 +84,7 @@ def test_stack_resolution_puts_instant_into_owners_graveyard() -> None:
         oracle_text="Deal 3 damage to any target.",
     )
     state.stack.append(
-        type("S", (), {"id": "stack-1", "source_card_id": spell_id, "controller": 1, "label": "Borrowed Bolt", "effect_key": "deal_damage", "payload": {"target_player": 2, "amount": 3}})()
+        type("S", (), {"id": "stack-1", "source_card_id": spell_id, "controller": 1, "label": "Borrowed Bolt", "effect_key": "deal_damage", "payload": {"__announced_stack_kind": "spell", "target_player": 2, "amount": 3}})()
     )
 
     resolve_top_of_stack(state)
@@ -99,17 +100,15 @@ def test_counter_spell_respects_cannot_be_countered_and_keeps_target_on_stack() 
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     target_id = "verdict-stack"
-    state.cards[target_id] = CardInstance(
+    state.cards[target_id] = canonical_card(
+        'Supreme Verdict',
         id=target_id,
-        name="Supreme Verdict",
         owner=1,
         controller=1,
         zone=Zone.STACK,
-        types=["Sorcery"],
-        oracle_text="Destroy all creatures. Supreme Verdict can't be countered.",
     )
     state.stack.append(
-        type("S", (), {"id": "verdict-item", "source_card_id": target_id, "controller": 1, "label": "Supreme Verdict", "effect_key": "destroy_all_creatures", "payload": {}})()
+        type("S", (), {"id": "verdict-item", "source_card_id": target_id, "controller": 1, "label": "Supreme Verdict", "effect_key": "destroy_all_creatures", "payload": {"__announced_stack_kind": "spell"}})()
     )
 
     counter_spell(state, 2, {"target_stack_id": "verdict-item"})
@@ -135,7 +134,7 @@ def test_counter_spell_uses_spell_owner_for_countered_stolen_spell() -> None:
         oracle_text="Draw a card.",
     )
     state.stack.append(
-        type("S", (), {"id": "stolen-item", "source_card_id": target_id, "controller": 1, "label": "Borrowed Draw", "effect_key": "draw_cards", "payload": {}})()
+        type("S", (), {"id": "stolen-item", "source_card_id": target_id, "controller": 1, "label": "Borrowed Draw", "effect_key": "draw_cards", "payload": {"__announced_stack_kind": "spell"}})()
     )
 
     counter_spell(state, 2, {"target_stack_id": "stolen-item"})

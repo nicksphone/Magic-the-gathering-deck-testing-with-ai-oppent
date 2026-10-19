@@ -1,0 +1,202 @@
+{
+  "bulkSHA": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "bulk_bytes": 24561328,
+  "bulk_expanded_bytes": 203114006,
+  "bulk_records": 38690,
+  "cards": {
+    "Archangel of Wrath": {
+      "canonical_fullrowSHA": "8a9f1d3250031ffcc273e64300e874e6da4dafcbba04bf96f15ac13f2e11baf6",
+      "canonical_id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+      "exact_printing": true,
+      "join_scope": "seed",
+      "runtime_id": "2d00bab2-e95d-4296-a805-2a05e7640efb",
+      "seed_membership": true
+    },
+    "Atraxa, Grand Unifier": {
+      "canonical_fullrowSHA": "68faa7b11dbf8c3fbf34fbea36387dd6b29973fcdf6e1e9f5af29c0961908401",
+      "canonical_id": "4a1f905f-1d55-4d02-9d24-e58070793d3f",
+      "exact_printing": true,
+      "join_scope": "seed",
+      "runtime_id": "4a1f905f-1d55-4d02-9d24-e58070793d3f",
+      "seed_membership": true
+    },
+    "Avacyn, Angel of Hope": {
+      "canonical_fullrowSHA": "8d9381d872af6ca6df955398508945c6588f930d5b31a13d437172336432777d",
+      "canonical_id": "74e5dcec-ef1d-4461-bb23-61d98ff082dd",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Flicker of Fate": {
+      "canonical_fullrowSHA": "e568ad7d583c592520f79651e63a560a7a55b8f60c8153b522325b547db9a64d",
+      "canonical_id": "59e19bac-176c-4e37-bfc8-27c00de7c37f",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Forest": {
+      "canonical_fullrowSHA": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0",
+      "canonical_id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "exact_printing": false,
+      "join_scope": "seed",
+      "runtime_id": "f169dfb2-e4c8-46e9-8591-e51bb82da082",
+      "seed_membership": true
+    },
+    "Humility": {
+      "canonical_fullrowSHA": "3c30523047617cc008560169db8c0d460a3cfa057e377f246bf621cf8e401890",
+      "canonical_id": "55ad6a45-a840-45ba-89ad-066e20e983f3",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Lightning Bolt": {
+      "canonical_fullrowSHA": "faad8b64b05be249244f0fec337a2745c81e2cece5aae154536f5aa358e56f3e",
+      "canonical_id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "exact_printing": false,
+      "join_scope": "seed",
+      "runtime_id": "77c6fa74-5543-42ac-9ead-0e890b188e99",
+      "seed_membership": true
+    },
+    "Lithoform Engine": {
+      "canonical_fullrowSHA": "108d4fb2bb06c061fd687dbe9f48488fbeab15d63637cdcb8cb6c1708333b38f",
+      "canonical_id": "6683416a-5820-4cd0-b28a-60a53239e9ef",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Melira, Sylvok Outcast": {
+      "canonical_fullrowSHA": "7b2be0ad774f99284880be1c7c91f3c0d14ef8ace0fb2f9e0cbd296727f74d0e",
+      "canonical_id": "e83851a1-e4e8-49ec-af5c-4efe86fa51ad",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Ornithopter": {
+      "canonical_fullrowSHA": "788edcd8a8935486b580b7547075d30b5b1b413d1ab0b6ce827c886060aa7efa",
+      "canonical_id": "305078a5-ac18-4721-bba2-3434eba5b1cf",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Prodigal Pyromancer": {
+      "canonical_fullrowSHA": "b9a366defcc5a35b8433f3909c0ed4ff4a99b40236a937accdcf73bb0e69c402",
+      "canonical_id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Raging Goblin": {
+      "canonical_fullrowSHA": "b084c49cbd337b82de4f5051f1dec661250e61df2c697a79c4994adfe10bf453",
+      "canonical_id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Ray of Command": {
+      "canonical_fullrowSHA": "8215bc1fcfff31e854bfc5471bdeaab55530d3506bab4def4cfbe01dd2c1b8cf",
+      "canonical_id": "7ca8a427-5c20-4650-bbb5-9895e4f2c009",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Return the Favor": {
+      "canonical_fullrowSHA": "dfa6e474e0f7149162cc610515d967483976e24d183704ef8396b673cde417fe",
+      "canonical_id": "a9cc02d1-799d-42aa-9bc2-4c05452b63b4",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Reverberate": {
+      "canonical_fullrowSHA": "928993ff33c0d3a9819061da99a8498d6def06877c0762e017c9b59609b968b6",
+      "canonical_id": "5996feb4-02ac-45e8-a7f2-966cf74391dc",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Rod of Ruin": {
+      "canonical_fullrowSHA": "51e03bf3f055788a342f8482300573496dc24aab2e9a534bd8286cc246b3ef66",
+      "canonical_id": "9a0e90b8-bc38-4e1c-92ca-ac562cc57e31",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Solemnity": {
+      "canonical_fullrowSHA": "51c1e15d59c72d9124bc2251c8bd276aff234632d31346f6f60ef62069a8994a",
+      "canonical_id": "0a71fb62-acbd-49f5-842f-0fc9fa48afea",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Strionic Resonator": {
+      "canonical_fullrowSHA": "78ebaabe8989b9a5008aea42d3f5160856c8a4cd69e273f22dca7b7c91eb1bd8",
+      "canonical_id": "b9edb215-f967-4968-905e-d1dc3b5d3424",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Suncleanser": {
+      "canonical_fullrowSHA": "85411b480f87089ea55e466d60b00d05575f1dd07ad67c9ff73790d614e431df",
+      "canonical_id": "3644df41-b690-4581-ac7d-c85cec75411f",
+      "exact_printing": true,
+      "join_scope": "seed",
+      "runtime_id": "3644df41-b690-4581-ac7d-c85cec75411f",
+      "seed_membership": true
+    },
+    "Unsummon": {
+      "canonical_fullrowSHA": "9904776f9599d4653f265300e1f2837a8ec9f0426d915feea23df95ce31dcc41",
+      "canonical_id": "ddad9f16-52d5-49de-82b0-b1a5294a9c44",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Volatile Stormdrake": {
+      "canonical_fullrowSHA": "42670ff083c39f3ca25e8aff4b2432970f986db325520657a067879313cb503d",
+      "canonical_id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+      "exact_printing": true,
+      "join_scope": "seed",
+      "runtime_id": "2e6e3232-8bb8-4504-9597-dfdfc6d634bd",
+      "seed_membership": true
+    },
+    "Vorinclex, Monstrous Raider": {
+      "canonical_fullrowSHA": "3d221622ff522a353f5179081dd77be7c6848c5c0fcd55d03967223f780c4c76",
+      "canonical_id": "92613468-205e-488b-930d-11908477e9f8",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Walking Ballista": {
+      "canonical_fullrowSHA": "d2eed6c53a96bca60b6d468981be6f05aaa2f6bc0fbd9d258437fc0077a57cf5",
+      "canonical_id": "5272436e-74f0-44c4-a291-ea8ebc3f1525",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    },
+    "Winding Constrictor": {
+      "canonical_fullrowSHA": "88f27856eaf6905ff8155891312406d6529641365b2c298cd94d8e1299a0bc83",
+      "canonical_id": "107c8aa8-c8f8-4cbf-821b-bd2cb33354f0",
+      "exact_printing": false,
+      "join_scope": "auxiliary full canonical row; not155 membership",
+      "runtime_id": null,
+      "seed_membership": false
+    }
+  },
+  "provenanceSHA": "db002c797f4ae1cdb68fd113483db4ae11563e32cbf9f9b0f66b40df2d44618f",
+  "seedSHA": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037"
+}

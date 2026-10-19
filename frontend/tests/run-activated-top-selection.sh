@@ -38,6 +38,7 @@ fi
 export MTG_OFFICER_RUNTIME="$runtime" MTG_OFFICER_EVIDENCE="$out" MTG_FRONTEND_DEPS="$deps"
 export MTG_BACKEND_ORIGIN=http://127.0.0.1:10237 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15237 MTG_BROWSER_ORIGIN=http://127.0.0.1:19237
 export MTG_OFFICER_PORT=10237 VITE_API_BASE_URL="$MTG_BACKEND_ORIGIN" PYTHONDONTWRITEBYTECODE=1
+export MTG_TRUSTED_ORIGINS="$MTG_FRONTEND_ORIGIN"
 backend='' frontend='' browser=''
 cleanup() {
   result=$?
@@ -86,9 +87,16 @@ start_backend before-restart
 timeout 120s node "$root/frontend/tests/browser-activated-top-selection.mjs" prepare 2>&1 | tee "$out/http-results.log"
 kill "$backend"; wait "$backend" || true; backend=''
 start_backend after-restart
-node "$deps/node_modules/vite/bin/vite.js" --config "$root/frontend/tests/vite-activated-top-selection.mjs" > "$runtime/frontend.log" 2>&1 &
+mkdir "$root/frontend/node_modules"
+for dependency in "$deps/node_modules"/*; do
+  ln -s "$dependency" "$root/frontend/node_modules/$(basename "$dependency")"
+done
+NODE_ENV=development node "$root/frontend/tests/prepare-development-frontend.mjs" "$root/frontend" "$root/frontend/tests/vite-activated-top-selection.mjs" "$runtime/frontend-dev-ci"
+NODE_ENV=development node "$deps/node_modules/vite/bin/vite.js" preview --mode development --outDir "$runtime/frontend-dev-ci" --config "$root/frontend/tests/vite-activated-top-selection.mjs" --host 127.0.0.1 --port 15237 --strictPort > "$runtime/frontend.log" 2>&1 &
 frontend=$!
-"$chrome" --headless --disable-dev-shm-usage --no-first-run --no-sandbox \
+browser_flags=()
+if [[ "${MTG_BROWSER_NO_SANDBOX:-}" == 1 ]]; then browser_flags+=(--no-sandbox); fi
+"$chrome" --headless --disable-dev-shm-usage --no-first-run "${browser_flags[@]}" \
   --user-data-dir="$runtime/browser-profile" --remote-debugging-port=19237 about:blank > "$runtime/browser.log" 2>&1 &
 browser=$!
 for _ in $(seq 1 120); do
@@ -96,4 +104,5 @@ for _ in $(seq 1 120); do
   if ! kill -0 "$frontend" 2>/dev/null || ! kill -0 "$browser" 2>/dev/null; then cat "$runtime/frontend.log" "$runtime/browser.log"; exit 1; fi
   sleep 0.25
 done
+timeout 30s node "$root/frontend/tests/browser-development-runtime-proof.mjs"
 timeout 240s node "$root/frontend/tests/browser-activated-top-selection.mjs" browser 2>&1 | tee "$out/browser-results.log"

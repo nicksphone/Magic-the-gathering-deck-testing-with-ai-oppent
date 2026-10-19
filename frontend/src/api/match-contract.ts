@@ -73,6 +73,13 @@ export function parseMatchState(value: unknown): MatchState {
       && ((value.discards_this_turn as Record<string, number>)[seat] >= 0)))) {
     throw new Error("Invalid match response: discard history");
   }
+  if (value.emblems !== undefined && (!Array.isArray(value.emblems)
+    || !value.emblems.every(emblem => record(emblem) && card(emblem)
+      && [1, 2].includes(emblem.controller as number) && [1, 2].includes(emblem.owner as number)
+      && emblem.zone === 'command')
+    || new Set(value.emblems.map(emblem => emblem.id)).size !== value.emblems.length)) {
+    throw new Error('Invalid match response: emblems');
+  }
   for (const seat of ["1", "2"]) {
     const player = value.players[seat];
     if (!record(player) || typeof player.life !== "number" || !Array.isArray(player.hand)
@@ -168,6 +175,12 @@ export type LegalMovesResponse = { player_id: number; moves: LegalMove[]; revisi
 
 function targetHints(value: unknown): boolean {
   if (!record(value)) return false;
+  if (value.choose_one_or_more_modes !== undefined && typeof value.choose_one_or_more_modes !== 'boolean') return false;
+  for (const key of ['mode_additional_mana_costs', 'mode_base_mana_costs']) {
+    const costs = value[key];
+    if (costs !== undefined && (!record(costs)
+      || !Object.values(costs).every(cost => typeof cost === 'string' && cost.length <= 200))) return false;
+  }
   if (value.linked_target_pairs !== undefined && (!Array.isArray(value.linked_target_pairs)
     || !value.linked_target_pairs.every(pair => record(pair) && typeof pair.primary_name === 'string'
       && typeof pair.creature_id === 'string' && typeof pair.creature_name === 'string'
@@ -179,6 +192,23 @@ function targetHints(value: unknown): boolean {
           && pair.targets.target_player === undefined && pair.targets.target_card_id === undefined
           && Array.isArray(pair.targets.target_card_ids) && pair.targets.target_card_ids.length === 2
           && pair.targets.target_card_ids[0] === pair.primary_id && pair.targets.target_card_ids[1] === pair.creature_id)))) return false;
+  if (['required_distinct_target_count', 'ordered_counter_amounts', 'ordered_counter_type']
+    .some(key => value[key] !== undefined)) {
+    if (value.required_target_instance_count !== undefined || value.ordered_creature_modifiers !== undefined
+      || !Number.isInteger(value.required_distinct_target_count)
+      || (value.required_distinct_target_count as number) < 2
+      || (value.required_distinct_target_count as number) > 250) return false;
+    const pools = [value.creature_targets, value.permanent_targets].filter(pool => pool !== undefined);
+    if (!pools.length || !pools.every(pool => Array.isArray(pool)
+      && pool.every(target => record(target) && typeof target.id === 'string' && target.id.trim().length > 0
+        && typeof target.name === 'string' && target.name.trim().length > 0)
+      && new Set(pool.map(target => target.id)).size === pool.length)) return false;
+    if (value.ordered_counter_amounts === undefined && value.ordered_counter_type === undefined) return true;
+    return Array.isArray(value.ordered_counter_amounts)
+      && value.ordered_counter_amounts.length === value.required_distinct_target_count
+      && value.ordered_counter_amounts.every(amount => Number.isInteger(amount) && amount >= 0)
+      && typeof value.ordered_counter_type === 'string' && value.ordered_counter_type.trim().length > 0;
+  }
   if (value.required_target_instance_count === undefined && value.ordered_creature_modifiers === undefined) return true;
   return value.required_distinct_target_count === undefined
     && Number.isInteger(value.required_target_instance_count)
@@ -239,6 +269,12 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         && Number.isInteger(move.time_counters) && (move.time_counters as number) > 0))
       && (move.kind !== 'suspend_cast' || (move.type === 'choose_mechanic' && move.player_id === value.player_id
         && move.count === 1 && Array.isArray(move.options) && move.options.length === 1 && move.options[0] === 'decline'))
+      && (move.kind !== 'optional_reveal' || (move.type === 'choose_mechanic' && move.player_id === value.player_id
+        && move.count === 1 && Array.isArray(move.options) && move.options.length === 2
+        && move.options[0] === 'reveal' && move.options[1] === 'decline'
+        && Array.isArray(move.inspected_cards) && move.inspected_cards.length === 1 && move.inspected_cards.every(card)
+        && record(move.option_labels) && typeof move.option_labels.reveal === 'string'
+        && typeof move.option_labels.decline === 'string'))
       && (move.banding_attackers === undefined || (Array.isArray(move.banding_attackers)
         && move.banding_attackers.every(id => typeof id === "string" && Array.isArray(move.options) && move.options.includes(id))))
       && (move.legal_blocks === undefined || (record(move.legal_blocks) && Object.entries(move.legal_blocks).every(([id, targets]) =>
@@ -272,6 +308,12 @@ export function parseLegalMoves(value: unknown): LegalMovesResponse {
         && (option.kicker_base_id == null || typeof option.kicker_base_id === 'string')
         && (option.target_hints === undefined || targetHints(option.target_hints))
         && (option.resource_payment_candidates === undefined || resourceCandidates(option.resource_payment_candidates))
+        && (['hand_exile_color', 'hand_exile_generic_reduction', 'exile_card_ids'].every(key => option[key] === undefined)
+          || (typeof option.hand_exile_color === 'string' && /^[WUBRG]$/.test(option.hand_exile_color)
+            && Number.isSafeInteger(option.hand_exile_generic_reduction) && (option.hand_exile_generic_reduction as number) > 0
+            && Array.isArray(option.exile_card_ids) && option.exile_card_ids.length <= 250
+            && option.exile_card_ids.every(id => typeof id === 'string' && id.length > 0 && id.length <= 100)
+            && new Set(option.exile_card_ids).size === option.exile_card_ids.length))
         && ['discard_cards', 'sacrifice_creatures'].every(key => Number.isInteger(option[key]) && (option[key] as number) >= 0)
         && ['discard_card_ids', 'sacrifice_card_ids'].every(key => option[key] === undefined ||
           (Array.isArray(option[key]) && option[key].every(id => typeof id === 'string')

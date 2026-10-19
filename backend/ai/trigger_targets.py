@@ -40,6 +40,10 @@ def target_value(state, action, player_id):
 
 
 def choose_target(state, choices, player_id):
+    from ai.paid_optional_policy import preserve_lethal_response
+    protected = preserve_lethal_response(state, choices, player_id)
+    if protected is not None:
+        return protected, True
     scored = [(target_value(state, action, player_id), action) for action in choices]
     known = [(value, action) for value, action in scored if value is not None]
     unknown = [action for value, action in scored if value is None]

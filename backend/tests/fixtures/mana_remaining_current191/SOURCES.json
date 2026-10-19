@@ -1,0 +1,354 @@
+{
+  "base_current191_pins": "686152973ed354328f63d2191969ea4917d9f27a78bfb4a4b6d20917131af7eb",
+  "missing_full_RAW": [],
+  "new_network_requests": 0,
+  "objects": {
+    "Figure of Destiny": {
+      "RAW_keywords": [],
+      "fields": 66,
+      "file": "canonical_hydration/figure-of-destiny-scryfall-raw.json",
+      "file_sha256": "861c21c299816724a667c392cc37d4182da2a52496e1cb7da5f6cf39a97edaeb",
+      "id": "6d779966-4bd4-4315-8b45-d3a4492f2bb2",
+      "line": null,
+      "oracle_id": "cd51cc2d-0d39-4aba-b0ea-70e8118149bc",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "canonical_hydration/figure-of-destiny-scryfall-raw.json",
+        "file_sha256": "861c21c299816724a667c392cc37d4182da2a52496e1cb7da5f6cf39a97edaeb",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": null,
+        "provenance_file": "canonical_hydration/PROVENANCE.json",
+        "provenance_sha256": "22e0bf7a5c287f4c0e803513cd8c7a7f77bc41d6810eeca156e5dc582a9d04ac"
+      },
+      "raw_sha256": "861c21c299816724a667c392cc37d4182da2a52496e1cb7da5f6cf39a97edaeb"
+    },
+    "Font of Agonies": {
+      "RAW_keywords": [],
+      "fields": 66,
+      "file": "damage_life_printed_79/font-of-agonies-scryfall-raw.json",
+      "file_sha256": "b13ec5bacaa3571df66d6a2cb97846bc25a633678ce83b17f110a3d9dd958f20",
+      "id": "d7c02aec-4a89-4ccc-8525-6f979c10d799",
+      "line": null,
+      "oracle_id": "ab44c6fe-6a66-42f0-9e75-8b25641e1f13",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "damage_life_printed_79/font-of-agonies-scryfall-raw.json",
+        "file_sha256": "b13ec5bacaa3571df66d6a2cb97846bc25a633678ce83b17f110a3d9dd958f20",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": null,
+        "provenance_file": "damage_life_printed_79/PROVENANCE.json",
+        "provenance_sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+      },
+      "raw_sha256": "b13ec5bacaa3571df66d6a2cb97846bc25a633678ce83b17f110a3d9dd958f20"
+    },
+    "Forest": {
+      "RAW_keywords": [],
+      "fields": 61,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+      "line": 39,
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "knowledge_profiles/seed155-scryfall.jsonl",
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": 39,
+        "provenance_file": "knowledge_profiles/PROVENANCE.json",
+        "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      "raw_sha256": "d522e1272ee59bd6e931587330fddb769f83136a8532561129a69bdeff4129ce"
+    },
+    "Gilded Lotus": {
+      "RAW_keywords": [],
+      "fields": 67,
+      "file": "manual_mana_a227/gilded-lotus.raw.json",
+      "file_sha256": "4467e360a1d46fd510c9a379ef9776e42528fb9663c239054da861cbcd02a2d5",
+      "id": "28e619e6-ecc1-49c3-8fa9-ce42becdb9ba",
+      "line": null,
+      "oracle_id": "9a02a9a7-39d9-4763-85d3-747a0540b60b",
+      "provenance": {
+        "intake": {
+          "RAW_keywords": [],
+          "URL": "https://api.scryfall.com/cards/named?exact=Gilded+Lotus",
+          "ended_UTC": "2026-10-17T04:58:04.977164+00:00",
+          "fields": 67,
+          "fixture": "mana_system_fb775/gilded-lotus.raw.json",
+          "headers_sha256": "0e798899e215358e63f6d820753c9105aa35edef9b0732fba3438a789c9d02aa",
+          "http_status": 200,
+          "id": "28e619e6-ecc1-49c3-8fa9-ce42becdb9ba",
+          "minimum_request_start_spacing_seconds": 0.3,
+          "name": "Gilded Lotus",
+          "no_auth_no_retries": true,
+          "oracle_id": "9a02a9a7-39d9-4763-85d3-747a0540b60b",
+          "response_bytes": 5013,
+          "response_sha256": "4467e360a1d46fd510c9a379ef9776e42528fb9663c239054da861cbcd02a2d5",
+          "started_UTC": "2026-10-17T04:58:04.569360+00:00"
+        },
+        "kind": "actual_public_API"
+      },
+      "raw_sha256": "4467e360a1d46fd510c9a379ef9776e42528fb9663c239054da861cbcd02a2d5"
+    },
+    "Hallowed Fountain": {
+      "RAW_keywords": [],
+      "fields": 63,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "b7285986-7e08-4969-86ef-452dc5bfdd9f",
+      "line": 44,
+      "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "knowledge_profiles/seed155-scryfall.jsonl",
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": 44,
+        "provenance_file": "knowledge_profiles/PROVENANCE.json",
+        "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      "raw_sha256": "82010bcc7d4121ddd1135504820c6884c7c551b1db46cf5b25e1190f3a780d2c"
+    },
+    "Island": {
+      "RAW_keywords": [],
+      "fields": 60,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "line": 50,
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "knowledge_profiles/seed155-scryfall.jsonl",
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": 50,
+        "provenance_file": "knowledge_profiles/PROVENANCE.json",
+        "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      "raw_sha256": "450bf6448c1ed549fe3d69fe922cb0ffb8d6fa08751875cc873265f89ad95407"
+    },
+    "Lavinia, Azorius Renegade": {
+      "RAW_keywords": [],
+      "fields": 67,
+      "file": "mana_remaining_current191/lavinia-azorius-renegade.raw.json",
+      "file_sha256": "c9a2bda92da6951409d06ea53768bf70d9aa036e838df7fe225d37ab03391d6b",
+      "id": "197bf3f4-c0df-4082-97a1-902ceabbdd3f",
+      "line": null,
+      "oracle_id": "81ba3a33-0e04-4f68-9a42-1dd717733b57",
+      "provenance": {
+        "intake": {
+          "RAW_keywords": [],
+          "URL": "https://api.scryfall.com/cards/named?exact=Lavinia%2C+Azorius+Renegade",
+          "ended_UTC": "2026-10-17T04:58:04.568611+00:00",
+          "fields": 67,
+          "fixture": "mana_system_fb775/lavinia-azorius-renegade.raw.json",
+          "headers_sha256": "453c2c9a5b1e4fd0e738a7dec69f7fd4fd9e99907fe312028689011ef70df63b",
+          "http_status": 200,
+          "id": "197bf3f4-c0df-4082-97a1-902ceabbdd3f",
+          "minimum_request_start_spacing_seconds": 0.3,
+          "name": "Lavinia, Azorius Renegade",
+          "no_auth_no_retries": true,
+          "oracle_id": "81ba3a33-0e04-4f68-9a42-1dd717733b57",
+          "response_bytes": 5342,
+          "response_sha256": "c9a2bda92da6951409d06ea53768bf70d9aa036e838df7fe225d37ab03391d6b",
+          "started_UTC": "2026-10-17T04:58:04.184673+00:00"
+        },
+        "kind": "actual_public_API"
+      },
+      "raw_sha256": "c9a2bda92da6951409d06ea53768bf70d9aa036e838df7fe225d37ab03391d6b"
+    },
+    "Llanowar Elves": {
+      "RAW_keywords": [],
+      "fields": 71,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+      "line": 58,
+      "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "knowledge_profiles/seed155-scryfall.jsonl",
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": 58,
+        "provenance_file": "knowledge_profiles/PROVENANCE.json",
+        "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      "raw_sha256": "1333c60e71d06955083e05567066319c7883f19bb7bc42f9ea3bb920270a3d83"
+    },
+    "Marble Diamond": {
+      "RAW_keywords": [],
+      "fields": 63,
+      "file": "mana_remaining_current191/marble-diamond.raw.json",
+      "file_sha256": "bb81ced217ef4cc60cd0c1f5b3e8807c59bd489ef2c5b0b574087c4f760b4553",
+      "id": "0930f71c-c3c8-4bdd-8468-6a61349cc8ca",
+      "line": null,
+      "oracle_id": "910488bf-66ab-415e-973b-1262b2ab7454",
+      "provenance": {
+        "intake": {
+          "RAW_keywords": [],
+          "URL": "https://api.scryfall.com/cards/named?exact=Marble+Diamond",
+          "ended_UTC": "2026-10-17T04:58:04.183415+00:00",
+          "fields": 63,
+          "fixture": "mana_system_fb775/marble-diamond.raw.json",
+          "headers_sha256": "3a216b1527bca55a1379198ff96e5388edbb63ee4d4d1d0d6ef943a5f117f804",
+          "http_status": 200,
+          "id": "0930f71c-c3c8-4bdd-8468-6a61349cc8ca",
+          "minimum_request_start_spacing_seconds": 0.3,
+          "name": "Marble Diamond",
+          "no_auth_no_retries": true,
+          "oracle_id": "910488bf-66ab-415e-973b-1262b2ab7454",
+          "response_bytes": 4972,
+          "response_sha256": "bb81ced217ef4cc60cd0c1f5b3e8807c59bd489ef2c5b0b574087c4f760b4553",
+          "started_UTC": "2026-10-17T04:58:03.786951+00:00"
+        },
+        "kind": "actual_public_API"
+      },
+      "raw_sha256": "bb81ced217ef4cc60cd0c1f5b3e8807c59bd489ef2c5b0b574087c4f760b4553"
+    },
+    "Mutagenic Growth": {
+      "RAW_keywords": [],
+      "fields": 63,
+      "file": "mana_remaining_current191/mutagenic-growth.raw.json",
+      "file_sha256": "aad420aaa6226c9c5e7916a814090393b8d60a4f81303d4c12c65d3bae0bf497",
+      "id": "2e0861a2-1858-47af-8154-20a977c2b298",
+      "line": null,
+      "oracle_id": "c17b9e5b-58b6-4ccf-8283-945ba77429e7",
+      "provenance": {
+        "intake": {
+          "RAW_keywords": [],
+          "URL": "https://api.scryfall.com/cards/named?exact=Mutagenic+Growth",
+          "ended_UTC": "2026-10-17T04:58:03.786223+00:00",
+          "fields": 63,
+          "fixture": "mana_system_fb775/mutagenic-growth.raw.json",
+          "headers_sha256": "20d5356e5507d745985333738e06a1c56d6a743f14e65a797af42680141bc087",
+          "http_status": 200,
+          "id": "2e0861a2-1858-47af-8154-20a977c2b298",
+          "minimum_request_start_spacing_seconds": 0.3,
+          "name": "Mutagenic Growth",
+          "no_auth_no_retries": true,
+          "oracle_id": "c17b9e5b-58b6-4ccf-8283-945ba77429e7",
+          "response_bytes": 5032,
+          "response_sha256": "aad420aaa6226c9c5e7916a814090393b8d60a4f81303d4c12c65d3bae0bf497",
+          "started_UTC": "2026-10-17T04:58:03.295355+00:00"
+        },
+        "kind": "actual_public_API"
+      },
+      "raw_sha256": "aad420aaa6226c9c5e7916a814090393b8d60a4f81303d4c12c65d3bae0bf497"
+    },
+    "Pestilent Souleater": {
+      "RAW_keywords": [],
+      "fields": 66,
+      "file": "mana_remaining_current191/pestilent-souleater.raw.json",
+      "file_sha256": "77003d589fedc8640f03c4049f4c1d80bc68d863a147124e5afeab45b5721e47",
+      "id": "a069cc07-55eb-4ddb-a548-cbf463d078d3",
+      "line": null,
+      "oracle_id": "c4779671-2a01-4eef-847c-ede36091fc4a",
+      "provenance": {
+        "intake": {
+          "RAW_keywords": [],
+          "URL": "https://api.scryfall.com/cards/named?exact=Pestilent+Souleater",
+          "ended_UTC": "2026-10-17T04:58:03.294648+00:00",
+          "fields": 66,
+          "fixture": "mana_system_fb775/pestilent-souleater.raw.json",
+          "headers_sha256": "2273c45454eeaa9e9e46ea6b2bef0d3c2506ef343587c8326406d9b71a899457",
+          "http_status": 200,
+          "id": "a069cc07-55eb-4ddb-a548-cbf463d078d3",
+          "minimum_request_start_spacing_seconds": 0.3,
+          "name": "Pestilent Souleater",
+          "no_auth_no_retries": true,
+          "oracle_id": "c4779671-2a01-4eef-847c-ede36091fc4a",
+          "response_bytes": 5626,
+          "response_sha256": "77003d589fedc8640f03c4049f4c1d80bc68d863a147124e5afeab45b5721e47",
+          "started_UTC": "2026-10-17T04:58:02.926014+00:00"
+        },
+        "kind": "actual_public_API"
+      },
+      "raw_sha256": "77003d589fedc8640f03c4049f4c1d80bc68d863a147124e5afeab45b5721e47"
+    },
+    "Plains": {
+      "RAW_keywords": [],
+      "fields": 60,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "09ac862f-0a51-44dd-b86f-9412b8218b13",
+      "line": 70,
+      "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "knowledge_profiles/seed155-scryfall.jsonl",
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": 70,
+        "provenance_file": "knowledge_profiles/PROVENANCE.json",
+        "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      "raw_sha256": "83e08b8086bca16377f1bd3b77ba87062c08ecde1e9d6b3bea29aed5d051cd21"
+    },
+    "Realmwalker": {
+      "RAW_keywords": [
+        "Changeling"
+      ],
+      "fields": 66,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "52733829-27b7-40ec-a897-cabab35b3729",
+      "line": 75,
+      "oracle_id": "b81eaa2f-0554-41c6-bdf6-d1cb73b8f56f",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "knowledge_profiles/seed155-scryfall.jsonl",
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": 75,
+        "provenance_file": "knowledge_profiles/PROVENANCE.json",
+        "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      "raw_sha256": "0abc59f12efe05a737b14184d2aa5a685b7e5c29b63900b763dd10bc982d39ec"
+    },
+    "Spectral Procession": {
+      "RAW_keywords": [],
+      "fields": 65,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "id": "9964629e-d79e-46e4-b3fd-e7d1759cbc60",
+      "line": 90,
+      "oracle_id": "376271a6-80f0-47a6-990a-5ec5517aae42",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "knowledge_profiles/seed155-scryfall.jsonl",
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": 90,
+        "provenance_file": "knowledge_profiles/PROVENANCE.json",
+        "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      },
+      "raw_sha256": "e6f89b89de504991baae14e80a75838b0e287cf90bf1e3e415cb7bc869192891"
+    },
+    "Tamiyo, Compleated Sage": {
+      "RAW_keywords": [
+        "Compleated"
+      ],
+      "fields": 67,
+      "file": "compleated_loyalty_full/tamiyo.raw.json",
+      "file_sha256": "dcbfd8d6648620cf3a466af951b7db1aee9b40f9fa0956edc9c0aba1a2dbea55",
+      "id": "222a736e-d819-452d-aeda-eb848c4b2302",
+      "line": null,
+      "oracle_id": "021b4745-4a15-462c-a6b0-2dee1dc9d196",
+      "provenance": {
+        "base": "fb775e1e5d5cbc480b2be3f1ab8e1511c65536c7",
+        "file": "compleated_loyalty_full/tamiyo.raw.json",
+        "file_sha256": "dcbfd8d6648620cf3a466af951b7db1aee9b40f9fa0956edc9c0aba1a2dbea55",
+        "kind": "immutable_committed_full_RAW_reuse",
+        "line": null,
+        "provenance_file": "compleated_loyalty_full/provenance.json",
+        "provenance_sha256": "be072b8ffa6e1f8e1d693e4f1508c1f7654f5051de63018d61a893d43212cc1c"
+      },
+      "raw_sha256": "dcbfd8d6648620cf3a466af951b7db1aee9b40f9fa0956edc9c0aba1a2dbea55"
+    }
+  },
+  "prior_preoffline_archive_name": "mana-system-fb775-RAW-PREOFFLINE-20261017-gu0KVcCj",
+  "prior_preoffline_receipt_sha256": "d99731880fe56cfefa8e82592b1b82e341ca39c9bd5aeeb7e57a7bb54f7e0b07",
+  "status": "FROZEN_FULL_RAW_REUSE_NO_NEW_INTAKE"
+}

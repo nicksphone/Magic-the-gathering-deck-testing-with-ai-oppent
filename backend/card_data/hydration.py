@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 
 from card_data.display import select_display_image_uri
-from card_data.fallback_cards import fallback_card_payload
-from card_data.sync import ScryfallSyncService, needs_split_color_sync
+from card_data.seed_cards import seed_card_payload
+from card_data.sync import ScryfallSyncService, needs_split_color_sync, oracle_fields_valid
 
 
 def cached_json(value, expected_type):
@@ -35,7 +35,7 @@ def _required_characteristics_available(metadata):
 
 
 def ready_for_match(metadata):
-    if not metadata.get('type_line') or not is_playable_deck_card(metadata) or not _required_characteristics_available(metadata):
+    if not oracle_fields_valid(metadata) or not metadata.get('type_line') or not is_playable_deck_card(metadata) or not _required_characteristics_available(metadata):
         return False
     if metadata.get('card_faces') and not metadata.get('layout'):
         return False
@@ -63,9 +63,32 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
     for item in deck:
         name = str(item.get("card_name") or "Card")
         out = dict(item)
+        out.pop('knowledge_snapshot', None)
         row = cached.get(name.lower())
-        fallback = fallback_card_payload(name) or {}
+        fallback = seed_card_payload(name) or {}
         profile = ScryfallSyncService.canonical_local_profile(knowledge.get(name.casefold()), name)
+        try:
+            raw_cached_faces = getattr(row, 'card_faces_json', None)
+            cached_faces = json.loads(raw_cached_faces) if raw_cached_faces not in (None, '') else []
+        except (TypeError, ValueError):
+            cached_faces = {}
+        cached_surface = {'oracle_text': getattr(row, 'oracle_text', None),
+                          'card_faces': cached_faces}
+        rules = None
+        projection_valid = True
+        if profile is not None:
+            try:
+                rules = ScryfallSyncService._canonical_rule_projection(profile['card_data'], row, physical_front=True)
+            except (AttributeError, KeyError, TypeError, ValueError):
+                projection_valid = False
+        if (not oracle_fields_valid(out) or not oracle_fields_valid(cached_surface)
+                or not projection_valid
+                or profile is not None and not oracle_fields_valid(profile['card_data'])):
+            # Do not hide malformed stored facts behind otherwise valid seed data.
+            out.update(oracle_text='', type_line='', card_faces=[], card_data_sources=[],
+                       image_uri=select_display_image_uri({}, name=name))
+            hydrated.append(out)
+            continue
         sources = []
         if fallback:
             sources.append('offline_seed')
@@ -111,6 +134,10 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
                 'image_uri': getattr(row, 'image_uri', None) or (None if has_face_art else fallback.get('image_uri')),
                 'card_faces': out.get('card_faces') or [],
             }, name=name, type_line=str(out.get('type_line') or ''))
+        if rules is not None:
+            out.update({key: value for key, value in rules.items() if key not in {'colors', 'card_faces_json'}})
+            out['colors'] = rules['colors'].split(',') if rules['colors'] else []
+            out['card_faces'] = json.loads(rules['card_faces_json'])
         if out.get('layout') == 'split' and out.get('card_faces'):
             colors = {color for face in out['card_faces'] for color in (face.get('colors') or [])}
             if colors:
@@ -123,5 +150,9 @@ def hydrate_deck_cards(repo, deck: list[dict]) -> list[dict]:
         if not out.get("image_uri"):
             out["image_uri"] = select_display_image_uri(out, name=name, type_line=str(out.get("type_line") or ""))
         out['card_data_sources'] = sources
+        from knowledge.service import snapshot_for
+        snapshot = snapshot_for(knowledge.get(name.casefold()), name, out)
+        if snapshot:
+            out['knowledge_snapshot'] = snapshot
         hydrated.append(out)
     return hydrated

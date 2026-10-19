@@ -135,6 +135,10 @@ def test_start_key_retries_one_durable_match_without_replacing_other_controllers
 
 def test_start_receipt_storage_failure_leaves_no_match_or_receipt(game, monkeypatch):
     client, original = game
+    with Session(engine) as session:
+        repo = Repository(session)
+        persisted_ids_before = {row.id for row in repo.list_active_matches()}
+        main._restore_active_matches(repo)
     before = snapshot(original)
     ids_before = set(main.ACTIVE_MATCHES)
     deck = [{"quantity": 60, "card_name": "Island"}]
@@ -151,7 +155,7 @@ def test_start_receipt_storage_failure_leaves_no_match_or_receipt(game, monkeypa
     assert snapshot(original) == before
     with Session(engine) as session:
         assert Repository(session).get_match_start_receipt(key) is None
-        assert {row.id for row in Repository(session).list_active_matches()} == ids_before
+        assert {row.id for row in Repository(session).list_active_matches()} == persisted_ids_before
 
 
 @pytest.mark.parametrize("key", ["", "x" * 101])

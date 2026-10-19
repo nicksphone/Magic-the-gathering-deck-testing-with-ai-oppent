@@ -52,9 +52,21 @@ def test_legacy_snapshot_does_not_recover_composition_from_hidden_cards():
     state, _, _ = setup('Rites of Spring')
     snapshot = serialize_match_snapshot(state)
     snapshot.pop('starting_decks')
+    snapshot.pop('sideboard_facts')
     restored = deserialize_match_snapshot(snapshot)
     assert restored.starting_decks == {}
     assert known_search_land_count(restored, 1, 'basic_land') == 0
+
+
+def test_current_snapshot_missing_composition_rejects_retained_inventory_facts():
+    deck = [{'card_name': 'Swamp', 'quantity': 60}]
+    state = MatchFactory.from_decks(deck, deck, seed=32)
+    before = serialize_match_snapshot(state)
+    snapshot = deepcopy(before)
+    snapshot.pop('starting_decks')
+    with pytest.raises(ValueError, match='Sideboard inventory does not match original stock'):
+        deserialize_match_snapshot(snapshot)
+    assert serialize_match_snapshot(state) == before
 
 
 def test_known_search_count_subtracts_visible_copies_and_caps_by_library():

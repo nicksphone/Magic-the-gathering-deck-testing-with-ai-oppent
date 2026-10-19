@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 import pytest
 
@@ -22,7 +23,7 @@ CRYPTIC_ORACLE = (
 
 def _setup_counter_and_return():
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=17)
+    state = controlled_basic_game(deck, deck, seed=17)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
@@ -42,7 +43,7 @@ def _setup_counter_and_return():
     bolt.types = ["Instant"]
     bolt.type_line = "Instant"
     bolt.zone = Zone.STACK
-    state.stack.append(StackItem("bolt", bolt_id, 2, "Lightning Bolt", "deal_damage", {"target_player": 1, "amount": 3}))
+    state.stack.append(StackItem("bolt", bolt_id, 2, "Lightning Bolt", "deal_damage", {"__announced_stack_kind": "spell", "target_player": 1, "amount": 3}))
 
     forest_id = state.players[2].hand.pop()
     forest = state.cards[forest_id]

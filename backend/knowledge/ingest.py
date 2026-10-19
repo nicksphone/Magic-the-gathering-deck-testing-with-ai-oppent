@@ -56,8 +56,8 @@ class KnowledgeIngestor:
         parsed = urlparse(url)
         if parsed.scheme != "https" or parsed.netloc != "api.scryfall.com":
             raise ValueError("Knowledge requests must use the Scryfall API.")
-        # Scryfall's named/search endpoints now require 500ms spacing.
-        interval = max(self.interval, 0.5 if parsed.path in {"/cards/named", "/cards/search"} else 0.1)
+        # Keep the existing conservative named/search floor above the corpus floor.
+        interval = max(self.interval, 0.5 if parsed.path in {"/cards/named", "/cards/search"} else 0.25)
         time.sleep(max(0.0, interval - (time.monotonic() - self._last_request)))
         try:
             for attempt in range(3):
@@ -85,9 +85,54 @@ class KnowledgeIngestor:
             row = self.repository.get_card_knowledge(cached_card.name) if cached_card else None
         if row is None or row.oracle_source != "scryfall":
             return None
-        profile = json.loads(row.profiles_json)
-        if profile.get("schema_version") != SCHEMA_VERSION or not profile.get("rulings_verified"):
+        try:
+            profile = json.loads(row.profiles_json)
+        except (TypeError, ValueError):
             return None
+        if (not isinstance(profile, dict) or profile.get("schema_version") != SCHEMA_VERSION
+                or profile.get("rulings_verified") is not True):
+            return None
+        cached_card = self.repository.get_cached_card_by_name(name)
+        needs_recovery = cached_card is None
+        if cached_card is not None:
+            canonical = self.normalizer.canonical_local_profile(row, name)
+            if canonical is not None:
+                try:
+                    rules = self.normalizer._canonical_rule_projection(canonical['card_data'], cached_card)
+                    needs_recovery = not self.normalizer._cache_rules_match(cached_card, rules)
+                except (AttributeError, KeyError, TypeError, ValueError):
+                    return None
+        if needs_recovery:
+            canonical = self.normalizer.canonical_local_profile(row, name)
+            if canonical is None:
+                return None
+            raw = canonical["card_data"]
+            # DFC faces do not mask malformed root values preferred by the mapper.
+            if (any(raw.get(field) is not None and not isinstance(raw[field], str)
+                    for field in ("type_line", "oracle_text", "mana_cost", "power", "toughness", "loyalty"))
+                    or not isinstance(raw.get("layout", ""), str)
+                    or raw.get("colors") is not None and (
+                        not isinstance(raw["colors"], list) or any(not isinstance(color, str) for color in raw["colors"]))
+                    or not isinstance(raw.get("legalities", {}), dict)
+                    or raw.get("image_uris") is not None and (
+                        not isinstance(raw["image_uris"], dict)
+                        or any(not isinstance(uri, str) for uri in raw["image_uris"].values()))):
+                return None
+            surfaces = raw.get("card_faces") or [raw]
+            if (any(not isinstance(surface.get(field), str) for surface in surfaces
+                    for field in ("name", "type_line", "oracle_text", "mana_cost"))
+                    or profile.get("oracle_id", raw.get("oracle_id")) != raw.get("oracle_id")
+                    or "card_data_sha256" in profile
+                    and profile["card_data_sha256"] != canonical_hash(raw)):
+                return None
+            try:
+                validate_rulings_page({"object": "list", "data": profile.get("rulings"),
+                                      "has_more": False}, raw.get("oracle_id"))
+                # Restore only display/cache data; never re-ingest or reset knowledge.
+                if not self.normalizer.sync_card_from_local_knowledge(name):
+                    return None
+            except (AttributeError, KeyError, TypeError, ValueError):
+                return None
         if "tactical_tags" not in profile and isinstance(profile.get("card_data"), dict):
             profile.update(canonical_tactical_tags(profile["card_data"]))
             row.profiles_json = json.dumps(profile, sort_keys=True)
@@ -96,10 +141,18 @@ class KnowledgeIngestor:
         return row
 
     def sync_name(self, name: str, force: bool = False) -> str:
-        existing = self.cached(name)
+        existing = None if force else self.cached(name)
         if existing is not None and not force:
             return "cached"
-        raw = self._get(f"{API}/cards/named", {"exact": name})
+        raw = self._get(f"{API}/cards/named", {"fuzzy": name})
+        canonical_name = raw.get("name")
+        aliases = {canonical_name.casefold()} if isinstance(canonical_name, str) else set()
+        faces = raw.get("card_faces")
+        if raw.get("layout") != "art_series" and raw.get("type_line") != "Card" and isinstance(faces, list):
+            aliases.update(face["name"].casefold() for face in faces
+                           if isinstance(face, dict) and isinstance(face.get("name"), str) and face["name"])
+        if not isinstance(name, str) or not name.strip() or name.strip().casefold() not in aliases:
+            raise ValueError("Canonical response does not match the requested card or a real face.")
         self.sync_payload(raw)
         return "synced"
 

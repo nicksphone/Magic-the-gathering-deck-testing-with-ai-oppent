@@ -75,16 +75,20 @@ try {
       assert.equal(await evaluate(enabled(label)), false, label);
     }
     assert.equal(await evaluate(enabled('Apply Sideboard Swaps')), true);
-    assert.equal(await evaluate(enabled('P1 Play First')), true);
-    assert.equal(await evaluate(enabled('P1 Draw First')), true);
+    assert.equal(await evaluate(enabled('P1 Play First')), false, 'sideboarding must be confirmed first');
+    assert.equal(await evaluate(enabled('P1 Draw First')), false, 'sideboarding must be confirmed first');
     assert.equal(await evaluate("document.querySelector('#table fieldset').disabled"), true);
     await settle();
     assert.equal(writes.length, 0, 'human games never auto-advance');
     console.log(`PASS winner ${winner}: game result, stopped actions, manual between-games controls`);
   }
   await load(fixture(2));
+  assert.equal(await evaluate(enabled('P1 Play First')), false);
+  assert.equal(await evaluate(enabled('P1 Draw First')), false);
   await click('Apply Sideboard Swaps');
   await waitFor("document.body.innerText.includes('Sideboard Applied')");
+  assert.equal(await evaluate(enabled('P1 Play First')), true);
+  assert.equal(await evaluate(enabled('P1 Draw First')), true);
   await click('P1 Draw First');
   await waitFor("!document.querySelector('.game-result')");
   assert.deepEqual(writes.map(write => write.path.split('/').at(-1)), ['sideboard', 'next-game']);

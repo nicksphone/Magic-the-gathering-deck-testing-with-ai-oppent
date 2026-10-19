@@ -4,6 +4,7 @@ import httpx
 
 from card_data.sync import ScryfallSyncService
 from card_data.service import CardService
+from tests.canonical_positive_fixtures import cached_card
 
 
 class _DummyRepo:
@@ -98,10 +99,14 @@ def test_sync_card_by_name_falls_back_to_cached_card_on_http_error(monkeypatch) 
     assert repo.upsert_called is False
 
 
-def test_sync_card_by_name_merges_fallback_text_for_blank_cached_card() -> None:
+def test_sync_card_by_name_merges_fallback_text_for_blank_cached_card(monkeypatch) -> None:
     repo = _DummyRepo(cached=_BlankCachedCard())
     service = ScryfallSyncService(repo)
 
+    def _offline(*args, **kwargs):
+        raise httpx.ConnectError("Declared offline transport", request=httpx.Request("GET", "https://api.scryfall.com/cards/named"))
+
+    monkeypatch.setattr("card_data.sync.get_with_backoff", _offline)
     out = service.sync_card_by_name("Clarion Spirit")
 
     assert "second spell each turn" in out["oracle_text"]
@@ -128,14 +133,8 @@ def test_completeness_report_identifies_cached_and_missing_card_data() -> None:
 
 
 def test_completeness_report_warns_for_unsupported_bands_with_other() -> None:
-    variant = _CompleteCachedCard()
-    variant.name = "Old Fogey"
-    variant.type_line = "Summon — Dinosaur"
-    variant.oracle_text = "Phasing, fading 3, bands with other Dinosaurs, flanking"
-    ordinary = _CompleteCachedCard()
-    ordinary.name = "Benalish Hero"
-    ordinary.type_line = "Creature — Human Soldier"
-    ordinary.oracle_text = "Banding"
+    variant = cached_card("Old Fogey")
+    ordinary = cached_card("Benalish Hero")
 
     class _ReportRepo:
         def get_cached_cards_by_names(self, names):  # noqa: ANN001
@@ -152,10 +151,7 @@ def test_completeness_report_warns_for_unsupported_bands_with_other() -> None:
 
 
 def test_cached_vanilla_creature_has_valid_empty_oracle_text() -> None:
-    bear = _CompleteCachedCard()
-    bear.name = "Grizzly Bears"
-    bear.oracle_text = ""
-    bear.type_line = "Creature — Bear"
+    bear = cached_card("Grizzly Bears")
 
     class _ReportRepo:
         def get_cached_cards_by_names(self, names):  # noqa: ANN001
@@ -168,9 +164,7 @@ def test_cached_vanilla_creature_has_valid_empty_oracle_text() -> None:
 
 
 def test_completeness_report_warns_for_morph() -> None:
-    card = _CompleteCachedCard()
-    card.name = "Willbender"
-    card.oracle_text = "Morph {1}{U}"
+    card = cached_card("Willbender")
 
     class _ReportRepo:
         def get_cached_cards_by_names(self, names):  # noqa: ANN001

@@ -1,0 +1,92 @@
+{
+  "Behold the Multiverse": {
+    "file": "queued_sequence/canonical.json",
+    "id": "27855a38-a682-4f97-ad22-ac625e86faec",
+    "key": "Behold the Multiverse",
+    "kind": "complete committed official bulk object in canonical map; original foretell source only",
+    "oracle_id": "d7d2f701-77df-4169-bf98-0d51d6886e9b",
+    "provenance": "queued_sequence/provenance.json",
+    "provenance_sha256": "e1aeeb882d1b18e46c60dfb6f3199db7e828e73bd23af878625412bcb25ad3e5",
+    "sha256": "2bf3e0c554d3086fe2ca20e71312b18e67641441fc45dfb7884e8fa8c3f924bb"
+  },
+  "Counterspell": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "kind": "complete committed official cards/collection object; no new wire fetch",
+    "line": 23,
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "provenance": "knowledge_profiles/PROVENANCE.json",
+    "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+    "row_sha256": "83406c9d1d649347cad7440cdd52198d9b8aad39835952d221f9f2ab74619f1c",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+  },
+  "Divination": {
+    "file": "library_ranking_vectors/divination-scryfall-raw.json",
+    "id": "cb3b35b8-f321-46d8-a441-6b9a6efa9021",
+    "kind": "complete committed unchanged official bulk row; no new bulk/wire authentication",
+    "oracle_id": "273b339c-964b-4a18-8eb5-ceb8abcdfd9e",
+    "provenance": "library_ranking_vectors/PROVENANCE.json",
+    "provenance_sha256": "af841adc2418f6247a6dafc08c2e242b94c4d775ad8ecc94ce3981329a9e4a04",
+    "sha256": "6b2e4f894aa39e9d498b8f4b57b8aae11d78093bd954e34357c9c52ed411a174"
+  },
+  "Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+    "kind": "complete committed official cards/collection object; no new wire fetch",
+    "line": 50,
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "provenance": "knowledge_profiles/PROVENANCE.json",
+    "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+    "row_sha256": "450bf6448c1ed549fe3d69fe922cb0ffb8d6fa08751875cc873265f89ad95407",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+  },
+  "Lightning Bolt": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "kind": "complete committed official cards/collection object; no new wire fetch",
+    "line": 57,
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "provenance": "knowledge_profiles/PROVENANCE.json",
+    "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+    "row_sha256": "04884b32611d3a7b2f5f65d1fdc1df5f420d3a3db4c68937ed78817f6485a7cf",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+  },
+  "Prosperity": {
+    "file": "draw_canonical_sidecar/prosperity.json",
+    "id": "69ebc3a4-94b8-45aa-a3bf-21cd435ff5cf",
+    "kind": "complete unchanged archived official bulk JSONL row; not original HTTP wire body",
+    "oracle_id": "c586312d-d04a-4bfb-bbb2-b41186ca178e",
+    "provenance": "draw_canonical_sidecar/SOURCES.json",
+    "provenance_sha256": "d0d1208fdfa97a4ee270fd22373a60b2f444d7c27e8be00f4c4b28452d0a3e1c",
+    "sha256": "45908455d5d8c52309c3431d58b4bb4ada86491863f628e73083788a81497644"
+  },
+  "Spirit of the Labyrinth": {
+    "file": "draw_canonical_sidecar/spirit.json",
+    "id": "f44e5128-e146-4e46-b313-a40d82719d1d",
+    "kind": "complete unchanged archived official bulk JSONL row; not original HTTP wire body",
+    "oracle_id": "1463795b-ec0c-44d6-ae1a-55f78d9843ec",
+    "provenance": "draw_canonical_sidecar/SOURCES.json",
+    "provenance_sha256": "d0d1208fdfa97a4ee270fd22373a60b2f444d7c27e8be00f4c4b28452d0a3e1c",
+    "sha256": "3a82dea1bf4aaa6e4cb167c440b51f4a94b80bb54da807ed0b489008de153675"
+  },
+  "Swamp": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "id": "b233b117-9369-45c1-80c5-cc857386b6be",
+    "kind": "complete committed official cards/collection object; original foretell stock only",
+    "line": 97,
+    "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+    "provenance": "knowledge_profiles/PROVENANCE.json",
+    "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+    "row_sha256": "84c05da88a717e51e24b0e1d2da5018ea1741117c4334984176f4859668ec3d4",
+    "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732"
+  },
+  "Vision Skeins": {
+    "file": "draw_canonical_sidecar/vision.json",
+    "id": "76999d96-f3fe-421e-9190-e682259e3cdb",
+    "kind": "complete unchanged archived official bulk JSONL row; not original HTTP wire body",
+    "oracle_id": "6d42dff5-97ec-4768-b112-84a3584d0b87",
+    "provenance": "draw_canonical_sidecar/SOURCES.json",
+    "provenance_sha256": "d0d1208fdfa97a4ee270fd22373a60b2f444d7c27e8be00f4c4b28452d0a3e1c",
+    "sha256": "61a162d208e65cf536f8a1e52d4dbd57c9acaef290ccd23d7ba4594b3ad45e95"
+  }
+}

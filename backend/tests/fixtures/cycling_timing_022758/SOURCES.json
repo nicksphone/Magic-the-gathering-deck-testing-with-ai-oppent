@@ -1,0 +1,173 @@
+{
+  "base": "022758e64debeeab8b8e698cce2cd76d35ba82d5",
+  "cards": {
+    "Ajani's Pridemate": {
+      "fields": 68,
+      "file": "damage_life_printed_79/ajani-s-pridemate-scryfall-raw.json",
+      "id": "222c1a68-e34c-4103-b1be-17d4ceaef6ce",
+      "line": null,
+      "object_sha256": "dc8dac697cdc2c3eb1cd405bd9861b45cef3ff844c807afbffc9f486eadb61a7",
+      "oracle_id": "95e94dea-5ac0-4d6f-adec-ca147aee861f",
+      "provenance": [
+        {
+          "file": "damage_life_printed_79/PROVENANCE.json",
+          "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+        }
+      ],
+      "sha256": "166959ab61c19db39af33dc48ddf9542d73a8b8a81f6cb692b14eb92237e59ad",
+      "steps": []
+    },
+    "Alhammarret's Archive": {
+      "fields": 65,
+      "file": "life_conversion/alhammarrets-archive.json",
+      "id": "4f4187f1-05bd-4db6-a2e7-d677eff588ee",
+      "line": null,
+      "object_sha256": "2399471da8490d26882721b7f436f5c74b804ffb71a857c8cc9b5f7e226c1c60",
+      "oracle_id": "d5c4d36c-54b3-4149-906b-a57a670260fc",
+      "provenance": [
+        {
+          "file": "life_conversion/provenance.json",
+          "sha256": "879000bb1f305955e156cc0e7d798d4bc2b4a21965b09fd9081986d4c3f7e753"
+        }
+      ],
+      "sha256": "498b8c1c97b465892cdef001231bf1b59c9b9a4f577988906088a920b5a7753a",
+      "steps": []
+    },
+    "Ash Barrens": {
+      "fields": 65,
+      "file": "cycling_timing_022758/ash-barrens.json",
+      "id": "e8510205-4baa-4f1c-bf64-5d931e2ddf48",
+      "line": null,
+      "object_sha256": "eb4c771b45e8006e4ea7e3bf629cb1aca8f3765929d7f66e3125bf045cf76d33",
+      "oracle_id": "58257464-278e-45fa-8e0b-bcd9a7500bc1",
+      "provenance": [
+        {
+          "file": "cycling_timing_022758/BULK_PROVENANCE.json",
+          "sha256": "a8970964467fbd5ca7a4ba9441defba8f1da9ef1278ccc471b4b1c1bcad363ea"
+        }
+      ],
+      "sha256": "a7141d12d7d7557610efb5078e5aceda09815d817d53e5175910708965b04eca",
+      "steps": []
+    },
+    "Boon Reflection": {
+      "fields": 65,
+      "file": "damage_life_printed_79/boon-reflection-scryfall-raw.json",
+      "id": "0d4032a7-600c-4b30-a012-fe3cde1be9c9",
+      "line": null,
+      "object_sha256": "d6d17e94afaf6b79cc80860cf40a09b247c44c08ab14f3ac596433c46084406b",
+      "oracle_id": "b86d3142-568a-4eea-b1ae-5fcfc1453533",
+      "provenance": [
+        {
+          "file": "damage_life_printed_79/PROVENANCE.json",
+          "sha256": "5a1fdded153c5ad59596668077c5df65627a9eb9969643cece03f69165450378"
+        }
+      ],
+      "sha256": "2023700cc2abc3b60d3475933373448715fc03d1616242674c9442633abc2d01",
+      "steps": []
+    },
+    "Crypt Rats": {
+      "fields": 65,
+      "file": "ai_terminal_draw/crypt-rats.raw.json",
+      "id": "96916db2-5121-4ff1-880c-369744f11ecf",
+      "line": null,
+      "object_sha256": "f9d26cee84d63b6e4cf08d09970d84af0cbba03f705a7909a8bae0b0b57f225c",
+      "oracle_id": "104095ed-55e3-408e-bf70-4fe06bb16d2f",
+      "provenance": [
+        {
+          "file": "ai_terminal_draw/PROVENANCE.json",
+          "sha256": "0b70668291db34d57ba9614b247d4ea942d17d60e93aff810b266464e6008b29"
+        }
+      ],
+      "sha256": "a0337f0db28bf0b3a82073d59eef869bf517b800720f9339437858d06fcba70d",
+      "steps": []
+    },
+    "Grizzly Bears": {
+      "fields": 66,
+      "file": "../vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "line": null,
+      "object_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "provenance": [
+        {
+          "file": "../vraska_full/fixtures/PROVENANCE.json",
+          "sha256": "4ca06bb36a8ee650e8c3593f3013636958914b189b0212416b9b01d762143c71"
+        }
+      ],
+      "sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+      "steps": []
+    },
+    "Island": {
+      "fields": 60,
+      "file": "knowledge_profiles/seed155-scryfall.jsonl",
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "line": 50,
+      "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "provenance": [
+        {
+          "file": "day_night_apnap_canonical/PROVENANCE.json",
+          "sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe"
+        },
+        {
+          "file": "knowledge_profiles/PROVENANCE.json",
+          "sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+        },
+        {
+          "file": "knowledge_profiles/RULINGS_PROVENANCE.json",
+          "sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d"
+        }
+      ],
+      "sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "steps": []
+    },
+    "Lonely Sandbar": {
+      "fields": 65,
+      "file": "cycling_timing_022758/lonely-sandbar.json",
+      "id": "42f8591e-df30-49ec-962c-a75d32e6d9f5",
+      "line": null,
+      "object_sha256": "baf47ee600637e636208b6709935df030b289c1ec8250aac88e0f54ff8a56e06",
+      "oracle_id": "765863c8-1be0-4bb1-9e9c-db7701cffde3",
+      "provenance": [
+        {
+          "file": "cycling_timing_022758/BULK_PROVENANCE.json",
+          "sha256": "a8970964467fbd5ca7a4ba9441defba8f1da9ef1278ccc471b4b1c1bcad363ea"
+        }
+      ],
+      "sha256": "35d8d07abe185faa25abe5ab622e21b229601822d13cac05a4da3745b15e1223",
+      "steps": []
+    },
+    "Protection of the Hekma": {
+      "fields": 64,
+      "file": "shuffle_observer_fix/canonical.jsonl",
+      "id": "15d01e04-7c40-4af0-b5bd-5fa267d10378",
+      "line": 6,
+      "object_sha256": "273b357127be7312fbaad83438f0821b673126639e04d6cafd2993e7f3808828",
+      "oracle_id": "c5f611c9-9e6e-4719-ad71-8686327a8564",
+      "provenance": [
+        {
+          "file": "shuffle_observer_fix/provenance.json",
+          "sha256": "d555d2a3dc2e94e2d628162103ec9ceb06505de1c6351b2c77a60b03dbb546f0"
+        }
+      ],
+      "sha256": "b2940c590f40c0377c5e6abdf5e2459abd4e1c45fdc75fd300b0e450b4e15e71",
+      "steps": []
+    },
+    "Urza's Armor": {
+      "fields": 64,
+      "file": "cycling_timing_022758/urzas-armor.json",
+      "id": "e40375cf-8649-4f06-9e08-f0577f35d1bf",
+      "line": null,
+      "object_sha256": "12b253ff3e949cc716d68198b1a92b56cf984bd1e347f0d9b5b09058dab7bc6d",
+      "oracle_id": "e5fa232a-c8f2-4532-88bf-60d1223181b0",
+      "provenance": [
+        {
+          "file": "cycling_timing_022758/URZA_PROVENANCE.json",
+          "sha256": "7623cb31d099b0b479ee4f8927dab389732403290d7b703d77e735301af2ff7d"
+        }
+      ],
+      "sha256": "0db6445cafa47ce714bde4b4fd51337ed9f1e941427c21533aa32038bfa46472",
+      "steps": []
+    }
+  }
+}

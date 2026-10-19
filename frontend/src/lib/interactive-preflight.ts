@@ -9,6 +9,13 @@ export type InteractiveReview = {
 };
 export type PendingInteractiveStart = { key: string; payload: StartMatchPayload; review?: InteractiveReview };
 
+export function startControllers(mode: StartMatchPayload["mode"], humanSeat: 1 | 2): Pick<StartMatchPayload, "controller_a" | "controller_b"> {
+  return {
+    controller_a: mode === "human_vs_human" || (mode === "player_vs_ai" && humanSeat === 1) ? "human" : "ai",
+    controller_b: mode === "human_vs_human" || (mode === "player_vs_ai" && humanSeat === 2) ? "human" : "ai",
+  };
+}
+
 function record(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }

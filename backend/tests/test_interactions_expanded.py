@@ -3,6 +3,7 @@ from __future__ import annotations
 from effects.registry import resolve_effect
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine import combat
+from tests.rules_printed_facts_e4 import canonical_card
 
 
 def test_effect_sequence_resolves_all_clauses() -> None:
@@ -184,14 +185,12 @@ def test_deal_damage_cumulative_lethal() -> None:
 
 def test_combat_death_replacement_exiles_creature_instead_of_graveyard() -> None:
     state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}], seed=19)
-    replacement = CardInstance(
+    replacement = canonical_card(
+        "Rest in Peace",
         id="rep",
-        name="Rest in Peace",
         owner=2,
         controller=2,
         zone=Zone.BATTLEFIELD,
-        types=["Enchantment"],
-        oracle_text="When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead.",
     )
     state.cards[replacement.id] = replacement
     state.players[2].battlefield.append(replacement.id)
@@ -242,14 +241,12 @@ def test_state_based_action_lethal_creature_emits_permanent_and_creature_death_t
     state.cards[creature_id].power = 2
     state.cards[creature_id].toughness = 2
     state.cards[creature_id].counters["__damage_marked"] = 2
-    state.cards["trigger"] = CardInstance(
+    state.cards["trigger"] = canonical_card(
+        "Blood Artist",
         id="trigger",
-        name="Blood Artist",
         owner=1,
         controller=1,
         zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        oracle_text="Whenever a creature dies, draw a card.",
     )
     state.players[1].battlefield.append("trigger")
 

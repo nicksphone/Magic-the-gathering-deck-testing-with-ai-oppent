@@ -1,0 +1,84 @@
+{
+  "policy": "Printed records extracted unchanged; runtime zone/counter/mana setup is an explicit rules fixture, not natural play. Fresh raw records preserve complete Oracle.",
+  "records": [
+    {
+      "name": "Soul-Scar Mage",
+      "source_path": "backend/card_data/builtin_oracle_seed.json",
+      "source_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+      "scryfall_id": "a8003786-6e2a-4e2d-a915-f23293c7273a"
+    },
+    {
+      "name": "Lightning Bolt",
+      "source_path": "backend/card_data/builtin_oracle_seed.json",
+      "source_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+      "scryfall_id": "77c6fa74-5543-42ac-9ead-0e890b188e99"
+    },
+    {
+      "name": "Unholy Heat",
+      "source_path": "backend/card_data/builtin_oracle_seed.json",
+      "source_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+      "scryfall_id": "4e879386-b1f8-4f2a-9820-6e1291746f88"
+    },
+    {
+      "name": "Torrential Gearhulk",
+      "source_path": "backend/card_data/builtin_oracle_seed.json",
+      "source_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+      "scryfall_id": "92872fea-2fb4-4154-815e-cad9d966e60f"
+    },
+    {
+      "name": "Island",
+      "source_path": "backend/card_data/builtin_oracle_seed.json",
+      "source_sha256": "9296ec1b24654374aaca985b92dc4c3b62a93e6fd024afcd6b4acd61a6007037",
+      "scryfall_id": "77b88bb8-6bd9-4632-b937-89468fcb5e6a"
+    },
+    {
+      "name": "Prodigal Pyromancer",
+      "source_path": "backend/tests/fixtures/ward.json",
+      "source_sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+      "scryfall_id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52"
+    },
+    {
+      "name": "Grizzly Bears",
+      "source_path": "backend/tests/fixtures/ward.json",
+      "source_sha256": "5ac010f65ac406637d20083511b34186bae81acff2b946e612dff03213775599",
+      "scryfall_id": "409f9b88-f03e-40b6-9883-68c14c37c0de"
+    },
+    {
+      "name": "Humility",
+      "source_path": "backend/tests/fixtures/ability_suppression.json",
+      "source_sha256": "91f7516a2a13ab79847fb57c39aee7e0bd9ca21e1d45316d1ae2d00980fd30cf",
+      "scryfall_id": "55ad6a45-a840-45ba-89ad-066e20e983f3"
+    },
+    {
+      "name": "Furnace of Rath",
+      "source_path": "backend/tests/fixtures/resolution_conditions/furnace-of-rath.json",
+      "source_sha256": "4a2feca3b6b9bb2da4e59bc5172b94c84505d74ffcb64598f697b9570143252a",
+      "scryfall_id": "d7f0e720-3c32-4040-b663-7f99ad5bc810"
+    },
+    {
+      "name": "Glistener Elf",
+      "source_path": "backend/tests/fixtures/counter_prohibitions.json",
+      "source_sha256": "94fe0b7a42c358835cc4abf1f1e231c5096798a32de7de61a34c5a21d4cdc448",
+      "scryfall_id": "8b94f4c6-b518-43b3-be52-e889d1f3ea38"
+    }
+  ],
+  "official_rules_url": "https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt",
+  "soulscar_official_rulings_uri": "https://api.scryfall.com/cards/a8003786-6e2a-4e2d-a915-f23293c7273a/rulings",
+  "new_raw_cards": [
+    {
+      "name": "Stigma Lasher",
+      "uri": "https://api.scryfall.com/cards/ce5d1fd4-0543-46ce-bcea-1695fc04e85b",
+      "sha256": "8467f6629636571cfbbae90a7de205464445f2fdfa28fc6d1045532d8a693b42"
+    },
+    {
+      "name": "Vampire Nighthawk",
+      "uri": "https://api.scryfall.com/cards/7aff07f9-9528-4149-9af0-f4e3c66c9dc5",
+      "sha256": "083bf98d6178082c2655d798ca145fef500c2254608e7287b73c42e1657bdb9e"
+    },
+    {
+      "name": "Boon of Safety",
+      "uri": "https://api.scryfall.com/cards/2069310a-9fb6-41b7-bbd5-849e3df05632",
+      "sha256": "97f6285a9bf12cbe76375a5ff9a99449fba4b7723590431bb4bfb049793d1896"
+    }
+  ]
+}

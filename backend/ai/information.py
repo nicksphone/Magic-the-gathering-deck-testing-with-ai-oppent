@@ -9,6 +9,7 @@ from ai.pending_effects import planning_copy
 
 
 INSPECTED_CHOICES = frozenset({
+    'library_top_order', 'library_order_shuffle', 'library_shuffle',
     'scry', 'scry_top_order', 'surveil', 'surveil_top_order', 'topdeck_bottom_order',
     'search_library', 'topdeck_put', 'topdeck_reveal_creature',
     'look_top_choose', 'look_top_select_hand', 'choose_revealed_discard', 'choose_revealed_exile',
@@ -24,6 +25,9 @@ def decision_view(state, player_id, legal_moves):
     """Keep current authorized observations, never expose an unseen draw/reply."""
     from rules_engine.foretell import can_look
     memo = {}
+    facts = getattr(state, 'sideboard_facts', None)
+    if facts is not None:
+        memo[id(facts)] = {}
     deck_lists = getattr(state, 'starting_decks', None)
     if deck_lists is not None:
         memo[id(deck_lists)] = {player_id: deepcopy(deck_lists.get(player_id, []))}
@@ -31,8 +35,8 @@ def decision_view(state, player_id, legal_moves):
     visible = {cid for player in state.players.values()
                for cid in player.battlefield + getattr(player, 'graveyard', [])}
     visible.update(state.players[player_id].hand)
-    visible.update(getattr(item, 'source_card_id', getattr(item, 'card_id', None))
-                   for item in getattr(state, 'stack', []))
+    visible.update(cid for cid in getattr(state, 'emblems', []) if cid in state.cards
+                   and state.cards[cid].zone == Zone.COMMAND)
     # A resolving spell leaves the stack queue while an owned choice is pending,
     # but its source remains a public stack-zone card until resolution completes.
     visible.update(cid for cid, card in state.cards.items() if getattr(card, 'zone', None) == Zone.STACK)
@@ -42,6 +46,7 @@ def decision_view(state, player_id, legal_moves):
     choice = getattr(state, 'pending_mechanic_choice', None) or {}
     if choice.get('player_id') == player_id and choice.get('kind') in INSPECTED_CHOICES:
         visible.update(cid for cid in choice.get('options', []) if isinstance(cid, str))
+        visible.update(cid for cid in choice.get('inspected_card_ids', []) if isinstance(cid, str))
     for move in legal_moves:
         cid = move.get('card_id')
         # Authoritative source actions include permitted top-library plays.
@@ -85,7 +90,7 @@ def known_search_land_count(state, player_id, contains):
     This is an upper bound when hidden removals occurred. Actual resolution
     still searches only the authoritative, legally inspected library options.
     """
-    from card_data.fallback_cards import fallback_card_payload
+    from card_data.seed_cards import seed_card_payload
     from rules_engine.oracle_effects import search_card_matches
     player = state.players[player_id]
     observed = Counter()
@@ -97,7 +102,7 @@ def known_search_land_count(state, player_id, contains):
     count = 0
     for row in getattr(state, 'starting_decks', {}).get(player_id, []):
         name = row['card_name']
-        metadata = row if row.get('type_line') else (fallback_card_payload(name) or {})
+        metadata = row if row.get('type_line') else (seed_card_payload(name) or {})
         type_line = str(metadata.get('type_line') or '').split('//', 1)[0].strip()
         # A printed-data descriptor, never inserted into gameplay state.
         card = SimpleNamespace(name=name, type_line=type_line, types=type_line.split(),
@@ -116,7 +121,7 @@ def draw_resource_forecast(state, player_id, draws):
     Never inspect library card instances or transfer opposing deck knowledge.
     Probabilities describe unknown draws, not executable projected card objects.
     """
-    from card_data.fallback_cards import fallback_card_payload
+    from card_data.seed_cards import seed_card_payload
     from rules_engine.card_types import is_token_card
     if getattr(state, 'ai_information_player', None) != player_id:
         return None
@@ -128,7 +133,7 @@ def draw_resource_forecast(state, player_id, draws):
     descriptors = {}
     for row in rows:
         name = row['card_name'].casefold()
-        metadata = row if row.get('type_line') else fallback_card_payload(row['card_name'])
+        metadata = row if row.get('type_line') else seed_card_payload(row['card_name'])
         if not metadata or not metadata.get('type_line'):
             return None
         # Face choices need their own resource model; do not guess their value.

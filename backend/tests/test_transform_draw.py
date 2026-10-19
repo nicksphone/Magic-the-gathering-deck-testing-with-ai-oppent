@@ -1,16 +1,10 @@
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.events import emit_event
 from rules_engine.stack_engine import resolve_top_of_stack
-
-
-CORRUPTION_ORACLE = (
-    "When Corruption of Towashi enters the battlefield, incubate 4.\n"
-    "Whenever a permanent you control transforms or a permanent enters the battlefield under your control transformed, "
-    "you may draw a card. Do this only once each turn."
-)
+from tests.transform_draw_canonical_fixtures import permanent
 
 
 def _state():
@@ -20,10 +14,7 @@ def _state():
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
-    corruption = CardInstance(
-        "corruption", "Corruption of Towashi", 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
-        oracle_text=CORRUPTION_ORACLE, type_line="Enchantment",
-    )
+    corruption = permanent("corruption", "Corruption of Towashi")
     state.cards[corruption.id] = corruption
     state.players[1].battlefield.append(corruption.id)
     return state
@@ -80,11 +71,7 @@ def test_declining_transform_draw_allows_later_trigger_but_accepting_stops_it():
 
 def test_entering_transformed_counts_but_modal_back_face_does_not():
     state = _state()
-    transformed = CardInstance(
-        "etching", "Etching of Kumano", 1, 1, Zone.BATTLEFIELD, ["Enchantment", "Creature"],
-        type_line="Enchantment Creature - Human Shaman", layout="transform", selected_face_index=1,
-        card_faces=[{"name": "Kumano Faces Kakkazan"}, {"name": "Etching of Kumano"}],
-    )
+    transformed = permanent("etching", "Kumano Faces Kakkazan // Etching of Kumano", face_index=1)
     state.cards[transformed.id] = transformed
     state.players[1].battlefield.append(transformed.id)
     emit_event(state, "enters_battlefield", {"card_id": transformed.id, "controller": 1})
@@ -93,21 +80,13 @@ def test_entering_transformed_counts_but_modal_back_face_does_not():
     resolve_top_of_stack(state)
     assert len(state.players[1].hand) == initial_hand + 1
 
-    second = CardInstance(
-        "second-etching", "Etching of Kumano", 1, 1, Zone.BATTLEFIELD, ["Enchantment", "Creature"],
-        type_line="Enchantment Creature - Human Shaman", layout="transform", selected_face_index=1,
-        card_faces=transformed.card_faces,
-    )
+    second = permanent("second-etching", "Kumano Faces Kakkazan // Etching of Kumano", face_index=1)
     state.cards[second.id] = second
     state.players[1].battlefield.append(second.id)
     emit_event(state, "enters_battlefield", {"card_id": second.id, "controller": 1})
     assert not state.stack
 
-    modal = CardInstance(
-        "modal", "Bala Ged Sanctuary", 1, 1, Zone.BATTLEFIELD, ["Land"],
-        type_line="Land", layout="modal_dfc", selected_face_index=1,
-        card_faces=[{"name": "Bala Ged Recovery"}, {"name": "Bala Ged Sanctuary"}],
-    )
+    modal = permanent("modal", "Bala Ged Recovery // Bala Ged Sanctuary", face_index=1)
     state.cards[modal.id] = modal
     state.players[1].battlefield.append(modal.id)
     emit_event(state, "enters_battlefield", {"card_id": modal.id, "controller": 1})

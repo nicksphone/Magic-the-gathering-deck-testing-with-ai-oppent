@@ -1,0 +1,24 @@
+{
+  "bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "kind": "exact complete public official bulk JSONL rows, including original newline; not new HTTP wire intake",
+  "new_requests": 0,
+  "rows": {
+    "Ash Barrens": {
+      "bulk_line": 13222,
+      "fields": 65,
+      "file": "ash-barrens.json",
+      "id": "e8510205-4baa-4f1c-bf64-5d931e2ddf48",
+      "oracle_id": "58257464-278e-45fa-8e0b-bcd9a7500bc1",
+      "sha256": "a7141d12d7d7557610efb5078e5aceda09815d817d53e5175910708965b04eca"
+    },
+    "Lonely Sandbar": {
+      "bulk_line": 17798,
+      "fields": 65,
+      "file": "lonely-sandbar.json",
+      "id": "42f8591e-df30-49ec-962c-a75d32e6d9f5",
+      "oracle_id": "765863c8-1be0-4bb1-9e9c-db7701cffde3",
+      "sha256": "35d8d07abe185faa25abe5ab622e21b229601822d13cac05a4da3745b15e1223"
+    }
+  }
+}

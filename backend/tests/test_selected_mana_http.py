@@ -12,6 +12,7 @@ from game_state.state import Zone
 from persistence.db import engine
 from persistence.repository import Repository
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 from tests.test_training_selected_mana import selected_position, filter_position
 from tests.test_training_mana_choice_coverage import mana
 from tests.test_training_mana_choice_coverage import card
@@ -29,11 +30,8 @@ def forbid_external_network(monkeypatch):
 
 
 def retain(match, env):
-    identifier = match.state.id
-    match.state = deepcopy(env._state)
-    match.state.id = identifier
-    persist(match)
-    return identifier
+    adopt_fixture_state(match, deepcopy(env._state))
+    return match.state.id
 
 
 def restart(identifier):

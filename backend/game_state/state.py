@@ -16,6 +16,7 @@ class Zone(str, Enum):
     EXILE = "exile"
     STACK = "stack"
     CEASED = "ceased"
+    COMMAND = "command"
 
 
 class Step(str, Enum):
@@ -76,6 +77,8 @@ class CardInstance:
     base_stat_effects: list[dict] = field(default_factory=list)
     type_effects: list[dict] = field(default_factory=list)
     type_effect_base: list[str] | None = None
+    control_effect_base: int | None = None
+    control_effects: list[dict] = field(default_factory=list)
     oracle_text: str = ""
     type_line: str = ""
     image_uri: str | None = None
@@ -102,8 +105,16 @@ class CardInstance:
     granted_flashback: dict = field(default_factory=dict)
     was_foretold: bool = False
     was_kicked: bool = False
+    kicker_count: int | None = None
     printed_power: str | None = None
     printed_toughness: str | None = None
+    characteristic_record: dict | None = field(default=None, kw_only=True)
+    knowledge_snapshot: dict = field(default_factory=dict)
+
+    def __post_init__(self):
+        if self.characteristic_record is None:
+            from rules_engine.copiable_values import initialize
+            initialize(self)
 
     def __setattr__(self, name, value):
         # Suspend's granted haste ends permanently at the first control loss.
@@ -112,6 +123,8 @@ class CardInstance:
         object.__setattr__(self, name, value)
 
     def reset_zone_counters(self, zone: Zone) -> None:
+        from rules_engine.control_effects import clear_control_effects
+        clear_control_effects(self)
         from rules_engine.type_effects import clear_type_effects
         clear_type_effects(self)
         self.keyword_effects.clear()
@@ -125,10 +138,13 @@ class CardInstance:
 
     def move_to_zone(self, zone: Zone) -> None:
         if zone != self.zone and self.zone == Zone.BATTLEFIELD:
+            from rules_engine.control_effects import clear_control_effects
+            clear_control_effects(self)
             from rules_engine.type_effects import clear_type_effects
             clear_type_effects(self)
         if zone != self.zone and not (self.zone == Zone.STACK and zone == Zone.BATTLEFIELD):
             self.was_kicked = False
+            self.kicker_count = None
         if zone not in {Zone.STACK, Zone.BATTLEFIELD} and self.bestow_characteristics:
             from rules_engine.bestow import end_bestow
             end_bestow(self)
@@ -185,6 +201,23 @@ class PlayerState:
 
 
 @dataclass
+class NumericPreventionShield:
+    version: int
+    receipt_id: str
+    resolving_stack_id: str
+    source_card_id: str
+    source_controller: int
+    source_label: str
+    source_reference: dict[str, int]
+    target_player: int | None
+    target_reference: dict | None
+    remaining: int
+    created_turn: int
+    expires_at_cleanup: bool
+    effect_timestamp: int
+
+
+@dataclass
 class MatchState:
     id: str
     players: dict[int, PlayerState]
@@ -193,10 +226,17 @@ class MatchState:
     rng: random.Random = field(default_factory=random.Random)
     starting_decks: dict[int, list[dict]] = field(default_factory=dict)
     card_observations: dict[int, dict[str, dict]] = field(default_factory=dict)
+    sideboard_facts: dict = field(default_factory=dict)
     turn: int = 1
     active_player: int = 1
     priority_player: int = 1
     step: Step = Step.UNTAP
+    normal_turn_successor: int | None = None
+    extra_turns: list[dict] = field(default_factory=list)
+    next_schedule_ordinal: int = 1
+    phase_plan: list[dict] = field(default_factory=list)
+    phase_cursor: int = 0
+    next_phase_visit: int = 1
     passed_priority: set[int] = field(default_factory=set)
     attackers: list[str] = field(default_factory=list)
     attack_targets: dict[str, str] = field(default_factory=dict)
@@ -213,6 +253,8 @@ class MatchState:
     cleanup_repeat_required: bool = False
     cleanup_deferred_triggers: list[dict] = field(default_factory=list)
     delayed_triggers: list[dict] = field(default_factory=list)
+    emblems: list[str] = field(default_factory=list)
+    loyalty_permissions: list[dict] = field(default_factory=list)
     foretells_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     winner: int | None = None
     failed_draw_players: set[int] = field(default_factory=set)
@@ -239,6 +281,10 @@ class MatchState:
     # the upkeep transition is deterministic and survives snapshot restore.
     day_night: str = "none"
     spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
+    spell_color_history: dict[int, set[str]] = field(default_factory=lambda: {1: set(), 2: set()})
+    spell_color_history_known: bool = True
+    turn_spell_protection: set[int] = field(default_factory=set)
+    turn_player_hexproof: dict[int, set[str]] = field(default_factory=dict)
     kicked_spells_cast_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     declared_attackers_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     spells_cast_last_turn: int = 0
@@ -251,6 +297,7 @@ class MatchState:
     players_with_permanent_departure: set[int] = field(default_factory=set)
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
     linked_exiles: list[dict] = field(default_factory=list)
+    retained_counter_prohibitions: list[dict] = field(default_factory=list)
     # Delayed entry modifications created by resolving effects such as Saga
     # chapters. Entries are consumed by the next matching spell this turn.
     pending_entry_counters: list[dict] = field(default_factory=list)
@@ -266,6 +313,7 @@ class MatchState:
     replacement_choice_players: set[int] = field(default_factory=set)
     mechanic_choice_players: set[int] = field(default_factory=set)
     pending_replacement_choice: dict | None = None
+    mana_continuation: dict | None = None
     trigger_order_choice_required: bool = False
     trigger_order_choice_players: set[int] = field(default_factory=set)
     trigger_staging: bool = False
@@ -273,6 +321,8 @@ class MatchState:
     staged_triggers: list[dict] = field(default_factory=list)
     pending_trigger_order: dict | None = None
     pending_mechanic_choice: dict | None = None
+
+    numeric_prevention_shields: list[NumericPreventionShield] = field(default_factory=list)
 
     def allocate_object_id(self) -> str:
         """Stable gameplay identities without consuming the shuffle RNG."""
@@ -300,8 +350,14 @@ class MatchFactory:
         player_a_name: str = "Player A",
         player_b_name: str = "Player B",
         seed: int | None = None,
+        *,
+        game_id: str | None = None,
     ) -> MatchState:
+        if game_id is not None and (type(game_id) is not str or not game_id
+                or not game_id.isprintable() or any(c.isspace() for c in game_id)):
+            raise ValueError('game_id must be a nonempty clean string or None')
         cards: dict[str, CardInstance] = {}
+        sideboard_inventory = {}
         p1 = PlayerState(id=1, name=player_a_name)
         p2 = PlayerState(id=2, name=player_b_name)
         rng = random.Random(seed) if seed is not None else random
@@ -347,6 +403,7 @@ class MatchFactory:
                     card_faces=list(raw_item.get("card_faces") or []),
                     layout=str(raw_item.get("layout") or ""),
                     selected_face_index=raw_item.get("selected_face_index"),
+                    knowledge_snapshot=deepcopy(raw_item.get('knowledge_snapshot') or {}),
                     instance_order=copy_index,
                     colors=raw_item.get("colors"),
                 )
@@ -356,11 +413,17 @@ class MatchFactory:
                     apply_transform_face(card, 0)
                     card.selected_face_index = previous_selection
                     card.printed_characteristics['selected_face_index'] = previous_selection
+                from rules_engine.copiable_values import initialize
+                initialize(card)
                 cards[cid] = card
+                sideboard_inventory[cid] = {'owner': owner, 'stock_key': raw_item['card_name']}
                 player.library.append(cid)
 
-        match = MatchState(id=str(uuid.uuid4()), players={1: p1, 2: p2}, cards=cards, stack=[])
+        match = MatchState(id=game_id if game_id is not None else str(uuid.uuid4()),
+                           players={1: p1, 2: p2}, cards=cards, stack=[])
         match.starting_decks = {1: deepcopy(deck_a), 2: deepcopy(deck_b)}
+        from ai.sideboard_facts import initialize
+        initialize(match, sideboard_inventory)
         match.rng = rng if seed is not None else random.Random()
         for pid in [1, 2]:
             for _ in range(7):
@@ -406,6 +469,7 @@ def assign_static_order_on_battlefield_entry(state: MatchState, card_id: str) ->
     card.reset_zone_counters(Zone.BATTLEFIELD)
     assign_effect_timestamp(state, card_id)
     card.battlefield_incarnation = card.effect_timestamp
+    state.loyalty_activated_this_turn = state.loyalty_activated_this_turn - {card_id}
 
 
 def object_incarnation(card) -> int:
@@ -574,15 +638,11 @@ def _infer_loyalty(name: str, loyalty: str | int | None = None, types: list[str]
 
 def _infer_keywords(oracle_text: str) -> list[str]:
     from rules_engine.oracle_text import without_reminder_text
+    from rules_engine.protection import PROTECTION_CLAUSE_RE, extract_protection_keywords, hexproof_variants
     text = without_reminder_text(oracle_text or "").lower()
-    out: list[str] = []
-    if re.search(r"(?:^|[\n,])\s*training\b", text):
-        out.append("training")
-    # "Bands with other" is distinct from ordinary banding even though card
-    # data sources may classify both under the broad Banding keyword.
-    if re.search(r"(?:^|\n)\s*banding\b|,\s*banding\b", text):
-        out.append("banding")
-    for kw in [
+    keywords = [
+        "training",
+        "banding",
         "trample",
         "first strike",
         "double strike",
@@ -613,10 +673,16 @@ def _infer_keywords(oracle_text: str) -> list[str]:
         "desertwalk",
         "wasteswalk",
         "legendary landwalk",
-    ]:
-        if re.search(r'(?:^|[,\n])\s*' + re.escape(kw) + r'(?=\s*(?:[,\n.]|$))', text):
-            out.append(kw)
-    from rules_engine.protection import extract_protection_keywords
-    for clause in re.findall(r"(?:^|[,\n])\s*protection from ([^.;,\n]+)", text):
-        out.extend(extract_protection_keywords('protection from ' + clause))
+    ]
+    standalone: list[str] = []
+    for line in text.splitlines():
+        parts = [part.strip() for part in line.strip().removesuffix('.').split(',')]
+        # A comma inside an instruction is not an innate keyword boundary.
+        if all(part in keywords or PROTECTION_CLAUSE_RE.fullmatch(part) or hexproof_variants(part)
+               for part in parts):
+            standalone.extend(parts)
+    out = [keyword for keyword in keywords if keyword in standalone]
+    for clause in standalone:
+        if PROTECTION_CLAUSE_RE.fullmatch(clause):
+            out.extend(extract_protection_keywords(clause))
     return out

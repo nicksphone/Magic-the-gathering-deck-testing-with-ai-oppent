@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { canStartReviewed, parsePendingInteractiveStart, reviewMatchesPayload, startSignature } from '../src/lib/interactive-preflight.ts';
+import { canStartReviewed, parsePendingInteractiveStart, reviewMatchesPayload, startSignature, startControllers } from '../src/lib/interactive-preflight.ts';
 
 const payload = {
   deck_a: [{ quantity: 60, card_name: 'Island' }], deck_b: [{ quantity: 60, card_name: 'Forest' }],
@@ -10,6 +10,16 @@ const payload = {
 const coverage = { status: 'exploratory', known_unsupported_cards: [] };
 const review = { version: 1, signature: startSignature(payload), coverage, exploratoryAcknowledged: true };
 const pending = { key: 'a'.repeat(32), payload, review };
+for (const seat of [1, 2]) {
+  assert.deepEqual(startControllers('human_vs_human', seat), {controller_a: 'human', controller_b: 'human'});
+  assert.deepEqual(startControllers('ai_vs_ai', seat), {controller_a: 'ai', controller_b: 'ai'});
+  const chosen = {...payload, ...startControllers('player_vs_ai', seat)};
+  assert.equal(chosen.controller_a, seat === 1 ? 'human' : 'ai');
+  assert.equal(chosen.controller_b, seat === 2 ? 'human' : 'ai');
+  const chosenReview = {...review, signature: startSignature(chosen)};
+  assert.deepEqual(parsePendingInteractiveStart(JSON.stringify({...pending, payload: chosen, review: chosenReview})).payload, chosen);
+  assert.equal(canStartReviewed(review, chosen), seat === 1, 'Changing human seat invalidates the old support review');
+}
 assert.equal(canStartReviewed(review, payload), true);
 assert.equal(canStartReviewed({ ...review, exploratoryAcknowledged: false }, payload), false, 'Empty gaps still need acknowledgement');
 assert.equal(canStartReviewed(null, payload), false);

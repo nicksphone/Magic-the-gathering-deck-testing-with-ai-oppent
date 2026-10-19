@@ -10,6 +10,40 @@ CONDITION = re.compile(r'\bif this spell was kicked, ([^.]+)\.', re.I)
 TOKEN_INSTRUCTION = r'create (?:a|an|one|two|three|four|five|\d+) \d+/\d+ (?:white|blue|black|red|green|colorless) [a-z-]+ creature tokens?(?: with flying)?\.'
 
 
+def validate_kicker_count(count, kicked):
+    """Explicit payment counts are distinct from absent legacy metadata."""
+    if type(count) is not int or count not in (0, 1, 2) or type(kicked) is not bool or kicked != (count > 0):
+        raise ValueError('Invalid explicit kicker count or kicked flag')
+    return count
+
+
+def paired_permanent_kicker(card):
+    """Compile the complete two-price, independent self-entry damage body."""
+    if not set(getattr(card, 'types', []) or []).intersection({'Creature'}):
+        return None
+    lines = [line.strip() for line in without_reminder_text(card.oracle_text or '').splitlines()
+             if line.strip()]
+    price = re.fullmatch(r'kicker ((?:\{[WUBRGC]\})+) and/or ((?:\{[WUBRGC]\})+)',
+                        lines[0], re.I) if lines else None
+    if not price:
+        return None
+    remaining = lines[1:]
+    if remaining and re.fullmatch(r'(?:flying|lifelink)(?:, (?:flying|lifelink))*', remaining[0], re.I):
+        remaining = remaining[1:]
+    if len(remaining) != 2:
+        return None
+    triggers = []
+    reference = r'(?:this creature|' + re.escape(card.name) + r')'
+    for threshold, line in enumerate(remaining, 1):
+        match = re.fullmatch(r'when ' + reference + r' enters(?: the battlefield)?, if it was kicked'
+                             + (r' twice' if threshold == 2 else '')
+                             + r', (it deals ([1-9]\d*) damage to any target\.)', line, re.I)
+        if not match:
+            return None
+        triggers.append({'threshold': threshold, 'clause': line, 'instruction': match[1]})
+    return {'prices': (price[1].upper(), price[2].upper()), 'triggers': triggers}
+
+
 def kicker_components(price):
     if price.startswith('{'):
         return {'mana_cost': price}

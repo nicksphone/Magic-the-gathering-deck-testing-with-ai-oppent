@@ -16,6 +16,7 @@ from tests.test_ai_recurring_engines import add as raw_add
 from tests.test_combat_domain_temporary_costs import fixture, add, zero_mana, attack_step
 from tests.test_conditional_combat import lose
 from tests.test_api_input_contracts import game, persist, rejected, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 
 ROWS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/recipient_combat.json').read_text())}
 
@@ -56,9 +57,7 @@ def test_http_recipient_cost_is_atomic_charges_once_and_restores(game, seat, kin
     from persistence.repository import Repository
     client, match = game
     state, guard, free = recipient_board(seat, kind)
-    state.id = match.state.id
-    match.state = state
-    persist(match)
+    adopt_fixture_state(match, state)
     actor = seat if kind == 'attack' else 3-seat
     action = {'type': 'attack', 'attackers': [guard, free]} if kind == 'attack' else {
         'type': 'block', 'blocks': {aid: [guard] for aid in state.attackers}}

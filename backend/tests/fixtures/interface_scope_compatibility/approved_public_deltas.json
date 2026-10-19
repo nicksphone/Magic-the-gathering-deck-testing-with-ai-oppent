@@ -1,0 +1,436 @@
+{
+  "historical_production_commit": "a6cf671179dd07bf7c76ca928bd3eb3e1237b953",
+  "historical_keyword_commit": "4ebcd5f25d4585dd032329c072c822c4c774d61c",
+  "approved_public_commit": "2fd7b7bb1e3ea3f353770744b113b92df2fd32e4",
+  "production": {
+    "main.py": {
+      "old_sha256": "5276bf212fc4769d2a60e69ae9e8234e86438c83def59d22bcaa5d4c063aa9ef",
+      "new_sha256": "e3991b16412c5d476a571368a02ca9804f78cb031a947e798052ede3d81ef418",
+      "hunks": [
+        {
+          "start": 21,
+          "end": 22,
+          "old": "",
+          "new": "from fastapi.responses import JSONResponse\n"
+        },
+        {
+          "start": 32,
+          "end": 33,
+          "old": "",
+          "new": "from browser_origin import BrowserOriginMiddleware, trusted_origins\n"
+        },
+        {
+          "start": 36,
+          "end": 37,
+          "old": "",
+          "new": "from analytics.resource_budget import RESOURCE_LIMITS, SimulationResourceLimit, checked_json, checked_text\n"
+        },
+        {
+          "start": 44,
+          "end": 45,
+          "old": "",
+          "new": "from decks.catalog import CatalogImportRequest, catalog_context\n"
+        },
+        {
+          "start": 51,
+          "end": 54,
+          "old": "from persistence.db import engine, get_session, init_db\n",
+          "new": "from persistence.db import engine, get_session, init_db, initialize_resource_capacity\nfrom persistence.capacity import (DatabaseOwner, CapacityExceeded, CapacityIntegrityError,\n                                  CapacityAdmissionClosed, owner_for_engine, owner_uncertain)\n"
+        },
+        {
+          "start": 63,
+          "end": 94,
+          "old": "    init_db()\n    with Session(engine) as session:\n        repo = Repository(session)\n        _ensure_builtin_decks(repo)\n        _ensure_expansion_top_decks(repo)\n        _restore_simulation_jobs(repo)\n    yield\n",
+          "new": "    global SIM_SHUTTING_DOWN\n    _prepare_simulation_admission()\n    owner = DatabaseOwner(engine).acquire()\n    try:\n        backup = owner.path.with_name(owner.path.name + '.before-capacity-' + owner.epoch + '.db')\n        if owner.path.exists():\n            initialize_resource_capacity(owner, backup)\n            init_db()\n        else:\n            init_db()\n            initialize_resource_capacity(owner, backup)\n        with Session(engine) as session:\n            repo = Repository(session)\n            _ensure_builtin_decks(repo)\n            _ensure_expansion_top_decks(repo)\n            _restore_simulation_jobs(repo)\n        owner.open_admission()\n    except BaseException:\n        owner.close()\n        raise\n    with SIM_START_LOCK:\n        SIM_SHUTTING_DOWN = False\n    try:\n        yield\n    finally:\n        try:\n            _shutdown_simulation_workers()\n        finally:\n            owner.fence_admission()\n        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n        owner.close()\n"
+        },
+        {
+          "start": 96,
+          "end": 132,
+          "old": "",
+          "new": "\n\n@app.exception_handler(SimulationResourceLimit)\nasync def resource_limit_response(_request, exc):\n    return JSONResponse(status_code=413, content={'detail': {\n        'code': 'simulation_resource_limit', 'dimension': exc.dimension}})\n\n\n@app.exception_handler(CapacityExceeded)\nasync def capacity_limit_response(_request, exc):\n    return JSONResponse(status_code=507, content={'detail': {\n        'code': 'simulation_capacity_exceeded', 'dimension': exc.dimension}})\n\n\n@app.exception_handler(CapacityAdmissionClosed)\nasync def capacity_closed_response(_request, _exc):\n    return JSONResponse(status_code=503, content={'detail': {'code': 'simulation_shutting_down'}})\n\n\n@app.exception_handler(CapacityIntegrityError)\n@app.exception_handler(SQLAlchemyError)\nasync def storage_unconfirmed_response(_request, _exc):\n    return JSONResponse(status_code=503, content={'detail': {'code': 'storage_state_unconfirmed'}})\n\n\n@app.exception_handler(Exception)\nasync def unexpected_failure_response(_request, _exc):\n    if owner_uncertain(engine):\n        return JSONResponse(status_code=503, content={'detail': {'code': 'storage_state_unconfirmed'}})\n    return JSONResponse(status_code=500, content={'detail': 'Internal Server Error'})\n\n\n@app.exception_handler(SimulationCancelled)\nasync def sync_cancelled_response(_request, _exc):\n    return JSONResponse(status_code=503, content={'detail': {'code': 'simulation_cancelled_during_shutdown'}})\nTRUSTED_BROWSER_ORIGINS = trusted_origins(os.environ.get(\"MTG_TRUSTED_ORIGINS\"))\n"
+        },
+        {
+          "start": 134,
+          "end": 135,
+          "old": "    allow_origins=[\"*\"],\n",
+          "new": "    allow_origins=list(TRUSTED_BROWSER_ORIGINS),\n"
+        },
+        {
+          "start": 136,
+          "end": 138,
+          "old": "    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n",
+          "new": "    allow_methods=[\"GET\", \"HEAD\", \"POST\", \"PUT\", \"PATCH\", \"DELETE\", \"OPTIONS\"],\n    allow_headers=[\"Content-Type\", \"Authorization\", \"Idempotency-Key\", \"X-Match-Revision\"],\n"
+        },
+        {
+          "start": 139,
+          "end": 141,
+          "old": "",
+          "new": "# Added last so mutation rejection runs outside CORS, routes and dependencies.\napp.add_middleware(BrowserOriginMiddleware, origins=TRUSTED_BROWSER_ORIGINS)\n"
+        },
+        {
+          "start": 177,
+          "end": 180,
+          "old": "",
+          "new": "SIM_JOB_WORKERS: dict[str, tuple[threading.Thread, threading.Event]] = {}\nSIM_SHUTTING_DOWN = False\nSIM_JOB_SHUTDOWN_TIMEOUT = 20.0\n"
+        },
+        {
+          "start": 243,
+          "end": 244,
+          "old": "    ai_difficulty: Literal[\"casual\", \"strong\", \"master\"] = \"master\"\n",
+          "new": "    ai_difficulty: Literal[\"casual\", \"strong\", \"master\", \"master_plus\"] = \"master\"\n"
+        },
+        {
+          "start": 479,
+          "end": 557,
+          "old": "",
+          "new": "def _update_job(job_id, **changes):\n    \"\"\"Publish only an acknowledged durable candidate; never retry uncertain writes.\"\"\"\n    try:\n        with SIM_JOBS_LOCK:\n            if job_id not in SIM_JOBS:\n                return\n            candidate = {**SIM_JOBS[job_id], **changes}\n            _persist_job(candidate)\n            SIM_JOBS[job_id] = candidate\n            _prune_simulation_jobs()\n    except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):\n        _fence_uncertain_job(job_id)\n        raise\n\n\ndef _fence_uncertain_job(job_id, *, start_locked=False):\n    global SIM_SHUTTING_DOWN\n    # Acquire in startup order, never while retaining SIM_JOBS_LOCK.\n    with (nullcontext() if start_locked else SIM_START_LOCK):\n        SIM_SHUTTING_DOWN = True\n    with SIM_JOBS_LOCK:\n        SIM_JOBS.pop(job_id, None)\n    try:\n        owner_for_engine(engine).fence_admission()\n    except (CapacityIntegrityError, CapacityAdmissionClosed):\n        # An invalid owner cannot admit work; do not attempt persistence recovery.\n        pass\n\n\ndef _retired_job_response(row):\n    if row.status == 'retired':\n        raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': row.id})\n\n\ndef _reap_simulation_workers() -> None:\n    \"\"\"Caller holds SIM_START_LOCK; retain each thread until it actually exits.\"\"\"\n    for job_id, (thread, _event) in list(SIM_JOB_WORKERS.items()):\n        if not thread.is_alive():\n            SIM_JOB_WORKERS.pop(job_id, None)\n\n\ndef _prepare_simulation_admission() -> None:\n    global SIM_SHUTTING_DOWN\n    with SIM_START_LOCK:\n        _reap_simulation_workers()\n        if SIM_JOB_WORKERS:\n            raise RuntimeError(\"Cannot start while simulation workers are still running\")\n        SIM_SHUTTING_DOWN = True\n\n\ndef _shutdown_simulation_workers() -> None:\n    global SIM_SHUTTING_DOWN\n    deadline = time.monotonic() + SIM_JOB_SHUTDOWN_TIMEOUT\n    if not SIM_START_LOCK.acquire(timeout=max(0.0, deadline - time.monotonic())):\n        raise RuntimeError(\"Timed out fencing simulation admission\")\n    try:\n        SIM_SHUTTING_DOWN = True\n        workers = list(SIM_JOB_WORKERS.items())\n        for _job_id, (_thread, event) in workers:\n            event.set()\n    finally:\n        SIM_START_LOCK.release()\n\n    # Never hold admission/job locks while a runner persists or releases its slot.\n    for _job_id, (thread, _event) in workers:\n        if thread is threading.current_thread():\n            raise RuntimeError(\"A simulation worker cannot join itself during shutdown\")\n        thread.join(timeout=max(0.0, deadline - time.monotonic()))\n    if not SIM_START_LOCK.acquire(timeout=max(0.0, deadline - time.monotonic())):\n        raise RuntimeError(\"Timed out finalizing simulation shutdown\")\n    try:\n        _reap_simulation_workers()\n        if SIM_JOB_WORKERS:\n            raise RuntimeError(\"Timed out waiting for simulation workers to stop\")\n    finally:\n        SIM_START_LOCK.release()\n\n\n"
+        },
+        {
+          "start": 688,
+          "end": 689,
+          "old": "",
+          "new": "        \"catalog\": catalog_context(item),\n"
+        },
+        {
+          "start": 693,
+          "end": 696,
+          "old": "def import_expansion_top_deck(code: str, repo: Repository = Depends(get_repo)) -> dict:\n",
+          "new": "def import_expansion_top_deck(code: str, request: CatalogImportRequest | None = None,\n                            format_scope: Literal[\"historical\", \"current\"] | None = Query(None),\n                            repo: Repository = Depends(get_repo)) -> dict:\n"
+        },
+        {
+          "start": 698,
+          "end": 700,
+          "old": "        return service.import_expansion_top_deck(code)\n",
+          "new": "        scope = \"current\" if (format_scope == \"current\" or request and request.format_scope == \"current\") else \"historical\"\n        return service.import_expansion_top_deck(code, format_scope=scope)\n"
+        },
+        {
+          "start": 705,
+          "end": 708,
+          "old": "def import_all_expansion_top_decks(repo: Repository = Depends(get_repo)) -> dict:\n",
+          "new": "def import_all_expansion_top_decks(request: CatalogImportRequest | None = None,\n                                  format_scope: Literal[\"historical\", \"current\"] | None = Query(None),\n                                  repo: Repository = Depends(get_repo)) -> dict:\n"
+        },
+        {
+          "start": 709,
+          "end": 711,
+          "old": "    results = service.import_all_expansion_top_decks()\n",
+          "new": "    scope = \"current\" if (format_scope == \"current\" or request and request.format_scope == \"current\") else \"historical\"\n    results = service.import_all_expansion_top_decks(format_scope=scope)\n"
+        },
+        {
+          "start": 1158,
+          "end": 1165,
+          "old": "",
+          "new": "    unfinished = [pid for pid in (1, 2)\n                  if match.controllers.get(pid) == \"human\" and pid not in match.sideboarded_players]\n    if unfinished:\n        raise HTTPException(status_code=409, detail={\n            \"code\": \"sideboarding_not_ready\", \"players\": unfinished,\n            \"message\": \"Each human seat must submit swaps or confirm no swaps before the next game.\",\n        })\n"
+        },
+        {
+          "start": 1179,
+          "end": 1182,
+          "old": "",
+          "new": "    with SIM_START_LOCK:\n        if SIM_SHUTTING_DOWN:\n            raise HTTPException(503, detail={'code': 'simulation_shutting_down'})\n"
+        },
+        {
+          "start": 1207,
+          "end": 1208,
+          "old": "",
+          "new": "    _reap_simulation_workers()\n"
+        },
+        {
+          "start": 1217,
+          "end": 1221,
+          "old": "",
+          "new": "            if row is not None:\n                _retired_job_response(row)\n            elif existing['status'] == 'retired':\n                raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': key})\n"
+        },
+        {
+          "start": 1222,
+          "end": 1233,
+          "old": "",
+          "new": "    if SIM_SHUTTING_DOWN:\n        raise HTTPException(status_code=503, detail={\n            \"code\": \"simulation_shutting_down\", \"message\": \"Simulation admission is closed during shutdown\",\n        })\n    try:\n        checked_json(requested, RESOURCE_LIMITS[\"request_json_bytes\"], \"request_json\")\n    except SimulationResourceLimit:\n        raise HTTPException(status_code=413, detail={\n            \"code\": \"simulation_request_too_large\", \"limit\": RESOURCE_LIMITS[\"request_json_bytes\"],\n            \"dimension\": \"request_json\",\n        }) from None\n"
+        },
+        {
+          "start": 1257,
+          "end": 1260,
+          "old": "",
+          "new": "        global SIM_SHUTTING_DOWN\n        producer = None\n        entered = False\n"
+        },
+        {
+          "start": 1261,
+          "end": 1264,
+          "old": "",
+          "new": "            producer = owner_for_engine(engine).activity()\n            producer.__enter__()\n            entered = True\n"
+        },
+        {
+          "start": 1266,
+          "end": 1267,
+          "old": "            with SIM_JOBS_LOCK:\n                if job_id in SIM_JOBS:\n                    SIM_JOBS[job_id][\"status\"] = \"running\"\n                    _persist_job(SIM_JOBS[job_id])\n",
+          "new": "            _update_job(job_id, status='running')\n"
+        },
+        {
+          "start": 1270,
+          "end": 1271,
+          "old": "                    with SIM_JOBS_LOCK:\n                        if job_id in SIM_JOBS:\n                            SIM_JOBS[job_id][\"completed_matches\"] = int(done)\n                            SIM_JOBS[job_id][\"total_matches\"] = int(total)\n                            _persist_job(SIM_JOBS[job_id])\n\n",
+          "new": "                    _update_job(job_id, completed_matches=int(done), total_matches=int(total))\n"
+        },
+        {
+          "start": 1272,
+          "end": 1277,
+          "old": "                    deck_a,\n                    deck_b,\n                    payload.matches,\n                    payload.difficulty,\n                    max_ticks=payload.max_ticks,\n                    progress_callback=_progress,\n                    should_cancel=cancel_event.is_set,\n                )\n            with SIM_JOBS_LOCK:\n                if job_id in SIM_JOBS:\n                    SIM_JOBS[job_id][\"status\"] = \"completed\"\n                    SIM_JOBS[job_id][\"completed_matches\"] = int(payload.matches)\n                    SIM_JOBS[job_id][\"finished_at\"] = time.time()\n                    SIM_JOBS[job_id][\"result\"] = result\n                    _persist_job(SIM_JOBS[job_id])\n                    _prune_simulation_jobs()\n",
+          "new": "                    deck_a, deck_b, payload.matches, payload.difficulty,\n                    max_ticks=payload.max_ticks, progress_callback=_progress,\n                    should_cancel=cancel_event.is_set, reservation_token=snapshot_token)\n            _update_job(job_id, status='completed', completed_matches=int(payload.matches),\n                        finished_at=time.time(), result=result)\n"
+        },
+        {
+          "start": 1278,
+          "end": 1284,
+          "old": "            with SIM_JOBS_LOCK:\n                if job_id in SIM_JOBS:\n                    SIM_JOBS[job_id][\"status\"] = \"canceled\"\n                    SIM_JOBS[job_id][\"finished_at\"] = time.time()\n                    _persist_job(SIM_JOBS[job_id])\n                    _prune_simulation_jobs()\n",
+          "new": "            _update_job(job_id, status='canceled', finished_at=time.time())\n        except SimulationResourceLimit as exc:\n            _update_job(job_id, status='failed', finished_at=time.time(), result=None, error=str(exc))\n        except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):\n            # No compensating write after an uncertain commit/integrity outcome.\n            _fence_uncertain_job(job_id)\n"
+        },
+        {
+          "start": 1285,
+          "end": 1294,
+          "old": "            with SIM_JOBS_LOCK:\n                if job_id in SIM_JOBS:\n                    SIM_JOBS[job_id][\"status\"] = \"failed\"\n                    SIM_JOBS[job_id][\"finished_at\"] = time.time()\n                    SIM_JOBS[job_id][\"error\"] = str(exc)\n                    _persist_job(SIM_JOBS[job_id])\n                    _prune_simulation_jobs()\n",
+          "new": "            if owner_uncertain(engine):\n                _fence_uncertain_job(job_id)\n            else:\n                error = str(exc)\n                try:\n                    checked_text(error, RESOURCE_LIMITS['error_utf8_bytes'], 'error')\n                except SimulationResourceLimit:\n                    error = 'resource_limit:error'\n                _update_job(job_id, status='failed', finished_at=time.time(), result=None, error=error)\n"
+        },
+        {
+          "start": 1298,
+          "end": 1300,
+          "old": "",
+          "new": "            if entered:\n                producer.__exit__(None, None, None)\n"
+        },
+        {
+          "start": 1303,
+          "end": 1308,
+          "old": "",
+          "new": "        with Session(engine) as session:\n            admitted_repo = Repository(session)\n            admitted_repo.save_simulation_job(job)\n            persisted = True\n            snapshot_token = admitted_repo.background_snapshot_token(job_id)\n"
+        },
+        {
+          "start": 1311,
+          "end": 1311,
+          "old": "        _persist_job(job)\n        persisted = True\n",
+          "new": ""
+        },
+        {
+          "start": 1312,
+          "end": 1313,
+          "old": "",
+          "new": "        SIM_JOB_WORKERS[job_id] = (t, cancel_event)\n"
+        },
+        {
+          "start": 1314,
+          "end": 1316,
+          "old": "    except Exception:\n",
+          "new": "    except Exception as exc:\n        SIM_JOB_WORKERS.pop(job_id, None)\n"
+        },
+        {
+          "start": 1319,
+          "end": 1335,
+          "old": "        if persisted:\n            job.update(status=\"failed\", finished_at=time.time(), error=\"Simulation worker could not start.\")\n            try:\n                _persist_job(job)\n            except Exception:\n                pass\n        SIM_WORK_SLOT.release()\n",
+          "new": "        try:\n            if isinstance(exc, (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed)) or owner_uncertain(engine):\n                _fence_uncertain_job(job_id, start_locked=True)\n            elif persisted:\n                job.update(status=\"failed\", finished_at=time.time(), error=\"Simulation worker could not start.\")\n                try:\n                    _persist_job(job)\n                except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):\n                    _fence_uncertain_job(job_id, start_locked=True)\n                    raise\n                except Exception:\n                    if owner_uncertain(engine):\n                        _fence_uncertain_job(job_id, start_locked=True)\n                        raise\n        finally:\n            SIM_WORK_SLOT.release()\n"
+        },
+        {
+          "start": 1347,
+          "end": 1348,
+          "old": "",
+          "new": "            _retired_job_response(row)\n"
+        },
+        {
+          "start": 1349,
+          "end": 1351,
+          "old": "",
+          "new": "        if job['status'] == 'retired':\n            raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': job_id})\n"
+        },
+        {
+          "start": 1362,
+          "end": 1364,
+          "old": "",
+          "new": "            if job['status'] == 'retired':\n                raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': job_id})\n"
+        },
+        {
+          "start": 1368,
+          "end": 1369,
+          "old": "",
+          "new": "    _retired_job_response(row)\n"
+        },
+        {
+          "start": 1374,
+          "end": 1377,
+          "old": "",
+          "new": "    with SIM_START_LOCK:\n        if SIM_SHUTTING_DOWN:\n            raise HTTPException(503, detail={'code': 'simulation_shutting_down'})\n"
+        }
+      ]
+    },
+    "persistence/repository.py": {
+      "old_sha256": "a1da2eb6fa3ee5eadd01ad619aa223a271f9c3add65c29ac09e9f27d5d7b5202",
+      "new_sha256": "a177b4fd46bc67ea43cabd83759093745fe319f6012c276adf625cb4abfc1eee",
+      "hunks": [
+        {
+          "start": 9,
+          "end": 15,
+          "old": "",
+          "new": "from analytics.resource_budget import RESOURCE_LIMITS, checked_json, checked_text\nfrom persistence.capacity import (\n    JOB_LIMIT, TERMINAL, CapacityExceeded, CapacityIntegrityError, background_escrow,\n    capacity_transaction, counters_from, encoded_bytes, snapshot_escrow,\n    capacity_write, owner_for,\n)\n"
+        },
+        {
+          "start": 24,
+          "end": 25,
+          "old": "",
+          "new": "    ResourceReservation,\n"
+        },
+        {
+          "start": 290,
+          "end": 296,
+          "old": "        row = self.session.get(SimulationJobRecord, str(payload[\"job_id\"]))\n",
+          "new": "        request_json = checked_json(payload.get(\"request\", {}), RESOURCE_LIMITS[\"request_json_bytes\"], \"request_json\",\n                                    encoder=lambda: json.dumps(payload.get(\"request\", {})))\n        result_json = (checked_json(payload[\"result\"], RESOURCE_LIMITS[\"result_json_bytes\"], \"result_json\",\n                                   encoder=lambda: json.dumps(payload.get(\"result\")))\n                       if payload.get(\"result\") is not None else None)\n        error = checked_text(payload.get(\"error\"), RESOURCE_LIMITS[\"error_utf8_bytes\"], \"error\")\n"
+        },
+        {
+          "start": 302,
+          "end": 305,
+          "old": "            \"error\": payload.get(\"error\"),\n            \"result_json\": json.dumps(payload.get(\"result\")) if payload.get(\"result\") is not None else None,\n            \"request_json\": json.dumps(payload.get(\"request\", {})),\n",
+          "new": "            \"error\": error,\n            \"result_json\": result_json,\n            \"request_json\": request_json,\n"
+        },
+        {
+          "start": 306,
+          "end": 344,
+          "old": "        if row is None:\n            row = SimulationJobRecord(id=str(payload[\"job_id\"]), **values)\n        else:\n            for key, value in values.items():\n                setattr(row, key, value)\n        self.session.add(row)\n        self.session.commit()\n        self.session.refresh(row)\n        return row\n",
+          "new": "        with capacity_write(self.session):\n            with capacity_transaction(self.session) as tx:\n                row = self.session.get(SimulationJobRecord, str(payload[\"job_id\"]), populate_existing=True)\n                from persistence.capacity import validate_job_transition\n                validate_job_transition(row, values)\n                old_size = encoded_bytes(row.request_json, row.result_json, row.error) if row is not None else 0\n                new_size = encoded_bytes(request_json, result_json, error)\n                active = values[\"status\"] in {\"queued\", \"running\"}\n                if not active and values[\"status\"] not in TERMINAL:\n                    raise CapacityIntegrityError(\"Unknown simulation job status\")\n                reservation = tx.reservation(job_id=str(payload[\"job_id\"]))\n                if row is None:\n                    if self.count_simulation_jobs() >= JOB_LIMIT:\n                        raise CapacityExceeded(\"job_rows\")\n                    tx.counters(counters_from(tx.ledger).shifted(durable_bytes=new_size))\n                    row = SimulationJobRecord(id=str(payload[\"job_id\"]), **values)\n                    self.session.add(row)\n                    if active:\n                        if result_json is not None or error is not None:\n                            raise CapacityIntegrityError(\"New active job has terminal fields\")\n                        # Flush the parent inside this transaction before its FK escrow.\n                        self.session.flush()\n                        tx.add_reservation(background_escrow(), kind=\"background\", job_id=row.id)\n                else:\n                    if request_json != row.request_json:\n                        raise CapacityIntegrityError(\"Stored job request is immutable\")\n                    if active:\n                        if reservation is None or result_json != row.result_json or error != row.error:\n                            raise CapacityIntegrityError(\"Active job reservation/fields mismatch\")\n                    elif reservation is not None:\n                        tx.finish_job(reservation, old_size, new_size)\n                    else:\n                        tx.counters(counters_from(tx.ledger).shifted(durable_bytes=new_size - old_size))\n                    for key, value in values.items():\n                        setattr(row, key, value)\n                    self.session.add(row)\n            self.session.refresh(row)\n            return row\n"
+        },
+        {
+          "start": 347,
+          "end": 398,
+          "old": "",
+          "new": "\n    def background_snapshot_token(self, job_id: str) -> str:\n        owner = owner_for(self.session)\n        row = self.session.exec(select(ResourceReservation).where(ResourceReservation.job_id == job_id)).one()\n        if row.kind != 'background' or row.owner_epoch != owner.epoch or row.snapshot_rows != 1:\n            raise CapacityIntegrityError('Background snapshot reservation missing')\n        return row.token\n\n    def validate_snapshot_reservation(self, token):\n        owner = owner_for(self.session)\n        row = self.session.get(ResourceReservation, token, populate_existing=True)\n        if row is None or row.owner_epoch != owner.epoch or row.snapshot_rows != 1:\n            raise CapacityIntegrityError('Live snapshot reservation required before work')\n\n    def retire_simulations(self, job_ids, snapshot_ids):\n        \"\"\"Explicit offline owned retirement; retain retry identity and request bytes.\"\"\"\n        jobs, snapshots = tuple(job_ids), tuple(snapshot_ids)\n        if (len(set(jobs)) != len(jobs) or any(not isinstance(x, str) or not x for x in jobs)\n                or len(set(snapshots)) != len(snapshots)\n                or any(type(x) is not int or x <= 0 for x in snapshots)):\n            raise ValueError('Explicit unique job/snapshot selections required')\n        owner = owner_for(self.session)\n        with owner.mutex:\n            owner.require()\n            if owner.admissions_open or owner.producers:\n                raise CapacityIntegrityError('Retirement requires fenced, drained ownership')\n            with capacity_transaction(self.session) as tx:\n                if self.session.exec(select(ResourceReservation)).first() is not None:\n                    raise CapacityIntegrityError('Outstanding escrow requires restart reconciliation')\n                reclaimed = 0\n                for job_id in jobs:\n                    row = self.session.get(SimulationJobRecord, job_id, populate_existing=True)\n                    if row is None or row.status not in TERMINAL:\n                        raise CapacityIntegrityError('Only existing terminal jobs may retire')\n                    reclaimed += encoded_bytes(row.result_json, row.error)\n                    row.status, row.result_json, row.error = 'retired', None, None\n                    self.session.add(row)\n                for snapshot_id in snapshots:\n                    row = self.session.get(StatsSnapshot, snapshot_id, populate_existing=True)\n                    if row is None:\n                        raise CapacityIntegrityError('Selected snapshot missing')\n                    if row.job_id is not None:\n                        job = self.session.get(SimulationJobRecord, row.job_id)\n                        if job is None or job.status not in TERMINAL:\n                            raise CapacityIntegrityError('Snapshot belongs to unfinished work')\n                    reclaimed += encoded_bytes(row.stats_json)\n                    self.session.delete(row)\n                tx.counters(counters_from(tx.ledger).shifted(\n                    durable_bytes=-reclaimed, snapshot_rows=-len(snapshots)))\n        return {'retired_jobs': list(jobs), 'deleted_snapshots': list(snapshots),\n                'reclaimed_logical_bytes': reclaimed, 'job_rows_reclaimed': 0}\n"
+        },
+        {
+          "start": 408,
+          "end": 441,
+          "old": "    def save_snapshot(self, label: str, stats: dict[str, Any]) -> StatsSnapshot:\n        record = StatsSnapshot(label=label, stats_json=json.dumps(stats))\n        self.session.add(record)\n        self.session.commit()\n        self.session.refresh(record)\n        return record\n",
+          "new": "    def reserve_snapshot(self) -> str:\n        \"\"\"Producer must reserve before work; service wiring is a separate slice.\"\"\"\n        with capacity_write(self.session):\n            with capacity_transaction(self.session) as tx:\n                reservation = tx.add_reservation(snapshot_escrow(), kind=\"snapshot\")\n                token = reservation.token\n            return token\n\n    def release_snapshot_reservation(self, token: str) -> None:\n        \"\"\"Release only after this producer stops; failed commit leaves outcome unknown.\"\"\"\n        with capacity_write(self.session):\n            with capacity_transaction(self.session) as tx:\n                row = tx.reservation(token=token)\n                if row is None or row.kind != \"snapshot\":\n                    raise CapacityIntegrityError(\"Snapshot reservation missing\")\n                tx.finish_job(row, 0, 0)\n\n    def save_snapshot(self, label: str, stats: dict[str, Any], *, reservation_token: str | None = None) -> StatsSnapshot:\n        encoded = checked_json(stats, RESOURCE_LIMITS[\"snapshot_json_bytes\"], \"snapshot_json\",\n                               encoder=lambda: json.dumps(stats))\n        with capacity_write(self.session):\n            with capacity_transaction(self.session) as tx:\n                size = encoded_bytes(encoded)\n                if reservation_token is None:\n                    # Direct writers still charge the shared ledger atomically.\n                    tx.counters(counters_from(tx.ledger).shifted(durable_bytes=size, snapshot_rows=1))\n                    job_id = None\n                else:\n                    job_id = tx.snapshot(size, reservation_token)\n                record = StatsSnapshot(label=label, stats_json=encoded, job_id=job_id)\n                self.session.add(record)\n            self.session.refresh(record)\n            return record\n"
+        }
+      ]
+    }
+  },
+  "keyword_prefix": {
+    "old_sha256": "fa7dbdf4f8989ec5d54494e8ba40577d2028fcf83c3bc559c0e57bc364e073b5",
+    "new_sha256": "bc1f06e2623c0a2f469e3b93d67a3864adc26d746568f829405f55331ded4696",
+    "hunks": [
+      {
+        "start": 85,
+        "end": 102,
+        "old": "",
+        "new": "    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') in {'loyalty_cards', 'loyalty_attachment'}:\n        from rules_engine.loyalty_instructions import finish_choice\n        return finish_choice(state, player_id, action)\n    if (state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'land_entry'\n            and state.pending_mechanic_choice.get('effect_key') == 'loyalty_hand_entry'):\n        from rules_engine.loyalty_instructions import land_choice_valid\n        if not land_choice_valid(state, player_id, action, state.pending_mechanic_choice):\n            return False\n    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'exchange_energy_payment':\n        from rules_engine.exchange_energy import finish\n        return finish(state, player_id, action)\n    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'entry_mode':\n        from rules_engine.modal_entry import finish\n        return finish(state, player_id, action)\n    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'note_creature_type':\n        from rules_engine.next_creature_entry_trigger import finish_note\n        return finish_note(state, player_id, action)\n"
+      },
+      {
+        "start": 105,
+        "end": 130,
+        "old": "",
+        "new": "    if pending and pending['kind'] == 'land_from_hand':\n        ids = action.get('card_ids')\n        if (pending['player_id'] != player_id or not isinstance(ids, list)\n                or not pending['min_count'] <= len(ids) <= 1\n                or any(not isinstance(cid, str) or cid not in pending['options'] for cid in ids)):\n            return False\n        if ids:\n            from game_state.state import object_incarnation\n            from rules_engine.zone_actions import is_departed_token\n            card = state.cards.get(ids[0])\n            if (card is None or card.owner != pending['controller'] or card.zone != Zone.HAND\n                    or card.id not in state.players[pending['controller']].hand\n                    or 'Land' not in effective_types(state, card) or is_departed_token(card)\n                    or pending['land_references'].get(card.id) != [object_incarnation(card), card.zone_change_sequence]):\n                return False\n        from effects.registry import resolve_effect\n        from rules_engine.stack_engine import resume_paused_resolution\n        state.pending_mechanic_choice = None\n        if ids:\n            resolve_effect(state, pending['controller'], 'put_land_from_hand', {\n                **pending['effect_payload'], 'land_id': ids[0],\n                '__land_reference': pending['land_references'][ids[0]],\n            })\n        resume_paused_resolution(state, pending)\n        return True\n"
+      },
+      {
+        "start": 205,
+        "end": 206,
+        "old": "    if pending and pending[\"kind\"] == \"copy_target\":\n",
+        "new": "    if pending and pending[\"kind\"] in {'copy_target', 'spree_target_change'}:\n"
+      },
+      {
+        "start": 214,
+        "end": 232,
+        "old": "",
+        "new": "\n        def publish_selected_targets():\n            if not state.pending_mechanic_choice:\n                from rules_engine.granted_target_triggers import _record_target_selection\n                from rules_engine.ward import mark_stack_targets\n                _record_target_selection(state, copied)\n                mark_stack_targets(state, copied)\n\n        from rules_engine.targeting import validate_announced_target_references, replace_announced_target_reference\n        references = copied.payload.get('__announced_target_references')\n        if '__announced_target_references' in copied.payload:\n            validate_announced_target_references(copied.payload.get('__announced_targets') or {}, references)\n\n        def refresh(paths):\n            if references is not None:\n                copied.payload['__announced_target_references'] = replace_announced_target_reference(\n                    state, references, copied.payload.get('__announced_targets') or {}, paths)\n\n"
+      },
+      {
+        "start": 233,
+        "end": 244,
+        "old": "",
+        "new": "        if pending['kind'] == 'copy_target' and pending.get('loyalty_target_slot') is not None:\n            from rules_engine.loyalty_instructions import choose_copy_target\n            if not choose_copy_target(state, copied, pending, chosen):\n                return False\n            publish_selected_targets()\n            resume_paused_resolution(state, pending)\n            return True\n        if pending['kind'] == 'spree_target_change':\n            from rules_engine.spree import valid_change\n            if not valid_change(state, pending, chosen):\n                return False\n"
+      },
+      {
+        "start": 248,
+        "end": 249,
+        "old": "            if not state.pending_mechanic_choice and not pending.get('resolving_item'):\n                from rules_engine.ward import mark_stack_targets\n                mark_stack_targets(state, copied)\n",
+        "new": "            publish_selected_targets()\n"
+      },
+      {
+        "start": 255,
+        "end": 256,
+        "old": "            if not state.pending_mechanic_choice and not pending.get('resolving_item'):\n                from rules_engine.ward import mark_stack_targets\n                mark_stack_targets(state, copied)\n",
+        "new": "            publish_selected_targets()\n"
+      },
+      {
+        "start": 274,
+        "end": 275,
+        "old": "",
+        "new": "                refresh([(key,)])\n"
+      },
+      {
+        "start": 283,
+        "end": 284,
+        "old": "",
+        "new": "            publish_selected_targets()\n"
+      },
+      {
+        "start": 304,
+        "end": 305,
+        "old": "",
+        "new": "                refresh([('mode_targets', mode, key)])\n"
+      },
+      {
+        "start": 316,
+        "end": 317,
+        "old": "",
+        "new": "            publish_selected_targets()\n"
+      },
+      {
+        "start": 328,
+        "end": 329,
+        "old": "                if new_id in distribution:\n",
+        "new": "                if new_id in distribution and new_id != old_id:\n"
+      },
+      {
+        "start": 334,
+        "end": 335,
+        "old": "",
+        "new": "                refresh([('target_distribution', new_id)])\n"
+      },
+      {
+        "start": 344,
+        "end": 345,
+        "old": "",
+        "new": "            publish_selected_targets()\n"
+      },
+      {
+        "start": 350,
+        "end": 358,
+        "old": "",
+        "new": "            selected_graveyard_trigger = (copied.effect_key == 'cast_from_graveyard'\n                                          and copied.payload.get('__trigger_target_choice') is True)\n            if selected_graveyard_trigger:\n                from rules_engine.events import trigger_target_options\n                if key != 'target_card_id' or not any(\n                        option.get('target_card_id') == value\n                        for option in trigger_target_options(state, copied)):\n                    return False\n"
+      },
+      {
+        "start": 364,
+        "end": 368,
+        "old": "",
+        "new": "            refresh([(key,)])\n            if selected_graveyard_trigger or (key == 'target_card_id' and copied.payload.get('__trigger_target_choice') is True):\n                from rules_engine.events import _remember_trigger_target\n                _remember_trigger_target(state, copied)\n"
+      },
+      {
+        "start": 383,
+        "end": 384,
+        "old": "",
+        "new": "        publish_selected_targets()\n"
+      },
+      {
+        "start": 432,
+        "end": 448,
+        "old": "",
+        "new": "    if pending and pending['kind'] == 'hand_top_order':\n        ids = action.get('card_ids')\n        if (pending['player_id'] != player_id or not isinstance(ids, list)\n                or len(ids) != pending['count']\n                or any(not isinstance(cid, str) for cid in ids)\n                or len(set(ids)) != len(ids)\n                or any(cid not in pending['options'] or cid not in state.players[player_id].hand\n                       or state.cards[cid].zone != Zone.HAND\n                       or state.cards[cid].owner != player_id for cid in ids)):\n            return False\n        from effects.handlers import put_hand_on_library\n        from rules_engine.stack_engine import resume_paused_resolution\n        put_hand_on_library(state, player_id, {**pending['effect_payload'], 'selected_card_ids': ids})\n        state.pending_mechanic_choice = None\n        resume_paused_resolution(state, pending)\n        return True\n"
+      },
+      {
+        "start": 462,
+        "end": 463,
+        "old": "        resolve_discard_followup(state, pending.get('effect_controller', player_id), pending.get('followup_effect'), len(ids))\n",
+        "new": "        resolve_discard_followup(state, pending.get('effect_controller', player_id), pending.get('followup_effect'), len(ids), ids)\n"
+      }
+    ]
+  },
+  "keyword_suffix": {
+    "old_sha256": "5fbc4cf4faaf3339d7fcb3346010d94a3f9f77ee3deee3b5a625f1d965066dbd",
+    "new_sha256": "5fbc4cf4faaf3339d7fcb3346010d94a3f9f77ee3deee3b5a625f1d965066dbd",
+    "hunks": []
+  },
+  "worker_platform": {
+    "new": "    if not (str(root).startswith('/home/nick/') or str(root).startswith('/tmp/')):\n        from tests.ci_input_contracts import assert_github_owned_source\n        assert_github_owned_source()\n        assert root.is_relative_to(Path(os.environ['RUNNER_TEMP']).resolve())\n",
+    "old": "    assert str(root).startswith('/home/nick/') or str(root).startswith('/tmp/')\n"
+  }
+}

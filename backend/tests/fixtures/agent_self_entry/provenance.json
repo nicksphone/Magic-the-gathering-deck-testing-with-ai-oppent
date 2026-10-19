@@ -1,0 +1,12 @@
+{
+  "complete_rows_unmodified": true,
+  "Oracle_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "facts_provenance": "full frozen control canonical rows; Agent whole body retained, end-step unqualified",
+  "Stifle_provenance": "auxiliary complete canonical row from SHA-verified retained bulk; not seed155 membership",
+  "protocol_baseline_provenance": "exact _targeted_trigger_clause function bytes from immutable22971a2e Git object; internal ABI only",
+  "pins": {
+    "facts.json": "27c507f0e9aafc8fc68d3d8c7267833223031eaaf6e690fbbe63a582af5ff2e3",
+    "stifle.json": "6bb0888de9ca032e119d301db6381d0351ed76932d8ef4f8158a47ec50e5301f",
+    "targeted_trigger_clause_preimage.py.txt": "bca775ce96d421be02247d284990474b1d2f4b767d76d4a68a8231cc78bdea49"
+  }
+}

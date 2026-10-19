@@ -1,0 +1,86 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "fcd7595207c617d47db56754ec09f4dd4a73f31af999af41a275a21a3c3ff76d",
+  "selection": "jq -c exact-name predicates; full official objects unchanged; no Oracle edits",
+  "cards": [
+    {
+      "name": "Rest in Peace",
+      "id": "d108c2b1-236e-4b8d-8445-d9749ccc4fea",
+      "oracle_id": "087f9ad7-e74f-40e2-8102-1ed2925d0418",
+      "uri": "https://api.scryfall.com/cards/d108c2b1-236e-4b8d-8445-d9749ccc4fea"
+    },
+    {
+      "name": "Darksteel Colossus",
+      "id": "70197723-c61b-4600-b61d-41380c8f3067",
+      "oracle_id": "1b09d0cf-403c-4a15-aeee-602a1bdaf0c1",
+      "uri": "https://api.scryfall.com/cards/70197723-c61b-4600-b61d-41380c8f3067"
+    },
+    {
+      "name": "Psychogenic Probe",
+      "id": "e83d1ed5-3a49-4cfa-bad2-e342ef28649e",
+      "oracle_id": "1beb81a8-b4aa-4964-93d2-2b5414fc6ce3",
+      "uri": "https://api.scryfall.com/cards/e83d1ed5-3a49-4cfa-bad2-e342ef28649e"
+    },
+    {
+      "name": "Progenitus",
+      "id": "e77fbc87-d78e-4602-baa0-da9b0d464dfb",
+      "oracle_id": "2d7e00b6-12f0-4b03-82a6-50e3d1b5395e",
+      "uri": "https://api.scryfall.com/cards/e77fbc87-d78e-4602-baa0-da9b0d464dfb"
+    },
+    {
+      "name": "Blood Artist",
+      "id": "b5275d76-2947-4219-be21-614c7421614a",
+      "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+      "uri": "https://api.scryfall.com/cards/b5275d76-2947-4219-be21-614c7421614a"
+    },
+    {
+      "name": "Wrath of God",
+      "id": "537d2b05-3f52-45d6-8fe3-26282085d0c6",
+      "oracle_id": "34515b16-c9a4-4f98-8c77-416a7a523407",
+      "uri": "https://api.scryfall.com/cards/537d2b05-3f52-45d6-8fe3-26282085d0c6"
+    },
+    {
+      "name": "Cosi's Trickster",
+      "id": "e1eb7372-481a-44a6-937d-21430ee02ff9",
+      "oracle_id": "372633d9-ac74-4630-a1ae-a1906bb2aed0",
+      "uri": "https://api.scryfall.com/cards/e1eb7372-481a-44a6-937d-21430ee02ff9"
+    },
+    {
+      "name": "Lightning Bolt",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "uri": "https://api.scryfall.com/cards/7673784e-db4b-43a1-8d55-1bb9fc1e284f"
+    },
+    {
+      "name": "Kozilek, Butcher of Truth",
+      "id": "d27cf7b7-7982-46bd-a559-7789c0e74bae",
+      "oracle_id": "7b8528b0-71eb-4c9e-bed9-aa2d2e84038f",
+      "uri": "https://api.scryfall.com/cards/d27cf7b7-7982-46bd-a559-7789c0e74bae"
+    },
+    {
+      "name": "Murder",
+      "id": "2c249609-9cf7-46f1-b94c-9329add966bb",
+      "oracle_id": "938b4e2c-88d9-4637-bc00-e228920c9a78",
+      "uri": "https://api.scryfall.com/cards/2c249609-9cf7-46f1-b94c-9329add966bb"
+    },
+    {
+      "name": "Doomed Traveler",
+      "id": "8a03d414-bff9-4aba-8b0a-0ed57982251e",
+      "oracle_id": "a30907c0-fbde-4fd3-a8c7-f304305fcea7",
+      "uri": "https://api.scryfall.com/cards/8a03d414-bff9-4aba-8b0a-0ed57982251e"
+    },
+    {
+      "name": "Humility",
+      "id": "55ad6a45-a840-45ba-89ad-066e20e983f3",
+      "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+      "uri": "https://api.scryfall.com/cards/55ad6a45-a840-45ba-89ad-066e20e983f3"
+    },
+    {
+      "name": "Leyline of the Void",
+      "id": "aeaa3aff-608d-4723-bb7c-8daedebe9f36",
+      "oracle_id": "f4e32fc1-1b8d-441e-8e76-71f19f98e925",
+      "uri": "https://api.scryfall.com/cards/aeaa3aff-608d-4723-bb7c-8daedebe9f36"
+    }
+  ]
+}

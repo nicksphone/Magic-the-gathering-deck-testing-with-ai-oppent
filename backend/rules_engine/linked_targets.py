@@ -141,6 +141,10 @@ def choose_linked_copy_target(state, copied, pending, chosen):
     if index not in (0, 1) or chosen not in linked_copy_options(state, copied, index):
         return False
     if chosen != 'keep':
+        references = copied.payload.get('__announced_target_references')
+        old_paths = ([('target_card_ids', 0), ('target_card_ids', 1)]
+                     if 'target_card_ids' in copied.payload.get('__announced_targets', {})
+                     else [None, ('target_card_id',)])
         key, value = chosen.split(':', 1)
         copied.payload['target_instances'][index] = (
             {'kind': 'player', 'id': int(value)} if key == 'target_player' else
@@ -152,6 +156,14 @@ def choose_linked_copy_target(state, copied, pending, chosen):
         announced.update({'target_player': primary['id'], 'target_card_id': secondary['id']}
                          if primary['kind'] == 'player' else
                          {'target_card_ids': [primary['id'], secondary['id']]})
+        if references is not None:
+            from rules_engine.targeting import replace_announced_target_reference
+            new_paths = ([('target_card_ids', 0), ('target_card_ids', 1)]
+                         if primary['kind'] != 'player' else [None, ('target_card_id',)])
+            copied.payload['__announced_target_references'] = replace_announced_target_reference(
+                state, references, announced, [new_paths[index]], remapped_slots={
+                    new_path: old_path for slot, (new_path, old_path) in enumerate(zip(new_paths, old_paths))
+                    if slot != index and new_path is not None})
         copied.targets = [str(primary['id']), secondary['id']]
         copied.payload.pop('legal_recipients', None)
         state.log.append(f'{state.players[copied.controller].name} changes a target of {copied.label}.')

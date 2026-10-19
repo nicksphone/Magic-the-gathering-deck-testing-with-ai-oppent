@@ -17,12 +17,7 @@ for (const seat of [1, 2]) {
       for (let slot = 0; slot < 2; slot++) {
         const name = slot === 0 || shared ? 'Torrential Gearhulk' : 'Sheoldred, the Apocalypse';
         await waitFor(`document.body.innerText.includes('Choose target ${slot+1} for Agony Warp (copy)')`);
-        await evaluate(`(() => {
-          const label = [...document.querySelectorAll('.block-panel label')].find(label => label.textContent.trim() === ${JSON.stringify(name)});
-          if (!label) throw new Error('Missing deliberate copy recipient');
-          label.querySelector('input[type=checkbox]').click();
-        })()`);
-        await click('Confirm Selection');
+        await click(name);
         await waitFor(`(async () => {
           const state = await (await fetch('${api}/matches/${id}')).json();
           return ${slot === 0 ? 'state.pending_mechanic_choice?.ordered_target_index === 1' : 'state.pending_mechanic_choice === null'};

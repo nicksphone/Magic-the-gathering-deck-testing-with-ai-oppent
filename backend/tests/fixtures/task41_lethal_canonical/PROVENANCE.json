@@ -1,0 +1,48 @@
+{
+  "cards": [
+    {
+      "filename": "tundra-wolves.raw.json",
+      "http_status": 200,
+      "mana_cost": "{W}",
+      "name": "Tundra Wolves",
+      "oracle_id": "2155864e-5788-4e72-a800-e2cf25cf59a7",
+      "oracle_text": "First strike (This creature deals combat damage before creatures without first strike.)",
+      "power": "1",
+      "raw_sha256": "653d9b47360abae3e36d426da434989f9593a90c28a82adf15f0869e729957f7",
+      "toughness": "1",
+      "type_line": "Creature \u2014 Wolf",
+      "url": "https://api.scryfall.com/cards/named?exact=Tundra%20Wolves",
+      "utc": "2026-10-13T02:50:09Z"
+    },
+    {
+      "filename": "volcanic-geyser.raw.json",
+      "http_status": 200,
+      "mana_cost": "{X}{R}{R}",
+      "name": "Volcanic Geyser",
+      "oracle_id": "846a4f9c-d955-403f-8a08-5c7c3d32e180",
+      "oracle_text": "Volcanic Geyser deals X damage to any target.",
+      "power": null,
+      "raw_sha256": "4f212e85e67392424b2a540421e1edca72d6bd467b0f74d02d278145b3119df8",
+      "toughness": null,
+      "type_line": "Instant",
+      "url": "https://api.scryfall.com/cards/named?exact=Volcanic%20Geyser",
+      "utc": "2026-10-13T02:50:15Z"
+    },
+    {
+      "filename": "silverback-ape.raw.json",
+      "http_status": 200,
+      "mana_cost": "{3}{G}{G}",
+      "name": "Silverback Ape",
+      "oracle_id": "a72f9437-d652-4a64-99df-a307a6dd9a0d",
+      "oracle_text": "",
+      "power": "5",
+      "raw_sha256": "97fa4b2e1cc48b6b81e0f842bddac6d69c8cd2a4034154a588618e6e6920733b",
+      "toughness": "5",
+      "type_line": "Creature \u2014 Ape",
+      "url": "https://api.scryfall.com/cards/named?exact=Silverback%20Ape",
+      "utc": "2026-10-13T02:50:15Z"
+    }
+  ],
+  "intake": "authorized_public_official_scryfall_before_offline_tests",
+  "source_commit": "2f42a6eb352480fae1940018b70f4395c478c38e"
+}

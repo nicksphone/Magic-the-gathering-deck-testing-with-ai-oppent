@@ -1,0 +1,53 @@
+def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
+    if item.effect_key == 'exchange_energy_payment':
+        return item.payload['__trigger_full_clause']
+    if item.effect_key == 'retained_counter_prohibition':
+        return item.payload['__counter_mode_clause']
+    if item.payload.get('__trigger_resolution_text'):
+        return item.payload['__trigger_full_clause']
+    event = item.payload.get("__trigger_event")
+    if event == 'time_counters_removed':
+        clause = item.payload.get('__trigger_full_clause', '')
+        if item.effect_key == 'destroy_permanent' and re.fullmatch(
+                r"Whenever a time counter is removed from this card while it's exiled, destroy target (?:nonbasic )?land\.",
+                clause, re.I):
+            return clause
+        return None
+    if event == 'saga_lore_added':
+        clause = item.payload.get('__chapter_clause', '')
+        if (item.effect_key == 'deal_damage' and 'any target' in clause.lower()
+                or re.search(r'\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b', clause, re.I)
+                and item.effect_key in {'destroy_permanent', 'destroy', 'exile', 'exile_permanent',
+                                       'tap', 'untap', 'return_permanent_to_hand', 'add_counters', 'deal_damage'}):
+            return clause
+        return None
+    patterns = {
+        "enters_battlefield": r"^(?:when|whenever)\b.*\benters\b",
+        "transformed": r"^(?:when|whenever)\b.*\btransforms into\b",
+        "spell_cast": r"^when you cast this spell\b",
+        "sacrifice": r"^(?:when|whenever)\b.*\bsacrific(?:e|es|ed)\b",
+        "creature_dies": r"^(?:when|whenever)\b.*\bdies\b",
+        "permanent_dies": r"^(?:when|whenever)\b.*\b(?:dies|put into a graveyard from the battlefield)\b",
+    }
+    if event not in patterns or item.payload.get("__trigger_target_clause"):
+        return None
+    card = _departed_card_view(state, item.source_card_id)
+    if not card:
+        return None
+    clauses = ([item.payload['__trigger_full_clause']] if item.payload.get('__trigger_full_clause')
+               else re.split(r"(?<=\.)\s+|\n", card.oracle_text or ""))
+    for sentence in clauses:
+        clause = sentence.strip()
+        if not re.match(patterns[event], clause, re.I):
+            continue
+        if item.effect_key == 'grant_flashback' and re.search(r'target instant or sorcery card in your graveyard gains flashback', clause, re.I):
+            return clause
+        if item.effect_key == 'cast_from_graveyard' and re.search(r'cast target (?:instant|sorcery) card from your graveyard', clause, re.I):
+            return clause
+        if item.effect_key == "deal_damage" and "any target" in clause.lower():
+            return clause
+        if item.payload.get("__targeted_life_loss") and re.search(r"\btarget (?:player|opponent) loses \d+ life\b", clause, re.I):
+            return clause
+        if re.search(r"\btarget (?:artifact or enchantment|creature|artifact|enchantment|nonland permanent|permanent)\b", clause, re.I) and item.effect_key in {"destroy_permanent", "destroy", "exile", "exile_permanent", "exile_until_source_leaves", "tap_permanent", "untap_permanent", "return_to_hand", "add_counters", "deal_damage"}:
+            return clause
+    return None

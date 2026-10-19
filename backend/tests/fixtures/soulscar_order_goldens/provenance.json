@@ -1,0 +1,8 @@
+{
+  "name": "Moment of Heroism",
+  "sourcePath": "backend/tests/fixtures/defensive_responses.json",
+  "sourceSha256": "d98473ab105e003da485a42ae98d6906f49a7c89f9dfe13cf5ae10babbe3eeaa",
+  "scryfallId": "b17da4d0-f9fd-43af-85fc-ede9fa3962bf",
+  "fullOracleUnchanged": true,
+  "baselineSourceArchive": "8a21ea751a4ebb1e526a41d2d8137904b374e978e44c35a543901fbcde14b89d"
+}

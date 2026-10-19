@@ -5,10 +5,11 @@ from game_state.state import MatchFactory, Step, Zone
 from rules_engine import combat
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import extract_loyalty_abilities
+from tests.planeswalkers_canonical_ff593 import canonical_card, deck_entry
 
 
 def test_attack_can_target_planeswalker_and_reduce_loyalty() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry("Island", 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -27,8 +28,9 @@ def test_attack_can_target_planeswalker_and_reduce_loyalty() -> None:
     pw = state.players[2].hand.pop()
     state.players[2].battlefield.append(pw)
     state.cards[pw].zone = Zone.BATTLEFIELD
-    state.cards[pw].name = "Teferi, Time Raveler"
-    state.cards[pw].types = ["Planeswalker"]
+    state.cards[pw] = canonical_card(
+        "Teferi, Time Raveler", id=pw, owner=2, controller=2, zone=Zone.BATTLEFIELD,
+    )
     state.cards[pw].loyalty = 2
 
     state.active_player = 1
@@ -46,7 +48,7 @@ def test_attack_can_target_planeswalker_and_reduce_loyalty() -> None:
 
 
 def test_planeswalker_loyalty_ability_appears_in_legal_moves() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry("Island", 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -58,10 +60,10 @@ def test_planeswalker_loyalty_ability_appears_in_legal_moves() -> None:
     pw = state.players[1].hand.pop()
     state.players[1].battlefield.append(pw)
     state.cards[pw].zone = Zone.BATTLEFIELD
-    state.cards[pw].name = "Test Walker"
-    state.cards[pw].types = ["Planeswalker"]
+    state.cards[pw] = canonical_card(
+        "Teferi, Time Raveler", id=pw, owner=1, controller=1, zone=Zone.BATTLEFIELD,
+    )
     state.cards[pw].loyalty = 3
-    state.cards[pw].oracle_text = "+1: Draw a card.\n-2: Target player loses 2 life."
 
     moves = engine.legal_moves(state, 1)
     loyalty_moves = [m for m in moves if m.get("type") == "activate_loyalty" and m.get("card_id") == pw]
@@ -69,7 +71,7 @@ def test_planeswalker_loyalty_ability_appears_in_legal_moves() -> None:
 
 
 def test_planeswalker_x_loyalty_ability_requires_x_value_and_materializes() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry("Island", 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -81,13 +83,13 @@ def test_planeswalker_x_loyalty_ability_requires_x_value_and_materializes() -> N
     pw = state.players[1].hand.pop()
     state.players[1].battlefield.append(pw)
     state.cards[pw].zone = Zone.BATTLEFIELD
-    state.cards[pw].name = "X Walker"
-    state.cards[pw].types = ["Planeswalker"]
+    state.cards[pw] = canonical_card(
+        "Ugin, the Spirit Dragon", id=pw, owner=1, controller=1, zone=Zone.BATTLEFIELD,
+    )
     state.cards[pw].loyalty = 4
-    state.cards[pw].oracle_text = "-X: Deal X damage to any target.\n+1: Draw a card."
 
     abilities = extract_loyalty_abilities(state.cards[pw])
-    assert abilities[0]["x_cost"] is True
+    assert abilities[1]["x_cost"] is True
 
     moves = engine.legal_moves(state, 1)
     x_moves = [m for m in moves if m.get("type") == "activate_loyalty" and m.get("card_id") == pw and m.get("ability_x_cost")]
@@ -108,7 +110,7 @@ def test_unblocked_damage_to_removed_planeswalker_disappears():
     the damage disappears — it does NOT redirect to the player."""
     from rules_engine.combat import _deal_unblocked_damage
 
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry("Island", 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -139,7 +141,7 @@ def test_unblocked_damage_to_removed_planeswalker_disappears():
 
 
 def test_trample_excess_damage_to_protected_planeswalker_is_prevented() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry("Island", 60)]
     state = MatchFactory.from_decks(deck, deck)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -152,6 +154,7 @@ def test_trample_excess_damage_to_protected_planeswalker_is_prevented() -> None:
     state.cards[atk].types = ["Creature"]
     state.cards[atk].name = "Red Trampler"
     state.cards[atk].mana_cost = "{3}{R}"
+    state.cards[atk].colors = ["R"]
     state.cards[atk].power = 4
     state.cards[atk].toughness = 4
     state.cards[atk].keywords = ["trample"]

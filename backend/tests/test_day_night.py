@@ -15,13 +15,22 @@ def _state() -> object:
     return state
 
 
+def _untap_then_upkeep(state, engine):
+    state.step = Step.UNTAP
+    engine._apply_step_start_actions(state)
+    assert not state.stack and state.pending_trigger_order is None
+    assert engine.advance_no_priority_step(state)
+    assert state.step == Step.UPKEEP
+
+
 def test_day_night_starts_at_upkeep_after_no_spells() -> None:
     state = _state()
     state.turn = 2
-    state.step = Step.UPKEEP
+    # Retain the legacy test name/outcome; only an established day can become night.
+    state.day_night = "day"
     state.spells_cast_last_turn = 0
 
-    RulesEngine()._apply_step_start_actions(state)
+    _untap_then_upkeep(state, RulesEngine())
 
     assert state.day_night == "night"
     assert any("becomes night" in line.lower() for line in state.log)
@@ -30,26 +39,25 @@ def test_day_night_starts_at_upkeep_after_no_spells() -> None:
 def test_day_night_transitions_only_on_zero_or_two_spells() -> None:
     state = _state()
     state.turn = 3
-    state.step = Step.UPKEEP
     engine = RulesEngine()
 
     state.day_night = "night"
     state.spells_cast_last_turn = 1
-    engine._apply_step_start_actions(state)
+    _untap_then_upkeep(state, engine)
     assert state.day_night == "night"
     state.spells_cast_last_turn = 2
-    engine._apply_step_start_actions(state)
+    _untap_then_upkeep(state, engine)
     assert state.day_night == "day"
 
     state.spells_cast_last_turn = 0
-    engine._apply_step_start_actions(state)
+    _untap_then_upkeep(state, engine)
     assert state.day_night == "night"
 
 
 def test_day_night_transforms_matching_double_faced_permanents() -> None:
     state = _state()
     state.turn = 2
-    state.step = Step.UPKEEP
+    state.day_night = "day"
     card = CardInstance(
         id="daybound-werewolf",
         name="Daybound Werewolf",
@@ -66,7 +74,7 @@ def test_day_night_transforms_matching_double_faced_permanents() -> None:
     state.cards[card.id] = card
     state.players[1].battlefield.append(card.id)
 
-    RulesEngine()._apply_step_start_actions(state)
+    _untap_then_upkeep(state, RulesEngine())
 
     assert state.day_night == "night"
     assert state.cards[card.id].name == "Nightbound Werewolf"
@@ -76,43 +84,24 @@ def test_day_night_transforms_matching_double_faced_permanents() -> None:
 def test_simultaneous_day_night_transforms_share_apnap_trigger_order_window(monkeypatch) -> None:
     from rules_engine import events
     from rules_engine.events import resume_trigger_order
+    from tests.day_night_apnap_canonical import CATHAR, permanent
 
     state = _state()
     state.turn = 3
-    state.step = Step.UPKEEP
     state.active_player = state.priority_player = 1
     state.day_night = "day"
     state.spells_cast_last_turn = 0
     state.trigger_order_choice_required = True
     state.trigger_order_choice_players = {1, 2}
-    arena = CardInstance(
-        "arena", "Phyrexian Arena", 1, 1, Zone.BATTLEFIELD, ["Enchantment"],
-        oracle_text="At the beginning of your upkeep, you draw a card and you lose 1 life.",
-    )
+    arena = permanent("arena", "Phyrexian Arena", 1)
     state.cards[arena.id] = arena
     state.players[1].battlefield.append(arena.id)
-    oracle = (
-        "When Corruption of Towashi enters the battlefield, incubate 4.\n"
-        "Whenever a permanent you control transforms or a permanent enters the battlefield under your control transformed, "
-        "you may draw a card. Do this only once each turn."
-    )
     for owner in (1, 2):
-        corruption = CardInstance(
-            f"corruption-{owner}", "Corruption of Towashi", owner, owner,
-            Zone.BATTLEFIELD, ["Enchantment"], oracle_text=oracle,
-        )
+        corruption = permanent(f"corruption-{owner}", "Corruption of Towashi", owner)
         state.cards[corruption.id] = corruption
         state.players[owner].battlefield.append(corruption.id)
         for copy_number in (1, 2):
-            card = CardInstance(
-                f"cathar-{owner}-{copy_number}", "Brutal Cathar", owner, owner,
-                Zone.BATTLEFIELD, ["Creature"], oracle_text="Daybound", layout="transform",
-                selected_face_index=0,
-                card_faces=[
-                    {"name": "Brutal Cathar", "oracle_text": "Daybound", "type_line": "Creature - Human Soldier Werewolf", "power": "2", "toughness": "2"},
-                    {"name": "Moonrage Brute", "oracle_text": "First strike\nNightbound", "type_line": "Creature - Werewolf", "power": "3", "toughness": "3"},
-                ],
-            )
+            card = permanent(f"cathar-{owner}-{copy_number}", CATHAR, owner)
             state.cards[card.id] = card
             state.players[owner].battlefield.append(card.id)
 
@@ -128,7 +117,7 @@ def test_simultaneous_day_night_transforms_share_apnap_trigger_order_window(monk
         return original_collect(game, event, payload)
 
     monkeypatch.setattr(events, "_collect_triggers", collect_after_all_faces_change)
-    RulesEngine()._apply_step_start_actions(state)
+    _untap_then_upkeep(state, RulesEngine())
     assert observed_faces == [(1, 1, 1, 1)] * 4
     assert state.day_night == "night"
     assert all(state.cards[f"cathar-{owner}-{copy_number}"].selected_face_index == 1
@@ -153,7 +142,6 @@ def test_simultaneous_day_night_transforms_share_apnap_trigger_order_window(monk
 def test_day_night_change_triggers_use_the_stack() -> None:
     state = _state()
     state.turn = 3
-    state.step = Step.UPKEEP
     state.day_night = "day"
     state.spells_cast_last_turn = 0
     trigger_source = CardInstance(
@@ -170,7 +158,7 @@ def test_day_night_change_triggers_use_the_stack() -> None:
     state.players[1].battlefield.append(trigger_source.id)
     before = len(state.players[1].hand)
 
-    RulesEngine()._apply_step_start_actions(state)
+    _untap_then_upkeep(state, RulesEngine())
 
     assert state.day_night == "night"
     assert state.stack

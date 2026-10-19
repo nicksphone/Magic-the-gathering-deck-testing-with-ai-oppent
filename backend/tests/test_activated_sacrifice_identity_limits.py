@@ -1,4 +1,4 @@
-"""Separate canonical effect quantity gap; not fixed by identity bookkeeping."""
+"""Canonical quantity regression now qualified with the self-death compiler."""
 import pytest
 
 from rules_engine.stack_engine import resolve_top_of_stack
@@ -6,8 +6,6 @@ from tests.test_activated_sacrifice_identity import add, activate, cards
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-@pytest.mark.xfail(strict=True, raises=AssertionError,
-                   reason='Existing for-each-counter death token quantity resolves one instead of two')
 def test_counter_dependent_death_token_quantity(seat):
     state = cards.position(seat)
     tower = add(state, 'Phyrexian Tower', seat)

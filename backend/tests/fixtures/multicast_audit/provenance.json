@@ -1,0 +1,69 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "684a4f7215a8d3020a3d8993b2c9a37eff851860e5650c9307af905307735d99",
+  "offline": true,
+  "facts_modified": false,
+  "rows": [
+    {
+      "name": "Raging Goblin",
+      "id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b"
+    },
+    {
+      "name": "Young Pyromancer",
+      "id": "c0d74ecd-a595-4012-81b4-083264b40c94",
+      "oracle_id": "5fac139a-07d3-4e6c-98e3-d98b199f7a6f"
+    },
+    {
+      "name": "Balmor, Battlemage Captain",
+      "id": "0b45ab13-9bb6-48af-8b37-d97b25801ac8",
+      "oracle_id": "7da19fc5-cb85-4ec7-beea-95210378bbfe"
+    },
+    {
+      "name": "Kappa Cannoneer",
+      "id": "99cd996f-be74-4dbb-9460-6d650cedfca6",
+      "oracle_id": "7fffbe7f-ad78-4bb6-a611-c37e495c6ee0"
+    },
+    {
+      "name": "Archmage Emeritus",
+      "id": "dd547601-d650-4a02-a3a4-890bcef03a7c",
+      "oracle_id": "8305d576-21d8-4ce7-8eda-a7cd9793aca5"
+    },
+    {
+      "name": "Storm-Kiln Artist",
+      "id": "da7ae8e0-cb6b-4386-8a30-9527d1af9be5",
+      "oracle_id": "a145ff8c-5812-4bcb-bd16-9839dc25121d"
+    },
+    {
+      "name": "Reverberate",
+      "id": "5996feb4-02ac-45e8-a7f2-966cf74391dc",
+      "oracle_id": "a1f55890-31c5-4ed4-a2cd-7a4a9f05f8ca"
+    },
+    {
+      "name": "Shock",
+      "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+      "oracle_id": "a9d288b8-cdc1-4e55-a0c9-d6edfc95e65d"
+    },
+    {
+      "name": "Jeskai Ascendancy",
+      "id": "9a8399fc-4cba-44c5-888e-2cfc0f6739f6",
+      "oracle_id": "c3c802ba-dfbb-4f63-ae9a-e29c2e30013d"
+    },
+    {
+      "name": "Veyran, Voice of Duality",
+      "id": "1cb06c70-7ff2-4c88-9931-1bfe8a3226d9",
+      "oracle_id": "d57a6b19-bd06-4b07-8ee1-0b45612ba9e4"
+    },
+    {
+      "name": "Bonecrusher Giant // Stomp",
+      "id": "b5b71cd2-de35-451f-b16e-2e3936169407",
+      "oracle_id": "d6d72f5f-8f5d-4180-b514-f22ff5482902"
+    },
+    {
+      "name": "Talrand, Sky Summoner",
+      "id": "1be3ed47-072e-481a-b3d9-dc232ac4b24f",
+      "oracle_id": "ea1eb902-a23c-44ff-9169-19baf71de238"
+    }
+  ]
+}

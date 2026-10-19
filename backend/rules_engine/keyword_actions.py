@@ -19,6 +19,7 @@ def ninjutsu_attackers(state, player_id: int) -> list[str]:
 
 
 def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
+    from rules_engine.activation_copy import record_activation_complete
     from rules_engine.events import emit_event
     from rules_engine.stack_engine import add_to_stack
     card_id = action.get("card_id")
@@ -28,9 +29,19 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     if card_id not in player.hand or return_id not in ninjutsu_attackers(state, player_id) or is_departed_token(state.cards[card_id]):
         return False
     card = state.cards[card_id]
+    source_sequence = card.zone_change_sequence
     cost = ninjutsu_cost(card)
-    if not cost or not auto_pay_cost(state, player_id, cost, card_name=card.name,
+    if not cost:
+        return False
+    staged_here = not state.trigger_staging
+    if staged_here:
+        state.trigger_staging = True
+        state.trigger_staging_event = 'ability_activation'
+    if not auto_pay_cost(state, player_id, cost, card_name=card.name,
             payment_kind='activation', payment_types=set(effective_types(state, card)), source_card_id=card_id, ability_kind='ninjutsu'):
+        if staged_here:
+            state.staged_triggers.clear()
+            state.trigger_staging = False
         return False
     returned = state.cards[return_id]
     target = state.attack_targets.get(return_id, f"player:{3-player_id}")
@@ -40,7 +51,9 @@ def activate_ninjutsu(state, player_id: int, action: dict) -> bool:
     returned.move_to_zone(Zone.HAND)
     state.attackers.remove(return_id)
     state.attack_targets.pop(return_id, None)
-    add_to_stack(state, card_id, player_id, f"{card.name} ninjutsu", "ninjutsu", {"attack_target": target}, is_spell=False)
+    activated_item = add_to_stack(state, card_id, player_id, f"{card.name} ninjutsu", "ninjutsu",
+                 {"attack_target": target, "__source_zone_sequence": source_sequence}, is_spell=False)
+    record_activation_complete(state, activated_item)
     return True
 
 
@@ -49,12 +62,16 @@ def resolve_ninjutsu(state, controller: int, payload: dict) -> None:
     card_id = payload.get("__source_card_id")
     player = state.players[controller]
     from rules_engine.zone_actions import is_departed_token
-    if card_id not in player.hand or is_departed_token(state.cards[card_id]):
+    card = state.cards.get(card_id)
+    source_sequence = payload.get("__source_zone_sequence")
+    # A returned hand card is a new object; paid costs do not follow it.
+    if (card_id not in player.hand or card is None or card.zone != Zone.HAND
+            or type(source_sequence) is not int or source_sequence != card.zone_change_sequence
+            or is_departed_token(card)):
         return
     player.hand.remove(card_id)
     player.battlefield.append(card_id)
-    card = state.cards[card_id]
-    card.zone = Zone.BATTLEFIELD
+    card.move_to_zone(Zone.BATTLEFIELD)
     card.tapped = True
     card.summoning_sick = True
     card.entered_turn = state.turn
@@ -77,9 +94,68 @@ def resolve_annihilator(state, controller: int, payload: dict) -> None:
 
 
 def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
+    pending_copy = state.pending_mechanic_choice
+    if (pending_copy and pending_copy.get('kind') == 'land_entry'
+            and '__entry_copy_plan' in pending_copy.get('effect_payload', {})):
+        from rules_engine.entry_copy import validate_land_choice
+        validate_land_choice(state, player_id, action)
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'entry_copy':
+        from rules_engine.entry_copy import finish_choice
+        return finish_choice(state, player_id, action)
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('graveyard_batch') is True:
+        from rules_engine.graveyard_batch_entry import finish_choice
+        return finish_choice(state, player_id, action)
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') in {'loyalty_cards', 'loyalty_attachment'}:
+        from rules_engine.loyalty_instructions import finish_choice
+        return finish_choice(state, player_id, action)
+    if (state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'land_entry'
+            and state.pending_mechanic_choice.get('effect_key') == 'loyalty_hand_entry'):
+        from rules_engine.loyalty_instructions import land_choice_valid
+        if not land_choice_valid(state, player_id, action, state.pending_mechanic_choice):
+            return False
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'exchange_energy_payment':
+        from rules_engine.exchange_energy import finish
+        return finish(state, player_id, action)
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'entry_mode':
+        from rules_engine.modal_entry import finish
+        return finish(state, player_id, action)
+    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'note_creature_type':
+        from rules_engine.next_creature_entry_trigger import finish_note
+        return finish_note(state, player_id, action)
     from rules_engine.events import emit_event_batch, was_creature_on_battlefield
     from rules_engine.replacement import replace_die_zone
     pending = state.pending_mechanic_choice
+    if pending and pending['kind'] == 'land_from_hand':
+        ids = action.get('card_ids')
+        if (pending['player_id'] != player_id or not isinstance(ids, list)
+                or not pending['min_count'] <= len(ids) <= 1
+                or any(not isinstance(cid, str) or cid not in pending['options'] for cid in ids)):
+            return False
+        if ids:
+            from game_state.state import object_incarnation
+            from rules_engine.zone_actions import is_departed_token
+            card = state.cards.get(ids[0])
+            if (card is None or card.owner != pending['controller'] or card.zone != Zone.HAND
+                    or card.id not in state.players[pending['controller']].hand
+                    or 'Land' not in effective_types(state, card) or is_departed_token(card)
+                    or pending['land_references'].get(card.id) != [object_incarnation(card), card.zone_change_sequence]):
+                return False
+        from effects.registry import resolve_effect
+        from rules_engine.stack_engine import resume_paused_resolution
+        state.pending_mechanic_choice = None
+        if ids:
+            resolve_effect(state, pending['controller'], 'put_land_from_hand', {
+                **pending['effect_payload'], 'land_id': ids[0],
+                '__land_reference': pending['land_references'][ids[0]],
+            })
+        resume_paused_resolution(state, pending)
+        return True
+    if pending and pending.get('kind') in {'library_top_order', 'library_order_shuffle', 'library_shuffle'}:
+        from rules_engine.library_reorder import finish_reorder
+        return finish_reorder(state, player_id, action)
+    if pending and pending.get('kind') == 'optional_reveal':
+        from rules_engine.optional_reveal import finish_reveal
+        return finish_reveal(state, player_id, action)
     if pending and pending['kind'] == 'foretell_from_hand':
         from rules_engine.foretell import finish_hand_choice
         return finish_hand_choice(state, player_id, action)
@@ -149,7 +225,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         })
         resume_paused_resolution(state, pending)
         return True
-    if pending and pending["kind"] == "copy_target":
+    if pending and pending["kind"] in {'copy_target', 'spree_target_change'}:
         from rules_engine.stack_engine import resume_paused_resolution
         ids = action.get("card_ids")
         if (pending["player_id"] != player_id or not isinstance(ids, list)
@@ -158,23 +234,48 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         copied = next((item for item in state.stack if item.id == pending["stack_id"]), None)
         if copied is None:
             return False
+
+        def publish_selected_targets():
+            if not state.pending_mechanic_choice:
+                from rules_engine.granted_target_triggers import _record_target_selection
+                from rules_engine.ward import mark_stack_targets
+                _record_target_selection(state, copied)
+                mark_stack_targets(state, copied)
+
+        from rules_engine.targeting import validate_announced_target_references, replace_announced_target_reference
+        references = copied.payload.get('__announced_target_references')
+        if '__announced_target_references' in copied.payload:
+            validate_announced_target_references(copied.payload.get('__announced_targets') or {}, references)
+
+        def refresh(paths):
+            if references is not None:
+                copied.payload['__announced_target_references'] = replace_announced_target_reference(
+                    state, references, copied.payload.get('__announced_targets') or {}, paths)
+
         chosen = ids[0]
+        if pending['kind'] == 'copy_target' and pending.get('loyalty_target_slot') is not None:
+            from rules_engine.loyalty_instructions import choose_copy_target
+            if not choose_copy_target(state, copied, pending, chosen):
+                return False
+            publish_selected_targets()
+            resume_paused_resolution(state, pending)
+            return True
+        if pending['kind'] == 'spree_target_change':
+            from rules_engine.spree import valid_change
+            if not valid_change(state, pending, chosen):
+                return False
         if pending.get('linked_target_index') is not None:
             from rules_engine.linked_targets import choose_linked_copy_target
             if not choose_linked_copy_target(state, copied, pending, chosen):
                 return False
-            if not state.pending_mechanic_choice and not pending.get('resolving_item'):
-                from rules_engine.ward import mark_stack_targets
-                mark_stack_targets(state, copied)
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if pending.get('ordered_target_index') is not None:
             from rules_engine.ordered_targets import choose_ordered_copy_target
             if not choose_ordered_copy_target(state, copied, pending, chosen):
                 return False
-            if not state.pending_mechanic_choice and not pending.get('resolving_item'):
-                from rules_engine.ward import mark_stack_targets
-                mark_stack_targets(state, copied)
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if pending.get("clause_effect_index") is not None:
@@ -193,6 +294,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 value = int(raw_value) if key == "target_player" else raw_value
                 announced[key] = value
                 effects[index]["payload"][key] = value
+                refresh([(key,)])
                 copied.targets = [str(announced[target]) for target in ("target_card_id", "target_player", "target_stack_id")
                                   if announced.get(target) is not None]
                 state.log.append(f"{state.players[player_id].name} changes a target of {copied.label}.")
@@ -201,6 +303,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 state, player_id, copied, remaining_indices=pending["remaining_clause_indices"],
                 slot_number=pending["target_slot_number"] + 1,
             )
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if pending.get("mode_target_text") is not None:
@@ -221,6 +324,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 announced["mode_targets"][mode] = {key: value}
                 effects[0]["payload"].pop(old_key)
                 effects[0]["payload"][key] = value
+                refresh([('mode_targets', mode, key)])
                 copied.targets = [
                     str(target)
                     for mode_targets in announced["mode_targets"].values()
@@ -232,6 +336,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 state, player_id, copied, remaining_modes=pending["remaining_modes"],
                 slot_number=pending["target_slot_number"] + 1,
             )
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if pending.get("distribution_target") is not None:
@@ -243,12 +348,13 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 return False
             if chosen != "keep":
                 new_id = chosen.split(":", 1)[1]
-                if new_id in distribution:
+                if new_id in distribution and new_id != old_id:
                     return False
                 updated = {new_id if target == old_id else target: amount
                            for target, amount in distribution.items()}
                 copied.payload["target_distribution"] = updated
                 copied.payload["__announced_targets"]["target_distribution"] = dict(updated)
+                refresh([('target_distribution', new_id)])
                 copied.targets = list(updated)
                 state.log.append(f"{state.players[player_id].name} changes a target of {copied.label}.")
             state.pending_mechanic_choice = None
@@ -258,17 +364,30 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
                 slot_number=pending["target_slot_number"] + 1,
                 slot_total=pending["target_slot_total"],
             )
+            publish_selected_targets()
             resume_paused_resolution(state, pending)
             return True
         if chosen != "keep":
             key, raw_value = chosen.split(":", 1)
             value = int(raw_value) if key == "target_player" else raw_value
+            selected_graveyard_trigger = (copied.effect_key == 'cast_from_graveyard'
+                                          and copied.payload.get('__trigger_target_choice') is True)
+            if selected_graveyard_trigger:
+                from rules_engine.events import trigger_target_options
+                if key != 'target_card_id' or not any(
+                        option.get('target_card_id') == value
+                        for option in trigger_target_options(state, copied)):
+                    return False
             announced = copied.payload.setdefault("__announced_targets", {})
             for old_key in ("target_player", "target_card_id", "target_stack_id"):
                 announced.pop(old_key, None)
                 copied.payload.pop(old_key, None)
             announced[key] = value
             copied.payload[key] = value
+            refresh([(key,)])
+            if selected_graveyard_trigger or (key == 'target_card_id' and copied.payload.get('__trigger_target_choice') is True):
+                from rules_engine.events import _remember_trigger_target
+                _remember_trigger_target(state, copied)
             if copied.effect_key == 'conditional_instruction':
                 from rules_engine.conditional_instructions import capture_target
                 capture_target(state, copied.payload)
@@ -284,6 +403,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             copied.targets = [str(value)]
             state.log.append(f"{state.players[player_id].name} changes {copied.label}'s target.")
         state.pending_mechanic_choice = None
+        publish_selected_targets()
         resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] in {"choose_revealed_discard", "choose_revealed_exile"}:
@@ -332,6 +452,22 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
         resolve_effect(state, pending["effect_controller"], "each_player_discard", payload)
         resume_paused_resolution(state, pending)
         return True
+    if pending and pending['kind'] == 'hand_top_order':
+        ids = action.get('card_ids')
+        if (pending['player_id'] != player_id or not isinstance(ids, list)
+                or len(ids) != pending['count']
+                or any(not isinstance(cid, str) for cid in ids)
+                or len(set(ids)) != len(ids)
+                or any(cid not in pending['options'] or cid not in state.players[player_id].hand
+                       or state.cards[cid].zone != Zone.HAND
+                       or state.cards[cid].owner != player_id for cid in ids)):
+            return False
+        from effects.handlers import put_hand_on_library
+        from rules_engine.stack_engine import resume_paused_resolution
+        put_hand_on_library(state, player_id, {**pending['effect_payload'], 'selected_card_ids': ids})
+        state.pending_mechanic_choice = None
+        resume_paused_resolution(state, pending)
+        return True
     if pending and pending["kind"] == "discard":
         from rules_engine.zone_actions import discard_selected
         from rules_engine.stack_engine import resume_paused_resolution
@@ -346,7 +482,7 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
             return False
         state.log.append(f"{state.players[player_id].name} discards {len(ids)}.")
         from effects.handlers import resolve_discard_followup
-        resolve_discard_followup(state, pending.get('effect_controller', player_id), pending.get('followup_effect'), len(ids))
+        resolve_discard_followup(state, pending.get('effect_controller', player_id), pending.get('followup_effect'), len(ids), ids)
         resume_paused_resolution(state, pending)
         return True
     if pending and pending["kind"] == "draw":
@@ -446,15 +582,20 @@ def finish_mechanic_choice(state, player_id: int, action: dict) -> bool:
     if not isinstance(ids, list) or any(not isinstance(cid, str) for cid in ids) or len(ids) != pending["count"] or len(set(ids)) != len(ids) or any(cid not in state.players[player_id].battlefield or cid not in pending["options"] for cid in ids):
         return False
     events = [{"card_id": cid, "controller": player_id} for cid in ids]
-    destinations = {cid: replace_die_zone(state, player_id, cid) for cid in ids}
+    from rules_engine.replacement import select_graveyard_entry_plan
+    from rules_engine.zone_actions import prepare_graveyard_entry_causes, execute_graveyard_entry
+    plans = {cid: select_graveyard_entry_plan(state, cid) for cid in ids}
+    # Prepare the whole batch before LBF can remove a replacement source.
+    causes = prepare_graveyard_entry_causes(state, plans.values())
     emit_event_batch(state, "leaves_battlefield", events)
+    entry_receipts = []
     for cid in ids:
         card = state.cards[cid]
-        state.players[player_id].battlefield.remove(cid)
-        zone = Zone.EXILE if destinations[cid] == "exile" else Zone.GRAVEYARD
-        getattr(state.players[card.owner], zone.value).append(cid)
-        card.zone = zone
+        execute_graveyard_entry(state, plans[cid], prevalidated=True,
+                               _prepared_cause=causes[cid], _entry_receipts=entry_receipts)
         state.log.append(f"{state.players[player_id].name} sacrifices {card.name}.")
+    if entry_receipts:
+        emit_event_batch(state, 'enters_graveyard', entry_receipts)
     emit_event_batch(state, "sacrifice", events)
     for event in events:
         card = state.cards[event["card_id"]]

@@ -4,7 +4,7 @@ from rules_engine.type_effects import effective_types
 import re
 from collections import Counter
 from functools import lru_cache, wraps
-from rules_engine.query_context import scoped_query, query_cache
+from rules_engine.query_context import scoped_query, query_cache, rule_query_scope
 from typing import Any
 
 from game_state.state import Zone
@@ -216,6 +216,10 @@ def _static_text_from_oracle(oracle_text: str) -> str:
 @lru_cache(maxsize=4096)
 def _conditional_static_instructions(oracle_text, name):
     """Compile complete clauses; cache instructions, never predicate results."""
+    # A resolved modal duration is not an independently active static layer.
+    from rules_engine.modal_entry import compile_instruction as modal_instruction
+    if modal_instruction((oracle_text or '').strip()) is not None:
+        return ()
     subject = _self_stat_subject(name)
     from rules_engine.static_conditions import static_clause_components
     result = []
@@ -285,8 +289,15 @@ def _conditional_static_effects(state, source, target):
 def conditional_static_clause_coverage(oracle_text, name=''):
     """Use runtime instruction recognition, never a simulated predicate value."""
     from rules_engine.static_conditions import parse_static_condition
+    from rules_engine.closed_loyalty import compile_body
+    from rules_engine.loyalty_timing import ENTRY_TURN_PERMISSION
+    compiled = compile_body(oracle_text, name)
+    permissions = {line.casefold().rstrip('.') for line in compiled['companions']
+                   if ENTRY_TURN_PERMISSION.fullmatch(line)} if compiled is not None else set()
     rows = []
     for condition, scope, _, _, _, _, granted, raw in _conditional_static_instructions(oracle_text, name):
+        if raw.casefold().rstrip('.') in permissions:
+            continue
         reasons = []
         if parse_static_condition(condition, name) is None:
             reasons.append('unsupported conditional static predicate')
@@ -466,12 +477,12 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
         out.update('ward ' + cost.lower() for cost in ward_costs)
         out['ward'] = max(out.get('ward', 0), len(ward_costs))
     # Scryfall's keyword metadata is unique; standalone Oracle instances aren't.
-    printed = Counter(part.strip().lower() for line in without_reminder_text(getattr(card, 'oracle_text', '') or '').splitlines()
+    printed = Counter(part.strip().lower().removesuffix('.') for line in without_reminder_text(getattr(card, 'oracle_text', '') or '').splitlines()
                       for part in line.split(',') if part.strip().lower() in {'exalted', 'decayed', 'flanking', 'undying'}
-                      or re.fullmatch(r'(?:bushido|rampage) \d+', part.strip().lower()))
+                      or re.fullmatch(r'(?:bushido|rampage) \d+|toxic \d+\.?', part.strip().lower()))
     for keyword, amount in printed.items():
         out[keyword] = max(out[keyword], amount)
-    for family in ('bushido', 'rampage'):
+    for family in ('bushido', 'rampage', 'toxic'):
         if any(keyword.startswith(family + ' ') for keyword in out):
             out.pop(family, None)  # Scryfall's family label is not an extra instance.
     from rules_engine.protection import hexproof_variants
@@ -501,11 +512,15 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     modifiers.extend({'timestamp': stamp, 'keyword': keyword, 'operation': 'grant', 'count': 1}
                      for stamp, keyword in counter_grants)
     modifiers.sort(key=lambda effect: effect['timestamp'])
+    from rules_engine.attached_characteristics import effects_on
+    attached_losses = {effect.source_ref[0] for effect in effects_on(state, card_id)}
     modifier_index = 0
     for src_id, src, source_active in _continuous_sources(state):
         while modifier_index < len(modifiers) and modifiers[modifier_index]['timestamp'] <= effect_timestamp(src):
             _apply_keyword_modifier(out,modifiers[modifier_index])
             modifier_index += 1
+        if src_id in attached_losses:
+            out.clear()
         if source_active:
             out.update(_attached_effects(state, src, card)[2])
             out.update(_conditional_static_effects(state, src, card)[2])
@@ -550,6 +565,62 @@ def effective_keyword_counts(state, card_id: str) -> dict[str, int]:
     return dict(sorted(out.items()))
 
 
+@scoped_query
+def effective_granted_target_abilities(state, card_id: str) -> tuple[dict, ...]:
+    """Closed quoted grants in layer 6, retaining each source/clause instance."""
+    from game_state.state import object_incarnation
+    from rules_engine.granted_target_triggers import compile_granted_target_clauses, execution_gaps
+    from rules_engine.attached_characteristics import effects_on
+    target = state.cards.get(card_id)
+    if target is None or not _is_battlefield(target) or 'Creature' not in effective_types(state, target):
+        return ()
+    attached_losses = {effect.source_ref[0] for effect in effects_on(state, card_id)}
+    modifiers = sorted(_resolved_keyword_modifiers(target), key=lambda effect: effect['timestamp'])
+    index, out = 0, []
+    for source_id, source, active in _continuous_sources(state):
+        while index < len(modifiers) and modifiers[index]['timestamp'] <= effect_timestamp(source):
+            effect = modifiers[index]
+            if effect['operation'] == 'remove' and effect['keyword'] == 'all abilities':
+                out.clear()
+            index += 1
+        if source_id in attached_losses:
+            out.clear()
+        # Source activity already accounts for dependency on effects removing its own ability.
+        if active:
+            clauses, _ = compile_granted_target_clauses(source.oracle_text or '', source.name)
+            if execution_gaps(clauses):
+                clauses = ()
+            for ordinal, scope, other, kind, limit, instruction in clauses:
+                if (not other or source_id != card_id) and _scope_controller(source.controller, scope, target.controller):
+                    out.append({'recipient_id': card_id, 'recipient_incarnation': object_incarnation(target),
+                                'grant_source_id': source_id, 'grant_source_incarnation': object_incarnation(source),
+                                'clause_index': ordinal, 'controller': target.controller,
+                                'event_kind': kind, 'limit': limit, 'instruction': instruction})
+        # A static all-ability removal remains applicable even if its source loses abilities.
+        from rules_engine.basic_land_layer import prior_layer_abilities_lost
+        if not prior_layer_abilities_lost(state, source):
+            for scope, other, subject, removed in _iter_keyword_removals(source):
+                if ('all abilities' in removed and (not other or source_id != card_id)
+                        and _scope_controller(source.controller, scope, target.controller)
+                        and _subject_matches(state, card_id, subject)):
+                    out.clear()
+    for effect in modifiers[index:]:
+        if effect['operation'] == 'remove' and effect['keyword'] == 'all abilities':
+            out.clear()
+    # A prior-layer land-type change removes printed abilities, not later layer-6 grants.
+    # Source activity handles this restriction on the granting source itself.
+    for _, source, active in _continuous_sources(state):
+        if not active:
+            continue
+        for match in KW_CANT_HAVE_RE.finditer(_static_oracle_text(source)):
+            other, subject, scope, removed = match.groups()
+            if ('all abilities' in removed and (not other or source.id != card_id)
+                    and _scope_controller(source.controller, scope, target.controller)
+                    and _subject_matches(state, card_id, subject)):
+                out.clear()
+    return tuple(out)
+
+
 def effective_keywords(state, card_id: str) -> list[str]:
     return list(effective_keyword_counts(state, card_id))
 
@@ -557,7 +628,7 @@ def effective_keywords(state, card_id: str) -> list[str]:
 def _remove_keyword_family(keywords, keyword):
     for present in list(keywords):
         if (present == keyword or keyword == 'hexproof' and present.startswith('hexproof from ')
-                or keyword in {'bushido', 'rampage', 'ward'} and present.startswith(keyword + ' ')):
+                or keyword in {'bushido', 'rampage', 'ward', 'toxic'} and present.startswith(keyword + ' ')):
             keywords.pop(present, None)
 
 
@@ -606,7 +677,11 @@ def printed_abilities_suppressed(state, card_id: str, *, losses=None, include_la
         return False
     cache = query_cache(state)
     if cache is None:
-        return _printed_suppression_result(state, card_id, card, losses, include_land_types)
+        if losses is not None and type(losses) not in (list, tuple):
+            return _printed_suppression_result(state, card_id, card, losses, include_land_types)
+        with rule_query_scope(state):
+            return printed_abilities_suppressed(state, card_id, losses=losses,
+                                                include_land_types=include_land_types)
     if losses is not None and type(losses) not in (list, tuple):
         return _printed_suppression_result(state, card_id, card, losses, include_land_types)
     loss_key = None if losses is None else tuple(
@@ -619,6 +694,9 @@ def printed_abilities_suppressed(state, card_id: str, *, losses=None, include_la
 
 
 def _printed_suppression_result(state, card_id, card, losses, include_land_types):
+    from rules_engine.attached_characteristics import effects_on
+    if effects_on(state, card_id):
+        return True
     if include_land_types:
         from rules_engine.land_types import printed_land_abilities_lost
         if printed_land_abilities_lost(state, card):
@@ -656,6 +734,9 @@ def _base_pt_with_layers(state, card_id: str) -> tuple[int | None, int | None]:
         base_t = dynamic_t
     # Minimal layer support: base PT setters from static text.
     setters = []
+    from rules_engine.attached_characteristics import effects_on
+    setters.extend((effect.timestamp, effect.compound.power, effect.compound.toughness)
+                   for effect in effects_on(state, card_id))
     for src_id, src, source_active in _continuous_sources(state):
         setter_source = src if source_active else _ability_layer_continuation_source(state, src)
         if setter_source is None:
@@ -918,6 +999,13 @@ def _pt_setter_applies(state, source, target_id, scope, other_only, subject):
 
 @_static_parser
 def _iter_keyword_grants(text):
+    # Unconditional global grants use live membership and the source timestamp.
+    for clause in re.split(r'[.\n]', text):
+        match = re.fullmatch(r'(?:all )?(creatures) have (.+)', clause.strip())
+        if match:
+            granted = _attached_keywords(match[2])
+            if granted:
+                yield ('all', False, match[1], tuple(granted))
     for match in PT_AND_KW_STATIC_RE.finditer(text):
         other_only = bool(match.group(1))
         subject = match.group(2).strip()
@@ -1024,7 +1112,8 @@ def _subject_match_result(state, card_id: str, subject: str) -> bool:
     if s.endswith(" creatures"):
         if "Creature" not in effective_types(state, card):
             return False
-        colors = set(getattr(card, "colors", None) or [])
+        from rules_engine.colors import card_color_symbols
+        colors = card_color_symbols(card, state)
         color_names = _COLOR_SYMBOLS
         front_types = set((getattr(card, "type_line", "") or "").split("—", 1)[0].split("-", 1)[0].lower().split())
 
@@ -1053,14 +1142,8 @@ def _has_subtype(card, subtype: str, *, state=None) -> bool:
     types = effective_types(state, card) if state is not None else (getattr(card, "types", []) or [])
     if "Creature" not in types:
         return False
-    type_line = (getattr(card, "type_line", "") or "").lower()
-    if "—" in type_line:
-        right = type_line.split("—", 1)[1]
-    elif "-" in type_line:
-        right = type_line.split("-", 1)[1]
-    else:
-        right = ""
-    tokens = [t.strip(" ,.") for t in right.split()]
+    from rules_engine.library_permissions import creature_types
+    tokens = creature_types(card, state)
     candidates = {subtype.lower(), f"{subtype.lower()}s"}
     if subtype.lower().endswith("f"):
         candidates.add(f"{subtype.lower()[:-1]}ves")
@@ -1075,6 +1158,12 @@ def _graveyard_card_matches_selector(card, selector: str) -> bool:
     s = selector.strip().lower()
     if s in {"", "card"}:
         return True
+    if match := re.fullmatch(r'(basic|nonbasic) lands?', s):
+        if "Land" not in (getattr(card, "types", []) or []):
+            return False
+        front = re.split(r'\s[\u2014-]\s', (getattr(card, "type_line", "") or "").split("//", 1)[0], maxsplit=1)[0]
+        basic = "Basic" in front.split()
+        return basic if match[1] == "basic" else not basic
     type_map = {kind.lower(): kind for kind in CARD_TYPES}
     if s in type_map:
         return type_map[s] in (getattr(card, "types", []) or [])
@@ -1110,10 +1199,25 @@ def _battlefield_card_matches_selector(card, selector: str, *, state=None) -> bo
 @scoped_query
 def _continuous_sources(state):
     """Reuse ordered source activity only inside immutable rules queries."""
+    from copy import copy
+    from rules_engine.loyalty_instructions import companion_text
+    def source_view(source):
+        if 'Planeswalker' not in source.types and source.zone != Zone.COMMAND:
+            return source
+        view = copy(source)
+        if 'Planeswalker' in source.types:
+            view.oracle_text = companion_text(source)
+        if source.zone == Zone.COMMAND:
+            # Active emblem source view only; no battlefield object or target is created.
+            view.zone = Zone.BATTLEFIELD
+        return view
     losses = _printed_ability_loss_sources(state)
-    return tuple((cid, source, not printed_abilities_suppressed(state, cid, losses=losses))
+    ordinary = tuple((cid, source_view(source), not printed_abilities_suppressed(state, cid, losses=losses))
                  for cid in _all_battlefield_ids(state)
                  if (source := state.cards.get(cid)))
+    emblems = tuple((cid, source_view(state.cards[cid]), True) for cid in state.emblems
+                    if cid in state.cards and state.cards[cid].zone == Zone.COMMAND)
+    return tuple(sorted((*ordinary, *emblems), key=lambda row: effect_timestamp(row[1])))
 
 
 @scoped_query
@@ -1273,6 +1377,11 @@ def _source_continuous_layer_entries(state, source_card, target_card_id: str) ->
     if not _is_battlefield(state.cards[target_card_id]):
         return entries
     target = state.cards[target_card_id]
+    from rules_engine.attached_characteristics import effects_on
+    for effect in effects_on(state, target_card_id):
+        if effect.source_ref[0] == source_card.id:
+            entries.extend([{'layer': 'type-subtype-replace'}, {'layer': 'color-set'},
+                            {'layer': 'keyword-remove:all-abilities'}, {'layer': 'pt-set'}])
     conditional_p, conditional_t, conditional_keywords, _ = _conditional_static_effects(state, source_card, target)
     if conditional_p or conditional_t:
         entries.append({'layer': f'pt-mod:{conditional_p}/{conditional_t}', 'conditional': True})

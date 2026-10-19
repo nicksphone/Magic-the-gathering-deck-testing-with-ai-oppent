@@ -1,0 +1,56 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "9ee9282e7971d6614bc05faffb520070475055dd44619f29af0fb6dad0cf79c1",
+  "selection": "jq -c name predicates; full official objects unchanged, no Oracle edits",
+  "cards": [
+    {
+      "name": "Darksteel Colossus",
+      "id": "70197723-c61b-4600-b61d-41380c8f3067",
+      "oracle_id": "1b09d0cf-403c-4a15-aeee-602a1bdaf0c1",
+      "uri": "https://api.scryfall.com/cards/70197723-c61b-4600-b61d-41380c8f3067"
+    },
+    {
+      "name": "Progenitus",
+      "id": "e77fbc87-d78e-4602-baa0-da9b0d464dfb",
+      "oracle_id": "2d7e00b6-12f0-4b03-82a6-50e3d1b5395e",
+      "uri": "https://api.scryfall.com/cards/e77fbc87-d78e-4602-baa0-da9b0d464dfb"
+    },
+    {
+      "name": "Blood Artist",
+      "id": "b5275d76-2947-4219-be21-614c7421614a",
+      "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+      "uri": "https://api.scryfall.com/cards/b5275d76-2947-4219-be21-614c7421614a"
+    },
+    {
+      "name": "Millstone",
+      "id": "c2051fd0-99cf-4e11-a625-8294e6767e5b",
+      "oracle_id": "3212e47a-5492-4c50-9d4a-6ea562f1a6e1",
+      "uri": "https://api.scryfall.com/cards/c2051fd0-99cf-4e11-a625-8294e6767e5b"
+    },
+    {
+      "name": "Village Rites",
+      "id": "42ed35e9-51cd-468a-86a9-9412553cf50d",
+      "oracle_id": "365548fb-5acc-4a8a-b20b-26d28b7d029f",
+      "uri": "https://api.scryfall.com/cards/42ed35e9-51cd-468a-86a9-9412553cf50d"
+    },
+    {
+      "name": "Sickening Dreams",
+      "id": "9396ac77-9f53-46bd-b126-02441a0f5594",
+      "oracle_id": "728d2e30-2f36-4054-81db-29b01e376a82",
+      "uri": "https://api.scryfall.com/cards/9396ac77-9f53-46bd-b126-02441a0f5594"
+    },
+    {
+      "name": "Kozilek, Butcher of Truth",
+      "id": "d27cf7b7-7982-46bd-a559-7789c0e74bae",
+      "oracle_id": "7b8528b0-71eb-4c9e-bed9-aa2d2e84038f",
+      "uri": "https://api.scryfall.com/cards/d27cf7b7-7982-46bd-a559-7789c0e74bae"
+    },
+    {
+      "name": "Doomed Traveler",
+      "id": "8a03d414-bff9-4aba-8b0a-0ed57982251e",
+      "oracle_id": "a30907c0-fbde-4fd3-a8c7-f304305fcea7",
+      "uri": "https://api.scryfall.com/cards/8a03d414-bff9-4aba-8b0a-0ed57982251e"
+    }
+  ]
+}

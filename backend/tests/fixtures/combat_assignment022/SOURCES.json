@@ -1,0 +1,278 @@
+{
+  "Benalish Hero": {
+    "file": "combat_ability_provenance.json",
+    "file_sha256": "1921f7439fd82e2ec1a589db8028581933f2a9af4dcc9a978d41346b9989aa92",
+    "id": "a14ba3be-f7cb-47e5-b6c4-d09cfd3cac34",
+    "line": null,
+    "object_sha256": "35afdf3eca7375fe576d78d448929fb4cd320166b71f9730ab22d036e5319fe7",
+    "oracle_id": "4c81cfb7-8765-4e28-ae33-4287fa9a86cc",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": [
+      17
+    ]
+  },
+  "Boros Swiftblade": {
+    "file": "damage_life_printed_79/boros-swiftblade-scryfall-raw.json",
+    "file_sha256": "d9517edf90068d9ecb3c72e11d44be9709dee38fcc71239d2f1981a41f8c5d49",
+    "id": "6135a9f2-e86d-4a34-857e-adea3c722fea",
+    "line": null,
+    "object_sha256": "a9cfb675b3daa6a4f0b04ecabcdeaeb8b26ec4ec3b7cef21a269c0a73eee0163",
+    "oracle_id": "377e4dad-866b-4e02-8c10-072bf7f000be",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Centaur Courser": {
+    "file": "damage_life_printed_79/centaur-courser-scryfall-raw.json",
+    "file_sha256": "0c81a637f5d88d0f885c11c1439e4bf1fb82749877b037215a52a13ad753a8cb",
+    "id": "e8b67ee8-3189-4426-8b1a-b540267768fd",
+    "line": null,
+    "object_sha256": "67756d56702c63adc2ea7be770d2b1ed2876b3b5994b5c396e9550709d0937a5",
+    "oracle_id": "2f5bf099-2e01-4e1c-9ebf-0ce0ac66939e",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Charging Monstrosaur": {
+    "file": "combat_assignment022/charging-monstrosaur.raw.json",
+    "file_sha256": "9f7fbdd57ce5850f39699c3a099bc1533f3925908475ec320dfd268ed10e8fb2",
+    "finished_utc": "2026-10-17T02:52:10.132773+00:00",
+    "http_status": 200,
+    "id": "d5222448-95d1-4b63-ab76-d5060febcf38",
+    "intake": "intake/charging-monstrosaur/attempt-01.body.json",
+    "line": null,
+    "object_sha256": "fa9c942581a1c70549f67b87933f1702db43722de2bfc6179c25b7465c33fbeb",
+    "oracle_id": "21dd60d5-76c8-469e-8c4e-112e377d2d59",
+    "origin": "actual public Scryfall exact-name HTTP200 intake before offline guard",
+    "started_utc": "2026-10-17T02:52:09.653975+00:00",
+    "steps": [],
+    "url": "https://api.scryfall.com/cards/named?exact=Charging%20Monstrosaur"
+  },
+  "Doomed Traveler": {
+    "file": "direct_graveyard_audit/canonical.jsonl",
+    "file_sha256": "fcd7595207c617d47db56754ec09f4dd4a73f31af999af41a275a21a3c3ff76d",
+    "id": "8a03d414-bff9-4aba-8b0a-0ed57982251e",
+    "line": 11,
+    "object_sha256": "613ffa1ea09053877116cc19ed9cba20eea494f6aec9b65961cf862c92b1c8ee",
+    "oracle_id": "a30907c0-fbde-4fd3-a8c7-f304305fcea7",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Elvish Mystic": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "08b9a296-3b76-4f8f-9d71-7c9af92bb3b4",
+    "line": 33,
+    "object_sha256": "e3b1286fb601a8b7743ecfe4eaca3f90c387ce5ec95eef5a90e313b1ee58a469",
+    "oracle_id": "3f3b2c10-21f8-4e13-be83-4ef3fa36e123",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Forest": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+    "line": 39,
+    "object_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Grim Haruspex": {
+    "file": "ai_decisions_canonical_cdba/grim-haruspex-scryfall-raw.json",
+    "file_sha256": "5efbfd06276f3bdc9f81f43e58342604f4573cf024852b0e872d96854277d47e",
+    "id": "f5c19b87-e114-46d4-9f6c-c02e838a08dd",
+    "line": null,
+    "object_sha256": "0a1de1ed005b45bd9582a19aceba75c9be2d2076c7a854084bc0cc815a19da99",
+    "oracle_id": "72aef1d8-11df-4bc2-af83-907b05df73a8",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Grizzly Bears": {
+    "file": "named_counters.json",
+    "file_sha256": "6ed5d7c85110b76a5489b5a5321622c0453ff5e2f0f1ad224a9c3de6ddbfcf5e",
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "line": null,
+    "object_sha256": "46bd7ab87ad23b60ab4afa6a2c8358aeffaff4b9c4c6c957625672cd07794d75",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": [
+      0
+    ]
+  },
+  "Guile": {
+    "file": "combat_assignment022/guile.raw.json",
+    "file_sha256": "befd05027c62f8a260c1b7611cafe67578f779e4cd04b106835101e9ddefd181",
+    "finished_utc": "2026-10-17T02:52:10.641351+00:00",
+    "http_status": 200,
+    "id": "b9021f91-0b92-44ff-9ccb-bcf1e81232c2",
+    "intake": "intake/guile/attempt-01.body.json",
+    "line": null,
+    "object_sha256": "fa86a6107b635dbffbc6a44fb7f92cd1dce323946860ddc81b9b01888bd8ff8f",
+    "oracle_id": "591bbf84-259d-4885-8b5f-b29c04222d41",
+    "origin": "actual public Scryfall exact-name HTTP200 intake before offline guard",
+    "started_utc": "2026-10-17T02:52:10.133672+00:00",
+    "steps": [],
+    "url": "https://api.scryfall.com/cards/named?exact=Guile"
+  },
+  "Hill Giant": {
+    "file": "combat_assignment022/hill-giant.raw.json",
+    "file_sha256": "869aef4e953041c120e763204e507901780fa2f5f30ac6560dd1f74351788861",
+    "finished_utc": "2026-10-17T02:52:11.049494+00:00",
+    "http_status": 200,
+    "id": "14c2be6a-9ca6-4d3a-8dd0-db4ea40799f8",
+    "intake": "intake/hill-giant/attempt-01.body.json",
+    "line": null,
+    "object_sha256": "71607420df1a161d3ca110fabc0a1e867448b3b8da4fd8d2c43361c9dc70e362",
+    "oracle_id": "342199e0-15b6-4824-83da-25caef2592b3",
+    "origin": "actual public Scryfall exact-name HTTP200 intake before offline guard",
+    "started_utc": "2026-10-17T02:52:10.644633+00:00",
+    "steps": [],
+    "url": "https://api.scryfall.com/cards/named?exact=Hill%20Giant"
+  },
+  "Impulse": {
+    "file": "activated_top_selection/impulse.json",
+    "file_sha256": "31409a5ca3fdbee3338d4e9684b25d15ac7c695226eac66ca24f1d4285f6463c",
+    "id": "3ec50625-5e14-4fd0-9a96-86f195342695",
+    "line": null,
+    "object_sha256": "3c8c745c96e4c0c94cdbe659346023df0565150b39cde12aab1e3483e5b2046b",
+    "oracle_id": "f6bd2902-7f8b-419e-bbc7-bcab0c1b7e01",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+    "line": 50,
+    "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Llanowar Elves": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "line": 58,
+    "object_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Ohran Frostfang": {
+    "file": "combat_assignment022/ohran-frostfang.raw.json",
+    "file_sha256": "31113a9dbacbfc14da2cccf6b50ac13ef365c303d17b40203fb7c0a618973a2e",
+    "finished_utc": "2026-10-17T02:52:11.484517+00:00",
+    "http_status": 200,
+    "id": "55fb93e6-d057-4b70-ad12-e98291fd4a2c",
+    "intake": "intake/ohran-frostfang/attempt-01.body.json",
+    "line": null,
+    "object_sha256": "eb39b414aa26a46d84f0ee770fc26c4ab69b0ac8510a27bfcc981cf934663b9a",
+    "oracle_id": "b99ada26-9a61-4175-9fb8-15a106960220",
+    "origin": "actual public Scryfall exact-name HTTP200 intake before offline guard",
+    "started_utc": "2026-10-17T02:52:11.050308+00:00",
+    "steps": [],
+    "url": "https://api.scryfall.com/cards/named?exact=Ohran%20Frostfang"
+  },
+  "Palace Guard": {
+    "file": "combat_ability_provenance.json",
+    "file_sha256": "1921f7439fd82e2ec1a589db8028581933f2a9af4dcc9a978d41346b9989aa92",
+    "id": "51e73c28-bf82-413e-bec2-adbb52fa6993",
+    "line": null,
+    "object_sha256": "fd680bf32b8f33c07bedd9a0301cf96d7426bfc0ab945f268659908486414e2e",
+    "oracle_id": "5c92f375-ae6a-4be5-a499-ab87d6bdc49b",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": [
+      4
+    ]
+  },
+  "Phage the Untouchable": {
+    "file": "combat_assignment022/phage-the-untouchable.raw.json",
+    "file_sha256": "f64e6760ef88d05a93f45306d369d259864965a8980d3f5f3140dd2e3149d3c5",
+    "finished_utc": "2026-10-17T02:52:11.849308+00:00",
+    "http_status": 200,
+    "id": "d497a5a3-65fb-4c12-b3f2-8ce4cf4e0f6f",
+    "intake": "intake/phage-the-untouchable/attempt-01.body.json",
+    "line": null,
+    "object_sha256": "25cbfb04e94e8584c3f9735e1a7eaa347337a6fc7041ef73091db322c289f892",
+    "oracle_id": "09d01406-b529-4c3b-900e-d8c889a4c400",
+    "origin": "actual public Scryfall exact-name HTTP200 intake before offline guard",
+    "started_utc": "2026-10-17T02:52:11.485336+00:00",
+    "steps": [],
+    "url": "https://api.scryfall.com/cards/named?exact=Phage%20the%20Untouchable"
+  },
+  "Serra Angel": {
+    "file": "activated_top_selection/serra-angel.json",
+    "file_sha256": "612bebf85f0af1f1784b418277426b18102d8282965e2ddac0adc89ed10597a2",
+    "id": "b8c5e74c-96e7-4a1f-93b7-14d776fe4b2d",
+    "line": null,
+    "object_sha256": "ac548c9d5fd3843f17bc58c2b33663a19dc62afa714cd6deb251353db8ac76a3",
+    "oracle_id": "4b7ac066-e5c7-43e6-9e7e-2739b24a905d",
+    "origin": "complete official object reused from immutable022758 activated_top_selection; original provenance retained",
+    "steps": []
+  },
+  "Shadowmage Infiltrator": {
+    "file": "combat_assignment022/shadowmage-infiltrator.raw.json",
+    "file_sha256": "c5b4b46bf896f5f278c513d3b41eb47f66c52905608a655832d5a12aaea9c05a",
+    "finished_utc": "2026-10-17T02:52:12.221862+00:00",
+    "http_status": 200,
+    "id": "2ac920d7-013f-40ad-b79f-0bb59062d42a",
+    "intake": "intake/shadowmage-infiltrator/attempt-01.body.json",
+    "line": null,
+    "object_sha256": "06f910237f23284f472719bb3b26fb1ce503820be77e5cbb0027b530878a2b8d",
+    "oracle_id": "3a6f886b-2043-47e9-9c0f-f7913a6fa67d",
+    "origin": "actual public Scryfall exact-name HTTP200 intake before offline guard",
+    "started_utc": "2026-10-17T02:52:11.850197+00:00",
+    "steps": [],
+    "url": "https://api.scryfall.com/cards/named?exact=Shadowmage%20Infiltrator"
+  },
+  "Teferi, Hero of Dominaria": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "5d10b752-d9cb-419d-a5c4-d4ee1acb655e",
+    "line": 100,
+    "object_sha256": "41d7b9bf8bd192b82472ed60b779993ed7f8f759105db9e019a5c3d809535cd7",
+    "oracle_id": "f2f165b6-ef0a-42ad-9352-ba68be8248b0",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Typhoid Rats": {
+    "file": "combat_assignment022/typhoid-rats.raw.json",
+    "file_sha256": "22c6387c09bad79abafed6177cc4e6ee4ab11a49e602b1c668e8d8184f19c773",
+    "finished_utc": "2026-10-17T02:52:12.322954+00:00",
+    "http_status": 200,
+    "id": "d13cb90b-50c3-46ef-83f8-812dfb7ff881",
+    "intake": "intake/typhoid-rats/attempt-01.body.json",
+    "line": null,
+    "object_sha256": "0b2561eca0faabcf53ea2cb98a23224c12c0e181c53d4f5d6c5324f14637889c",
+    "oracle_id": "d6ee6cc1-902d-4f56-afa5-6fa4813bfbbc",
+    "origin": "actual public Scryfall exact-name HTTP200 intake before offline guard",
+    "started_utc": "2026-10-17T02:52:12.222781+00:00",
+    "steps": [],
+    "url": "https://api.scryfall.com/cards/named?exact=Typhoid%20Rats"
+  },
+  "Wall of Omens": {
+    "file": "archangel_pair/wall-of-omens.json",
+    "file_sha256": "81a718efe3e57286eae2babe271819eb1a7913f39312842f19b59aea4db0f667",
+    "id": "3d134bb2-17ec-4e65-976e-f06fa983f3fb",
+    "line": null,
+    "object_sha256": "e87a3472779ae7e2767b23d3b685f135901074e3258e0bf00861306726939ea3",
+    "oracle_id": "5f601f48-d24b-4883-9fde-b3f620e7c9ea",
+    "origin": "complete official object reused byte-pinned from immutable022758 committed source; original intake provenance retained there",
+    "steps": []
+  },
+  "Wall of Runes": {
+    "file": "combat_assignment022/wall-of-runes.raw.json",
+    "file_sha256": "346b400ab2e6249c9f80010529827e12358aedab26893c5eff3f29ba2358eee6",
+    "finished_utc": "2026-10-17T02:52:12.624647+00:00",
+    "http_status": 200,
+    "id": "6ac0f66a-213f-463e-8ebb-35ff5940ea06",
+    "intake": "intake/wall-of-runes/attempt-01.body.json",
+    "line": null,
+    "object_sha256": "3b3b26ac6881b55032eee54bb21d4b32fe7096cd40031af18cadccb8d27afb55",
+    "oracle_id": "35dfe1c7-48ab-436f-9a6e-44835ea01cf9",
+    "origin": "actual public Scryfall exact-name HTTP200 intake before offline guard",
+    "started_utc": "2026-10-17T02:52:12.522897+00:00",
+    "steps": [],
+    "url": "https://api.scryfall.com/cards/named?exact=Wall%20of%20Runes"
+  }
+}

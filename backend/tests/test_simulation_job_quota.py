@@ -1,16 +1,21 @@
-"""Job admission quota on isolated SQLite only; no simulation workers execute."""
+"""Owned job admission quota; parked workers cancel without simulating games."""
 
+import json
 import threading
 
 import pytest
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-from sqlmodel import Session, SQLModel, create_engine, select
+from sqlmodel import Session, create_engine, select
 
 import main
 from analytics.schemas import BatchSimulationRequest
 from persistence.models import SimulationJobRecord
 from persistence.repository import Repository
+from persistence import capacity, db
+from tests.test_simulation_admission import (
+    DormantThread as AdmissionDormantThread, _isolated_simulation_state, _cancel_unfinished,
+)
 
 
 REAL_THREAD = threading.Thread
@@ -26,10 +31,7 @@ def request():
 
 
 @pytest.fixture
-def isolated(monkeypatch, tmp_path):
-    engine = create_engine(f"sqlite:///{tmp_path / 'quota.db'}", connect_args={"check_same_thread": False})
-    SQLModel.metadata.create_all(engine)
-    monkeypatch.setattr(main, "engine", engine)
+def isolated(monkeypatch, tmp_path, request):
     monkeypatch.setattr(main, "SIM_JOBS", {})
     monkeypatch.setattr(main, "SIM_JOB_CANCEL_EVENTS", {})
     monkeypatch.setattr(main, "SIM_START_LOCK", threading.Lock())
@@ -38,25 +40,77 @@ def isolated(monkeypatch, tmp_path):
     monkeypatch.setattr(main, "_validated_deck_cards", lambda _repo, cards: cards)
     starts = []
 
-    class DormantThread:
-        def __init__(self, **_kwargs):
-            pass
-
+    class DormantThread(AdmissionDormantThread):
         def start(self):
+            super().start()
             starts.append(True)
 
+        def join(self, timeout=None):
+            if not self.started:
+                return
+            jobs = [job for job, (thread, _) in main.SIM_JOB_WORKERS.items() if thread is self]
+            assert len(jobs) == 1
+            with Session(main.engine) as session:
+                row = Repository(session).get_simulation_job(jobs[0])
+                terminal = row.status in capacity.TERMINAL
+            if terminal:
+                # This test already persisted its exact terminal receipt; do not rewrite it.
+                main.SIM_JOB_CANCEL_EVENTS.pop(jobs[0], None)
+                main.SIM_WORK_SLOT.release()
+                self.started = False
+            else:
+                super().join(timeout)
+
     monkeypatch.setattr(main.threading, "Thread", DormantThread)
-    try:
-        yield engine, starts
-    finally:
-        engine.dispose()
+    legacy = getattr(request.node, 'callspec', None)
+    legacy = legacy is not None and legacy.params.get('status') == 'unknown'
+    with _isolated_simulation_state() as context:
+        engine = create_engine(f"sqlite:///{tmp_path / 'quota.db'}", connect_args={"check_same_thread": False})
+        context.setattr(main, 'engine', engine)
+        context.setattr(db, 'engine', engine)
+        owner = capacity.DatabaseOwner(engine).acquire()
+        try:
+            db.init_db()
+            if request.node.name == 'test_count_uses_scalar_query_without_loading_json':
+                # Deliberate legacy malformed JSON is seeded BEFORE accounting exists.
+                with engine.begin() as connection:
+                    connection.exec_driver_sql(
+                        "INSERT INTO simulationjobrecord (id, status, completed_matches, total_matches, started_at, request_json, result_json) "
+                        "VALUES ('invalid-json', 'unknown', 0, 0, 0, 'not json', 'not json')")
+            if not legacy:
+                db.initialize_resource_capacity(owner, tmp_path / 'before-capacity.db')
+                owner.open_admission()
+            yield engine, starts
+        finally:
+            if owner.ready:
+                main._shutdown_simulation_workers()
+                _cancel_unfinished(engine)
+            owner.drain_producers(timeout=2)
+            owner.close()
 
 
 def seed(repo, job_id, status="completed"):
+    if status == 'unknown':
+        owner = capacity._OWNERS[repo.session.get_bind()]
+        assert not owner.ready and not owner.admissions_open
+        # Historical unsupported statuses are fixture data, never accepted by the writer.
+        repo.session.add(SimulationJobRecord(
+            id=job_id, status=status, started_at=1.0,
+            request_json=json.dumps(request().model_dump(mode='json')),
+            result_json=json.dumps({'matches': 1})))
+        repo.session.commit()
+        count = repo.count_simulation_jobs()
+        repo.session.rollback()
+        assert count <= 2
+        if count == 2:
+            db.initialize_resource_capacity(owner, owner.path.with_name('before-capacity.db'))
+            owner.open_admission()
+        return
     repo.save_simulation_job({
         "job_id": job_id, "status": status, "started_at": 1.0,
         "finished_at": 2.0 if status in {"completed", "failed", "canceled"} else None,
-        "request": request().model_dump(mode="json"), "result": {"matches": 1},
+        "request": request().model_dump(mode="json"),
+        "result": {"matches": 1} if status in {"completed", "failed", "canceled"} else None,
     })
 
 
@@ -148,11 +202,6 @@ def test_all_statuses_count_and_over_limit_preserves_existing_rows(isolated, mon
 
 def test_count_uses_scalar_query_without_loading_json(isolated):
     engine, _ = isolated
-    with engine.begin() as conn:
-        conn.exec_driver_sql(
-            "INSERT INTO simulationjobrecord (id, status, completed_matches, total_matches, started_at, request_json, result_json) "
-            "VALUES ('invalid-json', 'unknown', 0, 0, 0, 'not json', 'not json')"
-        )
     with Session(engine) as session:
         assert Repository(session).count_simulation_jobs() == 1
         assert not session.identity_map

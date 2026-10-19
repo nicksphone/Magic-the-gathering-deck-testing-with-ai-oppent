@@ -7,14 +7,28 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "npm run test:unit && node --experimental-strip-types tests/table-model.mjs",
+    "test": "npm run test:unit && node --experimental-strip-types tests/table-model.mjs && npm run test:unit:mana && npm run test:unit:mechanics && npm run test:unit:suspend && npm run test:unit:metadata && npm run test:unit:private-discard-witness && npm run test:unit:human-bo3-readiness && npm run test:unit:preflight-cleanup && npm run test:unit:preflight-packaging && npm run test:unit:cathar-origin && npm run test:unit:v2-cost-handoff && node tests/browser-v2-drop-response-contract.mjs && npm run test:unit:native-browser && npm run test:unit:firefox && npm run test:unit:development-frontend",
+    "test:unit:development-frontend": "NODE_ENV=development node --test tests/development-frontend-contract.test.mjs",
+    "test:unit:native-browser": "node --test tests/browser-selection.test.mjs tests/browser-sandbox-flags.test.mjs tests/browser-vendor-preflight.test.mjs tests/native-browser-service.test.mjs tests/browser-driver-passive-cdp.mjs tests/browser-response-metadata.test.mjs tests/browser-start-recovery-diagnostics.test.mjs tests/browser-preflight-lifecycle-metadata.test.mjs tests/browser-start-recovery-post-response-contract.test.mjs tests/browser-v2-held-response-contract.test.mjs tests/browser-navigation-metadata.test.mjs tests/browser-cors-transport-diagnostic.test.mjs tests/browser-request-signal-diagnostics.test.mjs tests/entry-copy-controls.test.mjs tests/browser-start-signal-enrollment.test.mjs tests/browser-post-response-lifecycle.test.mjs tests/browser-fetch-causal-order.test.mjs",
+    "test:unit:firefox": "node --test tests/firefox-driver-contract.test.mjs tests/firefox-transport.test.mjs tests/firefox-fetch-collector.test.mjs tests/firefox-runtime-observer.test.mjs",
+    "test:unit:human-bo3-readiness": "node tests/human-bo3-between-games.mjs",
+    "test:unit:private-discard-witness": "node tests/private-discard-browser-witness.mjs",
     "test:browser": "node tests/browser-human-actions.mjs",
     "test:unit:suspend": "node --experimental-strip-types tests/suspend-human-actions.mjs",
+    "test:unit:metadata": "node --experimental-strip-types tests/deck-local-metadata-contract.mjs",
+    "test:unit:mana": "node --experimental-strip-types tests/manual-mana-base-options.mjs && node --experimental-strip-types tests/manual-mana-consumer.mjs && node --experimental-strip-types tests/manual-mana-control-reuse.mjs && node --experimental-strip-types tests/manual-mana-output.mjs && node --experimental-strip-types tests/manual-mana-shortcuts.mjs",
+    "test:unit:mechanics": "node --experimental-strip-types tests/mechanic-control-warning.mjs && node --experimental-strip-types tests/cycling-x-controls.mjs && node --experimental-strip-types tests/optional-reveal-contract.mjs && node --experimental-strip-types tests/note-creature-type-controls.mjs && node --experimental-strip-types tests/hand-top-order-controls.mjs && node --experimental-strip-types tests/optional-hand-exile-controls.mjs && node --experimental-strip-types tests/entry-mode-controls.mjs && node --experimental-strip-types tests/spree-mode-controls.mjs",
     "test:browser:suspend": "node tests/browser-suspend.mjs",
-    "test:unit": "node --experimental-strip-types tests/api-errors.mjs && node --experimental-strip-types tests/api-routing.mjs && node --experimental-strip-types tests/api-request-deadlines.mjs && node --experimental-strip-types tests/match-contract.mjs && node --experimental-strip-types tests/simulation-contract.mjs && node --experimental-strip-types tests/mutation-gate.mjs && node --experimental-strip-types tests/combat-selection.mjs && node tests/browser-driver-navigation.mjs && node --experimental-strip-types tests/interactive-preflight.mjs",
+    "test:unit": "node --experimental-strip-types tests/api-errors.mjs && node --experimental-strip-types tests/api-routing.mjs && node --experimental-strip-types tests/api-request-deadlines.mjs && node --experimental-strip-types tests/match-contract.mjs && node --experimental-strip-types tests/simulation-contract.mjs && node --experimental-strip-types tests/mutation-gate.mjs && node --experimental-strip-types tests/combat-selection.mjs && node tests/browser-driver-navigation.mjs && node tests/browser-combat-commit.mjs && node tests/browser-qualified-search-contract.mjs && node tests/browser-fixture-handoff.mjs && node tests/copy-choice-browser-contract.mjs && node --experimental-strip-types tests/interactive-preflight.mjs && node tests/human-seat-controls.mjs && node tests/human-response-window.mjs && node tests/human-response-timer.mjs && node tests/trigger-order-picker.mjs && node --experimental-strip-types tests/keeper-energy-controls.mjs && node tests/mechanic-match-reset.mjs && node --experimental-strip-types tests/loyalty-public-controls.mjs && node --experimental-strip-types tests/bounded-target-controls.mjs && node tests/native-empty-human-window-regression.mjs && node --experimental-strip-types tests/loyalty-activation-controls.mjs && node tests/human-sideboard-fixture-contract.mjs && node --experimental-strip-types tests/ordered-target-controls.mjs && node --experimental-strip-types tests/distinct-target-contract.mjs",
     "test:browser:recovery": "node tests/browser-recovery.mjs",
     "lint": "eslint src",
-    "test:browser:preflight": "node tests/browser-interactive-preflight.mjs"
+    "test:browser:preflight": "node tests/browser-interactive-preflight.mjs",
+    "test:browser:hand-order": "node tests/browser-hand-top-order.mjs",
+    "test:browser:entry-mode": "node tests/browser-entry-mode.mjs",
+    "test:unit:preflight-cleanup": "node tests/interactive-preflight-cleanup.mjs",
+    "test:unit:preflight-packaging": "node tests/interactive-preflight-packaging.mjs",
+    "test:unit:cathar-origin": "node tests/browser-cathar-origin.mjs",
+    "test:unit:v2-cost-handoff": "node tests/browser-v2-cost-handoff.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -29,6 +43,6 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "typescript": "^5.6.2",
     "typescript-eslint": "^8.70.1",
-    "vite": "~6.4.3"
+    "vite": "6.4.4"
   }
 }

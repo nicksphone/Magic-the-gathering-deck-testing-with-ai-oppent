@@ -8,7 +8,7 @@ from urllib.parse import urlparse
 import httpx
 
 from card_data.http_utils import get_with_backoff
-from card_data.placeholders import ensure_generic_token_image
+from card_data.placeholders import ensure_generic_token_image, local_image_available
 from card_data.sync import CACHE_DIR, CACHE_ROUTE_PREFIX
 
 SCRYFALL_SEARCH_URL = "https://api.scryfall.com/cards/search"
@@ -22,8 +22,9 @@ def resolve_token_image_uri(name: str, power: int | None, toughness: int | None)
         return ensure_generic_token_image()
     key = ((name or "token").strip().lower(), int(power), int(toughness))
     cached = _TOKEN_IMAGE_CACHE.get(key)
-    if cached:
+    if cached and local_image_available(cached, cache_dir=CACHE_DIR):
         return cached
+    _TOKEN_IMAGE_CACHE.pop(key, None)
 
     try:
         index = json.loads(_INDEX_FILE.read_text(encoding="utf-8"))

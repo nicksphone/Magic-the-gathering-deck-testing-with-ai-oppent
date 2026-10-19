@@ -1,0 +1,73 @@
+{
+  "bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "intake": "read-only reuse of existing pinned public full RAW, no HTTP",
+  "unique_English_physical_card_match": true,
+  "recovered": [
+    {
+      "name": "Altar of the Brood",
+      "source_line": 29473,
+      "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "altar-of-the-brood.json",
+      "sha256": "843b9c56b08371034ace68a89aac0f1553df4f3e9f3e49b9ba6c2c0f080d4bcc",
+      "raw_id": "8d59d264-87ee-4305-bffb-110549331a82",
+      "oracle_id": "c3aafcdd-c890-4971-b8a9-5bfcad794c0b"
+    },
+    {
+      "name": "Desecrated Tomb",
+      "source_line": 1236,
+      "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "desecrated-tomb.json",
+      "sha256": "80c323e3de20ee1ea4748a591927f21898a0e579a38477d6193717df8c452b1e",
+      "raw_id": "458ce930-c100-4ef5-b75a-a18051282f8c",
+      "oracle_id": "07ff619a-21ee-44b6-b666-ceab4a78096a"
+    },
+    {
+      "name": "Eidolon of Blossoms",
+      "source_line": 18016,
+      "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "eidolon-of-blossoms.json",
+      "sha256": "515e31839799a1e1893d4df5c821b7f2855e549bbe0f4c1eab9aaea7d2396b5f",
+      "raw_id": "f882aa63-d43c-4359-9de6-77231500a08e",
+      "oracle_id": "77ccbea1-70af-4194-adad-39a904221c75"
+    },
+    {
+      "name": "Quintorius, Field Historian",
+      "source_line": 6098,
+      "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "quintorius-field-historian.json",
+      "sha256": "db69aa34285660be8cfc756667ab9b73c9a5324c2ca8fcc4594ddadf0afd7f48",
+      "raw_id": "8e3c7f00-e997-4b07-98af-45b9ea35d2d7",
+      "oracle_id": "28b64167-b7ea-4b4f-8434-061298050366"
+    },
+    {
+      "name": "Slippery Bogle",
+      "source_line": 37217,
+      "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "slippery-bogle.json",
+      "sha256": "fb1308fe9b6ac1dc5ee5ff1978ebae305b04e9c332619c663247aa5336400a38",
+      "raw_id": "c4e4bbea-7e3f-4de0-bb01-dfd67f21c254",
+      "oracle_id": "f64878c1-1fba-44f7-a24f-d24bef2e03ae"
+    },
+    {
+      "name": "The Weatherseed Treaty",
+      "source_line": 18900,
+      "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "the-weatherseed-treaty.json",
+      "sha256": "2083b3b3d49263d2569560270274712c9a107645b3692766a47e85b2b3004446",
+      "raw_id": "e2a54461-1f75-4304-b6d7-635171419456",
+      "oracle_id": "7d723a6f-854f-43df-9401-a4eb0c0f639f"
+    },
+    {
+      "name": "Triskelion",
+      "source_line": 17593,
+      "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "triskelion.json",
+      "sha256": "ac427d644b188adb49a5c230a4218fffe6a19f9cc361693b0c43429ade86e666",
+      "raw_id": "63349fa3-4462-413c-bd96-bbc1049165a0",
+      "oracle_id": "74f67dcf-5afb-45aa-8d4b-3cdb23f6f2a1"
+    }
+  ],
+  "all_source_paths_pinned": "SOURCES.json",
+  "before_any_project_import_test_or_production_edit": true
+}

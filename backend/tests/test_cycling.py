@@ -2,9 +2,12 @@ from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.cycling import cycling_variant
 from ai.agent import AIAgent
+from tests.cycling_timing_canonical_022758 import cycling_state
 
 
-def _state_with_cycler() -> tuple[object, str]:
+def _state_with_cycler(*, protocol=False) -> tuple[object, str]:
+    if not protocol:
+        return cycling_state()
     state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}])
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -153,7 +156,7 @@ def test_optional_cycling_trigger_can_be_declined() -> None:
 
 
 def test_variable_cycling_exposes_only_mana_payable_x_values() -> None:
-    state, cid = _state_with_cycler()
+    state, cid = _state_with_cycler(protocol=True)
     state.cards[cid].oracle_text = "Cycling {X}{1}"
     p1 = state.players[1]
     for _ in range(2):
@@ -173,7 +176,7 @@ def test_alternate_cycling_variant_is_detected() -> None:
 
 
 def test_x_basic_landcycling_searches_for_a_basic_land() -> None:
-    state, cid = _state_with_cycler()
+    state, cid = _state_with_cycler(protocol=True)
     state.cards[cid].name = "Ash Barrens"
     state.cards[cid].oracle_text = "Basic landcycling {X}"
     p1 = state.players[1]
@@ -196,7 +199,7 @@ def test_x_basic_landcycling_searches_for_a_basic_land() -> None:
 
 
 def test_variable_cycle_x_value_reaches_dynamic_cycle_trigger() -> None:
-    state, cid = _state_with_cycler()
+    state, cid = _state_with_cycler(protocol=True)
     state.cards[cid].name = "Variable Cycler"
     state.cards[cid].oracle_text = "Cycling {X}{1}"
     p1 = state.players[1]

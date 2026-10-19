@@ -1,0 +1,45 @@
+{
+  "retrieved_utc": "2026-10-06T21:26:00.450256+00:00",
+  "cards": [
+    {
+      "file": "breeding-pool.json",
+      "sha256": "e825eff4daebb7a9c09da81573b93a78285fb37eda2b199255f8dacec688ef70",
+      "name": "Breeding Pool",
+      "oracle_id": "20283c4a-f1f0-42f0-bc08-6da87474426b",
+      "scryfall_uri": "https://scryfall.com/card/trk/279/breeding-pool?utm_source=api",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Breeding%20Pool"
+    },
+    {
+      "file": "fertilid.json",
+      "sha256": "f3eb5a506c9fc73bce5669efdf78a67e510eb1ba31f875c03245830b8e8840bc",
+      "name": "Fertilid",
+      "oracle_id": "21f1c6d7-8289-44b2-b88f-c09e202be200",
+      "scryfall_uri": "https://scryfall.com/card/moc/296/fertilid?utm_source=api",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Fertilid"
+    },
+    {
+      "file": "fertilids-favor.json",
+      "sha256": "90c891c1464d13f0e71c7a8711709563c68bd344daecb8296894dae0f37d040f",
+      "name": "Fertilid's Favor",
+      "oracle_id": "e2da8c3e-6ffc-41dd-a68a-62e64f7e9c60",
+      "scryfall_uri": "https://scryfall.com/card/mom/186/fertilids-favor?utm_source=api",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Fertilid%27s%20Favor"
+    },
+    {
+      "file": "forest.json",
+      "sha256": "9fd13936ddd26f08cc2aea5fb57b427ec3297e56040ed5d9fc74f566baf837cc",
+      "name": "Forest",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "scryfall_uri": "https://scryfall.com/card/trk/325/forest?utm_source=api",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Forest"
+    },
+    {
+      "file": "rampant-growth.json",
+      "sha256": "f133fc697156f65bbb8063cd4ad8a3da02cd172fb71945192b825ec7187ac17f",
+      "name": "Rampant Growth",
+      "oracle_id": "8539f295-5d58-4436-a73a-b9277c4c7795",
+      "scryfall_uri": "https://scryfall.com/card/tdc/265/rampant-growth?utm_source=api",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Rampant%20Growth"
+    }
+  ]
+}

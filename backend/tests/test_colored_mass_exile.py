@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import extract_loyalty_abilities
@@ -16,7 +16,7 @@ def test_x_loyalty_exiles_colored_permanents_by_mana_value_on_both_sides() -> No
     state.active_player = state.priority_player = 1
 
     def permanent(name: str, owner: int, *, token: bool = False) -> CardInstance:
-        data = fallback_card_payload(name) if not token else None
+        data = seed_card_payload(name) if not token else None
         card = CardInstance(
             id=f"{name}-{owner}", name=name, owner=owner, controller=owner,
             zone=Zone.BATTLEFIELD,

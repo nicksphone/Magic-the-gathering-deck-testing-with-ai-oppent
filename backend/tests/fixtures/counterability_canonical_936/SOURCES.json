@@ -1,0 +1,66 @@
+{
+  "Allosaurus Shepherd": {
+    "file": "counterability_canonical_936/allosaurus-shepherd.json",
+    "file_sha256": "bcc9bb1a0fd6c79941ec37c6674faaeecc7be35582fa08e930a4ccc8f260cbc8",
+    "format": "object",
+    "id": "7afa0ee5-a0b8-472e-9991-09402ddb5de3",
+    "object_sha256": "62e6ccf460acb95220127a31cf87f6b8606a5450ddbffe03f6766e8cafaa0aef",
+    "oracle_id": "98295bdc-db58-4e1f-ad4c-63092aea207e"
+  },
+  "Counterspell": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "format": "jsonl",
+    "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "object_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5"
+  },
+  "Cultivate": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "format": "jsonl",
+    "id": "e60deb92-f7dd-4f4e-9036-e47dd586f985",
+    "object_sha256": "ffe5075cee6f799f918d58f977344d40a01710a64e75963abd713fc46a1f8b65",
+    "oracle_id": "8b755881-a72d-4e21-a369-d2924eb4585a"
+  },
+  "Destiny Spinner": {
+    "file": "counterability_canonical_936/destiny-spinner.json",
+    "file_sha256": "680f5524499a25d8a827f8b39f98bbbfa897f280f7d931433b079cc8dea8a152",
+    "format": "object",
+    "id": "2cc3804b-3304-4add-81b4-0482bfed8074",
+    "object_sha256": "d6ef0c7d186645c6d1157038715a94d93e71cf890765f5e2939c238c7b6abbbc",
+    "oracle_id": "7dd189f8-a23f-4b43-b0ef-fb174a9664ba"
+  },
+  "Island": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "format": "jsonl",
+    "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+    "object_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b",
+    "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373"
+  },
+  "Lightning Bolt": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "format": "jsonl",
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "object_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070"
+  },
+  "Llanowar Elves": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "format": "jsonl",
+    "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "object_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3"
+  },
+  "Stifle": {
+    "file": "counter_native_frames/canonical.json",
+    "file_sha256": "18ac1342277048fdbb79aa3b69c9727f9f9437e083d7c72defcbe0b4553feb0d",
+    "format": "mapping",
+    "id": "616d1b20-61c1-4d39-a9b5-ad9fd61699e4",
+    "object_sha256": "eccb451a0000ccd2d8209bdbb6e71bf456fb5925d0466f154cf0f19a3047bc11",
+    "oracle_id": "b3b00911-ece7-4484-bc36-f211ce72b6cc"
+  }
+}

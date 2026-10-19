@@ -6,18 +6,36 @@ def linked_discard_gaps(text):
     if 'discard' not in text.lower():
         return []
     pattern = r'\bdiscard (?:any number of cards|up to \w+ cards?)\b|\bdiscard (?:all the cards in your hand|your hand), then\b'
-    for line in text.splitlines():
-        surface = re.sub(r'^\s*(?:\u2022\s*|[+\-\u2212]\d+:\s*)', '', line).strip()
+    surfaces = [re.sub(r'^\s*(?:\u2022\s*|[+\-\u2212]\d+:\s*)', '', line).strip()
+                for line in text.splitlines()]
+    entry_pattern = (r'(?:when|whenever) this (?:creature|artifact|enchantment|permanent|'
+                     r'planeswalker|aura|equipment|vehicle|land|battle|token)'
+                     r' enters(?: the battlefield)?, (.+)')
+    entries = [re.fullmatch(entry_pattern, surface, re.I) for surface in surfaces]
+    entry_count = sum(entry is not None for entry in entries)
+    for surface, entry in zip(surfaces, entries):
         if re.search(r'\beach player discards? .+?hand, then draws?\b', surface, re.I):
             if simultaneous_discard_draw_effect(surface) is None:
                 return ['linked discard sequence fidelity']
-        if re.search(pattern, surface, re.I) and linked_discard_effect(surface) is None:
-            return ['linked discard sequence fidelity']
+        if re.search(pattern, surface, re.I):
+            # Unwrap only one complete self-entry clause, never a substring reward.
+            instruction = entry[1] if entry is not None and entry_count == 1 else surface
+            if linked_discard_effect(instruction) is None:
+                return ['linked discard sequence fidelity']
     return []
 
 
 def linked_discard_effect(text):
     text = text.strip().lower()
+    # Coverage checks full chapter lines; resolution compiles the extracted body.
+    match = re.fullmatch(
+        r'(?:[ivx]+(?:\s*,\s*[ivx]+)*\s*[\u2014-]\s*)?you may discard up to '
+        r'(one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.\s*'
+        r'if you do, draw that many cards\.?', text)
+    if match:
+        from rules_engine.oracle_effects import _parse_count_token
+        return {'up_to': True, 'amount': _parse_count_token(match[1]),
+                'followup_effect': {'effect_key': 'draw_cards', 'payload': {}, 'count_field': 'amount'}}
     if not text.startswith('discard '):
         return None
     match = re.fullmatch(r'discard up to (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?, then draw that many cards\.?', text)

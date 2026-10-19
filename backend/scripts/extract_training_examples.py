@@ -9,6 +9,8 @@ import json
 from collections import Counter
 from pathlib import Path
 
+from ai.log_priors import _opponent_archetype
+
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Extract labeled AI training examples from verbose H2H logs")
@@ -29,7 +31,7 @@ def _parse_trace_line(line: str) -> dict | None:
 def _feature_row(game: dict, trace: dict) -> dict:
     action = trace.get("action") or {}
     life = trace.get("life") or {}
-    return {
+    row = {
         "game": game.get("game"),
         "winner": game.get("winner"),
         "pid": trace.get("pid"),
@@ -63,6 +65,13 @@ def _feature_row(game: dict, trace: dict) -> dict:
         "reasoning": trace.get("reasoning", ""),
         "reason_code": trace.get("reason_code", "unknown"),
     }
+    context = _opponent_archetype(trace)
+    if context is not None:
+        row["opponent_archetype"] = context
+    index = trace.get("action_index")
+    if type(index) is int and index >= 0:
+        row["action_index"] = index
+    return row
 
 
 def _board_snapshot(trace: dict) -> dict:

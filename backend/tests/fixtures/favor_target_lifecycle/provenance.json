@@ -1,0 +1,46 @@
+{
+  "retrieved_utc": "2026-10-06T22:10:33.902717+00:00",
+  "full_raw": true,
+  "cards": [
+    {
+      "file": "grizzly-bears.json",
+      "name": "Grizzly Bears",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "sha256": "f50920c8a99928b6119b81aba8a7f7a3a74068036091a2bd929323125f7481b1",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Grizzly%20Bears",
+      "scryfall_uri": "https://scryfall.com/card/10e/268/grizzly-bears?utm_source=api"
+    },
+    {
+      "file": "lightning-bolt.json",
+      "name": "Lightning Bolt",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "sha256": "6e81b27b75f947367be2b413f9383c172ff594769a1abf135cbfef7ff44e4145",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Lightning%20Bolt",
+      "scryfall_uri": "https://scryfall.com/card/msc/806/lightning-bolt?utm_source=api"
+    },
+    {
+      "file": "snakeskin-veil.json",
+      "name": "Snakeskin Veil",
+      "oracle_id": "1e6a24be-8281-41c1-a5ba-b68f0ef1d7b8",
+      "sha256": "9509f1abe9fef6707c0ff89777fcff5cab44270961bc1dd22522339d6b56c8cc",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Snakeskin%20Veil",
+      "scryfall_uri": "https://scryfall.com/card/tdm/159/snakeskin-veil?utm_source=api"
+    },
+    {
+      "file": "unsummon.json",
+      "name": "Unsummon",
+      "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561",
+      "sha256": "9affc85f38bc98cec2218a89bbdbbc0dee444cb3151be63ecad6ee30fd0b66de",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Unsummon",
+      "scryfall_uri": "https://scryfall.com/card/fra/46/unsummon?utm_source=api"
+    },
+    {
+      "file": "cloudshift.json",
+      "name": "Cloudshift",
+      "oracle_id": "6879f5ce-7a1b-4606-bad1-885779b0d456",
+      "sha256": "a6477d60b641d708f9447b8f53637a6701b02531fce76c6b04f9cb0fc6ded47b",
+      "intake_url": "https://api.scryfall.com/cards/named?exact=Cloudshift",
+      "scryfall_uri": "https://scryfall.com/card/tle/152/cloudshift?utm_source=api"
+    }
+  ]
+}

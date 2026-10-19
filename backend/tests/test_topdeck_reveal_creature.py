@@ -1,4 +1,6 @@
 """Canonical creature-reveal abilities choose at resolution, not on activation."""
+from tests.library_canonical_fixtures import canonicalize_basics, raw_card, reprint
+from tests.controlled_basic_game_support import controlled_basic_game
 
 from fastapi.testclient import TestClient
 
@@ -12,34 +14,28 @@ from rules_engine.stack_engine import resolve_top_of_stack
 from main import ACTIVE_MATCHES, MatchController, app
 
 
-RECRUITMENT_TEXT = (
-    "{3}{W}: Look at the top four cards of your library. You may reveal a creature card "
-    "with mana value 3 or less from among them and put it into your hand. "
-    "Put the rest on the bottom of your library in a random order."
-)
-MILITIA_TEXT = (
-    "Vigilance (Attacking doesn't cause this creature to tap.)\n"
-    "When this creature enters, look at the top four cards of your library. You may reveal "
-    "a creature card with power 2 or less from among them and put it into your hand. "
-    "Put the rest on the bottom of your library in a random order."
-)
+RECRUITMENT_TEXT = raw_card('Recruitment Officer')['oracle_text']
+MILITIA_TEXT = raw_card('Militia Bugler')['oracle_text']
 
 
 def setup(oracle_text: str):
     deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=17)
+    state = controlled_basic_game(deck, deck, seed=17)
+    canonicalize_basics(state)
     state.pregame_pending = False
     player = state.players[1]
     source = state.cards[player.hand[0]]
+    reprint(state, source.id, "Recruitment Officer" if oracle_text == RECRUITMENT_TEXT else "Militia Bugler")
     source.name = "Recruitment Officer" if oracle_text == RECRUITMENT_TEXT else "Militia Bugler"
     source.oracle_text = oracle_text
     top = player.library[-4:]
     for cid, name, cost, power, types in zip(top,
         ["Adeline, Resplendent Cathar", "Topiary Stomper", "Sheoldred, the Apocalypse", "Island"],
         ["{1}{W}{W}", "{1}{G}{G}", "{2}{B}{B}", ""],
-        [1, 4, 4, None],
+        [None, 4, 4, None],
         [["Creature"], ["Creature"], ["Creature"], ["Land"]],
     ):
+        reprint(state, cid, name)
         card = state.cards[cid]
         card.name, card.mana_cost, card.power, card.types = name, cost, power, types
     return state, source, top
@@ -107,13 +103,13 @@ def test_human_recruitment_officer_choice_resumes_activated_stack_after_snapshot
     player.battlefield.append(source.id)
     source.zone = Zone.BATTLEFIELD
     source.types = ["Creature"]
-    source.type_line = "Creature - Human Soldier"
+    source.type_line = raw_card("Recruitment Officer")["type_line"]
     source.mana_cost = "{W}"
     for _ in range(4):
         cid = player.library.pop(0)
+        reprint(state, cid, "Plains")
         land = state.cards[cid]
         land.name = "Plains"
-        land.type_line = "Basic Land - Plains"
         land.types = ["Land"]
         land.zone = Zone.BATTLEFIELD
         player.battlefield.append(cid)

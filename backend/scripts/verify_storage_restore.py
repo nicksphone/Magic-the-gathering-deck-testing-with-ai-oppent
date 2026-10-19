@@ -59,6 +59,12 @@ def backup_database(source, destination, *, timeout=5.0):
     _number(timeout, "timeout", positive=True)
     source = local_path(source)
     destination = local_path(destination, existing=False)
+    return _backup_validated_database(source, destination, timeout=timeout)
+
+
+def _backup_validated_database(source, destination, *, timeout=5.0):
+    """Private IO core; offline paths or registered application owner validate first."""
+    _number(timeout, "timeout", positive=True)
     if source == destination:
         raise ValueError("source and destination must differ")
     _vacant(destination)
@@ -148,6 +154,7 @@ def create_fixture(path):
                       "current_game_recorded": False, "match_complete": False,
                       "best_of": state.best_of, "root_seed": 8128, "play_draw_chooser": state.active_player,
                       "sideboarded_players": [], "seen_opponent_types": {"1": [], "2": []},
+                      "auto_sideboard": True,
                       "difficulties": {"1": "master", "2": "master"},
                       "archetypes": {"1": "Midrange", "2": "Midrange"}, "revision": 7,
                       "mutation_receipts": {"fixture-action": "fixture-fingerprint"}}

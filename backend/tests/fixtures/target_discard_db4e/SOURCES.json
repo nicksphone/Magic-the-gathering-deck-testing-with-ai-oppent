@@ -1,0 +1,386 @@
+{
+  "Aegis of the Gods": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 29767,
+    "bulk_line_sha256": "dd87a21eba42df86b0eccb692b011d884f370f8edba141b253b1f236a064a2f3",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "f2b2f381-86a2-42ac-b694-dcde437d574f",
+    "line": null,
+    "object_sha256": "0c397a2508a6942152c9b660a0332ebb773cc47d72fa520603f1385d432db149",
+    "oracle_id": "c5bfc1b9-a55d-4608-a6f7-bb62cb8dc3c6",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Aegis of the Gods"
+    ]
+  },
+  "Appetite for Brains": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 12010,
+    "bulk_line_sha256": "63b9804d29e9ab16a7c24de4672ea7891ee0f6c03d8e00b1412c668659428792",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "58f20b88-7b48-4d3b-b836-c7aef71cd337",
+    "line": null,
+    "object_sha256": "02a0e2e8b44e48ae25f88ca00a5ebb17d5b78e99cf70cdb90bc3d82355573fc4",
+    "oracle_id": "4ffc16e0-1778-4aba-ade3-58146c800f5f",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Appetite for Brains"
+    ]
+  },
+  "Coercion": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 15651,
+    "bulk_line_sha256": "48d848293a5244aad5ff6f73cada43aaf7e99b1366819c8e5fbd2610974d976b",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "8c0459ca-1646-46a0-9fc2-709b321bb41f",
+    "line": null,
+    "object_sha256": "0fd22c37c4e37fc6c5107cd11803b77f6bc165837a7988a7029e087907fe90b0",
+    "oracle_id": "68413337-ddb9-46f8-8c8e-f3d2d672c652",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Coercion"
+    ]
+  },
+  "Counterspell": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+    "line": 23,
+    "object_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e",
+    "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+    "origin": "existing_verified_committed_official_RAW",
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "steps": []
+  },
+  "Despise": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 26675,
+    "bulk_line_sha256": "67a05f46fa1e2188c28a480d0d7e76aac23a7412026115de80f08b319a8f177e",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "64216ce3-945e-42d8-9127-cf11c687da67",
+    "line": null,
+    "object_sha256": "ac5ec6ffabce1f60ab5174586dc4fd1f26c0fffb4a3d669617d2071f59a605ca",
+    "oracle_id": "b13b40f1-1b1f-40e8-989b-ef24dc05007a",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Despise"
+    ]
+  },
+  "Duress": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 7713,
+    "bulk_line_sha256": "93e3af3615fc96a69c3ae88c70c41b686112b2b6a208be9075b24209ab978f06",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "34c3a894-ee75-4db9-a69f-711bb3cc150a",
+    "line": null,
+    "object_sha256": "d876d46ff0f3e17b78814f2942b605f0516dd8608dabc8aadf4f3474122636cd",
+    "oracle_id": "33d405ea-7a9a-4970-b70f-9c05d90dd6f0",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Duress"
+    ]
+  },
+  "Forest": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+    "line": 39,
+    "object_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+    "origin": "existing_verified_committed_official_RAW",
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "steps": []
+  },
+  "Grizzly Bears": {
+    "file": "../vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+    "file_sha256": "150049326ad0c3b914719c54709331b3a51d11a18c02dde60c64246f3ac8239c",
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "line": null,
+    "object_sha256": "51502b289cb9e4a4d728f79c701295f3dc36b52fb84fad902af79af9fe33afa0",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+    "origin": "existing_verified_committed_official_RAW",
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/vraska_full/fixtures/PROVENANCE.json",
+        "file_sha256": "4ca06bb36a8ee650e8c3593f3013636958914b189b0212416b9b01d762143c71",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "steps": []
+  },
+  "Inquisition of Kozilek": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 8573,
+    "bulk_line_sha256": "7e276e418930d4380c95263d994793a6b8f06d9eeedc1d1aa075fb43ffac5ad6",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "17f38740-20fd-4097-90f8-f0c2c2ff7281",
+    "line": null,
+    "object_sha256": "c96f0a2bf443715ab484ea38fdb3028ef95b5be415c7414aa4e05326da2950df",
+    "oracle_id": "395611fa-aec2-4c9e-92c3-70cf95cc00f4",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Inquisition of Kozilek"
+    ]
+  },
+  "Ivory Mask": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 421,
+    "bulk_line_sha256": "8e71f696c7391beaed8e89fb1dbb3bbd3a90528cf81c382aca0e7460f7448ffc",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "b02422f7-728b-481b-9eb1-34d17c696ce6",
+    "line": null,
+    "object_sha256": "2fdb1cf66265aa588cd06515df195c46b5a4b21b028542adf7588eb377248b5f",
+    "oracle_id": "028bc726-0e86-4c53-9648-625153ae4b01",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Ivory Mask"
+    ]
+  },
+  "Jace, the Mind Sculptor": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 19198,
+    "bulk_line_sha256": "38808c1cd0dbafeff766fc04a862f5fcb5b252a6f473d29b195f6e2fb0eeed4e",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "c8817585-0d32-4d56-9142-0d29512e86a9",
+    "line": null,
+    "object_sha256": "3a73bf2f3b208b7e377ba05079dda14e83bbffa62e7ad56ef99ac598c561ffd7",
+    "oracle_id": "7f77a84e-5a4b-4834-aefa-3cecc175ae8e",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Jace, the Mind Sculptor"
+    ]
+  },
+  "Leyline of Sanctity": {
+    "file": "shuffle_observer_fix/canonical.jsonl",
+    "file_sha256": "b2940c590f40c0377c5e6abdf5e2459abd4e1c45fdc75fd300b0e450b4e15e71",
+    "id": "be8b1acf-dd87-42ca-ad19-c27d21066030",
+    "line": 2,
+    "object_sha256": "fd5bb6b6f9f5c8c0471710b95306aab8be57ba233b6210d8f22754ae822961b5",
+    "oracle_id": "492e0e6c-8c27-4376-938b-f8a8b6205810",
+    "origin": "existing_verified_committed_official_RAW",
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/queued_fizzle/provenance.json",
+        "file_sha256": "3390e86bd624798a559f66110d3899491aed4f50889380238d23148e27c1f0c9",
+        "hash_link": [
+          "raw_row_normalized_sha256"
+        ]
+      },
+      {
+        "card_name_present": true,
+        "file": "backend/tests/fixtures/shuffle_observer_fix/provenance.json",
+        "file_sha256": "d555d2a3dc2e94e2d628162103ec9ceb06505de1c6351b2c77a60b03dbb546f0",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "steps": []
+  },
+  "Lightning Bolt": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+    "line": 57,
+    "object_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+    "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+    "origin": "existing_verified_committed_official_RAW",
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "steps": []
+  },
+  "Liliana's Caress": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 24804,
+    "bulk_line_sha256": "f09029b2db8b07c5e2e76ef4a80eb49cffd8de3b983b637246bbff8681b63145",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "0d995382-57a6-40a4-9050-31f57cb8dae3",
+    "line": null,
+    "object_sha256": "b5c7a0cecb30518ba1f27161b6cb843a89a6639b11ca916b56b79173244e7427",
+    "oracle_id": "a4aec0d6-13fa-4709-b1a9-2f483f032744",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Liliana's Caress"
+    ]
+  },
+  "Llanowar Elves": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+    "line": 58,
+    "object_sha256": "20502422d100f66319395df76ac611f2bec8935eb35f01dc41ef9ebc0bf6e569",
+    "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+    "origin": "existing_verified_committed_official_RAW",
+    "provenance": [
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/day_night_apnap_canonical/PROVENANCE.json",
+        "file_sha256": "179370a18fcc8d43838aeb9f3246b0dd16ef183b1397db6dccff08d9881d89fe",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+        "hash_link": [
+          "file_sha256"
+        ]
+      },
+      {
+        "card_name_present": false,
+        "file": "backend/tests/fixtures/knowledge_profiles/RULINGS_PROVENANCE.json",
+        "file_sha256": "a525a0596a61888272c83907dc71ea6c9d6cc6244137afa9048dbc0ec30bc03d",
+        "hash_link": [
+          "file_sha256"
+        ]
+      }
+    ],
+    "steps": []
+  },
+  "Serra Angel": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 11336,
+    "bulk_line_sha256": "8d2e77815724fdf236461dd9c1ae3822076ec4f9bbffcc029fd8dc0b0f32019d",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "b8c5e74c-96e7-4a1f-93b7-14d776fe4b2d",
+    "line": null,
+    "object_sha256": "c4db702f81d92880abb48c0dc1170bb863c8666ce5b5087c7dde8e0c49c61e97",
+    "oracle_id": "4b7ac066-e5c7-43e6-9e7e-2739b24a905d",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Serra Angel"
+    ]
+  },
+  "Shock": {
+    "bulk_file": "oracle-cards-20260927090157.jsonl.gz",
+    "bulk_file_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+    "bulk_line": 25558,
+    "bulk_line_sha256": "a56d51e597b58a93063c6b7fdef69f85f8422166994fb981fa250f7b335c4e4b",
+    "file": "target_discard_db4e/canonical.json",
+    "file_sha256": "0e895792655e684567d1bda50eb23aed743af0b40d49b24fdb679622d0d41361",
+    "id": "b23900fb-efe9-43ab-9f67-4545dd01fb9c",
+    "line": null,
+    "object_sha256": "b86fd670efc807e5afdac1b0b6ef861870a6be97fe9501427c02f8a529b15eaf",
+    "oracle_id": "a9d288b8-cdc1-4e55-a0c9-d6edfc95e65d",
+    "origin": "existing_verified_official_bulk_exact_row",
+    "steps": [
+      "Shock"
+    ]
+  },
+  "Thoughtseize": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "id": "b281a308-ab6b-47b6-bec7-632c9aaecede",
+    "line": 105,
+    "object_sha256": "b403daeef77ef0f1759ff1771547e6936ae7f11fa5b234d9bb27b0fac0bb5580",
+    "oracle_id": "edd8d1e8-be43-4c38-bb3a-83081fbaf0b5",
+    "origin": "existing_verified_seed155_official_RAW",
+    "provenance": [
+      {
+        "file": "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json",
+        "file_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2"
+      }
+    ],
+    "steps": []
+  }
+}

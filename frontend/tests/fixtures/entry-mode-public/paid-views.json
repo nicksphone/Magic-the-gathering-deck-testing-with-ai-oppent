@@ -1,0 +1,1388 @@
+[
+  {
+    "seat": 1,
+    "mode": "creature",
+    "chosen": "mode-1",
+    "state": {
+      "id": "da74653e-dec4-4d3d-bf3e-39cf4d5f1df6",
+      "turn": 1,
+      "active_player": 1,
+      "priority_player": 1,
+      "step": "precombat_main",
+      "winner": null,
+      "score": {
+        "1": 0,
+        "2": 0
+      },
+      "pregame_pending": false,
+      "mulligan_count": {
+        "1": 0,
+        "2": 0
+      },
+      "mulligan_bottomed": {
+        "1": 0,
+        "2": 0
+      },
+      "kept_hands": [
+        1,
+        2
+      ],
+      "day_night": "none",
+      "spells_cast_this_turn": {
+        "1": 2,
+        "2": 0
+      },
+      "discards_this_turn": {
+        "1": 0,
+        "2": 0
+      },
+      "turn_cant_gain_life": [],
+      "turn_damage_cant_be_prevented": false,
+      "combat_damage_stage": "none",
+      "pending_replacement_choice": null,
+      "pending_trigger_order": null,
+      "priority_stops": {
+        "1": [
+          "upkeep",
+          "precombat_main",
+          "begin_combat",
+          "declare_attackers",
+          "postcombat_main",
+          "end_step"
+        ],
+        "2": [
+          "upkeep",
+          "begin_combat",
+          "declare_blockers",
+          "end_step"
+        ]
+      },
+      "players": {
+        "1": {
+          "id": 1,
+          "name": "Player A",
+          "life": 20,
+          "poison": 0,
+          "counters": {},
+          "library_count": 30,
+          "hand_count": 0,
+          "land_plays_remaining": 1,
+          "battlefield": [
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Suncleanser",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": 1,
+              "toughness": 4,
+              "base_power": 1,
+              "base_toughness": 4,
+              "printed_power": "1",
+              "printed_toughness": "4",
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{1}{W}",
+              "oracle_text": "When this creature enters, choose one \u2014\n\u2022 Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.\n\u2022 Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield.",
+              "image_uri": null,
+              "types": [
+                "Creature"
+              ],
+              "is_token": false,
+              "type_line": "Creature \u2014 Human Cleric",
+              "base_type_line": "Creature \u2014 Human Cleric",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "W"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "hand": [],
+          "graveyard": [
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Battlegrowth",
+              "tapped": false,
+              "summoning_sick": false,
+              "power": null,
+              "toughness": null,
+              "base_power": null,
+              "base_toughness": null,
+              "printed_power": null,
+              "printed_toughness": null,
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{G}",
+              "oracle_text": "Put a +1/+1 counter on target creature.",
+              "image_uri": null,
+              "types": [
+                "Instant"
+              ],
+              "is_token": false,
+              "type_line": "Instant",
+              "base_type_line": "Instant",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "G"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "graveyard_count": 1,
+          "exile": [],
+          "exile_count": 0,
+          "mana_pool": {
+            "C": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0,
+            "G": 0
+          },
+          "snow_mana_pool": {
+            "C": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0,
+            "G": 0
+          },
+          "restricted_mana_pool": []
+        },
+        "2": {
+          "id": 2,
+          "name": "Player B",
+          "life": 20,
+          "poison": 0,
+          "counters": {},
+          "library_count": 30,
+          "hand_count": 0,
+          "land_plays_remaining": 1,
+          "battlefield": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "Monastery Swiftspear",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": 2,
+              "toughness": 3,
+              "base_power": 1,
+              "base_toughness": 2,
+              "printed_power": "1",
+              "printed_toughness": "2",
+              "keywords": [
+                "haste"
+              ],
+              "keyword_counts": {
+                "haste": 1
+              },
+              "base_keywords": [
+                "haste"
+              ],
+              "counters": {
+                "+1/+1": 1
+              },
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{R}",
+              "oracle_text": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+              "image_uri": null,
+              "types": [
+                "Creature"
+              ],
+              "is_token": false,
+              "type_line": "Creature \u2014 Human Monk",
+              "base_type_line": "Creature \u2014 Human Monk",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "R"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "hand": [],
+          "graveyard": [],
+          "graveyard_count": 0,
+          "exile": [],
+          "exile_count": 0,
+          "mana_pool": {},
+          "snow_mana_pool": {},
+          "restricted_mana_pool": []
+        }
+      },
+      "stack": [
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "label": "Suncleanser ETB",
+          "controller": 1,
+          "effect_key": "modal_entry",
+          "targets": []
+        }
+      ],
+      "attackers": [],
+      "pending_mechanic_choice": {
+        "kind": "entry_mode",
+        "player_id": 1,
+        "label": "Suncleanser ETB",
+        "options": [
+          "mode-1",
+          "mode-2"
+        ],
+        "option_labels": {
+          "mode-1": "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
+          "mode-2": "Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield."
+        },
+        "count": 1
+      },
+      "attack_targets": {},
+      "attack_bands": [],
+      "blocks": {},
+      "log": [
+        "Game start. Both players draw 7 and decide on London mulligans.",
+        "Player A casts/activates Battlegrowth.",
+        "Battlegrowth resolves.",
+        "Player A casts/activates Suncleanser.",
+        "Player A passes priority on precombat_main (stack=1).",
+        "Player B passes priority on precombat_main (stack=1)."
+      ],
+      "controllers": {
+        "1": "human",
+        "2": "human"
+      },
+      "revision": 0
+    },
+    "move": {
+      "type": "choose_mechanic",
+      "kind": "entry_mode",
+      "player_id": 1,
+      "label": "Suncleanser ETB",
+      "options": [
+        "mode-1",
+        "mode-2"
+      ],
+      "option_labels": {
+        "mode-1": "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
+        "mode-2": "Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield."
+      },
+      "count": 1
+    },
+    "actual_paid_resolution": true
+  },
+  {
+    "seat": 1,
+    "mode": "player",
+    "chosen": "mode-2",
+    "state": {
+      "id": "18bf8d38-f878-434c-beb3-c3a89dc84ce7",
+      "turn": 2,
+      "active_player": 1,
+      "priority_player": 1,
+      "step": "precombat_main",
+      "winner": null,
+      "score": {
+        "1": 0,
+        "2": 0
+      },
+      "pregame_pending": false,
+      "mulligan_count": {
+        "1": 0,
+        "2": 0
+      },
+      "mulligan_bottomed": {
+        "1": 0,
+        "2": 0
+      },
+      "kept_hands": [
+        1,
+        2
+      ],
+      "day_night": "none",
+      "spells_cast_this_turn": {
+        "1": 1,
+        "2": 0
+      },
+      "discards_this_turn": {
+        "1": 0,
+        "2": 0
+      },
+      "turn_cant_gain_life": [],
+      "turn_damage_cant_be_prevented": false,
+      "combat_damage_stage": "regular",
+      "pending_replacement_choice": null,
+      "pending_trigger_order": null,
+      "priority_stops": {
+        "1": [
+          "upkeep",
+          "precombat_main",
+          "begin_combat",
+          "declare_attackers",
+          "postcombat_main",
+          "end_step"
+        ],
+        "2": [
+          "upkeep",
+          "begin_combat",
+          "declare_blockers",
+          "end_step"
+        ]
+      },
+      "players": {
+        "1": {
+          "id": 1,
+          "name": "Player A",
+          "life": 20,
+          "poison": 0,
+          "counters": {},
+          "library_count": 29,
+          "hand_count": 1,
+          "land_plays_remaining": 1,
+          "battlefield": [
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Suncleanser",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": 1,
+              "toughness": 4,
+              "base_power": 1,
+              "base_toughness": 4,
+              "printed_power": "1",
+              "printed_toughness": "4",
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{1}{W}",
+              "oracle_text": "When this creature enters, choose one \u2014\n\u2022 Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.\n\u2022 Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield.",
+              "image_uri": null,
+              "types": [
+                "Creature"
+              ],
+              "is_token": false,
+              "type_line": "Creature \u2014 Human Cleric",
+              "base_type_line": "Creature \u2014 Human Cleric",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "W"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "hand": [
+            {
+              "id": "p1-024",
+              "name": "Forest",
+              "tapped": false,
+              "summoning_sick": false,
+              "power": null,
+              "toughness": null,
+              "base_power": null,
+              "base_toughness": null,
+              "printed_power": null,
+              "printed_toughness": null,
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "",
+              "oracle_text": "({T}: Add {G}.)",
+              "image_uri": null,
+              "types": [
+                "Land"
+              ],
+              "is_token": false,
+              "type_line": "Basic Land \u2014 Forest",
+              "base_type_line": "Basic Land \u2014 Forest",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "graveyard": [],
+          "graveyard_count": 0,
+          "exile": [],
+          "exile_count": 0,
+          "mana_pool": {
+            "C": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0,
+            "G": 0
+          },
+          "snow_mana_pool": {
+            "C": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0,
+            "G": 0
+          },
+          "restricted_mana_pool": []
+        },
+        "2": {
+          "id": 2,
+          "name": "Player B",
+          "life": 20,
+          "poison": 0,
+          "counters": {
+            "experience": 1
+          },
+          "library_count": 30,
+          "hand_count": 0,
+          "land_plays_remaining": 1,
+          "battlefield": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "Toph, Earthbending Master",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": 2,
+              "toughness": 4,
+              "base_power": 2,
+              "base_toughness": 4,
+              "printed_power": "2",
+              "printed_toughness": "4",
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{3}{G}",
+              "oracle_text": "Landfall \u2014 Whenever a land you control enters, you get an experience counter.\nWhenever you attack, earthbend X, where X is the number of experience counters you have. (Target land you control becomes a 0/0 creature with haste that's still a land. Put X +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped.)",
+              "image_uri": null,
+              "types": [
+                "Creature"
+              ],
+              "is_token": false,
+              "type_line": "Legendary Creature \u2014 Human Warrior Ally",
+              "base_type_line": "Legendary Creature \u2014 Human Warrior Ally",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "G"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Forest",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": null,
+              "toughness": null,
+              "base_power": null,
+              "base_toughness": null,
+              "printed_power": null,
+              "printed_toughness": null,
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "",
+              "oracle_text": "({T}: Add {G}.)",
+              "image_uri": null,
+              "types": [
+                "Land"
+              ],
+              "is_token": false,
+              "type_line": "Basic Land \u2014 Forest",
+              "base_type_line": "Basic Land \u2014 Forest",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [],
+              "mana_source_colors": [
+                "G"
+              ],
+              "mana_source_amounts": {
+                "G": 1
+              },
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "hand": [],
+          "graveyard": [],
+          "graveyard_count": 0,
+          "exile": [],
+          "exile_count": 0,
+          "mana_pool": {
+            "C": 0,
+            "G": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0
+          },
+          "snow_mana_pool": {},
+          "restricted_mana_pool": []
+        }
+      },
+      "stack": [
+        {
+          "id": "00000000-0000-0000-0000-000000000007",
+          "label": "Suncleanser ETB",
+          "controller": 1,
+          "effect_key": "modal_entry",
+          "targets": []
+        }
+      ],
+      "attackers": [],
+      "pending_mechanic_choice": {
+        "kind": "entry_mode",
+        "player_id": 1,
+        "label": "Suncleanser ETB",
+        "options": [
+          "mode-1",
+          "mode-2"
+        ],
+        "option_labels": {
+          "mode-1": "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
+          "mode-2": "Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield."
+        },
+        "count": 1
+      },
+      "attack_targets": {},
+      "attack_bands": [],
+      "blocks": {},
+      "log": [
+        "Game start. Both players draw 7 and decide on London mulligans.",
+        "Player B casts/activates Toph, Earthbending Master.",
+        "Toph, Earthbending Master resolves.",
+        "Player B plays Forest.",
+        "1 triggered ability(s) added to stack (land_play).",
+        "Player B gets 1 experience counter(s).",
+        "Toph, Earthbending Master experience counter trigger resolves.",
+        "Player B passes priority on precombat_main (stack=0).",
+        "Player A passes priority on precombat_main (stack=0).",
+        "Player B passes priority on begin_combat (stack=0).",
+        "Player A passes priority on begin_combat (stack=0).",
+        "Player B passes priority on declare_attackers (stack=0).",
+        "Player A passes priority on declare_attackers (stack=0).",
+        "Player B passes priority on declare_blockers (stack=0).",
+        "Player A passes priority on declare_blockers (stack=0).",
+        "Player B passes priority on combat_damage (stack=0).",
+        "Player A passes priority on combat_damage (stack=0).",
+        "Player B passes priority on end_combat (stack=0).",
+        "Player A passes priority on end_combat (stack=0).",
+        "Player B passes priority on postcombat_main (stack=0).",
+        "Player A passes priority on postcombat_main (stack=0).",
+        "Player B passes priority on end_step (stack=0).",
+        "Player A passes priority on end_step (stack=0).",
+        "Player B passes priority on cleanup (stack=0).",
+        "Player A passes priority on cleanup (stack=0).",
+        "Player A untaps.",
+        "Player A passes priority on upkeep (stack=0).",
+        "Player B passes priority on upkeep (stack=0).",
+        "Player A draws 1.",
+        "Player A draws a card. Hand 0->1.",
+        "Player A passes priority on draw (stack=0).",
+        "Player B passes priority on draw (stack=0).",
+        "Player A casts/activates Suncleanser.",
+        "Player A passes priority on precombat_main (stack=1).",
+        "Player B passes priority on precombat_main (stack=1)."
+      ],
+      "controllers": {
+        "1": "human",
+        "2": "human"
+      },
+      "revision": 0
+    },
+    "move": {
+      "type": "choose_mechanic",
+      "kind": "entry_mode",
+      "player_id": 1,
+      "label": "Suncleanser ETB",
+      "options": [
+        "mode-1",
+        "mode-2"
+      ],
+      "option_labels": {
+        "mode-1": "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
+        "mode-2": "Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield."
+      },
+      "count": 1
+    },
+    "actual_paid_resolution": true
+  },
+  {
+    "seat": 2,
+    "mode": "creature",
+    "chosen": "mode-1",
+    "state": {
+      "id": "28e87a90-4040-4d3c-b07e-dd2a6f73e2b1",
+      "turn": 1,
+      "active_player": 2,
+      "priority_player": 2,
+      "step": "precombat_main",
+      "winner": null,
+      "score": {
+        "1": 0,
+        "2": 0
+      },
+      "pregame_pending": false,
+      "mulligan_count": {
+        "1": 0,
+        "2": 0
+      },
+      "mulligan_bottomed": {
+        "1": 0,
+        "2": 0
+      },
+      "kept_hands": [
+        1,
+        2
+      ],
+      "day_night": "none",
+      "spells_cast_this_turn": {
+        "1": 0,
+        "2": 2
+      },
+      "discards_this_turn": {
+        "1": 0,
+        "2": 0
+      },
+      "turn_cant_gain_life": [],
+      "turn_damage_cant_be_prevented": false,
+      "combat_damage_stage": "none",
+      "pending_replacement_choice": null,
+      "pending_trigger_order": null,
+      "priority_stops": {
+        "1": [
+          "upkeep",
+          "precombat_main",
+          "begin_combat",
+          "declare_attackers",
+          "postcombat_main",
+          "end_step"
+        ],
+        "2": [
+          "upkeep",
+          "begin_combat",
+          "declare_blockers",
+          "end_step"
+        ]
+      },
+      "players": {
+        "1": {
+          "id": 1,
+          "name": "Player A",
+          "life": 20,
+          "poison": 0,
+          "counters": {},
+          "library_count": 30,
+          "hand_count": 0,
+          "land_plays_remaining": 1,
+          "battlefield": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "Monastery Swiftspear",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": 2,
+              "toughness": 3,
+              "base_power": 1,
+              "base_toughness": 2,
+              "printed_power": "1",
+              "printed_toughness": "2",
+              "keywords": [
+                "haste"
+              ],
+              "keyword_counts": {
+                "haste": 1
+              },
+              "base_keywords": [
+                "haste"
+              ],
+              "counters": {
+                "+1/+1": 1
+              },
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{R}",
+              "oracle_text": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+              "image_uri": null,
+              "types": [
+                "Creature"
+              ],
+              "is_token": false,
+              "type_line": "Creature \u2014 Human Monk",
+              "base_type_line": "Creature \u2014 Human Monk",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "R"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "hand": [],
+          "graveyard": [],
+          "graveyard_count": 0,
+          "exile": [],
+          "exile_count": 0,
+          "mana_pool": {},
+          "snow_mana_pool": {},
+          "restricted_mana_pool": []
+        },
+        "2": {
+          "id": 2,
+          "name": "Player B",
+          "life": 20,
+          "poison": 0,
+          "counters": {},
+          "library_count": 30,
+          "hand_count": 0,
+          "land_plays_remaining": 1,
+          "battlefield": [
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Suncleanser",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": 1,
+              "toughness": 4,
+              "base_power": 1,
+              "base_toughness": 4,
+              "printed_power": "1",
+              "printed_toughness": "4",
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{1}{W}",
+              "oracle_text": "When this creature enters, choose one \u2014\n\u2022 Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.\n\u2022 Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield.",
+              "image_uri": null,
+              "types": [
+                "Creature"
+              ],
+              "is_token": false,
+              "type_line": "Creature \u2014 Human Cleric",
+              "base_type_line": "Creature \u2014 Human Cleric",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "W"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "hand": [],
+          "graveyard": [
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Battlegrowth",
+              "tapped": false,
+              "summoning_sick": false,
+              "power": null,
+              "toughness": null,
+              "base_power": null,
+              "base_toughness": null,
+              "printed_power": null,
+              "printed_toughness": null,
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{G}",
+              "oracle_text": "Put a +1/+1 counter on target creature.",
+              "image_uri": null,
+              "types": [
+                "Instant"
+              ],
+              "is_token": false,
+              "type_line": "Instant",
+              "base_type_line": "Instant",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "G"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "graveyard_count": 1,
+          "exile": [],
+          "exile_count": 0,
+          "mana_pool": {
+            "C": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0,
+            "G": 0
+          },
+          "snow_mana_pool": {
+            "C": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0,
+            "G": 0
+          },
+          "restricted_mana_pool": []
+        }
+      },
+      "stack": [
+        {
+          "id": "00000000-0000-0000-0000-000000000006",
+          "label": "Suncleanser ETB",
+          "controller": 2,
+          "effect_key": "modal_entry",
+          "targets": []
+        }
+      ],
+      "attackers": [],
+      "pending_mechanic_choice": {
+        "kind": "entry_mode",
+        "player_id": 2,
+        "label": "Suncleanser ETB",
+        "options": [
+          "mode-1",
+          "mode-2"
+        ],
+        "option_labels": {
+          "mode-1": "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
+          "mode-2": "Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield."
+        },
+        "count": 1
+      },
+      "attack_targets": {},
+      "attack_bands": [],
+      "blocks": {},
+      "log": [
+        "Game start. Both players draw 7 and decide on London mulligans.",
+        "Player B casts/activates Battlegrowth.",
+        "Battlegrowth resolves.",
+        "Player B casts/activates Suncleanser.",
+        "Player B passes priority on precombat_main (stack=1).",
+        "Player A passes priority on precombat_main (stack=1)."
+      ],
+      "controllers": {
+        "1": "human",
+        "2": "human"
+      },
+      "revision": 0
+    },
+    "move": {
+      "type": "choose_mechanic",
+      "kind": "entry_mode",
+      "player_id": 2,
+      "label": "Suncleanser ETB",
+      "options": [
+        "mode-1",
+        "mode-2"
+      ],
+      "option_labels": {
+        "mode-1": "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
+        "mode-2": "Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield."
+      },
+      "count": 1
+    },
+    "actual_paid_resolution": true
+  },
+  {
+    "seat": 2,
+    "mode": "player",
+    "chosen": "mode-2",
+    "state": {
+      "id": "b3caf2a6-e2d9-4f16-81e6-a77ac0e22a2b",
+      "turn": 2,
+      "active_player": 2,
+      "priority_player": 2,
+      "step": "precombat_main",
+      "winner": null,
+      "score": {
+        "1": 0,
+        "2": 0
+      },
+      "pregame_pending": false,
+      "mulligan_count": {
+        "1": 0,
+        "2": 0
+      },
+      "mulligan_bottomed": {
+        "1": 0,
+        "2": 0
+      },
+      "kept_hands": [
+        1,
+        2
+      ],
+      "day_night": "none",
+      "spells_cast_this_turn": {
+        "1": 0,
+        "2": 1
+      },
+      "discards_this_turn": {
+        "1": 0,
+        "2": 0
+      },
+      "turn_cant_gain_life": [],
+      "turn_damage_cant_be_prevented": false,
+      "combat_damage_stage": "regular",
+      "pending_replacement_choice": null,
+      "pending_trigger_order": null,
+      "priority_stops": {
+        "1": [
+          "upkeep",
+          "precombat_main",
+          "begin_combat",
+          "declare_attackers",
+          "postcombat_main",
+          "end_step"
+        ],
+        "2": [
+          "upkeep",
+          "begin_combat",
+          "declare_blockers",
+          "end_step"
+        ]
+      },
+      "players": {
+        "1": {
+          "id": 1,
+          "name": "Player A",
+          "life": 20,
+          "poison": 0,
+          "counters": {
+            "experience": 1
+          },
+          "library_count": 30,
+          "hand_count": 0,
+          "land_plays_remaining": 1,
+          "battlefield": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "Toph, Earthbending Master",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": 2,
+              "toughness": 4,
+              "base_power": 2,
+              "base_toughness": 4,
+              "printed_power": "2",
+              "printed_toughness": "4",
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{3}{G}",
+              "oracle_text": "Landfall \u2014 Whenever a land you control enters, you get an experience counter.\nWhenever you attack, earthbend X, where X is the number of experience counters you have. (Target land you control becomes a 0/0 creature with haste that's still a land. Put X +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped.)",
+              "image_uri": null,
+              "types": [
+                "Creature"
+              ],
+              "is_token": false,
+              "type_line": "Legendary Creature \u2014 Human Warrior Ally",
+              "base_type_line": "Legendary Creature \u2014 Human Warrior Ally",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "G"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Forest",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": null,
+              "toughness": null,
+              "base_power": null,
+              "base_toughness": null,
+              "printed_power": null,
+              "printed_toughness": null,
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "",
+              "oracle_text": "({T}: Add {G}.)",
+              "image_uri": null,
+              "types": [
+                "Land"
+              ],
+              "is_token": false,
+              "type_line": "Basic Land \u2014 Forest",
+              "base_type_line": "Basic Land \u2014 Forest",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [],
+              "mana_source_colors": [
+                "G"
+              ],
+              "mana_source_amounts": {
+                "G": 1
+              },
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "hand": [],
+          "graveyard": [],
+          "graveyard_count": 0,
+          "exile": [],
+          "exile_count": 0,
+          "mana_pool": {
+            "C": 0,
+            "G": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0
+          },
+          "snow_mana_pool": {},
+          "restricted_mana_pool": []
+        },
+        "2": {
+          "id": 2,
+          "name": "Player B",
+          "life": 20,
+          "poison": 0,
+          "counters": {},
+          "library_count": 29,
+          "hand_count": 1,
+          "land_plays_remaining": 1,
+          "battlefield": [
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Suncleanser",
+              "tapped": false,
+              "summoning_sick": true,
+              "power": 1,
+              "toughness": 4,
+              "base_power": 1,
+              "base_toughness": 4,
+              "printed_power": "1",
+              "printed_toughness": "4",
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "{1}{W}",
+              "oracle_text": "When this creature enters, choose one \u2014\n\u2022 Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.\n\u2022 Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield.",
+              "image_uri": null,
+              "types": [
+                "Creature"
+              ],
+              "is_token": false,
+              "type_line": "Creature \u2014 Human Cleric",
+              "base_type_line": "Creature \u2014 Human Cleric",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [
+                "W"
+              ],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "hand": [
+            {
+              "id": "p2-024",
+              "name": "Forest",
+              "tapped": false,
+              "summoning_sick": false,
+              "power": null,
+              "toughness": null,
+              "base_power": null,
+              "base_toughness": null,
+              "printed_power": null,
+              "printed_toughness": null,
+              "keywords": [],
+              "keyword_counts": {},
+              "base_keywords": [],
+              "counters": {},
+              "damage_marked": 0,
+              "loyalty": null,
+              "mana_cost": "",
+              "oracle_text": "({T}: Add {G}.)",
+              "image_uri": null,
+              "types": [
+                "Land"
+              ],
+              "is_token": false,
+              "type_line": "Basic Land \u2014 Forest",
+              "base_type_line": "Basic Land \u2014 Forest",
+              "attached_to": null,
+              "bestowed": false,
+              "effect_warnings": [],
+              "colors": [],
+              "mana_source_colors": [],
+              "mana_source_amounts": {},
+              "chosen_creature_type": null,
+              "card_faces": [],
+              "selected_face_index": null,
+              "layout": "normal",
+              "was_foretold": false,
+              "foretell_order": null,
+              "foretold_turn": null,
+              "suspended": false
+            }
+          ],
+          "graveyard": [],
+          "graveyard_count": 0,
+          "exile": [],
+          "exile_count": 0,
+          "mana_pool": {
+            "C": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0,
+            "G": 0
+          },
+          "snow_mana_pool": {
+            "C": 0,
+            "W": 0,
+            "U": 0,
+            "B": 0,
+            "R": 0,
+            "G": 0
+          },
+          "restricted_mana_pool": []
+        }
+      },
+      "stack": [
+        {
+          "id": "00000000-0000-0000-0000-000000000007",
+          "label": "Suncleanser ETB",
+          "controller": 2,
+          "effect_key": "modal_entry",
+          "targets": []
+        }
+      ],
+      "attackers": [],
+      "pending_mechanic_choice": {
+        "kind": "entry_mode",
+        "player_id": 2,
+        "label": "Suncleanser ETB",
+        "options": [
+          "mode-1",
+          "mode-2"
+        ],
+        "option_labels": {
+          "mode-1": "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
+          "mode-2": "Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield."
+        },
+        "count": 1
+      },
+      "attack_targets": {},
+      "attack_bands": [],
+      "blocks": {},
+      "log": [
+        "Game start. Both players draw 7 and decide on London mulligans.",
+        "Player A casts/activates Toph, Earthbending Master.",
+        "Toph, Earthbending Master resolves.",
+        "Player A plays Forest.",
+        "1 triggered ability(s) added to stack (land_play).",
+        "Player A gets 1 experience counter(s).",
+        "Toph, Earthbending Master experience counter trigger resolves.",
+        "Player A passes priority on precombat_main (stack=0).",
+        "Player B passes priority on precombat_main (stack=0).",
+        "Player A passes priority on begin_combat (stack=0).",
+        "Player B passes priority on begin_combat (stack=0).",
+        "Player A passes priority on declare_attackers (stack=0).",
+        "Player B passes priority on declare_attackers (stack=0).",
+        "Player A passes priority on declare_blockers (stack=0).",
+        "Player B passes priority on declare_blockers (stack=0).",
+        "Player A passes priority on combat_damage (stack=0).",
+        "Player B passes priority on combat_damage (stack=0).",
+        "Player A passes priority on end_combat (stack=0).",
+        "Player B passes priority on end_combat (stack=0).",
+        "Player A passes priority on postcombat_main (stack=0).",
+        "Player B passes priority on postcombat_main (stack=0).",
+        "Player A passes priority on end_step (stack=0).",
+        "Player B passes priority on end_step (stack=0).",
+        "Player A passes priority on cleanup (stack=0).",
+        "Player B passes priority on cleanup (stack=0).",
+        "Player B untaps.",
+        "Player B passes priority on upkeep (stack=0).",
+        "Player A passes priority on upkeep (stack=0).",
+        "Player B draws 1.",
+        "Player B draws a card. Hand 0->1.",
+        "Player B passes priority on draw (stack=0).",
+        "Player A passes priority on draw (stack=0).",
+        "Player B casts/activates Suncleanser.",
+        "Player B passes priority on precombat_main (stack=1).",
+        "Player A passes priority on precombat_main (stack=1)."
+      ],
+      "controllers": {
+        "1": "human",
+        "2": "human"
+      },
+      "revision": 0
+    },
+    "move": {
+      "type": "choose_mechanic",
+      "kind": "entry_mode",
+      "player_id": 2,
+      "label": "Suncleanser ETB",
+      "options": [
+        "mode-1",
+        "mode-2"
+      ],
+      "option_labels": {
+        "mode-1": "Remove all counters from target creature. It can't have counters put on it for as long as this creature remains on the battlefield.",
+        "mode-2": "Target opponent loses all counters. That player can't get counters for as long as this creature remains on the battlefield."
+      },
+      "count": 1
+    },
+    "actual_paid_resolution": true
+  }
+]

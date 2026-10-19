@@ -5,6 +5,7 @@ from rules_engine.engine import RulesEngine
 from rules_engine import combat
 from rules_engine.continuous import effective_power, effective_toughness
 from rules_engine.stack_engine import resolve_top_of_stack
+from tests.combat_sacrifice191_canonical import born_combat_position, place_born_card
 
 
 def _setup_creature(state, player_id: int, name: str, power: int, toughness: int, keywords: list[str] | None = None) -> str:
@@ -90,16 +91,15 @@ def test_multi_block_assignment_kills_multiple_small_blockers() -> None:
 
 def test_one_blocker_cannot_deal_full_power_to_each_attacker() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=41)
+    state = born_combat_position(deck, seed=41, hands={1: {0: 'Llanowar Elves', 1: 'Elvish Mystic'}, 2: {0: 'Palace Guard'}})
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1
     state.step = Step.COMBAT_DAMAGE
 
-    attacker_a = _setup_creature(state, 1, "Llanowar Elves", 1, 1)
-    attacker_b = _setup_creature(state, 1, "Elvish Mystic", 1, 1)
-    guard = _setup_creature(state, 2, "Palace Guard", 1, 4)
-    state.cards[guard].oracle_text = "Palace Guard can block any number of creatures."
+    attacker_a = place_born_card(state, 1, 'Llanowar Elves')
+    attacker_b = place_born_card(state, 1, 'Elvish Mystic')
+    guard = place_born_card(state, 2, 'Palace Guard')
     state.attackers = [attacker_a, attacker_b]
     combat.declare_blockers(state, {attacker_a: [guard], attacker_b: [guard]})
     assert state.blocks == {attacker_a: [guard], attacker_b: [guard]}
@@ -672,7 +672,7 @@ def test_fear_and_intimidate_blocking_restrictions_work() -> None:
     assert state.blocks.get(intimidate_atk) == [artifact_blk]
 def test_nonbasic_landwalk_prevents_blocking() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck, seed=21)
+    state = born_combat_position(deck, seed=21, hands={2: {1: 'Hallowed Fountain'}})
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1
@@ -680,8 +680,7 @@ def test_nonbasic_landwalk_prevents_blocking() -> None:
 
     attacker = _setup_creature(state, 1, "Nonbasic Walker", 2, 2, ["nonbasic landwalk"])
     blocker = _setup_creature(state, 2, "Bear", 2, 2, [])
-    land = _setup_permanent(state, 2, "Hallowed Fountain", "Land", "")
-    state.cards[land].type_line = "Land — Plains Island"
+    land = place_born_card(state, 2, 'Hallowed Fountain')
     state.attackers = [attacker]
 
     combat.declare_blockers(state, {attacker: [blocker]})

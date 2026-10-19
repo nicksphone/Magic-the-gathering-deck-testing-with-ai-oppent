@@ -1,4 +1,5 @@
 """Resolution-time target legality for a real divided-damage spell."""
+from tests.damage_life_printed_79 import canonical_card, canonical_deck_entry, raw_card
 from game_state.state import CardInstance, Zone
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -6,25 +7,16 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.prevention import add_card_prevention_shield
 from rules_engine.state_based_actions import apply_state_based_actions
-from tests.test_permanent_spell_context import state
+from tests.damage_life_printed_79 import canonical_base_state as state
 
 
 def _setup():
     game = state()
-    spell = CardInstance(
-        id="pyrotechnics", name="Pyrotechnics", owner=1, controller=1,
-        zone=Zone.HAND, types=["Sorcery"], mana_cost="{4}{R}",
-        oracle_text="Pyrotechnics deals 4 damage divided as you choose among any number of targets.",
-    )
+    spell = canonical_card("Pyrotechnics", id="pyrotechnics", owner=1, controller=1, zone=Zone.HAND)
     game.cards[spell.id] = spell
     game.players[1].hand.append(spell.id)
     for cid in ("first", "second"):
-        wall = CardInstance(
-            id=cid, name="Wall of Omens", owner=2, controller=2,
-            zone=Zone.BATTLEFIELD, types=["Creature"],
-            mana_cost="{1}{W}", power=0, toughness=4,
-            oracle_text="Defender\nWhen this creature enters, draw a card.",
-        )
+        wall = canonical_card("Wall of Omens", id=cid, owner=2, controller=2, zone=Zone.BATTLEFIELD)
         game.cards[cid] = wall
         game.players[2].battlefield.append(cid)
     return game
@@ -44,10 +36,7 @@ def test_divided_damage_requires_a_recipient_when_players_have_shroud():
         game.cards[cid].zone = Zone.GRAVEYARD
         game.players[2].graveyard.append(cid)
     for player_id in (1, 2):
-        shield = CardInstance(
-            id=f"mask-{player_id}", name="Ivory Mask", owner=player_id, controller=player_id,
-            zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text="You have shroud.",
-        )
+        shield = canonical_card("Ivory Mask", id=f"mask-{player_id}", owner=player_id, controller=player_id, zone=Zone.BATTLEFIELD)
         game.cards[shield.id] = shield
         game.players[player_id].battlefield.append(shield.id)
     assert not any(
@@ -142,11 +131,7 @@ def test_divided_damage_lifelink_counts_only_unprevented_damage_once():
     game = _setup()
     game.cards["pyrotechnics"].keywords.append("lifelink")
     add_card_prevention_shield(game.cards["second"], 1)
-    pridemate = CardInstance(
-        id="pridemate", name="Ajani's Pridemate", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-        oracle_text="Whenever you gain life, put a +1/+1 counter on Ajani's Pridemate.",
-    )
+    pridemate = canonical_card("Ajani's Pridemate", id="pridemate", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     game.cards[pridemate.id] = pridemate
     game.players[1].battlefield.append(pridemate.id)
     game = _cast(game)
@@ -163,11 +148,7 @@ def test_divided_damage_replacement_choice_preserves_first_share_after_snapshot(
     game.replacement_choice_required = True
     game.replacement_choice_players = {2}
     for index in (1, 2):
-        ward = CardInstance(
-            id=f"hekma-{index}", name="Protection of the Hekma", owner=2, controller=2,
-            zone=Zone.BATTLEFIELD, types=["Enchantment"],
-            oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
-        )
+        ward = canonical_card("Protection of the Hekma", id=f"hekma-{index}", owner=2, controller=2, zone=Zone.BATTLEFIELD)
         game.cards[ward.id] = ward
         game.players[2].battlefield.append(ward.id)
     game = checked_action(game, RulesEngine(), 1, {

@@ -137,7 +137,9 @@ def test_departure_history_resets_at_real_turn_boundary(seat):
     RulesEngine().next_step(state)
     assert state.active_player == seat
     assert state.players_with_permanent_departure == set()
-    state.step = Step.PRECOMBAT_MAIN
+    for expected in (Step.DRAW, Step.PRECOMBAT_MAIN):
+        RulesEngine().next_step(state)
+        assert state.step == expected
     state.players[seat].mana_pool = {'B': 1}
     target = add(state, 'Sheoldred, the Apocalypse', 3-seat)
     state, _ = cast(state, 'Fatal Push', target, seat)

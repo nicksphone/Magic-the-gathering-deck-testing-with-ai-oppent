@@ -38,9 +38,14 @@ def apply_prototype(card) -> None:
     symbols = re.findall(r'\{([^}]+)\}', characteristics['mana_cost'].upper())
     colors = {part for symbol in symbols for part in symbol.split('/')}
     characteristics['colors'] = [color for color in 'WUBRG' if color in colors]
-    card.printed_characteristics = {key: getattr(card, key) for key in characteristics}
+    from copy import deepcopy
+    card.printed_characteristics = deepcopy(card.printed_characteristics)
+    for key in characteristics:
+        card.printed_characteristics.setdefault(key, deepcopy(getattr(card, key)))
     for key, value in characteristics.items():
         setattr(card, key, value)
+    from rules_engine.copiable_values import record_form
+    record_form(card)
 
 
 def restore_printed_characteristics(card) -> None:
@@ -49,6 +54,8 @@ def restore_printed_characteristics(card) -> None:
     for key, value in card.printed_characteristics.items():
         setattr(card, key, value)
     card.printed_characteristics = {}
+    from rules_engine.copiable_values import restore
+    restore(card)
 
 
 def spell_cast_view(card, method):

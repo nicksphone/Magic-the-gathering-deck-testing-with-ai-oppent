@@ -1,0 +1,413 @@
+{
+  "function_delta_predecessor": "091e7e4eed2b0be6dd1b7f9fe38068dc42833a79",
+  "current_commit": "76b0befd7b3aed9365c7a5c5b9d20faafa77ef02",
+  "function_baseline_commit": "79e215fb4c39ccc49073c1a3963712608d25203c",
+  "functions": {
+    "test_oracle_effects.py:test_copy_target_permanent_spell_excludes_instants_and_sorceries": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "58e5f351765de523090d239757eaf48f7c364e6c7899b339ac22d6ed0ded4f56",
+          "before_sha256": "2ce0eb7b88aeb4c25f809fc47464cf6d59343b35f0a6f3b6a3a96e83328c86d5",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 3,
+          "new": "    from rules_engine.action_validation import checked_action\n",
+          "old": "",
+          "start": 2
+        },
+        {
+          "end": 28,
+          "new": "    copier = remaining_card('Lithoform Engine', id=\"lithoform\", owner=1, controller=1, zone=Zone.BATTLEFIELD)\n    state.cards[copier.id] = copier\n    state.players[1].battlefield.append(copier.id)\n    state.pregame_pending = False\n    state.kept_hands = {1, 2}\n    state.step = Step.PRECOMBAT_MAIN\n    state.active_player = state.priority_player = 1\n    state.players[1].mana_pool['C'] = 4\n    rules = RulesEngine()\n    move = next(move for move in rules.legal_moves(state, 1)\n                if move['type'] == 'activate_ability' and move['card_id'] == copier.id\n                and move['ability_index'] == 2)\n    hints = move['target_hints']\n",
+          "old": "    copier = CardInstance(\n        id=\"lithoform\", name=\"Lithoform Engine\", owner=1, controller=1,\n        zone=Zone.BATTLEFIELD, types=[\"Artifact\"],\n        oracle_text=\"{4}, {T}: Copy target permanent spell you control. (The copy becomes a token.)\",\n    )\n    hints = inspect_target_hints(state, copier, 1)\n",
+          "start": 15
+        },
+        {
+          "end": 33,
+          "new": "    state = checked_action(state, rules, 1, {\n        'type': 'activate_ability', 'card_id': copier.id, 'ability_index': 2,\n        'targets': {'target_stack_id': 'creature'}})\n    effect_key, payload = state.stack[-1].effect_key, state.stack[-1].payload\n",
+          "old": "    effect_key, payload = infer_effect_from_oracle(\n        state, copier, 1, action_targets={\"target_stack_id\": \"creature\"},\n    )\n",
+          "start": 29
+        }
+      ],
+      "new_sha256": "58e5f351765de523090d239757eaf48f7c364e6c7899b339ac22d6ed0ded4f56",
+      "old_sha256": "2ce0eb7b88aeb4c25f809fc47464cf6d59343b35f0a6f3b6a3a96e83328c86d5"
+    },
+    "test_oracle_effects.py:test_light_up_the_stage_style_exiles_cards_with_temporary_play_permission": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "7da9b68bcddbcb870ec13b88c0a316b9dbb7a4a9b972249e4cb608490e2a66f4",
+          "before_sha256": "e9d9990d7aee2bca33fa220ddea2eadfc4ad63bda7d8982c80e116fd0629812a",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 7,
+          "new": "    proxy = remaining_card('Light Up the Stage', id='stage-parser', owner=1, controller=1, zone=Zone.HAND)\n",
+          "old": "    proxy = type(\"Proxy\", (), {\"name\": \"Light Up the Stage\", \"oracle_text\": \"Exile the top two cards of your library. Until the end of your next turn, you may play those cards.\", \"mana_cost\": \"\"})()\n",
+          "start": 6
+        }
+      ],
+      "new_sha256": "7da9b68bcddbcb870ec13b88c0a316b9dbb7a4a9b972249e4cb608490e2a66f4",
+      "old_sha256": "e9d9990d7aee2bca33fa220ddea2eadfc4ad63bda7d8982c80e116fd0629812a"
+    },
+    "test_oracle_effects.py:test_lithoform_ability_copy_targets_only_controlled_abilities": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "9987496c56c54d04cb8b4fa35d6fa090b30579ec30e8e5be35ab4c55d2d61f74",
+          "before_sha256": "dc792c2cecdeb6135f8414e1a0d22a9b78762173aad58674056bb60d999efec1",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 3,
+          "new": "    from rules_engine.action_validation import checked_action\n",
+          "old": "",
+          "start": 2
+        },
+        {
+          "end": 10,
+          "new": "        source = remaining_card('Prodigal Pyromancer', id=f\"source-{player_id}\", owner=player_id, controller=player_id, zone=Zone.BATTLEFIELD)\n",
+          "old": "        source = CardInstance(\n            id=f\"source-{player_id}\", name=\"Prodigal Pyromancer\",\n            owner=player_id, controller=player_id, zone=Zone.BATTLEFIELD,\n            types=[\"Creature\"],\n        )\n",
+          "start": 9
+        },
+        {
+          "end": 27,
+          "new": "    copier = remaining_card('Lithoform Engine', id=\"lithoform\", owner=1, controller=1, zone=Zone.BATTLEFIELD)\n    state.cards[copier.id] = copier\n    state.players[1].battlefield.append(copier.id)\n    state.pregame_pending = False\n    state.kept_hands = {1, 2}\n    state.step = Step.PRECOMBAT_MAIN\n    state.active_player = state.priority_player = 1\n    state.players[1].mana_pool['C'] = 2\n    rules = RulesEngine()\n    move = next(move for move in rules.legal_moves(state, 1)\n                if move['type'] == 'activate_ability' and move['card_id'] == copier.id\n                and move['ability_index'] == 0)\n    hints = move['target_hints']\n",
+          "old": "    copier = CardInstance(\n        id=\"lithoform\", name=\"Lithoform Engine\", owner=1, controller=1,\n        zone=Zone.BATTLEFIELD, types=[\"Artifact\"],\n        oracle_text=\"{2}, {T}: Copy target activated or triggered ability you control. You may choose new targets for the copy.\",\n    )\n    hints = inspect_target_hints(state, copier, 1)\n",
+          "start": 14
+        },
+        {
+          "end": 32,
+          "new": "    state = checked_action(state, rules, 1, {\n        'type': 'activate_ability', 'card_id': copier.id, 'ability_index': 0,\n        'targets': {'target_stack_id': 'ability-1'}})\n    key, payload = state.stack[-1].effect_key, state.stack[-1].payload\n",
+          "old": "    key, payload = infer_effect_from_oracle(\n        state, copier, 1, action_targets={\"target_stack_id\": \"ability-1\"},\n    )\n",
+          "start": 28
+        }
+      ],
+      "new_sha256": "9987496c56c54d04cb8b4fa35d6fa090b30579ec30e8e5be35ab4c55d2d61f74",
+      "old_sha256": "dc792c2cecdeb6135f8414e1a0d22a9b78762173aad58674056bb60d999efec1"
+    },
+    "test_oracle_effects.py:test_nissa_loyalty_lines_animate_land_and_put_green_creature": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "3e7c8f645277862595de570165ba4c302e26d4441d6fc16ec44fb157a077f421",
+          "before_sha256": "2fbb2a20574fce640e0719146ad70056e4f1ff80695c080e19a383785f7e2301",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 10,
+          "new": "    set_printed(land, 'Forest')\n",
+          "old": "    land.types = [\"Land\"]\n    land.name = \"Forest\"\n    land.type_line = \"Basic Land - Forest\"\n",
+          "start": 9
+        },
+        {
+          "end": 16,
+          "new": "    nissa = remaining_card('Nissa, Who Shakes the World', id=\"nissa-loyalty\", owner=1, controller=1, zone=Zone.BATTLEFIELD)\n",
+          "old": "    nissa = CardInstance(\n        id=\"nissa-loyalty\",\n        name=\"Nissa, Who Shakes the World\",\n        owner=1,\n        controller=1,\n        zone=Zone.BATTLEFIELD,\n        types=[\"Planeswalker\"],\n        oracle_text=\"\",\n    )\n",
+          "start": 15
+        }
+      ],
+      "new_sha256": "3e7c8f645277862595de570165ba4c302e26d4441d6fc16ec44fb157a077f421",
+      "old_sha256": "2fbb2a20574fce640e0719146ad70056e4f1ff80695c080e19a383785f7e2301"
+    },
+    "test_oracle_effects.py:test_nonland_permanent_removal_chooses_nonland_target": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "3e5a033bd7d700dcc82e984385726dc077416eae078ce4a72c0030f128a1e082",
+          "before_sha256": "f4fc1ecf73788462aaabce154b22f9e214b183d42273086db9273dfd1b8f9d15",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 4,
+          "new": "    card = remaining_card('Vindicate', id=\"rem\", owner=1, controller=1, zone=Zone.HAND)\n",
+          "old": "    card = CardInstance(\n        id=\"rem\",\n        name=\"Vindicate\",\n        owner=1,\n        controller=1,\n        zone=Zone.HAND,\n        types=[\"Sorcery\"],\n        oracle_text=\"Destroy target nonland permanent.\",\n    )\n",
+          "start": 3
+        },
+        {
+          "end": 13,
+          "new": "    state.cards[\"land\"] = remaining_card('Island', id=\"land\", owner=2, controller=2, zone=Zone.BATTLEFIELD)\n",
+          "old": "    state.cards[\"land\"] = CardInstance(\n        id=\"land\",\n        name=\"Island\",\n        owner=2,\n        controller=2,\n        zone=Zone.BATTLEFIELD,\n        types=[\"Land\"],\n    )\n",
+          "start": 12
+        },
+        {
+          "end": 16,
+          "new": "    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={\"target_card_id\": \"artifact\"})\n",
+          "old": "    effect_key, payload = infer_effect_from_oracle(state, card, 1)\n",
+          "start": 15
+        }
+      ],
+      "new_sha256": "3e5a033bd7d700dcc82e984385726dc077416eae078ce4a72c0030f128a1e082",
+      "old_sha256": "f4fc1ecf73788462aaabce154b22f9e214b183d42273086db9273dfd1b8f9d15"
+    },
+    "test_oracle_effects.py:test_oracle_can_return_generic_permanent_from_graveyard": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "4428db7c6c44a721328cfdd5b6f435e0a4c7af09a391089e0611fde0257d9558",
+          "before_sha256": "f963f4822c6538bc6981fa8ec900a28068b25990c2712517668da7ed0031da38",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 5,
+          "new": "    land = remaining_card('Tropical Island', id=\"enemy-land\", owner=2, controller=2, zone=Zone.GRAVEYARD)\n",
+          "old": "    land = CardInstance(\n        id=\"enemy-land\",\n        name=\"Tropical Island\",\n        owner=2,\n        controller=2,\n        zone=Zone.GRAVEYARD,\n        types=[\"Land\"],\n        oracle_text=\"{T}: Add {G} or {U}.\",\n    )\n",
+          "start": 4
+        }
+      ],
+      "new_sha256": "4428db7c6c44a721328cfdd5b6f435e0a4c7af09a391089e0611fde0257d9558",
+      "old_sha256": "f963f4822c6538bc6981fa8ec900a28068b25990c2712517668da7ed0031da38"
+    },
+    "test_oracle_effects.py:test_oracle_can_return_graveyard_artifact_or_enchantment": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "2c4b8848f45f816b4e73a74c0e1479959cf96b215844dabc45cb5f5308bdeba0",
+          "before_sha256": "71fbdc3cd34ac7355e3916cb7fafb17f59b83b2b030881eef4a6c766da65e67b",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 13,
+          "new": "    from tests.graveyard_batch_native_support_bf62 import cast_vaults, place, position, snapshot\n\n    state = position(('Open the Vaults', 'Sol Ring', 'Oath of Nissa', 'Grizzly Bears'),\n                     ('Sol Ring', 'Oath of Nissa', 'Forest'))\n    artifact = state.cards[place(state, 'Sol Ring', Zone.GRAVEYARD, 2)]\n    enchantment = state.cards[place(state, 'Oath of Nissa', Zone.GRAVEYARD, 2)]\n    own_artifact = place(state, 'Sol Ring', Zone.GRAVEYARD)\n    own_enchantment = place(state, 'Oath of Nissa', Zone.GRAVEYARD)\n    noneligible = [place(state, 'Grizzly Bears', Zone.GRAVEYARD),\n                   place(state, 'Forest', Zone.GRAVEYARD, 2)]\n    card = state.cards[place(state, 'Open the Vaults', Zone.HAND)]\n    cohort = {own_artifact: 1, own_enchantment: 1, artifact.id: 2, enchantment.id: 2}\n",
+          "old": "    deck = [{\"quantity\": 60, \"card_name\": \"Island\"}]\n    state = MatchFactory.from_decks(deck, deck)\n    p2 = state.players[2]\n    artifact = CardInstance(\n        id=\"enemy-artifact\",\n        name=\"Lockstone\",\n        owner=2,\n        controller=2,\n        zone=Zone.GRAVEYARD,\n        types=[\"Artifact\"],\n        oracle_text=\"\",\n    )\n    enchantment = CardInstance(\n        id=\"enemy-enchantment\",\n        name=\"Curse\",\n        owner=2,\n        controller=2,\n        zone=Zone.GRAVEYARD,\n        types=[\"Enchantment\"],\n        oracle_text=\"\",\n    )\n    state.cards[artifact.id] = artifact\n    state.cards[enchantment.id] = enchantment\n    p2.graveyard.extend([artifact.id, enchantment.id])\n    card = CardInstance(\n        id=\"vaults\",\n        name=\"Open the Vaults\",\n        owner=1,\n        controller=1,\n        zone=Zone.HAND,\n        types=[\"Sorcery\"],\n        oracle_text=\"Return target artifact or enchantment card from a graveyard to the battlefield.\",\n    )\n",
+          "start": 1
+        },
+        {
+          "end": 38,
+          "new": "    assert hints == {'artifact_targets': [], 'enchantment_targets': [], 'noncreature_permanent_targets': []}\n    effect_key, payload = infer_effect_from_oracle(state, card, 1)\n    state, source = cast_vaults(state, 1)\n    p2, frame = state.players[2], state.stack[-1]\n    eligible = {cid: owner for owner in (1, 2) for cid in state.players[owner].graveyard\n                if set(state.cards[cid].types) & {'Artifact', 'Enchantment'}}\n    assert (effect_key == 'return_graveyard_permanents_batch'\n            and payload == {'graveyard_batch_clause': card.oracle_text}\n            and frame.effect_key == effect_key and source == card.id\n            and frame.targets == [] and frame.payload['__announced_targets'] == {}\n            and sum(state.players[1].mana_pool.values()) == 0 and eligible == cohort)\n    resolved = resolve_top_of_stack(state)\n    assert (resolved and artifact.id in state.players[2].battlefield\n            and {cid for player in state.players.values() for cid in player.battlefield} == set(cohort))\n    assert (artifact.id not in p2.graveyard\n            and all(cid not in state.players[owner].graveyard for cid, owner in cohort.items())\n            and all(state.cards[cid].zone == Zone.GRAVEYARD for cid in noneligible)\n            and state.cards[source].zone == Zone.GRAVEYARD)\n    restored = snapshot(state)\n    assert (state.cards[artifact.id].controller == 2\n            and all(state.cards[cid].controller == owner and cid in state.players[owner].battlefield\n                    and restored.cards[cid].controller == owner and cid in restored.players[owner].battlefield\n                    for cid, owner in cohort.items()))",
+          "old": "    assert {entry[\"id\"] for entry in hints.get(\"graveyard_permanent_targets\", [])} == {\"enemy-artifact\", \"enemy-enchantment\"}\n    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={\"target_card_id\": artifact.id})\n    assert effect_key == \"return_permanent_from_graveyard_to_battlefield\"\n    resolve_effect(state, 1, effect_key, payload)\n    assert artifact.id in state.players[1].battlefield\n    assert artifact.id not in p2.graveyard\n    assert state.cards[artifact.id].controller == 1",
+          "start": 15
+        }
+      ],
+      "new_sha256": "2c4b8848f45f816b4e73a74c0e1479959cf96b215844dabc45cb5f5308bdeba0",
+      "old_sha256": "71fbdc3cd34ac7355e3916cb7fafb17f59b83b2b030881eef4a6c766da65e67b"
+    },
+    "test_oracle_effects.py:test_oracle_copy_ability_parsing": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "2d16ef685b183248557dd6dda4e0423405850620b0695e7088235a6f84d4ffdf",
+          "before_sha256": "833828fcb296527eb95784aaf587683a7b5b80a4c45bacc65add4af7d197ce73",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 16,
+          "new": "    from rules_engine.targeting import stack_object_kind\n    from tests.rings_activation_native_support_5763 import activate, board\n\n    state = activate(board(1), 1)\n    original, trigger = state.stack[0], state.stack[-1]\n    effect_key, payload = trigger.effect_key, trigger.payload\n    assert effect_key == \"copy_referred_ability\" and stack_object_kind(state, trigger) == \"triggered\"\n    captured = payload[\"__activation_copy_original\"]\n    assert (captured[\"id\"] == original.id\n            and captured[\"source_card_id\"] == original.source_card_id\n            and \"target_stack_id\" not in payload)\n    assert (captured[\"payload\"][\"__announced_stack_kind\"] == \"activated\"\n            and captured[\"payload\"][\"__announced_targets\"] == original.payload[\"__announced_targets\"]\n            and payload[\"__optional_payment_cost\"] == \"{2}\"\n            and trigger.controller == original.controller == 1)",
+          "old": "    deck = [{\"quantity\": 60, \"card_name\": \"Island\"}]\n    state = MatchFactory.from_decks(deck, deck)\n    state.stack.append(type(\"SI\", (), {\"id\": \"stack-ability\"})())\n    card = CardInstance(\n        id=\"copy-ability\",\n        name=\"Rings of Brighthearth\",\n        owner=1,\n        controller=1,\n        zone=Zone.HAND,\n        types=[\"Artifact\"],\n        oracle_text=\"Copy target activated ability you control.\",\n    )\n    effect_key, payload = infer_effect_from_oracle(state, card, 1)\n    assert effect_key == \"copy_ability\"\n    assert payload[\"target_stack_id\"] == \"stack-ability\"\n    assert payload[\"copy_kind\"] == \"activated ability\"",
+          "start": 1
+        }
+      ],
+      "new_sha256": "2d16ef685b183248557dd6dda4e0423405850620b0695e7088235a6f84d4ffdf",
+      "old_sha256": "833828fcb296527eb95784aaf587683a7b5b80a4c45bacc65add4af7d197ce73"
+    },
+    "test_oracle_effects.py:test_oracle_mass_artifact_and_enchantment_removal_is_inferred": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "f25682190102bada9e9f7ea5aef0aae481e53a1641b19403ecd62b7c717868ce",
+          "before_sha256": "834c8b73652ad1f1c6b8432ddfaefcbd8cd99f683a03553ac0a4f38120b563f5",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 3,
+          "new": "    from tests.oracle_effects_semantic_support_8d import purify_card\n\n",
+          "old": "",
+          "start": 1
+        },
+        {
+          "end": 6,
+          "new": "    card = purify_card(id=\"wipe\", owner=1, controller=1, zone=Zone.HAND)\n",
+          "old": "    card = CardInstance(\n        id=\"wipe\",\n        name=\"Bane of Progress\",\n        owner=1,\n        controller=1,\n        zone=Zone.HAND,\n        types=[\"Creature\"],\n        oracle_text=\"Destroy all artifacts and enchantments.\",\n    )\n",
+          "start": 5
+        }
+      ],
+      "new_sha256": "f25682190102bada9e9f7ea5aef0aae481e53a1641b19403ecd62b7c717868ce",
+      "old_sha256": "834c8b73652ad1f1c6b8432ddfaefcbd8cd99f683a03553ac0a4f38120b563f5"
+    },
+    "test_oracle_effects.py:test_oracle_search_library_can_put_creature_onto_battlefield": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "cb2f5b1345c97b12f8d3df553447b88ca605502d87a56fd68d058b048782bdf3",
+          "before_sha256": "270285f3a4837a0f2cf63c6541c3756d7bd775b4a08ccd18cf0d4a778f192d75",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 5,
+          "new": "    creature = remaining_card('Elvish Mystic', id=creature_id, owner=1, controller=1, zone=Zone.LIBRARY)\n",
+          "old": "    creature = CardInstance(\n        id=creature_id,\n        name=\"Elvish Mystic\",\n        owner=1,\n        controller=1,\n        zone=Zone.LIBRARY,\n        types=[\"Creature\"],\n        oracle_text=\"\",\n    )\n",
+          "start": 4
+        },
+        {
+          "end": 8,
+          "new": "    card = remaining_card('Collected Company', id=\"tutor-battlefield\", owner=1, controller=1, zone=Zone.HAND)\n",
+          "old": "    card = CardInstance(\n        id=\"tutor-battlefield\",\n        name=\"Collected Company\",\n        owner=1,\n        controller=1,\n        zone=Zone.HAND,\n        types=[\"Instant\"],\n        oracle_text=\"Search your library for up to two creature cards with mana value 3 or less, put them onto the battlefield, then shuffle your library.\",\n    )\n",
+          "start": 7
+        },
+        {
+          "end": 12,
+          "new": "    effect_key, payload = infer_effect_from_oracle(state, card, 1)\n    assert effect_key == \"topdeck_put_creatures_battlefield\"\n    assert (payload[\"top_n\"], payload[\"max_creatures\"], payload[\"mv_max\"]) == (6, 2, 3)\n",
+          "old": "    effect_key, payload = infer_effect_from_oracle(state, card, 1, action_targets={\"search_contains\": \"creature\"})\n    assert effect_key == \"search_library\"\n    assert payload[\"destination\"] == \"battlefield\"\n",
+          "start": 9
+        }
+      ],
+      "new_sha256": "cb2f5b1345c97b12f8d3df553447b88ca605502d87a56fd68d058b048782bdf3",
+      "old_sha256": "270285f3a4837a0f2cf63c6541c3756d7bd775b4a08ccd18cf0d4a778f192d75"
+    },
+    "test_oracle_effects.py:test_oracle_search_library_honors_count_and_mana_value_on_battlefield_tutors": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "f926a9ecb63ce2fbeca9760834da429ded9c9176c93879be6e382983c4e1aaf3",
+          "before_sha256": "a75e77338ae7c0a58ba505715d3755196e6af360bd0bf824d8bb90373c1f01a2",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 9,
+          "new": "    low_a = remaining_card('Llanowar Elves', id=\"low-a\", owner=1, controller=1, zone=Zone.LIBRARY)\n    low_b = remaining_card('Elvish Mystic', id=\"low-b\", owner=1, controller=1, zone=Zone.LIBRARY)\n    high = remaining_card('Steel Hellkite', id=\"high\", owner=1, controller=1, zone=Zone.LIBRARY)\n",
+          "old": "    low_a = CardInstance(id=\"low-a\", name=\"Llanowar Elves\", owner=1, controller=1, zone=Zone.LIBRARY, types=[\"Creature\"], mana_cost=\"{G}\")\n    low_b = CardInstance(id=\"low-b\", name=\"Elvish Mystic\", owner=1, controller=1, zone=Zone.LIBRARY, types=[\"Creature\"], mana_cost=\"{G}\")\n    high = CardInstance(id=\"high\", name=\"Steel Hellkite\", owner=1, controller=1, zone=Zone.LIBRARY, types=[\"Creature\"], mana_cost=\"{6}\")\n",
+          "start": 6
+        }
+      ],
+      "new_sha256": "f926a9ecb63ce2fbeca9760834da429ded9c9176c93879be6e382983c4e1aaf3",
+      "old_sha256": "a75e77338ae7c0a58ba505715d3755196e6af360bd0bf824d8bb90373c1f01a2"
+    },
+    "test_oracle_effects.py:test_oracle_target_hints_include_nonland_permanent_targets": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "c89f23270ff6d60462cfda5b971a7ce02ab9d3877980ed4933c5ebeab0de2023",
+          "before_sha256": "00e824657470aebe831ad36c2057204c4d917092ab64b0c085bfca87ff5b4ecd",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 4,
+          "new": "    card = remaining_card('Vindicate', id=\"rem\", owner=1, controller=1, zone=Zone.HAND)\n",
+          "old": "    card = CardInstance(\n        id=\"rem\",\n        name=\"Vindicate\",\n        owner=1,\n        controller=1,\n        zone=Zone.HAND,\n        types=[\"Sorcery\"],\n        oracle_text=\"Destroy target nonland permanent.\",\n    )\n",
+          "start": 3
+        },
+        {
+          "end": 21,
+          "new": "    state.cards[\"land\"] = remaining_card('Island', id=\"land\", owner=2, controller=2, zone=Zone.BATTLEFIELD)\n",
+          "old": "    state.cards[\"land\"] = CardInstance(\n        id=\"land\",\n        name=\"Island\",\n        owner=2,\n        controller=2,\n        zone=Zone.BATTLEFIELD,\n        types=[\"Land\"],\n    )\n",
+          "start": 20
+        },
+        {
+          "end": 26,
+          "new": "    assert {entry[\"id\"] for entry in hints.get(\"permanent_targets\", [])} == {\"artifact\", \"enchantment\", \"land\"}",
+          "old": "    assert {entry[\"id\"] for entry in hints.get(\"permanent_targets\", [])} == {\"artifact\", \"enchantment\"}",
+          "start": 25
+        }
+      ],
+      "new_sha256": "c89f23270ff6d60462cfda5b971a7ce02ab9d3877980ed4933c5ebeab0de2023",
+      "old_sha256": "00e824657470aebe831ad36c2057204c4d917092ab64b0c085bfca87ff5b4ecd"
+    },
+    "test_oracle_effects.py:test_real_noncreature_land_loyalty_clause_uses_legal_target_and_keywords": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "298aa50559d19ca403d3f08ed8cbf8be144926991a55ea8b33c3c89ebd19aabb",
+          "before_sha256": "b4408cf96225d7f2f7740467b324e1da141324fef8ff449e8d63e5793bfdae53",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 17,
+          "new": "    nissa = remaining_card('Nissa, Who Shakes the World', id=\"nissa\", owner=1, controller=1, zone=Zone.BATTLEFIELD)\n",
+          "old": "    nissa = CardInstance(\n        id=\"nissa\", name=oracle[\"name\"], owner=1, controller=1,\n        zone=Zone.BATTLEFIELD, types=[\"Planeswalker\"], loyalty=5,\n        mana_cost=oracle[\"mana_cost\"], oracle_text=oracle[\"oracle_text\"],\n    )\n",
+          "start": 16
+        }
+      ],
+      "new_sha256": "298aa50559d19ca403d3f08ed8cbf8be144926991a55ea8b33c3c89ebd19aabb",
+      "old_sha256": "b4408cf96225d7f2f7740467b324e1da141324fef8ff449e8d63e5793bfdae53"
+    },
+    "test_oracle_effects.py:test_torrential_gearhulk_style_casts_target_instant_from_graveyard": {
+      "approved_git_lineage": [
+        {
+          "after_sha256": "24358a3240e0e806d1495d9978853d1c0e8d873d91056275b0b924f049ca9de5",
+          "before_sha256": "559b1859f33a66943069cf94a44f5a7591979983aa4c9aa96ed58d79e62c37e9",
+          "commit": "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+        }
+      ],
+      "hunks": [
+        {
+          "end": 8,
+          "new": "    set_printed(spell, 'Lightning Bolt')\n    set_printed(source, 'Torrential Gearhulk')\n",
+          "old": "",
+          "start": 6
+        }
+      ],
+      "new_sha256": "24358a3240e0e806d1495d9978853d1c0e8d873d91056275b0b924f049ca9de5",
+      "old_sha256": "559b1859f33a66943069cf94a44f5a7591979983aa4c9aa96ed58d79e62c37e9"
+    }
+  },
+  "historical_function_table_sha256": "94a314f7a95f8a1f538f06c181c274324b2afef2d97414f8d1c8ce29dd7e3559",
+  "keyword": {
+    "approved_commits": [
+      "a2fbcc99ca4b093224e93c5c2fde98db7e8804e3",
+      "0efab0bf86cc41e9b2e7aa511db465c351255e92"
+    ],
+    "prefix": {
+      "hunks": [
+        {
+          "end": 22,
+          "new": "    from rules_engine.activation_copy import record_activation_complete\n",
+          "old": "",
+          "start": 21
+        },
+        {
+          "end": 40,
+          "new": "    if not cost:\n        return False\n    staged_here = not state.trigger_staging\n    if staged_here:\n        state.trigger_staging = True\n        state.trigger_staging_event = 'ability_activation'\n    if not auto_pay_cost(state, player_id, cost, card_name=card.name,\n",
+          "old": "    if not cost or not auto_pay_cost(state, player_id, cost, card_name=card.name,\n",
+          "start": 33
+        },
+        {
+          "end": 44,
+          "new": "        if staged_here:\n            state.staged_triggers.clear()\n            state.trigger_staging = False\n",
+          "old": "",
+          "start": 41
+        },
+        {
+          "end": 54,
+          "new": "    activated_item = add_to_stack(state, card_id, player_id, f\"{card.name} ninjutsu\", \"ninjutsu\",\n",
+          "old": "    add_to_stack(state, card_id, player_id, f\"{card.name} ninjutsu\", \"ninjutsu\",\n",
+          "start": 53
+        },
+        {
+          "end": 56,
+          "new": "    record_activation_complete(state, activated_item)\n",
+          "old": "",
+          "start": 55
+        },
+        {
+          "end": 107,
+          "new": "    pending_copy = state.pending_mechanic_choice\n    if (pending_copy and pending_copy.get('kind') == 'land_entry'\n            and '__entry_copy_plan' in pending_copy.get('effect_payload', {})):\n        from rules_engine.entry_copy import validate_land_choice\n        validate_land_choice(state, player_id, action)\n    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('kind') == 'entry_copy':\n        from rules_engine.entry_copy import finish_choice\n        return finish_choice(state, player_id, action)\n    if state.pending_mechanic_choice and state.pending_mechanic_choice.get('graveyard_batch') is True:\n        from rules_engine.graveyard_batch_entry import finish_choice\n        return finish_choice(state, player_id, action)\n",
+          "old": "",
+          "start": 96
+        }
+      ],
+      "new_sha256": "76198cadc19f9bc74c2081b59bc9575a6f1d02116d0ce505cce92261e172c9e4",
+      "old_sha256": "bc1f06e2623c0a2f469e3b93d67a3864adc26d746568f829405f55331ded4696"
+    },
+    "sacrifice_middle_same": true,
+    "suffix": {
+      "hunks": [],
+      "new_sha256": "5fbc4cf4faaf3339d7fcb3346010d94a3f9f77ee3deee3b5a625f1d965066dbd",
+      "old_sha256": "5fbc4cf4faaf3339d7fcb3346010d94a3f9f77ee3deee3b5a625f1d965066dbd"
+    }
+  },
+  "keyword_baseline_commit": "2fd7b7bb1e3ea3f353770744b113b92df2fd32e4"
+}

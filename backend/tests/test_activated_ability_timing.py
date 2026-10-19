@@ -6,11 +6,13 @@ from rules_engine.engine import RulesEngine
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
+from tests.controlled_basic_game_support import controlled_basic_game
+from tests.cycling_timing_canonical_022758 import canonical_card, rats_state
 
 
 def _state(oracle_text: str):
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=7)
+    state = controlled_basic_game(deck, deck, seed=7)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = 1
@@ -62,15 +64,7 @@ def test_unrestricted_activated_ability_remains_available_with_stack() -> None:
 
 
 def _crypt_rats():
-    state, source_id = _state("{X}: Crypt Rats deals X damage to each creature and each player. Spend only black mana on X.")
-    source = state.cards[source_id]
-    source.name = "Crypt Rats"
-    source.types = ["Creature"]
-    source.mana_cost = "{2}{B}"
-    source.colors = ["B"]
-    source.power = source.toughness = 1
-    source.summoning_sick = False
-    return state, source_id
+    return rats_state()
 
 
 def test_restricted_x_payment_uses_only_black_mana_for_x() -> None:
@@ -102,10 +96,8 @@ def test_restricted_x_payment_uses_only_black_mana_for_x() -> None:
 
 def test_crypt_rats_damage_is_simultaneous_and_both_players_can_lose() -> None:
     state, source_id = _crypt_rats()
-    bear = CardInstance(
-        id="bear", name="Grizzly Bears", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-        mana_cost="{1}{G}", type_line="Creature - Bear",
+    bear = canonical_card(
+        "Grizzly Bears", id="bear", owner=2, controller=2, zone=Zone.BATTLEFIELD,
     )
     state.cards[bear.id] = bear
     state.players[2].battlefield.append(bear.id)
@@ -145,10 +137,8 @@ def test_crypt_rats_damage_respects_protection_from_black() -> None:
 def test_crypt_rats_lifelink_is_one_gain_event_for_all_recipients() -> None:
     state, source_id = _crypt_rats()
     state.cards[source_id].keywords.append("lifelink")
-    pridemate = CardInstance(
-        id="pridemate", name="Ajani's Pridemate", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-        oracle_text="Whenever you gain life, put a +1/+1 counter on Ajani's Pridemate.",
+    pridemate = canonical_card(
+        "Ajani's Pridemate", id="pridemate", owner=1, controller=1, zone=Zone.BATTLEFIELD,
     )
     state.cards[pridemate.id] = pridemate
     state.players[1].battlefield.append(pridemate.id)
@@ -174,9 +164,8 @@ def test_crypt_rats_lifelink_gain_choice_resumes_after_snapshot() -> None:
         ("archive", "Alhammarret's Archive", ["Legendary", "Artifact"]),
         ("reflection", "Boon Reflection", ["Enchantment"]),
     ):
-        card = CardInstance(
-            id=cid, name=name, owner=1, controller=1, zone=Zone.BATTLEFIELD,
-            types=types, oracle_text="If you would gain life, you gain twice that much life instead.",
+        card = canonical_card(
+            name, id=cid, owner=1, controller=1, zone=Zone.BATTLEFIELD,
         )
         state.cards[cid] = card
         state.players[1].battlefield.append(cid)
@@ -214,10 +203,8 @@ def test_ai_avoids_bad_crypt_rats_activation_but_uses_lethal_or_favorable_sweep(
         state.players[1].hand.clear()
         state.players[1].mana_pool.update({"B": 2, "R": 8})
         for index in range(opposing_creatures):
-            bear = CardInstance(
-                id=f"bear-{index}", name="Grizzly Bears", owner=2, controller=2,
-                zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-                mana_cost="{1}{G}", type_line="Creature - Bear",
+            bear = canonical_card(
+                "Grizzly Bears", id=f"bear-{index}", owner=2, controller=2, zone=Zone.BATTLEFIELD,
             )
             state.cards[bear.id] = bear
             state.players[2].battlefield.append(bear.id)
@@ -236,10 +223,8 @@ def test_crypt_rats_batch_resumes_human_damage_replacements_before_lethal_sba(li
     state.replacement_choice_required = True
     state.replacement_choice_players = {1}
     for index in (1, 2):
-        ward = CardInstance(
-            id=f"hekma-{index}", name="Protection of the Hekma", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Enchantment"],
-            oracle_text="If a source would deal damage to you, prevent 1 of that damage.",
+        ward = canonical_card(
+            "Urza's Armor", id=f"hekma-{index}", owner=1, controller=1, zone=Zone.BATTLEFIELD,
         )
         state.cards[ward.id] = ward
         state.players[1].battlefield.append(ward.id)

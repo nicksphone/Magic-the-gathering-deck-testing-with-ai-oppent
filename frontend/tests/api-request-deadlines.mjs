@@ -4,7 +4,7 @@ import { createServer } from 'vite';
 
 const server = await createServer({
   configFile: false, root: fileURLToPath(new URL('..', import.meta.url)),
-  server: { middlewareMode: true, hmr: false, watch: null },
+  server: { middlewareMode: true, hmr: false, ws: false, watch: null },
   appType: 'custom', logLevel: 'silent',
 });
 const originalFetch = globalThis.fetch;

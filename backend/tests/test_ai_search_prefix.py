@@ -4,6 +4,8 @@ from unittest.mock import patch
 
 import pytest
 
+from tests.ai_information76_canonical import canonical_card, deck_entry
+
 from ai.agent import AIAgent
 from ai import agent as agent_module
 from ai.pending_effects import planning_copy
@@ -45,7 +47,7 @@ def actor_correct_reference(ai, state, move, perspective, depth, actor=None):
 
 
 def bare_state(seat=1):
-    deck = [{'quantity': 60, 'card_name': 'Island'}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=6781)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -99,10 +101,8 @@ def test_selected_reply_is_executed_once_as_its_real_actor(monkeypatch, seat):
 def test_real_counter_response_matches_actor_correct_reference(seat, depth, archetype):
     state = bare_state(seat)
     opponent = 3-seat
-    bolt = CardInstance('bolt', 'Lightning Bolt', seat, seat, Zone.STACK, ['Instant'],
-                        mana_cost='{R}', oracle_text='Lightning Bolt deals 3 damage to any target.')
-    counter = CardInstance('counter', 'Counterspell', opponent, opponent, Zone.HAND, ['Instant'],
-                           mana_cost='{U}{U}', oracle_text='Counter target spell.')
+    bolt = canonical_card('Lightning Bolt', id='bolt', owner=seat, controller=seat, zone=Zone.STACK)
+    counter = canonical_card('Counterspell', id='counter', owner=opponent, controller=opponent, zone=Zone.HAND)
     state.cards[bolt.id] = bolt
     state.cards[counter.id] = counter
     state.players[opponent].hand.append(counter.id)

@@ -42,12 +42,12 @@ def request(url, data=None, context=None):
 
 def seed_island(python, backend_dir):
     code = (
-        "from card_data.fallback_cards import fallback_card_payload; "
+        "from card_data.seed_cards import seed_card_payload; "
         "from persistence.db import init_db, engine; "
         "from persistence.repository import Repository; "
         "from sqlmodel import Session; "
         "init_db(); "
-        "card=fallback_card_payload('Island'); "
+        "card=seed_card_payload('Island'); "
         "session=Session(engine); "
         "Repository(session).upsert_card(dict(card, scryfall_id='routing-smoke-island', name='Island', "
         "image_uri='/card-images/generic-token-creature.svg')); "

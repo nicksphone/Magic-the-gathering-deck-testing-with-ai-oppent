@@ -26,11 +26,14 @@ class SelectionActivationPlan(TypedDict):
 
 
 def _schema(ability):
+    raw_effect = ability.get('raw_effect_text')
+    if not isinstance(raw_effect, str):
+        return None
     match = re.fullmatch(
         r'look at the top (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards? of your library\. '
         r'you may reveal a creature card with mana value (\d+) or less from among them '
         r'and put it into your hand\. put the rest on the bottom of your library in a random order\.?',
-        ability['text'], re.I)
+        raw_effect, re.I)
     cost = parse_activated_cost(ability['mana_cost'])
     if (match is None or not cost.supported or cost.pay_life or cost.discard_cards
             or cost.discard_source or cost.sacrifice_creatures or cost.sacrifice_source
@@ -135,8 +138,13 @@ def pending_selection_expectation(state, player_id) -> float | None:
     source = state.cards.get(item.source_card_id)
     if source is None or is_unknown(source) or item.payload.get('__copied_card'):
         return None
+    index = item.payload.get('__ability_index')
+    raw_effect = item.payload.get('__ability_raw_effect_text')
+    if type(index) is not int or index < 0 or type(raw_effect) is not str:
+        return None
     ability = next((a for a in extract_activated_abilities(source)
-                    if a['text'] == item.payload.get('__ability_target_text')), None)
+                    if a['index'] == index and a['raw_effect_text'] == raw_effect
+                    and a['text'] == item.payload.get('__ability_target_text')), None)
     payload = _schema(ability) if ability else None
     if payload is None or any(item.payload.get(k) != v for k, v in payload.items()):
         return None

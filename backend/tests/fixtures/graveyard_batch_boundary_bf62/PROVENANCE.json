@@ -1,0 +1,43 @@
+{
+  "bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "intake": "existing public immutable bulk, no HTTP",
+  "records": [
+    {
+      "bulk_line": 4865,
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "breeding-pool.json",
+      "file_sha256": "18b384f23bf164039a556343aebed07b5a05a822233005295bfa7919f1d9afc7",
+      "id": "63e4dc07-c742-41bd-8301-861637908fd1",
+      "name": "Breeding Pool",
+      "oracle_id": "20283c4a-f1f0-42f0-bc08-6da87474426b"
+    },
+    {
+      "bulk_line": 36997,
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "liquimetal-coating.json",
+      "file_sha256": "46a05afaabda76ca082479ff42fe92d2d7954c5ff53b672b0c888dd5b613529d",
+      "id": "f631447c-36e3-4d82-a658-19c9767a216b",
+      "name": "Liquimetal Coating",
+      "oracle_id": "f4bdc551-c2eb-4a34-a3e3-b4a017c925af"
+    },
+    {
+      "bulk_line": 6745,
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "progenitus.json",
+      "file_sha256": "38f15c9d8d0ffd3aa4aaf2f042465d5291949e92603fdcdc2e70f04e3a38d4f4",
+      "id": "e77fbc87-d78e-4602-baa0-da9b0d464dfb",
+      "name": "Progenitus",
+      "oracle_id": "2d7e00b6-12f0-4b03-82a6-50e3d1b5395e"
+    },
+    {
+      "bulk_line": 16310,
+      "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+      "file": "sculpting-steel.json",
+      "file_sha256": "0e8435da84613b3902c6544162b616dc700fee2df6209221c2b8b65662ab127f",
+      "id": "d1958f01-77e9-4976-b7f8-f9b62aa78edc",
+      "name": "Sculpting Steel",
+      "oracle_id": "6c85271c-c711-49b0-a72e-9e576c33714d"
+    }
+  ]
+}

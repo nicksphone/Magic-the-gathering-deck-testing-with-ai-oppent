@@ -1,0 +1,71 @@
+{
+  "batch_intake_record_utc": "2026-10-07T04:17:01Z",
+  "current_official_rules_page": "https://magic.wizards.com/en/rules",
+  "rules_url": "https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt",
+  "cards": [
+    {
+      "file": "source-controller-audit/raw/counterspell.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Counterspell",
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "returned_uri": "https://api.scryfall.com/cards/4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "sha256": "ec5a66be537961755633aa3a100712f9f5e33ac4bc57225eaa14002530fdfb33"
+    },
+    {
+      "file": "source-controller-audit/raw/healing-salve.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Healing%20Salve",
+      "id": "0ff82aba-9022-4eff-a6dc-67365360d646",
+      "oracle_id": "8da8644c-75a1-4fe9-8e94-900d948d631c",
+      "returned_uri": "https://api.scryfall.com/cards/0ff82aba-9022-4eff-a6dc-67365360d646",
+      "sha256": "bbb9f8e419f944cdab82ddf9eec451ad0b24d138d3d80554128ddbbfdc0d0325"
+    },
+    {
+      "file": "source-controller-audit/raw/lightning-bolt.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Lightning%20Bolt",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "returned_uri": "https://api.scryfall.com/cards/7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "sha256": "6e81b27b75f947367be2b413f9383c172ff594769a1abf135cbfef7ff44e4145"
+    },
+    {
+      "file": "source-controller-audit/raw/prodigal-sorcerer.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Prodigal%20Sorcerer",
+      "id": "50aef269-55f9-4d84-8bc5-29e794297f11",
+      "oracle_id": "5e961d15-5972-4e4b-9385-1cd7cd7c6bbe",
+      "returned_uri": "https://api.scryfall.com/cards/50aef269-55f9-4d84-8bc5-29e794297f11",
+      "sha256": "b436e8f1feb53240736805e3c7d23a8a3f22b83efed6a6aa182e4a33df5b2ef5"
+    },
+    {
+      "file": "source-controller-audit/raw/ray-of-command.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Ray%20of%20Command",
+      "id": "7ca8a427-5c20-4650-bbb5-9895e4f2c009",
+      "oracle_id": "adf41d29-403d-4936-9689-3148d103e700",
+      "returned_uri": "https://api.scryfall.com/cards/7ca8a427-5c20-4650-bbb5-9895e4f2c009",
+      "sha256": "248cfd0304564ff17db62ba40276d2735622e6366d1635920563292863fed75b"
+    },
+    {
+      "file": "source-controller-audit/raw/soul-scar-mage.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Soul-Scar%20Mage",
+      "id": "a8003786-6e2a-4e2d-a915-f23293c7273a",
+      "oracle_id": "009240f3-b7f8-4cbe-a3e9-974da66fb62c",
+      "returned_uri": "https://api.scryfall.com/cards/a8003786-6e2a-4e2d-a915-f23293c7273a",
+      "sha256": "34d77bda3783b40562ac564cd5b7c6c4aff84e6a6fcf7751fc70988b85dd687b"
+    },
+    {
+      "file": "source-controller-audit/raw/torrential-gearhulk.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Torrential%20Gearhulk",
+      "id": "92872fea-2fb4-4154-815e-cad9d966e60f",
+      "oracle_id": "a6395447-677d-4c39-8eda-2d57e527c94e",
+      "returned_uri": "https://api.scryfall.com/cards/92872fea-2fb4-4154-815e-cad9d966e60f",
+      "sha256": "b18811df80ed519ab59dcb8744840ad6d37c095f4c7c99b22f39f0d715b6b8ca"
+    },
+    {
+      "file": "source-controller-audit/raw/twincast.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Twincast",
+      "id": "f38eec33-a40e-4739-ad2c-2f57008cef4e",
+      "oracle_id": "8f878efc-850f-43d2-a6fe-5ea8d1dd5afb",
+      "returned_uri": "https://api.scryfall.com/cards/f38eec33-a40e-4739-ad2c-2f57008cef4e",
+      "sha256": "6a1fc79661aebc87e332a3068f03057ad813c6449aa2c0a0231f35169e98e77d"
+    }
+  ]
+}

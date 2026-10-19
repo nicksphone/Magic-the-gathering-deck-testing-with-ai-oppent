@@ -19,6 +19,7 @@ from contextlib import asynccontextmanager, nullcontext
 from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, field_validator
 from sqlmodel import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -29,23 +30,28 @@ from ai.deck_analysis import analyze_deck, guess_archetype
 from ai.log_priors import build_priors_from_logs, load_log_priors, save_log_priors
 from ai.sideboarding import plan_sideboard
 from api_contracts import ActionRequest, DeckEntry, DeckPairInput, InputModel, PlayerID
+from browser_origin import BrowserOriginMiddleware, trusted_origins
 from analytics.schemas import AIDiagnosticsRequest, BatchSimulationRequest
 from analytics.replay_tools import classify_first_divergence, first_log_divergence
 from analytics.service import AnalyticsService, SimulationCancelled
-from card_data.fallback_cards import fallback_card_payload
+from analytics.resource_budget import RESOURCE_LIMITS, SimulationResourceLimit, checked_json, checked_text
+from card_data.seed_cards import seed_card_payload
 from card_data.display import select_display_image_uri
 from card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image
 from card_data.service import CardService
 from card_data.sync import CACHE_DIR, ScryfallSyncService
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
 from decks.builtin_decks import BUILTIN_DECKS
+from decks.catalog import CatalogImportRequest, catalog_context
 from decks.sideboard import SideboardError, apply_sideboard_swaps
 from decks.service import DeckService
 from data_ingest.service import TournamentIngestService
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot, serialize_card_view
 from game_state.state import MatchFactory, Step, pregame_actor
 from game_state.series_policy import game_seed, next_play_draw_chooser
-from persistence.db import engine, get_session, init_db
+from persistence.db import engine, get_session, init_db, initialize_resource_capacity
+from persistence.capacity import (DatabaseOwner, CapacityExceeded, CapacityIntegrityError,
+                                  CapacityAdmissionClosed, owner_for_engine, owner_uncertain)
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
 from rules_engine.coverage import deck_pair_coverage
@@ -55,23 +61,84 @@ from rules_engine.replacement import replacement_options
 
 @asynccontextmanager
 async def lifespan(app_instance: FastAPI):
-    init_db()
-    with Session(engine) as session:
-        repo = Repository(session)
-        _ensure_builtin_decks(repo)
-        _ensure_expansion_top_decks(repo)
-        _restore_active_matches(repo)
-        _restore_simulation_jobs(repo)
-    yield
+    global SIM_SHUTTING_DOWN
+    _prepare_simulation_admission()
+    owner = DatabaseOwner(engine).acquire()
+    try:
+        backup = owner.path.with_name(owner.path.name + '.before-capacity-' + owner.epoch + '.db')
+        if owner.path.exists():
+            initialize_resource_capacity(owner, backup)
+            init_db()
+        else:
+            init_db()
+            initialize_resource_capacity(owner, backup)
+        with Session(engine) as session:
+            repo = Repository(session)
+            _ensure_builtin_decks(repo)
+            _ensure_expansion_top_decks(repo)
+            _restore_simulation_jobs(repo)
+        owner.open_admission()
+    except BaseException:
+        owner.close()
+        raise
+    with SIM_START_LOCK:
+        SIM_SHUTTING_DOWN = False
+    try:
+        yield
+    finally:
+        try:
+            _shutdown_simulation_workers()
+        finally:
+            owner.fence_admission()
+        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)
+        owner.close()
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
+
+
+@app.exception_handler(SimulationResourceLimit)
+async def resource_limit_response(_request, exc):
+    return JSONResponse(status_code=413, content={'detail': {
+        'code': 'simulation_resource_limit', 'dimension': exc.dimension}})
+
+
+@app.exception_handler(CapacityExceeded)
+async def capacity_limit_response(_request, exc):
+    return JSONResponse(status_code=507, content={'detail': {
+        'code': 'simulation_capacity_exceeded', 'dimension': exc.dimension}})
+
+
+@app.exception_handler(CapacityAdmissionClosed)
+async def capacity_closed_response(_request, _exc):
+    return JSONResponse(status_code=503, content={'detail': {'code': 'simulation_shutting_down'}})
+
+
+@app.exception_handler(CapacityIntegrityError)
+@app.exception_handler(SQLAlchemyError)
+async def storage_unconfirmed_response(_request, _exc):
+    return JSONResponse(status_code=503, content={'detail': {'code': 'storage_state_unconfirmed'}})
+
+
+@app.exception_handler(Exception)
+async def unexpected_failure_response(_request, _exc):
+    if owner_uncertain(engine):
+        return JSONResponse(status_code=503, content={'detail': {'code': 'storage_state_unconfirmed'}})
+    return JSONResponse(status_code=500, content={'detail': 'Internal Server Error'})
+
+
+@app.exception_handler(SimulationCancelled)
+async def sync_cancelled_response(_request, _exc):
+    return JSONResponse(status_code=503, content={'detail': {'code': 'simulation_cancelled_during_shutdown'}})
+TRUSTED_BROWSER_ORIGINS = trusted_origins(os.environ.get("MTG_TRUSTED_ORIGINS"))
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=list(TRUSTED_BROWSER_ORIGINS),
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Idempotency-Key", "X-Match-Revision"],
 )
+# Added last so mutation rejection runs outside CORS, routes and dependencies.
+app.add_middleware(BrowserOriginMiddleware, origins=TRUSTED_BROWSER_ORIGINS)
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 ensure_generic_token_image()
 app.mount("/card-images", StaticFiles(directory=str(CACHE_DIR)), name="card-images")
@@ -95,18 +162,23 @@ class MatchController:
     play_draw_chooser: int = 1
     sideboarded_players: set[int] = field(default_factory=set)
     seen_opponent_types: dict[int, set[str]] = field(default_factory=lambda: {1: set(), 2: set()})
+    auto_sideboard: bool = True
     mutation_lock: object = field(default_factory=threading.RLock, repr=False)
     revision: int = 0
     mutation_receipts: dict[str, str] = field(default_factory=dict)
 
 
 ACTIVE_MATCHES: dict[str, MatchController] = {}
+MATCH_LOAD_LOCK = threading.RLock()
 START_MATCH_LOCK = threading.RLock()
 SIM_JOBS: dict[str, dict] = {}
 SIM_JOB_CANCEL_EVENTS: dict[str, threading.Event] = {}
 SIM_JOBS_LOCK = threading.Lock()
 SIM_START_LOCK = threading.Lock()
 SIM_WORK_SLOT = threading.BoundedSemaphore(1)
+SIM_JOB_WORKERS: dict[str, tuple[threading.Thread, threading.Event]] = {}
+SIM_SHUTTING_DOWN = False
+SIM_JOB_SHUTDOWN_TIMEOUT = 20.0
 SIM_JOBS_CACHE_LIMIT = 20
 # Single-process new-job row quota; preserves existing results and retry keys.
 SIM_JOBS_ROW_LIMIT = 10000
@@ -118,14 +190,14 @@ def coordinated_match(handler):
     @wraps(handler)
     def wrapped(*args, **kwargs):
         match_id = args[0] if args else kwargs["match_id"]
-        match = ACTIVE_MATCHES.get(match_id)
+        bound = inspect.signature(handler).bind(*args, **kwargs)
+        bound.apply_defaults()
+        match = _load_saved_match(match_id, bound.arguments.get("repo"))
         if match is None:
             raise HTTPException(status_code=404, detail="Match not found")
         with match.mutation_lock:
             if handler.__name__ not in {"take_action", "autoplay_tick", "set_priority_stops", "apply_sideboard", "next_game"}:
                 return deepcopy(handler(*args, **kwargs))
-            bound = inspect.signature(handler).bind(*args, **kwargs)
-            bound.apply_defaults()
             request = bound.arguments.get("request")
             key = request.headers.get("Idempotency-Key") if request is not None else None
             expected = request.headers.get("X-Match-Revision") if request is not None else None
@@ -170,9 +242,10 @@ class StartMatchRequest(DeckPairInput):
     deck_b_id: int | None = None
     controller_a: Literal["human", "ai"] = "human"
     controller_b: Literal["human", "ai"] = "ai"
-    ai_difficulty: Literal["casual", "strong", "master"] = "master"
+    ai_difficulty: Literal["casual", "strong", "master", "master_plus"] = "master"
     mode: Literal["player_vs_ai", "ai_vs_ai", "human_vs_human"] = "player_vs_ai"
     best_of: int = Field(default=3, ge=3, le=15)
+    auto_sideboard: bool = Field(default=True, strict=True)
     seed: int | None = None
 
     @field_validator("best_of")
@@ -272,6 +345,7 @@ def _controller_snapshot(match: MatchController) -> dict:
         "play_draw_chooser": match.play_draw_chooser,
         "sideboarded_players": sorted(match.sideboarded_players),
         "seen_opponent_types": {str(pid): sorted(types) for pid, types in match.seen_opponent_types.items()},
+        "auto_sideboard": match.auto_sideboard,
         "difficulties": difficulties,
         "archetypes": archetypes,
         "revision": match.revision,
@@ -292,14 +366,38 @@ def _persist_active_match(repo: Repository | object, match: MatchController) -> 
         Repository(session).save_active_match(match.state.id, state_json, controller_json)
 
 
+def _load_saved_match(match_id: str, repo=None) -> MatchController | None:
+    match = ACTIVE_MATCHES.get(match_id)
+    if match is not None:
+        return match
+    # Only cache misses acquire this local-process lock. Publish once, before
+    # any caller acquires the controller's separate mutation lock.
+    with MATCH_LOAD_LOCK:
+        if match_id not in ACTIVE_MATCHES:
+            if isinstance(repo, Repository):
+                _restore_active_matches(repo, match_id)
+            else:
+                with Session(engine) as session:
+                    _restore_active_matches(Repository(session), match_id)
+        return ACTIVE_MATCHES.get(match_id)
+
+
 def _restore_active_matches(repo: Repository, match_id: str | None = None) -> None:
+    """Legacy explicit eager restore; never replace an already live controller."""
+    with MATCH_LOAD_LOCK:
+        _restore_active_matches_locked(repo, match_id)
+
+
+def _restore_active_matches_locked(repo: Repository, match_id: str | None = None) -> None:
     rows = [repo.get_active_match(match_id)] if match_id is not None else repo.list_active_matches()
     for row in rows:
-        if row is None:
+        if row is None or row.id in ACTIVE_MATCHES:
             continue
         try:
             snapshot = json.loads(row.state_json)
             state = deserialize_match_snapshot(snapshot)
+            if state.id != row.id:
+                continue
             if not any(key in snapshot for key in ("mechanic_choice_players", "library_choice_players", "search_choice_players")):
                 state.mechanic_choice_players = {1, 2}
             config = json.loads(row.controller_json)
@@ -328,6 +426,7 @@ def _restore_active_matches(repo: Repository, match_id: str | None = None) -> No
                 play_draw_chooser=int(config.get("play_draw_chooser", state.active_player)),
                 sideboarded_players={int(pid) for pid in config.get("sideboarded_players", [])},
                 seen_opponent_types={pid: set(config.get("seen_opponent_types", {}).get(str(pid), [])) for pid in (1, 2)},
+                auto_sideboard=config.get('auto_sideboard', True),
                 revision=int(config.get("revision", 0)),
                 mutation_receipts=dict(config.get("mutation_receipts", {})),
             )
@@ -380,6 +479,84 @@ def _prune_simulation_jobs() -> None:
 def _persist_job(job: dict) -> None:
     with Session(engine) as session:
         Repository(session).save_simulation_job(job)
+
+
+def _update_job(job_id, **changes):
+    """Publish only an acknowledged durable candidate; never retry uncertain writes."""
+    try:
+        with SIM_JOBS_LOCK:
+            if job_id not in SIM_JOBS:
+                return
+            candidate = {**SIM_JOBS[job_id], **changes}
+            _persist_job(candidate)
+            SIM_JOBS[job_id] = candidate
+            _prune_simulation_jobs()
+    except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):
+        _fence_uncertain_job(job_id)
+        raise
+
+
+def _fence_uncertain_job(job_id, *, start_locked=False):
+    global SIM_SHUTTING_DOWN
+    # Acquire in startup order, never while retaining SIM_JOBS_LOCK.
+    with (nullcontext() if start_locked else SIM_START_LOCK):
+        SIM_SHUTTING_DOWN = True
+    with SIM_JOBS_LOCK:
+        SIM_JOBS.pop(job_id, None)
+    try:
+        owner_for_engine(engine).fence_admission()
+    except (CapacityIntegrityError, CapacityAdmissionClosed):
+        # An invalid owner cannot admit work; do not attempt persistence recovery.
+        pass
+
+
+def _retired_job_response(row):
+    if row.status == 'retired':
+        raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': row.id})
+
+
+def _reap_simulation_workers() -> None:
+    """Caller holds SIM_START_LOCK; retain each thread until it actually exits."""
+    for job_id, (thread, _event) in list(SIM_JOB_WORKERS.items()):
+        if not thread.is_alive():
+            SIM_JOB_WORKERS.pop(job_id, None)
+
+
+def _prepare_simulation_admission() -> None:
+    global SIM_SHUTTING_DOWN
+    with SIM_START_LOCK:
+        _reap_simulation_workers()
+        if SIM_JOB_WORKERS:
+            raise RuntimeError("Cannot start while simulation workers are still running")
+        SIM_SHUTTING_DOWN = True
+
+
+def _shutdown_simulation_workers() -> None:
+    global SIM_SHUTTING_DOWN
+    deadline = time.monotonic() + SIM_JOB_SHUTDOWN_TIMEOUT
+    if not SIM_START_LOCK.acquire(timeout=max(0.0, deadline - time.monotonic())):
+        raise RuntimeError("Timed out fencing simulation admission")
+    try:
+        SIM_SHUTTING_DOWN = True
+        workers = list(SIM_JOB_WORKERS.items())
+        for _job_id, (_thread, event) in workers:
+            event.set()
+    finally:
+        SIM_START_LOCK.release()
+
+    # Never hold admission/job locks while a runner persists or releases its slot.
+    for _job_id, (thread, _event) in workers:
+        if thread is threading.current_thread():
+            raise RuntimeError("A simulation worker cannot join itself during shutdown")
+        thread.join(timeout=max(0.0, deadline - time.monotonic()))
+    if not SIM_START_LOCK.acquire(timeout=max(0.0, deadline - time.monotonic())):
+        raise RuntimeError("Timed out finalizing simulation shutdown")
+    try:
+        _reap_simulation_workers()
+        if SIM_JOB_WORKERS:
+            raise RuntimeError("Timed out waiting for simulation workers to stop")
+    finally:
+        SIM_START_LOCK.release()
 
 
 
@@ -513,22 +690,29 @@ def get_expansion_top_deck(code: str, repo: Repository = Depends(get_repo)) -> d
         "finish": item["finish"],
         "decklist_source_url": item["decklist_source_url"],
         "event_source_url": item["event_source_url"],
+        "catalog": catalog_context(item),
     }
 
 
 @app.post("/decks/expansion-top/{code}/import")
-def import_expansion_top_deck(code: str, repo: Repository = Depends(get_repo)) -> dict:
+def import_expansion_top_deck(code: str, request: CatalogImportRequest | None = None,
+                            format_scope: Literal["historical", "current"] | None = Query(None),
+                            repo: Repository = Depends(get_repo)) -> dict:
     service = DeckService(repo)
     try:
-        return service.import_expansion_top_deck(code)
+        scope = "current" if (format_scope == "current" or request and request.format_scope == "current") else "historical"
+        return service.import_expansion_top_deck(code, format_scope=scope)
     except KeyError:
         raise HTTPException(status_code=404, detail="Expansion top deck not found") from None
 
 
 @app.post("/decks/expansion-top/import-all")
-def import_all_expansion_top_decks(repo: Repository = Depends(get_repo)) -> dict:
+def import_all_expansion_top_decks(request: CatalogImportRequest | None = None,
+                                  format_scope: Literal["historical", "current"] | None = Query(None),
+                                  repo: Repository = Depends(get_repo)) -> dict:
     service = DeckService(repo)
-    results = service.import_all_expansion_top_decks()
+    scope = "current" if (format_scope == "current" or request and request.format_scope == "current") else "historical"
+    results = service.import_all_expansion_top_decks(format_scope=scope)
     imported = [r for r in results if r.get("deck_id")]
     errors = [r for r in results if r.get("errors")]
     return {
@@ -621,10 +805,7 @@ def start_match(payload: StartMatchRequest, request: Request, repo: Repository =
             if receipt is not None:
                 if receipt.request_hash != fingerprint:
                     raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This start key already identifies a different match request"})
-                match = ACTIVE_MATCHES.get(receipt.match_id)
-                if match is None:
-                    _restore_active_matches(repo, receipt.match_id)
-                    match = ACTIVE_MATCHES.get(receipt.match_id)
+                match = _load_saved_match(receipt.match_id, repo)
                 if match is None:
                     raise HTTPException(503, detail={"code": "match_restore_unavailable", "message": "Created match could not be restored"})
                 with match.mutation_lock:
@@ -668,6 +849,7 @@ def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None,
         match_complete=False,
         best_of=payload.best_of,
         root_seed=root_seed,
+        auto_sideboard=payload.auto_sideboard,
     )
     try:
         with repo.atomic_match_writes() if isinstance(repo, Repository) else nullcontext():
@@ -681,15 +863,23 @@ def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None,
 
 
 @app.get("/matches")
-def list_active_matches() -> list[dict]:
-    items = []
-    for match in list(ACTIVE_MATCHES.values()):
+def list_active_matches(repo: Repository = Depends(get_repo)) -> list[dict]:
+    if isinstance(repo, Repository):
+        items = {item['id']: item for item in repo.iter_active_match_summaries()}
+    else:
+        with Session(engine) as session:
+            items = {item['id']: item for item in Repository(session).iter_active_match_summaries()}
+    with MATCH_LOAD_LOCK:
+        loaded = list(ACTIVE_MATCHES.values())
+    for match in loaded:
         with match.mutation_lock:
-            if not match.match_complete:
-                items.append({"id": match.state.id, "mode": match.mode, "turn": match.state.turn,
+            if match.match_complete:
+                items.pop(match.state.id, None)
+            else:
+                items[match.state.id] = {"id": match.state.id, "mode": match.mode, "turn": match.state.turn,
                               "game_number": match.game_number, "revision": match.revision,
-                              "players": [match.state.players[pid].name for pid in (1, 2)]})
-    return items
+                              "players": [match.state.players[pid].name for pid in (1, 2)]}
+    return list(items.values())
 
 
 @app.get("/matches/{match_id}")
@@ -838,6 +1028,8 @@ def take_action(match_id: str, payload: ActionRequest, repo: Repository = Depend
         candidate = checked_action(match.state, match.rules, payload.player_id, payload.action.model_dump(exclude_none=True))
     except ActionRejected as exc:
         raise HTTPException(status_code=422, detail={"code": "illegal_action", "message": str(exc)}) from exc
+    from ai.sideboard_facts import record_accepted_action
+    record_accepted_action(match.state, candidate, payload.player_id, payload.action.model_dump(exclude_none=True))
     match.state = candidate
     _post_step_finalize(match, repo)
     _persist_active_match(repo, match)
@@ -882,7 +1074,10 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
                         action = guard_land
             try:
                 action = complete_action(action)
-                match.state = checked_action(match.state, match.rules, pid, action)
+                candidate = checked_action(match.state, match.rules, pid, action)
+                from ai.sideboard_facts import record_accepted_action
+                record_accepted_action(match.state, candidate, pid, action)
+                match.state = candidate
             except ActionRejected as exc:
                 raise HTTPException(status_code=422, detail={
                     "code": "illegal_ai_action", "message": str(exc),
@@ -893,7 +1088,10 @@ def autoplay_tick(match_id: str, ticks: int = 1, repo: Repository = Depends(get_
                 break
             if _human_priority_pause(match, pid):
                 break
-            match.state = checked_action(match.state, match.rules, pid, {"type": "pass_priority"})
+            candidate = checked_action(match.state, match.rules, pid, {"type": "pass_priority"})
+            from ai.sideboard_facts import record_accepted_action
+            record_accepted_action(match.state, candidate, pid, {"type": "pass_priority"})
+            match.state = candidate
         _remember_public_types(match)
     _post_step_finalize(match, repo)
     _persist_active_match(repo, match)
@@ -971,6 +1169,13 @@ def next_game(match_id: str, payload: NextGameRequest | None = None, repo: Repos
         if payload is not None and payload.play_first is not None:
             raise HTTPException(status_code=422, detail={"code": "invalid_play_draw_choice", "message": "AI seat chooses play or draw"})
         play_first = True
+    unfinished = [pid for pid in (1, 2)
+                  if match.controllers.get(pid) == "human" and pid not in match.sideboarded_players]
+    if unfinished:
+        raise HTTPException(status_code=409, detail={
+            "code": "sideboarding_not_ready", "players": unfinished,
+            "message": "Each human seat must submit swaps or confirm no swaps before the next game.",
+        })
     _start_next_game_state(match, play_first=play_first, repo=repo)
     _persist_active_match(repo, match)
     return _serialize_match_controller(match)
@@ -985,6 +1190,9 @@ def simulate_batch_preflight(payload: DeckPairInput, repo: Repository = Depends(
 
 @app.post("/simulate/batch")
 def simulate_batch(payload: BatchSimulationRequest, repo: Repository = Depends(get_repo)) -> dict:
+    with SIM_START_LOCK:
+        if SIM_SHUTTING_DOWN:
+            raise HTTPException(503, detail={'code': 'simulation_shutting_down'})
     deck_a = _validated_deck_cards(repo, payload.deck_a)
     deck_b = _validated_deck_cards(repo, payload.deck_b)
     if not SIM_WORK_SLOT.acquire(blocking=False):
@@ -1010,6 +1218,7 @@ def simulate_batch_start(
 
 
 def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str | None) -> dict:
+    _reap_simulation_workers()
     requested = payload.model_dump(mode="json")
     if key is not None:
         row = repo.get_simulation_job(key)
@@ -1019,7 +1228,22 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
             original = json.loads(row.request_json or "{}") if row is not None else existing.get("request", {})
             if original != requested:
                 raise HTTPException(409, detail={"code": "idempotency_conflict", "message": "This start key already identifies a different simulation request"})
+            if row is not None:
+                _retired_job_response(row)
+            elif existing['status'] == 'retired':
+                raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': key})
             return {"job_id": key, "status": row.status if row is not None else existing["status"]}
+    if SIM_SHUTTING_DOWN:
+        raise HTTPException(status_code=503, detail={
+            "code": "simulation_shutting_down", "message": "Simulation admission is closed during shutdown",
+        })
+    try:
+        checked_json(requested, RESOURCE_LIMITS["request_json_bytes"], "request_json")
+    except SimulationResourceLimit:
+        raise HTTPException(status_code=413, detail={
+            "code": "simulation_request_too_large", "limit": RESOURCE_LIMITS["request_json_bytes"],
+            "dimension": "request_json",
+        }) from None
     if repo.count_simulation_jobs() >= SIM_JOBS_ROW_LIMIT:
         raise HTTPException(status_code=429, detail={
             "code": "simulation_job_quota_exceeded",
@@ -1044,79 +1268,84 @@ def _start_batch_job(payload: BatchSimulationRequest, repo: Repository, key: str
         "request": requested,
     }
     def _runner() -> None:
+        global SIM_SHUTTING_DOWN
+        producer = None
+        entered = False
         try:
+            producer = owner_for_engine(engine).activity()
+            producer.__enter__()
+            entered = True
             if cancel_event.is_set():
                 raise SimulationCancelled()
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "running"
-                    _persist_job(SIM_JOBS[job_id])
+            _update_job(job_id, status='running')
             with Session(engine) as session:
                 thread_repo = Repository(session)
                 def _progress(done: int, total: int) -> None:
-                    with SIM_JOBS_LOCK:
-                        if job_id in SIM_JOBS:
-                            SIM_JOBS[job_id]["completed_matches"] = int(done)
-                            SIM_JOBS[job_id]["total_matches"] = int(total)
-                            _persist_job(SIM_JOBS[job_id])
-
+                    _update_job(job_id, completed_matches=int(done), total_matches=int(total))
                 result = AnalyticsService(thread_repo).run_batch(
-                    deck_a,
-                    deck_b,
-                    payload.matches,
-                    payload.difficulty,
-                    max_ticks=payload.max_ticks,
-                    progress_callback=_progress,
-                    should_cancel=cancel_event.is_set,
-                )
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "completed"
-                    SIM_JOBS[job_id]["completed_matches"] = int(payload.matches)
-                    SIM_JOBS[job_id]["finished_at"] = time.time()
-                    SIM_JOBS[job_id]["result"] = result
-                    _persist_job(SIM_JOBS[job_id])
-                    _prune_simulation_jobs()
+                    deck_a, deck_b, payload.matches, payload.difficulty,
+                    max_ticks=payload.max_ticks, progress_callback=_progress,
+                    should_cancel=cancel_event.is_set, reservation_token=snapshot_token)
+            _update_job(job_id, status='completed', completed_matches=int(payload.matches),
+                        finished_at=time.time(), result=result)
         except SimulationCancelled:
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "canceled"
-                    SIM_JOBS[job_id]["finished_at"] = time.time()
-                    _persist_job(SIM_JOBS[job_id])
-                    _prune_simulation_jobs()
+            _update_job(job_id, status='canceled', finished_at=time.time())
+        except SimulationResourceLimit as exc:
+            _update_job(job_id, status='failed', finished_at=time.time(), result=None, error=str(exc))
+        except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):
+            # No compensating write after an uncertain commit/integrity outcome.
+            _fence_uncertain_job(job_id)
         except Exception as exc:
-            with SIM_JOBS_LOCK:
-                if job_id in SIM_JOBS:
-                    SIM_JOBS[job_id]["status"] = "failed"
-                    SIM_JOBS[job_id]["finished_at"] = time.time()
-                    SIM_JOBS[job_id]["error"] = str(exc)
-                    _persist_job(SIM_JOBS[job_id])
-                    _prune_simulation_jobs()
+            if owner_uncertain(engine):
+                _fence_uncertain_job(job_id)
+            else:
+                error = str(exc)
+                try:
+                    checked_text(error, RESOURCE_LIMITS['error_utf8_bytes'], 'error')
+                except SimulationResourceLimit:
+                    error = 'resource_limit:error'
+                _update_job(job_id, status='failed', finished_at=time.time(), result=None, error=error)
         finally:
             with SIM_JOBS_LOCK:
                 SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
             SIM_WORK_SLOT.release()
+            if entered:
+                producer.__exit__(None, None, None)
 
     persisted = False
     try:
+        with Session(engine) as session:
+            admitted_repo = Repository(session)
+            admitted_repo.save_simulation_job(job)
+            persisted = True
+            snapshot_token = admitted_repo.background_snapshot_token(job_id)
         with SIM_JOBS_LOCK:
             SIM_JOBS[job_id] = job
             SIM_JOB_CANCEL_EVENTS[job_id] = cancel_event
-        _persist_job(job)
-        persisted = True
         t = threading.Thread(target=_runner, daemon=True)
+        SIM_JOB_WORKERS[job_id] = (t, cancel_event)
         t.start()
-    except Exception:
+    except Exception as exc:
+        SIM_JOB_WORKERS.pop(job_id, None)
         with SIM_JOBS_LOCK:
             SIM_JOBS.pop(job_id, None)
             SIM_JOB_CANCEL_EVENTS.pop(job_id, None)
-        if persisted:
-            job.update(status="failed", finished_at=time.time(), error="Simulation worker could not start.")
-            try:
-                _persist_job(job)
-            except Exception:
-                pass
-        SIM_WORK_SLOT.release()
+        try:
+            if isinstance(exc, (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed)) or owner_uncertain(engine):
+                _fence_uncertain_job(job_id, start_locked=True)
+            elif persisted:
+                job.update(status="failed", finished_at=time.time(), error="Simulation worker could not start.")
+                try:
+                    _persist_job(job)
+                except (SQLAlchemyError, CapacityIntegrityError, CapacityAdmissionClosed):
+                    _fence_uncertain_job(job_id, start_locked=True)
+                    raise
+                except Exception:
+                    if owner_uncertain(engine):
+                        _fence_uncertain_job(job_id, start_locked=True)
+                        raise
+        finally:
+            SIM_WORK_SLOT.release()
         raise
     return {"job_id": job_id, "status": "queued"}
 
@@ -1129,7 +1358,10 @@ def simulate_batch_cancel(job_id: str, repo: Repository = Depends(get_repo)) -> 
             row = repo.get_simulation_job(job_id)
             if row is None:
                 raise HTTPException(status_code=404, detail="Simulation job not found")
+            _retired_job_response(row)
             return _job_dict(row)
+        if job['status'] == 'retired':
+            raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': job_id})
         event = SIM_JOB_CANCEL_EVENTS.get(job_id)
         if event is not None:
             event.set()
@@ -1141,15 +1373,21 @@ def simulate_batch_status(job_id: str, repo: Repository = Depends(get_repo)) -> 
     with SIM_JOBS_LOCK:
         job = SIM_JOBS.get(job_id)
         if job is not None:
+            if job['status'] == 'retired':
+                raise HTTPException(410, detail={'code': 'simulation_job_retired', 'job_id': job_id})
             return {key: value for key, value in job.items() if key != "request"}
     row = repo.get_simulation_job(job_id)
     if row is None:
         raise HTTPException(status_code=404, detail="Simulation job not found")
+    _retired_job_response(row)
     return _job_dict(row)
 
 
 @app.post("/ai/diagnostics")
 def ai_diagnostics(payload: AIDiagnosticsRequest, repo: Repository = Depends(get_repo)) -> dict:
+    with SIM_START_LOCK:
+        if SIM_SHUTTING_DOWN:
+            raise HTTPException(503, detail={'code': 'simulation_shutting_down'})
     rows = repo.list_decks()
     by_id = {row.id: row for row in rows}
 
@@ -1454,6 +1692,8 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
     reveal_at_game_end(state)
     if state.winner is None or match.current_game_recorded:
         return
+    from ai.sideboard_facts import seal_game
+    seal_game(state)
     p1 = state.players[1]
     p2 = state.players[2]
     state.log.append(
@@ -1577,19 +1817,43 @@ def _remember_public_types(match: MatchController) -> None:
 
 def _ai_sideboard_for_next_game(match: MatchController, repo: Repository | None) -> None:
     from card_data.hydration import hydrate_deck_cards
+    from ai.sideboard_facts import summary_for
+    from ai import sideboard_policy as policy
+    from collections import Counter
+
+    if match.auto_sideboard is not True:
+        return
 
     for pid in (1, 2):
         if match.controllers.get(pid) != "ai" or not match.sideboards.get(pid):
             continue
-        known_archetype = match.ai[pid].opponent_archetype if _is_full_ai_match(match) else None
-        cards_out, cards_in = plan_sideboard(
-            match.mainboards[pid], match.sideboards[pid], match.seen_opponent_types.get(pid, set()), known_archetype,
-        )
+        summary = summary_for(match.state, pid)
+        deck = {'mainboard': match.mainboards[pid], 'sideboard': match.sideboards[pid]}
+        route = policy.route_for(deck, summary)
+        if route == 'knowledge':
+            swaps = policy.plan_swaps(deck, summary, summary)
+            out = Counter(swap['out'] for swap in swaps)
+            into = Counter(swap['in'] for swap in swaps)
+            cards_out = [{'card_name': name, 'quantity': qty} for name, qty in sorted(out.items())]
+            cards_in = [{'card_name': name, 'quantity': qty} for name, qty in sorted(into.items())]
+        elif route == 'legacy':
+            known_archetype = match.ai[pid].opponent_archetype if _is_full_ai_match(match) else None
+            cards_out, cards_in = plan_sideboard(
+                match.mainboards[pid], match.sideboards[pid], set(summary['observed_types']), known_archetype, max_swaps=3)
+        else:
+            continue
         if not cards_in:
             continue
+        if (sum(item['quantity'] for item in cards_in) > 3
+                or any(item['card_name'] in summary['protected_stock']
+                    or item['quantity'] > summary['held_counts'].get(item['card_name'], 0) for item in cards_out)):
+            continue
         next_main, next_side = apply_sideboard_swaps(match.mainboards[pid], match.sideboards[pid], cards_out, cards_in)
-        match.mainboards[pid] = hydrate_deck_cards(repo, next_main)
-        match.sideboards[pid] = hydrate_deck_cards(repo, next_side)
+        if sum(item['quantity'] for item in next_main) != sum(item['quantity'] for item in match.mainboards[pid]):
+            raise ValueError('Sideboarding changed original main size')
+        hydrated_main = hydrate_deck_cards(repo, next_main)
+        hydrated_side = hydrate_deck_cards(repo, next_side)
+        match.mainboards[pid], match.sideboards[pid] = hydrated_main, hydrated_side
         match.state.log.append(f"{match.state.players[pid].name} sideboards {sum(item['quantity'] for item in cards_in)} card(s) for the next game.")
 
 
@@ -1609,6 +1873,7 @@ def _start_next_game_state(match: MatchController, *, play_first: bool = True, r
     seed = game_seed(match.root_seed, match.game_number + 1)
     new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name, seed=seed)
     new_state.id = prior_id
+    new_state.sideboard_facts['game_id'] = prior_id
     new_state.score = dict(match.state.score)
     new_state.best_of = match.best_of
     new_state.replacement_choice_required = any(

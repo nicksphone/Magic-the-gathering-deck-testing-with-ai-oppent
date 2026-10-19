@@ -1,0 +1,93 @@
+[
+  {
+    "name": "Twinshot Sniper",
+    "url": "https://api.scryfall.com/cards/named?exact=Twinshot%20Sniper",
+    "file": "twinshot-sniper.json",
+    "sha256": "23ce6813335697376eb1398f0c5f94e03ab2cdffda8d8ae6162e2e8adbde2453",
+    "oracle_id": "b72fd535-0051-4f59-9d99-75895f751006"
+  },
+  {
+    "name": "Eiganjo, Seat of the Empire",
+    "url": "https://api.scryfall.com/cards/named?exact=Eiganjo%2C%20Seat%20of%20the%20Empire",
+    "file": "eiganjo-seat-of-the-empire.json",
+    "sha256": "db911a174eb87f2f3bafd4636933308d5cf4c70f5ed76364ef16997699908495",
+    "oracle_id": "7edb3d15-4f70-4ebe-8c5e-caf6a225076d"
+  },
+  {
+    "name": "Zombify",
+    "url": "https://api.scryfall.com/cards/named?exact=Zombify",
+    "file": "zombify.json",
+    "sha256": "acfef9ac9498402fcc6c16e49e3e2912f105d9367194ea4b213c4d71d0827b7d",
+    "oracle_id": "bb95db4d-5017-4121-bf79-d68476602d8c"
+  },
+  {
+    "name": "Regrowth",
+    "url": "https://api.scryfall.com/cards/named?exact=Regrowth",
+    "file": "regrowth.json",
+    "sha256": "55f1a6f7a19da827dea368888eb236e464ae6ee0dafc8b4880d6fbc4cb4b540f",
+    "oracle_id": "e6e4a8bd-5c40-4654-8de1-0da9afed90fd"
+  },
+  {
+    "name": "Growth Spiral",
+    "url": "https://api.scryfall.com/cards/named?exact=Growth%20Spiral",
+    "file": "growth-spiral.json",
+    "sha256": "091f9d3d95e04c2310b95c4bc338d65448b6dc5e4528d756b40bbf2ff2fb7148",
+    "oracle_id": "34bcc217-dd91-45a0-90d7-a94d02f1f317"
+  },
+  {
+    "name": "Boomerang",
+    "url": "https://api.scryfall.com/cards/named?exact=Boomerang",
+    "file": "boomerang.json",
+    "sha256": "1b14fc9a916aa75310870f5c1f904d2c79ec5d1da19174ad405d7524d1a9b2fb",
+    "oracle_id": "dc4a4996-108a-4aac-850f-2d9f76403446"
+  },
+  {
+    "name": "Unsummon",
+    "url": "https://api.scryfall.com/cards/named?exact=Unsummon",
+    "file": "unsummon.json",
+    "sha256": "9affc85f38bc98cec2218a89bbdbbc0dee444cb3151be63ecad6ee30fd0b66de",
+    "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561"
+  },
+  {
+    "name": "Ray of Command",
+    "url": "https://api.scryfall.com/cards/named?exact=Ray%20of%20Command",
+    "file": "ray-of-command.json",
+    "sha256": "248cfd0304564ff17db62ba40276d2735622e6366d1635920563292863fed75b",
+    "oracle_id": "adf41d29-403d-4936-9689-3148d103e700"
+  },
+  {
+    "name": "Whip of Erebos",
+    "url": "https://api.scryfall.com/cards/named?exact=Whip%20of%20Erebos",
+    "file": "whip-of-erebos.json",
+    "sha256": "76eb687d844e5a603f4dab1135f989757e47a606b230f0e4ca0c79337123c582",
+    "oracle_id": "53987a39-c18c-4c13-b1ea-fd1b2a369f9e"
+  },
+  {
+    "name": "Leyline of Anticipation",
+    "url": "https://api.scryfall.com/cards/named?exact=Leyline%20of%20Anticipation",
+    "file": "leyline-of-anticipation.json",
+    "sha256": "ef29f3f72a77d201848b0cabbf33824d25e076e8bd5b9f6ba3fc1ac7656c5455",
+    "oracle_id": "9dc65ffe-17fc-4280-b4bd-78073ac7e12b"
+  },
+  {
+    "name": "Soul-Scar Mage",
+    "url": "https://api.scryfall.com/cards/named?exact=Soul-Scar%20Mage",
+    "file": "soul-scar-mage.json",
+    "sha256": "34d77bda3783b40562ac564cd5b7c6c4aff84e6a6fcf7751fc70988b85dd687b",
+    "oracle_id": "009240f3-b7f8-4cbe-a3e9-974da66fb62c"
+  },
+  {
+    "name": "Torrential Gearhulk",
+    "url": "https://api.scryfall.com/cards/named?exact=Torrential%20Gearhulk",
+    "file": "torrential-gearhulk.json",
+    "sha256": "b18811df80ed519ab59dcb8744840ad6d37c095f4c7c99b22f39f0d715b6b8ca",
+    "oracle_id": "a6395447-677d-4c39-8eda-2d57e527c94e"
+  },
+  {
+    "name": "Humility",
+    "url": "https://api.scryfall.com/cards/named?exact=Humility",
+    "file": "humility.json",
+    "sha256": "eb68a098b4bd6de1d3c02afe60e37461a5c8268108132b0d3351119a50de8b49",
+    "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0"
+  }
+]

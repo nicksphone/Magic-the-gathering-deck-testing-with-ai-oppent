@@ -1,0 +1,33 @@
+{
+  "new_intake": [
+    {
+      "name": "Crypt Rats",
+      "source_request_uri": "https://api.scryfall.com/cards/named?exact=Crypt%20Rats",
+      "returned_card_uri": "https://api.scryfall.com/cards/96916db2-5121-4ff1-880c-369744f11ecf",
+      "raw_sha256": "a0337f0db28bf0b3a82073d59eef869bf517b800720f9339437858d06fcba70d",
+      "kind": "upstream-public-Scryfall-RAW",
+      "oracle_modified": false
+    },
+    {
+      "name": "Darksteel Sentinel",
+      "source_request_uri": "https://api.scryfall.com/cards/named?exact=Darksteel%20Sentinel",
+      "returned_card_uri": "https://api.scryfall.com/cards/f9bd80ce-e36a-47ff-a009-17a05afce187",
+      "raw_sha256": "cb8502e81d51884b604f60b56ca9adc85b8d943afde1ae585b714192f58bd423",
+      "kind": "upstream-public-Scryfall-RAW",
+      "oracle_modified": false
+    },
+    {
+      "name": "Rumbling Baloth",
+      "source_request_uri": "https://api.scryfall.com/cards/named?exact=Rumbling%20Baloth",
+      "returned_card_uri": "https://api.scryfall.com/cards/93a56610-482b-4ddf-88e1-e4a2edf4fa0f",
+      "raw_sha256": "ab65a43726637e99f78134b45ae3ad6a5a3043001b38af30307b2f960f0a82fd",
+      "kind": "upstream-public-Scryfall-RAW",
+      "oracle_modified": false
+    }
+  ],
+  "copied_git_fixtures": {
+    "commit": "3a7db1e241034752bfd87ed14a22d445b4675986",
+    "bears": "backend/tests/vraska_full/fixtures/grizzly-bears-scryfall-raw.json",
+    "bolt": "backend/tests/vraska_full/fixtures/lightning-bolt.json"
+  }
+}

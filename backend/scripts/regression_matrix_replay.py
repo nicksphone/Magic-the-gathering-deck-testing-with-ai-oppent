@@ -20,7 +20,7 @@ from ai.deck_analysis import guess_archetype
 from analytics.replay_tools import classify_first_divergence, classify_log_line, classify_timeout_state, first_log_divergence, normalize_log_line
 from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
-from decks.selection import select_representative_decks
+from decks.selection import select_representative_decks, prepare_cohort, cohort_identity, cohort_pair_seed
 from game_state.state import MatchFactory, pregame_actor
 from game_state.series_policy import game_seed, next_play_draw_chooser
 from persistence.db import engine, init_db
@@ -92,7 +92,7 @@ def _timed_stage(observer, context, stage, operation):
 def _pair_schedule(left: dict, right: dict, count: int, seat_balanced: bool = True):
     """Pair each seed with both seat orders; repeats are not new samples."""
     for index in range(count):
-        seed = _stable_seed(left["name"], right["name"], index)
+        seed = cohort_pair_seed(left, right, index)
         yield seed, left, right, 1
         if seat_balanced:
             yield seed, right, left, 2
@@ -127,22 +127,26 @@ def _corpus_hash(decks: list[dict]) -> str:
                                     allow_nan=False).encode('utf-8')).hexdigest()
 
 
-def _load_deck_manifest(path: str, max_decks: int) -> tuple[list[dict], dict]:
-    """Use already resolved inputs verbatim; never rehydrate from a mutable cache."""
-    raw = Path(path).read_bytes()
-    manifest = json.loads(raw)
-    if not isinstance(manifest, dict) or type(manifest.get('schema_version')) is not int or manifest['schema_version'] != 1:
-        raise ValueError('Deck manifest requires schema_version 1')
-    decks = manifest.get('decks')
+def _validate_manifest_decks(decks, version):
     if not isinstance(decks, list) or len(decks) < 2:
         raise ValueError('Deck manifest requires at least two resolved decks')
     names = set()
+    identities = set()
     for deck in decks:
         if not isinstance(deck, dict) or not isinstance(deck.get('name'), str) or not deck['name'].strip():
             raise ValueError('Each manifest deck requires a nonempty name')
-        if deck['name'] in names:
+        if version == 1 and deck['name'] in names:
             raise ValueError('Manifest deck names must be unique')
         names.add(deck['name'])
+        if version == 2:
+            identity = cohort_identity(deck)
+            if not identity or deck.get('identity_key') != identity or identity in identities:
+                raise ValueError('Manifest requires unique canonical cohort identities')
+            identities.add(identity)
+            if deck.get('classification_status') == 'unknown':
+                raise ValueError('Unknown cohort data cannot be exported as resolved input')
+        elif deck.get('identity_key') is not None:
+            raise ValueError('Identified cohorts require manifest schema_version 2')
         board = deck.get('mainboard')
         if not isinstance(board, list) or not board or len(board) > 250:
             raise ValueError('Each manifest deck requires a nonempty resolved mainboard of at most 250 entries')
@@ -156,6 +160,21 @@ def _load_deck_manifest(path: str, max_decks: int) -> tuple[list[dict], dict]:
                 raise ValueError('Manifest cards require bounded quantities, names, Oracle text, mana cost and resolved type lines')
         if sum(card['quantity'] for card in board) > 250:
             raise ValueError('Manifest deck exceeds the 250-card application resource limit')
+        if version == 2:
+            from card_data.hydration import ready_for_match
+            if not all(ready_for_match(card) for card in board):
+                raise ValueError('Identified manifest requires complete card data')
+
+
+def _load_deck_manifest(path: str, max_decks: int) -> tuple[list[dict], dict]:
+    """Use validated pinned inputs verbatim; v1 retains legacy unique-name identity."""
+    raw = Path(path).read_bytes()
+    manifest = json.loads(raw)
+    if (not isinstance(manifest, dict) or type(manifest.get('schema_version')) is not int
+            or manifest['schema_version'] not in (1, 2)):
+        raise ValueError('Deck manifest requires schema_version 1 or identified version 2')
+    decks = manifest.get('decks')
+    _validate_manifest_decks(decks, manifest['schema_version'])
     expected = manifest.get('corpus_sha256')
     if not isinstance(expected, str) or expected != _corpus_hash(decks):
         raise ValueError('Manifest corpus_sha256 does not match its resolved decks')
@@ -167,9 +186,11 @@ def _load_deck_manifest(path: str, max_decks: int) -> tuple[list[dict], dict]:
 
 
 def _write_deck_manifest(path: str, decks: list[dict], provenance: dict) -> None:
+    version = 2 if any(deck.get('identity_key') is not None for deck in decks) else 1
+    _validate_manifest_decks(decks, version)
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(json.dumps({'schema_version': 1, 'decks': decks,
+    out.write_text(json.dumps({'schema_version': version, 'decks': decks,
                               'corpus_sha256': _corpus_hash(decks), 'provenance': provenance},
                              indent=2, allow_nan=False), encoding='utf-8')
 
@@ -198,70 +219,108 @@ def _match_termination_status(match: dict) -> str:
 
 
 def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, *, starting_player: int = 1,
-             observer: Callable[[dict], None] | None = None) -> dict:
+             observer: Callable[[dict], None] | None = None, trace_builder=None, budget=None, record_game=None) -> dict:
     if starting_player not in (1, 2):
         raise ValueError("Starting player must be 1 or 2")
+    if record_game is not None:
+        import time
+        game_started = time.monotonic()
     state = MatchFactory.from_decks(deck_a, deck_b, seed=seed)
     state.active_player = starting_player
     state.priority_player = starting_player
     state.mechanic_choice_players = {1, 2}
-    engine_rules = RulesEngine()
-    ai_a = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a), opponent_archetype=guess_archetype(deck_b))
-    ai_b = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b), opponent_archetype=guess_archetype(deck_a))
     ticks = 0
-    while state.winner is None and ticks < max_ticks:
-        pid = pregame_actor(state) if state.pregame_pending else state.priority_player
-        context = ({'event': 'decision_stage', 'game_seed': seed, 'tick': ticks + 1,
-                    'pid': pid, 'turn': state.turn, 'step': str(state.step),
-                    'life': {str(seat): player.life for seat, player in state.players.items()},
-                    'mana_pool': dict(state.players[pid].mana_pool),
-                    'lands_played_this_turn': state.players[pid].lands_played_this_turn,
-                    'hand': [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
-                    'opponent_battlefield': [state.cards[cid].name for cid in state.players[3-pid].battlefield if cid in state.cards],
-                    'battlefield': [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards]}
-                   if observer is not None else {})
-        legal = _timed_stage(observer, context, 'legal_moves', lambda: engine_rules.legal_moves(state, pid))
-        if not legal:
-            action = {"type": "pass_priority"}
-        else:
-            agent = ai_a if pid == 1 else ai_b
-            action = _timed_stage(observer, context, 'choose_action', lambda: agent.choose_action(state, legal, pid)).action
-        action = complete_action(action)
-        trace_line = (
-            "AI TRACE "
-            + json.dumps(
-                {
-                    "trace": True,
-                    "pid": pid,
-                    "turn": state.turn,
-                    "step": str(state.step),
-                    "active_player": state.active_player,
-                    "priority_player": state.priority_player,
-                    "hand": [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
-                    "battlefield": [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards],
-                    "legal_non_pass": any(move.get("type") != "pass_priority" for move in legal),
-                    "legal_meaningful": any(
-                        move.get("type") in {
-                            "play_land", "cast_spell", "activate_ability", "activate_loyalty",
-                            "cycle_card", "equip", "attack",
-                        }
-                        for move in legal
-                    ),
-                    "legal_action_types": sorted({str(move.get("type")) for move in legal}),
-                    "action": action,
-                },
-                separators=(",", ":"),
-            )
-        )
-        candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',
-                                 lambda: checked_action(state, engine_rules, pid, action))
-        candidate.log.insert(len(state.log), trace_line)
-        state = candidate
-        ticks += 1
+    stop_reason = None
+    resource_limit_dimension = None
+    try:
+        if budget is not None:
+            budget.begin_game(state.log)
+        engine_rules = RulesEngine()
+        ai_a = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_a), opponent_archetype=guess_archetype(deck_b))
+        ai_b = AIAgent(difficulty=difficulty, archetype=guess_archetype(deck_b), opponent_archetype=guess_archetype(deck_a))
+        ticks = 0
+        while state.winner is None and ticks < max_ticks:
+            if budget is not None:
+                budget.before_clone()
+            pid = pregame_actor(state) if state.pregame_pending else state.priority_player
+            context = ({'event': 'decision_stage', 'game_seed': seed, 'tick': ticks + 1,
+                        'pid': pid, 'turn': state.turn, 'step': str(state.step),
+                        'life': {str(seat): player.life for seat, player in state.players.items()},
+                        'mana_pool': dict(state.players[pid].mana_pool),
+                        'lands_played_this_turn': state.players[pid].lands_played_this_turn,
+                        'hand': [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
+                        'opponent_battlefield': [state.cards[cid].name for cid in state.players[3-pid].battlefield if cid in state.cards],
+                        'battlefield': [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards]}
+                       if observer is not None else {})
+            legal = _timed_stage(observer, context, 'legal_moves', lambda: engine_rules.legal_moves(state, pid))
+            decision = None
+            if not legal:
+                action = {"type": "pass_priority"}
+            else:
+                agent = ai_a if pid == 1 else ai_b
+                decision = _timed_stage(observer, context, 'choose_action', lambda: agent.choose_action(state, legal, pid))
+                action = decision.action
+            action = complete_action(action)
+            if trace_builder is not None:
+                if budget is not None:
+                    budget.trace_inputs(state, pid, action, getattr(decision, 'reasoning', ''))
+                payload = trace_builder(state, pid, legal, action, decision)
+                trace_line = (budget.trace_line(payload) if budget is not None else
+                              'AI TRACE ' + json.dumps(payload, separators=(',', ':'), allow_nan=False))
+            else:
+                trace_line = (
+                    "AI TRACE "
+                    + json.dumps(
+                        {
+                            "trace": True,
+                            "pid": pid,
+                            "turn": state.turn,
+                            "step": str(state.step),
+                            "active_player": state.active_player,
+                            "priority_player": state.priority_player,
+                            "hand": [state.cards[cid].name for cid in state.players[pid].hand if cid in state.cards],
+                            "battlefield": [state.cards[cid].name for cid in state.players[pid].battlefield if cid in state.cards],
+                            "legal_non_pass": any(move.get("type") != "pass_priority" for move in legal),
+                            "legal_meaningful": any(
+                                move.get("type") in {
+                                    "play_land", "cast_spell", "activate_ability", "activate_loyalty",
+                                    "cycle_card", "equip", "attack",
+                                }
+                                for move in legal
+                            ),
+                            "legal_action_types": sorted({str(move.get("type")) for move in legal}),
+                            "action": action,
+                        },
+                        separators=(",", ":"),
+                    )
+                )
+            candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',
+                                     lambda: checked_action(state, engine_rules, pid, action))
+            if budget is None:
+                candidate.log.insert(len(state.log), trace_line)
+            else:
+                budget.accept_candidate(state, candidate, trace_line)
+            state = candidate
+            ticks += 1
 
+    except Exception as exc:
+        if record_game is None:
+            raise
+        from analytics.resource_budget import SimulationResourceLimit
+        stop_reason = 'resource_limit' if isinstance(exc, SimulationResourceLimit) else 'action_error'
+        if type(exc) is SimulationResourceLimit:
+            dimension = getattr(exc, 'dimension', None)
+            if type(dimension) is str and dimension in (
+                'deadline', 'game_log', 'game_log_entries', 'batch_log', 'batch_log_entries',
+                'trace_scalar', 'trace_nodes', 'trace_depth', 'trace_entry', 'action_log',
+            ):
+                resource_limit_dimension = dimension
+
+    if record_game is not None:
+        game_elapsed_seconds = time.monotonic() - game_started
     normalized_log = [normalize_log_line(line) for line in state.log]
     log_hash = hashlib.sha256("\n".join(normalized_log).encode("utf-8")).hexdigest()
-    return {
+    result = {
         "winner": state.winner,
         "turn": state.turn,
         "ticks": ticks,
@@ -270,10 +329,40 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
         "timeout": state.winner is None,
         "starting_player": starting_player,
     }
+    if stop_reason is not None:
+        result['stop_reason'] = stop_reason
+    if record_game is not None:
+        result.update(resource_limit_dimension=resource_limit_dimension,
+                      game_elapsed_seconds=game_elapsed_seconds)
+        _record_game_evidence(result, state.log, record_game)
+    return result
+
+
+def _record_game_evidence(result, raw_log, record_game):
+    """The writer's return is a receipt, never an alternate game outcome."""
+    before_encode = getattr(record_game, 'before_encode', None)
+    if before_encode is not None:
+        before_encode(result, raw_log)
+    raw = json.dumps(raw_log, ensure_ascii=True, separators=(',', ':'), allow_nan=False).encode('utf-8')
+    try:
+        receipt = record_game(json.loads(json.dumps(result)), list(raw_log))
+        reference = receipt.get('reference') if type(receipt) is dict else None
+        if (type(receipt) is not dict or receipt.get('complete') is not True
+                or type(receipt.get('bytes')) is not int or receipt['bytes'] != len(raw)
+                or type(receipt.get('raw_sha256')) is not str
+                or receipt['raw_sha256'] != hashlib.sha256(raw).hexdigest()
+                or type(reference) is not str or len(reference) != 12
+                or not reference.startswith('game-') or not reference.endswith('.json')
+                or not all('0' <= char <= '9' for char in reference[5:7]) or reference[5:7] == '00'):
+            raise ValueError('Incomplete game evidence receipt')
+        result['evidence'] = {key: receipt[key] for key in ('complete', 'bytes', 'raw_sha256', 'reference')}
+    except Exception:
+        result.setdefault('stop_reason', 'evidence_error')
+        result['evidence'] = None
 
 
 def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, best_of: int, *,
-              observer: Callable[[dict], None] | None = None) -> dict:
+              observer: Callable[[dict], None] | None = None, game_runner=None) -> dict:
     """Run a seeded match while preserving each game's independent replay seed."""
     wins = {1: 0, 2: 0}
     games: list[dict] = []
@@ -286,12 +375,12 @@ def run_match(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str
         options = {'starting_player': chooser}
         if observer is not None:
             options['observer'] = lambda record: observer({**record, 'game_index': game_index + 1})
-        game = run_game(deck_a, deck_b, current_seed, difficulty, max_ticks, **options)
+        game = (run_game if game_runner is None else game_runner)(deck_a, deck_b, current_seed, difficulty, max_ticks, **options)
         game["seed"] = current_seed
         game["play_draw_chooser"] = chooser
         game["starting_player"] = chooser
         games.append(game)
-        if game["timeout"]:
+        if game["timeout"] or (game_runner is not None and (game['winner'] is None or game.get('stop_reason'))):
             break
         if game["winner"] != 0:
             counted_games += 1
@@ -336,13 +425,18 @@ def main() -> None:
     trace_path = Path(args.trace_output) if args.trace_output else None
     metrics_path = Path(args.decision_metrics) if args.decision_metrics else None
     diagnostic_paths = [path for path in (trace_path, metrics_path) if path is not None]
-    protected_paths = [args.output, str(args.output) + '.progress.json',
-                       args.deck_manifest, args.write_deck_manifest]
-    if len({path.resolve() for path in diagnostic_paths}) != len(diagnostic_paths):
-        p.error('Trace and metrics outputs must differ')
-    for path in diagnostic_paths:
-        if any(path.resolve() == Path(value).resolve() for value in protected_paths if value):
-            p.error('Diagnostic outputs must differ from summary, progress and deck manifest paths')
+    artifacts = {'summary': args.output, 'progress': str(args.output) + '.progress.json',
+                 'deck input': args.deck_manifest, 'deck export': args.write_deck_manifest,
+                 'trace': args.trace_output, 'decision metrics': args.decision_metrics}
+    paths = [(name, Path(value)) for name, value in artifacts.items() if value is not None]
+    try:
+        for (left_name, left), (right_name, right) in combinations(paths, 2):
+            # resolve catches symbolic aliases; samefile also catches hard links.
+            if (left.resolve() == right.resolve()
+                    or (left.exists() and right.exists() and left.samefile(right))):
+                p.error(f'{left_name} and {right_name} paths must differ')
+    except (OSError, RuntimeError) as exc:
+        p.error(f'Cannot validate artifact paths: {exc}')
     for path in diagnostic_paths:
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -357,19 +451,14 @@ def main() -> None:
         except (ValueError, OSError) as exc:
             p.error(str(exc))
     else:
-        init_db()
         with Session(engine) as session:
             repo = Repository(session)
-            ensure_builtin_decks(repo)
-            ensure_expansion_top_decks(repo)
-            rows = repo.list_decks()
-        selected_decks = select_representative_decks(rows, args.max_decks, guess_archetype_fn=guess_archetype)
-        with Session(engine) as session:
-            hydration_repo = Repository(session)
-            decks = [{**deck, "mainboard": hydrate_deck_cards(hydration_repo, deck["mainboard"])}
-                     for deck in selected_decks]
-        input_provenance = {'input_source': 'repository_bootstrap', 'corpus_sha256': _corpus_hash(decks),
+            rows = prepare_cohort(repo.list_decks(), resolve_deck_fn=lambda board: hydrate_deck_cards(repo, board))
+            decks = select_representative_decks(rows, args.max_decks, guess_archetype_fn=guess_archetype)
+        input_provenance = {'input_source': 'repository_readonly', 'corpus_sha256': _corpus_hash(decks),
                             'cache_policy': 'resolved from this isolated repository database; export to pin subsequent runs'}
+    if len(decks) < 2 or any(deck.get('classification_status') == 'unknown' for deck in decks):
+        p.error('Need at least two cohorts with complete local canonical card data')
     if args.write_deck_manifest:
         _write_deck_manifest(args.write_deck_manifest, decks, input_provenance)
 
@@ -395,7 +484,7 @@ def main() -> None:
         "input_provenance": input_provenance,
         "protocol": {"seeds_per_pair": args.matches_per_pair, "seat_balanced": not args.single_seat,
                      "difficulty": args.difficulty, "max_ticks_per_game": args.max_ticks,
-                     "seed_policy": "sha256(deck_a::deck_b::index), game seed = series seed + game index",
+                     "seed_policy": "legacy names: sha256(deck_a::deck_b::index); identified cohorts: sha256(JSON identities/index); game seed = series seed + game index",
                      "start_policy": "seat 1 chooses game one; prior loser chooses thereafter; draw retains chooser; AI chooses play; no sideboarding",
                      "timeout_policy": "unresolved at tick cap; excluded from completed-series win rate",
                      "repeatability_runs_per_sample": 2},
@@ -413,15 +502,21 @@ def main() -> None:
     for left, right in combinations(decks, 2):
         summary["pairs"] += 1
         pair = {"deck_a": left["name"], "deck_b": right["name"], "games": []}
+        if left.get('identity_key') or right.get('identity_key'):
+            pair.update(deck_a_identity=left.get('identity_key'), deck_b_identity=right.get('identity_key'))
         for seed, seat_one, seat_two, deck_a_seat in _pair_schedule(left, right, args.matches_per_pair, not args.single_seat):
             try:
                 trace_context = {'event': 'replay_trace_run', 'seed': seed,
                                  'deck_a_seat': deck_a_seat, 'seat_one_deck': seat_one['name'],
                                  'seat_two_deck': seat_two['name']}
+                if seat_one.get('identity_key') or seat_two.get('identity_key'):
+                    trace_context.update(seat_one_identity=seat_one.get('identity_key'),
+                                         seat_two_identity=seat_two.get('identity_key'))
                 def measured_match(run):
                     options = {}
                     if metrics_path is not None:
                         options['observer'] = lambda record: _append_replay_trace(metrics_path, {
+                            **{key: value for key, value in trace_context.items() if key.endswith('_identity')},
                             **record, 'seed': seed, 'deck_a_seat': deck_a_seat,
                             'seat_one_deck': seat_one['name'], 'seat_two_deck': seat_two['name'],
                             'repeatability_run': run,
@@ -436,7 +531,8 @@ def main() -> None:
                 if args.progress:
                     summary['anomaly_counts'] = dict(anomaly_counts)
                     _report_progress(args.output, summary, total, started, status='failed',
-                                     last_sample={'seed': seed, 'deck_a_seat': deck_a_seat,
+                                     last_sample={**{key: value for key, value in trace_context.items() if key.endswith('_identity')},
+                                                  'seed': seed, 'deck_a_seat': deck_a_seat,
                                                   'seat_one_deck': seat_one['name'], 'seat_two_deck': seat_two['name']},
                                      error=str(exc))
                 raise
@@ -454,6 +550,9 @@ def main() -> None:
             if termination_status != "resolved":
                 anomaly_counts[termination_status] += 1
             pair["games"].append({
+                **({"seat_one_identity": seat_one.get('identity_key'), "seat_two_identity": seat_two.get('identity_key'),
+                    "winner_identity": (left.get('identity_key') if a['winner'] == deck_a_seat else right.get('identity_key'))
+                    if a['winner'] in (1, 2) else None} if left.get('identity_key') or right.get('identity_key') else {}),
                 "seed": seed,
                 "deck_a_seat": deck_a_seat,
                 "seat_one_deck": seat_one["name"],
@@ -482,8 +581,9 @@ def main() -> None:
                 summary['anomaly_counts'] = dict(anomaly_counts)
                 row = pair['games'][-1]
                 _report_progress(args.output, summary, total, started,
-                                 last_sample={key: row[key] for key in ('seed', 'deck_a_seat', 'seat_one_deck',
-                                     'seat_two_deck', 'winner', 'termination_status', 'deterministic', 'drift_excerpt')})
+                                 last_sample={**{key: value for key, value in trace_context.items() if key.endswith('_identity')},
+                                     **{key: row[key] for key in ('seed', 'deck_a_seat', 'seat_one_deck',
+                                     'seat_two_deck', 'winner', 'termination_status', 'deterministic', 'drift_excerpt')}})
         pair["outcomes"] = _pair_outcomes(pair["games"])
         summary["pair_results"].append(pair)
 

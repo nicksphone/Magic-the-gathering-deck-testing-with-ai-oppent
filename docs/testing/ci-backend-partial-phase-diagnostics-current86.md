@@ -1,0 +1,19 @@
+# Nonfinal Backend Phase Diagnostics: Current86
+
+The bounded synthetic reporter component passed4whole unittest modules/86test bodies,0failures/errors/skips in5.507s (11.338970124s administrative supervisor), outer exit0. Original78 tests and227 assertion-call ASTs were retained; the unchanged NEW8 passed, including independent full-document and exact serialized-JSON healthy goldens. This is not a whole-backend, hosted-CI, browser, game, Phase1 or release qualification.
+
+## Behavior
+Only a missing required exit (`EVIDENCE_MISSING`) or successfully read invalid/empty exit text (`EXIT_CODE_INVALID`) adds optional `partial_diagnostics`. Top-level exit stays null, rows_exported=false, coverage incomplete and reporter status2; the original CLI/workflow still fail with fixed sanitized stderr. Nonregular/symlink/unreadable/Unicode exit errors do not enter this fallback. Source/evidence trust checks precede observation; no0/1/130 exit is guessed.
+
+The helper reads ONLY complete strict-UTF8/LF-terminated phases.jsonl, validates the entire snapshot before export, and constructs allowlisted report rows. Malformed/truncated/empty/unavailable input makes that optional namespace unavailable; no valid-prefix salvage, skipped rows, repair, new aggregate input cap or raw-content export. Ordered duplicates, setup-only rows, skip and xfail presence remain observations, never completed-test/pass certification. Whole node IDs are hashed before public-name projection; unresolvable public identities remain null. Existing numeric timing policy and20-slowest bound are reused. Failure/raw/signature/private witness files are not read by the helper. Valid-exit code flow/main and all other original definitions/constants/helpers remain unchanged by exact byte inverse.
+
+## Evidence And Limits
+The immutable prior once-RED had78original passes plusNEW1pass/7failing bodies:22 failure records(17failed subtests/5ordinary),0errors/skips. All failures were missing partial_diagnostics. GREEN ran the exact same86 test bytes once on explicit protected c3et Python3.12 runtime,3674files/4links/429dirs; source27files and runtime full inventories matched BEFORE/AFTER. The raw supplied d95c... inventory is preserved; guard-compatible137d... changes only bytes->size field names. No runtime substitution or old-runtime/result transfer.
+
+All7 preimport denial controls passed; no unexpected denials, FD difference, non-main threads, remaining self children or database. Physical closure2026-10-17T08:30:23.535811+00:00: known supervisor2488785/timeout2488800/Python2488801 ended;13-owned-target fuser exit1 with both streams empty. Shared-runtime scheduling window released then. No native game/global lease was involved. Passed subtest total is not recorded by the original unittest runner, so no count is invented.
+
+The parent audit admitted only the four original finite roles: fixture Git, reporter Git, original workflow Bash and original CLI. These are trusted cooperative child programs, not universal inherited child native-I/O isolation, a hostile sandbox or a per-child quota/PID certificate. No new child/read/write/cleanup privilege, root, aggregate input cap or900TERM15 bound was introduced.
+
+The historical cancelled AA7 sanitized artifact exported EXIT_CODE_INVALID/null exit/unavailable phase rows. Its actual underlying exit text and ledger were not observed; this feature does not recover that historical data, identify a cancellation/performance cause or turn an incomplete run into success. Raw backend logs/protected payloads were never fetched.
+
+Qualification source has product SHA256 `97f01101a30833e65e8b64d5eef2693eba99f674a64270f18f9890909fb96d5b`, unchanged NEW8 SHA256 `0867b630d55d6957f74b534572eb53ddf9039fa2950d3891ff6f6c5925f829b7`. This documentation is a post-terminal export artifact, not an additional executed test input. Parent review/promotion remains separate; no W/index/CI push was performed by the author.

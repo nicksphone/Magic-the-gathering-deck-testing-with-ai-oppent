@@ -8,6 +8,17 @@ CACHE_DIR = Path(__file__).resolve().parent / "image_cache"
 CACHE_ROUTE_PREFIX = "/card-images"
 
 
+def local_image_available(image_uri: str, *, cache_dir: Path | None = None) -> bool:
+    from urllib.parse import unquote, urlsplit
+    path = unquote(urlsplit(image_uri).path)
+    prefix = CACHE_ROUTE_PREFIX + "/"
+    if not path.startswith(prefix):
+        return False
+    filename = path[len(prefix):]
+    return bool(filename and Path(filename).name == filename
+                and ((CACHE_DIR if cache_dir is None else cache_dir) / filename).is_file())
+
+
 def ensure_generic_token_image() -> str:
     """Install the shipped offline fallback into the disposable media cache."""
     import shutil

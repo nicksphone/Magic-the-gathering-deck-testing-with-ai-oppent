@@ -182,9 +182,8 @@ def test_http_owned_choices_and_sqlite_recovery(game,seat,name):
     import main
     client,controller=game
     state,spell,hand=setup(name,seat)
-    state.id=controller.state.id
-    controller.state=state
-    persist(controller)
+    from tests.fixture_state_support import adopt_fixture_state
+    adopt_fixture_state(controller, state)
     rejected(client,controller,{'type':'choose_mechanic','card_ids':[hand[0].id]},3-seat)
     from sqlmodel import Session
     from persistence.db import engine

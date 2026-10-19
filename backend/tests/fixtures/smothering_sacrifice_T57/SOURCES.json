@@ -1,0 +1,23 @@
+{
+  "complete_response_bytes": 5102,
+  "complete_response_final_newline": false,
+  "complete_response_sha256": "ff0cec752805b3545a3399925b3fc3189163a0940c2fed1d280e3b9909d80786",
+  "id": "aac33238-e4bd-4c72-aecc-9905232c3ab4",
+  "intake_files": {
+    "PROVENANCE.json": "c4f4d6a2426481c733c0b370dff3a84a7d3e6856a0634259874e45f9502e46be",
+    "SHA256SUMS": "1bbe9aabba19c88cbbd358cf03489433b271c754dc962860dc4e8859612f042c",
+    "curl.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "curl.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "end-utc.txt": "24f623d7be80a4ef925d47bd1b8b1a5bc8d3dad55518c0781037d1ee9af7c842",
+    "http-status.txt": "c11e3f4837efde2441e23a7b9da02131f53bf59fddeb7147c4ab81afe400460f",
+    "response.headers": "6e62d47a7effe7ca9d833f2f16e2a65cf91fe3c901767859e13f42ec9dc7e4aa",
+    "response.json": "ff0cec752805b3545a3399925b3fc3189163a0940c2fed1d280e3b9909d80786",
+    "start-utc.txt": "313a625eb6929a1ab1a033e30c5cc8228b095f3e27fbbc15e42db5f1fee15da7"
+  },
+  "intake_files_location": "inputs/parent-intake; only response.json and PROVENANCE.json are source fixture data",
+  "name": "Smothering Abomination",
+  "no_API_tests_rules_upkeep_Devoid_or_gameplay_certificate": true,
+  "oracle_id": "c3db28e5-6162-4642-a1c9-a7ace0737950",
+  "origin": "diagnostics/ci/SMOTHERING-CANONICAL-INTAKE-20261017-1ss7pwy0",
+  "status": "PARENT_INTAKE_REUSED_PREP_ONLY_NO_WORKER_NETWORK"
+}

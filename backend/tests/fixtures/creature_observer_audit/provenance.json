@@ -1,0 +1,81 @@
+{
+  "source": "Scryfall official public API; inherited exact raw or fetched before offline execution",
+  "cards": [
+    {
+      "file": "primordial-sage.json",
+      "sha256": "6e89cdcbea03d3ad446c0fd1c1f25ebf8dc10d8ad302d69439bff410623e91ea",
+      "name": "Primordial Sage",
+      "oracle_id": "499f1e1e-d96e-481f-a5d9-eb38da927cd7",
+      "url": "https://api.scryfall.com/cards/named?exact=Primordial%20Sage",
+      "request_start_utc": "2026-10-06T18:43:39Z",
+      "complete_raw_response_preserved": true,
+      "inherited_from": "backend/tests/fixtures/trigger_instruction_prefix"
+    },
+    {
+      "file": "soul-of-the-harvest.json",
+      "sha256": "ea61353552154f67a9cd8767de1f657942178de29f2cc17fb635445d022b4d5f",
+      "name": "Soul of the Harvest",
+      "oracle_id": "6b9194dd-2296-4879-ac5e-f89b18431df6",
+      "url": "https://api.scryfall.com/cards/named?exact=Soul%20of%20the%20Harvest",
+      "request_start_utc": "2026-10-06T18:40:49Z",
+      "complete_raw_response_preserved": true,
+      "inherited_from": "backend/tests/fixtures/trigger_instruction_prefix"
+    },
+    {
+      "file": "harvester-of-souls.json",
+      "sha256": "bfca9bf9c8e4ea5feced87e94b12a3f2e9ba7c67bcc6cb0000b969c6e0808440",
+      "name": "Harvester of Souls",
+      "oracle_id": "5987ce77-10ad-4871-900a-5a005fcf4955",
+      "url": "https://api.scryfall.com/cards/named?exact=Harvester%20of%20Souls",
+      "request_start_utc": "2026-10-06T18:45:37Z",
+      "complete_raw_response_preserved": true,
+      "inherited_from": "backend/tests/fixtures/trigger_instruction_prefix"
+    },
+    {
+      "file": "village-rites.json",
+      "sha256": "af060bbb9e76829d1f7ff8322e369e914bfcbec02492235c0c0f6dd1304895f9",
+      "name": "Village Rites",
+      "oracle_id": "365548fb-5acc-4a8a-b20b-26d28b7d029f",
+      "url": "https://api.scryfall.com/cards/named?exact=Village%20Rites",
+      "request_start_utc": "2026-10-06T18:45:37Z",
+      "complete_raw_response_preserved": true,
+      "inherited_from": "backend/tests/fixtures/trigger_instruction_prefix"
+    },
+    {
+      "file": "grizzly-bears.json",
+      "sha256": "f50920c8a99928b6119b81aba8a7f7a3a74068036091a2bd929323125f7481b1",
+      "name": "Grizzly Bears",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "url": "https://api.scryfall.com/cards/named?exact=Grizzly%20Bears",
+      "request_start_utc": "2026-10-06T19:11:55.803475+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "raise-the-alarm.json",
+      "sha256": "c543cdf0cb14362ccb764ea5167e106b98226358cdfbb1335368c2b670bd1d6a",
+      "name": "Raise the Alarm",
+      "oracle_id": "5b2364d7-a811-4595-a1b4-224c70555ffa",
+      "url": "https://api.scryfall.com/cards/named?exact=Raise%20the%20Alarm",
+      "request_start_utc": "2026-10-06T19:11:56.099243+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "unsummon.json",
+      "sha256": "9affc85f38bc98cec2218a89bbdbbc0dee444cb3151be63ecad6ee30fd0b66de",
+      "name": "Unsummon",
+      "oracle_id": "837182db-1bf3-4a2c-bd01-1af9d9873561",
+      "url": "https://api.scryfall.com/cards/named?exact=Unsummon",
+      "request_start_utc": "2026-10-06T19:11:56.625690+00:00",
+      "complete_raw_response_preserved": true
+    },
+    {
+      "file": "island.json",
+      "sha256": "d8d45bda942640f4cbcc5af201e1a91e13785fa7f266303af031531b11782c43",
+      "name": "Island",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "url": "https://api.scryfall.com/cards/named?exact=Island",
+      "request_start_utc": "2026-10-06T19:11:56.892895+00:00",
+      "complete_raw_response_preserved": true
+    }
+  ]
+}

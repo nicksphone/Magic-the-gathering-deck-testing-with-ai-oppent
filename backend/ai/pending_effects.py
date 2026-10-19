@@ -11,6 +11,7 @@ import re
 from typing import Literal, TypedDict
 
 from game_state.state import CardInstance, MatchState, StackItem, Zone
+from game_state.copying import copy_match_state, _copy_card_field
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
 from rules_engine.oracle_text import without_reminder_text
@@ -22,7 +23,6 @@ SECONDARY_EFFECT_RE = re.compile(
 )
 
 _decision_projection = ContextVar("ai_decision_projection", default=None)
-_immutable_card_types = frozenset((str, int, float, bool, type(None), Zone))
 POSITION_SCORE_CACHE_BYTES = 16 * 1024 * 1024
 POSITION_SCORE_CACHE_ENTRIES = 256
 
@@ -43,6 +43,156 @@ def opaque_exile_opportunities(state: MatchState, player_id: int) -> tuple[Opaqu
     """
     return tuple(record.copy() for record in getattr(state, 'ai_opaque_exile_opportunities', ())
                  if record['controller'] == player_id and record['expires_turn'] >= state.turn)
+
+
+def granted_acquisition_forecast(state, item):
+    """Published count-only opportunity; never infer an opaque card's destination.
+
+    Return its controller, or None for an unqualified/unimplemented receipt.
+    The caller must cap acquisitions by public library size and must not turn
+    this forecast into hand cards, lands, mana or executable game permissions.
+    """
+    if item.effect_key != 'reveal_top_conditional':
+        return None
+    receipt = item.payload.get('__granted_target_receipt')
+    if not isinstance(receipt, dict):
+        return None
+    instruction = receipt.get('compiled_instruction')
+    if (not isinstance(instruction, list) or len(instruction) != 3
+            or instruction[0] not in {'Land', 'Creature', 'Artifact', 'Enchantment', 'Planeswalker'}
+            or instruction[2] != 'hand' or instruction[1] not in {'hand', 'battlefield'}
+            or instruction[1] == 'battlefield' and instruction[0] != 'Land'
+            or item.payload.get('instruction') != instruction
+            or receipt.get('trigger_controller') != item.controller):
+        return None
+    occurrence = receipt.get('targeting_occurrence')
+    if not isinstance(occurrence, list) or len(occurrence) != 2:
+        return None
+    cause = next((obj for obj in state.stack if obj.id == occurrence[0]), None)
+    if cause is None or cause.payload.get('__granted_target_revision') != occurrence[1]:
+        return None
+    capture = cause.payload.get('__granted_target_published_capture')
+    if (not isinstance(capture, dict) or capture.get('status') != 'captured'
+            or capture.get('captured') is not True
+            or not any({**row, 'targeting_occurrence': occurrence} == receipt
+                       for row in capture.get('receipts', []) if isinstance(row, dict))):
+        return None
+    from rules_engine.granted_target_triggers import _reference_key
+    try:
+        identity = [_reference_key(receipt['recipient_ref']),
+                    _reference_key(receipt['grant_source_ref']), receipt['clause_instance']]
+        prefix = 'granted-target:' + json.dumps([state.turn, identity], separators=(',', ':'))
+        limit = receipt['trigger_limit']
+        if limit is not None and (type(limit) is not int or limit < 1
+                or not any(f'{prefix}:{slot}' in state.trigger_once_seen_this_turn for slot in range(limit))):
+            return None
+    except (KeyError, TypeError):
+        return None
+    return item.controller if item.controller in state.players else None
+
+
+def pending_granted_acquisition_counts(state):
+    """Published, library-bounded opportunities, not hand cards or land value."""
+    counts = {pid: 0 for pid in state.players}
+    seen = set()
+    for item in state.stack:
+        controller = granted_acquisition_forecast(state, item)
+        if controller is None:
+            continue
+        receipt = json.dumps(item.payload['__granted_target_receipt'], sort_keys=True)
+        if receipt in seen:
+            continue
+        seen.add(receipt)
+        counts[controller] = min(counts[controller] + 1, len(state.players[controller].library))
+    return counts
+
+
+class UncertainSimulation(ValueError):
+    """AI-only boundary: a concrete hidden-zone outcome is not observable."""
+
+
+def _opaque_conditional_card(state, controller, payload):
+    from ai.information import is_unknown
+    player = state.players.get(controller)
+    if player is None:
+        return False
+    reference = payload.get('__revealed_card_reference')
+    if isinstance(reference, dict):
+        card = state.cards.get(reference.get('card_id'))
+        if card is None or card.zone != Zone.LIBRARY or card.id not in player.library:
+            return False
+    else:
+        if not player.library:
+            return False
+        card = state.cards.get(player.library[-1])
+    return is_unknown(card)
+
+
+def _opaque_source_linked_exile(state, effect_key, payload):
+    from ai.information import is_unknown
+    if effect_key == 'effect_sequence':
+        return any(_opaque_source_linked_exile(state, step['effect_key'], step['payload'])
+                   for step in payload.get('effects', []))
+    if effect_key != 'loyalty_source_exile' or payload.get('selection') != 'libraries':
+        return False
+    amount = payload.get('amount')
+    if type(amount) is not int or amount <= 0:
+        return False
+    return any(is_unknown(state.cards.get(cid)) for player in state.players.values()
+               for cid in player.library[-amount:])
+
+
+def simulation_frontier(state, player_id=None, action=None):
+    """Pure preflight for imminent resolution, not a ban on public responses."""
+    if action is not None:
+        kind = action.get('type')
+        pending = state.pending_mechanic_choice
+        if pending:
+            if (kind == 'choose_mechanic' and pending.get('player_id') == player_id
+                    and pending.get('effect_key') == 'reveal_top_conditional'
+                    and _opaque_conditional_card(state, player_id, pending.get('effect_payload') or {})):
+                return 'opaque_conditional_acquisition'
+            return None
+        if state.pending_trigger_order:
+            return None
+        if state.pending_replacement_choice:
+            pending = state.pending_replacement_choice
+            if kind != 'choose_replacement' or pending.get('player_id') != player_id:
+                return None
+        elif (kind != 'pass_priority' or player_id != state.priority_player
+              or 3-player_id not in state.passed_priority or state.step.value == 'untap'):
+            return None
+    if state.stack:
+        item = state.stack[-1]
+        if (item.effect_key == 'reveal_top_conditional'
+                and _opaque_conditional_card(state, item.controller, item.payload)):
+            return 'opaque_conditional_acquisition'
+        if _opaque_source_linked_exile(state, item.effect_key, item.payload):
+            return 'opaque_source_linked_exile'
+    return None
+
+
+def _require_simulation_frontier(state, player_id=None, action=None):
+    reason = simulation_frontier(state, player_id, action)
+    if reason is not None:
+        raise UncertainSimulation(reason)
+
+
+def simulation_take_action(engine, state, player_id, action, **kwargs):
+    _require_simulation_frontier(state, player_id, action)
+    return engine.take_action(state, player_id, action, **kwargs)
+
+
+def simulation_checked_action(state, engine, player_id, action):
+    from rules_engine.action_validation import checked_action
+    _require_simulation_frontier(state, player_id, action)
+    return checked_action(state, engine, player_id, action)
+
+
+def simulation_resolve_top(state):
+    from rules_engine.stack_engine import resolve_top_of_stack
+    _require_simulation_frontier(state)
+    return resolve_top_of_stack(state)
 
 
 def reuse_position_score(state, player_id, owner, compute):
@@ -83,40 +233,9 @@ def decision_projection_scope(state, player_id):
 
 def planning_copy(state, *, memo=None):
     """Copy all gameplay state, but not diagnostic history unused by search."""
-    log = getattr(state, "log", None)
-    memo = {} if memo is None else dict(memo)
-    if isinstance(log, list):
-        memo.setdefault(id(log), [])
-    # Avoid deepcopy's reconstruction/dispatch overhead for every immutable
-    # scalar of every card. Mutable metadata still shares one deepcopy memo.
-    cards = [card for card in getattr(state, "cards", {}).values()
-             if type(card) is CardInstance and id(card) not in memo]
-    for card in cards:
-        memo[id(card)] = object.__new__(CardInstance)
-        memo[id(card.__dict__)] = {}
-        memo[id(card)].__dict__ = memo[id(card.__dict__)]
-    for card in cards:
-        memo[id(card)].__dict__.update({
-            key: value if type(value) in _immutable_card_types
-            else _copy_card_field(value, memo)
-            for key, value in card.__dict__.items()
-        })
-    return deepcopy(state, memo)
-
-
-def _copy_card_field(value, memo):
-    """Copy common flat containers without deepcopy's per-scalar dispatch."""
-    if id(value) in memo:
-        return memo[id(value)]
-    kind = type(value)
-    if ((kind in (list, dict, set) and not value)
-            or (kind in (list, set) and all(type(item) in _immutable_card_types for item in value))
-            or (kind is dict and all(type(key) in _immutable_card_types and type(item) in _immutable_card_types
-                                     for key, item in value.items()))):
-        result = value.copy()
-        memo[id(value)] = result
-        return result
-    return deepcopy(value, memo)
+    # Keep the existing card-fields/hotpaths benchmark's dynamic hook active.
+    return copy_match_state(state, memo=memo, include_history=False,
+                            _field_copier=_copy_card_field)
 
 
 def prospective_creature_stats(state, card, player_id):
@@ -278,7 +397,9 @@ def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=
     libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
     opposing_hand = tuple(state.players[3-player_id].hand)
     try:
-        projected = checked_action(projected, RulesEngine(), player_id, action)
+        projected = simulation_checked_action(projected, RulesEngine(), player_id, action)
+    except UncertainSimulation:
+        return None
     except ActionRejected:
         return False
     if not _settle_announced_stack(projected, player_id=player_id, own_choice_action=own_choice_action):
@@ -453,11 +574,17 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
                 action = own_choice_action(projected, rules.legal_moves(projected, player_id), player_id)
             if action.get("type") == "pass_priority":
                 return False
-            rules.take_action(projected, chooser, action, reject_invalid=True)
+            try:
+                simulation_take_action(rules, projected, chooser, action, reject_invalid=True)
+            except UncertainSimulation:
+                return False
             continue
         if projected.winner is not None or not projected.stack:
             return True
-        rules.take_action(projected, projected.priority_player, {"type": "pass_priority"}, reject_invalid=True)
+        try:
+            simulation_take_action(rules, projected, projected.priority_player, {"type": "pass_priority"}, reject_invalid=True)
+        except UncertainSimulation:
+            return False
     return False
 
 
@@ -540,7 +667,9 @@ def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, 
     opponent = 3 - player_id
     opposing_hand = tuple(state.players[opponent].hand)
     try:
-        projected = checked_action(projected, RulesEngine(), player_id, action)
+        projected = simulation_checked_action(projected, RulesEngine(), player_id, action)
+    except UncertainSimulation:
+        return None
     except ActionRejected:
         return "rejected"
     if not _settle_announced_stack(projected, player_id=player_id, own_choice_action=own_choice_action):

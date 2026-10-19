@@ -14,7 +14,10 @@ from rules_engine.targeting import single_player_permanent_alternative, stack_ob
 DAMAGE_RE = re.compile(r"deals?\s+(\d+)\s+damage")
 X_DAMAGE_RE = re.compile(r"deals?\s+x\s+damage")
 DRAW_RE = re.compile(r"draw\s+(a|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?", re.IGNORECASE)
+FACE_UP_EXILE_GRAVEYARD_RE = re.compile(r"put target face-up exiled card into its owner's graveyard\.", re.I)
 EACH_PLAYER_DRAW_RE = re.compile(r"each player draws? (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+|x) cards?\.?", re.IGNORECASE)
+TARGETED_DRAW_RE = re.compile(r'target (?:player|opponent) draws (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.?', re.I)
+RECIPIENT_MILL_RE = re.compile(r'(target player|each opponent|you) mills? (one|two|three|four|five|six|seven|eight|nine|ten|twenty|\d+) cards?', re.I)
 X_DRAW_RE = re.compile(r"draw\s+x\s+card")
 GAIN_RE = re.compile(r"gains?\s+(\d+)\s+life")
 LOSE_RE = re.compile(r"loses?\s+(\d+)\s+life")
@@ -68,7 +71,7 @@ LOYALTY_ABILITY_RE = re.compile(r"([+-]?(?:\d+|X)):\s*([^\n]+)")
 SAGA_CHAPTER_RE = re.compile(r"^\s*([IVX]+(?:\s*,\s*[IVX]+)*)\s*[—-]\s*(.+?)\s*$", re.IGNORECASE)
 ACTIVATED_ABILITY_RE = re.compile(
     r"(?m)((?:\{[^{}]+\})+(?:\s*,\s*(?:(?:\{[^{}]+\})+|[^:\n]+))*"
-    r"|^[ \t]*(?:pay\s+\d+\s+life|sacrifice\s+[^:\n]+|discard\s+[^:\n]+))"
+    r"|^[ \t]*(?:pay\s+\d+\s+life|sacrifice\s+[^:\n]+|discard\s+[^:\n]+|remove\s+[^:\n]+))"
     r"\s*:\s*([^\n]+)", re.IGNORECASE
 )
 TARGET_TYPE_UNION_RE = re.compile(
@@ -89,9 +92,18 @@ def spell_resolution_text(card: CardInstance, oracle_text: str) -> str:
     from rules_engine.foretell import resolution_text
     from rules_engine.suspend import PRINTED
     oracle_text = resolution_text(card, oracle_text)
+    # Printed cycling triggers are separate abilities. A trigger-only proxy
+    # lacks the cycling keyword line and must keep its resolution instruction.
+    has_cycling = any(re.match(r"^cycling\b", line.strip(), re.IGNORECASE)
+                      for line in oracle_text.splitlines())
+    self_cycle_trigger = re.compile(
+        rf"^when(?:ever)? you cycle (?:this card|this spell|{re.escape(card.name)})(?=\s*[,\.])",
+        re.IGNORECASE,
+    )
     return "\n".join(
         line for line in oracle_text.splitlines()
         if not ACTIVATED_ABILITY_RE.match(line.strip())
+        and not (has_cycling and self_cycle_trigger.match(without_reminder_text(line).strip()))
         and not PRINTED.fullmatch(without_reminder_text(line).strip())
         and without_reminder_text(line).strip().lower() not in {'split second', 'delve', 'convoke', 'improvise'}
     )
@@ -197,6 +209,304 @@ def parse_temporary_target_buff(text):
     return {'power': int(match[1]), 'toughness': int(match[2]), 'keywords': keywords}
 
 
+def compile_draw_life_instruction(instruction: str) -> tuple[str, dict[str, Any]] | None:
+    """Compile only complete unconditional draw or life-then-draw bodies."""
+    body = instruction.strip().lower().removesuffix('.').strip()
+    draw = DRAW_RE.fullmatch(body)
+    if draw:
+        return 'draw_cards', {'amount': _parse_count_token(draw[1])}
+    life_text, joined, draw_text = body.partition(' and ')
+    life = GAIN_RE.fullmatch(life_text[4:]) if life_text.startswith('you gain ') else None
+    draw = DRAW_RE.fullmatch(draw_text)
+    if joined and life and draw:
+        return 'effect_sequence', {'effects': [
+            {'effect_key': 'gain_life', 'payload': {'amount': _parse_count_token(life[1])}},
+            {'effect_key': 'draw_cards', 'payload': {'amount': _parse_count_token(draw[1])}},
+        ]}
+    return None
+
+
+def optional_land_instruction_candidate(instruction: str) -> bool:
+    body = re.sub(r'\s+', ' ', instruction.strip()).lower()
+    land = r'you may put (?:a|one) land card from your hand\b'
+    return bool(re.match(land, body) or
+                (re.match(r'draw\b', body) and re.search(land, body)))
+
+
+def compile_optional_land_instruction(instruction: str) -> tuple[str, dict[str, Any]] | None:
+    """Recognize the complete optional own-hand clause, with an ordered draw."""
+    body = re.sub(r'\s+', ' ', instruction.strip()).lower()
+    draw = None
+    if body.startswith('draw '):
+        prefix, separator, body = body.partition('. ')
+        draw = compile_draw_life_instruction(prefix)
+        if not separator or draw is None or draw[0] != 'draw_cards':
+            return None
+    land = re.fullmatch(r'you may put (?:a|one) land card from your hand onto the battlefield'
+                        r'(?P<tapped> tapped)?\.?', body)
+    if land is None:
+        return None
+    data = {'optional': True, 'tapped': bool(land['tapped'])}
+    if draw is None:
+        return 'put_land_from_hand', data
+    return 'effect_sequence', {'effects': [
+        {'effect_key': draw[0], 'payload': draw[1]},
+        {'effect_key': 'put_land_from_hand', 'payload': data},
+    ]}
+
+
+def _infer_temporary_control_instruction(oracle, controller, action_targets):
+    prefix = r'untap target creature an opponent controls and gain control of it until end of turn'
+    if not re.match(prefix, oracle, re.I):
+        return None
+    if not re.fullmatch(
+        prefix + r'\.\s*that creature gains haste until end of turn\.\s*'
+        r'when you lose control of the creature, tap it\.', oracle.strip(), re.I,
+    ):
+        return 'noop', {'__unsupported_instruction': oracle}
+    return 'temporary_control_instruction', {
+        'target_card_id': action_targets.get('target_card_id'),
+        'new_controller': controller, 'until_end_of_turn': True,
+        'untap': True, 'haste': True, 'tap_on_control_loss': True,
+    }
+
+
+def _infer_closed_damage_instruction(oracle: str, source_name: str, action_targets: dict) -> tuple[str, dict] | None:
+    body = oracle.strip()
+    candidate = (re.search(r'\bprevent(?:s)? the next \d+ damage that would be dealt to any target\b', body, re.I)
+                 or (source_name and re.search(re.escape(source_name) + r' deals \d+ damage to each creature\b', body, re.I)))
+    if not candidate:
+        return None
+    unsupported = ('noop', {'__unsupported_instruction': oracle})
+    envelope = re.fullmatch(r'choose (one|two)\s*[\u2014-]\s*(.+)', body, re.I | re.S)
+    if envelope:
+        # Validate raw offered branches, not the extractor's punctuation-stripped previews.
+        offered = envelope[2].replace('\r', '')
+        if '\u2022' in offered:
+            parts = re.split(r'\s*\u2022\s*', offered)
+            if parts.pop(0).strip():
+                return unsupported
+        else:
+            parts = re.split(r'\n+|\s*;\s*', offered)
+        offered_effects = [_infer_closed_damage_mode(part.strip(), source_name, {}) for part in parts]
+        if len(parts) < 2 or any(effect is None for effect in offered_effects):
+            return unsupported
+        if envelope[1].lower() == 'one':
+            if len(parts) != 2 or any(effect[0] not in {'prevent_damage', 'gain_life'} for effect in offered_effects):
+                return unsupported
+        elif not any(effect[0] == 'damage_each_creature' for effect in offered_effects):
+            return unsupported
+        modes = _extract_modes(body)
+        if len(modes) != len(parts) or len(set(mode.casefold() for mode in modes)) != len(modes):
+            return unsupported
+        single = action_targets.get('mode_text')
+        multiple = action_targets.get('mode_texts')
+        if single is not None:
+            if not isinstance(single, str) or multiple:
+                return unsupported
+            selected = [single]
+        else:
+            if not isinstance(multiple, list) or len(multiple) != (2 if envelope[1].lower() == 'two' else 1):
+                return unsupported
+            selected = multiple
+        printed = {mode.casefold(): index for index, mode in enumerate(modes)}
+        if (any(not isinstance(mode, str) or mode.casefold() not in printed for mode in selected)
+                or len(set(mode.casefold() for mode in selected)) != len(selected)):
+            return unsupported
+        choices = action_targets.get('mode_targets', {})
+        if not isinstance(choices, dict) or any(
+                not isinstance(mode, str) or mode.casefold() not in printed or not isinstance(targets, dict)
+                or {'mode_text', 'mode_texts', 'mode_targets', 'selected_face_index'}.intersection(targets)
+                for mode, targets in choices.items()):
+            return unsupported
+        if single is None and choices and set(choices) != set(selected):
+            return unsupported
+        target_fields = ('target_player', 'target_card_id', 'target_stack_id')
+        targetless_keys = {'damage_each_creature', 'each_player_discard'}
+        # Native single-branch probes retain a shared sibling target. The full
+        # envelope owns that packet; native cardinality still fences real casts.
+        shared_probe = single is not None and multiple == [] and not choices and envelope[1].lower() == 'two'
+        if not shared_probe and all(offered_effects[printed[mode.casefold()]][0] in targetless_keys for mode in selected) and (
+                any(action_targets.get(key) is not None for key in target_fields)
+                or action_targets.get('target_card_ids') or action_targets.get('target_distribution')):
+            return unsupported
+        effects = []
+        for mode in sorted(selected, key=lambda value: printed[value.casefold()]):
+            targets = action_targets if single is not None or not choices else choices[mode]
+            index = printed[mode.casefold()]
+            if (choices or (single is not None and not shared_probe)) and offered_effects[index][0] in targetless_keys and (
+                    any(targets.get(key) is not None for key in target_fields)
+                    or targets.get('target_card_ids') or targets.get('target_distribution')):
+                return unsupported
+            compiled = _infer_closed_damage_mode(parts[index].strip(), source_name, targets)
+            if compiled is None:
+                return unsupported
+            key, payload = compiled
+            effects.append({'effect_key': key, 'payload': payload, 'mode_text': mode})
+        # Single-mode probes still validate every offered branch. External mode
+        # cardinality remains the native announcement contract before payment.
+        if single is not None:
+            if envelope[1].lower() == 'one' and effects[0]['effect_key'] == 'gain_life':
+                return None  # Preserve the validated legacy life-mode dispatch contract.
+            return effects[0]['effect_key'], effects[0]['payload']
+        return 'effect_sequence', {'effects': effects}
+    if _extract_modes(body) or action_targets.get('mode_text') or action_targets.get('mode_texts'):
+        return unsupported
+    # Candidate ownership limits standalone support to prevention/broadcast.
+    compiled = _infer_closed_damage_mode(body, source_name, action_targets)
+    return compiled if compiled is not None else unsupported
+
+
+def _infer_closed_damage_mode(body: str, source_name: str, action_targets: dict) -> tuple[str, dict] | None:
+    prevention = r'prevent the next ([1-9]\d*) damage that would be dealt to any target this turn\.?'
+    targeted = re.escape(source_name) + r' deals ([1-9]\d*) damage to target player or planeswalker\.?'
+    match = re.fullmatch(prevention, body, re.I)
+    damage = re.fullmatch(targeted, body, re.I) if source_name else None
+    gain = re.fullmatch(r'target player gains ([1-9]\d*) life\.?', body, re.I)
+    destroy = re.fullmatch(r'destroy target nonbasic land\.?', body, re.I)
+    if match or damage or gain or destroy:
+        target_card = action_targets.get('target_card_id')
+        target_player = action_targets.get('target_player')
+        if ((target_card is not None and target_player is not None)
+                or any(action_targets.get(key) for key in ('target_card_ids', 'target_distribution', 'target_stack_id'))
+                or gain and target_card is not None or destroy and target_player is not None):
+            return None
+        payload = {} if destroy else {'amount': int((match or damage or gain)[1])}
+        if target_card is not None:
+            if not isinstance(target_card, str) or not target_card:
+                return None
+            payload['target_card_id'] = target_card
+        elif target_player is not None:
+            if type(target_player) is not int or target_player not in (1, 2):
+                return None
+            payload['target_player'] = target_player
+        # Targetless previews remain incomplete; checked casts require a declared target.
+        return ('prevent_damage' if match else 'deal_damage' if damage else
+                'gain_life' if gain else 'destroy_permanent'), payload
+    match = re.fullmatch(re.escape(source_name) + r' deals ([1-9]\d*) damage to each creature\.?', body, re.I) if source_name else None
+    if match:
+        return 'damage_each_creature', {'amount': int(match[1])}
+    from rules_engine.linked_discard import simultaneous_discard_draw_effect
+    wheel = simultaneous_discard_draw_effect(body)
+    return ('each_player_discard', wheel) if wheel is not None else None
+
+
+def _infer_resource_scaled_target_pt(oracle, action_targets):
+    body = oracle.strip()
+    if not re.match(r'target creature gets [+-]x/[+-]x\b', body, re.I):
+        return None
+    unsupported = ('noop', {'__unsupported_instruction': oracle})
+    match = re.fullmatch(
+        r'target creature gets -x/-x until end of turn, where x is twice the number of '
+        r'([a-z][a-z-]*) tokens you control\.?(?:\s+activate only as a sorcery\.?)?', body, re.I)
+    token = named_artifact_token(match[1]) if match else None
+    if token is None:
+        return unsupported
+    from rules_engine.card_types import printed_card_types
+    line = re.split(r'\s+[\u2014\u2013-]\s+', token['type_line'], maxsplit=1)
+    if ('Artifact' not in printed_card_types(token['type_line']) or len(line) != 2
+            or match[1].casefold() not in {word.casefold() for word in line[1].split()}):
+        return unsupported
+    return 'resource_scaled_temporary_pt_buff', {
+        'target_card_id': action_targets.get('target_card_id'),
+        'token_subtype': match[1].casefold(), 'power_per_token': -2, 'toughness_per_token': -2,
+    }
+
+
+def compile_complete_x_bounded_exile_instruction(oracle_text: str, card_name: str = '') -> dict | None:
+    """Closed target contract; recognizing its header does not pay its cost."""
+    body = re.sub(r'\s+', ' ', oracle_text or '').strip()
+    if not (re.search(r'\bas an additional cost to cast\b', body, re.I)
+            and re.search(r'\bexile\b[^.]*\bcards from your hand\b', body, re.I)
+            and re.search(r'\bexile target\b[^.]*\bwith mana value x\b', body, re.I)):
+        return None
+    reference = r'this spell' + ('|' + re.escape(card_name) if card_name else '')
+    if not re.fullmatch(
+            r'As an additional cost to cast (?:' + reference + r'), you may exile any number of '
+            r'(?:white|blue|black|red|green) cards from your hand\. '
+            r'This spell costs \{\d+\} less to cast for each card exiled this way\. '
+            r'Exile target artifact, creature, or enchantment with mana value X or less\.', body, re.I):
+        return {'__unsupported_instruction': oracle_text}
+    return {'allowed_types': ['Artifact', 'Creature', 'Enchantment']}
+
+
+def compile_draw_then_put_hand_instruction(oracle_text: str):
+    count = r'(a|one|two|three|four|five|six|seven|eight|nine|ten|\d+)'
+    text = without_reminder_text(oracle_text).strip().lower()
+    if not re.match(r'^draw ' + count + r' cards?, then put ', text):
+        return None
+    match = re.fullmatch(r'draw ' + count + r' cards?, then put ' + count
+                        + r' cards? from your hand on top of your library in any order\.?', text)
+    if match is None:
+        return 'noop', {'__unsupported_instruction': oracle_text}
+    return 'effect_sequence', {'effects': [
+        {'effect_key': 'draw_cards', 'payload': {'amount': _parse_count_token(match[1])}},
+        {'effect_key': 'put_hand_on_library', 'payload': {'amount': _parse_count_token(match[2])}},
+    ]}
+
+
+def compile_additional_cost_draw_instruction(oracle_text: str, card_name: str):
+    """Separate parsed cost declarations from complete raw draw instructions."""
+    if not isinstance(oracle_text, str) or not isinstance(card_name, str):
+        return None
+    declaration = r'as an additional cost to cast\b'
+    if (not re.search(r'(?:^|[.\n])\s*' + declaration, oracle_text, re.I)
+            or not re.search(r'(?:^|[.\n])\s*[\"\']?draw\b', oracle_text, re.I)):
+        return None
+    unsupported = 'noop', {'__unsupported_instruction': oracle_text}
+    matched = re.fullmatch(r'\s*((?:' + declaration + r'[^.\n]*\.\s*)+)(.+)',
+                           oracle_text, re.I | re.S)
+    if matched is None or any(character in matched[1] for character in '()'):
+        return unsupported
+    from rules_engine.spell_cost_clauses import spell_additional_costs
+    if spell_additional_costs(oracle_text, card_name) is None:
+        return unsupported
+    body = matched[2].strip()
+    compound = re.fullmatch(r'(draw [^().]+) and (create [^().]+)\.(?: (\([^()]*\)))?',
+                            ' '.join(body.split()), re.I)
+    if compound:
+        draw = DRAW_RE.fullmatch(compound[1])
+        token = NAMED_ARTIFACT_TOKEN_RE.fullmatch(compound[2])
+        template = named_artifact_token(token[2]) if token else None
+        if draw is None or template is None:
+            return unsupported
+        from rules_engine.card_types import printed_card_types
+        types = printed_card_types(template['type_line'])
+        amount = _parse_count_token(token[1])
+        # Validate the raw reminder against the native template before stripping.
+        reminder = '(It\'s an artifact with "' + template['oracle_text'] + '")'
+        if types != ['Artifact'] or compound[3] and (
+                amount != 1 or compound[3].casefold() != reminder.casefold()):
+            return unsupported
+        return 'effect_sequence', {'effects': [
+            {'effect_key': 'draw_cards', 'payload': {'amount': _parse_count_token(draw[1])}},
+            {'effect_key': 'create_token', 'payload': {
+                'name': template['name'], 'amount': amount, 'types': types,
+                'type_line': template['type_line'], 'oracle_text': template['oracle_text'],
+                'power': None, 'toughness': None}},
+        ]}
+    instructions = [compile_draw_life_instruction(clause)
+                    for clause in re.split(r'\.\s*', body.removesuffix('.'))]
+    if not instructions or any(item is None or item[0] != 'draw_cards' for item in instructions):
+        return unsupported
+    if len(instructions) == 1:
+        return instructions[0]
+    return 'effect_sequence', {'effects': [
+        {'effect_key': key, 'payload': payload} for key, payload in instructions]}
+
+
+def _infer_temporary_artifact_instruction(oracle, action_targets):
+    text = oracle.strip()
+    if not re.match(r'target permanent becomes an artifact\b', text, re.I):
+        return None
+    if not re.fullmatch(
+            r'target permanent becomes an artifact in addition to its other types '
+            r'until end of turn\.', text, re.I):
+        return 'noop', {'__unsupported_instruction': oracle}
+    return 'add_artifact_type_until_end_of_turn', {
+        'target_card_id': action_targets.get('target_card_id')}
+
+
 def infer_effect_from_oracle(
     state: MatchState,
     card: CardInstance,
@@ -208,6 +518,37 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    from rules_engine.graveyard_batch_entry import compile_instruction as compile_graveyard_batch
+    from rules_engine.action_validation import ActionRejected
+    try:
+        graveyard_batch = compile_graveyard_batch(card.oracle_text)
+    except ActionRejected:
+        return 'noop', {'__unsupported_instruction': card.oracle_text}
+    if graveyard_batch is not None:
+        return graveyard_batch
+    from rules_engine.spree import is_spree, compile_instruction
+    if is_spree(card.oracle_text):
+        return compile_instruction(card, action_targets)
+    from rules_engine.exchange_energy import compile_instruction as compile_exchange_energy
+    exchange_energy = compile_exchange_energy(card, controller)
+    if exchange_energy is not None:
+        return exchange_energy
+    draw_put = compile_draw_then_put_hand_instruction(card.oracle_text)
+    if draw_put is not None:
+        return draw_put
+    bounded_exile = compile_complete_x_bounded_exile_instruction(card.oracle_text, card.name)
+    if bounded_exile is not None:
+        x_value = action_targets.get('x_value')
+        if ('__unsupported_instruction' in bounded_exile
+                or type(x_value) is not int or x_value < 0):
+            return 'noop', {'__unsupported_instruction': card.oracle_text}
+        target = action_targets.get('target_card_id')
+        restrictions = {**bounded_exile, 'mana_value_max': x_value}
+        if (not isinstance(target, str) or target not in state.cards
+                or state.cards[target].zone != Zone.BATTLEFIELD
+                or not _target_id_matches_restrictions(state, target, restrictions, controller)):
+            return 'noop', {'__unsupported_instruction': card.oracle_text}
+        return 'exile', {'target_card_id': target}
     if set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
         from rules_engine.foretell import spell_variants, record
         variants = spell_variants(card.oracle_text)
@@ -229,7 +570,127 @@ def infer_effect_from_oracle(
     if "Planeswalker" in (effective_types(state, card) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
+    if set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
+        cost_draw = compile_additional_cost_draw_instruction(oracle, name)
+        if cost_draw is not None:
+            if '__unsupported_instruction' in cost_draw[1]:
+                return 'noop', {'__unsupported_instruction': card.oracle_text}
+            return cost_draw
+    from rules_engine.linked_targets import linked_damage_instruction
+    # Broaden only candidate detection; admission still checks the complete raw body.
+    candidate_oracle = without_reminder_text(oracle)
+    if (re.search(r'damage\s+to\s+target\s+(?:player(?:\s+or\s+planeswalker)?|planeswalker)[^.]*'
+                  r"target\s+creature\s+that\s+(?:player|planeswalker|player\s+or\s+that\s+planeswalker's\s+controller)\s+controls",
+                  candidate_oracle, re.I)
+            and linked_damage_instruction(oracle, card.name) is None):
+        return 'noop', {'__unsupported_instruction': oracle}
+    if (set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'})
+            and re.search(r'(?:^|\n)\s*create\s+x\s+(?:tapped(?: and attacking)?\s+)?\d+/\d+', candidate_oracle, re.I)):
+        from rules_engine.token_descriptors import complete_x_creature_token_body
+        if complete_x_creature_token_body(oracle) is None:
+            return 'noop', {'__unsupported_instruction': oracle}
+    from rules_engine.bounded_removal import instruction as bounded_instruction, effect as bounded_effect
+    bounded = bounded_instruction(oracle)
+    if bounded is not None:
+        return bounded_effect(state, bounded, action_targets)
+    # A complete target instruction has an effect even before a target is chosen.
+    if re.fullmatch(r'untap target (?:(?:nonland|noncreature|tapped) )?'
+                    r'(?:artifact|creature|land|permanent)'
+                    r'(?: you control| an opponent controls)?\.?', oracle.strip()):
+        return 'untap', {'target_card_id': action_targets.get('target_card_id')}
+    temporary_artifact = _infer_temporary_artifact_instruction(oracle, action_targets)
+    if temporary_artifact is not None:
+        return temporary_artifact
+    from rules_engine.land_animation import compile_self_creature_change
+    self_change = compile_self_creature_change(state, card, oracle)
+    if self_change is not None:
+        return self_change
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
+    # Whole permanent surfaces contain costs/abilities; activation proxies do not.
+    if (not set(getattr(card, 'types', []) or []).intersection(
+            {'Artifact', 'Creature', 'Enchantment', 'Land', 'Planeswalker', 'Battle'})
+            and re.search(r"\bexile target player's graveyard\b", oracle, re.I)):
+        if not re.fullmatch(r"exile target player's graveyard\.?", oracle.strip(), re.I):
+            return 'noop', {'__unsupported_instruction': oracle}
+        return 'exile_all_graveyards', {'target_player': action_targets.get('target_player')}
+    from rules_engine.turn_spell_protection import compile_instruction as compile_turn_protection
+    turn_protection = compile_turn_protection(oracle)
+    if turn_protection is not None:
+        return turn_protection
+    from rules_engine.devotion import devotion_instruction
+    devotion = devotion_instruction(oracle, card.name)
+    if devotion is not None:
+        return 'devotion_effect', {**action_targets, 'devotion': devotion,
+                                   'source_incarnation': object_incarnation(card)}
+    resource_scaled_pt = _infer_resource_scaled_target_pt(oracle, action_targets)
+    if resource_scaled_pt is not None:
+        return resource_scaled_pt
+    from rules_engine.next_creature_entry_trigger import compile_instruction
+    next_entry = compile_instruction(oracle, getattr(card, 'source_oracle_text', None))
+    if next_entry is not None:
+        return 'set_next_creature_entry_counter', {
+            'counter': '+1/+1', 'amount': 1, '__native_next_instruction': next_entry}
+    if 'when you next cast a creature spell' in oracle.lower():
+        if report_unsupported:
+            state.log.append('Unsupported complete next-creature cast instruction.')
+        return 'noop', {'__unsupported_instruction': oracle}
+    if re.search(r'\bput target face-up exiled card\b', oracle.strip(), re.I):
+        if FACE_UP_EXILE_GRAVEYARD_RE.fullmatch(oracle.strip()):
+            return 'put_exiled_card_into_graveyard', {'target_card_id': action_targets.get('target_card_id')}
+        return 'noop', {'__unsupported_instruction': oracle}
+    closed_damage = _infer_closed_damage_instruction(oracle, name, action_targets)
+    if closed_damage is not None:
+        return closed_damage
+    temporary_control = _infer_temporary_control_instruction(oracle, controller, action_targets)
+    if temporary_control is not None:
+        return temporary_control
+    from rules_engine.temporary_characteristics import temporary_characteristics_candidate, compile_temporary_characteristics
+    if temporary_characteristics_candidate(oracle):
+        compiled = compile_temporary_characteristics(oracle, action_targets)
+        return compiled if compiled is not None else ('noop', {'__unsupported_instruction': oracle})
+    from rules_engine.land_animation import animation_candidate, compile_self_land_animation
+    if animation_candidate(card, oracle):
+        compiled = compile_self_land_animation(state, card, oracle)
+        return compiled if compiled is not None else ('noop', {'__unsupported_instruction': oracle})
+    immediate_return = _infer_immediate_return_effect(state, oracle, action_targets)
+    if immediate_return is not None:
+        if immediate_return[1].get('__unsupported_immediate_return') and report_unsupported:
+            state.log.append(f'Unsupported complete immediate-return instruction: {oracle}')
+        return immediate_return
+    if optional_land_instruction_candidate(oracle):
+        compiled = compile_optional_land_instruction(oracle)
+        if compiled is not None:
+            return compiled
+        if report_unsupported:
+            state.log.append(f'Unsupported optional land instruction on {card.name}: {oracle}')
+        return 'noop', {'__unsupported_instruction': oracle}
+    if re.fullmatch(r'its owner shuffles their graveyard into their library\.', oracle.strip()):
+        return 'shuffle_graveyard_into_library', {'graveyard_owner': card.owner}
+    from rules_engine.turn_scheduler import instruction
+    scheduled = instruction(oracle)
+    if scheduled in {'target', 'controller'}:
+        return 'extra_turn', ({'target_player': action_targets.get('target_player', controller)}
+                              if scheduled == 'target' else {})
+    if scheduled == 'combat_main':
+        return 'extra_combat_main', {}
+    article_mill = re.match(r'(?:(target player|each opponent|you) mills?|mill) (a|an) card\b', oracle.strip())
+    if article_mill:
+        # Do not compile one supported reward from an unknown compound body.
+        if oracle.strip()[article_mill.end():].strip() not in {'', '.'}:
+            return 'noop', {'__unsupported_mill_instruction': oracle}
+        recipient = (action_targets.get('target_player') if article_mill[1] == 'target player'
+                     else 3-controller if article_mill[1] == 'each opponent' else controller)
+        # A targeted preview remains incomplete until an actual target is announced.
+        return 'mill_cards', {'target_player': recipient, 'amount': _parse_count_token(article_mill[2])}
+    team_counters = re.fullmatch(
+        r'put (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
+        r'([+-]\d+/[+-]\d+) counters? on each creature (you control|your opponents control)\.?',
+        oracle.strip(), re.IGNORECASE)
+    if team_counters:
+        return 'add_counters_each_creature', {
+            'counter': team_counters[2], 'amount': _parse_count_token(team_counters[1].lower()),
+            'recipients': 'opponents' if team_counters[3].lower() == 'your opponents control' else 'controller',
+        }
     from rules_engine.linked_targets import linked_damage_instruction, linked_damage_effect
     if linked_damage_instruction(oracle, card.name):
         from copy import copy
@@ -302,11 +763,6 @@ def infer_effect_from_oracle(
                         'payload': {**instruction, 'source_card_id': card.id}}
                        for _, instruction in delayed_lines if instruction is not None)
         return 'effect_sequence', {'effects': effects}
-    from rules_engine.devotion import devotion_instruction
-    devotion = devotion_instruction(oracle, card.name)
-    if devotion is not None:
-        return 'devotion_effect', {**action_targets, 'devotion': devotion,
-                                   'source_incarnation': object_incarnation(card)}
     if re.search(r"choose a creature card exiled with .+? with (?:mana value|converted mana cost) x\.\s*.+? becomes a copy of that card", oracle):
         return "copy_linked_exiled_card", {
             "source_card_id": card.id, "x_value": int(action_targets.get("x_value", 0) or 0),
@@ -360,6 +816,7 @@ def infer_effect_from_oracle(
             key, payload = infer_effect_from_oracle(
                 state, card, controller,
                 {**action_targets, **mode_target, "mode_text": selected_mode, "mode_texts": []},
+                report_unsupported=report_unsupported,
             )
             for effect in payload["effects"] if key == "effect_sequence" else [{"effect_key": key, "payload": payload}]:
                 effects.append({**effect, "mode_text": selected_mode})
@@ -492,6 +949,13 @@ def infer_effect_from_oracle(
         return "reveal_defending_top_land", {
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
         }
+    from rules_engine.library_reorder import reorder_clause
+    reorder = reorder_clause(oracle)
+    if reorder:
+        effects = [{'effect_key': 'look_reorder', 'payload': reorder}]
+        if reorder['draw_after']:
+            effects.append({'effect_key': 'draw_cards', 'payload': {'amount': 1}})
+        return 'effect_sequence', {'effects': effects}
     mana_spent_hand = LOOK_TOP_MANA_SPENT_HAND_RE.search(oracle)
     if mana_spent_hand:
         return "look_top_select_hand", {
@@ -515,8 +979,13 @@ def infer_effect_from_oracle(
         return 'destroy_with_controller_search', {'target_card_id': action_targets.get('target_card_id'),
             'search_payload': {'contains': 'land_with_basic_type', 'destination': 'battlefield',
                                'count': 1, 'shuffle': True, 'optional': True}}
+    search_life = compile_search_life_instruction(oracle)
+    if search_life is not None:
+        return search_life
     search_effect = _infer_search_effect(oracle, action_targets)
     if search_effect is not None:
+        if search_effect[1].get('__unsupported_targeted_search') and report_unsupported:
+            state.log.append(f'Unsupported complete targeted search instruction for {card.name}.')
         if re.search(r"you gain 1 life for each \{s\} spent to cast this spell", oracle):
             return "effect_sequence", {"effects": [
                 {"effect_key": search_effect[0], "payload": search_effect[1]},
@@ -543,7 +1012,12 @@ def infer_effect_from_oracle(
         return 'noop', {}
     clauses = _split_clauses(oracle)
     effects: list[tuple[str, dict[str, Any], str]] = []
-    for clause in clauses:
+    for clause_index, clause in enumerate(clauses):
+        if (clause in {'untap those creatures', 'untap them'} and clause_index
+                and effects and effects[-1][0] == 'temporary_pt_buff_all'
+                and effects[-1][2] == clauses[clause_index - 1]):
+            effects[-1][1]['untap_affected_creatures'] = True
+            continue
         from rules_engine.combat_payments import temporary_combat_tax
         combat_tax = temporary_combat_tax(clause)
         if combat_tax:
@@ -565,6 +1039,8 @@ def infer_effect_from_oracle(
             continue
         inferred = _infer_clause_effect(state, card, controller, clause, action_targets, x_value)
         if inferred is not None:
+            if inferred[1].get('__unsupported_token_quantity') and report_unsupported:
+                state.log.append(f'Unsupported token base quantity for {card.name}: {clause}')
             # The existing land-animation handler already performs its untap.
             if inferred[0] == "untap" and any(
                 payload.get("animate_untap")
@@ -705,7 +1181,93 @@ def _infer_topdeck_creature_put_effect(oracle: str, action_targets: dict[str, An
     return "topdeck_put_creatures_battlefield", payload
 
 
+def _infer_targeted_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    clause_body = re.sub(r'\s+', ' ', oracle.strip())
+    body = clause_body.lower()
+    if not body.startswith('target player searches their library for '):
+        return None
+    match = re.fullmatch(
+        r'(?P<search_clause>target player searches their library for (?:a|one) basic land card, '
+        r'puts it onto the battlefield(?P<tapped> tapped)?, then shuffles(?: their library)?\.?)'
+        r'(?: (?P<counter_clause>put (?P<amount>a|one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+) '
+        r'\+1/\+1 counters? on up to one target (?P<target>artifact or creature|artifact|creature|permanent)\.?))?',
+        body,
+    )
+    if match is None:
+        return 'noop', {'__unsupported_targeted_search': oracle}
+    payload = {'target_player': action_targets.get('target_player'), 'contains': 'basic_land',
+               'destination': 'battlefield', 'count': 1, 'tapped': bool(match['tapped']), 'shuffle': True}
+    if match['amount'] is None:
+        return 'search_library', payload
+    amount = _parse_count_token(match['amount'])
+    if amount <= 0:
+        return 'noop', {'__unsupported_targeted_search': oracle}
+    return 'effect_sequence', {'effects': [
+        {'effect_key': 'search_library', 'payload': payload,
+         'clause_text': clause_body[slice(*match.span('search_clause'))]},
+        {'effect_key': 'add_counters', 'payload': {'target_card_id': action_targets.get('target_card_id'),
+                                                  'counter': '+1/+1', 'amount': amount},
+         'clause_text': clause_body[slice(*match.span('counter_clause'))]},
+    ]}
+
+
+def _infer_immediate_return_effect(state, oracle, action_targets):
+    body = re.sub(r'\s+', ' ', oracle.strip()).lower()
+    if re.match(r'^exile (?:two|2) target artifacts, creatures, and/or lands you control, then return\b', body):
+        if not re.fullmatch(r'exile (?:two|2) target artifacts, creatures, and/or lands you control, '
+                            r'then return those cards to the battlefield under your control\.?', body):
+            return 'noop', {'__unsupported_immediate_return': oracle}
+        targets = list(action_targets.get('target_card_ids') or [])
+        return 'exile_return_batch', {
+            'target_card_ids': targets,
+            '__announced_references': {
+                cid: {'incarnation': object_incarnation(state.cards[cid]),
+                      'zone_change_sequence': state.cards[cid].zone_change_sequence}
+                for cid in targets if cid in state.cards},
+        }
+    if not re.match(r'^exile target (?:creature(?: or enchantment)?|nontoken permanent)(?: you control)?, then return\b', body):
+        return None
+    match = re.fullmatch(
+        r"exile target (?P<domain>creature(?: or enchantment)?|nontoken permanent)(?P<controlled> you control)?, then return "
+        r"(?:that card|it) to the battlefield under (?P<policy>your control|its owner's control)\.?", body)
+    if match is None:
+        return 'noop', {'__unsupported_immediate_return': oracle}
+    target = action_targets.get('target_card_id')
+    card = state.cards.get(target)
+    payload = {
+        'target_card_id': target,
+        'return_control': 'resolving_controller' if match['policy'] == 'your control' else 'owner',
+        'requires_control': bool(match['controlled']),
+        '__announced_reference': ({'incarnation': object_incarnation(card),
+                                   'zone_change_sequence': card.zone_change_sequence} if card else None),
+    }
+    if match['domain'] == 'nontoken permanent':
+        payload['requires_nontoken'] = True
+    return 'exile_return_immediate', payload
+
+
+def compile_search_life_instruction(text):
+    """Keep the complete post-search reward in the existing ordered continuation."""
+    body = re.sub(r'\s+', ' ', without_reminder_text(text)).strip()
+    search = re.match(r'search your library for (?:a|an|one) basic land card, reveal it, '
+                      r'put it into your hand, then shuffle\.\s+(.+)', body, re.I)
+    if search is None:
+        return None
+    reward = re.fullmatch(r'you gain (a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) life\.',
+                          search[1], re.I)
+    if reward is None:
+        return 'noop', {'__unsupported_instruction': text}
+    key, payload = _infer_search_effect(body[:search.start(1)].strip().lower(), {})
+    return 'effect_sequence', {'effects': [
+        {'effect_key': key, 'payload': payload},
+        {'effect_key': 'gain_life', 'payload': {'amount': _parse_count_token(reward[1])}},
+    ]}
+
+
 def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    targeted = _infer_targeted_search_effect(oracle, action_targets)
+    if targeted is not None:
+        return targeted
     if "search your library for" not in oracle:
         return None
     contains = action_targets.get("search_contains")
@@ -841,15 +1403,42 @@ def inspect_target_hints(
     card: CardInstance,
     controller: int,
     action_targets: dict[str, Any] | None = None,
+    *,
+    source_kind: str | None = 'spell',
 ) -> dict[str, Any]:
+    from rules_engine.loyalty_instructions import target_hints as loyalty_target_hints
+    loyalty_hints = loyalty_target_hints(state, card, controller, action_targets, source_kind=source_kind)
+    if loyalty_hints is not None:
+        return loyalty_hints
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
+    from rules_engine.spree import is_spree, hints as spree_hints
+    if is_spree(card.oracle_text):
+        return spree_hints(state, card, action_targets or {})
+    bounded_exile = compile_complete_x_bounded_exile_instruction(card.oracle_text, card.name)
+    if bounded_exile is not None and ('__unsupported_instruction' in bounded_exile
+            or (action_targets and 'x_value' in action_targets
+                and (type(action_targets['x_value']) is not int or action_targets['x_value'] < 0))):
+        return {'requires_x_value': True, 'unsupported_resolution': ['unsupported complete X-bounded exile instruction']}
     raw_oracle = spell_resolution_text(card, card.oracle_text or "")
     action_targets = action_targets or {}
     selected_modes = _printed_mode_order(raw_oracle, action_targets.get("mode_texts") or [])
     selected_mode = action_targets.get("mode_text") or (selected_modes[0] if len(selected_modes) == 1 else None)
     oracle = without_reminder_text(str(" ".join(selected_modes) if selected_modes else selected_mode or raw_oracle).lower())
     hints: dict[str, Any] = {}
+    from rules_engine.bounded_removal import instruction as bounded_instruction
+    bounded = bounded_instruction(oracle)
+    if bounded is not None:
+        hints['up_to_target_count'] = bounded['count']
+    if FACE_UP_EXILE_GRAVEYARD_RE.fullmatch(oracle.strip()):
+        from rules_engine.zone_actions import is_departed_token
+        return {'exile_card_targets': [
+            {'id': cid, 'name': card.name, 'owner': card.owner, 'controller': card.controller}
+            for player in state.players.values() for cid in player.exile
+            if (card := state.cards.get(cid)) is not None
+            and card.zone == Zone.EXILE and cid in state.players[card.owner].exile
+            and card.exile_face_down is False and not is_departed_token(card)
+        ]}
     from rules_engine.linked_targets import linked_damage_instruction, linked_target_hints
     if linked_damage_instruction(oracle, card.name):
         return linked_target_hints(state, card, controller)
@@ -989,6 +1578,8 @@ def inspect_target_hints(
             for pid in land_players
             for cid in state.players[pid].battlefield
             if "Land" in effective_types(state, state.cards[cid])
+            and ("target nonbasic land" not in oracle or 'Basic' not in (state.cards[cid].type_line or '').split())
+            and ("target basic land" not in oracle or 'Basic' in (state.cards[cid].type_line or '').split())
         ]
     if re.search(r"^enchant ", oracle, re.M):
         from rules_engine.attachments import attachment_target_is_legal
@@ -1009,6 +1600,11 @@ def inspect_target_hints(
             for pid in target_players for cid in state.players[pid].battlefield
             if "Artifact" in effective_types(state, state.cards[cid])
         ]
+    if re.fullmatch(r'exile target artifact or creature\.?', oracle.strip()):
+        hints['creature_targets'] = [
+            {'id': cid, 'name': state.cards[cid].name}
+            for pid in target_players for cid in state.players[pid].battlefield
+            if {'Artifact', 'Creature'}.intersection(effective_types(state, state.cards[cid]))]
     if "enchantment" in oracle:
         hints["enchantment_targets"] = [
             {"id": cid, "name": state.cards[cid].name}
@@ -1065,8 +1661,10 @@ def inspect_target_hints(
             if cid in state.cards and {"Instant", "Sorcery"}.intersection(effective_types(state, state.cards[cid]))
         ]
     search_effect = _infer_search_effect(oracle, {})
-    if search_effect is not None:
+    if search_effect is not None and search_effect[0] in {'search_library', 'effect_sequence'}:
         _, search_payload = search_effect
+        if search_effect[0] == 'effect_sequence':
+            search_payload = search_payload['effects'][0]['payload']
         contains = search_payload.get("contains")
         mv_max = search_payload.get("mv_max")
         hints["library_search"] = {
@@ -1075,6 +1673,12 @@ def inspect_target_hints(
             "max_count": int(search_payload.get("count", 0) or 0),
             "allow_zero": True,
         }
+        if _infer_targeted_search_effect(oracle, {}) is not None and 'up to one target artifact or creature' in oracle:
+            hints['creature_targets'] = [
+                {'id': cid, 'name': state.cards[cid].name}
+                for pid in target_players for cid in state.players[pid].battlefield
+                if {'Artifact', 'Creature'}.intersection(effective_types(state, state.cards[cid]))
+            ]
     divided_one_or_two = bool(DIVIDED_ONE_OR_TWO_RE.search(oracle))
     if "any target" in oracle or "any number of targets" in oracle or "target player" in oracle or divided_one_or_two:
         hints["player_targets"] = [
@@ -1120,8 +1724,34 @@ def inspect_target_hints(
             for cid in state.players[opponent].battlefield
             if "Planeswalker" in effective_types(state, state.cards[cid])
         ]
+    immediate_return = _infer_immediate_return_effect(state, oracle, action_targets)
+    if immediate_return and immediate_return[0] == 'exile_return_batch':
+        for key in ('creature_targets', 'land_targets', 'artifact_targets', 'permanent_targets'):
+            hints.pop(key, None)
+        hints['required_distinct_target_count'] = 2
+        hints['permanent_targets'] = [
+            {'id': cid, 'name': state.cards[cid].name}
+            for cid in state.players[controller].battlefield
+            if state.cards[cid].zone == Zone.BATTLEFIELD and state.cards[cid].controller == controller
+            and set(effective_types(state, state.cards[cid])).intersection({'Artifact', 'Creature', 'Land'})
+        ]
+    if (immediate_return and immediate_return[0] == 'exile_return_immediate'
+            and immediate_return[1].get('requires_nontoken')):
+        hints.pop('creature_targets', None)
+        hints['permanent_targets'] = [
+            {'id': cid, 'name': state.cards[cid].name}
+            for pid in target_players for cid in state.players[pid].battlefield
+            if not state.cards[cid].is_token
+            and set(effective_types(state, state.cards[cid])).intersection(
+                {'Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'})
+        ]
     restrictions = infer_target_restrictions(state, oracle, controller)
-    if TARGET_TYPE_UNION_RE.search(oracle) or 'combat_status' in restrictions:
+    if bounded_exile is not None:
+        hints['requires_x_value'] = True
+        restrictions.update(bounded_exile)
+        if 'x_value' in action_targets:
+            restrictions['mana_value_max'] = action_targets['x_value']
+    if bounded is not None or TARGET_TYPE_UNION_RE.search(oracle) or 'combat_status' in restrictions:
         hints['permanent_targets'] = [
             {'id': cid, 'name': state.cards[cid].name}
             for pid in target_players for cid in state.players[pid].battlefield
@@ -1141,7 +1771,7 @@ def inspect_target_hints(
     if "player_targets" in hints:
         hints["player_targets"] = [
             target for target in hints["player_targets"]
-            if validate_hexproof_shroud_targets(state, controller, {"target_player": target["id"]})[0]
+            if validate_hexproof_shroud_targets(state, controller, {"target_player": target["id"]}, source_kind=source_kind)[0]
         ]
     source = card if isinstance(card, CardInstance) else state.cards.get(getattr(card, "id", None), card)
     for key in (
@@ -1151,7 +1781,7 @@ def inspect_target_hints(
         if key in hints:
             hints[key] = [
                 target for target in hints[key]
-                if (validate_hexproof_shroud_targets(state, controller, {"target_card_id": target["id"]}, source)[0]
+                if (validate_hexproof_shroud_targets(state, controller, {"target_card_id": target["id"]}, source, source_kind=source_kind)[0]
                     and validate_protection_targets(state, source, {"target_card_id": target["id"]})[0])
             ]
     return hints
@@ -1197,6 +1827,13 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
     future stack-resolution rechecks.
     """
     oracle = without_reminder_text((oracle_text or "").lower())
+    immediate_return = _infer_immediate_return_effect(state, oracle, {})
+    if immediate_return and immediate_return[0] == 'exile_return_batch':
+        return {'allowed_types': ['Artifact', 'Creature', 'Land']}
+    from rules_engine.bounded_removal import instruction as bounded_instruction
+    bounded = bounded_instruction(oracle)
+    if bounded is not None:
+        return {'allowed_types': bounded['allowed_types']}
     from rules_engine.conditional_instructions import parse_instruction
     conditional = parse_instruction(oracle)
     if conditional and conditional['effect_key'] == 'destroy_permanent':
@@ -1237,12 +1874,23 @@ def infer_target_restrictions(state: MatchState, oracle_text: str, controller: i
         restrictions["allowed_types"] = ["Instant"]
     elif "target sorcery" in oracle:
         restrictions["allowed_types"] = ["Sorcery"]
-    elif "target land" in oracle or "target noncreature land" in oracle:
+    elif re.search(r'\btarget (?:(?:basic|nonbasic|noncreature) )?land\b', oracle):
         restrictions["allowed_types"] = ["Land"]
+        if "target nonbasic land" in oracle:
+            restrictions['nonbasic_land_only'] = True
     combat = re.search(r'\btarget (attacking or blocking|attacking|blocking) creature\b', oracle)
     if combat:
         restrictions['allowed_types'] = ['Creature']
         restrictions['combat_status'] = combat[1]
+    noun = r'(?:artifact|battle|creature|enchantment|land|planeswalker|permanent)'
+    tap = re.search(r'\btarget (tapped|untapped) (' + noun
+                    + r'(?:(?:, (?:or )?| or )' + noun + r'){0,6})\b'
+                    + r'(?!\s+(?:card|spell|creature)\b)', oracle)
+    if tap:
+        restrictions['tap_status'] = tap[1]
+        kinds = re.findall(noun, tap[2])
+        if 'permanent' not in kinds:
+            restrictions['allowed_types'] = [kind.title() for kind in kinds]
 
     max_match = TARGET_MV_MAX_RE.search(oracle)
     min_match = TARGET_MV_MIN_RE.search(oracle)
@@ -1287,6 +1935,10 @@ def _target_card_matches_restrictions(state, card, restrictions, controller, x_v
     allowed = set(restrictions.get("allowed_types") or [])
     if allowed and not types.intersection(allowed):
         return False
+    if restrictions.get('tap_status'):
+        status = restrictions['tap_status']
+        if status not in {'tapped', 'untapped'} or bool(card.tapped) != (status == 'tapped'):
+            return False
     if (restrictions.get('nonbasic_land_only') and 'Land' in types
             and not types.intersection(allowed - {'Land'}) and 'Basic' in (card.type_line or '').split()):
         return False
@@ -1329,6 +1981,10 @@ def _first_creature(state: MatchState, player_id: int) -> str | None:
 
 
 def _extract_modes(oracle: str) -> list[str]:
+    from rules_engine.spree import is_spree, parse
+    if is_spree(oracle):
+        modes = parse(oracle)
+        return [mode.text for mode in modes] if modes else []
     match = CHOOSE_ONE_RE.search(oracle) or CHOOSE_TWO_RE.search(oracle)
     if not match:
         return []
@@ -1376,26 +2032,10 @@ def _split_clauses(oracle: str) -> list[str]:
 
 
 def extract_loyalty_abilities(card: CardInstance) -> list[dict[str, Any]]:
-    oracle = (card.oracle_text or "").replace("\u2212", "-")
-    out: list[dict[str, Any]] = []
-    for match in LOYALTY_ABILITY_RE.finditer(oracle):
-        raw_delta = match.group(1).strip()
-        text = match.group(2).strip()
-        if raw_delta.upper().endswith("X"):
-            x_sign = -1 if raw_delta.startswith("-") else 1
-            out.append(
-                {
-                    "delta": 0,
-                    "x_cost": True,
-                    "x_sign": x_sign,
-                    "text": text,
-                    "label": f"{raw_delta.upper()}: {text}",
-                }
-            )
-        else:
-            delta = int(raw_delta)
-            out.append({"delta": delta, "x_cost": False, "x_sign": 0, "text": text, "label": f"{delta:+d}: {text}"})
-    return out
+    from rules_engine.closed_loyalty import compile_body
+    compiled = compile_body(card.oracle_text or "", card.name)
+    return [{key: value for key, value in ability.items() if key != "instructions"}
+            for ability in compiled["abilities"]] if compiled is not None else []
 
 
 def extract_saga_chapters(oracle_text: str) -> list[dict[str, Any]]:
@@ -1414,12 +2054,68 @@ def extract_saga_chapters(oracle_text: str) -> list[dict[str, Any]]:
     return sorted(chapters, key=lambda item: int(item["number"]))
 
 
+def _pure_self_graveyard_return_instruction(card, instruction):
+    """Recognize a complete self return, not a prefix of a compound ability."""
+    text = re.sub(r'\s+', ' ', instruction or '').strip()
+    match = re.fullmatch(
+        r'return this card from your graveyard to '
+        r'(?:(the battlefield)( tapped)?|(your hand))\.?', text, re.I)
+    if match is None:
+        return None
+    return {'destination': 'battlefield' if match[1] else 'hand',
+            'tapped': bool(match[2])}
+
+
 def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
     """Extract simple mana-cost activated abilities from a card surface."""
     out: list[dict[str, Any]] = []
-    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(without_reminder_text(card.oracle_text or ""))):
+    raw = card.oracle_text or ''
+    normalized, offsets = raw, list(range(len(raw)))
+    while reminders := list(re.finditer(r'\([^()]*\)', normalized)):
+        for reminder in reversed(reminders):
+            start, end = reminder.span()
+            normalized = normalized[:start] + normalized[end:]
+            offsets[start:end] = []
+    if normalized != without_reminder_text(raw):
+        return out
+    # Execution spans use original offsets; normalized text only selects legacy indices.
+    top_level, depth, quote, escaped = [], 0, None, False
+    for char in raw:
+        top_level.append(depth == 0 and quote is None)
+        if depth:
+            depth += (char == '(') - (char == ')')
+        elif quote is not None:
+            if escaped:
+                escaped = False
+            elif char == '\\':
+                escaped = True
+            elif char == quote:
+                quote = None
+        elif char == '(':
+            depth = 1
+        elif char == ')':
+            return out
+        elif char in ('"', '\u201c'):
+            quote = '"' if char == '"' else '\u201d'
+    if depth or quote is not None:
+        return out
+    for index, match in enumerate(ACTIVATED_ABILITY_RE.finditer(normalized)):
         cost = match.group(1).strip().upper()
         text = match.group(2).strip()
+        separator = normalized.find(':', match.end(1), match.start(2))
+        if separator < 0 or '\n' in normalized[separator+1:match.start(2)]:
+            continue
+        end = offsets[match.end(2)] if match.end(2) < len(offsets) else len(raw)
+        if (not top_level[offsets[match.start(1)]] or not top_level[offsets[separator]]
+                or end < len(raw) and not top_level[end]):
+            continue
+        raw_body = raw[offsets[separator]+1:end].strip()
+        if without_reminder_text(raw_body).strip() != text:
+            continue
+        self_return = _pure_self_graveyard_return_instruction(card, text)
+        if re.search(r'return\s+this\s+card\s+from\s+your\s+graveyard\b', text, re.I):
+            if self_return is None or _pure_self_graveyard_return_instruction(card, raw_body) != self_return:
+                continue
         # Mana abilities are handled by the mana source model and should not
         # be duplicated as stack actions here.
         if "add " in text.lower() and "target" not in text.lower() and not re.search(
@@ -1427,10 +2123,22 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
             continue
         from rules_engine.activation_modifiers import ability_cost_modifier
         modifier = ability_cost_modifier(text)
+        raw_modifier = ability_cost_modifier(raw_body)
+        if modifier:
+            if (raw_modifier is None
+                    or any(raw_modifier[key] != modifier[key] for key in ('amount', 'basis'))
+                    or without_reminder_text(raw_modifier['effect_text']).strip() != modifier['effect_text']):
+                continue
+            raw_effect = raw_modifier['effect_text']
+        else:
+            if raw_modifier is not None or re.search(r'\bthis ability costs\b', raw_body, re.I):
+                continue
+            raw_effect = raw_body
         from rules_engine.costs import parse_activated_cost
         out.append({"index": index, "mana_cost": cost,
                     "text": modifier['effect_text'] if modifier else text,
-                    "activation_zone": 'hand' if parse_activated_cost(cost).discard_source else 'battlefield',
+                    'raw_body': raw_body, 'raw_effect_text': raw_effect,
+                    "activation_zone": 'graveyard' if self_return else 'hand' if parse_activated_cost(cost).discard_source else 'battlefield',
                     "cost_modifier": modifier, "label": f"{cost}: {text}"})
     return out
 
@@ -1440,12 +2148,48 @@ def activation_source_eligible(state, player_id, card_id, ability):
     zone = ability.get('activation_zone', 'battlefield')
     return (card is not None and card.zone.value == zone
             and card_id in getattr(state.players[player_id], zone)
-            and (zone == 'hand' or card.controller == player_id))
+            and (card.owner == player_id if zone == 'graveyard'
+                 else zone == 'hand' or card.controller == player_id))
 
 
 def crew_value(card: CardInstance) -> int | None:
     match = CREW_RE.search(card.oracle_text or "")
     return int(match.group(1)) if match else None
+
+
+def _token_base_quantity(oracle: str, action_targets: dict[str, Any], x_value: int) -> int | None:
+    # Quoted token abilities do not describe the quantity of the enclosing creation.
+    text = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d', '', oracle).strip(' .')
+    # The existing two-seat attack route has one opponent and a fixed per-opponent body.
+    text = re.sub(r'^(?:whenever you attack,\s*)?for each opponent,\s*(?=create\b)', '', text)
+    count = TOKEN_COUNT_RE.search(text)
+    if not count:
+        return None
+    fixed = None if count[1].lower() == 'x' else _parse_count_token(count[1])
+    per_counter = re.search(
+        r'\bfor each ([+-]\d+/[+-]\d+|[a-z][a-z -]*) counter on '
+        r'(?:this (?:creature|permanent|artifact|enchantment)|it)$', text)
+    counter_x = re.search(
+        r'\bwhere x is the number of ([+-]\d+/[+-]\d+|[a-z][a-z -]*) counters? on '
+        r'(?:this (?:creature|permanent|artifact|enchantment)|it)$', text)
+    counter = per_counter or counter_x
+    power = re.search(r"\bwhere x is this creature's power$", text)
+    lki = action_targets.get('__source_lki')
+    if counter:
+        counters = lki.get('counters') if isinstance(lki, dict) else None
+        value = counters.get(counter[1], 0) if isinstance(counters, dict) else None
+        multiplier = fixed if per_counter else 1 if fixed is None else None
+        return max(0, value) * multiplier if type(value) is int and multiplier is not None else None
+    if power:
+        value = lki.get('power') if isinstance(lki, dict) else None
+        return max(0, value) if type(value) is int and fixed is None else None
+    domain = re.search(r'\bfor each basic land type among lands you control$', text)
+    if (re.search(r'\bfor each\b', text) and not domain
+            or re.search(r'\bwhere x is\b|\bequal to\b|\bthat many\b', text)):
+        return None
+    if fixed is not None:
+        return fixed
+    return max(0, x_value) if 'x_value' in action_targets else None
 
 
 def _infer_clause_effect(
@@ -1456,12 +2200,20 @@ def _infer_clause_effect(
     action_targets: dict[str, Any],
     x_value: int,
 ) -> tuple[str, dict[str, Any]] | None:
+    self_return = _pure_self_graveyard_return_instruction(card, oracle)
+    if self_return and _pure_self_graveyard_return_instruction(card, card.oracle_text) == self_return:
+        payload = {'target_card_id': card.id, 'target_player': controller,
+                   '__self_graveyard_return': self_return['destination']}
+        if self_return['destination'] == 'hand':
+            return 'return_from_graveyard', payload
+        return 'return_creature_from_graveyard_to_battlefield', {
+            **payload, 'tapped': self_return['tapped']}
     mill = re.fullmatch(r'mill (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?,?', oracle.strip())
     if mill:
         return 'mill_cards', {'amount': _parse_count_token(mill[1])}
-    recipient_mill = re.fullmatch(r'(target player|each opponent|you) mills? (one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?', oracle.strip())
+    recipient_mill = RECIPIENT_MILL_RE.fullmatch(oracle.strip())
     if recipient_mill:
-        recipient = 3-controller if recipient_mill[1] == 'each opponent' else action_targets.get('target_player', 3-controller) if recipient_mill[1] == 'target player' else controller
+        recipient = 3-controller if recipient_mill[1] == 'each opponent' else action_targets.get('target_player') if recipient_mill[1] == 'target player' else controller
         return 'mill_cards', {'target_player': recipient, 'amount': _parse_count_token(recipient_mill[2])}
     graveyard_return = UNTARGETED_GRAVEYARD_RETURN_RE.fullmatch(oracle.strip(' .'))
     if graveyard_return:
@@ -1507,6 +2259,21 @@ def _infer_clause_effect(
                 payload.update(base_power=int(loss[2]), base_toughness=int(loss[3]))
             return 'temporary_ability_loss', payload
 
+    team_keywords = re.fullmatch(
+        r'(creatures|permanents)( you control| your opponents control)? '
+        r'(gain|lose) (.+) until end of turn', oracle.strip(' .'),
+    )
+    if team_keywords:
+        from rules_engine.continuous import _attached_keywords
+        keywords = _attached_keywords(team_keywords[4])
+        if keywords and not any(keyword == 'ward' or keyword.startswith('ward ') for keyword in keywords):
+            return 'grant_keyword', {
+                'keywords': keywords, 'until_end_of_turn': True,
+                'operation': 'remove' if team_keywords[3] == 'lose' else 'grant',
+                'recipient_kind': team_keywords[1],
+                'recipients': {' you control': 'controller', ' your opponents control': 'opponents'}.get(team_keywords[2], 'all'),
+            }
+
     keyword_change = re.fullmatch(
         rf'(target (?:creature|permanent)(?: you control| an opponent controls)?|it|this (?:creature|permanent|artifact)|{re.escape(card.name.lower())}) '
         r'(gains|loses) (.+) until end of turn', oracle.strip(' .'),
@@ -1517,7 +2284,7 @@ def _infer_clause_effect(
         if keywords and all(keyword != 'ward' and not keyword.startswith('ward ') for keyword in keywords):
             subject = keyword_change[1]
             recipient = target_card_id if subject.startswith('target ') or subject == 'it' else card.id
-            if recipient is not None:
+            if recipient is not None or subject.startswith('target '):
                 payload = {'target_card_id': recipient, 'until_end_of_turn': True}
                 payload['keyword' if len(keywords) == 1 else 'keywords'] = keywords[0] if len(keywords) == 1 else keywords
                 if keyword_change[2] == 'loses':
@@ -1580,8 +2347,13 @@ def _infer_clause_effect(
             "sacrifice_next_end_step": "sacrifice it at the beginning of the next end step" in (card.oracle_text or "").lower(),
         }
 
-    if "when you next cast a creature spell" in oracle and "additional +1/+1 counter" in oracle:
-        return "set_next_creature_entry_counter", {"counter": "+1/+1", "amount": 1}
+    if "when you next cast a creature spell" in oracle:
+        from rules_engine.next_creature_entry_trigger import compile_instruction
+        instruction = compile_instruction(oracle, getattr(card, 'source_oracle_text', None))
+        if instruction is not None:
+            return 'set_next_creature_entry_counter', {
+                'counter': '+1/+1', 'amount': 1, '__native_next_instruction': instruction}
+        return 'noop', {'__unsupported_instruction': oracle}
 
     if "exile this saga" in oracle and "return it to the battlefield transformed" in oracle:
         target = target_card_id or action_targets.get("source_card_id")
@@ -1622,7 +2394,7 @@ def _infer_clause_effect(
             target_player = opponent
         return "deal_damage", {"target_player": target_player, "amount": amount}
 
-    targeted_draw = re.fullmatch(r'target (?:player|opponent) draws (a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?\.?', oracle.strip(), re.I)
+    targeted_draw = TARGETED_DRAW_RE.fullmatch(oracle.strip())
     if targeted_draw and target_player is not None:
         return 'draw_cards', {'target_player': target_player, 'amount': _parse_count_token(targeted_draw[1])}
     each_draw = EACH_PLAYER_DRAW_RE.fullmatch(oracle.strip())
@@ -1874,9 +2646,9 @@ def _infer_clause_effect(
 
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:
-        count_match = TOKEN_COUNT_RE.search(oracle)
-        token_count = (max(0, x_value) if count_match.group(1).lower() == 'x'
-                       else _parse_count_token(count_match.group(1))) if count_match else 1
+        token_count = _token_base_quantity(oracle, action_targets, x_value)
+        if token_count is None:
+            return 'noop', {'__unsupported_token_quantity': True}
         token_name_match = TOKEN_NAME_RE.search(oracle)
         token_name = "Token"
         token_colors: list[str] = []
@@ -1897,6 +2669,10 @@ def _infer_clause_effect(
         }
         if token_name_match:
             out["type_line"] = f"Token Creature — {token_name}"
+        from rules_engine.token_descriptors import creature_token_descriptor
+        descriptor = creature_token_descriptor(oracle)
+        if descriptor is not None:
+            out.update(descriptor)
         if "tapped and attacking" in oracle:
             out["tapped_and_attacking"] = True
         if re.search(r'\bcreate\s+\S+\s+tapped\s+\d+/\d+\b', oracle):
@@ -1921,7 +2697,9 @@ def _infer_clause_effect(
     token_definition = named_artifact_token(named_token.group(2)) if named_token else None
     if named_token and (reminder_ability or token_definition) and " instead" not in oracle:
         token_name = named_token.group(2).title()
-        amount = _parse_count_token(named_token.group(1))
+        amount = _token_base_quantity(oracle, action_targets, x_value)
+        if amount is None:
+            return 'noop', {'__unsupported_token_quantity': True}
         conditional = SAC_TOUGHNESS_TOKEN_RE.search(without_reminder_text(source_oracle))
         sacrificed_toughness = getattr(card, "sacrificed_toughness", None)
         if (conditional and conditional.group(3).lower() == token_name.lower()
@@ -2095,6 +2873,7 @@ def _parse_count_token(token: str) -> int:
         "eight": 8,
         "nine": 9,
         "ten": 10,
+        "twenty": 20,
     }
     t = (token or "").strip().lower()
     if t in mapping:
@@ -2112,3 +2891,47 @@ def _extract_keywords_from_text(text: str) -> list[str]:
         if kw in lower:
             found.append(kw)
     return found
+
+
+def complete_stack_instruction_coverage(card):
+    """Positive complete stack-only bodies; unknown/residual text is not covered."""
+    if not isinstance(card.oracle_text, str) or not isinstance(card.name, str):
+        return None
+    body = without_reminder_text(card.oracle_text).strip()
+    if not body:
+        return None
+    draw = compile_draw_life_instruction(body)
+    if draw:
+        return {'instruction': body, 'source_zone': 'stack', 'effect_key': draw[0],
+                'payload': draw[1], 'target_domain': None, 'residual': ''}
+    damage = re.fullmatch(
+        r'(?:' + re.escape(card.name) + r'|this spell) deals ([1-9]\d*) damage to '
+        r'(any target|target creature|target player|target opponent|target planeswalker)\.',
+        body, re.I)
+    if damage:
+        return {'instruction': body, 'source_zone': 'stack', 'effect_key': 'deal_damage',
+                'payload': {'amount': int(damage[1])},
+                'target_domain': damage[2].lower(), 'residual': ''}
+    return None
+
+
+def compile_self_entry_damage_clause(clause: str, source_name: str) -> tuple[str, dict[str, Any]] | None:
+    """One complete self-entry damage paragraph; related unknown bodies fail closed."""
+    if not isinstance(clause, str) or not isinstance(source_name, str) or not source_name:
+        return None
+    reference = r'(?:' + re.escape(source_name) + r'|this (?:creature|permanent|artifact|enchantment))'
+    prefix = r'(?:when|whenever) ' + reference + r' enters\b'
+    text = clause.strip()
+    if not re.match(prefix, text, re.I) or not re.search(r'\bdeals?\b.*\bdamage\b', text, re.I | re.S):
+        return None
+    entry = re.fullmatch(prefix + r'(?: the battlefield)?, (.+)', text, re.I)
+    instruction = entry[1] if entry else text
+    body = re.fullmatch(r'(?:it|' + reference + r') deals ([1-9]\d*) damage to any target\.',
+                        instruction, re.I) if entry else None
+    amount = _parse_count_token(body[1]) if body else None
+    if body is None or type(amount) is not int or str(amount) != body[1]:
+        return 'noop', {'__trigger_full_clause': text,
+                        '__unsupported_trigger_instruction': instruction}
+    return 'deal_damage', {'amount': amount,
+                           '__trigger_full_clause': text,
+                           '__trigger_resolution_text': instruction}

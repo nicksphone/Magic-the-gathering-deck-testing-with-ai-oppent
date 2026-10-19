@@ -1,0 +1,4 @@
+Fresh full official API objects fetched before tests; UTC: 2026-10-06T12:51:20Z
+Stifle: https://api.scryfall.com/cards/616d1b20-61c1-4d39-a9b5-ad9fd61699e4
+Cremate: https://api.scryfall.com/cards/named?exact=Cremate
+Kozilek and family/control rows: unchanged full5a74 canonical.jsonl/provenance.json.

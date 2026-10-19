@@ -1,0 +1,20 @@
+# Canonical Combat Fixtures
+
+Current result: all 111 cases, including the entire original 28-case mixed HTTP
+module, pass in the [406-case component](canonical-timing-planes-combat406.md).
+The prior pure-83 epoch and its then-pending mixed acceptance are retained below
+as history, not substituted for that actual later execution.
+
+Immutable base a32dbd0d67586d5f6e4d5dcea2ec8860ff9ee550. The two original fixture modules have the same preimages and AI/rules/game-state sources as the earlier022 stage. The cumulative test/data recipe applies once overa32. No production, AI weights/limits, shared helper, W or index writes.
+
+Twenty-three complete official objects:15 reused committed pinned objects and8 actual exact-name Scryfall HTTP200 bodies. Full raw/status/headers/URL/UTC/SHA were NFS readback-verified before offline tests. No new intake or network in this continuation. Native MatchFactory printed births and existing normalizer/materializer are unchanged. Explicit synthetic Bear/Soldier/Field Anthem/Large/Small/Blocker and runtime unit battlefield/GY poses remain unwaived; this is not all-natural paid gameplay or literal Task1.3 closure. Canonical unit templates do not silently repair the original scene's captured stock.
+
+Preserved history: original offline79 nodes36PASS43FAIL, then canonical79 nodes77PASS2FAIL. The official Hill Giant is3/3, whereas the old lethal-positive setup gave defender4life (old handwritten Giant5/5). Real unblocked combat left1life and AI selected no block. Both ordinary failures and all old source/receipts remain immutable in the previous STAGE archive. No AI/rules defect or fix is claimed.
+
+The separately authorized resource correction changes ONLY defender player2life4->3 in test_master_block_search_prevents_lethal_damage_when_trade_is_available. Full canonical Hill Giant3/3, other resources/opponents/actions/seeds/AI limits, all38 original names/121 original test assertion ASTs and4 helper assertion ASTs remain unchanged. Byte-inverting that single setup literal exactly recovers the prior canonical AI module. The existing independent original-scene combat witness is strengthened to exact life3->0 with root purity. Four NEW native-combat controls cover both defender seats at life3->0 and life4->1/nonterminal. No claim that AI must not block a nonlethal attacker; no fake event or StackItem.
+
+ONE actual whole pure declaration: unchanged originalAI10 plus entire NEW fidelity73 =83 ordered cases,249 phases,83PASS/0FAIL/ERROR/SKIP. Pytest16.12s, driver16.367179397s, wrapper0 and independent metadata0. All79 preceding identities retained exactly and four new parametrized identities added. Direct FRESH Python-I-B/outerPYTHONDONTWRITEBYTECODE1, same900TERM+15/200-case ceiling. Eight preimport physical denials:3 SQLite aliases,2 socket constructors, native subprocess, provider import and main import. Unexpected[], zero SQL/App/HTTP/network/positive child/service execution. Full source/body/mode/link and FRESH3674regular/4links/429dirs BE; FDs equal, no extra threads/children/default-or-ownedDB. Actual timeout2188430/Python2188433 waited and absent. No retry or prior SQL-denied module repeat.
+
+Entire original damage module28, including its one TestClient lifespan/four requests/two explicit Session contexts, remains planned UNEXECUTED under a separately reviewed controlled mixed-I/O role. Only actual constructor/helper ASTs and one pure planeswalker scenario are exercised by NEW fidelity; this is NOT whole-module damage acceptance. Future whole original38+NEW73=111 is a reference, not a collected mixed result. Exact original/candidate HTTP bodies, startup/media, owned default/owner backup/RO epoch, noINET/child requirements are separate source-pinned handoff artifacts. No SQL or mixed cohort grant inferred.
+
+This document is a packet-only post-gate postimage, not retroactively part of the source BE inventory. Source/recipe/preservation/native guard inverses, ordered nodes, phases, raw intake and failed historical ledgers are archived. Full Phase1, measured AI strength, full matrix/native/browser goals remain open. Parent owns final composition/review/graph/publication.

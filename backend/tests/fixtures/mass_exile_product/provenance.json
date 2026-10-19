@@ -1,0 +1,29 @@
+[
+  {
+    "file": "progenitus.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Progenitus",
+    "retrieval_utc": "2026-10-07T05:21:39.246552+00:00",
+    "sha256": "f2c0e8fa549e8cbd000a89e83e392ae70e601c305c5188729de2e2c0905e98cb",
+    "full_raw": true,
+    "oracle_modified": false,
+    "oracle_text": "Protection from everything\nIf Progenitus would be put into a graveyard from anywhere, reveal Progenitus and shuffle it into its owner's library instead."
+  },
+  {
+    "file": "rest-in-peace.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Rest+in+Peace",
+    "retrieval_utc": "2026-10-07T05:21:39.933541+00:00",
+    "sha256": "84b5dd614bb82cd1f736b38b93f2a1be0efd94da777d1897fe612756a6cd85b7",
+    "full_raw": true,
+    "oracle_modified": false,
+    "oracle_text": "When this enchantment enters, exile all graveyards.\nIf a card or token would be put into a graveyard from anywhere, exile it instead."
+  },
+  {
+    "file": "avacyn.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Avacyn,+Angel+of+Hope",
+    "retrieval_utc": "2026-10-07T05:21:40.420534+00:00",
+    "sha256": "f3f2f5ff9ebf2c7538cd8d8ef8db2f4bf7fa4b2f3596e3a5e4c85ab0f5e861fd",
+    "full_raw": true,
+    "oracle_modified": false,
+    "oracle_text": "Flying, vigilance, indestructible\nOther permanents you control have indestructible."
+  }
+]

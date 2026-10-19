@@ -44,9 +44,19 @@ try {
   for (let step = 0; step < (humanOpponent ? 1800 : 500) && !state.match_complete; step++) {
     const revision = state.revision;
     if (state.winner !== null) {
+      for (const playerId of [1, 2]) {
+        if (state.controllers[String(playerId)] !== 'human' || state.sideboarding[String(playerId)].applied) continue;
+        const sideboardRevision = state.revision;
+        await evaluate(`(() => { const select = document.querySelector('select[aria-label="Sideboarding player"]'); select.value = '${playerId}'; select.dispatchEvent(new Event('change', { bubbles: true })); })()`);
+        await waitFor(`document.querySelector('select[aria-label="Sideboarding player"]').value === '${playerId}'`);
+        await click('Confirm No Swaps');
+        await syncAfter(`sideboard-${playerId}`, sideboardRevision);
+        assert.equal(state.sideboarding[String(playerId)].applied, true);
+      }
       const chooser = state.next_play_draw_chooser;
+      const nextGameRevision = state.revision;
       await click(chooser && state.controllers[String(chooser)] === 'human' ? `P${chooser} Play First` : 'Start Next Game');
-      await syncAfter('next-game', revision);
+      await syncAfter('next-game', nextGameRevision);
       observed.add(state.game_number);
       continue;
     }

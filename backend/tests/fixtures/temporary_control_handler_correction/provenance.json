@@ -1,0 +1,18 @@
+[
+  {
+    "file": "regrowth.json",
+    "full_raw": true,
+    "oracle_id": "e6e4a8bd-5c40-4654-8de1-0da9afed90fd",
+    "retrieved_utc": "2026-10-07T00:36:04Z",
+    "sha256": "55f1a6f7a19da827dea368888eb236e464ae6ee0dafc8b4880d6fbc4cb4b540f",
+    "url": "https://api.scryfall.com/cards/named?exact=Regrowth"
+  },
+  {
+    "file": "dominate.json",
+    "full_raw": true,
+    "oracle_id": "77db8db4-9fe4-478e-b919-5348b0b87b0d",
+    "retrieved_utc": "2026-10-07T00:38:33Z",
+    "sha256": "f99dac504011ad7de0bec33b64fbe398d971717cb1126008088860c6aea582ad",
+    "url": "https://api.scryfall.com/cards/named?exact=Dominate"
+  }
+]

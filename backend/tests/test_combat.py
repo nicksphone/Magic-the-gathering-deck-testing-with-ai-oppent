@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 
@@ -40,7 +40,7 @@ def test_priority_passes_apply_unblocked_combat_damage_once() -> None:
     card = CardInstance(
         id="swiftspear", name="Monastery Swiftspear", owner=1, controller=1,
         zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=2,
-        keywords=["haste"], oracle_text=fallback_card_payload("Monastery Swiftspear")["oracle_text"],
+        keywords=["haste"], oracle_text=seed_card_payload("Monastery Swiftspear")["oracle_text"],
     )
     state.cards[card.id] = card
     state.players[1].battlefield.append(card.id)

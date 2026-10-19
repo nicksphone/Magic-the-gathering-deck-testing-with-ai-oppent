@@ -2,7 +2,7 @@ from __future__ import annotations
 from rules_engine.type_effects import effective_types
 
 import re
-from copy import copy
+from copy import copy, deepcopy
 from typing import Any
 
 from game_state.state import MatchState, StackItem, Zone, object_incarnation
@@ -11,7 +11,8 @@ from rules_engine.oracle_text import without_reminder_text
 
 
 TRANSFORM_DRAW_RE = re.compile(
-    r"whenever a permanent you control transforms or a permanent enters the battlefield under your control transformed,\s*"
+    r"whenever a permanent you control transforms or a permanent "
+    r"(?:you control enters|enters the battlefield under your control) transformed,\s*"
     r"you may draw a card\.\s*do this only once each turn",
     re.IGNORECASE,
 )
@@ -32,6 +33,47 @@ ATTACK_REWARD_RE = re.compile(
 )
 
 
+def _shuffle_observer_triggers(state, card, oracle, payload):
+    """Only complete, anchored shuffle clauses with supported complete bodies."""
+    player = payload.get('player_id')
+    if type(player) is not int or player not in state.players:
+        return []
+    cause = payload.get('cause')
+    out = []
+    for clause in oracle.splitlines():
+        match = re.fullmatch(
+            r'whenever (?:(an opponent|a player) shuffles|'
+            r'a spell or ability causes (a player) to shuffle) their library, (.+)', clause.strip())
+        if not match or (match[1] == 'an opponent' and player == card.controller):
+            continue
+        if match[2]:
+            from rules_engine.shuffle_actions import is_static_replacement_event_cause
+            if (not isinstance(cause, dict) or (
+                    cause.get('kind') not in {'spell', 'activated', 'triggered'}
+                    and not is_static_replacement_event_cause(cause))):
+                continue
+        damage = re.fullmatch(r'this (?:artifact|creature|permanent) deals (a|an|one|two|three|four|five|\d+) damage to that player\.', match[3])
+        counter = re.fullmatch(r'you may put (a|an|one|two|three|four|five|\d+) ([+-]\d+/[+-]\d+) counters? on this (?:creature|artifact|permanent)\.', match[3])
+        if damage:
+            key = 'deal_damage'
+            effect = {'amount': _number_token(damage[1]), 'target_player': player}
+        elif counter:
+            key = 'add_counters'
+            effect = {'amount': _number_token(counter[1]), 'counter': counter[2],
+                      'target_card_id': card.id, 'effect_timestamp': object_incarnation(card), '__may': True}
+        else:
+            continue
+        out.append({
+            'source_card_id': card.id, 'controller': card.controller,
+            'label': f'{card.name} shuffle trigger', 'effect_key': key,
+            'payload': {**effect, '__trigger_full_clause': clause,
+                        '__shuffle_player': player, '__shuffle_cause': deepcopy(cause),
+                        '__shuffle_source_reference': {'incarnation': object_incarnation(card),
+                                                      'zone_change_sequence': card.zone_change_sequence}},
+        })
+    return out
+
+
 def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
     card = state.cards.get(card_id)
     if card is None or card.zone != Zone.BATTLEFIELD:
@@ -47,6 +89,7 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "controller": card.controller,
         "power": effective_power(state, card_id) if 'Creature' in types else None,
         "toughness": effective_toughness(state, card_id) if 'Creature' in types else None,
+        "loyalty": card.loyalty,
         "keywords": list(keyword_counts),
         "keyword_counts": keyword_counts,
         "counters": dict(card.counters),
@@ -56,10 +99,26 @@ def capture_last_known_battlefield(state: MatchState, card_id: str) -> None:
         "battlefield_incarnation": object_incarnation(card),
         "effect_timestamp": card.effect_timestamp,
         "was_kicked": card.was_kicked,
+        **({'kicker_count': card.kicker_count} if card.kicker_count is not None else {}),
         "printed_abilities_suppressed": printed_abilities_suppressed(state, card_id),
     }
+    from rules_engine.attached_token_payment import attachment_lki, copiable_lki, retain_departed_host
+    card.last_known_battlefield['__copiable_lki'] = copiable_lki(state, card)
+    retain_departed_host(state, card, card.last_known_battlefield['__copiable_lki'])
+    if card.attached_to is not None:
+        card.last_known_battlefield['__attachment_lki'] = attachment_lki(state, card)
     for item in state.stack:
         if item.source_card_id == card_id:
+            payload = item.payload or {}
+            if payload.get('__activation_source_origin') == 'hand' or '__activation_source_context' in payload:
+                continue
+            if '__activation_source_reference' in payload and '__ability_target_text' in payload:
+                reference = payload['__activation_source_reference']
+                if (type(reference) is not dict or set(reference) != {'incarnation', 'zone_change_sequence'}
+                        or any(type(value) is not int or value < 0 for value in reference.values())
+                        or reference != {'incarnation': object_incarnation(card),
+                                         'zone_change_sequence': card.zone_change_sequence}):
+                    continue
             item.payload.setdefault("__source_lki", dict(card.last_known_battlefield))
 
 
@@ -78,10 +137,12 @@ def was_creature_on_battlefield(card) -> bool:
 
 
 def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
+    from ai.sideboard_facts import record_event
+    record_event(state, event, payload)
     if event == 'enters_battlefield':
         from rules_engine.land_history import record_land_entry
         record_land_entry(state, payload)
-    if event in {'leaves_battlefield', 'enters_battlefield', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
+    if event in {'leaves_battlefield', 'enters_battlefield', 'enters_graveyard', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
         from game_state.observations import observe_cards
         observe_cards(state, [payload.get('card_id')])
     if event == "leaves_battlefield":
@@ -97,11 +158,14 @@ def emit_event(state: MatchState, event: str, payload: dict[str, Any]) -> None:
 
 def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any]]) -> None:
     """Collect simultaneous events before putting their triggers on the stack."""
+    from ai.sideboard_facts import record_event
+    for payload in payloads:
+        record_event(state, event, payload)
     if event == 'enters_battlefield':
         from rules_engine.land_history import record_land_entry
         for payload in payloads:
             record_land_entry(state, payload)
-    if event in {'leaves_battlefield', 'enters_battlefield', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
+    if event in {'leaves_battlefield', 'enters_battlefield', 'enters_graveyard', 'spell_cast', 'discard', 'creature_dies', 'permanent_dies'}:
         from game_state.observations import observe_cards
         observe_cards(state, [payload.get('card_id') for payload in payloads])
     triggers: list[dict[str, Any]] = []
@@ -115,7 +179,8 @@ def emit_event_batch(state: MatchState, event: str, payloads: list[dict[str, Any
         event_payload = {**payload, "__simultaneous_source_ids": departed_ids} if departed_ids else payload
         for trigger in _collect_triggers(state, event, event_payload):
             source_id = str(trigger.get("source_card_id", ""))
-            source = _departed_card_view(state, source_id)
+            source = (state.cards.get(source_id) if event == 'enters_graveyard'
+                      else _departed_card_view(state, source_id))
             oracle = (getattr(source, "oracle_text", "") or "").lower() if source else ""
             if "one or more" in oracle:
                 if source_id in one_or_more_sources:
@@ -166,6 +231,13 @@ def _finish_battlefield_exit(state: MatchState, card_id: str | None) -> None:
 def _push_triggers(state: MatchState, event: str, triggers: list[dict[str, Any]]) -> None:
     if not triggers:
         return
+    from ai.sideboard_facts import protect_source
+    for trigger in triggers:
+        protect_source(state, trigger.get('source_card_id'))
+    # Automatic target selection occurs inside _append_trigger_groups, after APNAP.
+    # Arm its actual selection boundary, not a later resolution scan.
+    triggers = [{**trigger, 'payload': {**trigger['payload'], '__granted_target_selection_pending': True}}
+                for trigger in triggers]
     if state.trigger_staging:
         state.staged_triggers.extend(
             {**trigger, "payload": {**trigger["payload"], "__trigger_event": event}}
@@ -238,16 +310,43 @@ def _append_trigger_groups(
                 from ai.trigger_policy import preferred_trigger_order
                 group = preferred_trigger_order(group, controller)
         ordered.extend(group)
-    target_stack_ids: list[str] = []
-    targeted_items = []
-    for order_index, trig in enumerate(ordered):
+    _publish_ordered_triggers(state, event, ordered)
+
+
+def _publish_ordered_triggers(
+    state: MatchState,
+    event: str,
+    ordered: list[dict[str, Any]],
+    start_index: int = 0,
+    target_stack_ids: list[str] | None = None,
+    targeted_item_ids: list[str] | None = None,
+    selected_item: StackItem | None = None,
+) -> None:
+    target_stack_ids = list(target_stack_ids or [])
+    targeted_item_ids = list(targeted_item_ids or [])
+    targeted_items = [item for item in state.stack if item.id in targeted_item_ids]
+    for order_index, trig in enumerate(ordered[start_index:], start=start_index):
         payload = dict(trig["payload"])
         if trig["effect_key"] == "ward_payment":
             source = state.cards.get(trig["source_card_id"])
             lki = source.last_known_battlefield if source else {}
             if lki.get("battlefield_incarnation") == payload.get("ward_incarnation"):
                 payload.setdefault("__source_lki", dict(lki))
-        item = StackItem(
+        if (trig['effect_key'] == 'set_next_creature_entry_counter'
+                or trig['effect_key'] == 'effect_sequence' and any(
+                    child.get('effect_key') == 'set_next_creature_entry_counter'
+                    for child in payload.get('effects', []))):
+            source = state.cards.get(trig['source_card_id'])
+            if source is not None and source.zone == Zone.BATTLEFIELD:
+                payload['__one_shot_publication'] = {
+                    'source_card_id': source.id, 'controller': trig['controller'],
+                    'reference': {'incarnation': object_incarnation(source),
+                                  'zone_change_sequence': source.zone_change_sequence,
+                                  'zone': source.zone.value},
+                    'oracle_text': source.oracle_text,
+                    'clause': payload.get('__chapter_clause'),
+                }
+        item = selected_item if order_index == start_index and selected_item is not None else StackItem(
             id=state.allocate_object_id(),
             source_card_id=trig["source_card_id"],
             controller=trig["controller"],
@@ -255,6 +354,17 @@ def _append_trigger_groups(
             effect_key=trig["effect_key"],
             payload={**payload, "__trigger_order": order_index, "__trigger_event": payload.get("__trigger_event", event)},
         )
+        if item.effect_key == 'bind_creature_spell_entry_counter':
+            from rules_engine.next_creature_entry_trigger import publication
+            item.payload['__native_publication'] = publication(item)
+        if item.effect_key == 'modal_entry':
+            from rules_engine.modal_entry import begin
+            if begin(state, item, {'event': event, 'ordered': ordered,
+                                  'start_index': order_index,
+                                  'target_stack_ids': target_stack_ids,
+                                  'targeted_item_ids': [value.id for value in targeted_items]}):
+                return
+            continue
         clause = _targeted_trigger_clause(state, item)
         if clause:
             item.payload["__trigger_target_clause"] = clause
@@ -265,7 +375,8 @@ def _append_trigger_groups(
             item.payload.pop("target_player", None)
             item.payload.pop("target_card_id", None)
             choice_players = set(getattr(state, "trigger_order_choice_players", set()) or set())
-            if getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players):
+            if (item.effect_key == 'retained_counter_prohibition'
+                    or getattr(state, "trigger_order_choice_required", False) and (not choice_players or item.controller in choice_players)):
                 target_stack_ids.append(item.id)
             else:
                 # Non-human controllers still need a legal target at stack entry.
@@ -284,7 +395,8 @@ def _append_trigger_groups(
                     choice = options[0]
                 item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
                 item.payload["__trigger_target_choice"] = True
-        state.stack.append(item)
+        if selected_item is not item:
+            state.stack.append(item)
         if item.payload.get("__trigger_target_choice"):
             _remember_trigger_target(state, item)
             targeted_items.append(item)
@@ -345,9 +457,30 @@ def resume_trigger_order(state: MatchState, requested_order: list[str]) -> bool:
 
 
 def _targeted_trigger_clause(state: MatchState, item: StackItem) -> str | None:
+    if item.effect_key == 'change_control':
+        source = _departed_card_view(state, item.source_card_id)
+        clause = item.payload.get('__trigger_full_clause', '')
+        if (source is not None and item.payload.get('__trigger_event') == 'enters_battlefield'
+                and re.fullmatch(
+                    r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
+                    r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+                    + r') enters(?: the battlefield)?, gain control of target permanent\.',
+                    clause, re.I)):
+            return clause
+    if item.effect_key == 'exchange_energy_payment':
+        return item.payload['__trigger_full_clause']
+    if item.effect_key == 'retained_counter_prohibition':
+        return item.payload['__counter_mode_clause']
     if item.payload.get('__trigger_resolution_text'):
         return item.payload['__trigger_full_clause']
     event = item.payload.get("__trigger_event")
+    if event == 'time_counters_removed':
+        clause = item.payload.get('__trigger_full_clause', '')
+        if item.effect_key == 'destroy_permanent' and re.fullmatch(
+                r"Whenever a time counter is removed from this card while it's exiled, destroy target (?:nonbasic )?land\.",
+                clause, re.I):
+            return clause
+        return None
     if event == 'saga_lore_added':
         clause = item.payload.get('__chapter_clause', '')
         if (item.effect_key == 'deal_damage' and 'any target' in clause.lower()
@@ -394,31 +527,36 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     if not clause or not source:
         return []
     from rules_engine.oracle_effects import inspect_target_hints
-    from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets
+    from rules_engine.targeting import validate_protection_targets, validate_hexproof_shroud_targets, stack_object_kind
     proxy = copy(source)
     lki = item.payload.get('__source_lki')
     if lki:
         proxy.types = list(lki['types'])
         proxy.colors = list(lki.get('colors', []))
         proxy.card_faces = []
+        if item.effect_key == 'retained_counter_prohibition':
+            from rules_engine.retained_counter_prohibition import current
+            if not current(state, item.payload.get('__counter_source_ref')):
+                proxy._retained_source_lki = lki
     proxy.oracle_text = clause
-    hints = inspect_target_hints(state, proxy, item.controller)
+    source_kind = stack_object_kind(state, item)
+    hints = inspect_target_hints(state, proxy, item.controller, source_kind=source_kind)
     low = clause.lower()
     if item.effect_key in {'cast_from_graveyard', 'grant_flashback'}:
         return [{'target_card_id': target['id'], 'target_name': target['name']}
                 for target in hints.get('graveyard_spell_targets', [])]
-    if item.payload.get("__targeted_life_loss"):
+    if item.payload.get("__targeted_life_loss") or item.payload.get('__counter_target_kind') == 'player':
         return [
             {"target_player": pid, "target_name": player.name}
             for pid, player in state.players.items()
-            if (not item.payload.get("__target_opponent_only") or pid != item.controller)
-            and validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
+            if (not (item.payload.get("__target_opponent_only") or item.payload.get('__counter_target_kind') == 'player') or pid != item.controller)
+            and validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid}, source_kind=source_kind)[0]
         ]
     if "any target" in low and item.effect_key == "deal_damage":
         options = [
             {"target_player": pid, "target_name": state.players[pid].name}
             for pid in state.players
-            if validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid})[0]
+            if validate_hexproof_shroud_targets(state, item.controller, {"target_player": pid}, source_kind=source_kind)[0]
         ]
         for player in state.players.values():
             for cid in player.battlefield:
@@ -426,7 +564,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
                 if not {"Creature", "Planeswalker"}.intersection(effective_types(state, target)):
                     continue
                 choice = {"target_card_id": cid}
-                if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy)[0]:
+                if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy, source_kind=source_kind)[0]:
                     options.append({**choice, "target_name": target.name})
         return options
     if "target artifact or enchantment" in low:
@@ -435,6 +573,8 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         key = "permanent_targets"
     elif "target creature" in low:
         key = "creature_targets"
+    elif re.search(r'\btarget (?:(?:basic|nonbasic) )?land\b', low):
+        key = "land_targets"
     elif "target artifact" in low:
         key = "artifact_targets"
     else:
@@ -442,7 +582,7 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
     options = []
     for target in hints.get(key, []):
         choice = {"target_card_id": target["id"]}
-        if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy)[0]:
+        if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy, source_kind=source_kind)[0]:
             options.append({**choice, "target_name": target["name"]})
     return options
 
@@ -478,6 +618,9 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
     item.payload.update({key: choice[key] for key in ("target_card_id", "target_player") if key in choice})
     item.payload["__trigger_target_choice"] = True
     _remember_trigger_target(state, item)
+    from rules_engine.granted_target_triggers import _record_target_selection
+    _record_target_selection(state, item)
+    item.payload.pop('__granted_target_selection_pending', None)
     from rules_engine.ward import mark_stack_targets
     if not state.trigger_staging:
         state.trigger_staging = True
@@ -488,17 +631,93 @@ def resume_trigger_target(state: MatchState, stack_id: str, target_card_id: str 
     return True
 
 
+def _collect_graveyard_entry_triggers(state, payload):
+    """From-anywhere self triggers inspect the new graveyard object, not death LKI."""
+    card = state.cards.get(payload.get('card_id'))
+    owner = payload.get('owner')
+    previous = payload.get('previous_reference')
+    entered = payload.get('entry_reference')
+    reference_keys = {'incarnation', 'zone_change_sequence'}
+    if (card is None or type(owner) is not int or owner not in state.players
+            or card.owner != owner or card.zone != Zone.GRAVEYARD
+            or state.players[owner].graveyard.count(card.id) != 1
+            or payload.get('from_zone') not in {zone.value for zone in Zone if zone != Zone.GRAVEYARD}
+            or type(payload.get('previous_controller')) is not int
+            or payload.get('previous_controller') not in state.players
+            or not isinstance(previous, dict) or set(previous) != reference_keys
+            or not isinstance(entered, dict) or set(entered) != reference_keys
+            or any(type(value) is not int or value < 0
+                   for reference in (previous, entered) for value in reference.values())
+            or entered != {'incarnation': object_incarnation(card),
+                           'zone_change_sequence': card.zone_change_sequence}
+            or entered['zone_change_sequence'] != previous['zone_change_sequence'] + 1):
+        return []
+    from rules_engine.oracle_effects import infer_effect_from_oracle
+    names = {card.name, card.name.split(',')[0], 'this card', 'this creature', 'this permanent'}
+    subject = '|'.join(re.escape(name) for name in names if name)
+    pattern = re.compile(r'when (?:' + subject + r') is put into a graveyard from anywhere, (.+)', re.I)
+    triggers = []
+    for index, clause in enumerate(without_reminder_text(card.oracle_text or '').splitlines()):
+        match = pattern.fullmatch(clause.strip())
+        if match is None:
+            continue
+        proxy = copy(card)
+        proxy.oracle_text, proxy.card_faces, proxy.types = match[1], [], []
+        proxy.selected_face_index = None
+        key, data = infer_effect_from_oracle(state, proxy, owner, report_unsupported=False)
+        if key != 'shuffle_graveyard_into_library':
+            continue
+        triggers.append({'source_card_id': card.id, 'controller': owner,
+                         'label': f'{card.name} graveyard entry trigger', 'effect_key': key,
+                         'payload': {**data, '__trigger_full_clause': clause,
+                                     '__trigger_ability_index': index,
+                                     '__trigger_source_reference': dict(entered)}})
+    return triggers
+
+
 def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) -> list[dict[str, Any]]:
+    if event == 'nonmana_ability_activated':
+        from rules_engine.activation_copy import collect_activation_copy_triggers
+        return collect_activation_copy_triggers(state, payload)
+    if event == 'enters_graveyard':
+        return _collect_graveyard_entry_triggers(state, payload)
     if event == 'becomes_tapped':
         from rules_engine.resource_events import collect_tap_triggers
         return collect_tap_triggers(state, payload)
     from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.keyword_triggers import collect_keyword_triggers
     out: list[dict[str, Any]] = collect_keyword_triggers(state, event, payload)
+    from rules_engine.loyalty_instructions import collect_emblem_triggers
+    out.extend(collect_emblem_triggers(state, event, payload))
+    from rules_engine.loyalty_combat import collect_retaliation
+    out.extend(collect_retaliation(state, event, payload))
     from rules_engine.foretell import collect_foretell_triggers
     out.extend(collect_foretell_triggers(state, event, payload))
     from rules_engine.suspend import collect_triggers as collect_suspend_triggers
     out.extend(collect_suspend_triggers(state, event, payload))
+    if event == 'spell_cast':
+        from rules_engine.next_creature_entry_trigger import collect_cast
+        out.extend(collect_cast(state, payload))
+    if event == 'cycle':
+        cycled = state.cards.get(payload.get('card_id'))
+        controller = payload.get('controller')
+        if cycled is not None and cycled.zone != Zone.BATTLEFIELD and controller in state.players:
+            from rules_engine.ability_model import build_ability_spec
+            for clause, instruction in _self_cycling_clauses(cycled):
+                proxy = copy(cycled)
+                proxy.oracle_text = instruction
+                proxy.card_faces = []
+                proxy.selected_face_index = None
+                proxy.source_oracle_text = cycled.oracle_text
+                ability = build_ability_spec(state, proxy, controller,
+                                            action_targets={**payload, 'source_card_id': cycled.id})
+                data = _maybe_payload(clause, dict(ability.effect.payload))
+                data['__trigger_full_clause'] = clause
+                if re.search(r'\btarget\b', instruction):
+                    data['__trigger_resolution_text'] = instruction
+                out.append({'source_card_id': cycled.id, 'controller': controller,
+                            'label': f'{cycled.name} cycling trigger',
+                            'effect_key': ability.effect.key, 'payload': data})
     if event == 'damage_dealt':
         return out
     if event == 'surveilled':
@@ -524,6 +743,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                 continue
             proxy = copy(saga)
             proxy.oracle_text = chapter['text']
+            proxy.source_oracle_text = saga.oracle_text
             proxy.mana_cost = ''
             ability = build_ability_spec(state, proxy, saga.controller,
                                         action_targets={'source_card_id': saga.id, 'target_card_id': saga.id})
@@ -589,10 +809,14 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             if (printed_abilities_suppressed(state, cid) if card.zone == Zone.BATTLEFIELD
                     else card.last_known_battlefield.get('printed_abilities_suppressed', False)):
                 continue
-            oracle = without_reminder_text((card.oracle_text or "").lower())
+            raw_oracle = card.oracle_text or ""
+            if 'Planeswalker' in card.types:
+                from rules_engine.loyalty_instructions import companion_text
+                raw_oracle = companion_text(card)
+            oracle = without_reminder_text(raw_oracle.lower())
             from rules_engine.foretell import without_created_clauses
             oracle = without_created_clauses(oracle, card.name.lower())
-            from rules_engine.kicker import kicked_cast_clauses
+            from rules_engine.kicker import kicked_cast_clauses, paired_permanent_kicker, validate_kicker_count
             kicker_clauses = kicked_cast_clauses(oracle)
             if (event == 'spell_cast' and payload.get('controller') == card.controller
                     and (payload.get('stack_payload') or {}).get('__kicked')):
@@ -694,10 +918,14 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                     clause = line.strip()
                     if not matcher(state, card, clause, death_payload):
                         continue
-                    if (_matches_self_death_trigger(state, card, clause, death_payload, event)
-                            and re.search(r'\b(?:dies|battlefield),\s*if\b', clause)):
+                    self_death = _matches_self_death_trigger(state, card, clause, death_payload, event)
+                    if self_death and re.search(r'\b(?:dies|battlefield),\s*if\b', clause):
                         state.log.append(f'Unsupported intervening-if self-death trigger on {card.name}: {clause}')
                         continue
+                    # Bind this departure before a returned incarnation can replace its LKI.
+                    source_lki = deepcopy(card.last_known_battlefield) if self_death else None
+                    clause_payload = ({**death_payload, '__source_lki': source_lki}
+                                      if source_lki is not None else death_payload)
                     if (event == 'permanent_dies' and cid == payload.get('card_id')
                             and re.fullmatch(
                                 r"when (?:" + re.escape(card.name.lower())
@@ -716,15 +944,35 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                         }
                     else:
                         trigger = _trigger_from_oracle(state, cid, card.controller, clause,
-                            default_label=f'{card.name} trigger', event=event, payload=death_payload)
+                            default_label=f'{card.name} trigger', event=event, payload=clause_payload)
+                    if source_lki is not None:
+                        trigger['payload']['__source_lki'] = deepcopy(source_lki)
                     trigger['payload']['__trigger_full_clause'] = clause
                     out.append(trigger)
             elif event == "leaves_battlefield" and _matches_leaves_battlefield_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
             elif event == "day_night_changed" and _matches_day_night_trigger(oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} trigger", event=event, payload=payload))
+            elif event == "enters_battlefield" and (paired := paired_permanent_kicker(card)):
+                count = (validate_kicker_count(card.kicker_count, card.was_kicked)
+                         if card.kicker_count is not None else int(card.was_kicked))
+                if payload.get('card_id') == cid:
+                    from rules_engine.ability_model import build_ability_spec
+                    for clause in paired['triggers']:
+                        if count < clause['threshold']:
+                            continue
+                        proxy = copy(card)
+                        proxy.oracle_text, proxy.card_faces = clause['instruction'], []
+                        ability = build_ability_spec(state, proxy, card.controller,
+                                                    action_targets={'source_card_id': cid})
+                        out.append({'source_card_id': cid, 'controller': card.controller,
+                                    'label': f"{card.name} ETB {clause['threshold']}",
+                                    'effect_key': ability.effect.key,
+                                    'payload': {**ability.effect.payload,
+                                                '__trigger_resolution_text': clause['instruction'],
+                                                '__trigger_full_clause': clause['clause']}})
             elif event == "enters_battlefield" and _matches_enters_battlefield_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload))
+                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} ETB", event=event, payload=payload, raw_entry_oracle=raw_oracle))
             elif event == "transformed" and payload.get("card_id") in state.cards:
                 for clause, _ in _self_entry_transform_clauses(card, oracle):
                     if payload['card_id'] == cid:
@@ -746,10 +994,16 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                     })
             elif event == "sacrifice" and _matches_sacrifice_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} sacrifice trigger", event=event, payload=payload))
-            elif event == "discard" and _matches_discard_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} discard trigger", event=event, payload=payload))
-            elif event == "cycle" and _matches_cycle_trigger(state, card, oracle, payload):
-                out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} cycling trigger", event=event, payload=payload))
+            elif event == 'shuffle':
+                out.extend(_shuffle_observer_triggers(state, card, oracle, payload))
+            elif event == "discard":
+                for clause in oracle.splitlines():
+                    if _matches_discard_trigger(state, card, clause, payload):
+                        out.append(_trigger_from_oracle(state, cid, card.controller, clause, default_label=f"{card.name} discard trigger", event=event, payload=payload))
+            elif event == "cycle":
+                for clause in oracle.splitlines():
+                    if _matches_cycle_trigger(state, card, clause, payload):
+                        out.append(_trigger_from_oracle(state, cid, card.controller, clause, default_label=f"{card.name} cycling trigger", event=event, payload=payload))
             elif event == "combat_damage_dealt" and _matches_combat_damage_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} combat damage trigger", event=event, payload=payload))
             elif event == "attack_declared" and _matches_attack_trigger(state, card, oracle, payload):
@@ -759,69 +1013,23 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             elif event == "block_declared" and _matches_block_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} block trigger", event=event, payload=payload))
             elif event in {"spell_cast", "spell_copy"}:
-                cast_controller = int(payload.get("controller", 0) or 0)
-                source_card_id = str(payload.get("source_card_id", "") or "")
-                source_card = state.cards.get(source_card_id) if source_card_id else None
-                source_types = {t.lower() for t in (effective_types(state, source_card) or [])}
-                if event == "spell_cast" and cast_controller == card.controller and "whenever you cast a spell" in oracle:
-                    out.append(
-                        _trigger_from_oracle(
-                            state,
-                            cid,
-                            card.controller,
-                            oracle,
-                            default_label=f"{card.name} cast trigger",
-                            event=event,
-                            payload=payload,
-                        )
-                    )
-                elif event == "spell_cast" and cast_controller == card.controller and (
-                    ("whenever you cast an instant spell" in oracle and "instant" in source_types)
-                    or ("whenever you cast a sorcery spell" in oracle and "sorcery" in source_types)
-                    or ("whenever you cast an instant or sorcery spell" in oracle and ("instant" in source_types or "sorcery" in source_types))
-                ):
-                    out.append(
-                        _trigger_from_oracle(
-                            state,
-                            cid,
-                            card.controller,
-                            oracle,
-                            default_label=f"{card.name} cast trigger",
-                            event=event,
-                            payload=payload,
-                        )
-                    )
-                elif cast_controller == card.controller and source_card and "creature" not in source_types and (
-                    ("prowess" in oracle and event == "spell_cast")
-                    or "magecraft" in oracle
-                    or (event == "spell_cast" and "whenever you cast a noncreature spell" in oracle)
-                    or (event == "spell_cast" and "whenever you cast a non-creature spell" in oracle)
-                    or "whenever you cast or copy an instant or sorcery spell" in oracle
-                    or "whenever you cast or copy a noncreature spell" in oracle
-                    or "whenever you cast or copy a non-creature spell" in oracle
-                    or (event == "spell_cast" and "gets +1/+1 until end of turn" in oracle)
-                ):
-                    ability = _trigger_from_oracle(
-                        state,
-                        cid,
-                        card.controller,
-                        oracle,
-                        default_label=f"{card.name} spell trigger",
-                        event=event,
-                        payload=payload,
-                    )
-                    if ability["effect_key"] != "noop":
+                from rules_engine.nth_spell_triggers import collect_nth_spell_triggers
+                nth_triggers, oracle = collect_nth_spell_triggers(state, card, event, payload, oracle)
+                out.extend(nth_triggers)
+                for clause, instruction in _matched_cast_trigger_clauses(state, card, oracle, event, payload):
+                    ability = _cast_clause_trigger(state, card, clause, instruction, event, payload)
+                    if (ability['effect_key'] != 'noop'
+                            or '__unsupported_trigger_instruction' in ability['payload']):
                         out.append(ability)
-                    elif "prowess" in oracle or "magecraft" in oracle or "gets +1/+1 until end of turn" in oracle:
-                        out.append(
-                            {
-                                "source_card_id": cid,
-                                "controller": card.controller,
-                                "label": f"{card.name} spell trigger",
-                                "effect_key": "temporary_pt_buff",
-                                "payload": {"target_card_id": cid, "power": 1, "toughness": 1},
-                            }
-                        )
+                source_card = _cast_event_source(state, event, payload)
+                if (event == 'spell_cast' and payload.get('controller') == card.controller
+                        and source_card is not None
+                        and 'Creature' not in effective_types(state, source_card)
+                        and 'prowess' in oracle):
+                    out.append({'source_card_id': cid, 'controller': card.controller,
+                                'label': f'{card.name} prowess trigger',
+                                'effect_key': 'temporary_pt_buff',
+                                'payload': {'target_card_id': cid, 'power': 1, 'toughness': 1}})
             elif event == "begin_step":
                 step = str(payload.get("step", "")).lower()
                 active_player = int(payload.get("active_player", 0) or 0)
@@ -862,7 +1070,18 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                                 "payload": {"target_card_id": cid},
                             }
                         )
-                    if "at the beginning of each end step" in oracle or "at the beginning of end step" in oracle:
+                    from rules_engine.end_step_ownership_draw import route_end_step
+                    routes = route_end_step(state, card, raw_oracle, active_player)
+                    if routes is not None:
+                        ownership, legacy_clauses = routes
+                        out.extend(ownership)
+                        for clause in legacy_clauses:
+                            out.append(_trigger_from_oracle(
+                                state, cid, card.controller, without_reminder_text(clause.lower()),
+                                default_label=f"{card.name} end-step trigger",
+                                event=event, payload=payload,
+                            ))
+                    elif "at the beginning of each end step" in oracle or "at the beginning of end step" in oracle:
                         out.append(
                             _trigger_from_oracle(
                                 state,
@@ -875,17 +1094,32 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
                             )
                         )
                     elif "at the beginning of your end step" in oracle and card.controller == active_player:
-                        out.append(
-                            _trigger_from_oracle(
-                                state,
-                                cid,
-                                card.controller,
-                                oracle,
-                                default_label=f"{card.name} end-step trigger",
-                                event=event,
-                                payload=payload,
+                        from rules_engine.end_step_ownership_draw import collect as collect_ownership_draw
+                        ownership_draw = collect_ownership_draw(state, card, raw_oracle)
+                        if ownership_draw is not None:
+                            out.extend(ownership_draw)
+                            from rules_engine.end_step_ownership_draw import CANDIDATE as ownership_candidate
+                            for clause in raw_oracle.splitlines():
+                                clause = clause.strip()
+                                if (clause.lower().startswith('at the beginning of your end step,')
+                                        and not ownership_candidate.search(clause)):
+                                    out.append(_trigger_from_oracle(
+                                        state, cid, card.controller, without_reminder_text(clause.lower()),
+                                        default_label=f"{card.name} end-step trigger",
+                                        event=event, payload=payload,
+                                    ))
+                        else:
+                            out.append(
+                                _trigger_from_oracle(
+                                    state,
+                                    cid,
+                                    card.controller,
+                                    oracle,
+                                    default_label=f"{card.name} end-step trigger",
+                                    event=event,
+                                    payload=payload,
+                                )
                             )
-                        )
             if once_each_turn and len(out) > trigger_count_before:
                 state.trigger_once_seen_this_turn.add(trigger_key)
     out.sort(key=lambda trig: (0 if trig["controller"] == state.active_player else 1, str(trig["source_card_id"]), str(trig["label"])))
@@ -1074,7 +1308,10 @@ def _matches_day_night_trigger(oracle: str, payload: dict[str, Any]) -> bool:
 def _remember_trigger_target(state, item):
     from rules_engine.flashback_grants import remember_target
     remember_target(state, item)
-    if item.effect_key == 'exile_until_source_leaves':
+    if (item.effect_key in {'exile_until_source_leaves', 'cast_from_graveyard', 'exchange_energy_payment', 'change_control'}
+            or item.effect_key == 'retained_counter_prohibition' and item.payload.get('__counter_target_kind') == 'card'
+            or item.effect_key == 'destroy_permanent'
+            and item.payload.get('__trigger_event') == 'time_counters_removed'):
         target = state.cards[item.payload['target_card_id']]
         item.payload['__trigger_target_reference'] = [object_incarnation(target), target.zone_change_sequence]
 
@@ -1086,6 +1323,19 @@ def _self_entry_transform_clauses(card, oracle):
             + r') enters(?: the battlefield)? or transforms into (.+?),\s*(.+)', line.strip(), re.I)
         if match and match[1].casefold() == card.name.casefold():
             yield line.strip(), match[2]
+
+
+def _entry_observer_clause(oracle: str, *, source_name: str | None = None):
+    reference = r'this (?:creature|permanent|artifact|enchantment|planeswalker|aura|equipment|vehicle|land|battle|token)'
+    if source_name:
+        reference += '|' + re.escape(source_name)
+    return re.fullmatch(
+        r"(?:[a-z][a-z -]*\s*[\u2014\u2013-]\s*)?(?:when|whenever) "
+        r"((?:" + reference + r") or another|a|an|another) "
+        r"(nontoken creature|creature|permanent|artifact|enchantment)"
+        r"( you control)? enters(?: the battlefield)?( under your control)?, (.+)",
+        oracle.strip(), re.I,
+    )
 
 
 def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
@@ -1112,13 +1362,28 @@ def _matches_enters_battlefield_trigger(state: MatchState, card, oracle: str, pa
             entering_card.controller == card.controller
             and (not tribal_group.group(1) or entering_id != card.id)
             and "Creature" in (effective_types(state, entering_card) or [])
-            and (bool(subtypes & creature_types(entering_card))
+            and (bool(subtypes & creature_types(entering_card, state))
                  or "changeling" in {keyword.lower() for keyword in (entering_card.keywords or [])})
         )
     # Check controller-scoped clauses before their broader prefixes. Without
     # this ordering, "a creature enters" also matches "under your control".
     entering_types = set(effective_types(state, entering_card) or [])
     enters_for_controller = entering_card.controller == card.controller
+    for line in oracle.splitlines():
+        clause = _entry_observer_clause(line, source_name=card.name)
+        if clause:
+            another, kind, modern_control, legacy_control, _ = clause.groups()
+            self_or_another = another.lower().endswith(' or another')
+            if self_or_another and entering_id == card.id:
+                return True
+            nontoken = kind.lower().startswith('nontoken ')
+            if nontoken:
+                kind = kind[len('nontoken '):]
+            if ((not modern_control and not legacy_control or enters_for_controller)
+                    and (another.lower() != 'another' and not self_or_another or entering_id != card.id)
+                    and (not nontoken or not entering_card.is_token)
+                    and (kind.lower() == 'permanent' or kind.title() in entering_types)):
+                return True
     if "another creature enters the battlefield under your control" in oracle:
         return "Creature" in entering_types and enters_for_controller and entering_id != card.id
     if "a creature enters the battlefield under your control" in oracle:
@@ -1259,6 +1524,11 @@ def _matches_discard_trigger(state: MatchState, card, oracle: str, payload: dict
         return False
     discarded_card = state.cards[discarded_id]
     discarding_player = payload.get("controller", discarded_card.controller)
+    combined = re.search(r"\b(?:when|whenever) you (?:cycle or discard|discard or cycle) (a|another) card,", oracle)
+    if combined:
+        # Cycling pays a discard cost and emits both events; recognize this
+        # combined condition only on discard, not again on cycle (CR702.29d).
+        return discarding_player == card.controller and (combined[1] != 'another' or discarded_id != card.id)
     if "whenever you discard a card" in oracle:
         return discarding_player == card.controller
     if "whenever you discard one or more cards" in oracle:
@@ -1276,10 +1546,21 @@ def _matches_discard_trigger(state: MatchState, card, oracle: str, payload: dict
     return False
 
 
+def _self_cycling_clauses(card):
+    subject = re.escape(card.name.lower())
+    for line in without_reminder_text(card.oracle_text or '').lower().splitlines():
+        match = re.fullmatch(
+            rf'(?:when|whenever) you cycle (?:this card|this creature|{subject}), (.+)', line.strip())
+        if match:
+            yield line.strip(), match[1]
+
+
 def _matches_cycle_trigger(state: MatchState, card, oracle: str, payload: dict[str, Any]) -> bool:
     cycled_id = payload.get("card_id")
     cycled = state.cards.get(cycled_id) if cycled_id else None
     if cycled is None:
+        return False
+    if re.search(r"\b(?:when|whenever) you (?:cycle or discard|discard or cycle) (?:a|another) card,", oracle):
         return False
     cycling_controller = int(payload.get("controller", getattr(cycled, "controller", 0)) or 0)
     if "an opponent cycles" in oracle or "whenever an opponent cycles" in oracle:
@@ -1288,6 +1569,8 @@ def _matches_cycle_trigger(state: MatchState, card, oracle: str, payload: dict[s
         return False
     if cycling_controller != card.controller:
         return False
+    if 'you cycle this card' in oracle or 'you cycle this creature' in oracle:
+        return cycled_id == card.id
     if "you cycle a card" in oracle or "you cycle one or more cards" in oracle:
         return True
     # Named cycling triggers (for example, "When you cycle Shark Typhoon")
@@ -1396,6 +1679,112 @@ def _order_apnap(state: MatchState, triggers: list[dict[str, Any]]) -> list[dict
     return first + second
 
 
+def _cast_event_source(state, event, payload):
+    from rules_engine.targeting import stack_source_card
+
+    stack_id = payload.get('source_stack_id')
+    for item in reversed(state.stack):
+        if (stack_id and item.id == stack_id or
+                event == 'spell_cast' and not stack_id
+                and item.source_card_id == payload.get('source_card_id')
+                and item.payload == payload.get('stack_payload')):
+            return stack_source_card(state, item)
+    return state.cards.get(payload.get('source_card_id'))
+
+
+def _matched_cast_trigger_clauses(state, source, oracle, event, payload):
+    spell = _cast_event_source(state, event, payload)
+    if spell is None or payload.get('controller') != source.controller:
+        return []
+    types = {kind.lower() for kind in effective_types(state, spell)}
+    subjects = {
+        'a spell': True,
+        'this spell': spell.id == source.id,
+        'a noncreature spell': 'creature' not in types,
+        'a non-creature spell': 'creature' not in types,
+        'a creature spell': 'creature' in types,
+        'an instant spell': 'instant' in types,
+        'a sorcery spell': 'sorcery' in types,
+        'an instant or sorcery spell': bool(types & {'instant', 'sorcery'}),
+    }
+    matches = []
+    for line in oracle.splitlines():
+        match = re.search(r'\b(?:when|whenever) you (cast or copy|cast|copy) ([^,]+),\s*(.+)', line)
+        if not (match and (event == 'spell_cast' and match[1] != 'copy'
+                           or event == 'spell_copy' and match[1] != 'cast')):
+            continue
+        applicable = subjects.get(match[2], False)
+        if match[2] == 'a spell that targets this creature':
+            from rules_engine.action_validation import ActionRejected
+            from rules_engine.targeting import (validate_announced_target_references,
+                                                announced_target_reference_matches)
+            announced = payload.get('stack_payload') or {}
+            references = announced.get('__announced_target_references')
+            if references is None:
+                raise ActionRejected('Missing native cast-target references')
+            validate_announced_target_references(announced.get('__announced_targets') or {}, references)
+
+            def paths(value, path=()):
+                if isinstance(value, dict):
+                    if set(value) == {'card_id', 'incarnation', 'zone_change_sequence'}:
+                        yield path, value['card_id']
+                    else:
+                        for key, child in value.items():
+                            yield from paths(child, (*path, key))
+                elif isinstance(value, list):
+                    for index, child in enumerate(value):
+                        yield from paths(child, (*path, index))
+
+            applicable = any(cid == source.id and announced_target_reference_matches(
+                state, references, path, cid) for path, cid in paths(references['targets']))
+        if applicable:
+            matches.append((line.strip(), match[3]))
+    return matches
+
+
+def _cast_clause_trigger(state, source, clause, instruction, event, payload):
+    if re.search(r'\b(?:when|whenever) you (?:cast or copy|cast|copy) '
+                 r'a spell that targets this creature,', clause, re.I):
+        data = {'__trigger_full_clause': clause}
+        full_clause = re.fullmatch(
+            r'(?:[a-z][a-z -]*\s*[\u2014\u2013-]\s*)?(?:when|whenever) you '
+            r'(?:cast or copy|cast|copy) a spell that targets this creature,\s*'
+            + re.escape(instruction), clause, re.I)
+        if full_clause and re.fullmatch(r'put a \+1/\+1 counter on this creature\.', instruction, re.I):
+            key = 'add_counters'
+            data.update(target_card_id=source.id, counter='+1/+1', amount=1,
+                        effect_timestamp=object_incarnation(source))
+        else:
+            key = 'noop'
+            data['__unsupported_trigger_instruction'] = instruction
+        return {'source_card_id': source.id, 'controller': source.controller,
+                'label': f'{source.name} cast trigger', 'effect_key': key, 'payload': data}
+    self_pump = re.fullmatch(
+        r'(?:this creature|' + re.escape(source.name) + r') gets ([+-]\d+)/([+-]\d+) until end of turn\.',
+        instruction, re.I,
+    )
+    if self_pump:
+        return {'source_card_id': source.id, 'controller': source.controller,
+                'label': f'{source.name} cast trigger', 'effect_key': 'temporary_pt_buff',
+                'payload': {'target_card_id': source.id, 'power': int(self_pump[1]),
+                            'toughness': int(self_pump[2]), '__trigger_full_clause': clause,
+                            '__self_buff_reference': [source.id, object_incarnation(source), source.zone_change_sequence]}}
+    # Paid/unknown conditional instructions retain the coordinated guard.
+    free_loot = re.fullmatch(r'you may draw a card\. if you do, discard a card\.', instruction)
+    if not free_loot:
+        return _trigger_from_oracle(state, source.id, source.controller, clause,
+                                    f'{source.name} cast trigger', event, payload)
+    data = _maybe_payload(clause, {'effects': [
+        {'effect_key': 'draw_cards', 'payload': {'amount': 1}},
+        {'effect_key': 'discard_cards', 'payload': {'self_discard': True, 'amount': 1}},
+    ]})
+    data['__trigger_full_clause'] = clause
+    if re.search(r'\btarget\b', instruction):
+        data['__trigger_resolution_text'] = instruction
+    return {'source_card_id': source.id, 'controller': source.controller,
+            'label': f'{source.name} cast trigger', 'effect_key': 'effect_sequence', 'payload': data}
+
+
 def _trigger_from_oracle(
     state: MatchState,
     source_card_id: str,
@@ -1404,9 +1793,179 @@ def _trigger_from_oracle(
     default_label: str,
     event: str,
     payload: dict[str, Any],
+    *,
+    raw_entry_oracle: str | None = None,
 ) -> dict[str, Any]:
+    entry_oracle = oracle if event == 'enters_battlefield' else None
+    from rules_engine.loyalty_combat import PLAYER_LOSS
+    if (event == 'combat_damage_dealt' and payload.get('source_card_id') == source_card_id
+            and payload.get('amount', 0) > 0 and payload.get('target_player') in state.players
+            and re.fullmatch(PLAYER_LOSS, oracle, re.I)):
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': 'player_loses_game',
+                'payload': {'target_player': payload['target_player'], '__trigger_full_clause': oracle}}
+    source = state.cards.get(source_card_id)
+    if (entry_oracle is not None and source is not None
+            and payload.get('card_id') == source_card_id):
+        entries = []
+        for line in entry_oracle.splitlines():
+            match = re.fullmatch(
+                r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
+                r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+                + r') enters(?: the battlefield)?, (gain control\b.*)', line.strip(), re.I)
+            if match:
+                entries.append((line.strip(), match[1]))
+        if entries:
+            clause, instruction = entries[0]
+            key, data = 'noop', {'__unsupported_trigger_instruction': '\n'.join(line for line, _ in entries)}
+            if len(entries) == 1 and re.fullmatch(r'gain control of target permanent\.', instruction, re.I):
+                from rules_engine.oracle_effects import infer_effect_from_oracle
+                proxy = copy(source)
+                proxy.oracle_text, proxy.card_faces, proxy.types = instruction, [], []
+                proxy.selected_face_index = None
+                key, data = infer_effect_from_oracle(state, proxy, controller)
+                data.pop('target_card_id', None)
+                data.pop('new_controller', None)
+            data['__trigger_full_clause'] = clause
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
+    raw_entry = raw_entry_oracle if raw_entry_oracle is not None else entry_oracle
+    if raw_entry is not None and source is not None:
+        self_entry_pattern = (
+            r'(?:when|whenever) (?:this (?:creature|permanent|artifact|enchantment|planeswalker|'
+            r'aura|equipment|vehicle|land|battle|token)|' + re.escape(source.name)
+            + r') enters(?: the battlefield)?, (.+)')
+        entries = []
+        for line in raw_entry.splitlines():
+            raw_match = re.fullmatch(self_entry_pattern, line.strip(), re.I)
+            # Normalization discovers the family; only the complete raw body may execute.
+            candidate = re.fullmatch(self_entry_pattern,
+                re.sub(r'\s+', ' ', without_reminder_text(line)).strip(), re.I)
+            if candidate and re.match(r'each opponent loses\b', candidate[1], re.I):
+                entries.append((line.strip(), raw_match[1] if raw_match else None))
+        if entries:
+            if payload.get('card_id') != source_card_id:
+                return None
+            from rules_engine.devotion import COLORS, devotion_instruction
+            instruction = entries[0][1] if len(entries) == 1 else None
+            if instruction is not None:
+                # Accept only the matching printed devotion reminder, never arbitrary parentheses.
+                for color, symbol in COLORS.items():
+                    reminder = (f' (Each {{{symbol}}} in the mana costs of permanents you control '
+                                f'counts toward your devotion to {color}.)')
+                    if (instruction.endswith(reminder)
+                            and re.search(r'\bwhere x is your devotion to ' + color + r'\.',
+                                          instruction[:-len(reminder)], re.I)):
+                        instruction = instruction[:-len(reminder)]
+                        break
+                devotion = (devotion_instruction(instruction, source.name)
+                            if not re.search(r'[()]', instruction) else None)
+                if devotion is not None:
+                    return {'source_card_id': source_card_id, 'controller': controller,
+                            'label': default_label, 'effect_key': 'devotion_effect',
+                            'payload': {'devotion': devotion,
+                                        'source_incarnation': object_incarnation(source)}}
+            from rules_engine.spell_cost_clauses import COUNT
+            from rules_engine.oracle_effects import _parse_count_token
+            clause = '\n'.join(line for line, _ in entries)
+            drain = (re.fullmatch(
+                r'each opponent loses (?P<loss>' + COUNT + r'|twenty) life and you gain '
+                r'(?P<gain>' + COUNT + r'|twenty) life\.', entries[0][1], re.I)
+                if len(entries) == 1 and entries[0][1] is not None else None)
+            data = {'__trigger_full_clause': clause}
+            key = 'noop'
+            if drain:
+                key = 'effect_sequence'
+                data['effects'] = [
+                    {'effect_key': 'lose_life', 'payload': {
+                        'target_player': pid, 'amount': _parse_count_token(drain['loss'])}}
+                    for pid in sorted(state.players) if pid != controller
+                ] + [{'effect_key': 'gain_life', 'payload': {
+                    'target_player': controller, 'amount': _parse_count_token(drain['gain'])}}]
+            else:
+                data['__unsupported_trigger_instruction'] = clause
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
     oracle = without_reminder_text(oracle)
     source = state.cards.get(source_card_id)
+    entering = state.cards.get(payload.get('card_id')) if event == 'enters_battlefield' else None
+    if (source is not None and entering is not None
+            and 'Land' in effective_types(state, entering)
+            and entering.controller == controller):
+        from rules_engine.attached_token_payment import compile_instruction
+        attached_instruction = compile_instruction(source, oracle)
+        if attached_instruction is not None:
+            effect_key, effect_payload = attached_instruction
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': effect_key, 'payload': effect_payload}
+    if (source is not None and event == 'enters_battlefield'
+            and payload.get('card_id') == source_card_id
+            and re.match(r'When this (?:creature|permanent) enters(?: the battlefield)?, choose one\b', entry_oracle, re.I)):
+        from rules_engine.modal_entry import compile_instruction
+        from rules_engine.retained_counter_prohibition import reference
+        printed = without_reminder_text(source.oracle_text)
+        modes = compile_instruction(printed) if printed.lower() == entry_oracle.lower() else None
+        data = {'__trigger_full_clause': entry_oracle}
+        if modes is None:
+            data['__unsupported_trigger_instruction'] = entry_oracle
+        else:
+            from rules_engine.colors import card_color_symbols, card_color_names
+            data.update(__modal_modes=modes, __counter_source_ref=reference(source),
+                        __source_lki={'types': list(effective_types(state, source)),
+                                      'colors': sorted(card_color_symbols(source, state)),
+                                      'color_names': sorted(card_color_names(source, state)),
+                                      'controller': controller})
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': 'modal_entry' if modes is not None else 'noop',
+                'payload': data}
+    cast_instruction = None
+    if source is not None and event in {'spell_cast', 'spell_copy'}:
+        clauses = _matched_cast_trigger_clauses(state, source, oracle, event, payload)
+        if len(clauses) == 1:
+            oracle, cast_instruction = clauses[0]
+            if re.search(r'\byou may pay\b|\bif you do\b', cast_instruction):
+                from rules_engine.paid_triggers import compile_paid_instruction
+                paid = compile_paid_instruction(state, source, controller, cast_instruction, payload)
+                if paid is not None:
+                    key, data = paid
+                    return {'source_card_id': source_card_id, 'controller': controller,
+                            'label': f"{default_label} (pay {data['__optional_payment_cost']})",
+                            'effect_key': key, 'payload': {**data, '__trigger_full_clause': oracle}}
+                state.log.append(f'Unsupported optional trigger payment for {source.name}.')
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'noop',
+                        'payload': {'__trigger_full_clause': oracle,
+                                    '__unsupported_trigger_instruction': cast_instruction}}
+    if source is not None and event in {'discard', 'cycle'}:
+        for clause in oracle.splitlines():
+            instruction = re.fullmatch(r'(?:when|whenever) ([^,]+), (.+)', clause.strip())
+            if instruction and event in instruction[1]:
+                if re.search(r'\byou may pay\b|\bif you do\b', instruction[2]):
+                    from rules_engine.paid_triggers import compile_paid_instruction
+                    paid = compile_paid_instruction(state, source, controller, instruction[2], payload)
+                    if paid is not None:
+                        key, data = paid
+                        return {'source_card_id': source_card_id, 'controller': controller,
+                                'label': f"{default_label} (pay {data['__optional_payment_cost']})",
+                                'effect_key': key, 'payload': {**data, '__trigger_full_clause': clause}}
+                    state.log.append(f'Unsupported optional trigger payment for {source.name}.')
+                    return {'source_card_id': source_card_id, 'controller': controller,
+                            'label': default_label, 'effect_key': 'noop',
+                            'payload': {'__trigger_full_clause': clause,
+                                        '__unsupported_trigger_instruction': instruction[2]}}
+                from rules_engine.oracle_effects import infer_effect_from_oracle
+                proxy = copy(source)
+                proxy.oracle_text, proxy.card_faces, proxy.types = instruction[2], [], []
+                proxy.selected_face_index = None
+                key, data = infer_effect_from_oracle(
+                    state, proxy, controller,
+                    action_targets={**payload, 'source_card_id': source_card_id})
+                data = _maybe_payload(clause, data)
+                data['__trigger_full_clause'] = clause
+                if re.search(r'\btarget\b', instruction[2]):
+                    data['__trigger_resolution_text'] = instruction[2]
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': key, 'payload': data}
     if source is not None and event in {'enters_battlefield', 'transformed'}:
         for clause, instruction in _self_entry_transform_clauses(source, oracle):
             if payload.get('card_id') != source_card_id:
@@ -1431,6 +1990,21 @@ def _trigger_from_oracle(
             entry = re.fullmatch(r'(?:when|whenever) [^,]+, (.+)', line.strip(), re.I)
             instruction = next_turn_draw_instruction(entry[1]) if entry else None
             if instruction is not None and _matches_enters_battlefield_trigger(state, source, line, payload):
+                observer = _entry_observer_clause(line, source_name=source.name)
+                if observer is not None and (
+                        observer[1].lower().endswith(' or another')
+                        or not re.match(r'(?:when|whenever)\b', observer[0], re.I)):
+                    raw_clauses = [clause.strip() for clause in raw_entry.splitlines()
+                                   if _matches_enters_battlefield_trigger(state, source, clause, payload)]
+                    raw_observer = (_entry_observer_clause(raw_clauses[0], source_name=source.name)
+                                    if len(raw_clauses) == 1 else None)
+                    instruction = next_turn_draw_instruction(raw_observer[5]) if raw_observer else None
+                    if instruction is None:
+                        clause = '\n'.join(raw_clauses) or raw_entry
+                        return {'source_card_id': source_card_id, 'controller': controller,
+                                'label': default_label, 'effect_key': 'noop', 'payload': {
+                                    '__trigger_full_clause': clause,
+                                    '__unsupported_trigger_instruction': clause}}
                 return {'source_card_id': source_card_id, 'controller': controller,
                         'label': default_label, 'effect_key': 'schedule_next_turn_draw',
                         'payload': {**instruction, 'source_card_id': source_card_id}}
@@ -1455,6 +2029,68 @@ def _trigger_from_oracle(
             if re.search(r'\btarget\b', kicker['instruction'], re.I):
                 data.update(__trigger_resolution_text=kicker['instruction'],
                             __trigger_full_clause=kicker['clause'])
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
+        if payload.get('card_id') == source_card_id:
+            from rules_engine.oracle_effects import compile_self_entry_damage_clause
+            entry_clauses = [line.strip() for line in entry_oracle.splitlines()
+                             if _matches_enters_battlefield_trigger(state, source, line, payload)]
+            damage_entries = [compiled for line in entry_clauses
+                              if (compiled := compile_self_entry_damage_clause(line, source.name)) is not None]
+            if damage_entries:
+                if len(entry_clauses) == 1:
+                    key, data = damage_entries[0]
+                else:
+                    key, data = 'noop', {
+                        '__trigger_full_clause': '\n'.join(entry_clauses),
+                        '__unsupported_trigger_instruction': '\n'.join(entry_clauses),
+                    }
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': key, 'payload': data}
+        entries = [clause for line in oracle.splitlines()
+                   if (clause := _entry_observer_clause(line, source_name=source.name)) is not None
+                   and _matches_enters_battlefield_trigger(state, source, line, payload)]
+        extended_observer = any(
+            entry[1].lower().endswith(' or another')
+            or not re.match(r'(?:when|whenever)\b', entry[0], re.I) for entry in entries)
+        if extended_observer and raw_entry is not None:
+            # Never discard an unknown suffix/reminder before compiling this full body.
+            entries = [clause for line in raw_entry.splitlines()
+                       if (clause := _entry_observer_clause(line, source_name=source.name)) is not None
+                       and _matches_enters_battlefield_trigger(state, source, line, payload)]
+            if not entries:
+                return {'source_card_id': source_card_id, 'controller': controller,
+                        'label': default_label, 'effect_key': 'noop', 'payload': {
+                            '__trigger_full_clause': raw_entry,
+                            '__unsupported_trigger_instruction': raw_entry}}
+        # Legacy paid and loot paths retain their existing choice/cost delegation.
+        if entries and (extended_observer or not any(
+                re.search(r'\byou may\b|\bif you do\b|\bdiscard\b', entry[5], re.I)
+                for entry in entries)):
+            instruction = entries[0][5]
+            data = {'__trigger_full_clause': entries[0][0]}
+            supported = (len(entries) == 1 and re.fullmatch(
+                r'(?:draw (?:a|one|two|three|four|five|six|seven|eight|nine|ten|\d+) cards?'
+                r'|each opponent mills (?:a|an) card|you gain \d+ life|put (?:a|an|one|two|three|four|five|\d+) '
+                r'[+-]\d+/[+-]\d+ counters? on each creature you control)\.',
+                instruction, re.I,
+            ))
+            key = 'noop'
+            if supported:
+                from rules_engine.ability_model import build_ability_spec
+                proxy = copy(source)
+                proxy.oracle_text = instruction
+                proxy.card_faces = []
+                proxy.selected_face_index = None
+                proxy.source_oracle_text = source.oracle_text
+                ability = build_ability_spec(state, proxy, controller,
+                                             action_targets=payload, report_unsupported=False)
+                key = ability.effect.key
+                data.update(ability.effect.payload)
+            if key == 'noop':
+                instruction = '\n'.join(entry[5] for entry in entries)
+                data['__unsupported_trigger_instruction'] = instruction
+                state.log.append(f'Unsupported entry trigger instruction on {source.name}: {instruction}')
             return {'source_card_id': source_card_id, 'controller': controller,
                     'label': default_label, 'effect_key': key, 'payload': data}
     if event == 'spell_cast':
@@ -1672,14 +2308,19 @@ def _trigger_from_oracle(
                 "effect_key": "deal_damage",
                 "payload": {"target_player": opponent, "amount": max(0, amount)},
             }
-        if event == "begin_step" and "transform" in oracle and "top card" in oracle and "instant or sorcery" in oracle:
-            return {
-                "source_card_id": source_card_id,
-                "controller": controller,
-                "label": default_label,
-                "effect_key": "transform_if_top_matches",
-                "payload": {"target_card_id": source_card_id, "required_types": ["Instant", "Sorcery"], "face_index": 1},
-            }
+        if event == "begin_step":
+            from rules_engine.optional_reveal import parse_upkeep_reveal
+            instruction = parse_upkeep_reveal(oracle)
+            if instruction is not None:
+                if payload.get('step') != 'upkeep' or payload.get('active_player') != controller:
+                    return {'source_card_id': source_card_id, 'controller': controller,
+                            'label': default_label, 'effect_key': 'noop', 'payload': {}}
+                return {
+                    'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': 'transform_if_top_matches',
+                    'payload': {**instruction, 'target_card_id': source_card_id,
+                                'source_reference': [source_card_id, object_incarnation(source_card), source_card.zone_change_sequence]},
+                }
         source_name = re.escape((source_card.name or "").lower())
         self_counter = re.search(
             rf"put\s+(a|an|one|two|three|four|five|\d+)\s+\+1/\+1\s+counters?\s+on\s+(?:this creature|this card|{source_name})",
@@ -1718,6 +2359,89 @@ def _trigger_from_oracle(
                 "effect_key": "lose_life",
                 "payload": _maybe_payload(oracle, {"target_player": drawn_by, "amount": lose_amount}),
             }
+
+    # A self trigger's complete instruction must not become a substring reward.
+    self_instructions = []
+    if (source is not None and cast_instruction is not None
+            and payload.get('source_card_id') == source_card_id
+            and re.match(r'(?:when|whenever) you cast this spell,', oracle, re.I)):
+        self_instructions = [(oracle, cast_instruction)]
+    elif (source is not None and event == 'enters_battlefield'
+          and payload.get('card_id') == source_card_id):
+        reference = (r'this (?:creature|artifact|enchantment|permanent|planeswalker|aura|equipment|vehicle|land|battle|token)|'
+                     + re.escape(source.name))
+        for line in oracle.splitlines():
+            entry = re.fullmatch(r'(?:when|whenever) (?:' + reference
+                                 + r') enters(?: the battlefield)?, (.+)', line.strip(), re.I)
+            if entry:
+                self_instructions.append((line.strip(), entry[1]))
+    if (event == 'enters_battlefield' and self_instructions and any(re.search(
+            r'\bdiscard (?:all the cards in your hand|your hand), then\b', body, re.I)
+            for _, body in self_instructions)):
+        from rules_engine.linked_discard import linked_discard_effect
+        # Discovery may normalize text; execution must consume the complete raw clause.
+        entries = []
+        for line in raw_entry.splitlines():
+            candidate = re.fullmatch(self_entry_pattern, without_reminder_text(line).strip(), re.I)
+            if candidate:
+                raw_match = re.fullmatch(self_entry_pattern, line.strip(), re.I)
+                entries.append((line.strip(), raw_match[1] if raw_match else None))
+        instruction = entries[0][1] if len(entries) == 1 else None
+        linked = linked_discard_effect(instruction) if instruction is not None else None
+        key = 'discard_cards' if linked is not None else 'noop'
+        data = ({'self_discard': True, **linked} if linked is not None else
+                {'__unsupported_trigger_instruction': '\n'.join(line for line, _ in entries)})
+        data['__trigger_full_clause'] = '\n'.join(line for line, _ in entries)
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': key, 'payload': data}
+    if self_instructions:
+        linked = [body for _, body in self_instructions if re.match(
+            r'exile target (?:creature|permanent|nonland permanent|artifact|enchantment)'
+            r'(?: an opponent controls| you control)? until\b', body, re.I)]
+        if linked:
+            from rules_engine.oracle_effects import infer_effect_from_oracle
+            compiled = None
+            if len(self_instructions) == 1 and oracle.strip() == self_instructions[0][0]:
+                clause, instruction = self_instructions[0]
+                proxy = copy(source)
+                proxy.oracle_text, proxy.card_faces, proxy.selected_face_index = instruction, [], None
+                key, data = infer_effect_from_oracle(state, proxy, controller, report_unsupported=False)
+                if key == 'exile_until_source_leaves':
+                    compiled = key, data
+            key, data = compiled if compiled is not None else ('noop', {
+                '__unsupported_trigger_instruction': '\n'.join(linked)})
+            data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
+            if compiled is not None:
+                data['__trigger_resolution_text'] = instruction
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
+        from rules_engine.oracle_effects import (compile_optional_land_instruction,
+                                                 optional_land_instruction_candidate)
+        if any(optional_land_instruction_candidate(body) for _, body in self_instructions):
+            clause, instruction = self_instructions[0]
+            compiled = compile_optional_land_instruction(instruction) if len(self_instructions) == 1 else None
+            key, data = compiled if compiled is not None else ('noop', {})
+            data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
+            if compiled is None:
+                data['__unsupported_trigger_instruction'] = '\n'.join(body for _, body in self_instructions)
+                state.log.append(f'Unsupported optional land trigger instruction on {source.name}: '
+                                 + data['__unsupported_trigger_instruction'])
+            return {'source_card_id': source_card_id, 'controller': controller,
+                    'label': default_label, 'effect_key': key, 'payload': data}
+    if self_instructions and any(re.match(r'^(?:draw\b|you gain\b)', body, re.I)
+                                 and re.search(r'\bdraws?\b', body, re.I)
+                                 for _, body in self_instructions):
+        from rules_engine.oracle_effects import compile_draw_life_instruction
+        clause, instruction = self_instructions[0]
+        compiled = compile_draw_life_instruction(instruction) if len(self_instructions) == 1 else None
+        key, data = compiled if compiled is not None else ('noop', {})
+        data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
+        if compiled is None:
+            data['__unsupported_trigger_instruction'] = '\n'.join(body for _, body in self_instructions)
+            state.log.append(f'Unsupported self trigger instruction on {source.name}: '
+                             + data['__unsupported_trigger_instruction'])
+        return {'source_card_id': source_card_id, 'controller': controller,
+                'label': default_label, 'effect_key': key, 'payload': data}
 
     if "draw a card" in oracle:
         return {
@@ -1793,7 +2517,7 @@ def _trigger_from_oracle(
         source_card = state.cards.get(source_card_id)
         if source_card is not None:
             parser_card = copy(source_card)
-            parser_card.oracle_text = oracle
+            parser_card.oracle_text = cast_instruction or oracle
             parser_card.card_faces = []
             parser_card.selected_face_index = None
             parser_card.source_oracle_text = source_card.oracle_text
@@ -1806,6 +2530,10 @@ def _trigger_from_oracle(
             ability = build_ability_spec(state, parser_card, controller, action_targets=parser_payload)
             effect_key, effect_payload = ability.effect.key, ability.effect.payload
             if effect_key and effect_key != "noop":
+                if cast_instruction is not None:
+                    effect_payload['__trigger_full_clause'] = oracle
+                    if re.search(r'\btarget\b', cast_instruction):
+                        effect_payload['__trigger_resolution_text'] = cast_instruction
                 return {
                     "source_card_id": source_card_id,
                     "controller": controller,
@@ -1858,3 +2586,36 @@ def _maybe_payload(oracle: str, payload: dict[str, Any]) -> dict[str, Any]:
     else:
         out["__may_choose"] = True
     return out
+
+
+def public_trigger_clause_coverage(card, clause):
+    """Structural whole-clause domains, not runtime success or readiness proof."""
+    if not isinstance(clause, str) or not isinstance(card.name, str):
+        return None
+    body = without_reminder_text(clause).strip().lower()
+    reference = {'id': card.id, 'incarnation': object_incarnation(card),
+                 'zone_change_sequence': card.zone_change_sequence}
+    draw = re.fullmatch(
+        r'whenever (you draw|an opponent draws) a card, '
+        r'(you gain|they lose) ([1-9]\d*) life\.', body)
+    if draw and (draw[1], draw[2]) in {
+            ('you draw', 'you gain'), ('an opponent draws', 'they lose')}:
+        return {'clause': clause, 'source_zone': 'battlefield', 'events': ['draw_card'],
+                'subject': 'controller' if draw[1] == 'you draw' else 'opponent',
+                'instruction': body.split(', ', 1)[1], 'source_reference': reference,
+                'effect_key': 'gain_life' if draw[2] == 'you gain' else 'lose_life',
+                'amount': int(draw[3]), 'dependent_context': None}
+    self_reference = r'(?:this creature|' + re.escape(card.name.lower()) + r')'
+    entry = re.fullmatch(
+        r'when ' + self_reference + r' enters(?: the battlefield)?, '
+        r'(you may cast target instant card from your graveyard without paying its mana cost\. '
+        r'if that spell would be put into your graveyard, exile it instead\.)', body)
+    if entry:
+        return {'clause': clause, 'source_zone': 'battlefield',
+                'events': ['enters_battlefield'], 'subject': 'source_exact_object',
+                'instruction': entry[1], 'source_reference': reference,
+                'effect_key': 'cast_from_graveyard',
+                'dependent_context': {'target_zone': 'graveyard', 'target_owner': 'controller',
+                    'target_types': ['Instant'], 'optional': True,
+                    'mana_payment': 'without_mana_cost', 'replacement': 'exile_after_cast'}}
+    return None

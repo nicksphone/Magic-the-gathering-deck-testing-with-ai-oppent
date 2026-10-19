@@ -1,0 +1,4 @@
+intake UTC 2026-10-06 23:07:31
+Full raw Scryfall /cards/named exact requests: Pyrotechnics; Kolaghans Command; Twincast. Before tests; no edited Oracle.
+Additional full raw exact Ornithopter retrieved before repeated-slot tests.
+Additional full raw exact Unholy Heat, Leafcrown Dryad, Reclamation Sage retrieved before early-path controls.

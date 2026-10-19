@@ -1,0 +1,135 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "cards": [
+    {
+      "name": "Lashwrithe",
+      "line": 1013,
+      "line_sha256": "5618e527391c93f328a7fa1c7793d1420410e01143a65177a96dfcc387fa1110",
+      "id": "de21d433-5c2c-49c0-80d1-bf6e8471f9d4",
+      "oracle_id": "066ba81e-b32d-4808-97ab-0b5f52d557e4",
+      "uri": "https://api.scryfall.com/cards/de21d433-5c2c-49c0-80d1-bf6e8471f9d4"
+    },
+    {
+      "name": "Unholy Strength",
+      "line": 1385,
+      "line_sha256": "d470cf98e69fef017ff0a57e67ae139d4862fa5b2489a8ee6b578faf03d3e45c",
+      "id": "f42c9574-2f09-4cb0-80cb-10fb8c592e6f",
+      "oracle_id": "090d88a9-7f2d-4bd1-a30a-7c48d05068be",
+      "uri": "https://api.scryfall.com/cards/f42c9574-2f09-4cb0-80cb-10fb8c592e6f"
+    },
+    {
+      "name": "Grizzly Bears",
+      "line": 3179,
+      "line_sha256": "51536be29a3141f7a71e97e5f3e6dc5aa88029d23ab7b96fd7d3891685742e6c",
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "uri": "https://api.scryfall.com/cards/409f9b88-f03e-40b6-9883-68c14c37c0de"
+    },
+    {
+      "name": "Absolute Grace",
+      "line": 9833,
+      "line_sha256": "68881e32321dc74c2fddf5f0c028fbd1cc464f58dc16e5555720d5e547620bb9",
+      "id": "fe7d1839-7180-4b4c-8ddb-7df24573f740",
+      "oracle_id": "41785f7b-3d02-4b7f-86ff-b381f626142e",
+      "uri": "https://api.scryfall.com/cards/fe7d1839-7180-4b4c-8ddb-7df24573f740"
+    },
+    {
+      "name": "Lightning Bolt",
+      "line": 10255,
+      "line_sha256": "420536045c9f3067b927bf6ae6d3a0dbdc727297e799ca5733d3765d56ba994e",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "uri": "https://api.scryfall.com/cards/7673784e-db4b-43a1-8d55-1bb9fc1e284f"
+    },
+    {
+      "name": "Bonesplitter",
+      "line": 10381,
+      "line_sha256": "671ccd3d2604fc3a58d0aab29381085bb4429012071cd575f11010429aed31f8",
+      "id": "690972a8-72df-4050-a353-16e45589167c",
+      "oracle_id": "452e3f5f-ce17-4682-966b-5cc100210aee",
+      "uri": "https://api.scryfall.com/cards/690972a8-72df-4050-a353-16e45589167c"
+    },
+    {
+      "name": "Goblin Piker",
+      "line": 12062,
+      "line_sha256": "01a9ae79b291c6c196d581e94415ea360c582e340aa6d47cb2f4f829f9e09a58",
+      "id": "083ec3e7-950c-4e9d-aba5-02ed13d723f0",
+      "oracle_id": "50608184-90d3-43d2-a221-deb186c78323",
+      "uri": "https://api.scryfall.com/cards/083ec3e7-950c-4e9d-aba5-02ed13d723f0"
+    },
+    {
+      "name": "Doom Blade",
+      "line": 13495,
+      "line_sha256": "92fafb65ecbfa8d8b05263d70e46ce9ce149ac0aa7890f212095d39115cde59d",
+      "id": "5dcd0c4e-4047-47a2-8969-c62616d457c2",
+      "oracle_id": "59e7f2ae-4535-4191-98be-3e65b6b2befa",
+      "uri": "https://api.scryfall.com/cards/5dcd0c4e-4047-47a2-8969-c62616d457c2"
+    },
+    {
+      "name": "Vorpal Sword",
+      "line": 14671,
+      "line_sha256": "6e6fb2144cf63ab8473b6e8b252c95facc3d25fe5e1cae75b56e29b914cec4c6",
+      "id": "7adbe69f-326d-4b4f-850f-c57a1860d17c",
+      "oracle_id": "61bfab3f-d8f0-4ff5-9ddf-3fd605070c8f",
+      "uri": "https://api.scryfall.com/cards/7adbe69f-326d-4b4f-850f-c57a1860d17c"
+    },
+    {
+      "name": "Firebreathing",
+      "line": 20155,
+      "line_sha256": "2005be857171834b1794fca545589c012a4f5cae115189f8ef5444738478b390",
+      "id": "6fbcc269-aaa3-42aa-9898-3f908aaae272",
+      "oracle_id": "8603bf74-faab-4910-8e45-0f2e3b318efb",
+      "uri": "https://api.scryfall.com/cards/6fbcc269-aaa3-42aa-9898-3f908aaae272"
+    },
+    {
+      "name": "Ovinize",
+      "line": 22955,
+      "line_sha256": "4ba9bcfb0cd08671e4d1c7b261cf3266204d11290378d84af38796987148b888",
+      "id": "e92204e3-2c98-4834-a838-ddc9f85fdeea",
+      "oracle_id": "98799336-a61e-4e35-ac30-51edb81301f6",
+      "uri": "https://api.scryfall.com/cards/e92204e3-2c98-4834-a838-ddc9f85fdeea"
+    },
+    {
+      "name": "Disenchant",
+      "line": 25280,
+      "line_sha256": "ed02934d8bd23c70b76dfeb3f35cc013cb695dd2de3b55a9bd5a9e04c1b0d3e0",
+      "id": "7ac43e16-8b14-46f2-877a-600ea918766b",
+      "oracle_id": "a7e97fa9-4b72-4548-b854-5be5f18a6f1a",
+      "uri": "https://api.scryfall.com/cards/7ac43e16-8b14-46f2-877a-600ea918766b"
+    },
+    {
+      "name": "Island",
+      "line": 26902,
+      "line_sha256": "5e0e3077123cff035ee4a723370c00c7e58925b619c6431277724895d159e9f6",
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "uri": "https://api.scryfall.com/cards/f3cc07cd-cc79-4745-b0b7-eade60175cc3"
+    },
+    {
+      "name": "White Knight",
+      "line": 33437,
+      "line_sha256": "0da8090aef4b549628b45a60e2f6a7c94129586e63deed5bd1ef591b7558c77c",
+      "id": "660f69ef-c04f-4f53-80e6-8190549ab12a",
+      "oracle_id": "ddb021df-ae4a-4ac1-8353-d0b375761714",
+      "uri": "https://api.scryfall.com/cards/660f69ef-c04f-4f53-80e6-8190549ab12a"
+    },
+    {
+      "name": "Absolute Law",
+      "line": 36984,
+      "line_sha256": "1cfc69be290dd62e7793c82ef79c96ce22d5f2a34d5a870a70a9f6a54b7d9a3e",
+      "id": "59d1f05b-f165-47c7-8a78-3b60ee3298ca",
+      "oracle_id": "f4aa8391-34d5-4ad2-a981-9aa08f8229db",
+      "uri": "https://api.scryfall.com/cards/59d1f05b-f165-47c7-8a78-3b60ee3298ca"
+    },
+    {
+      "name": "Walking Corpse",
+      "line": 38483,
+      "line_sha256": "9c27eb77b87446fa5ba7b9338f7af22ae9d0a0fb81ff8ec489ac97c3d8477479",
+      "id": "053b59b4-a22c-4228-aadc-ae9da6bb465e",
+      "oracle_id": "fea95888-e16a-4209-9cd4-623f7f4d2f67",
+      "uri": "https://api.scryfall.com/cards/053b59b4-a22c-4228-aadc-ae9da6bb465e"
+    }
+  ],
+  "execution_certified": false
+}

@@ -85,11 +85,11 @@ def test_cost_choice_resume_announces_and_pays_exactly_once(first, expected):
 
 
 def test_target_ward_waits_until_positive_cost_is_fully_paid():
-    from card_data.fallback_cards import fallback_card_payload
+    from card_data.seed_cards import seed_card_payload
     from tests.test_ai_recurring_engines import add as add_card
     state = clean(2)
     raw = {'power': None, 'toughness': None, 'keywords': [], 'colors': [],
-           **fallback_card_payload('Ugin, the Spirit Dragon')}
+           **seed_card_payload('Ugin, the Spirit Dragon')}
     walker = add_card(state, raw['name'], 2, cards={raw['name']: raw})
     walker.loyalty = int(raw['loyalty'])
     target = add(state, 'Tolarian Terror', 1)

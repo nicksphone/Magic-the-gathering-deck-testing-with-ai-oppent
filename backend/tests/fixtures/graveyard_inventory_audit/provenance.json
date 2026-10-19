@@ -1,0 +1,70 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "selection": "Full original official bulk JSONL lines copied byte-for-byte before offline tests; no Oracle edits",
+  "cards": [
+    {
+      "name": "Gravecrawler",
+      "file": "gravecrawler.json",
+      "sha256": "04e68e7f1291f66ca6e74d30e08618c6e330873fec25d36dd7eba848385e0ffc",
+      "oracle_id": "09ff28b1-b6c9-48e6-b12e-2f0e644f709f",
+      "id": "6987d609-ba0f-42bf-9b61-bdfb943c03b5"
+    },
+    {
+      "name": "Darksteel Colossus",
+      "file": "darksteel-colossus.json",
+      "sha256": "29cbb3f95182d047118c53af3626f1d551ac18ba82835676961376d75f54b8c5",
+      "oracle_id": "1b09d0cf-403c-4a15-aeee-602a1bdaf0c1",
+      "id": "70197723-c61b-4600-b61d-41380c8f3067"
+    },
+    {
+      "name": "Snapcaster Mage",
+      "file": "snapcaster-mage.json",
+      "sha256": "078037266a90b7db073e0c908aee2d2dfb3054fd4c68ac458a895231a834df41",
+      "oracle_id": "2bb2eda7-3b38-4c56-870f-c3218a1056f5",
+      "id": "22b36ad5-bf4d-436a-9c3c-fa4acd0052fe"
+    },
+    {
+      "name": "Past in Flames",
+      "file": "past-in-flames.json",
+      "sha256": "dbc4a7b08e8ef9c0bf43a417db53bdb55433f3b73905054abf5cfc071fbfa2df",
+      "oracle_id": "37a18736-5fe2-4897-809b-013497bdd890",
+      "id": "2b7472f4-37b0-439f-b4ac-80706d40d191"
+    },
+    {
+      "name": "Woe Strider",
+      "file": "woe-strider.json",
+      "sha256": "0102108b9f085ab7a920f11572ca7c4a617bdc6005e492ecfc34d6837687924a",
+      "oracle_id": "3adbd963-e85d-4569-963a-4472594f06f9",
+      "id": "f458ae68-5cda-4c40-a348-47b4196fba02"
+    },
+    {
+      "name": "Diregraf Ghoul",
+      "file": "diregraf-ghoul.json",
+      "sha256": "a18cfd235ee52964ba95d8ce9681e217b3eb4a75aaf5061f00d4f8eb216bdc7c",
+      "oracle_id": "6048fc70-0dcc-4b54-977d-16e240225f82",
+      "id": "4682012c-d7e0-4257-b538-3de497507464"
+    },
+    {
+      "name": "Nether Traitor",
+      "file": "nether-traitor.json",
+      "sha256": "adac252b0edfdafca8939eba0346b4b33346594557371be4b68ae64bddbb117d",
+      "oracle_id": "6f16c3ac-a9b8-47e6-b18b-ae37c74d44a0",
+      "id": "fae5d1cb-ead9-41e1-84ce-2f06dc8cf6ba"
+    },
+    {
+      "name": "Kozilek, Butcher of Truth",
+      "file": "kozilek-butcher-of-truth.json",
+      "sha256": "ab1bc3c30424c615ee39280ae1900fc307975ddc8d983cfae18f4861a1e17055",
+      "oracle_id": "7b8528b0-71eb-4c9e-bed9-aa2d2e84038f",
+      "id": "d27cf7b7-7982-46bd-a559-7789c0e74bae"
+    },
+    {
+      "name": "Reassembling Skeleton",
+      "file": "reassembling-skeleton.json",
+      "sha256": "273707961094bad092b66853c7654bf606cd12555987c15a22c3fa8b95814391",
+      "oracle_id": "9dbc3530-b278-4c8d-b2cc-a09dfac9d5e5",
+      "id": "4d431445-d7db-4ce1-b422-41494d9be1b4"
+    }
+  ]
+}

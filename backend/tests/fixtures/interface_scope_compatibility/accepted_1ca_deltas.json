@@ -1,0 +1,95 @@
+{
+  "accepted_public_commit": "1ca5005d7840a569f35f3797d03e3c852386816e",
+  "main_preimage_commit": "2fd7b7bb1e3ea3f353770744b113b92df2fd32e4",
+  "private_fixture_preimage_commit": "f90aaf2016c00b72b0c098b08146973c8aa0d1fb",
+  "accepted_main_delta": {
+    "old_sha256": "e3991b16412c5d476a571368a02ca9804f78cb031a947e798052ede3d81ef418",
+    "new_sha256": "0e163563dfabf109964588d53a2a56504745b032fd56ec44818d5a95258fec9f",
+    "hunks": [
+      {
+        "start": 34,
+        "end": 41,
+        "old": "from analytics.replay_tools import classify_first_divergence, first_log_divergence\nfrom analytics.service import AnalyticsService, SimulationCancelled\nfrom analytics.resource_budget import RESOURCE_LIMITS, SimulationResourceLimit, checked_json, checked_text\nfrom card_data.fallback_cards import fallback_card_payload\nfrom card_data.display import select_display_image_uri\nfrom card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image\nfrom card_data.service import CardService\n",
+        "new": "from analytics.replay_tools import classify_first_divergence, first_log_divergence\nfrom analytics.service import AnalyticsService, SimulationCancelled\nfrom analytics.resource_budget import RESOURCE_LIMITS, SimulationResourceLimit, checked_json, checked_text\nfrom card_data.seed_cards import seed_card_payload\nfrom card_data.display import select_display_image_uri\nfrom card_data.placeholders import ensure_placeholder_image, ensure_generic_token_image\nfrom card_data.service import CardService\n"
+      },
+      {
+        "start": 161,
+        "end": 168,
+        "old": "    play_draw_chooser: int = 1\n    sideboarded_players: set[int] = field(default_factory=set)\n    seen_opponent_types: dict[int, set[str]] = field(default_factory=lambda: {1: set(), 2: set()})\n    mutation_lock: object = field(default_factory=threading.RLock, repr=False)\n    revision: int = 0\n    mutation_receipts: dict[str, str] = field(default_factory=dict)\n",
+        "new": "    play_draw_chooser: int = 1\n    sideboarded_players: set[int] = field(default_factory=set)\n    seen_opponent_types: dict[int, set[str]] = field(default_factory=lambda: {1: set(), 2: set()})\n    auto_sideboard: bool = True\n    mutation_lock: object = field(default_factory=threading.RLock, repr=False)\n    revision: int = 0\n    mutation_receipts: dict[str, str] = field(default_factory=dict)\n"
+      },
+      {
+        "start": 244,
+        "end": 251,
+        "old": "    ai_difficulty: Literal[\"casual\", \"strong\", \"master\", \"master_plus\"] = \"master\"\n    mode: Literal[\"player_vs_ai\", \"ai_vs_ai\", \"human_vs_human\"] = \"player_vs_ai\"\n    best_of: int = Field(default=3, ge=3, le=15)\n    seed: int | None = None\n\n    @field_validator(\"best_of\")\n",
+        "new": "    ai_difficulty: Literal[\"casual\", \"strong\", \"master\", \"master_plus\"] = \"master\"\n    mode: Literal[\"player_vs_ai\", \"ai_vs_ai\", \"human_vs_human\"] = \"player_vs_ai\"\n    best_of: int = Field(default=3, ge=3, le=15)\n    auto_sideboard: bool = Field(default=True, strict=True)\n    seed: int | None = None\n\n    @field_validator(\"best_of\")\n"
+      },
+      {
+        "start": 344,
+        "end": 351,
+        "old": "        \"play_draw_chooser\": match.play_draw_chooser,\n        \"sideboarded_players\": sorted(match.sideboarded_players),\n        \"seen_opponent_types\": {str(pid): sorted(types) for pid, types in match.seen_opponent_types.items()},\n        \"difficulties\": difficulties,\n        \"archetypes\": archetypes,\n        \"revision\": match.revision,\n",
+        "new": "        \"play_draw_chooser\": match.play_draw_chooser,\n        \"sideboarded_players\": sorted(match.sideboarded_players),\n        \"seen_opponent_types\": {str(pid): sorted(types) for pid, types in match.seen_opponent_types.items()},\n        \"auto_sideboard\": match.auto_sideboard,\n        \"difficulties\": difficulties,\n        \"archetypes\": archetypes,\n        \"revision\": match.revision,\n"
+      },
+      {
+        "start": 425,
+        "end": 432,
+        "old": "                play_draw_chooser=int(config.get(\"play_draw_chooser\", state.active_player)),\n                sideboarded_players={int(pid) for pid in config.get(\"sideboarded_players\", [])},\n                seen_opponent_types={pid: set(config.get(\"seen_opponent_types\", {}).get(str(pid), [])) for pid in (1, 2)},\n                revision=int(config.get(\"revision\", 0)),\n                mutation_receipts=dict(config.get(\"mutation_receipts\", {})),\n            )\n",
+        "new": "                play_draw_chooser=int(config.get(\"play_draw_chooser\", state.active_player)),\n                sideboarded_players={int(pid) for pid in config.get(\"sideboarded_players\", [])},\n                seen_opponent_types={pid: set(config.get(\"seen_opponent_types\", {}).get(str(pid), [])) for pid in (1, 2)},\n                auto_sideboard=config.get('auto_sideboard', True),\n                revision=int(config.get(\"revision\", 0)),\n                mutation_receipts=dict(config.get(\"mutation_receipts\", {})),\n            )\n"
+      },
+      {
+        "start": 848,
+        "end": 855,
+        "old": "        match_complete=False,\n        best_of=payload.best_of,\n        root_seed=root_seed,\n    )\n    try:\n        with repo.atomic_match_writes() if isinstance(repo, Repository) else nullcontext():\n",
+        "new": "        match_complete=False,\n        best_of=payload.best_of,\n        root_seed=root_seed,\n        auto_sideboard=payload.auto_sideboard,\n    )\n    try:\n        with repo.atomic_match_writes() if isinstance(repo, Repository) else nullcontext():\n"
+      },
+      {
+        "start": 1027,
+        "end": 1035,
+        "old": "        candidate = checked_action(match.state, match.rules, payload.player_id, payload.action.model_dump(exclude_none=True))\n    except ActionRejected as exc:\n        raise HTTPException(status_code=422, detail={\"code\": \"illegal_action\", \"message\": str(exc)}) from exc\n    match.state = candidate\n    _post_step_finalize(match, repo)\n    _persist_active_match(repo, match)\n",
+        "new": "        candidate = checked_action(match.state, match.rules, payload.player_id, payload.action.model_dump(exclude_none=True))\n    except ActionRejected as exc:\n        raise HTTPException(status_code=422, detail={\"code\": \"illegal_action\", \"message\": str(exc)}) from exc\n    from ai.sideboard_facts import record_accepted_action\n    record_accepted_action(match.state, candidate, payload.player_id, payload.action.model_dump(exclude_none=True))\n    match.state = candidate\n    _post_step_finalize(match, repo)\n    _persist_active_match(repo, match)\n"
+      },
+      {
+        "start": 1073,
+        "end": 1083,
+        "old": "                        action = guard_land\n            try:\n                action = complete_action(action)\n                match.state = checked_action(match.state, match.rules, pid, action)\n            except ActionRejected as exc:\n                raise HTTPException(status_code=422, detail={\n                    \"code\": \"illegal_ai_action\", \"message\": str(exc),\n",
+        "new": "                        action = guard_land\n            try:\n                action = complete_action(action)\n                candidate = checked_action(match.state, match.rules, pid, action)\n                from ai.sideboard_facts import record_accepted_action\n                record_accepted_action(match.state, candidate, pid, action)\n                match.state = candidate\n            except ActionRejected as exc:\n                raise HTTPException(status_code=422, detail={\n                    \"code\": \"illegal_ai_action\", \"message\": str(exc),\n"
+      },
+      {
+        "start": 1087,
+        "end": 1097,
+        "old": "                break\n            if _human_priority_pause(match, pid):\n                break\n            match.state = checked_action(match.state, match.rules, pid, {\"type\": \"pass_priority\"})\n        _remember_public_types(match)\n    _post_step_finalize(match, repo)\n    _persist_active_match(repo, match)\n",
+        "new": "                break\n            if _human_priority_pause(match, pid):\n                break\n            candidate = checked_action(match.state, match.rules, pid, {\"type\": \"pass_priority\"})\n            from ai.sideboard_facts import record_accepted_action\n            record_accepted_action(match.state, candidate, pid, {\"type\": \"pass_priority\"})\n            match.state = candidate\n        _remember_public_types(match)\n    _post_step_finalize(match, repo)\n    _persist_active_match(repo, match)\n"
+      },
+      {
+        "start": 1691,
+        "end": 1699,
+        "old": "    reveal_at_game_end(state)\n    if state.winner is None or match.current_game_recorded:\n        return\n    p1 = state.players[1]\n    p2 = state.players[2]\n    state.log.append(\n",
+        "new": "    reveal_at_game_end(state)\n    if state.winner is None or match.current_game_recorded:\n        return\n    from ai.sideboard_facts import seal_game\n    seal_game(state)\n    p1 = state.players[1]\n    p2 = state.players[2]\n    state.log.append(\n"
+      },
+      {
+        "start": 1816,
+        "end": 1859,
+        "old": "\ndef _ai_sideboard_for_next_game(match: MatchController, repo: Repository | None) -> None:\n    from card_data.hydration import hydrate_deck_cards\n\n    for pid in (1, 2):\n        if match.controllers.get(pid) != \"ai\" or not match.sideboards.get(pid):\n            continue\n        known_archetype = match.ai[pid].opponent_archetype if _is_full_ai_match(match) else None\n        cards_out, cards_in = plan_sideboard(\n            match.mainboards[pid], match.sideboards[pid], match.seen_opponent_types.get(pid, set()), known_archetype,\n        )\n        if not cards_in:\n            continue\n        next_main, next_side = apply_sideboard_swaps(match.mainboards[pid], match.sideboards[pid], cards_out, cards_in)\n        match.mainboards[pid] = hydrate_deck_cards(repo, next_main)\n        match.sideboards[pid] = hydrate_deck_cards(repo, next_side)\n        match.state.log.append(f\"{match.state.players[pid].name} sideboards {sum(item['quantity'] for item in cards_in)} card(s) for the next game.\")\n\n\n",
+        "new": "\ndef _ai_sideboard_for_next_game(match: MatchController, repo: Repository | None) -> None:\n    from card_data.hydration import hydrate_deck_cards\n    from ai.sideboard_facts import summary_for\n    from ai import sideboard_policy as policy\n    from collections import Counter\n\n    if match.auto_sideboard is not True:\n        return\n\n    for pid in (1, 2):\n        if match.controllers.get(pid) != \"ai\" or not match.sideboards.get(pid):\n            continue\n        summary = summary_for(match.state, pid)\n        deck = {'mainboard': match.mainboards[pid], 'sideboard': match.sideboards[pid]}\n        route = policy.route_for(deck, summary)\n        if route == 'knowledge':\n            swaps = policy.plan_swaps(deck, summary, summary)\n            out = Counter(swap['out'] for swap in swaps)\n            into = Counter(swap['in'] for swap in swaps)\n            cards_out = [{'card_name': name, 'quantity': qty} for name, qty in sorted(out.items())]\n            cards_in = [{'card_name': name, 'quantity': qty} for name, qty in sorted(into.items())]\n        elif route == 'legacy':\n            known_archetype = match.ai[pid].opponent_archetype if _is_full_ai_match(match) else None\n            cards_out, cards_in = plan_sideboard(\n                match.mainboards[pid], match.sideboards[pid], set(summary['observed_types']), known_archetype, max_swaps=3)\n        else:\n            continue\n        if not cards_in:\n            continue\n        if (sum(item['quantity'] for item in cards_in) > 3\n                or any(item['card_name'] in summary['protected_stock']\n                    or item['quantity'] > summary['held_counts'].get(item['card_name'], 0) for item in cards_out)):\n            continue\n        next_main, next_side = apply_sideboard_swaps(match.mainboards[pid], match.sideboards[pid], cards_out, cards_in)\n        if sum(item['quantity'] for item in next_main) != sum(item['quantity'] for item in match.mainboards[pid]):\n            raise ValueError('Sideboarding changed original main size')\n        hydrated_main = hydrate_deck_cards(repo, next_main)\n        hydrated_side = hydrate_deck_cards(repo, next_side)\n        match.mainboards[pid], match.sideboards[pid] = hydrated_main, hydrated_side\n        match.state.log.append(f\"{match.state.players[pid].name} sideboards {sum(item['quantity'] for item in cards_in)} card(s) for the next game.\")\n\n\n"
+      },
+      {
+        "start": 1872,
+        "end": 1879,
+        "old": "    seed = game_seed(match.root_seed, match.game_number + 1)\n    new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name, seed=seed)\n    new_state.id = prior_id\n    new_state.score = dict(match.state.score)\n    new_state.best_of = match.best_of\n    new_state.replacement_choice_required = any(\n",
+        "new": "    seed = game_seed(match.root_seed, match.game_number + 1)\n    new_state = MatchFactory.from_decks(match.mainboards[1], match.mainboards[2], player_a_name=p1_name, player_b_name=p2_name, seed=seed)\n    new_state.id = prior_id\n    new_state.sideboard_facts['game_id'] = prior_id\n    new_state.score = dict(match.state.score)\n    new_state.best_of = match.best_of\n    new_state.replacement_choice_required = any(\n"
+      }
+    ]
+  },
+  "accepted_private_fixture_delta": {
+    "old_sha256": "711e6fd8cf528a5f032d852eb4cfd5805d97a5d37c54c9832a46d49ef27d7abb",
+    "new_sha256": "9630f02ffe9528def11e064de5bdc308351314680d27f9ee812c78d51e09eaf7",
+    "hunks": [
+      {
+        "start": 55,
+        "end": 63,
+        "old": "    if family not in {'delver', 'officer'} or seat not in (1, 2):\n        raise HTTPException(422, 'Declared canonical family and actor required')\n    state, inspected, foreign = position(family, seat)\n    state.id = str(uuid4())\n    state.log.append(LABEL)\n    controller = main.MatchController(state=state, rules=RulesEngine(),\n        controllers={1: 'human', 2: 'human'}, ai={1: AIAgent(), 2: AIAgent()},\n",
+        "new": "    if family not in {'delver', 'officer'} or seat not in (1, 2):\n        raise HTTPException(422, 'Declared canonical family and actor required')\n    state, inspected, foreign = position(family, seat)\n    if family == 'officer':\n        state.id = str(uuid4())\n    state.log.append(LABEL)\n    controller = main.MatchController(state=state, rules=RulesEngine(),\n        controllers={1: 'human', 2: 'human'}, ai={1: AIAgent(), 2: AIAgent()},\n"
+      }
+    ]
+  }
+}

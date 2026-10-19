@@ -1,0 +1,1 @@
+2026-10-06T22:26:32Z https://api.scryfall.com/cards/named?exact=Flicker%20of%20Fate

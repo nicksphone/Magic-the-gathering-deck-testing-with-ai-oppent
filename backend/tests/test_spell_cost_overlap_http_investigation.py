@@ -1,5 +1,6 @@
-"""Opt-in ASGI boundary reproducers, memory-only DB, never a live API call."""
+"""Opt-in ASGI reproducers with owned case databases, never a live API call."""
 import json
+import hashlib
 import os
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from tests.test_spell_cost_overlap_investigation import source_overlap
 
 
 pytestmark = pytest.mark.skipif(os.environ.get('MTG_COST_OVERLAP_HTTP') != '1',
-                               reason='Opt-in isolated-source memory-only HTTP qualification')
+                               reason='Opt-in isolated-source owned-database HTTP qualification')
 
 
 class UncontrolledSourceOverlap(AssertionError):
@@ -18,30 +19,30 @@ class UncontrolledSourceOverlap(AssertionError):
 
 
 @pytest.fixture
-def isolated_api(monkeypatch):
+def isolated_api(monkeypatch, tmp_path):
     root = Path(__file__).resolve().parents[1]
     approved = os.environ.get('MTG_COST_OVERLAP_ROOT')
     assert approved and Path(approved).resolve() == root
     assert not (root / 'mtg_lab.db').exists() and not (root / 'mtg_lab.db').is_symlink()
     from fastapi.testclient import TestClient
-    from sqlalchemy.pool import StaticPool
     from sqlmodel import create_engine
     import persistence.db as db
     import main
 
     assert Path(main.__file__).resolve().parent == root
-    memory = create_engine('sqlite://', connect_args={'check_same_thread': False}, poolclass=StaticPool)
-    monkeypatch.setattr(db, 'engine', memory)
-    monkeypatch.setattr(main, 'engine', memory)
+    owned = create_engine('sqlite:///' + str(tmp_path / 'cost-overlap.sqlite3'))
+    monkeypatch.setattr(db, 'engine', owned)
+    monkeypatch.setattr(main, 'engine', owned)
     for name in ('_ensure_builtin_decks', '_ensure_expansion_top_decks',
                  '_restore_active_matches', '_restore_simulation_jobs'):
         monkeypatch.setattr(main, name, lambda repo: None)
     monkeypatch.setattr(main, 'ACTIVE_MATCHES', {})
     try:
         with TestClient(main.app, raise_server_exceptions=False) as client:
-            yield main, memory, client
+            yield main, owned, client
     finally:
-        memory.dispose()
+        assert owned.pool.checkedout() == 0
+        owned.dispose()
         assert not (root / 'mtg_lab.db').exists()
 
 
@@ -73,12 +74,16 @@ def test_http_source_overlap_is_controlled_rejection_with_atomic_root_and_db(iso
     before = serialize_match_snapshot(state)
     controller_before = main._controller_snapshot(controller)
     database_before = database_dump(memory)
+    database_file = Path(memory.url.database) if memory.url.database not in {None, ':memory:'} else None
+    database_hash_before = hashlib.sha256(database_file.read_bytes()).hexdigest() if database_file else None
     response = client.post(f'/matches/{state.id}/action',
                            json={'player_id': seat, 'action': action})
     root_equal = serialize_match_snapshot(controller.state) == before
     controller_equal = main._controller_snapshot(controller) == controller_before
     db_equal = database_dump(memory) == database_before
     assert root_equal and controller_equal and db_equal
+    if database_file:
+        assert hashlib.sha256(database_file.read_bytes()).hexdigest() == database_hash_before
     evidence = os.environ.get('MTG_COST_OVERLAP_EVIDENCE')
     if evidence:
         path = Path(evidence) / f'http-{state.id}.json'

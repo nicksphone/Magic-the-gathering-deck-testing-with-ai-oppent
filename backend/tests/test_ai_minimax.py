@@ -2,6 +2,8 @@
 
 import pytest
 
+from tests.ai_information76_canonical import canonical_card, deck_entry
+
 from ai.agent import AIAgent
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.stack_engine import add_to_stack
@@ -9,7 +11,7 @@ from rules_engine.stack_engine import add_to_stack
 
 @pytest.mark.parametrize("next_actor,expected", [(1, 20.0), (2, 18.0)])
 def test_strategic_search_selects_best_own_or_worst_opponent_reply(monkeypatch, next_actor, expected):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=676)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
@@ -35,7 +37,7 @@ def test_strategic_search_selects_best_own_or_worst_opponent_reply(monkeypatch, 
 
 
 def test_strategic_search_materializes_targeted_opponent_reply(monkeypatch):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=677)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
@@ -66,7 +68,7 @@ def test_strategic_search_materializes_targeted_opponent_reply(monkeypatch):
 
 
 def test_ranking_rollout_materializes_targeted_candidate(monkeypatch):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=678)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
@@ -89,7 +91,7 @@ def test_ranking_rollout_materializes_targeted_candidate(monkeypatch):
 
 
 def test_ranking_rollout_materializes_targeted_opponent_reply(monkeypatch):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=679)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
@@ -108,7 +110,7 @@ def test_ranking_rollout_materializes_targeted_opponent_reply(monkeypatch):
 
 
 def test_strategic_beam_uses_ranked_reply_beyond_lexical_prefix(monkeypatch):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=680)
     agent = AIAgent(difficulty="master", archetype="Midrange")
     replies = [
@@ -136,7 +138,7 @@ def test_strategic_beam_uses_ranked_reply_beyond_lexical_prefix(monkeypatch):
 
 
 def test_ranking_reply_beam_uses_ranked_move_beyond_lexical_prefix(monkeypatch):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=681)
     agent = AIAgent(difficulty="master", archetype="Midrange")
     replies = [
@@ -159,7 +161,7 @@ def test_ranking_reply_beam_uses_ranked_move_beyond_lexical_prefix(monkeypatch):
 
 
 def test_shallow_reply_ranking_does_not_start_nested_rollout(monkeypatch):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=682)
     agent = AIAgent(difficulty="master", archetype="Midrange")
 
@@ -172,20 +174,14 @@ def test_shallow_reply_ranking_does_not_start_nested_rollout(monkeypatch):
 
 
 def test_strategic_search_rejects_unpayable_cast_instead_of_scoring_noop(monkeypatch):
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=683)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
-    counter = CardInstance(
-        "counter", "Counterspell", 1, 1, Zone.HAND, ["Instant"],
-        mana_cost="{U}{U}", oracle_text="Counter target spell.",
-    )
-    threat = CardInstance(
-        "threat", "Lightning Bolt", 2, 2, Zone.STACK, ["Instant"],
-        mana_cost="{R}", oracle_text="Lightning Bolt deals 3 damage to any target.",
-    )
+    counter = canonical_card('Counterspell', id="counter", owner=1, controller=1, zone=Zone.HAND)
+    threat = canonical_card('Lightning Bolt', id="threat", owner=2, controller=2, zone=Zone.STACK)
     state.cards[counter.id] = counter
     state.players[1].hand.append(counter.id)
     state.cards[threat.id] = threat

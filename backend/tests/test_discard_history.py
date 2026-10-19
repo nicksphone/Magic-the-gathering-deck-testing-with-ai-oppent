@@ -302,9 +302,8 @@ def test_http_choice_and_sqlite_history_restore(game, seat, name):
     state, source, hand, action = setup(name, seat, cast=False)
     assert discard_selected(state, seat, [hand[0].id])
     state = resolve_to_choice(checked_action(state, RulesEngine(), seat, action))
-    state.id = controller.state.id
-    controller.state = state
-    persist(controller)
+    from tests.fixture_state_support import adopt_fixture_state
+    adopt_fixture_state(controller, state)
     rejected(client, controller, {'type': 'choose_mechanic', 'card_ids': [hand[1].id]}, 3-seat)
     main.ACTIVE_MATCHES.pop(state.id)
     with Session(engine) as session:

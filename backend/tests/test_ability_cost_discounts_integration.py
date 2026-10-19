@@ -8,6 +8,7 @@ from rules_engine.action_validation import checked_action, ActionRejected
 from rules_engine.engine import RulesEngine
 from tests.test_ability_cost_discounts import source, board, add, view, resolve
 from tests.test_api_input_contracts import game, persist, rejected, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 
 
 @pytest.mark.parametrize('seat', [1, 2])
@@ -33,9 +34,7 @@ def test_http_scoped_cost_payment_is_atomic_and_restored(game, seat, name):
         color = None
     if color:
         state.players[seat].mana_pool[color] = 1
-    state.id = match.state.id
-    match.state = state
-    persist(match)
+    adopt_fixture_state(match, state)
     action = {'type': 'activate_ability', 'card_id': card.id, 'ability_index': 0, 'targets': {}}
     rejected(client, match, action, seat)
     match.state.players[seat].mana_pool['C'] = 1

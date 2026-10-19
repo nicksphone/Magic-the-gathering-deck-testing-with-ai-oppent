@@ -1,0 +1,29 @@
+{
+  "canonical_jsonl_sha256": "c405305d4e6ea08e7605a115929e847434d64cef1d104892db45e30e30611a73",
+  "facts_modified": false,
+  "http_requests": 0,
+  "rows": {
+    "Dispel": {
+      "id": "bceab6b3-6b64-4964-a501-ce806a6c13ad",
+      "oracle_id": "6d7be242-a072-40ce-b540-95880506cccd",
+      "raw_sha256": "1681a35670722c8b3be1f2db252e46c5dc47b6eed82cb12a1fa590ad14e89e7f"
+    },
+    "Faith of the Devoted": {
+      "id": "5f8c5e6a-a161-4630-842a-4c8d4071d6e6",
+      "oracle_id": "99af5247-06cf-40b2-9a7c-65ad59b1ddf6",
+      "raw_sha256": "1a0b4743268ac06a09aafda5e33e01a53de6a7a7a70c620d4dd20a49a30eed4c"
+    },
+    "Life from the Loam": {
+      "id": "cdb6432f-3f56-4c92-b09a-2a5b64620c04",
+      "oracle_id": "ac8fba34-512c-4f24-999a-ab72f1ce4acb",
+      "raw_sha256": "ced6b619f0c5f2e40d26fb6fd339a55de1d05d4233fd8eabdb6ac8bf5f8b02ea"
+    },
+    "Negate": {
+      "id": "52d58fe4-6070-4022-9cd7-c35a11b44525",
+      "oracle_id": "3407fe41-fdd3-4119-8f70-4bc4590a379f",
+      "raw_sha256": "90d37bb8ead523ea99cf40dff8eeb4187dd55f400a32ce4769c1001dc943b92c"
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

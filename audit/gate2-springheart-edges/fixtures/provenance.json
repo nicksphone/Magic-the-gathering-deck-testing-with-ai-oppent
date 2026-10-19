@@ -1,0 +1,52 @@
+{
+  "bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "unchanged_full_rows": 9,
+  "cards": {
+    "Doubling Season": {
+      "id": "f2c4f80e-84a0-463b-82c3-5c6503809351",
+      "oracle_id": "01546b7d-a233-4176-8843-d732074dc5b6",
+      "canonical_fullrow_sha256": "48d11ad8319007d1369a4a651831596491be1f764ecd3f895ddfc00602774107"
+    },
+    "Wild Cantor": {
+      "id": "e6b56946-a368-4cd7-9d35-be14afca935b",
+      "oracle_id": "24472823-d33c-4d96-add1-233116f6f4f7",
+      "canonical_fullrow_sha256": "67705cc4480a93fdaecb8b1ec0ed06a7c1a60645fbfdfcf9f68b09a91234781d"
+    },
+    "Raging Goblin": {
+      "id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b",
+      "canonical_fullrow_sha256": "b084c49cbd337b82de4f5051f1dec661250e61df2c697a79c4994adfe10bf453"
+    },
+    "Renata, Called to the Hunt": {
+      "id": "2b27e6b2-13ad-42b2-a121-70935913723d",
+      "oracle_id": "6761b077-7a89-42c9-93ab-675fe4231564",
+      "canonical_fullrow_sha256": "7d22bd9f08097ac9f4e79bdf56e0117a11919cf9baaf1fe2d25c28e0f3565f9d"
+    },
+    "Springheart Nantuko": {
+      "id": "54a3ea87-005e-4985-b2a5-21711d0b71c0",
+      "oracle_id": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+      "canonical_fullrow_sha256": "dec8bbe5c2555f0d728b0f074aa15d193fcc7c73a15d846bca57df26f0889156"
+    },
+    "Hardened Scales": {
+      "id": "99cfd1a8-49fd-4cc0-96f2-f9f159ce5d55",
+      "oracle_id": "a1f3da21-af6d-450e-bf0b-985d158418e6",
+      "canonical_fullrow_sha256": "f18315da3060bb6dd1eb22fd5f03fc1dca5378767a12fa92a26f4b94ecdc716a"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "canonical_fullrow_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0"
+    },
+    "Isamaru, Hound of Konda": {
+      "id": "6afead32-3542-44c4-82d6-b6a81beb9f90",
+      "oracle_id": "cfb756dd-6fe1-430a-8f04-8b10cac62a86",
+      "canonical_fullrow_sha256": "cb0f3cb79ec07f17c2bd07bb89dd0a390a89f23c35839380348b516dab1d0b56"
+    },
+    "Delver of Secrets // Insectile Aberration": {
+      "id": "6904ea20-e504-47da-95a0-08739fdde260",
+      "oracle_id": "edd531b9-f615-4399-8c8c-1c5e18c4acbf",
+      "canonical_fullrow_sha256": "7e9b6ff983469671659cf9a56bde06535c0938f6cf8ac45cae2619c3040311f6"
+    }
+  }
+}

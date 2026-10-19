@@ -1,7 +1,11 @@
 from __future__ import annotations
 
-from game_state.state import CardInstance, MatchFactory, Zone
+import json
+
+from game_state.state import CardInstance, MatchFactory, Zone, _infer_keywords
 from rules_engine.ability_model import build_ability_spec
+from rules_engine.card_types import printed_card_types
+from tests.canonical_positive_fixtures import cached_card
 
 
 def test_ability_model_exposes_effect_targets_modes_and_choices() -> None:
@@ -46,18 +50,27 @@ def test_planeswalker_static_and_loyalty_text_is_not_cast_time_fallback() -> Non
         [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}],
         [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}],
     )
+    printed = cached_card("Nissa, Who Shakes the World")
     card = CardInstance(
         id="nissa",
-        name="Nissa, Who Shakes the World",
+        name=printed.name,
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Planeswalker"],
-        oracle_text=(
-            "Lands you control have '{T}: Add two mana of any one color.'\n"
-            "+1: Put a +1/+1 counter on up to one target land you control.\n"
-            "-3: You may put a green creature card from your hand onto the battlefield."
-        ),
+        types=printed_card_types(printed.type_line),
+        type_line=printed.type_line,
+        oracle_text=printed.oracle_text,
+        mana_cost=printed.mana_cost,
+        power=int(printed.power) if printed.power is not None else None,
+        toughness=int(printed.toughness) if printed.toughness is not None else None,
+        printed_power=printed.power,
+        printed_toughness=printed.toughness,
+        loyalty=int(printed.loyalty) if printed.loyalty is not None else None,
+        colors=printed.colors.split(",") if printed.colors else [],
+        keywords=_infer_keywords(printed.oracle_text),
+        layout=printed.layout,
+        card_faces=json.loads(printed.card_faces_json),
+        image_uri=printed.image_uri,
     )
 
     spec = build_ability_spec(state, card, 1)

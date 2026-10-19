@@ -6,7 +6,7 @@ const frontend = process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15174';
 const evidence = process.env.MTG_UI_EVIDENCE;
 assert.ok(evidence, 'Set MTG_UI_EVIDENCE to a local test scratch directory');
 await mkdir(evidence, {recursive:true});
-const { evaluate, command, waitFor, click, reload, close } = await openBrowser(frontend);
+const { evaluate, command, waitFor, click, reload, close, uiInput } = await openBrowser(frontend);
 const results = [];
 async function setup(path) {
   const response = await fetch(backend + path, {method:'POST'});
@@ -19,16 +19,20 @@ async function setup(path) {
 }
 async function capture(name) {
   await evaluate('document.activeElement?.blur(); window.scrollTo(0,0)');
+  if (uiInput) await uiInput.pressKey('Escape');
+  else {
   await command('Input.dispatchKeyEvent',{type:'keyDown',key:'Escape',code:'Escape'});
   await command('Input.dispatchKeyEvent',{type:'keyUp',key:'Escape',code:'Escape'});
+  }
   const shot = await command('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
   await writeFile(`${evidence}/${name}.png`,Buffer.from(shot.data,'base64'));
 }
 async function viewport(width,height) { await command('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false}); }
 async function fits() { assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth + 1'),true,'Page has horizontal overflow'); }
-async function key(key,code=key) { await command('Input.dispatchKeyEvent',{type:'keyDown',key,code});await command('Input.dispatchKeyEvent',{type:'keyUp',key,code}); }
+async function key(key,code=key) { if(uiInput) return uiInput.pressKey(...arguments); await command('Input.dispatchKeyEvent',{type:'keyDown',key,code});await command('Input.dispatchKeyEvent',{type:'keyUp',key,code}); }
 async function pointerClick(prefix) {
   const point = await evaluate(`(() => { const b=[...document.querySelectorAll('button')].find(b=>b.textContent.trim().startsWith(${JSON.stringify(prefix)})&&!b.matches(':disabled')); if(!b)throw Error('Missing action'); b.scrollIntoView({block:'center'}); const r=b.getBoundingClientRect(); return {x:r.x+r.width/2,y:r.y+r.height/2}; })()`);
+  if (uiInput) return uiInput.clickAt(point);
   await command('Input.dispatchMouseEvent',{type:'mouseMoved',...point});
   await command('Input.dispatchMouseEvent',{type:'mousePressed',...point,button:'left',clickCount:1});
   await command('Input.dispatchMouseEvent',{type:'mouseReleased',...point,button:'left',clickCount:1});

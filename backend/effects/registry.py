@@ -1,5 +1,15 @@
 from __future__ import annotations
 from rules_engine.flashback_grants import resolve_grant
+from rules_engine.exchange_energy import resolve as resolve_exchange_energy
+from rules_engine.attached_token_payment import resolve as resolve_attached_token_payment
+from rules_engine.land_animation import resolve_self_land_animation, resolve_self_creature_change
+from rules_engine.temporary_characteristics import resolve_temporary_characteristics
+from rules_engine.turn_spell_protection import conditional_draw, grant_protection
+from rules_engine.retained_counter_prohibition import resolve as resolve_counter_prohibition
+from rules_engine.spree import resolve_copy as resolve_spree_copy, offer_change as resolve_spree_target_change
+from rules_engine.end_step_ownership_draw import resolve as resolve_ownership_end_step_draw
+from rules_engine.graveyard_batch_entry import resolve as resolve_graveyard_batch
+from rules_engine.activation_copy import resolve_copy_referred_ability
 
 from collections.abc import Callable
 
@@ -11,6 +21,20 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'return_graveyard_permanents_batch': resolve_graveyard_batch,
+    'add_artifact_type_until_end_of_turn': handlers.add_artifact_type_until_end_of_turn,
+    'ownership_end_step_draw': resolve_ownership_end_step_draw,
+    'reveal_top_conditional': handlers.reveal_top_conditional,
+    'attached_token_payment': resolve_attached_token_payment,
+    'spree_copy': resolve_spree_copy,
+    'spree_change_target': resolve_spree_target_change,
+    'exchange_energy_payment': resolve_exchange_energy,
+    'retained_counter_prohibition': resolve_counter_prohibition,
+    'conditional_color_draw': conditional_draw,
+    'grant_turn_spell_protection': grant_protection,
+    'temporary_creature_characteristics': resolve_temporary_characteristics,
+    'animate_self_land': resolve_self_land_animation,
+    'change_self_creature_characteristics': resolve_self_creature_change,
     'set_combat_cost': handlers.set_combat_cost,
     'temporary_ability_loss': handlers.temporary_ability_loss,
     'set_base_stats': handlers.set_base_stats,
@@ -23,17 +47,22 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "deal_damage_to_controller": handlers.deal_damage_to_controller,
     "deal_damage_multi": handlers.deal_damage_multi,
     "deal_damage_batch": handlers.deal_damage_batch,
+    "damage_each_creature": handlers.damage_each_creature,
     "damage_each_creature_and_player": handlers.damage_each_creature_and_player,
     "draw_cards": handlers.draw_cards,
+    "put_hand_on_library": handlers.put_hand_on_library,
     "cycle_draw": handlers.cycle_draw,
     "cycle_search": handlers.cycle_search,
     "gain_life": handlers.gain_life,
     "lose_life": handlers.lose_life,
+    "player_loses_game": handlers.player_loses_game,
     "destroy_permanent": handlers.destroy_permanent,
     "destroy_with_controller_search": handlers.destroy_with_controller_search,
     "mill_cards": handlers.mill_cards,
+    "shuffle_graveyard_into_library": handlers.shuffle_graveyard_into_library,
     "choose_graveyard_return": handlers.choose_graveyard_return,
     "change_control": handlers.change_control,
+    "temporary_control_instruction": handlers.temporary_control_instruction,
     "destroy_all_creatures": handlers.destroy_all_creatures,
     "exile_all_creatures": handlers.exile_all_creatures,
     "exile_nonland_until_source_leaves": handlers.exile_nonland_until_source_leaves,
@@ -50,10 +79,14 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "counter_ability": handlers.counter_ability,
     "copy_spell": handlers.copy_spell,
     "copy_ability": handlers.copy_ability,
+    "copy_referred_ability": resolve_copy_referred_ability,
     "exile": handlers.exile_permanent,
+    "exile_return_immediate": handlers.exile_return_immediate,
+    "exile_return_batch": handlers.exile_return_batch,
     "exile_from_graveyard": handlers.exile_from_graveyard,
     "return_permanent_to_hand": handlers.return_permanent_to_hand,
     "return_from_graveyard": handlers.return_from_graveyard,
+    'put_exiled_card_into_graveyard': handlers.put_exiled_card_into_graveyard,
     'grant_flashback': resolve_grant,
     "put_land_from_hand": handlers.put_land_from_hand,
     "cast_from_graveyard": handlers.cast_from_graveyard,
@@ -78,8 +111,10 @@ EFFECT_HANDLERS: dict[str, EffectHandler] = {
     "add_counters": handlers.add_counters,
     "add_counters_each_creature": handlers.add_counters_each_creature,
     "set_next_creature_entry_counter": handlers.set_next_creature_entry_counter,
+    "bind_creature_spell_entry_counter": handlers.bind_creature_spell_entry_counter,
     "put_green_creature_from_hand": handlers.put_green_creature_from_hand,
     "temporary_pt_buff": handlers.temporary_pt_buff,
+    "resource_scaled_temporary_pt_buff": handlers.resource_scaled_temporary_pt_buff,
     "temporary_pt_buff_all": handlers.temporary_pt_buff_all,
     "sacrifice": handlers.sacrifice,
     "tap": handlers.tap_card,
@@ -115,6 +150,14 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
     if not isinstance(payload, dict):
         state.log.append(f"Invalid payload type for effect {effect_key}: {type(payload).__name__}, expected dict")
         return
+    if effect_key.startswith('loyalty_'):
+        from rules_engine.loyalty_instructions import resolve
+        resolve(state, controller, {**payload, 'loyalty_operation': effect_key.removeprefix('loyalty_')})
+        return
+    if effect_key in {'extra_turn', 'extra_combat_main'}:
+        from rules_engine.turn_scheduler import resolve_turn, resolve_combat_main
+        (resolve_turn if effect_key == 'extra_turn' else resolve_combat_main)(state, controller, payload)
+        return
     if effect_key == 'conditional_instruction':
         from rules_engine.conditional_instructions import resolve_instruction
         resolve_instruction(state, controller, payload)
@@ -142,9 +185,13 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
         from rules_engine.keyword_triggers import schedule_next_turn_draw
         schedule_next_turn_draw(state, controller, payload)
         return
-    if effect_key in {'undying_return', 'exalted_buff', 'decayed_attack', 'decayed_sacrifice', 'bushido_buff', 'rampage_buff', 'flanking_buff', 'referenced_pt_buff'}:
+    if effect_key in {'undying_return', 'exalted_buff', 'decayed_attack', 'decayed_sacrifice', 'bushido_buff', 'rampage_buff', 'flanking_buff', 'referenced_pt_buff', 'control_loss_tap'}:
         from rules_engine.keyword_triggers import resolve_keyword_trigger
         resolve_keyword_trigger(state, controller, effect_key, payload)
+        return
+    if effect_key == 'look_reorder':
+        from rules_engine.library_reorder import look_reorder
+        look_reorder(state, controller, payload)
         return
     if effect_key in {'scry', 'surveil'}:
         from rules_engine.scry import scry, surveil
@@ -177,25 +224,39 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
     if effect_key == 'permanent_spell_copy_entry':
         from game_state.state import StackItem
         from rules_engine.stack_engine import finish_stack_resolution
-        finish_stack_resolution(state, StackItem(**payload['entry_item']), {
-            **payload['entry_payload'], '__entry_candidates': payload['__entry_candidates'],
-            '__entry_counters_by_id': payload['__entry_counters_by_id'],
-        })
+        from rules_engine.action_validation import ActionRejected
+        from rules_engine.loyalty_instructions import native_frame_matches
+        from rules_engine.entry_copy import PLAN
+        frame = payload.get('entry_item')
+        if (not native_frame_matches(frame, controller) or type(payload.get('entry_payload')) is not dict
+                or frame['payload'].get('__stack_copy_kind') != 'spell'
+                or payload['entry_payload'].get('__copied_card') != frame['payload'].get('__copied_card')
+                or payload['entry_payload'].get('__source_card_id') != frame['source_card_id']
+                or ('__entry_candidates' in payload) != ('__entry_counters_by_id' in payload)):
+            raise ActionRejected('Invalid native copied-permanent continuation')
+        finish_stack_resolution(state, StackItem(**frame), {
+            **payload['entry_payload'], **{key: payload[key] for key in
+                (PLAN, '__entry_choices', '__entry_candidates', '__entry_counters_by_id') if key in payload}})
         return
     if effect_key == "effect_sequence":
+        from rules_engine.damage_results import validate_hand_payload, HAND_CONTEXT_KEYS
+        validate_hand_payload(state, payload)
+        retained = {key: payload[key] for key in HAND_CONTEXT_KEYS if key in payload}
         source_card_id = payload.get("__source_card_id")
         source_lki = payload.get("__source_lki")
         snow_mana_spent = payload.get("snow_mana_spent")
         effects = payload.get("effects", [])
         for index, item in enumerate(effects):
             key = item.get("effect_key")
-            data = dict(item.get("payload", {}) or {})
+            data = {**retained, **dict(item.get("payload", {}) or {})}
             if key == "lose_life" and payload.get("__targeted_life_loss"):
                 data["target_player"] = payload.get("target_player")
             if source_card_id and "__source_card_id" not in data:
                 data["__source_card_id"] = source_card_id
             if source_lki is not None:
                 data.setdefault("__source_lki", source_lki)
+            if payload.get('__resolving_item') is not None:
+                data['__resolving_item'] = payload['__resolving_item']
             if snow_mana_spent:
                 data.setdefault("snow_mana_spent", snow_mana_spent)
             if not key:
@@ -206,11 +267,13 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
                 pending.setdefault('continuation_controller', controller)
                 remaining = []
                 for next_effect in effects[index + 1:]:
-                    next_data = dict(next_effect.get("payload", {}))
+                    next_data = {**retained, **dict(next_effect.get("payload", {}))}
                     if source_card_id:
                         next_data.setdefault("__source_card_id", source_card_id)
                     if source_lki is not None:
                         next_data.setdefault("__source_lki", source_lki)
+                    if payload.get('__resolving_item') is not None:
+                        next_data['__resolving_item'] = payload['__resolving_item']
                     if snow_mana_spent:
                         next_data.setdefault("snow_mana_spent", snow_mana_spent)
                     remaining.append({**next_effect, "payload": next_data})

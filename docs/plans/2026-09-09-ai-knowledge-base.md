@@ -1,5 +1,93 @@
 # AI Quality + Knowledge Base Implementation Plan
 
+## October 16 Phase 1 Boundary Checkpoint
+
+Phase 1 remains open. The shared activation path now retains complete printed
+occurrence identity through engine, legal-offer and AI consumers, with one
+16-whole-module declaration passing 587 ordinary cases. The canonical fixture
+migrations and rules gaps exposed by them still need their combined acceptance;
+this component does not certify the entire backend or all card families.
+UI/browser qualification proceeds in parallel and is not Phase 1 signoff. See
+[RAW occurrence evidence](../testing/activated-raw-occurrence.md).
+
+A separate current-code prevention/replacement fixture migration passes both
+whole modules, 59 ordinary cases including real HTTP startup and persistence.
+All 43 original names and 155 assertions remain; eight named positive families
+now use complete official card data. This is not an aggregate full-suite result
+or a waiver for remaining noncanonical protocols. See
+[fixture evidence](../testing/prevention-replacement-canonical-fb531.md).
+
+## October 13 Combined Block And Runner Checkpoint
+
+One fresh 41-whole-module composition passes 775 ordinary cases (278.08s),
+with no failures, errors, skips or unexpected I/O denials. The two reproduced
+blocking defects now preserve recurring material and stop pricing unused offered
+mana creatures as selected blockers. Actual allocation legality uses the existing
+checked copied-state engine; coefficients and rules are unchanged.
+
+The BO3 runner now binds the complete measured backend separately from export
+provenance, reserves output before execution, invalidates game and pair quality
+on source drift, and advances independent scheduled series after a fully recorded
+per-series resource stop. Fatal source, action, evidence and global limits still
+stop the matrix. These runner controls are protocol tests, not 110 played series.
+
+A separate native Master comparison completed the reference three-game BO3,
+matched the first instrumented game exactly and matched the second accepted
+gameplay prefix before its 600-second series limit. The budgets were unequal,
+so full native parity is not established. Equal-budget two-seat games, the full
+seeded matrix, learned matchup data, sideboarding and measured A/B improvements
+remain required. See [combined evidence](../testing/ai-bo3-block-composed-current.md).
+
+## October 12 Data-Layer Checkpoint
+
+The subsequent cast-input migration now reads eligible persisted threat tiers
+in the existing deployment classifier and premium-removal priority slots.
+Current/prospective suppression, live pressure and engine target authority remain
+separate. Missing or context-unsafe advice preserves the original branch. One
+combined 31-whole-module declaration passes 607 ordinary cases, including the
+ordinary friendly-board regression; existing scoring coefficients are unchanged.
+This does not complete block-profile migration, final-choice improvement or the
+required seed/seat A/B benchmark. See
+[cast inputs](../testing/ai-profile-cast-inputs-current.md) and
+[combined evidence](../testing/ai-profile-cast-inputs-composed.md).
+
+The subsequent Task 2.3 component validates compact threat-estimate transport
+without making it a scoring or legality authority. Outcome-based combat goldens
+expose losing strong trample blocks and double-strike pruning in strong/master.
+The shared one-method correction and estimate transport pass one combined
+25-whole-module declaration of 487 ordinary cases. That checkpoint had not yet
+added numerical scoring inputs; the required before/after benchmark remains
+unfinished. See
+[blocking evidence](../testing/ai-outcome-based-trample-blocking.md) and
+[estimate transport](../testing/ai-profile-threat-transport-current.md).
+
+The Task2.1 derivation and opt-in corpus-sync path now have an actual six-module
+85-pass component qualification, plus10 separately passed subtests. Complete
+official data for all155 shipped names round-trips through the real repository;
+repeating profile generation updates zero rows. Canonical objects, provenance,
+unknown metadata and pending-rulings status are preserved. The profile schema
+labels versioned heuristic estimates and context-dependent answer routes, not
+rules permission or measured AI strength. See
+[derivation](../testing/knowledge-profiles-current-derivation.md) and
+[sync evidence](../testing/knowledge-profile-sync.md).
+
+Production AI now consumes validated match-frozen printed tags from persisted
+knowledge, with exact legacy fallback and anonymous per-decision trace usage.
+The composed15-whole-module component passes190 cases, including real repository
+hydration and the original seeded master head-to-head completing naturally.
+That checkpoint used printed tags, not numerical threat/play-value inputs. Full current
+pytest/hosted qualification, threat-aware scoring, learned matchups, deliberate
+sideboarding and the specified A/B improvements remain required; this checkpoint
+does not complete the plan. See
+[actual decisions and traces](../testing/ai-knowledge-repository-and-traces.md).
+
+The subsequent test/data-only shipped-corpus rulings component fetches155
+official lists: 443 rulings and35 verified empty lists. Seven whole modules
+pass89 ordinary cases with actual repository/cache ingestion, new-session
+reads and zero-update repetition; all existing profile tests are unchanged.
+This is not a live-database update or additional-user-deck coverage. See
+[rulings qualification](../testing/knowledge-rulings-shipped-corpus.md).
+
 ## September 27 implementation status
 
 The historical baseline below describes September 9 only. Canonical ingestion now supports all unique Scryfall Oracle cards via `scripts.sync_all_card_knowledge`, plus individual/corpus rulings verification via `scripts.sync_corpus_cards` and coverage reporting via `scripts.knowledge_gap_report`. The first local bulk import added 38,690 records, including 6,433 faces and 504 disambiguated same-name Oracle variants. Bulk metadata is not a gameplay-support certificate and does not include verified rulings until separately fetched. Successful empty ruling lists are valid; do not require every card to have published rulings. The existing AI does not yet consume persisted knowledge, and verified seed replacement, tactical profiles and sideboarding remain unfinished. See the current root `plan.md` for release priorities.
@@ -192,7 +280,7 @@ Expect: completes, 0 invalid targets.
 - Test: `backend/tests/test_ai_threat_blocking.py`
 
 **Step 1:** Failing tests:
-- Against a 7/7 with deathtouch, AI prefers blocking with its biggest creature even when a smaller creature "wins" on raw PT (threat_level 3 override).
+- Against a canonical 7/7 with deathtouch, compare legal checked combat outcomes rather than always prefer the biggest blocker. A legal surviving block must beat a losing line; effective first/double strike, trample and deathtouch removal determine which blocks survive or trade. The historical biggest-blocker criterion is superseded by independently checked canonical outcomes, not a blanket size override.
 - Removal spell scoring: with a threat_level 3 target in play, `destroy_target`-capable spells rank above value cards; with only threat_level 0/1 targets, they rank below.
 - A hexproof 4/4 is not targeted by `answerable_by`-destroy effects (existing target validation already enforces legality — this pins that AI *choosing* also avoids it pre-validation).
 **Step 2:** Implement using `knowledge.service.tags_for` + `threat_level`; keep existing search-based block logic, only change the *scoring inputs*.

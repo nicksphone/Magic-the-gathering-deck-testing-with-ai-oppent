@@ -1,5 +1,7 @@
+from tests.library_canonical_fixtures import canonical_card, canonicalize_basics, reprint
+from tests.controlled_basic_game_support import controlled_basic_game
 from ai.agent import AIAgent
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Zone
@@ -10,17 +12,16 @@ from rules_engine.engine import RulesEngine
 
 def _survey_state():
     deck = [{"quantity": 60, "card_name": "Mountain"}]
-    state = MatchFactory.from_decks(deck, deck, seed=823)
+    state = controlled_basic_game(deck, deck, seed=823)
+    canonicalize_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
-    payload = fallback_card_payload("Cartographer's Survey")
+    payload = seed_card_payload("Cartographer's Survey")
     assert payload is not None
-    survey = CardInstance(
-        "survey", payload["name"], 1, 1, Zone.STACK, ["Sorcery"],
-        mana_cost=payload["mana_cost"], oracle_text=payload["oracle_text"],
-    )
+    survey = canonical_card(payload["name"], id="survey", owner=1, controller=1, zone=Zone.STACK)
     state.cards[survey.id] = survey
     top = state.players[1].library[-7:]
+    reprint(state, top[-1], "Grizzly Bears")
     creature = state.cards[top[-1]]
     creature.name = "Grizzly Bears"
     creature.types = ["Creature"]

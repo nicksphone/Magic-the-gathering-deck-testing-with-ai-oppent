@@ -27,9 +27,22 @@ def gain_clause(line):
     """Return a bounded instruction; do not infer an unknown trigger condition."""
     match = GAIN_RE.fullmatch(line.strip())
     if not match:
-        return None
-    prefix, count, counter = (value.lower() for value in match.groups())
-    amount = int(count) if count.isdigit() else NUMBERS[count]
+        energy = re.fullmatch(r'(.+), you get ((?:\{E\}){1,64})'
+                              r'(?: \(([^()]*)\))?\s*\.?', line.strip(), re.I)
+        if energy is None:
+            return None
+        prefix, symbols, reminder = energy.groups()
+        prefix, amount, counter = prefix.lower(), len(symbols)//3, 'energy'
+        if reminder is not None:
+            count = re.fullmatch(r'(a|an|one|two|three|four|five|\d+) energy counters?', reminder, re.I)
+            if count is None:
+                return None
+            word = count[1].lower()
+            if (int(word) if word.isdigit() else NUMBERS[word]) != amount:
+                return None
+    else:
+        prefix, count, counter = (value.lower() for value in match.groups())
+        amount = int(count) if count.isdigit() else NUMBERS[count]
     if prefix == 'at the beginning of your end step, if a permanent you controlled left the battlefield this turn':
         return ('end_step_departure', amount, counter, None, None)
     if prefix == 'whenever another creature you control dies':
@@ -78,9 +91,14 @@ def gain_matches(state, source, event, payload, instruction):
 def gain_triggers(state, source, event, payload, oracle):
     if 'you get' not in oracle:
         return [], oracle
+    from rules_engine.oracle_text import without_reminder_text
+    raw_lines = (source.oracle_text or '').splitlines()
     triggers, remaining = [], []
     for line in oracle.splitlines():
-        instruction = gain_clause(line)
+        # The event surface has erased parentheses; recognition must use raw text.
+        candidates = {raw.strip() for raw in raw_lines
+                      if without_reminder_text(raw).strip().casefold() == line.strip().casefold()}
+        instruction = gain_clause(next(iter(candidates))) if len(candidates) == 1 else None
         if instruction is None:
             remaining.append(line)
             continue

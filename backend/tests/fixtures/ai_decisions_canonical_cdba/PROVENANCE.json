@@ -1,0 +1,723 @@
+{
+  "source": "Official Scryfall exact named endpoint",
+  "minimum_request_spacing_seconds": 0.25,
+  "full_raw_objects": true,
+  "oracle_modified": false,
+  "art_rulings_provider_sql_requests": 0,
+  "requests": [
+    {
+      "name": "Merfolk Looter",
+      "url": "https://api.scryfall.com/cards/named?exact=Merfolk+Looter",
+      "attempt": 1,
+      "request_start_utc": "2026-10-16T01:37:27.355921+00:00",
+      "response_end_utc": "2026-10-16T01:37:29.235837+00:00",
+      "request_start_monotonic": 447363.013369182,
+      "status": 200,
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 01:37:29 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"c896efbb4ed3088cce6f0c811c45d78f\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=sbpiZBbTSUB849a%2FgUz4ZUbrqUJvhlFez4UmF5JmpQo%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792114649\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=sbpiZBbTSUB849a%2FgUz4ZUbrqUJvhlFez4UmF5JmpQo%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792114649\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/afc/86/merfolk-looter?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/6/d/6d740928-bf61-4420-a403-63097538b97d.jpg?1783926224"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b356abbc47949b-LHR"
+        ]
+      ],
+      "body_sha256": "c896efbb4ed3088cce6f0c811c45d78f64a193a4e34c4a17625a2d055a4b4f62",
+      "bytes": 4985,
+      "complete_raw_response_preserved": true,
+      "attempt_file": "intake/merfolk-looter.attempt-1.body",
+      "file": "merfolk-looter-scryfall-raw.json",
+      "scryfall_id": "6d740928-bf61-4420-a403-63097538b97d",
+      "oracle_id": "67362406-b1ca-49e2-800d-9050bfe8742a"
+    },
+    {
+      "name": "Dream Trawler",
+      "url": "https://api.scryfall.com/cards/named?exact=Dream+Trawler",
+      "attempt": 1,
+      "request_start_utc": "2026-10-16T01:37:29.236256+00:00",
+      "response_end_utc": "2026-10-16T01:37:29.666458+00:00",
+      "request_start_monotonic": 447364.893697713,
+      "status": 200,
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 01:37:29 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"b8e6ac8d14c0de9f6053ec6ca803bd7a\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=sbpiZBbTSUB849a%2FgUz4ZUbrqUJvhlFez4UmF5JmpQo%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792114649\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=sbpiZBbTSUB849a%2FgUz4ZUbrqUJvhlFez4UmF5JmpQo%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792114649\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/thb/214/dream-trawler?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/7/d/7d3e97d8-92c7-43c4-bdaf-7b0a6ce7cb5f.jpg?1783931523"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b356adf9808a25-LHR"
+        ]
+      ],
+      "body_sha256": "b8e6ac8d14c0de9f6053ec6ca803bd7ae83f411f1396cc3c1b96493aaf32a07a",
+      "bytes": 5272,
+      "complete_raw_response_preserved": true,
+      "attempt_file": "intake/dream-trawler.attempt-1.body",
+      "file": "dream-trawler-scryfall-raw.json",
+      "scryfall_id": "7d3e97d8-92c7-43c4-bdaf-7b0a6ce7cb5f",
+      "oracle_id": "661b2159-4040-4a44-b182-46085416ebd9"
+    },
+    {
+      "name": "Runeclaw Bear",
+      "url": "https://api.scryfall.com/cards/named?exact=Runeclaw+Bear",
+      "attempt": 1,
+      "request_start_utc": "2026-10-16T01:37:29.666879+00:00",
+      "response_end_utc": "2026-10-16T01:37:30.182020+00:00",
+      "request_start_monotonic": 447365.324320477,
+      "status": 200,
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 01:37:30 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"f8b88dbd8f0ba783b974472488baf04d\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=kbp%2FXGDrNPgsgStIA%2FHQyusn2lBrysHdWm%2FsJ4%2F5HgA%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792114650\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=kbp%2FXGDrNPgsgStIA%2FHQyusn2lBrysHdWm%2FsJ4%2F5HgA%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792114650\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "MISS"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/m15/197/runeclaw-bear?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/d/1/d1995238-79cc-4381-9595-71ef11ea1e36.jpg?1783939162"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "MISS"
+        ],
+        [
+          "CF-RAY",
+          "a4b356b0aefa4e3b-LHR"
+        ]
+      ],
+      "body_sha256": "f8b88dbd8f0ba783b974472488baf04d04753772a8d6e196eab470b192cce29e",
+      "bytes": 5037,
+      "complete_raw_response_preserved": true,
+      "attempt_file": "intake/runeclaw-bear.attempt-1.body",
+      "file": "runeclaw-bear-scryfall-raw.json",
+      "scryfall_id": "d1995238-79cc-4381-9595-71ef11ea1e36",
+      "oracle_id": "ec49dfcf-d16d-4621-af4b-4a6f09043221"
+    },
+    {
+      "name": "Rhystic Study",
+      "url": "https://api.scryfall.com/cards/named?exact=Rhystic+Study",
+      "attempt": 1,
+      "request_start_utc": "2026-10-16T01:37:30.182397+00:00",
+      "response_end_utc": "2026-10-16T01:37:30.270259+00:00",
+      "request_start_monotonic": 447365.839838418,
+      "status": 200,
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 01:37:30 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"fd71db57f2d28040ab3c64b949422e8e\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=R86aeNiLsAwYXNrM3O3EdgUFj6VkFpZe74CXFU%2Bs%2BlE%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1792101309\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=R86aeNiLsAwYXNrM3O3EdgUFj6VkFpZe74CXFU%2Bs%2BlE%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1792101309\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "HIT"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/j22/114/rhystic-study?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/9/f/9f37c5b6-a59c-45cd-9a99-e9357fe9ea1b.jpg?1783919146"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "HIT"
+        ],
+        [
+          "CF-RAY",
+          "a4b356b3ed9c6407-LHR"
+        ]
+      ],
+      "body_sha256": "fd71db57f2d28040ab3c64b949422e8edda5a6f92d9790160043f5c81473e85d",
+      "bytes": 5501,
+      "complete_raw_response_preserved": true,
+      "attempt_file": "intake/rhystic-study.attempt-1.body",
+      "file": "rhystic-study-scryfall-raw.json",
+      "scryfall_id": "9f37c5b6-a59c-45cd-9a99-e9357fe9ea1b",
+      "oracle_id": "53236dd7-845a-444c-96d5-f41ed7325d8f"
+    },
+    {
+      "name": "Explore",
+      "url": "https://api.scryfall.com/cards/named?exact=Explore",
+      "attempt": 1,
+      "request_start_utc": "2026-10-16T01:37:30.432487+00:00",
+      "response_end_utc": "2026-10-16T01:37:30.502000+00:00",
+      "request_start_monotonic": 447366.089941537,
+      "status": 200,
+      "response_headers": [
+        [
+          "Date",
+          "Fri, 16 Oct 2026 01:37:30 GMT"
+        ],
+        [
+          "Content-Type",
+          "application/json; charset=utf-8"
+        ],
+        [
+          "Transfer-Encoding",
+          "chunked"
+        ],
+        [
+          "Connection",
+          "close"
+        ],
+        [
+          "access-control-allow-headers",
+          "Accept, Accept-Charset, Accept-Language, Authorization, Cache-Control, Content-Language, Content-Type, DNT, Host, If-Modified-Since, Keep-Alive, Origin, Referer, User-Agent, X-Requested-With"
+        ],
+        [
+          "access-control-allow-methods",
+          "GET, POST, DELETE, OPTIONS"
+        ],
+        [
+          "access-control-allow-origin",
+          "*"
+        ],
+        [
+          "access-control-max-age",
+          "300"
+        ],
+        [
+          "Cache-Control",
+          "public, max-age=172800"
+        ],
+        [
+          "content-disposition",
+          "inline"
+        ],
+        [
+          "content-transfer-encoding",
+          "binary"
+        ],
+        [
+          "etag",
+          "W/\"eecf27130f92e54ca15fbc8931daee4d\""
+        ],
+        [
+          "nel",
+          "{\"report_to\":\"heroku-nel\",\"response_headers\":[\"Via\"],\"max_age\":3600,\"success_fraction\":0.01,\"failure_fraction\":0.1}"
+        ],
+        [
+          "referrer-policy",
+          "strict-origin-when-cross-origin"
+        ],
+        [
+          "report-to",
+          "{\"group\":\"heroku-nel\",\"endpoints\":[{\"url\":\"https://nel.heroku.com/reports?s=NvtcjT%2BHzFXfbnR8m9620iU7M6AsS8XYoGrg3jvxJxA%3D\\u0026sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6\\u0026ts=1791996386\"}],\"max_age\":3600}"
+        ],
+        [
+          "reporting-endpoints",
+          "heroku-nel=\"https://nel.heroku.com/reports?s=NvtcjT%2BHzFXfbnR8m9620iU7M6AsS8XYoGrg3jvxJxA%3D&sid=929419e7-33ea-4e2f-85f0-7d8b7cd5cbd6&ts=1791996386\""
+        ],
+        [
+          "Server",
+          "cloudflare"
+        ],
+        [
+          "strict-transport-security",
+          "max-age=31536000; includeSubDomains; preload"
+        ],
+        [
+          "vary",
+          "Accept,Accept-Encoding"
+        ],
+        [
+          "via",
+          "2.0 heroku-router"
+        ],
+        [
+          "x-action-cache",
+          "HIT"
+        ],
+        [
+          "x-content-type-options",
+          "nosniff"
+        ],
+        [
+          "x-download-options",
+          "noopen"
+        ],
+        [
+          "x-frame-options",
+          "DENY"
+        ],
+        [
+          "x-permitted-cross-domain-policies",
+          "none"
+        ],
+        [
+          "x-robots-tag",
+          "none"
+        ],
+        [
+          "x-scryfall-card",
+          "https://scryfall.com/card/tle/259/explore?utm_source=api"
+        ],
+        [
+          "x-scryfall-card-image",
+          "https://cards.scryfall.io/large/front/a/b/ab9dbf0b-2c1d-463c-b675-ff711c282e56.jpg?1783904770"
+        ],
+        [
+          "x-xss-protection",
+          "1; mode=block"
+        ],
+        [
+          "cf-cache-status",
+          "HIT"
+        ],
+        [
+          "Age",
+          "118263"
+        ],
+        [
+          "CF-RAY",
+          "a4b356b57b371e12-LHR"
+        ]
+      ],
+      "body_sha256": "eecf27130f92e54ca15fbc8931daee4db1f801905fa8dd0560cd5008f8d512c0",
+      "bytes": 5139,
+      "complete_raw_response_preserved": true,
+      "attempt_file": "intake/explore.attempt-1.body",
+      "file": "explore-scryfall-raw.json",
+      "scryfall_id": "ab9dbf0b-2c1d-463c-b675-ff711c282e56",
+      "oracle_id": "b8f566ea-8283-4afa-9ac8-737e26419283"
+    }
+  ]
+}

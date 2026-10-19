@@ -1,0 +1,18 @@
+{
+  "actual_intake_results_sha256": "1268e753db4a1814caf7d3afc086ee38c74c1dbfa511ff7689fd6f2e8c6cf25d",
+  "actual_request_count": 8,
+  "base": "022758e64debeeab8b8e698cce2cd76d35ba82d5",
+  "full_mixed_http_module_executed": false,
+  "minimum_request_start_spacing_seconds": 0.3,
+  "network_after_offline_guard": false,
+  "scope": "23 full official printed objects;8 actual exact-name requests +15 immutable-source reuse, no Oracle modifications",
+  "sources_sha256": "7490f45d3924dcdf8362e69e6cf74eb81a8cfbcbc8c6ab887bfc7ce2f166a618",
+  "synthetic_labels_unwaived": [
+    "Bear",
+    "Soldier",
+    "Field Anthem",
+    "Large",
+    "Small",
+    "Blocker"
+  ]
+}

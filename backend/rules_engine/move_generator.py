@@ -17,7 +17,7 @@ from rules_engine.graveyard_permissions import graveyard_land_permission, battle
 from rules_engine.mana import can_pay_with_pool_and_lands, hybrid_payment_symbols
 from rules_engine.oracle_effects import extract_activated_abilities, extract_loyalty_abilities
 from rules_engine.library_permissions import top_library_creature_for_type
-from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing, split_second_active
+from rules_engine.restrictions import card_cant_attack, can_activate_in_current_timing, can_cast_in_current_timing, split_second_active, has_global_flash_permission
 from rules_engine.zone_actions import is_departed_token
 
 
@@ -33,7 +33,7 @@ def _land_moves(state: MatchState, player_id: int, card, move: dict) -> list[dic
     return moves
 
 
-def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
+def _cost_option_view(option, state=None, player_id=None, card_id=None, *, cast_card=None) -> dict:
     view = {
         "id": option.id,
         "label": option.label,
@@ -57,9 +57,15 @@ def _cost_option_view(option, state=None, player_id=None, card_id=None) -> dict:
     if state is not None and (option.discard_cards or option.sacrifice_creatures or option.discard_x or option.discard_all or option.sacrifice_all):
         from rules_engine.costs import additional_cost_candidates
         view.update(additional_cost_candidates(state, player_id, card_id, option))
+    if option.hand_exile_color:
+        view['hand_exile_color'] = option.hand_exile_color
+        view['hand_exile_generic_reduction'] = option.hand_exile_generic_reduction
+        if state is not None:
+            from rules_engine.costs import additional_cost_candidates
+            view.update(additional_cost_candidates(state, player_id, card_id, option))
     if state is not None:
         from rules_engine.kicker import kicker_surfaces
-        card = state.cards[card_id]
+        card = cast_card if cast_card is not None else state.cards[card_id]
         from rules_engine.casting_resources import resource_keywords, resource_candidates
         if resource_keywords(card):
             view['resource_payment_candidates'] = resource_candidates(state, player_id, card)
@@ -76,15 +82,40 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         pending = state.pending_mechanic_choice
         if pending['player_id'] != player_id:
             return []
+        if pending['kind'] == 'entry_copy':
+            from rules_engine.entry_copy import choice_view
+            return [{'type': 'choose_mechanic', **choice_view(pending, actor=True)}]
+        if pending['kind'] in {'loyalty_cards', 'loyalty_attachment'}:
+            from rules_engine.loyalty_instructions import choice_view
+            return [{'type': 'choose_mechanic', **choice_view(pending, actor=True, state=state)}]
+        if pending['kind'] == 'note_creature_type':
+            from rules_engine.next_creature_entry_trigger import note_view
+            return [note_view(pending)]
         if pending['kind'] == 'effect_cast':
             from rules_engine.effect_casts import cast_moves
             return cast_moves(state, player_id)
         if pending['kind'] == 'suspend_cast':
             from rules_engine.suspend import cast_moves
             return cast_moves(state, player_id)
+        if pending['kind'] == 'exchange_energy_payment':
+            from rules_engine.exchange_energy import public_choice
+            return [{'type': 'choose_mechanic', **public_choice(pending)}]
+        if pending['kind'] == 'entry_mode':
+            from rules_engine.modal_entry import view
+            return [{'type': 'choose_mechanic', **view(pending)}]
         labels = {cid: state.cards[cid].name if cid in state.cards else (pending.get("option_labels") or {}).get(cid, "Draw normally") for cid in pending.get("options", [])}
         type_lines = {cid: state.cards[cid].type_line or " ".join(effective_types(state, state.cards[cid]))
                       for cid in pending.get("options", []) if cid in state.cards}
+        if pending['kind'] == 'discard':
+            from rules_engine.optional_reveal import public_choice
+            return [{'type': 'choose_mechanic', **public_choice(pending),
+                     'options': list(pending['options']), 'option_labels': labels,
+                     'option_type_lines': type_lines}]
+        if pending['kind'] == 'hand_top_order':
+            return [{'type': 'choose_mechanic', 'kind': pending['kind'],
+                     'player_id': player_id, 'options': list(pending['options']),
+                     'count': pending['count'], 'label': pending['label'],
+                     'option_labels': labels, 'option_type_lines': type_lines}]
         if pending["kind"] == "each_player_discard":
             return [{"type": "choose_mechanic", "kind": pending["kind"], "player_id": player_id,
                      "options": list(pending["options"]), "count": pending["count"],
@@ -102,9 +133,14 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
         if int(pending_order.get("current_controller", -1)) != player_id:
             return []
         if pending_order.get("phase") == "optional":
+            item = next((item for item in state.stack if item.id == pending_order['current_stack_id']), None)
+            choices = (True, False)
+            if item is not None and item.payload.get('__optional_payment_cost'):
+                from rules_engine.paid_triggers import can_pay_optional
+                choices = (True, False) if can_pay_optional(state, item) else (False,)
             return [
                 {"type": "choose_optional_effect", "stack_id": pending_order["current_stack_id"], "accept": accept}
-                for accept in (True, False)
+                for accept in choices
             ]
         if pending_order.get("phase") == "targets":
             from rules_engine.events import trigger_target_options
@@ -389,11 +425,14 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 }
             )
 
-    # Planeswalker loyalty abilities: sorcery speed, once per planeswalker each turn.
-    if state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN} and state.active_player == player_id and not state.stack:
+    # Timing grants do not change the once-per-planeswalker-per-turn limit.
+    from rules_engine.loyalty_timing import can_activate_loyalty_in_current_timing
+    if not split_second_active(state):
         for cid in player.battlefield:
             card = state.cards[cid]
             if "Planeswalker" not in effective_types(state, card):
+                continue
+            if not can_activate_loyalty_in_current_timing(state, card, player_id):
                 continue
             if printed_abilities_suppressed(state, cid):
                 continue
@@ -413,7 +452,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                 if next_loyalty > (card.loyalty or 0) and counter_placement_forbidden(state, 'loyalty', target_card_id=cid):
                     continue
                 hints_card = type("LoyaltyOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
-                hints = build_cast_hints(state, hints_card, player_id)
+                hints = build_cast_hints(state, hints_card, player_id, source_kind="activated")
                 if not has_available_targets_for_action(hints):
                     continue
                 if ability.get("x_cost"):
@@ -433,9 +472,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     }
                 )
 
-    # Source-bound discard abilities activate from hand; other supported forms from battlefield.
+    # Explicit self returns activate from the owner's graveyard.
     from rules_engine.oracle_effects import activation_source_eligible
-    for cid in [*player.battlefield, *player.hand]:
+    for cid in [*player.battlefield, *player.hand, *player.graveyard]:
         card = state.cards[cid]
         if printed_abilities_suppressed(state, cid):
             continue
@@ -449,10 +488,10 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if (not parsed_cost.supported or not activated_cost_available(
                     state, player_id, cid, cost, restricted_x_color=restricted_x_color(ability["text"]), ability_index=ability['index'])):
                 continue
-            proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["text"], "mana_cost": "", "name": card.name})()
+            proxy = type("ActivatedOracleProxy", (), {"id": cid, "oracle_text": ability["raw_effect_text"], "mana_cost": "", "name": card.name})()
             if build_ability_spec(state, proxy, player_id, report_unsupported=False).effect.key == "noop":
                 continue
-            hints = build_cast_hints(state, proxy, player_id)
+            hints = build_cast_hints(state, proxy, player_id, source_kind="activated")
             if not has_available_targets_for_action(hints):
                 continue
             if "{X}" in parsed_cost.mana_cost:
@@ -488,7 +527,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
             if not is_equipment(card):
                 continue
             targets = [target for target in own_creatures if attachment_target_is_legal(state, card, target)
-                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target}, card)[0]
+                       and validate_hexproof_shroud_targets(state, player_id, {"target_card_id": target}, card, source_kind="activated")[0]
                        and can_pay_with_pool_and_lands(state, player_id, equip_cost,
                            payment_kind="activation", payment_types=set(effective_types(state, card)), ability_kind="equip",
                            source_card_id=cid, target_card_id=target)]
@@ -568,7 +607,7 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                           "selected_face_index": index, "mana_cost": face.mana_cost,
                           "from_exile": original.zone == Zone.EXILE,
                           "from_graveyard": original.zone == Zone.GRAVEYARD,
-                          "cost_options": [vars(option) for option in options], "target_hints": hints})
+                          "cost_options": [_cost_option_view(option, state, player_id, cid, cast_card=face) for option in options], "target_hints": hints})
     from rules_engine.bestow import bestow_cost, bestow_cast_view
     for cid in list(player.hand) + list(player.graveyard) + exile_candidates(state, player_id):
         original = state.cards[cid]
@@ -592,7 +631,9 @@ def legal_moves(state: MatchState, player_id: int) -> list[dict]:
                     'from_graveyard': original.zone == Zone.GRAVEYARD,
                     **({'selected_face_index': index} if original.card_faces else {}),
                     'cost_options': [_cost_option_view(option, state, player_id, cid) for option in options], 'target_hints': hints})
-    return moves
+    from rules_engine.ability_model import unsupported_spell_reason
+    return [move for move in moves if move['type'] != 'cast_spell'
+            or not unsupported_spell_reason(state.cards[move['card_id']], move)]
 
 
 def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:
@@ -602,7 +643,7 @@ def _can_cast_spell(state: MatchState, card, player_id: int) -> bool:
         return True
     if has_keyword(state, card.id, "flash"):
         return True
-    return False
+    return has_global_flash_permission(state, player_id)
 
 
 def _extract_equip_cost(oracle_text: str) -> str:

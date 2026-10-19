@@ -182,7 +182,7 @@ def test_real_spell_instruction_order_and_snapshot_continuation(name, draw_befor
 @pytest.mark.parametrize('name,event,payload', [
     ('Thrummingbird', 'combat_damage_dealt', {'source_card_id': 'SOURCE', 'target_player': 2, 'amount': 1}),
     ('Evolution Sage', 'enters_battlefield', {'card_id': 'LAND', 'controller': 1}),
-    ('Inexorable Tide', 'spell_cast', {'card_id': 'SPELL', 'controller': 1}),
+    ('Inexorable Tide', 'spell_cast', {'card_id': 'SPELL', 'source_card_id': 'SPELL', 'controller': 1}),
 ])
 def test_canonical_trigger_families(name, event, payload):
     state = clean()

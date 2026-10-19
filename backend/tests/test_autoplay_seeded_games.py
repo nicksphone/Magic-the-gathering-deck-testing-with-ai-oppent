@@ -16,8 +16,7 @@ from training.environment import _deck
 def test_seeded_strong_ai_game_accepts_complete_actions(game, names, reverse):
     client, match = game
     decks = [_deck(name) for name in (names[::-1] if reverse else names)]
-    state = MatchFactory.from_decks(*decks, seed=6105 + int(reverse))
-    state.id = match.state.id
+    state = MatchFactory.from_decks(*decks, seed=6105 + int(reverse), game_id=match.state.id)
     match.state = state
     match.controllers = {1: "ai", 2: "ai"}
     match.mode = "ai_vs_ai"

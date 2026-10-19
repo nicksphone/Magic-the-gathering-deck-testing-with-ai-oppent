@@ -1,0 +1,11 @@
+{
+  "facts_modified": false,
+  "files_sha256": {
+    "canonical.jsonl": "ae208bc9f7cbf302c2d12760ecc41956075839b2bf14add93ebf5656283b7620",
+    "reviewed_admission.json": "5327757c8ca8fc9e3be2b0cddcfeb53de8a42688c074e502d01cde4f8facee5b",
+    "seed_before.json": "257e0276f8c4f4526dbabddd662a2cb1c2098295085b348441a09b0334b0c1d4"
+  },
+  "source_bulk": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "source_commit": "c16ea8dde513c32477f8463e2a008f518d6fa4b7"
+}

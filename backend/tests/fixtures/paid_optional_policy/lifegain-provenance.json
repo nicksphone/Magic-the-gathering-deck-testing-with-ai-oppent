@@ -1,0 +1,19 @@
+{
+  "canonical_jsonl_sha256": "d2dd9fcaf6f96871eed697a26fee58164ce1f9b80e06b84752bb451fe37164d9",
+  "facts_modified": false,
+  "http_requests": 0,
+  "rows": {
+    "Plains": {
+      "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+      "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+      "raw_sha256": "96d267598e275ed64ad08a1390234dfc87cc50a29e14778c48d874b7344941b5"
+    },
+    "Whitesun's Passage": {
+      "id": "a74d1bf3-4630-4be0-af5f-590789d27a0c",
+      "oracle_id": "df702285-3577-47cc-aa1e-868921cdf6f2",
+      "raw_sha256": "01fd608dcffae949b3dd0de918a733a60371669ea52846053864395cb3de4add"
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13"
+}

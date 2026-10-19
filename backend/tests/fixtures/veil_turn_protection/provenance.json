@@ -1,0 +1,20 @@
+[
+  {
+    "file": "thoughtseize.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Thoughtseize",
+    "sha256": "6edbf4daf732ace889ef435c5de77706440689bab84e17fce3a903eff4c18adb",
+    "name": "Thoughtseize",
+    "start_utc": "2026-10-08T02:22:15Z",
+    "end_utc": "2026-10-08T02:22:16Z",
+    "header_file": "thoughtseize.headers"
+  },
+  {
+    "file": "fatal-push.json",
+    "url": "https://api.scryfall.com/cards/named?exact=Fatal%20Push",
+    "sha256": "433501eb50c880dc91f8946aa609bb9988d91cf1f0a2527df058f9a886e89bdb",
+    "name": "Fatal Push",
+    "start_utc": "2026-10-08T02:22:16Z",
+    "end_utc": "2026-10-08T02:22:17Z",
+    "header_file": "fatal-push.headers"
+  }
+]

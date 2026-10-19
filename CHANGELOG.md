@@ -1,5 +1,467 @@
 # Changelog
 
+## Canonical Bounce And Life-Cost Acceptance - 2026-10-17
+
+- Replace affected real-card bounce/stack and life-cost fixtures with complete
+  official inputs and genuine factory capture. Retain all original 24 functions,
+  83 assertions, actions and resources; strengthen the independent selected-face
+  oracle without changing production code.
+- Pass one exact 56-whole-module, 1,973-case declaration retaining all prior
+  1,831 identities. All 5,919 phases pass, wrapper exit 0; permissions, game/AI
+  budgets and original denial controls remain unchanged.
+- Verify full source/runtime preservation and physical owned-resource closure.
+  Earlier failed ledgers remain immutable. Remaining fixtures, mana human-choice
+  continuation, complete backend CI and Phase 1 are not declared complete.
+
+## Bound Baseline Comparison - 2026-10-17
+
+- Add opt-in report comparison with explicit fixed-game schedules, controlled
+  data/source identities, consistent Oracle summaries and strict metric checks.
+  Preserve original report construction, CLI behavior and original test bytes.
+- Pass all 155 ordinary cases in both whole modules, including the genuine
+  original CLI subprocess; retain the earlier denied-child and admission-defect
+  ledgers. Verify source/runtime preservation and owned-resource closure.
+- Treat receipts as declarations requiring authentic producer evidence, not
+  proof of gameplay or AI improvement. Real matched measurements, remaining
+  canonical fixtures, full backend acceptance and Phase 1 remain open.
+
+## Canonical AI And Domain Acceptance - 2026-10-17
+
+- Replace affected AI information/draw and domain positive fixtures with complete
+  official inputs and genuine factory capture, retaining original actions,
+  resources, seeds, budgets and assertion ASTs. No production code changes.
+- Pass the exact disjoint 1,831-case, 50-whole-module composition with all 5,493
+  phases passing and wrapper exit 0. Preserve native denial of all links while
+  recognizing only four verified pytest callbacks as expected denials; original
+  SQL roles and six negative probes remain unchanged.
+- Verify complete source/runtime preservation, zero connection repairs and
+  physical owned-resource closure. Earlier failed ledgers remain unchanged;
+  protected backend, browser recovery, literal fixture scope and Phase 1 remain
+  open rather than being inferred from this passing component.
+
+## Canonical Copy-Entry Integration - 2026-10-16
+
+- Replace partial AI allocation fixtures with full canonical facts and native
+  entry-counter preparation. Phantom Nishoba retains printed 0/0 and reaches
+  its intended effective 7/7 through seven counters; all 14 cases pass without
+  changing AI policy or the original allocation assertions.
+- Use the canonical materializer in the read-ahead browser fixture rather than
+  a flattened-row adapter that requires creature-only fields. The original
+  branch and core-entry declaration passes 25 cases; full browser CI remains
+  required. Hosted Chrome now passes the preceding lost/held response scenarios.
+- Intercept accepted browser recovery responses directly, preserving application
+  behavior and existing recovery assertions. Four whole protocol modules pass
+  129 cases; native-browser acceptance is still required.
+- Replace three partial activation fixtures with complete canonical records,
+  preserving all original assertions. Both whole modules pass ten cases;
+  unsupported Oona activation remains explicitly rejected.
+- Fix the ordered-target test bridge's synchronous output overflow without
+  dropping full replay snapshots or assertions. A fresh coupled frontend
+  test/build/lint declaration passes against the corrected backend; the separate
+  browser response-drop failure is not claimed fixed.
+- Retain printed/copied characteristics and positional-constructor compatibility;
+  carry deliberate copy-entry choices through supported physical, copied-spell
+  and loyalty-return routes with once-only detached-token allocation. Reject
+  typed-reference aliases before entry commits. The combined 67-whole-module
+  declaration passes all 1,837 ordinary cases in 506.04s; original failures and
+  intermediate review holds remain archived rather than relabeled.
+- Add human copy-selection/decline controls and executable-choice AI selection
+  without changing public options or ranking weights. Real paid HTTP entry and
+  SQLite restoration pass all 16 cases; full frontend tests, build and lint pass.
+  Copied Auras, physical-browser acceptance, Phase 1 and release remain open.
+- Replace further shortened counter fixtures with complete official card data
+  and provenance; keep original test identities, assertions and runtime defaults.
+- Migrate two draw-fixture families without production changes; five whole
+  modules separately pass 28 checks in 4.35s on the corrected backend. This is
+  not folded into the earlier 1,837-case execution.
+
+## Backend Composition - 2026-10-07
+
+- Compose retained Ray announcing/resolving frames, copied-spell controller
+  fidelity and counterable control-loss taps. Current gates: 199 pure passes;
+  17 whole isolated-SQL modules / 322 passes; 12 dedicated HTTP passes. Preserve
+  earlier IO-guard/setup ledgers and first-cleanup timing witnesses. Explicitly
+  close shared test snapshot readers; no gameplay assertion changes. Original
+  Ray149 remains on hold; no full browser/server-restart/control-layer claim.
+
+- Align sourced, complete fixed-cost Suspend surfaces with bounded runtime
+  admission. Four whole current modules pass 136 checks in 10.01s; unknown/variable
+  bodies, legacy context-free callers and independent warnings remain conservative.
+- Qualify temporary characteristics on an exact current source-only HTTP copy:
+  40 passes in 76.59s, including eight cold-process continuations and actual
+  native-turn mana activation. Preserve the earlier readiness-expectation failures;
+  no production serializer change or forced readiness flags.
+
+- Add actual paid Growth Spiral responses to Searing Blaze, both seats with
+  deliberate own/opponent land selection or decline. Four complete current
+  modules pass 146 checks with isolated local SQLite. No production or preflight
+  flags changed; early resolver-pause and database-guard harness ledgers remain.
+
+- Compose complete temporary creature-characteristic instructions and the
+  effective nonland subtype-publication seam. Seven whole current modules pass
+  232 checks in 39.71s; original 42 desired cases are unchanged. HTTP remains
+  unqualified. A trailing blank in a new test was removed with AST equality;
+  frozen artifacts and canonical data stay unchanged.
+- One normal actual-App game attempt stops at support preflight before match
+  creation. Soul-Scar Mage, Rift Bolt and Searing Blaze identify the next corpus
+  audits; no bypass, forced game or natural full-game success is claimed.
+- Admit canonical intrinsic-mana dual lands in the conservative combat leaf
+  without changing weights, search depth or private-information access.
+  Current pure cohorts: 225 passes; then 276 passes / 40 retained graveyard
+  decision failures across 316 cases. An earlier missing-record-path attempt
+  is preserved separately, not classified as gameplay failures.
+- Add explicit journal-based seed/ledger recovery after interrupted publication.
+  Ten whole modules pass 245 checks, including real SIGKILL/restart CLI cases
+  and unchanged full155/prior17 metadata contracts. This is recoverability,
+  not atomic two-file visibility or power-loss durability certification.
+
+## Unreleased Backend Composition - 2026-10-06
+
+- Subsequent 2026-10-07 shape-validation increment rejects malformed recognized
+  announcement containers/card-ID leaves through the shared reference helper.
+  Seven whole pure modules pass 166 checks in 45.11s; original 40 desired
+  rejection cases pass unchanged. The original 12 HTTP rejection cases also
+  pass in 8.38s with full root/controller/SQLite equality and cold restores.
+
+- On the prior frozen published checkpoint, existing browser human-action
+  flows pass 81 checkpoints; App recovery passes four and actual backend
+  stop/restart verification passes one. These are fixture/consumer flows,
+  not complete natural human games or expert-AI certification.
+
+- Compose complete nontoken-permanent Flicker admission with announced-target
+  identity, animation, entry choices and color queries. Current whole30 gate:
+  692 passed / 38 failed, 194 warnings, 201.38s; no errors/skips. All 78 new
+  Flicker and all 62 Favor lifecycle/HTTP/clause checks pass. Retained failures:
+  24 Ray admission, 2 scheduler fixtures, 4 stale empty-pool expectations,
+  4 explicit old exile-only characterizations and 4 Ghostly Flicker cases.
+  Frontend unit, lint and build pass; browser/restart qualification remains open.
+
+- Compose announced card-target references across casts, generic activations,
+  resolution and supported copy/retarget seams. Current pure gates: 56 passes
+  for Favor clauses/copies; 36 passes and 12 unchanged Ray of Command failures
+  for helpers, graveyard targets and the external temporary-control audit.
+  Four original Favor blink and two Act blink failures close unchanged.
+  Current HTTP/browser and broad-neighbor qualification remain outstanding.
+
+- Forward current state to static color predicates and convoke color queries;
+  three complete modules pass 85 pure checks, 5.75s. Existing canonical gameplay
+  positives prove compatibility, not a newly demonstrated prior gameplay bug.
+
+- Compose supported source-bound land animations with actual layers, payment,
+  sickness and cleanup. Four real Cloudshift/reentry cases pass; original
+  animation ledgers retain unsupported Flicker families and stale self-payment
+  characterizations. No card-name dispatch or printed-data overwrite.
+- Compose the conservative checked-combat leaf with engine animation support:
+  64 focused decision cases pass, including two previously blocked Mutavault
+  attacks. This is not a measured natural-match improvement or broad AI claim.
+  Twenty-six whole layer/payment/AI neighbors pass 1011 checks in 108.79s.
+
+- Compose supported immediate exile/return, independent search/counter clauses
+  and pre-cost source references. Thirty whole modules: 854 passes and 12
+  strict failures (eight temporary-control, four announced target-incarnation).
+  Preserve these failures and fix shared targeting rather than the card name.
+- Preserve full 155-record seed metadata and the 17-fact ledger through real
+  idempotent CLI exports; eight whole modules pass 194 tests. Retain historical
+  119 fixtures; adapt only the global-current-seed count expectations.
+- Complete separate seat-swapped before/after tactical AI replay. All 2610
+  normalized recorded actions are identical, with the same turn-22/25 outcomes.
+  No natural strength improvement; resource-exhaustion runs remain separate.
+
+- Retain actual generic activation source incarnation before costs and reuse it
+  in supported shuffle receipts after source movement. Current 13-whole-module
+  gate: 469 passes and 16 strict pre-existing Cloudshift/Ray failures, 107.18s;
+  all eight paid-bounce witnesses now pass. Preserve the initial run's separate
+  SQLite-full setup error. This is scoped lifecycle support, not complete blink,
+  temporary control or all dedicated activation paths.
+
+- Preserve historical catalog identity and distinguish event lists from
+  archetype templates. Add sourced MH3 historical imports and 36 full canonical
+  records without changing original 119 seed properties. Current-format admission
+  remains explicitly unsupported. Current composition: 501 affected tests,
+  437 neighboring tests, two-process HTTP/restart checks and frontend
+  test/lint/build pass. Preserve the initial 500-pass/one SQLite-full setup-error
+  ledger separately; no gameplay or AI-strength conclusion follows from metadata.
+
+- Compose fixed source counter costs, complete targeted basic-land searches,
+  original-controller/private-choice continuations and genuine shuffle frames.
+  Redact internal search packets from public views. Twenty-two whole modules
+  pass 749 cases in 85.34s; ten previous-feature cross-family modules pass
+  293 in 56.61s. Frontend tests, lint and build pass. Preserve the initial
+  737-pass/12-fail ledger (obsolete Fertilid rejection and omitted isolated-root
+  test setting); upgrade only that obsolete HTTP branch to paid, selected,
+  restart-preserved execution. No worker archive or desired search assertion
+  was weakened.
+
+- Admit supported generic nontoken entry observers and unconditional global
+  as-though-flash permissions; retain controller, suppression, costs, priority
+  and casting restrictions. Correct seat-alternating batch hand-quality metrics.
+  Ten whole modules pass 293 checks in 60.41s. Upgrade the former unsupported
+  Leyline recast characterization to real paid recast/source-incarnation checks;
+  protect existing disposable root databases in the isolated API fixture.
+  Historical failures and setup errors remain archived separately.
+
+- Replace the 2,000-line finish-plan timeline with an actionable execution index.
+  Preserve the entire previous plan under docs/history, including historical
+  failures and evidence. Keep all original rules, AI and release goals open.
+
+- Qualify eight unchanged Scout/Atlas supplement cases on the shared source:
+  bare availability and actual paid HTTP casting, cold restart, immediate sick
+  tap rejection and unchanged state/SQLite. Eight passes in 18.78s; no new
+  production logic or expanded haste/type-changing coverage claim.
+
+- Compose supported private optional hand-land choices and paid optional trigger
+  costs, including checked decline, deliberate identity selection and restart.
+  Expose the hand-land choice in the existing GUI with mandatory/optional count
+  handling. Keep original failed setup and prior-source ledgers separate.
+- Restore complete printed self-pump cast/copy instructions without the former
+  blanket +1/+1 fallback; retain source incarnation through response and cleanup.
+  Add generic printed ramp-role recognition for hand-land deployment, shared by
+  runtime AI and canonical metadata. Combined acceptance: 800 passes across 27
+  complete backend modules in 390.20s; frontend tests, lint and build pass.
+  Preserve the earlier failed harness and role-classification ledgers separately.
+
+- Enforce summoning sickness and effective haste for shared creature self-tap
+  activation costs. Eight complete affected modules pass all 277 cases. A
+  separate canonical Scout/Atlas composition with the optional-land validator
+  hook passes all 48 unchanged tests, including actual paid casts and HTTP
+  restart. This does not deploy or certify the broader optional-land feature.
+
+- Compile complete unconditional self-trigger draw/life-draw instructions through
+  shared handlers, preserving earlier routing and genuine source/controller.
+  Shared-source 79-module gate: 2,175 passes / four known extra-land failures;
+  no skipped/expected failures. Correct the stale Ulamog single-resolution test
+  separately, retaining actual graveyard-shuffle then cast-trigger outcomes.
+
+- Shared-source counter/target acceptance: 522 passes; validate fixed source
+  +1/+1 counter costs and keep spell mana costs out of ability target hints
+  while preserving genuine ability X values and actual source/LKI protection.
+- Shared-source seed/hydration acceptance: 437 passes; populate all sixteen face
+  colors with ten canonical and six provenance-backed derived facts, preserve
+  all 119 seed rows, and recover missing loyalty by exact canonical printing.
+  The separate mock-media fixture adaptation preserves every original assertion.
+
+- Unpromoted integration: require exact current legend context plus an explicit
+  keeper, and use selected casting faces for AI valuation and interaction
+  reservation. Combined scoped validation: 113 passes / four existing
+  extra-land failures; not a release or expert-level AI certification.
+
+- Route the corpus reporter through shared read-only hydration and runtime card
+  construction. Retain canonical local knowledge and card faces; expose parser
+  choices/data admission separately from semantic correctness. Canonical empty
+  vanilla Oracle text is not classified as a missing card record. This is a
+  diagnostic milestone, not broader gameplay or AI certification.
+
+- Compose retained mill and selected annihilator sacrifice batches on `cb1ba8f`:
+  1,263 passes across 37 declared whole modules in 627.44s, with zero failures,
+  errors, skips or network attempts and unchanged source hashes. Preserve the
+  original selected mill set through real replacement shuffles; collect genuine
+  graveyard entries after all selected moves commit. Frontend lint/configured
+  tests/build pass after supplying the required test-interpreter setting.
+  Death-batch publication, protection, human keeper and broader replacement
+  continuation gaps remain separate, not hidden behind this bounded result.
+
+- Qualify illegal-Aura departure preflight and read-only offline import metadata
+  on `a0e7dc8`: 1,483 passes across 68 whole modules in 1047.52s, with zero
+  failures/errors/skips, unchanged source hashes and verified loopback-only HTTP
+  child guards. Preserve the initial two harness setup errors separately.
+  Current frontend lint/configured tests/build and 35 real HTTP requests across
+  five server lifetimes pass. Cached IDs stay genuine; seed/knowledge projection
+  does not invent SQL rows or implicitly synchronize. Required Scryfall IDs stay
+  unchanged; 267 frozen actual response literals pass the current DTO contract.
+  This is not deployment, whole-suite or professional-AI certification.
+
+- Qualify shared graveyard lifecycle on `fc22540`: 995 passes across 50
+  declared whole modules in 752.67s, with zero failures, errors or skips,
+  unchanged backend hashes and no network attempts. Compose committed entry,
+  retained shuffle references, keyword/handler/SBA death routing and simultaneous
+  discard publication. Keep immutable historical receipts; test-only event-alias
+  observation and narrowly checked legacy reference adapters are separate.
+  Frontend lint, configured tests and production build pass. This is an isolated
+  milestone, not deployment, whole-suite or expert-AI certification.
+
+- Compose friendly-damage AI materialization and media-cache eviction recovery
+  on `efbd52d`: 282 cases across 22 complete modules pass in 80.80s with offline
+  isolation and preserved source hashes. Preserve beneficial friendly-death
+  interactions, explicit historical scheduler assertions and honest fallback art.
+  Stale stored image URLs and broader expert-AI/browser acceptance remain open.
+  See `docs/testing/friendly-media-current.md` for exact scope and evidence.
+
+- Compose printed self-graveyard replacement plans, selected cost routing and
+  trusted static shuffle receipts on the queued/lazy milestone. Capture batch
+  references before departures and retain actual owner/source identities;
+  Probe damage uses the static cause, not a fabricated resolving spell.
+  Current-source qualification passes 1,081 cases across 31 whole modules in
+  380.82s. A separate complete 60-case audit passes 58 and retains two strict
+  Kozilek trigger failures. Direct death callers and public competing-cost
+  selection remain unsupported; historical expectation changes are separate
+  test-only deltas with unchanged archives.
+
+- Make private restart test clients hydrate through public GET before their
+  existing authenticated audit, preserving privacy checks. Compare disk and
+  cache inventories independently in failed-start rollback tests, with a new
+  corrupt-summary regression. These are test-interface corrections, not a
+  production rollback relaxation. Expanded coupled qualification passes all
+  3,904 cases across 133 declared whole modules in 1474.44s, with no failures,
+  errors or skips. Source hashes and JUnit module coverage are verified.
+
+- Integrate queued sequence scheduling, global static keyword grants and lazy
+  saved-match loading in an isolated candidate. Adapt four restart test workers
+  to restore through public HTTP before inspecting the cache, retaining all
+  original assertions. Independent adapter qualification passes 221 cases;
+  the expanded combined gate passes all 3,904 cases. Current frontend lint,
+  tests and build also pass with existing dependencies. No live deployment
+  or complete rules/AI certification is claimed.
+
+- Compose generic modern/legacy entry-observer dispatch, ordinary Ninjutsu entry
+  bookkeeping and complete article-mill instructions on the current Mulligan
+  source. Preserve source identity, paid costs, private choices and existing
+  library/group-keyword behavior. All 1,040 checks across 43 complete modules
+  pass in 707.02s, including six unchanged desired entry/mill regressions.
+  Unknown compound and other unsupported entry instructions remain diagnostic;
+  no named-card exception or arbitrary-card support claim.
+- Record an unresolved long-running Control/Ramp BO3 qualification: the original
+  two-case run on `9714ee5` hit its 1200-second outer bound after Burn/Aggro
+  passed. Preserve the exact last-persisted checkpoint and source pins; no
+  infinite-loop diagnosis, reduced search budget or passing full-pair claim.
+- Validate Mulligan intents before normalization, rejecting unknown/null choice
+  aliases and stale or malformed count metadata before helpers. Preserve the
+  current actor-first boundary and all 23 existing consumer bindings. Current
+  qualification passes 310 cases across 10 whole modules in 277.61s, including
+  unchanged original audit cases and both-seat London rounds/private bottom
+  choices/HTTP restart. Add a separately passing inventory regression requiring
+  every public action type to have a consumer model. Simplify the README to current capabilities rather than
+  accumulated historical patch counts. See the composition acceptance record.
+- Validate Suspend/keep-hand intents and reject invalid actor values before
+  normalization or helper calls. Preserve explicit choices and prior consumer
+  contracts. The pre-keyword-repair composition passes 1,507 checks across 25
+  complete modules in 1350.74s on the upgraded dependencies.
+- Compile supported complete temporary creature/permanent group keyword grants
+  through the existing keyword effect system. Fix the observed seeded autoplay
+  rejection of Boros Charm's actual printed protection mode without named-card
+  overrides. Canonical Boros Charm/Heroic Intervention both-seat tests cover
+  object membership, timestamp ordering, cleanup and durable HTTP restore.
+  The current repair gate passes 440 checks across 20 complete modules in
+  373.51s; this is not a full-suite or professional-AI qualification.
+- Repair fresh-process color tests to import the isolated backend, and replace
+  the invented cost-only alternate-cost fixture with the unchanged canonical
+  Bringer of the Red Dawn. The public explicit-choice API is unchanged.
+  See [the acceptance record](docs/testing/suspend-keep-group-keyword-composition.md).
+- Add generic complete-clause look/reorder, optional shuffle and draw resolution
+  with explicit private choices, seeded replay and durable continuations. Canonical
+  Index/Ponder fixtures are unchanged official API bodies. Full current gate:
+  516 passes across 16 complete modules in 216.80s; fresh frontend install/tests/
+  lint/build pass. Replace obsolete Ponder rejection assertions with actual
+  fresh-process pending-order/shuffle execution; preserve historical failure logs.
+- Reject client-supplied modes on nonmodal spells/abilities before payment.
+  A corrected six-case baseline reproduces the two missing spell mechanics and
+  both-seat instruction-substitution defect; no Oracle or named-card rule hacks.
+- Reject observed unsupported complete spell instructions and selected modal
+  fallbacks before paying costs. Preserve explicit HTTP diagnostics and full
+  root/RNG/database state on rejection; supported modal and permanent controls
+  remain usable. Current upgraded-dependency integration passes 297 checks in
+  seven whole modules and 130 checks in eight casting/stack neighbor modules.
+  The separate scheduler proposal remains unimplemented; no extra turns claimed.
+- Validate land and priority-pass intents before normalization, preserving
+  explicit source/origin/face/entry choices and requiring supplied display to
+  match the current actor's offered move. The unchanged 29-module worker batch
+  passes 2,624 checks on its recorded older pins; upgraded-dependency parent
+  qualification passes 136 focused and 261 combined checks (overlapping counts).
+- Avoid unnecessary planeswalker type queries by checking battlefield zone and
+  nonpositive loyalty first. One condition reorder preserves complete decision
+  and state traces; two repeats per version on one capture measure a 7.03%
+  reduction. This is not a universal latency or AI-strength guarantee.
+- Upgrade FastAPI to 0.142.2, pin Starlette 1.3.1, and update pytest 9.0.3 and
+  python-multipart 0.0.31 after a fresh declared-requirements advisory scan.
+  The baseline has 15 distinct package/advisory pairs (30 duplicate-inclusive
+  records); the upgraded scan is clean. All 600 checks across 13 complete
+  current-library/API/recovery/image modules pass in 692.16s. Frontend contracts,
+  lint and build also pass. Deprecation warnings and full-release gates remain.
+- Preserve explicitly selected private library choices when consuming legitimate
+  whole legal views. Eight server-owned continuation fields must match current
+  pending state exactly before normalization; client continuations never execute.
+  Original audit and correction cases plus current Ninja/action neighbors pass
+  all 975 parent checks in 317.39s. Worker composition independently passes 2,332
+  checks across 24 complete modules; counts overlap, not independent matches.
+- Update the transitive build dependency source-map-js from 1.2.1 to 1.2.2
+  for GHSA-68fv-2mgg-jv7q without changing direct dependencies. Fresh npm ci,
+  lint, build and complete frontend tests pass; the refreshed full npm audit
+  reports no advisories. A newly created Python environment also installs the
+  declared requirements and passes the 157 affected backend checks in 46.39s.
+- Fix CI isolation to archive the complete tracked source and create the private
+  choice audit marker only in its disposable checkout. Configure frontend CI
+  with Python fixture dependencies and the complete `npm test` command. The old
+  backend-only setup reproduces one failure and eight errors; the corrected two
+  affected modules pass 157 checks in 44.60 seconds and full frontend tests pass.
+  Hosted CI, fresh dependency installation and release-wide acceptance remain open.
+- Bind pending Ninjutsu to its original hand-zone sequence. A card that leaves
+  and reenters hand is not moved by the old ability; paid costs remain paid.
+  Combined consumer/engine/nth gate: 167 passes in 187.43 seconds, including the
+  two unchanged former incarnation failures. Legacy missing references fail
+  closed; deployment and broader release qualification remain pending.
+- Validate explicit Ninjutsu intent fields before normalization; supplied display
+  must match the actor's eligible choice. Composed gate: 107 passes and two
+  unchanged incarnation engine failures in 251.84 seconds. Engine fix remains
+  open; this is not a green Ninja gate or a deployed change.
+- Add bounded complete-clause nth-spell triggers and reset both players' cast
+  counts each turn. Seven combined modules pass 279 checks in 81.88 seconds;
+  complex unsupported rewards remain explicit and this candidate is not deployed.
+- Replace the impossible Control-removal test setup with canonical, payable
+  alternatives in both seats. Five affected modules pass 182 tests in 10.42
+  seconds on the private-choice/foretell composition; production AI is unchanged.
+- Validate explicit mechanic choices before completion and accept only exact
+  current actor view/continuation context. Preserve declared nullable schema
+  compatibility; a separate test-only adaptation updates obsolete auto-transform
+  assumptions to canonical Delver setup with an explicit reveal choice.
+- Compose foretell prevalidation, private choice views, AI reveal/decline,
+  damage-resolution staging and seeded autoplay: 517 checks across 12 modules
+  pass in 344.41 seconds. Preserve the initial missing-marker setup failure.
+  Main/live remain unchanged; full-suite and further mechanic gates are pending.
+- Preserve official expansion-deck identities and exact stored source keys across
+  normalized aliases; validate sideboard bounds before saving and avoid cache
+  materialization for malformed imports. Five composed modules pass 218 checks
+  in 113.65 seconds with unchanged source hashes.
+- Reject unsupported combat intent fields without inferring attackers, blockers
+  or costs. The original shared timeout remains archived; the separately
+  authorized unchanged-source run passes 695 checks in 1167.76 seconds. The new
+  reveal/day-night/combat composition passes 189 checks in 211.49 seconds.
+- Requalify actual-App reveal/day-night flows: 362 assertions across 12 flows,
+  including 46 backend restarts, pass in 303.971 seconds. Full-suite results and
+  the newly audited private-choice/foretell consumer corrections remain pending.
+- Preserve admitted canonical expansion-deck labels across startup; retain
+  historical labels when the available facts do not support reclassification.
+- Reuse attachment classification queries only within a single read-only SBA
+  scope, ending that scope before any mutation.
+- The three-module focused composition passes 71 checks in 14.21 seconds with
+  identical before/after source hashes; seven neighbors pass 127 in 36.55 seconds.
+  Optional reveal/day-night passes 95 in 29.38 seconds after a separate reviewed
+  legacy timing-test correction; the initial five failures remain archived.
+  Broader release gates remain pending;
+  these changes are not deployed, and this is not an AI-strength certificate.
+
+## Qualified Candidate: Rules And Human Choices - 2026-10-06
+
+- Collect supported self-cycling and combined cycling/discard triggers without
+  double rewards; bind dynamic death quantities to frozen source LKI.
+- Use live/retained colors in qualified layer consumers and color predicates.
+- Reject unsupported intent selections before normalization across additional
+  action and pending-choice families. Preserve deliberate actor selections.
+- Remove AI display names from strict target payloads and improve physical
+  mana-plan ordering for locked discounted costs without pruning fallbacks.
+- Preserve distinct same-name cohort identities, legacy seeds and stored history;
+  classify admitted first built-in imports from canonical local facts.
+- Preserve artifact/enchantment token types, optional cycling rewards and
+  ordinary casting instructions. Matched trigger clauses no longer execute
+  unrelated cycling effects; cycling targets use the existing choice protocol.
+- Warn on unsupported UI choices and expose offered cycling X in both hand
+  branches, including the standard regression command.
+- Qualify 2,024 checks across 83 modules; later compositions pass 153 and 123
+  checks. Human-flow16 passes 212 assertions; modal/Adventure browser checks
+  pass 144 assertions. Counts overlap; no expert-AI or full-suite claim.
+- Rewrite README around current features, setup, architecture and limits.
+  The older default suite timed out at 64%; the candidate is not yet deployed.
+  Paid optional continuations, Delver choices, remaining guards and broader
+  regression/performance acceptance remain active work.
+
 ## Mana, Layers And Resource Identity - 2026-10-06
 
 - Use normal zone transitions for activated sacrifices, preserving departure

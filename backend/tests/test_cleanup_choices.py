@@ -6,11 +6,12 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.zone_actions import discard_selected
 from ai.agent import AIAgent
+from tests.cleanup_canonical_db4e import canonical_card, canonical_entry, first_draw_deck
 
 
-def setup(player_id=1):
-    deck = [{"quantity": 60, "card_name": "Island", "type_line": "Basic Land - Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=9)
+def setup(player_id=1, *, first_spell=False):
+    deck = [canonical_entry('Island', 60)]
+    state = MatchFactory.from_decks(first_draw_deck('Counterspell') if first_spell else deck, deck, seed=9)
     state.pregame_pending = False
     state.active_player = state.priority_player = player_id
     state.step = Step.END_STEP
@@ -24,15 +25,12 @@ def setup(player_id=1):
 
 
 def test_ai_cleanup_discards_excess_land_instead_of_first_spell():
-    state, engine = setup()
+    state, engine = setup(first_spell=True)
     state.replacement_choice_required = False
     state.replacement_choice_players = set()
     state.mechanic_choice_players = {1}
     player = state.players[1]
     spell_id = player.hand[0]
-    state.cards[spell_id].name = "Counterspell"
-    state.cards[spell_id].types = ["Instant"]
-    state.cards[spell_id].mana_cost = "{U}{U}"
     for _ in range(5):
         cid = player.library.pop()
         player.battlefield.append(cid)
@@ -49,7 +47,7 @@ def test_ai_cleanup_discards_excess_land_instead_of_first_spell():
 
 def test_human_cleanup_choice_is_owned_validated_and_resumable_before_expiry():
     state, engine = setup(2)
-    creature = CardInstance(id="bear", name="Grizzly Bears", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2, counters={"__eot_toughness": 1, "__damage_marked": 2})
+    creature = canonical_card("Grizzly Bears", id="bear", owner=2, controller=2, zone=Zone.BATTLEFIELD, counters={"__eot_toughness": 1, "__damage_marked": 2})
     state.cards[creature.id] = creature
     state.players[2].battlefield.append(creature.id)
     engine.next_step(state)
@@ -74,7 +72,7 @@ def test_human_cleanup_choice_is_owned_validated_and_resumable_before_expiry():
 
 def test_cleanup_discard_trigger_grants_priority_then_repeats_cleanup():
     state, engine = setup()
-    trigger = CardInstance(id="sangromancer", name="Sangromancer", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"], power=3, toughness=3, oracle_text="Whenever an opponent discards a card, you gain 3 life.")
+    trigger = canonical_card("Sangromancer", id="sangromancer", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[trigger.id] = trigger
     state.players[2].battlefield.append(trigger.id)
     engine.next_step(state)
@@ -99,8 +97,14 @@ def test_cleanup_discard_trigger_grants_priority_then_repeats_cleanup():
 
 def test_discard_shared_operation_preserves_zone_owner_and_atomic_rejection():
     state, _ = setup()
-    cid = state.players[1].hand[0]
-    state.cards[cid].owner = 2
+    # Put an actual opponent-born card in the actor's hand; never change stock ownership.
+    old_id = state.players[1].hand[0]
+    cid = state.players[2].hand.pop(0)
+    state.players[1].hand[0] = cid
+    state.players[1].library.append(old_id)
+    state.cards[old_id].move_to_zone(Zone.LIBRARY)
+    state.cards[cid].controller = 1
+    assert state.cards[cid].owner == state.sideboard_facts['inventory'][cid]['owner'] == 2
     before = serialize_match_snapshot(state)
     assert not discard_selected(state, 1, [cid, "missing"])
     assert serialize_match_snapshot(state) == before
@@ -122,8 +126,8 @@ def test_no_ordinary_cleanup_casting_or_activation():
 
 def test_cleanup_stabilizes_cascading_state_based_actions_before_priority():
     state, engine = setup()
-    lord = CardInstance(id="lord", name="Elvish Clancaller", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature - Elf Druid", power=1, toughness=1, oracle_text="Other Elf creatures you control get +1/+1.", counters={"-1/-1": 1, "__eot_toughness": 1})
-    elf = CardInstance(id="elf", name="Llanowar Elves", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature - Elf Druid", power=1, toughness=1, counters={"-1/-1": 1})
+    lord = canonical_card("Elvish Clancaller", id="lord", owner=1, controller=1, zone=Zone.BATTLEFIELD, counters={"-1/-1": 1, "__eot_toughness": 1})
+    elf = canonical_card("Llanowar Elves", id="elf", owner=1, controller=1, zone=Zone.BATTLEFIELD, counters={"-1/-1": 1})
     state.cards.update({lord.id: lord, elf.id: elf})
     state.players[1].battlefield.extend([lord.id, elf.id])
     engine.next_step(state)

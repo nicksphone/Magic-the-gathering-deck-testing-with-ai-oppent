@@ -28,6 +28,8 @@ def entry(name, quantity=1):
 def position(seat=1):
     # Bounded positions, not proposed competitive decks. Library filler is real.
     state = MatchFactory.from_decks([entry('Mountain', 20)], [entry('Island', 20)], seed=SEED)
+    # Synthetic scenario identity and injected cards cannot certify original stock.
+    state.sideboard_facts = {}
     state.id = 'wave2-seed-731'
     state.pregame_pending = False
     state.kept_hands = {1, 2}

@@ -185,9 +185,8 @@ def test_sacrifice_cost_preserves_real_dies_payoff(seat):
 def test_http_payment_metadata_atomic_rejection_and_restore(game, seat, name):
     client, controller = game
     state, spell, payers, target = setup(name, seat)
-    state.id = controller.state.id
-    controller.state = state
-    persist(controller)
+    from tests.fixture_state_support import adopt_fixture_state
+    adopt_fixture_state(controller, state)
     moves = client.get(f'/matches/{state.id}/legal-moves?player_id={seat}').json()['moves']
     move = next(m for m in moves if m.get('card_id') == spell.id)
     option = next(o for o in move['cost_options'] if o['id'] == 'kicker')

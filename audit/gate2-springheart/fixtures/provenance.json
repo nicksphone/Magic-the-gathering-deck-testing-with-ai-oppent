@@ -1,0 +1,24 @@
+{
+  "bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "full_raw_rows": 3,
+  "cards": {
+    "Raging Goblin": {
+      "id": "3480927c-10da-4817-9954-10aea2bc7100",
+      "oracle_id": "30997b43-fc13-41d3-8064-1ccc2cb6fd2b",
+      "canonical_fullrow_sha256": "b084c49cbd337b82de4f5051f1dec661250e61df2c697a79c4994adfe10bf453"
+    },
+    "Springheart Nantuko": {
+      "id": "54a3ea87-005e-4985-b2a5-21711d0b71c0",
+      "oracle_id": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+      "canonical_fullrow_sha256": "dec8bbe5c2555f0d728b0f074aa15d193fcc7c73a15d846bca57df26f0889156"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "canonical_fullrow_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0"
+    }
+  },
+  "scope": "unchanged full canonical raw rows; no shortened Oracle",
+  "current155_springheart_rawhash_equal": true
+}

@@ -1,13 +1,16 @@
 """Real card faces and explicit return packets; not full Jace ability support."""
+from copy import deepcopy
 import json
 from pathlib import Path
 
 import pytest
 
 from effects.registry import resolve_effect
-from game_state.state import CardInstance, Zone, assign_static_order_on_battlefield_entry
+from game_state.state import (CardInstance, Zone, assign_static_order_on_battlefield_entry,
+                              _infer_keywords, _infer_power, _infer_toughness)
 from game_state.serializers import serialize_match_snapshot, deserialize_match_snapshot
 from rules_engine.card_faces import select_cast_face
+from rules_engine.card_types import printed_card_types
 from rules_engine.continuous import effective_combat_stats
 from rules_engine.state_based_actions import apply_state_based_actions
 from tests.test_counter_replacements import source as modifier, choose
@@ -19,8 +22,18 @@ ROW = ROWS[0]
 
 
 def jace(state, player=1, row=ROW):
+    front = row['card_faces'][0]
+    types = printed_card_types(front['type_line'])
     card = CardInstance(state.allocate_object_id(), row['name'], player, player, Zone.BATTLEFIELD,
-                        layout=row['layout'], card_faces=row['card_faces'])
+                        types=types, type_line=front['type_line'],
+                        oracle_text=front['oracle_text'], mana_cost=front['mana_cost'],
+                        power=_infer_power(row['name'], front.get('power'), types),
+                        toughness=_infer_toughness(row['name'], front.get('toughness'), types),
+                        printed_power=front.get('power'), printed_toughness=front.get('toughness'),
+                        loyalty=int(front['loyalty']) if front.get('loyalty') is not None else None,
+                        colors=deepcopy(front['colors']), keywords=_infer_keywords(front['oracle_text']),
+                        image_uri=front['image_uris']['normal'],
+                        layout=row['layout'], card_faces=deepcopy(row['card_faces']))
     face = select_cast_face(card, 0)
     state.cards[face.id] = face
     state.players[player].battlefield.append(face.id)

@@ -1,0 +1,6 @@
+Six full unchanged official Scryfall objects selected by exact name from frozen bulk:
+knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz
+Bulk SHA256 17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13
+Fixture SHA256 40c282d4e3cd1477814a46aaccd4510cb743a649f0cb550fe757ac94576af47d
+Jace Beleren; Pacifism; Unsummon; Grizzly Bears; Rest in Peace; Blood Artist.
+No rewritten Oracle, aliases, or invented cards.

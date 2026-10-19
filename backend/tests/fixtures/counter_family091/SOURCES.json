@@ -1,0 +1,158 @@
+{
+  "Binding the Old Gods": {
+    "file": "counter_family091/binding-the-old-gods.json",
+    "file_sha256": "46e3fa2f64edbf9df28e13d1250404fd6fcbb14be9de0164128fc2cbd1a1c05b",
+    "format": "object",
+    "id": "41802f18-7d46-431a-acb3-dbcc82eb415a",
+    "object_sha256": "84ebf93c48ae93c3546de68bc22bf4d8bfc9b5e623405434c2aad4bf17fd6d69",
+    "oracle_id": "4050e5b3-07c2-461c-9852-a2c081c0198d",
+    "source_line": 9655
+  },
+  "Branching Evolution": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "c0f1a736-8b12-4f58-a031-bf1733f65c51",
+    "object_sha256": "9ab0b2803ea12ebc487626917025b379931b6c7d99300b456dd910a7171e53a5",
+    "oracle_id": "28fe909b-06e0-424c-9f75-c824a25f5865"
+  },
+  "Corpsejack Menace": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "29538ff4-e28f-44d9-af23-6796edd56268",
+    "object_sha256": "bfda018d894f7998e64aef8500ebd773cbeb695614213c2fa74e1a59fb87567a",
+    "oracle_id": "ca0cc02b-b106-4eca-9388-d4b48dd3be49"
+  },
+  "Doubling Season": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "f2c4f80e-84a0-463b-82c3-5c6503809351",
+    "object_sha256": "48d11ad8319007d1369a4a651831596491be1f764ecd3f895ddfc00602774107",
+    "oracle_id": "01546b7d-a233-4176-8843-d732074dc5b6"
+  },
+  "Forest": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "format": "jsonl",
+    "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+    "object_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3",
+    "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6"
+  },
+  "Grizzly Bears": {
+    "file": "static_parser_cache.json",
+    "file_sha256": "395a72009bb8ed250ace0e3211ad147fc5622b48f96ef8654411fbc36888e919",
+    "format": "list",
+    "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+    "object_sha256": "9512336fab43dd717c015655b9e5940d2aeea690795f11e4c16e9946565d465a",
+    "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0"
+  },
+  "Hardened Scales": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "99cfd1a8-49fd-4cc0-96f2-f9f159ce5d55",
+    "object_sha256": "f18315da3060bb6dd1eb22fd5f03fc1dca5378767a12fa92a26f4b94ecdc716a",
+    "oracle_id": "a1f3da21-af6d-450e-bf0b-985d158418e6"
+  },
+  "History of Benalia": {
+    "file": "counter_family091/history-of-benalia.json",
+    "file_sha256": "aa6bd55eaed5ff8ef788da66e4dd4a9fdfb8fa54fde2cbe6e5dfb5fa7211426e",
+    "format": "object",
+    "id": "d134385d-b01c-41c7-bb2d-30722b44dc5a",
+    "object_sha256": "c5b6c0701693960998560a2c0f82a03b12aa85eb9f129b45e82a00bbe8fca060",
+    "oracle_id": "c15bb7eb-aaaa-4468-9641-8f706d6137e8",
+    "source_line": 29106
+  },
+  "Kami of Whispered Hopes": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "0be4e5f6-a1fc-4a91-aafe-f963878cd1b3",
+    "object_sha256": "fe7b7edf5107f95f2332facb920d89fbf01978c86b2f89bb6381e1d524da6cf5",
+    "oracle_id": "f122624f-f30d-444e-a62a-939829241045"
+  },
+  "Lae'zel, Vlaakith's Champion": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "1a93f587-ab72-42da-88c4-31af1c9cdf1b",
+    "object_sha256": "821e47c6ab3b5f8f57476c78f989e58b3ef4ab9151a798caaf69b7296fcde2c6",
+    "oracle_id": "c066f921-e349-45d1-8ec3-0955d10bbf19"
+  },
+  "Nissa, Ascended Animist": {
+    "file": "knowledge_profiles/seed155-scryfall.jsonl",
+    "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+    "format": "jsonl",
+    "id": "1dd64b1d-bcef-476c-bf0b-3ac7df7cbed3",
+    "object_sha256": "58ea67b006698e55970416bf08ddde6d2247283d879ad2374cb3973fa04bcc91",
+    "oracle_id": "9c8845d6-fa65-4731-b348-dc724fc2d285"
+  },
+  "Primal Vigor": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "dafea0d1-6986-46b3-affc-1337ef564947",
+    "object_sha256": "e692a5bc5de2a69906d8741d456761c07e860884fb62fa2472155c224d8b553e",
+    "oracle_id": "c665544f-557b-4631-a1dc-39571470ca2e"
+  },
+  "Sol Ring": {
+    "file": "static_parser_cache.json",
+    "file_sha256": "395a72009bb8ed250ace0e3211ad147fc5622b48f96ef8654411fbc36888e919",
+    "format": "list",
+    "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+    "object_sha256": "ff26917d2e41e3f85a3b2d4268e0ef1b2673cbabab2a27ec04162181cb5dae00",
+    "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487"
+  },
+  "Tamiyo, Compleated Sage": {
+    "file": "compleated_loyalty_full/tamiyo.raw.json",
+    "file_sha256": "dcbfd8d6648620cf3a466af951b7db1aee9b40f9fa0956edc9c0aba1a2dbea55",
+    "format": "object",
+    "id": "222a736e-d819-452d-aeda-eb848c4b2302",
+    "object_sha256": "ff389c0b181c900c3c6f50049434d54637df43ffd94ee46aaa2c429ba1744dcf",
+    "oracle_id": "021b4745-4a15-462c-a6b0-2dee1dc9d196"
+  },
+  "The Phasing of Zhalfir": {
+    "file": "counter_family091/the-phasing-of-zhalfir.json",
+    "file_sha256": "e12973a7f5e71386b43ae9099edf2663bf64fc37c2b6866ef1b8996fd682a733",
+    "format": "object",
+    "id": "0770eb6a-4f01-4677-a401-14c1b30692c9",
+    "object_sha256": "303cce30af8053219886605db7b51ee3a1d1bc23dc0db2e20562623d387a6df5",
+    "oracle_id": "6b92a5f4-a241-48c8-9aec-c8e9d5b01fa5",
+    "source_line": 16184
+  },
+  "Tolarian Terror": {
+    "file": "counter_family091/tolarian-terror.json",
+    "file_sha256": "5ba1af6e0085e064153094b3deea431c725b7f1d2f84ddc0120a13e34818ef1d",
+    "format": "object",
+    "id": "2569d4f3-55ed-4f99-9592-34c7df0aab72",
+    "object_sha256": "4c6607895806a56b3d7534f0f9d7c9ba9d2b7d2aeddb9740a028202d0afd7720",
+    "oracle_id": "b9d0f2e1-62c2-44fd-ad38-471daf17bb0a",
+    "source_line": 27952
+  },
+  "Vorinclex, Monstrous Raider": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "92613468-205e-488b-930d-11908477e9f8",
+    "object_sha256": "3d221622ff522a353f5179081dd77be7c6848c5c0fcd55d03967223f780c4c76",
+    "oracle_id": "5a3fdf5a-bff8-4896-b288-3f43f9a72d9b"
+  },
+  "Walking Ballista": {
+    "file": "counter_prohibitions.json",
+    "file_sha256": "94fe0b7a42c358835cc4abf1f1e231c5096798a32de7de61a34c5a21d4cdc448",
+    "format": "list",
+    "id": "5272436e-74f0-44c4-a291-ea8ebc3f1525",
+    "object_sha256": "d2eed6c53a96bca60b6d468981be6f05aaa2f6bc0fbd9d258437fc0077a57cf5",
+    "oracle_id": "4b515bb0-f275-4400-8032-3173b799ab40"
+  },
+  "Winding Constrictor": {
+    "file": "counter_replacements.json",
+    "file_sha256": "04d8fc1c9f8cc3b9742e5de36eaa4d3bc09709e0f35a3ea3e677257ad468547f",
+    "format": "list",
+    "id": "107c8aa8-c8f8-4cbf-821b-bd2cb33354f0",
+    "object_sha256": "88f27856eaf6905ff8155891312406d6529641365b2c298cd94d8e1299a0bc83",
+    "oracle_id": "c9404d7d-a026-4082-9fcb-1ab571a136b5"
+  }
+}

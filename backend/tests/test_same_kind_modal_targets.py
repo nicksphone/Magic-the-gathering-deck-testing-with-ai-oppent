@@ -1,33 +1,30 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
 
 import pytest
 
 from ai.agent import AIAgent
 from effects.handlers import copy_spell, discard_cards
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import MatchFactory, Step, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.zone_actions import put_into_graveyard
+from tests.test_same_kind_modal_db4e_fidelity import canonicalize_controlled_basics, materialize, raw_card
 
 
 DESTROY = "Destroy target artifact"
 DAMAGE = "Kolaghan's Command deals 2 damage to any target"
 RETURN = "Return target creature card from your graveyard to your hand"
 DISCARD = "Target player discards a card"
-ORACLE = (
-    "Choose two —\n"
-    "• Return target creature card from your graveyard to your hand.\n"
-    "• Target player discards a card.\n"
-    "• Destroy target artifact.\n"
-    "• Kolaghan's Command deals 2 damage to any target."
-)
+ORACLE = raw_card("Kolaghan's Command")['oracle_text']
 
 
 def _setup():
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=81)
+    state = controlled_basic_game(deck, deck, seed=81)
+    canonicalize_controlled_basics(state)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
@@ -35,14 +32,12 @@ def _setup():
     state.players[1].mana_pool = {"B": 1, "R": 1, "C": 1}
     spell_id = state.players[1].hand[0]
     spell = state.cards[spell_id]
-    spell.name = "Kolaghan's Command"
-    spell.types = ["Instant"]
-    spell.type_line = "Instant"
-    spell.mana_cost = "{1}{B}{R}"
-    spell.oracle_text = ORACLE
+    state.cards[spell_id] = materialize(
+        spell_id, "Kolaghan's Command", spell.owner, spell.controller, spell.zone,
+        instance_order=spell.instance_order, summoning_sick=spell.summoning_sick)
     targets = (
-        CardInstance("ring", "Sol Ring", 2, 2, Zone.BATTLEFIELD, ["Artifact"], oracle_text="{T}: Add {C}{C}."),
-        CardInstance("bear", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2),
+        materialize("ring", "Sol Ring", 2, 2, Zone.BATTLEFIELD),
+        materialize("bear", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD),
     )
     for card in targets:
         state.cards[card.id] = card
@@ -102,7 +97,7 @@ def test_modal_copy_retargets_each_mode_without_changing_original() -> None:
             "mode_targets": {DESTROY: {"target_card_id": "ring"}, DAMAGE: {"target_card_id": "bear"}},
         },
     })
-    spare = CardInstance("spare-ring", "Sol Ring", 2, 2, Zone.BATTLEFIELD, ["Artifact"])
+    spare = materialize("spare-ring", "Sol Ring", 2, 2, Zone.BATTLEFIELD)
     state.cards[spare.id] = spare
     state.players[2].battlefield.append(spare.id)
     original = state.stack[-1]
@@ -136,7 +131,7 @@ def test_modal_copy_retargets_each_mode_without_changing_original() -> None:
 
 def test_shared_same_card_target_is_two_choices_on_modal_copy() -> None:
     state, spell_id = _setup()
-    spare = CardInstance("spare-ring", "Sol Ring", 2, 2, Zone.BATTLEFIELD, ["Artifact"])
+    spare = materialize("spare-ring", "Sol Ring", 2, 2, Zone.BATTLEFIELD)
     state.cards[spare.id] = spare
     state.players[2].battlefield.append(spare.id)
     state = checked_action(state, RulesEngine(), 1, {
@@ -189,7 +184,7 @@ def test_ai_copy_redirects_removal_away_from_its_own_permanents() -> None:
             "mode_targets": {DESTROY: {"target_card_id": "ring"}, DAMAGE: {"target_card_id": "bear"}},
         },
     })
-    enemy_ring = CardInstance("enemy-ring", "Sol Ring", 1, 1, Zone.BATTLEFIELD, ["Artifact"])
+    enemy_ring = materialize("enemy-ring", "Sol Ring", 1, 1, Zone.BATTLEFIELD)
     state.cards[enemy_ring.id] = enemy_ring
     state.players[1].battlefield.append(enemy_ring.id)
     copy_spell(state, 2, {"target_stack_id": state.stack[-1].id, "may_choose_new_targets": True})
@@ -210,7 +205,7 @@ def test_ai_copy_redirects_removal_away_from_its_own_permanents() -> None:
 def _graveyard_pair():
     state, spell_id = _setup()
     for cid, name, owner in (("elf", "Llanowar Elves", 1), ("bear-own", "Grizzly Bears", 1), ("bear-opp", "Grizzly Bears", 2)):
-        state.cards[cid] = CardInstance(cid, name, owner, owner, Zone.GRAVEYARD, ["Creature"])
+        state.cards[cid] = materialize(cid, name, owner, owner, Zone.GRAVEYARD)
         state.players[owner].graveyard.append(cid)
     return state, spell_id
 

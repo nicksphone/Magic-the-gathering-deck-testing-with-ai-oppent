@@ -1,0 +1,1869 @@
+{
+  "base_commit": "dadd3388e1ae2228b898ad830d996a18373f4b3a",
+  "current32": {
+    "cases": 32,
+    "counts": {
+      "desired_public_mode_witness": 18,
+      "pass": 12,
+      "upstream_safekeeper_action_admission": 2
+    },
+    "failures": [
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[remove-ban-leave-creature-1]",
+        "trace_sha256": "e4a5bc0083ab14502f75141b130519ac2ab05e6357f40ed2c2081cab0a2c0377"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[remove-ban-leave-creature-2]",
+        "trace_sha256": "8c7c272d15daa0300c6c590b37862b854226f04f0b9042a8479cfb95493d1b84"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[remove-ban-leave-player-1]",
+        "trace_sha256": "9745d40205b1561bcfbf3595ed520c5f477c38f4734ed862eeb4ef5b999a76b1"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[remove-ban-leave-player-2]",
+        "trace_sha256": "7277f42ec981fe0a623d49ce9b881854637c802ca3df4955d845987c3caf863c"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[departure-before-resolution-creature-1]",
+        "trace_sha256": "e479ce34cd582e647864053e24b8fc6cf65a4339c4ab93d965ac9d12c6bd372e"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[departure-before-resolution-creature-2]",
+        "trace_sha256": "e04daaa862e0ceff55f5af571af4dd0616f004df1f293ad835e259f454f2287c"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[departure-before-resolution-player-1]",
+        "trace_sha256": "0facb02d0e813bc53c60471b26fd93c4195c03a837122211a5d7180fb1a0c8f9"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[departure-before-resolution-player-2]",
+        "trace_sha256": "8ffbc4770ddacd11fa820936b65f67111129a01c60f61f6059250f3f60f95b43"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[suppressed-after-resolution-creature-1]",
+        "trace_sha256": "fa3c66713a7670a2ea5ddfe5f1c25a5daa844df646d705ec1d3a3844432aa07e"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[suppressed-after-resolution-creature-2]",
+        "trace_sha256": "4804b8e0bba21d5364f7d37a458f7daee6c8017b935040f01b943f9b1a1c7881"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[suppressed-after-resolution-player-1]",
+        "trace_sha256": "f313f80bb77484fc06ad6ae6f0731964e53275b674b290f3008cf83e19c1cf40"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[suppressed-after-resolution-player-2]",
+        "trace_sha256": "8e310ac4158eeb210bff8f7c85d98f3253452b6f9d4abe01b890da6b01fa75cd"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[invalid-atomic-creature-1]",
+        "trace_sha256": "e5dfcc83f2ab59d3c878f4309b797768e1a15002874b57d143628d002c4a506d"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[invalid-atomic-creature-2]",
+        "trace_sha256": "c730f83851192c4dce61d8732bc6143a0d08b65d36140d58a0b59d3a83bfa578"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[invalid-atomic-player-1]",
+        "trace_sha256": "20b4c1b238c2e822d4c41b3ed18891ad2d44a8e7c47c6739f33e92eab5631eca"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[invalid-atomic-player-2]",
+        "trace_sha256": "30bbf68de6a129199015335f74f4564eb8b175413109f0fa24eeda23334ae069"
+      },
+      {
+        "boundary": "upstream_safekeeper_action_admission",
+        "node_name": "test_desired_complete_paid_suncleanser_family[protected-atomic-creature-1]",
+        "trace_sha256": "c330f8ab8f0c106a1072fc87af53091b41ef2031c3aad52eaf4de6d10335a3e7"
+      },
+      {
+        "boundary": "upstream_safekeeper_action_admission",
+        "node_name": "test_desired_complete_paid_suncleanser_family[protected-atomic-creature-2]",
+        "trace_sha256": "313d8e2003b9bef28ac264ef68246709b5bad3c4ce493d8a4026b13f00f3b231"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[protected-atomic-player-1]",
+        "trace_sha256": "ff98647ae477ecb16d4dbe289a00df06983055f42255025107e9dac7df01929a"
+      },
+      {
+        "boundary": "desired_public_mode_witness",
+        "node_name": "test_desired_complete_paid_suncleanser_family[protected-atomic-player-2]",
+        "trace_sha256": "9fd3cfbaaa34569cc193d62925d50c1bab7fe19ab4a064be2eb007a92f9a0c5f"
+      }
+    ],
+    "native_receipt_sha256": "ec2ac413669e7e64b87c40edd151aba5f1a147cb962fb7779afaa5deaf20a0f8"
+  },
+  "inventory_limit": "AST assignments, not complete call/dynamic-write coverage or runtime certificate",
+  "physical_storage_assignment_inventory": [
+    {
+      "assignment": "target.counters = dict(target.counters)",
+      "file_sha256": "27e1a7474002bd155bf03ea63b3b5af872ed5c090206d1e9ccf66c89a5062786",
+      "line": 156,
+      "path": "backend/ai/pending_effects.py"
+    },
+    {
+      "assignment": "card.loyalty = loyalty_counters",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 2393,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "card.loyalty = None",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 2395,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "card.counters['__eot_power'] = int(card.counters.get('__eot_power', 0)) + power",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 2695,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "card.counters['__eot_toughness'] = int(card.counters.get('__eot_toughness', 0)) + toughness",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 2696,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "token.counters['__sac_next_end_step'] = 1",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 2127,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "card.counters['loyalty'] = loyalty_counters",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 2397,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "card.counters['__eot_power'] = int(card.counters.get('__eot_power', 0)) + power",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 2724,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "card.counters['__eot_toughness'] = int(card.counters.get('__eot_toughness', 0)) + toughness",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 2725,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "card.loyalty -= int(post)",
+      "file_sha256": "34f307615b9962fec025b1d964b3132abc279796a73b3fc1ffad4926394d78b4",
+      "line": 244,
+      "path": "backend/effects/handlers.py"
+    },
+    {
+      "assignment": "player.poison = int(raw.get('poison', 0))",
+      "file_sha256": "8965dfe75331a7927065dd94ee803a07647d779a23976c5e8059e7cbd2fb2281",
+      "line": 265,
+      "path": "backend/game_state/serializers.py"
+    },
+    {
+      "assignment": "player.counters = {str(key): int(value) for key, value in raw.get('counters', {}).items() if key != 'poison'}",
+      "file_sha256": "8965dfe75331a7927065dd94ee803a07647d779a23976c5e8059e7cbd2fb2281",
+      "line": 266,
+      "path": "backend/game_state/serializers.py"
+    },
+    {
+      "assignment": "self.counters = {key: value for key, value in self.counters.items() if not key.startswith('__')}",
+      "file_sha256": "f7b706ac18fe64a114c2fc99d71a62a199990d91081ce51ad033d9af8a8c048a",
+      "line": 121,
+      "path": "backend/game_state/state.py"
+    },
+    {
+      "assignment": "self.counter_timestamps = {key: value for key, value in self.counter_timestamps.items() if self.counters.get(key, 0) > 0}",
+      "file_sha256": "f7b706ac18fe64a114c2fc99d71a62a199990d91081ce51ad033d9af8a8c048a",
+      "line": 122,
+      "path": "backend/game_state/state.py"
+    },
+    {
+      "assignment": "attachment.counters['__attached_to'] = 0",
+      "file_sha256": "9aca7f9de322d301fbd8fabda09e3fbe9fc16640e3e8f255b8152dfc433fdfd6",
+      "line": 99,
+      "path": "backend/rules_engine/attachments.py"
+    },
+    {
+      "assignment": "card.counters[DEATHTOUCH_MARK_KEY] = 1",
+      "file_sha256": "bc0f6e25be14715004b1e4c2e9307d04b056664c5e014611069d0ee94c456cc4",
+      "line": 808,
+      "path": "backend/rules_engine/combat.py"
+    },
+    {
+      "assignment": "card.loyalty = (card.loyalty or 0) - amount",
+      "file_sha256": "bc0f6e25be14715004b1e4c2e9307d04b056664c5e014611069d0ee94c456cc4",
+      "line": 760,
+      "path": "backend/rules_engine/combat.py"
+    },
+    {
+      "assignment": "source.counters[cost.remove_counter_kind] -= cost.remove_source_counters",
+      "file_sha256": "d8b3c52c2fcde2c934e51be79cc20899fcd047c31625a0de944d2449811ac67d",
+      "line": 377,
+      "path": "backend/rules_engine/costs.py"
+    },
+    {
+      "assignment": "target.poison += amount",
+      "file_sha256": "3c22ae348b25774bafc5b4723a34ce73dbfab4ef5f30d7d1228333b5b1673fbf",
+      "line": 109,
+      "path": "backend/rules_engine/counter_placement.py"
+    },
+    {
+      "assignment": "target.loyalty = int(target.loyalty or 0) + amount",
+      "file_sha256": "3c22ae348b25774bafc5b4723a34ce73dbfab4ef5f30d7d1228333b5b1673fbf",
+      "line": 112,
+      "path": "backend/rules_engine/counter_placement.py"
+    },
+    {
+      "assignment": "target.counters[key] = before + amount",
+      "file_sha256": "3c22ae348b25774bafc5b4723a34ce73dbfab4ef5f30d7d1228333b5b1673fbf",
+      "line": 116,
+      "path": "backend/rules_engine/counter_placement.py"
+    },
+    {
+      "assignment": "card.counters['__deathtouch_damaged'] = 1",
+      "file_sha256": "0d3d2d8693ea1b27888e2cc39542026e20a0985b89275446fcde0698273f9df5",
+      "line": 268,
+      "path": "backend/rules_engine/damage_results.py"
+    },
+    {
+      "assignment": "card.counters['__damage_marked'] = int(card.counters.get('__damage_marked', 0)) + amount",
+      "file_sha256": "0d3d2d8693ea1b27888e2cc39542026e20a0985b89275446fcde0698273f9df5",
+      "line": 275,
+      "path": "backend/rules_engine/damage_results.py"
+    },
+    {
+      "assignment": "pw.loyalty = next_loyalty",
+      "file_sha256": "e63016b22d26c576f62c6bbce2bfd93ddbbb1f10b1f4e208c689bc38d2a55abf",
+      "line": 1484,
+      "path": "backend/rules_engine/engine.py"
+    },
+    {
+      "assignment": "card.loyalty = 0",
+      "file_sha256": "8438cf02ded8bdef1a062c12a580112465c62b09d98254e7675792ce440a278b",
+      "line": 451,
+      "path": "backend/rules_engine/entry_counters.py"
+    },
+    {
+      "assignment": "card.counters['shield'] -= 1",
+      "file_sha256": "d9ae814a819dd416c9aa42fd4bf1c0f60c0865f2c62047c011959dd744481f54",
+      "line": 55,
+      "path": "backend/rules_engine/named_counters.py"
+    },
+    {
+      "assignment": "card.counters['stun'] -= 1",
+      "file_sha256": "d9ae814a819dd416c9aa42fd4bf1c0f60c0865f2c62047c011959dd744481f54",
+      "line": 84,
+      "path": "backend/rules_engine/named_counters.py"
+    },
+    {
+      "assignment": "card.counters[CARD_SHIELD_KEY] = int(card.counters.get(CARD_SHIELD_KEY, 0)) + int(amount)",
+      "file_sha256": "26fd87f3536c13c96224ee65ef505aa10ee59df9b6ed97c726c62b25e1d8f5a3",
+      "line": 237,
+      "path": "backend/rules_engine/prevention.py"
+    },
+    {
+      "assignment": "card.counters[CARD_SHIELD_KEY] = total - prevented",
+      "file_sha256": "26fd87f3536c13c96224ee65ef505aa10ee59df9b6ed97c726c62b25e1d8f5a3",
+      "line": 257,
+      "path": "backend/rules_engine/prevention.py"
+    },
+    {
+      "assignment": "card.counters[CARD_SHIELD_KEY] -= prevented",
+      "file_sha256": "26fd87f3536c13c96224ee65ef505aa10ee59df9b6ed97c726c62b25e1d8f5a3",
+      "line": 133,
+      "path": "backend/rules_engine/prevention.py"
+    },
+    {
+      "assignment": "card.loyalty = 0",
+      "file_sha256": "c247b5acb644e112592631982041057e803183139cfc99a6dfdcf92d2cad9b0a",
+      "line": 611,
+      "path": "backend/rules_engine/stack_engine.py"
+    },
+    {
+      "assignment": "card.counters['time'] = options['time_counters']",
+      "file_sha256": "96928e467eb9312f3995ed1b135bdde71376831c842428a5d99a84d914e300ac",
+      "line": 201,
+      "path": "backend/rules_engine/suspend.py"
+    },
+    {
+      "assignment": "card.counters['time'] = after",
+      "file_sha256": "96928e467eb9312f3995ed1b135bdde71376831c842428a5d99a84d914e300ac",
+      "line": 280,
+      "path": "backend/rules_engine/suspend.py"
+    },
+    {
+      "assignment": "state.players[2].counters['energy'] = 1",
+      "file_sha256": "731fd3cb585260742092a8f1e8d8d45db64102a7fcf1a5c4e409d7e72f8abd8b",
+      "line": 434,
+      "path": "backend/tests/browser_fixture_server.py"
+    },
+    {
+      "assignment": "state.players[2].poison = 1",
+      "file_sha256": "731fd3cb585260742092a8f1e8d8d45db64102a7fcf1a5c4e409d7e72f8abd8b",
+      "line": 435,
+      "path": "backend/tests/browser_fixture_server.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 1",
+      "file_sha256": "731fd3cb585260742092a8f1e8d8d45db64102a7fcf1a5c4e409d7e72f8abd8b",
+      "line": 499,
+      "path": "backend/tests/browser_fixture_server.py"
+    },
+    {
+      "assignment": "state.cards[bear].counters['+1/+1'] = 1",
+      "file_sha256": "03b0854b73f6571a4b7eb45e7b2f60c0f25050e17a4d42246afa25157d9cc24d",
+      "line": 110,
+      "path": "backend/tests/regression_agent/test_interactions.py"
+    },
+    {
+      "assignment": "state.cards[bear].counters['+1/+1'] = 1",
+      "file_sha256": "03b0854b73f6571a4b7eb45e7b2f60c0f25050e17a4d42246afa25157d9cc24d",
+      "line": 201,
+      "path": "backend/tests/regression_agent/test_interactions.py"
+    },
+    {
+      "assignment": "bear.counters['+1/+1'] = 2",
+      "file_sha256": "5cbc81f08e4727120f54e0ffbe0231420f699dd00b808378b0ff1f4433cfb4bb",
+      "line": 90,
+      "path": "backend/tests/regression_agent_wave2/test_casting_contracts.py"
+    },
+    {
+      "assignment": "other.counters['+1/+1'] = 1",
+      "file_sha256": "a25da8d2002d458a42f083b81267c89825d5bdccededc3ee010044b9300408f7",
+      "line": 93,
+      "path": "backend/tests/test_ability_cost_discounts.py"
+    },
+    {
+      "assignment": "condition.counters['+1/+1'] = 1",
+      "file_sha256": "a25da8d2002d458a42f083b81267c89825d5bdccededc3ee010044b9300408f7",
+      "line": 96,
+      "path": "backend/tests/test_ability_cost_discounts.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 5",
+      "file_sha256": "a25da8d2002d458a42f083b81267c89825d5bdccededc3ee010044b9300408f7",
+      "line": 133,
+      "path": "backend/tests/test_ability_cost_discounts.py"
+    },
+    {
+      "assignment": "qualifier.counters['+1/+1'] = 1",
+      "file_sha256": "a25da8d2002d458a42f083b81267c89825d5bdccededc3ee010044b9300408f7",
+      "line": 164,
+      "path": "backend/tests/test_ability_cost_discounts.py"
+    },
+    {
+      "assignment": "add(state, 'Azure Mage', seat).counters['+1/+1'] = units",
+      "file_sha256": "a25da8d2002d458a42f083b81267c89825d5bdccededc3ee010044b9300408f7",
+      "line": 63,
+      "path": "backend/tests/test_ability_cost_discounts.py"
+    },
+    {
+      "assignment": "add(state, 'Azure Mage', 3 - seat).counters['+1/+1'] = 7",
+      "file_sha256": "a25da8d2002d458a42f083b81267c89825d5bdccededc3ee010044b9300408f7",
+      "line": 64,
+      "path": "backend/tests/test_ability_cost_discounts.py"
+    },
+    {
+      "assignment": "add(state, 'Mind Stone', seat).counters['+1/+1'] = 7",
+      "file_sha256": "a25da8d2002d458a42f083b81267c89825d5bdccededc3ee010044b9300408f7",
+      "line": 65,
+      "path": "backend/tests/test_ability_cost_discounts.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 5",
+      "file_sha256": "a25da8d2002d458a42f083b81267c89825d5bdccededc3ee010044b9300408f7",
+      "line": 112,
+      "path": "backend/tests/test_ability_cost_discounts.py"
+    },
+    {
+      "assignment": "raw_add(state, 'Sheoldred, the Apocalypse', seat).counters['+1/+1'] = 1",
+      "file_sha256": "053daaf85d26ac52999820c6096b3d5057cec2efea5222446f3acfffc30ee55f",
+      "line": 74,
+      "path": "backend/tests/test_ability_cost_discounts_integration.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 4",
+      "file_sha256": "053daaf85d26ac52999820c6096b3d5057cec2efea5222446f3acfffc30ee55f",
+      "line": 28,
+      "path": "backend/tests/test_ability_cost_discounts_integration.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 1",
+      "file_sha256": "e8afa2e535006685521d7c8955c761d429a68c70e5d91c5560e68a4057a54d46",
+      "line": 90,
+      "path": "backend/tests/test_action_replay.py"
+    },
+    {
+      "assignment": "victim.counters['+1/+1'] = 2",
+      "file_sha256": "7f92bdfde2bc86956ec259c8a5b43297997f31c822504f4d523780497a899801",
+      "line": 87,
+      "path": "backend/tests/test_activated_sacrifice_identity.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = 2",
+      "file_sha256": "7f92bdfde2bc86956ec259c8a5b43297997f31c822504f4d523780497a899801",
+      "line": 119,
+      "path": "backend/tests/test_activated_sacrifice_identity.py"
+    },
+    {
+      "assignment": "victim.counters['+1/+1'] = 2",
+      "file_sha256": "7f92bdfde2bc86956ec259c8a5b43297997f31c822504f4d523780497a899801",
+      "line": 242,
+      "path": "backend/tests/test_activated_sacrifice_identity.py"
+    },
+    {
+      "assignment": "victim.counters['+1/+1'] = 2",
+      "file_sha256": "51444be71971e81b2f129d57b80e58ab8ff412395089ad55b145f7a1c8f120eb",
+      "line": 13,
+      "path": "backend/tests/test_activated_sacrifice_identity_limits.py"
+    },
+    {
+      "assignment": "state.cards[source].counters['+1/+1'] = 2",
+      "file_sha256": "ddc73bde53b3166ca424c3522de10bc5bd1190d183c8290f22bf1f601562924f",
+      "line": 57,
+      "path": "backend/tests/test_activated_search_shuffle_reference_reader.py"
+    },
+    {
+      "assignment": "walker.loyalty = 7",
+      "file_sha256": "cc6881c0092dcf7f573be4e41af5e328caa9e804cf66cdcb1d57882c19669517",
+      "line": 218,
+      "path": "backend/tests/test_activation_modifiers.py"
+    },
+    {
+      "assignment": "state.cards['enemy'].counters['__damage_marked'] = 1",
+      "file_sha256": "8d0cb8665fed1cd8fe37ef384b2114e3d172fbfd60e536041df901ce9e0b453c",
+      "line": 32,
+      "path": "backend/tests/test_ai_allocation_contracts.py"
+    },
+    {
+      "assignment": "walker.loyalty = 3",
+      "file_sha256": "1f2f1b1a8546df60bdbdb4f02f820e0595eaae7886c5e8eb7abcf28578a9a5e4",
+      "line": 121,
+      "path": "backend/tests/test_ai_combat_intents.py"
+    },
+    {
+      "assignment": "host.counters['+1/+1'] = 2",
+      "file_sha256": "e935ad24ed962d18da61946d3c54fb461ecf3f924092c019b85fcab86d20b1dd",
+      "line": 84,
+      "path": "backend/tests/test_ai_combat_setup.py"
+    },
+    {
+      "assignment": "host.counters['+1/+1'] = 2",
+      "file_sha256": "e935ad24ed962d18da61946d3c54fb461ecf3f924092c019b85fcab86d20b1dd",
+      "line": 98,
+      "path": "backend/tests/test_ai_combat_setup.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 1",
+      "file_sha256": "87d92b6d72a6b22d641e010da0e2107aae181f3379a33516165ef7a1fa20421b",
+      "line": 69,
+      "path": "backend/tests/test_ai_destruction_reuse.py"
+    },
+    {
+      "assignment": "pressured.cards[walker_id].loyalty = 5",
+      "file_sha256": "95a55a55c04b2bd51b5734efbd3dafeaa51d644ccb8d301bd5d11b98c3b67147",
+      "line": 93,
+      "path": "backend/tests/test_ai_heuristics.py"
+    },
+    {
+      "assignment": "clone.cards[victim].counters['+1/+1'] = 5",
+      "file_sha256": "2a8d81f9969533e3405db21d595acb21815d48c43ecf964b73b541ab0d5321ef",
+      "line": 153,
+      "path": "backend/tests/test_ai_projection_scope.py"
+    },
+    {
+      "assignment": "dead.counters['__damage_marked'] = 1",
+      "file_sha256": "83afa3e836f957a21ed5609821e2928b991cb282f178405348ea7314f78b5ddd",
+      "line": 43,
+      "path": "backend/tests/test_ai_read_query_boundaries.py"
+    },
+    {
+      "assignment": "own.counters['charge'] = 1",
+      "file_sha256": "cba11a732f6fd78853d3aecb3197ec4e13d82c4ce610315cf546996fcfc9b942",
+      "line": 35,
+      "path": "backend/tests/test_ai_selective_copy.py"
+    },
+    {
+      "assignment": "copied.cards[own.id].counters['charge'] = 10",
+      "file_sha256": "cba11a732f6fd78853d3aecb3197ec4e13d82c4ce610315cf546996fcfc9b942",
+      "line": 42,
+      "path": "backend/tests/test_ai_selective_copy.py"
+    },
+    {
+      "assignment": "view.cards[own.id].counters['charge'] = 5",
+      "file_sha256": "cba11a732f6fd78853d3aecb3197ec4e13d82c4ce610315cf546996fcfc9b942",
+      "line": 45,
+      "path": "backend/tests/test_ai_selective_copy.py"
+    },
+    {
+      "assignment": "state.cards[blocker_id].counters['__damage_marked'] = 2",
+      "file_sha256": "d52cae1520d9c50c55250f0400882a190696fc7c0f4e98102f4ab762f6537d94",
+      "line": 116,
+      "path": "backend/tests/test_analytics_batch.py"
+    },
+    {
+      "assignment": "source.counters['charge'] = 3",
+      "file_sha256": "7bfee2d590c5d817e5fb7117260d7d7581fcd46c9b648035de7cc27618f24e40",
+      "line": 67,
+      "path": "backend/tests/test_announced_target_reference_product.py"
+    },
+    {
+      "assignment": "source.counters = {'charge': count, '__engine_marker': 99}",
+      "file_sha256": "ca7d068fe4b55f8bc08db608efc90c3dde00da3519b9d65b40b87df30df4b4aa",
+      "line": 96,
+      "path": "backend/tests/test_attached_predicates.py"
+    },
+    {
+      "assignment": "source.counters['-1/-1'] = 1",
+      "file_sha256": "25bb7a60abc69e12e6f4be7f40ed75d6f0cbb42c62392c75a7a59b5e5403e821",
+      "line": 90,
+      "path": "backend/tests/test_bestow.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = count",
+      "file_sha256": "d356c333436b5ed2a4df5c5b246d0661692166fb492cccb91760fa2b37df9811",
+      "line": 77,
+      "path": "backend/tests/test_canonical_token_descriptors.py"
+    },
+    {
+      "assignment": "target.counters['__prevent_damage_shield'] = 5",
+      "file_sha256": "45d557616437bb2cf717cda066d3bcd32f561d11323c161eae6651b703da90a2",
+      "line": 38,
+      "path": "backend/tests/test_cant_prevent_scopes.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 2",
+      "file_sha256": "34ca9528260847ea2e3647067251b9f5b8a8754647748887e294859b2d77785c",
+      "line": 221,
+      "path": "backend/tests/test_characteristic_stats.py"
+    },
+    {
+      "assignment": "creature.counters['+1/+1'] = 4",
+      "file_sha256": "2cff15e5a41ccdef27824d1edea6c3253dddff347c2221d74b4923da982399e2",
+      "line": 89,
+      "path": "backend/tests/test_combat_coverage_diagnostics.py"
+    },
+    {
+      "assignment": "state.cards['traveler'].counters['__damage_marked'] = 1",
+      "file_sha256": "55926a33556277e74bba42e73463770811d779d360108e344bbc624538b6ded5",
+      "line": 300,
+      "path": "backend/tests/test_combat_damage_assignment.py"
+    },
+    {
+      "assignment": "state.cards[source].counters[kind] = {'insufficient': 0 if name == 'Fertilid' else 2, 'boolean': True, 'float': 3.0, 'negative': -1}[bad]",
+      "file_sha256": "72214ab81bfb64d2d33a815f30d35d9cb3ecc5c7412e5d6281bd1ceb486792cf",
+      "line": 120,
+      "path": "backend/tests/test_compound_source_counter_costs.py"
+    },
+    {
+      "assignment": "state.cards[source].counters = {'charge' if name == 'Fertilid' else '+1/+1': 3}",
+      "file_sha256": "72214ab81bfb64d2d33a815f30d35d9cb3ecc5c7412e5d6281bd1ceb486792cf",
+      "line": 123,
+      "path": "backend/tests/test_compound_source_counter_costs.py"
+    },
+    {
+      "assignment": "card.counters['charge'] = 2",
+      "file_sha256": "72214ab81bfb64d2d33a815f30d35d9cb3ecc5c7412e5d6281bd1ceb486792cf",
+      "line": 161,
+      "path": "backend/tests/test_compound_source_counter_costs.py"
+    },
+    {
+      "assignment": "blocker.counters['+1/+1'] = 2",
+      "file_sha256": "9499a0064b925f91301456a835113ab155cff83f36193a63472533ba10be1441",
+      "line": 99,
+      "path": "backend/tests/test_conditional_combat.py"
+    },
+    {
+      "assignment": "dragon.counters['+1/+1'] = 4",
+      "file_sha256": "9499a0064b925f91301456a835113ab155cff83f36193a63472533ba10be1441",
+      "line": 175,
+      "path": "backend/tests/test_conditional_combat.py"
+    },
+    {
+      "assignment": "restored.state.cards[dragon.id].counters['+1/+1'] = 5",
+      "file_sha256": "9499a0064b925f91301456a835113ab155cff83f36193a63472533ba10be1441",
+      "line": 185,
+      "path": "backend/tests/test_conditional_combat.py"
+    },
+    {
+      "assignment": "dragon.counters['+1/+1'] = amount",
+      "file_sha256": "9499a0064b925f91301456a835113ab155cff83f36193a63472533ba10be1441",
+      "line": 69,
+      "path": "backend/tests/test_conditional_combat.py"
+    },
+    {
+      "assignment": "state.cards[cid].counters['luck'] = 1",
+      "file_sha256": "31578334d4a98794e3d88b9cffa1f9e54eadda1149ae87712904d3f0fa769c11",
+      "line": 92,
+      "path": "backend/tests/test_conditional_opening_hand.py"
+    },
+    {
+      "assignment": "state.cards[colored].counters['luck'] = 1",
+      "file_sha256": "31578334d4a98794e3d88b9cffa1f9e54eadda1149ae87712904d3f0fa769c11",
+      "line": 111,
+      "path": "backend/tests/test_conditional_opening_hand.py"
+    },
+    {
+      "assignment": "state.cards[lord].counters['-1/-1'] = 1",
+      "file_sha256": "8fe801e4a96b43a1d3676592a6876c446a0f579840894363be65fdce8d580a2b",
+      "line": 173,
+      "path": "backend/tests/test_continuous_static_effects.py"
+    },
+    {
+      "assignment": "state.cards[elf].counters['-1/-1'] = 1",
+      "file_sha256": "8fe801e4a96b43a1d3676592a6876c446a0f579840894363be65fdce8d580a2b",
+      "line": 174,
+      "path": "backend/tests/test_continuous_static_effects.py"
+    },
+    {
+      "assignment": "state.cards[lord].counters['-1/-1'] = 1",
+      "file_sha256": "8fe801e4a96b43a1d3676592a6876c446a0f579840894363be65fdce8d580a2b",
+      "line": 199,
+      "path": "backend/tests/test_continuous_static_effects.py"
+    },
+    {
+      "assignment": "state.cards[elf].counters['-1/-1'] = 1",
+      "file_sha256": "8fe801e4a96b43a1d3676592a6876c446a0f579840894363be65fdce8d580a2b",
+      "line": 200,
+      "path": "backend/tests/test_continuous_static_effects.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = counters",
+      "file_sha256": "f521dfa14a1f2822faddd142f1258ea88e3d8d679700129e4ff5603af978cb06",
+      "line": 22,
+      "path": "backend/tests/test_counter_activation_admission_audit.py"
+    },
+    {
+      "assignment": "card.counters = {'charge': 3}",
+      "file_sha256": "f521dfa14a1f2822faddd142f1258ea88e3d8d679700129e4ff5603af978cb06",
+      "line": 151,
+      "path": "backend/tests/test_counter_activation_admission_audit.py"
+    },
+    {
+      "assignment": "card.loyalty = int(ROWS[name]['loyalty']) if ROWS[name].get('loyalty') is not None else None",
+      "file_sha256": "75f2b06a0e820e97c2f4c26efb370d98bd7b868a6618c762db7a1a56a5362072",
+      "line": 35,
+      "path": "backend/tests/test_counter_prohibitions.py"
+    },
+    {
+      "assignment": "state.cards[target_id].counters['+1/+1'] = 1",
+      "file_sha256": "9728f024b27cf7b5a6d87b82ff3ddfd2580cc2bf343c6119491b5fc71fd08ef6",
+      "line": 51,
+      "path": "backend/tests/test_creature_copy_tokens.py"
+    },
+    {
+      "assignment": "state.players[2].poison = 7",
+      "file_sha256": "7a385960d0322917628363c850d167004ae7a8e62e5b4e26d3a0a9db25378864",
+      "line": 128,
+      "path": "backend/tests/test_damage_counter_replacements.py"
+    },
+    {
+      "assignment": "card.counters['-1/-1'] = 12",
+      "file_sha256": "354635d43ddc96893ce9aa6e5e6ec61aae4fc40444e34f13f29f33654134fd7f",
+      "line": 65,
+      "path": "backend/tests/test_death_batch_entry_publication.py"
+    },
+    {
+      "assignment": "source.counters['charge' if name == 'Chromatic Star' else '+1/+1'] = 2",
+      "file_sha256": "e8595c0adf618bbfb02dce4ce6c597072d92421dfbd4e86299f1eb9630094c94",
+      "line": 101,
+      "path": "backend/tests/test_death_cycle_ordering_audit.py"
+    },
+    {
+      "assignment": "fish.counters['+1/+1'] = 2",
+      "file_sha256": "e8595c0adf618bbfb02dce4ce6c597072d92421dfbd4e86299f1eb9630094c94",
+      "line": 274,
+      "path": "backend/tests/test_death_cycle_ordering_audit.py"
+    },
+    {
+      "assignment": "second.counters['+1/+1'] = 2",
+      "file_sha256": "5303bb695e3b5f67a1ca884653af9d08093d369b23dc0966a5b814858767c2ca",
+      "line": 62,
+      "path": "backend/tests/test_death_last_known.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 1",
+      "file_sha256": "75fa13190d2913377fcedc83e82882611046bbcfeb5dda6cc510db41d40db9d0",
+      "line": 135,
+      "path": "backend/tests/test_death_replacement_canonical.py"
+    },
+    {
+      "assignment": "card.counters['__damage_marked'] = 3",
+      "file_sha256": "75fa13190d2913377fcedc83e82882611046bbcfeb5dda6cc510db41d40db9d0",
+      "line": 136,
+      "path": "backend/tests/test_death_replacement_canonical.py"
+    },
+    {
+      "assignment": "pw.loyalty = int(ROWS[pw.name]['loyalty'])",
+      "file_sha256": "91ed62fd3e234fda9cb9a7c3138d1e315f0c83b45ea0b6e257d57355b9b892a4",
+      "line": 71,
+      "path": "backend/tests/test_declaration_limits.py"
+    },
+    {
+      "assignment": "source.counters['__eot_keyword_lifelink'] = 1",
+      "file_sha256": "c28697ad1b4648bd16ebd535f1fe5075b887695e79489bf732d8e931f6934643",
+      "line": 41,
+      "path": "backend/tests/test_departed_damage_sources.py"
+    },
+    {
+      "assignment": "source.counters['__eot_keyword_infect'] = 1",
+      "file_sha256": "c28697ad1b4648bd16ebd535f1fe5075b887695e79489bf732d8e931f6934643",
+      "line": 42,
+      "path": "backend/tests/test_departed_damage_sources.py"
+    },
+    {
+      "assignment": "source.counters['__eot_keyword_lifelink'] = 1",
+      "file_sha256": "c28697ad1b4648bd16ebd535f1fe5075b887695e79489bf732d8e931f6934643",
+      "line": 55,
+      "path": "backend/tests/test_departed_damage_sources.py"
+    },
+    {
+      "assignment": "source.counters['__eot_keyword_lifelink'] = 1",
+      "file_sha256": "c28697ad1b4648bd16ebd535f1fe5075b887695e79489bf732d8e931f6934643",
+      "line": 71,
+      "path": "backend/tests/test_departed_damage_sources.py"
+    },
+    {
+      "assignment": "source.counters['__eot_keyword_lifelink'] = 1",
+      "file_sha256": "c28697ad1b4648bd16ebd535f1fe5075b887695e79489bf732d8e931f6934643",
+      "line": 80,
+      "path": "backend/tests/test_departed_damage_sources.py"
+    },
+    {
+      "assignment": "source.counters['__eot_keyword_wither'] = 1",
+      "file_sha256": "c28697ad1b4648bd16ebd535f1fe5075b887695e79489bf732d8e931f6934643",
+      "line": 88,
+      "path": "backend/tests/test_departed_damage_sources.py"
+    },
+    {
+      "assignment": "source.counters['__eot_keyword_lifelink'] = 1",
+      "file_sha256": "c28697ad1b4648bd16ebd535f1fe5075b887695e79489bf732d8e931f6934643",
+      "line": 124,
+      "path": "backend/tests/test_departed_damage_sources.py"
+    },
+    {
+      "assignment": "source.counters['__eot_keyword_lifelink'] = 1",
+      "file_sha256": "c28697ad1b4648bd16ebd535f1fe5075b887695e79489bf732d8e931f6934643",
+      "line": 150,
+      "path": "backend/tests/test_departed_damage_sources.py"
+    },
+    {
+      "assignment": "opposing.counters['+1/+1'] = 8",
+      "file_sha256": "1bbbb65b2a00afb55a4e0a038b7fd1818513da353d67c4c42480110dc2b96875",
+      "line": 148,
+      "path": "backend/tests/test_devotion.py"
+    },
+    {
+      "assignment": "source.loyalty = 3 if name == 'Daretti, Scrap Savant' else None",
+      "file_sha256": "bba3f4e85d8e6c22cbea6deafe7b70cbc96d1f72d521d0f59ee2678e0db451cc",
+      "line": 27,
+      "path": "backend/tests/test_discard_history.py"
+    },
+    {
+      "assignment": "source.counters['__eot_power'] = bonus",
+      "file_sha256": "bbc1e714a01d6a9701157e8a038b74e43e676ecb0e6922709021938707f34b1f",
+      "line": 36,
+      "path": "backend/tests/test_dynamic_activation_modifiers.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = 2",
+      "file_sha256": "bbc1e714a01d6a9701157e8a038b74e43e676ecb0e6922709021938707f34b1f",
+      "line": 54,
+      "path": "backend/tests/test_dynamic_activation_modifiers.py"
+    },
+    {
+      "assignment": "dynamic(state, 'Agatha of the Vile Cauldron', seat).counters['+1/+1'] = 2",
+      "file_sha256": "bbc1e714a01d6a9701157e8a038b74e43e676ecb0e6922709021938707f34b1f",
+      "line": 82,
+      "path": "backend/tests/test_dynamic_activation_modifiers.py"
+    },
+    {
+      "assignment": "dynamic(state, 'Agatha of the Vile Cauldron', seat).counters['+1/+1'] = 2",
+      "file_sha256": "bbc1e714a01d6a9701157e8a038b74e43e676ecb0e6922709021938707f34b1f",
+      "line": 144,
+      "path": "backend/tests/test_dynamic_activation_modifiers.py"
+    },
+    {
+      "assignment": "returned.counters['+1/+1'] = 9",
+      "file_sha256": "961edbf686d4aa7bbefd227f6434f7d1d16d0b7eb8f80f0b304f54f2fac50c6b",
+      "line": 185,
+      "path": "backend/tests/test_dynamic_death_quantity.py"
+    },
+    {
+      "assignment": "returned.counters['+1/+1'] = 2 if name == 'Nested Shambler' else 3",
+      "file_sha256": "961edbf686d4aa7bbefd227f6434f7d1d16d0b7eb8f80f0b304f54f2fac50c6b",
+      "line": 211,
+      "path": "backend/tests/test_dynamic_death_quantity.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = counters",
+      "file_sha256": "961edbf686d4aa7bbefd227f6434f7d1d16d0b7eb8f80f0b304f54f2fac50c6b",
+      "line": 42,
+      "path": "backend/tests/test_dynamic_death_quantity.py"
+    },
+    {
+      "assignment": "source.counters['charge'] = 7",
+      "file_sha256": "d09392fdd9ff820b10c7d422e7874e1467520708e0ad046cbaa66bb633edd226",
+      "line": 44,
+      "path": "backend/tests/test_dynamic_death_quantity_boundaries.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = starting_counters",
+      "file_sha256": "d09392fdd9ff820b10c7d422e7874e1467520708e0ad046cbaa66bb633edd226",
+      "line": 61,
+      "path": "backend/tests/test_dynamic_death_quantity_boundaries.py"
+    },
+    {
+      "assignment": "card.loyalty = int(ROWS[name]['loyalty'])",
+      "file_sha256": "56f3630c7af090a92330814815cc8b68d9b1877266f25d820fc93c178665e137",
+      "line": 26,
+      "path": "backend/tests/test_entry_replacement_order.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 4",
+      "file_sha256": "da4581aa8209ae49556adffcba26bf4a2fa83ccb8af721414efc7d066eb72051",
+      "line": 60,
+      "path": "backend/tests/test_entry_routes.py"
+    },
+    {
+      "assignment": "target.counters['+1/+1'] = 1",
+      "file_sha256": "9d05ef7eb7ae838aba6a4703edc64ef07de2874a9ebecaf5022420f088431984",
+      "line": 100,
+      "path": "backend/tests/test_equip_context.py"
+    },
+    {
+      "assignment": "source.counters['charge'] = 3",
+      "file_sha256": "9d05ef7eb7ae838aba6a4703edc64ef07de2874a9ebecaf5022420f088431984",
+      "line": 132,
+      "path": "backend/tests/test_equip_context.py"
+    },
+    {
+      "assignment": "state.cards[cid].counters['__damage_marked'] = 1",
+      "file_sha256": "5917605e1ab2bed781c459c4fc4ebd2385efc68b61846a35333223f1780a750b",
+      "line": 388,
+      "path": "backend/tests/test_events_apnap.py"
+    },
+    {
+      "assignment": "state.players[1].poison = 4",
+      "file_sha256": "607d290eec50eef57febf2591a1b59961c640152b453126a722aa4cce197ecef",
+      "line": 75,
+      "path": "backend/tests/test_expanded_keyword_mechanics.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = 3",
+      "file_sha256": "72004c503cff9101d9ac46815042bae0b5951a30d0a64d14abe2ea58ed57efbb",
+      "line": 134,
+      "path": "backend/tests/test_generic_protection_damage.py"
+    },
+    {
+      "assignment": "ordinary.counters['shield'] = 1",
+      "file_sha256": "88bb15e4c585a6d98a182c7fe931e10178853e793e1059569ee75166200073c3",
+      "line": 127,
+      "path": "backend/tests/test_handler_graveyard_migration.py"
+    },
+    {
+      "assignment": "shielded.counters['shield'] = 1",
+      "file_sha256": "88bb15e4c585a6d98a182c7fe931e10178853e793e1059569ee75166200073c3",
+      "line": 160,
+      "path": "backend/tests/test_handler_graveyard_migration.py"
+    },
+    {
+      "assignment": "pw.loyalty = 7",
+      "file_sha256": "7e278de7dea29468fca84961f6723aaddc5bbd2d4d2ff301a2406af2904ec810",
+      "line": 144,
+      "path": "backend/tests/test_hexproof_variants.py"
+    },
+    {
+      "assignment": "state.cards[creature_id].counters['__damage_marked'] = 2",
+      "file_sha256": "33478a74807f484d79f4ae2e7847a9366afc340a211205c521b5c570944b4a4c",
+      "line": 244,
+      "path": "backend/tests/test_interactions_expanded.py"
+    },
+    {
+      "assignment": "state.cards[pw_id].loyalty = 0",
+      "file_sha256": "33478a74807f484d79f4ae2e7847a9366afc340a211205c521b5c570944b4a4c",
+      "line": 273,
+      "path": "backend/tests/test_interactions_expanded.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 2",
+      "file_sha256": "e6ef4dc35e78984dec9b40b9eba3ed9d37bb69017f8efeb586ee092aee299502",
+      "line": 45,
+      "path": "backend/tests/test_keyword_graveyard_plans.py"
+    },
+    {
+      "assignment": "target.counters['+1/+1'] = 2",
+      "file_sha256": "45f8b7f991f62c83ad9fd79856c2ff596b55a34ed85a263ff291ee3c0ba8f1b6",
+      "line": 221,
+      "path": "backend/tests/test_kicker.py"
+    },
+    {
+      "assignment": "target.counters[barrier] = 1",
+      "file_sha256": "45f8b7f991f62c83ad9fd79856c2ff596b55a34ed85a263ff291ee3c0ba8f1b6",
+      "line": 222,
+      "path": "backend/tests/test_kicker.py"
+    },
+    {
+      "assignment": "target.counters['+1/+1'] = 2",
+      "file_sha256": "45f8b7f991f62c83ad9fd79856c2ff596b55a34ed85a263ff291ee3c0ba8f1b6",
+      "line": 31,
+      "path": "backend/tests/test_kicker.py"
+    },
+    {
+      "assignment": "target.counters['+1/+1'] = 6",
+      "file_sha256": "45f8b7f991f62c83ad9fd79856c2ff596b55a34ed85a263ff291ee3c0ba8f1b6",
+      "line": 133,
+      "path": "backend/tests/test_kicker.py"
+    },
+    {
+      "assignment": "large.counters['+1/+1'] = 4",
+      "file_sha256": "567be35527953bd5364b0f54536affb19e0e19a7ff9dd80566f7a5c3269419c0",
+      "line": 100,
+      "path": "backend/tests/test_kicker_goldens.py"
+    },
+    {
+      "assignment": "target.counters['__damage_marked'] = 2",
+      "file_sha256": "567be35527953bd5364b0f54536affb19e0e19a7ff9dd80566f7a5c3269419c0",
+      "line": 138,
+      "path": "backend/tests/test_kicker_goldens.py"
+    },
+    {
+      "assignment": "target.counters['+1/+1'] = 3",
+      "file_sha256": "567be35527953bd5364b0f54536affb19e0e19a7ff9dd80566f7a5c3269419c0",
+      "line": 135,
+      "path": "backend/tests/test_kicker_goldens.py"
+    },
+    {
+      "assignment": "arbor.counters['flying'] = 1",
+      "file_sha256": "740a7ae3458785b4620f03e369039db4083345afbddd8fe543e49c1127015796",
+      "line": 303,
+      "path": "backend/tests/test_land_type_layers.py"
+    },
+    {
+      "assignment": "creature.counters['+1/+1'] = 2",
+      "file_sha256": "64db2bd5cfa56b03d7ae3315fcc02f954a5ec6e52840c3a4bb5d3e5fcd8ef915",
+      "line": 122,
+      "path": "backend/tests/test_land_view_scope.py"
+    },
+    {
+      "assignment": "state.cards[cid].loyalty = 4",
+      "file_sha256": "da5401ee8f232f8e28e1bdfc9f831f4d4b60d7bb76d084f01fa10ef80864c273",
+      "line": 44,
+      "path": "backend/tests/test_legend_rule.py"
+    },
+    {
+      "assignment": "card.loyalty = int(ROWS[name]['loyalty'])",
+      "file_sha256": "fae8db2c9bb75ee4d669c3d3cd647b90b3d6ae2ce570764cced7c1fac4a495fa",
+      "line": 25,
+      "path": "backend/tests/test_legendary_channels.py"
+    },
+    {
+      "assignment": "state.players[seat].poison = 10",
+      "file_sha256": "9e45c537365f069d8d3ac031f455be71b517b01cd434e67efa81763b983166dc",
+      "line": 101,
+      "path": "backend/tests/test_life_conversion.py"
+    },
+    {
+      "assignment": "source.counters['__damage_marked'] = 100",
+      "file_sha256": "4cc8408d09e726157ecb074530eacb2f712b4093b27291d33e7f3699a1390a5f",
+      "line": 144,
+      "path": "backend/tests/test_linked_entry_counters.py"
+    },
+    {
+      "assignment": "source.counters['__damage_marked'] = 1",
+      "file_sha256": "86c7e6765b27d0cb0258232278a396a0df36f6fe05410baf956d1496221a700e",
+      "line": 128,
+      "path": "backend/tests/test_linked_exile.py"
+    },
+    {
+      "assignment": "ally.counters['stun'] = stun",
+      "file_sha256": "cd0b63d4c4bdb27e3ff8e2b6e6dbe7d964b7999a114db8271fec3d5d63a3566b",
+      "line": 66,
+      "path": "backend/tests/test_linked_group_untap.py"
+    },
+    {
+      "assignment": "state.players[2].poison = 10",
+      "file_sha256": "97daff85377e5b0e76db98cc85f4625d5c0ed8f3cc275416adfe56136b61ffb9",
+      "line": 47,
+      "path": "backend/tests/test_live_bo3_policy.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 5",
+      "file_sha256": "d538d5c0a2e83a23f1b3b9111218c117076af26aba3fc3b7cf6ef67c8f1026cf",
+      "line": 28,
+      "path": "backend/tests/test_locked_activation_mana_plan.py"
+    },
+    {
+      "assignment": "walker.loyalty = int(raw['loyalty'])",
+      "file_sha256": "5577765bdbf3c1905f3f2a86a6340c3b28df3c3a9c6ddc34c1d969cf4510cc7b",
+      "line": 94,
+      "path": "backend/tests/test_loyalty_counter_costs.py"
+    },
+    {
+      "assignment": "source.counters['charge'] = 3",
+      "file_sha256": "060967451eb30f4758706fb6c0d882d69e94b616ab0454ce6daf5f170bee1510",
+      "line": 300,
+      "path": "backend/tests/test_mana_self_sacrifice.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = 3",
+      "file_sha256": "060967451eb30f4758706fb6c0d882d69e94b616ab0454ce6daf5f170bee1510",
+      "line": 317,
+      "path": "backend/tests/test_mana_self_sacrifice.py"
+    },
+    {
+      "assignment": "source.loyalty = 5",
+      "file_sha256": "6b1654821fb51013c172ec1b94cd7c51426f30185fcdd36aa79f1c8fd7ef0bda",
+      "line": 436,
+      "path": "backend/tests/test_mana_system.py"
+    },
+    {
+      "assignment": "state.cards[fodder_id].counters['+1/+1'] = counters",
+      "file_sha256": "44cd37d82cc6f9a193e301156dd6500fa5b2cc0db76afb0227726b10898247e4",
+      "line": 51,
+      "path": "backend/tests/test_named_artifact_tokens.py"
+    },
+    {
+      "assignment": "state.cards['artist'].counters['__damage_marked'] = 1",
+      "file_sha256": "c84f009a4e41a67cc1a411cb98f110732bfbe72a3c49d63eca6a75f59fe41c30",
+      "line": 145,
+      "path": "backend/tests/test_named_death_triggers.py"
+    },
+    {
+      "assignment": "state.cards['elf'].counters['__damage_marked'] = 1",
+      "file_sha256": "c84f009a4e41a67cc1a411cb98f110732bfbe72a3c49d63eca6a75f59fe41c30",
+      "line": 146,
+      "path": "backend/tests/test_named_death_triggers.py"
+    },
+    {
+      "assignment": "bear.counters['stun'] = 2",
+      "file_sha256": "0e448985bc66ba001917806e324682f7d00ed6f139b37bb7b70f210d68514925",
+      "line": 54,
+      "path": "backend/tests/test_no_priority_progression.py"
+    },
+    {
+      "assignment": "bear.counters['stun'] = 2",
+      "file_sha256": "0e448985bc66ba001917806e324682f7d00ed6f139b37bb7b70f210d68514925",
+      "line": 105,
+      "path": "backend/tests/test_no_priority_progression.py"
+    },
+    {
+      "assignment": "cached.loyalty = None",
+      "file_sha256": "ed7f6ca0379cb09128c0e19bde81fc850e6611fb18bc7d604e987b7e3eb9724a",
+      "line": 273,
+      "path": "backend/tests/test_offline_match_hydration.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1' if name == 'Fertilid' else 'charge'] = 2 if name == 'Fertilid' else 3",
+      "file_sha256": "b9847e28c9bb0d016ba7381aab36807341440a65c3e11fa6ea37bd55b0dbff84",
+      "line": 38,
+      "path": "backend/tests/test_paid_counter_family_audit.py"
+    },
+    {
+      "assignment": "state.cards[source].counters[kind] = 0 if name == 'Fertilid' else 2",
+      "file_sha256": "b9847e28c9bb0d016ba7381aab36807341440a65c3e11fa6ea37bd55b0dbff84",
+      "line": 273,
+      "path": "backend/tests/test_paid_counter_family_audit.py"
+    },
+    {
+      "assignment": "state.cards[source].counters[kind] = True",
+      "file_sha256": "b9847e28c9bb0d016ba7381aab36807341440a65c3e11fa6ea37bd55b0dbff84",
+      "line": 275,
+      "path": "backend/tests/test_paid_counter_family_audit.py"
+    },
+    {
+      "assignment": "state.cards[source].counters['charge' if name == 'Fertilid' else '+1/+1'] = 3",
+      "file_sha256": "b9847e28c9bb0d016ba7381aab36807341440a65c3e11fa6ea37bd55b0dbff84",
+      "line": 210,
+      "path": "backend/tests/test_paid_counter_family_audit.py"
+    },
+    {
+      "assignment": "state.cards[pw].loyalty = 2",
+      "file_sha256": "85cf97680ff90a5700fc0504540b5e8caa6d205a1c723d0bb304b59ff2e55a7e",
+      "line": 32,
+      "path": "backend/tests/test_planeswalkers.py"
+    },
+    {
+      "assignment": "state.cards[pw].loyalty = 3",
+      "file_sha256": "85cf97680ff90a5700fc0504540b5e8caa6d205a1c723d0bb304b59ff2e55a7e",
+      "line": 63,
+      "path": "backend/tests/test_planeswalkers.py"
+    },
+    {
+      "assignment": "state.cards[pw].loyalty = 4",
+      "file_sha256": "85cf97680ff90a5700fc0504540b5e8caa6d205a1c723d0bb304b59ff2e55a7e",
+      "line": 86,
+      "path": "backend/tests/test_planeswalkers.py"
+    },
+    {
+      "assignment": "state.cards[pw].loyalty = 5",
+      "file_sha256": "85cf97680ff90a5700fc0504540b5e8caa6d205a1c723d0bb304b59ff2e55a7e",
+      "line": 129,
+      "path": "backend/tests/test_planeswalkers.py"
+    },
+    {
+      "assignment": "state.cards[pw].loyalty = 5",
+      "file_sha256": "85cf97680ff90a5700fc0504540b5e8caa6d205a1c723d0bb304b59ff2e55a7e",
+      "line": 173,
+      "path": "backend/tests/test_planeswalkers.py"
+    },
+    {
+      "assignment": "clone.players[player].counters['experience'] = 8",
+      "file_sha256": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+      "line": 54,
+      "path": "backend/tests/test_player_counters.py"
+    },
+    {
+      "assignment": "state.players[1].poison = 7",
+      "file_sha256": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+      "line": 60,
+      "path": "backend/tests/test_player_counters.py"
+    },
+    {
+      "assignment": "state.players[1].poison = 9",
+      "file_sha256": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+      "line": 73,
+      "path": "backend/tests/test_player_counters.py"
+    },
+    {
+      "assignment": "state.players[player].counters['experience'] = 3",
+      "file_sha256": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+      "line": 173,
+      "path": "backend/tests/test_player_counters.py"
+    },
+    {
+      "assignment": "state.players[1].counters['experience'] = 4",
+      "file_sha256": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+      "line": 185,
+      "path": "backend/tests/test_player_counters.py"
+    },
+    {
+      "assignment": "state.players[1].counters['experience'] = 5",
+      "file_sha256": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+      "line": 197,
+      "path": "backend/tests/test_player_counters.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 2",
+      "file_sha256": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+      "line": 198,
+      "path": "backend/tests/test_player_counters.py"
+    },
+    {
+      "assignment": "state.players[2].counters['experience'] = 3",
+      "file_sha256": "fc872e09ef162cb74ae30c231e16fa416a2acef4d14a209752cb6e5bd14cf035",
+      "line": 293,
+      "path": "backend/tests/test_player_counters.py"
+    },
+    {
+      "assignment": "creature.counters['__damage_marked'] = 2",
+      "file_sha256": "5ae3e927fc23123f49dd95870c954684aa945774d773cab9f16c603086167e56",
+      "line": 844,
+      "path": "backend/tests/test_prevention_replacement_edges.py"
+    },
+    {
+      "assignment": "creature.counters['__damage_marked'] = 2",
+      "file_sha256": "5ae3e927fc23123f49dd95870c954684aa945774d773cab9f16c603086167e56",
+      "line": 882,
+      "path": "backend/tests/test_prevention_replacement_edges.py"
+    },
+    {
+      "assignment": "card.counters['__damage_marked'] = 2",
+      "file_sha256": "5ae3e927fc23123f49dd95870c954684aa945774d773cab9f16c603086167e56",
+      "line": 1075,
+      "path": "backend/tests/test_prevention_replacement_edges.py"
+    },
+    {
+      "assignment": "card.counters['__deathtouch_damaged'] = 1",
+      "file_sha256": "5ae3e927fc23123f49dd95870c954684aa945774d773cab9f16c603086167e56",
+      "line": 1076,
+      "path": "backend/tests/test_prevention_replacement_edges.py"
+    },
+    {
+      "assignment": "card.counters['__prevent_damage_shield'] = 3",
+      "file_sha256": "5ae3e927fc23123f49dd95870c954684aa945774d773cab9f16c603086167e56",
+      "line": 1077,
+      "path": "backend/tests/test_prevention_replacement_edges.py"
+    },
+    {
+      "assignment": "bear.counters = {'+1/+1': 3, 'shield': 2, 'stun': 1, '__damage_marked': 1, 'charge': 0}",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 47,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[player].poison = 2",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 48,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[player].counters = {'energy': 3, 'experience': 1}",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 49,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "bear.counters = {'+1/+1': 1, 'shield': 1}",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 94,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "bear.counters = {'+1/+1': 1, 'shield': 1}",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 111,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[2].poison = 2",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 113,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].counters['energy'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 130,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[2].counters['energy'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 131,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "history.counters['__lore'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 148,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "walker.loyalty = 7",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 150,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].counters['energy'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 165,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "own.counters = {'+1/+1': 1, 'shield': 1}",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 204,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "enemy.counters = {'-1/-1': 1}",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 205,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].poison = 9",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 206,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[2].poison = 9",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 207,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].counters['energy'] = 10",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 219,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].poison = 9",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 220,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].counters = {'poison': 100, '__marker': 1}",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 226,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].poison = 2",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 228,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "bear.counters = {'+1/+1': 1, 'shield': 1}",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 235,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].counters['energy'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 249,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[2].counters['energy'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 250,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[2].poison = 9",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 279,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].counters['energy'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 311,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[2].counters['energy'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 312,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[2].counters['energy'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 330,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[2].poison = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 331,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "watcher.counters['+1/+1'] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 75,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].poison = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 294,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "state.players[1].counters[kind] = 1",
+      "file_sha256": "c54fa6b30c968117618c4b72618471b776d9f86546f102e2eb54498d7820e93b",
+      "line": 296,
+      "path": "backend/tests/test_proliferation.py"
+    },
+    {
+      "assignment": "card.counters = None",
+      "file_sha256": "19243ac3042e82ffd903642104ede3bb54d7427fec8b942364fa5cd20eb5c982",
+      "line": 103,
+      "path": "backend/tests/test_public_graveyard_inventory.py"
+    },
+    {
+      "assignment": "stun.counters['stun'] = 1",
+      "file_sha256": "cad70590925ad4ca8705238db1dc7d03da8959dd50d46b0d157bffd19b744911",
+      "line": 147,
+      "path": "backend/tests/test_queued_sequences.py"
+    },
+    {
+      "assignment": "source.counters['invitation'] = prior_counters",
+      "file_sha256": "8f2860379b07ca921468d5ce49757f7f958479e36bc4cb3af19d86399272ab8f",
+      "line": 171,
+      "path": "backend/tests/test_readiness_rules_seam.py"
+    },
+    {
+      "assignment": "state.cards[wolf].counters['+1/+1'] = 1",
+      "file_sha256": "29e764a65f2fc7171936631541dd5da86f19f7db2f2b0988d76a4afb381450ad",
+      "line": 87,
+      "path": "backend/tests/test_regression_repair_edges.py"
+    },
+    {
+      "assignment": "state.cards[wolf].counters['+1/+1'] = 1",
+      "file_sha256": "29e764a65f2fc7171936631541dd5da86f19f7db2f2b0988d76a4afb381450ad",
+      "line": 54,
+      "path": "backend/tests/test_regression_repair_edges.py"
+    },
+    {
+      "assignment": "card.counters = {'+1/+1': 1, '__eot_power': 2, '__damage_marked': 1}",
+      "file_sha256": "2ebb1b5c81c86e426e140c3eff27cf6f63e5d37e91344de8e7d64eb41970bc0d",
+      "line": 35,
+      "path": "backend/tests/test_release_card_contracts.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 1",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 98,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 1",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 102,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 1",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 111,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 3",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 172,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 3",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 184,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 3",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 192,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 2",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 206,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 1",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 236,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 1",
+      "file_sha256": "fd5970e445c306c2a0091517be4cb76f9a84b2fe8c2eb18a910fc2a2aacc165c",
+      "line": 145,
+      "path": "backend/tests/test_saga_counter_events.py"
+    },
+    {
+      "assignment": "saga.counters['__lore'] = 2",
+      "file_sha256": "7e281993dde99caea8d4b3fc2a0bcd329eca472b44f38708647ef874c07ede29",
+      "line": 35,
+      "path": "backend/tests/test_saga_live.py"
+    },
+    {
+      "assignment": "state.cards['saga'].counters['__lore'] = 1",
+      "file_sha256": "eade44db7b8aa4cdbe52938ecca11c0a83398a656c5766bed034df488afeaf13",
+      "line": 61,
+      "path": "backend/tests/test_sagas.py"
+    },
+    {
+      "assignment": "saga.counters['__lore'] = 2",
+      "file_sha256": "eade44db7b8aa4cdbe52938ecca11c0a83398a656c5766bed034df488afeaf13",
+      "line": 110,
+      "path": "backend/tests/test_sagas.py"
+    },
+    {
+      "assignment": "saga.counters['+1/+1'] = 1",
+      "file_sha256": "eade44db7b8aa4cdbe52938ecca11c0a83398a656c5766bed034df488afeaf13",
+      "line": 111,
+      "path": "backend/tests/test_sagas.py"
+    },
+    {
+      "assignment": "saga.counters['__lore'] = 2",
+      "file_sha256": "eade44db7b8aa4cdbe52938ecca11c0a83398a656c5766bed034df488afeaf13",
+      "line": 153,
+      "path": "backend/tests/test_sagas.py"
+    },
+    {
+      "assignment": "target.counters['-1/-1'] = 11",
+      "file_sha256": "0b8125c0c9db6b8cc3dbb2a8135e1f8698146d18f69d5e1a0602f20db4522774",
+      "line": 119,
+      "path": "backend/tests/test_sba_graveyard_entry_product.py"
+    },
+    {
+      "assignment": "first.counters['__damage_marked'] = 1",
+      "file_sha256": "0b8125c0c9db6b8cc3dbb2a8135e1f8698146d18f69d5e1a0602f20db4522774",
+      "line": 145,
+      "path": "backend/tests/test_sba_graveyard_entry_product.py"
+    },
+    {
+      "assignment": "second.counters['-1/-1'] = 11",
+      "file_sha256": "0b8125c0c9db6b8cc3dbb2a8135e1f8698146d18f69d5e1a0602f20db4522774",
+      "line": 146,
+      "path": "backend/tests/test_sba_graveyard_entry_product.py"
+    },
+    {
+      "assignment": "offboard.loyalty = 0",
+      "file_sha256": "826678870d97986744d30dda7db06ea9b16dba0e9e9ce8e5a08cc5044f8788c0",
+      "line": 106,
+      "path": "backend/tests/test_sba_planeswalker_query_order.py"
+    },
+    {
+      "assignment": "card.loyalty = loyalty",
+      "file_sha256": "826678870d97986744d30dda7db06ea9b16dba0e9e9ce8e5a08cc5044f8788c0",
+      "line": 128,
+      "path": "backend/tests/test_sba_planeswalker_query_order.py"
+    },
+    {
+      "assignment": "first.loyalty = second.loyalty = 0",
+      "file_sha256": "826678870d97986744d30dda7db06ea9b16dba0e9e9ce8e5a08cc5044f8788c0",
+      "line": 140,
+      "path": "backend/tests/test_sba_planeswalker_query_order.py"
+    },
+    {
+      "assignment": "first.loyalty = second.loyalty = 0",
+      "file_sha256": "826678870d97986744d30dda7db06ea9b16dba0e9e9ce8e5a08cc5044f8788c0",
+      "line": 140,
+      "path": "backend/tests/test_sba_planeswalker_query_order.py"
+    },
+    {
+      "assignment": "state.cards[walker.id].loyalty = 0",
+      "file_sha256": "826678870d97986744d30dda7db06ea9b16dba0e9e9ce8e5a08cc5044f8788c0",
+      "line": 160,
+      "path": "backend/tests/test_sba_planeswalker_query_order.py"
+    },
+    {
+      "assignment": "state.cards[first.id].loyalty = state.cards[later.id].loyalty = 0",
+      "file_sha256": "826678870d97986744d30dda7db06ea9b16dba0e9e9ce8e5a08cc5044f8788c0",
+      "line": 177,
+      "path": "backend/tests/test_sba_planeswalker_query_order.py"
+    },
+    {
+      "assignment": "state.cards[first.id].loyalty = state.cards[later.id].loyalty = 0",
+      "file_sha256": "826678870d97986744d30dda7db06ea9b16dba0e9e9ce8e5a08cc5044f8788c0",
+      "line": 177,
+      "path": "backend/tests/test_sba_planeswalker_query_order.py"
+    },
+    {
+      "assignment": "walker.loyalty = 0",
+      "file_sha256": "826678870d97986744d30dda7db06ea9b16dba0e9e9ce8e5a08cc5044f8788c0",
+      "line": 195,
+      "path": "backend/tests/test_sba_planeswalker_query_order.py"
+    },
+    {
+      "assignment": "bear.counters['__prevent_damage_shield'] = 10",
+      "file_sha256": "dc887a9233684da1b3b96169d5057f5bdb143b86034db1e79d476cefc448d55f",
+      "line": 50,
+      "path": "backend/tests/test_shield_counters.py"
+    },
+    {
+      "assignment": "armor.counters['shield'] = 1",
+      "file_sha256": "dc887a9233684da1b3b96169d5057f5bdb143b86034db1e79d476cefc448d55f",
+      "line": 120,
+      "path": "backend/tests/test_shield_counters.py"
+    },
+    {
+      "assignment": "bear.counters[{'zero': '__eot_toughness', 'lethal': '__damage_marked', 'deathtouch': '__deathtouch_damaged'}[reason]] = -2 if reason == 'zero' else 2",
+      "file_sha256": "dc887a9233684da1b3b96169d5057f5bdb143b86034db1e79d476cefc448d55f",
+      "line": 107,
+      "path": "backend/tests/test_shield_counters.py"
+    },
+    {
+      "assignment": "state.cards[source].counters['+1/+1'] = {'boolean': True, 'float': 3.0, 'negative': -1}[problem]",
+      "file_sha256": "045f84fbc47981517f01cf37117b8309f0fa7c5a930dfdc829fb66937afb946e",
+      "line": 104,
+      "path": "backend/tests/test_source_counter_costs.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 0",
+      "file_sha256": "045f84fbc47981517f01cf37117b8309f0fa7c5a930dfdc829fb66937afb946e",
+      "line": 124,
+      "path": "backend/tests/test_source_counter_costs.py"
+    },
+    {
+      "assignment": "card.counters['__lore'] = 0",
+      "file_sha256": "57fe414bd205eaa857f1aabdbfe5adb1d25fa986edf3f06376dc40c20ef4cccb",
+      "line": 152,
+      "path": "backend/tests/test_spell_entry_counters.py"
+    },
+    {
+      "assignment": "other.counters['+1/+1'] = 3",
+      "file_sha256": "c53b97a03ef2ef90afbde9558de254fa1819d45276f418d48d4aa21f36e1a07e",
+      "line": 66,
+      "path": "backend/tests/test_static_parser_cache.py"
+    },
+    {
+      "assignment": "card.counters = {'+1/+1': 2}",
+      "file_sha256": "b737270170b621eafc5bd3ddd92697a4f39371b2e7d335120093a9d0625b2c89",
+      "line": 46,
+      "path": "backend/tests/test_targeted_search_runtime_dependencies.py"
+    },
+    {
+      "assignment": "elf.counters['+1/+1'] = 1",
+      "file_sha256": "89b11315fcb9c82d20290c106e69983d2a69c9684b99048cb69e145010627576",
+      "line": 47,
+      "path": "backend/tests/test_temporary_ability_loss.py"
+    },
+    {
+      "assignment": "elf.counters['__damage_marked'] = 1",
+      "file_sha256": "89b11315fcb9c82d20290c106e69983d2a69c9684b99048cb69e145010627576",
+      "line": 62,
+      "path": "backend/tests/test_temporary_ability_loss.py"
+    },
+    {
+      "assignment": "walker.loyalty = 7",
+      "file_sha256": "d858482a635e8d5c055de590e6c939bfff930b6a6b31882ee6886460e53e7a6d",
+      "line": 42,
+      "path": "backend/tests/test_training_combat_intent_audit.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 3",
+      "file_sha256": "f945daad40f2541b164364969781b4b154ca326ef8276271702dee7a195e4fa8",
+      "line": 87,
+      "path": "backend/tests/test_transformed_entry.py"
+    },
+    {
+      "assignment": "card.loyalty = 7",
+      "file_sha256": "f945daad40f2541b164364969781b4b154ca326ef8276271702dee7a195e4fa8",
+      "line": 111,
+      "path": "backend/tests/test_transformed_entry.py"
+    },
+    {
+      "assignment": "card.loyalty = 2",
+      "file_sha256": "f945daad40f2541b164364969781b4b154ca326ef8276271702dee7a195e4fa8",
+      "line": 131,
+      "path": "backend/tests/test_transformed_entry.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = 3",
+      "file_sha256": "0cf1dc39053e0a82c862726d86ae912d13afc0967f032f6682994b7ee6245e97",
+      "line": 65,
+      "path": "backend/tests/test_variable_mana.py"
+    },
+    {
+      "assignment": "source.counters['-1/-1'] = 20",
+      "file_sha256": "0cf1dc39053e0a82c862726d86ae912d13afc0967f032f6682994b7ee6245e97",
+      "line": 73,
+      "path": "backend/tests/test_variable_mana.py"
+    },
+    {
+      "assignment": "source.counters['+1/+1'] = 4",
+      "file_sha256": "0cf1dc39053e0a82c862726d86ae912d13afc0967f032f6682994b7ee6245e97",
+      "line": 85,
+      "path": "backend/tests/test_variable_mana.py"
+    },
+    {
+      "assignment": "state.cards[target].counters['+1/+1'] = 2",
+      "file_sha256": "e9bc9f359c2a057cb6d0860c82f1896a56280ff2a87dbb4ee4c611346b60af96",
+      "line": 99,
+      "path": "backend/tests/test_ward_resolution.py"
+    },
+    {
+      "assignment": "card.counters['+1/+1'] = 2",
+      "file_sha256": "d7f6df0b41aabf5c84fdf009dd5fbb9010f6133b30ec75d785a5849b42c5f3f8",
+      "line": 270,
+      "path": "backend/tests/test_wheel_draw.py"
+    },
+    {
+      "assignment": "state.cards[skullbriar.id].counters['+1/+1'] = 2",
+      "file_sha256": "ffdc0e41f82405109a0f495898912690b1dd7569765d8f925a43a595c3337159",
+      "line": 85,
+      "path": "backend/tests/test_zone_object_reset.py"
+    },
+    {
+      "assignment": "state.cards[cid].counters['time'] = count",
+      "file_sha256": "66681651e4e6292a97c453fe9c3a5ebb17e77d472337b59ea5c26717a9c45206",
+      "line": 54,
+      "path": "backend/tests/variable_suspend_support.py"
+    }
+  ],
+  "proposed_scope": {
+    "api_contracts.py": {
+      "file_sha256": "201790be31fa513e8371236ce86af26a4007b14e53997fa58923d81b20d2e2ff",
+      "requested_functions": {},
+      "status": "read-only"
+    },
+    "effects/registry.py": {
+      "file_sha256": "72e9b91d1d86a26b9ea35f2671b3036307e7ed71c70da6f85b5325d5f474491a",
+      "requested_functions": {},
+      "status": "proposal-only"
+    },
+    "game_state/serializers.py": {
+      "file_sha256": "8965dfe75331a7927065dd94ee803a07647d779a23976c5e8059e7cbd2fb2281",
+      "requested_functions": {
+        "deserialize_match_snapshot": {
+          "ast_sha256": "973293dd56236e39eacc5633c842bad0420c3cc575effc39cc3f11b6abf24530",
+          "end_line": 435,
+          "line": 254,
+          "preimage_sha256": "91ce94319402ae1554caa55ff83e5e5eed362349aa9e19addd3cc4de4c3f3833"
+        },
+        "serialize_match_snapshot": {
+          "ast_sha256": "ef9306f981b0d75f470faf6134285d426cff6de6a8f1d971f90022d9a97810bf",
+          "end_line": 251,
+          "line": 72,
+          "preimage_sha256": "d1972a4b5ec4280a1777458d9ea2b37d1149c62726cb2133aa77960054023e90"
+        }
+      },
+      "status": "proposal-only"
+    },
+    "game_state/state.py": {
+      "file_sha256": "f7b706ac18fe64a114c2fc99d71a62a199990d91081ce51ad033d9af8a8c048a",
+      "requested_functions": {
+        "MatchState": {
+          "ast_sha256": "3e3c90f353f9f45611f94e187c40dd798fe6bbfacac84616934da93f0861a02c",
+          "end_line": 311,
+          "line": 206,
+          "preimage_sha256": "a709fecb4c0c1808b8bffec118edf3c4d6192ecdd4461453704254e91deaa863"
+        }
+      },
+      "status": "proposal-only"
+    },
+    "rules_engine/action_validation.py": {
+      "file_sha256": "8177eb148ff340b8285e8aae8eee7799ff47265c1b7613d01f75b1c65f56c204",
+      "requested_functions": {
+        "validate_action": {
+          "ast_sha256": "facdb734c3da9176590d72f7f7e47777883fa2e770dd2bdd981bb360c0cd1f29",
+          "end_line": 385,
+          "line": 155,
+          "preimage_sha256": "c840f2ab78e8f40c08e86c3a41eb34e76e498541dc00df7a84914dfdaffee15e"
+        }
+      },
+      "status": "proposal-only"
+    },
+    "rules_engine/continuous.py": {
+      "file_sha256": "3ff90a5aed8f193b2098cf5695192dd1dbd4126d39825fbf238d543b47b3d9c8",
+      "requested_functions": {},
+      "status": "read-only"
+    },
+    "rules_engine/costs.py": {
+      "file_sha256": "d8b3c52c2fcde2c934e51be79cc20899fcd047c31625a0de944d2449811ac67d",
+      "requested_functions": {},
+      "status": "read-only"
+    },
+    "rules_engine/counter_placement.py": {
+      "file_sha256": "3c22ae348b25774bafc5b4723a34ce73dbfab4ef5f30d7d1228333b5b1673fbf",
+      "requested_functions": {
+        "counter_placement_forbidden": {
+          "ast_sha256": "a66a78f2c105278f1df4d61233f8691cc2a826bfeacbabf86c384a07bd77dc18",
+          "end_line": 79,
+          "line": 43,
+          "preimage_sha256": "90bebb2d7022d177669bd8222cb2fa9cd2d68eadbc2abf891b1565d94dc23794"
+        }
+      },
+      "status": "proposal-only"
+    },
+    "rules_engine/coverage.py": {
+      "file_sha256": "2b1217d0c5bf41e3e72f64c0e1b7a792d54f52fc92120247ebcbac74a6ee5ae3",
+      "requested_functions": {},
+      "status": "read-only"
+    },
+    "rules_engine/engine.py": {
+      "file_sha256": "e63016b22d26c576f62c6bbce2bfd93ddbbb1f10b1f4e208c689bc38d2a55abf",
+      "requested_functions": {},
+      "status": "read-only"
+    },
+    "rules_engine/events.py": {
+      "file_sha256": "5dc72bcafb23351b94257cb65aac87afccd7be2df2022deb35dc2f0a525dbf4c",
+      "requested_functions": {
+        "_append_trigger_groups": {
+          "ast_sha256": "bbdf2acfeaf819ccd324d7c87a7cf43f9566e660bca49d4fd7eb0a93b2b98ea8",
+          "end_line": 369,
+          "line": 273,
+          "preimage_sha256": "6d454cb82a60f050c0bfc5a1e153119a8e8521b9566e5f4cd6df97c643d56063"
+        },
+        "_targeted_trigger_clause": {
+          "ast_sha256": "6281b49fe9ee4f99d5b38303ea8939b25385e4639a6a19427b67062abfe6a7fc",
+          "end_line": 465,
+          "line": 417,
+          "preimage_sha256": "c111685039487bfdb0246ed639aae46e455f55edb8df878f4f6be36eb0808a3c"
+        },
+        "_trigger_from_oracle": {
+          "ast_sha256": "bb496a508f5fa44ade635619b28c8da96c02a61a72513bc049e8ffdf90457e4e",
+          "end_line": 2271,
+          "line": 1678,
+          "preimage_sha256": "d1f37f3b4dca3d1cd5dc5582f50aafd75e4b4fe246711a3481710360c0702c8f"
+        },
+        "trigger_target_options": {
+          "ast_sha256": "33c93bb6f0877a1866405d54e91050682ec38eeb8f4712ee6de53dd1340d3a57",
+          "end_line": 526,
+          "line": 468,
+          "preimage_sha256": "d8213dbafe527311755df72801af06076970f5a986992d6945182a225843859f"
+        }
+      },
+      "status": "proposal-only"
+    },
+    "rules_engine/keyword_actions.py": {
+      "file_sha256": "a5a7bac28e65a522acfabaf5eaf0ae45ab9e8229792e6f04a819c5548c97fa7e",
+      "requested_functions": {
+        "finish_mechanic_choice": {
+          "ast_sha256": "dfd07f38a5fec9d37b1fe1fa5a0d02a839607406ab805ec9f13a3c6303090fdb",
+          "end_line": 561,
+          "line": 85,
+          "preimage_sha256": "7a2c9362ddb1405cccbd0eba9b9d24e9de36f034dd4166165bf1f59781f7d7a5"
+        }
+      },
+      "status": "proposal-only"
+    },
+    "rules_engine/move_generator.py": {
+      "file_sha256": "125314d9c24e2af2024b2824553a507ba68081a77813a84d65503e5e71dfc733",
+      "requested_functions": {
+        "legal_moves": {
+          "ast_sha256": "5dff103382b252b7506f952a0398b8ad27b1ae9e1c7d23fe00b7e8273c372232",
+          "end_line": 610,
+          "line": 72,
+          "preimage_sha256": "5acc60368d57a8c35da90794faa1368d9eacf5439a70d3358ceb9919a8998253"
+        }
+      },
+      "status": "proposal-only"
+    },
+    "rules_engine/optional_reveal.py": {
+      "file_sha256": "5ff7a198ef7d62a03608ea28e5ffcfbfa52d17c820fc91f29b8544248068f837",
+      "requested_functions": {
+        "public_choice": {
+          "ast_sha256": "4342e1add695230688d5f4400fa92e9d498648245b404222af47b0295b7386e4",
+          "end_line": 91,
+          "line": 83,
+          "preimage_sha256": "56b0b8fed301277eb23595156875e2209e4618768642923ad16c4a7ff6eabef3"
+        }
+      },
+      "status": "proposal-only"
+    },
+    "rules_engine/oracle_effects.py": {
+      "file_sha256": "1464ce56088212b25ea30cdb22e1db334084e79dad2c35fd6ecbf4b62e4512a3",
+      "requested_functions": {},
+      "status": "read-only"
+    },
+    "rules_engine/stack_engine.py": {
+      "file_sha256": "c247b5acb644e112592631982041057e803183139cfc99a6dfdcf92d2cad9b0a",
+      "requested_functions": {},
+      "status": "read-only"
+    },
+    "rules_engine/targeting.py": {
+      "file_sha256": "2351ece0ead5d6ca6af914a5ddf9f01aa7dd6f479f4aee02a34e82975c3e0e40",
+      "requested_functions": {},
+      "status": "read-only"
+    }
+  },
+  "qualification": "source-only proposal; current32 original assertions remain RED"
+}

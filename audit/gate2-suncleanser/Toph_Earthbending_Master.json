@@ -1,0 +1,160 @@
+{
+  "all_parts": [
+    {
+      "component": "combo_piece",
+      "id": "edf99449-b176-460b-afb3-14a35e3ae35a",
+      "name": "Experience",
+      "object": "related_card",
+      "type_line": "Card",
+      "uri": "https://api.scryfall.com/cards/edf99449-b176-460b-afb3-14a35e3ae35a"
+    },
+    {
+      "component": "combo_piece",
+      "id": "91070e35-2e17-4045-a8ac-0056cb0a2b11",
+      "name": "Toph, Earthbending Master",
+      "object": "related_card",
+      "type_line": "Legendary Creature \u2014 Human Warrior Ally",
+      "uri": "https://api.scryfall.com/cards/91070e35-2e17-4045-a8ac-0056cb0a2b11"
+    }
+  ],
+  "arena_id": 98290,
+  "artist": "Phima",
+  "artist_ids": [
+    "6b40d3ec-57df-4444-931b-cf19bd049795"
+  ],
+  "booster": false,
+  "border_color": "black",
+  "card_back_id": "0aeebaf5-8c7d-4636-9e82-8c27447861f7",
+  "cardmarket_id": 855799,
+  "cmc": 4.0,
+  "collector_number": "145",
+  "color_identity": [
+    "G"
+  ],
+  "colors": [
+    "G"
+  ],
+  "digital": false,
+  "edhrec_rank": 3056,
+  "finishes": [
+    "nonfoil",
+    "foil"
+  ],
+  "foil": true,
+  "frame": "2015",
+  "frame_effects": [
+    "legendary"
+  ],
+  "full_art": false,
+  "game_changer": false,
+  "games": [
+    "paper",
+    "arena",
+    "mtgo"
+  ],
+  "highres_image": true,
+  "id": "22d1b078-9175-45ab-8fbe-ed4af2abde1f",
+  "illustration_id": "3d0a96d2-689b-43c1-9528-736dfa1866b4",
+  "image_status": "highres_scan",
+  "image_updated_at": "2026-07-13T01:06:51Z",
+  "image_uris": {
+    "art": "https://cards.scryfall.io/art/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.webp?1783904811",
+    "art_crop": "https://cards.scryfall.io/art_crop/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.jpg?1783904811",
+    "border_crop": "https://cards.scryfall.io/border_crop/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.jpg?1783904811",
+    "crop": "https://cards.scryfall.io/crop/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.webp?1783904811",
+    "display": "https://cards.scryfall.io/display/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.webp?1783904811",
+    "grid": "https://cards.scryfall.io/grid/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.webp?1783904811",
+    "large": "https://cards.scryfall.io/large/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.jpg?1783904811",
+    "normal": "https://cards.scryfall.io/normal/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.jpg?1783904811",
+    "png": "https://cards.scryfall.io/png/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.png?1783904811",
+    "small": "https://cards.scryfall.io/small/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.jpg?1783904811",
+    "thumb": "https://cards.scryfall.io/thumb/front/2/2/22d1b078-9175-45ab-8fbe-ed4af2abde1f.webp?1783904811"
+  },
+  "keywords": [
+    "Earthbend",
+    "Landfall"
+  ],
+  "lang": "en",
+  "layout": "normal",
+  "legalities": {
+    "alchemy": "not_legal",
+    "brawl": "legal",
+    "commander": "legal",
+    "competitivebrawl": "legal",
+    "duel": "legal",
+    "future": "not_legal",
+    "gladiator": "legal",
+    "historic": "legal",
+    "legacy": "legal",
+    "modern": "not_legal",
+    "oathbreaker": "legal",
+    "oldschool": "not_legal",
+    "pauper": "not_legal",
+    "paupercommander": "not_legal",
+    "penny": "not_legal",
+    "pioneer": "not_legal",
+    "predh": "not_legal",
+    "premodern": "not_legal",
+    "standard": "not_legal",
+    "standardbrawl": "not_legal",
+    "timeless": "legal",
+    "tlr": "not_legal",
+    "vintage": "legal"
+  },
+  "mana_cost": "{3}{G}",
+  "mtgo_id": 145688,
+  "multiverse_ids": [],
+  "name": "Toph, Earthbending Master",
+  "nonfoil": true,
+  "object": "card",
+  "oracle_id": "ad5d3e7e-bf8c-4fa3-a81e-1523aec2585f",
+  "oracle_text": "Landfall \u2014 Whenever a land you control enters, you get an experience counter.\nWhenever you attack, earthbend X, where X is the number of experience counters you have. (Target land you control becomes a 0/0 creature with haste that's still a land. Put X +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped.)",
+  "oversized": false,
+  "power": "2",
+  "prices": {
+    "eur": "40.70",
+    "eur_foil": "38.53",
+    "tix": "3.00",
+    "usd": "36.28",
+    "usd_etched": null,
+    "usd_foil": "40.15"
+  },
+  "prints_search_uri": "https://api.scryfall.com/cards/search?order=released&q=oracleid%3Aad5d3e7e-bf8c-4fa3-a81e-1523aec2585f&unique=prints",
+  "promo": false,
+  "promo_types": [
+    "universesbeyond"
+  ],
+  "purchase_uris": {
+    "cardhoarder": "https://www.cardhoarder.com/cards/145688?affiliate_id=scryfall&ref=card-profile&utm_campaign=affiliate&utm_medium=card&utm_source=scryfall",
+    "cardmarket": "https://www.cardmarket.com/en/Magic/Products?idProduct=855799&referrer=scryfall&utm_campaign=card_prices&utm_medium=text&utm_source=scryfall",
+    "tcgplayer": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&u=https%3A%2F%2Fwww.tcgplayer.com%2Fproduct%2F660581%3Fpage%3D1"
+  },
+  "rarity": "mythic",
+  "related_uris": {
+    "edhrec": "https://edhrec.com/route/?cc=Toph%2C+Earthbending+Master",
+    "tcgplayer_infinite_articles": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Farticles&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Farticles%3FproductLineName%3Dmagic%26q%3DToph%252C%2BEarthbending%2BMaster",
+    "tcgplayer_infinite_decks": "https://partner.tcgplayer.com/c/4931599/1830156/21018?subId1=api&trafcat=tcgplayer.com%2Fsearch%2Fdecks&u=https%3A%2F%2Fwww.tcgplayer.com%2Fsearch%2Fdecks%3FproductLineName%3Dmagic%26q%3DToph%252C%2BEarthbending%2BMaster"
+  },
+  "released_at": "2025-11-21",
+  "reprint": false,
+  "reserved": false,
+  "resource_id": "4C77A41664DAF91A7A83778B7313F124E4D92D83486A852849968E8218C4D549",
+  "rulings_uri": "https://api.scryfall.com/cards/22d1b078-9175-45ab-8fbe-ed4af2abde1f/rulings",
+  "scryfall_set_uri": "https://scryfall.com/sets/tle?utm_source=api",
+  "scryfall_uri": "https://scryfall.com/card/tle/145/toph-earthbending-master?utm_source=api",
+  "security_stamp": "oval",
+  "set": "tle",
+  "set_id": "a75e6ceb-d62c-4063-8e96-f269e3a0b025",
+  "set_name": "Avatar: The Last Airbender Eternal",
+  "set_search_uri": "https://api.scryfall.com/cards/search?order=set&q=e%3Atle&unique=prints",
+  "set_type": "eternal",
+  "set_uri": "https://api.scryfall.com/sets/a75e6ceb-d62c-4063-8e96-f269e3a0b025",
+  "story_spotlight": false,
+  "tcgplayer_id": 660581,
+  "textless": false,
+  "toughness": "4",
+  "type_line": "Legendary Creature \u2014 Human Warrior Ally",
+  "uri": "https://api.scryfall.com/cards/22d1b078-9175-45ab-8fbe-ed4af2abde1f",
+  "variation": false,
+  "watermark": "earthkingdom"
+}

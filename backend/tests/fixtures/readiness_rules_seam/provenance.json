@@ -1,0 +1,81 @@
+{
+  "canonical_sha256": "370488950705d6765c9829c7bd1568cf53e6b7c966150a91121adc5b2b3f136b",
+  "compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "facts_modified": false,
+  "http_requests": 0,
+  "rows": {
+    "Brazen Borrower // Petty Theft": {
+      "id": "25d309d6-9e56-441e-bd29-5c903d5221bf",
+      "oracle_id": "c7b044c3-3cfa-407e-bf20-2875e8e04b7b",
+      "raw_sha256": "d623ff0371b1fd0943d407120e3875d7310e28d4739ea73f784397968bff3663",
+      "source": "https://api.scryfall.com/cards/25d309d6-9e56-441e-bd29-5c903d5221bf"
+    },
+    "Clarion Spirit": {
+      "id": "86a4c348-1012-4339-960a-c7bc7fd84fbb",
+      "oracle_id": "dec20b18-afe6-405e-b47d-a757a5645c63",
+      "raw_sha256": "6dc3c3233ebf48b37e969dd3c968686b5a1a1329bf8f33368fe1dd3a4bc302cc",
+      "source": "https://api.scryfall.com/cards/86a4c348-1012-4339-960a-c7bc7fd84fbb"
+    },
+    "Counterspell": {
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "raw_sha256": "fe9513a8443f2f78ceb48e835c4e81d5b6d6eb995581683c73dfff9acecdb6b9",
+      "source": "https://api.scryfall.com/cards/4f616706-ec97-4923-bb1e-11a69fbaa1f8"
+    },
+    "Drown in the Loch": {
+      "id": "eb7b9762-740b-4c1c-a411-20dbf023aea5",
+      "oracle_id": "0f264e5b-264e-4e97-9a8d-8ae1d6a286ce",
+      "raw_sha256": "313d3e25ff5270c196bb0d87ae0cbb94d24ca6d63f4637ad537780bba5875105",
+      "source": "https://api.scryfall.com/cards/eb7b9762-740b-4c1c-a411-20dbf023aea5"
+    },
+    "Fatal Push": {
+      "id": "6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7",
+      "oracle_id": "16437a83-be52-44cd-a768-a767c9347eb2",
+      "raw_sha256": "efcd9615cd2a90e942729fb2c4fb12461f228cfb6565799a9ec4eb5d241f9d17",
+      "source": "https://api.scryfall.com/cards/6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7"
+    },
+    "Go for the Throat": {
+      "id": "5446e1ba-c745-45b2-ad05-b22abf04daec",
+      "oracle_id": "2f092562-9e17-43cd-aeb8-d0567f99363e",
+      "raw_sha256": "f172a2fdc1d549a8d76bd03a83eb3f4956c3320a7f08ab877c3eac930e14b91f",
+      "source": "https://api.scryfall.com/cards/5446e1ba-c745-45b2-ad05-b22abf04daec"
+    },
+    "Grizzly Bears": {
+      "id": "409f9b88-f03e-40b6-9883-68c14c37c0de",
+      "oracle_id": "14c8f55d-d177-4c25-a931-ebeb9e6062a0",
+      "raw_sha256": "b18887a25ea64587ccdc5382aeedcf356c8a81aec76282c7652d4e704cdca6d2",
+      "source": "https://api.scryfall.com/cards/409f9b88-f03e-40b6-9883-68c14c37c0de"
+    },
+    "Intangible Virtue": {
+      "id": "716d82a1-fb5d-4607-b1fa-e8e9edd4dd77",
+      "oracle_id": "d21c3c8f-d105-4ba9-bf69-e5f26f0f8ec5",
+      "raw_sha256": "a542d41bfa505ed84867e843d1facd315fd46c33356e5341d7d6f564328f2296",
+      "source": "https://api.scryfall.com/cards/716d82a1-fb5d-4607-b1fa-e8e9edd4dd77"
+    },
+    "Island": {
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "raw_sha256": "d748be7ca3497689c356bd7d41fea708f6883aa88affe8985813540337135769",
+      "source": "https://api.scryfall.com/cards/f3cc07cd-cc79-4745-b0b7-eade60175cc3"
+    },
+    "Mountain": {
+      "id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+      "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+      "raw_sha256": "02252691aab55f8d309dc66ce39d1381b1e8cda18c68a6ac2b4f695030ea816c",
+      "source": "https://api.scryfall.com/cards/2a844b96-6616-4c39-8f4f-5d14a3b2bd55"
+    },
+    "Raise the Alarm": {
+      "id": "6c7c8527-55f6-494d-b4f7-c427a5735053",
+      "oracle_id": "5b2364d7-a811-4595-a1b4-224c70555ffa",
+      "raw_sha256": "afbfefef8df33819b260275b218031c21007862f0acd4419d56117a39bb9a931",
+      "source": "https://api.scryfall.com/cards/6c7c8527-55f6-494d-b4f7-c427a5735053"
+    },
+    "Wedding Announcement // Wedding Festivity": {
+      "id": "4e6f365d-c5c4-4fd6-94cb-833b89239d73",
+      "oracle_id": "259ac30c-cc05-4c04-9b23-71283f84b808",
+      "raw_sha256": "72e857f7030239616f1c015e69008b43ad2cbb309aec58e9da41d8317d9d15a0",
+      "source": "https://api.scryfall.com/cards/4e6f365d-c5c4-4fd6-94cb-833b89239d73"
+    }
+  },
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz"
+}

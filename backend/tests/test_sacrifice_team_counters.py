@@ -7,23 +7,20 @@ from game_state.serializers import deserialize_match_snapshot, serialize_match_s
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.keyword_actions import finish_mechanic_choice, resolve_annihilator
 from rules_engine.stack_engine import resolve_top_of_stack
+from tests.combat_sacrifice191_canonical import canonical_card, deck_entry
 
 
 def _state():
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=675)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     cards = [
-        CardInstance(
-            "mazirek", "Mazirek, Kraul Death Priest", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-            power=2, toughness=2,
-            oracle_text="Flying\nWhenever a player sacrifices another permanent, put a +1/+1 counter on each creature you control.",
-        ),
-        CardInstance("ally", "Llanowar Elves", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1),
-        CardInstance("fuel", "Sol Ring", 1, 1, Zone.BATTLEFIELD, ["Artifact"]),
-        CardInstance("enemy", "Llanowar Elves", 2, 2, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1),
-        CardInstance("enemy_fuel", "Sol Ring", 2, 2, Zone.BATTLEFIELD, ["Artifact"]),
+        canonical_card('Mazirek, Kraul Death Priest', id='mazirek', owner=1, controller=1, zone=Zone.BATTLEFIELD),
+        canonical_card('Llanowar Elves', id='ally', owner=1, controller=1, zone=Zone.BATTLEFIELD),
+        canonical_card('Sol Ring', id='fuel', owner=1, controller=1, zone=Zone.BATTLEFIELD),
+        canonical_card('Llanowar Elves', id='enemy', owner=2, controller=2, zone=Zone.BATTLEFIELD),
+        canonical_card('Sol Ring', id='enemy_fuel', owner=2, controller=2, zone=Zone.BATTLEFIELD),
     ]
     for card in cards:
         state.cards[card.id] = card
@@ -56,7 +53,7 @@ def test_team_counter_trigger_uses_creatures_present_at_resolution():
     state.players[1].battlefield.remove("ally")
     state.players[1].graveyard.append("ally")
     state.cards["ally"].zone = Zone.GRAVEYARD
-    newcomer = CardInstance("newcomer", "Llanowar Elves", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=1, toughness=1)
+    newcomer = canonical_card('Llanowar Elves', id='newcomer', owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[newcomer.id] = newcomer
     state.players[1].battlefield.append(newcomer.id)
     assert resolve_top_of_stack(state)

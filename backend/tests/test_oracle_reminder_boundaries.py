@@ -1,4 +1,4 @@
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.events import _trigger_from_oracle, emit_event
 from rules_engine.oracle_effects import extract_activated_abilities, infer_effect_from_oracle, inspect_target_hints
@@ -6,7 +6,7 @@ from rules_engine.oracle_text import without_reminder_text
 
 
 def _card(name: str) -> CardInstance:
-    payload = fallback_card_payload(name)
+    payload = seed_card_payload(name)
     return CardInstance(
         id=name, name=name, owner=1, controller=1, zone=Zone.BATTLEFIELD,
         types=payload["type_line"].split(" — ")[0].split(),

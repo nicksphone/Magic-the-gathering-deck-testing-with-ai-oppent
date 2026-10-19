@@ -1,0 +1,20 @@
+{
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "fixture_sha256": "03a372fe6a2e9a121d10e3f855d6186ac5a85d44f3f771ca45e5a1f324905b38",
+  "facts_modified": false,
+  "offline": true,
+  "game_http_external_requests": 0,
+  "rows": [
+    {
+      "name": "Drake Haven",
+      "id": "e2502a3a-2c1d-490e-b958-969dfc7f875a",
+      "oracle_id": "86d3def3-53fa-4cad-bb25-d3275af1e3f5"
+    },
+    {
+      "name": "Faith of the Devoted",
+      "id": "5f8c5e6a-a161-4630-842a-4c8d4071d6e6",
+      "oracle_id": "99af5247-06cf-40b2-9a7c-65ad59b1ddf6"
+    }
+  ]
+}

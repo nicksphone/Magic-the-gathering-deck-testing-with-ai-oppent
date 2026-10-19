@@ -6,7 +6,7 @@ import pytest
 
 from ai.agent import AIAgent
 from ai.information import decision_view
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
@@ -20,9 +20,9 @@ from tests.test_legendary_channels import resolve_to_choice
 def position(seat=1, lands=48, board_lands=5, remaining_spell='Lightning Bolt',
              source_name='Cathartic Pyre', cast=True):
     source_data = {**ROWS, **LINKED_ROWS}[source_name]
-    deck = [{**fallback_card_payload('Mountain'), 'card_name': 'Mountain', 'quantity': lands},
-            {**fallback_card_payload('Ugin, the Spirit Dragon'), 'card_name': 'Ugin, the Spirit Dragon', 'quantity': 2},
-            {**fallback_card_payload(remaining_spell), 'card_name': remaining_spell, 'quantity': 57-lands},
+    deck = [{**seed_card_payload('Mountain'), 'card_name': 'Mountain', 'quantity': lands},
+            {**seed_card_payload('Ugin, the Spirit Dragon'), 'card_name': 'Ugin, the Spirit Dragon', 'quantity': 2},
+            {**seed_card_payload(remaining_spell), 'card_name': remaining_spell, 'quantity': 57-lands},
             {**source_data, 'card_name': source_name, 'quantity': 1}]
     state = MatchFactory.from_decks(deck, deck, seed=1992)
     state.pregame_pending = False

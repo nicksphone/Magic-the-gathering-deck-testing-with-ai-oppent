@@ -16,6 +16,7 @@ TARGET_KEYS = (
     "graveyard_spell_targets", "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
     "aura_targets", "permanent_targets", "artifact_targets", "enchantment_targets",
     "land_targets", "noncreature_permanent_targets",
+    "exile_card_targets",
 )
 
 
@@ -35,7 +36,11 @@ def has_available_targets_for_action(hints: dict[str, Any]) -> bool:
     if hints.get('required_target_instance_count') and not hints.get('creature_targets'):
         return False
     required = hints.get('required_distinct_target_count')
-    if required and len({target['id'] for target in hints.get('creature_targets', [])}) < required:
+    candidates = {target['id'] for key in (
+        'creature_targets', 'permanent_targets', 'land_targets', 'artifact_targets',
+        'enchantment_targets', 'planeswalker_targets', 'noncreature_permanent_targets', 'aura_targets')
+        for target in hints.get(key, [])}
+    if required and len(candidates) < required:
         return False
     if hints.get("modes"):
         required = 2 if hints.get("choose_two_modes") else 1
@@ -54,6 +59,9 @@ def available_cast_options_and_hints(state: MatchState, card: CardInstance, cont
         variants = [(option, build_cost_cast_hints(state, card, controller, option))
                     for option in options if check_cost_option_available(state, controller, card, option)]
         variants = [(option, hints) for option, hints in variants if has_available_targets_for_action(hints)]
+        if variants and variants[0][1].get('choose_one_or_more_modes'):
+            variants[0][1]['mode_base_mana_costs'] = {
+                option.id: hints['mode_base_mana_costs'][option.id] for option, hints in variants}
         return [option for option, _ in variants], variants[0][1] if variants else {}
     hints = build_cast_hints(state, card, controller)
     targets = hints.get("aura_targets", [])
@@ -68,7 +76,14 @@ def available_cast_options_and_hints(state: MatchState, card: CardInstance, cont
 
 def build_cost_cast_hints(state, card, controller, option, action_targets=None):
     from rules_engine.kicker import spell_kicker_view
-    hints = build_cast_hints(state, spell_kicker_view(card, option.kicked), controller, action_targets)
+    hints = build_cast_hints(state, spell_kicker_view(card, option.kicked), controller, action_targets,
+                             cost_option=option)
+    if hints.get('choose_one_or_more_modes'):
+        from rules_engine.spree import parse, selected, unpriced_base
+        modes = parse(card.oracle_text)
+        chosen = (selected(modes, action_targets) if action_targets is not None
+                  else [min(modes, key=lambda mode: mode.generic)])
+        hints['mode_base_mana_costs'] = {option.id: unpriced_base(option, chosen)}
     if '{X}' in option.mana_cost.upper():
         hints['requires_x_value'] = True
         hints['choice_schema']['x_value'] = {'type': 'integer', 'required': True, 'minimum': 0}
@@ -80,6 +95,9 @@ def build_cast_hints(
     card: CardInstance,
     controller: int,
     action_targets: dict[str, Any] | None = None,
+    *,
+    source_kind: str | None = 'spell',
+    cost_option=None,
 ) -> dict[str, Any]:
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
@@ -96,7 +114,7 @@ def build_cast_hints(
             # This is a permanent spell, not one of its later abilities.
             # Preserve mana/face choices without borrowing ability targets.
             card.oracle_text = ""
-    hints = inspect_target_hints(state, card, controller, action_targets)
+    hints = inspect_target_hints(state, card, controller, action_targets, source_kind=source_kind)
     selected_modes = (action_targets or {}).get("mode_texts") or []
     selected_text = spell_resolution_text(card, " ".join(selected_modes) or (action_targets or {}).get("mode_text") or card.oracle_text or "")
     hints["action_has_target_text"] = _needs_target(selected_text)
@@ -106,8 +124,23 @@ def build_cast_hints(
             mode for mode in hints["modes"]
             if (not selected or mode in selected)
             and (not _needs_target(mode)
-                 or _has_target_options(inspect_target_hints(state, card, controller, {"mode_text": mode})))
+                 or _has_target_options(inspect_target_hints(state, card, controller, {"mode_text": mode}, source_kind=source_kind)))
         ]
+        if hints.get('choose_one_or_more_modes') and not selected:
+            from rules_engine.costs import collect_cost_options, check_cost_option_available
+            options_by_mode = {mode: collect_cost_options(state, controller, card,
+                                                          action_targets={'mode_text': mode})
+                               for mode in hints['available_modes']}
+            if cost_option is not None:
+                from dataclasses import replace
+                from rules_engine.spree import parse, priced, unpriced_base
+                modes = parse(card.oracle_text)
+                base = unpriced_base(cost_option, [min(modes, key=lambda mode: mode.generic)])
+                raw_option = replace(cost_option, mana_cost=base)
+                options_by_mode = {mode.text: [priced(raw_option, [mode])] for mode in modes}
+            hints['available_modes'] = [mode for mode in hints['available_modes'] if any(
+                check_cost_option_available(state, controller, card, option)
+                for option in options_by_mode[mode])]
     hints.setdefault("choice_schema", {})
     face_names = hints.get("face_names") or []
     if face_names:
@@ -120,10 +153,22 @@ def build_cast_hints(
     if CHOOSE_TWO_RE.search(card.oracle_text or ""):
         hints["choose_two_modes"] = True
     if hints.get("modes"):
-        if hints.get("choose_two_modes"):
+        if hints.get('choose_one_or_more_modes'):
+            hints['choice_schema']['mode_text'] = {'type': 'string', 'required': False,
+                                                   'enum': hints['available_modes']}
+            hints['choice_schema']['mode_texts'] = {'type': 'array', 'required': False,
+                'min_items': 1, 'max_items': len(hints['modes']), 'enum': hints['available_modes']}
+            from rules_engine.spree import parse
+            hints['mode_target_hints'] = {
+                mode: inspect_target_hints(state, card, controller, {'mode_text': mode}, source_kind=source_kind)
+                for mode in hints['available_modes']}
+            hints['mode_additional_mana_costs'] = {
+                mode.text: '{' + str(mode.generic) + '}' for mode in parse(card.oracle_text)
+                if mode.text in hints['available_modes']}
+        elif hints.get("choose_two_modes"):
             hints["choice_schema"]["mode_texts"] = {"type": "array", "required": True, "min_items": 2, "max_items": 2, "enum": hints["available_modes"]}
             hints["mode_target_hints"] = {
-                mode: inspect_target_hints(state, card, controller, {"mode_text": mode})
+                mode: inspect_target_hints(state, card, controller, {"mode_text": mode}, source_kind=source_kind)
                 for mode in hints["available_modes"]
             }
         else:
@@ -178,6 +223,8 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
     if not ok:
         return ok, err
     selected_modes = (action_targets.get("mode_texts") or []) + ([action_targets["mode_text"]] if action_targets.get("mode_text") else [])
+    if (selected_modes or mode_targets) and not hints.get('modes'):
+        return False, 'This spell or ability has no modes.'
     if "available_modes" in hints and any(mode not in hints["available_modes"] for mode in selected_modes):
         return False, "Selected mode has no legal target."
     face_names = hints.get("face_names") or []
@@ -198,12 +245,32 @@ def validate_cast_choice(hints: dict[str, Any], action_targets: dict[str, Any]) 
 
 
 def validate_mode_targets(state: MatchState, card: CardInstance, controller: int, action_targets: dict[str, Any]) -> tuple[bool, str]:
+    from api_contracts import ModeTarget
+    from pydantic import ValidationError
+    from rules_engine.targeting import single_player_permanent_alternative
+
     selected = action_targets.get("mode_texts") or ([action_targets["mode_text"]] if action_targets.get("mode_text") else [])
     choices = action_targets.get("mode_targets") or {}
-    if set(choices) != set(selected) or len(choices) != len(selected):
+    if not isinstance(choices, dict) or set(choices) != set(selected) or len(choices) != len(selected):
         return False, "Mode targets must match the selected modes."
+    targetless_modes = []
     for mode in selected:
-        targets = {"mode_text": mode, **choices[mode]}
+        if not isinstance(choices[mode], dict):
+            return False, "Invalid per-mode target packet."
+        try:
+            packet = ModeTarget.model_validate(choices[mode]).model_dump(exclude_none=True)
+        except ValidationError:
+            return False, "Invalid per-mode target packet."
+        targetless = not re.search(r'\btargets?\b', without_reminder_text(mode), re.I)
+        targetless_modes.append(targetless)
+        if targetless and packet:
+            return False, "This selected mode has no targets."
+        targets = {**packet, "mode_text": mode}
+        if single_player_permanent_alternative(mode):
+            player = targets.get("target_player") is not None
+            permanent = targets.get("target_card_id") is not None
+            if player == permanent:
+                return False, "Announce exactly one player or permanent target."
         hints = inspect_target_hints(state, card, controller, targets)
         for check in (
             validate_cast_targets(hints, targets),
@@ -212,6 +279,10 @@ def validate_mode_targets(state: MatchState, card: CardInstance, controller: int
         ):
             if not check[0]:
                 return check
+    if selected and all(targetless_modes) and (
+            any(action_targets.get(key) is not None for key in ModeTarget.model_fields)
+            or action_targets.get('target_card_ids') or action_targets.get('target_distribution')):
+        return False, "Selected modes have no targets."
     return True, ""
 
 

@@ -1,9 +1,17 @@
 from __future__ import annotations
 
+from dataclasses import replace
+import hashlib
+import json
+from pathlib import Path
+
+from tests.counter_native_frames import paid as native_paid, respond as native_respond
+from tests.canonical_positive_fixtures import raw_card
+
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.cast_choice import validate_cast_choice
 from rules_engine.ability_model import build_ability_spec
-from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
+from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import checked_action
 from rules_engine.stack_engine import resolve_top_of_stack
@@ -13,8 +21,45 @@ from rules_engine.oracle_effects import infer_effect_from_oracle, inspect_target
 from effects.registry import resolve_effect
 
 
+def _official_card(name):
+    if name == 'Izzet Charm':
+        root = Path(__file__).parent / 'fixtures/cast_choice_modes'
+        data = (root / 'izzet-charm-scryfall-raw.json').read_bytes()
+        proof = json.loads((root / 'PROVENANCE.json').read_bytes())
+        assert hashlib.sha256(data).hexdigest() == proof['response_sha256'] == '08e925516702e32a190f344cf2b239a99670d6018c03071f8551b124466f3353'
+        return json.loads(data)
+    if name != 'Cryptic Command':
+        return raw_card(name)
+    root = Path(__file__).parent / 'fixtures/counter_native_frames'
+    raw = json.loads((root / 'canonical.json').read_bytes())[name]
+    proof = json.loads((root / 'provenance.json').read_bytes())['cards'][name]
+    digest = hashlib.sha256(json.dumps(raw, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+    assert digest == proof['canonical_fullrow_sha256'] == 'fc9c7da365cf96777fcc285fcbc741fb1ad98e2627f063013618ead70897ac2a'
+    return raw
+
+
+def _island_deck():
+    return [{**raw_card('Island'), 'quantity': 60, 'card_name': 'Island'}]
+
+
+def _canonical_card(name, **pose):
+    raw = _official_card(name)
+    sample = MatchFactory.from_decks([{**raw, 'quantity': 8, 'card_name': raw['name']}], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, **pose)
+
+
+def _canonical_hand_card(state, name):
+    old = state.cards[state.players[1].hand[0]]
+    card = _canonical_card(name, id=old.id, owner=old.owner, controller=old.controller,
+        zone=old.zone, instance_order=old.instance_order, zone_change_sequence=old.zone_change_sequence,
+        summoning_sick=old.summoning_sick)
+    state.cards[card.id] = card
+    return card
+
+
 def _state() -> object:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = _island_deck()
     return MatchFactory.from_decks(deck, deck)
 
 
@@ -77,19 +122,12 @@ def test_mode_specific_hints_only_expose_targets_for_selected_mode() -> None:
     creature = state.cards[creature_id]
     creature.zone = Zone.BATTLEFIELD
     creature.types = ["Creature"]
-    spell = CardInstance(
+    spell = _canonical_card(
+        "Drown in the Loch",
         id="drown",
-        name="Drown in the Loch",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Instant"],
-        mana_cost="{U}{B}",
-        oracle_text=(
-            "Choose one —\n"
-            "• Counter target spell.\n"
-            "• Destroy target creature."
-        ),
     )
 
     counter_hints = build_cast_hints(state, spell, 1, {"mode_text": "Counter target spell"})
@@ -146,66 +184,54 @@ def test_x_mode_inference_respects_selected_mode_and_x() -> None:
 
 
 def test_planeswalker_cast_does_not_require_x_value_from_loyalty_text() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = _island_deck()
     state = MatchFactory.from_decks(deck, deck)
-    card = CardInstance(
+    card = _canonical_card(
+        "Ugin, the Spirit Dragon",
         id="ugin",
-        name="Ugin, the Spirit Dragon",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Planeswalker"],
-        mana_cost="{8}",
-        oracle_text="+2: Ugin, the Spirit Dragon deals 3 damage to any target.\n-X: Exile each permanent with mana value X or less that's one or more colors.\n-10: You gain 7 life and draw seven cards.",
     )
     hints = inspect_target_hints(state, card, 1)
     assert hints.get("requires_x_value") is not True
 
 
 def test_memory_deluge_does_not_require_x_value_for_cast() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = _island_deck()
     state = MatchFactory.from_decks(deck, deck)
-    card = CardInstance(
+    card = _canonical_card(
+        "Memory Deluge",
         id="deluge",
-        name="Memory Deluge",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Instant"],
-        mana_cost="{2}{U}{U}",
-        oracle_text="Look at the top X cards of your library, where X is the amount of mana spent to cast this spell.",
     )
     hints = inspect_target_hints(state, card, 1)
     assert hints.get("requires_x_value") is not True
 
 
 def test_shark_typhoon_does_not_require_x_value_for_cast() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = _island_deck()
     state = MatchFactory.from_decks(deck, deck)
-    card = CardInstance(
+    card = _canonical_card(
+        "Shark Typhoon",
         id="shark",
-        name="Shark Typhoon",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Enchantment"],
-        mana_cost="{5}{U}",
-        oracle_text="Cycling {X}{1}{U}. When you cycle Shark Typhoon, create an X/X blue Shark creature token with flying.",
     )
     hints = inspect_target_hints(state, card, 1)
     assert hints.get("requires_x_value") is not True
 
 
 def test_non_divide_x_spell_does_not_auto_set_divide_total() -> None:
-    card = CardInstance(
+    card = _canonical_card(
+        "March of Otherworldly Light",
         id="march",
-        name="March of Otherworldly Light",
         owner=1,
         controller=1,
         zone=Zone.HAND,
-        types=["Instant"],
-        mana_cost="{X}{W}",
-        oracle_text="Exile target artifact, creature, or enchantment with mana value X or less.",
     )
     targets = enrich_divide_total(card, {"x_value": 3, "target_card_id": "c1"})
     assert "divide_total" not in targets
@@ -251,18 +277,7 @@ def test_cryptic_command_can_choose_two_untargeted_modes_without_targets() -> No
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool = {"U": 4}
-    card = state.cards[state.players[1].hand[0]]
-    card.name = "Cryptic Command"
-    card.types = ["Instant"]
-    card.type_line = "Instant"
-    card.mana_cost = "{1}{U}{U}{U}"
-    card.oracle_text = (
-        "Choose two —\n"
-        "• Counter target spell.\n"
-        "• Return target permanent to its owner's hand.\n"
-        "• Tap all creatures your opponents control.\n"
-        "• Draw a card."
-    )
+    card = _canonical_hand_card(state, "Cryptic Command")
 
     cast = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == card.id and move["type"] == "cast_spell")
     assert cast["target_hints"]["available_modes"] == [
@@ -301,25 +316,12 @@ def test_cryptic_command_counter_then_draw_resolves_both_modes() -> None:
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool = {"U": 4}
-    card = state.cards[state.players[1].hand[0]]
-    card.name = "Cryptic Command"
-    card.types = ["Instant"]
-    card.type_line = "Instant"
-    card.mana_cost = "{1}{U}{U}{U}"
-    card.oracle_text = (
-        "Choose two —\n"
-        "• Counter target spell.\n"
-        "• Return target permanent to its owner's hand.\n"
-        "• Tap all creatures your opponents control.\n"
-        "• Draw a card."
-    )
-    target_id = state.players[2].hand.pop()
-    state.cards[target_id].name = "Lightning Bolt"
-    state.cards[target_id].zone = Zone.STACK
-    state.cards[target_id].types = ["Instant"]
-    state.stack.append(StackItem("bolt", target_id, 2, "Lightning Bolt", "deal_damage", {"target_player": 1, "amount": 3}))
+    card = _canonical_hand_card(state, "Cryptic Command")
+    state, target_id, target_stack_id = native_paid(
+        state, "Lightning Bolt", 2, pool={"R": 1}, target_player=1)
+    state = native_respond(state, 1)
     modes = ["Counter target spell", "Draw a card"]
-    action = {"type": "cast_spell", "card_id": card.id, "targets": {"mode_texts": modes, "target_stack_id": "bolt"}}
+    action = {"type": "cast_spell", "card_id": card.id, "targets": {"mode_texts": modes, "target_stack_id": target_stack_id}}
 
     after = checked_action(state, RulesEngine(), 1, action)
     assert [effect["effect_key"] for effect in after.stack[-1].payload["effects"]] == ["counter_spell", "draw_cards"]
@@ -339,29 +341,16 @@ def test_cryptic_command_draw_mode_fizzles_when_its_only_target_disappears() -> 
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool = {"U": 4}
-    card = state.cards[state.players[1].hand[0]]
-    card.name = "Cryptic Command"
-    card.types = ["Instant"]
-    card.type_line = "Instant"
-    card.mana_cost = "{1}{U}{U}{U}"
-    card.oracle_text = (
-        "Choose two —\n"
-        "• Counter target spell.\n"
-        "• Return target permanent to its owner's hand.\n"
-        "• Tap all creatures your opponents control.\n"
-        "• Draw a card."
-    )
-    target_id = state.players[2].hand.pop()
-    state.cards[target_id].name = "Lightning Bolt"
-    state.cards[target_id].zone = Zone.STACK
-    state.cards[target_id].types = ["Instant"]
-    state.stack.append(StackItem("bolt", target_id, 2, "Lightning Bolt", "deal_damage", {"target_player": 1, "amount": 3}))
+    card = _canonical_hand_card(state, "Cryptic Command")
+    state, target_id, target_stack_id = native_paid(
+        state, "Lightning Bolt", 2, pool={"R": 1}, target_player=1)
+    state = native_respond(state, 1)
     action = {"type": "cast_spell", "card_id": card.id, "targets": {
-        "mode_texts": ["Counter target spell", "Draw a card"], "target_stack_id": "bolt",
+        "mode_texts": ["Counter target spell", "Draw a card"], "target_stack_id": target_stack_id,
     }}
 
     after = checked_action(state, RulesEngine(), 1, action)
-    after.stack = [item for item in after.stack if item.id != "bolt"]
+    after.stack = [item for item in after.stack if item.id != target_stack_id]
     after.cards[target_id].zone = Zone.GRAVEYARD
     after.players[2].graveyard.append(target_id)
     hand_before = len(after.players[1].hand)
@@ -376,17 +365,7 @@ def test_choose_one_mode_with_no_target_remains_castable() -> None:
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool = {"U": 1, "R": 1}
-    card = state.cards[state.players[1].hand[0]]
-    card.name = "Izzet Charm"
-    card.types = ["Instant"]
-    card.type_line = "Instant"
-    card.mana_cost = "{U}{R}"
-    card.oracle_text = (
-        "Choose one —\n"
-        "• Counter target noncreature spell unless its controller pays {2}.\n"
-        "• Izzet Charm deals 2 damage to target creature.\n"
-        "• Draw two cards, then discard two cards."
-    )
+    card = _canonical_hand_card(state, "Izzet Charm")
 
     cast = next(move for move in RulesEngine().legal_moves(state, 1) if move.get("card_id") == card.id and move["type"] == "cast_spell")
     assert cast["target_hints"]["available_modes"] == ["Draw two cards, then discard two cards"]
@@ -407,17 +386,7 @@ def test_izzet_charm_discard_choice_uses_hand_after_drawing() -> None:
     state.step = Step.PRECOMBAT_MAIN
     state.mechanic_choice_players = {1, 2}
     state.players[1].mana_pool = {"U": 1, "R": 1}
-    card = state.cards[state.players[1].hand[0]]
-    card.name = "Izzet Charm"
-    card.types = ["Instant"]
-    card.type_line = "Instant"
-    card.mana_cost = "{U}{R}"
-    card.oracle_text = (
-        "Choose one —\n"
-        "• Counter target noncreature spell unless its controller pays {2}.\n"
-        "• Izzet Charm deals 2 damage to target creature.\n"
-        "• Draw two cards, then discard two cards."
-    )
+    card = _canonical_hand_card(state, "Izzet Charm")
     after = checked_action(state, RulesEngine(), 1, {
         "type": "cast_spell", "card_id": card.id,
         "targets": {"mode_text": "Draw two cards, then discard two cards"},
@@ -442,16 +411,7 @@ def test_choose_one_spell_with_no_legal_mode_is_not_offered() -> None:
     state.active_player = state.priority_player = 1
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool = {"U": 1, "B": 1}
-    card = state.cards[state.players[1].hand[0]]
-    card.name = "Drown in the Loch"
-    card.types = ["Instant"]
-    card.type_line = "Instant"
-    card.mana_cost = "{U}{B}"
-    card.oracle_text = (
-        "Choose one —\n"
-        "• Counter target spell with mana value less than or equal to the number of cards in its controller's graveyard.\n"
-        "• Destroy target creature with mana value less than or equal to the number of cards in its controller's graveyard."
-    )
+    card = _canonical_hand_card(state, "Drown in the Loch")
 
     assert not any(move.get("card_id") == card.id and move["type"] == "cast_spell" for move in RulesEngine().legal_moves(state, 1))
 

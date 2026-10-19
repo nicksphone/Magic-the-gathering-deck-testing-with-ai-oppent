@@ -2,16 +2,17 @@
 
 from effects.handlers import destroy_all_creatures, destroy_permanent, exile_all_creatures, exile_permanent, put_green_creature_from_hand, return_creature_from_graveyard_to_battlefield, return_permanent_to_hand, sacrifice, transform_card
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
-from game_state.state import CardInstance, MatchFactory, Step, Zone
+from game_state.state import MatchFactory, Step, Zone
 from rules_engine.attachments import attach_if_legal
 from rules_engine.continuous import effective_toughness
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.zone_actions import put_into_graveyard
+from tests.test_keyword_zone4f86_fidelity import deck_entry, materialize
 
 
 def _state():
-    deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest"}]
+    deck = [deck_entry("Forest", 60)]
     state = MatchFactory.from_decks(deck, deck, seed=418)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -22,11 +23,7 @@ def _state():
 
 def test_bounced_creature_loses_old_counters_and_damage_on_reentry():
     state = _state()
-    bear = CardInstance(
-        id="bear", name="Grizzly Bears", owner=1, controller=1, zone=Zone.BATTLEFIELD,
-        types=["Creature"], type_line="Creature - Bear", mana_cost="{1}{G}",
-        power=2, toughness=2, counters={"+1/+1": 2, "__damage_marked": 1, "__eot_toughness": 1},
-    )
+    bear = materialize(id="bear", name="Grizzly Bears", owner=1, controller=1, zone=Zone.BATTLEFIELD, counters={"+1/+1": 2, "__damage_marked": 1, "__eot_toughness": 1})
     state.cards[bear.id] = bear
     state.players[1].battlefield.append(bear.id)
     return_permanent_to_hand(state, 2, {"target_card_id": bear.id})
@@ -40,17 +37,12 @@ def test_bounced_creature_loses_old_counters_and_damage_on_reentry():
 
 def test_escape_enters_with_only_its_new_counter():
     state = _state()
-    ox = CardInstance(
-        id="ox", name="Ox of Agonas", owner=1, controller=1, zone=Zone.GRAVEYARD,
-        types=["Creature"], mana_cost="{3}{R}{R}", power=4, toughness=2,
-        oracle_text="Escape—{R}{R}, Exile eight other cards from your graveyard.\nThis creature escapes with a +1/+1 counter on it.",
-        counters={"+1/+1": 2, "__damage_marked": 1},
-    )
+    ox = materialize(id="ox", name="Ox of Agonas", owner=1, controller=1, zone=Zone.GRAVEYARD, counters={"+1/+1": 2, "__damage_marked": 1})
     state.cards[ox.id] = ox
     state.players[1].graveyard.append(ox.id)
     for index in range(8):
         card_id = f"fuel-{index}"
-        state.cards[card_id] = CardInstance(card_id, "Mountain", 1, 1, Zone.GRAVEYARD, ["Land"])
+        state.cards[card_id] = materialize(card_id, "Mountain", 1, 1, Zone.GRAVEYARD)
         state.players[1].graveyard.append(card_id)
     state.players[1].mana_pool["R"] = 2
     move = next(move for move in RulesEngine().legal_moves(state, 1)
@@ -63,13 +55,7 @@ def test_escape_enters_with_only_its_new_counter():
 
 def test_oracle_counter_persistence_except_hand_or_library():
     state = _state()
-    skullbriar = CardInstance(
-        id="skullbriar", name="Skullbriar, the Walking Grave", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], mana_cost="{B}{G}", power=1, toughness=1,
-        oracle_text="Haste\nWhenever Skullbriar deals combat damage to a player, put a +1/+1 counter on it.\n"
-                    "Counters remain on Skullbriar as it moves to any zone other than a player's hand or library.",
-        counters={"+1/+1": 3, "__eot_toughness": 1},
-    )
+    skullbriar = materialize(id="skullbriar", name="Skullbriar, the Walking Grave", owner=1, controller=1, zone=Zone.BATTLEFIELD, counters={"+1/+1": 3, "__eot_toughness": 1})
     state.cards[skullbriar.id] = skullbriar
     state.players[1].battlefield.append(skullbriar.id)
     destroy_permanent(state, 2, {"target_card_id": skullbriar.id})
@@ -89,17 +75,7 @@ def test_oracle_counter_persistence_except_hand_or_library():
 
 def test_transformed_card_returns_to_printed_front_face_after_bounce():
     state = _state()
-    delver = CardInstance(
-        id="delver", name="Delver of Secrets", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature — Human Wizard",
-        mana_cost="{U}", power=1, toughness=1, layout="transform",
-        card_faces=[
-            {"name": "Delver of Secrets", "type_line": "Creature — Human Wizard", "mana_cost": "{U}",
-             "power": "1", "toughness": "1", "oracle_text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform this creature."},
-            {"name": "Insectile Aberration", "type_line": "Creature — Human Insect", "mana_cost": "",
-             "power": "3", "toughness": "2", "oracle_text": "Flying", "image_uri": None},
-        ],
-    )
+    delver = materialize(id="delver", name="Delver of Secrets", owner=1, controller=1, zone=Zone.BATTLEFIELD, selected_face_index=0)
     state.cards[delver.id] = delver
     state.players[1].battlefield.append(delver.id)
     transform_card(state, 1, {"target_card_id": delver.id, "face_index": 1})
@@ -114,12 +90,8 @@ def test_transformed_card_returns_to_printed_front_face_after_bounce():
 
 def test_equipment_and_target_leave_break_old_attachment():
     state = _state()
-    bear = CardInstance("bear", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
-    sword = CardInstance(
-        "sword", "Short Sword", 1, 1, Zone.BATTLEFIELD, ["Artifact"],
-        mana_cost="{1}", type_line="Artifact — Equipment",
-        oracle_text="Equipped creature gets +1/+1.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
-    )
+    bear = materialize("bear", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD)
+    sword = materialize("sword", "Short Sword", 1, 1, Zone.BATTLEFIELD)
     state.cards.update({bear.id: bear, sword.id: sword})
     state.players[1].battlefield.extend([bear.id, sword.id])
     assert attach_if_legal(state, sword.id, bear.id)
@@ -138,11 +110,7 @@ def test_equipment_and_target_leave_break_old_attachment():
 
 def test_single_exile_clears_old_counters_and_combat_state():
     state = _state()
-    spider = CardInstance(
-        "spider", "Giant Spider", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        power=2, toughness=4,
-        counters={"+1/+1": 1, "__eot_power": 2, "__damage_marked": 3},
-    )
+    spider = materialize("spider", "Giant Spider", 1, 1, Zone.BATTLEFIELD, counters={"+1/+1": 1, "__eot_power": 2, "__damage_marked": 3})
     state.cards[spider.id] = spider
     state.players[1].battlefield.append(spider.id)
     exile_permanent(state, 2, {"target_card_id": spider.id})
@@ -153,16 +121,8 @@ def test_single_exile_clears_old_counters_and_combat_state():
 
 def test_batch_exile_collects_old_state_then_resets_new_zone(monkeypatch):
     state = _state()
-    skullbriar = CardInstance(
-        "skullbriar", "Skullbriar, the Walking Grave", 1, 1, Zone.BATTLEFIELD,
-        ["Creature"], power=1, toughness=1,
-        oracle_text="Counters remain on Skullbriar as it moves to any zone other than a player's hand or library.",
-        counters={"+1/+1": 2, "__damage_marked": 1},
-    )
-    spider = CardInstance(
-        "spider", "Giant Spider", 2, 2, Zone.BATTLEFIELD, ["Creature"],
-        power=2, toughness=4, counters={"+1/+1": 1, "__eot_toughness": 2},
-    )
+    skullbriar = materialize("skullbriar", "Skullbriar, the Walking Grave", 1, 1, Zone.BATTLEFIELD, counters={"+1/+1": 2, "__damage_marked": 1})
+    spider = materialize("spider", "Giant Spider", 2, 2, Zone.BATTLEFIELD, counters={"+1/+1": 1, "__eot_toughness": 2})
     for card in (skullbriar, spider):
         state.cards[card.id] = card
         state.players[card.controller].battlefield.append(card.id)
@@ -187,21 +147,9 @@ def test_batch_exile_collects_old_state_then_resets_new_zone(monkeypatch):
 
 def test_death_triggers_see_old_counters_before_graveyard_reset(monkeypatch):
     state = _state()
-    spider = CardInstance(
-        "spider", "Giant Spider", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-        power=2, toughness=4,
-        counters={"+1/+1": 1, "__eot_power": 2, "__damage_marked": 1},
-    )
-    skullbriar = CardInstance(
-        "skullbriar", "Skullbriar, the Walking Grave", 1, 1, Zone.BATTLEFIELD,
-        ["Creature"], power=1, toughness=1,
-        oracle_text="Counters remain on Skullbriar as it moves to any zone other than a player's hand or library.",
-        counters={"+1/+1": 2, "__damage_marked": 1},
-    )
-    chalice = CardInstance(
-        "chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD, ["Artifact"],
-        type_line="Artifact", counters={"charge": 2},
-    )
+    spider = materialize("spider", "Giant Spider", 1, 1, Zone.BATTLEFIELD, counters={"+1/+1": 1, "__eot_power": 2, "__damage_marked": 1})
+    skullbriar = materialize("skullbriar", "Skullbriar, the Walking Grave", 1, 1, Zone.BATTLEFIELD, counters={"+1/+1": 2, "__damage_marked": 1})
+    chalice = materialize("chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD, counters={"charge": 2})
     for card in (spider, skullbriar, chalice):
         state.cards[card.id] = card
         state.players[1].battlefield.append(card.id)
@@ -230,10 +178,7 @@ def test_death_triggers_see_old_counters_before_graveyard_reset(monkeypatch):
 
 def test_countered_spell_loses_stack_counters_in_graveyard():
     state = _state()
-    bolt = CardInstance(
-        "bolt", "Lightning Bolt", 1, 1, Zone.STACK, ["Instant"],
-        mana_cost="{R}", counters={"time": 2},
-    )
+    bolt = materialize("bolt", "Lightning Bolt", 1, 1, Zone.STACK, counters={"time": 2})
     state.cards[bolt.id] = bolt
     put_into_graveyard(state, bolt.id)
     assert bolt.zone == Zone.GRAVEYARD
@@ -242,10 +187,7 @@ def test_countered_spell_loses_stack_counters_in_graveyard():
 
 def test_sacrificed_artifact_loses_old_charge_counters():
     state = _state()
-    chalice = CardInstance(
-        "chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD,
-        ["Artifact"], type_line="Artifact", counters={"charge": 2},
-    )
+    chalice = materialize("chalice", "Everflowing Chalice", 1, 1, Zone.BATTLEFIELD, counters={"charge": 2})
     state.cards[chalice.id] = chalice
     state.players[1].battlefield.append(chalice.id)
     sacrifice(state, 1, {"target_card_id": chalice.id})
@@ -256,10 +198,8 @@ def test_sacrificed_artifact_loses_old_charge_counters():
 def test_batch_deaths_collect_all_old_counters_before_reset(monkeypatch):
     state = _state()
     creatures = [
-        CardInstance("bear", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-                     power=2, toughness=2, counters={"+1/+1": 1, "__damage_marked": 1}),
-        CardInstance("spider", "Giant Spider", 2, 2, Zone.BATTLEFIELD, ["Creature"],
-                     power=2, toughness=4, counters={"+1/+1": 2, "__damage_marked": 2}),
+        materialize("bear", "Grizzly Bears", 1, 1, Zone.BATTLEFIELD, counters={"+1/+1": 1, "__damage_marked": 1}),
+        materialize("spider", "Giant Spider", 2, 2, Zone.BATTLEFIELD, counters={"+1/+1": 2, "__damage_marked": 2}),
     ]
     for card in creatures:
         state.cards[card.id] = card

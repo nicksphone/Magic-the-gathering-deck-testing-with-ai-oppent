@@ -1,0 +1,101 @@
+{
+  "base": "76b0befd7b3aed9365c7a5c5b9d20faafa77ef02",
+  "raw_file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+  "provenance_path": "knowledge_profiles/PROVENANCE.json",
+  "provenance_sha256": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
+  "complete_official_objects_reused": true,
+  "network_requests": 0,
+  "oracle_modified": false,
+  "source_epoch": "2026-10-12",
+  "fresh_HTTP_or_rulings_claim": false,
+  "admissions": {
+    "Leyline Binding": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 55,
+      "id": "3c3ac3dd-35db-447f-8674-37b4680a1ef7",
+      "oracle_id": "b49642f6-20bd-468d-9dac-e578f9ac3091",
+      "fields": 63,
+      "row_sha256": "55d7cb06e139c3404fc74efc182fe924df6990770825eeaf386b1770f7c6fd5e"
+    },
+    "Herd Migration": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 45,
+      "id": "b0244a1f-e696-4223-9c14-22c2ca3cb738",
+      "oracle_id": "dfdc0eab-309b-4441-a94c-930c6dde4c48",
+      "fields": 66,
+      "row_sha256": "003529fe5fae3c248a9c506ff54d400095e9f4c707927f35cb274ba3985894a0"
+    },
+    "Plains": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 70,
+      "id": "09ac862f-0a51-44dd-b86f-9412b8218b13",
+      "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+      "fields": 60,
+      "row_sha256": "bb36c8b3d7c52e7274ab49ee95993248b8dc616ba4e1702b3d8e33ec107b1b0b"
+    },
+    "Island": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 50,
+      "id": "1335d293-3dd2-4f13-bd2c-22181f4528ee",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "fields": 60,
+      "row_sha256": "932ef67074504645e2ddf2ceefcb9e65aa3b6938c6f6c42cb226dbdbe5b30d6b"
+    },
+    "Swamp": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 97,
+      "id": "b233b117-9369-45c1-80c5-cc857386b6be",
+      "oracle_id": "56719f6a-1a6c-4c0a-8d21-18f7d7350b68",
+      "fields": 60,
+      "row_sha256": "cbe60bb5325532b7363da9bbe4b7b035a8d89cb129f72272f4f3aeffae5c36d6"
+    },
+    "Forest": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 39,
+      "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "fields": 61,
+      "row_sha256": "602b1fe3c5c18846061929fee422e97c8e9c2c431e57e8c6c810f2da7643fad3"
+    },
+    "Jetmir's Garden": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 51,
+      "id": "26d40e03-6de4-4373-9fbf-04c1dd79e995",
+      "oracle_id": "f5896356-5744-4f7e-a4e5-1cc36dde5958",
+      "fields": 66,
+      "row_sha256": "c3c35650eb1b316523d5cb0378b73d0fc65bfcaea6e42cf778dcf56e60e360fc"
+    },
+    "Raffine's Tower": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 73,
+      "id": "a2c56479-4bee-4edb-80d7-4af010b7c793",
+      "oracle_id": "6e9ef5ef-6aed-4d3e-a59b-9e3dc8740b1b",
+      "fields": 66,
+      "row_sha256": "84030a8a16b4893d0853d18b1185c697c1c124878ab15281c764a8441fd9f7b1"
+    },
+    "Tropical Island": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 109,
+      "id": "47033ba4-8f26-4a6b-97bd-5b366327325e",
+      "oracle_id": "74b7fe23-5d3a-4092-8d78-7c0eba8f6f73",
+      "fields": 63,
+      "row_sha256": "af71f56ccd187942259be3bd29907c17a0530175226a865c976b2dbccfddef66"
+    },
+    "Temple Garden": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 147,
+      "id": "b9b0589d-f327-46a7-8bac-06b7654c547a",
+      "oracle_id": "f413a83d-a40d-434c-b20a-4c707c0527fa",
+      "fields": 63,
+      "row_sha256": "abd5536f3f71d6ca916a9838c2d87c621302acee3cc02f7ad1a3c4c8357c4ca0"
+    },
+    "Waterlogged Grove": {
+      "source": "knowledge_profiles/seed155-scryfall.jsonl",
+      "line": 153,
+      "id": "0ab6bfbd-d2e1-4c4c-9f91-6f69c5b8e3bb",
+      "oracle_id": "70fa2eba-565e-4fed-adc9-7f5d9fcbf1fa",
+      "fields": 66,
+      "row_sha256": "d414fa11fe4b0ad7d4281e24a4e1e3b909419f7f8d61d79f52cea22c977fd4fb"
+    }
+  }
+}

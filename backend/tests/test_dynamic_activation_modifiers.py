@@ -138,7 +138,7 @@ def test_http_dynamic_payment_rejection_and_sqlite_resume(game, seat, modifier):
     from persistence.db import engine
     from persistence.repository import Repository
     client, match = game
-    state = board(seat)
+    state = board(seat, game_id=match.state.id)
     mage = add(state, 'Azure Mage', seat)
     if modifier == 'power':
         dynamic(state, 'Agatha of the Vile Cauldron', seat).counters['+1/+1'] = 2
@@ -148,7 +148,6 @@ def test_http_dynamic_payment_rejection_and_sqlite_resume(game, seat, modifier):
         state.active_player = 3-seat
         required = 4
     state.players[seat].mana_pool['C'] = max(0, required-1)
-    state.id = match.state.id
     match.state = state
     persist(match)
     action = {'type': 'activate_ability', 'card_id': mage.id, 'ability_index': 0, 'targets': {}}

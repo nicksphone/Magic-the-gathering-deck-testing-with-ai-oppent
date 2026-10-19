@@ -14,6 +14,7 @@ from rules_engine.foretell import hand_costs, can_look, record
 from tests.test_ai_recurring_engines import add as raw_add, resolve
 from tests.test_variable_mana import clean
 from tests.test_api_input_contracts import game, persist
+from tests.fixture_state_support import adopt_fixture_state
 
 CARDS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/foretell.json').read_text())}
 PRINTED = [name for name, card in CARDS.items() if 'Foretell' in (card['keywords'] or [])]
@@ -141,8 +142,7 @@ def test_bad_foreTell_attempts_leave_complete_snapshot_unchanged(seat):
 def test_foreTell_reaches_http_contract_and_saved_private_views(game, seat):
     client, match = game
     state, cid = setup(seat=seat)
-    state.id = match.state.id
-    match.state = state
+    adopt_fixture_state(match, state)
     persist(match)
     response = client.post(f'/matches/{state.id}/action', json={
         'player_id': seat, 'action': {'type': 'foretell', 'card_id': cid}})

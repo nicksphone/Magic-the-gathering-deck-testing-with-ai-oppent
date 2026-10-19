@@ -115,10 +115,10 @@ def test_live_diagnostics_exclude_private_zones_and_preserve_sqlite_state(game, 
 
 def test_http_preflight_reports_canonical_tax_from_name_only_deck(game, monkeypatch):
     import main
-    from card_data.fallback_cards import fallback_card_payload
+    from card_data.seed_cards import seed_card_payload
     client, match = game
     monkeypatch.setattr(main, '_hydrate_deck_cards', lambda repo, deck: [
-        {**(ROWS.get(item['card_name']) or fallback_card_payload(item['card_name'])), **item}
+        {**(ROWS.get(item['card_name']) or seed_card_payload(item['card_name'])), **item}
         for item in deck])
     deck = [{'quantity': 4, 'card_name': "Stormtide Leviathan"}, {'quantity': 56, 'card_name': 'Island'}]
     before = snapshot(match)

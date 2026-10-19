@@ -20,8 +20,19 @@ ARCHAIC = "Wandering Archaic // Explore the Vastlands"
 VALKI = "Valki, God of Lies // Tibalt, Cosmic Impostor"
 
 
-def _valki_entry():
-    state, source = fixture(VALKI)
+def _valki_entry(*, opponent_rows=None):
+    state, source = fixture(VALKI, opponent_rows=opponent_rows)
+    if opponent_rows is not None:
+        target = next(card for card in state.cards.values()
+                      if card.owner == 2 and card.name == "Elvish Mystic")
+        opponent = state.players[2]
+        if target.id not in opponent.hand:
+            displaced_id = opponent.hand[0]
+            index = opponent.library.index(target.id)
+            opponent.library[index] = displaced_id
+            opponent.hand[0] = target.id
+            state.cards[displaced_id].move_to_zone(Zone.LIBRARY)
+            target.move_to_zone(Zone.HAND)
     state.players[1].hand.remove(source.id)
     state.players[1].battlefield.append(source.id)
     source.move_to_zone(Zone.BATTLEFIELD)
@@ -161,19 +172,15 @@ def test_valki_http_choice_persists_link_and_returns_to_hand() -> None:
 
 
 def _valki_with_exiled_mystic():
-    from card_data.fallback_cards import fallback_card_payload
-
-    state, source = _valki_entry()
+    printed = next(json.loads(line) for line in
+                   (Path(__file__).parent / "fixtures/knowledge_profiles/seed155-scryfall.jsonl").read_text().splitlines()
+                   if json.loads(line)["name"] == "Elvish Mystic")
+    state, source = _valki_entry(opponent_rows=[
+        {**DATA[VALKI], "quantity": 59}, {**printed, "quantity": 1},
+    ])
     state.mechanic_choice_players = {1, 2}
-    target_id = state.players[2].hand[0]
-    printed = fallback_card_payload("Elvish Mystic")
+    target_id = next(cid for cid in state.players[2].hand if state.cards[cid].name == "Elvish Mystic")
     assert printed is not None
-    sample = MatchFactory.from_decks([{**printed, 'card_name': 'Elvish Mystic', 'quantity': 1}], [], seed=4)
-    target = next(iter(sample.cards.values()))
-    target.id = target_id
-    target.owner = target.controller = 2
-    target.move_to_zone(Zone.HAND)
-    state.cards[target_id] = target
     assert not resolve_top_of_stack(state)
     state = checked_action(state, RulesEngine(), 1, {"type": "choose_mechanic", "card_ids": [target_id]})
     state.players[1].mana_pool = {color: 0 for color in "WUBRGC"}
@@ -292,13 +299,21 @@ def test_copy_activation_has_no_choice_if_linked_card_left_exile() -> None:
     assert state.cards[source_id].name == "Valki, God of Lies"
 
 
-def fixture(name):
+def fixture(name, *, opponent_rows=None):
     raw = DATA[name]
     row = SimpleNamespace(**{key: value for key, value in raw.items() if key != "card_faces"},
                           card_faces_json=json.dumps(raw["card_faces"]), image_uri="/card-images/offline.svg")
     repo = SimpleNamespace(get_cached_cards_by_names=lambda names: {name.lower(): row})
     deck = hydrate_deck_cards(repo, [{"quantity": 60, "card_name": name}])
-    game = MatchFactory.from_decks(deck, deck, seed=9)
+    opponent_deck = deck
+    if opponent_rows is not None:
+        cached = {raw["name"].lower(): SimpleNamespace(**ScryfallSyncService._normalize_payload(
+            raw, "/card-images/offline.svg")) for raw in opponent_rows}
+        opponent_repo = SimpleNamespace(get_cached_cards_by_names=lambda names: cached)
+        opponent_deck = hydrate_deck_cards(opponent_repo, [
+            {"quantity": raw["quantity"], "card_name": raw["name"]} for raw in opponent_rows
+        ])
+    game = MatchFactory.from_decks(deck, opponent_deck, seed=9)
     game.pregame_pending = False
     game.kept_hands = {1, 2}
     game.step = Step.PRECOMBAT_MAIN

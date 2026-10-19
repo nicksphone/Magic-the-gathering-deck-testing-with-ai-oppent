@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
@@ -9,13 +10,22 @@ from urllib.parse import urlparse
 import httpx
 
 from card_data.http_utils import get_with_backoff
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from card_data.placeholders import ensure_placeholder_image
 from persistence.repository import Repository
 
 SCRYFALL_NAMED_URL = "https://api.scryfall.com/cards/named"
 CACHE_DIR = Path(__file__).resolve().parent / "image_cache"
 CACHE_ROUTE_PREFIX = "/card-images"
+
+
+def oracle_fields_valid(metadata: dict) -> bool:
+    """Absent text can use face/seed fallback; other non-strings are malformed."""
+    faces = metadata.get('card_faces')
+    if faces is not None and (not isinstance(faces, list) or any(not isinstance(face, dict) for face in faces)):
+        return False
+    return all(surface.get('oracle_text') is None or isinstance(surface['oracle_text'], str)
+               for surface in [metadata, *(faces or [])])
 
 
 def needs_split_color_sync(card) -> bool:
@@ -41,6 +51,8 @@ class ScryfallSyncService:
 
     @classmethod
     def _normalize_payload(cls, raw: dict[str, Any], image_uri: str | None, rulings: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+        if not oracle_fields_valid(raw):
+            raise ValueError('Oracle text fields must be strings or absent.')
         face = None
         if raw.get("card_faces"):
             face = raw["card_faces"][0]
@@ -66,6 +78,8 @@ class ScryfallSyncService:
 
     @classmethod
     def _normalize_faces(cls, faces: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        if not oracle_fields_valid({'card_faces': faces}):
+            raise ValueError('Oracle text fields must be strings or absent.')
         out: list[dict[str, Any]] = []
         for face in faces:
             out.append(
@@ -82,6 +96,89 @@ class ScryfallSyncService:
                 }
             )
         return out
+
+    @classmethod
+    def _canonical_rule_projection(cls, raw: dict, cached=None, *, physical_front: bool = False) -> dict:
+        """Project only rules, retaining selected-print art and opaque face metadata."""
+        text_fields = ('oracle_text', 'mana_cost', 'type_line', 'power', 'toughness', 'loyalty')
+        surfaces = [raw, *(raw.get('card_faces') or [])]
+        if not oracle_fields_valid(raw) or any(
+            any(surface.get(key) is not None and not isinstance(surface[key], str) for key in text_fields)
+            or surface.get('colors') is not None and (
+                not isinstance(surface['colors'], list)
+                or any(not isinstance(color, str) for color in surface['colors']))
+            or surface.get('image_uris') is not None and (
+                not isinstance(surface['image_uris'], dict)
+                or any(not isinstance(uri, str) for uri in surface['image_uris'].values()))
+            for surface in surfaces
+        ) or not isinstance(raw.get('layout', ''), str):
+            raise ValueError('Malformed canonical rule fields.')
+        # A nonempty operand prevents the normalizer from creating placeholder art.
+        normalized = cls._normalize_payload(raw, 'unused:rule-projection')
+        keys = (*text_fields, 'layout', 'colors', 'card_faces_json')
+        rules = {key: normalized[key] for key in keys}
+        faces = json.loads(rules['card_faces_json'])
+        old_faces = []
+        if cached is not None:
+            old_faces = json.loads(getattr(cached, 'card_faces_json', '') or '[]')
+            if old_faces is None:
+                old_faces = []
+            if not oracle_fields_valid({'oracle_text': cached.oracle_text, 'card_faces': old_faces}) or any(
+                getattr(cached, key, None) is not None and not isinstance(getattr(cached, key), str)
+                for key in (*text_fields, 'layout', 'colors')
+            ):
+                raise ValueError('Malformed cached rule fields.')
+            names = {face['name'] for face in faces}
+            if any(not isinstance(face.get('name'), str) or face['name'] not in names
+                   or any(face.get(key) is not None and not isinstance(face[key], str) for key in text_fields)
+                   or face.get('colors') is not None and (
+                       not isinstance(face['colors'], list)
+                       or any(not isinstance(color, str) for color in face['colors']))
+                   for face in old_faces) or len({face['name'] for face in old_faces}) != len(old_faces):
+                raise ValueError('Malformed or ambiguous cached faces.')
+        selected_face = next((face for face in faces if cached is not None
+                              and face['name'].casefold() == cached.name.strip().casefold()), None)
+        if (selected_face is not None and not physical_front
+                and raw.get('layout') != 'art_series' and raw.get('type_line') != 'Card'):
+            rules.update({key: selected_face.get(key) for key in text_fields})
+            for key in ('oracle_text', 'mana_cost', 'type_line'):
+                rules[key] = rules[key] or ''
+            if selected_face.get('colors') is not None:
+                rules['colors'] = ','.join(selected_face['colors'])
+            elif cached.colors is not None:
+                rules['colors'] = cached.colors
+        elif faces and raw.get('layout') in {'modal_dfc', 'transform', 'adventure', 'reversible_card'}:
+            front = {key: faces[0].get(key) for key in text_fields}
+            for key in ('oracle_text', 'mana_cost', 'type_line'):
+                front[key] = front[key] or ''
+            front['colors'] = (','.join(faces[0]['colors']) if faces[0].get('colors') is not None
+                               else rules['colors'])
+            if physical_front:
+                rules.update(front)
+            elif cached is not None and all(getattr(cached, key, None) == value for key, value in front.items()):
+                # Full-name cache rows may already use a coherent physical-front frame.
+                rules.update(front)
+        old_by_name = {face['name']: face for face in old_faces}
+        rules['card_faces_json'] = json.dumps([
+            {**old_by_name.get(face['name'], {}), **face,
+             **({'image_uri': old_by_name[face['name']]['image_uri']}
+                if 'image_uri' in old_by_name.get(face['name'], {}) else {})}
+            for face in faces
+        ])
+        return rules
+
+    @staticmethod
+    def _cache_rules_match(cached, rules: dict) -> bool:
+        for key, value in rules.items():
+            actual = getattr(cached, key, None)
+            if key == 'card_faces_json':
+                actual = json.loads(actual or '[]')
+                if actual is None:
+                    actual = []
+                value = json.loads(value)
+            if actual != value:
+                return False
+        return True
 
     @staticmethod
     def _extract_face_image_uri(face: dict[str, Any]) -> str | None:
@@ -100,6 +197,16 @@ class ScryfallSyncService:
             return False
         raw = profile["card_data"]
         cached = self.repository.get_cached_card_by_name(name)
+        if cached is not None:
+            try:
+                rules = self._canonical_rule_projection(raw, cached)
+            except (AttributeError, KeyError, TypeError, ValueError):
+                return False
+            if not self._cache_rules_match(cached, rules):
+                self.repository.upsert_card({
+                    'scryfall_id': cached.scryfall_id, **rules, 'updated_at': datetime.utcnow(),
+                })
+            return True
         local_image = cached.image_uri if cached and cached.scryfall_id == raw["id"] and self._cached_image_available(cached.image_uri) else None
         rulings = profile.get("rulings") if profile.get("rulings_verified") is True else []
         if not isinstance(rulings, list):
@@ -136,7 +243,8 @@ class ScryfallSyncService:
 
     def sync_card_by_name(self, name: str, force: bool = False) -> dict[str, Any]:
         cached = self.repository.get_cached_card_by_name(name)
-        if cached and not force and self._cached_image_available(cached.image_uri):
+        if (cached and not force and self._cached_image_available(cached.image_uri)
+                and self._cached_oracle_fields_valid(cached)):
             from card_data.hydration import ready_for_match
             metadata = self._serialize_card(cached)
             if ready_for_match(metadata):
@@ -151,7 +259,7 @@ class ScryfallSyncService:
                 image_uri = self._cache_image(raw["id"], remote_image_uri, client) if remote_image_uri else None
                 rulings = self._fetch_rulings(raw.get("rulings_uri"), client)
         except httpx.HTTPError:
-            if cached is not None:
+            if cached is not None and self._cached_oracle_fields_valid(cached):
                 return self._serialize_card(cached)
             raise
         payload = self._normalize_payload(raw, image_uri=image_uri or remote_image_uri, rulings=rulings)
@@ -210,9 +318,17 @@ class ScryfallSyncService:
         image_name = image_uri.split("/", 2)[-1]
         return (CACHE_DIR / image_name).exists()
 
+    def _cached_oracle_fields_valid(self, card) -> bool:
+        return oracle_fields_valid({
+            'oracle_text': self._card_attr(card, 'oracle_text'),
+            'card_faces': json.loads(self._card_attr(card, 'card_faces_json', '[]') or '[]'),
+        })
+
     def _serialize_card(self, card) -> dict[str, Any]:
+        if not self._cached_oracle_fields_valid(card):
+            raise ValueError('Oracle text fields must be strings or absent.')
         card_name = self._card_attr(card, "name", "")
-        fallback = fallback_card_payload(card_name)
+        fallback = seed_card_payload(card_name)
         return {
             "id": self._card_attr(card, "id"),
             "scryfall_id": self._card_attr(card, "scryfall_id"),

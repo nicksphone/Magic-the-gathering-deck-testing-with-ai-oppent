@@ -85,7 +85,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckName(data.name);
     setDeckText(data.deck_text.trim());
     const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
-    setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
+    setStatus(`Imported built-in #${imported.deck_id} (${imported.archetype_guess}) - local metadata ${resolved}/${imported.mainboard.length} card entries`);
     await showCompleteness([...imported.mainboard, ...imported.sideboard].map((item) => item.card_name));
     await refreshDeckData();
   }
@@ -113,7 +113,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     setDeckName(loaded.name);
     setDeckText(loaded.deck_text.trim());
     const resolved = imported.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
-    setStatus(`Imported ${loaded.kind === "tournament" ? "historical tournament deck" : "archetype template"} #${imported.deck_id} (${imported.archetype_guess}) - resolved ${resolved}/${imported.mainboard.length} card entries`);
+    setStatus(`Imported ${loaded.kind === "tournament" ? "historical tournament deck" : "archetype template"} #${imported.deck_id} (${imported.archetype_guess}) - local metadata ${resolved}/${imported.mainboard.length} card entries`);
     await showCompleteness([...imported.mainboard, ...imported.sideboard].map((item) => item.card_name));
     await refreshDeckData();
   }
@@ -133,7 +133,7 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
     }
     setImportAnalysis(data);
     const resolved = data.resolved_mainboard_cards?.filter((item) => item.card_metadata).length ?? 0;
-    setStatus(`Saved deck #${data.deck_id} (${data.archetype_guess}) - resolved ${resolved}/${data.mainboard.length} card entries`);
+    setStatus(`Saved deck #${data.deck_id} (${data.archetype_guess}) - local metadata ${resolved}/${data.mainboard.length} card entries`);
     await showCompleteness([...data.mainboard, ...data.sideboard].map((item) => item.card_name));
     await refreshDeckData();
   }
@@ -199,8 +199,8 @@ export function DeckPanel({ decks, onDecksLoaded }: Props) {
       )}
       {completeness && (
         <div className="data-report" role="status">
-          <strong>Card metadata: {completeness.complete}/{completeness.requested} available</strong>
-          <span>Oracle fallback: {completeness.cards.filter((card) => card.oracle_source === "fallback").length}</span>
+          <strong>Cached/knowledge Oracle records: {completeness.complete}/{completeness.requested} available</strong>
+          <span>Offline seed Oracle: {completeness.cards.filter((card) => card.oracle_source === "fallback").length}</span>
           {completeness.cards.every((card) => typeof card.match_ready === "boolean") && <span>Local match data ready: {completeness.cards.filter((card) => card.match_ready).length}/{completeness.requested}. Art and rulings sync separately.</span>}
           {completeness.cards.some((card) => card.needs_card_sync) && <span role="alert">Sync complete card data before playing: {completeness.cards.filter((card) => card.needs_card_sync).map((card) => card.name).join(", ")}</span>}
           <span>Uncached: {completeness.missing.cached}</span>

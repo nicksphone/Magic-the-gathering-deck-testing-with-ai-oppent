@@ -1,0 +1,27 @@
+{
+  "cards": [
+    {
+      "file": "reassembling-skeleton.json",
+      "id": "4d431445-d7db-4ce1-b422-41494d9be1b4",
+      "name": "Reassembling Skeleton",
+      "oracle_id": "9dbc3530-b278-4c8d-b2cc-a09dfac9d5e5",
+      "oracle_text": "{1}{B}: Return this card from your graveyard to the battlefield tapped.",
+      "sha256": "273707961094bad092b66853c7654bf606cd12555987c15a22c3fa8b95814391",
+      "source_line_1based": 23761
+    },
+    {
+      "file": "sanitarium-skeleton.json",
+      "id": "119020b3-9d26-4153-b7b9-28375f7fa915",
+      "name": "Sanitarium Skeleton",
+      "oracle_id": "d09b0648-e324-4a16-b78c-d1849177c04f",
+      "oracle_text": "{2}{B}: Return this card from your graveyard to your hand.",
+      "sha256": "9a1ee9571f3e263cc2f074bff20686368a0b03cae8e4fcd8ba46054433ed41bb",
+      "source_line_1based": 31435
+    }
+  ],
+  "no_http": true,
+  "raw_full_original_lines": true,
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "source_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "utc": "2026-10-07T02:05:05.144737+00:00"
+}

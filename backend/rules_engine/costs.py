@@ -1,4 +1,5 @@
 from __future__ import annotations
+from rules_engine.card_types import CARD_TYPES
 from rules_engine.type_effects import effective_types
 
 import re
@@ -42,7 +43,10 @@ class CostOption:
     exile_graveyard: int = 0
     additional_cost_group: str | None = None
     kicked: bool = False
+    kicker_count: int | None = None
     kicker_base_id: str | None = None
+    hand_exile_color: str | None = None
+    hand_exile_generic_reduction: int = 0
     graveyard_permission_key: str | None = None
     graveyard_permission_max_mana_value: int | None = None
 
@@ -63,10 +67,62 @@ class ActivatedCost:
     sacrifice_kind: str = "creature"
     sacrifice_source: bool = False
     supported: bool = True
+    remove_source_counters: int = 0
+    remove_counter_kind: str | None = None
+
+
+def _parse_source_counter_cost(cost_text: str) -> ActivatedCost:
+    from rules_engine.oracle_effects import _parse_count_token
+
+    mana_symbols = []
+    tap_source = False
+    amount = 0
+    counter_kind = None
+    for part in (segment.strip() for segment in cost_text.split(',')):
+        match = re.fullmatch(
+            r"\s*remove\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|[0-9]+)"
+            r"\s+(\+1/\+1|charge)\s+counters?\s+from\s+this\s+(?:creature|permanent|artifact|enchantment)\s*",
+            part, re.IGNORECASE,
+        )
+        if match:
+            if counter_kind is not None:
+                return ActivatedCost(supported=False)
+            try:
+                amount = int(match[1]) if match[1].isdigit() else _parse_count_token(match[1])
+            except ValueError:
+                return ActivatedCost(supported=False)
+            if amount <= 0:
+                return ActivatedCost(supported=False)
+            counter_kind = match[2].lower()
+        elif part.upper() == '{T}' and not tap_source:
+            tap_source = True
+        elif re.fullmatch(
+            r"(?:\{(?:[0-9]+|[WUBRGCS]|[WUBRG]/[WUBRG]|2/[WUBRG]|[WUBRG](?:/[WUBRG])?/P)\}\s*)+",
+            part, re.IGNORECASE,
+        ):
+            symbols = re.findall(r'\{([^}]+)\}', part.upper())
+            try:
+                for symbol in symbols:
+                    if symbol.isdigit():
+                        int(symbol)
+                    elif '/' in symbol and symbol.split('/')[0] == symbol.split('/')[1]:
+                        return ActivatedCost(supported=False)
+            except ValueError:
+                return ActivatedCost(supported=False)
+            mana_symbols.extend('{' + symbol + '}' for symbol in symbols)
+        else:
+            return ActivatedCost(supported=False)
+    if counter_kind is None:
+        return ActivatedCost(supported=False)
+    return ActivatedCost(mana_cost=''.join(mana_symbols), tap_source=tap_source,
+                         remove_source_counters=amount, remove_counter_kind=counter_kind)
 
 
 def parse_activated_cost(cost_text: str) -> ActivatedCost:
     """Parse common activated costs without treating them as Oracle effects."""
+    if re.search(r"\bremove\b", cost_text or "", re.IGNORECASE):
+        # Match the entire cost; unknown clauses must never fall through to partial payment.
+        return _parse_source_counter_cost(cost_text)
     mana_symbols: list[str] = []
     tap_source = False
     pay_life = discard_cards = sacrifice_creatures = 0
@@ -92,7 +148,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
         if upper in {"T", "TAP"}:
             tap_source = True
         elif "SACRIFICE" in upper and any(term in upper for term in ("CREATURE", "ARTIFACT", "ENCHANTMENT", "PERMANENT", "TOKEN")):
-            if sacrifice_kind.startswith('subtype_'):
+            if sacrifice_kind == 'land' or sacrifice_kind.startswith('subtype_'):
                 supported = False
                 continue
             match = ACTIVATED_SACRIFICE_RE.search(upper)
@@ -116,7 +172,7 @@ def parse_activated_cost(cost_text: str) -> ActivatedCost:
             from rules_engine.spell_cost_clauses import fixed_cost_component
             component = fixed_cost_component(part)
             kind = (component or {}).get('sacrifice_kind', '')
-            if (not kind.startswith('subtype_')
+            if (not (kind == 'land' or kind.startswith('subtype_'))
                     or sacrifice_creatures and sacrifice_kind != kind):
                 supported = False
                 continue
@@ -244,14 +300,33 @@ def _payable_activation_selection(state, player_id, source_id, cost, hybrid_choi
     return None
 
 
+def _source_counter_cost_available(state, player_id, source_id, cost, unavailable_resources):
+    if not cost.remove_source_counters:
+        return True
+    source = state.cards.get(source_id)
+    player = state.players.get(player_id)
+    amount = source.counters.get(cost.remove_counter_kind, 0) if source else None
+    return (source is not None and player is not None and source.id == source_id
+            and source.zone == Zone.BATTLEFIELD and source.controller == player_id
+            and player.battlefield.count(source_id) == 1
+            and source_id not in unavailable_resources
+            and type(amount) is int and amount >= cost.remove_source_counters)
+
+
 def activated_cost_available(state: MatchState, player_id: int, source_id: str, cost_text: str, hybrid_choices: list[str] | None = None, x_value: int = 0, restricted_x_color: str | None = None, *, ability_kind='activated', ability_index=None, payment_choices=None, unavailable_resources=(), protected_life=0) -> bool:
     cost = parse_activated_cost(cost_text)
     if not cost.supported or x_value < 0:
+        return False
+    if not _source_counter_cost_available(state, player_id, source_id, cost, unavailable_resources):
         return False
     source = state.cards[source_id]
     player = state.players[player_id]
     if cost.tap_source and (source.zone != Zone.BATTLEFIELD or source.tapped):
         return False
+    if cost.tap_source and "Creature" in effective_types(state, source) and source.summoning_sick:
+        from rules_engine.continuous import has_keyword
+        if not has_keyword(state, source_id, "haste"):
+            return False
     if cost.discard_source and (source_id not in player.hand or source.zone != Zone.HAND):
         return False
     if not can_pay_life(state, player_id, cost.pay_life + protected_life):
@@ -266,16 +341,43 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
         return False
     player = state.players[player_id]
     source = state.cards[source_id]
+    from game_state.state import object_incarnation
+    counter_reference = (object_incarnation(source), source.zone_change_sequence) if cost.remove_source_counters else None
     selected = _payable_activation_selection(state, player_id, source_id, cost, hybrid_choices, x_value,
         restricted_x_color, ability_kind, ability_index, payment_choices, unavailable_resources, protected_life)
     if selected is None:
         return False
+    from rules_engine.replacement import graveyard_entry_plans, select_graveyard_entry_plan
+    from rules_engine.zone_actions import execute_graveyard_entry, prepare_graveyard_entry_causes
+    from rules_engine.action_validation import ActionRejected
+    # Replacement choices are not part of the cost payload. Reject unresolved
+    # choices before payment can tap resources, change life, or consume RNG.
+    sacrifice_plans = {cid: select_graveyard_entry_plan(state, cid)
+                       for cid in selected['sacrifice_card_ids']}
+    selected_discard_ids = tuple(selected['discard_card_ids'])
+    discard_ids = list(dict.fromkeys(([source_id] if cost.discard_source else [])
+                                    + list(selected_discard_ids)))
+    discard_plans = {cid: select_graveyard_entry_plan(state, cid) for cid in discard_ids}
+    resource_plans = {**discard_plans, **sacrifice_plans}
     reserved = set(unavailable_resources) | set(selected['discard_card_ids']) | set(selected['sacrifice_card_ids'])
     if not _pay_activated_mana(state, player_id, cost.mana_cost, source.name, cost.pay_life, hybrid_choices, x_value, restricted_x_color, set(effective_types(state, source)), source_id, ability_kind, {source_id} if cost.tap_source else None, ability_index, reserved, protected_life):
         return False
+    if cost.remove_source_counters and (
+            state.cards.get(source_id) is not source
+            or (object_incarnation(source), source.zone_change_sequence) != counter_reference
+            or not _source_counter_cost_available(state, player_id, source_id, cost, unavailable_resources)):
+        raise ActionRejected('Source counter payment changed during mana payment')
     selected = activated_cost_selection(state, player_id, source_id, cost, selected, unavailable_resources)
     if selected is None:
         return False
+    if (set(selected['sacrifice_card_ids']) != set(sacrifice_plans)
+            or set(selected['discard_card_ids']) != set(selected_discard_ids)
+            or any(plan not in graveyard_entry_plans(state, cid)
+                   for cid, plan in resource_plans.items())):
+        raise ActionRejected('Graveyard replacement plan changed during mana payment')
+    resource_causes = prepare_graveyard_entry_causes(state, resource_plans.values())
+    if cost.remove_source_counters:
+        source.counters[cost.remove_counter_kind] -= cost.remove_source_counters
     if cost.tap_source:
         from rules_engine.resource_events import tap_permanents
         tap_permanents(state, [source_id])
@@ -285,6 +387,9 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
             return False
         state.log.append(f"{player.name} pays {cost.pay_life} life for {source.name}.")
     from rules_engine.events import emit_event, emit_event_batch, flush_staged_triggers, was_creature_on_battlefield
+    if any(plan not in graveyard_entry_plans(state, cid)
+           for cid, plan in resource_plans.items()):
+        raise ActionRejected('Graveyard replacement plan is no longer available')
     if cost.discard_source:
         from rules_engine.zone_actions import discard_selected
         if not discard_selected(state, player_id, [source_id]):
@@ -292,12 +397,14 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
     for discard_id in selected['discard_card_ids']:
         if cost.discard_source and discard_id == source_id:
             continue
-        player.hand.remove(discard_id)
-        put_into_graveyard(state, discard_id)
+        execute_graveyard_entry(state, discard_plans[discard_id], prevalidated=True,
+                               _prepared_cause=resource_causes[discard_id])
         state.log.append(f"{player.name} discards {state.cards[discard_id].name} for {source.name}.")
         emit_event(state, "discard", {"card_id": discard_id, "controller": player_id})
     sacrifice_ids = selected['sacrifice_card_ids']
-    destinations = {cid: replace_die_zone(state, state.cards[cid].controller, cid) for cid in sacrifice_ids}
+    if any(plan not in graveyard_entry_plans(state, cid)
+           for cid, plan in sacrifice_plans.items()):
+        raise ActionRejected('Sacrifice replacement plan is no longer available')
     events = [{"card_id": cid, "controller": player_id} for cid in sacrifice_ids]
     started_staging = bool(events) and not state.trigger_staging
     if started_staging:
@@ -309,13 +416,9 @@ def apply_activated_costs(state: MatchState, player_id: int, source_id: str, cos
             context["__sacrificed_toughness"] = effective_toughness(state, sac_id)
     emit_event_batch(state, "leaves_battlefield", events)
     for sac_id in sacrifice_ids:
-        if sac_id in player.battlefield:
-            player.battlefield.remove(sac_id)
         card = state.cards[sac_id]
-        owner = state.players[getattr(card, "owner", player_id)]
-        zone = Zone.EXILE if destinations[sac_id] == "exile" else Zone.GRAVEYARD
-        getattr(owner, zone.value).append(sac_id)
-        card.move_to_zone(zone)
+        execute_graveyard_entry(state, sacrifice_plans[sac_id], prevalidated=True,
+                               _prepared_cause=resource_causes[sac_id])
         state.log.append(f"{player.name} sacrifices {card.name} for {source.name}.")
     emit_event_batch(state, "sacrifice", events)
     died = [event for event in events if state.cards[event["card_id"]].zone == Zone.GRAVEYARD]
@@ -336,7 +439,17 @@ def _pay_activated_mana(state: MatchState, player_id: int, mana_cost: str, card_
     return auto_pay_cost(state, player_id, mana_cost, card_name=card_name, reserved_life=reserved_life, hybrid_choices=hybrid_choices, x_value=x_value, restricted_x_color=restricted_x_color, payment_kind="activation", payment_types=source_types, source_card_id=source_id, ability_kind=ability_kind, excluded_sources=excluded_sources, ability_index=ability_index, reserved_card_ids=reserved_card_ids, protected_life=protected_life)
 
 
-def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False) -> list[CostOption]:
+def collect_cost_options(state: MatchState, player_id: int, card, *, without_mana: bool = False, action_targets=None) -> list[CostOption]:
+    from rules_engine.spree import is_spree, parse, selected, priced
+    spree_modes = parse(card.oracle_text) if is_spree(card.oracle_text) else None
+    if is_spree(card.oracle_text) and spree_modes is None:
+        return []
+    if spree_modes:
+        try:
+            chosen_modes = (selected(spree_modes, action_targets) if action_targets is not None
+                            else [min(spree_modes, key=lambda mode: mode.generic)])
+        except ValueError:
+            return []
     from rules_engine.graveyard_permissions import zone_cast_prohibited, graveyard_only_cast
     if zone_cast_prohibited(state, player_id, card.zone) or (card.zone != Zone.GRAVEYARD and graveyard_only_cast(card)):
         return []
@@ -406,9 +519,21 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
     if card.zone == Zone.EXILE and not without_mana:
         options.extend(CostOption(id=f'foretell_{index}', label='Foretell', mana_cost=cost)
                        for index, cost in enumerate(cast_costs(state, card, player_id)))
-    from rules_engine.kicker import kicker_price, kicker_cost
+    from rules_engine.kicker import kicker_price, kicker_cost, paired_permanent_kicker
     kicker = kicker_cost(card)
-    if kicker:
+    paired = paired_permanent_kicker(card)
+    if paired:
+        options = [variant for option in options for variant in (
+            replace(option, kicker_count=0),
+            *[replace(option,
+                      id=('kicker' if option.id == 'base' else option.id + '_kicker') + suffix,
+                      label=option.label + ' + kicker ' + price,
+                      mana_cost=_join_costs(option.mana_cost, price), kicked=True,
+                      kicker_count=count, kicker_base_id=option.id)
+              for suffix, price, count in (
+                  ('_1', paired['prices'][0], 1), ('_2', paired['prices'][1], 1),
+                  ('_1_2', _join_costs(*paired['prices']), 2))])]
+    elif kicker:
         options = [variant for option in options for variant in (
             option, replace(option, id='kicker' if option.id == 'base' else option.id + '_kicker',
                             label=option.label + f' + kicker {kicker_price(card)}',
@@ -445,14 +570,25 @@ def collect_cost_options(state: MatchState, player_id: int, card, *, without_man
                 discard_all=bool(branch.get('discard_all')),
                 sacrifice_all=bool(branch.get('sacrifice_all')),
                 sacrifice_creatures=option.sacrifice_creatures + branch.get('sacrifice_creatures', 0),
-                sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind)))
-    return compiled
+                sacrifice_kind=branch.get('sacrifice_kind', option.sacrifice_kind),
+                hand_exile_color=branch.get('hand_exile_color'),
+                hand_exile_generic_reduction=branch.get('hand_exile_generic_reduction', 0)))
+    from rules_engine.alternative_casts import spell_cast_view
+    from rules_engine.graveyard_permissions import spell_cast_prohibited
+    compiled = [option for option in compiled if not spell_cast_prohibited(
+        state, player_id, card.zone,
+        spell_types=tuple(sorted(set(effective_types(state, spell_cast_view(card, casting_method(option.id)))) & CARD_TYPES)))]
+    return [priced(option, chosen_modes) for option in compiled] if spree_modes else compiled
 
 
-def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None) -> bool:
+def check_cost_option_available(state: MatchState, player_id: int, card, option: CostOption, x_value: int = 0, *, target_card_id: str | None = None, cost_choice=None, escape_exile_ids=None) -> bool:
     from rules_engine.attachments import is_aura
     from rules_engine.alternative_casts import spell_cast_view
     card = spell_cast_view(card, casting_method(option.id))
+    from rules_engine.graveyard_permissions import spell_cast_prohibited
+    if spell_cast_prohibited(state, player_id, card.zone,
+                             spell_types=tuple(sorted(set(effective_types(state, card)) & CARD_TYPES))):
+        return False
     if option.graveyard_permission_max_mana_value is not None:
         from rules_engine.mana import mana_value
         if mana_value(card.mana_cost or '', x_value=x_value) > option.graveyard_permission_max_mana_value:
@@ -460,7 +596,14 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     player = state.players[player_id]
     if x_value < 0:
         return False
-    if option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id and not is_departed_token(state.cards[cid])]) < option.exile_graveyard:
+    escape_condition = None
+    escape_reserved = set()
+    if casting_method(option.id) == 'escape':
+        from rules_engine.spell_cost_witness import escape_payment_condition
+        escape_condition = escape_payment_condition(player_id, card.id, option.exile_graveyard, escape_exile_ids)
+        if isinstance(escape_exile_ids, list):
+            escape_reserved = {cid for cid in escape_exile_ids if isinstance(cid, str) and cid in player.graveyard}
+    elif option.exile_graveyard and len([cid for cid in player.graveyard if cid != card.id and not is_departed_token(state.cards[cid])]) < option.exile_graveyard:
         return False
     if not can_pay_life(state, player_id, option.pay_life + (x_value if option.pay_life_x else 0)):
         return False
@@ -471,6 +614,17 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
     if option.sacrifice_all and set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind, payment_kind='effect')) != set(_eligible_sacrifice_ids(state, player_id, option.sacrifice_kind)):
         return False
     from rules_engine.spell_cost_witness import fixed_cost_selections
+    if cost_choice is not None:
+        selected = additional_cost_selection(state, player_id, option, card.id, cost_choice, x_value=x_value)
+        if selected is not None:
+            # Exhaustive costs consume remaining resources after mana payment.
+            if option.discard_all:
+                selected['discard_card_ids'] = []
+            if option.sacrifice_all:
+                selected['sacrifice_card_ids'] = []
+        selections = [] if selected is None else [selected]
+    else:
+        selections = fixed_cost_selections(state, player_id, card.id, option, x_value)
     return any(can_pay_with_pool_and_lands(
         state, player_id, option.mana_cost, is_land=("Land" in effective_types(state, card)),
         card_name=card.name, x_value=x_value, spell_types=set(effective_types(state, card)),
@@ -480,8 +634,10 @@ def check_cost_option_available(state: MatchState, player_id: int, card, option:
         reserved_life=option.pay_life + (x_value if option.pay_life_x else 0),
         source_card_id=card.id, target_card_id=target_card_id,
         cast_resource_card=card,
-        reserved_card_ids={card.id, *selected['discard_card_ids'], *selected['sacrifice_card_ids']},
-    ) for selected in fixed_cost_selections(state, player_id, card.id, option, x_value))
+        reserved_card_ids={card.id, *escape_reserved, *selected['discard_card_ids'], *selected['sacrifice_card_ids'], *selected.get('exile_card_ids', [])},
+        additional_generic_reduction=len(selected.get('exile_card_ids', [])) * option.hand_exile_generic_reduction,
+        post_payment_condition=escape_condition,
+    ) for selected in selections)
 
 
 def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> CostOption:
@@ -494,11 +650,18 @@ def normalize_cost_choice(action: dict[str, Any], options: list[CostOption]) -> 
 
 
 def additional_cost_candidates(state, player_id, spell_card_id, option):
-    return {
+    candidates = {
         'discard_card_ids': [cid for cid in state.players[player_id].hand
                              if cid != spell_card_id and not is_departed_token(state.cards[cid])],
         'sacrifice_card_ids': _eligible_sacrifice_ids(state, player_id, option.sacrifice_kind),
     }
+    if option.hand_exile_color:
+        from rules_engine.colors import card_color_symbols
+        candidates['exile_card_ids'] = [cid for cid in state.players[player_id].hand
+            if cid != spell_card_id and cid in state.cards and not is_departed_token(state.cards[cid])
+            and state.cards[cid].zone == Zone.HAND and state.cards[cid].owner == player_id
+            and option.hand_exile_color in card_color_symbols(state.cards[cid], state)]
+    return candidates
 
 
 def additional_cost_selection(state, player_id, option, spell_card_id, choice=None, *, x_value=0):
@@ -506,6 +669,14 @@ def additional_cost_selection(state, player_id, option, spell_card_id, choice=No
     selected = {}
     if x_value < 0:
         return None
+    if 'exile_card_ids' in (choice or {}) and not option.hand_exile_color:
+        return None
+    if option.hand_exile_color:
+        ids = (choice or {}).get('exile_card_ids', [])
+        if (not isinstance(ids, list) or len(ids) > 250 or any(not isinstance(cid, str) for cid in ids)
+                or len(set(ids)) != len(ids) or any(cid not in candidates['exile_card_ids'] for cid in ids)):
+            return None
+        selected['exile_card_ids'] = list(ids)
     for key, count in [('discard_card_ids', option.discard_cards + (x_value if option.discard_x else 0)),
                        ('sacrifice_card_ids', option.sacrifice_creatures)]:
         ids = (choice or {}).get(key)
@@ -526,6 +697,8 @@ def additional_cost_selection(state, player_id, option, spell_card_id, choice=No
                 or any(cid not in candidates[key] for cid in ids)):
             return None
         selected[key] = list(ids)
+    if set(selected.get('exile_card_ids', [])) & (set(selected['discard_card_ids']) | set(selected['sacrifice_card_ids'])):
+        return None
     return selected
 
 
@@ -545,7 +718,9 @@ def apply_additional_costs(state: MatchState, player_id: int, option: CostOption
             return False
         state.log.append(f"{player.name} pays {life_amount} life as an additional cost.")
 
-    from rules_engine.zone_actions import discard_selected, sacrifice_selected
+    from rules_engine.zone_actions import discard_selected, sacrifice_selected, exile_selected_from_hand
+    if selected.get('exile_card_ids') and not exile_selected_from_hand(state, player_id, selected['exile_card_ids']):
+        return False
     if selected['discard_card_ids'] and not discard_selected(state, player_id, selected['discard_card_ids']):
         return False
     sacrifices = selected['sacrifice_card_ids']
@@ -592,14 +767,22 @@ def _eligible_sacrifice_ids(state: MatchState, player_id: int, kind: str = "crea
             continue
         if kind.startswith('subtype_'):
             subtype = kind.removeprefix('subtype_')
+            resource_type, separator, resource_subtype = subtype.partition('_')
+            if separator:
+                from rules_engine.spell_cost_clauses import RESOURCE_SUBTYPES
+                if (RESOURCE_SUBTYPES.get(resource_subtype) == resource_type.title()
+                        and resource_type.title() in types
+                        and resource_subtype in creature_types(card, state)):
+                    eligible.append(cid)
+                continue
             if types.intersection({'Creature', 'Kindred'}) and (
-                    subtype in creature_types(card)
+                    subtype in creature_types(card, state)
                     or 'changeling' in {str(k).lower() for k in card.keywords or []}):
                 eligible.append(cid)
             continue
         color, separator, typed_kind = kind.partition('_')
         if separator and color in {'white', 'blue', 'black', 'red', 'green'}:
-            if color in card_color_names(card) and (typed_kind == 'permanent' or typed_kind.title() in types):
+            if color in card_color_names(card, state) and (typed_kind == 'permanent' or typed_kind.title() in types):
                 eligible.append(cid)
             continue
         if (

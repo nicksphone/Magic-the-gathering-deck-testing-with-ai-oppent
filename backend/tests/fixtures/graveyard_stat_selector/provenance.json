@@ -1,0 +1,24 @@
+{
+  "Terravore": {
+    "url": "https://api.scryfall.com/cards/named?exact=Terravore",
+    "retrieved_utc": "2026-10-07T02:24:07Z"
+  },
+  "Detritivore": {
+    "immutable_intake": "holding-spells/variable-suspend-intake/over-context-qualified-7f",
+    "verified_manifest": true
+  },
+  "raw_rows": {
+    "detritivore.json": {
+      "sha256": "11cebb050b3a685a71810f5be1397cf732735706bf0ab8eb4284811b506de05a",
+      "id": "2ec01f4b-b3df-4e2b-ae93-2f2d0cc279bd",
+      "oracle_id": "ba5fa5ca-f72d-49dd-9f86-e6e1292f5bf0",
+      "oracle_text": "Detritivore's power and toughness are each equal to the number of nonbasic land cards in your opponents' graveyards.\nSuspend X\u2014{X}{3}{R}. X can't be 0. (Rather than cast this card from your hand, you may pay {X}{3}{R} and exile it with X time counters on it. At the beginning of your upkeep, remove a time counter. When the last is removed, you may cast it without paying its mana cost. It has haste.)\nWhenever a time counter is removed from this card while it's exiled, destroy target nonbasic land."
+    },
+    "terravore.json": {
+      "sha256": "0151be99d0d2751fb926252767daf850b407a7ecb2762f18138e7314536d5469",
+      "id": "b70fbe1c-d3f4-4e28-a830-2072dee1b7b5",
+      "oracle_id": "f44fb61a-9aa5-4178-b958-5115d62a7f50",
+      "oracle_text": "Trample\nTerravore's power and toughness are each equal to the number of land cards in all graveyards."
+    }
+  }
+}

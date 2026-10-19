@@ -1,21 +1,66 @@
+from dataclasses import replace
+import hashlib
+import json
+from pathlib import Path
+
 from ai.agent import AIAgent
+from card_data.sync import ScryfallSyncService
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
+from tests.library_canonical_fixtures import PRINTED
+
+
+def _canonical_card(name, **runtime):
+    """Full official printed values at the original uncast, no-entry pose."""
+    if PRINTED.intersection(runtime):
+        raise ValueError('Printed fields are not runtime fixture overrides')
+    root = Path(__file__).parent / 'fixtures'
+    data = (root / 'allocation_canonical7f/SOURCES.json').read_bytes()
+    assert hashlib.sha256(data).hexdigest() == '016f2483ed3eca00d259914b81bfa8668a636bf56d0c3d1fa355dd950d1e9b4d'
+    record = json.loads(data)[name]
+    data = (root / record['file']).read_bytes()
+    assert hashlib.sha256(data).hexdigest() == record['file_sha256']
+    raw = json.loads(data)
+    if 'index' in record:
+        raw = raw[record['index']]
+    assert raw['object'] == 'card' and raw['name'] == name
+    assert raw['id'] == record['id'] and raw['oracle_id'] == record['oracle_id']
+    normalized = ScryfallSyncService._normalize_payload(
+        raw, ScryfallSyncService._extract_remote_image_uri(raw))
+    entry = {**raw, **normalized, 'card_name': name, 'quantity': 8,
+             'colors': raw['colors'], 'card_faces': json.loads(normalized['card_faces_json'])}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, **{'instance_order': 0, 'summoning_sick': True, **runtime})
+
+
+def _initialize_entry_counter_pose(state, card):
+    """Derive and commit the existing entry counters for a trusted ready pose."""
+    from rules_engine.graveyard_batch_entry import _entry_seeds
+    from rules_engine.entry_counters import prepare_entry_counters, commit_entry_counters
+    seed = _entry_seeds(state, [card], controllers={card.id: card.controller})[card.id]
+    data = {'entry_payload': seed, 'entry_prepared': {}, 'entry_index': 0}
+    if not prepare_entry_counters(state, card.controller, data, card, 'permanent_entry_counters'):
+        raise AssertionError('Controlled counter pose requires a completed native entry preparation')
+    commit_entry_counters(state, card, {
+        '__entry_counters_by_id': {card.id: data['entry_payload']['__entry_counters_ready']}})
 
 
 def state_with_targets():
     state = MatchFactory.from_decks([{"quantity": 60, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}], seed=3)
     state.pregame_pending = False
     state.step = Step.PRECOMBAT_MAIN
+    # Historical numbers are not printed overrides: Nishoba is genuinely 0/0.
     for cid, name, power, owner in (("friendly", "Phantom Nishoba", 7, 1), ("enemy", "Grizzly Bears", 2, 2)):
-        state.cards[cid] = CardInstance(id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD, types=["Creature"], power=power, toughness=power, summoning_sick=False)
+        state.cards[cid] = _canonical_card(name, id=cid, owner=owner, controller=owner, zone=Zone.BATTLEFIELD, summoning_sick=False)
         state.players[owner].battlefield.append(cid)
+        _initialize_entry_counter_pose(state, state.cards[cid])
     return state
 
 
 def test_ai_uses_the_fixed_damage_budget_and_an_enemy_recipient():
     state = state_with_targets()
-    card = CardInstance(id="spell", name="Pyrotechnics", owner=1, controller=1, zone=Zone.HAND, types=["Sorcery"], mana_cost="{4}{R}", oracle_text="Pyrotechnics deals 4 damage divided as you choose among any number of targets.")
+    card = _canonical_card("Pyrotechnics", id="spell", owner=1, controller=1, zone=Zone.HAND)
     state.cards[card.id] = card
     state.players[1].hand.append(card.id)
     state.players[1].mana_pool["R"] = 5
@@ -30,7 +75,7 @@ def test_ai_uses_the_fixed_damage_budget_and_an_enemy_recipient():
 def test_generic_targeted_activation_gets_a_materialized_enemy_target():
     state = state_with_targets()
     state.cards["enemy"].counters["__damage_marked"] = 1
-    source = CardInstance(id="pyro", name="Prodigal Pyromancer", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1, summoning_sick=False, oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.")
+    source = _canonical_card("Prodigal Pyromancer", id="pyro", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     engine = RulesEngine()
@@ -44,7 +89,7 @@ def test_generic_targeted_activation_gets_a_materialized_enemy_target():
 
 def test_generic_targeted_activation_avoids_nonlethal_creature_damage():
     state = state_with_targets()
-    source = CardInstance(id="pyro", name="Prodigal Pyromancer", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=1, summoning_sick=False, oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.")
+    source = _canonical_card("Prodigal Pyromancer", id="pyro", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     engine = RulesEngine()

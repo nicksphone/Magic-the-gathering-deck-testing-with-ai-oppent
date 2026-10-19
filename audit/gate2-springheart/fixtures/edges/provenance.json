@@ -1,0 +1,37 @@
+{
+  "bulk_path": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "unchanged_full_raw_rows": 6,
+  "cards": {
+    "Hopeful Eidolon": {
+      "id": "4c69995b-ef31-4635-8d5a-b31f73993364",
+      "oracle_id": "13c1ca1e-cd17-49ef-bc31-97bff99ec1e3",
+      "canonical_fullrow_sha256": "635cf259edb24e97bae5811fe5082981904d2e57cd0ea1f0dc05266aa478849a"
+    },
+    "Cloudshift": {
+      "id": "6dc0c976-26d2-40c9-a571-c370e9139d1d",
+      "oracle_id": "6879f5ce-7a1b-4606-bad1-885779b0d456",
+      "canonical_fullrow_sha256": "95a643522f2758c4d33c44bd632acc99afcee652f543461b7dee9a3b1a292cd1"
+    },
+    "Springheart Nantuko": {
+      "id": "54a3ea87-005e-4985-b2a5-21711d0b71c0",
+      "oracle_id": "8a3ad2ef-8bcb-40c0-85de-f03328c2b644",
+      "canonical_fullrow_sha256": "dec8bbe5c2555f0d728b0f074aa15d193fcc7c73a15d846bca57df26f0889156"
+    },
+    "Forest": {
+      "id": "dce15387-4114-4b3e-91aa-5b42b45c44ac",
+      "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+      "canonical_fullrow_sha256": "f0e6aff0dd663be51328c1b6c07f9cec830d686cf543c66edcde5e5fa315b1e0"
+    },
+    "Back to Nature": {
+      "id": "b49270b2-ba15-4268-adb3-16d09c09adee",
+      "oracle_id": "b8d8ece6-397e-4bc9-b86c-7caa1d675d0f",
+      "canonical_fullrow_sha256": "1aa1877780455f6f650726f95ef8ef0f56ff065b02414b10af1b18df0922b2aa"
+    },
+    "Naturalize": {
+      "id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+      "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728",
+      "canonical_fullrow_sha256": "40d2d038908dec986d029379a3a1d7973c6abd2c56526fb60e796e8c6b438c1e"
+    }
+  }
+}

@@ -224,14 +224,14 @@ def test_ai_materializes_payable_bestow_variant_with_real_target_and_cost(seat, 
 @pytest.mark.parametrize('seat', [1, 2])
 def test_http_bestow_cost_target_and_snapshot_resume(game, seat):
     import main
+    from tests.fixture_state_support import adopt_fixture_state
     from tests.test_api_input_contracts import persist, rejected, snapshot
     from sqlmodel import Session
     from persistence.db import engine
     from persistence.repository import Repository
     client, match = game
     state, source, host = cast_board(seat, 3)
-    state.id = match.state.id
-    match.state = state
+    adopt_fixture_state(match, state)
     persist(match)
     action = {'type': 'cast_spell', 'card_id': source.id, 'cost_choice': {'id': 'bestow'}, 'targets': {'target_card_id': host.id}}
     rejected(client, match, action, seat)

@@ -5,7 +5,6 @@ try:  # pragma: no cover - import path bootstrap for CLI execution
 except ImportError:  # pragma: no cover - direct script execution
     import _bootstrap  # noqa: F401
 import argparse
-import copy
 import json
 import time
 from collections import Counter
@@ -18,6 +17,8 @@ from typing import TextIO
 from ai.agent import AIAgent
 from ai.deck_analysis import guess_archetype
 from analytics.decision_quality import (
+    _battlefield_snapshot,
+    _lethal_attack_available,
     build_decision_quality_artifact,
     build_trace_payload,
     deck_artifact_entries,
@@ -28,11 +29,10 @@ from analytics.replay_tools import classify_timeout_state
 from analytics.service import AnalyticsService
 from card_data.hydration import hydrate_deck_cards
 from decks.bootstrap import ensure_builtin_decks, ensure_expansion_top_decks
-from decks.selection import select_representative_decks
+from decks.selection import select_representative_decks, prepare_cohort, cohort_pair_seed
 from game_state.state import MatchFactory, pregame_actor
 from persistence.db import engine, init_db
 from persistence.repository import Repository
-from rules_engine.continuous import effective_power
 from rules_engine.engine import RulesEngine
 from sqlmodel import Session
 
@@ -83,36 +83,20 @@ def life_snapshot(state, pid: int) -> dict[str, int]:
     }
 
 
-def lethal_attack_available(state, pid: int, legal_moves: list[dict]) -> bool:
-    """Return open-board lethal evidence from a validated attack declaration."""
-    opponent_pid = 1 if pid == 2 else 2
-    if any("Creature" in state.cards[cid].types for cid in state.players[opponent_pid].battlefield):
-        return False
-    attack_move = next((move for move in legal_moves if move.get("type") == "attack"), None)
-    if attack_move is None:
-        return False
-    declaration = dict(attack_move)
-    declaration["attackers"] = list(attack_move.get("attackers") or attack_move.get("options") or [])
-    simulated_state = copy.deepcopy(state)
-    RulesEngine().take_action(simulated_state, pid, declaration)
-    legal_power = sum(max(0, effective_power(simulated_state, cid)) for cid in simulated_state.attackers)
-    return legal_power >= state.players[opponent_pid].life
+def lethal_attack_available(state, pid: int, legal_moves: list[dict]) -> bool | None:
+    """Use the same engine-validated evidence as production decision traces."""
+    return _lethal_attack_available(state, pid, legal_moves)
 
 
 def battlefield_snapshot(state, pid: int) -> list[dict]:
     """Keep round-robin traces compact while retaining tactical board state."""
     out: list[dict] = []
-    for cid in state.players[pid].battlefield:
+    for row in _battlefield_snapshot(state, pid):
+        cid = row["id"]
         card = state.cards[cid]
         out.append(
             {
-                "id": cid,
-                "name": card.name,
-                "types": list(getattr(card, "types", []) or []),
-                "tapped": bool(getattr(card, "tapped", False)),
-                "power": getattr(card, "power", None),
-                "toughness": getattr(card, "toughness", None),
-                "keywords": list(getattr(card, "keywords", []) or []),
+                **row,
                 "loyalty": getattr(card, "loyalty", None),
                 "selected_face_index": getattr(card, "selected_face_index", None),
             }
@@ -123,7 +107,9 @@ def battlefield_snapshot(state, pid: int) -> list[dict]:
 def _deck_artifact(deck_pool: list[dict]) -> list[dict]:
     return sorted(
         [
-            {"id": deck.get("id"), "name": deck["name"], "archetype": deck["archetype"]}
+            {"id": deck.get("id"), "name": deck["name"], "archetype": deck["archetype"],
+             **({key: deck[key] for key in ('source', 'identity_key', 'classification_status', 'analysis',
+                 'classification_provenance', 'stored_archetype') if key in deck} if deck.get('identity_key') else {})}
             for deck in deck_pool
         ],
         key=lambda deck: (deck["name"], str(deck["id"])),
@@ -132,6 +118,9 @@ def _deck_artifact(deck_pool: list[dict]) -> list[dict]:
 
 def _game_identity(left: dict, right: dict) -> dict:
     return {
+        **({"deck_a_identity": left.get('identity_key'), "deck_b_identity": right.get('identity_key'),
+            "deck_a_source": left.get('source'), "deck_b_source": right.get('source')}
+           if left.get('identity_key') or right.get('identity_key') else {}),
         "deck_a": left["name"],
         "deck_a_id": left.get("id"),
         "deck_a_archetype": left["archetype"],
@@ -148,10 +137,12 @@ def _build_overnight_trace_payload(
     action: dict,
     reasoning: str,
     reason_code: str,
+    *,
+    knowledge_usage: dict | None = None,
 ) -> dict:
     """Extend the shared authoritative trace with overnight-only diagnostics."""
     opponent_pid = 1 if pid == 2 else 2
-    payload = build_trace_payload(state, pid, legal_moves, action, reasoning)
+    payload = build_trace_payload(state, pid, legal_moves, action, reasoning, knowledge_usage=knowledge_usage)
     payload.update(
         {
             "graveyard_count": len(state.players[pid].graveyard),
@@ -245,7 +236,6 @@ def _write_game_record(
 
 def run() -> int:
     args = parse_args()
-    init_db()
 
     out_base = Path(args.output_dir)
     if not out_base.is_absolute():
@@ -260,40 +250,19 @@ def run() -> int:
 
     with Session(engine) as session:
         repo = Repository(session)
-        ensure_builtin_decks(repo)
-        ensure_expansion_top_decks(repo)
         analytics = AnalyticsService(repo)
         rows = repo.list_decks()
 
         wanted = {x.strip().lower() for x in args.sources.split(",") if x.strip()}
         selected = [r for r in rows if (r.source or "").strip().lower() in wanted]
+        selected = prepare_cohort(selected, resolve_deck_fn=lambda board: hydrate_deck_cards(repo, board))
         if len(selected) < 2:
             raise SystemExit(f"Need at least 2 decks from sources={sorted(wanted)}; found {len(selected)}")
         if args.max_decks and args.max_decks > 0:
             selected = select_representative_decks(selected, args.max_decks, guess_archetype_fn=guess_archetype)
-
-        deck_pool: list[dict] = []
-        for row in selected:
-            if isinstance(row, dict):
-                mainboard = hydrate_deck_cards(repo, row["mainboard"])
-                deck_pool.append(
-                    {
-                        "id": row.get("id"),
-                        "name": row["name"],
-                        "mainboard": mainboard,
-                        "archetype": guess_archetype(mainboard),
-                    }
-                )
-            else:
-                mainboard = hydrate_deck_cards(repo, json.loads(row.mainboard_json))
-                deck_pool.append(
-                    {
-                        "id": row.id,
-                        "name": row.name,
-                        "mainboard": mainboard,
-                        "archetype": guess_archetype(mainboard),
-                    }
-                )
+        if len(selected) < 2 or any(row.get('classification_status') == 'unknown' for row in selected):
+            raise SystemExit('Need at least two cohorts with complete local canonical card data')
+        deck_pool = [{**row, 'archetype': row.get('archetype') or row['archetype_guess']} for row in selected]
 
         total_pairs = len(list(combinations(deck_pool, 2)))
         total_games = total_pairs * args.matches_per_pair
@@ -321,7 +290,8 @@ def run() -> int:
                 right_arch = right["archetype"]
 
                 for game_idx in range(args.matches_per_pair):
-                    state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"])
+                    seed = cohort_pair_seed(left, right, game_idx) if left.get('identity_key') or right.get('identity_key') else None
+                    state = MatchFactory.from_decks(left["mainboard"], right["mainboard"], player_a_name=left["name"], player_b_name=right["name"], seed=seed)
                     a_agent = AIAgent(difficulty=args.difficulty, archetype=left_arch)
                     b_agent = AIAgent(difficulty=args.difficulty, archetype=right_arch)
 
@@ -333,6 +303,7 @@ def run() -> int:
                     while state.winner is None and ticks < args.max_ticks:
                         pid = pregame_actor(state) if state.pregame_pending else state.priority_player
                         legal = engine_rules.legal_moves(state, pid)
+                        knowledge_usage = None
                         if not legal:
                             action = {"type": "pass_priority"}
                             reasoning = "No legal action"
@@ -341,6 +312,7 @@ def run() -> int:
                             decision = agent.choose_action(state, legal, pid)
                             action = decision.action
                             reasoning = decision.reasoning
+                            knowledge_usage = getattr(decision, 'knowledge_usage', None)
 
                         legal_non_pass = has_actionable_move(legal)
                         meaningful_non_pass = has_meaningful_move(legal)
@@ -379,6 +351,7 @@ def run() -> int:
                             action,
                             reasoning,
                             reason_code,
+                            knowledge_usage=knowledge_usage,
                         )
                         state.log.append(f"AI TRACE {json.dumps(trace_line, separators=(',', ':'))}")
 
@@ -408,6 +381,7 @@ def run() -> int:
                     game_counter += 1
 
                     game_record = {
+                        "seed": seed,
                         **_game_identity(left, right),
                         "game_index": game_idx + 1,
                         "winner": state.winner,
@@ -456,6 +430,7 @@ def run() -> int:
 
                 avg_turns = round(sum(pair_turns) / max(1, len(pair_turns)), 2)
                 pair_summary = {
+                    **_game_identity(left, right),
                     "deck_a": left["name"],
                     "deck_b": right["name"],
                     "games": args.matches_per_pair,
@@ -536,6 +511,9 @@ def _write_anomaly_clusters(anomaly_games_path: Path, out_path: Path) -> None:
                         "deck_a": row.get("deck_a"),
                         "deck_b": row.get("deck_b"),
                         "game_index": row.get("game_index"),
+                        **({key: row.get(key) for key in ('deck_a_identity', 'deck_b_identity',
+                            'deck_a_id', 'deck_b_id', 'deck_a_source', 'deck_b_source')}
+                           if row.get('deck_a_identity') or row.get('deck_b_identity') else {}),
                         "winner": row.get("winner"),
                         "turns": row.get("turns"),
                     }

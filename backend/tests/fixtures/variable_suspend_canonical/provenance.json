@@ -1,0 +1,53 @@
+{
+  "intake_utc": "2026-10-07T02:05:39.531385+00:00",
+  "base_source_sha256": "b46b34695c3145c79b8c48beef7a850aa24e236bf69e941a544248558871c914",
+  "canonical_cards": [
+    {
+      "name": "Aeon Chronicler",
+      "path": "backend/tests/fixtures/suspend_canonical/aeon-chronicler.json",
+      "sha256": "667eb28d11a8e0a0c214f62700597b332cb8b4110ac3cd9cf9c8cd12c56f4bb2",
+      "printing_id": "5cec8dcc-8ebb-4640-a5f3-90e6e62c27e5",
+      "oracle_id": "a1399cb8-f22a-487e-b539-2db47b09a790",
+      "source_url": "https://api.scryfall.com/cards/named?exact=Aeon%20Chronicler",
+      "mode": "existing_immutable_full_raw",
+      "full_raw": true,
+      "oracle_unchanged": true
+    },
+    {
+      "name": "Detritivore",
+      "path": "backend/tests/fixtures/variable_suspend_canonical/detritivore.json",
+      "sha256": "11cebb050b3a685a71810f5be1397cf732735706bf0ab8eb4284811b506de05a",
+      "printing_id": "2ec01f4b-b3df-4e2b-ae93-2f2d0cc279bd",
+      "oracle_id": "ba5fa5ca-f72d-49dd-9f86-e6e1292f5bf0",
+      "source_url": "https://api.scryfall.com/cards/named?exact=Detritivore",
+      "mode": "targeted_primary_intake_before_tests",
+      "full_raw": true,
+      "oracle_unchanged": true
+    }
+  ],
+  "official_CR": {
+    "effective": "2026-09-25",
+    "source_url": "https://media.wizards.com/2026/downloads/MagicCompRules%2020260925.txt",
+    "sha256": "8d860e451f20f38865b725b42d82feb714c725373dd8f3b32b8652b3eeb070ca",
+    "rules": [
+      "116.2f",
+      "702.62a-d",
+      "107.3b"
+    ]
+  },
+  "rulings": [
+    {
+      "path": "backend/tests/fixtures/variable_suspend_canonical/aeon-chronicler-rulings.json",
+      "sha256": "d41f9645d1732827abdd9e51ac5c24858d32e01ea4a4977bd47c85949e7a97a5",
+      "source_url": "https://api.scryfall.com/cards/5cec8dcc-8ebb-4640-a5f3-90e6e62c27e5/rulings"
+    },
+    {
+      "path": "backend/tests/fixtures/variable_suspend_canonical/detritivore-rulings.json",
+      "sha256": "3e5c06cbc34de35833041427f289c489c09afb5c3d4047035156d2334f1fe418",
+      "source_url": "https://api.scryfall.com/cards/2ec01f4b-b3df-4e2b-ae93-2f2d0cc279bd/rulings"
+    }
+  ],
+  "SQL_connections": 0,
+  "intake_network_scope": "one targeted card API request, two ruling requests, one official CR TXT; no bulk/sync",
+  "no_production_metadata_changes": true
+}

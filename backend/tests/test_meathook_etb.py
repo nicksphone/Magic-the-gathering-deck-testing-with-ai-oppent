@@ -1,4 +1,4 @@
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.action_validation import checked_action
@@ -14,7 +14,7 @@ def test_printed_meathook_etb_uses_announced_x_not_other_abilities() -> None:
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
     state.players[1].mana_pool["B"] = 4
-    oracle = fallback_card_payload("The Meathook Massacre")
+    oracle = seed_card_payload("The Meathook Massacre")
     assert oracle is not None
     hook = CardInstance(
         "meathook", oracle["name"], 1, 1, Zone.HAND, ["Enchantment"],

@@ -8,7 +8,7 @@ from pydantic import TypeAdapter, ValidationError
 
 from ai.information import decision_view, is_unknown
 from api_contracts import Action
-from card_data.fallback_cards import fallback_card_payload
+from card_data.seed_cards import seed_card_payload
 from decks.builtin_decks import BUILTIN_DECKS
 from game_state.serializers import (
     deserialize_match_snapshot, serialize_card_view, serialize_match_snapshot,
@@ -96,7 +96,7 @@ def _deck(name):
     rows = []
     for line in BUILTIN_DECKS[name].strip().splitlines():
         quantity, card_name = line.strip().split(' ', 1)
-        metadata = fallback_card_payload(card_name)
+        metadata = seed_card_payload(card_name)
         if not metadata or not metadata.get('scryfall_id') or not metadata.get('type_line'):
             raise ValueError(f'No canonical offline metadata for {card_name}')
         rows.append({**deepcopy(metadata), 'card_name': card_name, 'quantity': int(quantity)})
@@ -149,8 +149,7 @@ class TrainingEnvironment:
             'engine_hash': _engine_hash(),
             'metadata_source': 'card_data/builtin_oracle_seed.json',
         }
-        state = MatchFactory.from_decks(*decks, seed=seed)
-        state.id = _digest(provenance)
+        state = MatchFactory.from_decks(*decks, seed=seed, game_id=_digest(provenance))
         # Policies, not engine defaults, must resolve supported private choices.
         state.mechanic_choice_players = {1, 2}
         state.replacement_choice_required = True
@@ -232,7 +231,7 @@ class TrainingEnvironment:
             }.get(move['type'], [] if move['type'] in _SIMPLE else ['Complete action contract'])
             if move['type'] == 'choose_mechanic':
                 field = ('damage_assignment' if move['kind'] == 'combat_damage' else
-                         'choice_id' if move['kind'] in {'draw', 'land_entry', 'saga_entry'} else 'card_ids')
+                         'choice_id' if move['kind'] in {'draw', 'land_entry', 'saga_entry', 'note_creature_type'} else 'card_ids')
                 choices = [field + ' (explicit selection; preserve order; count/range from hint)']
             elif move['type'] == 'choose_trigger_order':
                 choices = ['trigger_order (complete permutation, bottom-to-top stack order)']
@@ -335,7 +334,7 @@ class TrainingEnvironment:
             pending = self._state.pending_mechanic_choice
             require(bool(pending), 'No pending mechanic choice')
             field = ('damage_assignment' if pending['kind'] == 'combat_damage' else
-                     'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry'} else 'card_ids')
+                     'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry', 'note_creature_type', 'entry_mode'} else 'card_ids')
             require(action.get(field) is not None, 'Missing required choice: ' + field)
         if kind in {'tap_land_for_mana', 'tap_lands_bulk'}:
             require(action.get('color') is not None, 'Missing required choice: color')
@@ -385,6 +384,9 @@ class TrainingEnvironment:
                    for option in move.get('cost_options', []) if option['id'] == choice['id']]
         require(bool(options), 'Casting cost choice is not in current engine hints')
         option = options[0]
+        if 'exile_card_ids' in choice:
+            require(bool(option.get('hand_exile_color')), 'This selected casting cost does not permit hand exile')
+            require(isinstance(choice['exile_card_ids'], list), 'An explicit hand-exile selection must be a list')
         require(not ('{X}' in option.get('mana_cost', '').upper() or option.get('pay_life_x')
                      or option.get('discard_x')) or action.get('targets', {}).get('x_value') is not None,
                 'Missing required choice: targets.x_value')
@@ -427,13 +429,25 @@ class TrainingEnvironment:
         Encoded actions and lookup/step remain strict. This explicit convenience
         boundary strips presentation fields using the parent-owned model map.
         """
+        _seat(self.acting_seat if seat is None else seat)
         from ai.action_contract import complete_action
         from api_contracts import (
             ManaAbilityAction, TapAction, NonlandManaAction, BulkTapAction, CastAction, AbilityAction,
+            EquipAction, CrewAction, CycleAction, MechanicChoice, OptionalEffectChoice, TriggerChoice,
+            ReplacementChoice, TriggerTargetChoice, AttackAction, BlockAction, ForetellAction, NinjutsuAction,
+            LandAction, PassAction, SuspendAction, KeepAction, MulliganAction,
         )
         models = {'activate_mana_ability': ManaAbilityAction, 'tap_land_for_mana': TapAction,
                   'tap_nonland_for_mana': NonlandManaAction, 'tap_lands_bulk': BulkTapAction,
-                  'cast_spell': CastAction, 'activate_ability': AbilityAction}
+                  'cast_spell': CastAction, 'activate_ability': AbilityAction,
+                  'activate_loyalty': AbilityAction, 'equip': EquipAction,
+                  'crew': CrewAction, 'cycle_card': CycleAction,
+                  'choose_mechanic': MechanicChoice, 'choose_optional_effect': OptionalEffectChoice,
+                  'choose_trigger_order': TriggerChoice,
+                  'choose_replacement': ReplacementChoice, 'choose_trigger_target': TriggerTargetChoice,
+                  'attack': AttackAction, 'block': BlockAction, 'foretell': ForetellAction,
+                  'ninjutsu': NinjutsuAction, 'play_land': LandAction, 'pass_priority': PassAction,
+                  'suspend': SuspendAction, 'keep_hand': KeepAction, 'mulligan': MulliganAction}
         if isinstance(intent, dict) and isinstance(intent.get('type'), str) and intent['type'] in models:
             display = {'card_name', 'mana_cost', 'cost_options', 'target_hints', 'outputs',
                        'cost_text', 'ability_label', 'label', 'payment_options',
@@ -443,12 +457,244 @@ class TrainingEnvironment:
             if intent['type'] == 'cast_spell':
                 display = {'card_name', 'mana_cost', 'cost_options', 'target_hints'}
                 contract = 'Cast'
+            elif intent['type'] == 'suspend':
+                display = {'card_name', 'mana_cost', 'time_counters', 'card_view'}
+                contract = 'Suspend'
+                try:
+                    SuspendAction.model_validate({key: value for key, value in intent.items()
+                                                  if key not in display})
+                    supplied = display & set(intent)
+                    if supplied:
+                        actor = self.acting_seat if seat is None else seat
+                        candidate = deepcopy(self._state)
+                        view = next((move for move in self._rules.legal_moves(candidate, actor)
+                                     if move['type'] == 'suspend'
+                                     and move['card_id'] == intent['card_id']), None)
+                        if view is not None and 'card_view' in supplied:
+                            view['card_view'] = serialize_card_view(candidate, intent['card_id'])
+                        if view is None or any(key not in view or _json(intent[key]) != _json(view[key])
+                                               for key in supplied):
+                            raise ActionRejected('Suspend metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid suspend intent') from exc
+            elif intent['type'] == 'keep_hand':
+                display = set()
+                contract = 'Keep hand'
+                try:
+                    KeepAction.model_validate(intent)
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid keep hand intent') from exc
+            elif intent['type'] == 'mulligan':
+                display = {'current_mulligans'}
+                contract = 'Mulligan'
+                try:
+                    MulliganAction.model_validate({key: value for key, value in intent.items()
+                                                   if key not in display})
+                    if 'current_mulligans' in intent:
+                        count = intent['current_mulligans']
+                        if type(count) is not int or count < 0:
+                            raise ActionRejected('Mulligan count must be integer display metadata')
+                        actor = self.acting_seat if seat is None else seat
+                        view = next((move for move in self._rules.legal_moves(deepcopy(self._state), actor)
+                                     if move['type'] == 'mulligan'), None)
+                        if view is None or count != view.get('current_mulligans'):
+                            raise ActionRejected('Mulligan metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid mulligan intent') from exc
+            elif intent['type'] == 'foretell':
+                display = {'card_name', 'mana_cost', 'fixed_costs', 'granted_reductions', 'card_view'}
+                contract = 'Foretell'
+                try:
+                    ForetellAction.model_validate({key: value for key, value in intent.items()
+                                                   if key not in display})
+                    supplied = display & set(intent)
+                    if supplied:
+                        actor = self.acting_seat if seat is None else seat
+                        candidate = deepcopy(self._state)
+                        view = next((move for move in self._rules.legal_moves(candidate, actor)
+                                     if move['type'] == 'foretell'
+                                     and move['card_id'] == intent['card_id']), None)
+                        if view is not None and 'card_view' in supplied:
+                            view['card_view'] = serialize_card_view(candidate, intent['card_id'])
+                        if view is None or any(key not in view or _json(intent[key]) != _json(view[key])
+                                               for key in supplied):
+                            raise ActionRejected('Foretell metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid foretell intent') from exc
+            elif intent['type'] == 'ninjutsu':
+                display = {'card_name', 'mana_cost', 'card_view'}
+                contract = 'Ninjutsu'
+                try:
+                    NinjutsuAction.model_validate({key: value for key, value in intent.items()
+                                                   if key not in display})
+                    supplied = display & set(intent)
+                    if supplied:
+                        actor = self.acting_seat if seat is None else seat
+                        candidate = deepcopy(self._state)
+                        view = next((move for move in self._rules.legal_moves(candidate, actor)
+                                     if move['type'] == 'ninjutsu' and move['card_id'] == intent['card_id']
+                                     and move['return_card_id'] == intent['return_card_id']), None)
+                        if view is not None and 'card_view' in supplied:
+                            view['card_view'] = serialize_card_view(candidate, intent['card_id'])
+                        if view is None or any(key not in view or _json(intent[key]) != _json(view[key])
+                                               for key in supplied):
+                            raise ActionRejected('Ninjutsu metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid ninjutsu intent') from exc
+            elif intent['type'] == 'play_land':
+                display = {'card_view', 'card_name', 'graveyard_permission_name'}
+                contract = 'Land'
+                try:
+                    chosen = LandAction.model_validate({key: value for key, value in intent.items()
+                                                       if key not in display}).model_dump(exclude_none=True)
+                    supplied = display & set(intent)
+                    if supplied:
+                        actor = self.acting_seat if seat is None else seat
+                        candidate = deepcopy(self._state)
+                        view = next((move for move in self._rules.legal_moves(candidate, actor)
+                                     if move['type'] == 'play_land' and
+                                     LandAction.model_validate({key: value for key, value in move.items()
+                                                                if key in LandAction.model_fields}
+                                                               ).model_dump(exclude_none=True) == chosen), None)
+                        if view is not None and 'card_view' in supplied:
+                            view['card_view'] = serialize_card_view(candidate, intent['card_id'])
+                        if view is None or any(key not in view or _json(intent[key]) != _json(view[key])
+                                               for key in supplied):
+                            raise ActionRejected('Land metadata does not match current public view')
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Invalid land intent') from exc
+            elif intent['type'] == 'pass_priority':
+                display = set()
+                contract = 'Priority pass'
             elif intent['type'] == 'activate_ability':
                 display = {'card_name', 'mana_cost', 'ability_label', 'payment_options',
                            'activation_costs', 'hybrid_symbols', 'target_hints'}
                 contract = 'Activated ability'
+            elif intent['type'] == 'activate_loyalty':
+                display = {'card_name', 'ability_label', 'ability_delta', 'activation_costs',
+                           'ability_x_cost', 'ability_x_sign', 'target_hints'}
+                contract = 'Loyalty ability'
+            elif intent['type'] == 'equip':
+                display = {'card_name', 'mana_cost', 'targets'}
+                contract = 'Equip'
+                # The offered candidates are display, not a chosen Targets object.
+                if 'targets' in intent:
+                    candidates = intent['targets']
+                    if not (isinstance(candidates, list) and candidates and all(
+                            isinstance(candidate, dict) and set(candidate) == {'id', 'name'}
+                            and all(isinstance(candidate[key], str) and candidate[key]
+                                    for key in ('id', 'name')) for candidate in candidates)):
+                        raise ActionRejected('Equip targets must be a display candidate list')
+            elif intent['type'] == 'crew':
+                display = {'card_name', 'crew_value', 'suggested_crew_card_ids',
+                           'activation_costs', 'crew_candidates'}
+                contract = 'Crew'
+            elif intent['type'] == 'cycle_card':
+                display = {'card_name', 'mana_cost', 'activation_costs', 'cycling_variant'}
+                contract = 'Cycling'
+            elif intent['type'] == 'choose_mechanic':
+                display = {'kind', 'options', 'count', 'min_count', 'label',
+                           'option_labels', 'option_type_lines', 'inspected_cards',
+                           'inspected_card_ids', 'effect_payload', 'top_reference',
+                           'top_ids', 'bottom_any_order', 'bottom_random'}
+                contract = 'Mechanic choice'
+                # Whole engine views carry continuations, not authoritative input.
+                context = {'player_id', 'effect_controller', 'followup_effect', 'resolving_item',
+                           'controller', 'amount', 'bottom_ids', 'effect_key',
+                           'continuation_controller', 'continuation_effects',
+                           'counter_continuation_queue', 'draw_continuation_queue'}
+                pending = self._state.pending_mechanic_choice or {}
+                actor = self.acting_seat if seat is None else seat
+                _seat(actor)
+                if pending.get('player_id') != actor:
+                    raise ActionRejected('Mechanic view context does not match pending actor')
+                legend_context = {'legend_group_index', 'legend_context'}
+                supplied_legend = legend_context & set(intent)
+                if supplied_legend:
+                    try:
+                        matches = (pending.get('kind') == 'legend_keeper'
+                                   and all(key in pending and intent[key] is not None
+                                           and _json(intent[key]) == _json(pending[key])
+                                           for key in supplied_legend))
+                    except _INPUT_ERRORS as exc:
+                        raise ActionRejected('Invalid legend keeper view context') from exc
+                    if not matches:
+                        raise ActionRejected('Legend keeper view context does not match pending state')
+                    context |= legend_context
+                if pending.get('kind') == 'legend_keeper':
+                    if not (isinstance(intent.get('card_ids'), list)
+                            and len(intent['card_ids']) == 1
+                            and isinstance(intent['card_ids'][0], str)
+                            and intent['card_ids'][0] in pending.get('options', [])):
+                        raise ActionRejected('Legend keeper requires exactly one explicit card_ids entry')
+                moves = self._rules.legal_moves(deepcopy(self._state), actor)
+                offered = next((move for move in moves if move['type'] == 'choose_mechanic'), {})
+                for key in (display | context) & set(intent):
+                    try:
+                        authoritative = pending if key in context else offered
+                        matches = (key in authoritative
+                                   and _json(intent[key]) == _json(authoritative[key]))
+                    except _INPUT_ERRORS as exc:
+                        raise ActionRejected('Invalid mechanic view context') from exc
+                    if not matches:
+                        raise ActionRejected('Mechanic view context does not match pending state')
+                display |= context
+            elif intent['type'] == 'choose_optional_effect':
+                display = set()
+                contract = 'Optional effect choice'
+            elif intent['type'] == 'choose_trigger_order':
+                display = {'trigger_labels', 'event'}
+                contract = 'Trigger order'
+                if 'trigger_labels' in intent:
+                    labels = intent['trigger_labels']
+                    if not (isinstance(labels, list) and labels
+                            and all(isinstance(label, str) and label for label in labels)):
+                        raise ActionRejected('Trigger labels must be a display string list')
+                if 'event' in intent and not (isinstance(intent['event'], str) and intent['event']):
+                    raise ActionRejected('Trigger event must be a display string')
+            elif intent['type'] == 'choose_replacement':
+                display = {'event', 'replacement_name'}
+                contract = 'Replacement choice'
+                for key in display & set(intent):
+                    if not (isinstance(intent[key], str) and intent[key]):
+                        raise ActionRejected('Replacement metadata must be a display string')
+            elif intent['type'] == 'choose_trigger_target':
+                display = {'target_name'}
+                contract = 'Trigger target choice'
+                if 'target_name' in intent and not (isinstance(intent['target_name'], str)
+                                                   and intent['target_name']):
+                    raise ActionRejected('Trigger target name must be a display string')
+            elif intent['type'] in {'attack', 'block'}:
+                display = ({'options', 'defenders', 'banding_attackers', 'attack_taxes',
+                            'attack_costs', 'declaration_limits'} if intent['type'] == 'attack' else
+                           {'attackers', 'blockers', 'legal_blocks', 'blocker_capacities',
+                            'target_requirements', 'block_taxes', 'block_costs', 'declaration_limits'})
+                contract = 'Combat declaration'
+                # Display is a current public view, never an authoritative choice.
+                supplied = display & set(intent)
+                if supplied:
+                    try:
+                        actor = self.acting_seat if seat is None else seat
+                        view = next((move for move in self._rules.legal_moves(deepcopy(self._state), actor)
+                                     if move['type'] == intent['type']), None)
+                        matches = view is not None and all(
+                            key in view and _json(intent[key]) == _json(view[key]) for key in supplied)
+                    except _INPUT_ERRORS as exc:
+                        raise ActionRejected('Invalid combat display metadata') from exc
+                    if not matches:
+                        raise ActionRejected('Combat display metadata does not match current public view')
             if set(intent) - set(models[intent['type']].model_fields) - display - {'_invalid_ai_choice'}:
                 raise ActionRejected(contract + ' contract cannot carry requested fields')
+            if intent['type'] == 'choose_mechanic':
+                # Check the public chosen-parameter model before any completion helper.
+                try:
+                    action = MechanicChoice.model_validate({key: value for key, value in intent.items()
+                                                           if key in MechanicChoice.model_fields})
+                except _INPUT_ERRORS as exc:
+                    raise ActionRejected('Malformed mechanic choice parameters') from exc
+                intent = {**action.model_dump(exclude_none=True),
+                          **({'_invalid_ai_choice': intent['_invalid_ai_choice']}
+                             if '_invalid_ai_choice' in intent else {})}
         return self.lookup(complete_action(intent), seat)
 
     def simple_actions(self):

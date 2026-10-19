@@ -1,3 +1,4 @@
+from tests.rules_printed_facts_e4 import canonical_card, canonical_deck_entry, raw_card, set_printed
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
@@ -10,7 +11,7 @@ from rules_engine.state_based_actions import apply_state_based_actions
 
 
 def _state():
-    deck = [{"quantity": 60, "card_name": "Forest", "type_line": "Basic Land - Forest", "oracle_text": "{T}: Add {G}."}]
+    deck = [canonical_deck_entry('Forest', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=119)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -74,7 +75,7 @@ def test_sunfall_exiles_creatures_then_incubates_exiled_count():
         card = CardInstance(f"creature-{owner}", "Test Creature", owner, owner, Zone.BATTLEFIELD, ["Creature"], power=2, toughness=2)
         state.cards[card.id] = card
         state.players[owner].battlefield.append(card.id)
-    spell = CardInstance("sunfall", "Sunfall", 1, 1, Zone.STACK, ["Sorcery"], oracle_text="Exile all creatures. Incubate X, where X is the number of creatures exiled this way.")
+    spell = canonical_card("Sunfall", id="sunfall", owner=1, controller=1, zone=Zone.STACK)
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1)
     assert spec.effect.key == "exile_all_creatures_incubate"
@@ -85,8 +86,7 @@ def test_sunfall_exiles_creatures_then_incubates_exiled_count():
 
 def test_seedshark_incubates_cast_spells_mana_value_not_paid_cost():
     state = _state()
-    shark = CardInstance("shark", "Chrome Host Seedshark", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-                         oracle_text="Whenever you cast a noncreature spell, incubate X, where X is that spell's mana value.")
+    shark = canonical_card("Chrome Host Seedshark", id="shark", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     spell = CardInstance("spell", "Test Spell", 1, 1, Zone.STACK, ["Instant"], mana_cost="{X}{U}")
     state.cards.update({shark.id: shark, spell.id: spell})
     state.players[1].battlefield.append(shark.id)
@@ -108,8 +108,7 @@ def test_fixed_incubate_enters_trigger_and_creature_cast_does_not_trigger_seedsh
     resolve_top_of_stack(state)
     assert _incubator(state).counters == {"+1/+1": 2}
 
-    shark = CardInstance("shark", "Chrome Host Seedshark", 1, 1, Zone.BATTLEFIELD, ["Creature"],
-                         oracle_text="Whenever you cast a noncreature spell, incubate X, where X is that spell's mana value.")
+    shark = canonical_card("Chrome Host Seedshark", id="shark", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     creature = CardInstance("creature", "Creature Spell", 1, 1, Zone.STACK, ["Creature"], mana_cost="{3}{G}")
     state.cards.update({shark.id: shark, creature.id: creature})
     state.players[1].battlefield.append(shark.id)
@@ -123,8 +122,7 @@ def test_incubate_twice_uses_land_count_and_unknown_x_is_not_silently_zero():
         cid = state.players[1].hand.pop()
         state.cards[cid].zone = Zone.BATTLEFIELD
         state.players[1].battlefield.append(cid)
-    spell = CardInstance("dawn", "Glistening Dawn", 1, 1, Zone.STACK, ["Sorcery"],
-                         oracle_text="Incubate X twice, where X is the number of lands you control.")
+    spell = canonical_card("Glistening Dawn", id="dawn", owner=1, controller=1, zone=Zone.STACK)
     state.cards[spell.id] = spell
     spec = build_ability_spec(state, spell, 1)
     assert spec.effect.key == "incubate"

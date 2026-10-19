@@ -1,0 +1,10 @@
+{
+  "compressed_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "file": "walking-ballista.json",
+  "id": "5272436e-74f0-44c4-a291-ea8ebc3f1525",
+  "line": 11312,
+  "line_sha256": "43f8b0987258fe198240ce3c7db39485ce04b0d7e099dc1832d538694b490c12",
+  "oracle_id": "4b515bb0-f275-4400-8032-3173b799ab40",
+  "scope": "canonical intrinsic-entry diagnostic, NOT exhaustive replacement-order certificate",
+  "source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz"
+}

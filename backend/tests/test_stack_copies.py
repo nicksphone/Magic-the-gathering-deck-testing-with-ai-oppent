@@ -1,4 +1,6 @@
 from __future__ import annotations
+from tests.controlled_basic_game_support import controlled_basic_game
+from tests.stack_copy_printed_b720 import canonical_stack_card, set_stack_printed, canonical_deck_entry
 
 from effects.handlers import copy_ability, copy_spell, counter_ability, counter_spell
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -9,9 +11,9 @@ from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.targeting import stack_object_kind
 
 
-def _state():
-    deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck, seed=935)
+def _state(*, controlled=False):
+    deck = [{"quantity": 60, "card_name": "Island"}] if controlled else [canonical_deck_entry("Island", 60)]
+    state = (controlled_basic_game(deck, deck, seed=935) if controlled else MatchFactory.from_decks(deck, deck, seed=935))
     state.pregame_pending = False
     state.kept_hands = {1, 2}
     state.priority_player = 1
@@ -19,15 +21,11 @@ def _state():
 
 
 def _bolt(state):
-    card = CardInstance(
-        id="bolt", name="Lightning Bolt", owner=1, controller=1,
-        zone=Zone.STACK, types=["Instant"], mana_cost="{R}",
-        type_line="Instant", oracle_text="Lightning Bolt deals 3 damage to any target.",
-    )
+    card = canonical_stack_card("Lightning Bolt", id="bolt", owner=1, controller=1, zone=Zone.STACK)
     state.cards[card.id] = card
     state.stack.append(StackItem(
         id="original", source_card_id=card.id, controller=1, label=card.name,
-        effect_key="deal_damage", payload={"target_player": 2, "amount": 3,
+        effect_key="deal_damage", payload={"__announced_stack_kind": "spell", "target_player": 2, "amount": 3,
             "__announced_targets": {"target_player": 2}},
     ))
     return card
@@ -87,17 +85,12 @@ def test_copy_preserves_announced_modes_x_and_targets_across_snapshot() -> None:
 
 def test_memory_deluge_copy_has_zero_mana_spent_to_cast() -> None:
     state = _state()
-    card = CardInstance(
-        id="deluge", name="Memory Deluge", owner=1, controller=1,
-        zone=Zone.STACK, types=["Instant"], mana_cost="{2}{U}{U}",
-        oracle_text="Look at the top X cards of your library, where X is the amount of mana spent to cast this spell. "
-                    "Put two of them into your hand and the rest on the bottom of your library in a random order.",
-    )
+    card = canonical_stack_card("Memory Deluge", id="deluge", owner=1, controller=1, zone=Zone.STACK)
     state.cards[card.id] = card
     state.stack.append(StackItem(
         id="deluge-original", source_card_id=card.id, controller=1,
         label=card.name, effect_key="look_top_select_hand",
-        payload={"mana_spent_to_cast": 4, "hand_count": 2},
+        payload={"__announced_stack_kind": "spell", "mana_spent_to_cast": 4, "hand_count": 2},
     ))
     copy_spell(state, 1, {"target_stack_id": "deluge-original"})
     assert state.stack[-1].payload["mana_spent_to_cast"] == 0
@@ -110,10 +103,7 @@ def test_memory_deluge_copy_has_zero_mana_spent_to_cast() -> None:
 
 def test_copied_ability_resolves_after_a_response_window() -> None:
     state = _state()
-    source = CardInstance(
-        id="ability-source", name="Soul Warden", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"],
-    )
+    source = canonical_stack_card("Soul Warden", id="ability-source", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     state.stack.append(StackItem(
@@ -131,10 +121,7 @@ def test_copied_ability_resolves_after_a_response_window() -> None:
 
 def test_countering_copied_ability_preserves_source_and_original() -> None:
     state = _state()
-    source = CardInstance(
-        id="ability-source", name="Soul Warden", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"],
-    )
+    source = canonical_stack_card("Soul Warden", id="ability-source", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     state.stack.append(StackItem(
@@ -152,10 +139,7 @@ def test_countering_copied_ability_preserves_source_and_original() -> None:
 
 def test_copy_effect_rejects_wrong_stack_object_kind() -> None:
     state = _state()
-    source = CardInstance(
-        id="ability-source", name="Soul Warden", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"],
-    )
+    source = canonical_stack_card("Soul Warden", id="ability-source", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[source.id] = source
     state.stack.append(StackItem(
         id="ability", source_card_id=source.id, controller=1,
@@ -175,14 +159,10 @@ def test_copy_effect_rejects_wrong_stack_object_kind() -> None:
 def test_copied_spell_fizzles_when_its_only_target_becomes_illegal() -> None:
     state = _state()
     bolt = _bolt(state)
-    target = CardInstance(
-        id="target", name="Grizzly Bears", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], type_line="Creature - Bear",
-        power=2, toughness=2,
-    )
+    target = canonical_stack_card("Grizzly Bears", id="target", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[target.id] = target
     state.players[2].battlefield.append(target.id)
-    state.stack[0].payload = {"target_card_id": target.id, "amount": 3,
+    state.stack[0].payload = {"__announced_stack_kind": "spell", "target_card_id": target.id, "amount": 3,
                               "__announced_targets": {"target_card_id": target.id}}
     copy_spell(state, 1, {"target_stack_id": "original"})
     state.players[2].battlefield.remove(target.id)
@@ -196,15 +176,11 @@ def test_copied_spell_fizzles_when_its_only_target_becomes_illegal() -> None:
 
 def test_copied_permanent_spell_enters_as_token_without_moving_card() -> None:
     state = _state()
-    card = CardInstance(
-        id="bear", name="Grizzly Bears", owner=1, controller=1,
-        zone=Zone.STACK, types=["Creature"], mana_cost="{1}{G}",
-        type_line="Creature - Bear", power=2, toughness=2,
-    )
+    card = canonical_stack_card("Grizzly Bears", id="bear", owner=1, controller=1, zone=Zone.STACK)
     state.cards[card.id] = card
     state.stack.append(StackItem(
         id="bear-original", source_card_id=card.id, controller=1,
-        label=card.name, effect_key="noop", payload={},
+        label=card.name, effect_key="noop", payload={"__announced_stack_kind": "spell"},
     ))
     copy_spell(state, 2, {"target_stack_id": "bear-original"})
     assert resolve_top_of_stack(state)
@@ -217,14 +193,12 @@ def test_copied_permanent_spell_enters_as_token_without_moving_card() -> None:
 
 
 def test_twincast_cast_resolves_copy_before_original_after_priority_passes() -> None:
-    state = _state()
+    state = _state(controlled=True)
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["U"] = 2
     _bolt(state)
     card = state.cards[state.players[1].hand[0]]
-    card.name, card.types, card.type_line = "Twincast", ["Instant"], "Instant"
-    card.mana_cost = "{U}{U}"
-    card.oracle_text = "Copy target instant or sorcery spell. You may choose new targets for the copy."
+    set_stack_printed(card, "Twincast")
     rules = RulesEngine()
     state = checked_action(state, rules, 1, {
         "type": "cast_spell", "card_id": card.id,
@@ -250,14 +224,12 @@ def test_http_twincast_action_exposes_copy_on_stack_before_resolution() -> None:
     from fastapi.testclient import TestClient
     from main import ACTIVE_MATCHES, MatchController, app
 
-    state = _state()
+    state = _state(controlled=True)
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["U"] = 2
     _bolt(state)
     card = state.cards[state.players[1].hand[0]]
-    card.name, card.types, card.type_line = "Twincast", ["Instant"], "Instant"
-    card.mana_cost = "{U}{U}"
-    card.oracle_text = "Copy target instant or sorcery spell. You may choose new targets for the copy."
+    set_stack_printed(card, "Twincast")
     deck = [{"quantity": 60, "card_name": "Island"}]
     match = MatchController(
         state=state, rules=RulesEngine(), controllers={1: "human", 2: "human"}, ai={},
@@ -344,7 +316,7 @@ def test_copy_target_choice_rejects_unoffered_target_without_mutation() -> None:
 def test_copy_without_target_does_not_pause_for_retargeting() -> None:
     state = _state()
     _bolt(state)
-    state.stack[0].payload = {"amount": 3}
+    state.stack[0].payload = {"__announced_stack_kind": "spell", "amount": 3}
     copy_spell(state, 1, {"target_stack_id": "original", "may_choose_new_targets": True})
     assert state.pending_mechanic_choice is None
 
@@ -352,16 +324,12 @@ def test_copy_without_target_does_not_pause_for_retargeting() -> None:
 def test_counterspell_copy_cannot_target_itself() -> None:
     state = _state()
     _bolt(state)
-    counter = CardInstance(
-        id="counter", name="Counterspell", owner=2, controller=2,
-        zone=Zone.STACK, types=["Instant"], mana_cost="{U}{U}",
-        oracle_text="Counter target spell.",
-    )
+    counter = canonical_stack_card("Counterspell", id="counter", owner=2, controller=2, zone=Zone.STACK)
     state.cards[counter.id] = counter
     state.stack.append(StackItem(
         id="counter-original", source_card_id=counter.id, controller=2,
         label="Counterspell", effect_key="counter_spell",
-        payload={"target_stack_id": "original", "__announced_targets": {"target_stack_id": "original"}},
+        payload={"__announced_stack_kind": "spell", "target_stack_id": "original", "__announced_targets": {"target_stack_id": "original"}},
     ))
     copy_spell(state, 2, {"target_stack_id": "counter-original", "may_choose_new_targets": True})
     assert state.stack[-1].id != "counter-original"
@@ -370,11 +338,10 @@ def test_counterspell_copy_cannot_target_itself() -> None:
 
 
 def test_creature_spell_copy_offers_only_legal_new_creature_targets() -> None:
-    state = _state()
+    state = _state(controlled=True)
     _bolt(state)
     spell = state.cards["bolt"]
-    spell.name = "Murder"
-    spell.oracle_text = "Destroy target creature."
+    set_stack_printed(spell, "Murder")
     state.stack[0].label = "Murder"
     state.stack[0].effect_key = "destroy_permanent"
     for card_id, types in (("first", ["Creature"]), ("second", ["Creature"]), ("land", ["Land"])):
@@ -383,6 +350,7 @@ def test_creature_spell_copy_offers_only_legal_new_creature_targets() -> None:
         state.cards[card_id] = card
         state.players[1].battlefield.append(card_id)
     state.stack[0].payload = {
+        "__announced_stack_kind": "spell",
         "target_card_id": "first", "__announced_targets": {"target_card_id": "first"},
     }
     copy_spell(state, 2, {"target_stack_id": "original", "may_choose_new_targets": True})
@@ -396,17 +364,13 @@ def test_creature_spell_copy_offers_only_legal_new_creature_targets() -> None:
 
 def test_activated_ability_copy_can_choose_a_new_target() -> None:
     state = _state()
-    source = CardInstance(
-        id="pyromancer", name="Prodigal Pyromancer", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"],
-        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
-    )
+    source = canonical_stack_card("Prodigal Pyromancer", id="pyromancer", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     state.cards[source.id] = source
     state.players[1].battlefield.append(source.id)
     state.stack.append(StackItem(
         id="pyromancer-ability", source_card_id=source.id, controller=1,
         label="Prodigal Pyromancer ability", effect_key="deal_damage",
-        payload={"target_player": 2, "amount": 1,
+        payload={"__announced_stack_kind": "activated", "target_player": 2, "amount": 1,
                  "__announced_targets": {"target_player": 2},
                  "__ability_target_text": source.oracle_text},
     ))
@@ -425,11 +389,10 @@ def test_activated_ability_copy_can_choose_a_new_target() -> None:
 
 def test_triggered_ability_copy_uses_trigger_clause_for_legal_targets() -> None:
     state = _state()
-    clause = "When Goblin Arsonist dies, you may have it deal 1 damage to any target."
-    source = CardInstance(
-        id="arsonist", name="Goblin Arsonist", owner=1, controller=1,
-        zone=Zone.GRAVEYARD, types=["Creature"], oracle_text=clause,
+    source = canonical_stack_card(
+        "Goblin Arsonist", id="arsonist", owner=1, controller=1, zone=Zone.GRAVEYARD,
     )
+    clause = source.oracle_text
     state.cards[source.id] = source
     state.players[1].graveyard.append(source.id)
     state.stack.append(StackItem(
@@ -451,15 +414,8 @@ def test_triggered_ability_copy_uses_trigger_clause_for_legal_targets() -> None:
 
 def test_activated_ability_copy_fizzles_when_new_target_becomes_illegal() -> None:
     state = _state()
-    source = CardInstance(
-        id="pyromancer", name="Prodigal Pyromancer", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"],
-        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
-    )
-    target = CardInstance(
-        id="bear", name="Grizzly Bears", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-    )
+    source = canonical_stack_card("Prodigal Pyromancer", id="pyromancer", owner=1, controller=1, zone=Zone.BATTLEFIELD)
+    target = canonical_stack_card("Grizzly Bears", id="bear", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[source.id] = source
     state.cards[target.id] = target
     state.players[1].battlefield.append(source.id)
@@ -467,7 +423,7 @@ def test_activated_ability_copy_fizzles_when_new_target_becomes_illegal() -> Non
     state.stack.append(StackItem(
         id="ability", source_card_id=source.id, controller=1,
         label="Prodigal Pyromancer ability", effect_key="deal_damage",
-        payload={"target_player": 2, "amount": 1,
+        payload={"__announced_stack_kind": "activated", "target_player": 2, "amount": 1,
                  "__announced_targets": {"target_player": 2},
                  "__ability_target_text": source.oracle_text},
     ))
@@ -490,16 +446,8 @@ def test_lithoform_activation_copies_targeted_ability_with_human_choice() -> Non
     state = _state()
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["C"] = 2
-    pyromancer = CardInstance(
-        id="pyromancer", name="Prodigal Pyromancer", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], summoning_sick=False,
-        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
-    )
-    engine = CardInstance(
-        id="lithoform", name="Lithoform Engine", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact"], summoning_sick=False,
-        oracle_text="{2}, {T}: Copy target activated or triggered ability you control. You may choose new targets for the copy.",
-    )
+    pyromancer = canonical_stack_card("Prodigal Pyromancer", id="pyromancer", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
+    engine = canonical_stack_card("Lithoform Engine", id="lithoform", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     for card in (pyromancer, engine):
         state.cards[card.id] = card
         state.players[1].battlefield.append(card.id)
@@ -535,23 +483,15 @@ def test_lithoform_cannot_copy_an_opponents_ability() -> None:
     state = _state()
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["C"] = 2
-    source = CardInstance(
-        id="opponent-source", name="Prodigal Pyromancer", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"],
-        oracle_text="{T}: Prodigal Pyromancer deals 1 damage to any target.",
-    )
-    engine = CardInstance(
-        id="lithoform", name="Lithoform Engine", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact"], summoning_sick=False,
-        oracle_text="{2}, {T}: Copy target activated or triggered ability you control. You may choose new targets for the copy.",
-    )
+    source = canonical_stack_card("Prodigal Pyromancer", id="opponent-source", owner=2, controller=2, zone=Zone.BATTLEFIELD)
+    engine = canonical_stack_card("Lithoform Engine", id="lithoform", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     for card in (source, engine):
         state.cards[card.id] = card
         state.players[card.controller].battlefield.append(card.id)
     state.stack.append(StackItem(
         id="opponent-ability", source_card_id=source.id, controller=2,
         label="Prodigal Pyromancer ability", effect_key="deal_damage",
-        payload={"target_player": 1, "amount": 1},
+        payload={"__announced_stack_kind": "activated", "target_player": 1, "amount": 1},
     ))
     before = serialize_match_snapshot(state)
     with pytest.raises(Exception):
@@ -568,29 +508,15 @@ def test_lithoform_permanent_spell_copy_enters_as_token() -> None:
     state = _state()
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["C"] = 4
-    engine = CardInstance(
-        id="lithoform", name="Lithoform Engine", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Artifact"], summoning_sick=False,
-        oracle_text=(
-            "{2}, {T}: Copy target activated or triggered ability you control. You may choose new targets for the copy.\n"
-            "{3}, {T}: Copy target instant or sorcery spell you control. You may choose new targets for the copy.\n"
-            "{4}, {T}: Copy target permanent spell you control. (The copy becomes a token.)"
-        ),
-    )
+    engine = canonical_stack_card("Lithoform Engine", id="lithoform", owner=1, controller=1, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[engine.id] = engine
     state.players[1].battlefield.append(engine.id)
     for cid, types in (("bear", ["Creature"]), ("bolt", ["Instant"])):
-        card = CardInstance(
-            id=cid, name="Grizzly Bears" if cid == "bear" else "Lightning Bolt",
-            owner=1, controller=1, zone=Zone.STACK, types=types,
-            mana_cost="{1}{G}" if cid == "bear" else "{R}",
-            power=2 if cid == "bear" else None,
-            toughness=2 if cid == "bear" else None,
-        )
+        card = canonical_stack_card("Grizzly Bears" if cid == "bear" else "Lightning Bolt", id=cid, owner=1, controller=1, zone=Zone.STACK)
         state.cards[cid] = card
         state.stack.append(StackItem(
             id=f"{cid}-spell", source_card_id=cid, controller=1,
-            label=card.name, effect_key="noop", payload={},
+            label=card.name, effect_key="noop", payload={"__announced_stack_kind": "spell"},
         ))
     rules = RulesEngine()
     before = serialize_match_snapshot(state)
@@ -616,15 +542,8 @@ def test_lithoform_permanent_spell_copy_enters_as_token() -> None:
 
 
 def _pyrotechnics(state):
-    spell = CardInstance(
-        id="pyrotechnics", name="Pyrotechnics", owner=1, controller=1,
-        zone=Zone.STACK, types=["Sorcery"], mana_cost="{4}{R}",
-        oracle_text="Pyrotechnics deals 4 damage divided as you choose among any number of targets.",
-    )
-    target = CardInstance(
-        id="bear", name="Grizzly Bears", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2,
-    )
+    spell = canonical_stack_card("Pyrotechnics", id="pyrotechnics", owner=1, controller=1, zone=Zone.STACK)
+    target = canonical_stack_card("Grizzly Bears", id="bear", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[spell.id] = spell
     state.cards[target.id] = target
     state.players[2].battlefield.append(target.id)
@@ -632,7 +551,7 @@ def _pyrotechnics(state):
     state.stack.append(StackItem(
         id="pyrotechnics-original", source_card_id=spell.id, controller=1,
         label=spell.name, effect_key="deal_damage_multi",
-        payload={"target_distribution": dict(distribution),
+        payload={"__announced_stack_kind": "spell", "target_distribution": dict(distribution),
                  "__announced_targets": {"target_distribution": dict(distribution), "divide_total": 4}},
     ))
 
@@ -702,14 +621,12 @@ def test_ai_redirects_divided_copy_damage_to_opponent() -> None:
 
 
 def test_twincast_divided_copy_finishes_only_after_all_target_choices() -> None:
-    state = _state()
+    state = _state(controlled=True)
     state.step = Step.PRECOMBAT_MAIN
     state.players[1].mana_pool["U"] = 2
     _pyrotechnics(state)
     twincast = state.cards[state.players[1].hand[0]]
-    twincast.name, twincast.types, twincast.type_line = "Twincast", ["Instant"], "Instant"
-    twincast.mana_cost = "{U}{U}"
-    twincast.oracle_text = "Copy target instant or sorcery spell. You may choose new targets for the copy."
+    set_stack_printed(twincast, "Twincast")
     rules = RulesEngine()
     state = checked_action(state, rules, 1, {
         "type": "cast_spell", "card_id": twincast.id,

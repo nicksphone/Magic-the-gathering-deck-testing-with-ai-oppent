@@ -1,4 +1,5 @@
 from __future__ import annotations
+from tests.damage_life_printed_79 import canonical_card, canonical_deck_entry, raw_card
 
 from ai.agent import AIDecision, AIAgent
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot
@@ -8,7 +9,7 @@ from scripts.regression_matrix_replay import run_game
 
 
 def _state():
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     state = MatchFactory.from_decks(deck, deck, seed=29)
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -19,11 +20,7 @@ def _state():
 
 
 def _creature(state, cid: str, owner: int, name: str, power: int, toughness: int, keywords: list[str]) -> None:
-    card = CardInstance(
-        id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
-        types=["Creature"], power=power, toughness=toughness, keywords=keywords,
-        summoning_sick=False,
-    )
+    card = canonical_card(name, id=cid, owner=owner, controller=owner, zone=Zone.BATTLEFIELD, summoning_sick=False)
     state.cards[cid] = card
     state.players[owner].battlefield.append(cid)
 
@@ -101,10 +98,7 @@ def test_instant_can_be_cast_after_first_damage_before_regular_damage() -> None:
     _enter_damage(state)
     assert state.players[2].life == 19
 
-    shock = CardInstance(
-        id="shock", name="Shock", owner=2, controller=2, zone=Zone.HAND,
-        types=["Instant"], mana_cost="{R}", oracle_text="Shock deals 2 damage to any target.",
-    )
+    shock = canonical_card("Shock", id="shock", owner=2, controller=2, zone=Zone.HAND)
     state.cards[shock.id] = shock
     state.players[2].hand.append(shock.id)
     state.players[2].mana_pool["R"] = 1
@@ -141,14 +135,14 @@ def test_replay_keeps_both_combat_damage_priority_windows(monkeypatch) -> None:
     original_take_action = RulesEngine.take_action
     windows: list[tuple[str, int]] = []
 
-    def record_action(self, state, player_id, action):
+    def record_action(self, state, player_id, action, *, reject_invalid=False):
         assert action["type"] != "combat_damage"
-        original_take_action(self, state, player_id, action)
+        original_take_action(self, state, player_id, action, reject_invalid=reject_invalid)
         windows.append((state.combat_damage_stage, state.players[2].life))
 
     monkeypatch.setattr(RulesEngine, "take_action", record_action)
 
-    deck = [{"quantity": 60, "card_name": "Island"}]
+    deck = [canonical_deck_entry('Island', 60)]
     run_game(deck, deck, seed=29, difficulty="strong", max_ticks=4)
     assert windows[1] == ("first", 19)
     assert windows[3] == ("regular", 18)

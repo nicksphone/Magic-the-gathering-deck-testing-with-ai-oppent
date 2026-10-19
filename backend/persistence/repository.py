@@ -7,6 +7,12 @@ from typing import Any, Iterable
 
 from sqlmodel import Session, func, select
 from sqlalchemy import or_
+from analytics.resource_budget import RESOURCE_LIMITS, checked_json, checked_text
+from persistence.capacity import (
+    JOB_LIMIT, TERMINAL, CapacityExceeded, CapacityIntegrityError, background_escrow,
+    capacity_transaction, counters_from, encoded_bytes, snapshot_escrow,
+    capacity_write, owner_for,
+)
 
 from knowledge.models import CardKnowledge
 from persistence.models import (
@@ -16,6 +22,7 @@ from persistence.models import (
     MatchRecord,
     MatchStartReceipt,
     SimulationJobRecord,
+    ResourceReservation,
     StatsSnapshot,
     TournamentDeck,
     TournamentEvent,
@@ -25,6 +32,16 @@ from persistence.models import (
 class Repository:
     def __init__(self, session: Session):
         self.session = session
+
+    def _folded_card_name(self, column):
+        connection = self.session.connection()
+        # Pool-record info is cleared when its physical DBAPI connection is replaced.
+        if not connection.info.get('mtg_card_name_casefold'):
+            connection.connection.driver_connection.create_function(
+                'mtg_card_name_casefold', 1, _card_name_key, deterministic=True,
+            )
+            connection.info['mtg_card_name_casefold'] = True
+        return func.mtg_card_name_casefold(column)
 
     def upsert_card(self, payload: dict[str, Any]) -> CardCache:
         query = select(CardCache).where(CardCache.scryfall_id == payload["scryfall_id"])
@@ -45,10 +62,6 @@ class Repository:
     def upsert_card_knowledge(self, payload: dict[str, Any]) -> CardKnowledge:
         """Upsert one CardKnowledge row keyed by normalized card name."""
         normalized = str(payload["name"]).strip()
-        query = select(CardKnowledge).where(
-            func.lower(CardKnowledge.name) == normalized.lower()
-        )
-        row = self.session.exec(query).first()
         values = {
             "scryfall_id": str(payload.get("scryfall_id", "")),
             "oracle_source": str(payload.get("oracle_source", "manual")),
@@ -60,11 +73,19 @@ class Repository:
             "profiles_json": json.dumps(payload.get("profiles") or {}),
             "updated_at": datetime.utcnow(),
         }
+        # Table constructors do not validate input; admit it before any ORM mutation.
+        candidate = CardKnowledge.model_validate({"name": normalized, **values})
+        row = self.session.exec(select(CardKnowledge).where(CardKnowledge.name == normalized)).first()
         if row is None:
-            row = CardKnowledge(name=normalized, **values)
+            query = select(CardKnowledge).where(
+                self._folded_card_name(CardKnowledge.name) == _card_name_key(normalized)
+            ).order_by(CardKnowledge.id)
+            row = self.session.exec(query).first()
+        if row is None:
+            row = candidate
         else:
-            for key, value in values.items():
-                setattr(row, key, value)
+            for key in values:
+                setattr(row, key, getattr(candidate, key))
         self.session.add(row)
         self.session.commit()
         self.session.refresh(row)
@@ -79,20 +100,22 @@ class Repository:
             return {}
         normalized = {name.casefold() for name in requested}
         rows = self.session.exec(select(CardKnowledge).where(CardKnowledge.name.in_(requested))).all()
-        out = {row.name.casefold(): row for row in rows}
+        out = {_card_name_key(row.name): row for row in rows}
         missing = normalized - out.keys()
         if missing:
-            rows = self.session.exec(select(CardKnowledge).where(func.lower(CardKnowledge.name).in_(missing))).all()
-            out.update({row.name.casefold(): row for row in rows})
+            rows = self.session.exec(select(CardKnowledge).where(
+                self._folded_card_name(CardKnowledge.name).in_(missing)
+            ).order_by(CardKnowledge.id)).all()
+            for row in rows:
+                out.setdefault(_card_name_key(row.name), row)
         missing = normalized - out.keys()
         if not missing:
             return out
         predicates = []
-        for name in requested:
-            if name.casefold() not in missing:
-                continue
-            predicates.extend([CardKnowledge.name.startswith(name + ' // ', autoescape=True),
-                               CardKnowledge.name.endswith(' // ' + name, autoescape=True)])
+        folded = self._folded_card_name(CardKnowledge.name)
+        for name in missing:
+            predicates.extend([folded.startswith(name + ' // ', autoescape=True),
+                               folded.endswith(' // ' + name, autoescape=True)])
         rows = self.session.exec(select(CardKnowledge).where(or_(*predicates)).order_by(CardKnowledge.id)).all()
         for row in rows:
             try:
@@ -109,9 +132,9 @@ class Repository:
     def list_card_knowledge(self, names: list[str] | None = None) -> list[CardKnowledge]:
         query = select(CardKnowledge)
         if names:
-            normalized = {str(n).strip().lower() for n in names if str(n).strip()}
+            normalized = {_card_name_key(str(n)) for n in names if str(n).strip()}
             if normalized:
-                query = query.where(func.lower(CardKnowledge.name).in_(normalized))
+                query = query.where(self._folded_card_name(CardKnowledge.name).in_(normalized))
         return list(self.session.exec(query).all())
 
     def list_card_knowledge_names(self) -> list[str]:
@@ -127,27 +150,39 @@ class Repository:
     def get_cached_cards_by_names(self, names: list[str]) -> dict[str, CardCache]:
         if not names:
             return {}
-        lowered = {n.strip().lower() for n in names if n.strip()}
-        if not lowered:
+        requested = {n.strip() for n in names if n.strip()}
+        if not requested:
             return {}
+        keys = {name.lower(): _card_name_key(name) for name in requested}
         # Exact Oracle names must win over face aliases regardless of row order.
         out: dict[str, CardCache] = {
             row.name.strip().lower(): row
-            for row in self.session.exec(select(CardCache).where(or_(
-                CardCache.name.in_({name.strip() for name in names}), func.lower(CardCache.name).in_(lowered)))).all()
+            for row in self.session.exec(select(CardCache).where(CardCache.name.in_(requested))).all()
         }
-        if len(out) == len(lowered):
+        missing = keys.keys() - out.keys()
+        if not missing:
             return out
-        missing = lowered - out.keys()
-        predicates = []
-        for name in missing:
-            predicates.extend([func.lower(CardCache.name).startswith(name + ' // ', autoescape=True),
-                               func.lower(CardCache.name).endswith(' // ' + name, autoescape=True)])
+        folded = self._folded_card_name(CardCache.name)
+        folded_keys = {keys[key] for key in missing}
+        predicates = [folded.in_(folded_keys)]
+        for name in folded_keys:
+            predicates.extend([folded.startswith(name + ' // ', autoescape=True),
+                               folded.endswith(' // ' + name, autoescape=True)])
         rows = self.session.exec(select(CardCache).where(or_(*predicates)).order_by(CardCache.id)).all()
+        matches, lower_matches = {}, {}
         for row in rows:
-            for alias in _name_aliases(row.name, row.layout, row.type_line):
-                if alias in lowered:
-                    out.setdefault(alias, row)
+            matches.setdefault(_card_name_key(row.name), row)
+            lower_matches.setdefault(row.name.strip().lower(), row)
+        for key in missing:
+            row = lower_matches.get(key) or matches.get(keys[key])
+            if row is not None:
+                out[key] = row
+        missing = keys.keys() - out.keys()
+        for row in rows:
+            aliases = _name_aliases(row.name, row.layout, row.type_line)
+            for key in missing:
+                if keys[key] in aliases:
+                    out.setdefault(key, row)
         return out
 
     def save_deck(self, name: str, source: str, mainboard: list[dict[str, Any]], sideboard: list[dict[str, Any]], archetype_guess: str) -> DeckRecord:
@@ -164,7 +199,7 @@ class Repository:
         return record
 
     def save_catalog_deck(self, name: str, source: str, mainboard: list[dict[str, Any]], sideboard: list[dict[str, Any]], archetype_guess: str) -> DeckRecord:
-        if not source.lower().startswith("expansion_top:"):
+        if not source.strip().lower().startswith("expansion_top:"):
             raise ValueError("Catalog deck source must identify an expansion")
         record = self.session.exec(
             select(DeckRecord).where(DeckRecord.source == source).order_by(DeckRecord.created_at.desc(), DeckRecord.id.desc())
@@ -244,6 +279,36 @@ class Repository:
     def list_active_matches(self) -> list[ActiveMatchRecord]:
         return list(self.session.exec(select(ActiveMatchRecord).order_by(ActiveMatchRecord.updated_at.desc())).all())
 
+    def iter_active_match_summaries(self):
+        """Discovery metadata only; do not construct gameplay objects or agents."""
+        from game_state.state import Step, Zone
+        query = select(ActiveMatchRecord.id, ActiveMatchRecord.state_json,
+                       ActiveMatchRecord.controller_json).order_by(ActiveMatchRecord.updated_at.desc())
+        for mid, state_json, controller_json in self.session.exec(query.execution_options(yield_per=50)):
+            try:
+                raw, config = json.loads(state_json), json.loads(controller_json)
+                if not isinstance(raw, dict) or not isinstance(config, dict) or raw['id'] != mid:
+                    continue
+                if config.get('match_complete', False):
+                    continue
+                # Reject malformed snapshot envelopes without hydrating every
+                # card. The by-ID loader remains authoritative for full restore.
+                Step(raw.get('step', Step.UNTAP.value))
+                for card in raw['cards'].values():
+                    Zone(card['zone'])
+                    str(card['id']), str(card['name']), int(card['owner']), int(card['controller'])
+                names = {}
+                for player in raw['players'].values():
+                    int(player['life'])
+                    names[int(player['id'])] = str(player['name'])
+                yield {'id': mid, 'mode': str(config.get('mode', 'player_vs_ai')),
+                       'turn': int(raw.get('turn', 1)),
+                       'game_number': int(config.get('game_number', 1)),
+                       'revision': int(config.get('revision', 0)),
+                       'players': [names[pid] for pid in (1, 2)]}
+            except (KeyError, TypeError, ValueError, AttributeError):
+                continue
+
     def delete_active_match(self, match_id: str) -> None:
         row = self.session.get(ActiveMatchRecord, match_id)
         if row is not None:
@@ -251,29 +316,114 @@ class Repository:
             self.session.commit()
 
     def save_simulation_job(self, payload: dict[str, Any]) -> SimulationJobRecord:
-        row = self.session.get(SimulationJobRecord, str(payload["job_id"]))
+        request_json = checked_json(payload.get("request", {}), RESOURCE_LIMITS["request_json_bytes"], "request_json",
+                                    encoder=lambda: json.dumps(payload.get("request", {})))
+        result_json = (checked_json(payload["result"], RESOURCE_LIMITS["result_json_bytes"], "result_json",
+                                   encoder=lambda: json.dumps(payload.get("result")))
+                       if payload.get("result") is not None else None)
+        error = checked_text(payload.get("error"), RESOURCE_LIMITS["error_utf8_bytes"], "error")
         values = {
             "status": str(payload.get("status", "queued")),
             "completed_matches": int(payload.get("completed_matches", 0)),
             "total_matches": int(payload.get("total_matches", 0)),
             "started_at": float(payload.get("started_at", 0.0)),
             "finished_at": payload.get("finished_at"),
-            "error": payload.get("error"),
-            "result_json": json.dumps(payload.get("result")) if payload.get("result") is not None else None,
-            "request_json": json.dumps(payload.get("request", {})),
+            "error": error,
+            "result_json": result_json,
+            "request_json": request_json,
         }
-        if row is None:
-            row = SimulationJobRecord(id=str(payload["job_id"]), **values)
-        else:
-            for key, value in values.items():
-                setattr(row, key, value)
-        self.session.add(row)
-        self.session.commit()
-        self.session.refresh(row)
-        return row
+        with capacity_write(self.session):
+            with capacity_transaction(self.session) as tx:
+                row = self.session.get(SimulationJobRecord, str(payload["job_id"]), populate_existing=True)
+                from persistence.capacity import validate_job_transition
+                validate_job_transition(row, values)
+                old_size = encoded_bytes(row.request_json, row.result_json, row.error) if row is not None else 0
+                new_size = encoded_bytes(request_json, result_json, error)
+                active = values["status"] in {"queued", "running"}
+                if not active and values["status"] not in TERMINAL:
+                    raise CapacityIntegrityError("Unknown simulation job status")
+                reservation = tx.reservation(job_id=str(payload["job_id"]))
+                if row is None:
+                    if self.count_simulation_jobs() >= JOB_LIMIT:
+                        raise CapacityExceeded("job_rows")
+                    tx.counters(counters_from(tx.ledger).shifted(durable_bytes=new_size))
+                    row = SimulationJobRecord(id=str(payload["job_id"]), **values)
+                    self.session.add(row)
+                    if active:
+                        if result_json is not None or error is not None:
+                            raise CapacityIntegrityError("New active job has terminal fields")
+                        # Flush the parent inside this transaction before its FK escrow.
+                        self.session.flush()
+                        tx.add_reservation(background_escrow(), kind="background", job_id=row.id)
+                else:
+                    if request_json != row.request_json:
+                        raise CapacityIntegrityError("Stored job request is immutable")
+                    if active:
+                        if reservation is None or result_json != row.result_json or error != row.error:
+                            raise CapacityIntegrityError("Active job reservation/fields mismatch")
+                    elif reservation is not None:
+                        tx.finish_job(reservation, old_size, new_size)
+                    else:
+                        tx.counters(counters_from(tx.ledger).shifted(durable_bytes=new_size - old_size))
+                    for key, value in values.items():
+                        setattr(row, key, value)
+                    self.session.add(row)
+            self.session.refresh(row)
+            return row
 
     def get_simulation_job(self, job_id: str) -> SimulationJobRecord | None:
         return self.session.get(SimulationJobRecord, job_id)
+
+    def background_snapshot_token(self, job_id: str) -> str:
+        owner = owner_for(self.session)
+        row = self.session.exec(select(ResourceReservation).where(ResourceReservation.job_id == job_id)).one()
+        if row.kind != 'background' or row.owner_epoch != owner.epoch or row.snapshot_rows != 1:
+            raise CapacityIntegrityError('Background snapshot reservation missing')
+        return row.token
+
+    def validate_snapshot_reservation(self, token):
+        owner = owner_for(self.session)
+        row = self.session.get(ResourceReservation, token, populate_existing=True)
+        if row is None or row.owner_epoch != owner.epoch or row.snapshot_rows != 1:
+            raise CapacityIntegrityError('Live snapshot reservation required before work')
+
+    def retire_simulations(self, job_ids, snapshot_ids):
+        """Explicit offline owned retirement; retain retry identity and request bytes."""
+        jobs, snapshots = tuple(job_ids), tuple(snapshot_ids)
+        if (len(set(jobs)) != len(jobs) or any(not isinstance(x, str) or not x for x in jobs)
+                or len(set(snapshots)) != len(snapshots)
+                or any(type(x) is not int or x <= 0 for x in snapshots)):
+            raise ValueError('Explicit unique job/snapshot selections required')
+        owner = owner_for(self.session)
+        with owner.mutex:
+            owner.require()
+            if owner.admissions_open or owner.producers:
+                raise CapacityIntegrityError('Retirement requires fenced, drained ownership')
+            with capacity_transaction(self.session) as tx:
+                if self.session.exec(select(ResourceReservation)).first() is not None:
+                    raise CapacityIntegrityError('Outstanding escrow requires restart reconciliation')
+                reclaimed = 0
+                for job_id in jobs:
+                    row = self.session.get(SimulationJobRecord, job_id, populate_existing=True)
+                    if row is None or row.status not in TERMINAL:
+                        raise CapacityIntegrityError('Only existing terminal jobs may retire')
+                    reclaimed += encoded_bytes(row.result_json, row.error)
+                    row.status, row.result_json, row.error = 'retired', None, None
+                    self.session.add(row)
+                for snapshot_id in snapshots:
+                    row = self.session.get(StatsSnapshot, snapshot_id, populate_existing=True)
+                    if row is None:
+                        raise CapacityIntegrityError('Selected snapshot missing')
+                    if row.job_id is not None:
+                        job = self.session.get(SimulationJobRecord, row.job_id)
+                        if job is None or job.status not in TERMINAL:
+                            raise CapacityIntegrityError('Snapshot belongs to unfinished work')
+                    reclaimed += encoded_bytes(row.stats_json)
+                    self.session.delete(row)
+                tx.counters(counters_from(tx.ledger).shifted(
+                    durable_bytes=-reclaimed, snapshot_rows=-len(snapshots)))
+        return {'retired_jobs': list(jobs), 'deleted_snapshots': list(snapshots),
+                'reclaimed_logical_bytes': reclaimed, 'job_rows_reclaimed': 0}
 
     def count_simulation_jobs(self) -> int:
         return self.session.exec(select(func.count()).select_from(SimulationJobRecord)).one()
@@ -284,12 +434,39 @@ class Repository:
     def list_unfinished_simulation_jobs(self) -> list[SimulationJobRecord]:
         return list(self.session.exec(select(SimulationJobRecord).where(SimulationJobRecord.status.in_(["queued", "running"]))).all())
 
-    def save_snapshot(self, label: str, stats: dict[str, Any]) -> StatsSnapshot:
-        record = StatsSnapshot(label=label, stats_json=json.dumps(stats))
-        self.session.add(record)
-        self.session.commit()
-        self.session.refresh(record)
-        return record
+    def reserve_snapshot(self) -> str:
+        """Producer must reserve before work; service wiring is a separate slice."""
+        with capacity_write(self.session):
+            with capacity_transaction(self.session) as tx:
+                reservation = tx.add_reservation(snapshot_escrow(), kind="snapshot")
+                token = reservation.token
+            return token
+
+    def release_snapshot_reservation(self, token: str) -> None:
+        """Release only after this producer stops; failed commit leaves outcome unknown."""
+        with capacity_write(self.session):
+            with capacity_transaction(self.session) as tx:
+                row = tx.reservation(token=token)
+                if row is None or row.kind != "snapshot":
+                    raise CapacityIntegrityError("Snapshot reservation missing")
+                tx.finish_job(row, 0, 0)
+
+    def save_snapshot(self, label: str, stats: dict[str, Any], *, reservation_token: str | None = None) -> StatsSnapshot:
+        encoded = checked_json(stats, RESOURCE_LIMITS["snapshot_json_bytes"], "snapshot_json",
+                               encoder=lambda: json.dumps(stats))
+        with capacity_write(self.session):
+            with capacity_transaction(self.session) as tx:
+                size = encoded_bytes(encoded)
+                if reservation_token is None:
+                    # Direct writers still charge the shared ledger atomically.
+                    tx.counters(counters_from(tx.ledger).shifted(durable_bytes=size, snapshot_rows=1))
+                    job_id = None
+                else:
+                    job_id = tx.snapshot(size, reservation_token)
+                record = StatsSnapshot(label=label, stats_json=encoded, job_id=job_id)
+                self.session.add(record)
+            self.session.refresh(record)
+            return record
 
     def upsert_tournament_event(
         self,
@@ -367,8 +544,12 @@ class Repository:
         return list(self.session.exec(q).all())
 
 
+def _card_name_key(name: str | None) -> str:
+    return (name or "").strip().casefold()
+
+
 def _name_aliases(name: str | None, layout: str = "", type_line: str = "") -> set[str]:
-    raw = (name or "").strip().lower()
+    raw = _card_name_key(name)
     if not raw:
         return set()
     aliases = {raw}

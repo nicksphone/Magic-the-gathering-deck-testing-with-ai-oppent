@@ -29,12 +29,15 @@ from rules_engine.replacement import (
     player_cant_lose_life,
     replacement_options,
     replacement_source_used,
-    replace_die_zone,
+    select_graveyard_entry_plan,
     replace_draw_cards,
     replace_gain_life,
     replace_noncombat_damage_to_creature,
 )
-from rules_engine.zone_actions import move_spell_from_stack, is_departed_token, put_into_graveyard
+from rules_engine.zone_actions import (
+    move_spell_from_stack, is_departed_token, put_into_graveyard,
+    execute_graveyard_entry, prepare_graveyard_entry_causes,
+)
 
 
 def _queue_human_damage_replacement_choice(
@@ -46,6 +49,8 @@ def _queue_human_damage_replacement_choice(
 ) -> bool:
     """Pause a human damage chain when the modified event remains replaceable."""
     if remaining_amount <= 0 or not selected_source_id:
+        return False
+    if state.pending_replacement_choice or state.pending_mechanic_choice:
         return False
     if not getattr(state, "replacement_choice_required", False):
         return False
@@ -64,11 +69,16 @@ def _queue_human_damage_replacement_choice(
         target_player=affected_player if target_player is not None else None,
         target_card_id=str(target_card_id) if target_card_id else None,
         source_card_id=payload.get('__source_card_id'),
+        amount=remaining_amount, source_lki=payload.get('__source_lki'),
+        source_context=payload.get('__activation_source_context'),
+        combat=False,
     )
     used_source_ids = [str(value) for value in (payload.get("__used_replacement_source_ids") or [])]
     if str(selected_source_id) not in used_source_ids:
         used_source_ids.append(str(selected_source_id))
-    options = [option for option in options if str(option.get("source_id")) not in set(used_source_ids)]
+    from rules_engine.replacement import replacement_source_used
+    options = [option for option in options
+               if not replacement_source_used(used_source_ids, event, str(option.get("source_id")))]
     if not options:
         return False
     state.pending_replacement_choice = {
@@ -81,6 +91,7 @@ def _queue_human_damage_replacement_choice(
         "controller": int(controller),
         "source_card_id": payload.get("__source_card_id"),
         "source_lki": payload.get("__source_lki"),
+        "source_payload": {key: payload[key] for key in ('__activation_source_context', '__activation_source_origin', '__activation_source_reference', '__ability_target_text') if key in payload},
         "selected_source_ids": used_source_ids,
         "batch_damage": bool(payload.get("__batch_damage")),
         "options": options,
@@ -148,21 +159,18 @@ def _creature_is_lethally_damaged(state: MatchState, card_id: str) -> bool:
 def _move_creature_to_graveyard(state: MatchState, card_id: str) -> None:
     card = state.cards[card_id]
     battlefield_owner = state.players[card.controller]
-    zone_owner = state.players[getattr(card, "owner", card.controller)]
     if card_id in battlefield_owner.battlefield:
-        destination = replace_die_zone(state, card.controller, card_id)
-        emit_event(state, "leaves_battlefield", {"card_id": card_id, "controller": card.controller})
-        battlefield_owner.battlefield.remove(card_id)
-        if destination == "exile":
-            zone_owner.exile.append(card_id)
-            card.move_to_zone(Zone.EXILE)
+        plan = select_graveyard_entry_plan(state, card_id)
+        cause = prepare_graveyard_entry_causes(state, [plan])[card_id]
+        event = {"card_id": card_id, "controller": plan.controller}
+        emit_event(state, "leaves_battlefield", event)
+        destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
+        if destination == Zone.EXILE:
             state.log.append(f"{card.name} is exiled instead of dying.")
-        else:
-            zone_owner.graveyard.append(card_id)
-            card.zone = Zone.GRAVEYARD
+        elif destination == Zone.GRAVEYARD:
             state.log.append(f"{card.name} dies.")
-            emit_event(state, "permanent_dies", {"card_id": card_id, "controller": card.controller})
-            emit_event(state, "creature_dies", {"card_id": card_id, "controller": card.controller})
+            emit_event(state, "permanent_dies", event)
+            emit_event(state, "creature_dies", event)
 
 
 def deal_damage_to_controller(state: MatchState, controller: int, payload: dict) -> None:
@@ -177,12 +185,22 @@ def deal_damage_to_controller(state: MatchState, controller: int, payload: dict)
 
 
 def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
+    from rules_engine.damage_results import validate_hand_payload
+    source_context = validate_hand_payload(state, payload)
     payload = apply_replacement_effects("damage", dict(payload))
     target_player = payload.get("target_player")
     target_card_id = payload.get("target_card_id")
     amount = int(payload.get("amount", 0))
     source_card_id = payload.get("__source_card_id")
     source_lki = payload.get("__source_lki")
+    if payload.get('__stack_copy_kind') == 'spell':
+        if source_lki is None and payload.get('__copied_card'):
+            from types import SimpleNamespace
+            from rules_engine.colors import card_color_names
+            source_lki = {**payload['__copied_card'], 'color_names': sorted(card_color_names(
+                SimpleNamespace(**payload['__copied_card'])))}
+        source_lki = {**(source_lki or payload.get('__copied_card') or {}), 'controller': controller}
+        payload['__source_lki'] = source_lki
     selected_source_id = payload.get("__replacement_source_id")
     human_chain = bool(selected_source_id and getattr(state, "replacement_choice_required", False))
     prevention_locked = damage_cant_be_prevented(
@@ -191,23 +209,9 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
         target_player=int(target_player) if target_player is not None else None,
         target_card_id=target_card_id,
     )
-    source_colors: set[str] = set()
-    if source_lki is not None:
-        source_colors = set(source_lki.get("color_names", []))
-    elif source_card_id in state.cards:
-        source_colors = card_color_names(state.cards[source_card_id])
     if target_card_id is not None and target_card_id in state.cards:
         card = state.cards[target_card_id]
-        kws = effective_keywords(state, target_card_id)
-        for color in source_colors:
-            if not prevention_locked and f"protection from {color}" in kws:
-                state.log.append(f"{card.name} prevents damage from {color} source due to protection.")
-                return 0
         if card.zone == Zone.BATTLEFIELD and amount > 0:
-            if replace_noncombat_damage_to_creature(state, source_card_id, target_card_id, amount, source_lki=source_lki) is not None:
-                if not state.pending_replacement_choice and not payload.get("__defer_lethal") and "Creature" in effective_types(state, card) and _creature_is_lethally_damaged(state, target_card_id):
-                    _move_creature_to_graveyard(state, target_card_id)
-                return 0
             replaced_amount = apply_permanent_damage_replacements(
                 state,
                 target_card_id,
@@ -216,24 +220,31 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
                 max_replacements=1 if human_chain else None,
                 used_source_ids=payload.get('__used_replacement_source_ids'),
                 prevention_locked=prevention_locked,
+                source_card_id=source_card_id, source_lki=source_lki, source_context=source_context,
+                combat=False,
             )
             if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
                 return 0
-            post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount)
+            post, prevented = (replaced_amount, 0) if prevention_locked else consume_card_prevention_shield(card, replaced_amount, state=state)
             if prevented > 0:
                 state.log.append(f"{card.name} prevents {prevented} damage.")
             if post <= 0:
+                if (not state.trigger_staging and not state.pending_replacement_choice
+                        and not state.pending_mechanic_choice and not payload.get('__defer_lethal')
+                        and 'Creature' in effective_types(state, card)
+                        and _creature_is_lethally_damaged(state, target_card_id)):
+                    _move_creature_to_graveyard(state, target_card_id)
                 return 0
             from rules_engine.damage_results import apply_creature_damage
             if "Creature" in effective_types(state, card):
                 apply_creature_damage(state, target_card_id, int(post), source_card_id, source_lki=source_lki,
-                                      controller=controller, counter_is_effect=True)
+                                      controller=controller, counter_is_effect=True, source_context=source_context)
                 state.log.append(f"{card.name} takes {post} damage.")
             if "Planeswalker" in effective_types(state, card) and card.loyalty is not None:
                 card.loyalty -= int(post)
                 state.log.append(f"{card.name} loses {post} loyalty.")
             if not payload.get("__batch_damage"):
-                _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki)
+                _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki, source_context=source_context)
             emit_event(state, 'damage_dealt', {'source_card_id': source_card_id,
                        'target_card_id': target_card_id, 'amount': int(post)})
             # A staged spell/ability finishes all instructions before its SBA check.
@@ -251,6 +262,7 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
             max_replacements=1 if human_chain else None,
             used_source_ids=payload.get('__used_replacement_source_ids'),
             prevention_locked=prevention_locked,
+            source_card_id=source_card_id, source_lki=source_lki, source_context=source_context,
         )
         if human_chain and _queue_human_damage_replacement_choice(state, controller, payload, replaced_amount, selected_source_id):
             return 0
@@ -261,10 +273,10 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
             return 0
         from rules_engine.damage_results import apply_player_damage
         apply_player_damage(state, int(target_player), int(post), source_card_id, source_lki=source_lki,
-                            controller=controller, counter_is_effect=True)
+                            controller=controller, counter_is_effect=True, source_context=source_context)
         state.log.append(f"{state.players[target_player].name} takes {post} damage.")
         if not payload.get("__batch_damage"):
-            _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki)
+            _gain_lifelink_from_damage(state, source_card_id, int(post), source_lki, source_context=source_context)
         emit_event(state, 'damage_dealt', {'source_card_id': source_card_id,
                    'target_player': int(target_player), 'amount': int(post)})
         return int(post)
@@ -272,10 +284,10 @@ def deal_damage(state: MatchState, controller: int, payload: dict) -> int:
 
 
 def _gain_lifelink_from_damage(state: MatchState, source_id: str | None, amount: int,
-                               source_lki: dict | None = None) -> None:
-    from rules_engine.damage_results import source_has_keyword
-    if amount > 0 and source_has_keyword(state, source_id, "lifelink", source_lki):
-        source_controller = int(source_lki["controller"]) if source_lki is not None else state.cards[source_id].controller
+                               source_lki: dict | None = None, *, source_context=None) -> None:
+    from rules_engine.damage_results import source_has_keyword, damage_lifelink_beneficiary
+    if amount > 0 and source_has_keyword(state, source_id, "lifelink", source_lki, source_context=source_context):
+        source_controller = damage_lifelink_beneficiary(state, source_id, source_lki=source_lki, source_context=source_context)
         payload = {
             "target_player": source_controller, "amount": amount, "__source_card_id": source_id,
         }
@@ -284,6 +296,37 @@ def _gain_lifelink_from_damage(state: MatchState, source_id: str | None, amount:
             pending.setdefault('continuation_effects', []).append({'effect_key': 'gain_life', 'payload': payload})
         else:
             gain_life(state, source_controller, payload)
+
+
+def put_hand_on_library(state: MatchState, controller: int, payload: dict) -> None:
+    player = state.players[controller]
+    available = list(player.hand)
+    count = min(max(0, int(payload['amount'])), len(available))
+    selected = payload.get('selected_card_ids')
+    if selected is None and count and controller in state.mechanic_choice_players:
+        state.pending_mechanic_choice = {
+            'kind': 'hand_top_order', 'player_id': controller,
+            'options': available, 'count': count,
+            'label': f'Choose {count} hand cards for your library, topmost first',
+            'effect_payload': dict(payload),
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    if selected is None:
+        selected = available[:count]
+    if (not isinstance(selected, list) or len(selected) != count
+            or any(not isinstance(cid, str) for cid in selected)
+            or len(set(selected)) != count
+            or any(cid not in available or state.cards[cid].zone != Zone.HAND
+                   or state.cards[cid].owner != controller for cid in selected)):
+        raise ValueError('Unavailable ordered hand selection')
+    # Library top is the final element; the first explicit selection is topmost.
+    for cid in reversed(selected):
+        player.hand.remove(cid)
+        state.cards[cid].move_to_zone(Zone.LIBRARY)
+        player.library.append(cid)
+    state.log.append(f'{player.name} puts {count} hand cards on top of their library.')
 
 
 def draw_cards(state: MatchState, controller: int, payload: dict) -> None:
@@ -465,31 +508,42 @@ def _count_controlled_type(state: MatchState, controller: int, type_name: str) -
     return count
 
 
+def player_loses_game(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.replacement import player_cant_lose_game
+    player = payload.get('target_player')
+    if (type(player) is int and player in state.players and state.winner is None
+            and not player_cant_lose_game(state, player)):
+        state.winner = 3 - player
+
+
 def destroy_permanent(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if not target or target not in state.cards:
         return
     card = state.cards[target]
     battlefield_owner = state.players[card.controller]
-    zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
         from rules_engine.named_counters import destruction_prevented
+        # Prevented destruction needs no graveyard replacement choice.
+        if has_keyword(state, target, "indestructible") or card.counters.get('shield', 0) > 0:
+            destruction_prevented(state, target)
+            return
+        plan = select_graveyard_entry_plan(state, target, payload.get("__replacement_source_id"))
+        cause = prepare_graveyard_entry_causes(state, [plan])[target]
         if destruction_prevented(state, target):
             return
-        destination = replace_die_zone(state, card.controller, target, payload.get("__replacement_source_id"))
-        emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
-        battlefield_owner.battlefield.remove(target)
-        if destination == "exile":
-            zone_owner.exile.append(target)
-            card.move_to_zone(Zone.EXILE)
+        event = {"card_id": target, "controller": plan.controller}
+        emit_event(state, "leaves_battlefield", event)
+        destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
+        if destination == Zone.EXILE:
             state.log.append(f"{card.name} is exiled instead of dying.")
             return
-        zone_owner.graveyard.append(target)
-        card.move_to_zone(Zone.GRAVEYARD)
+        if destination != Zone.GRAVEYARD:
+            return
         state.log.append(f"{card.name} is destroyed.")
-        emit_event(state, "permanent_dies", {"card_id": target, "controller": card.controller})
+        emit_event(state, "permanent_dies", event)
         if was_creature_on_battlefield(card):
-            emit_event(state, "creature_dies", {"card_id": target, "controller": card.controller})
+            emit_event(state, "creature_dies", event)
 
 
 def change_control(state: MatchState, controller: int, payload: dict) -> None:
@@ -500,146 +554,128 @@ def change_control(state: MatchState, controller: int, payload: dict) -> None:
     new_controller = int(payload.get("new_controller", controller) or controller)
     if new_controller not in state.players:
         return
-    old_controller = int(card.controller)
-    if old_controller != new_controller:
-        old_battlefield = state.players[old_controller].battlefield
-        if target_id in old_battlefield:
-            old_battlefield.remove(target_id)
-        state.players[new_controller].battlefield.append(target_id)
-        card.controller = new_controller
-        card.summoning_sick = True
-        card.entered_turn = state.turn
-    if payload.get("until_end_of_turn"):
-        state.temporary_control_changes[target_id] = {
-            "controller": old_controller,
-            "expires_turn": int(state.turn),
-        }
-    state.log.append(f"{state.players[new_controller].name} gains control of {card.name}.")
+    from rules_engine.control_effects import record_control_effect
+    record_control_effect(state, card, new_controller,
+                          temporary=bool(payload.get('until_end_of_turn')))
+
+
+def temporary_control_instruction(state: MatchState, controller: int, payload: dict) -> None:
+    card = state.cards.get(payload.get('target_card_id'))
+    if card is None or card.zone != Zone.BATTLEFIELD:
+        return
+    untap_card(state, controller, payload)
+    change_control(state, controller, {**payload, 'new_controller': controller})
+    grant_keyword(state, controller, {**payload, 'keywords': ['haste']})
+    from rules_engine.keyword_triggers import schedule_control_loss_tap
+    schedule_control_loss_tap(state, controller, payload)
+
+
 def destroy_all_creatures(state: MatchState, controller: int, payload: dict) -> None:
     del controller, payload
-    destroyed = False
-    leaves: list[dict] = []
-    permanent_deaths: list[dict] = []
-    creature_deaths: list[dict] = []
-    from rules_engine.named_counters import destruction_prevented
-    destinations = {
-        cid: replace_die_zone(state, card.controller, cid)
-        for cid, card in state.cards.items()
-        if "Creature" in effective_types(state, card) and cid in state.players[card.controller].battlefield
-        and not destruction_prevented(state, cid)
-    }
-    for cid in destinations:
-        capture_last_known_battlefield(state, cid)
-    for cid, card in list(state.cards.items()):
-        if cid not in destinations:
-            continue
-        battlefield_owner = state.players[card.controller]
-        zone_owner = state.players[getattr(card, "owner", card.controller)]
-        if cid in battlefield_owner.battlefield:
-            event_payload = {"card_id": cid, "controller": card.controller}
-            leaves.append(event_payload)
-            battlefield_owner.battlefield.remove(cid)
-            destination = destinations[cid]
-            if destination == "exile":
-                zone_owner.exile.append(cid)
-                card.zone = Zone.EXILE
-                state.log.append(f"{card.name} is exiled instead of dying.")
-                destroyed = True
-                continue
-            zone_owner.graveyard.append(cid)
-            card.zone = Zone.GRAVEYARD
-            destroyed = True
-            state.log.append(f"{card.name} is destroyed.")
-            permanent_deaths.append(event_payload)
-            creature_deaths.append(event_payload)
-    emit_event_batch(state, "leaves_battlefield", leaves)
-    emit_event_batch(state, "permanent_dies", permanent_deaths)
-    emit_event_batch(state, "creature_dies", creature_deaths)
-    if destroyed:
-        state.log.append("All creatures are destroyed.")
+    _destroy_all_permanents_of_types(state, {"Creature"}, "All creatures are destroyed.")
 
 
-def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str], log_label: str) -> None:
-    destroyed = False
-    leaves: list[dict] = []
-    permanent_deaths: list[dict] = []
-    creature_deaths: list[dict] = []
+def _destroy_all_permanents_of_types(state: MatchState, allowed_types: set[str], log_label: str, *, target_ids=None) -> None:
     from rules_engine.named_counters import destruction_prevented
-    destinations = {
-        cid: replace_die_zone(state, card.controller, cid)
-        for cid, card in state.cards.items()
-        if allowed_types.intersection(set(effective_types(state, card) or [])) and cid in state.players[card.controller].battlefield
-        and not destruction_prevented(state, cid)
-    }
-    for cid in destinations:
-        capture_last_known_battlefield(state, cid)
-    for cid, card in list(state.cards.items()):
-        if cid not in destinations:
-            continue
-        battlefield_owner = state.players[card.controller]
-        zone_owner = state.players[getattr(card, "owner", card.controller)]
-        if cid in battlefield_owner.battlefield:
-            event_payload = {"card_id": cid, "controller": card.controller}
-            leaves.append(event_payload)
-            battlefield_owner.battlefield.remove(cid)
-            destination = destinations[cid]
-            if destination == "exile":
-                zone_owner.exile.append(cid)
-                card.zone = Zone.EXILE
-                destroyed = True
-                state.log.append(f"{card.name} is exiled instead of dying.")
-                continue
-            zone_owner.graveyard.append(cid)
-            card.zone = Zone.GRAVEYARD
-            destroyed = True
-            state.log.append(f"{card.name} is destroyed.")
-            permanent_deaths.append(event_payload)
-            if "Creature" in effective_types(state, card):
-                creature_deaths.append(event_payload)
+    from rules_engine.events import flush_staged_triggers
+    targets = [cid for cid, card in state.cards.items()
+               if allowed_types.intersection(set(effective_types(state, card) or []))
+               and cid in state.players[card.controller].battlefield
+               and (target_ids is None or cid in target_ids)]
+    # Shield consumption/logging is a mutation: preflight every actual death first.
+    plans = {cid: select_graveyard_entry_plan(state, cid) for cid in targets
+             if not has_keyword(state, cid, "indestructible")
+             and state.cards[cid].counters.get('shield', 0) <= 0}
+    causes = prepare_graveyard_entry_causes(state, plans.values())
+    for cid in targets:
+        destruction_prevented(state, cid)
+    if not plans:
+        return
+    started_staging = not state.trigger_staging
+    if started_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "permanent_dies"
+    leaves = [{"card_id": cid, "controller": plan.controller} for cid, plan in plans.items()]
     emit_event_batch(state, "leaves_battlefield", leaves)
+    permanent_deaths = []
+    creature_deaths = []
+    entry_receipts = []
+    for event in leaves:
+        cid = event["card_id"]
+        card = state.cards[cid]
+        destination = execute_graveyard_entry(state, plans[cid], prevalidated=True,
+                                              _prepared_cause=causes[cid], _entry_receipts=entry_receipts)
+        if destination == Zone.EXILE:
+            state.log.append(f"{card.name} is exiled instead of dying.")
+        elif destination == Zone.GRAVEYARD:
+            state.log.append(f"{card.name} is destroyed.")
+            permanent_deaths.append(event)
+            if was_creature_on_battlefield(card):
+                creature_deaths.append(event)
+    if entry_receipts:
+        emit_event_batch(state, "enters_graveyard", entry_receipts)
     emit_event_batch(state, "permanent_dies", permanent_deaths)
     emit_event_batch(state, "creature_dies", creature_deaths)
-    if destroyed:
-        state.log.append(log_label)
+    state.log.append(log_label)
+    if started_staging and not state.pending_mechanic_choice:
+        flush_staged_triggers(state)
 
 
 def exile_all_graveyards(state: MatchState, controller: int, payload: dict) -> None:
-    del controller, payload
+    del controller
+    players = list(state.players.values())
+    if 'target_player' in payload:
+        target = payload['target_player']
+        if type(target) is not int or target not in state.players:
+            return
+        players = [state.players[target]]
     from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
-    departures = capture_graveyard_departures(state, [cid for player in state.players.values() for cid in player.graveyard])
-    for player in state.players.values():
+    departures = capture_graveyard_departures(state, [cid for player in players for cid in player.graveyard])
+    for player in players:
         for cid in list(player.graveyard):
             if is_departed_token(state.cards[cid]):
                 continue
             player.graveyard.remove(cid)
             state.players[state.cards[cid].owner].exile.append(cid)
             state.cards[cid].move_to_zone(Zone.EXILE)
-    state.log.append("All graveyards are exiled.")
+    state.log.append("All graveyards are exiled." if 'target_player' not in payload
+                     else f"Player {payload['target_player']}'s graveyard is exiled.")
     emit_graveyard_departures(state, departures)
 
 
 def exile_all_creatures(state: MatchState, controller: int, payload: dict) -> int:
     """Exile every creature, preserving ownership and leave events."""
-    moved = 0
-    leaves: list[dict] = []
+    from rules_engine.events import flush_staged_triggers
+
+    cohort = []
     for player in state.players.values():
         for cid in player.battlefield:
-            if "Creature" in effective_types(state, state.cards[cid]):
-                capture_last_known_battlefield(state, cid)
-    for cid, card in list(state.cards.items()):
-        if card.zone != Zone.BATTLEFIELD or "Creature" not in effective_types(state, card):
-            continue
-        battlefield = state.players[card.controller]
-        owner = state.players[getattr(card, "owner", card.controller)]
-        if cid not in battlefield.battlefield:
-            continue
-        leaves.append({"card_id": cid, "controller": card.controller})
-        battlefield.battlefield.remove(cid)
-        owner.exile.append(cid)
-        card.zone = Zone.EXILE
-        moved += 1
+            card = state.cards[cid]
+            if (card.zone == Zone.BATTLEFIELD and card.controller == player.id
+                    and "Creature" in effective_types(state, card)):
+                cohort.append((card, card.controller, card.owner, {
+                    "incarnation": object_incarnation(card),
+                    "zone_change_sequence": card.zone_change_sequence,
+                }))
+    for card, _, _, _ in cohort:
+        capture_last_known_battlefield(state, card.id)
+    started_staging = not state.trigger_staging
+    if started_staging:
+        state.trigger_staging = True
+        state.trigger_staging_event = "leaves_battlefield"
+    leaves = [{"card_id": card.id, "controller": previous_controller,
+               "previous_reference": reference}
+              for card, previous_controller, _, reference in cohort]
+    # Collect all genuine PRE departure observers before any zone/list transition.
     emit_event_batch(state, "leaves_battlefield", leaves)
+    for card, previous_controller, owner, _ in cohort:
+        state.players[previous_controller].battlefield.remove(card.id)
+        state.players[owner].exile.append(card.id)
+        card.move_to_zone(Zone.EXILE)
+    moved = len(cohort)
     state.log.append(f"Exile all creatures resolves: {moved} creature(s) exiled.")
+    if started_staging and not state.pending_mechanic_choice:
+        flush_staged_triggers(state)
     return moved
 
 
@@ -714,11 +750,8 @@ def copy_linked_exiled_card(state: MatchState, controller: int, payload: dict) -
     source = state.cards[source_id]
     previous_name = source.name
     selected = select_cast_face(state.cards[chosen], 0)
-    from rules_engine.type_effects import copiable_types, rebase_type_effects
-    for field in ("name", "mana_cost", "type_line", "types", "power", "toughness", "printed_power", "printed_toughness", "loyalty", "oracle_text", "keywords", "colors"):
-        source.printed_characteristics.setdefault(field, copiable_types(source) if field == 'types' else copy(getattr(source, field)))
-        setattr(source, field, copy(getattr(selected, field)))
-    rebase_type_effects(source)
+    from rules_engine.copiable_values import apply, values
+    apply(source, values(selected))
     state.log.append(f"{previous_name} becomes a copy of {selected.name}.")
 
 
@@ -732,7 +765,7 @@ def exile_colored_permanents_mana_value_at_most(state: MatchState, controller: i
     mv_max = int(payload["mv_max"])
     affected = [
         cid for player in state.players.values() for cid in player.battlefield
-        if card_color_names(state.cards[cid]) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
+        if card_color_names(state.cards[cid], state) and mana_value(state.cards[cid].mana_cost or "") <= mv_max
     ]
     for cid in affected:
         capture_last_known_battlefield(state, cid)
@@ -850,30 +883,38 @@ def counter_ability(state: MatchState, controller: int, payload: dict) -> None:
     for i, item in enumerate(state.stack):
         if item.id == target_stack_id:
             kind = stack_object_kind(state, item)
-            if kind == "spell" or (payload.get("target_kind") in {"activated", "triggered"} and payload["target_kind"] != kind):
+            if kind not in {"activated", "triggered"} or (payload.get("target_kind") in {"activated", "triggered"} and payload["target_kind"] != kind):
                 return
             if payload.get("uncounterable") or (item.payload or {}).get("uncounterable"):
                 state.log.append(f"{item.label} can't be countered.")
                 return
+            from rules_engine.activation_copy import retain_countered_activation
+            retain_countered_activation(state, item)
             state.stack.pop(i)
             state.log.append(f"{item.label} was countered.")
             return
 
 
-def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect_label: str):
-    target_stack_id = payload.get("target_stack_id")
-    if not target_stack_id:
-        return
-    item = next((x for x in state.stack if x.id == target_stack_id), None)
-    if item is None:
-        return
+def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect_label: str, *, retained_item=None):
+    if retained_item is None:
+        target_stack_id = payload.get("target_stack_id")
+        if not target_stack_id:
+            return
+        item = next((x for x in state.stack if x.id == target_stack_id), None)
+        if item is None:
+            return
+    else:
+        item = retained_item
     copied_payload = copy.deepcopy(item.payload or {})
     copied_payload.pop("__last_target_ids", None)
+    for key in list(copied_payload):
+        if key.startswith('__granted_target_'):
+            copied_payload.pop(key)
     from game_state.state import StackItem
     from rules_engine.targeting import stack_object_kind
 
     kind = stack_object_kind(state, item)
-    if (effect_label == "spell") != (kind == "spell"):
+    if kind not in {"spell", "activated", "triggered"} or (effect_label == "spell") != (kind == "spell"):
         return
     if effect_label == "spell":
         copied_payload["snow_mana_spent"] = 0
@@ -912,17 +953,23 @@ def _copy_stack_object(state: MatchState, controller: int, payload: dict, effect
     state.log.append(f"{state.players[controller].name} copies {effect_label} {item.label}.")
     if payload.get("may_choose_new_targets"):
         _offer_copy_target_choice(state, controller, copied_item)
+    if not (state.pending_mechanic_choice and state.pending_mechanic_choice.get('stack_id') == copied_item.id):
+        from rules_engine.granted_target_triggers import _record_target_selection
+        _record_target_selection(state, copied_item)
+        from rules_engine.ward import mark_stack_targets
+        mark_stack_targets(state, copied_item)
     return copied_item
 
 
-def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -> None:
+def _offer_copy_target_choice(state: MatchState, controller: int, copied_item, *, original=False) -> None:
     from rules_engine.cast_choice import build_cast_hints
-    from rules_engine.targeting import validate_cast_targets
+    from rules_engine.targeting import validate_cast_targets, announced_target_reference_matches, stack_object_kind
 
     copied_payload = copied_item.payload
     trigger_clause = copied_payload.get("__trigger_target_clause") if copied_payload.get("__trigger_target_choice") else None
     ability_text = copied_payload.get("__ability_target_text")
-    is_spell = copied_payload.get("__stack_copy_kind") == "spell"
+    is_spell = (copied_payload.get("__stack_copy_kind") == "spell"
+                or original and stack_object_kind(state, copied_item) == 'spell')
     if not is_spell and not (trigger_clause or ability_text):
         return
     announced = copied_payload.get("__announced_targets") or {
@@ -934,7 +981,7 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         from rules_engine.linked_targets import offer_linked_copy_target_choice
         offer_linked_copy_target_choice(state, copied_item)
         return
-    if is_spell and (copied_payload.get('__ordered_target_instances')
+    if is_spell and (copied_item.effect_key == 'exile_return_batch' or copied_payload.get('__ordered_target_instances')
                      or copied_payload.get('__ordered_distinct_targets')):
         from rules_engine.ordered_targets import offer_ordered_copy_target_choice
         offer_ordered_copy_target_choice(state, copied_item)
@@ -962,9 +1009,20 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
             if len(per_mode) == len(modes) and shared == {
                 key: value for selected in per_mode.values() for key, value in selected.items()
             }:
+                references = copied_payload.get('__announced_target_references')
+                if '__announced_target_references' in copied_payload:
+                    from rules_engine.targeting import validate_announced_target_references, replace_announced_target_reference
+                    validate_announced_target_references(announced, references)
+                    updated = {key: value for key, value in announced.items() if key not in keys}
+                    updated['mode_targets'] = per_mode
+                    migrated = replace_announced_target_reference(state, references, updated, [],
+                        remapped_slots={('mode_targets', mode, 'target_card_id'): ('target_card_id',)
+                            for mode, selected in per_mode.items() if 'target_card_id' in selected})
                 for key in keys:
                     announced.pop(key, None)
                 announced["mode_targets"] = per_mode
+                if references is not None:
+                    copied_payload['__announced_target_references'] = migrated
                 copied_item.targets = [str(value) for selected in per_mode.values() for value in selected.values()]
         if announced.get("mode_targets"):
             _offer_modal_copy_target_choice(state, controller, copied_item)
@@ -972,6 +1030,10 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
     if is_spell and copied_item.effect_key == "effect_sequence" and not announced.get("mode_texts"):
         _offer_clause_copy_target_choice(state, controller, copied_item)
         return
+    if not is_spell and copied_item.effect_key == "effect_sequence":
+        from rules_engine.loyalty_instructions import offer_copy_target_choice
+        if offer_copy_target_choice(state, controller, copied_item):
+            return
     target_keys = [key for key in ("target_player", "target_card_id", "target_stack_id") if announced.get(key) is not None]
     if (len(target_keys) != 1 or any(key in announced for key in ("mode_targets", "target_card_ids", "target_distribution"))
             or copied_item.effect_key == "effect_sequence"):
@@ -983,10 +1045,10 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
     copied_card = copy.copy(copied_card)
     if not is_spell:
         copied_card.oracle_text = trigger_clause or ability_text
-    hints = build_cast_hints(state, copied_card, controller, announced) if is_spell else None
+    hints = build_cast_hints(state, copied_card, controller, announced, source_kind=stack_object_kind(state, copied_item)) if is_spell else None
     if not is_spell and not trigger_clause:
         from rules_engine.oracle_effects import inspect_target_hints
-        hints = inspect_target_hints(state, copied_card, controller, announced)
+        hints = inspect_target_hints(state, copied_card, controller, announced, source_kind=stack_object_kind(state, copied_item))
     options = ["keep"]
     labels = {"keep": "Keep original target"}
     candidate_keys = {
@@ -995,6 +1057,7 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         "land_targets": "target_card_id", "artifact_targets": "target_card_id",
         "enchantment_targets": "target_card_id", "noncreature_permanent_targets": "target_card_id",
         "graveyard_creature_targets": "target_card_id", "graveyard_permanent_targets": "target_card_id",
+        'exile_card_targets': 'target_card_id',
         "stack_targets": "target_stack_id",
     }
     if trigger_clause:
@@ -1014,7 +1077,10 @@ def _offer_copy_target_choice(state: MatchState, controller: int, copied_item) -
         if target_key == "target_stack_id" and value == copied_item.id:
             continue
         option = f"{target_key}:{value}"
-        if option in options or (target_key == target_keys[0] and str(value) == str(announced[target_keys[0]])):
+        unchanged = (target_key == target_keys[0] and str(value) == str(announced[target_keys[0]])
+                     and (target_key != 'target_card_id' or announced_target_reference_matches(
+                         state, copied_payload.get('__announced_target_references'), (target_key,), value)))
+        if option in options or unchanged:
             continue
         proposed = {key: value for key, value in announced.items() if key not in target_keys}
         proposed[target_key] = value
@@ -1036,7 +1102,7 @@ def _offer_clause_copy_target_choice(
     remaining_indices: list[int] | None = None, slot_number: int = 1,
 ) -> None:
     from rules_engine.oracle_effects import clause_target_assignments, inspect_target_hints
-    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets, announced_target_reference_matches
 
     from rules_engine.targeting import stack_source_card
     copied_card = stack_source_card(state, copied_item)
@@ -1074,7 +1140,10 @@ def _offer_clause_copy_target_choice(
         for surface in surfaces[target_key]:
             for candidate in hints.get(surface, []):
                 value = candidate["id"]
-                if str(value) == str(old_value) or value == copied_item.id:
+                unchanged = (str(value) == str(old_value) and (
+                    target_key != 'target_card_id' or announced_target_reference_matches(
+                        state, copied_item.payload.get('__announced_target_references'), (target_key,), value)))
+                if unchanged or value == copied_item.id:
                     continue
                 proposed = {target_key: value}
                 if not (validate_cast_targets(hints, proposed)[0]
@@ -1102,7 +1171,7 @@ def _offer_divided_copy_target_choice(
     remaining_targets: list[str] | None = None, slot_number: int = 1, slot_total: int | None = None,
 ) -> None:
     from rules_engine.cast_choice import build_cast_hints, validate_cast_choice
-    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets
+    from rules_engine.targeting import validate_hexproof_shroud_targets, validate_protection_targets, announced_target_reference_matches
 
     announced = copied_item.payload["__announced_targets"]
     distribution = copied_item.payload["target_distribution"]
@@ -1130,7 +1199,11 @@ def _offer_divided_copy_target_choice(
         labels = {"keep": f"Keep {amount} damage on {target_name}"}
         for key, new_id, label in candidates:
             option = f"{key}:{new_id}"
-            if new_id in distribution or option in options:
+            replaces_stale = (new_id == old_id and key == 'target_card_id'
+                              and not announced_target_reference_matches(state,
+                                  copied_item.payload.get('__announced_target_references'),
+                                  ('target_distribution', old_id), old_id))
+            if (new_id in distribution and not replaces_stale) or option in options:
                 continue
             proposed = {**announced, "target_distribution": {new_id: amount}, "divide_total": amount}
             if not (validate_cast_choice(hints, proposed)[0]
@@ -1157,7 +1230,7 @@ def _offer_modal_copy_target_choice(
     remaining_modes: list[str] | None = None, slot_number: int = 1,
 ) -> None:
     from rules_engine.oracle_effects import inspect_target_hints
-    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets
+    from rules_engine.targeting import validate_cast_targets, validate_hexproof_shroud_targets, validate_protection_targets, announced_target_reference_matches
 
     announced = copied_item.payload["__announced_targets"]
     modes = list(remaining_modes) if remaining_modes is not None else list(announced.get("mode_texts") or [])
@@ -1189,7 +1262,11 @@ def _offer_modal_copy_target_choice(
         for surface, target_key in surfaces.items():
             for candidate in hints.get(surface, []):
                 value = candidate["id"]
-                if (target_key == key and str(value) == str(selected[key])) or value == copied_item.id:
+                unchanged = (target_key == key and str(value) == str(selected[key]) and (
+                    key != 'target_card_id' or announced_target_reference_matches(state,
+                        copied_item.payload.get('__announced_target_references'),
+                        ('mode_targets', mode, key), value)))
+                if unchanged or value == copied_item.id:
                     continue
                 proposed = {"mode_text": mode, target_key: value}
                 if not (validate_cast_targets(hints, proposed)[0]
@@ -1267,6 +1344,317 @@ def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
         state.log.append(f"{card.name} is exiled.")
 
 
+def exile_return_immediate(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+
+    target = payload.get('target_card_id')
+    card = state.cards.get(target)
+    policy = payload.get('return_control')
+    if card is None or controller not in state.players or policy not in {'owner', 'resolving_controller'}:
+        return
+    data = dict(payload)
+    if '__exiled_reference' not in data:
+        reference = {'incarnation': object_incarnation(card),
+                     'zone_change_sequence': card.zone_change_sequence}
+        if (reference != data.get('__announced_reference') or card.zone != Zone.BATTLEFIELD
+                or target not in state.players[card.controller].battlefield
+                or (data.get('requires_control') and card.controller != controller)
+                or (data.get('requires_nontoken') and card.is_token)):
+            return
+        exile_permanent(state, controller, {'target_card_id': target})
+        data['__exiled_reference'] = {'incarnation': object_incarnation(card),
+                                     'zone_change_sequence': card.zone_change_sequence}
+        data['__return_controller'] = card.owner if policy == 'owner' else controller
+    reference = {'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
+    if (card.zone != Zone.EXILE or target not in state.players[card.owner].exile
+            or reference != data['__exiled_reference'] or is_departed_token(card)
+            or battlefield_entry_prohibited(state, target)):
+        return
+    recipient = data['__return_controller']
+    from rules_engine.entry_copy import prepare as prepare_copies, projections, commit as commit_copies
+    if prepare_copies(state, controller, [card], 'exile_return_immediate', data,
+                      controllers={target: recipient}):
+        return
+    projected_cards = projections(state, data)
+    entry_card = projected_cards.get(target, card)
+    if pause_for_land_entries(state, controller, [target], 'exile_return_immediate', data,
+                              controllers={target: recipient}, projections=projected_cards):
+        return
+    from rules_engine.oracle_effects import _parse_count_token
+    from rules_engine.continuous import printed_abilities_suppressed
+    entry_counts = {}
+    projected = copy.copy(entry_card)
+    projected.zone, projected.controller = Zone.BATTLEFIELD, recipient
+    projection = copy.copy(state)
+    projection.cards = {**state.cards, target: projected}
+    clauses = '' if printed_abilities_suppressed(projection, target) else entry_card.oracle_text
+    for amount, kind in re.findall(
+            r'^This (?:creature|artifact|enchantment|permanent) enters with '
+            r'(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
+            r'([+-]\d+/[+-]\d+|[a-z][a-z -]*) counters? on it\.$',
+            clauses, re.I | re.M):
+        entry_counts[kind.lower()] = entry_counts.get(kind.lower(), 0) + _parse_count_token(amount.lower())
+    data['counters'] = entry_counts
+    if prepare_counter_entries(state, controller, [card], 'exile_return_immediate', data,
+                               controllers={target: recipient}, projections=projected_cards):
+        return
+    commit_copies(state, data, [target])
+    state.players[card.owner].exile.remove(target)
+    card.move_to_zone(Zone.BATTLEFIELD)
+    card.controller = recipient
+    card.summoning_sick = True
+    card.entered_turn = state.turn
+    state.players[recipient].battlefield.append(target)
+    apply_entry_choice(state, recipient, card,
+                       choice=(data.get('__entry_choices') or {}).get(target, 'tapped'))
+    assign_static_order_on_battlefield_entry(state, target)
+    commit_entry_counters(state, card, data)
+    state.log.append(f'{card.name} returns to the battlefield under {state.players[recipient].name}\'s control.')
+    emit_event(state, 'enters_battlefield', {'card_id': target, 'controller': recipient})
+
+
+def exile_return_batch(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.events import flush_staged_triggers
+    from rules_engine.oracle_effects import _parse_count_token
+    from rules_engine.continuous import printed_abilities_suppressed
+
+    data = dict(payload)
+    if '__exiled_references' not in data:
+        cohort = []
+        for cid in dict.fromkeys(data.get('target_card_ids') or []):
+            card = state.cards.get(cid)
+            if (card is not None and card.zone == Zone.BATTLEFIELD and card.controller == controller
+                    and cid in state.players[controller].battlefield
+                    and set(effective_types(state, card)).intersection({'Artifact', 'Creature', 'Land'})
+                    and data.get('__announced_references', {}).get(cid) == {
+                        'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}):
+                cohort.append(card)
+        if not cohort:
+            return
+        leaves = [{'card_id': card.id, 'controller': card.controller, 'previous_reference': {
+            'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}}
+            for card in cohort]
+        for card in cohort:
+            capture_last_known_battlefield(state, card.id)
+        data['__return_batch_staging'] = not state.trigger_staging
+        if data['__return_batch_staging']:
+            state.trigger_staging = True
+            state.trigger_staging_event = 'immediate_return_batch'
+        # Every leave observer sees the complete PRE battlefield, not a partial departure.
+        emit_event_batch(state, 'leaves_battlefield', leaves)
+        for card in cohort:
+            state.players[card.controller].battlefield.remove(card.id)
+            state.players[card.owner].exile.append(card.id)
+            card.move_to_zone(Zone.EXILE)
+        data['__exiled_references'] = {card.id: {
+            'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
+            for card in cohort}
+    cards = [state.cards[cid] for cid, reference in data['__exiled_references'].items()
+             if cid in state.cards and state.cards[cid].zone == Zone.EXILE
+             and cid in state.players[state.cards[cid].owner].exile
+             and reference == {'incarnation': object_incarnation(state.cards[cid]),
+                               'zone_change_sequence': state.cards[cid].zone_change_sequence}
+             and not is_departed_token(state.cards[cid]) and not battlefield_entry_prohibited(state, cid)]
+    recipients = {card.id: controller for card in cards}
+    if pause_for_land_entries(state, controller, [card.id for card in cards], 'exile_return_batch', data,
+                              controllers=recipients):
+        return
+    seeds = {}
+    for card in cards:
+        projected = copy.copy(card)
+        projected.zone, projected.controller = Zone.BATTLEFIELD, controller
+        projection = copy.copy(state)
+        projection.cards = {**state.cards, card.id: projected}
+        clauses = '' if printed_abilities_suppressed(projection, card.id) else card.oracle_text
+        counts = {}
+        for amount, kind in re.findall(
+                r'^This (?:creature|artifact|enchantment|permanent) enters with '
+                r'(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+) '
+                r'([+-]\d+/[+-]\d+|[a-z][a-z -]*) counters? on it\.$', clauses, re.I | re.M):
+            counts[kind.lower()] = counts.get(kind.lower(), 0) + _parse_count_token(amount.lower())
+        seeds[card.id] = {'counters': counts}
+    if cards and prepare_counter_entries(state, controller, cards, 'exile_return_batch', data,
+                                         controllers=recipients, entry_payloads=seeds):
+        return
+    # Incoming static abilities are not residents when simultaneous entry choices apply.
+    for card in cards:
+        apply_entry_choice(state, controller, card,
+                           choice=(data.get('__entry_choices') or {}).get(card.id, 'tapped'))
+    counter_events = []
+    for card in cards:
+        state.players[card.owner].exile.remove(card.id)
+        card.move_to_zone(Zone.BATTLEFIELD)
+        card.controller = controller
+        card.summoning_sick = True
+        card.entered_turn = state.turn
+        state.players[controller].battlefield.append(card.id)
+        assign_static_order_on_battlefield_entry(state, card.id)
+        commit_entry_counters(state, card, data, _event_receipts=counter_events)
+        state.log.append(f'{card.name} returns to the battlefield under {state.players[controller].name}\'s control.')
+    # Entry counter observers see the complete board and all committed counters.
+    emit_event_batch(state, 'saga_lore_added', counter_events)
+    emit_event_batch(state, 'enters_battlefield', [
+        {'card_id': card.id, 'controller': controller} for card in cards])
+    if data.get('__return_batch_staging') and not (state.pending_mechanic_choice or state.pending_replacement_choice):
+        flush_staged_triggers(state)
+
+
+def _exile_entry_json(value):
+    import json
+    from rules_engine.action_validation import ActionRejected
+    try:
+        return json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False)
+    except (TypeError, ValueError) as error:
+        raise ActionRejected('Malformed exile-entry JSON context') from error
+
+
+def _exile_entry_plan_data(plan):
+    from dataclasses import asdict
+    data = asdict(plan)
+    data['origin'] = plan.origin.value
+    data['destination'] = plan.destination.value
+    return data
+
+
+def _exile_entry_source_reference(state, frame, controller):
+    from dataclasses import fields
+    from game_state.state import StackItem
+    from rules_engine.action_validation import ActionRejected
+    if (type(frame) is not dict or set(frame) != {field.name for field in fields(StackItem)}
+            or type(frame.get('id')) is not str or not frame['id']
+            or type(frame.get('source_card_id')) is not str or not frame['source_card_id']
+            or type(frame.get('controller')) is not int or frame['controller'] != controller
+            or controller not in state.players
+            or type(frame.get('label')) is not str or not frame['label']
+            or type(frame.get('targets')) is not list
+            or any(type(target) is not str for target in frame['targets'])
+            or frame.get('effect_key') != 'put_exiled_card_into_graveyard'
+            or type(frame.get('payload')) is not dict):
+        raise ActionRejected('Invalid retained exile-entry source frame')
+    data = frame['payload']
+    if '__stack_copy_kind' in data:
+        snapshot = data.get('__copied_card')
+        snapshot_keys = {'name', 'types', 'type_line', 'mana_cost', 'oracle_text', 'power',
+            'toughness', 'printed_power', 'printed_toughness', 'loyalty', 'keywords', 'colors',
+            'image_uri', 'layout', 'card_faces', 'selected_face_index', 'bestow_characteristics'}
+        if (data['__stack_copy_kind'] != 'spell' or type(data.get('__copied_card')) is not dict
+                or set(snapshot) != snapshot_keys or type(snapshot.get('name')) is not str
+                or type(snapshot.get('types')) is not list
+                or any(type(kind) is not str for kind in snapshot['types'])
+                or not {'Instant', 'Sorcery'}.intersection(snapshot['types'])
+                or type(data.get('__copied_from_stack_id')) is not str):
+            raise ActionRejected('Invalid retained exile-entry copied source')
+        return 'copied_spell', None
+    source = state.cards.get(frame['source_card_id'])
+    if source is None or source.zone != Zone.STACK:
+        raise ActionRejected('Exile-entry physical source is no longer on the stack')
+    reference = {'incarnation': object_incarnation(source),
+                 'zone_change_sequence': source.zone_change_sequence}
+    if any(type(value) is not int or value < 0 for value in reference.values()):
+        raise ActionRejected('Invalid exile-entry physical source reference')
+    return 'physical_spell', reference
+
+
+def _exile_entry_target(state, frame, references):
+    from rules_engine.action_validation import ActionRejected
+    from rules_engine.targeting import validate_announced_target_references, announced_target_reference_matches
+    data = frame['payload']
+    announced = data.get('__announced_targets')
+    if (type(announced) is not dict or type(announced.get('target_card_id')) is not str
+            or data.get('target_card_id') != announced['target_card_id']
+            or _exile_entry_json(references) != _exile_entry_json(data.get('__announced_target_references'))):
+        raise ActionRejected('Exile-entry announced target changed')
+    validate_announced_target_references(announced, references)
+    cid = announced['target_card_id']
+    card = state.cards.get(cid)
+    if (card is None or card.owner not in state.players or card.zone != Zone.EXILE
+            or cid not in state.players[card.owner].exile or card.exile_face_down is not False
+            or is_departed_token(card)
+            or not announced_target_reference_matches(state, references, ('target_card_id',), cid)):
+        raise ActionRejected('Exile-entry selected object is no longer available')
+    return card
+
+
+def put_exiled_card_into_graveyard(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.replacement import graveyard_entry_plans
+    from rules_engine.action_validation import ActionRejected
+    frame = payload.get('__resolving_item')
+    kind, source_reference = _exile_entry_source_reference(state, frame, controller)
+    if payload.get('__source_card_id') != frame['source_card_id']:
+        raise ActionRejected('Exile-entry frame has a different source')
+    references = payload.get('__announced_target_references')
+    card = _exile_entry_target(state, frame, references)
+    plans = graveyard_entry_plans(state, card.id)
+    if len(plans) == 1:
+        plan = plans[0]
+        cause = prepare_graveyard_entry_causes(state, [plan])[card.id]
+        execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
+        return
+    candidates = {plan.replacement_source_id: _exile_entry_plan_data(plan) for plan in plans}
+    if (not plans or len(candidates) != len(plans)
+            or any(type(source) is not str or source not in state.cards for source in candidates)
+            or state.pending_replacement_choice):
+        raise ActionRejected('Invalid exile-entry replacement candidates')
+    state.pending_replacement_choice = {
+        'resume_kind': 'exile_graveyard_entry', 'player_id': card.owner,
+        'event': 'graveyard_entry', 'target_card_id': card.id, 'stack_id': frame['id'],
+        'continuation_controller': controller,
+        'options': [{'source_id': plan.replacement_source_id,
+                     'name': state.cards[plan.replacement_source_id].name,
+                     'destination': plan.destination.value} for plan in plans],
+        'exile_graveyard_context': {
+            'version': 1, 'resolving_frame': copy.deepcopy(frame),
+            'source_kind': kind, 'physical_source_reference': source_reference,
+            'target_references': copy.deepcopy(references), 'candidates': candidates,
+        },
+    }
+    state.priority_player = card.owner
+    state.passed_priority = set()
+
+
+def finish_exiled_graveyard_replacement(state: MatchState, player_id: int, source_id: str) -> None:
+    from rules_engine.action_validation import ActionRejected
+    from rules_engine.replacement import graveyard_entry_plans
+    pending = state.pending_replacement_choice
+    context = pending.get('exile_graveyard_context') if type(pending) is dict else None
+    keys = {'version', 'resolving_frame', 'source_kind', 'physical_source_reference',
+            'target_references', 'candidates'}
+    if (type(pending) is not dict or pending.get('resume_kind') != 'exile_graveyard_entry'
+            or type(pending.get('player_id')) is not int
+            or type(player_id) is not int or pending.get('player_id') != player_id
+            or pending.get('event') != 'graveyard_entry'
+            or type(context) is not dict or set(context) != keys
+            or type(context.get('version')) is not int or context['version'] != 1
+            or type(pending.get('continuation_controller')) is not int
+            or type(source_id) is not str or not source_id):
+        raise ActionRejected('Invalid retained exile-entry choice context')
+    frame = context['resolving_frame']
+    kind, reference = _exile_entry_source_reference(state, frame, pending['continuation_controller'])
+    if (_exile_entry_json(frame) != _exile_entry_json(pending.get('resolving_item'))
+            or pending.get('stack_id') != frame['id']
+            or kind != context['source_kind']
+            or _exile_entry_json(reference) != _exile_entry_json(context['physical_source_reference'])):
+        raise ActionRejected('Exile-entry resolving source changed')
+    card = _exile_entry_target(state, frame, context['target_references'])
+    if card.owner != player_id or pending.get('target_card_id') != card.id:
+        raise ActionRejected('Exile-entry affected owner changed')
+    plans = graveyard_entry_plans(state, card.id)
+    candidates = {plan.replacement_source_id: _exile_entry_plan_data(plan) for plan in plans}
+    options = [{'source_id': plan.replacement_source_id,
+                'name': state.cards[plan.replacement_source_id].name,
+                'destination': plan.destination.value} for plan in plans]
+    if (len(candidates) != len(plans) or len(plans) < 2
+            or _exile_entry_json(candidates) != _exile_entry_json(context['candidates'])
+            or _exile_entry_json(options) != _exile_entry_json(pending.get('options'))
+            or source_id not in candidates):
+        raise ActionRejected('Exile-entry replacement candidates changed')
+    chosen = next(plan for plan in plans if plan.replacement_source_id == source_id)
+    cause = prepare_graveyard_entry_causes(state, [chosen])[card.id]
+    state.pending_replacement_choice = None
+    execute_graveyard_entry(state, chosen, prevalidated=True, _prepared_cause=cause)
+
+
 def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) -> None:
     """Return a battlefield permanent to its owner's hand without changing ownership."""
     target = payload.get("target_card_id")
@@ -1289,15 +1677,54 @@ def return_permanent_to_hand(state: MatchState, controller: int, payload: dict) 
     state.log.append(f"{card.name} returns to its owner's hand.")
 
 
+def shuffle_graveyard_into_library(state: MatchState, controller: int, payload: dict) -> None:
+    from game_state.state import StackItem
+    from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
+    from rules_engine.shuffle_actions import shuffle_library
+
+    owner = payload.get('graveyard_owner')
+    frame = payload.get('__resolving_item')
+    if type(owner) is not int or owner not in state.players or not isinstance(frame, dict):
+        raise ValueError('Graveyard shuffle requires an owner and actual resolving item')
+    item = StackItem(**frame)
+    if (type(controller) is not int or type(item.controller) is not int
+            or item.source_card_id not in state.cards or item.controller != controller
+            or controller not in state.players):
+        raise ValueError('Graveyard shuffle requires its retained resolving source')
+    player = state.players[owner]
+    ids = list(player.graveyard)
+    if (len(set(ids)) != len(ids) or any(cid not in state.cards
+            or state.cards[cid].zone != Zone.GRAVEYARD or state.cards[cid].owner != owner
+            or any(cid in getattr(other, zone.value, [])
+                   for other in state.players.values() for zone in Zone
+                   if other.id != owner or zone != Zone.GRAVEYARD) for cid in ids)):
+        raise ValueError('Graveyard shuffle requires unique current graveyard membership')
+    captured = capture_graveyard_departures(state, ids)
+    for cid in ids:
+        player.graveyard.remove(cid)
+        player.library.append(cid)
+        state.cards[cid].move_to_zone(Zone.LIBRARY)
+    emit_graveyard_departures(state, captured)
+    shuffle_library(state, owner, resolving_item=frame)
+
+
 def mill_cards(state: MatchState, controller: int, payload: dict) -> None:
-    from rules_engine.zone_actions import put_into_graveyard
+    from rules_engine.replacement import select_graveyard_entry_plan
     player = state.players[int(payload.get('target_player', controller))]
+    count = min(len(player.library), max(0, int(payload.get('amount', 0))))
+    # Retain the simultaneous top set even if a replacement shuffles the library.
+    ids = list(reversed(player.library[-count:])) if count else []
+    plans = {cid: select_graveyard_entry_plan(state, cid) for cid in ids}
+    causes = prepare_graveyard_entry_causes(state, plans.values())
     events = []
-    for _ in range(min(len(player.library), max(0, int(payload.get('amount', 0))))):
-        cid = player.library.pop()
-        put_into_graveyard(state, cid)
+    entry_receipts = []
+    for cid in ids:
+        execute_graveyard_entry(state, plans[cid], prevalidated=True,
+                               _prepared_cause=causes[cid], _entry_receipts=entry_receipts)
         events.append({'card_id': cid, 'controller': player.id})
         state.log.append(f'{player.name} mills {state.cards[cid].name}.')
+    if entry_receipts:
+        emit_event_batch(state, 'enters_graveyard', entry_receipts)
     emit_event_batch(state, 'mill', events)
 
 
@@ -1364,10 +1791,31 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     controller's land-play allowance and the effect may enter the land tapped.
     """
     player = state.players[controller]
-    eligible = [cid for cid in player.hand if cid in state.cards and "Land" in effective_types(state, state.cards[cid]) and not is_departed_token(state.cards[cid])]
-    land_id = payload.get("land_id") if payload.get("land_id") in eligible else next(iter(eligible), None)
-    if not land_id:
+    eligible = [cid for cid in player.hand if cid in state.cards
+                and state.cards[cid].owner == controller and state.cards[cid].zone == Zone.HAND
+                and "Land" in effective_types(state, state.cards[cid])
+                and not is_departed_token(state.cards[cid])]
+    if not eligible:
         state.log.append(f"{player.name} has no land in hand for the effect.")
+        return
+    land_id = payload.get("land_id")
+    if land_id is None:
+        state.pending_mechanic_choice = {
+            'kind': 'land_from_hand', 'player_id': controller, 'controller': controller,
+            'options': eligible, 'count': 1, 'min_count': 0 if payload.get('optional') is True else 1,
+            'land_references': {cid: [object_incarnation(state.cards[cid]),
+                                     state.cards[cid].zone_change_sequence] for cid in eligible},
+            'effect_key': 'put_land_from_hand', 'effect_payload': copy.deepcopy(payload),
+            'label': 'Choose a land from your hand to put onto the battlefield',
+        }
+        state.priority_player = controller
+        state.passed_priority = set()
+        return
+    if land_id not in eligible:
+        return
+    reference = payload.get('__land_reference')
+    if reference is not None and reference != [object_incarnation(state.cards[land_id]),
+                                               state.cards[land_id].zone_change_sequence]:
         return
     if pause_for_land_entries(state, controller, [land_id], "put_land_from_hand", {**payload, "land_id": land_id}):
         return
@@ -1375,7 +1823,7 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     apply_entry_choice(state, controller, land, choice=(payload.get("__entry_choices") or {}).get(land_id, "tapped"), effect_tapped=bool(payload.get("tapped", False)))
     player.hand.remove(land_id)
     player.battlefield.append(land_id)
-    land.zone = Zone.BATTLEFIELD
+    land.move_to_zone(Zone.BATTLEFIELD)
     land.controller = controller
     land.summoning_sick = True
     land.entered_turn = state.turn
@@ -1432,11 +1880,15 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
         if target in player.graveyard:
             source_graveyard = player
             break
-    if source_graveyard is None or is_departed_token(card) or battlefield_entry_prohibited(state, target):
+    if source_graveyard is None or is_departed_token(card):
         return
     # Lock the graveyard characteristics before any resumable entry choice.
     if payload.get('lose_life_equal_to_mana_value'):
         payload.setdefault('__return_life_loss', mana_value(card.mana_cost or ''))
+    if battlefield_entry_prohibited(state, target):
+        if payload.get('lose_life_equal_to_mana_value'):
+            lose_life(state, controller, {'target_player': controller, 'amount': payload['__return_life_loss']})
+        return
     if prepare_counter_entries(state, controller, [card], 'return_creature_from_graveyard_to_battlefield', payload):
         return
     from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
@@ -1446,7 +1898,7 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
     battlefield_owner.battlefield.append(target)
     card.move_to_zone(Zone.BATTLEFIELD)
     card.controller = controller
-    card.tapped = False
+    card.tapped = payload.get('tapped') is True
     card.summoning_sick = True
     card.entered_turn = state.turn
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
@@ -1460,36 +1912,102 @@ def return_creature_from_graveyard_to_battlefield(state: MatchState, controller:
 
 def return_permanent_from_graveyard_to_battlefield(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.loyalty_instructions import prepare_return_entry, return_context_matches
     target = payload.get("target_card_id")
-    if not target or target not in state.cards:
+    if not target or target not in state.cards or type(controller) is not int or controller not in state.players:
         return
     card = state.cards[target]
+    if not return_context_matches(state, controller, payload):
+        return
+    reference = {'incarnation': object_incarnation(card), 'zone_change_sequence': card.zone_change_sequence}
+    if '__graveyard_reference' in payload and (type(payload['__graveyard_reference']) is not dict
+            or any(type(value) is not int for value in payload['__graveyard_reference'].values())
+            or payload['__graveyard_reference'] != reference):
+        return
+    payload = {**payload, '__graveyard_reference': reference}
     source_graveyard = None
     for player in state.players.values():
         if target in player.graveyard:
             source_graveyard = player
             break
-    if source_graveyard is None or is_departed_token(card) or battlefield_entry_prohibited(state, target):
+    if (source_graveyard is None or card.zone != Zone.GRAVEYARD or is_departed_token(card)
+            or battlefield_entry_prohibited(state, target)
+            or not set(effective_types(state, card)) & {'Creature', 'Land', 'Artifact', 'Enchantment', 'Planeswalker', 'Battle'}
+            or set(effective_types(state, card)) & {'Instant', 'Sorcery'}):
         return
-    if pause_for_land_entries(state, controller, [target], "return_permanent_from_graveyard_to_battlefield", payload):
+    projected = {}
+    copy_return = payload.get('__loyalty_return_context', {}).get('kind') == 'sacrifice'
+    if copy_return:
+        from rules_engine.entry_copy import prepare as prepare_copies, projections, commit as commit_copies
+        if prepare_copies(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield',
+                          payload, controllers={target: controller}):
+            return
+        projected = projections(state, payload)
+    if not prepare_return_entry(state, controller, projected.get(target, card), payload):
         return
-    if prepare_counter_entries(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield', payload):
+    if copy_return:
+        from rules_engine.graveyard_batch_entry import _entry_seeds
+        seeds = _entry_seeds(state, [projected.get(target, card)], controllers={target: controller})
+    if prepare_counter_entries(state, controller, [card], 'return_permanent_from_graveyard_to_battlefield', payload,
+                               **({'projections': projected, 'entry_payloads': seeds} if copy_return else {})):
         return
     from rules_engine.resource_events import capture_graveyard_departures, emit_graveyard_departures
     departures = capture_graveyard_departures(state, [target])
-    apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(target, "tapped"))
+    if copy_return:
+        commit_copies(state, payload, [target])
+    apply_entry_choice(state, controller, card, choice=(payload.get("__entry_choices") or {}).get(target, "tapped"),
+                       effect_tapped=payload.get('tapped') is True)
     source_graveyard.graveyard.remove(target)
     battlefield_owner = state.players[controller]
     battlefield_owner.battlefield.append(target)
-    card.zone = Zone.BATTLEFIELD
+    card.move_to_zone(Zone.BATTLEFIELD)
     card.controller = controller
     card.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, target)
     commit_entry_counters(state, card, payload)
     card.summoning_sick = True
+    attachment = payload.get('__graveyard_attachment')
+    if attachment is not None:
+        from rules_engine.attachments import attach_if_legal
+        if attachment['id'].startswith('player:'):
+            card.attached_to = attachment['id']
+        elif not attach_if_legal(state, target, attachment['id']):
+            raise ValueError('Previously qualified graveyard Aura attachment became unavailable')
     state.log.append(f"{card.name} returns from graveyard to the battlefield under {state.players[controller].name}'s control.")
     emit_graveyard_departures(state, departures)
     emit_event(state, "enters_battlefield", {"card_id": target, "controller": controller})
+
+
+def _search_resolution_context(state: MatchState, controller: int, payload: dict):
+    from game_state.state import StackItem
+
+    owner = payload.get('target_player', controller)
+    if type(owner) is not int or owner not in state.players:
+        raise ValueError('Unknown searching player')
+    frame = payload.get('__resolving_item')
+    if 'target_player' in payload and frame is None:
+        raise ValueError('Targeted search requires its genuine resolving item')
+    if frame is None:
+        return owner, controller, None
+    if not isinstance(frame, dict):
+        raise ValueError('Invalid retained search resolution')
+    item = StackItem(**frame)
+    if (type(item.controller) is not int or item.controller not in state.players
+            or item.source_card_id not in state.cards):
+        raise ValueError('Search requires a retained source and controller')
+    # Preflight the central shuffle helper's retained-trigger contract before moving cards.
+    if payload.get('shuffle'):
+        from rules_engine.targeting import stack_object_kind
+        data = item.payload or {}
+        if data.get('__trigger_event') == 'enters_graveyard' or '__trigger_source_reference' in data:
+            reference = data.get('__trigger_source_reference')
+            if (stack_object_kind(state, item) != 'triggered'
+                    or data.get('__trigger_event') != 'enters_graveyard'
+                    or not isinstance(reference, dict)
+                    or set(reference) != {'incarnation', 'zone_change_sequence'}
+                    or any(type(value) is not int or value < 0 for value in reference.values())):
+                raise ValueError('Search has an invalid retained shuffle reference')
+    return owner, item.controller, frame
 
 
 def search_library(state: MatchState, controller: int, payload: dict) -> None:
@@ -1501,39 +2019,68 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     limit = int(payload.get("count", 0) or 0)
     mv_max = payload.get("mv_max")
     mv_max = int(mv_max) if mv_max is not None else None
-    player = state.players[controller]
+    owner, effect_controller, frame = _search_resolution_context(state, controller, payload)
+    player = state.players[owner]
+
+    def retain_continuation():
+        pending = state.pending_mechanic_choice or state.pending_replacement_choice
+        if pending:
+            pending.setdefault('continuation_controller', effect_controller)
+            if frame is not None:
+                pending.setdefault('resolving_item', frame)
+
     if payload.get('optional') and not payload.get('__search_accepted'):
-        if controller in state.mechanic_choice_players:
+        if owner in state.mechanic_choice_players:
             state.pending_mechanic_choice = {
-                'kind': 'optional_search', 'player_id': controller, 'count': 1,
+                'kind': 'optional_search', 'player_id': owner, 'count': 1,
                 'options': ['search', 'decline'], 'option_labels': {'search': 'Search library', 'decline': 'Decline search'},
                 'effect_payload': payload, 'label': 'You may search your library',
             }
-            state.priority_player = controller
+            retain_continuation()
+            state.priority_player = owner
             state.passed_priority = set()
             return
     if not subtype:
         return
     if (payload.get("selected_card_ids") is None
-            and (controller in state.mechanic_choice_players
-                 or (state.replacement_choice_required and controller in state.replacement_choice_players))):
+            and (owner in state.mechanic_choice_players
+                 or (state.replacement_choice_required and owner in state.replacement_choice_players))):
         eligible = [cid for cid in player.library if search_card_matches(state.cards[cid], subtype, mv_max)]
         if eligible:
             state.pending_mechanic_choice = {
-                "kind": "search_library", "player_id": controller,
+                "kind": "search_library", "player_id": owner,
                 "options": eligible, "count": min(limit, len(eligible)) if limit else len(eligible),
                 "min_count": min(limit, len(eligible)) if subtype == "card" and not payload.get("up_to") else 0,
-                "library_ids": list(player.library), "effect_payload": payload,
+                "library_ids": list(player.library), "effect_payload": {
+                    **payload, '__search_references': {
+                        cid: [object_incarnation(state.cards[cid]), state.cards[cid].zone_change_sequence]
+                        for cid in eligible}},
                 "effect_key": "search_library",
                 "label": ("Search your library: first selection enters tapped, remaining cards go to hand"
                           if destination == "split_battlefield_hand" else
                           "Search your library: choose the required card" if subtype == "card" and not payload.get("up_to") else
                           "Search your library (you may fail to find a matching card)"),
             }
-            state.priority_player = controller
+            retain_continuation()
+            state.priority_player = owner
             state.passed_priority = set()
             return
     selected = payload.get("selected_card_ids")
+    if selected is not None:
+        if (not isinstance(selected, list) or any(not isinstance(cid, str) for cid in selected)
+                or len(selected) != len(set(selected)) or limit and len(selected) > limit
+                or any(cid not in player.library or cid not in state.cards
+                       or state.cards[cid].zone != Zone.LIBRARY or state.cards[cid].owner != owner
+                       or not search_card_matches(state.cards[cid], subtype, mv_max)
+                       for cid in selected)):
+            raise ValueError('Unavailable library search selection')
+        references = payload.get('__search_references')
+        if references is not None and any(
+                references.get(cid) != [object_incarnation(state.cards[cid]), state.cards[cid].zone_change_sequence]
+                for cid in selected):
+            raise ValueError('Library search selection changed incarnation')
+        if subtype == 'card' and not payload.get('up_to') and len(selected) < min(limit, len(player.library)):
+            raise ValueError('Required library search selection is missing')
     selected_ids = list(selected) if isinstance(selected, list) else None
     candidates = selected_ids if selected_ids is not None else list(player.library)
     chosen = []
@@ -1546,10 +2093,12 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
                 break
     entering = chosen[:1] if destination == "split_battlefield_hand" else chosen if destination == "battlefield" else []
     entering = [cid for cid in entering if not battlefield_entry_prohibited(state, cid)]
-    if pause_for_land_entries(state, controller, entering, "search_library", {**payload, "selected_card_ids": chosen}):
+    if pause_for_land_entries(state, owner, entering, "search_library", {**payload, "selected_card_ids": chosen}):
+        retain_continuation()
         return
-    if entering and prepare_counter_entries(state, controller, [state.cards[cid] for cid in entering],
+    if entering and prepare_counter_entries(state, owner, [state.cards[cid] for cid in entering],
                                            'search_library', {**payload, 'selected_card_ids': chosen}):
+        retain_continuation()
         return
     found: list[str] = []
     entry_events = []
@@ -1560,10 +2109,10 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             continue
         choice = (payload.get("__entry_choices") or {}).get(cid, "tapped")
         player.library.remove(cid)
-        _place_searched_card(state, controller, cid, zone, tapped=bool(payload.get("tapped")),
+        _place_searched_card(state, owner, cid, zone, tapped=bool(payload.get("tapped")),
                              entry_choice=choice, emit_entry=destination != "battlefield", entry_payload=payload)
         if destination == "battlefield":
-            entry_events.append({"card_id": cid, "controller": controller})
+            entry_events.append({"card_id": cid, "controller": owner})
         found.append(state.cards[cid].name)
         placed.append(cid)
     if entry_events:
@@ -1577,10 +2126,10 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
             from game_state.observations import observe_cards
             observe_cards(state, placed)
         detail = f": {', '.join(found)}" if public_names else ""
-        state.log.append(f"{state.players[controller].name} searched library and found {len(found)} card(s){detail}.")
+        state.log.append(f"{player.name} searched library and found {len(found)} card(s){detail}.")
     if payload.get("shuffle"):
-        state.rng.shuffle(player.library)
-        state.log.append(f"{player.name} shuffles their library.")
+        from rules_engine.shuffle_actions import shuffle_library
+        shuffle_library(state, owner, resolving_item=frame)
 
 
 def _place_searched_card(
@@ -1621,6 +2170,9 @@ def _place_searched_card(
 
 
 def create_token(state: MatchState, controller: int, payload: dict) -> None:
+    if not isinstance(payload, dict):
+        from rules_engine.action_validation import ActionRejected
+        raise ActionRejected('Token copy requires retained physical and copiable characteristics')
     from game_state.state import CardInstance
     from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
     from rules_engine.domain import basic_land_type_count
@@ -1744,6 +2296,14 @@ def incubate(state: MatchState, controller: int, payload: dict) -> None:
     })
 
 
+def token_copy_descriptor(target) -> dict:
+    from rules_engine.copiable_values import values
+    data = values(target)
+    data['types'] = list(dict.fromkeys([*data['types'], 'Token']))
+    data.update(colors=data['colors'] or [], image_uri=target.image_uri)
+    return data
+
+
 def create_token_copy(state: MatchState, controller: int, payload: dict) -> None:
     target_id = payload.get("target_card_id")
     source_id = payload.get("__source_card_id")
@@ -1756,14 +2316,8 @@ def create_token_copy(state: MatchState, controller: int, payload: dict) -> None
     keywords = list(target.keywords or [])
     if payload.get("grant_haste") and "haste" not in {value.lower() for value in keywords}:
         keywords.append("haste")
-    from rules_engine.type_effects import copiable_types
     create_token(state, controller, {
-        "name": target.name, "types": list(dict.fromkeys([*copiable_types(target), "Token"])),
-        "mana_cost": target.mana_cost, "type_line": target.type_line,
-        "power": target.power, "toughness": target.toughness,
-        "printed_power": target.printed_power, "printed_toughness": target.printed_toughness,
-        "oracle_text": target.oracle_text, "keywords": keywords,
-        "colors": target.colors or [], "image_uri": target.image_uri,
+        **token_copy_descriptor(target), "keywords": keywords,
         "sacrifice_next_end_step": bool(payload.get("sacrifice_next_end_step")),
     })
 
@@ -1939,6 +2493,10 @@ def look_top_choose(state: MatchState, controller: int, payload: dict) -> None:
 
 def transform_if_top_matches(state: MatchState, controller: int, payload: dict) -> None:
     """Reveal the top card and transform the source when its type condition passes."""
+    if payload.get('optional_reveal'):
+        from rules_engine.optional_reveal import begin_reveal
+        begin_reveal(state, controller, payload)
+        return
     target_id = payload.get("target_card_id")
     player = state.players[controller]
     if not target_id or target_id not in state.cards or not player.library:
@@ -2032,6 +2590,55 @@ def exile_return_transformed(state: MatchState, controller: int, payload: dict) 
     commit_entry_counters(state, card, payload)
     state.log.append(f"{card.name} returns to the battlefield transformed.")
     emit_event(state, "enters_battlefield", {"card_id": target_id, "controller": controller})
+
+
+def reveal_top_conditional(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.granted_target_triggers import _reference
+    from rules_engine.entry_counters import prepare_counter_entries, commit_entry_counters
+    from rules_engine.graveyard_permissions import battlefield_entry_prohibited
+    instruction = payload['instruction']
+    condition, destination, otherwise = instruction
+    if (otherwise != 'hand' or destination not in {'hand', 'battlefield'}
+            or destination == 'battlefield' and condition != 'Land'):
+        raise ValueError('Unqualified conditional reveal entry instruction')
+    player = state.players[controller]
+    data = copy.deepcopy(payload)
+    reference = data.get('__revealed_card_reference')
+    if reference is None:
+        if not player.library:
+            return
+        card = state.cards[player.library[-1]]
+        reference = _reference(card)
+        data['__revealed_card_reference'] = reference
+        data['__revealed_destination'] = destination if condition in effective_types(state, card) else otherwise
+        state.log.append(f'{player.name} reveals {card.name} from the top of their library.')
+    card = state.cards.get(reference['card_id'])
+    if (card is None or card.zone != Zone.LIBRARY or card.id not in player.library
+            or _reference(card) != reference):
+        return
+    if data['__revealed_destination'] == 'hand':
+        player.library.remove(card.id)
+        card.move_to_zone(Zone.HAND)
+        player.hand.append(card.id)
+        state.log.append(f'{player.name} puts {card.name} into their hand.')
+        return
+    if battlefield_entry_prohibited(state, card.id):
+        return
+    if pause_for_land_entries(state, controller, [card.id], 'reveal_top_conditional', data):
+        return
+    if prepare_counter_entries(state, controller, [card], 'reveal_top_conditional', data):
+        return
+    apply_entry_choice(state, controller, card, choice=(data.get('__entry_choices') or {}).get(card.id, 'tapped'))
+    player.library.remove(card.id)
+    card.move_to_zone(Zone.BATTLEFIELD)
+    card.controller = controller
+    card.summoning_sick = True
+    card.entered_turn = state.turn
+    player.battlefield.append(card.id)
+    assign_static_order_on_battlefield_entry(state, card.id)
+    commit_entry_counters(state, card, data)
+    emit_event(state, 'enters_battlefield', {'card_id': card.id, 'controller': controller})
+    state.log.append(f'{player.name} puts {card.name} onto the battlefield.')
 
 
 def reveal_defending_top_land(state: MatchState, controller: int, payload: dict) -> None:
@@ -2130,19 +2737,74 @@ def add_counters(state: MatchState, controller: int, payload: dict) -> None:
 
 def add_counters_each_creature(state: MatchState, controller: int, payload: dict) -> None:
     from effects.registry import resolve_effect
+    recipients = payload.get('recipients', 'controller')
+    if recipients not in {'controller', 'opponents'}:
+        return
+    player_ids = [controller] if recipients == 'controller' else [pid for pid in state.players if pid != controller]
     resolve_effect(state, controller, 'effect_sequence', {'effects': [
         {'effect_key': 'add_counters', 'payload': {**payload, 'target_card_id': cid,
                                                 'effect_timestamp': object_incarnation(state.cards[cid])}}
-        for cid in list(state.players[controller].battlefield)
+        for pid in player_ids for cid in list(state.players[pid].battlefield)
         if cid in state.cards and 'Creature' in effective_types(state, state.cards[cid])
     ]})
 
 
+def retained_next_creature_entry_origin(state, controller, payload):
+    """Retain native provenance, not a certificate of upstream instruction support."""
+    from copy import deepcopy
+    frame = payload.get('__resolving_item')
+    if not isinstance(frame, dict):
+        return None
+    publication = frame.get('payload', {}).get('__one_shot_publication')
+    if not isinstance(publication, dict):
+        return None
+    position = payload.get('__one_shot_child_position')
+    if frame.get('effect_key') == 'set_next_creature_entry_counter':
+        if position is not None:
+            return None
+        instruction = frame.get('payload', {})
+    elif frame.get('effect_key') == 'effect_sequence':
+        effects = frame.get('payload', {}).get('effects', [])
+        if type(position) is not int or not 0 <= position < len(effects):
+            return None
+        child = effects[position]
+        if child.get('effect_key') != 'set_next_creature_entry_counter':
+            return None
+        instruction = child.get('payload', {})
+    else:
+        return None
+    reference = publication.get('reference')
+    if (not isinstance(reference, dict) or set(reference) != {'incarnation', 'zone_change_sequence', 'zone'}
+            or any(type(reference.get(key)) is not int or reference[key] < 0
+                   for key in ('incarnation', 'zone_change_sequence'))
+            or reference['zone'] != 'battlefield' or frame.get('controller') != controller
+            or (publication.get('controller') != controller
+                and not instruction.get('__native_next_instruction'))
+            or publication.get('source_card_id') != frame.get('source_card_id')
+            or not isinstance(frame.get('id'), str) or not frame['id']
+            or not isinstance(publication.get('oracle_text'), str)
+            or instruction.get('counter', '+1/+1') != payload.get('counter', '+1/+1')
+            or instruction.get('amount', 1) != payload.get('amount', 1)):
+        return None
+    return {'version': 1, 'kind': 'retained_native_resolution',
+            'frame': deepcopy(frame), 'publication': deepcopy(publication),
+            'child_position': position, 'controller': controller,
+            'instruction': {'effect_key': 'set_next_creature_entry_counter',
+                            'counter': payload.get('counter', '+1/+1'),
+                            'amount': payload.get('amount', 1)},
+            'semantic_qualification': 'upstream_not_certified'}
+
+
 def set_next_creature_entry_counter(state: MatchState, controller: int, payload: dict) -> None:
     """Arm a one-shot counter for the next creature spell cast this turn."""
+    if '__native_next_instruction' in payload:
+        from rules_engine.next_creature_entry_trigger import arm
+        arm(state, controller, payload)
+        return
     amount = max(0, int(payload.get("amount", 1) or 0))
     if amount <= 0:
         return
+    origin = retained_next_creature_entry_origin(state, controller, payload)
     state.pending_entry_counters.append(
         {
             "controller": int(controller),
@@ -2150,11 +2812,17 @@ def set_next_creature_entry_counter(state: MatchState, controller: int, payload:
             "amount": amount,
             "expires_turn": int(state.turn),
             "source_card_id": payload.get("__source_card_id"),
+            **({'__entry_origin': origin} if origin is not None else {}),
         }
     )
     state.log.append(
         f"{state.players[controller].name} will put {amount} +1/+1 counter on the next creature they cast this turn."
     )
+
+
+def bind_creature_spell_entry_counter(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.next_creature_entry_trigger import bind
+    bind(state, controller, payload)
 
 
 def put_green_creature_from_hand(state: MatchState, controller: int, payload: dict) -> None:
@@ -2188,8 +2856,32 @@ def put_green_creature_from_hand(state: MatchState, controller: int, payload: di
     state.log.append(f"{player.name} puts {card.name} from hand onto the battlefield.")
 
 
+def resource_scaled_temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.land_types import effective_type_line
+    subtype = payload['token_subtype'].casefold()
+    count = 0
+    for cid in state.players[controller].battlefield:
+        card = state.cards.get(cid)
+        if (card is None or card.zone != Zone.BATTLEFIELD or card.controller != controller
+                or not card.is_token or 'Artifact' not in effective_types(state, card)):
+            continue
+        line = re.split(r'\s+[\u2014\u2013-]\s+', effective_type_line(state, card), maxsplit=1)
+        if len(line) == 2 and subtype in {word.casefold() for word in line[1].split()}:
+            count += 1
+    # Responses have finished; resolve once using the retained ability controller.
+    temporary_pt_buff(state, controller, {
+        **payload, 'power': count * payload['power_per_token'],
+        'toughness': count * payload['toughness_per_token'],
+    })
+
+
 def temporary_pt_buff(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
+    if '__self_buff_reference' in payload:
+        card = state.cards.get(target)
+        if (card is None or card.zone != Zone.BATTLEFIELD
+                or payload['__self_buff_reference'] != [card.id, object_incarnation(card), card.zone_change_sequence]):
+            return
     power = int(payload.get("power", payload.get("amount", 1)) or 0)
     toughness = int(payload.get("toughness", payload.get("amount", 1)) or 0)
     if target in state.cards and (power or toughness):
@@ -2210,6 +2902,7 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
     players = [state.players[controller]] if payload.get("controller_only") else state.players.values()
     required_subtypes = set(payload.get("creature_subtypes") or [])
     keyword_timestamp = allocate_effect_timestamp(state) if keyword else None
+    affected_creatures = []
     for player in players:
         for card_id in list(player.battlefield):
             card = state.cards[card_id]
@@ -2218,15 +2911,22 @@ def temporary_pt_buff_all(state: MatchState, controller: int, payload: dict) -> 
             if required_subtypes:
                 from rules_engine.library_permissions import creature_types
 
-                if (not required_subtypes.intersection(creature_types(card))
+                if (not required_subtypes.intersection(creature_types(card, state))
                         and "changeling" not in {keyword.lower() for keyword in (card.keywords or [])}):
                     continue
+            affected_creatures.append(card_id)
             card.counters["__eot_power"] = int(card.counters.get("__eot_power", 0)) + power
             card.counters["__eot_toughness"] = int(card.counters.get("__eot_toughness", 0)) + toughness
             if keyword:
                 from rules_engine.keyword_effects import add_keyword_effect
                 add_keyword_effect(state,card_id,[keyword],until_end_of_turn=True,timestamp=keyword_timestamp,
                                    source_card_id=payload.get('__source_card_id'))
+    if payload.get('untap_affected_creatures'):
+        from rules_engine.named_counters import untap_permanent
+
+        # The follow-up refers to the buff's resolution-time group, not a new query.
+        for card_id in affected_creatures:
+            untap_permanent(state, card_id)
     scope = (f"{payload['creature_subtype_label']} you control" if payload.get("creature_subtype_label")
              else "Creatures you control" if payload.get("controller_only") else "All creatures")
     state.log.append(f"{scope} get {power:+d}/{toughness:+d} until end of turn.")
@@ -2236,31 +2936,23 @@ def sacrifice(state: MatchState, controller: int, payload: dict) -> None:
     target = payload.get("target_card_id")
     if target in state.cards and target in state.players[controller].battlefield:
         from rules_engine.events import flush_staged_triggers
+        plan = select_graveyard_entry_plan(state, target)
+        cause = prepare_graveyard_entry_causes(state, [plan])[target]
         started_staging = not state.trigger_staging
         if started_staging:
             state.trigger_staging = True
             state.trigger_staging_event = "sacrifice"
         card = state.cards[target]
-        destination = replace_die_zone(state, card.controller, target)
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": controller})
-        state.players[controller].battlefield.remove(target)
-        zone_owner = state.players[getattr(card, "owner", card.controller)]
-        if destination == "exile":
-            zone_owner.exile.append(target)
-            card.zone = Zone.EXILE
+        destination = execute_graveyard_entry(state, plan, prevalidated=True, _prepared_cause=cause)
+        if destination == Zone.EXILE:
             state.log.append(f"{card.name} is exiled instead of dying.")
-            emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
-            card.reset_zone_counters(Zone.EXILE)
-            if started_staging:
-                flush_staged_triggers(state)
-            return
-        zone_owner.graveyard.append(target)
-        card.zone = Zone.GRAVEYARD
-        emit_event(state, "permanent_dies", {"card_id": target, "controller": controller})
-        if was_creature_on_battlefield(card):
-            emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
+        elif destination == Zone.GRAVEYARD:
+            emit_event(state, "permanent_dies", {"card_id": target, "controller": controller})
+            if was_creature_on_battlefield(card):
+                emit_event(state, "creature_dies", {"card_id": target, "controller": controller})
         emit_event(state, "sacrifice", {"card_id": target, "controller": controller})
-        card.reset_zone_counters(Zone.GRAVEYARD)
+        card.reset_zone_counters(destination)
         if started_staging:
             flush_staged_triggers(state)
 
@@ -2272,7 +2964,20 @@ def deal_damage_multi(state: MatchState, controller: int, payload: dict) -> None
         for target, amount in (payload.get("target_distribution") or {}).items()
     ]
     deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id"),
-                                          "__source_lki": payload.get("__source_lki")})
+                                          "__source_lki": payload.get("__source_lki"),
+                                          **{key: payload[key] for key in ('__activation_source_context', '__activation_source_origin', '__activation_source_reference', '__ability_target_text') if key in payload}})
+
+
+def damage_each_creature(state: MatchState, controller: int, payload: dict) -> None:
+    amount = max(0, int(payload.get("amount", 0)))
+    if not amount:
+        return
+    recipients = [
+        {"target_card_id": cid, "amount": amount}
+        for player in state.players.values() for cid in list(player.battlefield)
+        if "Creature" in effective_types(state, state.cards[cid])
+    ]
+    deal_damage_batch(state, controller, {**payload, "recipients": recipients})
 
 
 def damage_each_creature_and_player(state: MatchState, controller: int, payload: dict) -> None:
@@ -2286,12 +2991,23 @@ def damage_each_creature_and_player(state: MatchState, controller: int, payload:
     ]
     recipients.extend({"target_player": pid, "amount": amount} for pid in state.players)
     deal_damage_batch(state, controller, {"recipients": recipients, "__source_card_id": payload.get("__source_card_id"),
-                                          "__source_lki": payload.get("__source_lki")})
+                                          "__source_lki": payload.get("__source_lki"),
+                                          **{key: payload[key] for key in ('__activation_source_context', '__activation_source_origin', '__activation_source_reference', '__ability_target_text') if key in payload}})
 
 
 def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.damage_results import validate_hand_payload, HAND_CONTEXT_KEYS
+    source_context = validate_hand_payload(state, payload)
+    retained = {key: payload[key] for key in HAND_CONTEXT_KEYS if key in payload}
     source_id = payload.get("__source_card_id")
     source_lki = payload.get("__source_lki")
+    if payload.get('__stack_copy_kind') == 'spell':
+        if source_lki is None and payload.get('__copied_card'):
+            from types import SimpleNamespace
+            from rules_engine.colors import card_color_names
+            source_lki = {**payload['__copied_card'], 'color_names': sorted(card_color_names(
+                SimpleNamespace(**payload['__copied_card'])))}
+        source_lki = {**(source_lki or payload.get('__copied_card') or {}), 'controller': controller}
     lifelink_total = max(0, int(payload.get("lifelink_total", 0)))
     recipients = []
     grouped = {}
@@ -2312,7 +3028,7 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
             variants.append((signature, recipient))
         recipients.append(recipient)
     for index, recipient in enumerate(recipients):
-        recipient = {**recipient, "__source_card_id": source_id, "__source_lki": source_lki,
+        recipient = {**recipient, **retained, "__source_card_id": source_id, "__source_lki": source_lki,
                      "__defer_lethal": True, "__batch_damage": True}
         target_id = recipient.get("target_card_id")
         affected = state.cards[target_id].controller if target_id else recipient.get("target_player")
@@ -2322,6 +3038,8 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
             options = replacement_options(
                 state, event, target_player=affected if not target_id else None,
                 target_card_id=target_id, source_card_id=source_id,
+                amount=recipient['amount'], source_lki=source_lki, source_context=source_context,
+                combat=False,
             )
             if len(options) > 1:
                 state.pending_replacement_choice = {
@@ -2329,10 +3047,11 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
                     "target_player": recipient.get("target_player"), "target_card_id": target_id,
                     "amount": recipient["amount"], "controller": controller, "source_card_id": source_id,
                     "source_lki": source_lki,
+                    "source_payload": retained,
                     "options": options, "combat_damage_needs_sba": True,
                     "continuation_effects": [{
                         "effect_key": "deal_damage_batch",
-                        "payload": {"recipients": recipients[index + 1:], "__source_card_id": source_id,
+                        "payload": {**retained, "recipients": recipients[index + 1:], "__source_card_id": source_id,
                                     "__source_lki": source_lki,
                                     "lifelink_total": lifelink_total},
                     }],
@@ -2342,19 +3061,19 @@ def deal_damage_batch(state: MatchState, controller: int, payload: dict) -> None
                 return
         dealt = deal_damage(state, controller, recipient)
         from rules_engine.damage_results import source_has_keyword
-        if source_has_keyword(state, source_id, "lifelink", source_lki):
+        if source_has_keyword(state, source_id, "lifelink", source_lki, source_context=source_context):
             lifelink_total += dealt
         pending = state.pending_replacement_choice or state.pending_mechanic_choice
         if pending:
             pending["combat_damage_needs_sba"] = True
             pending.setdefault("continuation_effects", []).append({
                 "effect_key": "deal_damage_batch",
-                "payload": {"recipients": recipients[index + 1:], "__source_card_id": source_id,
+                "payload": {**retained, "recipients": recipients[index + 1:], "__source_card_id": source_id,
                             "__source_lki": source_lki,
                             "lifelink_total": lifelink_total},
             })
             return
-    _gain_lifelink_from_damage(state, source_id, lifelink_total, source_lki)
+    _gain_lifelink_from_damage(state, source_id, lifelink_total, source_lki, source_context=source_context)
 
 
 def emit_combat_damage_events(state: MatchState, controller: int, payload: dict) -> None:
@@ -2448,15 +3167,43 @@ def temporary_ability_loss(state: MatchState, controller: int, payload: dict) ->
             set_base_stats(state, controller, {**payload, 'target_card_id': card_id, 'resolution_timestamp': stamp})
 
 
+def add_artifact_type_until_end_of_turn(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.type_effects import add_type_effect
+    add_type_effect(state, payload.get('target_card_id'), ['Artifact'],
+                    until_end_of_turn=True, source_card_id=payload.get('__source_card_id'))
+
+
 def grant_keyword(state: MatchState, controller: int, payload: dict) -> None:
     from rules_engine.keyword_effects import add_keyword_effect
     keywords = payload.get('keywords') or ([payload['keyword']] if payload.get('keyword') else [])
+    if payload.get('recipient_kind') in {'creatures', 'permanents'}:
+        from game_state.state import allocate_effect_timestamp
+        from rules_engine.type_effects import effective_types
+        # Resolution locks in recipients; later entrants do not inherit this grant.
+        stamp = allocate_effect_timestamp(state)
+        for player_id, player in state.players.items():
+            scope = payload.get('recipients')
+            if scope == 'controller' and player_id != controller or scope == 'opponents' and player_id == controller:
+                continue
+            for card_id in list(player.battlefield):
+                card = state.cards[card_id]
+                if payload['recipient_kind'] == 'creatures' and 'Creature' not in effective_types(state, card):
+                    continue
+                add_keyword_effect(state, card_id, keywords,
+                                   operation=payload.get('operation', 'grant'),
+                                   until_end_of_turn=bool(payload.get('until_end_of_turn')),
+                                   timestamp=stamp, source_card_id=payload.get('__source_card_id'))
+        return
     add_keyword_effect(state,payload.get('target_card_id'),keywords,
                        operation=payload.get('operation','grant'),until_end_of_turn=bool(payload.get('until_end_of_turn')),
                        source_card_id=payload.get('__source_card_id'))
 
 
 def prevent_damage(state: MatchState, controller: int, payload: dict) -> None:
+    if payload.get('__resolving_item') is not None:
+        from rules_engine.prevention import create_numeric_prevention_shield
+        create_numeric_prevention_shield(state, controller, payload)
+        return
     amount = int(payload.get("amount", 0))
     target_player = payload.get("target_player")
     target_card_id = payload.get("target_card_id")
@@ -2497,11 +3244,14 @@ def discard_cards(state: MatchState, controller: int, payload: dict) -> None:
     discard_selected(state, target_player, selected)
     discarded = len(selected)
     state.log.append(f"{player.name} discards {discarded}.")
-    resolve_discard_followup(state, controller, payload.get('followup_effect'), discarded)
+    resolve_discard_followup(state, controller, payload.get('followup_effect'), discarded, selected)
 
 
-def resolve_discard_followup(state, controller, followup, discarded):
+def resolve_discard_followup(state, controller, followup, discarded, discarded_ids=()):
     if not followup:
+        return
+    if ('matching_discard_ids' in followup
+            and not set(discarded_ids).intersection(followup['matching_discard_ids'])):
         return
     from effects.registry import resolve_effect
     data = dict(followup.get('payload') or {})
@@ -2785,10 +3535,12 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
             continue
         if "power_max" in payload:
             try:
-                printed_power = int(card.power)
+                # A library CDA can define power; incomplete metadata stays ineligible.
+                power = (effective_combat_stats(state, cid)[0]
+                         if card.power is None else int(card.power))
             except (TypeError, ValueError):
                 continue
-            if printed_power > int(payload["power_max"]):
+            if power is None or power > int(payload["power_max"]):
                 continue
         eligible.append(cid)
     if (controller in state.mechanic_choice_players
@@ -2811,7 +3563,8 @@ def topdeck_reveal_creature_to_hand(state: MatchState, controller: int, payload:
     def value(cid: str) -> tuple[int, int]:
         card = state.cards[cid]
         try:
-            power = int(card.power or 0)
+            power = int(card.power if card.power is not None
+                        else effective_combat_stats(state, cid)[0] or 0)
         except (TypeError, ValueError):
             power = 0
         return mana_value(card.mana_cost or ""), power

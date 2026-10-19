@@ -1,0 +1,17 @@
+{
+  "id": "b17da4d0-f9fd-43af-85fc-ede9fa3962bf",
+  "oracle_id": "a167d593-cded-43e1-b9bb-2287dbd0cbec",
+  "name": "Moment of Heroism",
+  "mana_cost": "{1}{W}",
+  "type_line": "Instant",
+  "oracle_text": "Target creature gets +2/+2 and gains lifelink until end of turn. (Damage dealt by the creature also causes its controller to gain that much life.)",
+  "power": null,
+  "toughness": null,
+  "colors": [
+    "W"
+  ],
+  "keywords": [],
+  "scryfall_uri": "https://scryfall.com/card/jmp/124/moment-of-heroism?utm_source=api",
+  "layout": "normal",
+  "card_faces": null
+}

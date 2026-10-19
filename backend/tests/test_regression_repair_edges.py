@@ -9,6 +9,7 @@ from rules_engine.engine import RulesEngine
 from tests.regression_agent.test_interactions import add, cast, pass_once, position, restore, settle
 from tests.test_counter_replacements import source as modifier, choose
 from tests.test_api_input_contracts import game, persist, rejected
+from tests.fixture_state_support import adopt_fixture_state
 
 
 @pytest.mark.parametrize('seat', [1, 2])
@@ -192,13 +193,12 @@ def test_http_damage_choice_restores_exactly_and_rejects_wrong_actor(game, seat)
 
     client, controller = game
     state = position(seat)
-    state.id = controller.state.id
     first = add(state, 'Furnace of Rath', seat, Zone.BATTLEFIELD)
     second = add(state, 'Furnace of Rath', 3-seat, Zone.BATTLEFIELD)
     state.replacement_choice_required = True
     state.replacement_choice_players = {3-seat}
     spell = add(state, 'Lightning Bolt', seat)
-    controller.state = pass_once(pass_once(cast(state, spell, target_player=3-seat)))
+    adopt_fixture_state(controller, pass_once(pass_once(cast(state, spell, target_player=3-seat))))
     for source_id in (first, second):
         persist(controller)
         before = serialize_match_snapshot(controller.state)

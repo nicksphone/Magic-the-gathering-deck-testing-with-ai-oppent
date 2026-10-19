@@ -756,7 +756,7 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
                 return 0
             amount = apply_permanent_damage_replacements(state, cid, amount, prevention_locked=prevention_locked)
             if not prevention_locked:
-                amount, _ = consume_card_prevention_shield(card, amount)
+                amount, _ = consume_card_prevention_shield(card, amount, state=state)
             card.loyalty = (card.loyalty or 0) - amount
             state.log.append(f"{card.name} loses {amount} loyalty.")
             return amount
@@ -769,7 +769,8 @@ def _deal_unblocked_damage(state: MatchState, defender_key: str, amount: int, so
         target_player=pid,
         combat=True,
     )
-    amount = apply_damage_replacements(state, pid, amount, prevention_locked=prevention_locked)
+    amount = apply_damage_replacements(state, pid, amount, prevention_locked=prevention_locked,
+                                       source_card_id=source_id)
     post, prevented = (amount, 0) if prevention_locked else consume_player_prevention_shield(state, pid, amount)
     if prevented > 0:
         state.log.append(f"{state.players[pid].name} prevents {prevented} damage.")
@@ -797,7 +798,7 @@ def _mark_creature_damage(
         combat=True,
     )
     amount = apply_permanent_damage_replacements(state, card_id, amount, prevention_locked=prevention_locked)
-    post, prevented = (amount, 0) if prevention_locked else consume_card_prevention_shield(card, amount)
+    post, prevented = (amount, 0) if prevention_locked else consume_card_prevention_shield(card, amount, state=state)
     if prevented > 0:
         state.log.append(f"{card.name} prevents {prevented} damage.")
     if post <= 0:

@@ -1,0 +1,16 @@
+{
+  "curl_exit": 0,
+  "full_raw_response_unchanged": true,
+  "http_status": 200,
+  "id": "7cb9d4a0-66bd-454d-b676-80192a96c723",
+  "new_requests_total": 1,
+  "no_network_during_tests": true,
+  "oracle_id": "ea9f4de3-fc35-435a-8dff-a5657d14a9bd",
+  "request_end_utc": "2026-10-16T16:29:21.486229397Z",
+  "request_start_utc": "2026-10-16T16:29:19.861765190Z",
+  "response_bytes": 5984,
+  "response_headers_sha256": "073ad04be95c148bd9c9ac17f588b45b100ab209faaf950e25756475f45798e2",
+  "response_sha256": "4fc9d73aded6d4c3cacd7f72d745f670d032b8ee6c8c36a15ac40204ac3506cc",
+  "source": "One exact-name Scryfall official API HTTPS request before offline execution",
+  "url": "https://api.scryfall.com/cards/named?exact=Daretti%2C%20Scrap%20Savant"
+}

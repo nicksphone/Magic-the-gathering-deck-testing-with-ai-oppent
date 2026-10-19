@@ -15,6 +15,7 @@ from tests.test_conditional_combat import lose
 from tests.test_conditional_combat import add as conditional_add
 from tests.test_declaration_limits import add as limit_card
 from tests.test_api_input_contracts import game, persist, rejected, snapshot
+from tests.fixture_state_support import adopt_fixture_state
 
 
 def board(seat=1, kind='attack'):
@@ -138,9 +139,7 @@ def test_http_conditional_cost_hints_reject_atomic_and_restore(game, seat, kind)
     import main
     client, match = game
     state, sid, bear, elf = board(seat, kind)
-    state.id = match.state.id
-    match.state = state
-    persist(match)
+    adopt_fixture_state(match, state)
     actor = seat if kind == 'attack' else 3-seat
     move = next(row for row in client.get(f'/matches/{state.id}/legal-moves?player_id={actor}').json()['moves'] if row['type'] == kind)
     cost = move['attack_costs'][bear][f'player:{3-seat}'] if kind == 'attack' else move['block_costs'][elf]

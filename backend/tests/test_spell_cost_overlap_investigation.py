@@ -204,8 +204,6 @@ def escape_position(seat, initial=3):
 
 
 @pytest.mark.parametrize('seat', [1, 2])
-@pytest.mark.xfail(strict=True, raises=ActionRejected,
-                   reason='Escape eligibility is locked before mana can create its fourth graveyard card')
 def test_native_escape_can_use_card_created_by_mana_payment(seat):
     state, _, creature, spell, grave = escape_position(seat)
     with unchanged_root(state):

@@ -160,11 +160,6 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
     pending = state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order
     if not state.pregame_pending and not pending:
         require(state.priority_player == player_id, "This player does not have priority")
-    moves = rules.legal_moves(state, player_id)
-    available = [move for move in moves if move["type"] == kind]
-    if kind == 'cast_spell':
-        bestowed = casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow'
-        available = [move for move in available if (move.get('cast_variant') == 'bestow') == bestowed]
     if kind in {"tap_land_for_mana", "tap_lands_bulk", "tap_nonland_for_mana", 'activate_mana_ability'}:
         require(not state.pregame_pending and not pending, "Mana actions cannot interrupt a pending choice")
         require(state.step != Step.CLEANUP or state.cleanup_repeat_required, "No mana actions during ordinary cleanup")
@@ -226,6 +221,17 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                     require(all(len(bundle) <= 1 for bundle in view.get('base_output_bundles', [])),
                             'Announce the complete mixed mana vector; use activate_mana_ability')
         return
+    moves = rules.legal_moves(state, player_id)
+    available = [move for move in moves if move["type"] == kind]
+    if kind == 'cast_spell':
+        from rules_engine.ability_model import unsupported_spell_reason
+        source = state.cards.get(action.get('card_id'))
+        if source is not None and source.owner == player_id and source.zone != Zone.LIBRARY:
+            reason = unsupported_spell_reason(source, {**action.get('targets', {}), **{
+                key: action[key] for key in ('selected_face_index',) if key in action}})
+            require(reason is None, reason or '')
+        bestowed = casting_method((action.get('cost_choice') or {}).get('id', '')) == 'bestow'
+        available = [move for move in available if (move.get('cast_variant') == 'bestow') == bestowed]
     # Declaring no attackers is legal even when the move generator has none.
     if kind == "attack" and not action["attackers"]:
         require(state.step == Step.DECLARE_ATTACKERS and state.active_player == player_id and not state.attackers_declared, "Not an attacker declaration window")
@@ -265,12 +271,15 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
         require(state.mulligan_count.get(player_id, 0) < 7, "Cannot mulligan below zero opening cards")
     elif kind == "choose_mechanic":
         pending = state.pending_mechanic_choice
-        if pending["kind"] == "combat_damage":
+        if pending['kind'] == 'entry_copy':
+            from rules_engine.entry_copy import selected_option
+            selected_option(state, player_id, action)
+        elif pending["kind"] == "combat_damage":
             from rules_engine.combat import valid_damage_assignment
             require(valid_damage_assignment(state, player_id, action), "Invalid combat damage assignment")
-        elif pending["kind"] in {"draw", "land_entry", "saga_entry"}:
+        elif pending["kind"] in {"draw", "land_entry", "saga_entry", "note_creature_type", "entry_mode", "exchange_energy_payment", "loyalty_attachment"}:
             require(action.get("choice_id") in pending["options"], "Unavailable draw choice")
-        elif pending["kind"] in {"topdeck_put", "search_library", "proliferate", "scry", "surveil"} or (pending['kind'] == 'discard' and pending.get('min_count') == 0):
+        elif pending["kind"] in {"topdeck_put", "search_library", "proliferate", "scry", "surveil", "land_from_hand", "loyalty_cards"} or (pending['kind'] == 'discard' and pending.get('min_count') == 0):
             unique_ids(action.get("card_ids", []), pending["options"])
             require(len(action.get("card_ids", [])) <= pending["count"], "Too many topdeck cards selected")
         else:
@@ -318,6 +327,7 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             payment_choices=action.get('payment_choices'),
         ), "Cannot pay activation costs")
     elif kind == "activate_loyalty" and targets.get("x_value") is not None:
+        require(type(targets["x_value"]) is int and targets["x_value"] >= 0, "X value must be a non-negative integer")
         from rules_engine.oracle_effects import extract_loyalty_abilities
         require(extract_loyalty_abilities(state.cards[action["card_id"]])[action["ability_index"]].get("x_cost"), "This ability does not have a chosen X")
     elif kind == "cast_spell":
@@ -338,6 +348,23 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
             without_mana=bool(state.pending_mechanic_choice and state.pending_mechanic_choice['kind'] in {'effect_cast', 'suspend_cast'}))
         choice = (action.get("cost_choice") or {}).get("id")
         require(not choice or any(option.id == choice for option in options), "Unknown casting cost option")
+        selected_option = next((option for option in options if option.id == choice), None)
+        pitch = action.get('cost_choice') or {}
+        if 'exile_card_ids' in pitch:
+            require(selected_option is not None and bool(selected_option.hand_exile_color),
+                    'This selected casting cost does not permit hand exile')
+        if selected_option is not None and selected_option.hand_exile_color:
+            from rules_engine.costs import additional_cost_selection, check_cost_option_available
+            require(type(targets.get('x_value')) is int and targets['x_value'] >= 0,
+                    'This casting cost requires an explicit nonnegative X')
+            require(additional_cost_selection(state, player_id, selected_option, face_card.id, pitch,
+                                              x_value=targets['x_value']) is not None,
+                    'Invalid optional hand-exile selection')
+            require(check_cost_option_available(state, player_id, face_card, selected_option,
+                    x_value=targets['x_value'], target_card_id=targets.get('target_card_id'), cost_choice=pitch),
+                    'Cannot pay the selected optional hand-exile casting cost')
+        elif any(option.hand_exile_color for option in options):
+            require(bool(choice), 'Select the optional hand-exile casting cost explicitly')
         hybrid_choices = action.get("hybrid_choices")
         if hybrid_choices is not None:
             from rules_engine.mana import hybrid_payment_symbols, can_pay_with_pool_and_lands
@@ -356,6 +383,9 @@ def validate_action(state, rules, player_id: int, action: dict) -> None:
                 spell_kicked=option.kicked,
                 source_card_id=face_card.id, target_card_id=targets.get('target_card_id'),
                 hybrid_choices=hybrid_choices,
+                additional_generic_reduction=(len(pitch.get('exile_card_ids', [])) * selected_option.hand_exile_generic_reduction
+                                              if selected_option and selected_option.hand_exile_color else 0),
+                reserved_card_ids={face_card.id, *pitch.get('exile_card_ids', [])},
                 reserved_life=option.pay_life + (int(targets.get("x_value") or 0) if option.pay_life_x else 0),
             ), "Cannot pay the selected hybrid branches")
         if targets.get("x_value") is not None:

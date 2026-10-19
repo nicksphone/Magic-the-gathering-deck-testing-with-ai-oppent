@@ -1,0 +1,16 @@
+{
+  "bulk_line": 19279,
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "bulk_source": "/mnt/rchfiles/codex-storage/mtg-deck-testing-lab/knowledge-corpus/workstream-a-0214bb9/sources/oracle-cards-20260927090157.jsonl.gz",
+  "id": "1b6ef5f5-4058-4f89-a573-9e2da87a9f2e",
+  "keys": 67,
+  "name": "Steel Seraph",
+  "no_missing_prototype_RAW": true,
+  "not_new_HTTP": true,
+  "oracle_id": "7ff8940f-d798-41eb-b82e-a1eba2163fe7",
+  "origin": "existing pinned public official Scryfall bulk, no network intake",
+  "raw_file": "steel-seraph.raw.json",
+  "raw_file_sha256": "72eab5073b2ae6ae683cfd7c6d3cb8d052b69577184ec5086518f58acc8047f7",
+  "raw_size": 5213,
+  "verified_UTC": "2026-10-17T16:47:18.930520+00:00"
+}

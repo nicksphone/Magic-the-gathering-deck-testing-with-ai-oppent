@@ -18,21 +18,199 @@ _PLAYER_PERMANENT_ALTERNATIVE_RE = re.compile(
 )
 
 
+def _target_reference_shape(announced, make_reference):
+    from rules_engine.action_validation import ActionRejected
+
+    if not isinstance(announced, dict):
+        raise ActionRejected('Malformed announced target references')
+    for key, expected in (('target_card_ids', list), ('target_distribution', dict), ('mode_targets', dict)):
+        if key in announced and not isinstance(announced[key], expected):
+            raise ActionRejected('Malformed announced target references')
+
+    def card_id(value):
+        return isinstance(value, str) and bool(value)
+
+    scalar = announced.get('target_card_id')
+    if ((scalar is not None and not card_id(scalar))
+            or any(not card_id(cid) for cid in announced.get('target_card_ids', []))
+            or any(not (card_id(cid) or type(cid) is int and cid in (1, 2))
+                   for cid in announced.get('target_distribution', {}))
+            or any(not isinstance(selected, dict) for selected in announced.get('mode_targets', {}).values())):
+        raise ActionRejected('Malformed announced target references')
+
+    result = {}
+    if announced.get('target_card_id') is not None:
+        result['target_card_id'] = make_reference(announced['target_card_id'])
+    if 'target_card_ids' in announced:
+        result['target_card_ids'] = [make_reference(cid) for cid in announced['target_card_ids']]
+    if 'target_distribution' in announced:
+        result['target_distribution'] = {cid: make_reference(cid)
+            for cid in announced['target_distribution'] if str(cid) not in {'1', '2'}}
+    if 'mode_targets' in announced:
+        result['mode_targets'] = {mode: _target_reference_shape(selected, make_reference)
+                                 for mode, selected in announced['mode_targets'].items()}
+    return result
+
+
+def _capture_target_reference(state, cid):
+    from game_state.state import object_incarnation
+    from rules_engine.action_validation import ActionRejected
+    card = state.cards.get(cid)
+    if card is None:
+        raise ActionRejected('Unknown announced target object')
+    reference = {'card_id': cid, 'incarnation': object_incarnation(card),
+                 'zone_change_sequence': card.zone_change_sequence}
+    if any(type(reference[key]) is not int or reference[key] < 0
+           for key in ('incarnation', 'zone_change_sequence')):
+        raise ActionRejected('Invalid announced target identity')
+    return reference
+
+
+def capture_announced_target_references(state, announced):
+    return {'version': 1, 'targets': _target_reference_shape(
+        announced, lambda cid: _capture_target_reference(state, cid))}
+
+
+def validate_announced_target_references(announced, bundle):
+    from rules_engine.action_validation import ActionRejected
+
+    def valid(expected, actual):
+        if isinstance(expected, list):
+            return (isinstance(actual, list) and len(expected) == len(actual)
+                    and all(valid(a, b) for a, b in zip(expected, actual)))
+        if not isinstance(actual, dict) or set(expected) != set(actual):
+            return False
+        if set(expected) == {'card_id', 'incarnation', 'zone_change_sequence'}:
+            return (actual['card_id'] == expected['card_id']
+                    and all(type(actual[key]) is int and actual[key] >= 0
+                            for key in ('incarnation', 'zone_change_sequence')))
+        return all(valid(value, actual[key]) for key, value in expected.items())
+
+    shape = _target_reference_shape(announced, lambda cid: {
+        'card_id': cid, 'incarnation': 0, 'zone_change_sequence': 0})
+    if (not isinstance(bundle, dict) or set(bundle) != {'version', 'targets'}
+            or type(bundle['version']) is not int or bundle['version'] != 1
+            or not valid(shape, bundle['targets'])):
+        raise ActionRejected('Malformed announced target references')
+
+
+def _reference_at(bundle, path):
+    value = bundle['targets']
+    for key in path:
+        value = value[key]
+    return value
+
+
+def announced_target_reference_matches(state, bundle, slot_path, card_id):
+    from game_state.state import object_incarnation
+    if bundle is None:
+        return True  # Legacy frames do not contain reconstructible target identity.
+    try:
+        reference = _reference_at(bundle, slot_path)
+    except (KeyError, IndexError, TypeError):
+        return False
+    card = state.cards.get(card_id)
+    return (card is not None and reference['card_id'] == card_id
+            and reference['incarnation'] == object_incarnation(card)
+            and reference['zone_change_sequence'] == card.zone_change_sequence)
+
+
+def replace_announced_target_reference(state, bundle, announced, changed_slots, *, remapped_slots=None):
+    """Rebuild the current shape, querying only explicitly changed card slots."""
+    if bundle is None:
+        return None
+    changed = set(changed_slots)
+    remapped = remapped_slots or {}
+    shape = _target_reference_shape(announced, lambda cid: {
+        'card_id': cid, 'incarnation': 0, 'zone_change_sequence': 0})
+
+    def replace(node, path=()):
+        if isinstance(node, list):
+            return [replace(value, (*path, index)) for index, value in enumerate(node)]
+        if set(node) == {'card_id', 'incarnation', 'zone_change_sequence'}:
+            return (_capture_target_reference(state, node['card_id']) if path in changed
+                    else deepcopy(_reference_at(bundle, remapped.get(path, path))))
+        return {key: replace(value, (*path, key)) for key, value in node.items()}
+
+    result = {'version': 1, 'targets': replace(shape)}
+    validate_announced_target_references(announced, result)
+    return result
+
+
 def stack_object_kind(state: Any, item: Any) -> str:
     payload = getattr(item, 'payload', None) or {}
     copied_kind = payload.get("__stack_copy_kind")
-    if copied_kind:
+    if '__stack_copy_kind' in payload:
+        if type(copied_kind) is not str or copied_kind not in {'spell', 'activated', 'triggered'}:
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Unknown copied stack kind')
         return str(copied_kind)
     if payload.get("__trigger_event"):
         return "triggered"
-    source = state.cards.get(item.source_card_id)
-    return "spell" if source is not None and getattr(source, 'zone', None) == Zone.STACK else "activated"
+    native_kind = None
+    if '__announced_stack_kind' in payload:
+        kind = payload['__announced_stack_kind']
+        if type(kind) is not str or kind not in {'spell', 'activated'}:
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Unknown announced stack kind')
+        native_kind = kind
+    if (payload.get('__activation_source_origin') == 'hand'
+            and '__activation_source_context' in payload
+            and '__activation_source_reference' in payload and '__ability_target_text' in payload):
+        from rules_engine.damage_results import validate_hand_payload
+        validate_hand_payload(state, payload, source_card_id=item.source_card_id)
+        if native_kind not in {None, 'activated'}:
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Hand activation has inconsistent announced kind')
+        return 'activated'
+    if native_kind is not None:
+        return native_kind
+    # Original native snapshots already retain distinct announcement shapes.
+    # Do not classify old frames using a source's later zone or controller.
+    activation_keys = {'__activation_source_origin', '__activation_source_reference', '__ability_target_text'}
+    spell_keys = {'mana_spent', '__kicked', 'snow_mana_spent', 'snow_mana_colors',
+                  '__announced_targets', '__announced_target_references'}
+    complete_activation = activation_keys | {'__announced_target_references'} <= payload.keys()
+    if activation_keys & payload.keys() and (spell_keys <= payload.keys() or not complete_activation):
+        return 'legacy_unknown'
+    if ('__activation_source_origin' in payload and '__activation_source_reference' in payload
+            and '__ability_target_text' in payload and '__announced_target_references' in payload):
+        reference = payload['__activation_source_reference']
+        if (type(payload['__activation_source_origin']) is not str
+                or payload['__activation_source_origin'] not in {'battlefield', 'graveyard'}
+                or type(reference) is not dict or set(reference) != {'incarnation', 'zone_change_sequence'}
+                or any(type(reference[key]) is not int or reference[key] < 0 for key in reference)
+                or type(payload['__ability_target_text']) is not str or not payload['__ability_target_text']):
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Malformed retained activation announcement')
+        validate_announced_target_references(payload.get('__announced_targets'), payload['__announced_target_references'])
+        return 'activated'
+    if spell_keys <= payload.keys():
+        if (type(payload['mana_spent']) is not int or payload['mana_spent'] < 0
+                or type(payload['snow_mana_spent']) is not int
+                or not 0 <= payload['snow_mana_spent'] <= payload['mana_spent']
+                or type(payload['__kicked']) is not bool or type(payload['snow_mana_colors']) is not dict
+                or any(type(key) is not str or type(value) is not int or value < 0
+                       for key, value in payload['snow_mana_colors'].items())):
+            from rules_engine.action_validation import ActionRejected
+            raise ActionRejected('Malformed retained spell announcement')
+        validate_announced_target_references(payload['__announced_targets'], payload['__announced_target_references'])
+        return 'spell'
+    return 'legacy_unknown'
 
 
 def stack_source_card(state: Any, item: Any):
     """Read saved copy characteristics and casting choices without mutation."""
     source = state.cards.get(getattr(item, "source_card_id", None))
     payload = getattr(item, "payload", None) or {}
+    if '__activation_source_context' in payload:
+        from rules_engine.damage_results import validate_hand_payload
+        from rules_engine.action_validation import ActionRejected
+        context = validate_hand_payload(state, payload, source_card_id=item.source_card_id)
+        if source is None:
+            raise ActionRejected('HAND target hints require a real source instance')
+        source = copy(source)
+        source._retained_hand_source_context = context
     if source is None:
         return source
     if payload.get('__stack_copy_kind') == 'spell':
@@ -56,6 +234,8 @@ _SPELL_COUNTER_PROTECTION_RE = re.compile(
 
 def spell_cant_be_countered(state: Any, item: Any) -> bool:
     """Evaluate supported self and battlefield spell protection at resolution."""
+    if stack_object_kind(state, item) == 'spell' and item.controller in getattr(state, 'turn_spell_protection', ()):
+        return True
     source = stack_source_card(state, item)
     if source is None:
         return False
@@ -93,13 +273,28 @@ def single_player_permanent_alternative(text: str) -> str | None:
 
 def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str, Any]) -> tuple[bool, str]:
     action_targets = action_targets or {}
+    if 'exile_card_targets' in target_hints:
+        target = action_targets.get('target_card_id')
+        if (not isinstance(target, str) or not target or any(
+                key in action_targets for key in ('target_card_ids', 'target_distribution',
+                    'target_player', 'target_stack_id', 'mode_targets'))):
+            return False, 'Exactly one face-up exiled card target is required.'
     if 'linked_target_pairs' in target_hints:
         from rules_engine.linked_targets import validate_linked_choice
         return validate_linked_choice(target_hints, action_targets)
     modes = target_hints.get("modes") or []
     choose_two = bool(target_hints.get("choose_two_modes"))
-
-    if choose_two:
+    if target_hints.get('choose_one_or_more_modes'):
+        selected = action_targets.get('mode_texts')
+        one = action_targets.get('mode_text')
+        if one is not None and selected:
+            return False, 'Use one mode selection representation.'
+        selected = selected if selected is not None else ([one] if one is not None else [])
+        if (not isinstance(selected, list) or not selected or len(selected) > len(modes)
+                or any(not isinstance(mode, str) or mode not in modes for mode in selected)
+                or len(set(selected)) != len(selected)):
+            return False, 'Select one or more distinct printed modes.'
+    elif choose_two:
         selected = action_targets.get("mode_texts") or []
         if len(selected) != 2:
             return False, "Exactly two modes must be selected."
@@ -133,8 +328,9 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     if required is not None:
         ids = action_targets.get('target_card_ids') or []
         if (len(ids) != required or len(set(ids)) != required
-                or action_targets.get('target_card_id') is not None):
-            return False, f'Exactly {required} different creature targets are required.'
+                or any(action_targets.get(key) is not None for key in (
+                    'target_card_id', 'target_player', 'target_stack_id', 'target_distribution'))):
+            return False, f'Exactly {required} different card targets are required.'
     if up_to > 0:
         target_ids = action_targets.get("target_card_ids") or []
         if len(target_ids) > up_to:
@@ -223,12 +419,14 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
             "creature_targets", "planeswalker_targets", "permanent_targets", "land_targets",
             "artifact_targets", "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
             "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+            "exile_card_targets",
         ):
             candidate_ids.update(str(item.get("id")) for item in (target_hints.get(key) or []) if item.get("id") is not None)
         candidate_surface_present = bool(candidate_ids) or any(key in target_hints for key in (
             "creature_targets", "permanent_targets", "land_targets", "artifact_targets",
             "enchantment_targets", "noncreature_permanent_targets", "aura_targets",
             "graveyard_card_targets", "graveyard_creature_targets", "graveyard_permanent_targets",
+            "exile_card_targets",
         )) or "planeswalker_targets" in target_hints
         if candidate_surface_present and any(str(cid) not in candidate_ids for cid in selected_card_ids):
             return False, "The selected card is not a legal target for this effect."
@@ -236,7 +434,7 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
     return True, ""
 
 
-def validate_protection_targets(state, source_card, action_targets: dict[str, Any]) -> tuple[bool, str]:
+def validate_protection_targets(state, source_card, action_targets: dict[str, Any], *, source_lki=None) -> tuple[bool, str]:
     target_ids: list[str] = []
     target_card_id = action_targets.get("target_card_id")
     if target_card_id:
@@ -249,7 +447,7 @@ def validate_protection_targets(state, source_card, action_targets: dict[str, An
         target = state.cards.get(cid)
         if not target:
             continue
-        reason = protection_match_reason(state, cid, source_card)
+        reason = protection_match_reason(state, cid, source_card, source_lki=source_lki)
         if reason is not None:
             return False, f"Target {target.name} has protection from {reason}."
     return True, ""
@@ -260,12 +458,23 @@ def validate_hexproof_shroud_targets(
     source_controller: int,
     action_targets: dict[str, Any],
     source_card=None,
+    *,
+    source_lki=None,
+    source_kind=None,
 ) -> tuple[bool, str]:
+    if source_kind is not None and (type(source_kind) is not str
+            or source_kind not in {'spell', 'activated', 'triggered', 'legacy_unknown'}):
+        from rules_engine.action_validation import ActionRejected
+        raise ActionRejected('Unknown targeting source kind')
     player_ids = []
     if action_targets.get("target_player") is not None:
         player_ids.append(int(action_targets["target_player"]))
     player_ids.extend(int(pid) for pid in (action_targets.get("target_distribution") or {}) if str(pid) in {"1", "2"})
     for player_id in set(player_ids):
+        if source_controller != player_id:
+            for color in getattr(state, 'turn_player_hexproof', {}).get(player_id, ()):
+                if source_matches_quality(source_card, color, state=state, source_lki=source_lki):
+                    return False, f'Target player has hexproof from {color}.'
         immunity = player_target_immunity(state, player_id, source_controller)
         if immunity:
             return False, f"Target {state.players[player_id].name} has {immunity}."
@@ -293,7 +502,11 @@ def validate_hexproof_shroud_targets(
             if 'hexproof' in keywords:
                 return False, f"Target {target.name} has hexproof."
             for keyword in keywords:
-                if keyword.startswith('hexproof from ') and source_matches_quality(source_card,keyword.removeprefix('hexproof from '), state=state):
+                if (keyword == 'hexproof from activated and triggered abilities'
+                        and source_kind in {'activated', 'triggered', 'legacy_unknown'}):
+                    return False, f'Target {target.name} has {keyword}.'
+                if keyword.startswith('hexproof from ') and source_matches_quality(
+                        source_card, keyword.removeprefix('hexproof from '), state=state, source_lki=source_lki):
                     return False, f'Target {target.name} has {keyword}.'
     return True, ""
 

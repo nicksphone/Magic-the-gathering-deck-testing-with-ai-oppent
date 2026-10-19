@@ -9,18 +9,14 @@ from game_state.serializers import deserialize_match_snapshot, serialize_match_s
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
+from tests.land_entry_canonical_a32 import canonical_card, canonical_match, canonical_row
 
 
-FOUNDRY = {
-    "quantity": 1,
-    "card_name": "Sacred Foundry",
-    "type_line": "Land — Mountain Plains",
-    "oracle_text": "({T}: Add {R} or {W}.)\nAs this land enters, you may pay 2 life. If you don't, it enters tapped.",
-}
+FOUNDRY = canonical_row("Sacred Foundry", 1)
 
 
 def game():
-    state = MatchFactory.from_decks([FOUNDRY, {"quantity": 59, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}], seed=14)
+    state = canonical_match([FOUNDRY, {"quantity": 59, "card_name": "Island"}], [{"quantity": 60, "card_name": "Island"}], seed=14)
     state.pregame_pending = False
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
@@ -60,7 +56,7 @@ def test_land_payment_unavailable_below_two_life_and_ai_prefers_tapped_without_f
     state.players[1].life = 20
     moves = [move for move in engine.legal_moves(state, 1) if move.get("card_id") == cid and move["type"] == "play_land"]
     assert AIAgent()._best_land_move(state, moves, 1)["entry_choice"] == "tapped"
-    state.cards["bolt"] = CardInstance(id="bolt", name="Lightning Bolt", owner=1, controller=1, zone=Zone.HAND, types=["Instant"], mana_cost="{R}")
+    state.cards["bolt"] = canonical_card("Lightning Bolt", id="bolt", owner=1, controller=1, zone=Zone.HAND)
     state.players[1].hand.append("bolt")
     assert AIAgent()._best_land_move(state, moves, 1)["entry_choice"] == "pay_two_life"
 
@@ -132,7 +128,7 @@ def test_graveyard_land_return_uses_entry_choice_and_emits_entry_event():
 
 def test_two_simultaneous_land_entries_reserve_life_before_either_moves():
     deck = [{**FOUNDRY, "quantity": 2}, {"quantity": 58, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, [{"quantity": 60, "card_name": "Island"}], seed=7)
+    state = canonical_match(deck, [{"quantity": 60, "card_name": "Island"}], seed=7)
     state.pregame_pending = False
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
@@ -159,7 +155,7 @@ def test_two_simultaneous_land_entries_reserve_life_before_either_moves():
 
 def test_life_zero_payment_waits_for_remaining_entry_choice_before_state_based_loss():
     deck = [{**FOUNDRY, "quantity": 2}, {"quantity": 58, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, [{"quantity": 60, "card_name": "Island"}], seed=9)
+    state = canonical_match(deck, [{"quantity": 60, "card_name": "Island"}], seed=9)
     state.pregame_pending = False
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
@@ -182,7 +178,7 @@ def test_life_zero_payment_waits_for_remaining_entry_choice_before_state_based_l
 
 def test_multiple_paid_effect_entries_defer_trigger_order_until_all_lands_enter():
     deck = [{**FOUNDRY, "quantity": 2}, {"quantity": 58, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, [{"quantity": 60, "card_name": "Island"}], seed=21)
+    state = canonical_match(deck, [{"quantity": 60, "card_name": "Island"}], seed=21)
     state.pregame_pending = False
     state.step = Step.PRECOMBAT_MAIN
     state.active_player = state.priority_player = 1
@@ -196,10 +192,8 @@ def test_multiple_paid_effect_entries_defer_trigger_order_until_all_lands_enter(
         state.players[1].library.append(cid)
         state.cards[cid].zone = Zone.LIBRARY
     for suffix in ("a", "b"):
-        font = CardInstance(
-            id=f"font-{suffix}", name="Font of Agonies", owner=1, controller=1,
-            zone=Zone.BATTLEFIELD, types=["Enchantment"],
-            oracle_text="Whenever you pay life, put that many blood counters on this enchantment.",
+        font = canonical_card(
+            "Font of Agonies", id=f"font-{suffix}", owner=1, controller=1, zone=Zone.BATTLEFIELD,
         )
         state.cards[font.id] = font
         state.players[1].battlefield.append(font.id)

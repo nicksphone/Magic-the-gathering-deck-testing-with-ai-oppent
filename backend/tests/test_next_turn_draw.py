@@ -19,6 +19,7 @@ from tests.test_ai_recurring_engines import add as raw_add, resolve
 from tests.test_variable_mana import clean
 from tests.test_combat_keyword_triggers import CARDS as COMBAT
 from tests.test_api_input_contracts import game, persist
+from tests.fixture_state_support import adopt_fixture_state
 
 CARDS = dict(COMBAT)
 for fixture in ('attached_scaling', 'delayed_draw'):
@@ -153,9 +154,7 @@ def test_countered_spell_never_schedules_or_countered_delayed_trigger_never_repe
 def test_http_cast_and_database_restart_preserve_delayed_draw(game, name, seat):
     client, match = game
     state, source, _, action = setup(name, seat)
-    state.id = match.state.id
-    match.state = state
-    persist(match)
+    adopt_fixture_state(match, state)
     path = f'/matches/{state.id}/action'
 
     def post(player, move):

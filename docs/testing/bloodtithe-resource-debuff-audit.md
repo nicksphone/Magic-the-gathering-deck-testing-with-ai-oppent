@@ -1,0 +1,17 @@
+# Resource-scaled targeted debuff: strict canonical audit
+
+Immutable source: 9437de9549898961e5d29f3eab89741fc511913a; no production changes.
+
+Whole new module `backend/tests/test_bloodtithe_resource_debuff_audit.py`: 30 cases, 14 PASS / 16 ordinary FAIL. Whole neighbors activated_sacrifice_identity (39), activated_sacrifice_events (3), temporary_team_buff (2): all 44 PASS. Combined 74 cases: 58 PASS / 16 FAIL, 62.59 seconds, exit 1; no skips/errors. Pre-import native/public SQLite and socket denial remains enabled.
+
+Full raw Harvester, WotC-attributed rulings, Giant Growth and Colossal Dreadmaw are independently pinned in the new fixture provenance. Naturalize, Unsummon, Cloudshift, Dress Down, and official Blood token definitions reuse unchanged committed data. Built-in Midrange admits three Harvester copies; that is priority evidence, not support certification.
+
+Actual checked paid casts publish Harvester and Blood. Real priority/turn progression removes summoning sickness. Both-seat canonical controls pass: Naturalize destroys the actual ETB Blood (SBA ceases the token), Cloudshift returns a new target object, sickness and sorcery rejection, paid Dress Down suppression, fixed +3/+3 and cleanup, hand privacy, snapshot equality and checked-action root immutability. Initial canonical land board and opposing Dreadmaw are explicit fixtures, not claimed natural game history. Spells are added to hand as declared canonical setup, never fake mana/stack/effects.
+
+Fourteen strict episodes stop at absent legal activated action. They retain desired source-sacrifice, count 0/1/2, paid opposing Blood exclusion, paid Naturalize response before resolution, and Unsummon/Cloudshift stale-target assertions; these downstream assertions are NOT claimed executed or qualified. Two compiler-negative complete-body tails wrongly yield only draw_cards or gain_life. They are not installed as invented playable cards.
+
+Causal seams: oracle_effects.parse_temporary_target_buff only admits numeric signed amounts; the existing X route is all/each creatures, not this targeted resource expression. move_generator.legal_moves filters the resulting noop. Engine announcement also rejects noop. Compilation after activation-cost payment still precedes responses, and stack resolution consumes the stored descriptor: computing X in the compiler is insufficient.
+
+Proposed separate product scope, NOT authorized here: a complete-body resource-counted targeted P/T descriptor, with a pure closed-family diagnostic before loose draw/life fallbacks, plus resolution-time handler/registry delegation to existing temporary_pt_buff. Count the original genuine resolving controller's CURRENT battlefield artifact tokens with the Blood subtype exactly once; exclude opponent tokens, do not require source still on battlefield, do not use hand count, announced X or hidden data. Preserve existing native target receipt pruning/timing/payment/entry machinery. Exact ABI and oracle/helper ownership must be coordinated before any product edit. No API/schema/AI change is proposed.
+
+History is preserved: first 46 PASS / 28 missing-target-fixture failures (4.47s); second 56 PASS / 18 failures (63.23s), including two incorrect graveyard assertions for ceased tokens. Corrections only supply canonical Dreadmaw bytes and assert real token cessation/departure; no desired semantics were relaxed. Final cohort is unchanged in scope. No timeout, retry loop, HTTP, database, UI or release certification.

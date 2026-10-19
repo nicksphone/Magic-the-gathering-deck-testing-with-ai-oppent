@@ -305,9 +305,8 @@ def test_wheel_http_and_sqlite_resume_retains_both_draw_sequences(game, seat, na
     state, source, _, action = setup(name, seat, cast=False)
     imp = raw_add(state, 'Stinkweed Imp', seat, Zone.HAND, cards=LINKED)
     state = resolve_to_choice(checked_action(state, RulesEngine(), seat, action))
-    state.id = controller.state.id
-    controller.state = state
-    persist(controller)
+    from tests.fixture_state_support import adopt_fixture_state
+    adopt_fixture_state(controller, state)
     rejected(client, controller, {'type': 'choose_mechanic', 'choice_id': imp.id}, 3-seat)
     main.ACTIVE_MATCHES.pop(state.id)
     with Session(engine) as session:
