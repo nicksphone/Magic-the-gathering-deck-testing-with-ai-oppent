@@ -65,6 +65,13 @@ bad-block result. Later measurements need comparable definitions, source,
 seed/seat schedules and explicit unavailable counters; do not manufacture a
 zero to make an A/B comparison pass.
 
+The subsequent [canonical bad-block measurement](bad-blocks-canonical-measurement.md)
+closes a reproduced observer admission bug: illegal block requests were silently
+filtered into zero counts. The corrected checked-action observer passes 219
+cases in four whole modules, including 32 new canonical cases. Its intentionally
+narrow dominated-chump definition remains unchanged; both policy arms still
+need the same observer in an authentic matched measurement.
+
 The additive [bound baseline comparator](ai-baseline-report-comparison.md) now
 passes all 155 cases in both whole reporter modules, including the unchanged
 original CLI subprocess. It validates explicit controlled-input declarations and

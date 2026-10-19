@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from typing import Any
 
 from analytics.decision_taxonomy import has_actionable_move, has_meaningful_move
+from rules_engine.action_validation import checked_action
 from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
 from rules_engine.type_effects import effective_types
@@ -139,11 +140,13 @@ def _simulate_block_line(
     pid: int,
     action: dict[str, Any],
 ) -> tuple[Any, dict[str, list[str]]] | None:
-    simulated_state = copy.deepcopy(state)
     engine = RulesEngine()
-    if not any(move.get("type") == "block" for move in engine.legal_moves(simulated_state, pid)):
-        return None
-    engine.take_action(simulated_state, pid, action)
+    declaration = copy.deepcopy(action)
+    declaration["blocks"] = {
+        attacker: [blockers] if isinstance(blockers, str) else blockers
+        for attacker, blockers in declaration["blocks"].items()
+    }
+    simulated_state = checked_action(state, engine, pid, declaration)
     accepted_blocks = {
         attacker_id: list(blocker_ids)
         for attacker_id, blocker_ids in simulated_state.blocks.items()

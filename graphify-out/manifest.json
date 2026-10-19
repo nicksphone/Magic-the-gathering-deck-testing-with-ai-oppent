@@ -192,9 +192,9 @@
     "semantic_hash": ""
   },
   "backend/analytics/decision_quality.py": {
-    "mtime": 1792371909.0,
-    "seen": 1792375114.794222,
-    "ast_hash": "5a5a169a485c74ebe91166418d35f26a",
+    "mtime": 1792394661.9615119,
+    "seen": 1792394914.499989,
+    "ast_hash": "90b9232206b0f41f27ccd0856ef7de2a",
     "semantic_hash": ""
   },
   "backend/analytics/decision_taxonomy.py": {
@@ -18078,9 +18078,9 @@
     "semantic_hash": ""
   },
   "docs/testing/ai-plan-acceptance-progress.md": {
-    "mtime": 1792392859.6194437,
-    "seen": 1792392955.8534167,
-    "ast_hash": "302914eebe2bf59bd35d2fb0ecbccd2c",
+    "mtime": 1792394775.30372,
+    "seen": 1792394914.505498,
+    "ast_hash": "f5a9392bd57f6ee69e4c2ee06c2a16f5",
     "semantic_hash": ""
   },
   "docs/testing/current-837-ci-repair-composition.md": {
@@ -22641,6 +22641,24 @@
     "mtime": 1792392800.4444885,
     "seen": 1792392955.8517997,
     "ast_hash": "19e066c4489cabb0bf8aa56d8523e161",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_bad_blocks_canonical_fidelity.py": {
+    "mtime": 1792394630.807002,
+    "seen": 1792394914.5027747,
+    "ast_hash": "082c79a490734fd6d85b3fd21282a9cf",
+    "semantic_hash": ""
+  },
+  "docs/testing/bad-blocks-canonical-measurement.md": {
+    "mtime": 1792394775.30372,
+    "seen": 1792394914.5055962,
+    "ast_hash": "2f3cf4e20d357926f02692bbe9844876",
+    "semantic_hash": ""
+  },
+  "docs/testing/phase2-tactical-consumer-integration-current.md": {
+    "mtime": 1792392859.6194437,
+    "seen": 1792394914.5064726,
+    "ast_hash": "f081baeb5ae26377b636bd0c2dd8cace",
     "semantic_hash": ""
   }
 }
