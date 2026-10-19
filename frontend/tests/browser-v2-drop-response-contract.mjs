@@ -393,7 +393,7 @@ test('actual drop enable captures response stage at the same exact action endpoi
     identityError: new Error('CDP browser identity unavailable on Firefox transport')});
   p.fail.resolve(); await p.promise;
   assert.deepEqual(JSON.parse(JSON.stringify(p.calls.find(([name]) => name === 'Fetch.enable'))),
-    ['Fetch.enable', {patterns:[{urlPattern:'http://fixture.invalid/matches/new-fixture/action',requestStage:'Response'}]}]);
+    ['Fetch.enable', {patterns:[{urlPattern:'http://fixture.invalid/matches/new-fixture/action',requestStage:'Request'}]}]);
 });
 
 for (const method of ['OPTIONS', 'POST']) {
@@ -880,9 +880,9 @@ test('missing POST metadata remains bounded and redacts unknown browser failure 
 // New transport-capability protocols; these VM fixtures are not browser evidence.
 for (const [name, supported, expectedPattern] of [
   ['CDP', true, {urlPattern: 'http://fixture.invalid/matches/new-fixture/action',
-    requestStage: 'Response'}],
+    requestStage: 'Request'}],
   ['Firefox-compatible', false, {urlPattern: 'http://fixture.invalid/matches/new-fixture/action',
-    requestStage: 'Response'}],
+    requestStage: 'Request'}],
 ]) {
   test(`${name} capability selects the exact pattern without bypassing drop or reconciliation`, async () => {
     const p = protocol({browserCapabilities: {supportsFetchResourceTypeFilter: supported},
@@ -933,7 +933,7 @@ for (const supported of [true, false]) {
     p.fail.resolve();
     const state = await p.promise;
     assert.deepEqual(JSON.parse(JSON.stringify(p.calls.find(([method]) => method === 'Fetch.enable'))),
-      ['Fetch.enable', {patterns: [{urlPattern: 'http://fixture.invalid/matches/new-fixture/action', requestStage: 'Response'}]}]);
+      ['Fetch.enable', {patterns: [{urlPattern: 'http://fixture.invalid/matches/new-fixture/action', requestStage: 'Request'}]}]);
     assert.equal(state.revision, 1);
     assert.equal(p.events.filter(event => event === 'click').length, 1);
     assert.equal(p.events.filter(event => event === 'Fetch.failRequest').length, 1);

@@ -29,6 +29,8 @@ class DropDiagnosticScheduleTests(unittest.TestCase):
             'tests/browser-post-response-lifecycle.test.mjs',
             'tests/browser-fetch-causal-order.test.mjs',
             'tests/browser-response-drop-diagnostic.test.mjs',
+            'tests/browser-v2-request-stage-recovery.test.mjs',
+            'tests/browser-start-recovery-failure-diagnostic.test.mjs',
         ])
 
 
