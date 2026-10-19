@@ -4,6 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import * as diagnostics from './browser-start-recovery-diagnostics.mjs';
 import * as driver from './browser-driver.mjs';
+import {reportUiV2DropFailure, uiV2DropFailureMetadata} from './browser-source-diagnostic.mjs';
 
 const source = await readFile(new URL('./browser-ui-v2.mjs', import.meta.url), 'utf8');
 const oldStart = source.indexOf("s=await setup('/fixture');let dropped=false;");
@@ -28,7 +29,7 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   diagnosticReadError, holdDiagnosticRead = false, identityError, holdIdentity = false,
   networkError, holdNetwork = false,
   browserCapabilities = {supportsFetchResourceTypeFilter: true} } = {}) {
-  const events = [], tasks = [], logs = [], calls = [], state = { id: 'new-fixture', revision: 0 };
+  const events = [], tasks = [], logs = [], calls = [], annotations = [], state = { id: 'new-fixture', revision: 0 };
   const fail = deferred(), ui = deferred(), continuation = deferred(), uiRead = deferred();
   const stateRead = deferred();
   const disable = deferred();
@@ -86,6 +87,9 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
     }
   }
   const context = {
+    reportUiV2DropFailure: vm.runInNewContext(`(${reportUiV2DropFailure.toString()})`, {
+      uiV2DropFailureMetadata, writeSync: (...args) => annotations.push(args),
+    }),
     continueRequestForPostResponse: diagnostics.continueRequestForPostResponse,
     traceStartRecoveryResponses: diagnostics.traceStartRecoveryResponses,
     assert, AbortController, b: browser, api:'http://fixture.invalid', origin:'http://ui.invalid',

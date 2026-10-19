@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import vm from 'node:vm';
 import {traceStartRecoveryResponses, continueRequestForPostResponse} from './browser-start-recovery-diagnostics.mjs';
+import {reportUiV2DropFailure, uiV2DropFailureMetadata} from './browser-source-diagnostic.mjs';
 
 const front = 'http://127.0.0.1:15173', back = 'http://127.0.0.1:10199';
 const secret = 'PRIVATE_PAYLOAD_URL_TOKEN';
@@ -121,10 +122,13 @@ test('actual UI caller captures after-first metadata only after its existing fai
   const end = source.indexOf('\ntry {', start);
   assert.ok(start >= 0 && end > start);
   const primary = new Error('{"code":-32602,"message":"original-native"}');
-  const calls = [], logs = [], reads = []; let trace, serial = 0;
+  const calls = [], logs = [], reads = [], annotations = []; let trace, serial = 0;
   const event = pause({responseStatusCode: undefined, responseErrorReason: 'Failed'});
   const command = async method => { calls.push(method); if (method === 'Fetch.continueResponse') throw primary; };
   const context = {api: back, origin: front, traceStartRecoveryResponses, continueRequestForPostResponse, command,
+    reportUiV2DropFailure: vm.runInNewContext(`(${reportUiV2DropFailure.toString()})`, {
+      uiV2DropFailureMetadata, writeSync: (...args) => annotations.push(args),
+    }),
     b: {supportsFetchResourceTypeFilter: true,
       onIntercept(value) { trace = value; }, async browserIdentity() { reads.push('runtime'); return {product: 'Chrome/155.0.8059.85', protocolVersion: '1.3'}; }},
     click: async () => { trace.observeBrowserEvent({method: 'Fetch.requestPaused', params: event}, owner); await trace(event); },

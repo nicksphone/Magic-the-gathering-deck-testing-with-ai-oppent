@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { openBrowser } from './browser-driver.mjs';
 import { startReviewed } from './review-start.mjs';
 import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
-import { observeUiV2Failures } from './browser-source-diagnostic.mjs';
+import { observeUiV2Failures, reportUiV2DropFailure } from './browser-source-diagnostic.mjs';
 
 observeUiV2Failures();
 
@@ -202,6 +202,7 @@ async function recoverDroppedResponse(s) {
     }finally{collecting=false;clearTimeout(diagnosticTimer);diagnosticAbort.abort();}
     try {
       diagnostic.requestLifecycleFinal=interceptionTrace.captureFinal?.()??null;
+      reportUiV2DropFailure(diagnostic);
       console.error('DROP_RESPONSE_TRACE',JSON.stringify(diagnostic));
     }catch{}
     throw error;
