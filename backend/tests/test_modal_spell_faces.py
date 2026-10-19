@@ -14,10 +14,12 @@ from rules_engine.events import emit_event
 from game_state.state import assign_static_order_on_battlefield_entry
 from rules_engine.action_validation import ActionRejected, checked_action
 from effects.registry import resolve_effect
+from tests.remaining_named_birth_fixtures import bind_modal
 
 DATA = json.loads((Path(__file__).parent / "fixtures/modal_spell_faces.json").read_text())
 ARCHAIC = "Wandering Archaic // Explore the Vastlands"
 VALKI = "Valki, God of Lies // Tibalt, Cosmic Impostor"
+bind_modal(DATA, ARCHAIC)
 
 
 def _valki_entry(*, opponent_rows=None):
@@ -301,8 +303,14 @@ def test_copy_activation_has_no_choice_if_linked_card_left_exile() -> None:
 
 def fixture(name, *, opponent_rows=None):
     raw = DATA[name]
-    row = SimpleNamespace(**{key: value for key, value in raw.items() if key != "card_faces"},
-                          card_faces_json=json.dumps(raw["card_faces"]), image_uri="/card-images/offline.svg")
+    from tests.remaining_named_birth_fixtures import modal_raw
+    canonical = modal_raw(DATA, name)
+    if canonical is not None:
+        row = SimpleNamespace(**ScryfallSyncService._normalize_payload(
+            canonical, "/card-images/offline.svg"))
+    else:
+        row = SimpleNamespace(**{key: value for key, value in raw.items() if key != "card_faces"},
+                              card_faces_json=json.dumps(raw["card_faces"]), image_uri="/card-images/offline.svg")
     repo = SimpleNamespace(get_cached_cards_by_names=lambda names: {name.lower(): row})
     deck = hydrate_deck_cards(repo, [{"quantity": 60, "card_name": name}])
     opponent_deck = deck

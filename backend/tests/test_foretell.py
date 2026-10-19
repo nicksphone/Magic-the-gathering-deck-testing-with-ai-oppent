@@ -11,13 +11,15 @@ from rules_engine.card_faces import exile_permission
 from rules_engine.costs import collect_cost_options
 from rules_engine.engine import RulesEngine
 from rules_engine.foretell import hand_costs, can_look, record
-from tests.test_ai_recurring_engines import add as raw_add, resolve
+from tests.test_ai_recurring_engines import resolve
+from tests.remaining_named_birth_fixtures import bind_add
 from tests.test_variable_mana import clean
 from tests.test_api_input_contracts import game, persist
 from tests.fixture_state_support import adopt_fixture_state
 
 CARDS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/foretell.json').read_text())}
 PRINTED = [name for name, card in CARDS.items() if 'Foretell' in (card['keywords'] or [])]
+raw_add = bind_add(CARDS, 'Behold the Multiverse')
 
 
 def add(state, name, seat, zone=Zone.HAND):
