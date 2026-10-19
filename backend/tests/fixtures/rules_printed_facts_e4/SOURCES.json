@@ -68,7 +68,7 @@
       {
         "card_name_present": false,
         "file": "backend/tests/fixtures/color_domain_audit/provenance.json",
-        "file_sha256": "d1cafd160ce9638627922d7d27d01932e6de7d409bdffdfd5c529fa9f62da3b5",
+        "file_sha256": "f8980eda2efcf130dec60b1bec05cf35ef0719ebd59280c7bf37bfb48e843a68",
         "hash_link": [
           "file_sha256"
         ]
@@ -1144,7 +1144,7 @@
       {
         "card_name_present": true,
         "file": "backend/tests/fixtures/color_consumer_goldens/provenance.json",
-        "file_sha256": "37aca1647d8b9a423f71cef48642327c0b18ccbe0928f2d485c9ca85f2e3a881",
+        "file_sha256": "72322a94413a7a32589a264678cd5b10e99d4faa07a7b3227f54b9d454d30b0c",
         "hash_link": [
           "file_sha256"
         ]

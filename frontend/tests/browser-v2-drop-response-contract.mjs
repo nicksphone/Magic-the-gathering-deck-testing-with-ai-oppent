@@ -876,7 +876,7 @@ test('missing POST metadata remains bounded and redacts unknown browser failure 
 // New transport-capability protocols; these VM fixtures are not browser evidence.
 for (const [name, supported, expectedPattern] of [
   ['CDP', true, {urlPattern: 'http://fixture.invalid/matches/new-fixture/action',
-    requestStage: 'Response', resourceType: 'Fetch'}],
+    requestStage: 'Response'}],
   ['Firefox-compatible', false, {urlPattern: 'http://fixture.invalid/matches/new-fixture/action',
     requestStage: 'Response'}],
 ]) {
@@ -919,5 +919,48 @@ for (const [name, browserCapabilities] of [
     assert.ok(!p.events.includes('click'));
     assert.ok(!p.events.includes('Fetch.failRequest'));
     assert.ok(!p.events.includes('canonical-state-read'));
+  });
+}
+
+// Restored-pattern regressions reuse the existing actual-function VM protocol only.
+for (const supported of [true, false]) {
+  test(`mock restored recovery uses the plain Response pattern with capability ${supported}`, async () => {
+    const p = protocol({browserCapabilities: {supportsFetchResourceTypeFilter: supported}});
+    p.fail.resolve();
+    const state = await p.promise;
+    assert.deepEqual(JSON.parse(JSON.stringify(p.calls.find(([method]) => method === 'Fetch.enable'))),
+      ['Fetch.enable', {patterns: [{urlPattern: 'http://fixture.invalid/matches/new-fixture/action', requestStage: 'Response'}]}]);
+    assert.equal(state.revision, 1);
+    assert.equal(p.events.filter(event => event === 'click').length, 1);
+    assert.equal(p.events.filter(event => event === 'Fetch.failRequest').length, 1);
+    assert.ok(p.events.indexOf('Fetch.disable') > p.events.indexOf('drop-fulfilled'));
+  });
+  test(`mock restored recovery retains exact OPTIONS POST continuations and fatal errors with capability ${supported}`, async () => {
+    const caps = {supportsFetchResourceTypeFilter: supported};
+    const p = protocol({browserCapabilities: caps, lateEvent: true});
+    await flush();
+    await p.pause(pausedRequest('OPTIONS'));
+    await p.pause(pausedRequest('POST'));
+    await p.pause(pausedResponse());
+    assert.deepEqual(JSON.parse(JSON.stringify(p.calls.filter(([method]) =>
+      method === 'Fetch.continueRequest' || method === 'Fetch.continueResponse'))), [
+      ['Fetch.continueRequest', {requestId: privateMarker, interceptResponse: false}],
+      ['Fetch.continueRequest', {requestId: privateMarker, interceptResponse: true}],
+      ['Fetch.continueResponse', {requestId: privateMarker}],
+    ]);
+    assert.equal(p.events.includes('Fetch.failRequest'), false);
+    p.deliver(); p.fail.resolve(); await p.promise;
+    assert.equal(p.events.filter(event => event === 'Fetch.failRequest').length, 1);
+    for (const phase of ['request', 'response', 'drop']) {
+      const error = new Error('PUBLIC controlled original command rejection');
+      const bad = protocol({browserCapabilities: caps, lateEvent: phase !== 'drop',
+        ...(phase === 'request' ? {requestError: error} : phase === 'response' ? {continueError: error} : {failError: error})});
+      await flush();
+      if (phase === 'request') await bad.pause(pausedRequest('OPTIONS'));
+      else if (phase === 'response') await bad.pause(pausedResponse());
+      else bad.fail.resolve();
+      await assert.rejects(bad.promise, actual => actual === error);
+      assert.equal(bad.events.filter(event => event === 'click').length, 1);
+    }
   });
 }

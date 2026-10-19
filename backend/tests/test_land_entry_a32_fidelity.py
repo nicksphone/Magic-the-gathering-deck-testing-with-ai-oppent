@@ -13,7 +13,7 @@ from game_state.state import MatchFactory
 
 
 FIXTURES = Path(__file__).parent / 'fixtures'
-SOURCES_SHA = '7b4e6891174bd118e73b5c5e308183bfea39b1c6644392c7c69bebf6c31b4bc2'
+SOURCES_SHA = 'c4a9b44774a6aec9d14f20d8c2b196ed9fc317ad19a42b86b009bb42d9da7c5a'
 NAMES = ('Sacred Foundry', 'Lightning Bolt', 'Island', 'Font of Agonies')
 CASES = (
     ('foundry', 'test_land_play_requires_explicit_entry_choice_and_payment_is_atomic', 'legal_moves', 'Sacred Foundry', None),

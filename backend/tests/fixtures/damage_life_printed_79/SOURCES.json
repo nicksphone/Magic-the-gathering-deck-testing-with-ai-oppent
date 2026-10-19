@@ -501,7 +501,7 @@
       {
         "card_name_present": true,
         "file": "backend/tests/fixtures/color_consumer_goldens/provenance.json",
-        "file_sha256": "37aca1647d8b9a423f71cef48642327c0b18ccbe0928f2d485c9ca85f2e3a881",
+        "file_sha256": "72322a94413a7a32589a264678cd5b10e99d4faa07a7b3227f54b9d454d30b0c",
         "hash_link": [
           "file_sha256"
         ]
@@ -549,7 +549,7 @@
       {
         "file": "backend/tests/fixtures/color_consumer_goldens/provenance.json",
         "link": "raw_file_or_normalized_row_SHA_present",
-        "sha256": "37aca1647d8b9a423f71cef48642327c0b18ccbe0928f2d485c9ca85f2e3a881"
+        "sha256": "72322a94413a7a32589a264678cd5b10e99d4faa07a7b3227f54b9d454d30b0c"
       },
       {
         "file": "backend/tests/fixtures/soulscar_consumer_audit/provenance.json",

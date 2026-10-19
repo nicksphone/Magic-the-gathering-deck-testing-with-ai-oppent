@@ -6528,9 +6528,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-ui-v2.mjs": {
-    "mtime": 1792355634.3643525,
-    "seen": 1792355776.5830028,
-    "ast_hash": "dee44e0f690bc075edda08ff8e6b522c",
+    "mtime": 1792369251.656716,
+    "seen": 1792370158.8645468,
+    "ast_hash": "1e255cc00f30199ec623f3e489fe4f84",
     "semantic_hash": ""
   },
   "frontend/tests/browser-variable-costs.mjs": {
@@ -18258,9 +18258,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/browser-v2-drop-response-contract.mjs": {
-    "mtime": 1792355634.3623524,
-    "seen": 1792355776.5830066,
-    "ast_hash": "9049a8d3cb73307ef3f8d88e4c5193d9",
+    "mtime": 1792369251.656716,
+    "seen": 1792370158.8645506,
+    "ast_hash": "6825b2f3613880ae184fedee51fc5172",
     "semantic_hash": ""
   },
   "docs/testing/browser-v2-accepted-response-recovery.md": {
@@ -18348,9 +18348,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_selected_fixture_contracts.py": {
-    "mtime": 1792033175.694677,
-    "seen": 1792034402.357422,
-    "ast_hash": "877b2a79501c0bd6e594ba68521a52c4",
+    "mtime": 1792369251.6277165,
+    "seen": 1792370158.86374,
+    "ast_hash": "f928ef2491c34d4b65a8fc9a4f671287",
     "semantic_hash": ""
   },
   "backend/tests/test_selection_suspend_fixture_birth.py": {
@@ -18918,9 +18918,9 @@
     "semantic_hash": ""
   },
   "docs/testing/phase1-acceptance-current.md": {
-    "mtime": 1792362213.3648696,
-    "seen": 1792362999.1475716,
-    "ast_hash": "9ba23a5387aa4871e391f143ff569bf7",
+    "mtime": 1792370130.0310671,
+    "seen": 1792370158.8660107,
+    "ast_hash": "b00e823db9355c3c557e88f9b5e128cd",
     "semantic_hash": ""
   },
   "backend/tests/test_knowledge_domain_boundaries.py": {
@@ -19554,9 +19554,9 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/rules_printed_facts_e4/SOURCES.json": {
-    "mtime": 1792349252.453559,
-    "seen": 1792349638.7041194,
-    "ast_hash": "0b1efa84c54d9945889bd54fd7291dc5",
+    "mtime": 1792370017.4729452,
+    "seen": 1792370158.8616583,
+    "ast_hash": "bb25d32f9de163d2cb4ba6b30ca2ce00",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/rules_printed_facts_e4/UNCHANGED_FUNCTION_SHA256.json": {
@@ -19698,9 +19698,9 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/damage_life_printed_79/SOURCES.json": {
-    "mtime": 1792134717.7065144,
-    "seen": 1792134906.726026,
-    "ast_hash": "1852bbc359f527b830b3629c32ffab76",
+    "mtime": 1792370017.4709454,
+    "seen": 1792370158.8606946,
+    "ast_hash": "8a78ba987d51f7a0dd231032dcc92019",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/damage_life_printed_79/ajani-s-pridemate-scryfall-raw.json": {
@@ -19908,9 +19908,9 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/stack_copy_printed_b720/SOURCES.json": {
-    "mtime": 1792145644.3535907,
-    "seen": 1792145884.6497264,
-    "ast_hash": "0a1772bb41001dcaf20ddde0a0cda896",
+    "mtime": 1792370017.4769452,
+    "seen": 1792370158.8617773,
+    "ast_hash": "2d80bba0ce76593fefb077e045ba2bec",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/stack_copy_printed_b720/STATE_FIXTURE_PREIMAGE.json": {
@@ -21282,9 +21282,9 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/life_cost_022758/SOURCES.json": {
-    "mtime": 1792204504.1947021,
-    "seen": 1792205655.1015468,
-    "ast_hash": "75684837a10594f20c28cffb0ac88b8c",
+    "mtime": 1792370017.4729452,
+    "seen": 1792370158.8613675,
+    "ast_hash": "be78e354fdd17c83ad9114852d1e3195",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/life_cost_022758/TOXIC_PROVENANCE.json": {
@@ -21300,9 +21300,9 @@
     "semantic_hash": ""
   },
   "backend/tests/life_cost_canonical_022758.py": {
-    "mtime": 1792204504.1947021,
-    "seen": 1792205655.1021361,
-    "ast_hash": "7287c8216d62523ca540f3378bfdf6fb",
+    "mtime": 1792370017.4769452,
+    "seen": 1792370158.8619933,
+    "ast_hash": "0699baa124660cfa55d33bc76936685c",
     "semantic_hash": ""
   },
   "backend/tests/test_bounce_stack_aa7_fidelity.py": {
@@ -21312,9 +21312,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_life_cost_022758_fidelity.py": {
-    "mtime": 1792204504.1947021,
-    "seen": 1792205655.103321,
-    "ast_hash": "d175eac969a916a949ba4055d3e919a6",
+    "mtime": 1792370017.4769452,
+    "seen": 1792370158.8632224,
+    "ast_hash": "a7070c6d47af01bd0db077e5112a2895",
     "semantic_hash": ""
   },
   "docs/testing/bounce-stack-canonical-aa7.md": {
@@ -21510,9 +21510,9 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/land_entry_a32/SOURCES.json": {
-    "mtime": 1792212337.001742,
-    "seen": 1792215100.263194,
-    "ast_hash": "2c8c94626e279522f8fb4440bcb848f5",
+    "mtime": 1792370017.4709454,
+    "seen": 1792370158.8612943,
+    "ast_hash": "d4d39fc9e439b5dc83bd9c8af36861b4",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/static_layers_a32/PROVENANCE.json": {
@@ -21558,9 +21558,9 @@
     "semantic_hash": ""
   },
   "backend/tests/land_entry_canonical_a32.py": {
-    "mtime": 1792212337.001742,
-    "seen": 1792215100.263833,
-    "ast_hash": "4096c0b1770763909f0381240b321a0b",
+    "mtime": 1792370017.4769452,
+    "seen": 1792370158.8619773,
+    "ast_hash": "82ec56de50b4a92f9423deec32bf52b7",
     "semantic_hash": ""
   },
   "backend/tests/static_layers_canonical_a32.py": {
@@ -21570,9 +21570,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_land_entry_a32_fidelity.py": {
-    "mtime": 1792212337.001742,
-    "seen": 1792215100.2649887,
-    "ast_hash": "69b6a0c545fc3cfb2ce75350e7365286",
+    "mtime": 1792370017.4769452,
+    "seen": 1792370158.863143,
+    "ast_hash": "3c9f3bf7f2d45d5d5d8b1c713af81135",
     "semantic_hash": ""
   },
   "backend/tests/test_static_layers_canonical_a32_fidelity.py": {
@@ -22158,9 +22158,9 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/browser_positive83/PROVENANCE.json": {
-    "mtime": 1792258602.3983192,
-    "seen": 1792258824.4565055,
-    "ast_hash": "91d151ec1878b42273e39abdfdd29cf0",
+    "mtime": 1792370017.4709454,
+    "seen": 1792370158.8603916,
+    "ast_hash": "9ce8d45066f69358c09c7b2d407bbaa3",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/browser_positive83/SOURCES.json": {
@@ -22266,9 +22266,9 @@
     "semantic_hash": ""
   },
   "backend/tests/fixtures/event_release_T57/SOURCES.json": {
-    "mtime": 1792349252.4555588,
-    "seen": 1792349638.703461,
-    "ast_hash": "db60f9aea02653c5632601bbaec6378e",
+    "mtime": 1792370017.4709454,
+    "seen": 1792370158.8610618,
+    "ast_hash": "d90b7b7670ac05ae27db098363bc4105",
     "semantic_hash": ""
   },
   "backend/tests/fixtures/smothering_sacrifice_T57/PROVENANCE.json": {
@@ -22530,9 +22530,15 @@
     "semantic_hash": ""
   },
   "docs/testing/ci-fixture-regressions-current.md": {
-    "mtime": 1792362748.8068926,
-    "seen": 1792362999.1468916,
-    "ast_hash": "b59abb4452318b04e0f325517170a97b",
+    "mtime": 1792370130.0310671,
+    "seen": 1792370158.8653164,
+    "ast_hash": "a8ec380b696944cb0fcffa1990933c44",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-response-pattern-restoration.md": {
+    "mtime": 1792369747.8624434,
+    "seen": 1792370158.8651915,
+    "ast_hash": "a060d35f2ed46079fccfd8af2a5cfe46",
     "semantic_hash": ""
   }
 }

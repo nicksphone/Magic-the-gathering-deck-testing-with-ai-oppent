@@ -121,7 +121,7 @@ async function recoverDroppedResponse(s) {
   try {
     await command('Network.enable');
     interceptionTrace.observeControl?.('Fetch.enable','sent');
-    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response',...(supportsFetchResourceTypeFilter?{resourceType:'Fetch'}:{})}]});enabled=true;
+    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
     interceptionTrace.observeControl?.('Fetch.enable','accepted');
     await click('Play Land Forest');
     const deadline=Date.now()+15000;

@@ -1,5 +1,48 @@
 # Source-Validated CI Fixture Repairs
 
+## Closed Provenance Dependencies
+
+Hosted run `39173144750` completed on `e8811ad0`: workers 1 and 3 pass,
+worker 2 reports the two publisher expectations below, and worker 0 reports
+one provenance-pin assertion. Only reviewed sanitized metadata is inspected.
+The raw protected game trace and hosted backend logs remain unread.
+
+The earlier complete color-record update legitimately expanded two provenance
+receipts but left their consumers' digests stale. The correction updates a
+closed dependency chain of 11 files and 15 hash literals, including four
+`SOURCES_SHA` constants. Complete card bodies, JSON structure, function bodies,
+assertions and strict hash comparisons remain unchanged. Independent source
+checks validate all 60 rules RAW bindings and 129 provenance links.
+
+The unchanged 17-case baseline reproduces 16 passes and that single digest
+failure. The candidate passes one seven-whole-module declaration of 248 cases,
+including all 17, with all 15 finality checks and physical release at
+`2026-10-19T00:35:07.603590Z`. No 248-case baseline, separate candidate-17 run,
+whole backend, browser or Phase 1 completion is inferred.
+
+## Subsequent Publisher Contract
+
+Reviewed sanitized worker2 metadata from `e8811ad0` narrows its remaining
+failures to two stale publication-unit expectations: the current canonical
+compleated projection accepts default/exact `True` and records matching per-seat
+mainboards, while these tests still demand `False` and a two-item record.
+The updated 16-case module tests that actual contract without widening any
+publisher or production helper. Its original four Factory/corruption cases
+and both extraction helpers remain byte-identical. Publication controls are
+explicitly mock protocols, not gameplay or original-stock certificates.
+
+A corrected baseline runs all 9 old cases with 7 passes and those two failures.
+The candidate passes all 16 cases in 5.80 seconds, with all 15 finality checks,
+no unexpected IO and physical release at `2026-10-19T00:14:00.353686Z`.
+An initial harness path-rebinding stop executes no tests and is preserved;
+source/runtime/system and idle-supervisor closure are independently checked
+before the corrected baseline is granted. No failed attempt is called a pass.
+
+The same reviewed worker metadata shows the unchanged BO3 terminal test passing
+setup/call/teardown. Its source calls the fresh genuine producer before the
+cold read; no raw trace is accessed. This is evidence for that worker's actual
+series-and-restore path, not all independent BO3 tests or whole-backend success.
+
 The reviewed sanitized diagnostics for hosted run39161755968 identify several
 fixture regressions separately from the inventory schema defect. No protected
 trace or raw backend log is read. These corrections do not change production

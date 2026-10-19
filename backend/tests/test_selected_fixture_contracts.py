@@ -81,25 +81,73 @@ def publication_function():
     return namespace['publish'], calls
 
 
-def test_publication_accepts_exact_declared_false_keyword_only():
+@pytest.mark.parametrize('mode', ('default', 'explicit-true', 'per-seat'))
+def test_publication_accepts_exact_true_default_and_matching_mainboards(mode):
+    """Mock publication protocol only, not a native game or stock certificate."""
     publish, calls = publication_function()
-    state, deck = object(), [{'quantity': 60, 'card_name': 'Island'}]
-    try:
-        result = publish(state, deck, capture_original_stock=False)
-    except TypeError:
-        pytest.fail('Original publication keyword is not accepted')
-    assert result is state and calls == [(state, deck)]
-
-
-@pytest.mark.parametrize('value', (True, None, 0, 'False'))
-def test_publication_rejects_any_other_capture_value(value):
-    publish, calls = publication_function()
-    try:
-        publish(object(), [], capture_original_stock=value)
-    except AssertionError:
-        pass
-    except TypeError:
-        pytest.fail('Keyword missing; strictFalse predicate not reached')
+    deck = [{'quantity': 60, 'card_name': 'Island'}]
+    boards = {1: deepcopy(deck), 2: [{'quantity': 60, 'card_name': 'Swamp'}]
+              if mode == 'per-seat' else deepcopy(deck)}
+    state = SimpleNamespace(starting_decks=deepcopy(boards))
+    keywords = {} if mode == 'default' else {'capture_original_stock': True}
+    if mode == 'per-seat':
+        keywords['mainboards'] = boards
+    before = pickle.dumps((state, deck, boards), protocol=5)
+    result = publish(state, deck, **keywords)
+    assert result is state and calls == [(state, deck, boards)]
+    recorded_state, recorded_deck, recorded_boards = calls[0]
+    assert recorded_state is state and recorded_deck is deck
+    assert type(recorded_boards) is dict and set(recorded_boards) == {1, 2}
+    assert all(type(seat) is int for seat in recorded_boards)
+    assert recorded_boards == state.starting_decks and recorded_boards[1] == deck
+    if mode == 'per-seat':
+        assert recorded_boards is boards and recorded_boards[1] != recorded_boards[2]
     else:
-        pytest.fail('Unsupported capture flag accepted')
+        assert recorded_boards[1] is deck and recorded_boards[2] is deck
+    assert pickle.dumps((state, deck, boards), protocol=5) == before
+
+
+@pytest.mark.parametrize('value', (False, None, 0, 'False', 1),
+                         ids=('false', 'none', 'zero', 'string-false', 'one'))
+def test_publication_rejects_any_other_capture_value(value):
+    """Otherwise-valid mock arguments isolate the exact-True boundary."""
+    publish, calls = publication_function()
+    deck = [{'quantity': 60, 'card_name': 'Island'}]
+    state = SimpleNamespace(starting_decks={1: deepcopy(deck), 2: deepcopy(deck)})
+    before = pickle.dumps((state, deck), protocol=5)
+    with pytest.raises(AssertionError):
+        publish(state, deck, capture_original_stock=value)
     assert not calls
+    assert pickle.dumps((state, deck), protocol=5) == before
+
+
+def test_publication_rejects_unknown_keyword_before_recording():
+    """Python keyword binding stays strict; no fallback publication is accepted."""
+    publish, calls = publication_function()
+    deck = [{'quantity': 60, 'card_name': 'Island'}]
+    state = SimpleNamespace(starting_decks={1: deepcopy(deck), 2: deepcopy(deck)})
+    before = pickle.dumps((state, deck), protocol=5)
+    with pytest.raises(TypeError, match='unexpected keyword argument'):
+        publish(state, deck, capture_original_stock=True, unknown_publication_flag=True)
+    assert not calls
+    assert pickle.dumps((state, deck), protocol=5) == before
+
+
+@pytest.mark.parametrize('fault', ('keys', 'record', 'seat-one-deck'))
+def test_publication_rejects_mismatched_mainboards_without_mutation(fault):
+    """Mock shape/record/deck contradictions are not native fixture states."""
+    publish, calls = publication_function()
+    deck = [{'quantity': 60, 'card_name': 'Island'}]
+    boards = {1: deepcopy(deck), 2: [{'quantity': 60, 'card_name': 'Swamp'}]}
+    state = SimpleNamespace(starting_decks=deepcopy(boards))
+    if fault == 'keys':
+        boards = {str(seat): rows for seat, rows in boards.items()}
+    elif fault == 'record':
+        boards[2] = [{'quantity': 60, 'card_name': 'Forest'}]
+    else:
+        deck = [{'quantity': 60, 'card_name': 'Plains'}]
+    before = pickle.dumps((state, deck, boards), protocol=5)
+    with pytest.raises(AssertionError):
+        publish(state, deck, capture_original_stock=True, mainboards=boards)
+    assert not calls
+    assert pickle.dumps((state, deck, boards), protocol=5) == before

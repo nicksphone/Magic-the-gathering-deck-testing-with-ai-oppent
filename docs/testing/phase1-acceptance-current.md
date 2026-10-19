@@ -5,6 +5,21 @@ Reviewed on 2026-10-16 against the original
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,
 and completeness of a particular operator's stored decks are different claims.
 
+The completed `e8811ad0` run passes backend workers 1 and 3 but fails workers
+0 and 2 on three test-contract/digest expectations; its browser still fails
+accepted-response recovery. The closed provenance correction passes 248 cases
+in seven whole modules, including the original 17-case module whose baseline
+reproduces the stale digest. This remains separate from the runs below and
+does not substitute for the next full hosted CI result.
+
+The October 19 follow-up passes the whole 16-case publication-contract module
+and a separate 151-case browser unit/protocol suite. The former corrects the
+last two reported worker2 test expectations; the latter verifies the
+[unfiltered response-pattern restoration](browser-response-pattern-restoration.md)
+after a baseline reproduces its new regression. These are not one 167-case
+invocation or a real-browser pass. The existing complete browser suite and
+full backend CI remain required; the protected trace stays private.
+
 Candidate `d9d53d94` passes hosted frontend and backend-reference. Its browser
 fails an earlier accepted-response-drop probe before reaching linked-discard;
 backend workers are still running at this checkpoint. The subsequent

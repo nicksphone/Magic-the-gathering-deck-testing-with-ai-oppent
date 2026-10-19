@@ -41,7 +41,7 @@
   "no_network": true,
   "status": "PREP_ONLY_UNEXECUTED",
   "unchanged_materializers_and_admissions": {
-    "backend/tests/fixtures/rules_printed_facts_e4/SOURCES.json": "581a171e0aea2bfd34537a1e452036aa7badb034d5fa7236a13d5bdbfb836d7b",
+    "backend/tests/fixtures/rules_printed_facts_e4/SOURCES.json": "b6b9ba9405a501fd32b1a17c7d65702ab50b5f41926b0230b74812e35e6ff53b",
     "backend/tests/fixtures/static_layers_a32/PROVENANCE.json": "86b5c544dde1bb874ab3f451a1c194d3baee3038e13f6da4276a8acc519efa16",
     "backend/tests/fixtures/static_layers_a32/SOURCES.json": "e576308cfa2da6a4d1df29c00555906c9d75672ea8f0e556b4177e915be31889",
     "backend/tests/fixtures/static_layers_a32/tarmogoyf.raw.json": "e60a747f71098f55a4690c20c6558219f209b54760c137a4afbe8af1da9d87d9",

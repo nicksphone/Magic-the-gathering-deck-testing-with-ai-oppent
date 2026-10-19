@@ -9,7 +9,7 @@ from game_state.state import MatchFactory, Zone
 
 
 FIXTURES = Path(__file__).parent / 'fixtures'
-SOURCES_SHA = '9739e307c7839509b60d2aa0ea58c61bd969c5ccfdb058385c0f36cdff1d8923'
+SOURCES_SHA = '71a15ce054cd56bd3cd426cfb4699da63927b891e3aa293b5e0a7fb529668630'
 
 
 def raw_card(name):

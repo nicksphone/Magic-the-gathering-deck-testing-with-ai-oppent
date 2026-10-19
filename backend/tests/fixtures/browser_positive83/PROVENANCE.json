@@ -42,7 +42,7 @@
     "backend/tests/fixtures/keyword_zone4f86/SOURCES.json": "d728f61499dea3e3c03027c5df0c1689d0445c6a66f9240d55a808a48d460c2e",
     "backend/tests/fixtures/knowledge_profiles/PROVENANCE.json": "f15047f1ecb06fdaa985a58537d01b6497683637d7caf88db518dea469fc1ca2",
     "backend/tests/fixtures/library_ranking_vectors/PROVENANCE.json": "af841adc2418f6247a6dafc08c2e242b94c4d775ad8ecc94ce3981329a9e4a04",
-    "backend/tests/fixtures/life_cost_022758/SOURCES.json": "9739e307c7839509b60d2aa0ea58c61bd969c5ccfdb058385c0f36cdff1d8923",
+    "backend/tests/fixtures/life_cost_022758/SOURCES.json": "71a15ce054cd56bd3cd426cfb4699da63927b891e3aa293b5e0a7fb529668630",
     "backend/tests/fixtures/manual_mana_a227/PROVENANCE.json": "6f4454e0b034b640f6f1965184833a90ce8f10d4a67b13ea4e22493b8a2eefc3",
     "backend/tests/fixtures/manual_mana_a227/SOURCES.json": "e450c68b67cb25498e80c245962502715477bb9c903a4a77d931682ae1b5bcb8",
     "backend/tests/fixtures/trigger_instruction_audit/provenance.json": "40b29b77468eed197ae34be165941b18c52f8b600a319be53cdd4983a91393a5",
