@@ -8,6 +8,8 @@ from card_data.hydration import hydrate_deck_cards
 from game_state.state import CardInstance, MatchFactory, Zone
 from game_state.serializers import serialize_match, serialize_match_snapshot, deserialize_match_snapshot
 from rules_engine.continuous import effective_power, effective_toughness
+from tests.browser_positive83_canonical import entry as full_entry
+from tests.release_printed_fixture import glorious_anthem
 from tests.static_layers_canonical_a32 import entry as canonical_entry
 
 
@@ -28,7 +30,7 @@ def test_live_hydration_matches_diagnostic_faces_and_preserves_zero_stats():
 
 
 def test_public_card_view_matches_combat_and_preserves_base_after_reload():
-    deck = [{"quantity": 60, "card_name": "Grizzly Bears", "type_line": "Creature - Bear", "power": 2, "toughness": 2}]
+    deck = [full_entry("Grizzly Bears", 60)]
     state = MatchFactory.from_decks(deck, deck, seed=1)
     cid = state.players[1].hand.pop()
     state.players[1].battlefield.append(cid)
@@ -42,7 +44,7 @@ def test_public_card_view_matches_combat_and_preserves_base_after_reload():
     assert view["damage_marked"] == 1
     assert view["counters"]["+1/+1"] == 1
     assert (card.power, card.toughness) == (2, 2)
-    anthem = CardInstance(id="anthem", name="Glorious Anthem", owner=1, controller=1, zone=Zone.BATTLEFIELD, types=["Enchantment"], oracle_text="Creatures you control get +1/+1.")
+    anthem = glorious_anthem()
     restored.cards[anthem.id] = anthem
     restored.players[1].battlefield.append(anthem.id)
     view = serialize_match(restored)["players"][1]["battlefield"][0]

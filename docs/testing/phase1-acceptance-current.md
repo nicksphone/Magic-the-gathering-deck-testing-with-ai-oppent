@@ -811,3 +811,11 @@ completed copied-data sync is not authorization to replace a live database or
 publish private data. These boundaries do not add DB CHECK constraints, test
 history reconstruction, image completeness, browser acceptance or AI benchmarks
 to the original Phase 1 model/ingestion/seed/completeness exit criteria.
+
+The later [opening/release fixture-fidelity component](task13-opening-release-printed-fidelity.md)
+closes two additional identified positive-fixture seams: six complete opening
+prints before native capture, and canonical Bears/Anthem inputs in the release
+stat test. Its final eight whole modules pass 170 ordinary cases, retaining all
+original assertions and unsupported/invalid controls. This bounded component
+does not establish an exhaustive fixture remainder, replace later hosted CI,
+or silently resolve the literal protocol/generated-object scope question.
