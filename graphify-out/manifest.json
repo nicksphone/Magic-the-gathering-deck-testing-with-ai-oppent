@@ -22558,5 +22558,23 @@
     "seen": 1792375300.810196,
     "ast_hash": "b39a2b6c6c766100eb91ab0598e89d9c",
     "semantic_hash": ""
+  },
+  ".github/workflows/browser-recovery-localization.yml": {
+    "mtime": 1792386123.3414762,
+    "seen": 1792386402.0250223,
+    "ast_hash": "d9686cbae22425548bd26df60b602288",
+    "semantic_hash": ""
+  },
+  "docs/testing/browser-recovery-localization.md": {
+    "mtime": 1792386123.3414762,
+    "seen": 1792386402.0253785,
+    "ast_hash": "cb161eaf692feb3729ce71214a4c9306",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_browser_recovery_localization.py": {
+    "mtime": 1792386123.3414762,
+    "seen": 1792386402.0193188,
+    "ast_hash": "355fc33176227db1a2fa926887ccf964",
+    "semantic_hash": ""
   }
 }
