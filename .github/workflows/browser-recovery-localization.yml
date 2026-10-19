@@ -5,6 +5,8 @@ on:
   push:
     paths:
       - .github/workflows/browser-recovery-localization.yml
+      - .github/scripts/install-ci-app-runtime.sh
+      - backend/requirements-py312-linux.lock
 
 permissions:
   contents: read
@@ -12,12 +14,12 @@ permissions:
 jobs:
   browser-localization:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          python-version: '3.12'
+          python-version: '3.12.3'
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '22'
@@ -25,13 +27,26 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install existing ordinary-browser dependencies
         run: |
-          python -m pip install -r backend/requirements.txt
+          bash .github/scripts/install-ci-app-runtime.sh
           npm --prefix frontend ci
       - name: Record observed browser and runtime versions
         run: |
           google-chrome --version
           node --version
           python -c 'import json,sys; from importlib.metadata import version; print(json.dumps({"python":sys.version,"packages":{name:version(name) for name in ("fastapi","pydantic","starlette","httpx","uvicorn")}}))'
+          cat "$RUNNER_TEMP/ci-app-runtime.json"
+      - name: Fresh archived-source offline asset probe, not browser qualification
+        run: |
+          set -euo pipefail
+          scratch="$RUNNER_TEMP/offline-asset-probe"
+          test ! -e "$scratch" && test ! -L "$scratch"
+          mkdir -m 700 "$scratch"
+          mkdir "$scratch/source" "$scratch/runtime"
+          git archive HEAD backend | tar -x -C "$scratch/source"
+          test ! -e "$scratch/runtime/probe.db" && test ! -L "$scratch/runtime/probe.db"
+          cd "$scratch/source/backend"
+          MTG_DATABASE_PATH="$scratch/runtime/probe.db" \
+            timeout --signal=TERM --kill-after=15s 300s python -B -m tests.release_agent.offline_probe
       - name: Focused transport and start recovery, not the full UI suite
         env:
           MTG_BROWSER_NO_SANDBOX: '1'

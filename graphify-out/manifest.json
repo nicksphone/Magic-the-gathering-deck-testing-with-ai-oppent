@@ -10188,9 +10188,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/ci.yml": {
-    "mtime": 1792371909.0,
-    "seen": 1792375114.799938,
-    "ast_hash": "d06a126149887e45a078ca44b19a6649",
+    "mtime": 1792387281.9177759,
+    "seen": 1792387562.4069695,
+    "ast_hash": "0584360d674e4d66b873e085ac121e38",
     "semantic_hash": ""
   },
   "ai-performance-plan.md": {
@@ -22560,21 +22560,33 @@
     "semantic_hash": ""
   },
   ".github/workflows/browser-recovery-localization.yml": {
-    "mtime": 1792386123.3414762,
-    "seen": 1792386402.0250223,
-    "ast_hash": "d9686cbae22425548bd26df60b602288",
+    "mtime": 1792387281.9177759,
+    "seen": 1792387562.4069676,
+    "ast_hash": "6f918821d3d278c8236378a7d3c04815",
     "semantic_hash": ""
   },
   "docs/testing/browser-recovery-localization.md": {
-    "mtime": 1792386123.3414762,
-    "seen": 1792386402.0253785,
-    "ast_hash": "cb161eaf692feb3729ce71214a4c9306",
+    "mtime": 1792387426.8882391,
+    "seen": 1792387562.4073234,
+    "ast_hash": "c2f7c276b42b70576b4244669dd9f83d",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_browser_recovery_localization.py": {
     "mtime": 1792386123.3414762,
     "seen": 1792386402.0193188,
     "ast_hash": "355fc33176227db1a2fa926887ccf964",
+    "semantic_hash": ""
+  },
+  ".github/scripts/install-ci-app-runtime.sh": {
+    "mtime": 1792387281.9167757,
+    "seen": 1792387562.4012485,
+    "ast_hash": "03b65a16a43bbdb264d3846582205332",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_app_runtime.py": {
+    "mtime": 1792387281.9177759,
+    "seen": 1792387562.4012733,
+    "ast_hash": "ed7a32ab11063e3f431d28f0be9b77e4",
     "semantic_hash": ""
   }
 }
