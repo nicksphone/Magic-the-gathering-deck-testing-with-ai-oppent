@@ -218,6 +218,143 @@ def _match_termination_status(match: dict) -> str:
     return classify_timeout_state(match.get("log", []), bool(match.get("timeout")))
 
 
+def contextual_trace(trace_builder, opponent_archetypes):
+    """Bind explicit public context to native accepted-action trace identities."""
+    from collections.abc import Mapping
+    from copy import deepcopy
+    from ai.log_priors import _opponent_archetype
+
+    if (not callable(trace_builder) or not isinstance(opponent_archetypes, Mapping)
+            or set(opponent_archetypes) != {1, 2}
+            or any(type(pid) is not int for pid in opponent_archetypes)):
+        raise ValueError('Trace context requires the two physical actor seats')
+    labels = {}
+    for pid, label in opponent_archetypes.items():
+        normalized = _opponent_archetype({'opponent_archetype': label})
+        if type(label) is not str or normalized is None:
+            raise ValueError('Trace context requires an admitted public archetype')
+        labels[pid] = normalized
+
+    def trace(state, pid, legal, action, decision):
+        return trace_builder(state, pid, legal, action, decision)
+
+    def bind_native_action(payload, state, pid, action, action_index):
+        if (type(pid) is not int or pid not in labels
+                or type(action_index) is not int or action_index < 0
+                or type(payload) is not dict or type(action) is not dict
+                or type(payload.get('turn')) is not int or payload['turn'] != state.turn
+                or type(payload.get('action')) is not dict):
+            raise ValueError('Trace context requires a native action identity')
+        bound = deepcopy(payload)
+        for key, value in (('pid', pid), ('action_index', action_index),
+                           ('player_name', state.players[pid].name)):
+            if key in bound and (type(bound[key]) is not type(value) or bound[key] != value):
+                raise ValueError('Conflicting trace action identity')
+            bound[key] = value
+        for key, value in bound['action'].items():
+            if key != 'card_name' and (
+                    key not in action
+                    or json.dumps(value, sort_keys=True, allow_nan=False)
+                    != json.dumps(action[key], sort_keys=True, allow_nan=False)):
+                raise ValueError('Conflicting trace action fields')
+
+        source_action = action.get('type') in {'cast_spell', 'activate_ability'}
+        announced_name = None
+        if source_action:
+            card = state.cards.get(action.get('card_id'))
+            if card is not None and type(card.name) is str and card.name:
+                if action['type'] == 'activate_ability':
+                    announced_name = card.name + ' ability'
+                elif not card.card_faces:
+                    announced_name = card.name
+                else:
+                    targets = action.get('targets') or {}
+                    index = action.get('selected_face_index', targets.get('selected_face_index'))
+                    if type(index) is int and 0 <= index < len(card.card_faces):
+                        face = card.card_faces[index]
+                        face_name = face.get('name') if type(face) is dict else None
+                        if type(face_name) is str and face_name:
+                            announced_name = face_name
+            if announced_name is not None:
+                if ('card_name' in bound['action']
+                        and bound['action']['card_name'] != announced_name):
+                    raise ValueError('Conflicting trace announced source')
+                bound['action']['card_name'] = announced_name
+            elif 'card_name' in bound['action']:
+                raise ValueError('Trace announced source is not natively bound')
+
+        has_context = any(key in bound for key in ('opponent_archetype', 'opp_archetype'))
+        # Unresolved announcements cannot qualify a cast through the legacy reader.
+        if source_action and announced_name is None:
+            if has_context:
+                raise ValueError('Unbound announcement cannot certify trace context')
+        else:
+            if has_context and _opponent_archetype(bound) != labels[pid]:
+                raise ValueError('Conflicting trace opponent context')
+            bound['opponent_archetype'] = labels[pid]
+        return bound
+
+    def confirm_native_action(payload, original, previous, candidate, pid, action):
+        kind = action.get('type')
+        if kind not in {'cast_spell', 'activate_ability'}:
+            return payload
+        cid = action.get('card_id')
+        old_ids = {item.id for item in previous.stack}
+        items = []
+        for item in candidate.stack:
+            data = item.payload
+            if (type(item.id) is not str or not item.id or item.id in old_ids
+                    or item.source_card_id != cid or type(item.controller) is not int
+                    or item.controller != pid or type(data) is not dict
+                    or data.get('__stack_copy_kind') or data.get('__trigger_event')):
+                continue
+            if kind == 'cast_spell':
+                before = previous.spells_cast_this_turn.get(pid)
+                after = candidate.spells_cast_this_turn.get(pid)
+                card = candidate.cards.get(cid)
+                if (data.get('__announced_stack_kind') != 'spell'
+                        or type(before) is not int or type(after) is not int
+                        or after != before + 1 or card is None
+                        or card.zone.value != 'stack'):
+                    continue
+            else:
+                from game_state.state import object_incarnation
+                source = previous.cards.get(cid)
+                reference = data.get('__activation_source_reference')
+                if (data.get('__announced_stack_kind') != 'activated'
+                        or data.get('__completed_nonmana_activation') is not True
+                        or source is None or type(reference) is not dict
+                        or set(reference) != {'incarnation', 'zone_change_sequence'}
+                        or any(type(value) is not int or value < 0 for value in reference.values())
+                        or reference != {'incarnation': object_incarnation(source),
+                                         'zone_change_sequence': source.zone_change_sequence}
+                        or data.get('__activation_source_origin') != source.zone.value):
+                    continue
+            if type(item.label) is str and item.label:
+                items.append(item)
+
+        final = deepcopy(payload)
+        if len(items) != 1 or (
+                any(key in payload for key in ('opponent_archetype', 'opp_archetype'))
+                and _opponent_archetype(payload) != labels[pid]):
+            # A checked transition can stop at paid-cost choices, before announcement.
+            final.pop('opponent_archetype', None)
+            final.pop('opp_archetype', None)
+            final['action'].pop('card_name', None)
+        else:
+            name = items[0].label
+            if ('card_name' in original['action']
+                    and original['action']['card_name'] != name):
+                raise ValueError('Conflicting actual native announcement')
+            final['action']['card_name'] = name
+            final['opponent_archetype'] = labels[pid]
+        return final
+
+    trace.bind_native_action = bind_native_action
+    trace.confirm_native_action = confirm_native_action
+    return trace
+
+
 def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str, max_ticks: int, *, starting_player: int = 1,
              observer: Callable[[dict], None] | None = None, trace_builder=None, budget=None, record_game=None) -> dict:
     if starting_player not in (1, 2):
@@ -265,8 +402,25 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
                 if budget is not None:
                     budget.trace_inputs(state, pid, action, getattr(decision, 'reasoning', ''))
                 payload = trace_builder(state, pid, legal, action, decision)
+                original_payload = payload
+                bind_native_action = getattr(trace_builder, 'bind_native_action', None)
+                if bind_native_action is not None:
+                    payload = bind_native_action(payload, state, pid, action, ticks)
                 trace_line = (budget.trace_line(payload) if budget is not None else
                               'AI TRACE ' + json.dumps(payload, separators=(',', ':'), allow_nan=False))
+                candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',
+                                         lambda: checked_action(state, engine_rules, pid, action))
+                confirm_native_action = getattr(trace_builder, 'confirm_native_action', None)
+                if confirm_native_action is not None:
+                    final_payload = confirm_native_action(
+                        payload, original_payload, state, candidate, pid, action)
+                    if final_payload != payload:
+                        trace_line = (budget.trace_line(final_payload) if budget is not None else
+                                      'AI TRACE ' + json.dumps(final_payload, separators=(',', ':'), allow_nan=False))
+                if budget is None:
+                    candidate.log.insert(len(state.log), trace_line)
+                else:
+                    budget.accept_candidate(state, candidate, trace_line)
             else:
                 trace_line = (
                     "AI TRACE "
@@ -294,12 +448,12 @@ def run_game(deck_a: list[dict], deck_b: list[dict], seed: int, difficulty: str,
                         separators=(",", ":"),
                     )
                 )
-            candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',
-                                     lambda: checked_action(state, engine_rules, pid, action))
-            if budget is None:
-                candidate.log.insert(len(state.log), trace_line)
-            else:
-                budget.accept_candidate(state, candidate, trace_line)
+                candidate = _timed_stage(observer, {**context, 'action': action}, 'apply_action',
+                                         lambda: checked_action(state, engine_rules, pid, action))
+                if budget is None:
+                    candidate.log.insert(len(state.log), trace_line)
+                else:
+                    budget.accept_candidate(state, candidate, trace_line)
             state = candidate
             ticks += 1
 

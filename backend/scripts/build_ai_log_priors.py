@@ -104,12 +104,16 @@ def _qualified_export_contexts(root: Path) -> tuple[dict, dict]:
                 and isinstance(row.get("action_card_name"), str) and row["action_card_name"].strip()):
             record(path, row)
     rows = []
-    for values in candidates.values():
+    accepted_games = set()
+    for identity, values in candidates.items():
         if any(value != values[0] for value in values[1:]):
             unavailable["conflicting_action_provenance"] += len(values)
         elif values[0]["action_type"] in {"cast_spell", "activate_ability"}:
             rows.append(values[0])
-    return build_priors_from_examples(rows), dict(sorted(unavailable.items()))
+            accepted_games.add(identity[:-1])
+    payload = build_priors_from_examples(rows)
+    payload["samples"]["games"] = len(accepted_games)
+    return payload, dict(sorted(unavailable.items()))
 
 
 def _export_native_matrix_training(*, root: Path, contract: Path, inventory: Path,
@@ -204,7 +208,19 @@ def _export_native_matrix_training(*, root: Path, contract: Path, inventory: Pat
                 and type(binding["backend_files"]) is dict and binding["backend_files"]
                 and all(hex_string(v) for v in binding["backend_files"].values())
                 and digest(binding["backend_files"]) == expected_backend_sha256, "source_epoch_mismatch")
-        require(binding["backend_files"].get("scripts/matchup_round_robin.py") ==
+        # These are the recorded producer's files, not this consumer's own hash.
+        producer_context_tuple = tuple(binding["backend_files"].get(path) for path in (
+            "scripts/matchup_round_robin.py", "scripts/regression_matrix_replay.py",
+            "scripts/build_ai_log_priors.py"))
+        current_context_layout = producer_context_tuple in {
+            ("8c844e5705dd653fe036fac87d552c9d31f69182bc38b8df5ca102ecbf5ffc59",
+             "d447992fb786b37d1a37174cc3c7b8693b196dda5072cf0ac247173053adb298",
+             "68f2d13b6922d4329f9f1a3c9d0064c47cf6933bce94434ecb66f7592cbf2fb7"),
+            ("8c844e5705dd653fe036fac87d552c9d31f69182bc38b8df5ca102ecbf5ffc59",
+             "d29588861eb7a471ae3616fd79a4591c4b56050cc4ef9d1fe9db0e7ee3228b10",
+             "68f2d13b6922d4329f9f1a3c9d0064c47cf6933bce94434ecb66f7592cbf2fb7"),
+        }
+        require(current_context_layout or binding["backend_files"].get("scripts/matchup_round_robin.py") ==
                 "9061cc3b92c136a6d44bd3bb9b3ecef3297dde125f04e18ccb36e49cabb0775b", "unsupported_native_layout_epoch")
         harness = header["harness_files"]
         require(type(harness) is dict and set(harness) == {"matrix_policy.py", "parent_matrix_harness.py", "parent_matrix_launch.py"}
@@ -263,6 +279,11 @@ def _export_native_matrix_training(*, root: Path, contract: Path, inventory: Pat
         require(all(type(n) is str and n for n in names) and len(set(names)) == 11
                 and type(manifest["seeds"]) is list and len(manifest["seeds"]) == 1
                 and type(manifest["seeds"][0]) is int and manifest["seeds"][0] >= 0, "invalid_explicit_schedule")
+        if current_context_layout:
+            effective_contexts = manifest.get("effective_archetypes", {})
+            resolved_names = {d["name"] for d in decks if d["classification_status"] == "resolved"}
+            require(type(effective_contexts) is dict and all(name in resolved_names and type(label) is str
+                    for name, label in effective_contexts.items()), "invalid_effective_context_map")
         expected_schedule = {(a, b, seat, manifest["seeds"][0]) for a, b in combinations(sorted(names), 2) for seat in (1, 2)}
         actual_schedule, consumed, records = set(), set(), []
         metrics = ("missed_land_drops", "unused_mana_passes", "lethal_misses", "bad_blocks", "stall_streaks", "redundant_removal_casts")
@@ -300,6 +321,29 @@ def _export_native_matrix_training(*, root: Path, contract: Path, inventory: Pat
                 raw_bytes = json.dumps(capsule["raw_log"], ensure_ascii=True, separators=(",", ":"), allow_nan=False).encode("utf-8")
                 require(len(raw_bytes) == receipt["bytes"] and hashlib.sha256(raw_bytes).hexdigest()
                         == receipt["raw_sha256"] == capsule["raw_sha256"], "native_raw_receipt_mismatch")
+                if current_context_layout:
+                    for line in capsule["raw_log"]:
+                        if "AI TRACE " not in line:
+                            continue
+                        try:
+                            trace = json.loads(line.split("AI TRACE ", 1)[1])
+                        except ValueError:
+                            continue
+                        if type(trace) is not dict:
+                            continue
+                        known_context = any(_opponent_archetype({key: trace.get(key)}) is not None
+                                            for key in ("opp_archetype", "opponent_archetype"))
+                        if not known_context:
+                            continue
+                        context, pid = _opponent_archetype(trace), trace.get("pid")
+                        physical_contexts = {
+                            1: _opponent_archetype({"opponent_archetype": effective_contexts.get(row["seat_two"])}),
+                            2: _opponent_archetype({"opponent_archetype": effective_contexts.get(row["seat_one"])}),
+                        }
+                        require(context is not None and type(pid) is int and pid in (1, 2)
+                                and row["seat_one"] in resolved_names and row["seat_two"] in resolved_names
+                                and all(physical_contexts.values()) and physical_contexts[pid] == context,
+                                "native_context_map_mismatch")
                 result = capsule["result"]
                 require(type(result.get("ticks")) is int and 0 <= result["ticks"] <= manifest["max_ticks"]
                         and positive_finite_int(result.get("turn"))

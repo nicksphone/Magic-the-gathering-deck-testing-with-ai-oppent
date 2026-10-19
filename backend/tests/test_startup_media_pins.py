@@ -23,6 +23,9 @@ PIN_PATHS = (
 INPUT_PATHS = PIN_PATHS + (
     "backend/decks/builtin_decks.py", "backend/decks/catalog.py",
     "backend/card_data/builtin_oracle_seed.json", "backend/decks/historical_event_catalog.json",
+    "backend/tests/current_built_browser_server.py", "backend/card_data/sync.py",
+    "backend/tests/fixtures/human_transform_audit/canonical.json",
+    "backend/tests/fixtures/human_transform_audit/provenance.json",
 )
 
 
@@ -105,12 +108,29 @@ def test_all_public_startup_names_and_aliases_have_exact_seed_rows(generator):
             match = patterns["DECK_LINE"].match(line)
             assert match and int(match[1]) > 0
             names.add(match[2].strip())
+    # INITIAL_DATABASE has one non-seed public RAW dependency, independently bound
+    # before consuming the generated artifact. It does not change seed membership.
+    raw_bytes = (SOURCE / "backend/tests/fixtures/human_transform_audit/canonical.json").read_bytes()
+    provenance = json.loads((SOURCE / "backend/tests/fixtures/human_transform_audit/provenance.json").read_bytes())
+    assert provenance["facts_modified"] is False
+    assert provenance["canonical_sha256"] == hashlib.sha256(raw_bytes).hexdigest()
+    raw = json.loads(raw_bytes)["Shock"]
+    assert type(raw) is dict and raw["name"] == "Shock"
+    for key in ("id", "oracle_id"):
+        assert type(raw[key]) is str and raw[key] and raw[key] == provenance["ids"]["Shock"][key]
+    assert type(raw["type_line"]) is str and raw["type_line"]
+    assert SEED.get("Shock") is None
     artifact = generator.build_artifact(SOURCE)
     assert (len(builtin), len(expansion), len(names)) == (11, 53, 149)
     assert artifact["builtin_decks_structural_sha256"] == structural(builtin)
     assert artifact["expansion_decks_structural_sha256"] == structural(expansion)
     entries = {row["name"]: row for row in artifact["startup_media"].values()}
-    assert set(entries) == {alias for requested, row in SEED.items() for alias in (requested, row["name"])}
+    assert set(entries) - {"Shock"} == {alias for requested, row in SEED.items() for alias in (requested, row["name"])}
+    assert len(entries) == 164 and len(set(entries) - {"Shock"}) == 163
+    shock = entries["Shock"]
+    assert shock["name"] == raw["name"] and shock["type_line"] == raw["type_line"]
+    assert shock["seed_row_sha256"] == structural(None)
+    assert shock["sha256"] == hashlib.sha256(shock["content"].encode("utf-8")).hexdigest()
     for name in names:
         row = SEED.get(name) or next(row for row in SEED.values() if row["name"] == name)
         assert entries[name]["seed_row_sha256"] == structural(row)
