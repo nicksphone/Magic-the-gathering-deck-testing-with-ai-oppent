@@ -386,16 +386,31 @@ function start(label, executable, args, cwd, env = {}) {
   console.log(`OWN ${label} pid=${child.pid} UTC=${new Date().toISOString()} root=${root} ports=${JSON.stringify(ports)}`);
   return child;
 }
+function ownedGroupAbsent(child) {
+  assert.ok(Number.isSafeInteger(child?.pid) && child.pid > 0, 'Positive owned child PID required');
+  try { process.kill(-child.pid, 0); return false; }
+  catch (error) { if (error.code === 'ESRCH') return true; throw error; }
+}
 async function stop(child) {
-  if (!child?.pid || child.exitCode !== null || child.signalCode !== null) return;
-  try { process.kill(-child.pid, 'SIGTERM'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
-  let timer;
-  await Promise.race([child.done, new Promise(resolve => { timer = setTimeout(resolve, 5000); })]);
-  clearTimeout(timer);
+  if (!child?.pid) return;
+  const until = Date.now() + 5000;
   if (child.exitCode === null && child.signalCode === null) {
-    try { process.kill(-child.pid, 'SIGKILL'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
-    await deadline(child.done, 2000, `Owned KILL exit ${child.label}`);
-    assert.fail(`Forced kill required: ${child.label}`);
+    try { process.kill(-child.pid, 'SIGTERM'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
+    let timer;
+    await Promise.race([child.done, new Promise(resolve => {
+      timer = setTimeout(resolve, Math.max(0, until - Date.now()));
+    })]);
+    clearTimeout(timer);
+    if (child.exitCode === null && child.signalCode === null) {
+      try { process.kill(-child.pid, 'SIGKILL'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
+      await deadline(child.done, 2000, `Owned KILL exit ${child.label}`);
+      assert.fail(`Forced kill required: ${child.label}`);
+    }
+  }
+  while (!ownedGroupAbsent(child)) {
+    const remaining = until - Date.now();
+    assert.ok(remaining > 0, 'Owned process group closure unproven');
+    await new Promise(resolve => setTimeout(resolve, Math.min(100, remaining)));
   }
 }
 async function capture(label, executable, args, ms, env = {}) {
@@ -611,6 +626,7 @@ async function closedReceipt({requireOwnedIdentity = true} = {}) {
   if (requireOwnedIdentity) assert.deepEqual(unknownOwnedIdentities, [], 'UNKNOWN_CHILD_IDENTITY: owned closure unproven');
   assert.deepEqual(refs, []); assert.deepEqual(journals, []);
   assert.ok(children.every(c => c.exitCode !== null || c.signalCode !== null), 'All tracked children must exit');
+  for (const child of children) assert.ok(ownedGroupAbsent(child), 'All tracked process groups must be absent');
   const serverReceipts=(await readdir(out)).filter(n => /^server-closure-\d+\.json$/.test(n));
   assert.equal(serverReceipts.length,children.filter(c=>c.label==='backend').length,'Every real server must close');
   for (const file of serverReceipts) {

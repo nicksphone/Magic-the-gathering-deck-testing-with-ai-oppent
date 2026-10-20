@@ -20,6 +20,7 @@ class FirefoxUnitScheduleTests(unittest.TestCase):
             'tests/firefox-release-owned-launcher-contract.test.mjs',
             'tests/firefox-launcher-listener-readiness.test.mjs',
             'tests/release-owned/public-storage-owner-rename-budget.test.mjs',
+            'tests/release-owned/owned-process-group-closure.test.mjs',
         ])
 
 
