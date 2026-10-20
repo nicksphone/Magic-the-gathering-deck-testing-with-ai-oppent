@@ -7,7 +7,8 @@ from pathlib import Path
 from pydantic import TypeAdapter, ValidationError
 
 from ai.information import decision_view, is_unknown
-from api_contracts import Action
+from api_contracts import Action, DeckPairInput
+from card_data.hydration import ready_for_match
 from card_data.seed_cards import seed_card_payload
 from decks.builtin_decks import BUILTIN_DECKS
 from game_state.serializers import (
@@ -20,6 +21,7 @@ from rules_engine.engine import RulesEngine
 
 VERSION = 'mtg.training.v1'
 ACTION_PREFIX = 'mtg.action.v1:'
+_CUSTOM_METADATA_SOURCE = 'validated_canonical_deck_rows'
 _ACTION = TypeAdapter(Action)
 _INPUT_ERRORS = (ValidationError, ValueError, TypeError, KeyError, IndexError, AttributeError)
 # Prompts are intentionally a partial surface, never engine continuation payloads.
@@ -103,6 +105,25 @@ def _deck(name):
     return rows
 
 
+def _canonical_decks(deck_a, deck_b, *, sandbox):
+    if any(type(deck) is not list or any(type(row) is not dict for row in deck)
+           for deck in (deck_a, deck_b)):
+        raise ValueError('Canonical decks must be lists of hydrated row objects')
+    decks = deepcopy([deck_a, deck_b])
+    try:
+        request = DeckPairInput(**{
+            key: [{'quantity': row['quantity'], 'card_name': row['card_name']} for row in deck]
+            for key, deck in zip(('deck_a', 'deck_b'), decks)
+        }, sandbox=sandbox)
+    except _INPUT_ERRORS as exc:
+        raise ValueError('Invalid canonical deck quantities, names or sizes') from exc
+    for deck, entries in zip(decks, (request.deck_a, request.deck_b)):
+        if any(row['card_name'] != entry.card_name or not ready_for_match(row)
+               for row, entry in zip(deck, entries)):
+            raise ValueError('Supply complete, playable, already hydrated canonical rows')
+    return decks
+
+
 def _seat(seat):
     if type(seat) is not int or seat not in (1, 2):
         raise ActionRejected('Seat must be integer 1 or 2')
@@ -149,7 +170,27 @@ class TrainingEnvironment:
             'engine_hash': _engine_hash(),
             'metadata_source': 'card_data/builtin_oracle_seed.json',
         }
-        state = MatchFactory.from_decks(*decks, seed=seed, game_id=_digest(provenance))
+        return self._reset_from_rows(decks, provenance)
+
+    def reset_from_decks(self, deck_a, deck_b, *, seed, sandbox=False):
+        """Trusted canonical app rows, without repository lookup or metadata repair."""
+        if type(seed) is not int:
+            raise ValueError('An explicit integer seed is required')
+        decks = _canonical_decks(deck_a, deck_b, sandbox=sandbox)
+        provenance = {
+            'version': VERSION, 'action_version': ACTION_PREFIX,
+            'seed': seed, 'deck_names': ['Custom A', 'Custom B'],
+            'deck_hashes': [_digest(rows) for rows in decks],
+            'engine_hash': _engine_hash(), 'metadata_source': _CUSTOM_METADATA_SOURCE,
+            'sandbox': sandbox,
+        }
+        staged = TrainingEnvironment()
+        observation = staged._reset_from_rows(decks, provenance)
+        self._state, self._provenance, self._steps = staged._state, staged._provenance, 0
+        return observation
+
+    def _reset_from_rows(self, decks, provenance):
+        state = MatchFactory.from_decks(*decks, seed=provenance['seed'], game_id=_digest(provenance))
         # Policies, not engine defaults, must resolve supported private choices.
         state.mechanic_choice_players = {1, 2}
         state.replacement_choice_required = True
@@ -751,7 +792,19 @@ class TrainingEnvironment:
             raise ValueError('Snapshot state digest mismatch')
         if type(data['steps']) is not int or data['steps'] < 0:
             raise ValueError('Invalid episode step count')
-        expected = [_digest(_deck(name)) for name in data['provenance']['deck_names']]
+        origin = data['provenance'].get('metadata_source')
+        if origin == _CUSTOM_METADATA_SOURCE:
+            try:
+                initial = _canonical_decks(
+                    data['state']['starting_decks']['1'], data['state']['starting_decks']['2'],
+                    sandbox=data['provenance']['sandbox'])
+            except _INPUT_ERRORS as exc:
+                raise ValueError('Invalid retained canonical deck rows') from exc
+            expected = [_digest(rows) for rows in initial]
+        elif origin == 'card_data/builtin_oracle_seed.json':
+            expected = [_digest(_deck(name)) for name in data['provenance']['deck_names']]
+        else:
+            raise ValueError('Unknown training deck origin')
         actual = [_digest(data['state']['starting_decks'][str(pid)]) for pid in (1, 2)]
         if expected != actual or actual != data['provenance']['deck_hashes']:
             raise ValueError('Snapshot deck provenance mismatch')

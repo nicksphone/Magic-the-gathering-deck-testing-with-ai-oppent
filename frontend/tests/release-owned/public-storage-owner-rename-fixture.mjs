@@ -32,9 +32,12 @@ export function failure(code, file) {
 
 export function subject(variant, options = {}) {
   assert.equal(variant, 'public487');
+  const uid = options.uid ?? 1000;
   const methods = ['outputBudget', 'missingLiveChromeCacheLeaf', 'storageReceipts'];
   if (/^async function missingLiveFirefoxCacheLeaf\(/m.test(launcher))
     methods.push('missingLiveFirefoxCacheLeaf');
+  for (const name of ['missingLiveBodyCacheLeaf', 'missingOwnedTransientCacheLeaf'])
+    if (new RegExp(`^async function ${name}\\(`, 'm').test(launcher)) methods.push(name);
   const receipt = {
     pid: PID, start_ticks: 3010, epoch: EPOCH, stage: 'ready',
     lock: {path: DB + '.capacity-owner.lock', identity: [7, 99], bytes: 0},
@@ -49,7 +52,7 @@ export function subject(variant, options = {}) {
   const initial = failure(options.code ?? 'ENOENT', options.errorPath ?? temp);
   const second = failure('ENOENT', temp);
   let tempStats = 0, finalStats = 0;
-  const file = (data, extra = {}) => ({data, size: data.length, uid: 1000,
+  const file = (data, extra = {}) => ({data, size: data.length, uid,
     gid: 1000, mode: 0o100600, nlink: 1, dev: 7, ino: 15, kind: 'file', ...extra});
   const finalFile = () => file(bytes, {ino: 16, ...options.finalInfo});
   const rename = () => {
@@ -87,7 +90,7 @@ export function subject(variant, options = {}) {
   };
   const lookup = (name, opts = {}) => {
     if (files.has(name)) return info(files.get(name), opts);
-    if (directories().has(name)) return info({kind: 'directory', uid: 1000,
+    if (directories().has(name)) return info({kind: 'directory', uid,
       gid: 1000, dev: 7, ino: 2, mode: 0o40700, nlink: 2, size: 0}, opts);
     throw failure('ENOENT', name);
   };
@@ -150,10 +153,12 @@ export function subject(variant, options = {}) {
       files.set(name, file(Buffer.from(data)));
     },
     storageInventory: async () => ({bytes: options.storageBytes ?? 0}),
-    process: {getuid: () => 1000, pid: 201,
+    process: {getuid: () => uid, pid: 201,
       kill: (...args) => calls.signals.push(args)},
     children});
   const declarations = `const root=${JSON.stringify(ROOT)},out=${JSON.stringify(options.out ?? OUT)},db=${JSON.stringify(DB)};
+    const browserVendor=${JSON.stringify(options.vendor ?? 'firefox')};
+    const python='/protocol/python',bodyCacheDirectory=path.join(out,'firefox-body-cache');
     const ownerLock=db+'.capacity-owner.lock';
     const ownerEpochs=new Map(),closedBackupHashes=new Map();
     let lockIdentity,shuttingDown=false,backendReady=true;
@@ -170,33 +175,37 @@ export function subject(variant, options = {}) {
 // The original subjects stay unchanged; these finite overrides model only XDG cache I/O.
 export function firefoxSubject(options = {}) {
   const out = options.out ?? OUT;
-  const cache = path.join(out, 'cache');
-  const leaf = options.leaf ?? path.join(cache, 'fontconfig', 'CACHEDIR.TAG.LCK');
+  const uid = options.uid ?? 1000;
+  const body = options.bodyCache === true;
+  const cache = path.join(out, body ? 'firefox-body-cache' : 'cache');
+  const leaf = options.leaf ?? path.join(cache, body ? 'a'.repeat(32) + '.claim' : 'fontconfig/CACHEDIR.TAG.LCK');
   const parent = path.dirname(leaf);
-  const s = subject('public487', {stable: true, out});
-  const child = {label: 'firefox', pid: 501, exitCode: null, signalCode: null,
+  const s = subject('public487', {stable: true, out, uid, vendor: options.vendor});
+  const child = body ? {label: 'backend', pid: 301, startTicks: 3010, exitCode: null, signalCode: null}
+    : {label: 'firefox', pid: 501, exitCode: null, signalCode: null,
     budgetIdentity: {pid: 501, startTicks: '5010', exe: '/protocol/firefox'}};
   if (options.identity) Object.assign(child.budgetIdentity, options.identity);
   if (options.child) Object.assign(child, options.child);
   s.context.children.splice(0, s.context.children.length, ...(options.noChild ? [] : [child]));
+  vm.runInContext("backend=children.find(child=>child.label==='backend')", s.context);
   if (options.shutdown) vm.runInContext('shuttingDown=true', s.context);
-  const file = {kind: 'file', dev: 7, ino: 14, uid: 1000, gid: 1000,
+  const file = {kind: 'file', dev: 7, ino: 14, uid, gid: 1000,
     mode: 0o100600, nlink: 1, size: 37};
   let current = {...file}, error, procReads = 0, exeReads = 0;
   const dirCalls = new Map();
   const info = row => ({...row, isFile: () => row.kind === 'file',
     isDirectory: () => row.kind === 'directory', isSymbolicLink: () => row.kind === 'symlink'});
-  const dirs = new Map([[out, {kind: 'directory', dev: 7, ino: 1, uid: 1000,
+  const dirs = new Map([[out, {kind: 'directory', dev: 7, ino: 1, uid,
     gid: 1000, mode: 0o40700}], [cache, {kind: 'directory', dev: 7, ino: 2,
-    uid: 1000, gid: 1000, mode: 0o40700}], [parent, {kind: 'directory', dev: 7,
-    ino: 3, uid: 1000, gid: 1000, mode: 0o40755}]]);
+    uid, gid: 1000, mode: 0o40700}]]);
+  if (parent !== cache) dirs.set(parent, {kind: 'directory', dev: 7,
+    ino: 3, uid, gid: 1000, mode: 0o40755});
   const io = options.io;
   Object.assign(s.context, {
     readdir: async (name, opts) => {
       if (name === MEDIA) return [];
       if (io) return io.readdir(name, opts);
-      const childName = name === out ? path.relative(out, parent).split(path.sep)[0]
-        : name === cache ? 'fontconfig' : path.basename(leaf);
+      const childName = name === parent ? path.basename(leaf) : path.relative(name, parent).split(path.sep)[0];
       return [{name: childName, isDirectory: () => name !== parent,
         isFile: () => name === parent, isSymbolicLink: () => false}];
     },
@@ -226,16 +235,20 @@ export function firefoxSubject(options = {}) {
       return info({...dirs.get(name), ...options[kind + 'Info'], ...(drift ? {ino: 900} : {})});
     },
     realpath: async name => {
-      if (name === '/proc/501/exe') return ++exeReads > 1 && options.exeAfter
-        ? options.exeAfter : '/protocol/firefox';
+      (s.calls.resolve ??= []).push(name);
+      if (name === '/protocol/python') return '/protocol/python-real';
+      if (name === '/proc/' + child.pid + '/exe') return ++exeReads > 1 && options.exeAfter
+        ? options.exeAfter : options.exeBefore ?? (body ? '/protocol/python-real' : '/protocol/firefox');
       if (options.redirect === name) return '/foreign';
       return io ? io.realpath(name) : name;
     },
     readFile: async name => {
-      assert.equal(name, '/proc/501/stat', 'No real process reads in Firefox unit subjects');
+      s.calls.read.push(name);
+      assert.equal(name, '/proc/' + child.pid + '/stat', 'No real process reads in Firefox unit subjects');
       const fields = Array(23).fill('0');
-      fields[19] = ++procReads > 1 && options.birthAfter ? options.birthAfter : options.birthBefore ?? '5010';
-      return '501 (Firefox unit) ' + fields.join(' ');
+      fields[19] = ++procReads > 1 && options.birthAfter ? options.birthAfter : options.birthBefore ?? (body ? '3010' : '5010');
+      if (procReads > 1 && options.replaceBackend) vm.runInContext('backend={...backend}', s.context);
+      return child.pid + ' (Firefox unit) ' + fields.join(' ');
     },
     writeFile: async (name, bytes) => {
       s.calls.write.push(name);

@@ -239,7 +239,7 @@ test('actual outputBudget sees readdir then genuine Firefox cache unlink and sta
     await mkdir(cache, {mode: 0o700});
     await mkdir(parent, {mode: 0o700});
     await writeFile(leaf, 'owned-public-cache', {mode: 0o600, flag: 'wx'});
-    const s = firefoxSubject({out: directory, io: {
+    const s = firefoxSubject({out: directory, uid: process.getuid(), io: {
       readdir, lstat, realpath, writeFile,
       stat: async file => {
         assert.equal(file, leaf);
@@ -282,7 +282,7 @@ test('recreated lstat snapshot is charged after another genuine unlink without r
     await mkdir(cache, {mode: 0o700});
     await mkdir(parent, {mode: 0o700});
     await writeFile(leaf, 'original public cache bytes', {mode: 0o600, flag: 'wx'});
-    const s = firefoxSubject({out: directory, io: {
+    const s = firefoxSubject({out: directory, uid: process.getuid(), io: {
       readdir, writeFile,
       stat: async file => {
         assert.equal(file, leaf);
@@ -322,5 +322,183 @@ test('recreated lstat snapshot is charged after another genuine unlink without r
     assert.equal(s.calls.signals.length, 0);
   } finally {
     await rm(directory, {recursive: true, force: true});
+  }
+});
+
+test('Firefox body-cache metrics accepts exactly five direct transient suffixes without reading bodies', async () => {
+  for (const suffix of ['.body', '.json', '.claim', '.release', '.release.next']) {
+    const s = firefoxSubject({bodyCache: true,
+      leaf: OUT + '/firefox-body-cache/' + 'a'.repeat(32) + suffix});
+    const result = await s.run();
+    assert.equal(result.bytes, 0);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.equal(s.calls.write.length, 1);
+    assert.ok(s.calls.read.every(name => name === '/proc/301/stat'));
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('body-cache recreated regular and hardlinked metrics charge the last observed size without following the leaf', async () => {
+  for (const nlink of [1, 2]) {
+    const s = firefoxSubject({bodyCache: true, recreated: {size: 123, nlink}});
+    const result = await s.run();
+    assert.equal(result.bytes, 123);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.equal(s.calls.resolve.includes(s.leaf), false);
+    assert.ok(s.calls.read.every(name => name === '/proc/301/stat'));
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('body-cache exception excludes enrollment permanent unknown malformed and nested names', async () => {
+  for (const name of ['enrollment.json', 'enrollment.json.next', 'unknown.tmp',
+    'a'.repeat(31) + '.claim', 'A'.repeat(32) + '.claim',
+    'a'.repeat(32) + '.body.next', 'a'.repeat(32) + '.json.backup',
+    'nested/' + 'a'.repeat(32) + '.claim']) {
+    const s = firefoxSubject({bodyCache: true, leaf: OUT + '/firefox-body-cache/' + name});
+    await assert.rejects(s.run(), error => error === s.initial);
+    assert.equal(s.calls.signals.length, 0);
+  }
+  const s = firefoxSubject({bodyCache: true, leaf: OUT + '/profile/' + 'a'.repeat(32) + '.claim'});
+  await assert.rejects(s.run(), error => error === s.initial);
+});
+
+test('body-cache metrics requires the retained current backend and actual birth and executable on both sides', async () => {
+  for (const options of [
+    {noChild: true}, {shutdown: true}, {child: {label: 'firefox'}},
+    {child: {pid: -1}}, {child: {exitCode: 0}}, {child: {signalCode: 'SIGTERM'}},
+    {child: {startTicks: 0}}, {child: {startTicks: '3010'}},
+    {birthBefore: '9999'}, {birthAfter: '9999'},
+    {exeBefore: '/foreign'}, {exeAfter: '/foreign'}, {replaceBackend: true},
+  ]) {
+    const s = firefoxSubject({bodyCache: true, ...options});
+    await assert.rejects(s.run());
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('body-cache metrics rejects nonmissing errors unsafe or changed directories and recreated nonregular foreign leaves', async () => {
+  for (const options of [
+    {code: 'EACCES'}, {errorPath: '/foreign'}, {leafError: 'EACCES'},
+    {redirect: OUT}, {redirect: OUT + '/firefox-body-cache'},
+    {rootInfo: {uid: 999}}, {rootInfo: {mode: 0o40755}},
+    {cacheInfo: {kind: 'symlink'}}, {cacheInfo: {uid: 999}}, {cacheInfo: {mode: 0o40755}},
+    {drift: 'root'}, {drift: 'cache'},
+    {recreated: {kind: 'symlink'}}, {recreated: {kind: 'directory'}},
+    {recreated: {uid: 999}}, {recreated: {mode: 0o100666}},
+  ]) {
+    const s = firefoxSubject({bodyCache: true, ...options});
+    await assert.rejects(s.run());
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('body-cache transient metrics shares the finite Firefox ledger and unchanged aggregate cap', async () => {
+  for (const [options, message] of [
+    [{ledger: Array(4096).fill({})}, /Finite Firefox cache race count/],
+    [{ledger: [{padding: 'x'.repeat(2 * 1024 * 1024)}]}, /Bounded Firefox cache race ledger/],
+    [{recreated: {size: 1536 * 1024 * 1024 + 1}}, /Owned output exceeds aggregate 1\.5 GiB/],
+  ]) {
+    const s = firefoxSubject({bodyCache: true, ...options});
+    await assert.rejects(s.run(), message);
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('actual outputBudget observes a genuine direct body-cache claim unlink after readdir', async () => {
+  const directory = await mkdtemp(path.join(process.env.UNIT_EVIDENCE ?? tmpdir(), 'body-cache-unlink-'));
+  const cache = path.join(directory, 'firefox-body-cache');
+  const leaf = path.join(cache, 'a'.repeat(32) + '.claim');
+  let removed = false;
+  try {
+    await mkdir(cache, {mode: 0o700});
+    await writeFile(leaf, 'public protocol claim bytes', {mode: 0o600, flag: 'wx'});
+    const s = firefoxSubject({bodyCache: true, out: directory, uid: process.getuid(), io: {
+      readdir, lstat, realpath, writeFile,
+      stat: async file => {
+        assert.equal(file, leaf);
+        assert.equal(removed, false);
+        await unlink(file); removed = true;
+        return stat(file);
+      },
+    }});
+    const result = await s.run();
+    assert.equal(removed, true);
+    assert.equal(s.initial.code, 'ENOENT');
+    assert.equal(s.initial.path, leaf);
+    assert.equal(result.bytes, 0);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.equal(s.calls.signals.length, 0);
+    const rows = JSON.parse(await readFile(path.join(directory, 'firefox-cache-races.json')));
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].chargedBytes, 0);
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});
+
+test('body-cache recreated lstat then genuine unlink conservatively charges without resolving or reading the leaf', async () => {
+  const directory = await mkdtemp(path.join(process.env.UNIT_EVIDENCE ?? tmpdir(), 'body-cache-recreated-'));
+  const cache = path.join(directory, 'firefox-body-cache');
+  const leaf = path.join(cache, 'b'.repeat(32) + '.body');
+  const bytes = Buffer.from('public synthetic body bytes');
+  let observed;
+  try {
+    await mkdir(cache, {mode: 0o700});
+    await writeFile(leaf, 'old public bytes', {mode: 0o600, flag: 'wx'});
+    const s = firefoxSubject({bodyCache: true, out: directory, uid: process.getuid(), io: {
+      readdir, writeFile,
+      stat: async file => {
+        assert.equal(file, leaf);
+        await unlink(file);
+        let gone;
+        try { await stat(file); } catch (error) { gone = error; }
+        assert.equal(gone.code, 'ENOENT');
+        await writeFile(file, bytes, {mode: 0o600, flag: 'wx'});
+        throw gone;
+      },
+      lstat: async file => {
+        const info = await lstat(file);
+        if (file === leaf) { observed = info; await unlink(file); }
+        return info;
+      },
+      realpath: async file => {
+        assert.notEqual(file, leaf, 'Metrics must not follow the transient leaf');
+        return realpath(file);
+      },
+    }});
+    const result = await s.run();
+    assert.ok(observed.isFile());
+    assert.equal(observed.size, bytes.length);
+    assert.equal(result.bytes, bytes.length);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.equal(s.calls.signals.length, 0);
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});
+
+test('Firefox VM ownership binds a nondefault UID while its original protocol default stays 1000', async () => {
+  const original = firefoxSubject();
+  assert.equal(original.context.process.getuid(), 1000);
+  const s = firefoxSubject({uid: 31337});
+  assert.equal(s.context.process.getuid(), 31337);
+  const result = await s.run();
+  assert.equal(result.observedFirefoxCacheRaceCount, 1);
+  assert.equal(result.observedChromeCacheRaceCount, 0);
+  const foreign = firefoxSubject({uid: 31337, cacheInfo: {uid: 1000}});
+  await assert.rejects(foreign.run(), /Owned Firefox cache directory required/);
+});
+
+test('body-cache metrics cannot borrow Chrome or Brave backend ownership', async () => {
+  for (const vendor of ['chrome', 'brave']) {
+    const s = firefoxSubject({bodyCache: true, vendor});
+    await assert.rejects(s.run(), error => error === s.initial);
+    assert.equal(s.calls.read.length, 0);
+    assert.equal(s.calls.signals.length, 0);
   }
 });

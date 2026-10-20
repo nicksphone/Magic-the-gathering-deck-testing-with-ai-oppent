@@ -5676,9 +5676,9 @@
     "semantic_hash": ""
   },
   "backend/training/environment.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0622327,
-    "ast_hash": "51d74301c5110fe9dde501e9024d1c3a",
+    "mtime": 1792529062.8409958,
+    "seen": 1792529458.8958747,
+    "ast_hash": "6841239529ede3a214e146b475a2b2bd",
     "semantic_hash": ""
   },
   "docs/audits/2026-09-27-api-validation-jev-provenance.json": {
@@ -15570,9 +15570,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/run-current-built-acceptance.mjs": {
-    "mtime": 1792527151.40998,
-    "seen": 1792527291.6857648,
-    "ast_hash": "94464c9928b5d2c702e1d27c52f1a4ce",
+    "mtime": 1792529133.0621223,
+    "seen": 1792529458.8963673,
+    "ast_hash": "084259917b715b27ddc7f2afb8eb25bd",
     "semantic_hash": ""
   },
   "docs/testing/ordered-copy-current.md": {
@@ -22950,15 +22950,15 @@
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/public-storage-owner-rename-budget.test.mjs": {
-    "mtime": 1792527151.40998,
-    "seen": 1792527291.6857595,
-    "ast_hash": "65276c5e1502e6bc26bc937c80c9135b",
+    "mtime": 1792529133.0621223,
+    "seen": 1792529458.8963642,
+    "ast_hash": "826076ddfc7dac0b471bcb74902aa26e",
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/public-storage-owner-rename-fixture.mjs": {
-    "mtime": 1792527151.40998,
-    "seen": 1792527291.6857631,
-    "ast_hash": "b92078b665b0b81d9e1654c1b38a86c0",
+    "mtime": 1792529133.0621223,
+    "seen": 1792529458.896366,
+    "ast_hash": "755a87035daff9564ece611f82d80a9c",
     "semantic_hash": ""
   },
   "docs/testing/storage-output-and-start-phase-checkpoint-current.md": {
@@ -23091,6 +23091,18 @@
     "mtime": 1792524051.7626264,
     "seen": 1792524344.2179594,
     "ast_hash": "c99a64fbc705fae4fbebc232efc4e0c3",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_training_custom_canonical_decks.py": {
+    "mtime": 1792529062.8409958,
+    "seen": 1792529458.8956866,
+    "ast_hash": "e38d927dc75db013ed3dee73a598ac99",
+    "semantic_hash": ""
+  },
+  "docs/testing/training-custom-canonical-decks.md": {
+    "mtime": 1792529087.3246953,
+    "seen": 1792529458.8980374,
+    "ast_hash": "b7c705837b2ca82eef549d240e070ee7",
     "semantic_hash": ""
   }
 }

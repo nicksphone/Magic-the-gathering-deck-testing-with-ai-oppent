@@ -188,10 +188,28 @@ async function missingLiveChromeCacheLeaf(error, file, entry) {
   return result;
 }
 
-async function missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot) {
+async function missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot, cacheDirectories) {
   const cache = path.join(out, 'cache');
   const child = children.find(c => c.label === 'firefox');
   const identity = child?.budgetIdentity;
+  return missingOwnedTransientCacheLeaf(error, file, entry, budgetRoot, cacheDirectories,
+    {cache, child, identity, retained: () => child.budgetIdentity === identity});
+}
+
+async function missingLiveBodyCacheLeaf(error, file, entry, budgetRoot, cacheDirectories) {
+  if (browserVendor !== 'firefox' || path.dirname(file) !== bodyCacheDirectory
+      || !/^[a-f0-9]{32}\.(?:body|json|claim|release|release\.next)$/.test(entry.name)) return false;
+  const child = backend;
+  const startTicks = child?.startTicks;
+  if (child?.label !== 'backend' || !Number.isSafeInteger(startTicks) || startTicks <= 0) return false;
+  const identity = {pid: child.pid, startTicks: String(startTicks), exe: await realpath(python)};
+  return missingOwnedTransientCacheLeaf(error, file, entry, budgetRoot, cacheDirectories,
+    {cache: bodyCacheDirectory, child, identity,
+      retained: () => backend === child && child.label === 'backend' && child.startTicks === startTicks});
+}
+
+async function missingOwnedTransientCacheLeaf(error, file, entry, budgetRoot, cacheDirectories, scope) {
+  const {cache, child, identity, retained} = scope;
   if (error.code !== 'ENOENT' || error.path !== file || !entry.isFile()
       || path.resolve(file) !== file || !file.startsWith(cache + '/')
       || path.basename(file) !== entry.name || !identity
@@ -199,13 +217,13 @@ async function missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot) {
       || typeof identity.startTicks !== 'string' || !/^[1-9][0-9]*$/.test(identity.startTicks)
       || typeof identity.exe !== 'string' || !path.isAbsolute(identity.exe)) return false;
   const alive = async () => {
-    if (shuttingDown || !children.includes(child) || child.budgetIdentity !== identity
+    if (shuttingDown || !children.includes(child) || !retained()
         || child.exitCode !== null || child.signalCode !== null) return false;
     const proc = await readFile('/proc/' + child.pid + '/stat', 'utf8');
     const startTicks = proc.slice(proc.lastIndexOf(')') + 2).split(/\s+/)[19];
     const exe = await realpath('/proc/' + child.pid + '/exe');
     return startTicks === identity.startTicks && exe === identity.exe && !shuttingDown
-      && children.includes(child) && child.budgetIdentity === identity
+      && children.includes(child) && retained()
       && child.pid === identity.pid && child.exitCode === null && child.signalCode === null;
   };
   if (!await alive()) return false;
@@ -223,9 +241,12 @@ async function missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot) {
       && (info.mode & 0o700) === 0o700 && (info.mode & 0o022) === 0,
     'Owned Firefox cache directory required');
     assert.equal(await realpath(directory), directory, 'Firefox cache directory must not redirect');
+    const enumerated = cacheDirectories.get(directory);
+    assert.ok(enumerated && enumerated.canonical === directory && same(info, enumerated.info),
+      'Firefox cache directory changed since enumeration');
     if (directory === out) assert.ok(budgetRoot.isDirectory() && same(info, budgetRoot)
       && (info.mode & 0o777) === 0o700, 'Owned output root changed');
-    if (directory === cache) assert.equal(info.mode & 0o777, 0o700, 'Owned Firefox XDG cache mode');
+    if (directory === cache) assert.equal(info.mode & 0o777, 0o700, 'Owned Firefox cache mode');
     boundaries.push(info);
   }
   let leaf;
@@ -254,6 +275,7 @@ async function missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot) {
 async function outputBudget() {
   let bytes = 0, profileBytes = 0, screenshots = 0;
   const budgetRoot = await lstat(out);
+  const cacheDirectories = new Map([[out, {info: budgetRoot, canonical: await realpath(out)}]]);
   const publishers = children.filter(child => child.label === 'backend').map(child =>
     ({child, pid: child.pid, startTicks: child.startTicks}));
   let pass = 0, renameError;
@@ -290,6 +312,13 @@ async function outputBudget() {
       && await realpath(final) === final && await sameRoot();
   }
   async function walk(directory) {
+    if (directory === bodyCacheDirectory || directory === path.join(out, 'cache')
+        || directory.startsWith(path.join(out, 'cache') + '/')) {
+      const info = await lstat(directory), canonical = await realpath(directory);
+      assert.ok(info.isDirectory() && !info.isSymbolicLink() && canonical === directory,
+        'Firefox cache directory must not redirect');
+      cacheDirectories.set(directory, {info, canonical});
+    }
     for (const entry of await readdir(directory, {withFileTypes: true})) {
       const file = path.join(directory, entry.name);
       if (entry.isDirectory()) await walk(file);
@@ -301,7 +330,8 @@ async function outputBudget() {
             renameError = error;
             throw error;
           }
-          const race = await missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot)
+          const race = await missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot, cacheDirectories)
+            || await missingLiveBodyCacheLeaf(error, file, entry, budgetRoot, cacheDirectories)
             || await missingLiveChromeCacheLeaf(error, file, entry);
           if (!race) throw error;
           size = race.size;
