@@ -188,6 +188,69 @@ async function missingLiveChromeCacheLeaf(error, file, entry) {
   return result;
 }
 
+async function missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot) {
+  const cache = path.join(out, 'cache');
+  const child = children.find(c => c.label === 'firefox');
+  const identity = child?.budgetIdentity;
+  if (error.code !== 'ENOENT' || error.path !== file || !entry.isFile()
+      || path.resolve(file) !== file || !file.startsWith(cache + '/')
+      || path.basename(file) !== entry.name || !identity
+      || !Number.isSafeInteger(identity.pid) || identity.pid <= 0 || identity.pid !== child.pid
+      || typeof identity.startTicks !== 'string' || !/^[1-9][0-9]*$/.test(identity.startTicks)
+      || typeof identity.exe !== 'string' || !path.isAbsolute(identity.exe)) return false;
+  const alive = async () => {
+    if (shuttingDown || !children.includes(child) || child.budgetIdentity !== identity
+        || child.exitCode !== null || child.signalCode !== null) return false;
+    const proc = await readFile('/proc/' + child.pid + '/stat', 'utf8');
+    const startTicks = proc.slice(proc.lastIndexOf(')') + 2).split(/\s+/)[19];
+    const exe = await realpath('/proc/' + child.pid + '/exe');
+    return startTicks === identity.startTicks && exe === identity.exe && !shuttingDown
+      && children.includes(child) && child.budgetIdentity === identity
+      && child.pid === identity.pid && child.exitCode === null && child.signalCode === null;
+  };
+  if (!await alive()) return false;
+  const directories = [out, cache];
+  let parent = cache;
+  for (const part of path.relative(cache, path.dirname(file)).split(path.sep).filter(Boolean)) {
+    parent = path.join(parent, part); directories.push(parent);
+  }
+  const fields = ['dev', 'ino', 'uid', 'gid', 'mode'];
+  const same = (a, b) => fields.every(key => a[key] === b[key]);
+  const boundaries = [];
+  for (const directory of directories) {
+    const info = await lstat(directory);
+    assert.ok(info.isDirectory() && !info.isSymbolicLink() && info.uid === process.getuid()
+      && (info.mode & 0o700) === 0o700 && (info.mode & 0o022) === 0,
+    'Owned Firefox cache directory required');
+    assert.equal(await realpath(directory), directory, 'Firefox cache directory must not redirect');
+    if (directory === out) assert.ok(budgetRoot.isDirectory() && same(info, budgetRoot)
+      && (info.mode & 0o777) === 0o700, 'Owned output root changed');
+    if (directory === cache) assert.equal(info.mode & 0o777, 0o700, 'Owned Firefox XDG cache mode');
+    boundaries.push(info);
+  }
+  let leaf;
+  try { leaf = await lstat(file); }
+  catch (gone) { if (gone.code !== 'ENOENT' || gone.path !== file) throw gone; }
+  if (leaf && (!leaf.isFile() || leaf.isSymbolicLink()
+      || leaf.uid !== process.getuid() || (leaf.mode & 0o022) !== 0
+      || !Number.isSafeInteger(leaf.size) || leaf.size < 0)) return false;
+  if (!await alive()) return false;
+  for (let i = 0; i < directories.length; i++) {
+    const current = await lstat(directories[i]);
+    assert.ok(current.isDirectory() && !current.isSymbolicLink() && same(current, boundaries[i])
+      && await realpath(directories[i]) === directories[i], 'Firefox cache directory changed');
+  }
+  const result = {size: leaf?.size ?? 0, outcome: leaf ? 'recreated-regular-charged' : 'confirmed-missing'};
+  const races = outputBudget.firefoxCacheRaces ??= [];
+  assert.ok(races.length < 4096, 'Finite Firefox cache race count');
+  races.push({file, identity, outcome: result.outcome, chargedBytes: result.size,
+    dev: leaf?.dev, ino: leaf?.ino, UTC: new Date().toISOString()});
+  const ledger = JSON.stringify(races);
+  assert.ok(Buffer.byteLength(ledger) <= 2 * 1024 * 1024, 'Bounded Firefox cache race ledger');
+  await writeFile(path.join(out, 'firefox-cache-races.json'), ledger);
+  return result;
+}
+
 async function outputBudget() {
   let bytes = 0, profileBytes = 0, screenshots = 0;
   const budgetRoot = await lstat(out);
@@ -238,7 +301,8 @@ async function outputBudget() {
             renameError = error;
             throw error;
           }
-          const race = await missingLiveChromeCacheLeaf(error, file, entry);
+          const race = await missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot)
+            || await missingLiveChromeCacheLeaf(error, file, entry);
           if (!race) throw error;
           size = race.size;
         }
@@ -274,6 +338,7 @@ async function outputBudget() {
   const storage = await storageInventory();
   assert.ok(bytes + storage.bytes <= 2560 * 1024 * 1024, 'Combined owned output exceeds2.5GiB');
   return {bytes, storageBytes: storage.bytes, profileBytes, screenshots, svgCount: svg.length,
+    observedFirefoxCacheRaceCount: outputBudget.firefoxCacheRaces?.length ?? 0,
     observedChromeCacheRaceCount: outputBudget.cacheRaces?.length ?? 0,
     enforcement: 'cooperative 1s checkpoints plus producer SVG pre-write checks; not a kernel quota'};
 }

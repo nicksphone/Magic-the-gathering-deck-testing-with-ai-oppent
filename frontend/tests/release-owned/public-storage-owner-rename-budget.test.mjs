@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
-import {mkdtemp, writeFile, readdir, lstat, stat, rename, readFile, rm} from 'node:fs/promises';
+import {mkdtemp, writeFile, readdir, lstat, stat, rename, readFile, rm, mkdir, unlink, realpath} from 'node:fs/promises';
 import path from 'node:path';
 import {tmpdir} from 'node:os';
 import {test} from 'node:test';
-import {subject, variants, OUT, TEMP, FINAL, EPOCH, failure} from './public-storage-owner-rename-fixture.mjs';
+import {subject, variants, OUT, TEMP, FINAL, EPOCH, failure, firefoxSubject} from './public-storage-owner-rename-fixture.mjs';
 
 // This whole public-only cohort declares 20 protocol cases plus one owned-FS case.
 // No launcher module, application, token, /proc, service, or guard is imported.
@@ -162,6 +162,164 @@ test('owned native filesystem proves readdir-before-rename then ENOENT and same 
     assert.equal(after.ino, before.ino);
     assert.equal(after.nlink, 1);
     assert.deepEqual(await readFile(target), bytes);
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});
+
+test('Firefox XDG cache disappearance counts Firefox once and Chrome zero', async () => {
+  const s = firefoxSubject();
+  const result = await s.run();
+  assert.equal(result.bytes, 0);
+  assert.equal(result.observedFirefoxCacheRaceCount, 1);
+  assert.equal(result.observedChromeCacheRaceCount, 0);
+  assert.equal(s.calls.write.length, 1);
+  assert.equal(s.calls.signals.length, 0);
+});
+
+test('recreated regular Firefox cache leaf is charged rather than skipped', async () => {
+  const s = firefoxSubject({recreated: {size: 123}});
+  const result = await s.run();
+  assert.equal(result.bytes, 123);
+  assert.equal(result.observedFirefoxCacheRaceCount, 1);
+  assert.equal(result.observedChromeCacheRaceCount, 0);
+  assert.equal(s.calls.signals.length, 0);
+});
+
+test('Firefox exception rejects unrelated errors paths and unsafe filesystem boundaries', async () => {
+  for (const options of [
+    {code: 'EACCES'}, {errorPath: '/foreign'}, {leafError: 'EACCES'},
+    {leaf: OUT + '/profile/unrelated'},
+    {redirect: OUT}, {redirect: OUT + '/cache'}, {redirect: OUT + '/cache/fontconfig'},
+    {rootInfo: {uid: 999}}, {rootInfo: {mode: 0o40755}},
+    {cacheInfo: {kind: 'symlink'}}, {cacheInfo: {uid: 999}},
+    {parentInfo: {kind: 'symlink'}}, {parentInfo: {mode: 0o40777}},
+    {drift: 'root'}, {drift: 'cache'}, {drift: 'parent'},
+    {recreated: {kind: 'symlink'}}, {recreated: {kind: 'directory'}},
+    {recreated: {uid: 999}},
+  ]) {
+    const s = firefoxSubject(options);
+    await assert.rejects(s.run());
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('Firefox cache exception requires actual live child birth and executable twice', async () => {
+  for (const options of [
+    {noChild: true}, {shutdown: true}, {child: {exitCode: 0}},
+    {child: {signalCode: 'SIGTERM'}}, {identity: {pid: 999}},
+    {birthBefore: '9999'}, {birthAfter: '9999'},
+    {exeAfter: '/foreign'}, {identity: {exe: '/foreign'}},
+  ]) {
+    const s = firefoxSubject(options);
+    await assert.rejects(s.run());
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('Firefox race ledger and recreated bytes cannot bypass existing finite caps', async () => {
+  for (const [options, message] of [
+    [{ledger: Array(4096).fill({})}, /Finite Firefox cache race count/],
+    [{ledger: [{padding: 'x'.repeat(2 * 1024 * 1024)}]}, /Bounded Firefox cache race ledger/],
+    [{recreated: {size: 1536 * 1024 * 1024 + 1}}, /Owned output exceeds aggregate 1\.5 GiB/],
+  ]) {
+    const s = firefoxSubject(options);
+    await assert.rejects(s.run(), message);
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('actual outputBudget sees readdir then genuine Firefox cache unlink and stat ENOENT', async () => {
+  const evidence = process.env.UNIT_EVIDENCE ?? tmpdir();
+  const directory = await mkdtemp(path.join(evidence, 'firefox-cache-unlink-'));
+  const cache = path.join(directory, 'cache'), parent = path.join(cache, 'fontconfig');
+  const leaf = path.join(parent, 'CACHEDIR.TAG.LCK');
+  let removed = false;
+  try {
+    await mkdir(cache, {mode: 0o700});
+    await mkdir(parent, {mode: 0o700});
+    await writeFile(leaf, 'owned-public-cache', {mode: 0o600, flag: 'wx'});
+    const s = firefoxSubject({out: directory, io: {
+      readdir, lstat, realpath, writeFile,
+      stat: async file => {
+        assert.equal(file, leaf);
+        assert.equal(removed, false);
+        await unlink(file); removed = true;
+        return stat(file);
+      },
+    }});
+    const result = await s.run();
+    assert.equal(removed, true);
+    assert.equal(s.initial.code, 'ENOENT');
+    assert.equal(s.initial.path, leaf);
+    assert.equal(result.bytes, 0);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.equal(JSON.parse(await readFile(path.join(directory, 'firefox-cache-races.json'))).length, 1);
+    assert.equal(s.calls.signals.length, 0);
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});
+
+test('owned recreated hardlinked Firefox cache leaf is conservatively charged', async () => {
+  const s = firefoxSubject({recreated: {nlink: 2, size: 123}});
+  const result = await s.run();
+  assert.equal(result.bytes, 123);
+  assert.equal(result.observedFirefoxCacheRaceCount, 1);
+  assert.equal(result.observedChromeCacheRaceCount, 0);
+  assert.equal(s.calls.signals.length, 0);
+});
+
+test('recreated lstat snapshot is charged after another genuine unlink without resolving the leaf', async () => {
+  const evidence = process.env.UNIT_EVIDENCE ?? tmpdir();
+  const directory = await mkdtemp(path.join(evidence, 'firefox-recreated-unlink-'));
+  const cache = path.join(directory, 'cache'), parent = path.join(cache, 'fontconfig');
+  const leaf = path.join(parent, 'public-cache-entry');
+  const recreated = Buffer.from('recreated public cache bytes');
+  let observed, resolutions = 0;
+  try {
+    await mkdir(cache, {mode: 0o700});
+    await mkdir(parent, {mode: 0o700});
+    await writeFile(leaf, 'original public cache bytes', {mode: 0o600, flag: 'wx'});
+    const s = firefoxSubject({out: directory, io: {
+      readdir, writeFile,
+      stat: async file => {
+        assert.equal(file, leaf);
+        await unlink(file);
+        let gone;
+        try { await stat(file); }
+        catch (error) { gone = error; }
+        assert.equal(gone.code, 'ENOENT');
+        assert.equal(gone.path, file);
+        await writeFile(file, recreated, {mode: 0o600, flag: 'wx'});
+        throw gone;
+      },
+      lstat: async file => {
+        const metadata = await lstat(file);
+        if (file === leaf) {
+          observed = metadata;
+          await unlink(file);
+        }
+        return metadata;
+      },
+      realpath: async file => {
+        if (file === leaf) resolutions++;
+        return realpath(file);
+      },
+    }});
+    const result = await s.run();
+    assert.ok(observed.isFile());
+    assert.equal(observed.size, recreated.length);
+    assert.equal(result.bytes, observed.size);
+    assert.equal(resolutions, 0);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    await assert.rejects(lstat(leaf), error => error.code === 'ENOENT' && error.path === leaf);
+    const rows = JSON.parse(await readFile(path.join(directory, 'firefox-cache-races.json')));
+    assert.equal(rows[0].chargedBytes, observed.size);
+    assert.equal(rows[0].outcome, 'recreated-regular-charged');
+    assert.equal(s.calls.signals.length, 0);
   } finally {
     await rm(directory, {recursive: true, force: true});
   }

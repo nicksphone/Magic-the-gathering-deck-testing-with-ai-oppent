@@ -33,6 +33,8 @@ export function failure(code, file) {
 export function subject(variant, options = {}) {
   assert.equal(variant, 'public487');
   const methods = ['outputBudget', 'missingLiveChromeCacheLeaf', 'storageReceipts'];
+  if (/^async function missingLiveFirefoxCacheLeaf\(/m.test(launcher))
+    methods.push('missingLiveFirefoxCacheLeaf');
   const receipt = {
     pid: PID, start_ticks: 3010, epoch: EPOCH, stage: 'ready',
     lock: {path: DB + '.capacity-owner.lock', identity: [7, 99], bytes: 0},
@@ -151,7 +153,7 @@ export function subject(variant, options = {}) {
     process: {getuid: () => 1000, pid: 201,
       kill: (...args) => calls.signals.push(args)},
     children});
-  const declarations = `const root=${JSON.stringify(ROOT)},out=${JSON.stringify(OUT)},db=${JSON.stringify(DB)};
+  const declarations = `const root=${JSON.stringify(ROOT)},out=${JSON.stringify(options.out ?? OUT)},db=${JSON.stringify(DB)};
     const ownerLock=db+'.capacity-owner.lock';
     const ownerEpochs=new Map(),closedBackupHashes=new Map();
     let lockIdentity,shuttingDown=false,backendReady=true;
@@ -163,4 +165,85 @@ export function subject(variant, options = {}) {
     files, bytes, temp, get tempStats() { return tempStats; },
     get finalStats() { return finalStats; },
     expectedBytes: () => [...files.values()].reduce((sum, row) => sum + row.size, 0)};
+}
+
+// The original subjects stay unchanged; these finite overrides model only XDG cache I/O.
+export function firefoxSubject(options = {}) {
+  const out = options.out ?? OUT;
+  const cache = path.join(out, 'cache');
+  const leaf = options.leaf ?? path.join(cache, 'fontconfig', 'CACHEDIR.TAG.LCK');
+  const parent = path.dirname(leaf);
+  const s = subject('public487', {stable: true, out});
+  const child = {label: 'firefox', pid: 501, exitCode: null, signalCode: null,
+    budgetIdentity: {pid: 501, startTicks: '5010', exe: '/protocol/firefox'}};
+  if (options.identity) Object.assign(child.budgetIdentity, options.identity);
+  if (options.child) Object.assign(child, options.child);
+  s.context.children.splice(0, s.context.children.length, ...(options.noChild ? [] : [child]));
+  if (options.shutdown) vm.runInContext('shuttingDown=true', s.context);
+  const file = {kind: 'file', dev: 7, ino: 14, uid: 1000, gid: 1000,
+    mode: 0o100600, nlink: 1, size: 37};
+  let current = {...file}, error, procReads = 0, exeReads = 0;
+  const dirCalls = new Map();
+  const info = row => ({...row, isFile: () => row.kind === 'file',
+    isDirectory: () => row.kind === 'directory', isSymbolicLink: () => row.kind === 'symlink'});
+  const dirs = new Map([[out, {kind: 'directory', dev: 7, ino: 1, uid: 1000,
+    gid: 1000, mode: 0o40700}], [cache, {kind: 'directory', dev: 7, ino: 2,
+    uid: 1000, gid: 1000, mode: 0o40700}], [parent, {kind: 'directory', dev: 7,
+    ino: 3, uid: 1000, gid: 1000, mode: 0o40755}]]);
+  const io = options.io;
+  Object.assign(s.context, {
+    readdir: async (name, opts) => {
+      if (name === MEDIA) return [];
+      if (io) return io.readdir(name, opts);
+      const childName = name === out ? path.relative(out, parent).split(path.sep)[0]
+        : name === cache ? 'fontconfig' : path.basename(leaf);
+      return [{name: childName, isDirectory: () => name !== parent,
+        isFile: () => name === parent, isSymbolicLink: () => false}];
+    },
+    stat: async name => {
+      s.calls.stat.push(name);
+      if (io) {
+        try { return await io.stat(name); }
+        catch (caught) { error = caught; throw caught; }
+      }
+      assert.equal(name, leaf);
+      current = options.recreated ? {...file, ...options.recreated} : null;
+      error = failure(options.code ?? 'ENOENT', options.errorPath ?? name);
+      throw error;
+    },
+    lstat: async name => {
+      s.calls.lstat.push(name);
+      if (io) return io.lstat(name);
+      if (name === leaf) {
+        if (options.leafError) throw failure(options.leafError, name);
+        if (!current) throw failure('ENOENT', name);
+        return info(current);
+      }
+      assert.ok(dirs.has(name), 'Undeclared Firefox directory');
+      const calls = (dirCalls.get(name) ?? 0) + 1; dirCalls.set(name, calls);
+      const kind = name === out ? 'root' : name === cache ? 'cache' : 'parent';
+      const drift = options.drift === kind && calls > (kind === 'root' ? 2 : 1);
+      return info({...dirs.get(name), ...options[kind + 'Info'], ...(drift ? {ino: 900} : {})});
+    },
+    realpath: async name => {
+      if (name === '/proc/501/exe') return ++exeReads > 1 && options.exeAfter
+        ? options.exeAfter : '/protocol/firefox';
+      if (options.redirect === name) return '/foreign';
+      return io ? io.realpath(name) : name;
+    },
+    readFile: async name => {
+      assert.equal(name, '/proc/501/stat', 'No real process reads in Firefox unit subjects');
+      const fields = Array(23).fill('0');
+      fields[19] = ++procReads > 1 && options.birthAfter ? options.birthAfter : options.birthBefore ?? '5010';
+      return '501 (Firefox unit) ' + fields.join(' ');
+    },
+    writeFile: async (name, bytes) => {
+      s.calls.write.push(name);
+      assert.ok(['firefox-cache-races.json', 'chrome-cache-races.json']
+        .some(leaf => name === path.join(out, leaf)));
+      if (io) await io.writeFile(name, bytes);
+    },
+  });
+  if (options.ledger) s.context.subject.outputBudget.firefoxCacheRaces = options.ledger;
+  return {...s, cache, parent, leaf, child, get initial() { return error; }};
 }
