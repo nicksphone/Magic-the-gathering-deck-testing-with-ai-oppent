@@ -22,7 +22,7 @@ jobs:
       - name: Install the existing complete hashed application closure
         timeout-minutes: 8
         run: bash .github/scripts/install-ci-app-runtime.sh
-      - name: Three whole fixture modules in fresh archived source, no startup
+      - name: Four whole fixture modules in fresh archived source, no startup
         timeout-minutes: 7
         run: |
           set -euo pipefail
@@ -61,6 +61,7 @@ jobs:
               'tests/test_remaining_named_binding_scope.py',
               'tests/test_remaining_named_birth_fidelity.py',
               'tests/test_remaining_named_birth_row_protocol.py',
+              'tests/test_remaining_named_binding_boundaries.py',
           ])
           raise SystemExit(int(result) if result else int(bool(denied)))
           PYTHON
@@ -79,7 +80,7 @@ jobs:
               errors=sum(case.find('error') is not None for case in cases),
               skipped=sum(case.find('skipped') is not None for case in cases))
           print('::notice title=Fixture admission localization result::' + json.dumps(summary, separators=(',', ':')))
-          if (len(cases) != 56 or summary['errors'] or summary['skipped']
+          if (len(cases) != 60 or summary['errors'] or summary['skipped']
                   or summary['failures'] and summary['runner_exit'] == 0
                   or not 0 <= summary['runner_exit'] <= 255):
               raise SystemExit(1)

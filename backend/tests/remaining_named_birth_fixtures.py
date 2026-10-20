@@ -21,7 +21,7 @@ LEGACY = {
     'Behold the Multiverse': (
         'foretell.json', 'dca40879cb924e898a487390f4a541c945930dcdeaa87c44ef02d7ce348d00e2'),
 }
-_MODAL_BINDING = None
+_MODAL_BINDINGS = {}
 
 
 def _same_json(actual, expected):
@@ -55,12 +55,14 @@ def _matches(binding, table, name):
 
 
 def bind_modal(table, target):
-    global _MODAL_BINDING
-    _MODAL_BINDING = _bind_row(table, target)
+    _MODAL_BINDINGS[(id(table), target)] = _bind_row(table, target)
 
 
 def modal_raw(table, name):
-    return raw_card(name) if _matches(_MODAL_BINDING, table, name) else None
+    if type(name) is not str:
+        return None
+    binding = _MODAL_BINDINGS.get((id(table), name))
+    return raw_card(name) if _matches(binding, table, name) else None
 
 
 def raw_card(name):
