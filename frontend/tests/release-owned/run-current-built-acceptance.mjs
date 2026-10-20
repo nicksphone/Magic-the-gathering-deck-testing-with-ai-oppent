@@ -26,19 +26,22 @@ assert.equal(await realpath(ownedRoot), ownedRoot, 'Owned root must not traverse
 assert.equal(typeof qualifiedCommit, 'string', 'MTG_BROWSER_QUALIFIED_COMMIT is required');
 assert.equal(qualifiedCommit.length, 40, 'Exact Git commit length required');
 assert.match(qualifiedCommit, /^[0-9a-f]{40}$/, 'Exact lowercase Git commit required');
-const browserVendor = process.env.MTG_BROWSER_VENDOR || 'chrome';
-assert.ok(['chrome', 'firefox'].includes(browserVendor), 'Explicit supported release-owned browser required');
-assert.equal(process.env.MTG_BROWSER_NO_SANDBOX, browserVendor === 'firefox' ? '0' : '1',
-  'Retain isolated Chrome contract; Firefox must retain its sandbox');
-const firefoxExecutables = browserVendor === 'firefox'
+const browserVendor = process.env.MTG_BROWSER_VENDOR
+  || (process.env.MTG_BROWSER_NO_SANDBOX === '1' ? 'chrome' : undefined);
+assert.ok(['chrome', 'brave', 'firefox'].includes(browserVendor), 'Explicit supported release-owned browser required');
+const strictNative = process.env.MTG_BROWSER_NO_SANDBOX === '0';
+assert.ok(strictNative || (browserVendor === 'chrome' && process.env.MTG_BROWSER_NO_SANDBOX === '1'),
+  'Native sandbox mode0 or legacy Chrome mode1 required');
+const selectedExecutables = strictNative
   ? JSON.parse(await readFile(path.join(project, 'runner/executable-pins.json'), 'utf8')) : null;
 const out = path.join(project, 'evidence/native-browser');
-const python = browserVendor === 'firefox' ? firefoxExecutables.python?.path : '/tmp/mtg-fresh-deps-restored-dVBzUV/venv/bin/python';
-const deps = browserVendor === 'firefox' ? process.env.MTG_FRONTEND_DEPS : '/home/nick/mtg-deck-testing-lab/frontend/node_modules';
-const chrome = '/snap/chromium/3551/usr/lib/chromium-browser/chrome';
-const firefox = firefoxExecutables?.firefox?.path;
-if (browserVendor === 'firefox') for (const file of [python, deps, firefox]) {
-  assert.equal(typeof file, 'string', 'Separate pinned Firefox runtime intake required');
+const python = strictNative ? selectedExecutables?.python?.path : '/tmp/mtg-fresh-deps-restored-dVBzUV/venv/bin/python';
+const deps = strictNative ? process.env.MTG_FRONTEND_DEPS : '/home/nick/mtg-deck-testing-lab/frontend/node_modules';
+const chrome = strictNative && browserVendor !== 'firefox'
+  ? selectedExecutables?.[browserVendor]?.path : '/snap/chromium/3551/usr/lib/chromium-browser/chrome';
+const firefox = selectedExecutables?.firefox?.path;
+if (strictNative) for (const file of [python, deps, browserVendor === 'firefox' ? firefox : chrome]) {
+  assert.equal(typeof file, 'string', 'Separate pinned native runtime intake required');
   assert.ok(path.isAbsolute(file) && path.resolve(file) === file);
 }
 const bodyCacheDirectory = path.join(out, 'firefox-body-cache');
@@ -341,7 +344,7 @@ function authorizeChild(label, executable, args, cwd) {
     assert.deepEqual(args, ['--headless', '--no-first-run', '--disable-dev-shm-usage',
       '--disable-background-networking', '--no-default-browser-check', '--password-store=basic',
       '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost',
-      '--no-sandbox',
+      ...(strictNative ? [] : ['--no-sandbox']),
       `--user-data-dir=${path.join(out, 'profile')}`, '--remote-debugging-address=127.0.0.1',
       `--remote-debugging-port=${ports.cdp}`, 'about:blank']);
   }
@@ -641,14 +644,14 @@ async function closedReceipt({requireOwnedIdentity = true} = {}) {
   await writeFile(path.join(out, 'OUTPUT-BOUNDS.json'), JSON.stringify(await outputBudget(), null, 2));
 }
 // Capture validated mode once; partial startup/cleanup cannot weaken finality.
-closedReceipt = closedReceipt.bind(undefined, Object.freeze({requireOwnedIdentity: browserVendor === 'firefox'}));
+closedReceipt = closedReceipt.bind(undefined, Object.freeze({requireOwnedIdentity: strictNative}));
 
 assert.equal(process.argv.length, 2);
 const grant=JSON.parse(await readFile(path.join(project,'runner/EXECUTION-GRANT.json'),'utf8'));
 assert.deepEqual(grant,{root:project,source:root,commit:status.pin,scope:'built-app-40paid-3recovery-3BO3-4origin',explicit_parent_grant:true,seconds:2400});
 const cohort=JSON.parse(await readFile(path.join(project,'runner/cohort.json'),'utf8'));
 assert.equal(cohort.length,40);
-if (browserVendor === 'firefox') {
+if (strictNative) {
   for (const [runnerName, sourceName] of [['cohort.json', 'current-built-cohort.json'],
     ['recovery-fixtures.json', 'current-built-recovery-fixtures.json']]) {
     assert.equal(digest(await readFile(path.join(project, 'runner', runnerName))),
@@ -664,7 +667,7 @@ for(const [name,hash] of Object.entries(runnerPins)) assert.equal(digest(await r
 const externalPins=JSON.parse(await readFile(path.join(project,'runner/external-readonly-pins.json'),'utf8'));
 for(const [file,hash] of Object.entries(externalPins)) assert.equal(digest(await readFile(file)),hash,file);
 const execPins=JSON.parse(await readFile(path.join(project,'runner/executable-pins.json'),'utf8'));
-if (firefoxExecutables) assert.deepEqual(firefoxExecutables, execPins, 'Selected Firefox runtime bindings changed during pin validation');
+if (strictNative) assert.deepEqual(selectedExecutables, execPins, 'Selected native runtime bindings changed during pin validation');
 assert.equal(process.execPath,execPins.node.path);
 for(const row of Object.values(execPins)) {
   assert.equal(await realpath(row.path), row.realpath, `Executable target changed: ${row.path}`);
@@ -768,7 +771,7 @@ try {
     : start('chromium', chrome, ['--headless', '--no-first-run', '--disable-dev-shm-usage',
     '--disable-background-networking', '--no-default-browser-check', '--password-store=basic',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost',
-    '--no-sandbox',
+    ...(strictNative ? [] : ['--no-sandbox']),
     `--user-data-dir=${path.join(out,'profile')}`, '--remote-debugging-address=127.0.0.1',
     `--remote-debugging-port=${ports.cdp}`, 'about:blank'], root);
   const chromeStat = await readFile(`/proc/${chromium.pid}/stat`, 'utf8');

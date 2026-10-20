@@ -1,0 +1,80 @@
+name: Native Runtime Portability Localization
+
+on:
+  push:
+    paths:
+      - .github/workflows/native-runtime-portability-localization.yml
+      - frontend/tests/release-owned/native-runtime-selection.test.mjs
+      - frontend/tests/release-owned/native-cohort-input-binding.test.mjs
+      - frontend/tests/release-owned/run-current-built-acceptance.mjs
+
+permissions:
+  contents: read
+
+jobs:
+  node-protocols:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.3'
+      - name: Seven whole Node protocol modules, no browser or dependencies
+        working-directory: frontend
+        timeout-minutes: 7
+        run: |
+          set -euo pipefail
+          scratch="$RUNNER_TEMP/native-runtime-portability-node"
+          test ! -e "$scratch" && test ! -L "$scratch"
+          mkdir -m 700 "$scratch"
+          mkdir -m 700 "$scratch/tmp"
+          export TMPDIR="$scratch/tmp"
+          report="$scratch/junit.xml"
+          status=0
+          timeout --signal=TERM --kill-after=15s 300s \
+            node --test --test-reporter=junit --test-reporter-destination="$report" \
+            tests/release-owned/native-runtime-selection.test.mjs \
+            tests/release-owned/owned-process-group-closure.test.mjs \
+            tests/firefox-release-owned-launcher-contract.test.mjs \
+            tests/firefox-launcher-listener-readiness.test.mjs \
+            tests/release-owned/public-storage-owner-rename-budget.test.mjs \
+            tests/browser-response-drop-request-state.test.mjs \
+            tests/release-owned/native-cohort-input-binding.test.mjs || status=$?
+          summary_status=0
+          python -I -S -B - "$report" "$status" <<'PYTHON' || summary_status=$?
+          import hashlib, json, stat, sys, xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          report = Path(sys.argv[1])
+          info = report.lstat()
+          if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 262144:
+              raise SystemExit('Invalid Node protocol report')
+          cases = list(ET.parse(report).getroot().iter('testcase'))
+          failures = sum(case.find('failure') is not None for case in cases)
+          errors = sum(case.find('error') is not None for case in cases)
+          skips = sum(case.find('skipped') is not None for case in cases)
+          summary = dict(cases=len(cases), passed=len(cases) - failures - errors - skips,
+                         failures=failures, errors=errors, skips=skips, exit=int(sys.argv[2]))
+          expected_cases = 121  # Exact seven whole modules: unchanged81 + new28 + new12.
+          if (len(cases) != expected_cases or min(summary.values()) < 0 or not 0 <= summary['exit'] <= 255
+                  or summary['exit'] == 0 and failures + errors + skips):
+              raise SystemExit('Inconsistent Node protocol report')
+          print('\n::notice title=Native runtime portability result::' + json.dumps(summary, separators=(',', ':')))
+          identities = {}
+          for key, tag in (('failures', 'failure'), ('errors', 'error')):
+              names = [case.get('name') for case in cases if case.find(tag) is not None]
+              if any(type(name) is not str or not name for name in names):
+                  raise SystemExit('Invalid Node failure identity')
+              identities[key] = sorted(hashlib.sha256(name.encode('utf-8')).hexdigest() for name in names)
+          if sum(len(values) for values in identities.values()) > 256:
+              raise SystemExit('Too many Node failure identities')
+          print('\n::notice title=Native runtime portability failure identities::' + json.dumps(identities, separators=(',', ':')))
+          PYTHON
+          if ((status)); then exit "$status"; fi
+          exit "$summary_status"
