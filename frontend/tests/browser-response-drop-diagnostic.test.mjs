@@ -5,14 +5,47 @@ import test from 'node:test';
 import vm from 'node:vm';
 import * as diagnostics from './browser-source-diagnostic.mjs';
 
+function requestStateCapture() {
+  const inputs = [], writes = [];
+  assert.equal(typeof diagnostics.reportUiV2DropRequestStateFailure, 'function');
+  assert.equal(typeof diagnostics.uiV2DropRequestStateMetadata, 'function');
+  const report = vm.runInNewContext(`(${diagnostics.reportUiV2DropRequestStateFailure.toString()})`, {
+    uiV2DropRequestStateMetadata: diagnostics.uiV2DropRequestStateMetadata,
+    writeSync: (...args) => writes.push(args),
+  });
+  return {
+    report(input) { inputs.push(input); return report(input); },
+    verify(count) {
+      assert.equal(inputs.length, count); assert.equal(writes.length, count);
+      for (let index = 0; index < count; index++) {
+        const [fd, text] = writes[index], input = inputs[index];
+        const prefix = '\n::error title=Browser response drop request state failure::';
+        assert.equal(fd, 2); assert.equal(typeof text, 'string');
+        assert.ok(text.startsWith(prefix) && text.endsWith('\n'));
+        const body = text.slice(prefix.length, -1);
+        assert.ok(Buffer.byteLength(body) <= 512); assert.doesNotMatch(body, /[\r\n]|PRIVATE|https?:/);
+        assert.deepEqual(JSON.parse(body), {schema: 1, program: 'browser-ui-v2.mjs',
+          stage: 'response-drop-request-state',
+          post: {observed: input.requests.POST.observed, attempted: input.requests.POST.attempted,
+            ack: input.requests.POST.ack, error: input.requests.POST.error, pending: input.requests.POST.pending},
+          action: {enabled_prefix_count: input.actionUi?.enabledPrefixCount ?? null,
+            rendered_revision: input.actionUi?.renderedRevision ?? null},
+          ui: {status: input.uiStatus, pending: input.ui?.pending ?? null,
+            restoring: input.ui?.restoring ?? null, alert: input.ui?.alert ?? null}});
+      }
+    },
+  };
+}
+
 // Synthetic protocol controls, not browser/native execution or causal proof.
 const helperUrl = new URL('./browser-source-diagnostic.mjs', import.meta.url);
 const uiUrl = new URL('./browser-ui-v2.mjs', import.meta.url);
 const prefix = '::error title=Browser response drop failure::';
 const oldUiSha = '96ba5fe35b9a020daff4aaebd10e2787e287be9619d8d161460b9a4ab6a68558';
 const oldImport = "import { observeUiV2Failures } from './browser-source-diagnostic.mjs';";
-const newImport = "import { observeUiV2Failures, reportUiV2DropFailure } from './browser-source-diagnostic.mjs';";
+const newImport = "import { observeUiV2Failures, reportUiV2DropFailure, reportUiV2DropRequestStateFailure } from './browser-source-diagnostic.mjs';";
 const reportCall = '      reportUiV2DropFailure(diagnostic);\n';
+const requestStateCall = '    try { reportUiV2DropRequestStateFailure(diagnostic); } catch { /* Preserve the original failure. */ }\n';
 
 function project(input) {
   assert.equal(typeof diagnostics.uiV2DropFailureMetadata, 'function', 'Missing pure response-drop projector');
@@ -178,12 +211,15 @@ test('caller wiring changes only its existing diagnostic import and one failure-
   assert.equal(source.split(reportCall).length - 1, 1);
   assert.ok(source.indexOf(reportCall) > source.indexOf('diagnostic.requestLifecycleFinal='));
   assert.ok(source.indexOf(reportCall) < source.indexOf("console.error('DROP_RESPONSE_TRACE'"));
-  const restored = source.replace(newImport, oldImport).replace(reportCall, '');
+  assert.equal(source.split(requestStateCall).length - 1, 1);
+  assert.ok(source.includes(`    }catch{}\n${requestStateCall}    throw error;`));
+  const restored = source.replace(requestStateCall, '').replace(newImport, oldImport).replace(reportCall, '');
   assert.equal(createHash('sha256').update(restored).digest('hex'), oldUiSha);
 });
 
 async function actualFailurePath(withPost, sinkThrows) {
   const writes = [], commands = [], reads = [], timerBudgets = [], legacy = [];
+  const requestState = requestStateCapture();
   const originalError = new Error('PRIVATE_SYNTHETIC_CLICK_FAILURE');
   const {reportUiV2DropFailure} = reporting((fd, text) => {
     assert.equal(fd, 2); writes.push(text);
@@ -201,6 +237,7 @@ async function actualFailurePath(withPost, sinkThrows) {
   const b = {supportsFetchResourceTypeFilter: true, onIntercept(fn) { onIntercept = fn; },
     async browserIdentity() { reads.push('runtime'); return {product: 'SyntheticBrowser/1', protocolVersion: '1'}; }};
   const context = {api, origin, b, command, reportUiV2DropFailure, AbortController,
+    reportUiV2DropRequestStateFailure: requestState.report,
     continueRequestForPostResponse: async () => false,
     traceStartRecoveryResponses(_command, handler, _origin, collect) {
       const trace = async event => handler(event, command);
@@ -228,6 +265,7 @@ async function actualFailurePath(withPost, sinkThrows) {
   };
   const recover = vm.runInNewContext(`(${source.slice(start, end)})`, context, {timeout: 1000});
   await assert.rejects(recover(fixture), error => error === originalError);
+  requestState.verify(1);
   assert.equal(writes.length, 1);
   const record = frameRecord(writes[0]);
   const wanted = withPost ? expected({dropped: true, post_response_observed: true,

@@ -215,6 +215,24 @@ def main():
                 child.wait()
                 result = 1
                 print("Child exceeded shutdown timeout; recovery inspection required.", file=sys.stderr)
+        closure_warning = False
+        while True:
+            groups_absent = True
+            for child in children:
+                try:
+                    os.killpg(child.pid, 0)
+                except ProcessLookupError:
+                    continue
+                except OSError:
+                    pass
+                groups_absent = False
+            if groups_absent:
+                break
+            result = 1
+            if not closure_warning:
+                print("Service group closure unproven; retaining runtime lock for recovery inspection.", file=sys.stderr)
+                closure_warning = True
+            time.sleep(0.1)
         lock.close()
     return result
 

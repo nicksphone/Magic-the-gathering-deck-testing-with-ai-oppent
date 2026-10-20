@@ -1,0 +1,89 @@
+name: Fixture Admission Localization
+
+on:
+  push:
+    paths:
+      - .github/workflows/fixture-admission-localization.yml
+
+permissions:
+  contents: read
+
+jobs:
+  fixture-admission:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.3'
+      - name: Install the existing complete hashed application closure
+        timeout-minutes: 8
+        run: bash .github/scripts/install-ci-app-runtime.sh
+      - name: Four whole fixture modules in fresh archived source, no startup
+        timeout-minutes: 7
+        run: |
+          set -euo pipefail
+          scratch="$RUNNER_TEMP/fixture-admission-localization"
+          test ! -e "$scratch" && test ! -L "$scratch"
+          mkdir -m 700 "$scratch"
+          mkdir "$scratch/source" "$scratch/runtime" "$scratch/runtime/tmp"
+          git archive HEAD backend | tar -x -C "$scratch/source"
+          test ! -e "$scratch/source/.git"
+          export PYTEST_DISABLE_PLUGIN_AUTOLOAD=1
+          export TMPDIR="$scratch/runtime/tmp"
+          export MTG_DATABASE_PATH="$scratch/runtime/unused.db"
+          report="$scratch/runtime/fixture-admission.xml"
+          cd "$scratch/source/backend"
+          status=0
+          timeout --signal=TERM --kill-after=15s 300s python -I -B - "$report" <<'PYTHON' || status=$?
+          import sys
+          from pathlib import Path
+
+          denied = []
+          network = {'socket.connect', 'socket.bind', 'socket.getaddrinfo',
+                     'socket.gethostbyname', 'socket.gethostbyaddr', 'socket.getnameinfo'}
+
+          def deny_io(event, _args):
+              if event == 'sqlite3.connect' or event in network:
+                  denied.append(event)
+                  raise PermissionError('Fixture localization SQL/network denied')
+
+          # Audit is installed before pytest, conftest and every project import.
+          sys.addaudithook(deny_io)
+          sys.path.insert(0, str(Path.cwd()))
+          import pytest
+
+          result = pytest.main([
+              '-vv', '-s', '-p', 'no:cacheprovider', '--junitxml=' + sys.argv[1],
+              'tests/test_remaining_named_binding_scope.py',
+              'tests/test_remaining_named_birth_fidelity.py',
+              'tests/test_remaining_named_birth_row_protocol.py',
+              'tests/test_remaining_named_binding_boundaries.py',
+          ])
+          raise SystemExit(int(result) if result else int(bool(denied)))
+          PYTHON
+          summary_status=0
+          python -I -B - "$report" "$status" <<'PYTHON' || summary_status=$?
+          import json, stat, sys, xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          report = Path(sys.argv[1])
+          info = report.lstat()
+          if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 262144:
+              raise SystemExit('Invalid fixture localization report')
+          cases = list(ET.parse(report).getroot().iter('testcase'))
+          summary = dict(schema=1, cases=len(cases), runner_exit=int(sys.argv[2]),
+              failures=sum(case.find('failure') is not None for case in cases),
+              errors=sum(case.find('error') is not None for case in cases),
+              skipped=sum(case.find('skipped') is not None for case in cases))
+          print('::notice title=Fixture admission localization result::' + json.dumps(summary, separators=(',', ':')))
+          if (len(cases) != 60 or summary['errors'] or summary['skipped']
+                  or summary['failures'] and summary['runner_exit'] == 0
+                  or not 0 <= summary['runner_exit'] <= 255):
+              raise SystemExit(1)
+          PYTHON
+          if ((status)); then exit "$status"; fi
+          exit "$summary_status"

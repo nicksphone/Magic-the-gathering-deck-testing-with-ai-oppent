@@ -16,11 +16,31 @@ const helperSha = '13e1e1c8267bb7a65ca64784b5e039afd6debb00983b93b4adccec55e46a5
 const hash = value => createHash('sha256').update(value).digest('hex');
 const plain = value => JSON.parse(JSON.stringify(value));
 const importLine = "import { reportStartRecoveryFailure } from './browser-source-diagnostic.mjs';\n";
+const phaseImportLine = "import { reportStartRecoveryFailure, reportStartRecoveryPhaseFailure } from './browser-source-diagnostic.mjs';\n";
+const phasePrefix = '::error title=Browser start recovery phase failure::';
+const phaseReportLine = '  try { reportStartRecoveryPhaseFailure(recoveryPhase, error); } catch { /* Preserve the original scenario result. */ }\n';
 const originalReporter = "  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', undefined,\n";
 const snapshotReporter = "  }, process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', value => {\n"
   + '    startWithDroppedResponses.failureSnapshot = value;\n'
   + "    console.error('START_RECOVERY_RESPONSE_TRACE', JSON.stringify(value));\n  },\n";
 const reportLine = '  try { reportStartRecoveryFailure(startWithDroppedResponses.failureSnapshot); } catch { /* Preserve the original scenario result. */ }\n';
+
+function withoutKnownPhaseAdditions(source) {
+  const checkpoints = ['lost-prepare', 'lost-recover', 'lost-verify',
+    'reload-prepare', 'reload-pending', 'reload-replay', 'reload-verify',
+    'click-prepare', 'click-pending', 'click-replay', 'click-verify',
+    'legacy-prepare', 'legacy-pending', 'legacy-reload', 'legacy-review',
+    'legacy-replay', 'legacy-verify'];
+  // Only the authorized DIAG10 additions are projected for the older inverse.
+  for (const [added, original] of [[phaseImportLine, importLine],
+    ["let recoveryPhase = 'setup';\n", ''],
+    ...checkpoints.map(phase => [`  recoveryPhase = '${phase}';\n`, '']),
+    [phaseReportLine, '']]) {
+    assert.equal(source.split(added).length - 1, 1, 'Exact known DIAG10 addition required');
+    source = source.replace(added, original);
+  }
+  return source;
+}
 
 function project(value) {
   assert.equal(typeof diagnostic.startRecoveryFailureMetadata, 'function', 'Missing start-recovery projector');
@@ -59,6 +79,15 @@ function frame(text) {
   return JSON.parse(body);
 }
 
+function phaseFrame(text) {
+  assert.ok(text.startsWith(`\n${phasePrefix}`) && text.endsWith('\n'));
+  const body = text.slice(`\n${phasePrefix}`.length, -1);
+  assert.doesNotMatch(body, /[\r\n]/);
+  assert.ok(Buffer.byteLength(body) <= 512);
+  assert.doesNotMatch(body, /PRIVATE_|PUBLIC_SYNTHETIC|Idempotency|https?:|stack|body/);
+  return JSON.parse(body);
+}
+
 function actualModule(url, globals, imports = []) {
   const original = readFileSync(url, 'utf8');
   let body = original;
@@ -76,7 +105,7 @@ function actualModule(url, globals, imports = []) {
 function actualReporter(writeSync) {
   const source = readFileSync(helperUrl, 'utf8');
   assert.equal(source.split("import {writeSync} from 'node:fs';").length - 1, 1);
-  return actualModule(helperUrl, {writeSync}, ["import {writeSync} from 'node:fs';"]);
+  return actualModule(helperUrl, {writeSync, Error}, ["import {writeSync} from 'node:fs';"]);
 }
 
 test('OPTIONS-only trace cannot claim an observed or dropped POST', () => {
@@ -180,7 +209,7 @@ test('actual reporter frames only finite records and never replaces a failure on
 });
 
 test('exact caller inverse preserves all scenario bytes and the original diagnostic helper prefix', () => {
-  const source = readFileSync(programUrl, 'utf8');
+  const source = withoutKnownPhaseAdditions(readFileSync(programUrl, 'utf8'));
   for (const text of [importLine, snapshotReporter, reportLine]) assert.equal(source.split(text).length - 1, 1);
   const existingCatch = '  try { startWithDroppedResponses.trace?.reportFailure(); } catch { /* Preserve the original scenario result. */ }\n';
   assert.ok(source.includes(`${existingCatch}${reportLine}  throw error;`));
@@ -192,12 +221,17 @@ test('exact caller inverse preserves all scenario bytes and the original diagnos
 
 async function actualFailurePath(mode, sinkThrows = false) {
   const writes = [], commands = [], fetches = [], waits = [], evaluations = [], clicks = [], legacy = [];
+  const phaseWrites = [];
   let intercept, reviewed = false, acknowledged = false, closed = 0;
   const primary = new Error(mode === 'command-error'
     ? '{"code":-32602,"message":"PRIVATE_SYNTHETIC_COMMAND_FAILURE"}' : 'PRIVATE_SYNTHETIC_PRIMARY');
   const console = {log() {}, error(label, text) { legacy.push([label, text]); }};
   const reporter = actualReporter((fd, text) => {
-    assert.equal(fd, 2); writes.push(text);
+    if (text.startsWith(`\n${phasePrefix}`)) {
+      assert.equal(fd, 2); phaseWrites.push(text);
+    } else {
+      assert.equal(fd, 2); writes.push(text);
+    }
     if (sinkThrows) throw Error('PRIVATE_SYNTHETIC_SINK');
   });
   const trace = actualModule(traceUrl, {console});
@@ -244,13 +278,15 @@ async function actualFailurePath(mode, sinkThrows = false) {
     "import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';\n"]) {
     assert.equal(source.split(line).length - 1, 1); source = source.replace(line, '');
   }
-  if (source.includes(importLine)) source = source.replace(importLine, '');
+  assert.equal(source.split(phaseImportLine).length - 1, 1);
+  source = source.replace(phaseImportLine, '');
   assert.doesNotMatch(source, /^\s*import\s/m);
   const context = {assert, Buffer, URL, console, process: {env: {MTG_BACKEND_ORIGIN: api, MTG_FRONTEND_ORIGIN: frontend}},
     openBrowser: async url => { assert.equal(url, `${frontend}/`); return browser; },
     reviewStart: review.reviewStart, continueRequestForPostResponse: trace.continueRequestForPostResponse,
     traceStartRecoveryResponses: trace.traceStartRecoveryResponses, createRequestSignalObserver: trace.createRequestSignalObserver,
     reportStartRecoveryFailure: reporter.reportStartRecoveryFailure,
+    reportStartRecoveryPhaseFailure: reporter.reportStartRecoveryPhaseFailure,
     async fetch(url, options) {
       fetches.push([url, options]);
       if (url === `${api}/fixture/start-decks`) { assert.equal(options.method, 'POST'); return {json: async () => ({a: 1, b: 2})}; }
@@ -260,6 +296,10 @@ async function actualFailurePath(mode, sinkThrows = false) {
   const run = vm.runInNewContext(`(async () => {\n${source}\n})`, context, {timeout: 1000});
   await assert.rejects(run(), error => error === primary);
   assert.equal(closed, 1); assert.equal(writes.length, 1);
+  assert.equal(phaseWrites.length, 1);
+  assert.deepEqual(phaseFrame(phaseWrites[0]), {schema: 1, program: 'browser-start-recovery.mjs',
+    phase: mode === 'setup' ? 'setup' : mode === 'drop' ? 'lost-recover' : 'lost-prepare',
+    error_class: 'Error'});
   const output = frame(writes[0]);
   assert.doesNotMatch(writes[0], /PRIVATE_|PUBLIC_SYNTHETIC|Idempotency|https?:|stack|body/);
   if (mode === 'setup') {
@@ -307,4 +347,19 @@ test('actual trace callback failure is annotated once with its existing numeric 
 
 test('actual program failure before trace creation emits unavailable instead of invented observations', async () => {
   await actualFailurePath('setup');
+});
+
+test('known phase inverse retains unrelated source changes for the original hash check', () => {
+  const source = readFileSync(programUrl, 'utf8');
+  const unrelated = '\n// PUBLIC_SYNTHETIC_UNRELATED_CHANGE\n';
+  const projected = withoutKnownPhaseAdditions(source + unrelated);
+  assert.ok(projected.endsWith(unrelated));
+  assert.notEqual(hash(projected.replace(importLine, '').replace(snapshotReporter, originalReporter).replace(reportLine, '')), programSha);
+});
+
+test('known phase inverse rejects an unknown checkpoint instead of erasing it', () => {
+  const source = readFileSync(programUrl, 'utf8');
+  const changed = source.replace("  recoveryPhase = 'lost-recover';\n", "  recoveryPhase = 'unknown-checkpoint';\n");
+  assert.notEqual(changed, source);
+  assert.throws(() => withoutKnownPhaseAdditions(changed), /Exact known DIAG10 addition required/);
 });

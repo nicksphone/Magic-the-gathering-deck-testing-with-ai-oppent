@@ -140,3 +140,69 @@ export function reportStartRecoveryFailure(snapshot) {
     writeSync(2, `\n::error title=Browser start recovery failure::${body}\n`);
   } catch { /* Annotation failure must not replace the original failure. */ }
 }
+
+export function startRecoveryPhaseFailureMetadata(phase, error) {
+  if (!['setup', 'lost-prepare', 'lost-recover', 'lost-verify',
+    'reload-prepare', 'reload-pending', 'reload-replay', 'reload-verify',
+    'click-prepare', 'click-pending', 'click-replay', 'click-verify',
+    'legacy-prepare', 'legacy-pending', 'legacy-reload', 'legacy-review',
+    'legacy-replay', 'legacy-verify'].includes(phase)) return null;
+  let errorClass = 'other';
+  try {
+    if (error instanceof Error) {
+      const name = error.name;
+      if (classes.has(name)) errorClass = name;
+    }
+  } catch { /* Error getters must never replace the original failure. */ }
+  return {schema: 1, program: 'browser-start-recovery.mjs', phase, error_class: errorClass};
+}
+
+export function reportStartRecoveryPhaseFailure(phase, error) {
+  try {
+    const record = startRecoveryPhaseFailureMetadata(phase, error);
+    if (!record) return;
+    const body = JSON.stringify(record);
+    if (body.length > 512) return;
+    writeSync(2, `\n::error title=Browser start recovery phase failure::${body}\n`);
+  } catch { /* Annotation failure must not replace the original failure. */ }
+}
+
+export function uiV2DropRequestStateMetadata(diagnostic) {
+  try {
+    const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+    const count = value => Number.isSafeInteger(value) && value >= 0;
+    if (!record(diagnostic)) return null;
+    const {requests, uiStatus, actionUi, ui} = diagnostic;
+    if (!record(requests)) return null;
+    const {POST} = requests;
+    if (!record(POST)) return null;
+    const {observed, attempted, ack, error, pending} = POST;
+    if (![observed, attempted, ack, error, pending].every(count)
+        || !['available', 'unavailable', 'timed-out'].includes(uiStatus)) return null;
+    let action = {enabled_prefix_count: null, rendered_revision: null};
+    let view = {status: uiStatus, pending: null, restoring: null, alert: null};
+    if (uiStatus === 'available') {
+      if (!record(actionUi) || !record(ui)) return null;
+      const {enabledPrefixCount, renderedRevision} = actionUi;
+      const {pending: uiPending, restoring, alert} = ui;
+      if ((enabledPrefixCount !== null && !count(enabledPrefixCount))
+          || (renderedRevision !== null && !count(renderedRevision))
+          || typeof uiPending !== 'boolean' || typeof restoring !== 'boolean'
+          || typeof alert !== 'boolean') return null;
+      action = {enabled_prefix_count: enabledPrefixCount, rendered_revision: renderedRevision};
+      view = {status: uiStatus, pending: uiPending, restoring, alert};
+    } else if (ui !== null || actionUi !== null) return null;
+    return {schema: 1, program: 'browser-ui-v2.mjs', stage: 'response-drop-request-state',
+      post: {observed, attempted, ack, error, pending}, action, ui: view};
+  } catch { return null; }
+}
+
+export function reportUiV2DropRequestStateFailure(diagnostic) {
+  try {
+    const record = uiV2DropRequestStateMetadata(diagnostic);
+    if (!record) return;
+    const body = JSON.stringify(record);
+    if (body.length > 512) return;
+    writeSync(2, `\n::error title=Browser response drop request state failure::${body}\n`);
+  } catch { /* Annotation failure must not replace the original failure. */ }
+}

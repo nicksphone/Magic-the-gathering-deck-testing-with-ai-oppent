@@ -2,6 +2,15 @@ name: Browser Recovery Localization
 
 on:
   workflow_dispatch:
+    inputs:
+      scenario:
+        description: Fixed localization scenario
+        type: choice
+        default: start-recovery
+        options:
+          - start-recovery
+          - ui-v2
+          - ui-v2-prefix
   push:
     paths:
       - .github/workflows/browser-recovery-localization.yml
@@ -30,6 +39,35 @@ jobs:
         run: |
           bash .github/scripts/install-ci-app-runtime.sh
           npm --prefix frontend ci
+      - name: Recovery unit compatibility protocol contracts
+        working-directory: frontend
+        run: |
+          status=0
+          node --test --test-reporter=junit --test-reporter-destination="$RUNNER_TEMP/recovery-unit-compatibility.xml" tests/browser-start-recovery-failure-diagnostic.test.mjs tests/browser-start-recovery-phase-diagnostic.test.mjs tests/release-owned/public-storage-owner-rename-budget.test.mjs tests/browser-response-drop-diagnostic.test.mjs tests/browser-v2-drop-response-contract.mjs tests/browser-fetch-causal-order.test.mjs tests/browser-v2-request-stage-recovery.test.mjs ../.github/scripts/tests/test_browser_program_diagnostic.mjs tests/browser-response-drop-request-state.test.mjs || status=$?
+          summary_status=0
+          python - "$RUNNER_TEMP/recovery-unit-compatibility.xml" "$status" <<'PYTHON' || summary_status=$?
+          import json, stat, sys, xml.etree.ElementTree as ET
+          from pathlib import Path
+          report = Path(sys.argv[1])
+          info = report.lstat()
+          if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 262144:
+              raise SystemExit('Invalid browser protocol report')
+          cases = list(ET.parse(report).getroot().iter('testcase'))
+          summary = dict(schema=1, cases=len(cases), runner_exit=int(sys.argv[2]),
+              failures=sum(case.find('failure') is not None for case in cases),
+              errors=sum(case.find('error') is not None for case in cases),
+              skipped=sum(case.find('skipped') is not None for case in cases))
+          print('::notice title=Recovery unit compatibility result::' + json.dumps(summary, separators=(',', ':')))
+          if len(cases) != 183 or summary['skipped'] or not 0 <= summary['runner_exit'] <= 255:
+              raise SystemExit(1)
+          PYTHON
+          if ((status)); then exit "$status"; fi
+          exit "$summary_status"
+      # The prefix mode is a bounded context experiment, not the full browser suite.
+      - name: Localization workflow wiring contracts
+        run: |
+          python -B .github/scripts/tests/test_browser_recovery_localization.py
+          python -B .github/scripts/tests/test_browser_ui_localization_scenario.py
       - name: Record observed browser and runtime versions
         run: |
           google-chrome --version
@@ -50,6 +88,7 @@ jobs:
             timeout --signal=TERM --kill-after=15s 300s python -B -m tests.release_agent.offline_probe
       - name: Focused transport and start recovery, not the full UI suite
         env:
+          MTG_LOCALIZATION_SCENARIO: ${{ inputs.scenario || 'start-recovery' }}
           MTG_BROWSER_NO_SANDBOX: '1'
           MTG_KEEP_TEST_ARTIFACTS: '1'
           MTG_FRONTEND_ORIGIN: http://127.0.0.1:15173
@@ -57,9 +96,27 @@ jobs:
           MTG_BROWSER_ORIGIN: http://127.0.0.1:19222
         run: |
           set -euo pipefail
+          scenario="${MTG_LOCALIZATION_SCENARIO:-start-recovery}"
+          case "$scenario" in
+            start-recovery)
+              programs=(browser-cors-transport-diagnostic.mjs browser-start-recovery.mjs)
+              ;;
+            ui-v2|ui-v2-prefix)
+              E="$RUNNER_TEMP/ui-v2-localization-evidence"
+              test ! -e "$E" && test ! -L "$E"
+              mkdir -m 700 -- "$E"
+              export MTG_UI_EVIDENCE="$E"
+              programs=(browser-ui-v2.mjs)
+              if [[ "$scenario" == ui-v2-prefix ]]; then
+                programs=(browser-cors-transport-diagnostic.mjs browser-driver-async.mjs browser-ui-v2.mjs)
+              fi
+              ;;
+            *) exit 2 ;;
+          esac
+          printf '::notice title=Browser localization scenario::{"schema":1,"scenario":"%s"}\n' "$scenario"
           status=0
           timeout --signal=TERM --kill-after=15s 720s bash frontend/tests/run-browser-ci.sh \
-            browser-cors-transport-diagnostic.mjs browser-start-recovery.mjs || status=$?
+            "${programs[@]}" || status=$?
           closure_status=0
           if ports=$(ss -H -ltn '( sport = :10199 or sport = :15173 or sport = :19222 )'); then
             if [[ -n "$ports" ]]; then

@@ -101,7 +101,7 @@ def board(seat, spell, foreign=False, static=None):
     return state, cid, [target, elf, artist]
 
 
-@pytest.mark.parametrize('name', list(ROWS))
+@pytest.mark.parametrize('name', sorted(ROWS))
 def test_official_full_raw_receipt(name):
     entries = json.loads((FIXTURE / 'provenance.json').read_text())['raw_rows']
     entry = next(e for e in entries.values() if e['name'] == name)

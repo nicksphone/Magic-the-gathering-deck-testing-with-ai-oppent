@@ -187,6 +187,42 @@ async function missingLiveChromeCacheLeaf(error, file, entry) {
 
 async function outputBudget() {
   let bytes = 0, profileBytes = 0, screenshots = 0;
+  const budgetRoot = await lstat(out);
+  const publishers = children.filter(child => child.label === 'backend').map(child =>
+    ({child, pid: child.pid, startTicks: child.startTicks}));
+  let pass = 0, renameError;
+  async function ownedReceiptRename(error, file, entry) {
+    const match = /^storage-owner-([0-9]+)-([a-f0-9]{32})\.tmp$/.exec(entry.name);
+    if (error.code !== 'ENOENT' || error.path !== file || !entry.isFile()
+        || path.dirname(file) !== out || file !== path.join(out, entry.name) || !match) return false;
+    const pid = Number(match[1]);
+    const publisher = publishers.find(row => row.pid === pid);
+    if (!Number.isSafeInteger(pid) || pid <= 0 || String(pid) !== match[1] || !publisher
+        || !Number.isSafeInteger(publisher.startTicks) || publisher.startTicks <= 0) return false;
+    const sameRoot = async () => {
+      const current = await lstat(out);
+      return path.resolve(out) === out && await realpath(out) === out
+        && budgetRoot.isDirectory() && !budgetRoot.isSymbolicLink()
+        && current.isDirectory() && !current.isSymbolicLink()
+        && current.uid === process.getuid() && (current.mode & 0o777) === 0o700
+        && ['dev', 'ino', 'uid', 'gid', 'mode'].every(key => current[key] === budgetRoot[key]);
+    };
+    if (!await sameRoot()) return false;
+    const final = path.join(out, `storage-owner-${pid}-${match[2]}.json`);
+    const before = await lstat(final);
+    if (!before.isFile() || before.isSymbolicLink() || before.nlink !== 1
+        || before.uid !== process.getuid() || await realpath(final) !== final) return false;
+    const receipt = (await storageReceipts()).find(row => row.pid === pid && row.epoch === match[2]);
+    const after = await lstat(final);
+    return !!receipt && Number.isSafeInteger(receipt.pid) && Number.isSafeInteger(receipt.start_ticks)
+      && receipt.start_ticks === publisher.startTicks && children.includes(publisher.child)
+      && publisher.child.label === 'backend' && publisher.child.pid === publisher.pid
+      && publisher.child.startTicks === publisher.startTicks
+      && after.isFile() && !after.isSymbolicLink() && after.nlink === 1
+      && ['dev', 'ino', 'uid', 'gid', 'mode', 'size', 'mtimeMs', 'ctimeMs']
+        .every(key => after[key] === before[key])
+      && await realpath(final) === final && await sameRoot();
+  }
   async function walk(directory) {
     for (const entry of await readdir(directory, {withFileTypes: true})) {
       const file = path.join(directory, entry.name);
@@ -195,6 +231,10 @@ async function outputBudget() {
         let size;
         try { size = (await stat(file)).size; }
         catch (error) {
+          if (pass === 0 && await ownedReceiptRename(error, file, entry)) {
+            renameError = error;
+            throw error;
+          }
           const race = await missingLiveChromeCacheLeaf(error, file, entry);
           if (!race) throw error;
           size = race.size;
@@ -207,7 +247,12 @@ async function outputBudget() {
       // Do not follow Chrome's profile singleton/socket symlinks outside the owned tree.
     }
   }
-  await walk(out);
+  // A confirmed atomic publication invalidates the whole partial count, not just one leaf.
+  for (; pass < 2; pass++) {
+    bytes = profileBytes = screenshots = 0;
+    try { await walk(out); break; }
+    catch (error) { if (pass !== 0 || error !== renameError) throw error; }
+  }
   assert.ok(profileBytes <= 512 * 1024 * 1024, 'Profile exceeds 512 MiB');
   assert.ok(screenshots <= 64, 'Screenshot count exceeds 64');
   assert.ok(bytes <= 1536 * 1024 * 1024, 'Owned output exceeds aggregate 1.5 GiB');
@@ -341,16 +386,31 @@ function start(label, executable, args, cwd, env = {}) {
   console.log(`OWN ${label} pid=${child.pid} UTC=${new Date().toISOString()} root=${root} ports=${JSON.stringify(ports)}`);
   return child;
 }
+function ownedGroupAbsent(child) {
+  assert.ok(Number.isSafeInteger(child?.pid) && child.pid > 0, 'Positive owned child PID required');
+  try { process.kill(-child.pid, 0); return false; }
+  catch (error) { if (error.code === 'ESRCH') return true; throw error; }
+}
 async function stop(child) {
-  if (!child?.pid || child.exitCode !== null || child.signalCode !== null) return;
-  try { process.kill(-child.pid, 'SIGTERM'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
-  let timer;
-  await Promise.race([child.done, new Promise(resolve => { timer = setTimeout(resolve, 5000); })]);
-  clearTimeout(timer);
+  if (!child?.pid) return;
+  const until = Date.now() + 5000;
   if (child.exitCode === null && child.signalCode === null) {
-    try { process.kill(-child.pid, 'SIGKILL'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
-    await deadline(child.done, 2000, `Owned KILL exit ${child.label}`);
-    assert.fail(`Forced kill required: ${child.label}`);
+    try { process.kill(-child.pid, 'SIGTERM'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
+    let timer;
+    await Promise.race([child.done, new Promise(resolve => {
+      timer = setTimeout(resolve, Math.max(0, until - Date.now()));
+    })]);
+    clearTimeout(timer);
+    if (child.exitCode === null && child.signalCode === null) {
+      try { process.kill(-child.pid, 'SIGKILL'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
+      await deadline(child.done, 2000, `Owned KILL exit ${child.label}`);
+      assert.fail(`Forced kill required: ${child.label}`);
+    }
+  }
+  while (!ownedGroupAbsent(child)) {
+    const remaining = until - Date.now();
+    assert.ok(remaining > 0, 'Owned process group closure unproven');
+    await new Promise(resolve => setTimeout(resolve, Math.min(100, remaining)));
   }
 }
 async function capture(label, executable, args, ms, env = {}) {
@@ -566,6 +626,7 @@ async function closedReceipt({requireOwnedIdentity = true} = {}) {
   if (requireOwnedIdentity) assert.deepEqual(unknownOwnedIdentities, [], 'UNKNOWN_CHILD_IDENTITY: owned closure unproven');
   assert.deepEqual(refs, []); assert.deepEqual(journals, []);
   assert.ok(children.every(c => c.exitCode !== null || c.signalCode !== null), 'All tracked children must exit');
+  for (const child of children) assert.ok(ownedGroupAbsent(child), 'All tracked process groups must be absent');
   const serverReceipts=(await readdir(out)).filter(n => /^server-closure-\d+\.json$/.test(n));
   assert.equal(serverReceipts.length,children.filter(c=>c.label==='backend').length,'Every real server must close');
   for (const file of serverReceipts) {
