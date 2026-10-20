@@ -383,6 +383,11 @@ function start(label, executable, args, cwd, env = {}) {
     env: ownedEnvironment(executable, env) });
   closeSync(fd);
   child.label = label;
+  if (label === 'firefox') {
+    child.lifecycle = {registeredUTC: new Date().toISOString()};
+    child.once('error', () => { child.lifecycle.errorUTC = new Date().toISOString(); });
+    child.once('close', () => { child.lifecycle.closeUTC = new Date().toISOString(); });
+  }
   child.done = new Promise(resolve => { child.once('exit', resolve); child.once('error', resolve); });
   children.push(child);
   assert.ok(!shuttingDown, 'Service registration during shutdown');
@@ -623,7 +628,8 @@ async function closedReceipt({requireOwnedIdentity = true} = {}) {
     ownedIdentityQualified: requireOwnedIdentity && unknownOwnedIdentities.length === 0,
     identityScope: requireOwnedIdentity ? 'strict tracked-owned identities; not universal ancestry'
       : 'legacy Chrome closure; NOT strict owned-identity qualification',
-    processes: children.map(c => ({ label: c.label, pid: c.pid, exit: c.exitCode, signal: c.signalCode })),
+    processes: children.map(c => ({ label: c.label, pid: c.pid, exit: c.exitCode, signal: c.signalCode,
+      ...(c.label === 'firefox' ? {lifecycle: c.lifecycle} : {}) })),
     inputScope: 'reviewed file hashes, not generated media/full-tree equality', UTC: new Date().toISOString() };
   await writeFile(path.join(out, 'CLOSURE.json'), JSON.stringify(receipt, null, 2));
   if (requireOwnedIdentity) assert.deepEqual(unknownOwnedIdentities, [], 'UNKNOWN_CHILD_IDENTITY: owned closure unproven');
@@ -870,6 +876,7 @@ finally {
   try { await deadline(closedReceipt(), 8000, 'OS closure'); closureProven = true; }
   catch (error) { cleanupFailures.push(error); failure ??= error; }
   status.elapsedMilliseconds = Date.now() - started; status.failure = failure?.stack ?? (failure ? String(failure) : undefined);
+  if (failure) status.primaryFailure = failure;
   if (cleanupFailures.length) status.cleanupFailures = cleanupFailures;
   status.closureProven = closureProven;
   status.success = !failure && status.episodes.length === 3 && status.paid?.length===40 && status.recovery?.length===3 && status.origins?.length===4;
