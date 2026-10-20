@@ -264,7 +264,7 @@ does not qualify LAN deployment, clean-machine installation or client trust in
 Chrome, Brave and Firefox. Certificate trust remains an explicit manual choice.
 The separate development-server commands below are not that packaged entry.
 
-Use Python 3.12 and Node 22 as tested by the current development workflow.
+Use Python 3.12 and Node 24.22.0; hosted workflows pin this exact Node release.
 From the repository root, start the backend:
 
 ```bash
