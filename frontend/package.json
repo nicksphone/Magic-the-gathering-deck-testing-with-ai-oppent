@@ -15,7 +15,7 @@
     "test:unit:private-discard-witness": "node tests/private-discard-browser-witness.mjs",
     "test:browser": "node tests/browser-human-actions.mjs",
     "test:unit:suspend": "node --experimental-strip-types tests/suspend-human-actions.mjs",
-    "test:unit:metadata": "node --experimental-strip-types tests/deck-local-metadata-contract.mjs",
+    "test:unit:metadata": "node --experimental-strip-types tests/deck-local-metadata-contract.mjs && node --test tests/deck-import-response-contract.test.mjs",
     "test:unit:mana": "node --experimental-strip-types tests/manual-mana-base-options.mjs && node --experimental-strip-types tests/manual-mana-consumer.mjs && node --experimental-strip-types tests/manual-mana-control-reuse.mjs && node --experimental-strip-types tests/manual-mana-output.mjs && node --experimental-strip-types tests/manual-mana-shortcuts.mjs",
     "test:unit:mechanics": "node --experimental-strip-types tests/mechanic-control-warning.mjs && node --experimental-strip-types tests/cycling-x-controls.mjs && node --experimental-strip-types tests/optional-reveal-contract.mjs && node --experimental-strip-types tests/note-creature-type-controls.mjs && node --experimental-strip-types tests/hand-top-order-controls.mjs && node --experimental-strip-types tests/optional-hand-exile-controls.mjs && node --experimental-strip-types tests/entry-mode-controls.mjs && node --experimental-strip-types tests/spree-mode-controls.mjs",
     "test:browser:suspend": "node tests/browser-suspend.mjs",
