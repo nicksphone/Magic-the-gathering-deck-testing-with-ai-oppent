@@ -198,6 +198,8 @@ class BodyCache:
                     except FileNotFoundError: self._root(); return None
                     raise Unavailable('CACHE_RELEASE_STAGE_PAIR')
             elif leaf is not None:
+                try: stage.lstat()
+                except FileNotFoundError: self._root(); return None
                 raise Unavailable('CACHE_RELEASE_STAGE_PAIR')
             return info
         staged = staging()

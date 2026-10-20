@@ -18840,9 +18840,9 @@
     "semantic_hash": ""
   },
   "backend/tests/firefox_body_cache_app.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0582952,
-    "ast_hash": "8ffdefcb9d8e5d441077a6b33be4debd",
+    "mtime": 1792524051.7616265,
+    "seen": 1792524344.215074,
+    "ast_hash": "d05715c3cd17e3ea699685c571a003a7",
     "semantic_hash": ""
   },
   "backend/tests/test_firefox_response_cache.py": {
@@ -22800,9 +22800,9 @@
     "semantic_hash": ""
   },
   "frontend/tests/firefox-release-owned-launcher-contract.test.mjs": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0625868,
-    "ast_hash": "b132501724c51848fb564a1fe2139631",
+    "mtime": 1792524051.794626,
+    "seen": 1792524344.2197149,
+    "ast_hash": "4335a0bd3292aa699063630ae149fc30",
     "semantic_hash": ""
   },
   "frontend/tests/release-owned/fixtures/current-built-cohort.json": {
@@ -23085,6 +23085,12 @@
     "mtime": 1792521591.5244937,
     "seen": 1792521839.6438043,
     "ast_hash": "9e10e9ec869edccf4be667e5faf58d86",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_firefox_release_stage_race.py": {
+    "mtime": 1792524051.7626264,
+    "seen": 1792524344.2179594,
+    "ast_hash": "c99a64fbc705fae4fbebc232efc4e0c3",
     "semantic_hash": ""
   }
 }

@@ -95,7 +95,7 @@ test('[static] original paid natural driver transport and cache programs remain 
     'frontend/tests/release-owned/browser-driver.mjs': 'f9fea24ab58823dfc5cca9f43f6b227c2846289c266cd86cded8a5d2543ecef2',
     'frontend/tests/browser-driver.mjs': 'a8c9893acbef01ae224f43488a4f6fd6ce68858bfc837db677dfd38d0ae70115',
     'frontend/tests/firefox-transport.mjs': '91642e527c8f694cf85036afcdc2a9bb438bacd782e2b1673180c96194b0e973',
-    'backend/tests/firefox_body_cache_app.py': '7e91acdd1ab88f042a41cb3818da41ca91baa173b1d2c743423d8e6abf9c7077',
+    'backend/tests/firefox_body_cache_app.py': '1f090dba3f37b6d27df7dbe76554020880a43fc9e994b054fba5eefc66203cb7',
     'backend/tests/current_built_browser_server.py': '0550d53c8d754b98bc81e276de265b05323d2940457c2436dafa7a295ac04ff3',
   };
   for (const [name, sha] of Object.entries(unchanged)) assert.equal(digest(read(name)), sha, name);
