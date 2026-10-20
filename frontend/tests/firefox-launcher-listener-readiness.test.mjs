@@ -77,7 +77,7 @@ function protocol({vendor = 'firefox', outcomes = ['connect'], duringProbe,
     if (ackError) throw ackError;
     acknowledged = true; events.push('bidi:ack');
   }};
-  context = vm.createContext({assert, path, browserVendor: vendor, ports,
+  context = vm.createContext({assert, path, browserVendor: vendor, strictNative: vendor === 'firefox', ports,
     root: '/owned/source', out: '/owned/evidence', frontend, vite,
     firefox: '/pinned/firefox', chrome: '/pinned/chrome', nativeExecutable: executable,
     children: [child], shuttingDown: false, failure: null,

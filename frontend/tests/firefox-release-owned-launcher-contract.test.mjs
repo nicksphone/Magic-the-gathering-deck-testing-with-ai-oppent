@@ -148,7 +148,8 @@ test('[static] native ACK and realm contracts remain in the actual unchanged tra
 });
 
 function admission(vendor) {
-  const loaded = subject(['authorizeChild'], {roleCounts: new Map(), authorizedFuserPaths: [], viteConfig: '/owned/vite.mjs'},
+  const loaded = subject(['authorizeChild'], {strictNative: vendor === 'firefox',
+    roleCounts: new Map(), authorizedFuserPaths: [], viteConfig: '/owned/vite.mjs'},
     shared + `const browserVendor=${JSON.stringify(vendor)};`);
   // Real argv and the source's expected argv must inhabit the same VM realm.
   return {methods: {authorizeChild(label, executable, args, cwd) {

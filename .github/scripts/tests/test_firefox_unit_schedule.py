@@ -21,6 +21,8 @@ class FirefoxUnitScheduleTests(unittest.TestCase):
             'tests/firefox-launcher-listener-readiness.test.mjs',
             'tests/release-owned/public-storage-owner-rename-budget.test.mjs',
             'tests/release-owned/owned-process-group-closure.test.mjs',
+            'tests/release-owned/native-runtime-selection.test.mjs',
+            'tests/release-owned/native-cohort-input-binding.test.mjs',
         ])
 
 

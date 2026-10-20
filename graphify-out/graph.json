@@ -48117,7 +48117,7 @@
       "file_type": "code",
       "norm_label": "backendsubject()",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L173"
+      "source_location": "L174"
     },
     {
       "id": "frontend_tests_firefox_release_owned_launcher_contract_test_closure",
@@ -48129,7 +48129,7 @@
       "file_type": "code",
       "norm_label": "closure()",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L352"
+      "source_location": "L353"
     },
     {
       "id": "frontend_tests_firefox_release_owned_launcher_contract_test_digest",
@@ -48165,7 +48165,7 @@
       "file_type": "code",
       "norm_label": "phases()",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L249"
+      "source_location": "L250"
     },
     {
       "id": "frontend_tests_firefox_release_owned_launcher_contract_test_phases_part",
@@ -48177,7 +48177,7 @@
       "file_type": "code",
       "norm_label": "part()",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L259"
+      "source_location": "L260"
     },
     {
       "id": "frontend_tests_firefox_release_owned_launcher_contract_test_plain",
@@ -48225,7 +48225,7 @@
       "file_type": "code",
       "norm_label": "teardown()",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L303"
+      "source_location": "L304"
     },
     {
       "id": "backend_analytics_decision_comparison_compare_decision_views",
@@ -192777,7 +192777,7 @@
       "file_type": "code",
       "norm_label": "absent()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L285"
+      "source_location": "L288"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_allocate",
@@ -192789,7 +192789,7 @@
       "file_type": "code",
       "norm_label": "allocate()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L295"
+      "source_location": "L298"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_authorizechild",
@@ -192801,7 +192801,7 @@
       "file_type": "code",
       "norm_label": "authorizechild()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L307"
+      "source_location": "L310"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_capture",
@@ -192813,7 +192813,7 @@
       "file_type": "code",
       "norm_label": "capture()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L416"
+      "source_location": "L419"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_checkfuser",
@@ -192825,7 +192825,7 @@
       "file_type": "code",
       "norm_label": "checkfuser()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L454"
+      "source_location": "L457"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_checkpins",
@@ -192837,7 +192837,7 @@
       "file_type": "code",
       "norm_label": "checkpins()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L289"
+      "source_location": "L292"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_closedreceipt",
@@ -192849,7 +192849,7 @@
       "file_type": "code",
       "norm_label": "closedreceipt()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L581"
+      "source_location": "L584"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_currentbackendidentity",
@@ -192861,7 +192861,7 @@
       "file_type": "code",
       "norm_label": "currentbackendidentity()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L549"
+      "source_location": "L552"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_deadline",
@@ -192873,7 +192873,7 @@
       "file_type": "code",
       "norm_label": "deadline()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L278"
+      "source_location": "L281"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_digest",
@@ -192885,7 +192885,7 @@
       "file_type": "code",
       "norm_label": "digest()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L47"
+      "source_location": "L50"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_hashtree",
@@ -192897,7 +192897,7 @@
       "file_type": "code",
       "norm_label": "hashtree()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L751"
+      "source_location": "L754"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_interrupted",
@@ -192909,7 +192909,7 @@
       "file_type": "code",
       "norm_label": "interrupted()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L705"
+      "source_location": "L708"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_missinglivechromecacheleaf",
@@ -192921,7 +192921,7 @@
       "file_type": "code",
       "norm_label": "missinglivechromecacheleaf()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L152"
+      "source_location": "L155"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_outputbudget",
@@ -192933,7 +192933,7 @@
       "file_type": "code",
       "norm_label": "outputbudget()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L188"
+      "source_location": "L191"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_outputbudget_ownedreceiptrename",
@@ -192945,7 +192945,7 @@
       "file_type": "code",
       "norm_label": "ownedreceiptrename()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L194"
+      "source_location": "L197"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_outputbudget_walk",
@@ -192957,7 +192957,7 @@
       "file_type": "code",
       "norm_label": "walk()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L226"
+      "source_location": "L229"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_ownedenvironment",
@@ -192969,7 +192969,7 @@
       "file_type": "code",
       "norm_label": "ownedenvironment()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L350"
+      "source_location": "L353"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_ownedgroupabsent",
@@ -192981,7 +192981,7 @@
       "file_type": "code",
       "norm_label": "ownedgroupabsent()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L389"
+      "source_location": "L392"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_readledger",
@@ -192993,7 +192993,7 @@
       "file_type": "code",
       "norm_label": "readledger()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L557"
+      "source_location": "L560"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_ready",
@@ -193005,7 +193005,7 @@
       "file_type": "code",
       "norm_label": "ready()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L471"
+      "source_location": "L474"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_readyfirefoxlistener",
@@ -193017,7 +193017,7 @@
       "file_type": "code",
       "norm_label": "readyfirefoxlistener()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L482"
+      "source_location": "L485"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_restartbackend",
@@ -193029,7 +193029,7 @@
       "file_type": "code",
       "norm_label": "restartbackend()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L565"
+      "source_location": "L568"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_start",
@@ -193041,7 +193041,7 @@
       "file_type": "code",
       "norm_label": "start()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L375"
+      "source_location": "L378"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_startbackend",
@@ -193053,7 +193053,7 @@
       "file_type": "code",
       "norm_label": "startbackend()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L519"
+      "source_location": "L522"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_stop",
@@ -193065,7 +193065,7 @@
       "file_type": "code",
       "norm_label": "stop()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L394"
+      "source_location": "L397"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_storagefuserpaths",
@@ -193077,7 +193077,7 @@
       "file_type": "code",
       "norm_label": "storagefuserpaths()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L147"
+      "source_location": "L150"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_storageinventory",
@@ -193089,7 +193089,7 @@
       "file_type": "code",
       "norm_label": "storageinventory()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L93"
+      "source_location": "L96"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_storagereceipts",
@@ -193101,7 +193101,7 @@
       "file_type": "code",
       "norm_label": "storagereceipts()",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L65"
+      "source_location": "L68"
     },
     {
       "id": "github_scripts_ci_backend_shards_regular_read_invalid",
@@ -315063,7 +315063,7 @@
       "file_type": "code",
       "norm_label": "allocations",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L50"
+      "source_location": "L53"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_bodycachedirectory",
@@ -315074,7 +315074,7 @@
       "file_type": "code",
       "norm_label": "bodycachedirectory",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L44"
+      "source_location": "L47"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_children",
@@ -315085,7 +315085,7 @@
       "file_type": "code",
       "norm_label": "children",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L48"
+      "source_location": "L51"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_closedbackuphashes",
@@ -315096,7 +315096,7 @@
       "file_type": "code",
       "norm_label": "closedbackuphashes",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L62"
+      "source_location": "L65"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_cohort",
@@ -315107,7 +315107,7 @@
       "file_type": "code",
       "norm_label": "cohort",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L649"
+      "source_location": "L652"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_db",
@@ -315118,7 +315118,7 @@
       "file_type": "code",
       "norm_label": "db",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L45"
+      "source_location": "L48"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_dependencylinks",
@@ -315129,7 +315129,7 @@
       "file_type": "code",
       "norm_label": "dependencylinks",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L676"
+      "source_location": "L679"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_dependencypins",
@@ -315140,7 +315140,7 @@
       "file_type": "code",
       "norm_label": "dependencypins",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L674"
+      "source_location": "L677"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_execpins",
@@ -315151,7 +315151,7 @@
       "file_type": "code",
       "norm_label": "execpins",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L666"
+      "source_location": "L669"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_externalpins",
@@ -315162,7 +315162,7 @@
       "file_type": "code",
       "norm_label": "externalpins",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L664"
+      "source_location": "L667"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_fixturetoken",
@@ -315173,7 +315173,7 @@
       "file_type": "code",
       "norm_label": "fixturetoken",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L660"
+      "source_location": "L663"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_grant",
@@ -315184,7 +315184,7 @@
       "file_type": "code",
       "norm_label": "grant",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L647"
+      "source_location": "L650"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_installed",
@@ -315195,7 +315195,7 @@
       "file_type": "code",
       "norm_label": "installed",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L685"
+      "source_location": "L688"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_out",
@@ -315206,7 +315206,7 @@
       "file_type": "code",
       "norm_label": "out",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L35"
+      "source_location": "L37"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_ownerepochs",
@@ -315217,7 +315217,7 @@
       "file_type": "code",
       "norm_label": "ownerepochs",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L61"
+      "source_location": "L64"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_ports",
@@ -315228,7 +315228,7 @@
       "file_type": "code",
       "norm_label": "ports",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L51"
+      "source_location": "L54"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_project",
@@ -315250,7 +315250,7 @@
       "file_type": "code",
       "norm_label": "rolecounts",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L49"
+      "source_location": "L52"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_root",
@@ -315272,7 +315272,7 @@
       "file_type": "code",
       "norm_label": "runnerpins",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L662"
+      "source_location": "L665"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_runtimeroot",
@@ -315283,7 +315283,7 @@
       "file_type": "code",
       "norm_label": "runtimeroot",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L680"
+      "source_location": "L683"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_site",
@@ -315294,7 +315294,7 @@
       "file_type": "code",
       "norm_label": "site",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L686"
+      "source_location": "L689"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_started",
@@ -315305,7 +315305,7 @@
       "file_type": "code",
       "norm_label": "started",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L57"
+      "source_location": "L60"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_status",
@@ -315316,7 +315316,7 @@
       "file_type": "code",
       "norm_label": "status",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L58"
+      "source_location": "L61"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_stdlibpins",
@@ -315327,7 +315327,7 @@
       "file_type": "code",
       "norm_label": "stdlibpins",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L682"
+      "source_location": "L685"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_versions",
@@ -315338,7 +315338,7 @@
       "file_type": "code",
       "norm_label": "versions",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L684"
+      "source_location": "L687"
     },
     {
       "id": "frontend_tests_release_owned_run_current_built_acceptance_viteconfig",
@@ -315349,7 +315349,7 @@
       "file_type": "code",
       "norm_label": "viteconfig",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L46"
+      "source_location": "L49"
     },
     {
       "id": "docs_testing_ai_two_series_resource_diagnostics",
@@ -857980,7 +857980,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L197",
+      "source_location": "L198",
       "weight": 1.0
     },
     {
@@ -857992,7 +857992,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L368",
+      "source_location": "L369",
       "weight": 1.0
     },
     {
@@ -863392,7 +863392,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L419",
+      "source_location": "L422",
       "weight": 1.0
     },
     {
@@ -863404,7 +863404,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L421",
+      "source_location": "L424",
       "weight": 1.0
     },
     {
@@ -863416,7 +863416,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L441",
+      "source_location": "L444",
       "weight": 1.0
     },
     {
@@ -863428,7 +863428,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L443",
+      "source_location": "L446",
       "weight": 1.0
     },
     {
@@ -863440,7 +863440,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L465",
+      "source_location": "L468",
       "weight": 1.0
     },
     {
@@ -863452,7 +863452,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L466",
+      "source_location": "L469",
       "weight": 1.0
     },
     {
@@ -863464,7 +863464,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L292",
+      "source_location": "L295",
       "weight": 1.0
     },
     {
@@ -863476,7 +863476,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L584",
+      "source_location": "L587",
       "weight": 1.0
     },
     {
@@ -863488,7 +863488,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L614",
+      "source_location": "L617",
       "weight": 1.0
     },
     {
@@ -863500,7 +863500,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L629",
+      "source_location": "L632",
       "weight": 1.0
     },
     {
@@ -863512,7 +863512,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L640",
+      "source_location": "L643",
       "weight": 1.0
     },
     {
@@ -863524,7 +863524,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L641",
+      "source_location": "L644",
       "weight": 1.0
     },
     {
@@ -863536,7 +863536,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L47",
+      "source_location": "L50",
       "weight": 1.0
     },
     {
@@ -863548,7 +863548,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L751",
+      "source_location": "L754",
       "weight": 1.0
     },
     {
@@ -863560,7 +863560,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L751",
+      "source_location": "L754",
       "weight": 1.0
     },
     {
@@ -863572,7 +863572,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L164",
+      "source_location": "L167",
       "weight": 1.0
     },
     {
@@ -863584,7 +863584,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L271",
+      "source_location": "L274",
       "weight": 1.0
     },
     {
@@ -863596,7 +863596,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L215",
+      "source_location": "L218",
       "weight": 1.0
     },
     {
@@ -863608,7 +863608,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L229",
+      "source_location": "L232",
       "weight": 1.0
     },
     {
@@ -863620,7 +863620,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L234",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -863632,7 +863632,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L238",
+      "source_location": "L241",
       "weight": 1.0
     },
     {
@@ -863644,7 +863644,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L559",
+      "source_location": "L562",
       "weight": 1.0
     },
     {
@@ -863656,7 +863656,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L568",
+      "source_location": "L571",
       "weight": 1.0
     },
     {
@@ -863668,7 +863668,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L570",
+      "source_location": "L573",
       "weight": 1.0
     },
     {
@@ -863680,7 +863680,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L571",
+      "source_location": "L574",
       "weight": 1.0
     },
     {
@@ -863692,7 +863692,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L572",
+      "source_location": "L575",
       "weight": 1.0
     },
     {
@@ -863704,7 +863704,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L575",
+      "source_location": "L578",
       "weight": 1.0
     },
     {
@@ -863716,7 +863716,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L377",
+      "source_location": "L380",
       "weight": 1.0
     },
     {
@@ -863728,7 +863728,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L380",
+      "source_location": "L383",
       "weight": 1.0
     },
     {
@@ -863740,7 +863740,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L522",
+      "source_location": "L525",
       "weight": 1.0
     },
     {
@@ -863752,7 +863752,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L540",
+      "source_location": "L543",
       "weight": 1.0
     },
     {
@@ -863764,7 +863764,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L542",
+      "source_location": "L545",
       "weight": 1.0
     },
     {
@@ -863776,7 +863776,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L406",
+      "source_location": "L409",
       "weight": 1.0
     },
     {
@@ -863788,7 +863788,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L410",
+      "source_location": "L413",
       "weight": 1.0
     },
     {
@@ -863800,7 +863800,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L148",
+      "source_location": "L151",
       "weight": 1.0
     },
     {
@@ -863812,7 +863812,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L125",
+      "source_location": "L128",
       "weight": 1.0
     },
     {
@@ -863824,7 +863824,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L94",
+      "source_location": "L97",
       "weight": 1.0
     },
     {
@@ -882304,7 +882304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L173",
+      "source_location": "L174",
       "weight": 1.0
     },
     {
@@ -882340,7 +882340,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L249",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
@@ -882352,7 +882352,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L303",
+      "source_location": "L304",
       "weight": 1.0
     },
     {
@@ -882364,7 +882364,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L352",
+      "source_location": "L353",
       "weight": 1.0
     },
     {
@@ -882388,7 +882388,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/firefox-release-owned-launcher-contract.test.mjs",
-      "source_location": "L259",
+      "source_location": "L260",
       "weight": 1.0
     },
     {
@@ -883564,7 +883564,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L705",
+      "source_location": "L708",
       "weight": 1.0
     },
     {
@@ -883576,7 +883576,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L226",
+      "source_location": "L229",
       "weight": 1.0
     },
     {
@@ -1532673,7 +1532673,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L147",
+      "source_location": "L150",
       "weight": 1.0
     },
     {
@@ -1532684,7 +1532684,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L152",
+      "source_location": "L155",
       "weight": 1.0
     },
     {
@@ -1532700,17 +1532700,6 @@
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_outputbudget",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L188",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
       "target": "frontend_tests_release_owned_run_current_built_acceptance_project",
       "relation": "contains",
       "_origin": "ast",
@@ -1532722,13 +1532711,24 @@
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_outputbudget",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
       "target": "frontend_tests_release_owned_run_current_built_acceptance_deadline",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L278",
+      "source_location": "L281",
       "weight": 1.0
     },
     {
@@ -1532739,7 +1532739,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L285",
+      "source_location": "L288",
       "weight": 1.0
     },
     {
@@ -1532750,7 +1532750,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L289",
+      "source_location": "L292",
       "weight": 1.0
     },
     {
@@ -1532761,7 +1532761,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L295",
+      "source_location": "L298",
       "weight": 1.0
     },
     {
@@ -1532772,18 +1532772,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L307",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_out",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L35",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
@@ -1532794,7 +1532783,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L350",
+      "source_location": "L353",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_out",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
@@ -1532805,7 +1532805,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L375",
+      "source_location": "L378",
       "weight": 1.0
     },
     {
@@ -1532816,7 +1532816,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L389",
+      "source_location": "L392",
       "weight": 1.0
     },
     {
@@ -1532827,7 +1532827,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L394",
+      "source_location": "L397",
       "weight": 1.0
     },
     {
@@ -1532838,29 +1532838,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L416",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_bodycachedirectory",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L44",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_db",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L45",
+      "source_location": "L419",
       "weight": 1.0
     },
     {
@@ -1532871,23 +1532849,12 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L454",
+      "source_location": "L457",
       "weight": 1.0
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_viteconfig",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L46",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_digest",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_bodycachedirectory",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1532904,12 +1532871,12 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L471",
+      "source_location": "L474",
       "weight": 1.0
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_children",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_db",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1532926,12 +1532893,12 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L482",
+      "source_location": "L485",
       "weight": 1.0
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_rolecounts",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_viteconfig",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1532942,7 +1532909,7 @@
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_allocations",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_digest",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1532953,7 +1532920,7 @@
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_ports",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_children",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1532964,13 +1532931,46 @@
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_rolecounts",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L52",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
       "target": "frontend_tests_release_owned_run_current_built_acceptance_startbackend",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L519",
+      "source_location": "L522",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_allocations",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L53",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_ports",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L54",
       "weight": 1.0
     },
     {
@@ -1532981,7 +1532981,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L549",
+      "source_location": "L552",
       "weight": 1.0
     },
     {
@@ -1532992,7 +1532992,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L557",
+      "source_location": "L560",
       "weight": 1.0
     },
     {
@@ -1533003,29 +1533003,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L565",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_started",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L57",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_status",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L58",
+      "source_location": "L568",
       "weight": 1.0
     },
     {
@@ -1533036,12 +1533014,23 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L581",
+      "source_location": "L584",
       "weight": 1.0
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_ownerepochs",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_started",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L60",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_status",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1533052,40 +1533041,18 @@
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_ownerepochs",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L64",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
       "target": "frontend_tests_release_owned_run_current_built_acceptance_closedbackuphashes",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L62",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_grant",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L647",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_cohort",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L649",
-      "weight": 1.0
-    },
-    {
-      "source": "frontend_tests_release_owned_run_current_built_acceptance",
-      "target": "frontend_tests_release_owned_run_current_built_acceptance_storagereceipts",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1533096,13 +1533063,35 @@
     },
     {
       "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_grant",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L650",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_cohort",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L652",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
       "target": "frontend_tests_release_owned_run_current_built_acceptance_fixturetoken",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L660",
+      "source_location": "L663",
       "weight": 1.0
     },
     {
@@ -1533113,7 +1533102,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L662",
+      "source_location": "L665",
       "weight": 1.0
     },
     {
@@ -1533124,7 +1533113,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L664",
+      "source_location": "L667",
       "weight": 1.0
     },
     {
@@ -1533135,7 +1533124,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L666",
+      "source_location": "L669",
       "weight": 1.0
     },
     {
@@ -1533146,7 +1533135,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L674",
+      "source_location": "L677",
       "weight": 1.0
     },
     {
@@ -1533157,7 +1533146,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L676",
+      "source_location": "L679",
+      "weight": 1.0
+    },
+    {
+      "source": "frontend_tests_release_owned_run_current_built_acceptance",
+      "target": "frontend_tests_release_owned_run_current_built_acceptance_storagereceipts",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
+      "source_location": "L68",
       "weight": 1.0
     },
     {
@@ -1533168,7 +1533168,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L680",
+      "source_location": "L683",
       "weight": 1.0
     },
     {
@@ -1533179,7 +1533179,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L682",
+      "source_location": "L685",
       "weight": 1.0
     },
     {
@@ -1533190,7 +1533190,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L684",
+      "source_location": "L687",
       "weight": 1.0
     },
     {
@@ -1533201,7 +1533201,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L685",
+      "source_location": "L688",
       "weight": 1.0
     },
     {
@@ -1533212,7 +1533212,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L686",
+      "source_location": "L689",
       "weight": 1.0
     },
     {
@@ -1533223,7 +1533223,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L751",
+      "source_location": "L754",
       "weight": 1.0
     },
     {
@@ -1533234,7 +1533234,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L93",
+      "source_location": "L96",
       "weight": 1.0
     },
     {
@@ -1533245,7 +1533245,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L194",
+      "source_location": "L197",
       "weight": 1.0
     },
     {
@@ -1600468,7 +1600468,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L678",
+      "source_location": "L681",
       "weight": 1.0
     },
     {
@@ -1600480,7 +1600480,7 @@
       "confidence_score": 0.85,
       "context": "argument",
       "source_file": "frontend/tests/release-owned/run-current-built-acceptance.mjs",
-      "source_location": "L708",
+      "source_location": "L711",
       "weight": 1.0
     },
     {
