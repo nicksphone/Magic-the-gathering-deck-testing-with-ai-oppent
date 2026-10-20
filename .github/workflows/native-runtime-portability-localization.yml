@@ -5,6 +5,7 @@ on:
     paths:
       - .github/workflows/native-runtime-portability-localization.yml
       - frontend/tests/release-owned/native-runtime-selection.test.mjs
+      - frontend/tests/release-owned/native-cohort-input-binding.test.mjs
       - frontend/tests/release-owned/run-current-built-acceptance.mjs
 
 permissions:
@@ -24,7 +25,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.12.3'
-      - name: Six whole Node protocol modules, no browser or dependencies
+      - name: Seven whole Node protocol modules, no browser or dependencies
         working-directory: frontend
         timeout-minutes: 7
         run: |
@@ -43,7 +44,8 @@ jobs:
             tests/firefox-release-owned-launcher-contract.test.mjs \
             tests/firefox-launcher-listener-readiness.test.mjs \
             tests/release-owned/public-storage-owner-rename-budget.test.mjs \
-            tests/browser-response-drop-request-state.test.mjs || status=$?
+            tests/browser-response-drop-request-state.test.mjs \
+            tests/release-owned/native-cohort-input-binding.test.mjs || status=$?
           summary_status=0
           python -I -S -B - "$report" "$status" <<'PYTHON' || summary_status=$?
           import hashlib, json, stat, sys, xml.etree.ElementTree as ET
@@ -59,7 +61,7 @@ jobs:
           skips = sum(case.find('skipped') is not None for case in cases)
           summary = dict(cases=len(cases), passed=len(cases) - failures - errors - skips,
                          failures=failures, errors=errors, skips=skips, exit=int(sys.argv[2]))
-          expected_cases = 109  # Exact six whole modules: unchanged81 + new28.
+          expected_cases = 121  # Exact seven whole modules: unchanged81 + new28 + new12.
           if (len(cases) != expected_cases or min(summary.values()) < 0 or not 0 <= summary['exit'] <= 255
                   or summary['exit'] == 0 and failures + errors + skips):
               raise SystemExit('Inconsistent Node protocol report')
