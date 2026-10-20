@@ -312713,7 +312713,7 @@
       "node_kind": "heading",
       "norm_label": "qualification boundary",
       "source_file": "docs/testing/ui-drop-diagnostics-testfirst-current.md",
-      "source_location": "L43"
+      "source_location": "L52"
     },
     {
       "id": "docs_testing_ui_drop_diagnostics_testfirst_current_test_first_baseline",
@@ -320491,6 +320491,18 @@
       "type": "external"
     },
     {
+      "id": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "label": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "_origin": "semantic",
+      "community": 917,
+      "community_name": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "external": true,
+      "file_type": "concept",
+      "norm_label": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "source_file": "",
+      "type": "external"
+    },
+    {
       "id": "home_nick_hermes_cache_scratch_mtg_native_vendor_ci_sqbhmsqw_backend_scripts_init_py",
       "label": "home_nick_hermes_cache_scratch_mtg_native_vendor_ci_sqbhmsqw_backend_scripts_init_py",
       "_origin": "semantic",
@@ -321031,13 +321043,13 @@
       "type": "external"
     },
     {
-      "id": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
-      "label": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "id": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
+      "label": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "community": 371,
       "community_name": "Repository",
       "external": true,
       "file_type": "concept",
-      "norm_label": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "norm_label": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "source_file": "",
       "type": "external"
     }
@@ -1198794,7 +1198806,7 @@
     },
     {
       "source": "backend_scripts_anomaly_cluster_report",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1198902,7 +1198914,7 @@
     },
     {
       "source": "backend_scripts_baseline_report",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199022,7 +1199034,7 @@
     },
     {
       "source": "backend_scripts_benchmark_ai_decisions",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199082,7 +1199094,7 @@
     },
     {
       "source": "backend_scripts_build_ai_log_priors",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199166,7 +1199178,7 @@
     },
     {
       "source": "backend_scripts_card_mechanics_inventory",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199226,7 +1199238,7 @@
     },
     {
       "source": "backend_scripts_card_play_analytics",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199298,7 +1199310,7 @@
     },
     {
       "source": "backend_scripts_ci_regression_gate",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199334,7 +1199346,7 @@
     },
     {
       "source": "backend_scripts_corpus_knowledge_readiness",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199646,7 +1199658,7 @@
     },
     {
       "source": "backend_scripts_debug_head_to_head",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199790,7 +1199802,7 @@
     },
     {
       "source": "backend_scripts_export_builtin_oracle_seed",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199838,7 +1199850,7 @@
     },
     {
       "source": "backend_scripts_export_training_trajectories",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199886,7 +1199898,7 @@
     },
     {
       "source": "backend_scripts_extract_training_examples",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1199982,7 +1199994,7 @@
     },
     {
       "source": "backend_scripts_import_tournament_json",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1200078,7 +1200090,7 @@
     },
     {
       "source": "backend_scripts_knowledge_engine_coverage",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1200174,7 +1200186,7 @@
     },
     {
       "source": "backend_scripts_knowledge_gap_report",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1200390,7 +1200402,7 @@
     },
     {
       "source": "backend_scripts_oracle_corpus_report",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1200630,7 +1200642,7 @@
     },
     {
       "source": "backend_scripts_overnight_verbose_round_robin",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1200726,7 +1200738,7 @@
     },
     {
       "source": "backend_scripts_profile_ai_match",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1201014,7 +1201026,7 @@
     },
     {
       "source": "backend_scripts_regression_matrix_replay",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1201158,7 +1201170,7 @@
     },
     {
       "source": "backend_scripts_sync_all_card_knowledge",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1201266,7 +1201278,7 @@
     },
     {
       "source": "backend_scripts_sync_corpus_cards",
-      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_testfirst_56f_stage_20261020_bt9tv4d7_source_backend_scripts_init_py",
+      "target": "home_nick_hermes_cache_scratch_mtg_start_recovery_causal_20261019_5e2qnjfu_public_ui_prefix_mode_product_159d_stage_20261020_zgrc4e9i_source_backend_scripts_init_py",
       "relation": "imports_from",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -1516711,7 +1516723,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/testing/ui-drop-diagnostics-testfirst-current.md",
-      "source_location": "L43",
+      "source_location": "L52",
       "weight": 1.0
     },
     {

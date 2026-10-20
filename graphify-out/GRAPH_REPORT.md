@@ -1,12 +1,12 @@
 # Graph Report - source  (2026-10-20)
 
 ## Corpus Check
-- 3806 files · ~3,056,027 words
+- 3806 files · ~3,056,189 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 62 file(s) not represented in the graph (top: .jsonl 34, (none) 14, .utc 4)
 
 ## Summary
-- 27202 nodes · 119128 edges · 966 communities (746 shown, 220 thin omitted)
+- 27203 nodes · 119128 edges · 967 communities (746 shown, 221 thin omitted)
 - Extraction: 90% EXTRACTED · 10% INFERRED · 0% AMBIGUOUS · INFERRED: 12331 edges (avg confidence: 0.93)
 - Token cost: 0 input · 0 output
 
@@ -946,7 +946,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (966 total, 220 thin omitted)
+## Communities (967 total, 221 thin omitted)
 
 ### Community 0 - "test_combat_graveyard_caller_audit.py"
 Cohesion: 0.05
@@ -3934,8 +3934,8 @@ Nodes (4): Optional CI interruption observation, Qualification scopes, interrupt
 
 ## Knowledge Gaps
 - **3147 isolated node(s):** `install-ci-app-runtime.sh script`, `diagnostic_pins`, `MTG_ISOLATED_TEST_ROOT`, `MTG_CI_EVIDENCE`, `MTG_RELEASE_MEDIA_ARCHIVE` (+3142 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 7570 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **220 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 7571 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **221 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_

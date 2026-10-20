@@ -10,6 +10,7 @@ on:
         options:
           - start-recovery
           - ui-v2
+          - ui-v2-prefix
   push:
     paths:
       - .github/workflows/browser-recovery-localization.yml
@@ -62,7 +63,7 @@ jobs:
           PYTHON
           if ((status)); then exit "$status"; fi
           exit "$summary_status"
-      # Test-first only: ui-v2-prefix remains unsupported pending an observed contract RED.
+      # The prefix mode is a bounded context experiment, not the full browser suite.
       - name: Localization workflow wiring contracts
         run: |
           python -B .github/scripts/tests/test_browser_recovery_localization.py
@@ -100,12 +101,15 @@ jobs:
             start-recovery)
               programs=(browser-cors-transport-diagnostic.mjs browser-start-recovery.mjs)
               ;;
-            ui-v2)
+            ui-v2|ui-v2-prefix)
               E="$RUNNER_TEMP/ui-v2-localization-evidence"
               test ! -e "$E" && test ! -L "$E"
               mkdir -m 700 -- "$E"
               export MTG_UI_EVIDENCE="$E"
               programs=(browser-ui-v2.mjs)
+              if [[ "$scenario" == ui-v2-prefix ]]; then
+                programs=(browser-cors-transport-diagnostic.mjs browser-driver-async.mjs browser-ui-v2.mjs)
+              fi
               ;;
             *) exit 2 ;;
           esac
