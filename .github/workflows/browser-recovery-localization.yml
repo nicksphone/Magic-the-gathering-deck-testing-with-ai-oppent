@@ -62,6 +62,7 @@ jobs:
           PYTHON
           if ((status)); then exit "$status"; fi
           exit "$summary_status"
+      # Test-first only: ui-v2-prefix remains unsupported pending an observed contract RED.
       - name: Localization workflow wiring contracts
         run: |
           python -B .github/scripts/tests/test_browser_recovery_localization.py

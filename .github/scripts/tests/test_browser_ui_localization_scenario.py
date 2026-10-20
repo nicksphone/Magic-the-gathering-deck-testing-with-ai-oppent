@@ -152,6 +152,33 @@ class UiLocalizationScenarioTests(unittest.TestCase):
                 self.assertEqual(list(case.runner.iterdir()), [])
                 self.assertNotIn('Browser localization scenario', case.result.stdout)
 
+    def test_ui_v2_prefix_runs_exact_three_programs_with_exported_private_evidence(self):
+        import json
+
+        with self.run_case(choice='ui-v2-prefix') as case:
+            argv_matches = case.argv == TIMEOUT_PREFIX + [
+                'browser-cors-transport-diagnostic.mjs',
+                'browser-driver-async.mjs', 'browser-ui-v2.mjs']
+            evidence_exported = case.child_env.get('MTG_UI_EVIDENCE') == str(case.evidence)
+            print('::notice title=Browser prefix workflow contract::' + json.dumps({
+                'schema': 1, 'scenario': 'ui-v2-prefix', 'runner_exit': case.result.returncode,
+                'argv_matches': argv_matches, 'evidence_exported': evidence_exported,
+            }, separators=(',', ':')), flush=True)
+            self.assertEqual(case.result.returncode, 0)
+            self.assertTrue(argv_matches)
+            self.assertTrue(evidence_exported)
+            self.assertEqual(case.timeout_calls.read_text(), 'timeout\n')
+            self.assertEqual(case.ss_calls.read_text(), 'ss\n')
+            self.assertFalse(case.evidence.is_symlink())
+            info = case.evidence.lstat()
+            self.assertTrue(stat.S_ISDIR(info.st_mode))
+            self.assertEqual(stat.S_IMODE(info.st_mode), 0o700)
+            self.assertEqual(info.st_uid, os.getuid())
+            self.assertTrue(case.evidence.parent == case.runner)
+            self.assertEqual(list(case.evidence.iterdir()), [])
+            self.assertTrue('::notice title=Browser localization scenario::{"schema":1,"scenario":"ui-v2-prefix"}'
+                            in case.result.stdout)
+
 
 if __name__ == '__main__':
     unittest.main()
