@@ -31,6 +31,7 @@ class DropDiagnosticScheduleTests(unittest.TestCase):
             'tests/browser-response-drop-diagnostic.test.mjs',
             'tests/browser-v2-request-stage-recovery.test.mjs',
             'tests/browser-start-recovery-failure-diagnostic.test.mjs',
+            'tests/browser-start-recovery-phase-diagnostic.test.mjs',
         ])
 
 

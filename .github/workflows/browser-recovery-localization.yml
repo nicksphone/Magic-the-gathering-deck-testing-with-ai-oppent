@@ -30,6 +30,29 @@ jobs:
         run: |
           bash .github/scripts/install-ci-app-runtime.sh
           npm --prefix frontend ci
+      - name: Recovery unit compatibility protocol contracts
+        run: |
+          status=0
+          node --test --test-reporter=junit --test-reporter-destination="$RUNNER_TEMP/recovery-unit-compatibility.xml" frontend/tests/browser-start-recovery-failure-diagnostic.test.mjs frontend/tests/browser-start-recovery-phase-diagnostic.test.mjs frontend/tests/release-owned/public-storage-owner-rename-budget.test.mjs || status=$?
+          summary_status=0
+          python - "$RUNNER_TEMP/recovery-unit-compatibility.xml" "$status" <<'PYTHON' || summary_status=$?
+          import json, stat, sys, xml.etree.ElementTree as ET
+          from pathlib import Path
+          report = Path(sys.argv[1])
+          info = report.lstat()
+          if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 262144:
+              raise SystemExit('Invalid browser protocol report')
+          cases = list(ET.parse(report).getroot().iter('testcase'))
+          summary = dict(schema=1, cases=len(cases), runner_exit=int(sys.argv[2]),
+              failures=sum(case.find('failure') is not None for case in cases),
+              errors=sum(case.find('error') is not None for case in cases),
+              skipped=sum(case.find('skipped') is not None for case in cases))
+          print('::notice title=Recovery unit compatibility result::' + json.dumps(summary, separators=(',', ':')))
+          if len(cases) != 47 or summary['skipped'] or not 0 <= summary['runner_exit'] <= 255:
+              raise SystemExit(1)
+          PYTHON
+          if ((status)); then exit "$status"; fi
+          exit "$summary_status"
       - name: Record observed browser and runtime versions
         run: |
           google-chrome --version
