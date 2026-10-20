@@ -140,3 +140,29 @@ export function reportStartRecoveryFailure(snapshot) {
     writeSync(2, `\n::error title=Browser start recovery failure::${body}\n`);
   } catch { /* Annotation failure must not replace the original failure. */ }
 }
+
+export function startRecoveryPhaseFailureMetadata(phase, error) {
+  if (!['setup', 'lost-prepare', 'lost-recover', 'lost-verify',
+    'reload-prepare', 'reload-pending', 'reload-replay', 'reload-verify',
+    'click-prepare', 'click-pending', 'click-replay', 'click-verify',
+    'legacy-prepare', 'legacy-pending', 'legacy-reload', 'legacy-review',
+    'legacy-replay', 'legacy-verify'].includes(phase)) return null;
+  let errorClass = 'other';
+  try {
+    if (error instanceof Error) {
+      const name = error.name;
+      if (classes.has(name)) errorClass = name;
+    }
+  } catch { /* Error getters must never replace the original failure. */ }
+  return {schema: 1, program: 'browser-start-recovery.mjs', phase, error_class: errorClass};
+}
+
+export function reportStartRecoveryPhaseFailure(phase, error) {
+  try {
+    const record = startRecoveryPhaseFailureMetadata(phase, error);
+    if (!record) return;
+    const body = JSON.stringify(record);
+    if (body.length > 512) return;
+    writeSync(2, `\n::error title=Browser start recovery phase failure::${body}\n`);
+  } catch { /* Annotation failure must not replace the original failure. */ }
+}

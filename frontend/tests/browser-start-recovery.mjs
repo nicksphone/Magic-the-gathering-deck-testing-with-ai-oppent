@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { openBrowser } from './browser-driver.mjs';
 import { reviewStart } from './review-start.mjs';
 import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
-import { reportStartRecoveryFailure } from './browser-source-diagnostic.mjs';
+import { reportStartRecoveryFailure, reportStartRecoveryPhaseFailure } from './browser-source-diagnostic.mjs';
 
 const backend = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10199';
 const decks = await (await fetch(`${backend}/fixture/start-decks`, { method: 'POST' })).json();
@@ -86,16 +86,20 @@ async function resumeRequestCapture() {
   await observeFetchControl('Fetch.enable', { patterns: [{ urlPattern: '*/matches/start', requestStage: 'Request' }] });
 }
 
+let recoveryPhase = 'setup';
 try {
   startWithDroppedResponses.requestSignals = createRequestSignalObserver(process.env.MTG_FRONTEND_ORIGIN || 'http://127.0.0.1:15173', backend);
   onIntercept(Object.assign(() => {}, { observeBrowserEvent: startWithDroppedResponses.requestSignals.observe }));
   await command('Network.enable');
   await command('Page.enable');
   await command('Runtime.enable');
+  recoveryPhase = 'lost-prepare';
   await selectDecks();
   const before = await matchIds();
   const dropped = await startWithDroppedResponses(1);
+  recoveryPhase = 'lost-recover';
   await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')", 75000);
+  recoveryPhase = 'lost-verify';
   await observeFetchControl('Fetch.disable');
   const after = await matchIds();
   assert.equal(dropped(), 1);
@@ -104,17 +108,21 @@ try {
   assert.equal(after.has(await evaluate("localStorage.getItem('mtg.activeMatch')")), true);
   console.log('PASS lost successful start response retries one durable match');
 
+  recoveryPhase = 'reload-prepare';
   await selectDecks();
   const beforeReload = await matchIds();
   const droppedTwice = await startWithDroppedResponses(2);
+  recoveryPhase = 'reload-pending';
   await waitFor("document.querySelector('[role=alert]') && !document.body.innerText.includes('Match operation pending') && !!localStorage.getItem('mtg.pendingStart')");
   await observeFetchControl('Fetch.disable');
   assert.equal(droppedTwice(), 2);
   const reloadIntent = await evaluate("JSON.parse(localStorage.getItem('mtg.pendingStart'))");
   assert.equal(reloadIntent.review.exploratoryAcknowledged, true);
+  recoveryPhase = 'reload-replay';
   await resumeRequestCapture();
   await command('Page.reload');
   await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Restoring saved session') && !localStorage.getItem('mtg.pendingStart')");
+  recoveryPhase = 'reload-verify';
   await observeFetchControl('Fetch.disable');
   const afterReload = await matchIds();
   assert.equal(afterReload.size, beforeReload.size + 1);
@@ -123,17 +131,21 @@ try {
   assert.equal(droppedTwice.attempts.length, 3, 'Reload replays the same intent once');
   console.log('PASS reload recovers ambiguous start without creating another match');
 
+  recoveryPhase = 'click-prepare';
   await selectDecks();
   const beforeClickRetry = await matchIds();
   const droppedForClick = await startWithDroppedResponses(2);
+  recoveryPhase = 'click-pending';
   await waitFor("document.querySelector('[role=alert]') && !document.body.innerText.includes('Match operation pending') && !!localStorage.getItem('mtg.pendingStart')");
   await observeFetchControl('Fetch.disable');
   assert.equal(droppedForClick(), 2);
   const clickIntent = await evaluate("JSON.parse(localStorage.getItem('mtg.pendingStart'))");
   assert.equal(await evaluate("[...document.querySelectorAll('button')].find(b=>b.textContent==='Start Best-of-3 Match').disabled"), true);
+  recoveryPhase = 'click-replay';
   await resumeRequestCapture();
   await click('Recover pending match start');
   await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')");
+  recoveryPhase = 'click-verify';
   await observeFetchControl('Fetch.disable');
   const afterClickRetry = await matchIds();
   assert.equal(afterClickRetry.size, beforeClickRetry.size + 1);
@@ -142,13 +154,16 @@ try {
   assert.equal(droppedForClick.attempts.length, 3, 'Explicit recovery replays the same intent once');
   console.log('PASS explicit recovery click retains original reviewed key/payload without creating another');
 
+  recoveryPhase = 'legacy-prepare';
   await selectDecks();
   const beforeLegacy = await matchIds();
   const droppedLegacy = await startWithDroppedResponses(2);
+  recoveryPhase = 'legacy-pending';
   await waitFor("document.querySelector('[role=alert]') && !document.body.innerText.includes('Match operation pending') && !!localStorage.getItem('mtg.pendingStart')");
   await observeFetchControl('Fetch.disable');
   assert.equal(droppedLegacy(), 2);
   const legacy = await evaluate("(() => {const pending=JSON.parse(localStorage.getItem('mtg.pendingStart'));delete pending.review;localStorage.setItem('mtg.pendingStart',JSON.stringify(pending));return pending;})()");
+  recoveryPhase = 'legacy-reload';
   await resumeRequestCapture();
   await command('Page.reload');
   await waitFor("!document.body.innerText.includes('Restoring saved session') && [...document.querySelectorAll('button')].some(b=>b.textContent==='Recover pending match start'&&!b.disabled)");
@@ -157,12 +172,15 @@ try {
   assert.equal(await evaluate("localStorage.getItem('mtg.activeMatch')"), null);
   assert.equal(await evaluate("Boolean(document.querySelector('[aria-label=\"Acknowledge exploratory interactive match\"]'))"), false);
   assert.equal(droppedLegacy.attempts.length, 2, 'Legacy reload must not replay before review');
+  recoveryPhase = 'legacy-review';
   const recoverLabel = await reviewStart(browser, { recover: true });
   assert.deepEqual(await evaluate("JSON.parse(localStorage.getItem('mtg.pendingStart'))"), legacy,
     'Manual review must not submit or replace the legacy pending intent');
   assert.equal(droppedLegacy.attempts.length, 2, 'Check and acknowledgement alone must not replay');
+  recoveryPhase = 'legacy-replay';
   await click(recoverLabel);
   await waitFor("document.querySelector('.battlefield') && !document.body.innerText.includes('Match operation pending') && !localStorage.getItem('mtg.pendingStart')");
+  recoveryPhase = 'legacy-verify';
   await observeFetchControl('Fetch.disable');
   const afterLegacy = await matchIds();
   assert.equal(afterLegacy.size, beforeLegacy.size + 1);
@@ -171,6 +189,7 @@ try {
   assert.equal(droppedLegacy.attempts.length, 3, 'Reviewed legacy recovery replays the original intent once');
   console.log('PASS legacy unreviewed intent stays manual through reload/check/acknowledge, then recovers its same accepted match/key/payload');
 } catch (error) {
+  try { reportStartRecoveryPhaseFailure(recoveryPhase, error); } catch { /* Preserve the original scenario result. */ }
   try { startWithDroppedResponses.trace?.reportFailure(); } catch { /* Preserve the original scenario result. */ }
   try { reportStartRecoveryFailure(startWithDroppedResponses.failureSnapshot); } catch { /* Preserve the original scenario result. */ }
   throw error;
