@@ -5,6 +5,46 @@ import vm from 'node:vm';
 import * as diagnostics from './browser-start-recovery-diagnostics.mjs';
 import * as driver from './browser-driver.mjs';
 import {reportUiV2DropFailure, uiV2DropFailureMetadata} from './browser-source-diagnostic.mjs';
+import * as requestStateDiagnostics from './browser-source-diagnostic.mjs';
+import {afterEach} from 'node:test';
+
+function requestStateCapture() {
+  const inputs = [], writes = [];
+  assert.equal(typeof requestStateDiagnostics.reportUiV2DropRequestStateFailure, 'function');
+  assert.equal(typeof requestStateDiagnostics.uiV2DropRequestStateMetadata, 'function');
+  const report = vm.runInNewContext(`(${requestStateDiagnostics.reportUiV2DropRequestStateFailure.toString()})`, {
+    uiV2DropRequestStateMetadata: requestStateDiagnostics.uiV2DropRequestStateMetadata,
+    writeSync: (...args) => writes.push(args),
+  });
+  return {
+    report(input) { inputs.push(input); return report(input); },
+    verify(count) {
+      assert.equal(inputs.length, count); assert.equal(writes.length, count);
+      for (let index = 0; index < count; index++) {
+        const [fd, text] = writes[index], input = inputs[index];
+        const prefix = '\n::error title=Browser response drop request state failure::';
+        assert.equal(fd, 2); assert.equal(typeof text, 'string');
+        assert.ok(text.startsWith(prefix) && text.endsWith('\n'));
+        const body = text.slice(prefix.length, -1);
+        assert.ok(Buffer.byteLength(body) <= 512); assert.doesNotMatch(body, /[\r\n]|PRIVATE|https?:/);
+        assert.deepEqual(JSON.parse(body), {schema: 1, program: 'browser-ui-v2.mjs',
+          stage: 'response-drop-request-state',
+          post: {observed: input.requests.POST.observed, attempted: input.requests.POST.attempted,
+            ack: input.requests.POST.ack, error: input.requests.POST.error, pending: input.requests.POST.pending},
+          action: {enabled_prefix_count: input.actionUi?.enabledPrefixCount ?? null,
+            rendered_revision: input.actionUi?.renderedRevision ?? null},
+          ui: {status: input.uiStatus, pending: input.ui?.pending ?? null,
+            restoring: input.ui?.restoring ?? null, alert: input.ui?.alert ?? null}});
+      }
+    },
+  };
+}
+
+const requestStateChecks = [];
+afterEach(() => {
+  // Outside both the caller's catch and old assert.rejects predicates.
+  for (const verify of requestStateChecks.splice(0)) verify();
+});
 
 const source = await readFile(new URL('./browser-ui-v2.mjs', import.meta.url), 'utf8');
 const oldStart = source.indexOf("s=await setup('/fixture');let dropped=false;");
@@ -30,6 +70,8 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
   networkError, holdNetwork = false,
   browserCapabilities = {supportsFetchResourceTypeFilter: true} } = {}) {
   const events = [], tasks = [], logs = [], calls = [], annotations = [], state = { id: 'new-fixture', revision: 0 };
+  const requestState = requestStateCapture();
+  requestStateChecks.push(() => requestState.verify(events.includes('diagnostic-ui') ? 1 : 0));
   const fail = deferred(), ui = deferred(), continuation = deferred(), uiRead = deferred();
   const stateRead = deferred();
   const disable = deferred();
@@ -87,6 +129,7 @@ function protocol({ lateEvent = false, failError, wrongEvent = false, lateUi = f
     }
   }
   const context = {
+    reportUiV2DropRequestStateFailure: requestState.report,
     reportUiV2DropFailure: vm.runInNewContext(`(${reportUiV2DropFailure.toString()})`, {
       uiV2DropFailureMetadata, writeSync: (...args) => annotations.push(args),
     }),

@@ -5,6 +5,39 @@ import test from 'node:test';
 import vm from 'node:vm';
 import {traceStartRecoveryResponses, continueRequestForPostResponse} from './browser-start-recovery-diagnostics.mjs';
 import {reportUiV2DropFailure, uiV2DropFailureMetadata} from './browser-source-diagnostic.mjs';
+import * as requestStateDiagnostics from './browser-source-diagnostic.mjs';
+
+function requestStateCapture() {
+  const inputs = [], writes = [];
+  assert.equal(typeof requestStateDiagnostics.reportUiV2DropRequestStateFailure, 'function');
+  assert.equal(typeof requestStateDiagnostics.uiV2DropRequestStateMetadata, 'function');
+  const report = vm.runInNewContext(`(${requestStateDiagnostics.reportUiV2DropRequestStateFailure.toString()})`, {
+    uiV2DropRequestStateMetadata: requestStateDiagnostics.uiV2DropRequestStateMetadata,
+    writeSync: (...args) => writes.push(args),
+  });
+  return {
+    report(input) { inputs.push(input); return report(input); },
+    verify(count) {
+      assert.equal(inputs.length, count); assert.equal(writes.length, count);
+      for (let index = 0; index < count; index++) {
+        const [fd, text] = writes[index], input = inputs[index];
+        const prefix = '\n::error title=Browser response drop request state failure::';
+        assert.equal(fd, 2); assert.equal(typeof text, 'string');
+        assert.ok(text.startsWith(prefix) && text.endsWith('\n'));
+        const body = text.slice(prefix.length, -1);
+        assert.ok(Buffer.byteLength(body) <= 512); assert.doesNotMatch(body, /[\r\n]|PRIVATE|https?:/);
+        assert.deepEqual(JSON.parse(body), {schema: 1, program: 'browser-ui-v2.mjs',
+          stage: 'response-drop-request-state',
+          post: {observed: input.requests.POST.observed, attempted: input.requests.POST.attempted,
+            ack: input.requests.POST.ack, error: input.requests.POST.error, pending: input.requests.POST.pending},
+          action: {enabled_prefix_count: input.actionUi?.enabledPrefixCount ?? null,
+            rendered_revision: input.actionUi?.renderedRevision ?? null},
+          ui: {status: input.uiStatus, pending: input.ui?.pending ?? null,
+            restoring: input.ui?.restoring ?? null, alert: input.ui?.alert ?? null}});
+      }
+    },
+  };
+}
 
 const front = 'http://127.0.0.1:15173', back = 'http://127.0.0.1:10199';
 const secret = 'PRIVATE_PAYLOAD_URL_TOKEN';
@@ -123,9 +156,11 @@ test('actual UI caller captures after-first metadata only after its existing fai
   assert.ok(start >= 0 && end > start);
   const primary = new Error('{"code":-32602,"message":"original-native"}');
   const calls = [], logs = [], reads = [], annotations = []; let trace, serial = 0;
+  const requestState = requestStateCapture();
   const event = pause({responseStatusCode: undefined, responseErrorReason: 'Failed'});
   const command = async method => { calls.push(method); if (method === 'Fetch.continueResponse') throw primary; };
   const context = {api: back, origin: front, traceStartRecoveryResponses, continueRequestForPostResponse, command,
+    reportUiV2DropRequestStateFailure: requestState.report,
     reportUiV2DropFailure: vm.runInNewContext(`(${reportUiV2DropFailure.toString()})`, {
       uiV2DropFailureMetadata, writeSync: (...args) => annotations.push(args),
     }),
@@ -141,6 +176,7 @@ test('actual UI caller captures after-first metadata only after its existing fai
     console: {error(...args) { logs.push(args); }} };
   const fn = vm.runInNewContext('(' + source.slice(start, end) + ')', context);
   await assert.rejects(fn({id: 'fixture'}), e => e === primary);
+  requestState.verify(1);
   assert.equal(logs.length, 1); assert.equal(logs[0][0], 'DROP_RESPONSE_TRACE');
   const diagnostic = JSON.parse(logs[0][1]);
   assert.ok(diagnostic.requestLifecycleFinal, 'Actual caller lacks final capture after failure-only reads');

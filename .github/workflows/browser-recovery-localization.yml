@@ -2,6 +2,14 @@ name: Browser Recovery Localization
 
 on:
   workflow_dispatch:
+    inputs:
+      scenario:
+        description: Fixed localization scenario
+        type: choice
+        default: start-recovery
+        options:
+          - start-recovery
+          - ui-v2
   push:
     paths:
       - .github/workflows/browser-recovery-localization.yml
@@ -54,6 +62,10 @@ jobs:
           PYTHON
           if ((status)); then exit "$status"; fi
           exit "$summary_status"
+      - name: Localization workflow wiring contracts
+        run: |
+          python -B .github/scripts/tests/test_browser_recovery_localization.py
+          python -B .github/scripts/tests/test_browser_ui_localization_scenario.py
       - name: Record observed browser and runtime versions
         run: |
           google-chrome --version
@@ -74,6 +86,7 @@ jobs:
             timeout --signal=TERM --kill-after=15s 300s python -B -m tests.release_agent.offline_probe
       - name: Focused transport and start recovery, not the full UI suite
         env:
+          MTG_LOCALIZATION_SCENARIO: ${{ inputs.scenario || 'start-recovery' }}
           MTG_BROWSER_NO_SANDBOX: '1'
           MTG_KEEP_TEST_ARTIFACTS: '1'
           MTG_FRONTEND_ORIGIN: http://127.0.0.1:15173
@@ -81,9 +94,24 @@ jobs:
           MTG_BROWSER_ORIGIN: http://127.0.0.1:19222
         run: |
           set -euo pipefail
+          scenario="${MTG_LOCALIZATION_SCENARIO:-start-recovery}"
+          case "$scenario" in
+            start-recovery)
+              programs=(browser-cors-transport-diagnostic.mjs browser-start-recovery.mjs)
+              ;;
+            ui-v2)
+              E="$RUNNER_TEMP/ui-v2-localization-evidence"
+              test ! -e "$E" && test ! -L "$E"
+              mkdir -m 700 -- "$E"
+              export MTG_UI_EVIDENCE="$E"
+              programs=(browser-ui-v2.mjs)
+              ;;
+            *) exit 2 ;;
+          esac
+          printf '::notice title=Browser localization scenario::{"schema":1,"scenario":"%s"}\n' "$scenario"
           status=0
           timeout --signal=TERM --kill-after=15s 720s bash frontend/tests/run-browser-ci.sh \
-            browser-cors-transport-diagnostic.mjs browser-start-recovery.mjs || status=$?
+            "${programs[@]}" || status=$?
           closure_status=0
           if ports=$(ss -H -ltn '( sport = :10199 or sport = :15173 or sport = :19222 )'); then
             if [[ -n "$ports" ]]; then
