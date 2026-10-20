@@ -48,7 +48,7 @@ jobs:
             tests/browser-response-drop-request-state.test.mjs || status=$?
           summary_status=0
           python -I -S -B - "$report" "$status" <<'PYTHON' || summary_status=$?
-          import json, stat, sys, xml.etree.ElementTree as ET
+          import hashlib, json, stat, sys, xml.etree.ElementTree as ET
           from pathlib import Path
 
           report = Path(sys.argv[1])
@@ -61,10 +61,19 @@ jobs:
           skips = sum(case.find('skipped') is not None for case in cases)
           summary = dict(cases=len(cases), passed=len(cases) - failures - errors - skips,
                          failures=failures, errors=errors, skips=skips, exit=int(sys.argv[2]))
-          if (not cases or min(summary.values()) < 0 or not 0 <= summary['exit'] <= 255
+          if (len(cases) != 81 or min(summary.values()) < 0 or not 0 <= summary['exit'] <= 255
                   or summary['exit'] == 0 and failures + errors + skips):
               raise SystemExit('Inconsistent Node protocol report')
           print('\n::notice title=Browser owned closeout Node result::' + json.dumps(summary, separators=(',', ':')))
+          identities = {}
+          for key, tag in (('failures', 'failure'), ('errors', 'error')):
+              names = [case.get('name') for case in cases if case.find(tag) is not None]
+              if any(type(name) is not str or not name for name in names):
+                  raise SystemExit('Invalid Node failure identity')
+              identities[key] = sorted(hashlib.sha256(name.encode('utf-8')).hexdigest() for name in names)
+          if sum(len(values) for values in identities.values()) > 256:
+              raise SystemExit('Too many Node failure identities')
+          print('\n::notice title=Browser owned closeout Node failure identities::' + json.dumps(identities, separators=(',', ':')))
           PYTHON
           if ((status)); then exit "$status"; fi
           exit "$summary_status"
@@ -91,7 +100,7 @@ jobs:
           report="$scratch/result.json"
           status=0
           timeout --signal=TERM --kill-after=15s 300s python -I -S -B - "$report" <<'PYTHON' || status=$?
-          import importlib.util, json, sys, unittest
+          import hashlib, importlib.util, json, sys, unittest
           from pathlib import Path
 
           suite = unittest.TestSuite()
@@ -120,6 +129,13 @@ jobs:
                          failures=len(failures), errors=len(errors), skips=len(skips), exit=status)
           try:
               Path(sys.argv[1]).write_text(json.dumps(summary, separators=(',', ':')) + '\n')
+              identities = {
+                  key: sorted(hashlib.sha256(test.id().encode('utf-8')).hexdigest() for test, _ in rows)
+                  for key, rows in (('failures', result.failures), ('errors', result.errors))
+              }
+              if sum(len(values) for values in identities.values()) > 256:
+                  raise SystemExit('Too many Python failure identities')
+              Path(sys.argv[1]).with_name('failure-identities.json').write_text(json.dumps(identities, separators=(',', ':')) + '\n')
           finally:
               raise SystemExit(status)
           PYTHON
@@ -141,6 +157,21 @@ jobs:
                   or summary['exit'] == 0 and summary['failures'] + summary['errors'] + summary['skips']):
               raise SystemExit('Inconsistent Python protocol report')
           print('\n::notice title=Browser owned closeout Python result::' + json.dumps(summary, separators=(',', ':')))
+          identity_report = report.with_name('failure-identities.json')
+          info = identity_report.lstat()
+          if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 32768:
+              raise SystemExit('Invalid Python failure identity report')
+          identities = json.loads(identity_report.read_bytes())
+          if (type(identities) is not dict or set(identities) != {'failures', 'errors'}
+                  or any(type(values) is not list for values in identities.values())
+                  or sum(len(values) for values in identities.values()) > 256):
+              raise SystemExit('Invalid Python failure identities')
+          for values in identities.values():
+              if any(type(value) is not str or len(value) != 64 or any(char not in '0123456789abcdef' for char in value) for value in values):
+                  raise SystemExit('Invalid Python failure identity hash')
+              if values != sorted(values):
+                  raise SystemExit('Unsorted Python failure identities')
+          print('\n::notice title=Browser owned closeout Python failure identities::' + json.dumps(identities, separators=(',', ':')))
           PYTHON
           if ((status)); then exit "$status"; fi
           exit "$summary_status"
