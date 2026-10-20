@@ -31,9 +31,10 @@ jobs:
           bash .github/scripts/install-ci-app-runtime.sh
           npm --prefix frontend ci
       - name: Recovery unit compatibility protocol contracts
+        working-directory: frontend
         run: |
           status=0
-          node --test --test-reporter=junit --test-reporter-destination="$RUNNER_TEMP/recovery-unit-compatibility.xml" frontend/tests/browser-start-recovery-failure-diagnostic.test.mjs frontend/tests/browser-start-recovery-phase-diagnostic.test.mjs frontend/tests/release-owned/public-storage-owner-rename-budget.test.mjs || status=$?
+          node --test --test-reporter=junit --test-reporter-destination="$RUNNER_TEMP/recovery-unit-compatibility.xml" tests/browser-start-recovery-failure-diagnostic.test.mjs tests/browser-start-recovery-phase-diagnostic.test.mjs tests/release-owned/public-storage-owner-rename-budget.test.mjs tests/browser-response-drop-diagnostic.test.mjs tests/browser-v2-drop-response-contract.mjs tests/browser-fetch-causal-order.test.mjs tests/browser-v2-request-stage-recovery.test.mjs ../.github/scripts/tests/test_browser_program_diagnostic.mjs tests/browser-response-drop-request-state.test.mjs || status=$?
           summary_status=0
           python - "$RUNNER_TEMP/recovery-unit-compatibility.xml" "$status" <<'PYTHON' || summary_status=$?
           import json, stat, sys, xml.etree.ElementTree as ET
@@ -48,7 +49,7 @@ jobs:
               errors=sum(case.find('error') is not None for case in cases),
               skipped=sum(case.find('skipped') is not None for case in cases))
           print('::notice title=Recovery unit compatibility result::' + json.dumps(summary, separators=(',', ':')))
-          if len(cases) != 47 or summary['skipped'] or not 0 <= summary['runner_exit'] <= 255:
+          if len(cases) != 183 or summary['skipped'] or not 0 <= summary['runner_exit'] <= 255:
               raise SystemExit(1)
           PYTHON
           if ((status)); then exit "$status"; fi
