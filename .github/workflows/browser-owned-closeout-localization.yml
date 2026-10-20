@@ -61,9 +61,9 @@ jobs:
           skips = sum(case.find('skipped') is not None for case in cases)
           summary = dict(cases=len(cases), passed=len(cases) - failures - errors - skips,
                          failures=failures, errors=errors, skips=skips, exit=int(sys.argv[2]))
-          if (len(cases) != 81 or min(summary.values()) < 0 or not 0 <= summary['exit'] <= 255
+          if (len(cases) != 99 or min(summary.values()) < 0 or not 0 <= summary['exit'] <= 255
                   or summary['exit'] == 0 and failures + errors + skips):
-              raise SystemExit('Inconsistent Node protocol report')
+              raise SystemExit(f'Inconsistent Node protocol report: expected=99 actual={len(cases)}')
           print('\n::notice title=Browser owned closeout Node result::' + json.dumps(summary, separators=(',', ':')))
           identities = {}
           for key, tag in (('failures', 'failure'), ('errors', 'error')):
