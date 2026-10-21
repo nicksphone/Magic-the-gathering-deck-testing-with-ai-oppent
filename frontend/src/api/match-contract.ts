@@ -258,15 +258,29 @@ function manaChoiceView(move: Record<string, unknown>): boolean {
     && required.hybrid_choices === Boolean(move.hybrid_symbols.length);
 }
 
+function suspendView(move: Record<string, unknown>): boolean {
+  if (typeof move.card_id !== 'string' || !move.card_id.length || typeof move.mana_cost !== 'string') return false;
+  if (move.time_counters_variable !== true) {
+    return move.time_counters_variable === undefined && move.choice_schema === undefined
+      && /^(?:\{(?:\d+|[WUBRGCS])\})+$/.test(move.mana_cost)
+      && Number.isSafeInteger(move.time_counters) && (move.time_counters as number) > 0;
+  }
+  if (move.time_counters !== undefined || !move.mana_cost.includes('{X}')
+    || !/^(?:\{(?:\d+|[WUBRGCSX])\})+$/.test(move.mana_cost)
+    || !record(move.choice_schema) || !record(move.choice_schema.x_value)) return false;
+  const x = move.choice_schema.x_value;
+  return x.type === 'integer' && x.required === true
+    && Number.isSafeInteger(x.minimum) && (x.minimum as number) > 0
+    && Number.isSafeInteger(x.maximum) && (x.maximum as number) >= (x.minimum as number);
+}
+
 export function parseLegalMoves(value: unknown): LegalMovesResponse {
   if (!record(value) || (value.player_id !== 1 && value.player_id !== 2)
     || (value.can_auto_pass !== undefined && typeof value.can_auto_pass !== "boolean")
     || !Number.isInteger(value.revision) || (value.revision as number) < 0
     || !Array.isArray(value.moves) || !value.moves.every((move) => record(move)
       && typeof move.type === "string" && move.type.length > 0
-      && (move.type !== 'suspend' || (typeof move.card_id === 'string' && move.card_id.length > 0
-        && typeof move.mana_cost === 'string' && /^(?:\{(?:\d+|[WUBRGCS])\})+$/.test(move.mana_cost)
-        && Number.isInteger(move.time_counters) && (move.time_counters as number) > 0))
+      && (move.type !== 'suspend' || suspendView(move))
       && (move.kind !== 'suspend_cast' || (move.type === 'choose_mechanic' && move.player_id === value.player_id
         && move.count === 1 && Array.isArray(move.options) && move.options.length === 1 && move.options[0] === 'decline'))
       && (move.kind !== 'optional_reveal' || (move.type === 'choose_mechanic' && move.player_id === value.player_id
