@@ -6,18 +6,38 @@ Main `7fa3af7f906926d2042e8e5dc8ab5db77822ec41` completed hosted CI run
 `39566540577` successfully. The later learned-policy branch is a development
 candidate, not an RC or a replacement for that exact qualification.
 
+The later exact head `9b82651ab9e97a87924447ced572b3ea5d7ff212` passes the
+ordinary browser-and-recovery job `119216180830` with observed Chrome
+`156.0.8078.47`. Secure run `39598330472` also passes both Chrome and Brave
+jobs. This qualifies those exact workflow scopes, not the original local
+50-case declaration or a version-only causal explanation for the prior failure.
+Whole CI `39598342744` still fails at the reference job's single synthetic
+pipeline self-test; its backend workers did not run. The same 335 self-tests
+pass locally, but that first local run changed package bytecode-cache metadata,
+so it is not a read-only-runtime qualification. The original runtime has since
+been verified and restored; the child-launch fix is being tested separately.
+Finite Main-source and startup-media guard repairs separately pass all 254 cases
+in five whole source/file modules, plus all seven new controls on the integrated
+tree. Existing historical recipes, rejection assertions and rendered media are
+preserved. These pure checks are not actual HTTP or a whole-backend CI pass;
+the complete CI self-test declaration remains required.
+
 The `a66e53915e99012d5881af276ceeb93eda01d028` secure native workflow
 `39587759314` completed both Chrome and Brave jobs successfully with sandboxing
 enabled and closed child groups. Its retained JSON does not enumerate the
 original local 50-case suite, so this is not a 50-case acceptance claim. Ordinary
-CI on the same commit still fails the UI recovery case; backend workers were
-not complete when this checkpoint was written. Current-vendor CI installation
-is the next tested environment alignment, not an already-proven recovery fix.
+CI on that older commit fails the UI recovery case. Its four completed backend
+workers have 179 failures, classified from sanitized artifacts into finite
+Main-source inverse and startup-media binding failures. The later current-vendor
+workflow passes recovery as recorded above; this does not isolate browser version
+as the sole cause or retroactively qualify the older run.
 
 Separately executed component declarations pass 122 attack-producer cases,
 69 controller-lifecycle cases and 51 trusted-operator startup cases. The learned
 adapter remains explicit opt-in and the default agent remains heuristic.
-Real terminal-game collection is progressing; fitted weights, heldout playing
+Four real terminal games and their fixed 880/1,330 train/heldout partition pass
+the corpus readiness checks. The first bounded fit completes 880 optimizer steps
+but produces no qualified checkpoint. Fitted weights, heldout playing
 quality, genuine trained-model HTTP/SQLite restoration, the complete local
 native suite and broader release/clean-machine checks remain open. See
 `learned-qv-offline.md` for scope and fixture limitations. These separate

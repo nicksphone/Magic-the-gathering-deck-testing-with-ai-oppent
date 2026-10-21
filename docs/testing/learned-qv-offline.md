@@ -40,6 +40,12 @@ validates manifests/shards, preserves transitions and true seed/family/deck/
 position grouping edges, rejects duplicate runs and mixed engine/schema epochs,
 and enforces aggregate limits rather than multiplying them per root. Run hashes
 scope episode addresses; they are not input features or replacements for groups.
+The aggregate default stays 50 MiB. An explicit `--max-corpus-bytes` may admit
+at most 100 MiB across all roots; each original run remains limited to 50 MiB
+and each row to 2 MiB. The same limit applies during intake and sample loading.
+This explicit capacity option passes all 39 cases in its four-module declaration,
+including the 31 inherited cases; its larger charged-size controls are labeled
+accounting protocols, not large-game training evidence.
 
 The multi-run split uses schema 2 and scoped episode addresses. Schema 1 remains
 available for the original single-run interface. Every eligible episode belongs
@@ -182,9 +188,27 @@ admission, explicit defenders, costs or bands. All 122 cases in the five-module
 producer declaration pass, including 14 new controls. Earlier incomplete runs
 remain incomplete and are not eligible training games.
 
-The first two fresh final-epoch games completed with genuine terminal outcomes
-(514 and 366 accepted steps). The two predeclared heldout mirrors are still
-pending at this checkpoint. This is collection evidence, not fitted weights or
-expert demonstrations. Final-epoch training/reload, heldout Q/V evaluation,
+Four final-epoch games completed with genuine terminal outcomes: 514 and 366
+accepted training-game steps, plus 701 and 629 heldout-game steps. Their selected
+original files total 57,980,407 bytes. The original 50 MiB collection protocol
+remains a failed protocol: its fourth run stopped incomplete at 510 steps with
+`output_budget` and null terminal rewards. That run is retained as diagnostic
+evidence, not relabeled or supplied as a terminal training game. A separately
+declared, same-seed fourth run completed under the new capacity protocol without
+changing the game rules, action cap or per-row limit.
+
+The separately bounded, phase-instrumented verification completes in 524.35
+seconds: the 510 accepted transitions and header are byte-identical, all four
+terminal episodes retain the fixed split and group/fingerprint boundaries, and
+no identical state-feature bytes cross the partitions. It admits 880 training
+and 1,330 heldout decisions. The original 300-second verification timeout remains
+preserved as a failure, not retroactively converted into a pass.
+
+The first bounded fit performs all 880 optimizer steps but exits without a
+qualified checkpoint; complete final metrics/export/reload verification is not
+established. Its input/runtime/resource closures pass. A separate longer-time
+attempt keeps the same data, split, seed, iteration count and model architecture.
+No fitted-policy or expert-strength qualification follows from collected games
+or completed optimizer steps alone. Final-epoch training/reload, heldout Q/V evaluation,
 real-decision latency, checked live application persistence, matched gameplay
 quality and complete native/browser acceptance remain open.

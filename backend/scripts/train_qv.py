@@ -328,9 +328,11 @@ def _read_run(root, expected_engine_hash):
         os.close(lock)
 
 
-def collect_corpus(roots, *, expected_engine_hash):
+def collect_corpus(roots, *, expected_engine_hash, max_corpus_bytes=50 * 1024 * 1024):
     """Read existing sealed runs; scoped IDs are addressing, never model features."""
-    from training.dataset import MAX_BYTES, MAX_EPISODES
+    from training.dataset import MAX_EPISODES
+    if type(max_corpus_bytes) is not int or not 4096 <= max_corpus_bytes <= 100 * 1024 * 1024:
+        raise ValueError('Explicit integer corpus budget within 4096..100 MiB required')
     if type(roots) not in (list, tuple) or not 1 <= len(roots) <= MAX_EPISODES:
         raise ValueError('Use bounded original sealed run roots')
     runs, episodes, contract, used = {}, [], None, 0
@@ -339,7 +341,7 @@ def collect_corpus(roots, *, expected_engine_hash):
         if identity in runs:
             raise ValueError('Duplicate run bytes or run root')
         used += size
-        if used > MAX_BYTES or len(episodes) + len(rows) > MAX_EPISODES:
+        if used > max_corpus_bytes or len(episodes) + len(rows) > MAX_EPISODES:
             raise ValueError('Aggregate original dataset budget exceeded')
         if current is not None:
             if contract is not None and current != contract:
@@ -383,9 +385,10 @@ def _selected_samples(corpus, split):
     return samples
 
 
-def load_samples(root, split_path, *, expected_engine_hash):
+def load_samples(root, split_path, *, expected_engine_hash, max_corpus_bytes=50 * 1024 * 1024):
     roots = list(root) if type(root) in (list, tuple) else [root]
-    corpus = collect_corpus(roots, expected_engine_hash=expected_engine_hash)
+    corpus = collect_corpus(roots, expected_engine_hash=expected_engine_hash,
+                            max_corpus_bytes=max_corpus_bytes)
     split, split_bytes = read_json(split_path, 65536)
     return (_selected_samples(corpus, split), corpus['contract'], corpus['sha256'],
             sha256(split_bytes).hexdigest())
@@ -410,6 +413,8 @@ def main(argv=None):
                         help='Repeat for original independently sealed runs')
     parser.add_argument('--split')
     parser.add_argument('--engine-hash', required=True)
+    parser.add_argument('--max-corpus-bytes', type=int, default=50 * 1024 * 1024,
+                        help='Explicit aggregate capacity, at most 100 MiB; each sealed run stays bounded')
     parser.add_argument('--out')
     parser.add_argument('--seed', type=int)
     parser.add_argument('--collect-only', action='store_true')
@@ -430,7 +435,8 @@ def main(argv=None):
             if not math.isfinite(args.eval_fraction) or not 0 < args.eval_fraction < 1:
                 raise ValueError('Finite interior evaluation fraction required')
             path = _output_path(args.split_out, args.dataset)
-            corpus = collect_corpus(args.dataset, expected_engine_hash=args.engine_hash)
+            corpus = collect_corpus(args.dataset, expected_engine_hash=args.engine_hash,
+                                    max_corpus_bytes=args.max_corpus_bytes)
             report = grouped_split_report(corpus['episodes'], eval_fraction=args.eval_fraction)
             split = {'schema': 2, 'train': report['train'], 'eval': report['eval']}
             ready = report['partition_ready']
@@ -455,7 +461,8 @@ def main(argv=None):
             return 0 if ready else 2
         path = _output_path(args.out, args.dataset)
         samples, contract, dataset_hash, split_hash = load_samples(
-            args.dataset, args.split, expected_engine_hash=args.engine_hash)
+            args.dataset, args.split, expected_engine_hash=args.engine_hash,
+            max_corpus_bytes=args.max_corpus_bytes)
         payload, report = train_samples(samples['train'], contract=contract,
             dataset_sha256=dataset_hash, split_sha256=split_hash, seed=args.seed,
             epochs=args.epochs, learning_rate=args.learning_rate, seconds=args.seconds)
