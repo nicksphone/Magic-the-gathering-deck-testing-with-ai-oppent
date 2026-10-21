@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   backend-reference:
     runs-on: ubuntu-24.04
@@ -388,7 +392,12 @@ jobs:
         run: |
           bash .github/scripts/install-ci-app-runtime.sh
           npm --prefix frontend ci
+      - name: Install current official Chrome from its signed repository
+        run: |
+          bash .github/scripts/install-ci-vendor-browser.sh chrome
+          /opt/google/chrome/chrome --version
       - name: Browser action and recovery flows
         env:
+          MTG_CHROME: /opt/google/chrome/chrome
           MTG_BROWSER_NO_SANDBOX: '1'
         run: bash frontend/tests/run-browser-ci.sh

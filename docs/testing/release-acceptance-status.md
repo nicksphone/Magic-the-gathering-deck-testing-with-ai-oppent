@@ -1,5 +1,28 @@
 # Release Acceptance Status
 
+## October 21 Checkpoint
+
+Main `7fa3af7f906926d2042e8e5dc8ab5db77822ec41` completed hosted CI run
+`39566540577` successfully. The later learned-policy branch is a development
+candidate, not an RC or a replacement for that exact qualification.
+
+The `a66e53915e99012d5881af276ceeb93eda01d028` secure native workflow
+`39587759314` completed both Chrome and Brave jobs successfully with sandboxing
+enabled and closed child groups. Its retained JSON does not enumerate the
+original local 50-case suite, so this is not a 50-case acceptance claim. Ordinary
+CI on the same commit still fails the UI recovery case; backend workers were
+not complete when this checkpoint was written. Current-vendor CI installation
+is the next tested environment alignment, not an already-proven recovery fix.
+
+Separately executed component declarations pass 122 attack-producer cases,
+69 controller-lifecycle cases and 51 trusted-operator startup cases. The learned
+adapter remains explicit opt-in and the default agent remains heuristic.
+Real terminal-game collection is progressing; fitted weights, heldout playing
+quality, genuine trained-model HTTP/SQLite restoration, the complete local
+native suite and broader release/clean-machine checks remain open. See
+`learned-qv-offline.md` for scope and fixture limitations. These separate
+declarations are not a summed release suite or a project-completion percentage.
+
 ## Local Sharded CI Candidate
 
 On October18 the full20-whole-module CI selftest declaration passes259 ordinary

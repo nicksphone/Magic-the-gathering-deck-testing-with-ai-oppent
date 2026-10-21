@@ -35,7 +35,9 @@ def finalize_declaration(state, action):
     view = declaration_limit_view(state, kind)
     if kind == 'attack' and not view['sources'] and not any(weights.values()) and not (
             attack_tax_sources(state) if kind == 'attack' else target_block_requirements(state) or block_tax_sources(state)):
-        return action
+        return {**action, 'attack_targets': {
+            **{cid: f'player:{3-state.active_player}' for cid in action.get('attackers', [])},
+            **(action.get('attack_targets') or {})}}
     if kind == 'attack':
         from rules_engine.combat import _valid_defenders
         requested = list(action.get('attackers') or [])

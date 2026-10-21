@@ -69,7 +69,7 @@ def source_pin():
 def settings():
     config = json.loads(private_file(os.environ["MTG_OPERATOR_CONFIG"]).read_text())
     required = {"origin", "backend_port", "runtime", "python", "caddy", "dist", "cert", "key", "user", "password_hash"}
-    require(set(config) in (required, required | {"bind_address"}))
+    require(required <= set(config) <= required | {"bind_address", "learned_policy"})
     bind = config.get("bind_address", "127.0.0.1")
     require(type(bind) is str)
     address = ipaddress.IPv4Address(bind)
@@ -106,6 +106,14 @@ def settings():
     require(hashlib.sha256(config["caddy"].read_bytes()).hexdigest() == CADDY_SHA256)
     config["key"] = private_file(config["key"])
     require(config["cert"].is_file())
+    if "learned_policy" in config:
+        learned = config["learned_policy"]
+        require(type(learned) is dict and set(learned) == {"checkpoint", "sha256"})
+        require(type(learned["sha256"]) is str and re.fullmatch(r"[0-9a-f]{64}", learned["sha256"]) is not None)
+        require(type(learned["checkpoint"]) is str and Path(learned["checkpoint"]).is_absolute())
+        checkpoint = private_file(learned["checkpoint"])
+        require(not checkpoint.is_relative_to(SOURCE) and not checkpoint.is_relative_to(config["dist"]))
+        config["learned_policy"] = {"checkpoint": checkpoint, "sha256": learned["sha256"]}
     # Reject NFS/other remote runtime storage; Linux mountinfo lists the effective mount.
     probe = runtime
     while not probe.exists():
@@ -182,7 +190,11 @@ def main():
     result = 1
     try:
         try:
-            children.append(subprocess.Popen([str(config["python"]), "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", str(config["backend_port"]), "--workers", "1", "--no-access-log", "--no-proxy-headers", "--log-level", "critical"], cwd=config["runtime"] / "backend", env=backend_env, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+            command = [str(config["python"]), "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", str(config["backend_port"]), "--workers", "1", "--no-access-log", "--no-proxy-headers", "--log-level", "critical"]
+            if "learned_policy" in config:
+                learned = config["learned_policy"]
+                command = [str(config["python"]), "-m", "operator_start", "--checkpoint", str(learned["checkpoint"]), "--checkpoint-sha256", learned["sha256"], "--host", "127.0.0.1", "--port", str(config["backend_port"])]
+            children.append(subprocess.Popen(command, cwd=config["runtime"] / "backend", env=backend_env, start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
         except OSError as error:
             print(f"Backend could not start ({type(error).__name__}).", file=sys.stderr)
             raise

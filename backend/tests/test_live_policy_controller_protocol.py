@@ -215,7 +215,7 @@ def test_matching_explicit_binding_routes_to_supplied_agent(api, scene):
     binding = trusted_binding(scene)
     row = stored_row(api, scene.controller, {scene.seat: scene.record})
     restored = restore(api, row, {scene.seat: binding})
-    assert restored.ai[scene.seat] is binding['agent'], 'Trusted runtime agent was not restored'
+    assert restored.ai[scene.seat].learned_binding is binding['agent'].learned_binding, 'Trusted runtime binding was not restored'
     assert restored.ai[3 - scene.seat] is not binding['agent']
     assert saved_record(api, restored, scene.seat) == scene.record
 
@@ -256,7 +256,7 @@ def test_fallback_resnapshot_can_rebind_exact_original_not_new_checkpoint(api, s
     api.ACTIVE_MATCHES.clear()  # Fixture-owned mapping, simulating a cold restore.
     binding = trusted_binding(scene)
     restored = restore(api, second_row, {scene.seat: binding})
-    assert restored.ai[scene.seat] is binding['agent']
+    assert restored.ai[scene.seat].learned_binding is binding['agent'].learned_binding
     assert saved_record(api, restored, scene.seat) == scene.record
 
 

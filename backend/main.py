@@ -62,6 +62,10 @@ from rules_engine.replacement import replacement_options
 @asynccontextmanager
 async def lifespan(app_instance: FastAPI):
     global SIM_SHUTTING_DOWN
+    app_instance.state.new_match_policy_frozen = True
+    # Finish any in-progress pre-start configuration before storage admission.
+    with MATCH_LOAD_LOCK:
+        pass
     _prepare_simulation_admission()
     owner = DatabaseOwner(engine).acquire()
     try:
@@ -184,6 +188,39 @@ SIM_JOBS_CACHE_LIMIT = 20
 # Single-process new-job row quota; preserves existing results and retry keys.
 SIM_JOBS_ROW_LIMIT = 10000
 DIAGNOSTICS_ROOT = Path(__file__).resolve().parent / "diagnostics"
+
+
+def _live_policy_provenance(binding) -> dict:
+    """Identify an actual current in-memory binding, never a saved activation request."""
+    from ai.learned_policy import LivePolicyBinding
+    from ai.learned_qv import VERSION, validate_contract
+    from training.environment import _engine_hash
+
+    if VERSION != "mtg.qv.v1" or not isinstance(binding, LivePolicyBinding):
+        raise ValueError("A current trusted live-policy binding is required")
+    contract = binding.contract
+    validate_contract(contract)
+    digest = binding.checkpoint_sha256
+    if (contract["feature_version"] != "mtg.features.v2"
+            or contract["engine_hash"] != _engine_hash()
+            or type(digest) is not str or len(digest) != 64
+            or any(c not in "0123456789abcdef" for c in digest)):
+        raise ValueError("Incompatible live-policy binding")
+    return {"version": "mtg.live-policy.v1", "requested": "learned_qv",
+            "effective": "learned_qv", "checkpoint_sha256": digest,
+            "contract": contract, "fallback_reason": None}
+
+
+def configure_new_match_policy(binding) -> None:
+    """Explicit operator-only opt-in, once before the App lifespan starts."""
+    with MATCH_LOAD_LOCK:
+        if (getattr(app.state, "new_match_policy_frozen", False)
+                or getattr(app.state, "new_match_policy_configured", False)):
+            raise RuntimeError("New-match policy configuration is closed")
+        if binding is not None:
+            _live_policy_provenance(binding)
+        app.state.new_match_policy_binding = binding
+        app.state.new_match_policy_configured = True
 
 
 def coordinated_match(handler):
@@ -475,28 +512,25 @@ def _restore_active_matches_locked(repo: Repository, match_id: str | None = None
                         del controller.policy_provenance[pid]
                         continue
                     requested = {**record, "effective": "learned_qv", "fallback_reason": None}
-                    binding = policy_bindings.get(pid) if type(policy_bindings) is dict else None
-                    eligible = (type(binding) is dict and set(binding) == {"agent", "provenance"}
+                    loaded = None
+                    if policy_bindings is None:
+                        loaded = getattr(app.state, "new_match_policy_binding", None)
+                    elif type(policy_bindings) is dict:
+                        binding = policy_bindings.get(pid)
+                        if (type(binding) is dict and set(binding) == {"agent", "provenance"}
                                 and isinstance(binding["agent"], AIAgent)
-                                and binding["provenance"] == requested)
-                    if eligible:
-                        from ai.learned_policy import LivePolicyBinding
-                        from ai.learned_qv import VERSION
-                        from training.environment import _engine_hash
-
-                        loaded = binding["agent"].learned_binding
-                        # This envelope registers only the loader-validated mtg.qv.v1 model.
-                        eligible = (VERSION == "mtg.qv.v1" and isinstance(loaded, LivePolicyBinding)
-                                    and loaded.checkpoint_sha256 == record["checkpoint_sha256"]
-                                    and loaded.contract == record["contract"]
-                                    and loaded.contract["engine_hash"] == _engine_hash())
-                    if eligible:
+                                and binding["provenance"] == requested):
+                            loaded = binding["agent"].learned_binding
+                    verified = None
+                    if loaded is not None:
+                        try:
+                            verified = _live_policy_provenance(loaded)
+                        except ValueError:
+                            pass
+                    if verified == requested:
                         # Configured eligibility is not a claim that every decision is neural.
-                        controller.ai[pid] = binding["agent"]
-                        controller.policy_provenance[pid] = {
-                            **requested, "checkpoint_sha256": loaded.checkpoint_sha256,
-                            "contract": loaded.contract,
-                        }
+                        controller.ai[pid].learned_binding = loaded
+                        controller.policy_provenance[pid] = verified
                     else:
                         controller.policy_provenance[pid] = {
                             **record, "effective": "heuristic",
@@ -923,6 +957,13 @@ def _create_match(payload: StartMatchRequest, repo: Repository, key: str | None,
         root_seed=root_seed,
         auto_sideboard=payload.auto_sideboard,
     )
+    binding = getattr(app.state, "new_match_policy_binding", None)
+    if binding is not None:
+        provenance = _live_policy_provenance(binding)
+        for pid, control in controller.controllers.items():
+            if control == "ai":
+                controller.ai[pid].learned_binding = binding
+                controller.policy_provenance[pid] = deepcopy(provenance)
     try:
         with repo.atomic_match_writes() if isinstance(repo, Repository) else nullcontext():
             _persist_active_match(repo, controller)
@@ -1764,6 +1805,7 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
     reveal_at_game_end(state)
     if state.winner is None or match.current_game_recorded:
         return
+    provenance = _controller_snapshot(match).get("policy_provenance")
     from ai.sideboard_facts import seal_game
     seal_game(state)
     p1 = state.players[1]
@@ -1781,6 +1823,9 @@ def _post_step_finalize(match: MatchController, repo: Repository) -> None:
     if state.winner in state.score and state.score[state.winner] >= games_needed:
         match.match_complete = True
         state.log.append(f"Match complete. {winner_name} wins best-of-{match.best_of}.")
+    if provenance:
+        state.log.append("AI POLICY PROVENANCE " + json.dumps(
+            provenance, sort_keys=True, separators=(",", ":"), allow_nan=False))
     deck_a_id, deck_b_id = match.deck_ids
     if deck_a_id and deck_b_id:
         repo.save_match(

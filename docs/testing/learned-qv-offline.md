@@ -102,11 +102,29 @@ heuristic fallback. An ordinary agent plus matching strings is not eligible.
 The `mtg.live-policy.v1` envelope registers only the loader-validated
 `mtg.qv.v1` model. Empty metadata preserves the legacy snapshot format.
 
-Three whole import-only controller/persistence modules pass all 40 cases,
-including genuine loader-binding identity and mismatch checks. Their positive
-checkpoint is an explicitly labeled protocol fixture, not a trained model.
-New-match operator activation, completed-game history, actual HTTP/SQLite
-restoration and trained-model application acceptance remain separate work.
+The original three whole import-only controller/persistence modules pass all
+40 cases. The later four-module lifecycle declaration passes all 69 cases,
+including those 40 cases and 29 new startup, fresh-profile, restoration and
+completed-history controls. Positive checkpoints in these tests are explicitly
+labeled protocol fixtures, not trained models. Repository session doubles are
+not actual SQLite or HTTP persistence qualification.
+
+Trusted startup calls `main.configure_new_match_policy(binding)` before the app
+lifespan. New AI seats retain their saved difficulty/archetype profiles and
+receive only the validated binding; human seats do not receive it. Restoration
+still requires the recorded identity to match the configured trusted binding.
+Completed-game history retains a closed policy-provenance record using the
+existing string-log storage; metadata is not a model-loading instruction.
+
+The private operator configuration may explicitly add the closed object
+`"learned_policy": {"checkpoint": "/owned/private/checkpoint.json", "sha256":
+"FULL64HEX"}`. The checkpoint must be an owned private file outside source and
+the served frontend. The supervisor starts `operator_start`, which checks the
+expected SHA and binds the same bounded bytes before launching a single
+loopback worker. Omitting this object preserves the original heuristic startup.
+No HTTP endpoint, environment model selector or saved snapshot can choose a
+checkpoint. A separate four-module operator declaration passes all 51 cases;
+these are startup/file protocols, not an actual trained-model server run.
 
 The corrected live declaration passes all 302 ordinary cases in eleven whole
 modules, including the new 17 routing tests, in 329.93 seconds. The new tests
@@ -157,7 +175,16 @@ The legacy environment/dataset declaration separately passed all 92 cases in
 dataset locks in an old test fixture's `finally` block. No assertions or dataset
 semantics were removed. This earlier component run preceded the live-adapter
 extraction; it is not a second execution of the current 302-case declaration.
-Real terminal-game collection, final-epoch
-training/reload, heldout Q/V evaluation, real-decision latency, checked live
-application persistence, matched gameplay quality and native/browser acceptance
-remain open.
+Real collection exposed a missing explicit defender mapping in the heuristic
+teacher's untaxed attack declaration. The producer now materializes the core's
+existing default opposing-player defender without changing strict action
+admission, explicit defenders, costs or bands. All 122 cases in the five-module
+producer declaration pass, including 14 new controls. Earlier incomplete runs
+remain incomplete and are not eligible training games.
+
+The first two fresh final-epoch games completed with genuine terminal outcomes
+(514 and 366 accepted steps). The two predeclared heldout mirrors are still
+pending at this checkpoint. This is collection evidence, not fitted weights or
+expert demonstrations. Final-epoch training/reload, heldout Q/V evaluation,
+real-decision latency, checked live application persistence, matched gameplay
+quality and complete native/browser acceptance remain open.

@@ -45,7 +45,7 @@ def test_real_same_buffer_binding_restores_identity_and_registered_model(api, sc
     binding = trusted_binding(scene)
     row = stored_row(api, scene.controller, {scene.seat: scene.record})
     restored = restore(api, row, {scene.seat: binding})
-    assert restored.ai[scene.seat] is binding['agent']
+    assert restored.ai[scene.seat].learned_binding is binding['agent'].learned_binding
     assert restored.ai[scene.seat].learned_binding is scene.binding
     assert scene.binding.checkpoint_sha256 == sha256(scene.raw_checkpoint).hexdigest()
     assert scene.binding._policy.payload()['version'] == VERSION == 'mtg.qv.v1'
