@@ -156,7 +156,7 @@ class AncestorSymlinkTests(unittest.TestCase):
             "sys.argv = sys.argv[1:]\n"
             "runpy.run_path(sys.argv[0], run_name='__main__')\n")
         return subprocess.run(
-            [sys.executable, '-I', '-c', code, str(fixtures.SCRIPTS / 'ci_backend_metadata.py'),
+            [sys.executable, '-I', '-B', '-c', code, str(fixtures.SCRIPTS / 'ci_backend_metadata.py'),
              str(evidence), str(self.fixture.repo), str(output)],
             env={'PATH': os.defpath, 'HOME': str(self.root)},
             capture_output=True, text=True, check=False)

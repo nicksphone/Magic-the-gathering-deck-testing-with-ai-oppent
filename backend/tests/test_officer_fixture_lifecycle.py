@@ -44,6 +44,7 @@ def immediate(coroutine):
 
 def lifecycle(tmp_path, *, existing=False, bootstrap_fails=False, join_fails=False):
     calls, registry = [], {}
+    application = SimpleNamespace(state=SimpleNamespace(new_match_policy_frozen=False))
     # Text path-presence control, deliberately NOT a SQLite database.
     path = tmp_path / 'non-SQL-presence.txt'
     if existing:
@@ -98,9 +99,13 @@ def lifecycle(tmp_path, *, existing=False, bootstrap_fails=False, join_fails=Fal
         if join_fails:
             raise RuntimeError('synthetic live worker')
 
+    def prepare():
+        assert application.state.new_match_policy_frozen is True
+        calls.append('prepare')
+
     state = dict(asynccontextmanager=asynccontextmanager, engine=engine,
                  DatabaseOwner=lambda candidate: owner,
-                 _prepare_simulation_admission=lambda: calls.append('prepare'),
+                 _prepare_simulation_admission=prepare,
                  init_db=lambda: calls.append('init'),
                  initialize_resource_capacity=bootstrap,
                  Session=lambda candidate: nullcontext(calls.append('session')),
@@ -109,6 +114,7 @@ def lifecycle(tmp_path, *, existing=False, bootstrap_fails=False, join_fails=Fal
                  _ensure_expansion_top_decks=lambda repo: calls.append('expansion'),
                  _restore_simulation_jobs=lambda repo: calls.append('restore-jobs'),
                  _shutdown_simulation_workers=shutdown, SIM_START_LOCK=threading.Lock(),
+                 MATCH_LOAD_LOCK=threading.RLock(), app_instance=application,
                  SIM_SHUTTING_DOWN=False, SIM_JOB_SHUTDOWN_TIMEOUT=20,
                  _OWNERS=registry, _OWNER_LOCK=threading.RLock(),
                  JSONResponse=lambda **kw: SimpleNamespace(**kw))
@@ -116,6 +122,7 @@ def lifecycle(tmp_path, *, existing=False, bootstrap_fails=False, join_fails=Fal
            'owner_for_engine', namespace=state)
     actual(ROOT / 'backend/persistence/db.py', 'get_session', namespace=state)
     actual(ROOT / 'backend/main.py', 'lifespan', 'capacity_closed_response', namespace=state)
+    application.router = SimpleNamespace(lifespan_context=state['lifespan'])
 
     def request():
         # Keep the actual function-local import, binding it to the extracted real helper.
@@ -154,7 +161,7 @@ def test_actual_officer_entry_starts_native_owner_before_first_api_dependency(tm
                  if isinstance(node, ast.If) and ast.unparse(node.test) == "__name__ == '__main__'")
     exec(compile(ast.Module(body=[entry], type_ignores=[]), str(FIXTURE), 'exec'),
          dict(__name__='__main__', os=SimpleNamespace(environ={}),
-              app=SimpleNamespace(router=SimpleNamespace(lifespan_context=state['lifespan']))))
+              app=state['app_instance']))
     assert [(response.status_code, response.content) for response in responses] == [
         (200, {'synthetic_handler': True})]
     assert calls == ['prepare', 'acquire', 'init', 'bootstrap', 'session', 'builtin',
@@ -167,7 +174,7 @@ def test_actual_dependency_keeps_503_without_owner_or_after_shutdown(tmp_path, c
     state, calls, registry, owner, request = lifecycle(tmp_path)
     if closed:
         async def serve():
-            async with state['lifespan'](None):
+            async with state['lifespan'](state['app_instance']):
                 assert request().status_code == 200
         immediate(serve())
     before = list(calls)
@@ -181,7 +188,7 @@ def test_actual_dependency_keeps_503_without_owner_or_after_shutdown(tmp_path, c
 def test_actual_native_lifespan_bootstrap_order_and_fenced_rejection(tmp_path, existing):
     state, calls, registry, owner, request = lifecycle(tmp_path, existing=existing)
     async def serve():
-        async with state['lifespan'](None):
+        async with state['lifespan'](state['app_instance']):
             assert calls[:4] == ['prepare', 'acquire'] + (
                 ['bootstrap', 'init'] if existing else ['init', 'bootstrap'])
             assert request().status_code == 200
@@ -196,7 +203,7 @@ def test_actual_native_lifespan_bootstrap_order_and_fenced_rejection(tmp_path, e
 def test_actual_native_bootstrap_failure_never_opens_admission(tmp_path):
     state, calls, registry, owner, request = lifecycle(tmp_path, bootstrap_fails=True)
     async def serve():
-        async with state['lifespan'](None):
+        async with state['lifespan'](state['app_instance']):
             pytest.fail('Failed bootstrap yielded a running application')
     with pytest.raises(RuntimeError, match='synthetic bootstrap failure'):
         immediate(serve())
@@ -208,7 +215,7 @@ def test_actual_native_bootstrap_failure_never_opens_admission(tmp_path):
 def test_actual_native_shutdown_does_not_mask_failure_or_close_live_owner(tmp_path, join_fails):
     state, calls, registry, owner, request = lifecycle(tmp_path, join_fails=join_fails)
     async def serve():
-        async with state['lifespan'](None):
+        async with state['lifespan'](state['app_instance']):
             raise ValueError('synthetic application failure')
     if join_fails:
         with pytest.raises(RuntimeError, match='synthetic live worker'):

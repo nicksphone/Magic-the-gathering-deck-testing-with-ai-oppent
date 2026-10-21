@@ -88,13 +88,16 @@ def test_actual_lifespan_owner_order_without_any_native_sql(legacy, join_fails, 
         Session=lambda engine: nullcontext(object()), Repository=lambda session: session,
         _ensure_builtin_decks=lambda repo: None, _ensure_expansion_top_decks=lambda repo: None,
         _restore_simulation_jobs=lambda repo: calls.append('reconcile-cache'),
-        SIM_START_LOCK=nullcontext(), SIM_SHUTTING_DOWN=True,
+        MATCH_LOAD_LOCK=threading.RLock(), SIM_START_LOCK=nullcontext(), SIM_SHUTTING_DOWN=True,
         SIM_JOB_SHUTDOWN_TIMEOUT=20, _shutdown_simulation_workers=join)
     exec(compile(ast.Module(body=[node], type_ignores=[]), str(path), 'exec',
                  flags=__future__.annotations.compiler_flag), namespace)
 
+    app_instance = SimpleNamespace(state=SimpleNamespace())
+
     async def run():
-        async with namespace['lifespan'](None):
+        async with namespace['lifespan'](app_instance):
+            assert app_instance.state.new_match_policy_frozen is True
             calls.append('yield')
 
     if join_fails:
@@ -102,6 +105,7 @@ def test_actual_lifespan_owner_order_without_any_native_sql(legacy, join_fails, 
             asyncio.run(run())
     else:
         asyncio.run(run())
+    assert app_instance.state.new_match_policy_frozen is True
     assert calls[:2] == ['prepare', 'acquire']
     assert calls[2:4] == (['backup/migrate', 'init'] if legacy else ['init', 'backup/migrate'])
     assert calls[4:7] == ['reconcile-cache', 'open', 'yield']

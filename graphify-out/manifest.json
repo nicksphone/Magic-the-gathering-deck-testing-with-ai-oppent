@@ -13362,9 +13362,9 @@
     "semantic_hash": ""
   },
   "docs/testing/release-acceptance-status.md": {
-    "mtime": 1792592581.2195826,
-    "seen": 1792593048.600866,
-    "ast_hash": "c7f2dc6d0e185ad04b851a80578b5b59",
+    "mtime": 1792600098.5419385,
+    "seen": 1792600300.6535478,
+    "ast_hash": "35f70ec30943d82e95f198c5cb378737",
     "semantic_hash": ""
   },
   "backend/tests/test_pending_stack_privacy_goldens.py": {
@@ -13650,9 +13650,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_simulation_engine_shutdown.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0618315,
-    "ast_hash": "713f97e233a29fab6f4ce2b8b3ff757f",
+    "mtime": 1792600068.6483781,
+    "seen": 1792600300.651169,
+    "ast_hash": "243311c30638ab1ab318e45fc3ecbc63",
     "semantic_hash": ""
   },
   "backend/tests/test_simulation_shutdown.py": {
@@ -14562,9 +14562,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_capacity_lifecycle_policy.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0605803,
-    "ast_hash": "8fbb43249b39203959e7ba363b271e38",
+    "mtime": 1792600068.6483781,
+    "seen": 1792600300.6497831,
+    "ast_hash": "bc65972d89c55545e77c27cd98e4d023",
     "semantic_hash": ""
   },
   "backend/tests/test_capacity_uncertainty_identity.py": {
@@ -16344,9 +16344,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_ci_backend_metadata_symlink_ancestors.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0573754,
-    "ast_hash": "dc94578b581fffbeb060ccb54ee6dde5",
+    "mtime": 1792594734.4895122,
+    "seen": 1792594979.9951918,
+    "ast_hash": "7f694acfd4d34ac89f1936bfd3a94e30",
     "semantic_hash": ""
   },
   "backend/tests/test_additional_cost_artifact_token_body.py": {
@@ -16560,9 +16560,9 @@
     "semantic_hash": ""
   },
   "backend/tests/test_officer_fixture_lifecycle.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0614653,
-    "ast_hash": "a2ab5ddd39036ee3a718957fe912dc9a",
+    "mtime": 1792599692.060736,
+    "seen": 1792600300.6507833,
+    "ast_hash": "0b64117d92ecb92e37fc496994705441",
     "semantic_hash": ""
   },
   "backend/tests/test_reanimate_instruction_continuation.py": {
@@ -22422,9 +22422,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_ci_backend_shards_e2e.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0573826,
-    "ast_hash": "83ad34caa8dc2293ca7ac23db67810da",
+    "mtime": 1792594734.4895122,
+    "seen": 1792594979.9952004,
+    "ast_hash": "e620282c68c3b1976d9eada9f35e456b",
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_ci_backend_shards_v2.py": {
@@ -23124,9 +23124,9 @@
     "semantic_hash": ""
   },
   "backend/scripts/train_qv.py": {
-    "mtime": 1792587238.0401852,
-    "seen": 1792593048.5942914,
-    "ast_hash": "9ed5abb300e934801838aca98c62136c",
+    "mtime": 1792597665.0418742,
+    "seen": 1792598109.8494873,
+    "ast_hash": "506aada41bb8c131f24e4792bf0bc71c",
     "semantic_hash": ""
   },
   "backend/tests/test_learned_qv.py": {
@@ -23190,9 +23190,9 @@
     "semantic_hash": ""
   },
   "docs/testing/learned-qv-offline.md": {
-    "mtime": 1792592581.2175827,
-    "seen": 1792593048.6005604,
-    "ast_hash": "0ed9eec7163e1f00d545cfe8253960c8",
+    "mtime": 1792600098.5419385,
+    "seen": 1792600300.65326,
+    "ast_hash": "0ccbfa2e414a536599f2d9e4c3fbc5c0",
     "semantic_hash": ""
   },
   "docs/testing/training-decision-frame.md": {
@@ -23271,6 +23271,36 @@
     "mtime": 1792587238.0411851,
     "seen": 1792593048.5980842,
     "ast_hash": "3e33bedaa9750d1c56d7769b246bf742",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_cli_bytecode_boundary.py": {
+    "mtime": 1792594734.4895122,
+    "seen": 1792594979.9952123,
+    "ast_hash": "66d1a32b6b985932496a62f8c064586c",
+    "semantic_hash": ""
+  },
+  ".github/scripts/tests/test_ci_toy_failure_projection.py": {
+    "mtime": 1792594734.4905124,
+    "seen": 1792594979.995236,
+    "ast_hash": "c2189e5d9f0c813316f28eae31681dee",
+    "semantic_hash": ""
+  },
+  "backend/scripts/check_qv_training_progress.py": {
+    "mtime": 1792597665.0418742,
+    "seen": 1792598109.8494377,
+    "ast_hash": "66d62a60bc47dd21b53a2d622d744cce",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_qv_training_progress.py": {
+    "mtime": 1792597665.0428743,
+    "seen": 1792598109.8533967,
+    "ast_hash": "5a217b2dfd571de29c468bb0e2402525",
+    "semantic_hash": ""
+  },
+  "docs/testing/current-2d50-native-browser50.md": {
+    "mtime": 1792597711.292979,
+    "seen": 1792598109.8555224,
+    "ast_hash": "f068a2b5ed378827ef45081de2a2942a",
     "semantic_hash": ""
   }
 }

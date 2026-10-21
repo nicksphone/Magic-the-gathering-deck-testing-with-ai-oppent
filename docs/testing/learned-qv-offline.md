@@ -176,6 +176,26 @@ and `tests/test_qv_output_source_boundary.py`. Optional actual CPU checks are
 recreation must use the retained official CPU-wheel index and exact wheel hashes,
 not unconstrained/GPU-default installation. No Torch import is added to app startup.
 
+The optional progress/fusion comparison also needs the exact public pre-fusion
+trainer, not a private game fixture. From `backend/` in a Git checkout with the
+original commit available, using the separately installed CPU-Torch interpreter:
+
+```sh
+reference_dir=$(mktemp -d)
+git show 2d50b00fd3f3ad37da1091a0223cfe5c6bac4bfc:backend/scripts/train_qv.py \
+  > "$reference_dir/train_qv.py"
+printf '%s  %s\n' \
+  fdfb909f0e216715e6cab00a324fad4306ef755aab6580cb3a8ca9e99c375b58 \
+  "$reference_dir/train_qv.py" | sha256sum -c -
+QV_REFERENCE_TRAINER="$reference_dir/train_qv.py" \
+  python -m scripts.check_qv_training_progress
+```
+
+The module rejects a different digest, a linked reference or an absent explicit
+binding. The reference stays outside the checkout and is not an application
+model or training corpus. Its four numerical/protocol tests are separate from
+the original three CPU checks and do not establish playing strength.
+
 The legacy environment/dataset declaration separately passed all 92 cases in
 177.99 seconds, including the genuine exporter CLI children, after closing two
 dataset locks in an old test fixture's `finally` block. No assertions or dataset
@@ -206,9 +226,22 @@ preserved as a failure, not retroactively converted into a pass.
 
 The first bounded fit performs all 880 optimizer steps but exits without a
 qualified checkpoint; complete final metrics/export/reload verification is not
-established. Its input/runtime/resource closures pass. A separate longer-time
-attempt keeps the same data, split, seed, iteration count and model architecture.
+established. The separately declared longer-time attempt keeps the same data,
+split, seed, iteration count and model architecture. It also completes 880
+updates, then records the exact cooperative validation deadline at 1,204.25
+seconds without publishing a checkpoint. Both input/runtime/resource closures
+pass; neither run is a completed fitted model. The subsequent trainer change
+adds an optional phase observer and shares the final-weight forward between
+final MSE and export parity. All 41 default cases and seven actual CPU-Torch
+checks pass, including exact reference weights/losses and preservation of the
+last parity rejection. In the 65-sample protocol, Torch forwards decrease from
+260 to 195 while all 65 stdlib comparisons remain. This is a measured work-count
+reduction, not a measured speedup on the real games. The 64-sample progress
+cadence reports a completed-count floor; fused-phase times overlap and must not
+be summed. The real-game fit on this trainer remains pending.
 No fitted-policy or expert-strength qualification follows from collected games
 or completed optimizer steps alone. Final-epoch training/reload, heldout Q/V evaluation,
-real-decision latency, checked live application persistence, matched gameplay
-quality and complete native/browser acceptance remain open.
+real-decision latency, checked live application persistence and matched gameplay
+quality remain open. The separately qualified native 50-case declaration is
+recorded in `current-2d50-native-browser50.md`; it does not measure learned-policy
+strength or exhaustive browser/action coverage.

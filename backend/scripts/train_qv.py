@@ -179,9 +179,11 @@ def _samples(samples, *, feature_version=None):
 
 
 def train_samples(samples, *, contract, dataset_sha256, split_sha256,
-                  seed, epochs=20, learning_rate=0.01, seconds=300):
+                  seed, epochs=20, learning_rate=0.01, seconds=300, progress=None):
     validate_contract(contract)
     _samples(samples, feature_version=contract['feature_version'])
+    if progress is not None and not callable(progress):
+        raise ValueError('Optional progress callback must be callable')
     if (type(epochs) is not int or not 1 <= epochs <= 1000 or epochs * len(samples) > 100000
             or type(seconds) is not int or not 1 <= seconds <= 3600
             or type(learning_rate) not in (int, float) or not math.isfinite(learning_rate)
@@ -201,16 +203,28 @@ def train_samples(samples, *, contract, dataset_sha256, split_sha256,
             if time.monotonic() - started >= seconds:
                 raise ValueError('CPU training deadline reached; no checkpoint published')
 
-        def mse():
+        def notify(phase, event, processed, updates):
+            if progress is not None:
+                progress({'phase': phase, 'event': event, 'processed': processed,
+                          'total': epochs * len(samples) if phase == 'updates' else len(samples),
+                          'updates': updates, 'elapsed_seconds': time.monotonic() - started})
+
+        def mse(phase, updates=0):
+            notify(phase, 'start', 0, updates)
             with torch.no_grad():
                 errors = []
                 for row in samples:
                     budget()
                     errors.append(float((model(row['state'], row['action'])[0] - row['return']) ** 2))
-            return math.fsum(errors) / len(errors)
+                    if progress is not None and len(errors) % 64 == 0:
+                        notify(phase, 'progress', len(errors), updates)
+            value = math.fsum(errors) / len(errors)
+            notify(phase, 'end', len(errors), updates)
+            return value
 
-        initial_loss = mse()
+        initial_loss = mse('initial_mse')
         updates = 0
+        notify('updates', 'start', 0, updates)
         for _ in range(epochs):
             for row in samples:
                 budget()
@@ -224,20 +238,35 @@ def train_samples(samples, *, contract, dataset_sha256, split_sha256,
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0, error_if_nonfinite=True)
                 optimizer.step()
                 updates += 1
-        final_loss = mse()
+                if progress is not None and updates % 64 == 0:
+                    notify('updates', 'progress', updates, updates)
+        notify('updates', 'end', updates, updates)
+        # Final MSE and parity share the same read-only final-weight forward pass.
+        notify('final_mse', 'start', 0, updates)
+        notify('export_parity', 'start', 0, updates)
         payload = checkpoint(export_weights(model), contract, {
             'dataset_sha256': dataset_sha256, 'split_sha256': split_sha256,
             'trainer_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
             'torch_version': str(torch.__version__),
             'trainer_seed': seed, 'updates': updates, 'samples': len(samples)})
         policy = QVPolicy(payload, expected=contract)
+        verified = 0
+        final_errors = []
         with torch.no_grad():
             for row in samples:
                 budget()
                 q, v = model(row['state'], row['action'])
+                final_errors.append(float((q - row['return']) ** 2))
                 result = policy.predict(row['state'], row['action'])
                 if max(abs(result['q'] - q.item()), abs(result['v'] - v.item())) > 1e-9:
                     raise ValueError('Actual trained Torch/stdlib export parity failed')
+                verified += 1
+                if progress is not None and verified % 64 == 0:
+                    notify('final_mse', 'progress', verified, updates)
+                    notify('export_parity', 'progress', verified, updates)
+        final_loss = math.fsum(final_errors) / len(final_errors)
+        notify('final_mse', 'end', verified, updates)
+        notify('export_parity', 'end', verified, updates)
         return payload, {'updates': updates, 'samples': len(samples),
                          'weights_changed': export_weights(model) != initial,
                          'initial_q_mse': initial_loss, 'final_q_mse': final_loss}

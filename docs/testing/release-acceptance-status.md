@@ -15,12 +15,36 @@ Whole CI `39598342744` still fails at the reference job's single synthetic
 pipeline self-test; its backend workers did not run. The same 335 self-tests
 pass locally, but that first local run changed package bytecode-cache metadata,
 so it is not a read-only-runtime qualification. The original runtime has since
-been verified and restored; the child-launch fix is being tested separately.
+been verified and restored. The later private CI declaration passes all 345
+cases, preserving the original 335 ordered cases and adding ten controls.
+Its independent new child-launch/failure-projection declaration passes all
+three cases, with source/runtime/resource equality and physical closure.
+Those exact four CI-test postimages are integrated locally; this does not
+transfer the private declaration to a different public combined tree.
 Finite Main-source and startup-media guard repairs separately pass all 254 cases
 in five whole source/file modules, plus all seven new controls on the integrated
 tree. Existing historical recipes, rejection assertions and rendered media are
 preserved. These pure checks are not actual HTTP or a whole-backend CI pass;
-the complete CI self-test declaration remains required.
+complete public-source CI qualification remains required.
+
+The subsequent public head `2d50b00fd3f3ad37da1091a0223cfe5c6bac4bfc`
+completes run `39617643320` with successful reference, frontend, browser and
+backend worker 2/3 jobs. Workers 0/1 fail fourteen call bodies in three lifecycle
+fixture modules; the aggregate backend job fails. Its authenticated collection
+plan contains 33,569 nodes across 1,168 modules. Collection and individual job
+successes are not a whole-backend pass. Its pull-request merge tree is identical
+to that branch tree, not an inferred transfer from an older source.
+
+Sanitized metadata and local failing-before/passing-after declarations identify
+obsolete test doubles: extracted startup functions receive `None` or a fake app
+without state, and their namespaces omit the current match-load lock. The
+production app/state/lock contract is retained. The Officer module changes from
+26 passes/seven failures to all 33 passes. The other two whole modules change
+from 17 passes/seven failures to all 24 passes. All original assertions remain;
+new checks also require the policy to freeze before admission. The three tested
+fixture postimages are integrated locally with production Main unchanged.
+These separate local declarations do not convert the failed hosted run into a
+pass; complete CI on the combined published candidate remains required.
 
 The `a66e53915e99012d5881af276ceeb93eda01d028` secure native workflow
 `39587759314` completed both Chrome and Brave jobs successfully with sandboxing
@@ -36,12 +60,22 @@ Separately executed component declarations pass 122 attack-producer cases,
 69 controller-lifecycle cases and 51 trusted-operator startup cases. The learned
 adapter remains explicit opt-in and the default agent remains heuristic.
 Four real terminal games and their fixed 880/1,330 train/heldout partition pass
-the corpus readiness checks. The first bounded fit completes 880 optimizer steps
-but produces no qualified checkpoint. Fitted weights, heldout playing
-quality, genuine trained-model HTTP/SQLite restoration, the complete local
-native suite and broader release/clean-machine checks remain open. See
+the corpus readiness checks. Both separately declared fits complete all 880
+optimizer steps but produce no qualified checkpoint; the longer run records
+its exact cooperative validation deadline. The separately tested trainer now
+removes a duplicate final-weight pass, preserving all parity comparisons; all
+41 default and seven CPU-Torch checks pass. Fitted weights, heldout playing
+quality, genuine trained-model HTTP/SQLite restoration and broader
+release/clean-machine checks remain open. See
 `learned-qv-offline.md` for scope and fixture limitations. These separate
 declarations are not a summed release suite or a project-completion percentage.
+
+The original native 50-case declaration now passes on exact `2d50b00f`, using
+Firefox 158.0.1 and the frozen application runtime. All 40 paid cases, three
+recovery cases, four origin cases and three natural BO3 series complete in
+2,201.59 seconds with unchanged inputs and verified process/file/profile closure.
+See `current-2d50-native-browser50.md`. This is not learned-policy quality,
+all-card/all-action coverage, remote-client LAN trust or a complete RC.
 
 ## Local Sharded CI Candidate
 
