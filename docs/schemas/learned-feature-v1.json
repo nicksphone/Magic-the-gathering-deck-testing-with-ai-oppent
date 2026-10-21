@@ -1,0 +1,94 @@
+{
+  "module": "training.decision_frame",
+  "decision_version": "mtg.decision.v1",
+  "feature_version": "mtg.features.v1",
+  "functions": {
+    "build_decision_frame": "(observation,prompts)->(frame,private_bindings)",
+    "encode_state": "(frame)->EncodedTree",
+    "encode_action": "(frame,complete_aliased_action)->EncodedTree"
+  },
+  "frame_keys": [
+    "version",
+    "observation",
+    "prompts"
+  ],
+  "encoded_keys": [
+    "version",
+    "root",
+    "entities"
+  ],
+  "node_kinds": [
+    "null",
+    "bool",
+    "number",
+    "text",
+    "list",
+    "map",
+    "set",
+    "ref"
+  ],
+  "nodes": {
+    "null": {
+      "kind": "null"
+    },
+    "bool": {
+      "kind": "bool",
+      "value": "bool"
+    },
+    "number": {
+      "kind": "number",
+      "value": "finite number; scalar model input x/(1+abs(x))"
+    },
+    "text": {
+      "kind": "text",
+      "value": "semantic UTF8 string; position-aware byte pool; full text retained"
+    },
+    "list": {
+      "kind": "list",
+      "items": "ordered Node[]"
+    },
+    "map": {
+      "kind": "map",
+      "items": "[keyNode,valueNode][]; commutative pair aggregation"
+    },
+    "set": {
+      "kind": "set",
+      "items": "Node[]; commutative aggregation retaining multiplicity"
+    },
+    "ref": {
+      "kind": "ref",
+      "index": "zero-based entity gather ONLY; never scalar/token embedding"
+    }
+  },
+  "entities": "Node[] with refs only to preceding entities; card intrinsic records first, then stack/option descriptors; no raw/alias IDs in semantic nodes",
+  "reverse_bindings": "private object.action(wire)->aliased_action; .actual_action(aliased)->wire; never serialized",
+  "versions": {
+    "v1": "unchanged default mtg.dataset.v1",
+    "v2": "explicit mtg.dataset.v2; input frame mtg.decision.v1"
+  },
+  "dataset_api": {
+    "episode_records": "existing args + decision_frame=False",
+    "validate_episode": "existing args + dataset_version=VERSION keyword",
+    "DatasetRun": "existing args + dataset_version=VERSION keyword"
+  },
+  "model_hidden_width": 64,
+  "labels": "outside features; accepted-action labels and actual actor-seat terminal returns only",
+  "text_encoder": {
+    "kind": "position_aware_byte_pool",
+    "byte_embedding_width": 64,
+    "position": "t=0 for n=1; otherwise 2*i/(n-1)-1",
+    "pool": "concat(mean(E[byte]),mean(t*E[byte]),mean(t*t*E[byte]),n/(1+n))",
+    "projection": "learned Linear(193,64)+ReLU once per text",
+    "empty": "three zero pools and length zero",
+    "claim": "order-sensitive signal, not injective or reversible"
+  },
+  "limits": {
+    "max_depth": 64,
+    "max_nodes": 262144,
+    "max_entities": 4096,
+    "max_text_bytes": 65536,
+    "max_total_text_bytes": 1048576,
+    "validation": "before deepcopy or model/tensor allocations; reject without truncation"
+  },
+  "supersedes_abi_sha256": "7d5977c68f7051d82462a5486078417ee2d4840097d2b37242e40dc43d38f80c"
+}

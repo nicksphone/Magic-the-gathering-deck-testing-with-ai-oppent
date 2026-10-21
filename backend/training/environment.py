@@ -43,6 +43,30 @@ _SIMPLE = frozenset({
     'choose_replacement', 'choose_trigger_order', 'choose_trigger_target',
     'choose_optional_effect',
 })
+_PUBLIC_TARGET_FIELDS = frozenset({'target_player', 'target_card_id', 'target_card_ids',
+                                  'target_stack_id', 'target_distribution', 'mode_targets'})
+
+
+def _public_target_projection(announced):
+    """Only typed, publicly announced target choices, never an effect payload."""
+    from api_contracts import Targets
+    if not isinstance(announced, dict):
+        raise ValueError('Malformed public announcement')
+    result = {key: announced[key] for key in _PUBLIC_TARGET_FIELDS if key in announced}
+    if 'mode_targets' in result:
+        if not isinstance(result['mode_targets'], dict):
+            raise ValueError('Malformed public mode targets')
+        fields = {'target_player', 'target_card_id', 'target_stack_id'}
+        modes = {}
+        for name, targets in result['mode_targets'].items():
+            if not isinstance(targets, dict):
+                raise ValueError('Malformed public mode target')
+            modes[name] = {key: value for key, value in targets.items() if key in fields}
+        result['mode_targets'] = modes
+    try:
+        return Targets.model_validate(result).model_dump(exclude_none=True)
+    except ValueError:
+        raise ValueError('Malformed public target fields') from None
 
 
 def _json(value):
@@ -339,6 +363,21 @@ class TrainingEnvironment:
                                'seat': self.acting_seat} if pending else None,
             'winner': view.winner,
         }))
+
+    def decision_context(self, seat):
+        """Opt-in actor-public announcements; no current reference-legality inference."""
+        self._ready()
+        _seat(seat)
+        if seat != self.acting_seat or self.terminated:
+            raise ValueError('Public decision context requires the current nonterminal actor')
+        view, _ = self._view(seat)
+        stack = []
+        for item in view.stack:
+            available = '__announced_targets' in item.payload
+            targets = _public_target_projection(item.payload['__announced_targets']) if available else {}
+            stack.append({'stack_id': item.id, 'announcement_available': available,
+                          'announced_targets': targets, 'reference_lifecycle': 'unknown'})
+        return {'version': 'mtg.public-context.v1', 'seat': seat, 'stack': stack}
 
     def _checked(self, action, seat):
         self._ready()

@@ -50,8 +50,11 @@ def test_actual_heuristic_cast_exports_without_legal_move_display_hints(seat, tm
     assert rows[-1]['reason'] == 'tick_budget'
     run = DatasetRun(tmp_path / 'cast', {'configuration_hash': digest('controlled-cast'),
                                        **teacher.provenance(environment)})
-    run.write_episode(iter(rows))
-    validate_episode(tmp_path / 'cast/episode-0000.jsonl', 'episode-0000')
+    try:
+        run.write_episode(iter(rows))
+        validate_episode(tmp_path / 'cast/episode-0000.jsonl', 'episode-0000')
+    finally:
+        run.close()
 
 
 @pytest.mark.parametrize('seat', [1, 2])

@@ -16,7 +16,7 @@ PREFIX = '::notice title=Recovery unit compatibility result::'
 
 
 class RecoveryUnitReportTests(unittest.TestCase):
-    def project(self, count=201, *, skipped=False, runner_exit=0):
+    def project(self, count=212, *, skipped=False, runner_exit=0):
         source = WORKFLOW.read_text()
         marker = "<<'PYTHON' || summary_status=$?\n"
         self.assertEqual(source.count(marker), 1)
@@ -42,14 +42,15 @@ class RecoveryUnitReportTests(unittest.TestCase):
         self.assertTrue(lines[0].startswith(PREFIX))
         return code, json.loads(lines[0][len(PREFIX):])
 
-    def test_actual_projector_accepts_current_201_ordinary_cases(self):
+    def test_actual_projector_accepts_current_ordinary_cohort(self):
         code, summary = self.project()
         self.assertIsNone(code)
-        self.assertEqual(summary, {'schema': 1, 'cases': 201, 'runner_exit': 0,
+        self.assertEqual(summary, {'schema': 1, 'cases': 212, 'runner_exit': 0,
                                    'failures': 0, 'errors': 0, 'skipped': 0})
 
     def test_actual_projector_rejects_stale_partial_extra_skipped_or_invalid_status(self):
-        for options in ({'count': 183}, {'count': 200}, {'count': 202},
+        for options in ({'count': 183}, {'count': 200}, {'count': 201}, {'count': 202},
+                        {'count': 211}, {'count': 213},
                         {'skipped': True}, {'runner_exit': -1}, {'runner_exit': 256}):
             with self.subTest(options=options):
                 code, _ = self.project(**options)

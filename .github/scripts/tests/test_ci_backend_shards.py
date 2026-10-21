@@ -15,7 +15,7 @@ CONTEXT = {'rootdir': 'backend', 'config': None, 'importmode': 'prepend',
                        'ci_backend_storage', 'ci_backend_shards']}
 VERSIONS = {
     'annotated-doc': '0.0.5', 'annotated-types': '0.8.0', 'anyio': '4.15.1',
-    'certifi': '2026.7.22', 'click': '8.5.0', 'fastapi': '0.142.2',
+    'certifi': '2026.10.19', 'click': '8.5.0', 'fastapi': '0.142.2',
     'greenlet': '3.5.6', 'h11': '0.16.0', 'httpcore': '1.0.9', 'httpx': '0.27.2',
     'idna': '3.20', 'iniconfig': '2.3.1', 'opentelemetry-api': '1.45.1',
     'packaging': '26.3', 'pluggy': '1.6.0', 'pydantic-core': '2.23.4',

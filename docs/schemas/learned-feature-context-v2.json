@@ -1,0 +1,148 @@
+{
+  "checkpoint_epoch": "decision.v2/features.v2 plus SHA256 of THIS immutable ABI file. Keep sealed decision.v1/features.v1/0b3aadfe... constant pair distinct. Loader requires one matching tuple across selected records; mixed/new-vs-old contracts reject. No old weight admission by relabeling.",
+  "construction": "Register stable opaque bindings first; freeze base_index mapping; encode all base records with base_index only. Append context records with base_index only. Construct separate root_index mapping replacing card/stack gathers by their appended context records. Never reuse root_index while building any bank record.",
+  "context_records": {
+    "card_context": {
+      "attached_to": "base public card/reference ref or null, exactly from existing actor observation",
+      "incoming_attachments": "commutative multiset of base source-card refs from known public attached_to edges",
+      "incoming_stack_targets": "ordered list in public stack order; each entry has base stack ref and commutative multiset of incidence slots. Slot={path:ordered semantic field/mode/index list,quantity:strict distribution amount or null}. Never opaque IDs as path text or numeric features.",
+      "intrinsic": "base card ref"
+    },
+    "stack_context": {
+      "announced_targets": "finite public projection encoded with BASE refs and actor-relative players; ordered lists/mode text retained",
+      "announcement_available": "exact public_context bool",
+      "intrinsic": "base stack ref",
+      "legacy_targets": "existing actor observation targets, unchanged, independently retained as already-public data",
+      "reference_lifecycle": "unknown"
+    }
+  },
+  "coverage_ceiling": "ONE-HOP public incidence only. Context dependencies never recurse into other context records. Not an injective graph encoder, full mechanics/choice coverage, current-target legality proof, temporal-history model, learned strength result, or privacy/kernel certificate.",
+  "dataset_api": {
+    "DatasetRun": "existing dataset_version keyword retained; source engine epoch changes naturally; never rewrite old manifest/source hashes",
+    "episode_records": "existing args + public_context=False explicit bool; True requires decision_frame=True; capture observe/prompts/decision_context BEFORE teacher chooser. False retains existing v1/default and sealed decision_frame=True path.",
+    "validate_episode": "existing dataset_version keyword retained; dataset.v2 input validation dispatches exact decision.v1/v2 schema"
+  },
+  "decision_version": "mtg.decision.v2",
+  "encoded_keys": [
+    "version",
+    "root",
+    "entities"
+  ],
+  "entities": "Two-phase Node[]: ALL base records first (cards, stacks, authorized options/costs/permissions and explicit unknown public references), then card_context/stack_context records. Every bank-record ref uses BASE indices and points strictly earlier. Only root/action refs select CONTEXT indices for cards/stacks; all other refs retain base gathers. No raw/alias identifiers in semantic nodes.",
+  "feature_version": "mtg.features.v2",
+  "frame_keys": [
+    "version",
+    "observation",
+    "prompts",
+    "public_context"
+  ],
+  "functions": {
+    "TrainingEnvironment.decision_context": "(seat)->public_context; current nonterminal actor only, over ACTOR _view, no mutation",
+    "build_decision_frame": "(observation,prompts,*,public_context=None)->(frame,private_bindings); None retains sealed decision.v1/features.v1 behavior",
+    "encode_action": "(frame,complete_aliased_action)->EncodedTree; same bank/order as encode_state",
+    "encode_state": "(frame)->EncodedTree; exact dispatch by frame version, no silent relabeling",
+    "feature_contract": "(frame)->{decision_version,feature_version,feature_schema_sha256}; closed legacy/new pairs only"
+  },
+  "labels": "outside features; accepted-action labels and actual actor-seat terminal returns only",
+  "legacy_contract": {
+    "decision_version": "mtg.decision.v1",
+    "feature_schema_sha256": "0b3aadfead9f66999c8b6c3ddc13699ad7dc5dd1c76179e95585042ba0339ed5",
+    "feature_version": "mtg.features.v1"
+  },
+  "limits": {
+    "max_depth": 64,
+    "max_entities": 4096,
+    "max_nodes": 262144,
+    "max_text_bytes": 65536,
+    "max_total_text_bytes": 1048576,
+    "validation": "Before copying/model allocation; ALL base+context records count together within max_entities 4096 and other unchanged limits; reject without truncation or cap increase"
+  },
+  "model_hidden_width": 64,
+  "module": "training.decision_frame",
+  "node_kinds": [
+    "null",
+    "bool",
+    "number",
+    "text",
+    "list",
+    "map",
+    "set",
+    "ref"
+  ],
+  "nodes": {
+    "bool": {
+      "kind": "bool",
+      "value": "bool"
+    },
+    "list": {
+      "items": "ordered Node[]",
+      "kind": "list"
+    },
+    "map": {
+      "items": "[keyNode,valueNode][]; commutative pair aggregation",
+      "kind": "map"
+    },
+    "null": {
+      "kind": "null"
+    },
+    "number": {
+      "kind": "number",
+      "value": "finite number; scalar model input x/(1+abs(x))"
+    },
+    "ref": {
+      "index": "zero-based entity gather ONLY; never scalar/token embedding",
+      "kind": "ref"
+    },
+    "set": {
+      "items": "Node[]; commutative aggregation retaining multiplicity",
+      "kind": "set"
+    },
+    "text": {
+      "kind": "text",
+      "value": "semantic UTF8 string; position-aware byte pool; full text retained"
+    }
+  },
+  "public_context": {
+    "announced_target_fields": {
+      "mode_targets": "commutative semantic mode-text -> exact nested fields target_player/target_card_id/target_stack_id (actual api_contracts.ModeTarget)",
+      "target_card_id": "typed card opaque reference; no printed lookup outside authorized observations/prompts",
+      "target_card_ids": "ordered list of typed card opaque references, multiplicity retained",
+      "target_distribution": "commutative reference/player -> strict nonnegative int quantity; dynamic keys are gathers, not text features",
+      "target_player": "strict int 1 or 2, encoded actor-relative self/opponent",
+      "target_stack_id": "typed stack opaque reference"
+    },
+    "current_serializer_limit": "serialize_match does not expose these player announcements; no UI/API/engine/serializer change. New opt-in projection is confined to training actor _view.",
+    "excluded": "all other payload keys, effect parameters, private continuations, captured incarnation references, logs, knowledge snapshots and hidden-zone/card lookup",
+    "keys": [
+      "version",
+      "seat",
+      "stack"
+    ],
+    "seat": "strict int current actor 1 or 2; exactly equals observation.seat and acting_seat",
+    "stack": "same IDs and order, exactly once each, as observation.stack",
+    "stack_entry": {
+      "announced_targets": "exact finite projection below; absent announcement uses empty object, not inferred targets",
+      "announcement_available": "strict bool: genuine __announced_targets dict is present; absent is false, present malformed is reject",
+      "reference_lifecycle": "literal unknown; announcement is not proof of current target legality/incarnation/source continuity",
+      "stack_id": "gather-only opaque reference to the matching public observation stack entry"
+    },
+    "unknown_reference": "when an actually announced typed reference has no actor-authorized descriptor, register only a bounded public_reference base record with role card/stack and visibility unknown; never query hidden/current engine facts or infer controller/type/name",
+    "version": "mtg.public-context.v1"
+  },
+  "reverse_bindings": "private object.action(wire)->aliased_action; .actual_action(aliased)->wire; never serialized",
+  "supersedes_abi_sha256": "0b3aadfead9f66999c8b6c3ddc13699ad7dc5dd1c76179e95585042ba0339ed5",
+  "text_encoder": {
+    "byte_embedding_width": 64,
+    "claim": "order-sensitive signal, not injective or reversible",
+    "empty": "three zero pools and length zero",
+    "kind": "position_aware_byte_pool",
+    "pool": "concat(mean(E[byte]),mean(t*E[byte]),mean(t*t*E[byte]),n/(1+n))",
+    "position": "t=0 for n=1; otherwise 2*i/(n-1)-1",
+    "projection": "learned Linear(193,64)+ReLU once per text"
+  },
+  "versions": {
+    "context_optin": "mtg.dataset.v2 with decision_frame=True/public_context=True: decision.v2/features.v2/new ABI hash",
+    "default": "mtg.dataset.v1: original behavior unchanged",
+    "legacy_optin": "mtg.dataset.v2 with decision_frame=True/public_context=False: decision.v1/features.v1/0b unchanged"
+  }
+}

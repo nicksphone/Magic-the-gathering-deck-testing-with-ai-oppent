@@ -61,7 +61,7 @@ jobs:
           skips = sum(case.find('skipped') is not None for case in cases)
           summary = dict(cases=len(cases), passed=len(cases) - failures - errors - skips,
                          failures=failures, errors=errors, skips=skips, exit=int(sys.argv[2]))
-          expected_cases = 139  # Exact seven whole modules: current99 + selection28 + cohort12.
+          expected_cases = 150  # Exact seven whole modules: current110 + selection28 + cohort12.
           if (len(cases) != expected_cases or min(summary.values()) < 0 or not 0 <= summary['exit'] <= 255
                   or summary['exit'] == 0 and failures + errors + skips):
               raise SystemExit(f'Inconsistent Node protocol report: expected={expected_cases} actual={len(cases)}')

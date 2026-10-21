@@ -189,7 +189,10 @@ async function missingLiveChromeCacheLeaf(error, file, entry) {
 }
 
 async function missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot, cacheDirectories) {
-  const cache = path.join(out, 'cache');
+  if (browserVendor !== 'firefox') return false;
+  const cache = [path.join(out, 'cache'), path.join(out, 'profile')]
+    .find(directory => file.startsWith(directory + '/'));
+  if (!cache) return false;
   const child = children.find(c => c.label === 'firefox');
   const identity = child?.budgetIdentity;
   return missingOwnedTransientCacheLeaf(error, file, entry, budgetRoot, cacheDirectories,
@@ -313,7 +316,9 @@ async function outputBudget() {
   }
   async function walk(directory) {
     if (directory === bodyCacheDirectory || directory === path.join(out, 'cache')
-        || directory.startsWith(path.join(out, 'cache') + '/')) {
+        || directory.startsWith(path.join(out, 'cache') + '/')
+        || (browserVendor === 'firefox' && (directory === path.join(out, 'profile')
+          || directory.startsWith(path.join(out, 'profile') + '/')))) {
       const info = await lstat(directory), canonical = await realpath(directory);
       assert.ok(info.isDirectory() && !info.isSymbolicLink() && canonical === directory,
         'Firefox cache directory must not redirect');
