@@ -115,7 +115,12 @@ def _shortlist_with_priority_pass(ranked: list[dict], legal: list[dict], limit: 
 class AIAgent:
     _log_priors_cache: dict | None = None
 
-    def __init__(self, difficulty: str = "strong", archetype: str = "Midrange", opponent_archetype: str | None = None):
+    def __init__(self, difficulty: str = "strong", archetype: str = "Midrange", opponent_archetype: str | None = None, *, learned_binding=None):
+        if learned_binding is not None:
+            from ai.learned_policy import LivePolicyBinding
+            if not isinstance(learned_binding, LivePolicyBinding):
+                raise ValueError('An explicitly trusted live-policy binding is required')
+        self.learned_binding = learned_binding
         self.difficulty = difficulty.lower()
         self.archetype = archetype
         self.opponent_archetype = opponent_archetype
@@ -129,12 +134,23 @@ class AIAgent:
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         from ai.pending_effects import decision_projection_scope
         from ai.information import decision_view
+        authoritative_state = state
         state, legal_moves = decision_view(state, player_id, legal_moves)
         previous_usage = self._knowledge_usage
         self._knowledge_usage = {'seen': set(), 'counts': {'persisted': 0, 'fallback': 0, 'opaque': 0,
                                                          'fallback_reasons': {}}}
         try:
             with decision_projection_scope(state, player_id):
+                if self.learned_binding is not None:
+                    from ai.learned_policy import choose_learned_action
+                    from rules_engine.action_validation import checked_action
+                    action = choose_learned_action(
+                        self.learned_binding, self, state, legal_moves, player_id,
+                        admit=lambda proposed: checked_action(authoritative_state, self.engine, player_id, proposed))
+                    if action is not None:
+                        return AIDecision(action=action,
+                            reasoning='Rank a checked heuristic subset using the explicitly bound Q/V model',
+                            knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
                 decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
                 if decision.action.get('type') == 'pass_priority':
                     from ai.foretell_policy import idle_foretell_action

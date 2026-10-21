@@ -1,8 +1,10 @@
 # Offline Learned Q/V Groundwork
 
-Status: component-qualified checkpoint/inference, multi-run intake and CPU
-numerical-learning protocols. No real-game policy training, heldout gameplay
-quality, live-agent integration or release-candidate qualification is claimed.
+Status: component-qualified checkpoint/inference, multi-run intake, CPU numerical
+learning and explicit opt-in live-agent routing. Real-game policy fitting,
+heldout gameplay quality, application persistence and release-candidate
+qualification remain separate acceptance work. Production still defaults to the
+existing heuristic; no checkpoint is downloaded or activated automatically.
 
 ## Model And Boundary
 
@@ -71,6 +73,51 @@ actor-projection change before final real-game export/training, or the resulting
 dataset/checkpoint engine binding will become stale. The cooperative training
 timer does not replace an independently enforced outer deadline.
 
+## Explicit Live Binding
+
+`ai.learned_policy.bind_live_policy(raw_checkpoint_bytes)` validates and hashes
+the same bounded immutable byte buffer. It accepts only the registered v2 actor
+context contract for the current engine and requires positive update/sample
+counts. Those counts establish eligibility, not the truth of a training claim
+or measured playing strength. Supply the returned in-memory handle explicitly
+to `AIAgent(learned_binding=binding)`. The adapter accepts no filename, HTTP
+request, saved-match instruction or ambient setting as activation authority.
+
+The bound agent ranks an existing heuristic shortlist of at most nine checked
+actions, not the exhaustive legal-action space. Shared actor-view projection
+uses the supplied public moves without constructing another game or recomputing
+legal moves in a masked world. Only semantic feature packs reach the model;
+the original state is retained solely for authoritative action admission.
+Incomplete choices, unsupported encodings, stale contracts, unusable candidates
+and invalid numerical predictions retain the normal heuristic fallback. Stable
+ties preserve shortlist order. A configured learned adapter does not mean every
+decision uses neural scoring.
+
+Saved controller snapshots may retain a closed per-seat checkpoint identity and
+feature/engine contract. Restoration never activates weights from that metadata.
+The caller must explicitly supply a trusted agent whose actual validated
+`LivePolicyBinding` has the same checkpoint SHA, contract and current engine;
+otherwise the recorded identity remains with visible `restore_requires_opt_in`
+heuristic fallback. An ordinary agent plus matching strings is not eligible.
+The `mtg.live-policy.v1` envelope registers only the loader-validated
+`mtg.qv.v1` model. Empty metadata preserves the legacy snapshot format.
+
+Three whole import-only controller/persistence modules pass all 40 cases,
+including genuine loader-binding identity and mismatch checks. Their positive
+checkpoint is an explicitly labeled protocol fixture, not a trained model.
+New-match operator activation, completed-game history, actual HTTP/SQLite
+restoration and trained-model application acceptance remain separate work.
+
+The corrected live declaration passes all 302 ordinary cases in eleven whole
+modules, including the new 17 routing tests, in 329.93 seconds. The new tests
+use explicitly identified numerical/protocol doubles over genuine paid spell
+states; they do not certify fitted weights, latency, strength or saved-match
+activation. The first complete run recorded 300 passes and two new expectation
+failures: canonical actions included the public schema's three false origin
+defaults. Only those expected dictionaries were corrected; production action
+normalization and all inherited assertions were retained. A separate corrected
+whole-new-module run passed all 17 cases before the complete 302-case run.
+
 ## Observed Component Evidence
 
 These are separate actual scopes, not a summed coupled suite:
@@ -105,8 +152,12 @@ and `tests/test_qv_output_source_boundary.py`. Optional actual CPU checks are
 recreation must use the retained official CPU-wheel index and exact wheel hashes,
 not unconstrained/GPU-default installation. No Torch import is added to app startup.
 
-The current unchanged legacy environment/dataset modules have 92 static cases;
-their separate whole functional acceptance, including the genuine exporter CLI
-children, is not claimed here. Real terminal-game collection, final-epoch
+The legacy environment/dataset declaration separately passed all 92 cases in
+177.99 seconds, including the genuine exporter CLI children, after closing two
+dataset locks in an old test fixture's `finally` block. No assertions or dataset
+semantics were removed. This earlier component run preceded the live-adapter
+extraction; it is not a second execution of the current 302-case declaration.
+Real terminal-game collection, final-epoch
 training/reload, heldout Q/V evaluation, real-decision latency, checked live
-integration, matched gameplay quality and native/browser acceptance remain open.
+application persistence, matched gameplay quality and native/browser acceptance
+remain open.

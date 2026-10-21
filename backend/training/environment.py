@@ -170,6 +170,194 @@ def _unsupported_mana_choices(cost_text):
     return result
 
 
+def _acting_seat(state):
+    if state.winner is not None:
+        return None
+    if state.pending_mechanic_choice:
+        return state.pending_mechanic_choice['player_id']
+    if state.pending_trigger_order:
+        return int(state.pending_trigger_order['current_controller'])
+    if state.pending_replacement_choice:
+        return state.pending_replacement_choice['player_id']
+    return pregame_actor(state) if state.pregame_pending else state.priority_player
+
+
+def _observation_from_view(view, moves, seat, acting_seat):
+    """JSON allowlist over decision_view, with no private snapshot fields."""
+    players = {}
+    known = {}
+    for pid, player in view.players.items():
+        players[str(pid)] = {
+            'life': player.life, 'poison': player.poison, 'counters': dict(player.counters),
+            'hand_count': len(player.hand), 'library_count': len(player.library),
+            'mana_pool': dict(player.mana_pool),
+            'battlefield': list(player.battlefield), 'graveyard': list(player.graveyard),
+            'exile_count': len(player.exile),
+        }
+        if pid == seat:
+            players[str(pid)]['hand'] = list(player.hand)
+    for cid, card in view.cards.items():
+        if not is_unknown(card):
+            known[cid] = {**serialize_card_view(view, cid), 'zone': card.zone.value}
+    # Inspected nonselectable cards are also authorized by the actor's engine
+    # prompt (e.g. Officer misses). Never consult an opponent's legal moves.
+    for move in moves:
+        for card in move.get('inspected_cards', []):
+            cid = card['id']
+            if cid not in known:
+                known[cid] = {**deepcopy(card), 'zone': view.cards[cid].zone.value}
+    # Only allowlisted owned decision prompts cross; continuations stay private.
+    pending = (view.pending_mechanic_choice or view.pending_trigger_order
+               or view.pending_replacement_choice)
+    return json.loads(_json({
+        'version': VERSION, 'seat': seat, 'acting_seat': acting_seat,
+        'turn': view.turn, 'step': view.step.value, 'active_seat': view.active_player,
+        'priority_seat': view.priority_player, 'pregame_pending': view.pregame_pending,
+        'mulligan_count': {str(pid): count for pid, count in view.mulligan_count.items()},
+        'players': players, 'known_cards': known,
+        'stack': [{'id': item.id, 'source_card_id': item.source_card_id,
+                   'controller': item.controller, 'label': item.label,
+                   'targets': list(item.targets)} for item in view.stack],
+        'attackers': list(view.attackers), 'blocks': deepcopy(view.blocks),
+        'pending_choice': {'kind': pending.get('kind', pending.get('phase', 'replacement')),
+                           'seat': acting_seat,
+                           'prompts': TrainingEnvironment._prompts(moves)} if pending and seat == acting_seat else
+                          {'kind': pending.get('kind', pending.get('phase', 'replacement')),
+                           'seat': acting_seat} if pending else None,
+        'winner': view.winner,
+    }))
+
+
+def _context_from_view(view, seat):
+    stack = []
+    for item in view.stack:
+        available = '__announced_targets' in item.payload
+        targets = _public_target_projection(item.payload['__announced_targets']) if available else {}
+        stack.append({'stack_id': item.id, 'announcement_available': available,
+                      'announced_targets': targets, 'reference_lifecycle': 'unknown'})
+    return {'version': 'mtg.public-context.v1', 'seat': seat, 'stack': stack}
+
+
+def _require_explicit_choices(root_state, action, seat, legal_moves):
+    """Close known legacy defaults, while leaving execution to checked_action."""
+    from rules_engine.action_validation import require
+    kind = action['type']
+    if kind == 'tap_nonland_for_mana':
+        from rules_engine.mana_abilities import mana_ability_views
+        state = deepcopy(root_state)
+        card = state.cards.get(action['card_id'])
+        require(card is not None and card.id in state.players[seat].battlefield
+                and card.controller == seat, 'Mana source must be a permanent you control')
+        views = mana_ability_views(state, card)
+        matching = [view for view in views if action['color'] in view['outputs'] and (
+            view['outputs'][action['color']] > 0
+            or sum(view.get('output_bundles', {}).get(action['color'], {}).values()) > 0)]
+        require(len(matching) <= 1,
+                'Missing required choice: ability_index; use activate_mana_ability')
+        for view in matching:
+            require(not _unsupported_mana_choices(view['cost_text']),
+                    'Unsupported required choices: immediate mana resource/hybrid/X payments')
+    if kind == 'choose_mechanic':
+        pending = root_state.pending_mechanic_choice
+        require(bool(pending), 'No pending mechanic choice')
+        field = ('damage_assignment' if pending['kind'] == 'combat_damage' else
+                 'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry', 'note_creature_type', 'entry_mode'} else 'card_ids')
+        require(action.get(field) is not None, 'Missing required choice: ' + field)
+    if kind in {'tap_land_for_mana', 'tap_lands_bulk'}:
+        require(action.get('color') is not None, 'Missing required choice: color')
+    if kind == 'attack':
+        require(set(action.get('attack_targets', {})) == set(action['attackers']),
+                'Missing required choice: attack_targets for each attacker')
+    if kind in {'activate_ability', 'activate_loyalty', 'activate_mana_ability'}:
+        from rules_engine.costs import parse_activated_cost
+        state = deepcopy(root_state)
+        matching = [move for move in legal_moves(state, seat)
+                    if move['type'] == kind and move.get('card_id') == action['card_id']
+                    and move.get('ability_index') == action['ability_index']]
+        require(bool(matching), 'Ability is not in current engine hints')
+        move = matching[0]
+        if kind == 'activate_ability':
+            from rules_engine.mana_abilities import mana_ability_specs
+            require(not any(spec[0] == action['ability_index']
+                            for spec in mana_ability_specs(state.cards[action['card_id']], state)),
+                    'Immediate mana abilities require activate_mana_ability; '
+                    'the generic stack route is not a payment encoding workaround')
+        cost = parse_activated_cost(move.get('cost_text', move.get('mana_cost', '')))
+        require(not move.get('ability_x_cost') or action.get('targets', {}).get('x_value') is not None,
+                'Missing required choice: targets.x_value')
+        if kind == 'activate_mana_ability':
+            require('{X}' not in cost.mana_cost.upper(),
+                    'Unsupported required choice: variable mana production')
+            options = [option for option in move.get('output_options', [])
+                       if option['color'] == action['color']]
+            require(len(options) <= 1 or action.get('output_bundle') is not None,
+                    'Missing required choice: output_bundle')
+        payments = action.get('payment_choices') or {}
+        require(not cost.discard_cards or payments.get('discard_card_ids') is not None,
+                'Missing required choice: payment_choices.discard_card_ids')
+        require(not cost.sacrifice_creatures or cost.sacrifice_source
+                or payments.get('sacrifice_card_ids') is not None,
+                'Missing required choice: payment_choices.sacrifice_card_ids')
+        require(not move.get('hybrid_symbols') or action.get('hybrid_choices') is not None,
+                'Missing required choice: hybrid_choices')
+    if kind != 'cast_spell':
+        return
+    choice = action.get('cost_choice') or {}
+    require(bool(choice.get('id')), 'Missing required choice: cost_choice.id')
+    state = deepcopy(root_state)
+    moves = legal_moves(state, seat)
+    options = [option for move in moves if move['type'] == kind
+               and move.get('card_id') == action['card_id']
+               for option in move.get('cost_options', []) if option['id'] == choice['id']]
+    require(bool(options), 'Casting cost choice is not in current engine hints')
+    option = options[0]
+    if 'exile_card_ids' in choice:
+        require(bool(option.get('hand_exile_color')), 'This selected casting cost does not permit hand exile')
+        require(isinstance(choice['exile_card_ids'], list), 'An explicit hand-exile selection must be a list')
+    require(not ('{X}' in option.get('mana_cost', '').upper() or option.get('pay_life_x')
+                 or option.get('discard_x')) or action.get('targets', {}).get('x_value') is not None,
+            'Missing required choice: targets.x_value')
+    require(not option.get('hybrid_symbols') or action.get('hybrid_choices') is not None,
+            'Missing required choice: hybrid_choices')
+    require(not option.get('resource_payment_candidates') or action.get('resource_payment') is not None,
+            'Missing required choice: resource_payment')
+    require(not (option.get('discard_cards') or option.get('discard_x'))
+            or choice.get('discard_card_ids') is not None,
+            'Missing required choice: cost_choice.discard_card_ids')
+    require(not option.get('sacrifice_creatures') or choice.get('sacrifice_card_ids') is not None,
+            'Missing required choice: cost_choice.sacrifice_card_ids')
+    require(not option.get('exile_graveyard') or action.get('escape_exile_ids') is not None,
+            'Missing required choice: escape_exile_ids')
+    card = state.cards[action['card_id']]
+    require(card.layout not in {'modal_dfc', 'adventure', 'split'}
+            or action.get('selected_face_index', action.get('targets', {}).get('selected_face_index')) is not None,
+            'Missing required choice: selected_face_index')
+
+
+def _check_actor_view(view, moves, seat):
+    _seat(seat)
+    marker = getattr(view, 'ai_information_player', None)
+    if type(marker) is not int or marker != seat or _acting_seat(view) != seat:
+        raise ValueError('Expected the current trusted actor decision view')
+    if not isinstance(moves, list) or any(not isinstance(move, dict) for move in moves):
+        raise ValueError('Expected supplied actor legal-move descriptions')
+
+
+def decision_inputs_from_view(view, supplied_moves, seat):
+    """Read existing actor allowlists; never build a match or recompute hints."""
+    _check_actor_view(view, supplied_moves, seat)
+    projected, moves = deepcopy(view), deepcopy(supplied_moves)
+    observation = _observation_from_view(projected, moves, seat, seat)
+    return observation, TrainingEnvironment._prompts(moves), _context_from_view(projected, seat)
+
+
+def require_choices_from_view(view, supplied_moves, action, seat):
+    """Apply the original explicit-choice checks to supplied current actor hints."""
+    _check_actor_view(view, supplied_moves, seat)
+    _require_explicit_choices(view, action, seat, lambda state, player: supplied_moves)
+
+
+
 class TrainingEnvironment:
     """Single-process adapter. Snapshots/provenance are private evaluator data."""
 
@@ -227,16 +415,7 @@ class TrainingEnvironment:
     @property
     def acting_seat(self):
         self._ready()
-        state = self._state
-        if state.winner is not None:
-            return None
-        if state.pending_mechanic_choice:
-            return state.pending_mechanic_choice['player_id']
-        if state.pending_trigger_order:
-            return int(state.pending_trigger_order['current_controller'])
-        if state.pending_replacement_choice:
-            return state.pending_replacement_choice['player_id']
-        return pregame_actor(state) if state.pregame_pending else state.priority_player
+        return _acting_seat(self._state)
 
     @property
     def terminated(self):
@@ -321,48 +500,7 @@ class TrainingEnvironment:
     def observe(self, seat):
         """JSON allowlist over decision_view, with no private snapshot fields."""
         view, moves = self._view(seat)
-        players = {}
-        known = {}
-        for pid, player in view.players.items():
-            players[str(pid)] = {
-                'life': player.life, 'poison': player.poison, 'counters': dict(player.counters),
-                'hand_count': len(player.hand), 'library_count': len(player.library),
-                'mana_pool': dict(player.mana_pool),
-                'battlefield': list(player.battlefield), 'graveyard': list(player.graveyard),
-                'exile_count': len(player.exile),
-            }
-            if pid == seat:
-                players[str(pid)]['hand'] = list(player.hand)
-        for cid, card in view.cards.items():
-            if not is_unknown(card):
-                known[cid] = {**serialize_card_view(view, cid), 'zone': card.zone.value}
-        # Inspected nonselectable cards are also authorized by the actor's engine
-        # prompt (e.g. Officer misses). Never consult an opponent's legal moves.
-        for move in moves:
-            for card in move.get('inspected_cards', []):
-                cid = card['id']
-                if cid not in known:
-                    known[cid] = {**deepcopy(card), 'zone': view.cards[cid].zone.value}
-        # Only allowlisted owned decision prompts cross; continuations stay private.
-        pending = (view.pending_mechanic_choice or view.pending_trigger_order
-                   or view.pending_replacement_choice)
-        return json.loads(_json({
-            'version': VERSION, 'seat': seat, 'acting_seat': self.acting_seat,
-            'turn': view.turn, 'step': view.step.value, 'active_seat': view.active_player,
-            'priority_seat': view.priority_player, 'pregame_pending': view.pregame_pending,
-            'mulligan_count': {str(pid): count for pid, count in view.mulligan_count.items()},
-            'players': players, 'known_cards': known,
-            'stack': [{'id': item.id, 'source_card_id': item.source_card_id,
-                       'controller': item.controller, 'label': item.label,
-                       'targets': list(item.targets)} for item in view.stack],
-            'attackers': list(view.attackers), 'blocks': deepcopy(view.blocks),
-            'pending_choice': {'kind': pending.get('kind', pending.get('phase', 'replacement')),
-                               'seat': self.acting_seat,
-                               'prompts': self._prompts(moves)} if pending and seat == self.acting_seat else
-                              {'kind': pending.get('kind', pending.get('phase', 'replacement')),
-                               'seat': self.acting_seat} if pending else None,
-            'winner': view.winner,
-        }))
+        return _observation_from_view(view, moves, seat, self.acting_seat)
 
     def decision_context(self, seat):
         """Opt-in actor-public announcements; no current reference-legality inference."""
@@ -371,13 +509,7 @@ class TrainingEnvironment:
         if seat != self.acting_seat or self.terminated:
             raise ValueError('Public decision context requires the current nonterminal actor')
         view, _ = self._view(seat)
-        stack = []
-        for item in view.stack:
-            available = '__announced_targets' in item.payload
-            targets = _public_target_projection(item.payload['__announced_targets']) if available else {}
-            stack.append({'stack_id': item.id, 'announcement_available': available,
-                          'announced_targets': targets, 'reference_lifecycle': 'unknown'})
-        return {'version': 'mtg.public-context.v1', 'seat': seat, 'stack': stack}
+        return _context_from_view(view, seat)
 
     def _checked(self, action, seat):
         self._ready()
@@ -393,98 +525,7 @@ class TrainingEnvironment:
 
     def _require_choices(self, action, seat):
         """Close known legacy defaults, while leaving execution to checked_action."""
-        from rules_engine.action_validation import require
-        kind = action['type']
-        if kind == 'tap_nonland_for_mana':
-            from rules_engine.mana_abilities import mana_ability_views
-            state = deepcopy(self._state)
-            card = state.cards.get(action['card_id'])
-            require(card is not None and card.id in state.players[seat].battlefield
-                    and card.controller == seat, 'Mana source must be a permanent you control')
-            views = mana_ability_views(state, card)
-            matching = [view for view in views if action['color'] in view['outputs'] and (
-                view['outputs'][action['color']] > 0
-                or sum(view.get('output_bundles', {}).get(action['color'], {}).values()) > 0)]
-            require(len(matching) <= 1,
-                    'Missing required choice: ability_index; use activate_mana_ability')
-            for view in matching:
-                require(not _unsupported_mana_choices(view['cost_text']),
-                        'Unsupported required choices: immediate mana resource/hybrid/X payments')
-        if kind == 'choose_mechanic':
-            pending = self._state.pending_mechanic_choice
-            require(bool(pending), 'No pending mechanic choice')
-            field = ('damage_assignment' if pending['kind'] == 'combat_damage' else
-                     'choice_id' if pending['kind'] in {'draw', 'land_entry', 'saga_entry', 'note_creature_type', 'entry_mode'} else 'card_ids')
-            require(action.get(field) is not None, 'Missing required choice: ' + field)
-        if kind in {'tap_land_for_mana', 'tap_lands_bulk'}:
-            require(action.get('color') is not None, 'Missing required choice: color')
-        if kind == 'attack':
-            require(set(action.get('attack_targets', {})) == set(action['attackers']),
-                    'Missing required choice: attack_targets for each attacker')
-        if kind in {'activate_ability', 'activate_loyalty', 'activate_mana_ability'}:
-            from rules_engine.costs import parse_activated_cost
-            state = deepcopy(self._state)
-            matching = [move for move in self._rules.legal_moves(state, seat)
-                        if move['type'] == kind and move.get('card_id') == action['card_id']
-                        and move.get('ability_index') == action['ability_index']]
-            require(bool(matching), 'Ability is not in current engine hints')
-            move = matching[0]
-            if kind == 'activate_ability':
-                from rules_engine.mana_abilities import mana_ability_specs
-                require(not any(spec[0] == action['ability_index']
-                                for spec in mana_ability_specs(state.cards[action['card_id']], state)),
-                        'Immediate mana abilities require activate_mana_ability; '
-                        'the generic stack route is not a payment encoding workaround')
-            cost = parse_activated_cost(move.get('cost_text', move.get('mana_cost', '')))
-            require(not move.get('ability_x_cost') or action.get('targets', {}).get('x_value') is not None,
-                    'Missing required choice: targets.x_value')
-            if kind == 'activate_mana_ability':
-                require('{X}' not in cost.mana_cost.upper(),
-                        'Unsupported required choice: variable mana production')
-                options = [option for option in move.get('output_options', [])
-                           if option['color'] == action['color']]
-                require(len(options) <= 1 or action.get('output_bundle') is not None,
-                        'Missing required choice: output_bundle')
-            payments = action.get('payment_choices') or {}
-            require(not cost.discard_cards or payments.get('discard_card_ids') is not None,
-                    'Missing required choice: payment_choices.discard_card_ids')
-            require(not cost.sacrifice_creatures or cost.sacrifice_source
-                    or payments.get('sacrifice_card_ids') is not None,
-                    'Missing required choice: payment_choices.sacrifice_card_ids')
-            require(not move.get('hybrid_symbols') or action.get('hybrid_choices') is not None,
-                    'Missing required choice: hybrid_choices')
-        if kind != 'cast_spell':
-            return
-        choice = action.get('cost_choice') or {}
-        require(bool(choice.get('id')), 'Missing required choice: cost_choice.id')
-        state = deepcopy(self._state)
-        moves = self._rules.legal_moves(state, seat)
-        options = [option for move in moves if move['type'] == kind
-                   and move.get('card_id') == action['card_id']
-                   for option in move.get('cost_options', []) if option['id'] == choice['id']]
-        require(bool(options), 'Casting cost choice is not in current engine hints')
-        option = options[0]
-        if 'exile_card_ids' in choice:
-            require(bool(option.get('hand_exile_color')), 'This selected casting cost does not permit hand exile')
-            require(isinstance(choice['exile_card_ids'], list), 'An explicit hand-exile selection must be a list')
-        require(not ('{X}' in option.get('mana_cost', '').upper() or option.get('pay_life_x')
-                     or option.get('discard_x')) or action.get('targets', {}).get('x_value') is not None,
-                'Missing required choice: targets.x_value')
-        require(not option.get('hybrid_symbols') or action.get('hybrid_choices') is not None,
-                'Missing required choice: hybrid_choices')
-        require(not option.get('resource_payment_candidates') or action.get('resource_payment') is not None,
-                'Missing required choice: resource_payment')
-        require(not (option.get('discard_cards') or option.get('discard_x'))
-                or choice.get('discard_card_ids') is not None,
-                'Missing required choice: cost_choice.discard_card_ids')
-        require(not option.get('sacrifice_creatures') or choice.get('sacrifice_card_ids') is not None,
-                'Missing required choice: cost_choice.sacrifice_card_ids')
-        require(not option.get('exile_graveyard') or action.get('escape_exile_ids') is not None,
-                'Missing required choice: escape_exile_ids')
-        card = state.cards[action['card_id']]
-        require(card.layout not in {'modal_dfc', 'adventure', 'split'}
-                or action.get('selected_face_index', action.get('targets', {}).get('selected_face_index')) is not None,
-                'Missing required choice: selected_face_index')
+        return _require_explicit_choices(self._state, action, seat, self._rules.legal_moves)
 
     def lookup(self, action, seat=None):
         """Validate a complete proposal by trial execution on an engine copy."""

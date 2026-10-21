@@ -166,6 +166,7 @@ class MatchController:
     mutation_lock: object = field(default_factory=threading.RLock, repr=False)
     revision: int = 0
     mutation_receipts: dict[str, str] = field(default_factory=dict)
+    policy_provenance: dict[int, dict] = field(default_factory=dict)
 
 
 ACTIVE_MATCHES: dict[str, MatchController] = {}
@@ -331,7 +332,7 @@ def _controller_snapshot(match: MatchController) -> dict:
         str(pid): getattr(agent, "archetype", "Midrange")
         for pid, agent in match.ai.items()
     }
-    return {
+    snapshot = {
         "controllers": {str(pid): value for pid, value in match.controllers.items()},
         "mode": match.mode,
         "deck_ids": list(match.deck_ids),
@@ -351,6 +352,33 @@ def _controller_snapshot(match: MatchController) -> dict:
         "revision": match.revision,
         "mutation_receipts": match.mutation_receipts,
     }
+    if type(match.policy_provenance) is not dict:
+        raise ValueError("Invalid controller policy provenance")
+    if match.policy_provenance:
+        from ai.learned_qv import validate_contract
+
+        records = {}
+        for pid, record in match.policy_provenance.items():
+            if (type(pid) is not int or pid not in (1, 2)
+                    or match.controllers.get(pid) != "ai"
+                    or type(record) is not dict
+                    or set(record) != {"version", "requested", "effective",
+                                       "checkpoint_sha256", "contract", "fallback_reason"}
+                    or record["version"] != "mtg.live-policy.v1"
+                    or record["requested"] != "learned_qv"
+                    or record["effective"] not in ("learned_qv", "heuristic")
+                    or type(record["checkpoint_sha256"]) is not str
+                    or len(record["checkpoint_sha256"]) != 64
+                    or any(c not in "0123456789abcdef" for c in record["checkpoint_sha256"])
+                    or (record["effective"], record["fallback_reason"]) not in (
+                        ("learned_qv", None), ("heuristic", "restore_requires_opt_in"))):
+                raise ValueError("Invalid controller policy provenance")
+            validate_contract(record["contract"])
+            if record["contract"]["feature_version"] != "mtg.features.v2":
+                raise ValueError("Live policy requires actor-context features")
+            records[str(pid)] = deepcopy(record)
+        snapshot["policy_provenance"] = records
+    return snapshot
 
 
 def _persist_active_match(repo: Repository | object, match: MatchController) -> None:
@@ -382,13 +410,16 @@ def _load_saved_match(match_id: str, repo=None) -> MatchController | None:
         return ACTIVE_MATCHES.get(match_id)
 
 
-def _restore_active_matches(repo: Repository, match_id: str | None = None) -> None:
+def _restore_active_matches(repo: Repository, match_id: str | None = None, *, policy_bindings=None) -> None:
     """Legacy explicit eager restore; never replace an already live controller."""
     with MATCH_LOAD_LOCK:
-        _restore_active_matches_locked(repo, match_id)
+        if policy_bindings is None:
+            _restore_active_matches_locked(repo, match_id)
+        else:
+            _restore_active_matches_locked(repo, match_id, policy_bindings=policy_bindings)
 
 
-def _restore_active_matches_locked(repo: Repository, match_id: str | None = None) -> None:
+def _restore_active_matches_locked(repo: Repository, match_id: str | None = None, *, policy_bindings=None) -> None:
     rows = [repo.get_active_match(match_id)] if match_id is not None else repo.list_active_matches()
     for row in rows:
         if row is None or row.id in ACTIVE_MATCHES:
@@ -430,6 +461,47 @@ def _restore_active_matches_locked(repo: Repository, match_id: str | None = None
                 revision=int(config.get("revision", 0)),
                 mutation_receipts=dict(config.get("mutation_receipts", {})),
             )
+            records = config.get("policy_provenance", {})
+            if type(records) is dict:
+                for seat, record in records.items():
+                    if type(seat) is not str or seat not in ("1", "2"):
+                        continue
+                    pid = int(seat)
+                    controller.policy_provenance[pid] = deepcopy(record)
+                    try:
+                        _controller_snapshot(controller)
+                    except ValueError:
+                        # Invalid optional metadata must not discard the saved game.
+                        del controller.policy_provenance[pid]
+                        continue
+                    requested = {**record, "effective": "learned_qv", "fallback_reason": None}
+                    binding = policy_bindings.get(pid) if type(policy_bindings) is dict else None
+                    eligible = (type(binding) is dict and set(binding) == {"agent", "provenance"}
+                                and isinstance(binding["agent"], AIAgent)
+                                and binding["provenance"] == requested)
+                    if eligible:
+                        from ai.learned_policy import LivePolicyBinding
+                        from ai.learned_qv import VERSION
+                        from training.environment import _engine_hash
+
+                        loaded = binding["agent"].learned_binding
+                        # This envelope registers only the loader-validated mtg.qv.v1 model.
+                        eligible = (VERSION == "mtg.qv.v1" and isinstance(loaded, LivePolicyBinding)
+                                    and loaded.checkpoint_sha256 == record["checkpoint_sha256"]
+                                    and loaded.contract == record["contract"]
+                                    and loaded.contract["engine_hash"] == _engine_hash())
+                    if eligible:
+                        # Configured eligibility is not a claim that every decision is neural.
+                        controller.ai[pid] = binding["agent"]
+                        controller.policy_provenance[pid] = {
+                            **requested, "checkpoint_sha256": loaded.checkpoint_sha256,
+                            "contract": loaded.contract,
+                        }
+                    else:
+                        controller.policy_provenance[pid] = {
+                            **record, "effective": "heuristic",
+                            "fallback_reason": "restore_requires_opt_in",
+                        }
             ACTIVE_MATCHES[state.id] = controller
         except Exception:
             # A corrupt or obsolete snapshot must not prevent API startup.

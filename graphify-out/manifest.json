@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "backend/ai/agent.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0577624,
-    "ast_hash": "0829f1bc5561ecc0ff458934dbcd0770",
+    "mtime": 1792579214.0925887,
+    "seen": 1792579847.152031,
+    "ast_hash": "3cc3b87437285e91298cd07d6db159d6",
     "semantic_hash": ""
   },
   "backend/ai/block_search.py": {
@@ -444,9 +444,9 @@
     "semantic_hash": ""
   },
   "backend/main.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0579271,
-    "ast_hash": "37eafad964f0707fc5b2709367a09c9c",
+    "mtime": 1792579665.9801674,
+    "seen": 1792579847.1522079,
+    "ast_hash": "abd9ccaf1400e04f5c4cf321005dfba8",
     "semantic_hash": ""
   },
   "backend/persistence/__init__.py": {
@@ -5676,9 +5676,9 @@
     "semantic_hash": ""
   },
   "backend/training/environment.py": {
-    "mtime": 1792574991.922946,
-    "seen": 1792577037.7994719,
-    "ast_hash": "fe58872f839953f679f27769279d453b",
+    "mtime": 1792579214.0975885,
+    "seen": 1792579847.1569214,
+    "ast_hash": "aab4fc8c7a2b6cb3f24a7db39df6846b",
     "semantic_hash": ""
   },
   "docs/audits/2026-09-27-api-validation-jev-provenance.json": {
@@ -18822,9 +18822,9 @@
     "semantic_hash": ""
   },
   ".github/workflows/native-browser.yml": {
-    "mtime": 1792521591.5244937,
-    "seen": 1792521839.6497009,
-    "ast_hash": "8528f1a9ab586b1d33b9f7b538653d83",
+    "mtime": 1792579242.0741255,
+    "seen": 1792579847.1575785,
+    "ast_hash": "051e107725dd1a27948d387f8e52dea1",
     "semantic_hash": ""
   },
   "docs/testing/native-vendor-browser-ci.md": {
@@ -22686,9 +22686,9 @@
     "semantic_hash": ""
   },
   ".github/scripts/tests/test_native_workflow_budget.py": {
-    "mtime": 1792506272.0,
-    "seen": 1792513727.0574217,
-    "ast_hash": "8881ec08c1b22cc3698ecd53a6a8bd77",
+    "mtime": 1792579230.682314,
+    "seen": 1792579847.1516395,
+    "ast_hash": "a3ae1471f02aa6e9500ada083579c215",
     "semantic_hash": ""
   },
   "docs/testing/native-ci-job-budget.md": {
@@ -23190,15 +23190,39 @@
     "semantic_hash": ""
   },
   "docs/testing/learned-qv-offline.md": {
-    "mtime": 1792575861.039732,
-    "seen": 1792577037.8011124,
-    "ast_hash": "2b0f3597916fe00358719a9bb6003c41",
+    "mtime": 1792579666.0151668,
+    "seen": 1792579847.1585746,
+    "ast_hash": "38a99272d9b12272b0d3f7dc2ea79d2c",
     "semantic_hash": ""
   },
   "docs/testing/training-decision-frame.md": {
     "mtime": 1792575830.1662097,
     "seen": 1792577037.801675,
     "ast_hash": "a5363cc4836eba22280a603593661c0e",
+    "semantic_hash": ""
+  },
+  "backend/ai/learned_policy.py": {
+    "mtime": 1792579214.0955887,
+    "seen": 1792579847.152059,
+    "ast_hash": "62726938789ae8c6eaca6686c2034e58",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_live_learned_policy.py": {
+    "mtime": 1792579214.0965886,
+    "seen": 1792579847.155888,
+    "ast_hash": "1032e8a323c680fe84b685b2737ae28a",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_live_policy_controller_binding.py": {
+    "mtime": 1792579665.9801674,
+    "seen": 1792579847.15589,
+    "ast_hash": "41a084c3088cd96a593c472393cb71df",
+    "semantic_hash": ""
+  },
+  "backend/tests/test_live_policy_controller_protocol.py": {
+    "mtime": 1792579665.9801674,
+    "seen": 1792579847.1558917,
+    "ast_hash": "c2ffbaaf97c93eda971c496855427c64",
     "semantic_hash": ""
   }
 }
