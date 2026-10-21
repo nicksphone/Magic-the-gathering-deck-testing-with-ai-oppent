@@ -191,6 +191,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
   const [hybridChoice, setHybridChoice] = useState<Record<string, string>>({});
   const [faceChoices, setFaceChoices] = useState<Record<string, number>>({});
   const [cycleChoices, setCycleChoices] = useState<Record<string, number>>({});
+  const [suspendChoices, setSuspendChoices] = useState<Record<string, number | undefined>>({});
   const [divideInputs, setDivideInputs] = useState<Record<string, Record<string, number>>>({});
   const [landTapCounts, setLandTapCounts] = useState<Record<string, number>>({});
   const [landSelections, setLandSelections] = useState<Record<string, string>>({});
@@ -214,6 +215,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
     setHybridChoice({});
     setFaceChoices({});
     setCycleChoices({});
+    setSuspendChoices({});
     setDivideInputs({});
     setLandSelections({});
     setLandTapCounts({});
@@ -736,10 +738,22 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
               Foretell {card.name} ({foretellMove.mana_cost})
             </button> : null;
             const suspendMove = suspendMoves.find(m => m.card_id === card.id);
-            const suspendControl = suspendMove ? <button type="button"
-              onClick={() => onCardAction(viewerSeat, { type: "suspend", card_id: card.id })}>
-              Suspend {card.name} ({suspendMove.mana_cost}; {suspendMove.time_counters} time counter{suspendMove.time_counters === 1 ? "" : "s"})
-            </button> : null;
+            const suspendX = suspendChoices[card.id];
+            const suspendRule = suspendMove?.choice_schema?.x_value;
+            const variableSuspend = suspendMove?.time_counters_variable === true;
+            const invalidSuspendX = variableSuspend && (!suspendRule || !Number.isSafeInteger(suspendX)
+              || suspendX! < suspendRule.minimum || suspendX! > suspendRule.maximum);
+            const suspendControl = suspendMove ? <>
+              {variableSuspend ? <label>Suspend X <input type="number" step={1}
+                aria-label={`Suspend X for ${card.name}`} min={suspendRule?.minimum} max={suspendRule?.maximum}
+                value={suspendX ?? ""} onChange={event => setSuspendChoices(previous => ({...previous,
+                  [card.id]: event.target.value === "" ? undefined : Number(event.target.value)}))} /></label> : null}
+              <button type="button" disabled={invalidSuspendX}
+                onClick={() => onCardAction(viewerSeat, {type: "suspend", card_id: card.id,
+                  ...(variableSuspend ? {x_value: suspendX} : {})})}>
+                Suspend {card.name} ({suspendMove.mana_cost}; {variableSuspend ? suspendX ?? "X" : suspendMove.time_counters} time counter{!variableSuspend && suspendMove.time_counters === 1 ? "" : "s"})
+              </button>
+            </> : null;
             const cardCycleMoves = cycleMoves.filter((m) => m.card_id === card.id);
             const cycleMove = cardCycleMoves.find((m) => m.x_value === cycleChoices[card.id]) ?? cardCycleMoves[0];
             const cycleControl = cycleMove ? <>

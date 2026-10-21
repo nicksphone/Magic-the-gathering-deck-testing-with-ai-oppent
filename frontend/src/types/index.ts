@@ -156,6 +156,8 @@ export type MatchState = {
 
 export type LegalMove = {
   time_counters?: number;
+  time_counters_variable?: boolean;
+  choice_schema?: {x_value: {type: 'integer'; required: true; minimum: number; maximum: number}};
   inspected_cards?: CardView[];
   outputs?: Record<string, number>;
   cost_text?: string;
