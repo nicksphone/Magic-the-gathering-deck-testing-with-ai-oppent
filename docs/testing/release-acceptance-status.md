@@ -49,11 +49,12 @@ Additional separately executed components on this application:
   manager exit zero and independent PID/group/cgroup/file closure. This does
   not include the separately declared variable-Suspend companion or imply
   exhaustive action, arbitrary-card or AI playing-strength coverage.
-- The original natural-game declaration records 158 ordinary passes locally
-  with the same gameplay implementation. Its 56 private-input cases do not
-  change the hosted skip count. The original wrapper OS wait was not captured
-  independently; this is not a new complete boundary qualification. The default
-  AI remains heuristic; learned-policy loading
+- The private-input horizon regression module records 158 ordinary passes
+  locally with the same gameplay implementation. Its 56 private-input cases
+  reuse two archived natural-game positions across profiles, not a new matrix
+  of complete games, and do not change the hosted skip count. The original
+  wrapper OS wait was not captured independently; a managed rerun is being
+  prepared. The default AI remains heuristic; learned-policy loading
   and post-restart routing have separate component evidence, not a measured
   decision-quality or expert-play certificate.
 
