@@ -502,3 +502,230 @@ test('body-cache metrics cannot borrow Chrome or Brave backend ownership', async
     assert.equal(s.calls.signals.length, 0);
   }
 });
+
+test('Firefox owned profile accepts volatile leaves by domain, not a SQLite filename list', async () => {
+  for (const name of ['storage.sqlite-journal', 'cookies.sqlite-wal', 'places.sqlite-shm',
+    'prefs.js.tmp', 'nested/owned-cache-leaf']) {
+    const s = firefoxSubject({profile: true, leaf: OUT + '/profile/' + name});
+    const result = await s.run();
+    assert.equal(result.bytes, 0);
+    assert.equal(result.profileBytes, 0);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.ok(s.calls.read.every(file => file === '/proc/501/stat'));
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('Firefox owned profile charges recreated regular and hardlinked leaves without following them', async () => {
+  for (const nlink of [1, 2]) {
+    const s = firefoxSubject({profile: true, recreated: {size: 123, nlink}});
+    const result = await s.run();
+    assert.equal(result.bytes, 123);
+    assert.equal(result.profileBytes, 123);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.equal(s.calls.resolve.includes(s.leaf), false);
+    assert.ok(s.calls.read.every(file => file === '/proc/501/stat'));
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('Firefox profile exception rejects other vendors and paths outside its exact owned subtree', async () => {
+  for (const vendor of ['chrome', 'brave']) {
+    const s = firefoxSubject({profile: true, vendor});
+    await assert.rejects(s.run(), error => error === s.initial);
+    assert.equal(s.calls.read.length, 0);
+    assert.equal(s.calls.signals.length, 0);
+  }
+  for (const leaf of [OUT + '/profile-other/storage.sqlite-journal',
+    OUT + '/unknown/storage.sqlite-journal', OUT + '/storage.sqlite-journal']) {
+    const s = firefoxSubject({profile: true, leaf});
+    await assert.rejects(s.run(), error => error === s.initial);
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('Firefox profile exception requires stable canonical owned directories and safe recreated metadata', async () => {
+  for (const options of [
+    {code: 'EACCES'}, {errorPath: '/foreign'}, {leafError: 'EACCES'},
+    {redirect: OUT}, {redirect: OUT + '/profile'},
+    {redirect: OUT + '/profile/nested'},
+    {rootInfo: {uid: 999}}, {rootInfo: {mode: 0o40755}},
+    {cacheInfo: {kind: 'symlink'}}, {cacheInfo: {uid: 999}},
+    {cacheInfo: {mode: 0o40755}}, {parentInfo: {uid: 999}},
+    {drift: 'root'}, {drift: 'cache'}, {drift: 'parent'},
+    {recreated: {kind: 'symlink'}}, {recreated: {kind: 'directory'}},
+    {recreated: {uid: 999}}, {recreated: {mode: 0o100666}},
+  ]) {
+    const s = firefoxSubject({profile: true, leaf: OUT + '/profile/nested/owned-leaf', ...options});
+    await assert.rejects(s.run());
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('Firefox profile exception rejects process death, changed birth or executable and replaced identity', async () => {
+  for (const options of [
+    {noChild: true}, {shutdown: true}, {child: {exitCode: 0}},
+    {child: {signalCode: 'SIGTERM'}}, {identity: {pid: 999}},
+    {birthBefore: '9999'}, {birthAfter: '9999'},
+    {exeBefore: '/foreign'}, {exeAfter: '/foreign'},
+    {exitAfter: true}, {replaceIdentity: true},
+  ]) {
+    const s = firefoxSubject({profile: true, ...options});
+    await assert.rejects(s.run());
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('Firefox profile missing leaves retain the same bounded ledger and existing profile byte cap', async () => {
+  for (const [options, message] of [
+    [{ledger: Array(4096).fill({})}, /Finite Firefox cache race count/],
+    [{ledger: [{padding: 'x'.repeat(2 * 1024 * 1024)}]}, /Bounded Firefox cache race ledger/],
+    [{recreated: {size: 512 * 1024 * 1024 + 1}}, /Profile exceeds 512 MiB/],
+  ]) {
+    const s = firefoxSubject({profile: true, ...options});
+    await assert.rejects(s.run(), message);
+    assert.equal(s.calls.signals.length, 0);
+  }
+});
+
+test('actual outputBudget observes genuine Firefox profile journal unlink after readdir', async () => {
+  const directory = await mkdtemp(path.join(process.env.UNIT_EVIDENCE ?? tmpdir(), 'firefox-profile-unlink-'));
+  const profile = path.join(directory, 'profile');
+  const leaf = path.join(profile, 'storage.sqlite-journal');
+  let removed = false;
+  try {
+    await mkdir(profile, {mode: 0o700});
+    await writeFile(leaf, 'public synthetic journal bytes', {mode: 0o600, flag: 'wx'});
+    const s = firefoxSubject({profile: true, out: directory, uid: process.getuid(), io: {
+      readdir, lstat, realpath, writeFile,
+      stat: async file => {
+        assert.equal(file, leaf);
+        assert.equal(removed, false);
+        await unlink(file); removed = true;
+        return stat(file);
+      },
+    }});
+    const result = await s.run();
+    assert.equal(removed, true);
+    assert.equal(s.initial.code, 'ENOENT');
+    assert.equal(s.initial.path, leaf);
+    assert.equal(result.bytes, 0);
+    assert.equal(result.profileBytes, 0);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.equal(s.calls.signals.length, 0);
+    assert.equal(JSON.parse(await readFile(path.join(directory, 'firefox-cache-races.json'))).length, 1);
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});
+
+test('Firefox profile recreated lstat then genuine unlink charges the snapshot without following its leaf', async () => {
+  const directory = await mkdtemp(path.join(process.env.UNIT_EVIDENCE ?? tmpdir(), 'firefox-profile-recreated-'));
+  const profile = path.join(directory, 'profile');
+  const leaf = path.join(profile, 'cookies.sqlite-wal');
+  const bytes = Buffer.from('public recreated profile bytes');
+  let observed;
+  try {
+    await mkdir(profile, {mode: 0o700});
+    await writeFile(leaf, 'old public bytes', {mode: 0o600, flag: 'wx'});
+    const s = firefoxSubject({profile: true, out: directory, uid: process.getuid(), io: {
+      readdir, writeFile,
+      stat: async file => {
+        assert.equal(file, leaf);
+        await unlink(file);
+        let gone;
+        try { await stat(file); } catch (error) { gone = error; }
+        assert.equal(gone.code, 'ENOENT');
+        await writeFile(file, bytes, {mode: 0o600, flag: 'wx'});
+        throw gone;
+      },
+      lstat: async file => {
+        const info = await lstat(file);
+        if (file === leaf) { observed = info; await unlink(file); }
+        return info;
+      },
+      realpath: async file => {
+        assert.notEqual(file, leaf, 'Metrics must not follow a profile leaf');
+        return realpath(file);
+      },
+    }});
+    const result = await s.run();
+    assert.ok(observed.isFile());
+    assert.equal(result.bytes, bytes.length);
+    assert.equal(result.profileBytes, bytes.length);
+    assert.equal(result.observedFirefoxCacheRaceCount, 1);
+    assert.equal(result.observedChromeCacheRaceCount, 0);
+    assert.equal(s.calls.signals.length, 0);
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});
+
+test('actual Firefox profile directory replacement during a leaf race fails closed without touching old content', async () => {
+  const directory = await mkdtemp(path.join(process.env.UNIT_EVIDENCE ?? tmpdir(), 'firefox-profile-replaced-'));
+  const profile = path.join(directory, 'profile'), moved = path.join(directory, 'moved-profile');
+  const leaf = path.join(profile, 'places.sqlite-shm');
+  const bytes = 'old owned public profile bytes';
+  let replaced = false;
+  try {
+    await mkdir(profile, {mode: 0o700});
+    await writeFile(leaf, bytes, {mode: 0o600, flag: 'wx'});
+    const s = firefoxSubject({profile: true, out: directory, uid: process.getuid(), io: {
+      readdir, lstat, realpath, writeFile,
+      stat: async file => {
+        assert.equal(file, leaf);
+        await rename(profile, moved);
+        await mkdir(profile, {mode: 0o700});
+        replaced = true;
+        return stat(file);
+      },
+    }});
+    await assert.rejects(s.run());
+    assert.equal(replaced, true);
+    assert.equal(await readFile(path.join(moved, path.basename(leaf)), 'utf8'), bytes);
+    assert.equal(s.calls.signals.length, 0);
+  } finally {
+    await rm(directory, {recursive: true, force: true});
+  }
+});
+
+for (const vendor of ['chrome', 'brave']) {
+  test(`${vendor} profile walk does not install Firefox directory anchors`, async () => {
+    const directory = await mkdtemp(path.join(process.env.UNIT_EVIDENCE ?? tmpdir(), vendor + '-profile-walk-'));
+    const profile = path.join(directory, 'profile'), nested = path.join(profile, 'nested');
+    const leaf = path.join(nested, 'ordinary-owned-profile.bin');
+    const bytes = 'public existing vendor profile bytes';
+    const anchors = new Set([profile, nested]), calls = [];
+    try {
+      await mkdir(profile, {mode: 0o700});
+      await mkdir(nested, {mode: 0o700});
+      await writeFile(leaf, bytes, {mode: 0o600, flag: 'wx'});
+      const s = firefoxSubject({profile: true, vendor, out: directory, uid: process.getuid(), io: {
+        readdir, stat, writeFile,
+        lstat: async file => {
+          if (anchors.has(file)) calls.push(['lstat', file]);
+          return lstat(file);
+        },
+        realpath: async file => {
+          if (anchors.has(file)) calls.push(['realpath', file]);
+          return realpath(file);
+        },
+      }});
+      const result = await s.run();
+      assert.equal(result.bytes, Buffer.byteLength(bytes));
+      assert.equal(result.profileBytes, Buffer.byteLength(bytes));
+      assert.deepEqual(calls, [], 'Existing vendor traversal must not acquire Firefox profile anchors');
+      assert.equal(result.observedFirefoxCacheRaceCount, 0);
+      assert.equal(result.observedChromeCacheRaceCount, 0);
+      assert.equal(s.calls.read.length, 0);
+      assert.equal(s.calls.write.length, 0);
+      assert.equal(s.calls.signals.length, 0);
+      assert.equal(await readFile(leaf, 'utf8'), bytes);
+    } finally {
+      await rm(directory, {recursive: true, force: true});
+    }
+  });
+}

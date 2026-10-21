@@ -6,10 +6,12 @@ remain in owned scratch, including on failure; archive/cleanup is external.
 """
 from collections import Counter
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -73,6 +75,59 @@ def source_map(root):
             and '.git' not in path.relative_to(root).parts}
 
 
+def command_failure_metadata(root, label, directory, actual, expected):
+    """Only finite statuses and bounded stream fingerprints, never their text."""
+    def stream_metadata(path):
+        unavailable = dict(status='unavailable', bytes=None, sha256=None)
+        try:
+            before = path.lstat()
+            if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+                return unavailable
+            if before.st_size > 65536:
+                return dict(status='oversize', bytes=before.st_size, sha256=None)
+            descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+            with os.fdopen(descriptor, 'rb') as stream:
+                opened = os.fstat(stream.fileno())
+                if (opened.st_dev, opened.st_ino) != (before.st_dev, before.st_ino):
+                    return unavailable
+                data = stream.read(65537)
+            if len(data) > 65536:
+                return dict(status='oversize', bytes=len(data), sha256=None)
+            return dict(status='available', bytes=len(data), sha256=hashlib.sha256(data).hexdigest())
+        except (OSError, ValueError):
+            return unavailable
+
+    role = ('reference' if label == 'reference' else 'failed_worker' if label == 'failed-worker'
+            else 'worker' if label in {f'worker-{i}' for i in range(4)} else 'other')
+    closeout = None
+    if role != 'other':
+        try:
+            candidates = iter((root / (label + '-temp')).glob('mtg-backend-evidence-*'))
+            evidence = next(candidates, None)
+            if evidence is not None and next(candidates, None) is None:
+                spec = importlib.util.spec_from_file_location(
+                    'toy_failure_existing_sanitizer', SCRIPTS / 'ci_backend_metadata.py')
+                reporter = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(reporter)
+                text = reporter.read_text(evidence, 'pytest-exit-code.txt', max_bytes=4).strip()
+                code = int(text) if text.isascii() and text.isdecimal() and int(text) <= 255 else None
+                projected = reporter.closeout_fields(evidence, code).get('runner_closeout')
+                if projected is not None:
+                    diagnostics = projected['diagnostics']
+                    closeout = dict(status=projected['status'], runner=projected['runner'],
+                                    diagnostic_count=len(diagnostics),
+                                    finished_count=sum(row['finished'] for row in diagnostics),
+                                    forced_count=sum(row['forced'] for row in diagnostics),
+                                    nonzero_wait_count=sum(row['wait_exit_code'] not in (None, 0)
+                                                           for row in diagnostics))
+        except Exception:
+            # Optional diagnostics must never replace the original failed assertion.
+            closeout = None
+    return dict(schema=1, role=role, actual_exit=actual, expected_exit=expected,
+                stdout=stream_metadata(directory / 'stdout'),
+                stderr=stream_metadata(directory / 'stderr'), runner_closeout=closeout)
+
+
 class ShardCliE2ETests(unittest.TestCase):
     def _json(self, path):
         return json.loads(path.read_text())
@@ -106,6 +161,12 @@ class ShardCliE2ETests(unittest.TestCase):
         self._group_absent(process.pid)
         self.assertFalse(Path(f'/proc/{process.pid}').exists(), 'OWNED_PID_STILL_PRESENT')
         self._write_records()
+        if record['exit'] != expected:
+            try:
+                diagnostic = command_failure_metadata(self.root, label, directory, record['exit'], expected)
+                print('CI_TOY_COMMAND_FAILURE ' + json.dumps(diagnostic, sort_keys=True), file=sys.stderr)
+            except (OSError, ValueError):
+                pass
         self.assertEqual(record['exit'], expected, f'{label}: real command status')
         for stream in ('stdout', 'stderr'):
             self.assertLessEqual((directory / stream).stat().st_size, 65536)

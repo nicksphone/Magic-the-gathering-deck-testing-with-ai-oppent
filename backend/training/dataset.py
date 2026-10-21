@@ -12,6 +12,7 @@ from training.environment import decode_action, encode_action
 
 
 VERSION = 'mtg.dataset.v1'
+DECISION_DATASET_VERSION = 'mtg.dataset.v2'
 MAX_EPISODES = 64
 MAX_TICKS = 1000
 MAX_BYTES = 50 * 1024 * 1024
@@ -125,7 +126,8 @@ class HeuristicTeacher:
 
 
 def episode_records(environment, teacher, *, episode, groups, tick_budget,
-                    origin='unverified', cancelled=lambda: False):
+                    origin='unverified', cancelled=lambda: False, decision_frame=False,
+                    public_context=False):
     """Yield pre-action input and the complete action actually accepted by the engine."""
     if origin not in ORIGINS or (origin == 'heuristic' and not isinstance(teacher, HeuristicTeacher)):
         raise ValueError('No expert origin is certified by this exporter')
@@ -136,8 +138,13 @@ def episode_records(environment, teacher, *, episode, groups, tick_budget,
     if not re.fullmatch(r'episode-\d{4}', episode) or not groups or any(
             not re.fullmatch(r'(?:seed|family|deck|position):[0-9a-f]{64}', value) for value in groups):
         raise ValueError('Use opaque hashed groups, never raw seeds or private position data')
+    if type(decision_frame) is not bool:
+        raise ValueError('decision_frame must be an explicit boolean')
+    if type(public_context) is not bool or public_context and not decision_frame:
+        raise ValueError('public_context requires an explicit decision frame')
+    version = DECISION_DATASET_VERSION if decision_frame else VERSION
     aliases = EpisodeAliases()
-    yield {'version': VERSION, 'kind': 'episode_start', 'episode': episode,
+    yield {'version': version, 'kind': 'episode_start', 'episode': episode,
            'groups': sorted(set(groups)), 'origin': origin}
     count, reason = 0, 'tick_budget'
     try:
@@ -146,21 +153,30 @@ def episode_records(environment, teacher, *, episode, groups, tick_budget,
                 reason = 'cancelled'
                 break
             seat = environment.acting_seat
-            observation = aliases.observation(environment.observe(seat))
+            if decision_frame:
+                from training.decision_frame import build_decision_frame
+                observation, decision_bindings = build_decision_frame(
+                    environment.observe(seat), environment.prompts(seat),
+                    public_context=environment.decision_context(seat) if public_context else None)
+            else:
+                observation = aliases.observation(environment.observe(seat))
             proposed = teacher(environment)
             if cancelled():
                 reason = 'cancelled'
                 break
             action = environment.lookup(proposed, seat)['action']
-            public_action = aliases.action(action, seat)
-            if aliases.actual_action(public_action, seat) != action:
+            public_action = (decision_bindings.action(action) if decision_frame
+                             else aliases.action(action, seat))
+            restored_action = (decision_bindings.actual_action(public_action) if decision_frame
+                               else aliases.actual_action(public_action, seat))
+            if restored_action != action:
                 raise ActionRejected('Action aliases do not round-trip')
             if cancelled():
                 reason = 'cancelled'
                 break
             result = environment.step(action, seat)
             # No next observation, replay trace, reasoning or private evaluator state.
-            yield {'version': VERSION, 'kind': 'transition', 'episode': episode,
+            yield {'version': version, 'kind': 'transition', 'episode': episode,
                    'index': count, 'input': observation, 'action': public_action,
                    'action_id': encode_action(public_action), 'accepted': True}
             count += 1
@@ -173,7 +189,7 @@ def episode_records(environment, teacher, *, episode, groups, tick_budget,
     except Exception:
         reason = 'teacher_or_engine_error'
     terminal = environment.terminated and reason in {'terminal', 'tick_budget'}
-    yield {'version': VERSION, 'kind': 'episode_end', 'episode': episode,
+    yield {'version': version, 'kind': 'episode_end', 'episode': episode,
            'steps': count, 'complete': terminal, 'reason': 'terminal' if terminal else reason,
            'terminal_rewards': {str(k): v for k, v in environment.rewards.items()} if terminal else None}
 
@@ -182,6 +198,9 @@ def model_input(record):
     """Only this current actor's observation is a feature; labels/provenance stay out."""
     if record.get('kind') != 'transition' or record.get('accepted') is not True:
         raise ValueError('Expected an accepted transition')
+    if record.get('version') == DECISION_DATASET_VERSION:
+        from training.decision_frame import validate_frame
+        return validate_frame(record['input'])
     value = record['input']
     if set(value) != _OBSERVATION_FIELDS or type(value['seat']) is not int or value['seat'] not in (1, 2):
         raise ValueError('Observation schema mismatch; provenance/future fields are forbidden')
@@ -246,8 +265,10 @@ def grouped_split_report(episodes, *, eval_fraction=.2):
             'reasons': reasons}
 
 
-def validate_episode(path, expected_episode):
+def validate_episode(path, expected_episode, *, dataset_version=VERSION):
     """Fail closed on partial/malformed shards; never repair or truncate caller files."""
+    if dataset_version not in {VERSION, DECISION_DATASET_VERSION}:
+        raise ValueError('Unknown dataset version')
     if path.is_symlink() or not path.is_file() or path.stat().st_size > MAX_BYTES:
         raise ValueError('Unsafe episode file')
     content = sha256()
@@ -257,7 +278,7 @@ def validate_episode(path, expected_episode):
             if not line.endswith(b'\n') or len(line) > 2 * 1024 * 1024:
                 raise ValueError('Partial or oversized record')
             row = json.loads(line)
-            if row.get('version') != VERSION or row.get('episode') != expected_episode:
+            if row.get('version') != dataset_version or row.get('episode') != expected_episode:
                 raise ValueError('Episode/version mismatch')
             schemas = {
                 'episode_start': {'version', 'kind', 'episode', 'groups', 'origin'},
@@ -306,7 +327,11 @@ def validate_episode(path, expected_episode):
 class DatasetRun:
     """Exclusive immutable shards; resume only at verified episode boundaries."""
 
-    def __init__(self, path, manifest, *, resume=False, max_bytes=MAX_BYTES):
+    def __init__(self, path, manifest, *, resume=False, max_bytes=MAX_BYTES,
+                 dataset_version=VERSION):
+        if dataset_version not in {VERSION, DECISION_DATASET_VERSION}:
+            raise ValueError('Unknown dataset version')
+        self.dataset_version = dataset_version
         if type(max_bytes) is not int or not 4096 <= max_bytes <= MAX_BYTES:
             raise ValueError('Output byte budget must be 4096..MAX_BYTES')
         fields = {'configuration_hash', 'engine_hash', 'deck_hashes', 'policy_hash', 'origin'}
@@ -324,7 +349,7 @@ class DatasetRun:
                for value in hashes + manifest['deck_hashes']):
             raise ValueError('Invalid provenance hash')
         self.path, self.max_bytes = Path(path), max_bytes
-        self.manifest = {'version': VERSION, 'max_bytes': max_bytes, **manifest}
+        self.manifest = {'version': dataset_version, 'max_bytes': max_bytes, **manifest}
         if self.path.is_symlink():
             raise ValueError('Run directory must not be a symlink')
         if resume:
@@ -353,7 +378,8 @@ class DatasetRun:
             for index, shard in enumerate(shards):
                 if shard.name != f'episode-{index:04d}.jsonl':
                     raise ValueError('Noncontiguous episode shards')
-                self.completed.append(validate_episode(shard, f'episode-{index:04d}'))
+                self.completed.append(validate_episode(shard, f'episode-{index:04d}',
+                                                       dataset_version=self.dataset_version))
             self.used = sum(item.stat().st_size for item in entries)
             if self.used > max_bytes:
                 raise ValueError('Existing run exceeds output budget')
@@ -377,7 +403,7 @@ class DatasetRun:
         with pending.open('xb') as stream:
             os.chmod(pending, 0o600)
             for row in records:
-                if row.get('episode') != episode or row.get('version') != VERSION:
+                if row.get('episode') != episode or row.get('version') != self.dataset_version:
                     raise ValueError('Wrong episode/version')
                 row = deepcopy(row)
                 if row['kind'] == 'episode_start' and row.get('origin') != self.manifest['origin']:
@@ -387,7 +413,7 @@ class DatasetRun:
                     ended = True
                 line = (canonical(row) + '\n').encode()
                 if not ended and (len(line) > 2 * 1024 * 1024 or self.used + len(line) + 1024 > self.max_bytes):
-                    row = {'version': VERSION, 'kind': 'episode_end', 'episode': episode,
+                    row = {'version': self.dataset_version, 'kind': 'episode_end', 'episode': episode,
                            'steps': count, 'complete': False, 'reason': 'output_budget',
                            'terminal_rewards': None, 'content_sha256': content.hexdigest()}
                     line, ended = (canonical(row) + '\n').encode(), True
@@ -403,7 +429,7 @@ class DatasetRun:
                 raise ValueError('Missing explicit episode end')
             stream.flush()
             os.fsync(stream.fileno())
-        end = validate_episode(pending, episode)
+        end = validate_episode(pending, episode, dataset_version=self.dataset_version)
         os.link(pending, final, follow_symlinks=False)
         pending.unlink()
         self.completed.append(end)

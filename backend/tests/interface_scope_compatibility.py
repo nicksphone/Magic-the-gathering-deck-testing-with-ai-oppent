@@ -17,6 +17,16 @@ ACCEPTED_DELTAS = json.loads(delta_raw)
 assert ACCEPTED_DELTAS['accepted_public_commit'] == '1ca5005d7840a569f35f3797d03e3c852386816e'
 ACCEPTED_MAIN_DELTA = ACCEPTED_DELTAS['accepted_main_delta']
 
+CURRENT_MAIN_PATH = PATH.with_name('accepted_9b_main_delta.json')
+current_main_raw = CURRENT_MAIN_PATH.read_bytes()
+assert hashlib.sha256(current_main_raw).hexdigest() == '484d19fd477c449a1be50b671e84fd8faa5ea4469368931ba7ff044d1380bed8'
+CURRENT_MAIN = json.loads(current_main_raw)
+assert CURRENT_MAIN['accepted_public_commit'] == '9b82651ab9e97a87924447ced572b3ea5d7ff212'
+assert CURRENT_MAIN['previous_accepted_public_commit'] == ACCEPTED_DELTAS['accepted_public_commit']
+assert CURRENT_MAIN['source'] == 'main.py'
+CURRENT_MAIN_DELTA = CURRENT_MAIN['accepted_main_delta']
+assert CURRENT_MAIN_DELTA['old_sha256'] == ACCEPTED_MAIN_DELTA['new_sha256']
+
 REPOSITORY_DELTA_PATH = PATH.with_name('accepted_phase1_repository_delta.json')
 repository_raw = REPOSITORY_DELTA_PATH.read_bytes()
 assert hashlib.sha256(repository_raw).hexdigest() == '7617e4b9dbf6f1512bfd7bba51dc5a5e2506ade3163c28dca035e90c53b0e144'
@@ -99,6 +109,9 @@ def restore_reviewed_source(name, current, historical):
     assert name in recipes, 'No approved current delta for this source'
     recipe = recipes[name]
     assert historical == recipe['old_sha256'], 'Historical operand changed'
+    if name == 'main.py' and hashlib.sha256(current).hexdigest() not in {
+            recipe['old_sha256'], recipe['new_sha256']}:
+        current = _restore(current.decode(), CURRENT_MAIN_DELTA).encode()
     return _restore(current.decode(), recipe).encode()
 
 

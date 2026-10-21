@@ -177,8 +177,10 @@ export function firefoxSubject(options = {}) {
   const out = options.out ?? OUT;
   const uid = options.uid ?? 1000;
   const body = options.bodyCache === true;
-  const cache = path.join(out, body ? 'firefox-body-cache' : 'cache');
-  const leaf = options.leaf ?? path.join(cache, body ? 'a'.repeat(32) + '.claim' : 'fontconfig/CACHEDIR.TAG.LCK');
+  const profile = options.profile === true;
+  const cache = path.join(out, body ? 'firefox-body-cache' : profile ? 'profile' : 'cache');
+  const leaf = options.leaf ?? path.join(cache, body ? 'a'.repeat(32) + '.claim'
+    : profile ? 'storage.sqlite-journal' : 'fontconfig/CACHEDIR.TAG.LCK');
   const parent = path.dirname(leaf);
   const s = subject('public487', {stable: true, out, uid, vendor: options.vendor});
   const child = body ? {label: 'backend', pid: 301, startTicks: 3010, exitCode: null, signalCode: null}
@@ -248,6 +250,8 @@ export function firefoxSubject(options = {}) {
       const fields = Array(23).fill('0');
       fields[19] = ++procReads > 1 && options.birthAfter ? options.birthAfter : options.birthBefore ?? (body ? '3010' : '5010');
       if (procReads > 1 && options.replaceBackend) vm.runInContext('backend={...backend}', s.context);
+      if (procReads > 1 && options.exitAfter) child.exitCode = 0;
+      if (procReads > 1 && options.replaceIdentity) child.budgetIdentity = {...child.budgetIdentity};
       return child.pid + ' (Firefox unit) ' + fields.join(' ');
     },
     writeFile: async (name, bytes) => {

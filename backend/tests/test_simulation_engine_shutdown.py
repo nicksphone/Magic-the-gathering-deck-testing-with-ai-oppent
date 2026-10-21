@@ -5,6 +5,7 @@ import asyncio
 from contextlib import asynccontextmanager, nullcontext
 from pathlib import Path
 from types import SimpleNamespace
+import threading
 
 import pytest
 
@@ -43,6 +44,7 @@ def lifecycle(shutdown_fails=False):
                  _ensure_builtin_decks=lambda repo: None,
                  _ensure_expansion_top_decks=lambda repo: None,
                  _restore_simulation_jobs=lambda repo: None,
+                 MATCH_LOAD_LOCK=threading.RLock(),
                  SIM_START_LOCK=nullcontext(), SIM_SHUTTING_DOWN=True)
     exec(compile(ast.Module(body=[node], type_ignores=[]), "actual-lifespan", "exec",
                  flags=__future__.annotations.compiler_flag), state)
@@ -52,9 +54,11 @@ def lifecycle(shutdown_fails=False):
 @pytest.mark.parametrize("body_fails", [False, True])
 def test_lifespan_disposes_only_after_successful_join(body_fails):
     state, calls = lifecycle()
+    app_instance = SimpleNamespace(state=SimpleNamespace())
 
     async def run():
-        async with state["lifespan"](None):
+        async with state["lifespan"](app_instance):
+            assert app_instance.state.new_match_policy_frozen is True
             assert not state["SIM_SHUTTING_DOWN"]
             if body_fails:
                 raise ValueError("application body failure")
@@ -64,16 +68,20 @@ def test_lifespan_disposes_only_after_successful_join(body_fails):
             asyncio.run(run())
     else:
         asyncio.run(run())
+    assert app_instance.state.new_match_policy_frozen is True
     assert calls == ["prepare", "init", "join", "dispose"]
 
 
 def test_failed_worker_join_does_not_dispose_engine():
     state, calls = lifecycle(shutdown_fails=True)
+    app_instance = SimpleNamespace(state=SimpleNamespace())
 
     async def run():
-        async with state["lifespan"](None):
+        async with state["lifespan"](app_instance):
+            assert app_instance.state.new_match_policy_frozen is True
             pass
 
     with pytest.raises(RuntimeError, match="live worker"):
         asyncio.run(run())
+    assert app_instance.state.new_match_policy_frozen is True
     assert calls == ["prepare", "init", "join"]

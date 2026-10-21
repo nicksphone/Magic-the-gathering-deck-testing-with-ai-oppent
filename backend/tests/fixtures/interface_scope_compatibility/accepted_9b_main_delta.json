@@ -1,0 +1,83 @@
+{
+  "accepted_public_commit": "9b82651ab9e97a87924447ced572b3ea5d7ff212",
+  "previous_accepted_public_commit": "1ca5005d7840a569f35f3797d03e3c852386816e",
+  "source": "main.py",
+  "accepted_main_delta": {
+    "old_sha256": "0e163563dfabf109964588d53a2a56504745b032fd56ec44818d5a95258fec9f",
+    "new_sha256": "70e637100bea9ddcc1eabd23bad17a07fd37725f7b16f40103511298b77c7143",
+    "hunks": [
+      {
+        "start": 64,
+        "end": 68,
+        "old": "",
+        "new": "    app_instance.state.new_match_policy_frozen = True\n    # Finish any in-progress pre-start configuration before storage admission.\n    with MATCH_LOAD_LOCK:\n        pass\n"
+      },
+      {
+        "start": 172,
+        "end": 173,
+        "old": "",
+        "new": "    policy_provenance: dict[int, dict] = field(default_factory=dict)\n"
+      },
+      {
+        "start": 190,
+        "end": 223,
+        "old": "",
+        "new": "\n\ndef _live_policy_provenance(binding) -> dict:\n    \"\"\"Identify an actual current in-memory binding, never a saved activation request.\"\"\"\n    from ai.learned_policy import LivePolicyBinding\n    from ai.learned_qv import VERSION, validate_contract\n    from training.environment import _engine_hash\n\n    if VERSION != \"mtg.qv.v1\" or not isinstance(binding, LivePolicyBinding):\n        raise ValueError(\"A current trusted live-policy binding is required\")\n    contract = binding.contract\n    validate_contract(contract)\n    digest = binding.checkpoint_sha256\n    if (contract[\"feature_version\"] != \"mtg.features.v2\"\n            or contract[\"engine_hash\"] != _engine_hash()\n            or type(digest) is not str or len(digest) != 64\n            or any(c not in \"0123456789abcdef\" for c in digest)):\n        raise ValueError(\"Incompatible live-policy binding\")\n    return {\"version\": \"mtg.live-policy.v1\", \"requested\": \"learned_qv\",\n            \"effective\": \"learned_qv\", \"checkpoint_sha256\": digest,\n            \"contract\": contract, \"fallback_reason\": None}\n\n\ndef configure_new_match_policy(binding) -> None:\n    \"\"\"Explicit operator-only opt-in, once before the App lifespan starts.\"\"\"\n    with MATCH_LOAD_LOCK:\n        if (getattr(app.state, \"new_match_policy_frozen\", False)\n                or getattr(app.state, \"new_match_policy_configured\", False)):\n            raise RuntimeError(\"New-match policy configuration is closed\")\n        if binding is not None:\n            _live_policy_provenance(binding)\n        app.state.new_match_policy_binding = binding\n        app.state.new_match_policy_configured = True\n"
+      },
+      {
+        "start": 371,
+        "end": 372,
+        "old": "    return {\n",
+        "new": "    snapshot = {\n"
+      },
+      {
+        "start": 391,
+        "end": 418,
+        "old": "",
+        "new": "    if type(match.policy_provenance) is not dict:\n        raise ValueError(\"Invalid controller policy provenance\")\n    if match.policy_provenance:\n        from ai.learned_qv import validate_contract\n\n        records = {}\n        for pid, record in match.policy_provenance.items():\n            if (type(pid) is not int or pid not in (1, 2)\n                    or match.controllers.get(pid) != \"ai\"\n                    or type(record) is not dict\n                    or set(record) != {\"version\", \"requested\", \"effective\",\n                                       \"checkpoint_sha256\", \"contract\", \"fallback_reason\"}\n                    or record[\"version\"] != \"mtg.live-policy.v1\"\n                    or record[\"requested\"] != \"learned_qv\"\n                    or record[\"effective\"] not in (\"learned_qv\", \"heuristic\")\n                    or type(record[\"checkpoint_sha256\"]) is not str\n                    or len(record[\"checkpoint_sha256\"]) != 64\n                    or any(c not in \"0123456789abcdef\" for c in record[\"checkpoint_sha256\"])\n                    or (record[\"effective\"], record[\"fallback_reason\"]) not in (\n                        (\"learned_qv\", None), (\"heuristic\", \"restore_requires_opt_in\"))):\n                raise ValueError(\"Invalid controller policy provenance\")\n            validate_contract(record[\"contract\"])\n            if record[\"contract\"][\"feature_version\"] != \"mtg.features.v2\":\n                raise ValueError(\"Live policy requires actor-context features\")\n            records[str(pid)] = deepcopy(record)\n        snapshot[\"policy_provenance\"] = records\n    return snapshot\n"
+      },
+      {
+        "start": 449,
+        "end": 450,
+        "old": "def _restore_active_matches(repo: Repository, match_id: str | None = None) -> None:\n",
+        "new": "def _restore_active_matches(repo: Repository, match_id: str | None = None, *, policy_bindings=None) -> None:\n"
+      },
+      {
+        "start": 452,
+        "end": 456,
+        "old": "        _restore_active_matches_locked(repo, match_id)\n",
+        "new": "        if policy_bindings is None:\n            _restore_active_matches_locked(repo, match_id)\n        else:\n            _restore_active_matches_locked(repo, match_id, policy_bindings=policy_bindings)\n"
+      },
+      {
+        "start": 458,
+        "end": 459,
+        "old": "def _restore_active_matches_locked(repo: Repository, match_id: str | None = None) -> None:\n",
+        "new": "def _restore_active_matches_locked(repo: Repository, match_id: str | None = None, *, policy_bindings=None) -> None:\n"
+      },
+      {
+        "start": 500,
+        "end": 538,
+        "old": "",
+        "new": "            records = config.get(\"policy_provenance\", {})\n            if type(records) is dict:\n                for seat, record in records.items():\n                    if type(seat) is not str or seat not in (\"1\", \"2\"):\n                        continue\n                    pid = int(seat)\n                    controller.policy_provenance[pid] = deepcopy(record)\n                    try:\n                        _controller_snapshot(controller)\n                    except ValueError:\n                        # Invalid optional metadata must not discard the saved game.\n                        del controller.policy_provenance[pid]\n                        continue\n                    requested = {**record, \"effective\": \"learned_qv\", \"fallback_reason\": None}\n                    loaded = None\n                    if policy_bindings is None:\n                        loaded = getattr(app.state, \"new_match_policy_binding\", None)\n                    elif type(policy_bindings) is dict:\n                        binding = policy_bindings.get(pid)\n                        if (type(binding) is dict and set(binding) == {\"agent\", \"provenance\"}\n                                and isinstance(binding[\"agent\"], AIAgent)\n                                and binding[\"provenance\"] == requested):\n                            loaded = binding[\"agent\"].learned_binding\n                    verified = None\n                    if loaded is not None:\n                        try:\n                            verified = _live_policy_provenance(loaded)\n                        except ValueError:\n                            pass\n                    if verified == requested:\n                        # Configured eligibility is not a claim that every decision is neural.\n                        controller.ai[pid].learned_binding = loaded\n                        controller.policy_provenance[pid] = verified\n                    else:\n                        controller.policy_provenance[pid] = {\n                            **record, \"effective\": \"heuristic\",\n                            \"fallback_reason\": \"restore_requires_opt_in\",\n                        }\n"
+      },
+      {
+        "start": 959,
+        "end": 966,
+        "old": "",
+        "new": "    binding = getattr(app.state, \"new_match_policy_binding\", None)\n    if binding is not None:\n        provenance = _live_policy_provenance(binding)\n        for pid, control in controller.controllers.items():\n            if control == \"ai\":\n                controller.ai[pid].learned_binding = binding\n                controller.policy_provenance[pid] = deepcopy(provenance)\n"
+      },
+      {
+        "start": 1807,
+        "end": 1808,
+        "old": "",
+        "new": "    provenance = _controller_snapshot(match).get(\"policy_provenance\")\n"
+      },
+      {
+        "start": 1825,
+        "end": 1828,
+        "old": "",
+        "new": "    if provenance:\n        state.log.append(\"AI POLICY PROVENANCE \" + json.dumps(\n            provenance, sort_keys=True, separators=(\",\", \":\"), allow_nan=False))\n"
+      }
+    ]
+  }
+}

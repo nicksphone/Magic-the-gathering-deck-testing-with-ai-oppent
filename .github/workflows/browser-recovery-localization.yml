@@ -58,7 +58,7 @@ jobs:
               errors=sum(case.find('error') is not None for case in cases),
               skipped=sum(case.find('skipped') is not None for case in cases))
           print('::notice title=Recovery unit compatibility result::' + json.dumps(summary, separators=(',', ':')))
-          if len(cases) != 183 or summary['skipped'] or not 0 <= summary['runner_exit'] <= 255:
+          if len(cases) != 212 or summary['skipped'] or not 0 <= summary['runner_exit'] <= 255:
               raise SystemExit(1)
           PYTHON
           if ((status)); then exit "$status"; fi

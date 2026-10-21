@@ -12,7 +12,7 @@ import subprocess
 
 from decks.builtin_decks import BUILTIN_DECKS
 from training.environment import TrainingEnvironment
-from training.dataset import (DatasetRun, HeuristicTeacher, MAX_BYTES, MAX_EPISODES,
+from training.dataset import (DECISION_DATASET_VERSION, DatasetRun, HeuristicTeacher, MAX_BYTES, MAX_EPISODES,
                               MAX_TICKS, digest, episode_groups, episode_records,
                               grouped_split_report)
 
@@ -53,7 +53,13 @@ def main(argv=None):
     parser.add_argument('--family-a', help='Declare the shared family for deck variants')
     parser.add_argument('--family-b', help='Declare the shared family for deck variants')
     parser.add_argument('--resume', action='store_true')
+    parser.add_argument('--decision-frame', action='store_true',
+                        help='Opt in to dataset.v2 complete actor decision frames')
+    parser.add_argument('--public-context', action='store_true',
+                        help='Opt in to actor-public announcements; requires --decision-frame')
     args = parser.parse_args(argv)
+    if args.public_context and not args.decision_frame:
+        parser.error('--public-context requires --decision-frame')
     if not 1 <= len(args.seeds) <= MAX_EPISODES or len(set(args.seeds)) != len(args.seeds):
         parser.error('Use 1..64 distinct seeds; repeated games belong to the same group')
     if not 1 <= args.ticks <= MAX_TICKS or not 4096 <= args.max_bytes <= MAX_BYTES:
@@ -66,8 +72,13 @@ def main(argv=None):
     families = [args.family_a or args.deck_a, args.family_b or args.deck_b]
     config = {'seeds': args.seeds, 'decks': [args.deck_a, args.deck_b], 'families': families,
               'ticks': args.ticks, 'difficulty': args.difficulty}
+    if args.decision_frame:
+        config['decision_frame'] = True
+    if args.public_context:
+        config['public_context'] = True
     manifest = {'configuration_hash': digest(config), **metadata}
-    run = DatasetRun(path, manifest, resume=args.resume, max_bytes=args.max_bytes)
+    version = {'dataset_version': DECISION_DATASET_VERSION} if args.decision_frame else {}
+    run = DatasetRun(path, manifest, resume=args.resume, max_bytes=args.max_bytes, **version)
     cancelled = False
     def cancel(signum, frame):
         nonlocal cancelled
@@ -85,7 +96,8 @@ def main(argv=None):
             groups = episode_groups(args.seeds[index], families, metadata['deck_hashes'])
             end = run.write_episode(episode_records(environment, teacher,
                 episode=f'episode-{index:04d}', groups=groups, tick_budget=args.ticks,
-                origin='heuristic', cancelled=lambda: cancelled))
+                origin='heuristic', cancelled=lambda: cancelled,
+                decision_frame=args.decision_frame, public_context=args.public_context))
             print(json.dumps({'episode': end['episode'], 'complete': end['complete'],
                               'reason': end['reason'], 'steps': end['steps']}, sort_keys=True))
             if end['reason'] in {'cancelled', 'interrupted', 'output_budget'}:

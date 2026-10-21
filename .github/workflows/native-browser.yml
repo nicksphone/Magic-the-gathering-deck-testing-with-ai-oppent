@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - .github/workflows/native-browser.yml
+      - .github/scripts/install-ci-vendor-browser.sh
       - frontend/tests/browser-vendor-preflight.mjs
 
 permissions:
@@ -35,7 +36,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
-          python-version: '3.12'
+          python-version: '3.12.3'
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '24.22.0'
@@ -43,33 +44,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install app dependencies
         run: |
-          python -m pip install -r backend/requirements.txt
+          bash .github/scripts/install-ci-app-runtime.sh
           npm --prefix frontend ci
-      - name: Protect vendor installation directories on the disposable runner
-        run: |
-          test ! -L /opt
-          sudo install -d -o root -g root -m 0755 /opt
-          if [[ "$MTG_BROWSER_VENDOR" == chrome ]]; then
-            test ! -L /opt/google
-            test ! -L /opt/google/chrome
-            sudo install -d -o root -g root -m 0755 /opt/google /opt/google/chrome
-          fi
-      - name: Reinstall official Chrome package from its signed repository
-        if: matrix.vendor == 'chrome'
-        run: |
-          curl -fsSLo "$RUNNER_TEMP/google-linux-key.pub" https://dl.google.com/linux/linux_signing_key.pub
-          gpg --batch --show-keys --with-colons "$RUNNER_TEMP/google-linux-key.pub" | grep '^fpr:::::::::EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796:' >/dev/null
-          gpg --batch --dearmor < "$RUNNER_TEMP/google-linux-key.pub" | sudo tee /usr/share/keyrings/mtg-google-chrome.gpg >/dev/null
-          printf '%s\n' 'deb [arch=amd64 signed-by=/usr/share/keyrings/mtg-google-chrome.gpg,EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796] https://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/mtg-google-chrome.list >/dev/null
-          sudo apt-get update
-          sudo apt-get install -y --reinstall google-chrome-stable
-      - name: Install official Brave package
-        if: matrix.vendor == 'brave'
-        run: |
-          sudo curl -fsSLo /usr/share/keyrings/brave-browser-archive-keyring.gpg https://brave-browser-apt-release.s3.brave.com/brave-browser-archive-keyring.gpg
-          sudo curl -fsSLo /etc/apt/sources.list.d/brave-browser-release.sources https://brave-browser-apt-release.s3.brave.com/brave-browser.sources
-          sudo apt-get update
-          sudo apt-get install -y brave-browser
+      - name: Install official vendor browser
+        run: bash .github/scripts/install-ci-vendor-browser.sh "$MTG_BROWSER_VENDOR"
       # Vendor package installation, not ad-hoc helper chmod, restores file modes.
       # Preflight still rejects wrong ownership/modes and never substitutes Chromium.
       - name: Secure native preflight and complete browser suite

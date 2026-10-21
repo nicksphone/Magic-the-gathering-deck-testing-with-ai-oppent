@@ -19,7 +19,7 @@ def test_actual_current_main_requires_both_exact_historical_inverses():
     historical = api._restore(intermediate.decode(), recipe)
     assert hashlib.sha256(historical.encode()).hexdigest() == recipe['old_sha256']
     assert api.compatible_product_hash('main.py', current, recipe['old_sha256']) == hashlib.sha256(current).hexdigest()
-    assert hashlib.sha256(current).hexdigest() == api.ACCEPTED_MAIN_DELTA['new_sha256']
+    assert hashlib.sha256(current).hexdigest() == api.CURRENT_MAIN_DELTA['new_sha256']
 
 
 def test_actual_private_fixture_restores_only_reviewed_delver_identity_clause():
