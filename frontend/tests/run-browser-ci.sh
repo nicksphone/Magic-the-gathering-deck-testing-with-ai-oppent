@@ -4,6 +4,8 @@ root=$(cd "$(dirname "$0")/../.." && pwd -P)
 cd "$root"
 test "$(realpath "$(git rev-parse --show-toplevel)")" = "$root"
 
+source "$root/frontend/tests/browser-program-diagnostic.sh"
+
 # Select the browser before starting services.
 browser="${MTG_CHROME:-}"
 if [[ -z "$browser" ]]; then
@@ -14,7 +16,7 @@ if [[ -z "$browser" ]]; then
   browser=$(command -v google-chrome || command -v chromium)
 fi
 if [[ -n "${MTG_BROWSER_VENDOR:-}" ]]; then
-  node frontend/tests/browser-vendor-preflight.mjs --check-config "$browser"
+  run_browser_program "browser-vendor-preflight.mjs" node frontend/tests/browser-vendor-preflight.mjs --check-config "$browser"
 fi
 
 # The harness owns fixed loopback ports; concurrent runs must not share them.
@@ -63,6 +65,7 @@ stop_owned_services() {
 }
 cleanup() {
   status=$?
+  if ((status)); then report_browser_bootstrap_failure "$status" "${1:-1}" || :; fi
   stop_owned_services
   if [[ "$status" -eq 0 && "${MTG_KEEP_TEST_ARTIFACTS:-0}" != 1 ]]; then
     rm -r -- "$scratch" "$profile"
@@ -70,7 +73,7 @@ cleanup() {
     echo "Retained browser test artifacts: $scratch and $profile" >&2
   fi
 }
-trap cleanup EXIT
+trap 'cleanup "$LINENO"' EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
 
@@ -110,7 +113,7 @@ start_backend() {
   backend_pid=$!
 }
 
-(cd frontend && NODE_ENV=development VITE_API_BASE_URL=http://127.0.0.1:10199 node tests/prepare-development-frontend.mjs "$scratch/frontend" "$scratch/frontend/vite.ci.config.ts" "$scratch/frontend-dev-ci")
+(cd frontend && NODE_ENV=development VITE_API_BASE_URL=http://127.0.0.1:10199 run_browser_program "prepare-development-frontend.mjs" node tests/prepare-development-frontend.mjs "$scratch/frontend" "$scratch/frontend/vite.ci.config.ts" "$scratch/frontend-dev-ci")
 start_backend
 (cd frontend && exec setsid env NODE_ENV=development VITE_API_BASE_URL=http://127.0.0.1:10199 node "$frontend_deps/vite/bin/vite.js" preview --mode development --outDir ../frontend-dev-ci --config vite.ci.config.ts --host 127.0.0.1 --port 15173 --strictPort) >"$scratch/frontend.log" 2>&1 &
 frontend_pid=$!
@@ -134,7 +137,7 @@ wait_for_services() {
 }
 
 wait_for_services
-(cd frontend && timeout 30s node tests/browser-development-runtime-proof.mjs)
+(cd frontend && run_browser_program "browser-development-runtime-proof.mjs" timeout 30s node tests/browser-development-runtime-proof.mjs)
 if (($#)); then
   echo 'Focused browser scenarios, not the full browser gate'
   for scenario in "$@"; do
@@ -142,128 +145,128 @@ if (($#)); then
       echo "Invalid browser scenario: $scenario" >&2
       exit 2
     fi
-    (cd frontend && timeout 300s node "tests/$scenario")
+    (cd frontend && run_browser_program "$scenario" timeout 300s node "tests/$scenario")
   done
   exit 0
 fi
 # CORS transport diagnostic: ordinary hosted CDP only.
 cors_diagnostic_status=0
 if [[ -z "${MTG_BROWSER_VENDOR:-}" ]]; then
-  (cd frontend && MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 45s node tests/browser-cors-transport-diagnostic.mjs) || cors_diagnostic_status=$?
+  (cd frontend && MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 run_browser_program "browser-cors-transport-diagnostic.mjs" timeout 45s node tests/browser-cors-transport-diagnostic.mjs) || cors_diagnostic_status=$?
 else
   printf '%s\n' 'CORS_TRANSPORT_DIAGNOSTIC [{"classification":"not-applicable","reason":"native-vendor-scope"}]'
 fi
 echo 'Browser CI: async readiness helper'
-(cd frontend && timeout 30s node tests/browser-driver-async.mjs)
+(cd frontend && run_browser_program "browser-driver-async.mjs" timeout 30s node tests/browser-driver-async.mjs)
 echo 'Browser CI: competitive table v2'
-(cd frontend && MTG_UI_EVIDENCE="$scratch/ui-v2-evidence" MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2.mjs)
-(cd frontend && MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 timeout 180s node tests/browser-ui-v2-costs.mjs)
+(cd frontend && MTG_UI_EVIDENCE="$scratch/ui-v2-evidence" MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 run_browser_program "browser-ui-v2.mjs" timeout 180s node tests/browser-ui-v2.mjs)
+(cd frontend && MTG_BROWSER_ORIGIN=http://127.0.0.1:19222 MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 MTG_BACKEND_ORIGIN=http://127.0.0.1:10199 run_browser_program "browser-ui-v2-costs.mjs" timeout 180s node tests/browser-ui-v2-costs.mjs)
 echo 'Browser CI: action scenarios'
-(cd frontend && timeout 300s node tests/browser-cast-resources.mjs)
-(cd frontend && timeout 300s node tests/browser-graveyard-permissions.mjs)
-(cd frontend && timeout 300s node tests/browser-limited-graveyard-permissions.mjs)
-(cd frontend && timeout 300s node tests/browser-graveyard-cast-methods.mjs)
-(cd frontend && timeout 300s node tests/browser-announced-color-costs.mjs)
-(cd frontend && timeout 300s node tests/browser-opaque-selection.mjs)
-(cd frontend && timeout 180s node tests/browser-direct-combat.mjs)
-(cd frontend && MTG_TEST_PYTHON="$python_bin" MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 timeout 180s node tests/browser-attack-all.mjs)
-(cd frontend && timeout 180s node tests/browser-game-over.mjs)
-(cd frontend && timeout 120s node tests/browser-auto-progress.mjs)
-(cd frontend && timeout 180s node tests/browser-activation-payments.mjs)
-(cd frontend && timeout 120s node tests/browser-joint-activation-payments.mjs)
-(cd frontend && timeout 120s node tests/browser-nested-mana-life.mjs)
-(cd frontend && timeout 120s node tests/browser-life-lock.mjs)
-(cd frontend && timeout 120s node tests/browser-life-conversion.mjs)
-(cd frontend && timeout 90s node tests/browser-land-types.mjs)
-(cd frontend && timeout 300s node tests/browser-human-actions.mjs)
-(cd frontend && timeout 120s node tests/browser-ordered-targets.mjs)
-(cd frontend && timeout 120s node tests/browser-distinct-permanents.mjs)
-(cd frontend && timeout 120s node tests/browser-ordered-modifiers.mjs)
-(cd frontend && timeout 120s node tests/browser-ordered-copy.mjs)
-(cd frontend && timeout 180s node tests/browser-linked-damage.mjs)
-(cd frontend && timeout 120s node tests/browser-linked-copy.mjs)
-(cd frontend && timeout 180s node tests/browser-conditional-copy.mjs)
+(cd frontend && run_browser_program "browser-cast-resources.mjs" timeout 300s node tests/browser-cast-resources.mjs)
+(cd frontend && run_browser_program "browser-graveyard-permissions.mjs" timeout 300s node tests/browser-graveyard-permissions.mjs)
+(cd frontend && run_browser_program "browser-limited-graveyard-permissions.mjs" timeout 300s node tests/browser-limited-graveyard-permissions.mjs)
+(cd frontend && run_browser_program "browser-graveyard-cast-methods.mjs" timeout 300s node tests/browser-graveyard-cast-methods.mjs)
+(cd frontend && run_browser_program "browser-announced-color-costs.mjs" timeout 300s node tests/browser-announced-color-costs.mjs)
+(cd frontend && run_browser_program "browser-opaque-selection.mjs" timeout 300s node tests/browser-opaque-selection.mjs)
+(cd frontend && run_browser_program "browser-direct-combat.mjs" timeout 180s node tests/browser-direct-combat.mjs)
+(cd frontend && MTG_TEST_PYTHON="$python_bin" MTG_FRONTEND_ORIGIN=http://127.0.0.1:15173 run_browser_program "browser-attack-all.mjs" timeout 180s node tests/browser-attack-all.mjs)
+(cd frontend && run_browser_program "browser-game-over.mjs" timeout 180s node tests/browser-game-over.mjs)
+(cd frontend && run_browser_program "browser-auto-progress.mjs" timeout 120s node tests/browser-auto-progress.mjs)
+(cd frontend && run_browser_program "browser-activation-payments.mjs" timeout 180s node tests/browser-activation-payments.mjs)
+(cd frontend && run_browser_program "browser-joint-activation-payments.mjs" timeout 120s node tests/browser-joint-activation-payments.mjs)
+(cd frontend && run_browser_program "browser-nested-mana-life.mjs" timeout 120s node tests/browser-nested-mana-life.mjs)
+(cd frontend && run_browser_program "browser-life-lock.mjs" timeout 120s node tests/browser-life-lock.mjs)
+(cd frontend && run_browser_program "browser-life-conversion.mjs" timeout 120s node tests/browser-life-conversion.mjs)
+(cd frontend && run_browser_program "browser-land-types.mjs" timeout 90s node tests/browser-land-types.mjs)
+(cd frontend && run_browser_program "browser-human-actions.mjs" timeout 300s node tests/browser-human-actions.mjs)
+(cd frontend && run_browser_program "browser-ordered-targets.mjs" timeout 120s node tests/browser-ordered-targets.mjs)
+(cd frontend && run_browser_program "browser-distinct-permanents.mjs" timeout 120s node tests/browser-distinct-permanents.mjs)
+(cd frontend && run_browser_program "browser-ordered-modifiers.mjs" timeout 120s node tests/browser-ordered-modifiers.mjs)
+(cd frontend && run_browser_program "browser-ordered-copy.mjs" timeout 120s node tests/browser-ordered-copy.mjs)
+(cd frontend && run_browser_program "browser-linked-damage.mjs" timeout 180s node tests/browser-linked-damage.mjs)
+(cd frontend && run_browser_program "browser-linked-copy.mjs" timeout 120s node tests/browser-linked-copy.mjs)
+(cd frontend && run_browser_program "browser-conditional-copy.mjs" timeout 180s node tests/browser-conditional-copy.mjs)
 echo 'Browser CI: simulation preflight'
-(cd frontend && timeout 90s node tests/browser-simulation-preflight.mjs)
+(cd frontend && run_browser_program "browser-simulation-preflight.mjs" timeout 90s node tests/browser-simulation-preflight.mjs)
 echo 'Browser CI: canonical combat coverage preflight'
-(cd frontend && timeout 90s node tests/browser-combat-coverage.mjs)
+(cd frontend && run_browser_program "browser-combat-coverage.mjs" timeout 90s node tests/browser-combat-coverage.mjs)
 echo 'Browser CI: declaration limits'
-(cd frontend && timeout 90s node tests/browser-declaration-limits.mjs)
+(cd frontend && run_browser_program "browser-declaration-limits.mjs" timeout 90s node tests/browser-declaration-limits.mjs)
 echo 'Browser CI: combat payments and target requirements'
-(cd frontend && timeout 90s node tests/browser-combat-payments-requirements.mjs)
+(cd frontend && run_browser_program "browser-combat-payments-requirements.mjs" timeout 90s node tests/browser-combat-payments-requirements.mjs)
 echo 'Browser CI: deliberate hybrid attack payments and minimum blocker requirements'
-(cd frontend && timeout 120s node tests/browser-combat-branches.mjs)
+(cd frontend && run_browser_program "browser-combat-branches.mjs" timeout 120s node tests/browser-combat-branches.mjs)
 echo 'Browser CI: domain and resolved temporary attack/block costs'
-(cd frontend && timeout 180s node tests/browser-combat-domain-temporary.mjs)
+(cd frontend && run_browser_program "browser-combat-domain-temporary.mjs" timeout 180s node tests/browser-combat-domain-temporary.mjs)
 echo 'Browser CI: conditional attack/block costs'
-(cd frontend && timeout 180s node tests/browser-conditional-combat-costs.mjs)
+(cd frontend && run_browser_program "browser-conditional-combat-costs.mjs" timeout 180s node tests/browser-conditional-combat-costs.mjs)
 echo 'Browser CI: multiple-block capacity and one payment per blocker'
-(cd frontend && timeout 120s node tests/browser-combat-capacity.mjs)
+(cd frontend && run_browser_program "browser-combat-capacity.mjs" timeout 120s node tests/browser-combat-capacity.mjs)
 echo 'Browser CI: specific combat recipients'
-(cd frontend && timeout 120s node tests/browser-recipient-combat.mjs)
+(cd frontend && run_browser_program "browser-recipient-combat.mjs" timeout 120s node tests/browser-recipient-combat.mjs)
 echo 'Browser CI: bestow casting choices'
-(cd frontend && timeout 120s node tests/browser-bestow.mjs)
+(cd frontend && run_browser_program "browser-bestow.mjs" timeout 120s node tests/browser-bestow.mjs)
 echo 'Browser CI: canonical devotion payoff families'
-(cd frontend && timeout 180s node tests/browser-devotion.mjs)
+(cd frontend && run_browser_program "browser-devotion.mjs" timeout 180s node tests/browser-devotion.mjs)
 echo 'Browser CI: compound defensive spell responses'
-(cd frontend && timeout 120s node tests/browser-defensive-responses.mjs)
+(cd frontend && run_browser_program "browser-defensive-responses.mjs" timeout 120s node tests/browser-defensive-responses.mjs)
 echo 'Browser CI: conditional creature type transitions'
-(cd frontend && timeout 120s node tests/browser-conditional-creature-types.mjs)
+(cd frontend && run_browser_program "browser-conditional-creature-types.mjs" timeout 120s node tests/browser-conditional-creature-types.mjs)
 echo 'Browser CI: indexed mana, paid activations and multipliers'
-(cd frontend && timeout 180s node tests/browser-mana-abilities.mjs)
+(cd frontend && run_browser_program "browser-mana-abilities.mjs" timeout 180s node tests/browser-mana-abilities.mjs)
 echo 'Browser CI: hand activations and owned counter payments'
-(cd frontend && timeout 120s node tests/browser-hand-activations.mjs)
+(cd frontend && run_browser_program "browser-hand-activations.mjs" timeout 120s node tests/browser-hand-activations.mjs)
 echo 'Browser CI: legendary channels and owned resolution choices'
-(cd frontend && timeout 120s node tests/browser-legendary-channels.mjs)
+(cd frontend && run_browser_program "browser-legendary-channels.mjs" timeout 120s node tests/browser-legendary-channels.mjs)
 echo 'Browser CI: private surveil, ordering and payoff triggers'
-(cd frontend && timeout 120s node tests/browser-surveil.mjs)
+(cd frontend && run_browser_program "browser-surveil.mjs" timeout 120s node tests/browser-surveil.mjs)
 echo 'Browser CI: deliberate effect-authorized casts and declines'
-(cd frontend && timeout 180s node tests/browser-effect-casts.mjs)
+(cd frontend && run_browser_program "browser-effect-casts.mjs" timeout 180s node tests/browser-effect-casts.mjs)
 echo 'Browser CI: deliberate spell discard and sacrifice payments'
-(cd frontend && timeout 180s node tests/browser-cast-payments.mjs)
+(cd frontend && run_browser_program "browser-cast-payments.mjs" timeout 180s node tests/browser-cast-payments.mjs)
 echo 'Browser CI: kicker payment and conditional branch targets/effects'
-(cd frontend && timeout 240s node tests/browser-kicker.mjs)
+(cd frontend && run_browser_program "browser-kicker.mjs" timeout 240s node tests/browser-kicker.mjs)
 echo 'Browser CI: permanent kicker entry and owned ETB targets'
-(cd frontend && timeout 180s node tests/browser-permanent-kicker.mjs)
+(cd frontend && run_browser_program "browser-permanent-kicker.mjs" timeout 180s node tests/browser-permanent-kicker.mjs)
 echo 'Browser CI: kicked cast payoffs and first-cast discounts'
-(cd frontend && timeout 180s node tests/browser-kicked-cast.mjs)
+(cd frontend && run_browser_program "browser-kicked-cast.mjs" timeout 180s node tests/browser-kicked-cast.mjs)
 echo 'Browser CI: nonmana kicker costs and owned discard resolution'
-(cd frontend && timeout 180s node tests/browser-nonmana-kicker.mjs)
+(cd frontend && run_browser_program "browser-nonmana-kicker.mjs" timeout 180s node tests/browser-nonmana-kicker.mjs)
 echo 'Browser CI: canonical sacrifice-union kicker and conditional discard goldens'
-(cd frontend && timeout 240s node tests/browser-kicker-goldens.mjs)
+(cd frontend && run_browser_program "browser-kicker-goldens.mjs" timeout 240s node tests/browser-kicker-goldens.mjs)
 echo 'Browser CI: qualified subtype/color payments and actual search/controller/counter effects'
-(cd frontend && timeout 180s node tests/browser-qualified-costs.mjs)
+(cd frontend && run_browser_program "browser-qualified-costs.mjs" timeout 180s node tests/browser-qualified-costs.mjs)
 echo 'Browser CI: exhaustive resources and announced-X discard payments'
-(cd frontend && timeout 180s node tests/browser-variable-costs.mjs)
+(cd frontend && run_browser_program "browser-variable-costs.mjs" timeout 180s node tests/browser-variable-costs.mjs)
 echo 'Browser CI: linked discard, bounded search and actual follow-up draws'
-(cd frontend && timeout 180s node tests/browser-linked-discard.mjs)
+(cd frontend && run_browser_program "browser-linked-discard.mjs" timeout 180s node tests/browser-linked-discard.mjs)
 echo 'Browser CI: bounded discard, modal/loyalty actions and per-turn history'
-(cd frontend && timeout 180s node tests/browser-discard-history.mjs)
+(cd frontend && run_browser_program "browser-discard-history.mjs" timeout 180s node tests/browser-discard-history.mjs)
 echo 'Browser CI: simultaneous wheels, effective hand stats and draw continuation'
-(cd frontend && timeout 240s node tests/browser-wheel-draw.mjs)
+(cd frontend && run_browser_program "browser-wheel-draw.mjs" timeout 240s node tests/browser-wheel-draw.mjs)
 echo 'Browser CI: canonical resource-defined creature stats'
-(cd frontend && timeout 180s node tests/browser-characteristic-stats.mjs)
+(cd frontend && run_browser_program "browser-characteristic-stats.mjs" timeout 180s node tests/browser-characteristic-stats.mjs)
 echo 'Browser CI: canonical conditional static buffs and keyword grants'
-(cd frontend && timeout 180s node tests/browser-conditional-static.mjs)
+(cd frontend && run_browser_program "browser-conditional-static.mjs" timeout 180s node tests/browser-conditional-static.mjs)
 echo 'Browser CI: App recovery scenarios'
-(cd frontend && timeout 120s node tests/browser-recovery.mjs)
+(cd frontend && run_browser_program "browser-recovery.mjs" timeout 120s node tests/browser-recovery.mjs)
 echo 'Browser CI: stopping copied backend'
 stop_owned "$backend_pid"
 backend_pid=''
 start_backend
 wait_for_services
 echo 'Browser CI: verifying process restart'
-(cd frontend && timeout 120s node tests/browser-recovery.mjs --verify-restart)
+(cd frontend && run_browser_program "browser-recovery.mjs" timeout 120s node tests/browser-recovery.mjs --verify-restart)
 echo 'Browser CI: match creation recovery'
-(cd frontend && timeout 180s node tests/browser-start-recovery.mjs)
+(cd frontend && run_browser_program "browser-start-recovery.mjs" timeout 180s node tests/browser-start-recovery.mjs)
 echo 'Browser CI: sideboard transition'
-(cd frontend && timeout 120s node tests/browser-sideboard.mjs)
+(cd frontend && run_browser_program "browser-sideboard.mjs" timeout 120s node tests/browser-sideboard.mjs)
 echo 'Browser CI: natural AI BO3'
-(cd frontend && timeout 180s node tests/browser-live-bo3.mjs)
+(cd frontend && run_browser_program "browser-live-bo3.mjs" timeout 180s node tests/browser-live-bo3.mjs)
 echo 'Browser CI: natural human BO3'
-(cd frontend && timeout 240s node tests/browser-human-bo3.mjs)
+(cd frontend && run_browser_program "browser-human-bo3.mjs" timeout 240s node tests/browser-human-bo3.mjs)
 echo 'Browser CI: natural human-vs-human BO3'
-(cd frontend && MTG_HUMAN_BO3_OPPONENT=human timeout 360s node tests/browser-human-bo3.mjs)
+(cd frontend && MTG_HUMAN_BO3_OPPONENT=human run_browser_program "browser-human-bo3.mjs" timeout 360s node tests/browser-human-bo3.mjs)
 
 echo 'Browser CI: stopping ordinary harness before independent Officer restart flows'
 stop_owned_services
@@ -271,19 +274,19 @@ stop_owned_services
 # response; it must never borrow the ordinary harness's user/session storage.
 echo 'Browser CI: interactive support review and pending-start recovery'
 (cd frontend && MTG_UI_EVIDENCE="$scratch/interactive-preflight-evidence" \
-  CHROMIUM_BINARY="$browser" timeout 180s node tests/browser-interactive-preflight.mjs)
+  CHROMIUM_BINARY="$browser" run_browser_program "browser-interactive-preflight.mjs" timeout 180s node tests/browser-interactive-preflight.mjs)
 # Hosted CI explicitly opts into ephemeral evidence; local runs still require NFS.
 if [[ "${GITHUB_ACTIONS:-}" == true && -z "${MTG_OFFICER_EVIDENCE_ROOT:-}" ]]; then
   export MTG_OFFICER_EVIDENCE_ROOT="${RUNNER_TEMP:?GitHub CI requires RUNNER_TEMP}/mtg-officer-evidence"
 fi
 MTG_TEST_PYTHON="$python_bin" MTG_CHROME="$browser" \
-  MTG_FRONTEND_DEPS="$(dirname "$frontend_deps")" bash frontend/tests/run-activated-top-selection.sh
+  MTG_FRONTEND_DEPS="$(dirname "$frontend_deps")" run_browser_program "run-activated-top-selection.sh" bash frontend/tests/run-activated-top-selection.sh
 echo 'Browser CI: canonical Cathar (six controlled cases, both seats; not full transform support)'
 if [[ "${GITHUB_ACTIONS:-}" == true && -z "${MTG_CATHAR_ARCHIVE:-}" ]]; then
   export MTG_CATHAR_ARCHIVE="${RUNNER_TEMP:?GitHub CI requires RUNNER_TEMP}/mtg-cathar-evidence"
 fi
 MTG_TEST_PYTHON="$python_bin" MTG_CHROMIUM="$browser" \
-  MTG_FRONTEND_DEPS="$frontend_deps" node frontend/tests/browser-cathar.mjs
+  MTG_FRONTEND_DEPS="$frontend_deps" run_browser_program "browser-cathar.mjs" node frontend/tests/browser-cathar.mjs
 # Propagate diagnostic failure only after the unchanged full browser suite.
 if [[ "$cors_diagnostic_status" -ne 0 ]]; then
   exit "$cors_diagnostic_status"

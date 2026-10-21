@@ -1,5 +1,22 @@
 # Whole-Module Backend CI
 
+## CI Admission Candidate
+
+Full CI runs for every pull request, including draft PR updates, and for pushes
+to main or any tag. A feature branch without a PR does not get an automatic
+head-only run: open a draft PR for early feedback. The default PR checkout still
+tests the synthetic merge, not a forced checkout of the feature head.
+
+This changes only the event header. Permissions, all jobs and four workers,
+test commands, deadlines, source/run bindings and private publication rules
+are unchanged. Native-browser and recovery workflows retain their independent
+triggers. Post-merge main CI remains a separate required observation.
+
+Removing the duplicate head run is not a test exclusion or an artifact/pass
+reuse rule. A cancelled or incomplete invocation still cannot qualify.
+
+## Historical Implementation Qualification
+
 This is a locally qualified implementation candidate, not a hosted qualification or a
 Phase 1 completion claim. The historical six-hour cancellation cause remains
 unknown. Splitting by complete modules can reduce wall time, but one expensive

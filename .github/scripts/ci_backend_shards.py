@@ -34,7 +34,8 @@ META_KEYS = {'schema_version', 'source_commit', 'pytest_exit_code', 'coverage',
 # These are existing sanitizer observations, not arbitrary pass-through fields.
 # Successful shard transport retains the complete core audit, phases and subtests.
 LOCAL_METADATA_KEYS = {'runtime_versions', 'timing', 'failure_diagnostics_status',
-                       'interruption', 'interruption_diagnostics_status', 'partial_diagnostics'}
+                       'interruption', 'interruption_diagnostics_status', 'partial_diagnostics',
+                       'runner_closeout'}
 
 
 class ContractError(ValueError):
@@ -53,6 +54,55 @@ def shape(value, keys):
 def integer(value, minimum=0, maximum=1000000):
     require(type(value) is int and minimum <= value <= maximum)
     return value
+
+
+def runner_closeout_check(value, pytest_exit_code):
+    """Admit a finite local observation without adding it to the shard core."""
+    shape(value, {'schema_version', 'status', 'runner', 'diagnostics'})
+    require(type(value['schema_version']) is int and value['schema_version'] == 1
+            and type(value['status']) is str
+            and value['status'] in ('complete', 'partial', 'degraded'))
+    require(type(value['diagnostics']) is list and len(value['diagnostics']) <= 32)
+    for row in value['diagnostics']:
+        shape(row, {'role', 'finished', 'forced', 'wait_exit_code'})
+        require(type(row['role']) is str and row['role'] in
+                ('pytest', 'watcher', 'progress', 'sampler', 'pressure', 'sink', 'logger')
+                and type(row['finished']) is bool and type(row['forced']) is bool)
+        if row['finished']:
+            integer(row['wait_exit_code'], 0, 255)
+        else:
+            require(row['wait_exit_code'] is None)
+    runner = value['runner']
+    if value['status'] == 'degraded':
+        require(runner is None and value['diagnostics'] == [])
+        return
+    if runner is not None:
+        codes = {'entry_exit_code', 'final_exit_code', 'pytest_exit_code',
+                 'evidence_exit_code', 'audit_exit_code', 'pressure_exit_code',
+                 'sink_exit_code', 'watcher_exit_code'}
+        flags = {'diagnostic_failed', 'trap_changed_exit', 'closeout_complete'}
+        groups = {'group_after_wait_quiet', 'group_final_quiet'}
+        shape(runner, codes | flags | groups | {'schema_version', 'work_exit_stage'})
+        require(type(runner['schema_version']) is int and runner['schema_version'] == 1
+                and type(runner['work_exit_stage']) is str and runner['work_exit_stage'] in
+                ('EARLY_OR_UNKNOWN', 'PYTEST', 'SINK', 'CONTROL', 'EVIDENCE', 'AUDIT'))
+        for key in codes:
+            if runner[key] is None and key not in ('entry_exit_code', 'final_exit_code'):
+                continue
+            integer(runner[key], 0, 255)
+        for key in flags:
+            require(type(runner[key]) is bool)
+        for key in groups:
+            require(type(runner[key]) is bool or runner[key] is None)
+        require(runner['pytest_exit_code'] == pytest_exit_code
+                and (pytest_exit_code is None or type(pytest_exit_code) is int)
+                and runner['trap_changed_exit'] ==
+                (runner['entry_exit_code'] != runner['final_exit_code']))
+        if runner['closeout_complete']:
+            require(all(runner[key] is not None for key in codes | groups))
+    complete = (runner is not None and runner['closeout_complete']
+                and all(row['finished'] for row in value['diagnostics']))
+    require((value['status'] == 'complete') == bool(complete))
 
 
 def digest(value):
@@ -219,6 +269,8 @@ def assigned_nodes(plan, shard):
 def metadata_check(meta, expected, commit):
     require(type(meta) is dict and META_KEYS <= set(meta)
             and not set(meta) - META_KEYS - LOCAL_METADATA_KEYS)
+    if 'runner_closeout' in meta:
+        runner_closeout_check(meta['runner_closeout'], meta['pytest_exit_code'])
     # Optional sanitizer observations never become an unrestricted transport.
     value = {key: deepcopy(meta[key]) for key in META_KEYS}
     require(type(value['schema_version']) is int and value['schema_version'] == 1
@@ -446,6 +498,8 @@ def bound_diagnostic_file(path):
             and type(value['rows_exported']) is bool
             and value['skips_and_xfails_are_not_passes'] is True,
             'DIAGNOSTIC_SCHEMA_REJECTED')
+    if 'runner_closeout' in value:
+        runner_closeout_check(value['runner_closeout'], value['pytest_exit_code'])
 
 
 def save(path, value, limit):

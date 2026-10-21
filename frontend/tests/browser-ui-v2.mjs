@@ -3,6 +3,9 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { openBrowser } from './browser-driver.mjs';
 import { startReviewed } from './review-start.mjs';
 import { continueRequestForPostResponse, traceStartRecoveryResponses, createRequestSignalObserver } from './browser-start-recovery-diagnostics.mjs';
+import { observeUiV2Failures, reportUiV2DropFailure, reportUiV2DropRequestStateFailure } from './browser-source-diagnostic.mjs';
+
+observeUiV2Failures();
 
 // Isolated v2 suite. No dependency on production data or edits to the shared harness.
 const api = process.env.MTG_BACKEND_ORIGIN || 'http://127.0.0.1:10200';
@@ -121,7 +124,8 @@ async function recoverDroppedResponse(s) {
   try {
     await command('Network.enable');
     interceptionTrace.observeControl?.('Fetch.enable','sent');
-    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Response'}]});enabled=true;
+    // Opt only POST into response interception; keep OPTIONS at request stage.
+    await command('Fetch.enable',{patterns:[{urlPattern:actionUrl,requestStage:'Request'}]});enabled=true;
     interceptionTrace.observeControl?.('Fetch.enable','accepted');
     await click('Play Land Forest');
     const deadline=Date.now()+15000;
@@ -199,8 +203,10 @@ async function recoverDroppedResponse(s) {
     }finally{collecting=false;clearTimeout(diagnosticTimer);diagnosticAbort.abort();}
     try {
       diagnostic.requestLifecycleFinal=interceptionTrace.captureFinal?.()??null;
+      reportUiV2DropFailure(diagnostic);
       console.error('DROP_RESPONSE_TRACE',JSON.stringify(diagnostic));
     }catch{}
+    try { reportUiV2DropRequestStateFailure(diagnostic); } catch { /* Preserve the original failure. */ }
     throw error;
   }
   finally{

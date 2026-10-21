@@ -346,6 +346,91 @@ def interruption_fields(evidence, public):
     return {'interruption_diagnostics_status': 'degraded'}
 
 
+def closeout_fields(evidence, pytest_exit_code):
+    """Project only bounded, typed closeout observations, never raw streams."""
+    roles = {'pytest', 'watcher', 'progress', 'sampler', 'pressure', 'sink', 'logger'}
+    stages = {'EARLY_OR_UNKNOWN', 'PYTEST', 'SINK', 'CONTROL', 'EVIDENCE', 'AUDIT'}
+    codes = {'entry_exit_code', 'final_exit_code', 'pytest_exit_code',
+             'evidence_exit_code', 'audit_exit_code', 'pressure_exit_code',
+             'sink_exit_code', 'watcher_exit_code'}
+    flags = {'diagnostic_failed', 'trap_changed_exit', 'closeout_complete'}
+    groups = {'group_after_wait_quiet', 'group_final_quiet'}
+    degraded = {'runner_closeout': {'schema_version': 1, 'status': 'degraded',
+                                   'runner': None, 'diagnostics': []}}
+
+    def check(condition):
+        if not condition:
+            raise MetadataError('EVIDENCE_TYPE_INVALID')
+
+    def unique(pairs):
+        value = {}
+        for key, item in pairs:
+            check(key not in value)
+            value[key] = item
+        return value
+
+    try:
+        evidence = Path(evidence)
+        check(not has_symlink_component(evidence) and evidence.is_dir())
+        names = ('diagnostic-closeout.tsv', 'runner-closeout.json')
+        present = [path.exists() or path.is_symlink() for path in
+                   (evidence / name for name in names)]
+        if not any(present):
+            return {}
+        diagnostics = []
+        if present[0]:
+            text = read_text(evidence, names[0], max_bytes=16384)
+            check(bool(text) and text.endswith('\n'))
+            rows = text.split('\n')[:-1]
+            check(len(rows) <= 32)
+            for row in rows:
+                fields = row.split('\t')
+                check(len(fields) == 5)
+                role, pid, finished, forced, status = fields
+                check(role in roles and re.fullmatch(r'[1-9][0-9]{0,19}', pid) is not None
+                      and finished in ('0', '1') and forced in ('0', '1'))
+                code = None
+                if finished == '1':
+                    check(re.fullmatch(r'(?:0|[1-9][0-9]{0,2})', status) is not None)
+                    code = int(status)
+                    check(code <= 255)
+                else:
+                    check(status == 'UNKNOWN')
+                diagnostics.append({'role': role, 'finished': finished == '1',
+                                    'forced': forced == '1', 'wait_exit_code': code})
+        runner = None
+        if present[1]:
+            runner = json.loads(read_text(evidence, names[1], max_bytes=4096),
+                                object_pairs_hook=unique)
+            check(type(runner) is dict and set(runner) ==
+                  codes | flags | groups | {'schema_version', 'work_exit_stage'})
+            check(type(runner['schema_version']) is int and runner['schema_version'] == 1
+                  and type(runner['work_exit_stage']) is str
+                  and runner['work_exit_stage'] in stages)
+            for key in codes:
+                value = runner[key]
+                check(type(value) is int and 0 <= value <= 255 or
+                      value is None and key not in ('entry_exit_code', 'final_exit_code'))
+            for key in flags:
+                check(type(runner[key]) is bool)
+            for key in groups:
+                check(type(runner[key]) is bool or runner[key] is None)
+            check(runner['pytest_exit_code'] == pytest_exit_code
+                  and (pytest_exit_code is None or type(pytest_exit_code) is int)
+                  and runner['trap_changed_exit'] ==
+                  (runner['entry_exit_code'] != runner['final_exit_code']))
+            if runner['closeout_complete']:
+                check(all(runner[key] is not None for key in codes | groups))
+        complete = (runner is not None and runner['closeout_complete']
+                    and all(row['finished'] for row in diagnostics))
+        return {'runner_closeout': {'schema_version': 1,
+                                   'status': 'complete' if complete else 'partial',
+                                   'runner': runner, 'diagnostics': diagnostics}}
+    except (MetadataError, OSError, UnicodeError, KeyError, TypeError, ValueError,
+            RecursionError):
+        return degraded
+
+
 def _completed_phase_diagnostics(evidence, source, commit):
     """Observe complete report rows only; never infer terminal test coverage."""
     try:
@@ -536,6 +621,7 @@ def build_metadata(evidence, source):
             document['metadata_error_codes'].append('COVERAGE_INCOMPLETE')
         if exitcode == 0 and not audited['ci_success_consistent']:
             document['metadata_error_codes'].append('SUCCESS_INCONSISTENT')
+        document.update(closeout_fields(evidence, document['pytest_exit_code']))
         return document, 2 if audit_status or document['metadata_error_codes'] else 0
     except MetadataError as error:
         candidate = error.args[0] if error.args else None
@@ -549,6 +635,7 @@ def build_metadata(evidence, source):
     document['coverage']['all_collected_completed'] = False
     document['coverage']['ci_success_consistent'] = False
     document['metadata_error_codes'] = [code]
+    document.update(closeout_fields(evidence, document['pytest_exit_code']))
     return document, 2
 
 

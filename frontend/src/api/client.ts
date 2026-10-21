@@ -74,6 +74,62 @@ export type ResolvedDeckCard = {
   card_metadata?: ResolvedCardMetadata | null;
 };
 
+function parseDeckImportResponse(value: unknown): DeckImportResponse {
+  const record = (item: unknown): item is Record<string, unknown> =>
+    typeof item === "object" && item !== null && !Array.isArray(item);
+  const number = (item: unknown): item is number => typeof item === "number" && Number.isFinite(item);
+  const count = (item: unknown): item is number => number(item) && Number.isInteger(item) && item >= 0;
+  const strings = (item: unknown): item is string[] =>
+    Array.isArray(item) && item.every(part => typeof part === "string");
+  const numberMap = (item: unknown) => record(item) && Object.values(item).every(number);
+  const texts = (item: Record<string, unknown>, fields: string[], nullable = false) =>
+    fields.every(field => item[field] === undefined || typeof item[field] === "string"
+      || (nullable && item[field] === null));
+  const characteristics = (item: Record<string, unknown>) => ["power", "toughness"].every(field =>
+    item[field] === undefined || item[field] === null || typeof item[field] === "string" || number(item[field]));
+  const metadata = (item: unknown) => record(item)
+    && typeof item.scryfall_id === "string" && typeof item.name === "string"
+    && (item.id == null || typeof item.id === "string" || number(item.id))
+    && texts(item, ["oracle_text", "mana_cost", "type_line"])
+    && characteristics(item)
+    && texts(item, ["image_uri"], true)
+    && (item.colors === undefined || strings(item.colors))
+    && (item.card_data_sources === undefined || strings(item.card_data_sources))
+    && (item.match_ready === undefined || typeof item.match_ready === "boolean")
+    && (item.legalities === undefined || (record(item.legalities)
+      && Object.values(item.legalities).every(status => typeof status === "string")))
+    && (item.card_faces === undefined || (Array.isArray(item.card_faces) && item.card_faces.every(face =>
+      record(face) && texts(face, ["name", "mana_cost", "oracle_text", "type_line", "image_uri"], true)
+      && characteristics(face)
+      && (face.colors == null || strings(face.colors)))));
+  const board = (items: unknown): items is DeckItem[] => Array.isArray(items)
+    && items.every(item => record(item) && typeof item.card_name === "string" && count(item.quantity));
+  // Display projections retain one row per parsed entry, including unresolved cards.
+  const resolved = (rows: unknown, items: DeckItem[]) => rows === undefined || (Array.isArray(rows)
+    && rows.length === items.length && rows.every((row, index) => record(row)
+      && row.card_name === items[index].card_name && row.quantity === items[index].quantity
+      && (row.card_metadata == null || metadata(row.card_metadata))));
+  const analysis = (item: unknown) => item === undefined || (record(item)
+    && texts(item, ["primary_archetype", "secondary_archetype"])
+    && ["confidence", "land_count", "creature_count", "noncreature_spell_count"].every(field =>
+      item[field] === undefined || number(item[field]))
+    && (item.scores === undefined || numberMap(item.scores))
+    && (item.signals === undefined || strings(item.signals)));
+  if (!record(value) || !(value.deck_id === null || count(value.deck_id))
+    || typeof value.name !== "string" || typeof value.archetype_guess !== "string"
+    || !strings(value.errors) || !Array.isArray(value.suggestions)
+    || !value.suggestions.every(item => record(item) && count(item.line) && item.line > 0
+      && typeof item.input === "string" && (item.suggestion === null || typeof item.suggestion === "string")
+      && number(item.score))
+    || !board(value.mainboard) || !board(value.sideboard)
+    || !numberMap(value.mana_curve) || !numberMap(value.color_profile)
+    || !resolved(value.resolved_mainboard_cards, value.mainboard)
+    || !resolved(value.resolved_sideboard_cards, value.sideboard) || !analysis(value.analysis)) {
+    throw new Error("Invalid deck import response");
+  }
+  return value as DeckImportResponse;
+}
+
 export type CardCompletenessReport = {
   requested: number;
   complete: number;
@@ -247,10 +303,10 @@ export const api = {
   getExpansionTopDeck: (code: string) =>
     req<ExpansionTopDeckPayload>(`/decks/expansion-top/${encodeURIComponent(code)}`),
   importExpansionTopDeck: (code: string) =>
-    req<DeckImportResponse>(`/decks/expansion-top/${encodeURIComponent(code)}/import`, { method: "POST" }),
+    req<unknown>(`/decks/expansion-top/${encodeURIComponent(code)}/import`, { method: "POST" }).then(parseDeckImportResponse),
   importAllExpansionTopDecks: () => req<{ requested: number; imported: number; with_errors: number }>("/decks/expansion-top/import-all", { method: "POST" }),
   importDeck: (name: string, deck_text: string, source = "user") =>
-    req<DeckImportResponse>("/decks/import", { method: "POST", body: JSON.stringify({ name, deck_text, source }) }),
+    req<unknown>("/decks/import", { method: "POST", body: JSON.stringify({ name, deck_text, source }) }).then(parseDeckImportResponse),
   listDecks: () => req<DeckRecord[]>("/decks"),
   cardCompleteness: (names: string[]) => {
     const query = names.map((name) => `names=${encodeURIComponent(name)}`).join("&");

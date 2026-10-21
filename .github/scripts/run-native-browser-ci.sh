@@ -28,6 +28,7 @@ import { writeFileSync } from 'node:fs';
 const [destination, status, empty] = process.argv.slice(2);
 writeFileSync(destination, JSON.stringify({schema: 1, exit_status: Number(status), cgroup_empty: empty === 'true'}) + '\n', {flag: 'wx'});
 NODE
+  python3 .github/scripts/ci_native_browser_notice.py "$MTG_NATIVE_REPORT_DIR" "$MTG_BROWSER_VENDOR" || :
   exit "$status"
 }
 trap cleanup EXIT

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { createServer } from 'node:net';
+import { createConnection, createServer } from 'node:net';
 import { createServer as createHTTPServer } from 'node:http';
 import { mkdir, readFile, writeFile, readdir, readlink, lstat, stat, statfs, realpath, symlink } from 'node:fs/promises';
 import { openSync, closeSync } from 'node:fs';
@@ -10,6 +10,9 @@ import { fileURLToPath } from 'node:url';
 import { runNativeHumanBo3 } from './browser-native-human-bo3.mjs';
 import { runNativeHumanBo3Seat2 } from './browser-native-human-bo3-seat2.mjs';
 import {runPaidBuiltCases, runBuiltRecovery, runBuiltOrigins} from './browser-current-paid-acceptance.mjs';
+import {configureFirefoxTransport} from './browser-driver.mjs';
+import {createEnrollment, createFirefoxTransport} from '../firefox-transport.mjs';
+import {createWireTrace} from '../firefox-wire-trace.mjs';
 
 process.umask(0o077);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
@@ -23,11 +26,25 @@ assert.equal(await realpath(ownedRoot), ownedRoot, 'Owned root must not traverse
 assert.equal(typeof qualifiedCommit, 'string', 'MTG_BROWSER_QUALIFIED_COMMIT is required');
 assert.equal(qualifiedCommit.length, 40, 'Exact Git commit length required');
 assert.match(qualifiedCommit, /^[0-9a-f]{40}$/, 'Exact lowercase Git commit required');
-assert.equal(process.env.MTG_BROWSER_NO_SANDBOX, '1', 'Exact isolated test-only Chrome launch contract');
+const browserVendor = process.env.MTG_BROWSER_VENDOR
+  || (process.env.MTG_BROWSER_NO_SANDBOX === '1' ? 'chrome' : undefined);
+assert.ok(['chrome', 'brave', 'firefox'].includes(browserVendor), 'Explicit supported release-owned browser required');
+const strictNative = process.env.MTG_BROWSER_NO_SANDBOX === '0';
+assert.ok(strictNative || (browserVendor === 'chrome' && process.env.MTG_BROWSER_NO_SANDBOX === '1'),
+  'Native sandbox mode0 or legacy Chrome mode1 required');
+const selectedExecutables = strictNative
+  ? JSON.parse(await readFile(path.join(project, 'runner/executable-pins.json'), 'utf8')) : null;
 const out = path.join(project, 'evidence/native-browser');
-const python = '/tmp/mtg-fresh-deps-restored-dVBzUV/venv/bin/python';
-const deps = '/home/nick/mtg-deck-testing-lab/frontend/node_modules';
-const chrome = '/snap/chromium/3551/usr/lib/chromium-browser/chrome';
+const python = strictNative ? selectedExecutables?.python?.path : '/tmp/mtg-fresh-deps-restored-dVBzUV/venv/bin/python';
+const deps = strictNative ? process.env.MTG_FRONTEND_DEPS : '/home/nick/mtg-deck-testing-lab/frontend/node_modules';
+const chrome = strictNative && browserVendor !== 'firefox'
+  ? selectedExecutables?.[browserVendor]?.path : '/snap/chromium/3551/usr/lib/chromium-browser/chrome';
+const firefox = selectedExecutables?.firefox?.path;
+if (strictNative) for (const file of [python, deps, browserVendor === 'firefox' ? firefox : chrome]) {
+  assert.equal(typeof file, 'string', 'Separate pinned native runtime intake required');
+  assert.ok(path.isAbsolute(file) && path.resolve(file) === file);
+}
+const bodyCacheDirectory = path.join(out, 'firefox-body-cache');
 const db = path.join(project, 'runtime/sql/api.db');
 const viteConfig = path.join(root, 'frontend/.native-browser-vite.config.mjs');
 const digest = data => createHash('sha256').update(data).digest('hex');
@@ -36,6 +53,7 @@ const roleCounts = new Map();
 const allocations = new Set();
 const ports = {};
 let backend, failure, watchdog, hardDeadline, rejectInterrupted, hostileServer, budgetWatch;
+let enrollment, firefoxTransport, firefoxWire;
 let budgetChecking = false, fuserChecking = false;
 let backendReady = false;
 let shuttingDown = false, closureProven = false;
@@ -170,9 +188,137 @@ async function missingLiveChromeCacheLeaf(error, file, entry) {
   return result;
 }
 
+async function missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot, cacheDirectories) {
+  const cache = path.join(out, 'cache');
+  const child = children.find(c => c.label === 'firefox');
+  const identity = child?.budgetIdentity;
+  return missingOwnedTransientCacheLeaf(error, file, entry, budgetRoot, cacheDirectories,
+    {cache, child, identity, retained: () => child.budgetIdentity === identity});
+}
+
+async function missingLiveBodyCacheLeaf(error, file, entry, budgetRoot, cacheDirectories) {
+  if (browserVendor !== 'firefox' || path.dirname(file) !== bodyCacheDirectory
+      || !/^[a-f0-9]{32}\.(?:body|json|claim|release|release\.next)$/.test(entry.name)) return false;
+  const child = backend;
+  const startTicks = child?.startTicks;
+  if (child?.label !== 'backend' || !Number.isSafeInteger(startTicks) || startTicks <= 0) return false;
+  const identity = {pid: child.pid, startTicks: String(startTicks), exe: await realpath(python)};
+  return missingOwnedTransientCacheLeaf(error, file, entry, budgetRoot, cacheDirectories,
+    {cache: bodyCacheDirectory, child, identity,
+      retained: () => backend === child && child.label === 'backend' && child.startTicks === startTicks});
+}
+
+async function missingOwnedTransientCacheLeaf(error, file, entry, budgetRoot, cacheDirectories, scope) {
+  const {cache, child, identity, retained} = scope;
+  if (error.code !== 'ENOENT' || error.path !== file || !entry.isFile()
+      || path.resolve(file) !== file || !file.startsWith(cache + '/')
+      || path.basename(file) !== entry.name || !identity
+      || !Number.isSafeInteger(identity.pid) || identity.pid <= 0 || identity.pid !== child.pid
+      || typeof identity.startTicks !== 'string' || !/^[1-9][0-9]*$/.test(identity.startTicks)
+      || typeof identity.exe !== 'string' || !path.isAbsolute(identity.exe)) return false;
+  const alive = async () => {
+    if (shuttingDown || !children.includes(child) || !retained()
+        || child.exitCode !== null || child.signalCode !== null) return false;
+    const proc = await readFile('/proc/' + child.pid + '/stat', 'utf8');
+    const startTicks = proc.slice(proc.lastIndexOf(')') + 2).split(/\s+/)[19];
+    const exe = await realpath('/proc/' + child.pid + '/exe');
+    return startTicks === identity.startTicks && exe === identity.exe && !shuttingDown
+      && children.includes(child) && retained()
+      && child.pid === identity.pid && child.exitCode === null && child.signalCode === null;
+  };
+  if (!await alive()) return false;
+  const directories = [out, cache];
+  let parent = cache;
+  for (const part of path.relative(cache, path.dirname(file)).split(path.sep).filter(Boolean)) {
+    parent = path.join(parent, part); directories.push(parent);
+  }
+  const fields = ['dev', 'ino', 'uid', 'gid', 'mode'];
+  const same = (a, b) => fields.every(key => a[key] === b[key]);
+  const boundaries = [];
+  for (const directory of directories) {
+    const info = await lstat(directory);
+    assert.ok(info.isDirectory() && !info.isSymbolicLink() && info.uid === process.getuid()
+      && (info.mode & 0o700) === 0o700 && (info.mode & 0o022) === 0,
+    'Owned Firefox cache directory required');
+    assert.equal(await realpath(directory), directory, 'Firefox cache directory must not redirect');
+    const enumerated = cacheDirectories.get(directory);
+    assert.ok(enumerated && enumerated.canonical === directory && same(info, enumerated.info),
+      'Firefox cache directory changed since enumeration');
+    if (directory === out) assert.ok(budgetRoot.isDirectory() && same(info, budgetRoot)
+      && (info.mode & 0o777) === 0o700, 'Owned output root changed');
+    if (directory === cache) assert.equal(info.mode & 0o777, 0o700, 'Owned Firefox cache mode');
+    boundaries.push(info);
+  }
+  let leaf;
+  try { leaf = await lstat(file); }
+  catch (gone) { if (gone.code !== 'ENOENT' || gone.path !== file) throw gone; }
+  if (leaf && (!leaf.isFile() || leaf.isSymbolicLink()
+      || leaf.uid !== process.getuid() || (leaf.mode & 0o022) !== 0
+      || !Number.isSafeInteger(leaf.size) || leaf.size < 0)) return false;
+  if (!await alive()) return false;
+  for (let i = 0; i < directories.length; i++) {
+    const current = await lstat(directories[i]);
+    assert.ok(current.isDirectory() && !current.isSymbolicLink() && same(current, boundaries[i])
+      && await realpath(directories[i]) === directories[i], 'Firefox cache directory changed');
+  }
+  const result = {size: leaf?.size ?? 0, outcome: leaf ? 'recreated-regular-charged' : 'confirmed-missing'};
+  const races = outputBudget.firefoxCacheRaces ??= [];
+  assert.ok(races.length < 4096, 'Finite Firefox cache race count');
+  races.push({file, identity, outcome: result.outcome, chargedBytes: result.size,
+    dev: leaf?.dev, ino: leaf?.ino, UTC: new Date().toISOString()});
+  const ledger = JSON.stringify(races);
+  assert.ok(Buffer.byteLength(ledger) <= 2 * 1024 * 1024, 'Bounded Firefox cache race ledger');
+  await writeFile(path.join(out, 'firefox-cache-races.json'), ledger);
+  return result;
+}
+
 async function outputBudget() {
   let bytes = 0, profileBytes = 0, screenshots = 0;
+  const budgetRoot = await lstat(out);
+  const cacheDirectories = new Map([[out, {info: budgetRoot, canonical: await realpath(out)}]]);
+  const publishers = children.filter(child => child.label === 'backend').map(child =>
+    ({child, pid: child.pid, startTicks: child.startTicks}));
+  let pass = 0, renameError;
+  async function ownedReceiptRename(error, file, entry) {
+    const match = /^storage-owner-([0-9]+)-([a-f0-9]{32})\.tmp$/.exec(entry.name);
+    if (error.code !== 'ENOENT' || error.path !== file || !entry.isFile()
+        || path.dirname(file) !== out || file !== path.join(out, entry.name) || !match) return false;
+    const pid = Number(match[1]);
+    const publisher = publishers.find(row => row.pid === pid);
+    if (!Number.isSafeInteger(pid) || pid <= 0 || String(pid) !== match[1] || !publisher
+        || !Number.isSafeInteger(publisher.startTicks) || publisher.startTicks <= 0) return false;
+    const sameRoot = async () => {
+      const current = await lstat(out);
+      return path.resolve(out) === out && await realpath(out) === out
+        && budgetRoot.isDirectory() && !budgetRoot.isSymbolicLink()
+        && current.isDirectory() && !current.isSymbolicLink()
+        && current.uid === process.getuid() && (current.mode & 0o777) === 0o700
+        && ['dev', 'ino', 'uid', 'gid', 'mode'].every(key => current[key] === budgetRoot[key]);
+    };
+    if (!await sameRoot()) return false;
+    const final = path.join(out, `storage-owner-${pid}-${match[2]}.json`);
+    const before = await lstat(final);
+    if (!before.isFile() || before.isSymbolicLink() || before.nlink !== 1
+        || before.uid !== process.getuid() || await realpath(final) !== final) return false;
+    const receipt = (await storageReceipts()).find(row => row.pid === pid && row.epoch === match[2]);
+    const after = await lstat(final);
+    return !!receipt && Number.isSafeInteger(receipt.pid) && Number.isSafeInteger(receipt.start_ticks)
+      && receipt.start_ticks === publisher.startTicks && children.includes(publisher.child)
+      && publisher.child.label === 'backend' && publisher.child.pid === publisher.pid
+      && publisher.child.startTicks === publisher.startTicks
+      && after.isFile() && !after.isSymbolicLink() && after.nlink === 1
+      && ['dev', 'ino', 'uid', 'gid', 'mode', 'size', 'mtimeMs', 'ctimeMs']
+        .every(key => after[key] === before[key])
+      && await realpath(final) === final && await sameRoot();
+  }
   async function walk(directory) {
+    if (directory === bodyCacheDirectory || directory === path.join(out, 'cache')
+        || directory.startsWith(path.join(out, 'cache') + '/')) {
+      const info = await lstat(directory), canonical = await realpath(directory);
+      assert.ok(info.isDirectory() && !info.isSymbolicLink() && canonical === directory,
+        'Firefox cache directory must not redirect');
+      cacheDirectories.set(directory, {info, canonical});
+    }
     for (const entry of await readdir(directory, {withFileTypes: true})) {
       const file = path.join(directory, entry.name);
       if (entry.isDirectory()) await walk(file);
@@ -180,7 +326,13 @@ async function outputBudget() {
         let size;
         try { size = (await stat(file)).size; }
         catch (error) {
-          const race = await missingLiveChromeCacheLeaf(error, file, entry);
+          if (pass === 0 && await ownedReceiptRename(error, file, entry)) {
+            renameError = error;
+            throw error;
+          }
+          const race = await missingLiveFirefoxCacheLeaf(error, file, entry, budgetRoot, cacheDirectories)
+            || await missingLiveBodyCacheLeaf(error, file, entry, budgetRoot, cacheDirectories)
+            || await missingLiveChromeCacheLeaf(error, file, entry);
           if (!race) throw error;
           size = race.size;
         }
@@ -192,7 +344,12 @@ async function outputBudget() {
       // Do not follow Chrome's profile singleton/socket symlinks outside the owned tree.
     }
   }
-  await walk(out);
+  // A confirmed atomic publication invalidates the whole partial count, not just one leaf.
+  for (; pass < 2; pass++) {
+    bytes = profileBytes = screenshots = 0;
+    try { await walk(out); break; }
+    catch (error) { if (pass !== 0 || error !== renameError) throw error; }
+  }
   assert.ok(profileBytes <= 512 * 1024 * 1024, 'Profile exceeds 512 MiB');
   assert.ok(screenshots <= 64, 'Screenshot count exceeds 64');
   assert.ok(bytes <= 1536 * 1024 * 1024, 'Owned output exceeds aggregate 1.5 GiB');
@@ -211,6 +368,7 @@ async function outputBudget() {
   const storage = await storageInventory();
   assert.ok(bytes + storage.bytes <= 2560 * 1024 * 1024, 'Combined owned output exceeds2.5GiB');
   return {bytes, storageBytes: storage.bytes, profileBytes, screenshots, svgCount: svg.length,
+    observedFirefoxCacheRaceCount: outputBudget.firefoxCacheRaces?.length ?? 0,
     observedChromeCacheRaceCount: outputBudget.cacheRaces?.length ?? 0,
     enforcement: 'cooperative 1s checkpoints plus producer SVG pre-write checks; not a kernel quota'};
 }
@@ -245,7 +403,7 @@ async function allocate() {
   } finally { await new Promise(resolve => s.close(resolve)); allocations.delete(s); }
 }
 function authorizeChild(label, executable, args, cwd) {
-  const limits = {build: 1, preview: 1, chromium: 1, backend: 32, ledger: 31,
+  const limits = {build: 1, preview: 1, [browserVendor === 'firefox' ? 'firefox' : 'chromium']: 1, backend: 32, ledger: 31,
     'restart-fuser': 31, 'closure-fuser': 1};
   assert.ok(Object.hasOwn(limits, label), `Undeclared child role: ${label}`);
   const count = (roleCounts.get(label) ?? 0) + 1;
@@ -253,8 +411,11 @@ function authorizeChild(label, executable, args, cwd) {
   const vite = path.join(deps, 'vite/bin/vite.js');
   if (label === 'backend') {
     assert.equal(executable, python); assert.equal(cwd, path.join(root, 'backend'));
-    assert.deepEqual(args, ['-m', 'uvicorn', 'tests.current_built_browser_server:app',
-      '--host', '127.0.0.1', '--port', String(ports.backend)]);
+    assert.deepEqual(args, browserVendor === 'firefox'
+      ? ['-m', 'uvicorn', 'tests.firefox_body_cache_app:create_app', '--factory',
+        '--host', '127.0.0.1', '--port', String(ports.backend)]
+      : ['-m', 'uvicorn', 'tests.current_built_browser_server:app',
+        '--host', '127.0.0.1', '--port', String(ports.backend)]);
   } else if (label === 'ledger') {
     assert.equal(executable, python); assert.equal(cwd, path.join(root, 'backend'));
     assert.equal(args.length, 3); assert.equal(args[0], path.join(root, 'backend/tests/current_built_browser_server.py'));
@@ -269,12 +430,16 @@ function authorizeChild(label, executable, args, cwd) {
     assert.equal(executable, process.execPath); assert.equal(cwd, path.join(root, 'frontend'));
     assert.deepEqual(args, [vite, 'preview', '--config', viteConfig, '--host', '127.0.0.1',
       '--port', String(ports.frontend), '--strictPort']);
+  } else if (label === 'firefox') {
+    assert.equal(executable, firefox); assert.equal(cwd, root);
+    assert.deepEqual(args, ['--headless', '--no-remote', '--profile', path.join(out, 'profile'),
+      '--remote-debugging-port', String(ports.cdp), 'about:blank']);
   } else {
     assert.equal(executable, chrome); assert.equal(cwd, root);
     assert.deepEqual(args, ['--headless', '--no-first-run', '--disable-dev-shm-usage',
       '--disable-background-networking', '--no-default-browser-check', '--password-store=basic',
       '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost',
-      '--no-sandbox',
+      ...(strictNative ? [] : ['--no-sandbox']),
       `--user-data-dir=${path.join(out, 'profile')}`, '--remote-debugging-address=127.0.0.1',
       `--remote-debugging-port=${ports.cdp}`, 'about:blank']);
   }
@@ -293,6 +458,15 @@ function ownedEnvironment(executable, env) {
       XDG_DATA_HOME: path.join(out, 'data'), XDG_STATE_HOME: path.join(out, 'state'),
       XDG_RUNTIME_DIR: path.join(out, 'runtime'), CHROME_CONFIG_HOME: path.join(out, 'config')});
   }
+  if (browserVendor === 'firefox' && executable === firefox) {
+    for (const name of Object.keys(own)) if (name.startsWith('SNAP') || name.startsWith('MOZ_') ||
+      ['DBUS_SESSION_BUS_ADDRESS', 'DISPLAY', 'WAYLAND_DISPLAY',
+        'LD_PRELOAD', 'LD_LIBRARY_PATH', 'LD_AUDIT', 'LD_DEBUG', 'MOZILLA_FIVE_HOME'].includes(name)) delete own[name];
+    Object.assign(own, {HOME: path.join(out, 'home'),
+      XDG_CONFIG_HOME: path.join(out, 'config'), XDG_CACHE_HOME: path.join(out, 'cache'),
+      XDG_DATA_HOME: path.join(out, 'data'), XDG_STATE_HOME: path.join(out, 'state'),
+      XDG_RUNTIME_DIR: path.join(out, 'runtime')});
+  }
   return own;
 }
 
@@ -304,22 +478,42 @@ function start(label, executable, args, cwd, env = {}) {
     env: ownedEnvironment(executable, env) });
   closeSync(fd);
   child.label = label;
+  if (label === 'firefox') {
+    child.lifecycle = {registeredUTC: new Date().toISOString()};
+    child.once('error', () => { child.lifecycle.errorUTC = new Date().toISOString(); });
+    child.once('close', () => { child.lifecycle.closeUTC = new Date().toISOString(); });
+  }
   child.done = new Promise(resolve => { child.once('exit', resolve); child.once('error', resolve); });
   children.push(child);
   assert.ok(!shuttingDown, 'Service registration during shutdown');
   console.log(`OWN ${label} pid=${child.pid} UTC=${new Date().toISOString()} root=${root} ports=${JSON.stringify(ports)}`);
   return child;
 }
+function ownedGroupAbsent(child) {
+  assert.ok(Number.isSafeInteger(child?.pid) && child.pid > 0, 'Positive owned child PID required');
+  try { process.kill(-child.pid, 0); return false; }
+  catch (error) { if (error.code === 'ESRCH') return true; throw error; }
+}
 async function stop(child) {
-  if (!child?.pid || child.exitCode !== null || child.signalCode !== null) return;
-  try { process.kill(-child.pid, 'SIGTERM'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
-  let timer;
-  await Promise.race([child.done, new Promise(resolve => { timer = setTimeout(resolve, 5000); })]);
-  clearTimeout(timer);
+  if (!child?.pid) return;
+  const until = Date.now() + 5000;
   if (child.exitCode === null && child.signalCode === null) {
-    try { process.kill(-child.pid, 'SIGKILL'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
-    await deadline(child.done, 2000, `Owned KILL exit ${child.label}`);
-    assert.fail(`Forced kill required: ${child.label}`);
+    try { process.kill(-child.pid, 'SIGTERM'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
+    let timer;
+    await Promise.race([child.done, new Promise(resolve => {
+      timer = setTimeout(resolve, Math.max(0, until - Date.now()));
+    })]);
+    clearTimeout(timer);
+    if (child.exitCode === null && child.signalCode === null) {
+      try { process.kill(-child.pid, 'SIGKILL'); } catch (e) { if (e.code !== 'ESRCH') throw e; }
+      await deadline(child.done, 2000, `Owned KILL exit ${child.label}`);
+      assert.fail(`Forced kill required: ${child.label}`);
+    }
+  }
+  while (!ownedGroupAbsent(child)) {
+    const remaining = until - Date.now();
+    assert.ok(remaining > 0, 'Owned process group closure unproven');
+    await new Promise(resolve => setTimeout(resolve, Math.min(100, remaining)));
   }
 }
 async function capture(label, executable, args, ms, env = {}) {
@@ -388,11 +582,57 @@ async function ready(url, child) {
   }
   assert.fail(`Service readiness deadline: ${url}`);
 }
+async function readyFirefoxListener(child) {
+  const end = Date.now() + 90000;
+  const check = () => {
+    if (failure) throw failure;
+    assert.ok(!shuttingDown, 'No Firefox listener readiness during shutdown');
+    assert.ok(children.includes(child) && child.label === 'firefox', 'Actual owned Firefox child required');
+    assert.equal(child.exitCode, null, 'Firefox exited before listener readiness');
+    assert.equal(child.signalCode, null, 'Firefox signaled before listener readiness');
+    const remaining = end - Date.now();
+    assert.ok(remaining > 0, 'Firefox listener readiness deadline');
+    return remaining;
+  };
+  for (;;) {
+    const remaining = check();
+    const connected = await new Promise((resolve, reject) => {
+      let socket, connected = false, probeError;
+      try {
+        socket = createConnection({host: '127.0.0.1', port: ports.cdp});
+        socket.once('close', () => probeError ? reject(probeError) : resolve(connected));
+        socket.once('connect', () => { connected = true; socket.destroy(); });
+        socket.once('error', error => {
+          if (error.code !== 'ECONNREFUSED') probeError = error;
+          socket.destroy();
+        });
+        socket.once('timeout', () => socket.destroy());
+        socket.setTimeout(Math.min(1000, remaining));
+      } catch (error) {
+        if (!socket) { reject(error); return; }
+        probeError = error;
+        socket.destroy();
+      }
+    });
+    const left = check();
+    if (connected) return;
+    await new Promise(resolve => setTimeout(resolve, Math.min(100, left)));
+  }
+}
 async function startBackend() {
   assert.ok(!shuttingDown && !failure, 'No backend restart after shutdown');
   backendReady = false;
-  backend = start('backend', python, ['-m', 'uvicorn', 'tests.current_built_browser_server:app',
-    '--host', '127.0.0.1', '--port', String(ports.backend)], path.join(root, 'backend'), {
+  backend = start('backend', python, browserVendor === 'firefox'
+    ? ['-m', 'uvicorn', 'tests.firefox_body_cache_app:create_app', '--factory',
+      '--host', '127.0.0.1', '--port', String(ports.backend)]
+    : ['-m', 'uvicorn', 'tests.current_built_browser_server:app',
+      '--host', '127.0.0.1', '--port', String(ports.backend)], path.join(root, 'backend'), {
+    ...(browserVendor === 'firefox' ? {
+      MTG_RELEASE_BODY_CACHE_ROOT: bodyCacheDirectory,
+      MTG_RELEASE_BODY_CACHE_ENROLLMENT: path.join(bodyCacheDirectory, 'enrollment.json'),
+      MTG_BROKER_RUN_NONCE: enrollment.bindings.run_nonce,
+      MTG_BROKER_SOURCE_BINDING: enrollment.bindings.source_binding,
+    } : {}),
     MTG_BUILT_BACKEND_PORT: String(ports.backend),
     MTG_BUILT_PAGE_ORIGIN: `http://127.0.0.1:${ports.frontend}`,
     MTG_TRUSTED_ORIGINS: `http://127.0.0.1:${ports.frontend}`,
@@ -408,6 +648,14 @@ async function startBackend() {
     && owner.owner_fd !== null && owner.admissions_open && owner.backups.length === 1);
   assert.equal(owner.backups[0].verified_by_successful_lifespan, true);
   backendReady = true;
+}
+function currentBackendIdentity() {
+  assert.ok(backend && Number.isSafeInteger(backend.pid) && backend.pid > 0,
+    'Current owned backend PID required');
+  assert.equal(backend.exitCode, null); assert.equal(backend.signalCode, null);
+  assert.ok(Number.isSafeInteger(backend.startTicks) && backend.startTicks > 0,
+    'Current owned backend start identity required');
+  return {pid: backend.pid, start: String(backend.startTicks)};
 }
 async function readLedger(mid) {
   assert.ok(!shuttingDown && !failure, 'No ledger child during shutdown');
@@ -433,7 +681,8 @@ async function restartBackend(mid) {
     closedDBBefore: before, fuser, ledger, UTC: new Date().toISOString() }, null, 2));
   return ledger;
 }
-async function closedReceipt() {
+async function closedReceipt({requireOwnedIdentity = true} = {}) {
+  assert.equal(typeof requireOwnedIdentity, 'boolean', 'Typed owned-identity finality required');
   assert.equal(allocations.size, 0, 'All temporary port allocations must close');
   const storage = await storageInventory({closed: true});
   assert.equal(storage.receipts.length, children.filter(c => c.label === 'backend').length);
@@ -466,12 +715,22 @@ async function closedReceipt() {
     await new Promise(resolve => s.close(resolve));
   }
   const fuser = await checkFuser('closure-fuser');
+  const ownedPids = new Set(children.map(child => child.pid));
+  const unknownOwnedIdentities = [...new Set([...inaccessible.filter(pid => ownedPids.has(pid)),
+    ...unreadableFDs.filter(row => ownedPids.has(row.pid)).map(row => row.pid)])];
   const receipt = { refs, inaccessible, unreadableFDs, journals, fuser, storage,
-    processes: children.map(c => ({ label: c.label, pid: c.pid, exit: c.exitCode, signal: c.signalCode })),
+    requireOwnedIdentity, unknownOwnedIdentities,
+    ownedIdentityQualified: requireOwnedIdentity && unknownOwnedIdentities.length === 0,
+    identityScope: requireOwnedIdentity ? 'strict tracked-owned identities; not universal ancestry'
+      : 'legacy Chrome closure; NOT strict owned-identity qualification',
+    processes: children.map(c => ({ label: c.label, pid: c.pid, exit: c.exitCode, signal: c.signalCode,
+      ...(c.label === 'firefox' ? {lifecycle: c.lifecycle} : {}) })),
     inputScope: 'reviewed file hashes, not generated media/full-tree equality', UTC: new Date().toISOString() };
   await writeFile(path.join(out, 'CLOSURE.json'), JSON.stringify(receipt, null, 2));
+  if (requireOwnedIdentity) assert.deepEqual(unknownOwnedIdentities, [], 'UNKNOWN_CHILD_IDENTITY: owned closure unproven');
   assert.deepEqual(refs, []); assert.deepEqual(journals, []);
   assert.ok(children.every(c => c.exitCode !== null || c.signalCode !== null), 'All tracked children must exit');
+  for (const child of children) assert.ok(ownedGroupAbsent(child), 'All tracked process groups must be absent');
   const serverReceipts=(await readdir(out)).filter(n => /^server-closure-\d+\.json$/.test(n));
   assert.equal(serverReceipts.length,children.filter(c=>c.label==='backend').length,'Every real server must close');
   for (const file of serverReceipts) {
@@ -485,12 +744,22 @@ async function closedReceipt() {
   await checkPins();
   await writeFile(path.join(out, 'OUTPUT-BOUNDS.json'), JSON.stringify(await outputBudget(), null, 2));
 }
+// Capture validated mode once; partial startup/cleanup cannot weaken finality.
+closedReceipt = closedReceipt.bind(undefined, Object.freeze({requireOwnedIdentity: strictNative}));
 
 assert.equal(process.argv.length, 2);
 const grant=JSON.parse(await readFile(path.join(project,'runner/EXECUTION-GRANT.json'),'utf8'));
 assert.deepEqual(grant,{root:project,source:root,commit:status.pin,scope:'built-app-40paid-3recovery-3BO3-4origin',explicit_parent_grant:true,seconds:2400});
 const cohort=JSON.parse(await readFile(path.join(project,'runner/cohort.json'),'utf8'));
 assert.equal(cohort.length,40);
+if (strictNative) {
+  for (const [runnerName, sourceName] of [['cohort.json', 'current-built-cohort.json'],
+    ['recovery-fixtures.json', 'current-built-recovery-fixtures.json']]) {
+    assert.equal(digest(await readFile(path.join(project, 'runner', runnerName))),
+      digest(await readFile(path.join(root, 'frontend/tests/release-owned/fixtures', sourceName))),
+      'Actual owned fixture input must equal its pinned public source');
+  }
+}
 process.env.MTG_CDP_DIAGNOSTIC_DIR=path.join(out,'cdp-observations');
 const fixtureToken=(await readFile(path.join(project,'runner/fixture-token'),'utf8')).trim();
 assert.match(fixtureToken,/^[0-9a-f]{64}$/);
@@ -499,6 +768,7 @@ for(const [name,hash] of Object.entries(runnerPins)) assert.equal(digest(await r
 const externalPins=JSON.parse(await readFile(path.join(project,'runner/external-readonly-pins.json'),'utf8'));
 for(const [file,hash] of Object.entries(externalPins)) assert.equal(digest(await readFile(file)),hash,file);
 const execPins=JSON.parse(await readFile(path.join(project,'runner/executable-pins.json'),'utf8'));
+if (strictNative) assert.deepEqual(selectedExecutables, execPins, 'Selected native runtime bindings changed during pin validation');
 assert.equal(process.execPath,execPins.node.path);
 for(const row of Object.values(execPins)) {
   assert.equal(await realpath(row.path), row.realpath, `Executable target changed: ${row.path}`);
@@ -521,7 +791,8 @@ const site=path.join(runtimeRoot,'lib/python3.12/site-packages');
 for(const directory of await readdir(site)) if(directory.endsWith('.dist-info')) {const m=await readFile(path.join(site,directory,'METADATA'),'utf8');const name=m.match(/^Name: (.+)$/m)?.[1];const version=m.match(/^Version: (.+)$/m)?.[1];if(name&&version) installed.set(name.toLowerCase().replace(/[-_.]+/g,'-'),version);}
 for(const row of versions) assert.equal(installed.get(row.name.toLowerCase().replace(/[-_.]+/g,'-')),row.version,row.name);
 assert.ok((await stat(python)).isFile() && ((await stat(python)).mode & 0o111), 'Parent-qualified pinned recovery interpreter required; no unreviewed substitution');
-assert.ok((await lstat(chrome)).isFile() || (await lstat(chrome)).isSymbolicLink(), 'Existing cached Chromium required');
+const nativeExecutable = browserVendor === 'firefox' ? firefox : chrome;
+assert.ok((await lstat(nativeExecutable)).isFile() || (await lstat(nativeExecutable)).isSymbolicLink(), 'Pinned native executable required');
 assert.ok((await lstat(path.join(deps,'vite/bin/vite.js'))).isFile());
 assert.equal(await readFile(path.join(project, '.built-browser-owned'), 'utf8'), root);
 for (let p = root;; p = path.dirname(p)) { assert.equal((await lstat(p)).isSymbolicLink(), false); if (p === '/') break; }
@@ -584,23 +855,42 @@ try {
   async function hashTree(directory,base){for(const entry of await readdir(directory,{withFileTypes:true})){const file=path.join(directory,entry.name);if(entry.isDirectory())await hashTree(file,base);else if(entry.isFile()){builtBytes+=(await stat(file)).size;assert.ok(builtBytes<=128*1024*1024,'Built dist exceeds 128 MiB');built[path.relative(base,file)]=digest(await readFile(file));}else assert.fail('Built asset symlink');}}
   await hashTree(dist,dist);assert.ok(built['index.html']);assert.ok(Object.keys(built).length<=2048,'Built asset count');
   await writeFile(path.join(out,'BUILD-PINS.json'),JSON.stringify(built,null,2));
+  if (browserVendor === 'firefox') {
+    await mkdir(bodyCacheDirectory, {mode: 0o700});
+    await mkdir(path.join(out, 'profile'), {mode: 0o700});
+    enrollment = createEnrollment({directory: bodyCacheDirectory,
+      sourceBinding: digest(await readFile(path.join(project, 'runner/source-pins.json'))),
+      apiOrigin: api, frontendOrigin: frontend});
+  }
   await startBackend();
   const vite=start('preview',process.execPath,[path.join(deps,'vite/bin/vite.js'),'preview','--config',viteConfig,'--host','127.0.0.1','--port',String(ports.frontend),'--strictPort'],path.join(root,'frontend'));
   hostileServer=createHTTPServer((request,response)=>{if(request.method!=='GET'||!['/','/null'].includes(request.url)){response.writeHead(404).end();return;}response.setHeader('Content-Type','text/html');response.end('<!doctype html><title>Owned Origin control</title><body>Owned Origin control</body>');});
   await new Promise((resolve,reject)=>{hostileServer.once('error',reject);hostileServer.listen(ports.hostile,'127.0.0.1',resolve);});
-  const chromium = start('chromium', chrome, ['--headless', '--no-first-run', '--disable-dev-shm-usage',
+  const chromium = browserVendor === 'firefox'
+    ? start('firefox', firefox, ['--headless', '--no-remote', '--profile', path.join(out, 'profile'),
+      '--remote-debugging-port', String(ports.cdp), 'about:blank'], root)
+    : start('chromium', chrome, ['--headless', '--no-first-run', '--disable-dev-shm-usage',
     '--disable-background-networking', '--no-default-browser-check', '--password-store=basic',
     '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost',
-    '--no-sandbox',
+    ...(strictNative ? [] : ['--no-sandbox']),
     `--user-data-dir=${path.join(out,'profile')}`, '--remote-debugging-address=127.0.0.1',
     `--remote-debugging-port=${ports.cdp}`, 'about:blank'], root);
   const chromeStat = await readFile(`/proc/${chromium.pid}/stat`, 'utf8');
   chromium.budgetIdentity = Object.freeze({pid: chromium.pid,
     startTicks: chromeStat.slice(chromeStat.lastIndexOf(')') + 2).split(/\s+/)[19],
     exe: await realpath(`/proc/${chromium.pid}/exe`)});
-  assert.equal(chromium.budgetIdentity.exe, await realpath(chrome), 'Actual cached Chrome identity');
-  await writeFile(path.join(out, 'chrome-native-identity.json'), JSON.stringify(chromium.budgetIdentity));
-  await ready(frontend, vite); await ready(`http://127.0.0.1:${ports.cdp}/json/version`, chromium);
+  assert.equal(chromium.budgetIdentity.exe, await realpath(nativeExecutable), 'Actual pinned native identity');
+  await writeFile(path.join(out, browserVendor === 'firefox' ? 'firefox-native-identity.json' : 'chrome-native-identity.json'), JSON.stringify(chromium.budgetIdentity));
+  await ready(frontend, vite);
+  if (browserVendor === 'firefox') {
+    await readyFirefoxListener(chromium);
+    firefoxWire = createWireTrace(process.env.MTG_CDP_DIAGNOSTIC_DIR);
+    firefoxTransport = createFirefoxTransport({controller: enrollment, directory: bodyCacheDirectory,
+      endpoint: `ws://127.0.0.1:${ports.cdp}/session`, producer: currentBackendIdentity,
+      pageOrigins: [frontend, `http://127.0.0.1:${ports.hostile}`], observe: row => firefoxWire.record(row)});
+    await firefoxTransport.ready();
+    configureFirefoxTransport(firefoxTransport);
+  } else await ready(`http://127.0.0.1:${ports.cdp}/json/version`, chromium);
   const served = {};
   for (const [name, hash] of Object.entries(built)) {
     assert.ok(!failure && !shuttingDown);
@@ -624,12 +914,13 @@ try {
   for (const mode of ['human_vs_human', 'player_vs_ai']) {
     assert.ok(!failure);
     const maxMilliseconds = mode === 'human_vs_human' ? 900000 : 1200000;
-    status.episodes.push(await deadline(runNativeHumanBo3({ mode, api, frontend, out, restartBackend,
+    const episode = () => deadline(runNativeHumanBo3({ mode, api, frontend, out, restartBackend,
       maxMilliseconds,
       assertAlive: () => { assert.ok(!failure); assert.equal(backend.exitCode, null); } }),
-    maxMilliseconds, `${mode} episode`));
+    maxMilliseconds, `${mode} episode`);
+    status.episodes.push(await (enrollment ? enrollment.withEnrolledBodyEpisode(mode, episode) : episode()));
   }
-  status.episodes.push(await deadline(runNativeHumanBo3Seat2({mode: 'player_vs_ai',
+  const seat2Episode = () => deadline(runNativeHumanBo3Seat2({mode: 'player_vs_ai',
     api, frontend, out, maxMilliseconds: 1200000,
     restartBackend: async mid => {
       const ledger = await restartBackend(mid);
@@ -637,26 +928,58 @@ try {
       return ledger;
     },
     assertAlive: () => { assert.ok(!failure); assert.equal(backend.exitCode, null); }}),
-    1200000, 'player_vs_ai seat2 reversed whole decks episode'));
+    1200000, 'player_vs_ai seat2 reversed whole decks episode');
+  status.episodes.push(await (enrollment
+    ? enrollment.withEnrolledBodyEpisode('player_vs_ai-seat2', seat2Episode) : seat2Episode()));
   })()]);
 } catch (error) { failure ??= error; }
 finally {
   shuttingDown = true;
+  const cleanupFailures = [];
   clearTimeout(watchdog);
   clearInterval(budgetWatch);
-  if(hostileServer) {try{hostileServer.closeAllConnections();await new Promise(resolve=>hostileServer.close(resolve));}catch(error){failure??=error;}}
+  if (firefoxTransport) {
+    try {
+      await deadline(firefoxTransport.close(), 15000, 'Firefox transport closure');
+      assert.ok(!firefoxTransport.observerFailed, 'Native wire observer failed');
+    } catch (error) { cleanupFailures.push(error); failure ??= error; }
+  }
+  if (typeof firefoxWire !== 'undefined' && firefoxWire?.failed) {
+    const error = new Error('Native wire metadata publication failed');
+    cleanupFailures.push(error); failure ??= error;
+  }
+  if(hostileServer) {try{hostileServer.closeAllConnections();await new Promise(resolve=>hostileServer.close(resolve));}catch(error){cleanupFailures.push(error);failure??=error;}}
   try { await deadline(Promise.all([...allocations].map(async s => {
     await new Promise(resolve => s.close(resolve)); allocations.delete(s);
-  })), 1000, 'Temporary listener closure'); } catch (error) { failure ??= error; }
+  })), 1000, 'Temporary listener closure'); } catch (error) { cleanupFailures.push(error); failure ??= error; }
   await Promise.all([...children].reverse().map(async c => {
-    try { await stop(c); } catch (error) { failure ??= error; }
+    try { await stop(c); } catch (error) { cleanupFailures.push(error); failure ??= error; }
   }));
+  if (enrollment) {
+    if (typeof bodyCacheDirectory !== 'undefined') {
+      try {
+        assert.deepEqual((await readdir(bodyCacheDirectory)).sort(), ['enrollment.json'],
+          'Genuine backend cache shutdown must leave only the owned disabled publication');
+      } catch (error) { cleanupFailures.push(error); failure ??= error; }
+    }
+    try { enrollment.close(); } catch (error) { cleanupFailures.push(error); failure ??= error; }
+    if (typeof bodyCacheDirectory !== 'undefined') {
+      try { assert.deepEqual(await readdir(bodyCacheDirectory), [], 'Firefox cache closure unproven'); }
+      catch (error) { cleanupFailures.push(error); failure ??= error; }
+    }
+  }
   try { await deadline(closedReceipt(), 8000, 'OS closure'); closureProven = true; }
-  catch (error) { failure ??= error; }
-  status.elapsedMilliseconds = Date.now() - started; status.failure = failure?.stack;
+  catch (error) { cleanupFailures.push(error); failure ??= error; }
+  status.elapsedMilliseconds = Date.now() - started; status.failure = failure?.stack ?? (failure ? String(failure) : undefined);
+  if (failure) status.primaryFailure = failure;
+  if (cleanupFailures.length) status.cleanupFailures = cleanupFailures;
   status.closureProven = closureProven;
   status.success = !failure && status.episodes.length === 3 && status.paid?.length===40 && status.recovery?.length===3 && status.origins?.length===4;
-  await writeFile(path.join(out, 'RESULT.json'), JSON.stringify(status, null, 2));
+  await writeFile(path.join(out, 'RESULT.json'), JSON.stringify(status, (_key, value) =>
+    value && typeof value === 'object' && typeof value.stack === 'string' && typeof value.message === 'string'
+      ? {name: value.name, message: value.message, stack: value.stack,
+        ...(value.cause === undefined ? {} : {cause: value.cause}),
+        ...(Array.isArray(value.errors) ? {errors: value.errors} : {})} : value, 2));
   console.log(`TERMINAL success=${status.success} UTC=${new Date().toISOString()} evidence=${out}`);
   if (closureProven) clearTimeout(hardDeadline);
   else {

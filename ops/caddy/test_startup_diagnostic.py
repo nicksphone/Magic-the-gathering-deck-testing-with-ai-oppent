@@ -30,7 +30,19 @@ def supervisor(monkeypatch, capsys):
     monkeypatch.setattr(operator.subprocess, 'run', lambda *a, **kw: SimpleNamespace(returncode=0))
     handlers, children, signals = {}, [], []
     monkeypatch.setattr(operator.signal, 'signal', lambda signum, handler: handlers.update({signum: handler}))
-    monkeypatch.setattr(operator.os, 'killpg', lambda pid, signum: signals.append((pid, signum)))
+
+    def killpg(pid, signum):
+        assert type(pid) is int
+        child = next((child for child in children if child.pid == pid), None)
+        assert child is not None
+        if signum == 0:
+            if child.waits and child.code is not None:
+                raise ProcessLookupError
+            return
+        assert signum in (signal.SIGTERM, signal.SIGKILL)
+        signals.append((pid, signum))
+
+    monkeypatch.setattr(operator.os, 'killpg', killpg)
 
     def drive(codes=(None, None), *, spawn_error=None, timeout=False, check=False):
         class Child:

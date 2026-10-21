@@ -33,6 +33,10 @@ PUBLIC_INPUT_PINS = {
     'backend/decks/builtin_decks.py': '236bc11807d9aeea3134c2b1ec9d1fa73a29d9dc366bf0e11a79ed605a14c0b3',
     'backend/decks/catalog.py': 'a3907784a4f097c6a460d38a46569dd1bd68ccf26b903d083ce6b77f4ac08aa0',
     'backend/decks/historical_event_catalog.json': '2c589f58596f09b3d3b2e7387e5bebe23030fa5c5c11c510f48f655e2c200277',
+    'backend/tests/current_built_browser_server.py': '0550d53c8d754b98bc81e276de265b05323d2940457c2436dafa7a295ac04ff3',
+    'backend/card_data/sync.py': 'bb2f0f8fa1c2048c2ce4e1238434b18827418a175219f39e674ba6b9a0d2192b',
+    'backend/tests/fixtures/human_transform_audit/canonical.json': 'd5f3d85b5ede1e70b0572a75f5b0059df273d372ed84255b42092f4dc5423743',
+    'backend/tests/fixtures/human_transform_audit/provenance.json': '34ccb890bf6412176ee35dabd124953bcf4cc72289784ebb62edec120ad58688',
 }
 
 
@@ -92,7 +96,7 @@ def _assignment(tree: ast.Module, name: str):
 
 
 def build_artifact(source_root: Path) -> dict:
-    """Read only twelve closed public paths; never import project modules."""
+    """Read only sixteen closed public paths; never import project modules."""
     root = Path(source_root)
     _checked_directory(root)
     data = {p: _read_public(root, p) for p in PUBLIC_INPUT_PINS}
@@ -136,6 +140,35 @@ def build_artifact(source_root: Path) -> dict:
             if filename in media and media[filename] != entry:
                 raise ValueError("Canonical fixture filename collision")
             media[filename] = entry
+    # INITIAL_DATABASE's existing public RAW bootstrap also renders a placeholder.
+    # Derive its inputs without calling the effectful sync/Repository path.
+    raw_path = 'backend/tests/fixtures/human_transform_audit/canonical.json'
+    provenance = json.loads(data['backend/tests/fixtures/human_transform_audit/provenance.json'])
+    packet = json.loads(data[raw_path])
+    raw = packet.get('Shock') if type(packet) is dict else None
+    if (type(provenance) is not dict or provenance.get('facts_modified') is not False
+            or provenance.get('canonical_sha256') != hashlib.sha256(data[raw_path]).hexdigest()
+            or type(raw) is not dict or raw.get('name') != 'Shock'
+            or type(raw.get('type_line')) is not str or not raw['type_line']
+            or raw.get('card_faces')):
+        raise ValueError('Invalid initial-database canonical source')
+    ids = provenance.get('ids')
+    ids = ids.get('Shock') if type(ids) is dict else None
+    if type(ids) is not dict:
+        raise ValueError('Missing initial-database provenance identities')
+    if any(type(raw.get(key)) is not str or not raw[key] or raw[key] != ids.get(key)
+           for key in ('id', 'oracle_id')):
+        raise ValueError('Initial-database RAW/provenance identity mismatch')
+    name, type_line = raw['name'], raw['type_line']
+    family = namespace['_family'](type_line=type_line, token=False)
+    filename = 'placeholder-' + family + '-' + namespace['_slug'](name, type_line or family) + '.svg'
+    content = namespace['_svg_for'](family, name=name, type_line=type_line, token=False)
+    entry = dict(name=name, type_line=type_line,
+                 seed_row_sha256=_structural(namespace['seed_card_payload'](name)),
+                 content=content, sha256=hashlib.sha256(content.encode('utf-8')).hexdigest())
+    if filename in media and media[filename] != entry:
+        raise ValueError('Canonical fixture filename collision')
+    media[filename] = entry
     return {"source_module_pins": dict(SOURCE_MODULE_PINS), "seed_cards_structural_sha256": _structural(seed),
             "builtin_decks_structural_sha256": _structural(builtin),
             "expansion_decks_structural_sha256": _structural(expansion), "startup_media": media}

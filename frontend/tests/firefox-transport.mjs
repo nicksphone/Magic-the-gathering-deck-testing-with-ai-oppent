@@ -167,22 +167,43 @@ export function createEnrollment({directory,runNonce,sourceBinding,apiOrigin,fro
  const start=fs.readFileSync('/proc/self/stat','utf8').split(')').at(-1).trim().split(/\s+/)[19];if(!decimal(start)||!Number.isSafeInteger(Number(start)))unavailable();
  const budgets={'human_vs_human':900000,'player_vs_ai':1200000,'player_vs_ai-seat2':1200000};
  const sequence=Object.keys(budgets),sent=new Map(),children=new Map();let completed=0,generation=0,armed=null,currentRecord=null,publishedIdentity=null,stagingIdentity=null,broken=false,closed=false;
+ let bootstrapFD=null,bootstrapInode=null;
  function checkRoot(){const s=fs.lstatSync(directory,{bigint:true});if(!s.isDirectory()||s.dev!==root.dev||s.ino!==root.ino||s.uid!==root.uid||(s.mode&0o777n)!==0o700n)unavailable();}
  function leaf(name){try{return fs.lstatSync(path.join(directory,name),{bigint:true});}catch(e){if(e.code==='ENOENT')return null;throw e;}}
+ function rollbackBootstrap(){
+  checkRoot();if(fs.realpathSync(directory)!==directory||bootstrapFD===null||!bootstrapInode)unavailable();
+  const owned=s=>s.isFile()&&s.dev===bootstrapInode.dev&&s.ino===bootstrapInode.ino&&s.uid===root.uid&&(s.mode&0o777n)===0o600n;
+  const held=fs.fstatSync(bootstrapFD,{bigint:true});if(!owned(held)||held.nlink>1n)unavailable();
+  const names=['enrollment.next','enrollment.json'],candidates=names.map(name=>({name,stat:leaf(name)}));
+  // Check every candidate before deleting any; the held FD prevents inode reuse.
+  for(const {stat}of candidates)if(stat&&(!validFile(stat)||!owned(stat)||fingerprint(stat)!==fingerprint(held)))unavailable();
+  if(held.nlink!==BigInt(candidates.filter(entry=>entry.stat).length))unavailable();
+  for(const {name,stat}of candidates)if(stat){
+   checkRoot();if(fs.realpathSync(directory)!==directory)unavailable();
+   const current=leaf(name),still=fs.fstatSync(bootstrapFD,{bigint:true});
+   if(!current||!validFile(current)||!owned(still)||!owned(current)||fingerprint(current)!==fingerprint(stat)||fingerprint(current)!==fingerprint(still))unavailable();
+   fs.unlinkSync(path.join(directory,name));
+  }
+  checkRoot();const retired=fs.fstatSync(bootstrapFD,{bigint:true});
+  if(fs.realpathSync(directory)!==directory||!owned(retired)||retired.nlink!==0n||names.some(name=>leaf(name)))unavailable();
+  publishedIdentity=null;stagingIdentity=null;currentRecord=null;
+ }
  function publish(enabled){
-  checkRoot();if(generation>=6||broken||!armed)unavailable();
+  checkRoot();const bootstrap=armed===null;
+  if(generation>=6||broken||bootstrap&&(enabled!==false||generation!==0||publishedIdentity!==null||stagingIdentity!==null||currentRecord!==null))unavailable();
   const old=leaf('enrollment.json');if((old&&!publishedIdentity)||(!old&&publishedIdentity)||(old&&fingerprint(old)!==publishedIdentity)||leaf('enrollment.next'))unavailable();
-  const record={schema_version:1,generation:generation+1,enabled,episode:armed.episode,run_nonce:runNonce,source_binding:sourceBinding,api_origin:apiOrigin,frontend_origin:frontendOrigin,publisher_uid:process.getuid(),pid:process.pid,start_ticks:Number(start),native_top_context:enabled?armed.context:null,armed_ns:armed.at.toString(),expires_ns:armed.expiry.toString()};
+  const record={schema_version:1,generation:bootstrap?0:generation+1,enabled,episode:bootstrap?null:armed.episode,run_nonce:runNonce,source_binding:sourceBinding,api_origin:apiOrigin,frontend_origin:frontendOrigin,publisher_uid:process.getuid(),pid:process.pid,start_ticks:Number(start),native_top_context:enabled?armed.context:null,armed_ns:bootstrap?'0':armed.at.toString(),expires_ns:bootstrap?'0':armed.expiry.toString()};
   const data=Buffer.from(JSON.stringify(record));if(data.length>4096)unavailable();
   const fd=fs.openSync(path.join(directory,'enrollment.next'),fs.constants.O_WRONLY|fs.constants.O_CREAT|fs.constants.O_EXCL|fs.constants.O_NOFOLLOW,0o600);
-  try{fs.writeFileSync(fd,data);fs.fsyncSync(fd);const s=fs.fstatSync(fd,{bigint:true});if(!validFile(s)||s.size!==BigInt(data.length))unavailable();stagingIdentity=fingerprint(s);}finally{fs.closeSync(fd);}
+  if(bootstrap){bootstrapFD=fd;bootstrapInode=fs.fstatSync(fd,{bigint:true});if(!validFile(bootstrapInode))unavailable();}
+  try{fs.writeFileSync(fd,data);fs.fsyncSync(fd);const s=fs.fstatSync(fd,{bigint:true});if(!validFile(s)||s.size!==BigInt(data.length))unavailable();stagingIdentity=fingerprint(s);}finally{if(!bootstrap)fs.closeSync(fd);}
   try{
    const staged=leaf('enrollment.next');if(!staged||!validFile(staged)||fingerprint(staged)!==stagingIdentity)unavailable();
    fs.renameSync(path.join(directory,'enrollment.next'),path.join(directory,'enrollment.json'));
    const actual=leaf('enrollment.json');if(!actual||!validFile(actual)||actual.dev!==staged.dev||actual.ino!==staged.ino||actual.size!==staged.size)unavailable();
    publishedIdentity=fingerprint(actual);stagingIdentity=null;
    const dirfd=fs.openSync(directory,fs.constants.O_RDONLY|fs.constants.O_DIRECTORY|fs.constants.O_NOFOLLOW);try{fs.fsyncSync(dirfd);}finally{fs.closeSync(dirfd);}
-   generation++;currentRecord=record;
+   if(!bootstrap)generation++;currentRecord=record;
   }catch(e){broken=true;currentRecord=null;throw e;}
  }
  function current(){if(closed||broken||!armed||!currentRecord?.enabled||process.hrtime.bigint()>=armed.expiry)return null;return {...currentRecord};}
@@ -235,7 +256,23 @@ export function createEnrollment({directory,runNonce,sourceBinding,apiOrigin,fro
   publishedIdentity=null;stagingIdentity=null;
  }
  const publisher={withEnrolledBodyEpisode,recordCommand,acceptReply,contextCreated,hasContext,current,close,get isArmed(){return !!armed&&!closed&&!broken;},bindings:Object.freeze({run_nonce:runNonce,source_binding:sourceBinding,api_origin:apiOrigin,frontend_origin:frontendOrigin})};
- publishers.add(publisher);return publisher;
+ try{
+  publish(false);publishers.add(publisher);
+  fs.closeSync(bootstrapFD);bootstrapFD=null;return publisher;
+ }catch(primary){
+  if(bootstrapFD===null&&bootstrapInode===null)throw primary;
+  let cleanup;
+  try{rollbackBootstrap();}catch(error){cleanup=error;}
+  if(bootstrapFD!==null){
+   try{
+    const held=fs.fstatSync(bootstrapFD,{bigint:true});
+    if(!bootstrapInode||!held.isFile()||held.dev!==bootstrapInode.dev||held.ino!==bootstrapInode.ino||held.uid!==root.uid||(held.mode&0o777n)!==0o600n)unavailable();
+    fs.closeSync(bootstrapFD);bootstrapFD=null;
+   }catch(error){cleanup=cleanup?new AggregateError([cleanup,error],'Firefox bootstrap cleanup and FD close failed'):error;}
+  }
+  if(cleanup)throw new AggregateError([primary,cleanup],'Firefox bootstrap publication and cleanup failed');
+  throw primary;
+ }
 }
 
 // Private original-driver ABI hookup. Only actual BiDi wire replies are native

@@ -1,0 +1,177 @@
+name: Browser Owned Closeout Localization
+
+on:
+  push:
+    paths:
+      - .github/workflows/browser-owned-closeout-localization.yml
+      - frontend/package.json
+      - frontend/tests/release-owned/run-current-built-acceptance.mjs
+      - frontend/tests/release-owned/owned-process-group-closure.test.mjs
+      - .github/scripts/tests/test_browser_request_state_schedule.py
+      - frontend/tests/browser-response-drop-request-state.test.mjs
+
+permissions:
+  contents: read
+
+jobs:
+  node-protocols:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24.22.0'
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.3'
+      - name: Five whole Node protocol modules, no browser or dependencies
+        working-directory: frontend
+        timeout-minutes: 7
+        run: |
+          set -euo pipefail
+          scratch="$RUNNER_TEMP/browser-owned-closeout-node"
+          test ! -e "$scratch" && test ! -L "$scratch"
+          mkdir -m 700 "$scratch"
+          mkdir -m 700 "$scratch/tmp"
+          export TMPDIR="$scratch/tmp"
+          report="$scratch/junit.xml"
+          status=0
+          timeout --signal=TERM --kill-after=15s 300s \
+            node --test --test-reporter=junit --test-reporter-destination="$report" \
+            tests/release-owned/owned-process-group-closure.test.mjs \
+            tests/firefox-release-owned-launcher-contract.test.mjs \
+            tests/firefox-launcher-listener-readiness.test.mjs \
+            tests/release-owned/public-storage-owner-rename-budget.test.mjs \
+            tests/browser-response-drop-request-state.test.mjs || status=$?
+          summary_status=0
+          python -I -S -B - "$report" "$status" <<'PYTHON' || summary_status=$?
+          import hashlib, json, stat, sys, xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          report = Path(sys.argv[1])
+          info = report.lstat()
+          if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 262144:
+              raise SystemExit('Invalid Node protocol report')
+          cases = list(ET.parse(report).getroot().iter('testcase'))
+          failures = sum(case.find('failure') is not None for case in cases)
+          errors = sum(case.find('error') is not None for case in cases)
+          skips = sum(case.find('skipped') is not None for case in cases)
+          summary = dict(cases=len(cases), passed=len(cases) - failures - errors - skips,
+                         failures=failures, errors=errors, skips=skips, exit=int(sys.argv[2]))
+          if (len(cases) != 99 or min(summary.values()) < 0 or not 0 <= summary['exit'] <= 255
+                  or summary['exit'] == 0 and failures + errors + skips):
+              raise SystemExit(f'Inconsistent Node protocol report: expected=99 actual={len(cases)}')
+          print('\n::notice title=Browser owned closeout Node result::' + json.dumps(summary, separators=(',', ':')))
+          identities = {}
+          for key, tag in (('failures', 'failure'), ('errors', 'error')):
+              names = [case.get('name') for case in cases if case.find(tag) is not None]
+              if any(type(name) is not str or not name for name in names):
+                  raise SystemExit('Invalid Node failure identity')
+              identities[key] = sorted(hashlib.sha256(name.encode('utf-8')).hexdigest() for name in names)
+          if sum(len(values) for values in identities.values()) > 256:
+              raise SystemExit('Too many Node failure identities')
+          print('\n::notice title=Browser owned closeout Node failure identities::' + json.dumps(identities, separators=(',', ':')))
+          PYTHON
+          if ((status)); then exit "$status"; fi
+          exit "$summary_status"
+
+  python-schedules:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12.3'
+      - name: Five whole stdlib schedule modules, explicit file loading
+        timeout-minutes: 7
+        run: |
+          set -euo pipefail
+          scratch="$RUNNER_TEMP/browser-owned-closeout-python"
+          test ! -e "$scratch" && test ! -L "$scratch"
+          mkdir -m 700 "$scratch"
+          mkdir -m 700 "$scratch/tmp"
+          export TMPDIR="$scratch/tmp"
+          report="$scratch/result.json"
+          status=0
+          timeout --signal=TERM --kill-after=15s 300s python -I -S -B - "$report" <<'PYTHON' || status=$?
+          import hashlib, importlib.util, json, sys, unittest
+          from pathlib import Path
+
+          suite = unittest.TestSuite()
+          loader = unittest.TestLoader()
+          for relative in (
+              '.github/scripts/tests/test_browser_request_state_schedule.py',
+              '.github/scripts/tests/test_drop_diagnostic_schedule.py',
+              '.github/scripts/tests/test_firefox_unit_schedule.py',
+              '.github/scripts/tests/test_native_workflow_budget.py',
+              '.github/scripts/tests/test_ci_trigger_policy.py',
+          ):
+              path = Path(relative).resolve(strict=True)
+              spec = importlib.util.spec_from_file_location(path.stem, path)
+              module = importlib.util.module_from_spec(spec)
+              sys.modules[spec.name] = module
+              spec.loader.exec_module(module)
+              suite.addTests(loader.loadTestsFromModule(module))
+          if suite.countTestCases() != 6:
+              raise SystemExit('Exact six schedule methods required')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          status = int(not result.wasSuccessful())
+          errors = {getattr(test, 'test_case', test).id() for test, _ in result.errors}
+          failures = {getattr(test, 'test_case', test).id() for test, _ in result.failures} - errors
+          skips = {getattr(test, 'test_case', test).id() for test, _ in result.skipped} - errors - failures
+          summary = dict(cases=result.testsRun, passed=result.testsRun - len(errors | failures | skips),
+                         failures=len(failures), errors=len(errors), skips=len(skips), exit=status)
+          try:
+              Path(sys.argv[1]).write_text(json.dumps(summary, separators=(',', ':')) + '\n')
+              identities = {
+                  key: sorted(hashlib.sha256(test.id().encode('utf-8')).hexdigest() for test, _ in rows)
+                  for key, rows in (('failures', result.failures), ('errors', result.errors))
+              }
+              if sum(len(values) for values in identities.values()) > 256:
+                  raise SystemExit('Too many Python failure identities')
+              Path(sys.argv[1]).with_name('failure-identities.json').write_text(json.dumps(identities, separators=(',', ':')) + '\n')
+          finally:
+              raise SystemExit(status)
+          PYTHON
+          summary_status=0
+          python -I -S -B - "$report" "$status" <<'PYTHON' || summary_status=$?
+          import json, stat, sys
+          from pathlib import Path
+
+          report = Path(sys.argv[1])
+          info = report.lstat()
+          if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 4096:
+              raise SystemExit('Invalid Python protocol report')
+          summary = json.loads(report.read_bytes())
+          if (set(summary) != {'cases', 'passed', 'failures', 'errors', 'skips', 'exit'}
+                  or any(type(value) is not int or value < 0 for value in summary.values())
+                  or summary['exit'] != int(sys.argv[2]) or not 0 <= summary['exit'] <= 255
+                  or not summary['cases']
+                  or summary['cases'] != sum(summary[key] for key in ('passed', 'failures', 'errors', 'skips'))
+                  or summary['exit'] == 0 and summary['failures'] + summary['errors'] + summary['skips']):
+              raise SystemExit('Inconsistent Python protocol report')
+          print('\n::notice title=Browser owned closeout Python result::' + json.dumps(summary, separators=(',', ':')))
+          identity_report = report.with_name('failure-identities.json')
+          info = identity_report.lstat()
+          if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_size > 32768:
+              raise SystemExit('Invalid Python failure identity report')
+          identities = json.loads(identity_report.read_bytes())
+          if (type(identities) is not dict or set(identities) != {'failures', 'errors'}
+                  or any(type(values) is not list for values in identities.values())
+                  or sum(len(values) for values in identities.values()) > 256):
+              raise SystemExit('Invalid Python failure identities')
+          for values in identities.values():
+              if any(type(value) is not str or len(value) != 64 or any(char not in '0123456789abcdef' for char in value) for value in values):
+                  raise SystemExit('Invalid Python failure identity hash')
+              if values != sorted(values):
+                  raise SystemExit('Unsorted Python failure identities')
+          print('\n::notice title=Browser owned closeout Python failure identities::' + json.dumps(identities, separators=(',', ':')))
+          PYTHON
+          if ((status)); then exit "$status"; fi
+          exit "$summary_status"

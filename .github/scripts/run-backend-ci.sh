@@ -110,8 +110,49 @@ pytest_started=0
 sink_pid=
 watcher_pid=
 pytest_status=
+evidence_status=
+audit_status=
+pressure_status=
+sink_status=
+watcher_status=
+work_exit_stage=EARLY_OR_UNKNOWN
+group_after_wait_quiet=
+group_final_quiet=
+write_runner_closeout() {
+  local value stage=$work_exit_stage complete=true failed changed=false
+  local path="$evidence/runner-closeout.json"
+  local -a codes=() groups=()
+  # Fixed scalar operands only; no shell output, PID, argv or raw log is serialized.
+  for value in "$closeout_entry_status" "$status" "${pytest_status:-}" \
+      "${evidence_status:-}" "${audit_status:-}" "${pressure_status:-}" \
+      "${sink_status:-}" "${watcher_status:-}"; do
+    if [[ "$value" =~ ^(0|[1-9][0-9]{0,2})$ ]] && ((value <= 255)); then
+      codes+=("$value")
+    else
+      codes+=(null)
+      complete=false
+    fi
+  done
+  for value in "$group_after_wait_quiet" "$group_final_quiet"; do
+    case "$value" in
+      true|false) groups+=("$value") ;;
+      *) groups+=(null); complete=false ;;
+    esac
+  done
+  case "$stage" in
+    EARLY_OR_UNKNOWN|PYTEST|SINK|CONTROL|EVIDENCE|AUDIT) ;;
+    *) stage=EARLY_OR_UNKNOWN ;;
+  esac
+  case "$diagnostic_failed" in 0) failed=false ;; 1) failed=true ;; *) return 1 ;; esac
+  if ((closeout_entry_status != status)); then changed=true; fi
+  [[ ! -e "$path" && ! -L "$path" ]] || return 1
+  (umask 077; set -o noclobber
+   printf '{"schema_version":1,"work_exit_stage":"%s","entry_exit_code":%s,"final_exit_code":%s,"pytest_exit_code":%s,"evidence_exit_code":%s,"audit_exit_code":%s,"pressure_exit_code":%s,"sink_exit_code":%s,"watcher_exit_code":%s,"diagnostic_failed":%s,"group_after_wait_quiet":%s,"group_final_quiet":%s,"trap_changed_exit":%s,"closeout_complete":%s}\n' \
+     "$stage" "${codes[@]}" "$failed" "${groups[@]}" "$changed" "$complete" > "$path")
+}
 cleanup_owned() {
   status=$?
+  closeout_entry_status=$status
   trap - EXIT
   begin_closeout
   if [[ -n "$pytest_pid" ]]; then
@@ -136,7 +177,10 @@ cleanup_owned() {
       diagnostic_failed=1
     fi
   fi
-  if [[ -n "$watcher_pid" ]]; then close_diagnostic watcher "$watcher_pid" 20; fi
+  if [[ -n "$watcher_pid" ]]; then
+    close_diagnostic watcher "$watcher_pid" 20
+    watcher_status=$diagnostic_status
+  fi
   if [[ -n "$progress_pid" ]]; then
     # A blocked public sink can stall only this isolated group, never pytest.
     close_diagnostic progress "$progress_pid" 20
@@ -148,13 +192,18 @@ cleanup_owned() {
   fi
   if [[ -n "$pressure_pid" ]]; then
     close_diagnostic pressure "$pressure_pid" 50
+    pressure_status=$diagnostic_status
   fi
-  if [[ -n "$sink_pid" ]]; then close_diagnostic sink "$sink_pid" 50; fi
+  if [[ -n "$sink_pid" ]]; then
+    close_diagnostic sink "$sink_pid" 50
+    sink_status=$diagnostic_status
+  fi
   if [[ "$shard_role" != legacy && "$pytest_started" == 1 ]]; then
     # Retain registration after leader wait; absence of its group is separate.
     # This presence-only query never signals a surviving/reused/unbound group.
     timeout --signal=TERM --kill-after=2s 5s python "$shard_helper" group-quiet \
-      "$evidence/deadline.json.identity.json" "$evidence/group-quiet-final.json" || diagnostic_failed=1
+      "$evidence/deadline.json.identity.json" "$evidence/group-quiet-final.json" \
+      && group_final_quiet=true || { group_final_quiet=false; diagnostic_failed=1; }
   fi
   # Release only this freshly pinned reserve, never failed/source scratch.
   timeout --signal=TERM --kill-after=2s 10s /usr/bin/env -i PATH=/usr/bin:/bin LANG=C.UTF-8 "$storage_python" -I -B \
@@ -162,6 +211,8 @@ cleanup_owned() {
   exec 1>/dev/null 2>/dev/null
   close_diagnostic logger "$logger_pid" 20
   if ((status == 0 && (diagnostic_status != 0 || diagnostic_failed != 0))); then status=2; fi
+  # Optional evidence failure cannot replace the already determined runner exit.
+  write_runner_closeout || true
   exit "$status"
 }
 trap cleanup_owned EXIT
@@ -315,6 +366,7 @@ if [[ -n "$watcher_pid" ]]; then
   if [[ "$first_wait" == "$pytest_pid" ]]; then
     pytest_status=$first_status
   else
+    watcher_status=$first_status
     if ((first_status != 0)); then
       evidence_status=2
       close_diagnostic pytest "$pytest_pid" 0
@@ -346,7 +398,8 @@ if [[ -n "$watcher_pid" ]]; then
 fi
 if [[ "$shard_role" != legacy ]]; then
   timeout --signal=TERM --kill-after=2s 5s python "$shard_helper" group-quiet \
-    "$evidence/deadline.json.identity.json" "$evidence/group-quiet-after-wait.json" || evidence_status=2
+    "$evidence/deadline.json.identity.json" "$evidence/group-quiet-after-wait.json" \
+    && group_after_wait_quiet=true || { group_after_wait_quiet=false; evidence_status=2; }
 fi
 close_diagnostic pressure "$pressure_pid" 50
 pressure_status=$diagnostic_status
@@ -384,8 +437,13 @@ else
     fi
   fi
 fi
+work_exit_stage=PYTEST
 if ((statuses[0] != 0)); then exit "${statuses[0]}"; fi
+work_exit_stage=SINK
 if ((statuses[1] != 0)); then exit "${statuses[1]}"; fi
+work_exit_stage=CONTROL
 if ((pressure_status != 0 || diagnostic_failed != 0)); then exit 2; fi
+work_exit_stage=EVIDENCE
 if ((evidence_status != 0)); then exit "$evidence_status"; fi
+work_exit_stage=AUDIT
 exit "$audit_status"

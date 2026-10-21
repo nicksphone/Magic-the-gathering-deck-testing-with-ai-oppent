@@ -14,10 +14,10 @@ from rules_engine.draw_restrictions import can_draw_card
 from rules_engine.land_rules import compute_max_land_plays_this_turn
 from rules_engine.library_permissions import top_library_creature_for_type
 from rules_engine.hooks import CostContext, apply_cost_modifiers
-from tests.test_ability_suppression import CARDS as PREVIOUS
 from tests.test_ai_recurring_engines import fixture, add as raw_add
 from game_state.state import Zone, assign_static_order_on_battlefield_entry
 
+PREVIOUS = {c['name']: c for c in json.loads((Path(__file__).parent / 'fixtures/ability_suppression.json').read_text())}
 CARDS = {**PREVIOUS, **{c['name']: c for c in json.loads((Path(__file__).parent/'fixtures/static_ability_suppression.json').read_text())}}
 
 
