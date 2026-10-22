@@ -1,13 +1,29 @@
 # Release Acceptance Status
 
-## Measurement And HTTP Acceptance Candidate
+## October 22 Published Measurement And HTTP Acceptance
 
-The current candidate separates full private measurement artifacts from the
+[PR 22](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/22)
+is merged as `95cf63d4cf583c8ba4c2b849346422b893b8a61f`. The published tree is
+identical to the tested candidate and synthetic merge. Its completed
+[eight-job regression](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39781210807)
+contains 33,593 backend nodes in 1,172 whole modules: 33,523 ordinary passes,
+70 unchanged setup skips and 160 passing subtests. Original ordered nodes and
+phase outcomes, the 22 new passes, artifact digests and job identities are
+independently reconciled. Skips remain skips. This is publication and test
+evidence, not an upgrade of the operator's running installation.
+
+The subsequent [published-main regression](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39794990028)
+also passes all eight jobs on actual `95cf63d4`, with authenticated artifacts,
+the same complete ordered declaration, original phase outcomes and counts
+independently verified. This is a separate completed run, not a repeat inferred
+from tree equality.
+
+The merged measurement fix separates full private measurement artifacts from the
 unchanged 1 MiB API/result/snapshot limits. All fourteen numeric caps, complete
 logs, real receipt/hash joins, policy and metric definitions remain unchanged.
 Twelve whole affected modules pass 350 ordinary tests and 31 subtests; a
 separate parent invocation passes all sixteen new regressions. These are
-protocol checks, not natural-game or AI-improvement evidence. The previous
+protocol checks, not natural-game or AI-improvement evidence. The older
 sixteen-game declaration has eight attempts, eight unrun games and zero eligible
 comparisons, all stopped by `result_json`; unavailable metrics and winners are
 not inferred. See [private artifact budgets](private-measurement-artifact-budget.md).
@@ -17,13 +33,64 @@ four concurrent manual/autoplay cases and two canonical triggered repeat-cleanup
 cases. All six and eighteen phases pass under owned file-SQLite/ASGI isolation,
 with actor/manager exit zero and independent physical closure. An earlier new
 fixture argument error is preserved separately. Runtime code for these routes,
-rules, persistence and fixtures is byte-identical in this candidate; only the
+rules, persistence and fixtures is byte-identical in this change; only the
 offline measurement scripts change. See [the six-case scope](rc-manual-autoplay-and-repeat-cleanup.md).
 
-The composed candidate's full remote regression and a completed matched AI
-comparison are still required. Default policy remains heuristic, learned policy
-experimental, and this is not an RC-complete or deployed-server declaration.
-Separate-device LAN/manual CA trust remains user-deferred, not passed.
+## Current AI Evidence And Remaining Acceptance
+
+The fresh predeclared matched comparison completes all sixteen attempted games
+with zero unrun games and no resource-limit errors or policy denials. Six of
+eight two-game arm packages are eligible. The remaining reference and active
+packages have the same two unavailable decision-quality metrics; they are not
+imputed as zero. The whole comparison therefore does not pass its original
+eligibility contract. All deltas are zero at the three comparable matchup/seed
+coordinates: no measured natural-game improvement is established. The older
+incomplete experiment and this completed-but-partly-ineligible result remain
+separate records.
+
+A supplementary counter-sensitivity calibration executes the same three whole
+modules in each policy arm: 124 cases total. The reference has 50 passes and
+12 assertion failures; the active policy has 62 passes. Eight actual pass-to-
+block changes improve checked survival or damage outcomes while the available
+legacy decision counters remain unchanged. Four other reference cases stop at
+an earlier search-admission assertion, before an action is observed. These
+controlled boards demonstrate a counter-coverage limitation and narrow tactical
+improvement, not natural-game strength, a held-out result or an RC waiver.
+
+A subsequent predeclared parameter-transfer evaluation uses eight deterministically
+selected life/blocker-count pairs not used in that calibration, both seats
+and four frozen own/opponent profile contexts. Sixteen initial snapshots are
+prepared once before AI choice; each policy receives independent restorations
+of the same snapshot/RNG/card identities for all 64 evaluations per arm. All
+128 checked endpoints are available. The active policy avoids eight reference
+losses and takes three less damage in sixteen other paired cases; forty pairs
+have equal surviving life. Every active endpoint matches the independently
+checked safe-block alternative, with no paired loss, life or per-card material
+regression. Dead-reference life differences remain null, not zero.
+
+These are trusted initial boards/counters and scripted ordinary opponent passes,
+with actual unchanged AI choices and checked combat continuation. The four
+contexts are profile labels, not four physical decks; Llanowar Elves count
+changes offered blockers as well as mana-source availability. Parameters are
+held out, but the canonical combat mechanism is already exposed. The result
+supports narrow tactical parameter transfer, not independent natural games,
+population-level playing strength or a waiver of natural-game acceptance.
+
+Default policy remains heuristic; learned policy remains experimental opt-in.
+Private synthetic traces remain protected inputs, not public fixtures. Measured
+AI-quality acceptance and final release reconciliation/signoff remain open.
+The separate-device LAN routing/manual client CA-trust check is user-deferred,
+not passed; local HTTPS/authentication and Linux Chrome, Brave and Firefox
+remain in scope. Broader arbitrary-card/expert-AI objectives are not declared
+complete by the supported-corpus component results.
+
+The official OSV lookup refreshed at `2026-10-22T15:35:41Z` returns HTTP 200 and
+242 complete results for the unchanged locks: 28 application PyPI and 214 unique
+frontend npm package/version pairs, including optional/platform entries. No
+advisory matches or pagination tokens are returned. This is dated database
+evidence for those exact versions, not installation/reachability proof or an
+application-security certificate. Only public package names and versions are
+sent; no project data, traces or credentials are included.
 
 ## October 22 Verified Release Progress
 
