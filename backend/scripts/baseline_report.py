@@ -304,7 +304,8 @@ def render_report(report: dict[str, Any]) -> str:
 def package_measurement(production, *, directory, oracle_path, log_priors_path, budget, artifact_guard):
     """Package current closed fixed-game files; never run, retry or repair a game."""
     from analytics.resource_budget import checked_json
-    from scripts.matchup_round_robin import canonical_bytes, digest
+    from scripts.matchup_round_robin import (canonical_bytes, digest, checked_private_artifact,
+                                           preflight_game_record, _private_result_metadata)
     if (not callable(artifact_guard) or type(production) is not dict
             or production.get('budget_identity') != id(budget)
             or production.get('budget_deadline') != budget.deadline):
@@ -319,7 +320,9 @@ def package_measurement(production, *, directory, oracle_path, log_priors_path, 
             from analytics.resource_budget import SimulationResourceLimit
             raise SimulationResourceLimit('result_json')
         return raw
-    producer = read(directory / 'producer.json', limits['result_json_bytes'])
+    private_maximum = limits['batch_log_utf8_bytes']
+    checked_private_artifact('producer.json', production, budget)
+    producer = read(directory / 'producer.json', private_maximum)
     if canonical_bytes(json.loads(producer)) != canonical_bytes(production):
         raise ValueError('Producer file differs from the actual delivery')
     input_hashes = {}
@@ -331,9 +334,13 @@ def package_measurement(production, *, directory, oracle_path, log_priors_path, 
         input_hashes[str(path)] = actual
     observed = {}
     for name, receipt in production['output_files'].items():
-        raw = read(directory / name, limits['result_json_bytes'] + 1)
+        if name not in ('row-00.jsonl', 'row-01.jsonl', 'comparison-gate.json', 'legacy-gate.json'):
+            raise ValueError('Unknown fixed private output')
+        raw = read(directory / name, private_maximum if name.startswith('row-') else limits['result_json_bytes'] + 1)
         if len(raw) != receipt['bytes'] or hashlib.sha256(raw).hexdigest() != receipt['sha256']:
             raise ValueError('Actual closed writer output differs')
+        if name.startswith('row-'):
+            checked_private_artifact(name, json.loads(raw), budget)
         observed[name] = raw
     sample_fields = ('deck_a', 'deck_b', 'seed_token', 'deck_a_seat', 'evidence_complete', 'status', 'winner')
 
@@ -377,7 +384,7 @@ def package_measurement(production, *, directory, oracle_path, log_priors_path, 
                     or sample['evidence_complete'] and index >= len(records)):
                 raise ValueError('Published sample differs from its actual coordinate/outcome/evidence')
         names, identities, row_index = set(), set(), 0
-        maximum = min(limits['result_json_bytes'], limits['snapshot_json_bytes'])
+        wire_maximum = min(limits['result_json_bytes'], limits['snapshot_json_bytes'])
         for index, binding in enumerate(records):
             budget.check_deadline()
             if (type(binding) is not dict or set(binding) != {'ordinal', 'coordinate', 'receipt', 'result'}
@@ -396,6 +403,14 @@ def package_measurement(production, *, directory, oracle_path, log_priors_path, 
                     or receipt['reference'] != f'game-{index + 1:02d}.json'):
                 raise ValueError('Genuine complete writer receipt/sample join required')
             path = directory / receipt['reference']
+            _private_result_metadata(binding['result'], budget)
+            # Receipt bytes bound the exact existing envelope before decoding it.
+            from analytics.resource_budget import checked_json
+            result_json = checked_json(binding['result'], private_maximum, 'batch_log', separators=(',', ':'))
+            overhead = len(canonical_bytes(dict(schema_version=1, result={}, raw_log=[], raw_sha256='0' * 64))) - 4
+            if receipt['bytes'] < 0:
+                raise ValueError('Nonnegative actual raw byte count required')
+            maximum = min(private_maximum, max(wire_maximum, overhead + len(result_json) + receipt['bytes']))
             fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
             try:
                 before = os.fstat(fd)
@@ -423,7 +438,8 @@ def package_measurement(production, *, directory, oracle_path, log_priors_path, 
                     or type(envelope['result']) is not dict or type(envelope['raw_log']) is not list
                     or any(type(line) is not str for line in envelope['raw_log'])):
                 raise ValueError('Complete actual writer envelope required')
-            raw_log = checked_json(envelope['raw_log'], maximum, 'result_json', separators=(',', ':')).encode('ascii')
+            preflight_game_record(envelope['result'], envelope['raw_log'], budget, True)
+            raw_log = checked_json(envelope['raw_log'], private_maximum, 'batch_log', separators=(',', ':')).encode('ascii')
             raw_sha = hashlib.sha256(raw_log).hexdigest()
             if (canonical_bytes(envelope) != raw or hashlib.sha256(raw).hexdigest() != receipt['record_sha256']
                     or envelope['raw_sha256'] != raw_sha or receipt['raw_sha256'] != raw_sha

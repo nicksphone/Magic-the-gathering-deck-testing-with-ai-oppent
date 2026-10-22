@@ -1,5 +1,226 @@
 # Release Acceptance Status
 
+## Measurement And HTTP Acceptance Candidate
+
+The current candidate separates full private measurement artifacts from the
+unchanged 1 MiB API/result/snapshot limits. All fourteen numeric caps, complete
+logs, real receipt/hash joins, policy and metric definitions remain unchanged.
+Twelve whole affected modules pass 350 ordinary tests and 31 subtests; a
+separate parent invocation passes all sixteen new regressions. These are
+protocol checks, not natural-game or AI-improvement evidence. The previous
+sixteen-game declaration has eight attempts, eight unrun games and zero eligible
+comparisons, all stopped by `result_json`; unavailable metrics and winners are
+not inferred. See [private artifact budgets](private-measurement-artifact-budget.md).
+
+The two previously unlinked HTTP acceptance seams now have actual evidence:
+four concurrent manual/autoplay cases and two canonical triggered repeat-cleanup
+cases. All six and eighteen phases pass under owned file-SQLite/ASGI isolation,
+with actor/manager exit zero and independent physical closure. An earlier new
+fixture argument error is preserved separately. Runtime code for these routes,
+rules, persistence and fixtures is byte-identical in this candidate; only the
+offline measurement scripts change. See [the six-case scope](rc-manual-autoplay-and-repeat-cleanup.md).
+
+The composed candidate's full remote regression and a completed matched AI
+comparison are still required. Default policy remains heuristic, learned policy
+experimental, and this is not an RC-complete or deployed-server declaration.
+Separate-device LAN/manual CA trust remains user-deferred, not passed.
+
+## October 22 Verified Release Progress
+
+The separate-device LAN routing and manual client CA-trust check is deferred
+by the user for RC. It is not recorded as passed. Local HTTPS/authentication
+and Linux Chrome, Brave and Firefox remain in scope.
+
+[PR 20](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/20)
+is merged as `251298a821a0596010f20c93a1743758a5d3e828`. Its tested merge,
+public candidate and actual merged trees are identical. The completed
+[eight-job regression run](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39718908830)
+preserves all 33,571 original backend nodes in 1,169 whole modules: 33,501
+ordinary passes, 70 setup skips and 160 passing subtests. Artifact digests,
+membership and ordered phase outcomes are independently verified. The skips
+remain skips; separately executed components are not added to that count.
+The subsequent [main run 39727721881](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39727721881)
+also passes all eight jobs on the actual published merge, with the same original
+ordered nodes, phases, setup skips and passing subtests independently verified.
+
+The rebuilt card-table application completes all six native Firefox narrow-
+viewport cells and its 120-second health/reload smoke. Actual native viewport
+acknowledgements, keyboard/focus interaction, unchanged saved snapshot, eight
+health requests, two reloads and zero mutation requests are retained. No
+unnamed controls remain in the declared home/deck/table cells. Its original
+manager exit remains one: a separate receipt reader incorrectly required
+content scroll width to be at least viewport width. Correcting only that
+lower bound accepts the unchanged raw receipts; physical closure is verified
+independently. This is not a repeated browser run, screen-reader certification,
+or a long-session result.
+
+The original `ab6e` full50 declaration separately supplies active long-browser
+session evidence: its one Firefox process/profile remains alive for 1,816.814
+seconds through paid actions, recovery, origin checks and natural BO3, then
+closes cleanly. All 49 managed App contexts close; no single context is claimed
+to have lasted 30 minutes. Backend, launcher, browser driver, dependency lock
+and admitted runtime inputs are unchanged by the later accessible-name-only
+application delta. This supports scoped reuse of the original session, not a
+new execution on `6bbb`, an idle-page soak or a memory-leak certificate.
+
+[PR 21](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/21)
+candidate `8f0b75305dcc572a014f511b488118baf273167e` separately passes the
+[hosted clean-userspace component](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39731560602).
+All five Python provisioning stages and five frontend stages exit zero.
+The unchanged HTTPS/authentication/restart client passes all 479 observed
+instances across its 70 original distinct labels. Source/runtime equality,
+exact original tool pins, database/service closure and final container/cgroup
+closure are verified. This uses one fresh Ubuntu userspace on a hosted VM,
+not a physical-device or LAN-client certificate. Earlier failed provisioning,
+diagnostic and runtime-permission attempts remain separate historical results.
+Its [complete regression run](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39731396851)
+also passes all eight jobs, preserving the original 33,571 backend nodes and
+their ordered phase outcomes. PR 21 is merged as
+`6fab0e52d6bd1e871262876a98cc5e6c2f81bc63`; the merged tree is identical to
+the tested synthetic merge and public candidate. This is a normal verified
+merge, not a claim that an operator's running installation has been upgraded.
+
+The official OSV lookup at 2026-10-21 16:47 UTC covers 242 exact locked
+package/version pairs: 28 application PyPI packages and 214 unique frontend npm
+versions, including optional/platform lock entries. It returned HTTP 200, no
+advisory matches and no pending pagination. Both lockfiles remain byte-identical
+on `8f0`; this is dated database evidence, not a new query or security
+certificate. The application lock already uses certifi 2026.10.19. Its reviewed
+trust-store transition removes one root and adds none; current fresh install,
+consistency and HTTPS acceptance are separate evidence. Optional trainer and OS/
+browser dependencies remain distinct scopes.
+
+Measured AI decision improvement remains open. A predeclared, mirrored
+before/after comparison must retain actual completion eligibility and its
+resource limits; successful scenario tests do not establish playing strength.
+The default remains heuristic and learned policy remains experimental opt-in.
+The checkpoints below are historical, not statements that every older pending
+item is still unresolved. This document does not yet declare the project RC.
+
+## October 22 Card Table Names
+
+[PR 20](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/20)
+candidate `6bbb41befd565e7686a9e4974f3bee1edaa50557` adds nine explicit
+accessible names to existing card-table choices. The rest of the Battlefield
+component is byte-identical after removing those attributes: values, defaults,
+bounds, callbacks and target selection do not change. Nineteen new compiled
+component regressions reproduce the missing names before the fix and pass
+afterward. The two existing naming tests also pass. These are UI contracts,
+not rules-engine, assistive-technology or native-browser certification.
+
+Its hosted frontend job passes fresh dependency installation, build, lint and
+the full configured test command. A separate local current-source rebuild
+passes all four original commands, including the full configured tests and
+production build, without installing dependencies. Source/runtime checks and
+independent physical process/lease closure are verified. The branch's complete
+[CI run 39718908830](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39718908830)
+is still running; the candidate is not yet merged or signed off as an RC.
+
+The preceding native assessment on `50b4` now reaches four complete home/deck
+cells, then rejects three unnamed card-table controls. It never reaches the
+120-second smoke. That failure remains unchanged; the new app must separately
+pass the unchanged native assessment after rebuilding. The new names are an
+application correction, not an exception to the checker.
+
+The separately completed main run on `a95e2cd` passes all eight jobs and retains
+all 33,571 original ordered backend nodes in 1,169 modules: 33,501 ordinary
+passes, 70 setup skips and 160 passing subtests. Authenticated artifact digests,
+exact membership and ordered phase outcomes are independently reconciled.
+Those skips are not promoted to passes or added to separately qualified local
+counts. Remaining clean-userspace, long-session and matched AI-quality work
+is still distinct from these results. Only the separate-device LAN check is
+user-deferred for RC.
+
+## October 22 Accessibility Candidate
+
+Application candidate `50b4ea9abb4b9da489fd4d57082d8349fe584be0`
+adds seven explicit simulator/diagnostic form names, two compiled-component
+regressions and their entry in the existing frontend test command. No backend,
+dependency lock, AI default, form value, bound or callback changes. The two new
+tests reproduce missing names before the fix and pass afterward; they are not
+assistive-technology or native-browser acceptance.
+
+[PR 18](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/18)
+is merged as `6b0ea8890efe709cfa6936ddd99e092ffd37faa8`.
+Its [completed eight-job CI run](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39697188242)
+records 33,501 ordinary backend passes, 70 setup skips and 160 passing subtests.
+All 33,571 collected nodes and 1,169 whole modules retain their previous ordered
+declaration. The tested and merged trees are identical. This was a documentation
+merge, not a deployment or an application change.
+
+On the accessibility application candidate:
+
+- [PR 19](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/19)
+  is merged as `a95e2cd70684ecfdb555a3daa9f2713916b5c6d7` after its
+  [complete eight-job CI run](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39698679946)
+  passes. It independently preserves all 33,571 backend nodes and 1,169 whole
+  modules: 33,501 ordinary passes, 70 setup skips and 160 passing subtests, with
+  no failures, errors, expected failures or deselections. The actual merge adds
+  only PR 18's previously qualified release-status document to the tested
+  application tree; every other path, mode and blob is identical. This is
+  explicit composition evidence, not a claim that a later push workflow has
+  already completed or that the running operator app was deployed.
+- The complete hosted frontend job passes fresh `npm ci`, typecheck, lint,
+  production build and the configured test command. The separate local
+  four-command rebuild also passes typecheck, lint, the complete configured
+  frontend tests and production build, reusing verified dependencies. That
+  local rebuild did not install dependencies or reinstall Python. Its first
+  attempt failed because the passive-CDP harness requires a physical `/tmp`
+  owner; the separate corrected run changes the owned root, not that check.
+- [Secure vendor run 39702892051](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39702892051)
+  passes Linux Chrome and Brave. Allowlisted artifact digests, actual vendor
+  executable/package identities and current driver/preflight source hashes
+  are verified, with sandbox disabling false and successful cgroup closeout.
+  Expected renderer sandbox metadata is not actual renderer attestation.
+- The actual current built HTTPS component passes all 563 observed check
+  instances across the same 70 original distinct labels: TLS/hostname and
+  HTTP/2, authentication, origins, request-body atomicity, built assets/media,
+  and saved-match recovery after a real same-database server restart. Dynamic
+  repetitions explain the check-instance count; the older 617-instance run
+  is not relabeled as this execution. Actor and typed manager exit zero,
+  unchanged finite inputs and independent physical closure are verified.
+  This does not serve a restored backup or certify a browser trust store.
+
+The private horizon module's separately managed execution now passes all 158
+ordinary cases and 474 phases in 138.69 seconds, with actor/controller/typed
+manager exit zero, unchanged finite inputs and independent physical closure.
+The 56 protected-input cases still reuse two archived positions. They are not
+56 or 158 new complete games, and hosted setup skips remain skips. A separate
+heuristic BlueControl/Ramp game completes 629 accepted moves in 214.56 seconds;
+the learned pilot's incomplete result remains incomplete. Neither establishes
+learned-policy improvement or expert play; the default remains heuristic.
+
+The new narrow-viewport, keyboard/reduced-motion assessment remains separate
+from completed CI. Five native attempts are retained as failures, not retries
+silently converted into a pass. Their primary stops respectively concern the
+private input wrapper, legitimate health preflights, sampling disabled controls,
+the keyboard starting position, and the supervisor's transient `/proc` read.
+The fourth attempt completes only home/320 before stopping at the next cell;
+none completes all six cells or the 120-second smoke. The fifth stops before
+any cell, with physical closure independently verified afterward. No application
+keyboard defect is inferred from a supervisor failure before assessment.
+
+The corrected private assessment passes 124 Node protocol tests. A distinct
+supervisor component passes twelve source-extracted protocol cases after
+reproducing both uncaught disappearance-read sites and the secondary absent
+result read. It catches only file/process disappearance, preserving permission,
+birth, parent and process-group checks. These synthetic boundaries are not
+actual Firefox, screen-reader or whole-accessibility proof. A separately
+admitted native assessment is still required. A 120-second health/reload smoke
+also would not by itself satisfy the long-session requirement.
+
+The clean-Ubuntu provisioning proposal remains separate from the actual fresh
+dependency installations and rebuilt app already qualified above. Matched
+AI-quality acceptance remains open: neither successful scenario tests nor the
+incomplete learned pilot establishes measured improvement. Learned policy is
+opt-in experimental, not the default. This is not yet RC sign-off; original
+project goals remain distinct from these component results.
+
+Separate-device LAN routing and manual client certificate trust remain deferred
+by the user for RC, not passed. Local HTTPS/authentication and Linux Chrome,
+Brave and Firefox remain in scope. Historical checkpoints below keep their
+original source and execution qualifications.
+
 ## Current RC Checkpoint: October 22
 
 The application revision qualified here is

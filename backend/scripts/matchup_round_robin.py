@@ -309,9 +309,72 @@ def fixed_game_counters(raw_log, tick_timeout):
     return dict(counts)
 
 
-def preflight_game_record(result, raw_log, budget):
+def _private_result_metadata(result, budget, raw_log=None):
+    if type(result) is not dict or type(result.get('log')) is not list:
+        raise ValueError('Complete private result and normalized log required')
+    budget._log_cost(result['log'])
+    metadata = {key: value for key, value in result.items() if key != 'log'}
+    budget.checked_result(metadata)
+    if raw_log is not None:
+        from analytics.replay_tools import normalize_log_line
+        if type(raw_log) is not list:
+            raise ValueError('Complete typed raw log required')
+        budget._log_cost(raw_log)
+        if result['log'] != [normalize_log_line(line) for line in raw_log]:
+            # An unrelated large field is not admitted as private normalized evidence.
+            budget.checked_result(result)
+            raise ValueError('Normalized result differs from the complete raw log')
+    return metadata
+
+
+def checked_private_artifact(name, value, budget):
+    """Only known offline log slots use log budgets; all other JSON stays bounded."""
+    from analytics.resource_budget import checked_json
+    budget.check_deadline()
+    if type(value) is not dict:
+        raise ValueError('Typed private artifact required')
+    if name in ('game-01.json', 'game-02.json'):
+        if set(value) != {'schema_version', 'result', 'raw_log', 'raw_sha256'} or type(value['schema_version']) is not int or value['schema_version'] != 1:
+            raise ValueError('Exact private game envelope required')
+        metadata = dict(value, result=_private_result_metadata(value['result'], budget, value['raw_log']), raw_log=[])
+    elif name in ('row-00.jsonl', 'row-01.jsonl'):
+        if type(value.get('log')) is not list:
+            raise ValueError('Complete private row log required')
+        budget._log_cost(value['log'])
+        metadata = dict(value, log=[])
+    elif name == 'producer.json':
+        if type(value.get('rows')) is not list or type(value.get('game_records')) is not list:
+            raise ValueError('Complete private producer rows and records required')
+        metadata = dict(value, rows=[], game_records=[])
+        for row in value['rows']:
+            if type(row) is not dict or type(row.get('log')) is not list:
+                raise ValueError('Typed private producer row required')
+            budget._log_cost(row['log'])
+            metadata['rows'].append(dict(row, log=[]))
+        for record in value['game_records']:
+            if type(record) is not dict:
+                raise ValueError('Typed private game record required')
+            metadata['game_records'].append(dict(record, result=_private_result_metadata(record['result'], budget)))
+    else:
+        raise ValueError('Unknown private artifact name')
+    budget.checked_result(metadata)
+    encoded = checked_json(value, budget.limits['batch_log_utf8_bytes'], 'batch_log',
+                           separators=(',', ':'), depth=budget.limits['trace_depth'])
+    budget.check_deadline()
+    return encoded
+
+
+def preflight_game_record(result, raw_log, budget, private_artifact=False):
     """Bound the exact writer envelope before the existing unbounded encoders."""
     from analytics.resource_budget import checked_json
+    if type(private_artifact) is not bool:
+        raise ValueError('Exact private-file opt-in required')
+    if private_artifact:
+        _private_result_metadata(result, budget, raw_log)
+        raw = checked_json(raw_log, budget.limits['batch_log_utf8_bytes'], 'batch_log', separators=(',', ':'))
+        envelope = dict(schema_version=1, result=result, raw_log=raw_log,
+                        raw_sha256=hashlib.sha256(raw.encode('ascii')).hexdigest())
+        return checked_private_artifact('game-01.json', envelope, budget)
     budget.checked_result(result)
     limit = min(budget.limits['result_json_bytes'], budget.limits['snapshot_json_bytes'])
     raw = checked_json(raw_log, limit, 'result_json', separators=(',', ':'))
@@ -557,7 +620,10 @@ def run_fixed_game_measurement(export, seed_tokens, *, selected_pair, selected_t
     original_rows = deepcopy(rows)
     def write(name, value, *, jsonl=False):
         budget.check_deadline()
-        text = checked_json(value, limits['result_json_bytes'], 'result_json', separators=(',', ':'))
+        if name in ('producer.json', 'row-00.jsonl', 'row-01.jsonl'):
+            text = checked_private_artifact(name, value, budget)
+        else:
+            text = checked_json(value, limits['result_json_bytes'], 'result_json', separators=(',', ':'))
         data = (text + ('\n' if jsonl else '')).encode('ascii')
         path = directory / name
         artifact_guard(path, len(data))
@@ -575,9 +641,9 @@ def run_fixed_game_measurement(export, seed_tokens, *, selected_pair, selected_t
             checked_json(dict(boards=boards, configuration=configuration), limits['request_json_bytes'], 'request_json')
             raw_delivery = []
             def before_encode(result, raw):
-                preflight_game_record(result, raw, budget)
+                preflight_game_record(result, raw, budget, True)
             def record(result, raw):
-                encoded = preflight_game_record(result, raw, budget)
+                encoded = preflight_game_record(result, raw, budget, True)
                 artifact_guard(directory / f'game-{ordinal:02d}.json', len(encoded.encode('ascii')))
                 written_result = deepcopy(result)
                 receipt = write_private_game(directory, ordinal, result, raw)
