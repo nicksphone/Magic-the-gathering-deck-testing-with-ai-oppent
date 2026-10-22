@@ -1,6 +1,6 @@
 # Release Acceptance Status
 
-## Current RC Checkpoint: October 21
+## Current RC Checkpoint: October 22
 
 The application revision qualified here is
 `ab6e388b60c40086f220fac4f881b4a27e14948e`.
@@ -49,6 +49,16 @@ Additional separately executed components on this application:
   manager exit zero and independent PID/group/cgroup/file closure. This does
   not include the separately declared variable-Suspend companion or imply
   exhaustive action, arbitrary-card or AI playing-strength coverage.
+- The separately executed variable-Suspend browser declaration passes all four
+  controlled-mana cases: Aeon Chronicler and Detritivore, both seats. Blank,
+  zero, unaffordable and fractional values stay disabled without an action
+  request or persisted-state change. Explicit X=2 sends exactly one action,
+  pays the actual generic/colored cost, moves the card from hand to exile with
+  two time counters, increments the revision once and preserves priority.
+  Actual elapsed time is 30.36 seconds; manager exit zero, unchanged finite
+  inputs and independent process/file closure are verified. This is a separate
+  four-case component, not an executed aggregate 54-case suite, natural mana
+  production, upkeep/free-cast, or arbitrary-card certification.
 - The private-input horizon regression module records 158 ordinary passes
   locally with the same gameplay implementation. Its 56 private-input cases
   reuse two archived natural-game positions across profiles, not a new matrix
@@ -57,8 +67,14 @@ Additional separately executed components on this application:
   prepared. The default AI remains heuristic; learned-policy loading
   and post-restart routing have separate component evidence, not a measured
   decision-quality or expert-play certificate.
+- The next learned-policy pilot game delivers a valid incomplete result at
+  the unchanged productive 600-second deadline after 520 accepted moves.
+  The surrounding observer does not time out, and input/resource/physical
+  closure checks pass; the role exits nonzero because game completion is
+  required. This is neither a win, loss nor draw. The earlier heuristic game
+  completion and learned-policy timeouts do not establish improvement or
+  justify promoting the opt-in policy to the default.
 
-The separate four-case variable-Suspend UI declaration is still being completed.
 Earlier browser passes below retain their original source pins.
 The remaining release work also includes final acceptance reconciliation,
 accessibility/long-session evidence and broader seed/seat-balanced AI quality
