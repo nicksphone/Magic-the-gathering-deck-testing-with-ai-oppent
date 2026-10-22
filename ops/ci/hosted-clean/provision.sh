@@ -38,7 +38,7 @@ mkdir /opt/tool-build/caddy
 cp /public/ops/ci/hosted-clean/caddy/{go.mod,go.sum,main.go} /opt/tool-build/caddy/
 cd /opt/tool-build/caddy
 export HOME=/opt/tool-build/home TMPDIR=/opt/tool-build/tmp GOTMPDIR=/opt/tool-build/tmp
-export PATH=/opt/go/bin:/usr/bin:/bin GOROOT=/opt/go GOPATH=/opt/tool-build/gopath
+export PATH=/opt/go/bin:/usr/bin:/bin:/usr/sbin:/sbin GOROOT=/opt/go GOPATH=/opt/tool-build/gopath
 export GOMODCACHE=/opt/tool-build/modules GOCACHE=/opt/tool-build/cache
 export GOENV=off GOWORK=off GOTOOLCHAIN=local GOTELEMETRY=off GOVCS='*:off'
 export GOPROXY=https://proxy.golang.org GOSUMDB=sum.golang.org GOMAXPROCS=2
