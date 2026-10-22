@@ -3,12 +3,14 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
 
-from host import empty_report, error_class, write_report
+from host import DIAGNOSTIC_ERRORS, ERRORS, empty_diagnostic, empty_report, error_class, write_report
 
 ROOT = Path('/tmp/mtg-hosted-clean')
 PUBLIC = Path('/public')
@@ -63,6 +65,86 @@ def os_inputs():
                 assert not row['mode'] & 0o002
                 assert not (row['gid'] == 1001 and row['mode'] & 0o020)
     return result
+
+
+def project_client_terminal(terminal):
+    if (type(terminal) is not dict or set(terminal) != {'exit', 'failure_type', 'checks', 'identities',
+            'signals', 'closure_issues', 'pid_closure'} or type(terminal['exit']) is not int or
+            not -255 <= terminal['exit'] <= 255 or type(terminal['checks']) is not list or
+            len(terminal['checks']) > 10000 or type(terminal['closure_issues']) is not list or
+            len(terminal['closure_issues']) > 10000 or type(terminal['pid_closure']) is not bool or
+            terminal['failure_type'] is not None and type(terminal['failure_type']) is not str):
+        raise ValueError('Client terminal rejected')
+    checks = terminal['checks']
+    if any(type(row) is not dict or set(row) != {'check', 'passed'} or
+           type(row['check']) is not str or type(row['passed']) is not bool for row in checks):
+        raise ValueError('Client checks rejected')
+    failure = terminal['failure_type']
+    failure = failure if failure in DIAGNOSTIC_ERRORS else 'OtherError'
+    last = next((row['check'] for row in reversed(checks) if not row['passed']), None)
+    diagnostic = dict(empty_diagnostic(), origin='client', error_class=failure,
+                      last_failed_check_sha256=hashlib.sha256(last.encode()).hexdigest() if last is not None else None)
+    return dict(checks=len(checks), passed=sum(row['passed'] for row in checks),
+                label_count=len({row['check'] for row in checks}), client_exit=terminal['exit'],
+                closure_issues=len(terminal['closure_issues']), services_closed=terminal['pid_closure'],
+                error_class=failure if failure in ERRORS else 'OtherError',
+                diagnostic=diagnostic, phase='https', exit_code=terminal['exit'])
+
+
+def trace_diagnostic(raw, https):
+    if type(raw) is not bytes or len(raw) > 65536:
+        raise ValueError('Driver diagnostic size rejected')
+    result = dict(empty_diagnostic(), origin='unknown')
+    text = raw.decode('utf-8', errors='replace')
+    if 'Traceback (most recent call last):' not in text:
+        return result
+    text = text.rsplit('Traceback (most recent call last):', 1)[1]
+    frames = re.findall(r'^  File "([^"\n]+)", line ([0-9]+), in [^\n]+$', text, re.M)
+    sources = {str(https / 'actors/native-one-shot-driver.py'): 'driver',
+               str(https / 'gate-review/client-gate.py'): 'client'}
+    if frames and frames[-1][0] in sources and 1 <= int(frames[-1][1]) <= 100000:
+        result.update(origin=sources[frames[-1][0]], line=int(frames[-1][1]))
+    lines = text.rstrip().splitlines()
+    match = re.fullmatch(r'([A-Za-z_][A-Za-z0-9_]{0,63})(?::.*)?', lines[-1]) if lines else None
+    if match:
+        result['error_class'] = match[1] if match[1] in DIAGNOSTIC_ERRORS else 'OtherError'
+    return result
+
+
+def read_diagnostic_input(path, maximum):
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1 or info.st_uid != os.geteuid():
+            raise ValueError('Diagnostic input rejected')
+        with os.fdopen(fd, 'rb') as handle:
+            fd = None
+            raw = handle.read(maximum + 1)
+    finally:
+        if fd is not None:
+            os.close(fd)
+    if len(raw) > maximum:
+        raise ValueError('Diagnostic input size rejected')
+    return raw
+
+
+def observe_https(https, life):
+    path = https / 'evidence/runtime-gate/terminal.json'
+    if path.exists() or path.is_symlink():
+        terminal = json.loads(read_diagnostic_input(path, 2 * 1024**2))
+        life.update(project_client_terminal(terminal))
+        return terminal
+    life['diagnostic'] = dict(empty_diagnostic(), origin='unknown')
+    for path in (ROOT / 'private-logs/https.stderr', https / 'evidence/one-shot-driver.log'):
+        if not path.exists() and not path.is_symlink():
+            continue
+        diagnostic = trace_diagnostic(read_diagnostic_input(path, 65536), https)
+        if diagnostic['origin'] != 'unknown' or diagnostic['error_class'] is not None:
+            life['diagnostic'] = diagnostic
+            failure = diagnostic['error_class']
+            life['error_class'] = failure if failure in ERRORS else 'OtherError'
+            break
+    return None
 
 
 def main():
@@ -198,11 +280,13 @@ def main():
                 path.chmod(0o555)
         (https / 'source').chmod(0o555)
         code = run('https', [python, '-B', https / 'actors/native-one-shot-driver.py'], 900, https, env)
-        terminal = json.loads((https / 'evidence/runtime-gate/terminal.json').read_bytes())
-        closure = json.loads((https / 'evidence/runtime-gate/native-closure.json').read_bytes())
+        terminal = observe_https(https, life)
+        write_report(ROOT, 'lifecycle', life)
+        assert terminal is not None
         checks = terminal['checks']
         assert type(checks) is list and checks and all(set(row) == {'check', 'passed'} for row in checks)
         assert all(type(row['check']) is str and type(row['passed']) is bool for row in checks)
+        closure = json.loads((https / 'evidence/runtime-gate/native-closure.json').read_bytes())
         life.update(checks=len(checks), passed=sum(row['passed'] for row in checks),
                     label_count=len({row['check'] for row in checks}), client_exit=terminal['exit'],
                     closure_issues=len(terminal['closure_issues']),
@@ -220,7 +304,9 @@ def main():
         write_report(ROOT, 'lifecycle', life)
         return 0
     except BaseException as exc:
-        life.update(phase=phase, exit_code=1, error_class=error_class(exc), verified=False)
+        life.update(phase=phase, exit_code=1, error_class=life['error_class'] or error_class(exc), verified=False)
+        if life['diagnostic']['origin'] == 'none':
+            life['diagnostic'] = dict(empty_diagnostic(), origin='guest', error_class=error_class(exc))
         if not provision['verified']:
             provision.update(phase=phase, exit_code=1, error_class=error_class(exc), verified=False)
         write_report(ROOT, 'provisioning', provision)

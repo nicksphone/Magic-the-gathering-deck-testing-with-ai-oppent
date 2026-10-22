@@ -20,9 +20,16 @@ BASE = {'schema', 'head', 'base_image', 'phase', 'exit_code', 'error_class', 've
 EXTRA = {
     'provisioning': {'python_packages', 'python5_exits', 'frontend5_exits', 'tools', 'source_equal', 'runtime_equal'},
     'lifecycle': {'checks', 'passed', 'label_count', 'client_exit', 'closure_issues', 'db_closed',
-                  'services_closed', 'container_closed', 'cgroup_empty', 'source_equal'},
+                  'services_closed', 'container_closed', 'cgroup_empty', 'source_equal', 'diagnostic'},
 }
 TOOLS = {'python', 'node', 'npm', 'caddy', 'curl', 'lock', 'dist', 'system', 'app_runtime'}
+DIAGNOSTIC_ERRORS = ERRORS | {'RuntimeError', 'KeyError', 'TypeError', 'IndexError', 'OSError',
+                             'TimeoutError', 'CalledProcessError', 'JSONDecodeError'}
+DIAGNOSTIC_ORIGINS = {'none', 'client', 'driver', 'guest', 'outer', 'unknown'}
+
+
+def empty_diagnostic():
+    return dict(origin='none', error_class=None, line=None, last_failed_check_sha256=None)
 
 
 def integer(value, low, high, nullable=False):
@@ -41,7 +48,7 @@ def empty_report(kind, head):
     elif kind == 'lifecycle':
         row.update(checks=0, passed=0, label_count=0, client_exit=None, closure_issues=0,
                    db_closed=False, services_closed=False, container_closed=False,
-                   cgroup_empty=False, source_equal=False)
+                   cgroup_empty=False, source_equal=False, diagnostic=empty_diagnostic())
     else:
         raise ValueError('Kind rejected')
     return row
@@ -76,6 +83,19 @@ def validate_report(row, kind):
         integer(row['client_exit'], -255, 255, True)
         if row['passed'] > row['checks'] or row['label_count'] > row['checks']:
             raise ValueError('Count rejected')
+        diagnostic = row['diagnostic']
+        if type(diagnostic) is not dict or set(diagnostic) != set(empty_diagnostic()):
+            raise ValueError('Diagnostic schema rejected')
+        if (type(diagnostic['origin']) is not str or diagnostic['origin'] not in DIAGNOSTIC_ORIGINS or
+                diagnostic['error_class'] is not None and (type(diagnostic['error_class']) is not str
+                or diagnostic['error_class'] not in DIAGNOSTIC_ERRORS)):
+            raise ValueError('Diagnostic enum rejected')
+        integer(diagnostic['line'], 1, 100000, True)
+        value = diagnostic['last_failed_check_sha256']
+        if value is not None and (type(value) is not str or not HEX64.fullmatch(value)):
+            raise ValueError('Diagnostic digest rejected')
+        if len(json.dumps(diagnostic).encode()) > 512:
+            raise ValueError('Diagnostic size rejected')
     if any(type(row[name]) is not bool for name in booleans):
         raise ValueError('Boolean rejected')
     if row['verified']:
@@ -87,6 +107,8 @@ def validate_report(row, kind):
         else:
             good = good and row['client_exit'] == 0 and row['checks'] == row['passed'] > 0
             good = good and row['label_count'] > 0 and row['closure_issues'] == 0
+            good = good and row['diagnostic']['error_class'] is None
+            good = good and row['diagnostic']['last_failed_check_sha256'] is None
         if not good:
             raise ValueError('False qualification rejected')
     return row
@@ -95,6 +117,15 @@ def validate_report(row, kind):
 def error_class(error):
     name = type(error).__name__
     return name if name in ERRORS else 'OtherError'
+
+
+def outer_failure(lifecycle, failure, *, cancelled):
+    lifecycle.update(verified=False, phase='cancelled' if cancelled else lifecycle['phase'],
+                     exit_code=1, error_class='Cancelled' if cancelled else
+                     lifecycle['error_class'] or error_class(failure))
+    if lifecycle['diagnostic']['origin'] == 'none':
+        lifecycle['diagnostic'] = dict(empty_diagnostic(), origin='outer',
+                                        error_class=lifecycle['error_class'])
 
 
 def write_report(root, kind, row):
@@ -367,8 +398,7 @@ def main():
                 exit_code=failure.code if isinstance(failure, StageError) else 1,
                 error_class='Cancelled' if cancelled else error_class(failure))
         if failure or forced or cancelled:
-            lifecycle.update(verified=False, phase='cancelled' if cancelled else lifecycle['phase'],
-                             exit_code=1, error_class='Cancelled' if cancelled else error_class(failure))
+            outer_failure(lifecycle, failure, cancelled=cancelled)
         else:
             lifecycle.update(phase='complete', exit_code=0, error_class=None, verified=True)
         try:
