@@ -149,6 +149,9 @@ def prepare(config):
             shutil.copytree(SOURCE / "backend", runtime / "backend", ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache", "*.pyc", "*.db*", "*.sqlite*", "image_cache"))
             receipt.write_text(pin + "\n")
         require(inventory(runtime / "backend", runtime=True) == inventory(SOURCE / "backend"))
+        # Read-only shipped source must still produce writable private data directories.
+        for directory, _, _ in os.walk(runtime / "backend"):
+            Path(directory).chmod(0o700)
         return lock
     except BaseException:
         lock.close()
