@@ -1,5 +1,92 @@
 # Release Acceptance Status
 
+## Current RC Checkpoint: October 22
+
+The application revision qualified here is
+`ab6e388b60c40086f220fac4f881b4a27e14948e`.
+[PR 17](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/17)
+is merged. Its tested merge tree and published main tree are identical.
+[Complete CI run 39653674883](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39653674883)
+passes all eight jobs. The authenticated backend inventory has 33,571 cases in
+1,169 complete modules: 33,501 ordinary passes and 70 setup skips, with no
+failures, errors, expected failures or deselections. The skips remain skips:
+56 require the protected private input, four require the opt-in cost HTTP
+declaration and ten require the opt-in Suspend HTTP declaration. Separate local
+executions must not be added to the hosted total or relabeled as hosted passes.
+
+Additional separately executed components on this application:
+
+- A fresh frontend `npm ci`, typecheck, lint, complete configured `npm test` and
+  production build all exit zero. Node is 24.22.0. The Python application
+  runtime is a reused, verified environment, not a fresh Python installation.
+- The actual built local HTTPS component passes all 617 observed check
+  instances across 70 distinct labels. It exercises verified TLS/hostname and
+  HTTP/2, unknown-CA and wrong-hostname rejection, authentication, origins,
+  request-body atomicity, built assets/media and same-database saved-match
+  restoration after a real server restart. These are check instances, not
+  617 independent tests or remote-client acceptance.
+- All 11 unchanged storage-operations cases pass, including four real CLI
+  invocations, consistent SQLite backup/restore, persisted controller/seed/
+  revision metadata, and negative corruption/collision/write cases. Databases
+  execute locally only; private evidence is archived after closure. This does
+  not claim that a restored backup was served by a running application.
+- The two unchanged opt-in HTTP modules pass all 14 cases: four cost-overlap
+  cases and ten Suspend cases. All 42 setup/call/teardown phases pass. Three
+  real server lifecycles retain typed successful ASGI-shutdown evidence before
+  Uvicorn's unchanged SIGTERM replay; independent process/group/cgroup closure
+  also passes. Earlier missing-observer attempts are not retroactively passed.
+- [Secure vendor run 39685416759](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39685416759)
+  passes both Linux Chrome and Brave jobs on this exact revision. Retained
+  allowlisted preflight/lifecycle metadata binds the actual vendor executable,
+  source and successful cgroup closeout, with sandboxing enabled. The reported
+  expected renderer sandbox status is not actual renderer attestation. This
+  workflow does not enumerate or replace the original local 50-case declaration.
+- The unchanged original local 50-case declaration passes on this revision
+  using Linux Firefox 158.0.1 and Node 24.22.0: 40 paid cases, three recovery
+  cases, four origin cases and three natural UI BO3 series. Actual elapsed time
+  is 1,840.08 seconds within the original 2,250/2,400/2,460-second work/inner/
+  outer bounds. All finite source/runtime inputs remain unchanged, with actual
+  manager exit zero and independent PID/group/cgroup/file closure. This does
+  not include the separately declared variable-Suspend companion or imply
+  exhaustive action, arbitrary-card or AI playing-strength coverage.
+- The separately executed variable-Suspend browser declaration passes all four
+  controlled-mana cases: Aeon Chronicler and Detritivore, both seats. Blank,
+  zero, unaffordable and fractional values stay disabled without an action
+  request or persisted-state change. Explicit X=2 sends exactly one action,
+  pays the actual generic/colored cost, moves the card from hand to exile with
+  two time counters, increments the revision once and preserves priority.
+  Actual elapsed time is 30.36 seconds; manager exit zero, unchanged finite
+  inputs and independent process/file closure are verified. This is a separate
+  four-case component, not an executed aggregate 54-case suite, natural mana
+  production, upkeep/free-cast, or arbitrary-card certification.
+- The private-input horizon regression module records 158 ordinary passes
+  locally with the same gameplay implementation. Its 56 private-input cases
+  reuse two archived natural-game positions across profiles, not a new matrix
+  of complete games, and do not change the hosted skip count. The original
+  wrapper OS wait was not captured independently; a managed rerun is being
+  prepared. The default AI remains heuristic; learned-policy loading
+  and post-restart routing have separate component evidence, not a measured
+  decision-quality or expert-play certificate.
+- The next learned-policy pilot game delivers a valid incomplete result at
+  the unchanged productive 600-second deadline after 520 accepted moves.
+  The surrounding observer does not time out, and input/resource/physical
+  closure checks pass; the role exits nonzero because game completion is
+  required. This is neither a win, loss nor draw. The earlier heuristic game
+  completion and learned-policy timeouts do not establish improvement or
+  justify promoting the opt-in policy to the default.
+
+Earlier browser passes below retain their original source pins.
+The remaining release work also includes final acceptance reconciliation,
+accessibility/long-session evidence and broader seed/seat-balanced AI quality
+measurement. Successful storage, training or build components alone do not
+establish RC readiness or completion of the larger arbitrary-card/rules goal.
+
+The user has deferred separate-device LAN routing and certificate-trust checks
+from RC scope. They are **not passed**, but no longer block this local RC.
+Local HTTPS/authentication and Linux Chrome, Brave and Firefox acceptance remain
+in scope. The chronology below preserves older attempts and does not override
+this checkpoint.
+
 ## October 21 Checkpoint
 
 Main `7fa3af7f906926d2042e8e5dc8ab5db77822ec41` completed hosted CI run
