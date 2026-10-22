@@ -313,7 +313,7 @@ export function AnalyticsPanel({ decks }: Props) {
     <section className="panel analytics">
       <h2>Testing Simulator</h2>
       <div className="row">
-        <select value={deckA ?? ""} onChange={(e) => { setDeckA(Number(e.target.value)); setPreflight(null); setReviewedDecks(null); }}>
+        <select aria-label="Simulation deck A" value={deckA ?? ""} onChange={(e) => { setDeckA(Number(e.target.value)); setPreflight(null); setReviewedDecks(null); }}>
           <option value="">Deck A</option>
           {decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -321,7 +321,7 @@ export function AnalyticsPanel({ decks }: Props) {
             </option>
           ))}
         </select>
-        <select value={deckB ?? ""} onChange={(e) => { setDeckB(Number(e.target.value)); setPreflight(null); setReviewedDecks(null); }}>
+        <select aria-label="Simulation deck B" value={deckB ?? ""} onChange={(e) => { setDeckB(Number(e.target.value)); setPreflight(null); setReviewedDecks(null); }}>
           <option value="">Deck B</option>
           {decks.map((d) => (
             <option key={d.id} value={d.id}>
@@ -329,9 +329,9 @@ export function AnalyticsPanel({ decks }: Props) {
             </option>
           ))}
         </select>
-        <input type="number" min={5} max={500} value={matches} onChange={(e) => setMatches(Number(e.target.value))} />
-        <input type="number" min={500} max={50000} value={maxTicks} onChange={(e) => setMaxTicks(Number(e.target.value))} title="Max actions per game" />
-        <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+        <input aria-label="Number of simulation matches" type="number" min={5} max={500} value={matches} onChange={(e) => setMatches(Number(e.target.value))} />
+        <input aria-label="Maximum actions per simulation game" type="number" min={500} max={50000} value={maxTicks} onChange={(e) => setMaxTicks(Number(e.target.value))} title="Max actions per game" />
+        <select aria-label="Simulation AI difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
           <option value="casual">Casual</option>
           <option value="strong">Strong</option>
           <option value="master">Master</option>
@@ -389,11 +389,11 @@ export function AnalyticsPanel({ decks }: Props) {
         {diagnosticRunLimit > 3 && diagnosticRuns.length > 3 ? <button type="button" aria-controls="diagnostic-run-list" onClick={() => setDiagnosticRunLimit(3)}>Show fewer diagnostic runs</button> : null}
         {diagnosticRuns.length > 1 ? (
           <div className="row">
-            <select value={compareLeft} onChange={(event) => setCompareLeft(event.target.value)}>
+            <select aria-label="Left diagnostic run" value={compareLeft} onChange={(event) => setCompareLeft(event.target.value)}>
               <option value="">Compare left run</option>
               {diagnosticRuns.map((run) => <option key={`left-${run.run_name}`} value={run.run_name}>{run.run_name}</option>)}
             </select>
-            <select value={compareRight} onChange={(event) => setCompareRight(event.target.value)}>
+            <select aria-label="Right diagnostic run" value={compareRight} onChange={(event) => setCompareRight(event.target.value)}>
               <option value="">Compare right run</option>
               {diagnosticRuns.map((run) => <option key={`right-${run.run_name}`} value={run.run_name}>{run.run_name}</option>)}
             </select>
