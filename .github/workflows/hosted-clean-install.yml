@@ -1,0 +1,57 @@
+name: Hosted Clean Ubuntu Installation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/hosted-clean-install-20261022
+    paths:
+      - .github/workflows/hosted-clean-install.yml
+
+permissions:
+  contents: read
+
+jobs:
+  clean-userspace:
+    if: github.repository == 'nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent' && (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.event.before == '0000000000000000000000000000000000000000' && github.ref == 'refs/heads/codex/hosted-clean-install-20261022'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 80
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Closed controller protocols (no Docker)
+        # Whole test_hosted_clean.py, boundary and reports modules, no within-module filters.
+        run: python3 -B -m unittest discover -s .github/scripts/tests -p 'test_hosted_clean*.py' -v
+      - name: Exact public source and credential-free Git capsule
+        id: inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=$(mktemp -d "$RUNNER_TEMP/hosted-clean.XXXXXXXX")
+          mkdir "$root/public"
+          git archive "$GITHUB_SHA" | tar --no-same-owner -x -C "$root/public"
+          test ! -e "$root/public/.git"
+          git init --bare "$root/capsule"
+          git --git-dir="$root/capsule" -c protocol.file.allow=always fetch --depth=1 --no-tags "$GITHUB_WORKSPACE/.git" "$GITHUB_SHA"
+          git --git-dir="$root/capsule" update-ref refs/heads/clean FETCH_HEAD
+          git --git-dir="$root/capsule" symbolic-ref HEAD refs/heads/clean
+          git --git-dir="$root/capsule" read-tree "$GITHUB_SHA"
+          printf 'root=%s\n' "$root" >> "$GITHUB_OUTPUT"
+      - name: One bounded clean userspace (NOT physical-host or FULL50)
+        env:
+          INPUT_ROOT: ${{ steps.inputs.outputs.root }}
+        run: |
+          python3 -B ops/ci/hosted-clean/host.py \
+            --head "$GITHUB_SHA" --public "$INPUT_ROOT/public" \
+            --capsule "$INPUT_ROOT/capsule" --work "$INPUT_ROOT/actual"
+      - name: Only two closed, bounded JSON reports
+        if: always() && steps.inputs.outputs.root != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: hosted-clean-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ steps.inputs.outputs.root }}/actual-public-artifact/provisioning.json
+            ${{ steps.inputs.outputs.root }}/actual-public-artifact/lifecycle.json
+          if-no-files-found: error
+          retention-days: 7
