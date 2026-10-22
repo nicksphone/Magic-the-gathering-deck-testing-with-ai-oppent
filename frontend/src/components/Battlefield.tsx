@@ -639,6 +639,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   ) : null}
                   {hints?.player_targets?.length ? (
                     <select
+                      aria-label={`Loyalty player target for ${move.card_name}`}
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
@@ -657,6 +658,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   ) : null}
                   {permanentTargets.length ? (
                     <select
+                      aria-label={`Loyalty permanent target for ${move.card_name}`}
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
@@ -696,6 +698,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     Equip {move.card_name} {move.mana_cost ? `(${move.mana_cost})` : ""}
                   </button>
                   <select
+                    aria-label={`Equip target for ${move.card_name}`}
                     onChange={(e) =>
                       setTargets((prev) => ({
                         ...prev,
@@ -906,6 +909,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {cycleControl}
                 {faceNames.length > 1 ? (
                   <select
+                    aria-label={`Spell face for ${card.name}`}
                     value={selectedFaceIndex}
                     onChange={(e) => {
                       setFaceChoices((prev) => ({
@@ -925,7 +929,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   </select>
                 ) : null}
                 {castCostOptions.length ? (
-                  <select value={costChoice[card.id] ?? ""} onChange={(e) => {
+                  <select aria-label={`Casting cost for ${card.name}`} value={costChoice[card.id] ?? ""} onChange={(e) => {
                     const value = e.target.value;
                     setCostChoice((prev) => ({ ...prev, [card.id]: value }));
                     setTargets((prev) => ({ ...prev, [card.id]: {} }));
@@ -977,6 +981,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 ))}
                 {showAlternativeSelect ? (
                   <select
+                    aria-label={`Target for ${card.name}`}
                     value={targets[card.id]?.target_card_id ? `card:${targets[card.id].target_card_id}` : targets[card.id]?.target_player ? `player:${targets[card.id].target_player}` : ""}
                     onChange={(e) => {
                       const [kind, value] = e.target.value.split(":", 2);
@@ -1105,6 +1110,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 }) : null}
                 {hints?.requires_x_value ? (
                   <input
+                    aria-label={`X value for ${card.name}`}
                     type="number"
                     min={0}
                     max={hints.x_value_max}
@@ -1167,6 +1173,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                     </select>
                   ) : (
                     <select
+                      aria-label={`Target for ${card.name}`}
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
@@ -1211,6 +1218,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 ) : null}
                 {!perModeSelected && hints?.stack_targets?.length ? (
                   <select
+                    aria-label={`Stack target for ${card.name}`}
                     onChange={(e) =>
                       setTargets((prev) => ({
                         ...prev,
