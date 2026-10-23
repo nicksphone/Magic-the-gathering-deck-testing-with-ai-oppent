@@ -1,0 +1,572 @@
+{
+  "utc": "2026-10-23T15:25:31.594511+00:00",
+  "immutable_base": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+  "scope": "Only28existingnames29familycontexts; before any new tests",
+  "fresh_official_full_responses": 14,
+  "reused_complete_objects": 14,
+  "sources": {
+    "Sprite Dragon": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+        "line": 93,
+        "fields": 64,
+        "object_sha256": "c23cc6a29c291a8962ad837c65873b5b392dd97a021d9f2cb9f222660737b461",
+        "id": "361385d8-d9c7-4de8-a5c8-683e682779f4",
+        "oracle_id": "a9d8ab76-70a4-475e-b87e-4737c090553a",
+        "oracle_text_sha256": "c1e708f60d0108ffe82408f651db54c0a8b45510869f59f357e11a8f5be8663e",
+        "keywords": [
+          "Flying",
+          "Haste"
+        ],
+        "power": "1",
+        "toughness": "1",
+        "type_line": "Creature \u2014 Faerie Dragon",
+        "colors": [
+          "R",
+          "U"
+        ],
+        "mana_cost": "{U}{R}",
+        "layout": "normal",
+        "steps": [],
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "provider": "existing seed155"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 64,
+      "complete_object_sha256": "c23cc6a29c291a8962ad837c65873b5b392dd97a021d9f2cb9f222660737b461",
+      "id": "361385d8-d9c7-4de8-a5c8-683e682779f4",
+      "oracle_id": "a9d8ab76-70a4-475e-b87e-4737c090553a"
+    },
+    "Go for the Throat": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+        "line": 41,
+        "fields": 63,
+        "object_sha256": "3984bc8ff91d0c5651da60ea896c3be4969c4b8a8304dfb7b235e3acf17ca7c0",
+        "id": "5446e1ba-c745-45b2-ad05-b22abf04daec",
+        "oracle_id": "2f092562-9e17-43cd-aeb8-d0567f99363e",
+        "oracle_text_sha256": "a7e89cff45edd60bcb222798949ba5fe050df9d1fb033de09ab13b8fb6f416ff",
+        "keywords": [],
+        "power": null,
+        "toughness": null,
+        "type_line": "Instant",
+        "colors": [
+          "B"
+        ],
+        "mana_cost": "{1}{B}",
+        "layout": "normal",
+        "steps": [],
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "provider": "existing seed155"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 63,
+      "complete_object_sha256": "3984bc8ff91d0c5651da60ea896c3be4969c4b8a8304dfb7b235e3acf17ca7c0",
+      "id": "5446e1ba-c745-45b2-ad05-b22abf04daec",
+      "oracle_id": "2f092562-9e17-43cd-aeb8-d0567f99363e"
+    },
+    "Fatal Push": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+        "line": 38,
+        "fields": 62,
+        "object_sha256": "1b96838c2a2581e56ba5624b8be9c5841475f2d5ad215a92d6c2791abcda68a8",
+        "id": "6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7",
+        "oracle_id": "16437a83-be52-44cd-a768-a767c9347eb2",
+        "oracle_text_sha256": "0c99f1e1fbbcb1935bc755cdbea6bcc38e3c6a066ba6e5815e3fc280e8fff8a3",
+        "keywords": [
+          "Revolt"
+        ],
+        "power": null,
+        "toughness": null,
+        "type_line": "Instant",
+        "colors": [
+          "B"
+        ],
+        "mana_cost": "{B}",
+        "layout": "normal",
+        "steps": [],
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "provider": "existing seed155"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 62,
+      "complete_object_sha256": "1b96838c2a2581e56ba5624b8be9c5841475f2d5ad215a92d6c2791abcda68a8",
+      "id": "6e9d8fe4-fd9b-4923-92bf-7dd6b8fa02e7",
+      "oracle_id": "16437a83-be52-44cd-a768-a767c9347eb2"
+    },
+    "Mind Stone": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Mind+Stone",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "aea6745ad2d19d5fa4b7feb9762562d4154a27b09f1d94e7f34df495d04cbd1d",
+      "start_utc": "2026-10-23T15:23:22Z",
+      "end_utc": "2026-10-23T15:23:23Z",
+      "headers_sha256": "37098e22421fe5cad9496afe62631ee15100f47dc7cc0ee4a91e04641d01e3c6",
+      "raw_response_file": "intake/mind-stone.raw.json",
+      "field_count": 62,
+      "complete_object_sha256": "f2ac2775d92b515f110176021202ba593c884f9012e668b096b555b96a54c8be",
+      "id": "b30a8f92-ce42-4b27-a893-bcf97fde228d",
+      "oracle_id": "c97361b5-af16-4a7b-af85-a429dbaf4ad2"
+    },
+    "Naturalize": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Naturalize",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "b6c47bc256fd6567357cf4e9e7cb2b065ec4897ea13de219f68dec82428dada2",
+      "start_utc": "2026-10-23T15:23:41Z",
+      "end_utc": "2026-10-23T15:23:41Z",
+      "headers_sha256": "6679abac88fe96ff60b67b5239383a627b1544c035a1997a753fdcd14dfacc48",
+      "raw_response_file": "intake/naturalize.raw.json",
+      "field_count": 65,
+      "complete_object_sha256": "1140caa82f243cec553c0158abae22a591be236d884cb505bdb53a5a50e94765",
+      "id": "390c40ba-2464-44ae-8d67-93c72ab3c425",
+      "oracle_id": "bdb3ca68-ec1f-4e16-81cc-d23f8f52c728"
+    },
+    "Phyrexian Arena": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Phyrexian+Arena",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "d97352a307a0c1b6df8846663b682274070aba93d1bec56e28e6bd585c1f296f",
+      "start_utc": "2026-10-23T15:23:41Z",
+      "end_utc": "2026-10-23T15:23:41Z",
+      "headers_sha256": "614dff0a80a6f2b526f2276a0fcc7c3c7fcf6dff63282b5e4a07a10938a47c1d",
+      "raw_response_file": "intake/phyrexian-arena.raw.json",
+      "field_count": 67,
+      "complete_object_sha256": "8e72932d917226d45beeecea5b33bb28c4cd17bda8677409a4052eb786d5c4a6",
+      "id": "0784b6f0-9ebf-43d2-ba0f-a6bc93ba0c48",
+      "oracle_id": "ee579a32-a048-4335-b966-231ba731cdea"
+    },
+    "Counterspell": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+        "line": 23,
+        "fields": 62,
+        "object_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e",
+        "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+        "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+        "oracle_text_sha256": "6e7e3fa9bb231a1c1910cd956dc7e5c91bb22e9705b39ed61a2ebd23201950e4",
+        "keywords": [],
+        "power": null,
+        "toughness": null,
+        "type_line": "Instant",
+        "colors": [
+          "U"
+        ],
+        "mana_cost": "{U}{U}",
+        "layout": "normal",
+        "steps": [],
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "provider": "existing seed155"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 62,
+      "complete_object_sha256": "87c5de7dc9a4472644d597d6212310c86d25fe8697150dd7e78263eb989f036e",
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5"
+    },
+    "Lightning Bolt": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+        "line": 57,
+        "fields": 66,
+        "object_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+        "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+        "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+        "oracle_text_sha256": "1c8ec5180252d4d2258eec2c0312b6f3c86b101696246288422c2d46aaa5ff8b",
+        "keywords": [],
+        "power": null,
+        "toughness": null,
+        "type_line": "Instant",
+        "colors": [
+          "R"
+        ],
+        "mana_cost": "{R}",
+        "layout": "normal",
+        "steps": [],
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "provider": "existing seed155"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 66,
+      "complete_object_sha256": "69f44086d0a62778e6284b4d4926cd1d22d80d1330c1192e1c61a28d8f3b732b",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070"
+    },
+    "Giant Growth": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Giant+Growth",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "a5f331cb2d660bd73a7eb73220f811d98cc966f8729c486d7013a139ef88ef73",
+      "start_utc": "2026-10-23T15:23:41Z",
+      "end_utc": "2026-10-23T15:23:42Z",
+      "headers_sha256": "a1a0a39cdc72505314e0250b098a1f93e802c360ae9851d0b150d1e4271d3de3",
+      "raw_response_file": "intake/giant-growth.raw.json",
+      "field_count": 66,
+      "complete_object_sha256": "a93e641101cc53fba945725be4086815ecdcf4c98072303be3ec3d49233e9da2",
+      "id": "fd1f95bf-48ea-455a-8a6c-0249b11c8900",
+      "oracle_id": "5748ebf1-24e3-499d-ab7c-c2cebd462a24"
+    },
+    "Darksteel Myr": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Darksteel+Myr",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "73f96dd9611d22351eb8a6f894d0cf4734e921f9b11dc375b12925fac11479b8",
+      "start_utc": "2026-10-23T15:23:42Z",
+      "end_utc": "2026-10-23T15:23:42Z",
+      "headers_sha256": "78205b5eed829ff9a17891399567d2940d93e28cc91aa7b11ae31a141cbf967a",
+      "raw_response_file": "intake/darksteel-myr.raw.json",
+      "field_count": 66,
+      "complete_object_sha256": "a24c69311bfb5cf903f4a6acaf995e2096af9ae701472b773e37b02b4c187cb1",
+      "id": "0f5712cf-c6a9-4a2e-90db-8ca17c621724",
+      "oracle_id": "f90fe86c-5cca-483b-93c2-6e856fa01c88"
+    },
+    "Darksteel Colossus": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Darksteel+Colossus",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "1a1ebc3ba6b7e0f7604cbd2127005dcfc986e28528d92ef7b07e1da4a462b03b",
+      "start_utc": "2026-10-23T15:23:42Z",
+      "end_utc": "2026-10-23T15:23:43Z",
+      "headers_sha256": "386998f9bae48519b72043d00a7c4ef74a79e7f8ffbf3384e931a28a3a48d35e",
+      "raw_response_file": "intake/darksteel-colossus.raw.json",
+      "field_count": 68,
+      "complete_object_sha256": "8aa5fd6f4afb5109335a415e1d0fe4dc5681da304478117da927d5d4f3a55136",
+      "id": "70197723-c61b-4600-b61d-41380c8f3067",
+      "oracle_id": "1b09d0cf-403c-4a15-aeee-602a1bdaf0c1"
+    },
+    "Doom Blade": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Doom+Blade",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "1793b0e30225975ac0eda22d1cb077667158f43d56089f228feead3dc5e12389",
+      "start_utc": "2026-10-23T15:23:43Z",
+      "end_utc": "2026-10-23T15:23:43Z",
+      "headers_sha256": "2aa50ceb1b34773b5b62de4cae4189bc4f1bb32a1aa626a8a541f1dff44f962f",
+      "raw_response_file": "intake/doom-blade.raw.json",
+      "field_count": 66,
+      "complete_object_sha256": "60444d0db1bd879a044d52a57a4cb5d4f898c5b4a84ac3ad1091e02e0848e223",
+      "id": "5dcd0c4e-4047-47a2-8969-c62616d457c2",
+      "oracle_id": "59e7f2ae-4535-4191-98be-3e65b6b2befa"
+    },
+    "Abrade": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Abrade",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "16e0b6f0def73deb3c19e2957cfb5dcf707da58048412307d031306c88e3b45b",
+      "start_utc": "2026-10-23T15:23:44Z",
+      "end_utc": "2026-10-23T15:23:44Z",
+      "headers_sha256": "3152860fb62786887fe11fe8ff8b4641465b126147d1b097c2840e0aa8e8e8a4",
+      "raw_response_file": "intake/abrade.raw.json",
+      "field_count": 64,
+      "complete_object_sha256": "24f180c741b5f22f174feb2f8b5a627edba19c598ef07692fc1901c0c444befb",
+      "id": "1add1757-c1f8-448a-b279-c6940fb7ad5f",
+      "oracle_id": "f9db72dc-9a5b-48a4-a86e-7464d9a2166a"
+    },
+    "Thrashing Brontodon": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Thrashing+Brontodon",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "c39c9dae7b55a7ee75822a8b310b7fb4d01cad11dc848b1d75c62b33ae9dfbf5",
+      "start_utc": "2026-10-23T15:23:44Z",
+      "end_utc": "2026-10-23T15:23:44Z",
+      "headers_sha256": "d7caa23789f802f91d488e28a8cc2537b31028818e781517801dce8b34b14237",
+      "raw_response_file": "intake/thrashing-brontodon.raw.json",
+      "field_count": 68,
+      "complete_object_sha256": "051228721307419bc32254b04bfce570d912eb753dfcddd26a30d985d4d6b4a4",
+      "id": "592364bf-68b5-4ea0-97d6-c7cadce940fd",
+      "oracle_id": "60bc63dc-ac9f-4a2f-aef5-c90d0aa31553"
+    },
+    "Slice in Twain": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Slice+in+Twain",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "a6679eda3a2204d2cc2c5fa978c270e9d6955538260cc742d6b39c2c961af72a",
+      "start_utc": "2026-10-23T15:23:44Z",
+      "end_utc": "2026-10-23T15:23:44Z",
+      "headers_sha256": "0ff5f829b350ed610d193cd88a2b426b0c0bbdc9003cdd57eaad1cf2b7315533",
+      "raw_response_file": "intake/slice-in-twain.raw.json",
+      "field_count": 62,
+      "complete_object_sha256": "b13a073fc624005a9ca318925db470cd2853799bb3afcdaec54a91ca335dbb79",
+      "id": "244831cc-6383-4daf-aeee-ea4893fdb4c2",
+      "oracle_id": "a96d0065-b8c1-4843-8752-dce60bf83545"
+    },
+    "Bastion of Remembrance": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/player_counters.json",
+        "line": null,
+        "steps": [
+          12
+        ],
+        "file_sha256": "1a999508fa879730388799cd3ec3b46f2faadfc4a042540967dc31f302746288",
+        "object_sha256": "2703b38419a16a87bb6c022ef9b8b769e604cef39c731e59b3e037d73042b7f2",
+        "provider": "rules_printed_facts_e4 manifest",
+        "provenance": [
+          {
+            "card_name_present": false,
+            "file": "backend/tests/fixtures/color_domain_audit/provenance.json",
+            "file_sha256": "f8980eda2efcf130dec60b1bec05cf35ef0719ebd59280c7bf37bfb48e843a68",
+            "hash_link": [
+              "file_sha256"
+            ]
+          }
+        ]
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 67,
+      "complete_object_sha256": "2703b38419a16a87bb6c022ef9b8b769e604cef39c731e59b3e037d73042b7f2",
+      "id": "6fe6ccad-e303-48f9-9dfa-0db7c1878031",
+      "oracle_id": "c7f33cea-2ec8-4081-9208-a5b1d86721b3"
+    },
+    "Blood Artist": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+        "line": 8,
+        "fields": 66,
+        "object_sha256": "00cd78368587a1989834deed69cc4a8374462d1f374b5f8cbf8fba69c4809c74",
+        "id": "b5275d76-2947-4219-be21-614c7421614a",
+        "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d",
+        "oracle_text_sha256": "1af647a916420dc2a89b2ed3ef88593597ee9de21baafaabaf0b7a6f823035f3",
+        "keywords": [],
+        "power": "0",
+        "toughness": "1",
+        "type_line": "Creature \u2014 Vampire",
+        "colors": [
+          "B"
+        ],
+        "mana_cost": "{1}{B}",
+        "layout": "normal",
+        "steps": [],
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "provider": "existing seed155"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 66,
+      "complete_object_sha256": "00cd78368587a1989834deed69cc4a8374462d1f374b5f8cbf8fba69c4809c74",
+      "id": "b5275d76-2947-4219-be21-614c7421614a",
+      "oracle_id": "310f141c-7f37-4729-aed6-dd9c09db448d"
+    },
+    "Leyline of the Void": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Leyline+of+the+Void",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "114d20b9461a50fa89363114fcb91e51502cde92247781bfaf910c5887c8d185",
+      "start_utc": "2026-10-23T15:23:44Z",
+      "end_utc": "2026-10-23T15:23:45Z",
+      "headers_sha256": "307a76657121bebeb841377a7aa602469bde2ef07fc182117aca429d775bb520",
+      "raw_response_file": "intake/leyline-of-the-void.raw.json",
+      "field_count": 65,
+      "complete_object_sha256": "f80547e5ff697ee12d9b3dea111a247cc0c1b6b5edc6f8791559878773d04dd0",
+      "id": "aeaa3aff-608d-4723-bb7c-8daedebe9f36",
+      "oracle_id": "f4e32fc1-1b8d-441e-8e76-71f19f98e925"
+    },
+    "Murder": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Murder",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "232a9821eb2ec522ad8b503fd083384c4b3c0dbea9fcbe55ed00582fae7264d9",
+      "start_utc": "2026-10-23T15:23:45Z",
+      "end_utc": "2026-10-23T15:23:45Z",
+      "headers_sha256": "5ef1a91a14dddde2b3d7ee6fe5f8c8c1fba036520a183945469175f2566d8b1c",
+      "raw_response_file": "intake/murder.raw.json",
+      "field_count": 65,
+      "complete_object_sha256": "6ac580d8fab68e2f83066d4c350f34e4b8b3901fea97d3da104761ef2834c78b",
+      "id": "2c249609-9cf7-46f1-b94c-9329add966bb",
+      "oracle_id": "938b4e2c-88d9-4637-bc00-e228920c9a78"
+    },
+    "Prodigal Pyromancer": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl",
+        "line": 7,
+        "steps": [],
+        "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+        "object_sha256": "b9a366defcc5a35b8433f3909c0ed4ff4a99b40236a937accdcf73bb0e69c402",
+        "fields": 66,
+        "provider": "browser_positive83 manifest"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 66,
+      "complete_object_sha256": "b9a366defcc5a35b8433f3909c0ed4ff4a99b40236a937accdcf73bb0e69c402",
+      "id": "cf16600a-c2a5-49e4-89e2-260cfaf58b52",
+      "oracle_id": "29b3cb3e-aeb1-43eb-8095-9f7881aa34bd"
+    },
+    "Wall of Omens": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Wall+of+Omens",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "052789661383c58e31bff32d6f0e0066be2e17693ec5ee643ff9ce436249c9f2",
+      "start_utc": "2026-10-23T15:23:46Z",
+      "end_utc": "2026-10-23T15:23:46Z",
+      "headers_sha256": "12d41989baf06b5d59c9ccb058e7f5928474225cfbaf5e2c2079db87a93deb7d",
+      "raw_response_file": "intake/wall-of-omens.raw.json",
+      "field_count": 65,
+      "complete_object_sha256": "34db2fe6b82d7ecf85088ee18f4d72176a6171365488bae4cc02bd9c9cc4513a",
+      "id": "3d134bb2-17ec-4e65-976e-f06fa983f3fb",
+      "oracle_id": "5f601f48-d24b-4883-9fde-b3f620e7c9ea"
+    },
+    "Soul Warden": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/hand_entry_bookkeeping/canonical.jsonl",
+        "line": 3,
+        "steps": [],
+        "file_sha256": "99a897459c994dedb916a59104c0023cab4e9d96aac274d60fd3f7603c44cfc0",
+        "object_sha256": "aab93dc473e3b17311b364feedfdca3e4cad793ea7ed5197fee8522f5826295d",
+        "provider": "rules_printed_facts_e4 manifest",
+        "provenance": [
+          {
+            "card_name_present": false,
+            "file": "backend/tests/fixtures/hand_entry_bookkeeping/provenance.json",
+            "file_sha256": "6f2fba73d7019e957abd11eb720b5bb8f8be76014d25a10192b8093a96f75974",
+            "hash_link": [
+              "file_sha256"
+            ]
+          }
+        ]
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 66,
+      "complete_object_sha256": "aab93dc473e3b17311b364feedfdca3e4cad793ea7ed5197fee8522f5826295d",
+      "id": "d96266b3-a7cb-40ce-a328-ac13719fe5f0",
+      "oracle_id": "f3fad295-1af2-4ecc-8546-b121ad6be27b"
+    },
+    "Curiosity": {
+      "kind": "official_named_API_full_response",
+      "url": "https://api.scryfall.com/cards/named?exact=Curiosity",
+      "http_status": 200,
+      "curl_exit": 0,
+      "raw_response_sha256": "b7cdaa6cbf8edd7d5b5bb0899ffa841ed005ef29129210e0ab88c2e5da64ce66",
+      "start_utc": "2026-10-23T15:23:46Z",
+      "end_utc": "2026-10-23T15:23:46Z",
+      "headers_sha256": "787e1abd08cb06e13c18c80fdf8f10e12242a3a215ca724de704a6b5734597e1",
+      "raw_response_file": "intake/curiosity.raw.json",
+      "field_count": 64,
+      "complete_object_sha256": "5e7cae9f347b5b59577ddd624e07bc59fbc8a2c14281cbb0fd747790dc770cd0",
+      "id": "c5a0be10-c20f-4ac0-89a5-1770ecf48aad",
+      "oracle_id": "223fa044-d387-4884-bf4e-75f1b61c6a46"
+    },
+    "Smuggler's Copter": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl",
+        "line": 18,
+        "steps": [],
+        "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+        "object_sha256": "b5cfd0ee57a4bd384fca58455d24f0533c53402bb25f460b1e9bbe1737503e4f",
+        "fields": 65,
+        "provider": "browser_positive83 manifest"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 65,
+      "complete_object_sha256": "b5cfd0ee57a4bd384fca58455d24f0533c53402bb25f460b1e9bbe1737503e4f",
+      "id": "2680ed41-da35-475a-9d80-ae2f4686feed",
+      "oracle_id": "49136bdc-bc50-49a2-999a-1ef9c16ea130"
+    },
+    "Reclamation Sage": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl",
+        "line": 3,
+        "steps": [],
+        "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+        "object_sha256": "17f6219d119d07ab0eaa06a9c4ca9f0f9d5f4e90da6b4912037a2502c6aadc0e",
+        "fields": 66,
+        "provider": "browser_positive83 manifest"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 66,
+      "complete_object_sha256": "17f6219d119d07ab0eaa06a9c4ca9f0f9d5f4e90da6b4912037a2502c6aadc0e",
+      "id": "1918ea65-ab7f-4d40-97fd-a656c892a2a1",
+      "oracle_id": "032ec6e2-6cc3-4a97-9cc7-3233f5e11904"
+    },
+    "Sol Ring": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/manual_mana_a227/sol-ring.raw.json",
+        "line": null,
+        "steps": [],
+        "file_sha256": "af725004c42de97ef1ce2baa9747b517b561ceb7610502f320d7d41207ab369b",
+        "object_sha256": "77b61b9b0141eb45cf35ae78e9db7ca7c2c69d5cf9c10b50303d98d0518cb773",
+        "fields": 65,
+        "provider": "browser_positive83 manifest"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 65,
+      "complete_object_sha256": "77b61b9b0141eb45cf35ae78e9db7ca7c2c69d5cf9c10b50303d98d0518cb773",
+      "id": "8ee443cc-e17a-493b-9c93-1f9e141a30e4",
+      "oracle_id": "6ad8011d-3471-4369-9d68-b264cc027487"
+    },
+    "Ulamog, the Infinite Gyre": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/browser_inline26/canonical.jsonl",
+        "line": 36,
+        "steps": [],
+        "file_sha256": "3c0ac6f8912b171a0712ed3fb4d17aafae3d5e5190530e6ad960f8c147369fdd",
+        "object_sha256": "5158dc6d8a5f70e09c45fe95024d7a5e8a8566befd2d6108fb63d702e430ed63",
+        "fields": 67,
+        "provider": "browser_positive83 manifest"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 67,
+      "complete_object_sha256": "5158dc6d8a5f70e09c45fe95024d7a5e8a8566befd2d6108fb63d702e430ed63",
+      "id": "9464a820-65de-44f2-9895-46a35e8621a0",
+      "oracle_id": "b817bc56-9b4d-4c50-bafa-3c652b99578f"
+    },
+    "Monastery Swiftspear": {
+      "kind": "existing_complete_RAW",
+      "source": {
+        "path": "backend/tests/fixtures/knowledge_profiles/seed155-scryfall.jsonl",
+        "line": 64,
+        "fields": 67,
+        "object_sha256": "258c54a794d0afb52cdfb383dfec82bf6aef9da38e05799cd9931774120f8a54",
+        "id": "d6bfa227-4309-40ed-952c-279595eab17e",
+        "oracle_id": "dafd2713-d1bc-474b-b390-d2ff20b5375e",
+        "oracle_text_sha256": "24c6fe54607364423e3c142b8904d63b24ae5ead80654b683b5defad6e996476",
+        "keywords": [
+          "Prowess",
+          "Haste"
+        ],
+        "power": "1",
+        "toughness": "2",
+        "type_line": "Creature \u2014 Human Monk",
+        "colors": [
+          "R"
+        ],
+        "mana_cost": "{R}",
+        "layout": "normal",
+        "steps": [],
+        "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+        "provider": "existing seed155"
+      },
+      "commit": "5746f69703f87fd00425122d52aae7dc9232e3ba",
+      "field_count": 67,
+      "complete_object_sha256": "258c54a794d0afb52cdfb383dfec82bf6aef9da38e05799cd9931774120f8a54",
+      "id": "d6bfa227-4309-40ed-952c-279595eab17e",
+      "oracle_id": "dafd2713-d1bc-474b-b390-d2ff20b5375e"
+    }
+  },
+  "raw_dataset_sha256": "bbc868c335b6f5bc7e5a02f5aafe92bf16e25ede7652a0f2e7d5ae5428c5048a",
+  "not_native_or_gameplay_or_whole_phase_acceptance": true
+}

@@ -157,7 +157,7 @@ class AIAgent:
                     action = idle_foretell_action(self, state, legal_moves, player_id)
                     if action:
                         decision = AIDecision(action=action, reasoning='Bank idle mana without displacing a play or known answer')
-                if decision.action.get('type') == 'pass_priority':
+                if decision.action.get('type') == 'pass_priority' and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
                     from ai.suspend_policy import idle_suspend
                     action = idle_suspend(self, state, legal_moves, player_id)
                     if action:

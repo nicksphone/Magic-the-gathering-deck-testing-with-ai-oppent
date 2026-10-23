@@ -1,0 +1,770 @@
+[
+  {
+    "family": "pending",
+    "name": "Fatal Push",
+    "claims": {
+      "oracle_text": {
+        "old": "Destroy target creature if it has mana value 2 or less.\nRevolt \u2014 Destroy that creature if it has mana value 4 or less instead if a permanent left the battlefield under your control this turn.",
+        "canonical": "Destroy target creature if it has mana value 2 or less.\nRevolt \u2014 Destroy that creature if it has mana value 4 or less instead if a permanent left the battlefield under your control this turn.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{B}",
+        "canonical": "{B}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Instant",
+        "canonical": "Instant",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "keywords": {
+        "old": [
+          "Revolt"
+        ],
+        "canonical": [
+          "Revolt"
+        ],
+        "equal": true
+      },
+      "colors": {
+        "old": [
+          "B"
+        ],
+        "canonical": [
+          "B"
+        ],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Go for the Throat",
+    "claims": {
+      "oracle_text": {
+        "old": "Destroy target nonartifact creature.",
+        "canonical": "Destroy target nonartifact creature.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{1}{B}",
+        "canonical": "{1}{B}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Instant",
+        "canonical": "Instant",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "keywords": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      },
+      "colors": {
+        "old": [
+          "B"
+        ],
+        "canonical": [
+          "B"
+        ],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Sprite Dragon",
+    "claims": {
+      "oracle_text": {
+        "old": "Flying, haste\nWhenever you cast a noncreature spell, put a +1/+1 counter on this creature.",
+        "canonical": "Flying, haste\nWhenever you cast a noncreature spell, put a +1/+1 counter on this creature.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{U}{R}",
+        "canonical": "{U}{R}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Creature \u2014 Faerie Dragon",
+        "canonical": "Creature \u2014 Faerie Dragon",
+        "equal": true
+      },
+      "power": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      },
+      "toughness": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      },
+      "keywords": {
+        "old": [
+          "Flying",
+          "Haste"
+        ],
+        "canonical": [
+          "Flying",
+          "Haste"
+        ],
+        "equal": true
+      },
+      "colors": {
+        "old": [
+          "R",
+          "U"
+        ],
+        "canonical": [
+          "R",
+          "U"
+        ],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Counterspell",
+    "claims": {
+      "oracle_text": {
+        "old": "Counter target spell.",
+        "canonical": "Counter target spell.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{U}{U}",
+        "canonical": "{U}{U}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Instant",
+        "canonical": "Instant",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "keywords": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      },
+      "colors": {
+        "old": [
+          "U"
+        ],
+        "canonical": [
+          "U"
+        ],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Naturalize",
+    "claims": {
+      "oracle_text": {
+        "old": "Destroy target artifact or enchantment.",
+        "canonical": "Destroy target artifact or enchantment.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{1}{G}",
+        "canonical": "{1}{G}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Instant",
+        "canonical": "Instant",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "keywords": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      },
+      "colors": {
+        "old": [
+          "G"
+        ],
+        "canonical": [
+          "G"
+        ],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Mind Stone",
+    "claims": {
+      "oracle_text": {
+        "old": "{T}: Add {C}.\n{1}, {T}, Sacrifice this artifact: Draw a card.",
+        "canonical": "{T}: Add {C}.\n{1}, {T}, Sacrifice this artifact: Draw a card.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{2}",
+        "canonical": "{2}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Artifact",
+        "canonical": "Artifact",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "keywords": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      },
+      "colors": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Phyrexian Arena",
+    "claims": {
+      "oracle_text": {
+        "old": "At the beginning of your upkeep, you draw a card and lose 1 life.",
+        "canonical": "At the beginning of your upkeep, you draw a card and lose 1 life.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{1}{B}{B}",
+        "canonical": "{1}{B}{B}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Enchantment",
+        "canonical": "Enchantment",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "keywords": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      },
+      "colors": {
+        "old": [
+          "B"
+        ],
+        "canonical": [
+          "B"
+        ],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Darksteel Myr",
+    "claims": {
+      "oracle_text": {
+        "old": "Indestructible (Damage and effects that say \"destroy\" don't destroy this creature. If its toughness is 0 or less, it still dies.)",
+        "canonical": "Indestructible (Damage and effects that say \"destroy\" don't destroy this creature. If its toughness is 0 or less, it still dies.)",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{3}",
+        "canonical": "{3}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Artifact Creature \u2014 Myr",
+        "canonical": "Artifact Creature \u2014 Myr",
+        "equal": true
+      },
+      "power": {
+        "old": "0",
+        "canonical": "0",
+        "equal": true
+      },
+      "toughness": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      },
+      "keywords": {
+        "old": [
+          "Indestructible"
+        ],
+        "canonical": [
+          "Indestructible"
+        ],
+        "equal": true
+      },
+      "colors": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Lightning Bolt",
+    "claims": {
+      "oracle_text": {
+        "old": "Lightning Bolt deals 3 damage to any target.",
+        "canonical": "Lightning Bolt deals 3 damage to any target.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{R}",
+        "canonical": "{R}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Instant",
+        "canonical": "Instant",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "keywords": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      },
+      "colors": {
+        "old": [
+          "R"
+        ],
+        "canonical": [
+          "R"
+        ],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "pending",
+    "name": "Giant Growth",
+    "claims": {
+      "oracle_text": {
+        "old": "Target creature gets +3/+3 until end of turn.",
+        "canonical": "Target creature gets +3/+3 until end of turn.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{G}",
+        "canonical": "{G}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Instant",
+        "canonical": "Instant",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "keywords": {
+        "old": [],
+        "canonical": [],
+        "equal": true
+      },
+      "colors": {
+        "old": [
+          "G"
+        ],
+        "canonical": [
+          "G"
+        ],
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Prodigal Pyromancer",
+    "claims": {
+      "oracle_text": {
+        "old": "{T}: This creature deals 1 damage to any target.",
+        "canonical": "{T}: This creature deals 1 damage to any target.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{2}{R}",
+        "canonical": "{2}{R}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Creature \u2014 Human Wizard",
+        "canonical": "Creature \u2014 Human Wizard",
+        "equal": true
+      },
+      "power": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      },
+      "toughness": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Wall of Omens",
+    "claims": {
+      "oracle_text": {
+        "old": "Defender\nWhen this creature enters, draw a card.",
+        "canonical": "Defender\nWhen this creature enters, draw a card.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{1}{W}",
+        "canonical": "{1}{W}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Creature \u2014 Wall",
+        "canonical": "Creature \u2014 Wall",
+        "equal": true
+      },
+      "power": {
+        "old": "0",
+        "canonical": "0",
+        "equal": true
+      },
+      "toughness": {
+        "old": "4",
+        "canonical": "4",
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Soul Warden",
+    "claims": {
+      "oracle_text": {
+        "old": "Whenever another creature enters, you gain 1 life.",
+        "canonical": "Whenever another creature enters, you gain 1 life.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{W}",
+        "canonical": "{W}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Creature \u2014 Human Cleric",
+        "canonical": "Creature \u2014 Human Cleric",
+        "equal": true
+      },
+      "power": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      },
+      "toughness": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Curiosity",
+    "claims": {
+      "oracle_text": {
+        "old": "Enchant creature\nWhenever enchanted creature deals damage to an opponent, you may draw a card.",
+        "canonical": "Enchant creature\nWhenever enchanted creature deals damage to an opponent, you may draw a card.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{U}",
+        "canonical": "{U}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Enchantment \u2014 Aura",
+        "canonical": "Enchantment \u2014 Aura",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Reclamation Sage",
+    "claims": {
+      "oracle_text": {
+        "old": "When this creature enters, you may destroy target artifact or enchantment.",
+        "canonical": "When this creature enters, you may destroy target artifact or enchantment.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{2}{G}",
+        "canonical": "{2}{G}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Creature \u2014 Elf Shaman",
+        "canonical": "Creature \u2014 Elf Shaman",
+        "equal": true
+      },
+      "power": {
+        "old": "2",
+        "canonical": "2",
+        "equal": true
+      },
+      "toughness": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Smuggler's Copter",
+    "claims": {
+      "oracle_text": {
+        "old": "Flying\nWhenever this Vehicle attacks or blocks, you may draw a card. If you do, discard a card.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+        "canonical": "Flying\nWhenever this Vehicle attacks or blocks, you may draw a card. If you do, discard a card.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{2}",
+        "canonical": "{2}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Artifact \u2014 Vehicle",
+        "canonical": "Artifact \u2014 Vehicle",
+        "equal": true
+      },
+      "power": {
+        "old": "3",
+        "canonical": "3",
+        "equal": true
+      },
+      "toughness": {
+        "old": "3",
+        "canonical": "3",
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Sol Ring",
+    "claims": {
+      "oracle_text": {
+        "old": "{T}: Add {C}{C}.",
+        "canonical": "{T}: Add {C}{C}.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{1}",
+        "canonical": "{1}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Artifact",
+        "canonical": "Artifact",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Ulamog, the Infinite Gyre",
+    "claims": {
+      "oracle_text": {
+        "old": "When you cast this spell, destroy target permanent.\nIndestructible\nAnnihilator 4 (Whenever this creature attacks, defending player sacrifices four permanents of their choice.)\nWhen Ulamog is put into a graveyard from anywhere, its owner shuffles their graveyard into their library.",
+        "canonical": "When you cast this spell, destroy target permanent.\nIndestructible\nAnnihilator 4 (Whenever this creature attacks, defending player sacrifices four permanents of their choice.)\nWhen Ulamog is put into a graveyard from anywhere, its owner shuffles their graveyard into their library.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{11}",
+        "canonical": "{11}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Legendary Creature \u2014 Eldrazi",
+        "canonical": "Legendary Creature \u2014 Eldrazi",
+        "equal": true
+      },
+      "power": {
+        "old": "10",
+        "canonical": "10",
+        "equal": true
+      },
+      "toughness": {
+        "old": "10",
+        "canonical": "10",
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Monastery Swiftspear",
+    "claims": {
+      "oracle_text": {
+        "old": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+        "canonical": "Haste\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{R}",
+        "canonical": "{R}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Creature \u2014 Human Monk",
+        "canonical": "Creature \u2014 Human Monk",
+        "equal": true
+      },
+      "power": {
+        "old": "1",
+        "canonical": "1",
+        "equal": true
+      },
+      "toughness": {
+        "old": "2",
+        "canonical": "2",
+        "equal": true
+      }
+    }
+  },
+  {
+    "family": "permanent",
+    "name": "Lightning Bolt",
+    "claims": {
+      "oracle_text": {
+        "old": "Lightning Bolt deals 3 damage to any target.",
+        "canonical": "Lightning Bolt deals 3 damage to any target.",
+        "equal": true
+      },
+      "mana_cost": {
+        "old": "{R}",
+        "canonical": "{R}",
+        "equal": true
+      },
+      "type_line": {
+        "old": "Instant",
+        "canonical": "Instant",
+        "equal": true
+      },
+      "power": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      },
+      "toughness": {
+        "old": null,
+        "canonical": null,
+        "equal": true
+      }
+    }
+  }
+]
