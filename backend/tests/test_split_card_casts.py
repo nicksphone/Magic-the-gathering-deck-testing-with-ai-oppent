@@ -1,4 +1,7 @@
 """Canonical Scryfall split-card casts use one half on the stack."""
+from copy import deepcopy
+from dataclasses import replace
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -6,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 from ai.agent import AIAgent
+from card_data.sync import ScryfallSyncService
 from effects.handlers import counter_spell
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
@@ -19,6 +23,23 @@ from tests.rules_printed_facts_e4 import canonical_card
 
 
 CARDS = {row["name"]: row for row in json.loads((Path(__file__).parent / "fixtures/split_cards.json").read_text())}
+
+
+def _master_of_waves_card():
+    encoded = (Path(__file__).parent / 'fixtures/task13_master_of_waves/master-of-waves.raw.json').read_bytes()
+    assert hashlib.sha256(encoded).hexdigest() == 'c7be64947fe52c83bc9002601f60a34b55e598b5e921c050acb071744f28c411'
+    raw = json.loads(encoded)
+    assert (raw['object'], raw['name'], raw['id'], raw['oracle_id']) == (
+        'card', 'Master of Waves', '14cd5387-c6aa-4430-8edb-05da6b4e2ff5',
+        '07d40173-53e7-4328-a3b0-6214d93855b6')
+    normalized = ScryfallSyncService._normalize_payload(raw, 'unused:master-fixture-display')
+    entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+             'image_uri': None, 'colors': deepcopy(raw['colors']),
+             'card_faces': deepcopy(raw.get('card_faces', []))}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id='master', owner=2, controller=2, zone=Zone.BATTLEFIELD,
+                   instance_order=0, summoning_sick=True)
 
 
 def split_state(name: str):
@@ -191,8 +212,7 @@ def test_split_face_color_fallback_does_not_inherit_the_other_halfs_color():
         state.cards[card_id].card_faces,
     )
     state.players[1].mana_pool.update({"C": 1, "U": 1})
-    target = CardInstance("master", "Master of Waves", 2, 2, Zone.BATTLEFIELD, ["Creature"],
-                          power=2, toughness=1, oracle_text="Protection from red")
+    target = _master_of_waves_card()
     state.cards[target.id] = target
     state.players[2].battlefield.append(target.id)
     state = checked_action(state, RulesEngine(), 1, {

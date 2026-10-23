@@ -1,9 +1,38 @@
+from copy import deepcopy
+from dataclasses import replace
+import hashlib
+import json
+from pathlib import Path
+
 from card_data.seed_cards import seed_card_payload
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.action_validation import checked_action
 from rules_engine.continuous import effective_toughness
 from rules_engine.engine import RulesEngine
+
+
+def _canonical_meathook():
+    encoded = (Path(__file__).parent / 'fixtures/knowledge_profiles/seed155-scryfall.jsonl').read_bytes()
+    if hashlib.sha256(encoded).hexdigest() != '194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732':
+        raise ValueError('Full Meathook source changed')
+    raw = json.loads(encoded.splitlines()[102])
+    if (raw.get('object'), raw.get('name'), raw.get('id'), raw.get('oracle_id'), len(raw)) != (
+            'card', 'The Meathook Massacre', '70d0540f-93c6-4af5-ab2d-65e6c03001c7',
+            '127de52b-df75-4342-95a0-20d84c5bf916', 64):
+        raise ValueError('Full Meathook identity changed')
+    if hashlib.sha256(json.dumps(raw, sort_keys=True, separators=(',', ':'),
+                                 ensure_ascii=False).encode()).hexdigest() != '74a8c5d89cbd341783af3334f22fd563fa85c1afa10cda141051134bb1ac7b85':
+        raise ValueError('Full Meathook object changed')
+    from card_data.sync import ScryfallSyncService
+    normalized = ScryfallSyncService._normalize_payload(raw, 'unused:task13-fixture-display')
+    entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+             'image_uri': None, 'colors': deepcopy(raw.get('colors', [])),
+             'card_faces': deepcopy(raw.get('card_faces', []))}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id='meathook', owner=1, controller=1, zone=Zone.HAND,
+                   instance_order=0, summoning_sick=True)
 
 
 def test_printed_meathook_etb_uses_announced_x_not_other_abilities() -> None:
@@ -16,11 +45,7 @@ def test_printed_meathook_etb_uses_announced_x_not_other_abilities() -> None:
     state.players[1].mana_pool["B"] = 4
     oracle = seed_card_payload("The Meathook Massacre")
     assert oracle is not None
-    hook = CardInstance(
-        "meathook", oracle["name"], 1, 1, Zone.HAND, ["Enchantment"],
-        mana_cost=oracle["mana_cost"], type_line=oracle["type_line"],
-        oracle_text=oracle["oracle_text"],
-    )
+    hook = _canonical_meathook()
     state.cards[hook.id] = hook
     state.players[1].hand.append(hook.id)
     for cid, owner, toughness in (("own-small", 1, 1), ("small", 2, 1), ("large", 2, 3)):

@@ -18,6 +18,7 @@ from rules_engine.replacement import replacement_options
 from tests.test_named_counters import CARDS as NAMED, add as named_add
 from tests.test_ai_recurring_engines import fixture, add as raw_add
 from tests.test_api_input_contracts import game
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 CARDS = {c['name']: c for c in json.loads((Path(__file__).parent / 'fixtures/shield_counters.json').read_text())}
@@ -338,8 +339,8 @@ def test_http_virtual_shield_choice_survives_sqlite_restore_and_rejects_wrong_ow
     put_counters(state,'shield',2,target_card_id=bear.id)
     actor = 3-player
     seed = json.loads((Path(__file__).parent.parent/'card_data/builtin_oracle_seed.json').read_text())['cards']['Lightning Bolt']
-    bolt = CardInstance(id=state.allocate_object_id(),name=seed['name'],owner=actor,controller=actor,
-        zone=Zone.HAND,types=['Instant'],type_line=seed['type_line'],mana_cost=seed['mana_cost'],oracle_text=seed['oracle_text'])
+    bolt = canonical_card('Lightning Bolt', id=state.allocate_object_id(), owner=actor,
+                          controller=actor, zone=Zone.HAND)
     state.cards[bolt.id] = bolt
     state.players[actor].hand.append(bolt.id)
     state.players[actor].mana_pool['R'] = 1

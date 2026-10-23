@@ -141,9 +141,13 @@ def test_two_sources_leaving_together_return_both_sets() -> None:
     state, first = _state()
     _permanent(state, "first-held", 2, 2, ["Creature"], "{1}")
     _resolve_entry(state, first)
+    printed = raw_card(first.name)
     second = CardInstance(
-        "second-lockdown", first.name, 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
-        mana_cost=first.mana_cost, oracle_text=first.oracle_text,
+        "second-lockdown", printed["name"], 2, 2, Zone.BATTLEFIELD, ["Enchantment"],
+        mana_cost=printed["mana_cost"], oracle_text=printed["oracle_text"],
+        type_line=printed["type_line"], colors=deepcopy(printed["colors"]),
+        keywords=deepcopy(printed["keywords"]), layout=printed["layout"],
+        card_faces=deepcopy(printed.get("card_faces", [])),
     )
     state.cards[second.id] = second
     state.players[2].battlefield.append(second.id)
