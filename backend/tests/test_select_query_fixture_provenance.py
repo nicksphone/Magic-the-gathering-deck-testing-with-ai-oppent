@@ -1,4 +1,6 @@
 """Paid flashback, actual scan work, and exact offline-profile provenance."""
+from copy import deepcopy
+from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
@@ -7,6 +9,7 @@ from unittest.mock import patch
 import pytest
 
 from card_data.seed_cards import seed_card_payload
+from card_data.sync import ScryfallSyncService
 from effects.handlers import counter_spell
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import CardInstance, MatchFactory, StackItem, Step, Zone
@@ -17,6 +20,34 @@ from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.targeting import stack_object_kind
 from tests.test_basic_land_layer_goldens import add, position
 from tests.test_replacement_query_batches import reference, rows
+
+
+def _paid_input_card(name, *, id, owner, zone):
+    sources = {
+        'Memory Deluge': (62, 63, 'ca78551defc92aef72551b4b03060d3e86bd7f81fa8820c283fe8f9b518f4ac7',
+                          'edcd3802-ddb3-4eb6-9b6e-a26d76557662', 'e6fd55f2-7e26-469c-a44a-ea2eb90e19a9'),
+        'Negate': (66, 66, 'a6e0857a1fc161e46106b89cf0adb8d271d0ead6717da123a7a4093dcc5c5ba2',
+                   '52d58fe4-6070-4022-9cd7-c35a11b44525', '3407fe41-fdd3-4119-8f70-4bc4590a379f'),
+    }
+    encoded = (Path(__file__).parent / 'fixtures/knowledge_profiles/seed155-scryfall.jsonl').read_bytes()
+    if hashlib.sha256(encoded).hexdigest() != '194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732':
+        raise ValueError('Full paid-input source changed')
+    line, fields, object_sha, identifier, oracle_id = sources[name]
+    raw = json.loads(encoded.splitlines()[line - 1])
+    if (raw.get('object'), raw.get('name'), raw.get('id'), raw.get('oracle_id'), len(raw)) != (
+            'card', name, identifier, oracle_id, fields):
+        raise ValueError('Full paid-input identity changed')
+    if hashlib.sha256(json.dumps(raw, sort_keys=True, separators=(',', ':'),
+                                 ensure_ascii=False).encode()).hexdigest() != object_sha:
+        raise ValueError('Full paid-input object changed')
+    normalized = ScryfallSyncService._normalize_payload(raw, 'unused:task13-paid-input-display')
+    entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+             'image_uri': None, 'colors': deepcopy(raw.get('colors', [])),
+             'card_faces': deepcopy(raw.get('card_faces', []))}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id=id, owner=owner, controller=owner, zone=zone,
+                   instance_order=0, summoning_sick=True)
 
 
 @pytest.mark.parametrize('seat', [1, 2])
@@ -30,8 +61,7 @@ def test_actual_paid_flashback_and_counter_keep_native_announcement_after_snapsh
     for name, identifier, owner, zone in [('Memory Deluge', 'deluge', seat, Zone.GRAVEYARD),
                                           ('Negate', 'counter', 3-seat, Zone.HAND)]:
         raw = seed_card_payload(name)
-        card = CardInstance(identifier, name, owner, owner, zone, ['Instant'],
-                            mana_cost=raw['mana_cost'], oracle_text=raw['oracle_text'])
+        card = _paid_input_card(name, id=identifier, owner=owner, zone=zone)
         state.cards[identifier] = card
         (state.players[owner].graveyard if zone == Zone.GRAVEYARD else state.players[owner].hand).append(identifier)
     state.players[seat].mana_pool['U'] = 7
