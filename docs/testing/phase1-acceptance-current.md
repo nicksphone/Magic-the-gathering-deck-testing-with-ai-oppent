@@ -1,5 +1,32 @@
 # Phase 1 Acceptance Review
 
+## October 23 Current Checkpoint
+
+Phase 1 remains **not signed off**. Read the dated entries below as historical
+ledgers, not as a claim that every old CI failure is still present.
+
+[PR 28](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/28)
+is merged as `dffa9728fc2e21b3ec92dbf053bb5008c0b217b3`, with a full tree
+identical to its tested candidate and current-main synthetic merge. Its
+[complete eight-job run](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39931773454)
+has independently verified ordered phase records: 1,179 whole backend modules,
+33,624 nodes, 33,554 ordinary passes, 70 unchanged existing skips and 160 passing
+subtests. Original ordered outcomes are preserved. Fixture-source compatibility
+uses finite exact historical inverses, not relaxed digests or changed gameplay
+assertions. The actual-main push run is a separate execution.
+
+These finite real-card repairs do not complete Task 1.3's entire fixture
+inventory or settle deliberate synthetic/parser/generated input scope. A
+constructor-site census is not a certificate for every indirect Factory input.
+Tasks 1.1--1.4 still require final requirement-by-requirement reconciliation;
+passing supported-corpus or fixture components is not Phase 1 sign-off.
+Measured AI acceptance is also open, and the active native BO3 evaluation has
+no accepted final result at this checkpoint. See the
+[current release acceptance ledger](release-acceptance-status.md) for source,
+runtime, browser, privacy and user-deferred LAN boundaries.
+
+## Historical Reviews
+
 Reviewed on 2026-10-16 against the original
 [Tasks 1.1--1.4](../plans/2026-09-09-ai-knowledge-base.md).
 Phase 1 is **not signed off**. Implemented code, a passed shipped-corpus check,

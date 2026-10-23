@@ -1,0 +1,17 @@
+{
+  "URL": "https://api.scryfall.com/cards/named?exact=Witchbane%20Orb",
+  "request_begin_UTC": "2026-10-23T10:53:44Z",
+  "response_end_UTC": "2026-10-23T10:53:46Z",
+  "curl_exit": 0,
+  "HTTP": 200,
+  "TLS_verify": 0,
+  "raw_sha256": "98335dd475e759b14a8ed40c911c2e7cdec21787f47947c2d25d1cb88f811750",
+  "raw_bytes": 5003,
+  "keys": 63,
+  "printing_id": "53e0bf16-62f5-4b62-96e8-bc7e049bcf89",
+  "oracle_id": "7411a8f4-b736-482f-886e-5fa671e94e0d",
+  "name": "Witchbane Orb",
+  "oracle_text": "When this artifact enters, destroy all Curses attached to you.\nYou have hexproof. (You can't be the target of spells or abilities your opponents control, including Aura spells.)",
+  "no_rewrite": true,
+  "intake_before_tests": true
+}

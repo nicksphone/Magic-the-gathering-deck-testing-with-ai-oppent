@@ -1,4 +1,7 @@
 """Real Gollum / Meager Meal targets must be rechecked independently."""
+from copy import deepcopy
+from dataclasses import replace
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -7,6 +10,7 @@ import pytest
 
 from ai.agent import AIAgent
 from card_data.hydration import hydrate_deck_cards
+from card_data.sync import ScryfallSyncService
 from effects.handlers import copy_spell
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
@@ -46,9 +50,30 @@ def cast_meal(state, card_id, creature_id):
     return state
 
 
+def _witchbane_orb():
+    encoded = (Path(__file__).parent / 'fixtures/task13_witchbane_orb/witchbane-orb.raw.json').read_bytes()
+    if hashlib.sha256(encoded).hexdigest() != '98335dd475e759b14a8ed40c911c2e7cdec21787f47947c2d25d1cb88f811750':
+        raise ValueError('Full Orb source changed')
+    raw = json.loads(encoded)
+    if (raw.get('object'), raw.get('name'), raw.get('id'), raw.get('oracle_id'), len(raw)) != (
+            'card', 'Witchbane Orb', '53e0bf16-62f5-4b62-96e8-bc7e049bcf89',
+            '7411a8f4-b736-482f-886e-5fa671e94e0d', 63):
+        raise ValueError('Full Orb identity changed')
+    if hashlib.sha256(json.dumps(raw, sort_keys=True, separators=(',', ':'),
+                                 ensure_ascii=False).encode()).hexdigest() != 'db55b23bf0042af045162ef1495bea8730f3905b13e5e35d8410925812656746':
+        raise ValueError('Full Orb object changed')
+    normalized = ScryfallSyncService._normalize_payload(raw, 'unused:task13-orb-display')
+    entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+             'image_uri': None, 'colors': deepcopy(raw.get('colors', [])),
+             'card_faces': deepcopy(raw.get('card_faces', []))}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id='orb', owner=2, controller=2, zone=Zone.BATTLEFIELD,
+                   instance_order=0, summoning_sick=True)
+
+
 def grant_player_hexproof(state):
-    orb = CardInstance("orb", "Witchbane Orb", 2, 2, Zone.BATTLEFIELD, ["Artifact"],
-                       oracle_text="When this artifact enters, destroy all Curses attached to you.\nYou have hexproof.")
+    orb = _witchbane_orb()
     state.cards[orb.id] = orb
     state.players[2].battlefield.append(orb.id)
 

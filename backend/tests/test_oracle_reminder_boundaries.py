@@ -1,4 +1,11 @@
+from copy import deepcopy
+from dataclasses import replace
+import hashlib
+import json
+from pathlib import Path
+
 from card_data.seed_cards import seed_card_payload
+from card_data.sync import ScryfallSyncService
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.events import _trigger_from_oracle, emit_event
 from rules_engine.oracle_effects import extract_activated_abilities, infer_effect_from_oracle, inspect_target_hints
@@ -7,6 +14,32 @@ from rules_engine.oracle_text import without_reminder_text
 
 def _card(name: str) -> CardInstance:
     payload = seed_card_payload(name)
+    sources = {
+        'Bloodtithe Harvester': (9, 66, 'a086eb1eeb92eda6ad51aa1c551cc3739ac5207456fdc5b7ccb8e2b1c7e198e8',
+                                'ae4aec0d-c853-44e6-9f51-cbecf413ea14', '419a8ab2-cff6-4811-a559-8791c9bb3d8e'),
+        "Witch's Oven": (117, 66, '28665f48c3fcea64e1b0e48b30ce69ceee4aa3e4a4d33f2982220248699c0cd2',
+                         '04ef8493-d986-45f8-a718-617b028f7ad4', '8fa0fe02-2452-4386-8e0c-165757b0f0a3'),
+    }
+    if name in sources:
+        encoded = (Path(__file__).parent / 'fixtures/knowledge_profiles/seed155-scryfall.jsonl').read_bytes()
+        if hashlib.sha256(encoded).hexdigest() != '194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732':
+            raise ValueError('Full reminder source changed')
+        line, fields, object_sha, identifier, oracle_id = sources[name]
+        raw = json.loads(encoded.splitlines()[line - 1])
+        if (raw.get('object'), raw.get('name'), raw.get('id'), raw.get('oracle_id'), len(raw)) != (
+                'card', name, identifier, oracle_id, fields):
+            raise ValueError('Full reminder identity changed')
+        if hashlib.sha256(json.dumps(raw, sort_keys=True, separators=(',', ':'),
+                                     ensure_ascii=False).encode()).hexdigest() != object_sha:
+            raise ValueError('Full reminder object changed')
+        normalized = ScryfallSyncService._normalize_payload(raw, 'unused:task13-reminder-display')
+        entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+                 'image_uri': None, 'colors': deepcopy(raw.get('colors', [])),
+                 'card_faces': deepcopy(raw.get('card_faces', []))}
+        sample = MatchFactory.from_decks([entry], [], seed=0)
+        template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+        return replace(template, id=name, owner=1, controller=1, zone=Zone.BATTLEFIELD,
+                       instance_order=0, summoning_sick=True)
     return CardInstance(
         id=name, name=name, owner=1, controller=1, zone=Zone.BATTLEFIELD,
         types=payload["type_line"].split(" — ")[0].split(),
