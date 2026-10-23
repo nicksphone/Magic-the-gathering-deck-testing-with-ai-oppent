@@ -5,6 +5,7 @@ from pathlib import Path
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
+from tests.pending_permanent_fullraw import PERMANENT_NAMES, printed_kwargs
 
 DATA = json.loads((Path(__file__).parent / "fixtures/permanent_spell_context.json").read_text())
 
@@ -20,11 +21,16 @@ def state():
 
 def card(game, name, zone=Zone.HAND, owner=1):
     row = DATA[name]
-    obj = CardInstance(id=name, name=name, owner=owner, controller=owner, zone=zone,
-                       types=row["type_line"].split(" — ")[0].split(), type_line=row["type_line"],
-                       oracle_text=row["oracle_text"], mana_cost=row["mana_cost"],
-                       power=int(row["power"]) if row["power"] is not None else None,
-                       toughness=int(row["toughness"]) if row["toughness"] is not None else None)
+    printed = printed_kwargs(name, row) if name in PERMANENT_NAMES else None
+    if printed is not None:
+        obj = CardInstance(id=name, owner=owner, controller=owner, zone=zone,
+                           **printed)
+    else:
+        obj = CardInstance(id=name, name=name, owner=owner, controller=owner, zone=zone,
+                           types=row["type_line"].split(" — ")[0].split(), type_line=row["type_line"],
+                           oracle_text=row["oracle_text"], mana_cost=row["mana_cost"],
+                           power=int(row["power"]) if row["power"] is not None else None,
+                           toughness=int(row["toughness"]) if row["toughness"] is not None else None)
     game.cards[obj.id] = obj
     getattr(game.players[owner], zone.value).append(obj.id)
     return obj

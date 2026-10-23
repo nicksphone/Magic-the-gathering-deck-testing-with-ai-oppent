@@ -10,6 +10,7 @@ from game_state.serializers import deserialize_match_snapshot, serialize_match_s
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.action_validation import checked_action
 from rules_engine.engine import RulesEngine
+from tests.pending_permanent_fullraw import PENDING_NAMES, printed_kwargs
 
 
 CARDS = {row["name"]: row for row in json.loads(
@@ -18,13 +19,18 @@ CARDS = {row["name"]: row for row in json.loads(
 
 def add_card(state, name, zone, player=1):
     raw = CARDS[name]
-    card = CardInstance(f"{name}-{len(state.cards)}", name, player, player, zone,
-                        [kind for kind in ["Creature", "Artifact", "Enchantment", "Instant", "Sorcery"]
-                         if kind in raw["type_line"].split()], mana_cost=raw["mana_cost"],
-                        oracle_text=raw["oracle_text"], type_line=raw["type_line"],
-                        power=int(raw["power"]) if raw["power"] else None,
-                        toughness=int(raw["toughness"]) if raw["toughness"] else None,
-                        keywords=raw["keywords"], colors=raw["colors"])
+    printed = printed_kwargs(name, raw, catalog_keywords=True) if name in PENDING_NAMES else None
+    if printed is not None:
+        card = CardInstance(id=f"{name}-{len(state.cards)}", owner=player, controller=player,
+                            zone=zone, **printed)
+    else:
+        card = CardInstance(f"{name}-{len(state.cards)}", name, player, player, zone,
+                            [kind for kind in ["Creature", "Artifact", "Enchantment", "Instant", "Sorcery"]
+                             if kind in raw["type_line"].split()], mana_cost=raw["mana_cost"],
+                            oracle_text=raw["oracle_text"], type_line=raw["type_line"],
+                            power=int(raw["power"]) if raw["power"] else None,
+                            toughness=int(raw["toughness"]) if raw["toughness"] else None,
+                            keywords=raw["keywords"], colors=raw["colors"])
     state.cards[card.id] = card
     getattr(state.players[player], zone.value).append(card.id)
     return card
