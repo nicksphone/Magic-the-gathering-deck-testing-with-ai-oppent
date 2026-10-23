@@ -7,7 +7,7 @@ inputs retain the complete 66-field object. No new card data, production code,
 helper implementation or printed-fact override is introduced. Only the original
 scene identity, owner, controller and zone are applied after native capture.
 
-All seventeen original test functions and sixty-two assertion ASTs remain.
+All seventeen original functions and sixty-two assertion ASTs remain.
 Reversing the two imports and four constructor changes recovers both original
 files byte-for-byte. A metadata-only projection reproduces four incomplete
 input boundaries before the change and passes the same four afterward. It
