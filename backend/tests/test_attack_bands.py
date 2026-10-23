@@ -8,6 +8,7 @@ from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.engine import RulesEngine
 from rules_engine.continuous import has_keyword
 from rules_engine import combat
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 def _state():
@@ -23,10 +24,9 @@ def _state():
         ("elf", 1, "Llanowar Elves", 1, 1, []),
         ("bears", 2, "Grizzly Bears", 2, 2, []),
     ):
-        state.cards[cid] = CardInstance(
-            id=cid, name=name, owner=owner, controller=owner, zone=Zone.BATTLEFIELD,
-            types=["Creature"], power=power, toughness=toughness,
-            keywords=keywords, summoning_sick=False,
+        state.cards[cid] = canonical_card(
+            name, id=cid, owner=owner, controller=owner,
+            zone=Zone.BATTLEFIELD, summoning_sick=False,
         )
         state.players[owner].battlefield.append(cid)
     return state

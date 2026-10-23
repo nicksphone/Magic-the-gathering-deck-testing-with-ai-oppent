@@ -1,5 +1,40 @@
 # Release Acceptance Status
 
+## October 23 Canonical Fixture Verification
+
+[PR 28](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/28)
+is merged as `dffa9728fc2e21b3ec92dbf053bb5008c0b217b3`. Its candidate,
+tested synthetic merge, fresh current-main merge and actual merged commit have
+the same full tree, `37b6448ff3bde9a57f0c7123f5656af695571caa`.
+[Run 39931773454](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39931773454)
+passes all eight jobs. Independently checked artifact digests and per-node phase
+records contain 1,179 whole backend modules, 33,624 unique nodes, 33,554 ordinary
+passes, 70 unchanged existing setup skips and 160 passing subtests. All original
+1,173-module/33,597-node ordered outcomes are preserved. These are one run's
+counts, not a sum of overlapping components; skips are not passes.
+
+This includes the earlier reviewed fixture work merged by
+[PR 27](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/27),
+plus the control/basic-land and split-card support corrections. Complete pinned
+printing facts reach genuine native normalization and construction before
+capture. Original gameplay assertions and strict historical source guards are
+preserved; finite reviewed inverses restore exact historical source text rather
+than weakening the guards. The older failed CI records remain historical.
+
+The actual-main push run is separate from that tested-tree qualification. No
+operator installation is upgraded by merging a PR. Task 1.3's remaining fixture
+sites and deliberate synthetic/protocol boundaries are not certified by these
+finite repairs. Phase 1, measured AI acceptance and final RC reconciliation
+remain open. The predeclared native BO3 evaluation has no accepted final result
+at this checkpoint; elapsed time or a producer's eventual success status alone
+cannot establish that every series resolved.
+
+The separate-device HTTPS/LAN/manual CA-trust check is user-deferred for RC,
+not passed. Local HTTPS/authentication and Linux Chrome, Brave and Firefox
+remain in scope. Private synthetic traces remain protected CI inputs, never
+public fixtures; the default policy remains heuristic, with learned policy
+experimental and opt-in.
+
 ## October 23 Published Main Verification
 
 [PR 24](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/24)
