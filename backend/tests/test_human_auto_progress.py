@@ -1,11 +1,37 @@
 from types import SimpleNamespace
 from threading import RLock
+from copy import deepcopy
+from dataclasses import replace
+import hashlib
+import json
+from pathlib import Path
 
 import pytest
 
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from main import ACTIVE_MATCHES, _human_priority_pause, autoplay_tick, get_legal_moves
 from rules_engine.engine import RulesEngine
+from card_data.sync import ScryfallSyncService
+from tests.browser_positive83_canonical import card as canonical_card
+
+
+def _think_twice_card(seat):
+    data = (Path(__file__).parent / 'fixtures/nth_spell_triggers/canonical.json').read_bytes()
+    assert hashlib.sha256(data).hexdigest() == '3c865aae6e0e85af644d38f3c0f1900fc71fad502b8e335b1085ec8ee2f04d10'
+    raw = json.loads(data)['Think Twice']
+    assert (raw['object'], raw['name'], raw['id'], raw['oracle_id']) == (
+        'card', 'Think Twice', '85835de4-66ea-4ba1-87ca-6bcec2a8660a',
+        'fa85c5a2-8e83-4624-a35a-a0bbf17ecbb4')
+    encoded = json.dumps(raw, sort_keys=True, separators=(',', ':')).encode()
+    assert hashlib.sha256(encoded).hexdigest() == '223efd425f5bb197673cef2dbbe8dae181b0ac8f8674c5f01f1a58fef577da43'
+    normalized = ScryfallSyncService._normalize_payload(raw, 'unused:human-auto-printing')
+    entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+             'colors': deepcopy(raw['colors']), 'card_faces': deepcopy(raw.get('card_faces', [])),
+             'image_uri': None}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id='think', owner=seat, controller=seat, zone=Zone.HAND,
+                   instance_order=0, summoning_sick=True, tapped=False)
 
 
 def match_at(step, seat=1):
@@ -59,13 +85,11 @@ def test_payable_end_step_instant_preserves_control_window(seat, pooled):
     match.state.players[seat].mana_pool["U"] = 2 if pooled else 0
     if not pooled:
         for index in range(2):
-            land = CardInstance(id=f"island-{index}", name="Island", owner=seat, controller=seat,
-                                zone=Zone.BATTLEFIELD, types=["Land"], type_line="Basic Land - Island")
+            land = canonical_card("Island", id=f"island-{index}", owner=seat, controller=seat,
+                                  zone=Zone.BATTLEFIELD)
             match.state.cards[land.id] = land
             match.state.players[seat].battlefield.append(land.id)
-    card = CardInstance(id="think", name="Think Twice", owner=seat, controller=seat,
-                        zone=Zone.HAND, types=["Instant"], mana_cost="{1}{U}",
-                        oracle_text="Draw a card.")
+    card = _think_twice_card(seat)
     match.state.cards[card.id] = card
     match.state.players[seat].hand.append(card.id)
     assert any(m["type"] == "cast_spell" for m in match.rules.legal_moves(match.state, seat))

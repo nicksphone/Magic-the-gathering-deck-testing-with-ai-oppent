@@ -8,6 +8,7 @@ from main import ACTIVE_MATCHES, MatchController, _force_ai_land_action, autopla
 from persistence.db import engine, init_db
 from persistence.repository import Repository
 from rules_engine.engine import RulesEngine
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 def test_autoplay_preserves_first_strike_priority_window(monkeypatch) -> None:
@@ -18,10 +19,9 @@ def test_autoplay_preserves_first_strike_priority_window(monkeypatch) -> None:
     state.step = Step.DECLARE_BLOCKERS
     state.active_player = state.priority_player = 1
     state.blockers_declared = True
-    creature = CardInstance(
-        id="swiftblade", name="Boros Swiftblade", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=2,
-        keywords=["double strike"], summoning_sick=False,
+    creature = canonical_card(
+        "Boros Swiftblade", id="swiftblade", owner=1, controller=1,
+        zone=Zone.BATTLEFIELD, summoning_sick=False,
     )
     state.cards[creature.id] = creature
     state.players[1].battlefield.append(creature.id)

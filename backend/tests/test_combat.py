@@ -3,6 +3,7 @@ from __future__ import annotations
 from card_data.seed_cards import seed_card_payload
 from game_state.state import CardInstance, MatchFactory, Step, Zone
 from rules_engine.engine import RulesEngine
+from tests.test_keyword_zone4f86_fidelity import materialize as canonical_card
 
 
 def test_combat_damage_reduces_life() -> None:
@@ -37,11 +38,7 @@ def test_priority_passes_apply_unblocked_combat_damage_once() -> None:
     state.kept_hands = {1, 2}
     state.active_player = state.priority_player = 1
     state.step = Step.DECLARE_ATTACKERS
-    card = CardInstance(
-        id="swiftspear", name="Monastery Swiftspear", owner=1, controller=1,
-        zone=Zone.BATTLEFIELD, types=["Creature"], power=1, toughness=2,
-        keywords=["haste"], oracle_text=seed_card_payload("Monastery Swiftspear")["oracle_text"],
-    )
+    card = canonical_card("swiftspear", "Monastery Swiftspear", 1, 1, Zone.BATTLEFIELD)
     state.cards[card.id] = card
     state.players[1].battlefield.append(card.id)
     engine = RulesEngine()

@@ -1,0 +1,15 @@
+{
+  "scope": "official full raw intake BEFORE fixture changes or tests; no project/native/game execution",
+  "url": "https://api.scryfall.com/cards/named?exact=Seal%20of%20Removal",
+  "HTTP": 200,
+  "curl_exit": 0,
+  "ssl_verify_result": 0,
+  "start": "2026-10-23T07:25:08Z",
+  "end": "2026-10-23T07:25:10Z",
+  "sha256": "6b02efedebb98eebb89bb16b9fdcb80305623dc29cf74de4a5fbf571cdc7b793",
+  "bytes": 5184,
+  "fields": 66,
+  "id": "6dfc7060-e374-486f-8029-d3fdfe4b61e7",
+  "oracle_id": "f0801029-bcf7-4bdb-84bf-e88dcaa9dc03",
+  "oracle_text": "Sacrifice this enchantment: Return target creature to its owner's hand."
+}

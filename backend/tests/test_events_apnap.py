@@ -1,4 +1,11 @@
 from __future__ import annotations
+from copy import deepcopy
+from dataclasses import replace
+import hashlib
+import json
+from pathlib import Path
+
+from card_data.sync import ScryfallSyncService
 from tests.rules_printed_facts_e4 import canonical_card, canonical_deck_entry, raw_card, set_printed
 from tests.controlled_basic_game_support import controlled_basic_game
 from tests.smothering_sacrifice_T57 import smothering_card
@@ -15,6 +22,23 @@ from effects.handlers import sacrifice
 from effects.handlers import discard_cards
 from game_state.state import Step
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
+
+
+def _seal_of_removal_card(seat):
+    encoded = (Path(__file__).parent / 'fixtures/task13_seal_of_removal/seal-of-removal.raw.json').read_bytes()
+    assert hashlib.sha256(encoded).hexdigest() == '6b02efedebb98eebb89bb16b9fdcb80305623dc29cf74de4a5fbf571cdc7b793'
+    raw = json.loads(encoded)
+    assert (raw['object'], raw['name'], raw['id'], raw['oracle_id']) == (
+        'card', 'Seal of Removal', '6dfc7060-e374-486f-8029-d3fdfe4b61e7',
+        'f0801029-bcf7-4bdb-84bf-e88dcaa9dc03')
+    normalized = ScryfallSyncService._normalize_payload(raw, 'unused:seal-fixture-display')
+    entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+             'image_uri': None, 'colors': deepcopy(raw['colors']),
+             'card_faces': deepcopy(raw.get('card_faces', []))}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id='dead', owner=seat, controller=seat, zone=Zone.GRAVEYARD,
+                   instance_order=0, summoning_sick=True, tapped=False)
 
 
 def _put_trigger_creature(state, player_id: int, oracle: str) -> str:
@@ -597,14 +621,7 @@ def test_permanent_dies_trigger_matches_noncreature_permanent() -> None:
         types=["Enchantment"],
         oracle_text="Whenever a permanent you control dies, draw a card.",
     )
-    dead = CardInstance(
-        id="dead",
-        name="Seal of Removal",
-        owner=1,
-        controller=1,
-        zone=Zone.GRAVEYARD,
-        types=["Enchantment"],
-    )
+    dead = _seal_of_removal_card(1)
     state.cards[dead.id] = dead
 
     emit_event(state, "permanent_dies", {"card_id": dead.id})
@@ -628,14 +645,7 @@ def test_permanent_dies_trigger_does_not_match_opponent_permanent() -> None:
         types=["Enchantment"],
         oracle_text="Whenever a permanent you control dies, draw a card.",
     )
-    dead = CardInstance(
-        id="dead",
-        name="Seal of Removal",
-        owner=2,
-        controller=2,
-        zone=Zone.GRAVEYARD,
-        types=["Enchantment"],
-    )
+    dead = _seal_of_removal_card(2)
     state.cards[dead.id] = dead
 
     emit_event(state, "permanent_dies", {"card_id": dead.id})
@@ -680,14 +690,8 @@ def test_create_token_emits_enters_battlefield_for_etb_triggers() -> None:
     state.kept_hands = {1, 2}
     state.active_player = 1
     state.players[1].battlefield = ["p1"]
-    state.cards["p1"] = CardInstance(
-        id="p1",
-        name="Soul Warden",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        oracle_text="Whenever another creature enters the battlefield under your control, you gain 1 life.",
+    state.cards["p1"] = canonical_card(
+        "Soul Warden", id="p1", owner=1, controller=1, zone=Zone.BATTLEFIELD,
     )
 
     create_token(

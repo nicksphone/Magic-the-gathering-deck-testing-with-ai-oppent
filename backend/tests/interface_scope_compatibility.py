@@ -48,6 +48,14 @@ assert len(FINITE['functions']) == 14
 assert all(recipe['old_sha256'] == EXPECTED_FUNCTIONS[identity]
            for identity, recipe in FINITE['functions'].items())
 
+fixture_inverse_raw = PATH.with_name('reviewed_task13_fixture_inverses.json').read_bytes()
+assert hashlib.sha256(fixture_inverse_raw).hexdigest() == 'f4e505e4cc13a7004cea39aca02e820de72c17675dc9232be9616c23d44c98bc'
+FIXTURE_INVERSES = json.loads(fixture_inverse_raw)['functions']
+assert len(FIXTURE_INVERSES) == 3
+assert not (FIXTURE_INVERSES.keys() & FINITE['functions'].keys())
+assert all(recipe['old_sha256'] == EXPECTED_FUNCTIONS[identity]
+           for identity, recipe in FIXTURE_INVERSES.items())
+
 
 SMOTHERING_IDENTITY = 'test_events_apnap.py:test_sacrifice_emits_sacrifice_trigger_for_creature'
 # Source-hash normalization ONLY. The obsolete constructor stays inert text.
@@ -139,7 +147,8 @@ def restore_keyword_edges(text):
 def restore_printed_protocol_source(module, text):
     assert module in {identity.split(':')[0] for identity in EXPECTED_FUNCTIONS}, 'Unknown protected module'
     nodes = ast.parse(text).body
-    recipes = {**FINITE['functions'], SMOTHERING_IDENTITY: SMOTHERING_INVERSE}
+    recipes = {**FINITE['functions'], **FIXTURE_INVERSES,
+               SMOTHERING_IDENTITY: SMOTHERING_INVERSE}
     for identity, recipe in recipes.items():
         filename, name = identity.split(':')
         if filename != module:

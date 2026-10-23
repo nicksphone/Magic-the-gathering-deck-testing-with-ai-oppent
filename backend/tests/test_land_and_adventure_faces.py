@@ -9,6 +9,7 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine import combat
+from tests.browser_positive83_canonical import card as canonical_card
 
 RECOVERY = "Bala Ged Recovery // Bala Ged Sanctuary"
 PATHWAY = "Riverglide Pathway // Lavaglide Pathway"
@@ -149,7 +150,7 @@ def test_countered_adventure_does_not_grant_exile_permission():
 
 def test_adventure_with_a_missing_target_does_not_resolve_or_grant_permission():
     game, card = fixture(GIANT)
-    bear = CardInstance(id="bear", name="Grizzly Bears", owner=2, controller=2, zone=Zone.BATTLEFIELD, types=["Creature"], power=2, toughness=2)
+    bear = canonical_card("Grizzly Bears", id="bear", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     game.cards[bear.id] = bear
     game.players[2].battlefield.append(bear.id)
     stomp(game, card, bear.id)
