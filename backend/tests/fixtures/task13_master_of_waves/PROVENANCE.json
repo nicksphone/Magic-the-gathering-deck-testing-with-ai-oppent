@@ -1,0 +1,15 @@
+{
+  "source": "official Scryfall named API exact card endpoint",
+  "request": "http_code=200\nssl_verify_result=0\nurl_effective=https://api.scryfall.com/cards/named?exact=Master+of+Waves\nsize_download=5652\n",
+  "start_utc": "2026-10-23T09:51:58Z",
+  "end_utc": "2026-10-23T09:52:03Z",
+  "curl_exit": 0,
+  "response_sha256": "c7be64947fe52c83bc9002601f60a34b55e598b5e921c050acb071744f28c411",
+  "response_bytes": 5652,
+  "response_fields": 65,
+  "id": "14cd5387-c6aa-4430-8edb-05da6b4e2ff5",
+  "oracle_id": "07d40173-53e7-4328-a3b0-6214d93855b6",
+  "name": "Master of Waves",
+  "no_tests_yet": true,
+  "no_Oracle_rewrite": true
+}

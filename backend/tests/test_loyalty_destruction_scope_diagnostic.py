@@ -1,9 +1,15 @@
 """Full Vraska remains closed; the separate primitive exercises AI destroy guards."""
+from copy import deepcopy
+from dataclasses import replace
+import hashlib
+import json
+from pathlib import Path
+
 import pytest
 
 from ai.agent import AIAgent
 from game_state.serializers import serialize_match_snapshot
-from game_state.state import CardInstance, Zone
+from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.closed_loyalty import compile_body
 from rules_engine.engine import RulesEngine
@@ -13,12 +19,33 @@ from tests.test_pending_removal import CARDS, add_card
 from tests.test_self_removal import canonical_cards
 
 
+def _canonical_vraska():
+    encoded = (Path(__file__).parent / 'vraska_full/fixtures/vraska-scryfall-raw.json').read_bytes()
+    if hashlib.sha256(encoded).hexdigest() != 'd05bc8f4d639536deb46eabb9f1ee807373418591be1deb1af7d57548d79423f':
+        raise ValueError('Full Vraska source changed')
+    raw = json.loads(encoded)
+    if (raw.get('object'), raw.get('name'), raw.get('id'), raw.get('oracle_id'), len(raw)) != (
+            'card', 'Vraska the Unseen', 'a6ab9d2b-6cb3-4477-8d0e-712c530383bd',
+            '0d2bbce0-8c27-4b82-ab62-51a0c3cfc9b0', 66):
+        raise ValueError('Full Vraska identity changed')
+    if hashlib.sha256(json.dumps(raw, sort_keys=True, separators=(',', ':'),
+                                 ensure_ascii=False).encode()).hexdigest() != '53bb2bb2183d467d53842a588c074dedc118f62fc8a0ad70e33e2311f69fc7e6':
+        raise ValueError('Full Vraska object changed')
+    from card_data.sync import ScryfallSyncService
+    normalized = ScryfallSyncService._normalize_payload(raw, 'unused:task13-fixture-display')
+    entry = {**raw, **normalized, 'card_name': raw['name'], 'quantity': 8,
+             'image_uri': None, 'colors': deepcopy(raw.get('colors', [])),
+             'card_faces': deepcopy(raw.get('card_faces', []))}
+    sample = MatchFactory.from_decks([entry], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    return replace(template, id='canonical-vraska', owner=1, controller=1, zone=Zone.BATTLEFIELD,
+                   instance_order=0, summoning_sick=True)
+
+
 def test_full_canonical_vraska_complete_admission_and_checked_root_are_atomic():
     state, victim, _ = settled_state()
     row = CARDS['Vraska the Unseen']
-    card = CardInstance('canonical-vraska', row['name'], 1, 1, Zone.BATTLEFIELD,
-                        ['Planeswalker'], oracle_text=row['oracle_text'],
-                        type_line=row['type_line'], colors=row['colors'], loyalty=int(row['loyalty']))
+    card = _canonical_vraska()
     state.cards[card.id] = card
     state.players[1].battlefield.append(card.id)
     before = serialize_match_snapshot(state)
