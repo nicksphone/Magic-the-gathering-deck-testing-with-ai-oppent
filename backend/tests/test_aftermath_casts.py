@@ -13,6 +13,7 @@ from rules_engine.colors import card_color_symbols
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack, resolve_top_of_stack
 from rules_engine.zone_actions import move_spell_from_stack
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 CARDS = {row["name"]: row for row in json.loads((Path(__file__).parent / "fixtures/aftermath_cards.json").read_text())}
@@ -129,8 +130,7 @@ def test_all_illegal_aftermath_targets_exile_without_creating_a_copy():
 def test_cooperate_retarget_choice_resumes_then_exiles_its_own_card():
     state, card_id = aftermath_state("Refuse // Cooperate")
     state.mechanic_choice_players = {1}
-    shock = CardInstance("target-shock", "Shock", 2, 2, Zone.STACK, ["Instant"],
-                         mana_cost="{R}", oracle_text="Shock deals 2 damage to any target.")
+    shock = canonical_card("Shock", id="target-shock", owner=2, controller=2, zone=Zone.STACK)
     state.cards[shock.id] = shock
     target = add_to_stack(state, shock.id, 2, shock.name, "deal_damage", {
         "target_player": 1, "amount": 2, "__announced_targets": {"target_player": 1},
@@ -174,8 +174,7 @@ def test_sorcery_aftermath_still_requires_own_main_phase_empty_stack():
 
 def test_aftermath_waits_for_resumed_draw_choices_before_exiling():
     state, card_id = aftermath_state()
-    dredger = CardInstance("stinkweed", "Stinkweed Imp", 1, 1, Zone.GRAVEYARD,
-                           ["Creature"], oracle_text="Dredge 5")
+    dredger = canonical_card("Stinkweed Imp", id="stinkweed", owner=1, controller=1, zone=Zone.GRAVEYARD)
     state.cards[dredger.id] = dredger
     state.players[1].graveyard.append(dredger.id)
     state = cast_mind(state, card_id)
