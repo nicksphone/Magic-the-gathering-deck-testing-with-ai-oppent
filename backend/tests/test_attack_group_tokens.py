@@ -10,6 +10,7 @@ from rules_engine.move_generator import legal_moves
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.action_validation import ActionRejected
 from effects.handlers import create_token
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 ADELINE_ORACLE = (
@@ -79,11 +80,11 @@ def test_adeline_does_not_trigger_if_no_attackers_are_declared():
 
 
 def _opposing_planeswalker(state, loyalty=1):
-    card = CardInstance(
-        id="teferi", name="Teferi, Hero of Dominaria", owner=2, controller=2,
-        zone=Zone.BATTLEFIELD, types=["Planeswalker"], loyalty=loyalty,
-        type_line="Legendary Planeswalker — Teferi",
+    card = canonical_card(
+        "Teferi, Hero of Dominaria", id="teferi", owner=2, controller=2,
+        zone=Zone.BATTLEFIELD,
     )
+    card.loyalty = loyalty
     state.cards[card.id] = card
     state.players[2].battlefield.append(card.id)
     assign_static_order_on_battlefield_entry(state, card.id)

@@ -1,5 +1,36 @@
 # Release Acceptance Status
 
+## October 23 Published Main Verification
+
+[PR 24](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/24)
+is merged as `f585d4f64814a60bdc010ed5c11b2a3de07d516e`. Its published,
+candidate and tested synthetic-merge trees are identical. The subsequent
+[actual-main eight-job regression](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39872885342)
+passes on that merged commit: 1,172 whole backend modules, 33,593 unique nodes,
+33,523 ordinary passes, 70 unchanged setup skips and 160 passing subtests.
+Authenticated artifact digests, original ordered nodes and per-node phase
+outcomes are independently reconciled. Skips are not passes, and this count
+does not include separately executed components.
+
+That run's hosted metadata/selftest component separately passes all 406 original
+ordered unittest cases with no failures, errors or skips, in 104.661 seconds.
+It includes the genuine clean-userspace publication probe and both disk-SQLite
+checks; it does not turn an older local runtime mismatch or local safety skip
+into a pass.
+
+The [actual-main native Chrome/Brave job](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39872885386)
+also passes both declared components. Source, vendor package ownership,
+sandbox configuration, process identity and final cgroup closure are checked.
+This is not renderer attestation, another full50 browser execution, Firefox
+qualification, a LAN check or an RC declaration. Earlier independently scoped
+Firefox and application-browser evidence remains identified below.
+
+The separate-device LAN/manual CA-trust check remains user-deferred, not
+passed. Measured AI acceptance, the remaining real-card fixture inventory and
+final release reconciliation remain open. Default policy stays heuristic;
+learned policy and private trace publication permissions are unchanged. None
+of these CI results upgrades an operator's running installation.
+
 ## October 22 Published Measurement And HTTP Acceptance
 
 [PR 22](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/22)

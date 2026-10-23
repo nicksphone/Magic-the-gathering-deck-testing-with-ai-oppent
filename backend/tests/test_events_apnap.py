@@ -680,14 +680,8 @@ def test_create_token_emits_enters_battlefield_for_etb_triggers() -> None:
     state.kept_hands = {1, 2}
     state.active_player = 1
     state.players[1].battlefield = ["p1"]
-    state.cards["p1"] = CardInstance(
-        id="p1",
-        name="Soul Warden",
-        owner=1,
-        controller=1,
-        zone=Zone.BATTLEFIELD,
-        types=["Creature"],
-        oracle_text="Whenever another creature enters the battlefield under your control, you gain 1 life.",
+    state.cards["p1"] = canonical_card(
+        "Soul Warden", id="p1", owner=1, controller=1, zone=Zone.BATTLEFIELD,
     )
 
     create_token(
