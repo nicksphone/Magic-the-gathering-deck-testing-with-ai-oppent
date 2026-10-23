@@ -210,6 +210,16 @@ def due(now, previous_time, previous_state, state):
     return previous_time is None or now - previous_time >= INTERVAL_SECONDS or state != previous_state
 
 
+def stop_requested(evidence):
+    path = Path(evidence) / 'progress-stop'
+    if metadata.has_symlink_component(path):
+        raise ValueError('PATH_REJECTED')
+    value = metadata.read_text(Path(evidence), 'progress-stop', required=False, max_bytes=5)
+    if value not in ('', 'stop\n'):
+        raise ValueError('STOP_REQUEST_INVALID')
+    return bool(value)
+
+
 def main(args=None):
     args = sys.argv[1:] if args is None else args
     if len(args) != 2:
@@ -227,6 +237,7 @@ def main(args=None):
     previous_time = previous_state = None
     while True:
         try:
+            stopping = stopping or stop_requested(progress.evidence)
             row = progress.observe()
             now = time.monotonic()
             elapsed = now - started_at

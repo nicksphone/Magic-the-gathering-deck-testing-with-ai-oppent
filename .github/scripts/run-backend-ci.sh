@@ -38,8 +38,14 @@ close_diagnostic() {
   diagnostic_wait_status=UNKNOWN
   close_started=$(monotonic_second)
   begin_closeout
-  # Progress already has an explicit TERM shutdown contract, not a drain.
-  if [[ "$role" == progress ]]; then phases=(TERM KILL); fi
+  if [[ "$role" == progress ]]; then
+    # A stop request survives Python startup, unlike an early SIGTERM.
+    phases=(drain KILL)
+    if [[ -e "$evidence/progress-stop" || -L "$evidence/progress-stop" ]] ||
+       ! (umask 077; set -o noclobber; printf 'stop\n' > "$evidence/progress-stop"); then
+      diagnostic_failed=1
+    fi
+  fi
   for phase in "${phases[@]}"; do
     limit=$grace
     if [[ "$phase" == TERM ]]; then limit=20; fi

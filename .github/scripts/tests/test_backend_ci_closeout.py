@@ -42,7 +42,8 @@ class DiagnosticCloseoutTests(unittest.TestCase):
             self.assertFalse(any(p.is_symlink() for p in (self.ledger_root, *self.ledger_root.parents)))
 
     def run_control(self, stalled=None, pytest_status=0, ignore_term=False,
-                    active_delay=0, diagnostic_status=None, progress_status=None):
+                    active_delay=0, diagnostic_status=None, progress_status=None,
+                    progress_bootstrap=False, progress_stop_fifo=False):
         fixture = self.fixture
         scripts = fixture.source / '.github/scripts'
         storage = scripts / 'ci_backend_storage.py'
@@ -92,10 +93,27 @@ raise SystemExit({pytest_status!r})
                 "Path(sys.argv[1], 'control-progress.pid').write_text(str(os.getpid()))\n"
                 + (f'raise SystemExit({progress_status!r})\n' if progress_status is not None else
                    'signal.signal(signal.SIGTERM, signal.SIG_IGN)\ntime.sleep(60)\n'))
+        if progress_bootstrap:
+            shutil.copyfile(SCRIPTS / 'ci_backend_metadata.py', scripts / 'ci_backend_metadata.py')
+            progress = (SCRIPTS / 'ci_backend_progress.py').read_text()
+            bootstrap = '''import os as _bootstrap_os
+import sys as _bootstrap_sys
+import time as _bootstrap_time
+from pathlib import Path as _BootstrapPath
+_bootstrap_evidence = _BootstrapPath(_bootstrap_sys.argv[1])
+(_bootstrap_evidence / 'control-progress.pid').write_text(str(_bootstrap_os.getpid()))
+(_bootstrap_evidence / 'control-progress-bootstrap').write_text('waiting\\n')
+_bootstrap_deadline = _bootstrap_time.monotonic() + 5
+while not (_bootstrap_evidence / 'progress-stop').exists():
+    if _bootstrap_time.monotonic() >= _bootstrap_deadline:
+        raise SystemExit('CONTROL_PROGRESS_BOOTSTRAP_TIMEOUT')
+    _bootstrap_time.sleep(.01)
+'''
+            (scripts / 'ci_backend_progress.py').write_text(bootstrap + progress)
         self.commit_fixture()
         environment = {**fixture.environment,
                        'SYNTHETIC_RUN_MODE': 'fail' if pytest_status == 1 else 'pass'}
-        if stalled == 'progress' or progress_status is not None:
+        if stalled == 'progress' or progress_status is not None or progress_bootstrap:
             environment['MTG_CI_PROGRESS'] = '1'
             # The donor Python CLI forwards the original isolated progress calls.
             python = fixture.bin / 'python'
@@ -119,18 +137,23 @@ raise SystemExit({pytest_status!r})
                 output = Path(environment['GITHUB_OUTPUT'])
                 if output.exists() and output.read_text().startswith('evidence='):
                     evidence = Path(output.read_text().strip().split('=', 1)[1])
-                    if (evidence / 'control-pytest-ready').exists():
+                    if (evidence / 'control-pytest-ready').exists() and (
+                            not progress_bootstrap or (evidence / 'control-progress-bootstrap').exists()):
                         break
                 if child.poll() is not None:
                     self.fail('Control runner ended before synthetic pytest readiness')
                 time.sleep(.01)
             self.assertIsNotNone(evidence)
             self.assertTrue((evidence / 'control-pytest-ready').exists())
+            if progress_bootstrap:
+                self.assertTrue((evidence / 'control-progress-bootstrap').exists())
             if stalled == 'sink':
                 paths = dict(line.split('=', 1) for line in
                              (evidence / 'owned-paths.txt').read_text().splitlines())
                 held_writer = os.open(Path(paths['work']) / 'pytest-output',
                                       os.O_WRONLY | os.O_NONBLOCK)
+            if progress_stop_fifo:
+                os.mkfifo(evidence / 'progress-stop', 0o600)
             (evidence / 'control-release').write_text('release')
             if active_delay:
                 deadline = time.monotonic() + 3
@@ -253,6 +276,28 @@ raise SystemExit({pytest_status!r})
     def test_natural_progress_exit_cannot_be_masked_by_successful_logger(self):
         code, evidence = self.run_control(progress_status=23)
         self.assertEqual(code, 2)
+
+    def test_existing_progress_stop_fifo_rejects_without_blocking_closeout(self):
+        code, evidence = self.run_control(progress_status=0, progress_stop_fifo=True)
+        self.assertEqual(code, 2)
+        self.assertTrue((evidence / 'progress-stop').is_fifo())
+        progress_rows = [row.split('\t') for row in
+                         (evidence / 'diagnostic-closeout.tsv').read_text().splitlines()
+                         if row.startswith('progress\t')]
+        self.assertEqual(len(progress_rows), 1)
+        self.assertEqual(progress_rows[0][2:], ['1', '0', '0'])
+
+    def test_progress_bootstrap_stop_reaches_real_main_and_normal_closeout(self):
+        code, evidence = self.run_control(progress_bootstrap=True)
+        self.assertEqual(code, 0)
+        self.assertEqual((evidence / 'control-progress-bootstrap').read_bytes(), b'waiting\n')
+        self.assertEqual((evidence / 'progress-stop').read_bytes(), b'stop\n')
+        pid = int((evidence / 'control-progress.pid').read_text())
+        progress_rows = [row.split('\t') for row in
+                         (evidence / 'diagnostic-closeout.tsv').read_text().splitlines()
+                         if row.startswith('progress\t')]
+        self.assertEqual(progress_rows, [['progress', str(pid), '1', '0', '0']])
+        self.assertFalse(Path('/proc', str(pid)).exists(), 'Actual progress PID was not reaped')
 
     def test_natural_closeout_preserves_complete_private_stream_and_success(self):
         code, evidence = self.run_control()

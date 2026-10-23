@@ -51,6 +51,50 @@ def load(name):
     return module
 
 
+class StopRequestTests(unittest.TestCase):
+    def test_absent_empty_and_exact_stop_request(self):
+        progress = load('ci_backend_progress')
+        with tempfile.TemporaryDirectory(prefix='ci-progress-stop-') as temporary:
+            root = Path(temporary)
+            self.assertFalse(progress.stop_requested(root))
+            path = root / 'progress-stop'
+            path.write_bytes(b'')
+            self.assertFalse(progress.stop_requested(root))
+            path.write_bytes(b'stop\n')
+            self.assertTrue(progress.stop_requested(root))
+
+    def test_malformed_oversize_and_nonregular_stop_request_reject(self):
+        progress = load('ci_backend_progress')
+        with tempfile.TemporaryDirectory(prefix='ci-progress-stop-bad-') as temporary:
+            root = Path(temporary)
+            path = root / 'progress-stop'
+            for value in (b'stop', b'STOP\n', b'stop\nextra'):
+                path.write_bytes(value)
+                with self.assertRaises((ValueError, progress.metadata.MetadataError)):
+                    progress.stop_requested(root)
+            path.unlink()
+            path.mkdir()
+            with self.assertRaises(progress.metadata.MetadataError):
+                progress.stop_requested(root)
+
+    def test_leaf_and_ancestor_alias_stop_requests_reject(self):
+        progress = load('ci_backend_progress')
+        with tempfile.TemporaryDirectory(prefix='ci-progress-stop-alias-') as temporary:
+            root = Path(temporary)
+            actual = root / 'actual'
+            actual.mkdir()
+            (actual / 'progress-stop').write_bytes(b'stop\n')
+            alias = root / 'alias'
+            alias.symlink_to(actual, target_is_directory=True)
+            with self.assertRaises(ValueError):
+                progress.stop_requested(alias)
+            leaf = root / 'progress-stop'
+            leaf.symlink_to(actual / 'progress-stop')
+            with self.assertRaises(ValueError):
+                progress.stop_requested(root)
+            self.assertEqual((actual / 'progress-stop').read_bytes(), b'stop\n')
+
+
 class ProgressProjectionTests(unittest.TestCase):
     def setUp(self):
         self.progress = load('ci_backend_progress')
