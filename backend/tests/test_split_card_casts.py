@@ -15,6 +15,7 @@ from rules_engine.colors import card_color_symbols
 from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.targeting import validate_cast_targets
+from tests.rules_printed_facts_e4 import canonical_card
 
 
 CARDS = {row["name"]: row for row in json.loads((Path(__file__).parent / "fixtures/split_cards.json").read_text())}
@@ -60,7 +61,7 @@ def test_fire_half_uses_its_own_cost_and_restores_combined_identity() -> None:
 def test_ice_half_taps_target_and_draws_with_blue_mana() -> None:
     state, card_id = split_state("Fire // Ice")
     state.players[1].mana_pool.update({"C": 1, "U": 1})
-    target = CardInstance("target-island", "Island", 2, 2, Zone.BATTLEFIELD, ["Land"], type_line="Basic Land — Island")
+    target = canonical_card("Island", id="target-island", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[target.id] = target
     state.players[2].battlefield.append(target.id)
     moves = [move for move in RulesEngine().legal_moves(state, 1) if move["type"] == "cast_spell" and move["card_id"] == card_id]
@@ -100,8 +101,7 @@ def test_opponent_turn_only_offers_instant_half() -> None:
     assert set(state.cards[card_id].types) == {"Instant", "Sorcery"}
     state.active_player = 2
     state.players[1].mana_pool.update({"C": 1, "G": 1, "U": 1})
-    target = CardInstance("target-creature", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD,
-                          ["Creature"], power=2, toughness=2)
+    target = canonical_card("Grizzly Bears", id="target-creature", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[target.id] = target
     state.players[2].battlefield.append(target.id)
     moves = [move for move in RulesEngine().legal_moves(state, 1) if move["type"] == "cast_spell" and move["card_id"] == card_id]
@@ -117,8 +117,7 @@ def test_opponent_turn_only_offers_instant_half() -> None:
 def test_fire_rejects_more_than_two_announced_recipients() -> None:
     state, card_id = split_state("Fire // Ice")
     state.players[1].mana_pool.update({"C": 1, "R": 1})
-    target = CardInstance("third-target", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD,
-                          ["Creature"], power=2, toughness=2)
+    target = canonical_card("Grizzly Bears", id="third-target", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[target.id] = target
     state.players[2].battlefield.append(target.id)
     move = next(move for move in RulesEngine().legal_moves(state, 1)
@@ -221,8 +220,7 @@ def test_split_off_stack_colors_union_faces_when_top_level_metadata_is_missing()
 def test_ai_materializes_a_castable_split_half(half: str, pool: dict[str, int]) -> None:
     state, card_id = split_state("Fire // Ice")
     state.players[1].mana_pool.update(pool)
-    target = CardInstance("target-island", "Island", 2, 2, Zone.BATTLEFIELD,
-                          ["Land"], type_line="Basic Land — Island")
+    target = canonical_card("Island", id="target-island", owner=2, controller=2, zone=Zone.BATTLEFIELD)
     state.cards[target.id] = target
     state.players[2].battlefield.append(target.id)
     rules = RulesEngine()
