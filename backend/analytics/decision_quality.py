@@ -8,7 +8,7 @@ from typing import Any
 
 from analytics.decision_taxonomy import has_actionable_move, has_meaningful_move
 from rules_engine.action_validation import checked_action
-from rules_engine.continuous import effective_keywords, effective_power, effective_toughness
+from rules_engine.continuous import effective_combat_stats, effective_keywords, effective_power, effective_toughness
 from rules_engine.engine import RulesEngine
 from rules_engine.type_effects import effective_types
 from game_state.state import MatchState, Zone
@@ -57,14 +57,15 @@ def compact_action(action: dict[str, Any]) -> dict[str, Any]:
 
 
 def _battlefield_snapshot(state: Any, pid: int) -> list[dict[str, Any]]:
+    # Both scalar wrappers compute the same pair; retain it only for this row.
     return [
         {
             "id": cid,
             "name": state.cards[cid].name,
             "types": effective_types(state, cid),
             "tapped": bool(getattr(state.cards[cid], "tapped", False)),
-            "power": effective_power(state, cid),
-            "toughness": effective_toughness(state, cid),
+            "power": int((stats := effective_combat_stats(state, cid, unknown_as_zero=True))[0]),
+            "toughness": int(stats[1]),
             "keywords": effective_keywords(state, cid),
             "damage_marked": int(state.cards[cid].counters.get("__damage_marked", 0)),
         }

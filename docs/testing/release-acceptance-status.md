@@ -1,5 +1,43 @@
 # Release Acceptance Status
 
+## October 23 Trace Query And Evaluation Status
+
+[PR 30](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/30)
+is merged as `aa4029228a319d4ccabb9ccf792ddb476777d67f` with the exact tested
+full tree `6637b63d79cc2e11af7b38c980044b64e45e1c5c`.
+[Run 39945609483](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/actions/runs/39945609483)
+passes all eight hosted jobs. Independent artifact and per-node verification
+contains 1,184 whole backend modules, 33,639 collected nodes, 33,569 ordinary
+passes, 70 unchanged existing skips and 160 passed subtests. All predecessor
+ordered nodes and outcomes are preserved. These are one run's counts, not a
+sum of components. The subsequent actual-main run remains separate.
+
+The predeclared 110-series native evaluation is closed and rejected: all 110
+series started, 98 resolved and 12 hit resource limits (11 deadline, one game
+log). The producer exited 1 and the unchanged strict verifier refused
+`summary.complete`. Partial-prefix quality remains unavailable, not zero or
+recomputed complete-game evidence. No AI-strength acceptance follows. Raw
+synthetic traces remain private; no archived trace is published as a fixture.
+
+The small trace-query correction computes each battlefield card's existing
+power/toughness pair once instead of twice. Four new native regressions ran
+against unchanged code first: one pass and three redundant-query failures,
+with no errors. The same four then pass with the correction. They compare
+unsorted production-format JSON bytes, fresh counter/modifier values and
+unchanged state using complete pinned card inputs. The reviewed bounded runner
+passed 18 denial controls; native runs had no unexpected I/O and all scoped
+process, descriptor and thread checks closed. All other production function
+bodies and the exact inverse module bytes are preserved.
+
+This proves the tested query-count reduction, not a measured speedup, a cure
+for the 12 stopped series, natural-game improvement or RC readiness. All 14
+resource ceilings, the shared BO3 deadline, trace fields, metrics and policy
+remain unchanged. Complete hosted regression and measured AI acceptance are
+still required. The separate-device LAN/manual CA check remains user-deferred,
+not passed; local HTTPS/authentication and the three Linux browsers remain
+in scope. Default heuristic and experimental opt-in learned-policy scope are
+unchanged.
+
 ## October 23 Canonical Fixture Verification
 
 [PR 28](https://github.com/nicksphone/Magic-the-gathering-deck-testing-with-ai-oppent/pull/28)
