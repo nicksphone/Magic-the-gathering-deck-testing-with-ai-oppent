@@ -1,0 +1,45 @@
+{
+  "scope": "inert source-hash normalization only, not runtime reconstruction",
+  "reviewed_fixture_heads": [
+    "8d6e16e9c5410e40c0877970fd777903fc81c667",
+    "a2c9206601794bed6bcfa13639d7fe8b94dacb2a"
+  ],
+  "functions": {
+    "test_events_apnap.py:test_create_token_emits_enters_battlefield_for_etb_triggers": {
+      "old_sha256": "a468f165ab1b9d97df9d6c83624286f6a1d811897513bd8d03f6a9b921ceaf4c",
+      "new_sha256": "4f1aaa0678baff047f041123222c40d3a44f20723c5934e156eed04b1607287b",
+      "hunks": [
+        {
+          "start": 7,
+          "end": 9,
+          "new": "    state.cards[\"p1\"] = canonical_card(\n        \"Soul Warden\", id=\"p1\", owner=1, controller=1, zone=Zone.BATTLEFIELD,\n",
+          "old": "    state.cards[\"p1\"] = CardInstance(\n        id=\"p1\",\n        name=\"Soul Warden\",\n        owner=1,\n        controller=1,\n        zone=Zone.BATTLEFIELD,\n        types=[\"Creature\"],\n        oracle_text=\"Whenever another creature enters the battlefield under your control, you gain 1 life.\",\n"
+        }
+      ]
+    },
+    "test_events_apnap.py:test_permanent_dies_trigger_matches_noncreature_permanent": {
+      "old_sha256": "b9a1e5891f324448eb16ae97024f82aa3cab0af59b34d5c2734146fa77d041b8",
+      "new_sha256": "4dbc3d6e633f29966cd20b0354278bc2c6650959ec4cfbf66cee8d1244591acf",
+      "hunks": [
+        {
+          "start": 16,
+          "end": 17,
+          "new": "    dead = _seal_of_removal_card(1)\n",
+          "old": "    dead = CardInstance(\n        id=\"dead\",\n        name=\"Seal of Removal\",\n        owner=1,\n        controller=1,\n        zone=Zone.GRAVEYARD,\n        types=[\"Enchantment\"],\n    )\n"
+        }
+      ]
+    },
+    "test_events_apnap.py:test_permanent_dies_trigger_does_not_match_opponent_permanent": {
+      "old_sha256": "b493c1f7e6ff2c892c9e4cf2796676dd900434d767ea2c65a5890fa8341910ba",
+      "new_sha256": "467965f94ef3b07190cdb39b0ed37263b644063ea728856c5e12b8056f78e328",
+      "hunks": [
+        {
+          "start": 16,
+          "end": 17,
+          "new": "    dead = _seal_of_removal_card(2)\n",
+          "old": "    dead = CardInstance(\n        id=\"dead\",\n        name=\"Seal of Removal\",\n        owner=2,\n        controller=2,\n        zone=Zone.GRAVEYARD,\n        types=[\"Enchantment\"],\n    )\n"
+        }
+      ]
+    }
+  }
+}
