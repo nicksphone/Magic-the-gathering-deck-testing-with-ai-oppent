@@ -165,8 +165,8 @@ def test_attacking_token_count_is_frozen_before_sequential_choices():
     _opposing_planeswalker(state)
     state.mechanic_choice_players = {1}
     for name in ("Forest", "Island"):
-        card = CardInstance(id=name.lower(), name=name, owner=1, controller=1, zone=Zone.BATTLEFIELD,
-                            types=["Land"], type_line=f"Basic Land — {name}")
+        card = canonical_card(name, id=name.lower(), owner=1, controller=1,
+                              zone=Zone.BATTLEFIELD)
         state.cards[card.id] = card
         state.players[1].battlefield.append(card.id)
     create_token(state, 1, {"name": "Human", "power": 1, "toughness": 1,

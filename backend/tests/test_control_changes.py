@@ -4,6 +4,7 @@ from effects.registry import resolve_effect
 from effects.handlers import deal_damage, destroy_permanent, return_creature_from_graveyard_to_battlefield
 from rules_engine.ability_model import build_ability_spec
 from rules_engine.engine import RulesEngine
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 def _state() -> object:
@@ -59,8 +60,8 @@ def test_control_change_duration_is_snapshot_safe() -> None:
 
 def test_temporary_control_does_not_follow_reanimated_new_permanent() -> None:
     state = _state()
-    creature = CardInstance("creature", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"],
-                            type_line="Creature — Bear", power=2, toughness=2)
+    creature = canonical_card("Grizzly Bears", id="creature", owner=2, controller=2,
+                              zone=Zone.BATTLEFIELD)
     state.cards[creature.id] = creature
     state.players[2].battlefield.append(creature.id)
     resolve_effect(state, 1, "change_control", {
@@ -83,8 +84,8 @@ def test_temporary_control_does_not_follow_reanimated_new_permanent() -> None:
 
 def test_lethal_spell_damage_ends_temporary_control_before_reanimation() -> None:
     state = _state()
-    creature = CardInstance("creature", "Grizzly Bears", 2, 2, Zone.BATTLEFIELD, ["Creature"],
-                            type_line="Creature — Bear", power=2, toughness=2)
+    creature = canonical_card("Grizzly Bears", id="creature", owner=2, controller=2,
+                              zone=Zone.BATTLEFIELD)
     state.cards[creature.id] = creature
     state.players[2].battlefield.append(creature.id)
     resolve_effect(state, 1, "change_control", {
