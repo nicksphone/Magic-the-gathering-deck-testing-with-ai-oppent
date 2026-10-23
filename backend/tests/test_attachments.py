@@ -4,6 +4,7 @@ from rules_engine.ability_model import build_ability_spec
 from rules_engine.cast_choice import build_cast_hints
 from rules_engine.state_based_actions import apply_state_based_actions
 from rules_engine.targeting import validate_cast_targets
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 def _state() -> object:
@@ -27,7 +28,7 @@ def test_aura_and_equipment_detection_is_case_insensitive() -> None:
 def test_aura_target_restrictions_are_exposed_and_carried_to_stack_payload() -> None:
     state = _state()
     creature = CardInstance("creature", "Bear", 1, 1, Zone.BATTLEFIELD, ["Creature"], type_line="Creature — Bear")
-    land = CardInstance("land", "Forest", 1, 1, Zone.BATTLEFIELD, ["Land"], type_line="Basic Land — Forest")
+    land = canonical_card("Forest", id="land", owner=1, controller=1, zone=Zone.BATTLEFIELD)
     aura = CardInstance(
         "aura",
         "Growth Aura",
