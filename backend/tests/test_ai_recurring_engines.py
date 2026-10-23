@@ -37,8 +37,31 @@ def fixture():
     return state
 
 
-def add(state, name, player=1, zone=Zone.BATTLEFIELD, *, cards=CARDS):
+def add(state, name, player=1, zone=Zone.BATTLEFIELD, *, cards=CARDS, full_printing=False):
     raw = cards[name]
+    if full_printing:
+        if full_printing is not True or cards is not CARDS or name not in {'Blood Artist', 'Grizzly Bears', 'Rest in Peace'}:
+            raise ValueError('Full printing is only admitted for the three default positive rows')
+        if name == 'Blood Artist':
+            from tests.pending_permanent_fullraw import printed_kwargs
+            raw = printed_kwargs(name, raw, catalog_keywords=True)
+            if raw is None:
+                raise ValueError('Blood Artist positive printing operands changed')
+        elif name == 'Rest in Peace':
+            from tests.library_canonical_fixtures import raw_card
+            from card_data.sync import ScryfallSyncService
+            full = raw_card(name)
+            fields = ('name', 'id', 'oracle_id', 'mana_cost', 'oracle_text', 'type_line',
+                      'power', 'toughness', 'loyalty', 'keywords', 'colors', 'layout', 'card_faces')
+            if any(key in raw and (type(raw[key]) is not type(full.get(key)) or raw[key] != full.get(key))
+                   for key in fields):
+                raise ValueError('Rest in Peace positive printing operands changed')
+            cached = ScryfallSyncService._normalize_payload(full, 'unused:recurring-fixture-display')
+            raw = {**deepcopy(full), **cached, 'colors': deepcopy(full.get('colors', [])),
+                   'keywords': deepcopy(full.get('keywords', [])),
+                   'card_faces': json.loads(cached['card_faces_json']), 'image_uri': None}
+        else:
+            raw = entry(name)
     card = CardInstance(id=state.allocate_object_id(), name=name, owner=player, controller=player,
                         zone=zone, types=printed_card_types(raw["type_line"]), type_line=raw["type_line"],
                         mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
@@ -76,13 +99,13 @@ def wipe_state():
 
 def test_recurring_creature_rewards_survive_stats_scoring_without_mutating_state():
     state = fixture()
-    artist = add(state, "Blood Artist")
-    bear = add(state, "Grizzly Bears")
+    artist = add(state, "Blood Artist", full_printing=True)
+    bear = add(state, "Grizzly Bears", full_printing=True)
     before = serialize_match_snapshot(state)
     assert recurring_engine_value(state, artist.id) > 0
     assert _creature_value(state, artist.id) > _creature_value(state, bear.id)
     assert serialize_match_snapshot(state) == before
-    add(state, "Rest in Peace", 2)
+    add(state, "Rest in Peace", 2, full_printing=True)
     before = serialize_match_snapshot(state)
     assert recurring_engine_value(state, artist.id) == 0
     assert _creature_value(state, artist.id) < _creature_value(state, bear.id)
@@ -105,14 +128,14 @@ def test_eligibility_not_trigger_condition_or_spent_entry_text_sets_rewards():
 @pytest.mark.parametrize("style", ["Aggro", "Tokens", "Tribal", "Tempo", "Midrange", "Drain", "Aristocrats", "Control", "Ramp"])
 def test_live_creature_payoff_affects_threat_and_cast_values_across_styles(style):
     state = fixture()
-    artist = add(state, "Blood Artist", 2)
-    bear = add(state, "Grizzly Bears", 2)
+    artist = add(state, "Blood Artist", 2, full_printing=True)
+    bear = add(state, "Grizzly Bears", 2, full_printing=True)
     ai = AIAgent(archetype=style)
     assert ai._creature_threat_score(state, artist.id, 1) > ai._creature_threat_score(state, bear.id, 1)
-    cast = add(state, "Blood Artist", zone=Zone.HAND)
+    cast = add(state, "Blood Artist", zone=Zone.HAND, full_printing=True)
     move = {"type": "cast_spell", "card_id": cast.id}
     before = ai._cast_bias(state, move, 1)
-    add(state, "Rest in Peace", 2)
+    add(state, "Rest in Peace", 2, full_printing=True)
     assert ai._cast_bias(state, move, 1) < before
 
 
@@ -184,8 +207,8 @@ def test_opponent_trigger_target_choice_does_not_certify_loss():
 def test_multiple_death_replacements_do_not_mutate_valuation_logs():
     state = fixture()
     artist = add(state, "Blood Artist")
-    add(state, "Rest in Peace", 1)
-    add(state, "Rest in Peace", 2)
+    add(state, "Rest in Peace", 1, full_printing=True)
+    add(state, "Rest in Peace", 2, full_printing=True)
     before = serialize_match_snapshot(state)
     assert recurring_engine_value(state, artist.id) == 0
     assert serialize_match_snapshot(state) == before
