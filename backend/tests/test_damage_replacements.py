@@ -1,6 +1,7 @@
 from effects.handlers import deal_damage
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.continuous import effective_toughness
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 def test_noncombat_damage_replacement_puts_minus_counters_on_opposing_creature() -> None:
@@ -42,15 +43,7 @@ def test_noncombat_damage_replacement_puts_minus_counters_on_opposing_creature()
     assert target.counters.get("-1/-1", 0) == 0
     target.counters.clear()
 
-    spell = CardInstance(
-        id="spell",
-        name="Shock",
-        owner=1,
-        controller=1,
-        zone=Zone.STACK,
-        types=["Instant"],
-        oracle_text="Shock deals 2 damage to any target.",
-    )
+    spell = canonical_card("Shock", id="spell", owner=1, controller=1, zone=Zone.STACK)
     state.cards[spell.id] = spell
     deal_damage(state, 1, {"__source_card_id": spell.id, "target_card_id": target.id, "amount": 2})
 
@@ -84,15 +77,7 @@ def test_noncombat_damage_replacement_does_not_apply_to_controller_creature() ->
         power=3,
         toughness=4,
     )
-    spell = CardInstance(
-        id="spell-own",
-        name="Shock",
-        owner=1,
-        controller=1,
-        zone=Zone.STACK,
-        types=["Instant"],
-        oracle_text="Shock deals 2 damage to any target.",
-    )
+    spell = canonical_card("Shock", id="spell-own", owner=1, controller=1, zone=Zone.STACK)
     state.cards.update({source.id: source, target.id: target, spell.id: spell})
     state.players[1].battlefield.extend([source.id, target.id])
 
