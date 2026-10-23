@@ -1,6 +1,6 @@
 """Checked, copy-on-write actions for external callers, using engine legality."""
 from rules_engine.type_effects import effective_types
-from copy import deepcopy
+from game_state.copying import copy_match_state
 import re
 
 from game_state.state import Step, Zone
@@ -78,7 +78,7 @@ def require_declared_targets(card, hints: dict, targets: dict, controller: int, 
 def checked_action(state, rules, player_id: int, action: dict):
     # Even legality helpers run on the copy: no rejected request changes the
     # authoritative state, RNG, logs, cost payments or pending continuations.
-    candidate = deepcopy(state)
+    candidate = copy_match_state(state, include_history=True)
     validate_action(candidate, rules, player_id, action)
     if action['type'] == 'pass_priority' and not candidate.stack and not candidate.pregame_pending:
         from game_state.state import Step
