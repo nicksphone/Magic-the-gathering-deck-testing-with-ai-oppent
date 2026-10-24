@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "source": "Official Scryfall public API, captured before offline browser tests; full unchanged response bodies. HTTP headers are not published.",
+  "cards": [
+    {
+      "name": "Doomskar",
+      "file": "doomskar.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Doomskar",
+      "HTTP": 200,
+      "curl_exit": 0,
+      "started_utc": "2026-10-24T05:17:09Z",
+      "ended_utc": "2026-10-24T05:17:10Z",
+      "sha256": "49ee32b3f03ee7fed84de52f41d74a0c61b3b0f2ffa35b9646644234bdec0f69",
+      "bytes": 5716,
+      "top_level_fields": 68,
+      "scryfall_id": "130ee895-1e5e-4f82-bb66-e1275bac75dd",
+      "oracle_id": "38ece0fa-2c94-4eae-b6ab-74b783862f3e",
+      "complete_response_unchanged": true
+    },
+    {
+      "name": "Hollow One",
+      "file": "hollow-one.json",
+      "url": "https://api.scryfall.com/cards/named?exact=Hollow%20One",
+      "HTTP": 200,
+      "curl_exit": 0,
+      "started_utc": "2026-10-24T05:17:11Z",
+      "ended_utc": "2026-10-24T05:17:11Z",
+      "sha256": "3df32a84d1c5bf470c1d517905017cf0e450fbbe94545b35f8be4921c9e8c456",
+      "bytes": 5134,
+      "top_level_fields": 67,
+      "scryfall_id": "43fe9c6d-4fa2-4f9a-9025-1bf12fe7ed9f",
+      "oracle_id": "b9e4d34a-ba91-4ad6-b886-daeeda6c9498",
+      "complete_response_unchanged": true
+    }
+  ]
+}

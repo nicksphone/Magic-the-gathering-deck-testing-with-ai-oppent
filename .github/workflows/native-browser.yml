@@ -8,6 +8,7 @@ on:
       - .github/workflows/native-browser.yml
       - .github/scripts/install-ci-vendor-browser.sh
       - frontend/tests/browser-vendor-preflight.mjs
+      - frontend/tests/run-browser-ci.sh
 
 permissions:
   contents: read
