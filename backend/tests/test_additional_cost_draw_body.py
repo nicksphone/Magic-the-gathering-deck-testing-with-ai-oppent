@@ -1,7 +1,7 @@
 """Real paid costs are not resolution instructions; raw unknown bodies reject."""
 from contextlib import contextmanager
 from copy import deepcopy
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import hashlib
 import json
 from pathlib import Path
@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 
 from game_state.serializers import serialize_match_snapshot as snapshot
-from game_state.state import CardInstance, Zone
+from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine.ability_model import build_spell_spec, spell_resolution_gaps
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.card_types import printed_card_types
@@ -30,13 +30,48 @@ for name in ('March of Otherworldly Light', 'Thoughtseize'):
     ROWS[name] = SEED[name]
 
 
-def add(state, name, seat, zone=Zone.HAND):
+_FULL_PRINTING_RAW_SHA = {'Tormenting Voice': 'c90244e3493b7dd61a75d7d76c6f91d4d917707a3cb2d79832d24865eb4b0505',
+ 'Deadly Dispute': '61d2c0b85c9a6b42dcd9a417b05e7330c287463f8f1f0f3c1518d049941f6c14'}
+_FULL_PRINTING_TABLE = ROWS
+_FULL_PRINTING_FIELDS = ('name',
+ 'type_line',
+ 'mana_cost',
+ 'oracle_text',
+ 'colors',
+ 'power',
+ 'toughness',
+ 'loyalty',
+ 'keywords',
+ 'layout',
+ 'card_faces')
+_FULL_PRINTING_CASES = {'Tormenting Voice': '866fc93c245f7bcd81f4ef745d2b0667bc6d9036f0b65354f344a36b6c50cb01',
+ 'Deadly Dispute': 'ee7cffc98553868a64734940d59f0553883f8425de766cc090be11c434b2e5ef'}
+
+
+def add(state, name, seat, zone=Zone.HAND, *, full_printing=False):
     raw = ROWS[name]
     cid = f'p{seat}-{len(state.cards) + 1:03d}'
 
     def number(key):
         value = raw.get(key)
         return int(value) if value is not None and str(value).lstrip('-').isdigit() else None
+
+    if (full_printing is True and ROWS is _FULL_PRINTING_TABLE
+            and name in _FULL_PRINTING_CASES
+            and hashlib.sha256(repr(tuple((type(raw.get(field)).__name__, raw.get(field))
+                for field in _FULL_PRINTING_FIELDS)).encode()).hexdigest() == _FULL_PRINTING_CASES[name]):
+        full = deepcopy(audit.cards.ROWS[name])
+        encoded = json.dumps(full, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()
+        if hashlib.sha256(encoded).hexdigest() != _FULL_PRINTING_RAW_SHA[name]:
+            raise ValueError('Complete cost fixture source changed')
+        sample = MatchFactory.from_decks(
+            [{**full, 'card_name': name, 'quantity': 8, 'image_uri': None}], [], seed=0)
+        template = next(value for value in sample.cards.values() if value.zone == Zone.LIBRARY)
+        card = replace(template, id=cid, owner=seat, controller=seat, zone=zone,
+                       instance_order=0, summoning_sick=False)
+        state.cards[cid] = card
+        getattr(state.players[seat], zone.value).append(cid)
+        return card
 
     card = CardInstance(cid, name, seat, seat, zone,
                         printed_card_types(raw['type_line']), mana_cost=raw.get('mana_cost', ''),
@@ -82,9 +117,9 @@ def entry(card, seat, origin, before_sequence, after_sequence):
             'entry_reference': {'incarnation': 0, 'zone_change_sequence': after_sequence}}
 
 
-def draw_position(name, seat, mode='none'):
+def draw_position(name, seat, mode='none', *, full_printing=False):
     state = audit.cards.position(seat)
-    spell = add(state, name, seat)
+    spell = add(state, name, seat, full_printing=full_printing)
     count, draws = (1, 2) if name == 'Tormenting Voice' else (2, 3)
     costs = [add(state, name, seat) for name in ('Island', 'Swamp')[:count]]
     spare = add(state, 'Forest', seat)
@@ -110,7 +145,7 @@ def test_canonical_draw_cost_fixture_is_pinned_without_printed_fact_changes():
 @pytest.mark.parametrize('mode', audit.MODES)
 def test_real_paid_discard_draw_has_no_cost_resolver_and_complete_receipt_order(
         request, monkeypatch, seat, name, mode):
-    state, spell, costs, spare, opposing, library, action, draws = draw_position(name, seat, mode)
+    state, spell, costs, spare, opposing, library, action, draws = draw_position(name, seat, mode, full_printing=name == 'Tormenting Voice')
     before = snapshot(state)
     assert spell_additional_costs(spell.oracle_text, spell.name) == [{'discard_cards': len(costs)}]
     option, = collect_cost_options(state, seat, spell)
@@ -299,9 +334,9 @@ def test_real_non_cost_discard_spell_keeps_recipient_and_resolution_order(
 @pytest.mark.parametrize('name', ['Village Rites', 'Deadly Dispute', 'Crop Rotation', 'Goblin Grenade'])
 def test_canonical_other_cost_families_keep_paid_resolution(request, seat, name):
     state = audit.cards.position(seat)
-    spell = add(state, name, seat)
+    spell = add(state, name, seat, full_printing=name == 'Deadly Dispute')
     fuel = add(state, 'Forest' if name == 'Crop Rotation' else 'Raging Goblin', seat, Zone.BATTLEFIELD)
-    library = [add(state, name, seat, Zone.LIBRARY).id
+    library = [add(state, name, seat, Zone.LIBRARY, full_printing=name == 'Deadly Dispute').id
                for name in (('Island',) if name == 'Crop Rotation' else ('Island', 'Swamp'))]
     state.players[seat].mana_pool = ({'B': 1, **({'C': 1} if name == 'Deadly Dispute' else {})}
                                    if name in ('Village Rites', 'Deadly Dispute') else
