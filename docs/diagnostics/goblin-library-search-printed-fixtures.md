@@ -2,11 +2,14 @@
 
 ## Scope
 
-Authored over immutable main `891e862cd44f7aab67691c84c090365baf507086`.
-This changes only the four positive library slots in
+The initial fixture migration was authored over immutable main
+`891e862cd44f7aab67691c84c090365baf507086` and changed only the four positive library slots in
 `backend/tests/test_interactions_expanded.py::test_search_library_returns_all_matching_cards`.
-No production implementation, shared fixture helper, old assertion, other test
-body, rule choice, RNG, allocator, dependency or resource policy is changed.
+The historical-boundary follow-up below is authored over PR41 head
+`e5686061af22e0b16f8db8fd14f3616d84759cc6` and changes only its three obsolete
+companion expectations. Neither change edits production implementation, shared
+fixture helpers, gameplay assertions, rule choices, RNG, allocator, dependencies
+or resource policy.
 
 | Slot | Genuine Print | Native Facts |
 | --- | --- | --- |
@@ -67,8 +70,8 @@ new cases: 12 passed and three new fidelity assertions failed at the intended
 missing/wrong printed-data birth checks. With the fixture correction, the same
 whole cohort passes all 15 ordinary cases and 45 setup/call/teardown phases,
 without filters, skips or changed old assertions. The new tests were authored
-before the positive fixture edit. The pre-existing Guide fidelity companion
-remains unchanged and required in complete hosted CI.
+before the positive fixture edit. At that stage the pre-existing Guide fidelity
+companion was unchanged and remained required in complete hosted CI.
 
 An earlier baseline invocation also produced 12 passes and the same three
 fidelity failures, but its final harness check incorrectly expected a singleton
@@ -87,3 +90,42 @@ closed processes/groups, an available coordination lock and unchanged source,
 runtime, system files and inputs. No HTTP, SQL connection or startup is exercised.
 Complete hosted qualification remains separate from these local results.
 No full Task1.3, AI-quality, training, all-card or RC closure claim is made.
+
+## Historical Boundary Follow-Up
+
+PR41's first published head `e5686061af22e0b16f8db8fd14f3616d84759cc6`, executed
+as `1f64917e1095da0dc2d744468d183d20dcd2228c`, exposed three actual worker0 call
+failures: 8386 passed, three failed, all 8389 setup/teardown phases passed, and
+there were no skips. The authenticated diagnostic joins the three failures to
+`test_other_library_loop_branches_are_unchanged_not_canonicalized` for Piledriver,
+the historical Marshal slot and Bolt. Its old assertions prohibited full RAW
+admission and required shallow printing. Those constraints described the prior
+partial-migration scope, which expired when these real-card fixtures were
+explicitly canonicalized under the user's verified-data policy. They are not
+evidence of an engine defect.
+
+The follow-up retains the exact historical function name, parameter labels and
+three node IDs for ordered CI continuity. The name `not_canonicalized` is now a
+compatibility label, not the required behavior. Each case instead requires the
+complete hash-verified RAW at the real Factory boundary before construction,
+then independently checks its canonical printing in the materialized library.
+Controller, owner, library zone and layout constraints remain; physical ID,
+instance pose and the four-slot library order are checked explicitly. The old
+`Goblin War Marshal` parameter continues to identify only the opaque physical
+slot; its native printed name must be the distinct genuine Mogg War Marshal.
+
+The independent RAW reader and native-keyword expectations reuse the existing
+four-case Goblin fidelity module. There is no shortened RAW, new translator,
+assertion waiver, filtering or production change. All other companion cases,
+including labelled synthetic/negative boundaries, and all original search
+gameplay assertions remain unchanged.
+
+The coupled local verification executed all three whole modules: the existing
+15-case Bears/Atraxa/Guide companion, the original 11 interaction cases and the
+four new Goblin fidelity cases. All 30 cases and 90 setup/call/teardown phases
+passed, with no filters, skips, failures or unexpected native operations. The
+test code is byte-identical to that executed cohort; this verification paragraph
+was added afterward. Source, runtime and system inputs matched before and after,
+and independent post-recorder process, unit, coordination-lock and file-handle
+closure checks passed. Fresh complete hosted CI remains required; this local
+component result is not whole-suite, engine-wide, AI-quality or RC qualification.

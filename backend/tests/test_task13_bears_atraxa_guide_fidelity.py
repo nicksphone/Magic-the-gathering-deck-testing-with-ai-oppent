@@ -236,19 +236,38 @@ def test_altered_atraxa_declared_source_retains_legacy_birth(monkeypatch, field)
 
 @pytest.mark.parametrize('name', ['Goblin Piledriver', 'Goblin War Marshal', 'Lightning Bolt'])
 def test_other_library_loop_branches_are_unchanged_not_canonicalized(monkeypatch, name):
+    """Retain historical node IDs; these three real-card branches are now canonical."""
+    from tests.test_task13_goblin_search_printed_fidelity import (
+        NATIVE_KEYWORDS as search_keywords, official as search_official,
+    )
+
     subject = importlib.import_module(MODULES['guide'])
+    # The old Marshal parameter identifies a physical slot, not a printed card.
+    printed_name = 'Mogg War Marshal' if name == 'Goblin War Marshal' else name
+    raw = search_official(printed_name)
+    slot_id = 'card-' + name.lower().replace(' ', '-')
+    admitted = []
     previous_factory = MatchFactory.from_decks
 
     def factory(first, *args, **kwargs):
-        assert not (first and first[0].get('object') == 'card' and first[0].get('name') == name)
+        if first and first[0].get('card_name') == printed_name:
+            assert first == [{**raw, 'card_name': printed_name, 'quantity': 8}]
+            assert args == ([],) and kwargs == {'seed': 0}
+            admitted.append(printed_name)
         return previous_factory(first, *args, **kwargs)
 
     def consume(state, *_args, **_kwargs):
-        card = state.cards['card-' + name.lower().replace(' ', '-')]
-        assert card.name == name and card.owner == card.controller == 1 and card.zone == Zone.LIBRARY
-        assert card.types == ['Creature'] and card.type_line == '' and card.oracle_text == ''
-        assert card.mana_cost == '' and card.colors is None and card.keywords == []
-        assert card.power is None and card.toughness is None and card.layout == ''
+        assert admitted == [printed_name]
+        card = state.cards[slot_id]
+        assert card.name == printed_name and card.owner == card.controller == 1 and card.zone == Zone.LIBRARY
+        assert card.types == (['Instant'] if printed_name == 'Lightning Bolt' else ['Creature'])
+        assert card.type_line == raw['type_line'] and card.oracle_text == raw['oracle_text']
+        assert card.mana_cost == raw['mana_cost'] and card.colors == raw['colors'] and card.keywords == search_keywords[printed_name]
+        assert card.power == (int(raw['power']) if 'power' in raw else None)
+        assert card.toughness == (int(raw['toughness']) if 'toughness' in raw else None) and card.layout == raw['layout']
+        assert card.id == slot_id and card.instance_order == 0 and card.summoning_sick is True
+        assert state.players[1].library == ['card-goblin-guide', 'card-goblin-piledriver',
+                                             'card-goblin-war-marshal', 'card-lightning-bolt']
         raise BeforeScene
 
     with monkeypatch.context() as patch:
