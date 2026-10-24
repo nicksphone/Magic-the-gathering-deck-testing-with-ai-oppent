@@ -1653,6 +1653,12 @@ class AIAgent:
             mat = self._materialize_action(state, move, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
+            selected_card = _card_for_move(state, mat)
+            if (selected_card is not None and "{X}" in (getattr(selected_card, "mana_cost", "") or "").upper()
+                    and ALL_CREATURES_X_DEBUFF_RE.search(getattr(selected_card, "oracle_text", "") or "")):
+                x_value = int((mat.get("targets") or {}).get("x_value", 0) or 0)
+                if self._x_spell_timing_penalty(state, selected_card, player_id, x_value) < 0:
+                    continue
             text = _oracle_text(card)
             score = 0.0
             if "sweeper" in tags:
@@ -5813,6 +5819,16 @@ class AIAgent:
         if getattr(state, "stack", []) or []:
             return chosen
 
+        def eligible_conversion(action: dict) -> bool:
+            if self._is_unplayable_x_action(action):
+                return False
+            card = _card_for_move(state, action) if action.get("type") == "cast_spell" else None
+            if card is not None and "{X}" in (getattr(card, "mana_cost", "") or "").upper():
+                x_value = int((action.get("targets") or {}).get("x_value", 0) or 0)
+                if self._x_spell_timing_penalty(state, card, player_id, x_value) < 0:
+                    return False
+            return True
+
         meaningful = [m for m in legal_moves if m.get("type") in {"play_land", "cast_spell", "cycle_card", "activate_loyalty", "attack"}]
         if not meaningful:
             return chosen
@@ -5826,7 +5842,7 @@ class AIAgent:
                 proactive = self._materialize_action(state, proactive, player_id)
                 if (
                     not proactive.get("_invalid_ai_choice")
-                    and not self._is_unplayable_x_action(proactive)
+                    and eligible_conversion(proactive)
                     and not self._is_action_obviously_illegal(state, proactive, player_id)
                     and (proactive.get("type") != "attack" or bool(proactive.get("attackers") or []))
                 ):
@@ -5842,7 +5858,7 @@ class AIAgent:
             early_cheap = self._materialize_action(state, early_cheap, player_id)
             if (
                 not early_cheap.get("_invalid_ai_choice")
-                and not self._is_unplayable_x_action(early_cheap)
+                and eligible_conversion(early_cheap)
                 and not self._is_action_obviously_illegal(state, early_cheap, player_id)
             ):
                 return early_cheap
@@ -5852,7 +5868,7 @@ class AIAgent:
         if proactive is None:
             return chosen
         proactive = self._materialize_action(state, proactive, player_id)
-        if proactive.get("_invalid_ai_choice") or self._is_unplayable_x_action(proactive):
+        if proactive.get("_invalid_ai_choice") or not eligible_conversion(proactive):
             return chosen
         if self._is_action_obviously_illegal(state, proactive, player_id):
             return chosen

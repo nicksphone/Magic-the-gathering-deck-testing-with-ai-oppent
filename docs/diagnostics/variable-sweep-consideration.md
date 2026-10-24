@@ -40,3 +40,27 @@ Holding a sweeper there can be reasonable. Restoring consideration is not proof
 that casting was better, nor a fix or waiver for the rejected full-match resource
 gate. No strength, matchup, training-data or RC-ready claim follows. Archived
 synthetic game state and traces remain private and are not repository fixtures.
+
+## Tactical Hold Regression
+
+Full hosted CI exposed an unchanged tactical regression after consideration
+was restored: the repeated-pass conversion path and the earlier forced-sweeper
+path could return a materialized cast without honoring its existing negative
+X-timing score. The latter returned before ordinary move ranking.
+
+Pass conversion now respects that score for the selected variable-cost spell.
+The forced-sweeper guard is narrower: the selected mana cost must contain X and
+its text must match the existing all-creature variable-debuff pattern. Both use
+the already materialized X, not a new X search. Generic X-damage spells are not
+subject to the new early forced-sweeper guard. Compound casts still reach the
+ordinary ranker; scoring weights, resource limits and RNG remain unchanged.
+
+The unchanged 94-case tactical module, the 15-case consideration module, the
+original Meathook ETB case, and four new both-seat canonical hold regressions
+passed together: 114 ordinary passes, zero failures or skips. Before correction,
+the unchanged tactical test failed at the second empty-board decision; after
+only the pass-conversion correction it failed at the first decision against an
+unreachable larger creature. Actual return tracing identified the earlier
+forced-sweeper bypass. Those failed runs remain diagnostic evidence, not passes.
+No existing test or assertion was adapted. Complete hosted CI on the updated
+commit and a fresh complete resource-limited match schedule remain required.
