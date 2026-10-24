@@ -51,6 +51,11 @@ def _only_counter_spell_text(text: str) -> bool:
     return bool(_PURE_COUNTER_SPELL_RE.fullmatch(without_reminder_text(text).strip()))
 
 
+def _only_variable_sweep_text(text: str) -> bool:
+    return bool(ALL_CREATURES_X_DEBUFF_RE.fullmatch(
+        without_reminder_text(text).strip().removesuffix(".")))
+
+
 def _has_counter_spell_text(text: str) -> bool:
     return bool(re.search(r"\bcounter target(?: [a-z -]{0,45})?\b(?:spell|ability)\b",
                           without_reminder_text(str(text or "")).lower()))
@@ -203,9 +208,9 @@ class AIAgent:
         def useful_variable_sweep(move: dict) -> bool:
             if move.get("type") != "cast_spell":
                 return True
-            card = state.cards.get(move.get("card_id"))
+            card = _card_for_move(state, move)
             mana_cost = getattr(card, "mana_cost", "") or ""
-            if "{X}" not in mana_cost.upper() or not ALL_CREATURES_X_DEBUFF_RE.search(getattr(card, "oracle_text", "") or ""):
+            if "{X}" not in mana_cost.upper() or not _only_variable_sweep_text(getattr(card, "oracle_text", "") or ""):
                 return True
             x_value = self._choose_x_value(state, player_id, mana_cost, card=card)
             return any(
