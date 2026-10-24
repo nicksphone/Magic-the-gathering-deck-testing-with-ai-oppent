@@ -13,6 +13,8 @@ if (Path(main.__file__).resolve().parents[1] / ".git").exists():
 from tests.ui_fixture_server import app, publish, fixture, add
 from game_state.state import Zone
 import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
+from tests.ui_zone_keyword_fixture_server import register_zone_keyword_fixtures
+register_zone_keyword_fixtures()
 
 
 @app.post('/fixture/announced-color-cost')
