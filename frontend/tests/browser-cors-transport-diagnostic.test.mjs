@@ -263,6 +263,10 @@ test('source never requests response bodies via CDP and prints typed records bef
 });
 test('ordinary-only launcher hook preserves the entire original program by byte inverse', () => {
   let source = fs.readFileSync(new URL('./run-browser-ci.sh', import.meta.url), 'utf8');
+  // Undo exactly the separately exercised built-App mana scenario before ALL old checks.
+  const manaScenario = '(cd frontend && run_browser_program "browser-built-app-mana-routes.mjs" timeout 180s node tests/browser-built-app-mana-routes.mjs)\n';
+  assert.equal(source.split(manaScenario).length, 2);
+  source = source.replace(manaScenario, '');
   // Undo exactly the separately exercised zone-keyword scenario before the legacy checks.
   const zoneScenario = '(cd frontend && run_browser_program "browser-zone-keyword-actions.mjs" timeout 300s node tests/browser-zone-keyword-actions.mjs)\n';
   assert.equal(source.split(zoneScenario).length, 2);

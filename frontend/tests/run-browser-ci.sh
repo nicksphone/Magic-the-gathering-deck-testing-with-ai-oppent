@@ -180,6 +180,7 @@ echo 'Browser CI: action scenarios'
 (cd frontend && run_browser_program "browser-land-types.mjs" timeout 90s node tests/browser-land-types.mjs)
 (cd frontend && run_browser_program "browser-human-actions.mjs" timeout 300s node tests/browser-human-actions.mjs)
 (cd frontend && run_browser_program "browser-zone-keyword-actions.mjs" timeout 300s node tests/browser-zone-keyword-actions.mjs)
+(cd frontend && run_browser_program "browser-built-app-mana-routes.mjs" timeout 180s node tests/browser-built-app-mana-routes.mjs)
 (cd frontend && run_browser_program "browser-ordered-targets.mjs" timeout 120s node tests/browser-ordered-targets.mjs)
 (cd frontend && run_browser_program "browser-distinct-permanents.mjs" timeout 120s node tests/browser-distinct-permanents.mjs)
 (cd frontend && run_browser_program "browser-ordered-modifiers.mjs" timeout 120s node tests/browser-ordered-modifiers.mjs)

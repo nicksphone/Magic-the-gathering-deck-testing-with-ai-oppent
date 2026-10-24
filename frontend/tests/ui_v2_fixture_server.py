@@ -15,6 +15,8 @@ from game_state.state import Zone
 import tests.life_lock_browser_fixture  # Register disposable effective-restriction scenarios.
 from tests.ui_zone_keyword_fixture_server import register_zone_keyword_fixtures
 register_zone_keyword_fixtures()
+from tests.ui_mana_route_fixture_server import register_mana_route_fixtures
+register_mana_route_fixtures()
 
 
 @app.post('/fixture/announced-color-cost')
