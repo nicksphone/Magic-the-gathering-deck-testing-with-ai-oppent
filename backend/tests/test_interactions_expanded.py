@@ -1,12 +1,35 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import hashlib
+import json
+from pathlib import Path
 from tests.test_knowledge_ingest import _official_card
 
 from effects.registry import resolve_effect
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine import combat
 from tests.rules_printed_facts_e4 import canonical_card
+
+
+def _search_library_card(name: str, cid: str) -> CardInstance:
+    if name in {'Goblin Guide', 'Lightning Bolt'}:
+        raw = _official_card(name)
+    else:
+        filename, expected = {
+            'Goblin Piledriver': ('goblin-piledriver.json', 'b9e415ae9f2c999062caa727f18fc5ea1279976c85b43b2360794e620c5c8a6d'),
+            'Mogg War Marshal': ('mogg-war-marshal.json', '10e8bb7a4609be90bc3ecd511e771a308891d4919d610aee42005bc9594ae593'),
+        }[name]
+        data = (Path(__file__).parent / 'fixtures/goblin_search' / filename).read_bytes()
+        if hashlib.sha256(data).hexdigest() != expected:
+            raise ValueError('Complete search fixture RAW changed')
+        raw = json.loads(data)
+        if raw.get('object') != 'card' or raw.get('name') != name:
+            raise ValueError('Exact search fixture identity required')
+    sample = MatchFactory.from_decks([{**raw, 'card_name': name, 'quantity': 8}], [], seed=0)
+    template = next(value for value in sample.cards.values() if value.zone == Zone.LIBRARY)
+    return replace(template, id=cid, owner=1, controller=1, zone=Zone.LIBRARY,
+                   instance_order=0, summoning_sick=True)
 
 
 def test_effect_sequence_resolves_all_clauses() -> None:
@@ -50,23 +73,11 @@ def test_search_library_returns_all_matching_cards() -> None:
     state = MatchFactory.from_decks(deck, deck)
     player = state.players[1]
     player.library = []
-    for name in ["Goblin Guide", "Goblin Piledriver", "Goblin War Marshal", "Lightning Bolt"]:
-        cid = f"card-{name.lower().replace(' ', '-')}"
-        if name == "Goblin Guide":
-            raw = _official_card(name)
-            sample = MatchFactory.from_decks([{**raw, 'card_name': name, 'quantity': 8}], [], seed=0)
-            template = next(value for value in sample.cards.values() if value.zone == Zone.LIBRARY)
-            state.cards[cid] = replace(template, id=cid, owner=1, controller=1, zone=Zone.LIBRARY,
-                                       instance_order=0, summoning_sick=True)
-        else:
-            state.cards[cid] = CardInstance(
-                id=cid,
-                name=name,
-                owner=1,
-                controller=1,
-                zone=Zone.LIBRARY,
-                types=["Creature"],
-            )
+    for slot, name in [("Goblin Guide", "Goblin Guide"), ("Goblin Piledriver", "Goblin Piledriver"),
+                       ("Goblin War Marshal", "Mogg War Marshal"), ("Lightning Bolt", "Lightning Bolt")]:
+        # The old physical slot ID survives the explicit correction to a real card.
+        cid = f"card-{slot.lower().replace(' ', '-')}"
+        state.cards[cid] = _search_library_card(name, cid)
         player.library.append(cid)
 
     hand_before = len(player.hand)

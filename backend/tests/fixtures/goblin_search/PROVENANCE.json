@@ -1,0 +1,56 @@
+{
+  "cards": [
+    {
+      "bytes": 5139,
+      "fields": 67,
+      "file": "goblin-piledriver.json",
+      "format": "complete unmodified official JSON response; not a renamed/shortened/normalized RAW object",
+      "id": "4b332e3d-dcf4-4f62-8130-124ec5d23b90",
+      "name": "Goblin Piledriver",
+      "object_sha256": "c162d99d4b94597294acc07929c0052c56d77cf233f33cd904963835c2496828",
+      "official_request": "https://api.scryfall.com/cards/named?exact=Goblin%20Piledriver",
+      "oracle_id": "4d74d12b-1ffb-482f-8bac-635a8d4d32e9",
+      "scryfall_uri": "https://scryfall.com/card/ori/151/goblin-piledriver?utm_source=api",
+      "sha256": "b9e415ae9f2c999062caa727f18fc5ea1279976c85b43b2360794e620c5c8a6d"
+    },
+    {
+      "bytes": 5484,
+      "fields": 64,
+      "file": "mogg-war-marshal.json",
+      "format": "complete unmodified official JSON response; not a renamed/shortened/normalized RAW object",
+      "id": "4ebce261-3a53-48f2-a173-0d98c68aff2c",
+      "name": "Mogg War Marshal",
+      "object_sha256": "80e88615836563883634b6c4b271b12a17ca37c61588b5d9e926b4ecea805449",
+      "official_request": "https://api.scryfall.com/cards/named?exact=Mogg%20War%20Marshal",
+      "oracle_id": "7b8f4879-578e-40e4-863a-41d0c32c6bdd",
+      "scryfall_uri": "https://scryfall.com/card/plst/DMR-131/mogg-war-marshal?utm_source=api",
+      "sha256": "10e8bb7a4609be90bc3ecd511e771a308891d4919d610aee42005bc9594ae593"
+    }
+  ],
+  "existing_complete_RAW_reused": [
+    {
+      "existing_file": "../knowledge_profiles/seed155-scryfall.jsonl",
+      "fields": 66,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "line": 42,
+      "name": "Goblin Guide"
+    },
+    {
+      "existing_file": "../knowledge_profiles/seed155-scryfall.jsonl",
+      "fields": 66,
+      "file_sha256": "194abe0a2d6e1bb6139d0f569a347e419c75bd9349091f583cf79fa6a6036732",
+      "line": 57,
+      "name": "Lightning Bolt"
+    }
+  ],
+  "historical_exact_name_failure": {
+    "code": "not_found",
+    "disposition": "Historical404 retained privately. This positive slot explicitly uses the distinct genuine Mogg War Marshal; historical opaque slot ID unchanged. RAW and native card names are never renamed.",
+    "name": "Goblin War Marshal",
+    "request": "https://api.scryfall.com/cards/named?exact=Goblin%20War%20Marshal",
+    "response_bytes": 128,
+    "response_sha256": "4b850ee9bf7cdea5864af5188c9a478ad69efd3f22ab2ebd6d4e47a6783c3c13",
+    "status": 404
+  },
+  "source": "Parent-retained official Scryfall full-response intake, 2026-10-24; no worker network request"
+}
