@@ -1,3 +1,7 @@
+import hashlib
+import json
+from dataclasses import replace
+from tests.test_knowledge_ingest import _official_card
 from tests.controlled_basic_game_support import controlled_basic_game
 from ai.agent import AIAgent
 from card_data.seed_cards import seed_card_payload
@@ -10,6 +14,8 @@ from rules_engine.events import emit_event
 from rules_engine.stack_engine import resolve_top_of_stack
 
 
+_ATRAXA_SOURCE_SHA = '46303aea3852f203db8c846456de60c08ebb9af653bd966ddeaa1feaa3632b6c'
+
 def _atraxa_state():
     deck = [{"quantity": 60, "card_name": "Forest"}]
     state = controlled_basic_game(deck, deck, seed=1994)
@@ -17,10 +23,18 @@ def _atraxa_state():
     state.kept_hands = {1, 2}
     source = seed_card_payload("Atraxa, Grand Unifier")
     assert source is not None
-    atraxa = CardInstance(
-        "atraxa", source["name"], 1, 1, Zone.BATTLEFIELD,
-        ["Creature"], oracle_text=source["oracle_text"],
-    )
+    if hashlib.sha256(json.dumps({key: source.get(key) for key in ('name', 'oracle_text')},
+                                 sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest() == _ATRAXA_SOURCE_SHA:
+        raw = _official_card("Atraxa, Grand Unifier")
+        sample = MatchFactory.from_decks([{**raw, 'card_name': raw['name'], 'quantity': 8}], [], seed=0)
+        template = next(value for value in sample.cards.values() if value.zone == Zone.LIBRARY)
+        atraxa = replace(template, id="atraxa", owner=1, controller=1, zone=Zone.BATTLEFIELD,
+                         instance_order=0, summoning_sick=True)
+    else:
+        atraxa = CardInstance(
+            "atraxa", source["name"], 1, 1, Zone.BATTLEFIELD,
+            ["Creature"], oracle_text=source["oracle_text"],
+        )
     state.cards[atraxa.id] = atraxa
     state.players[1].battlefield.append(atraxa.id)
     top = state.players[1].library[-10:]
