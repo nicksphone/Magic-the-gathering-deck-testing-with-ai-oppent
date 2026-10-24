@@ -1,12 +1,14 @@
 """Real Oracle rows on public board positions, never altered cards or decks."""
 from copy import deepcopy
+import hashlib
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from effects.registry import resolve_effect
-from game_state.state import CardInstance, MatchState, PlayerState, Step, Zone, assign_static_order_on_battlefield_entry
+from game_state.state import CardInstance, MatchFactory, MatchState, PlayerState, Step, Zone, assign_static_order_on_battlefield_entry
 from game_state.serializers import serialize_match_snapshot, deserialize_match_snapshot
 from rules_engine.action_validation import checked_action
 from rules_engine.attachments import attach_if_legal
@@ -15,6 +17,8 @@ from rules_engine.engine import RulesEngine
 from rules_engine.mana import auto_pay_cost, can_pay_with_pool_and_lands, mana_source_outputs, count_untapped_lands_by_color
 from rules_engine.mana_abilities import mana_ability_views
 from rules_engine.mana_triggers import fixed_mana_clauses
+from tests.test_knowledge_ingest import _official_card
+from tests.browser_positive83_canonical import raw_card as browser_raw
 
 ROWS = {row['name']: row for row in json.loads((Path(__file__).parent / 'fixtures/additive_mana.json').read_text())}
 
@@ -26,8 +30,47 @@ def position(seat):
         pregame_pending=False, kept_hands={1, 2}, turn=5)
 
 
-def add(state, name, seat, zone=Zone.BATTLEFIELD):
+_FULL_PRINTING_TABLE = ROWS
+_FULL_PRINTING_FIELDS = ('name',
+ 'type_line',
+ 'mana_cost',
+ 'oracle_text',
+ 'colors',
+ 'power',
+ 'toughness',
+ 'loyalty',
+ 'keywords',
+ 'layout',
+ 'card_faces')
+_FULL_PRINTING_CASES = {'Nissa, Who Shakes the World': 'b5477b93156a5526dfe304ea63563425903594653356b3aaee9a84670c6e96e8',
+ 'Tropical Island': 'ae9cf2957b8eb2a5647c8de521e7b43c185b9f2f900dc694f36f4f4e7194745f',
+ 'Forest': '8584a3c762e39a1066951997bcf8f3c66fea0406439c0d7c0e2607d1d1f28079',
+ 'Island': '9f78217210d1dd58d8ee729b4c78ec1b7fa9e439011f69c378ebc45e9e664644',
+ 'Snow-Covered Forest': '37ff07c2a78fa9aa8411300dbe9310646705ad7595cac73fcd9bbe72384c98ba',
+ 'Ugin, the Spirit Dragon': '24d24e4811eb9b3b0fe7460c6c8dad477a2e7b4c9b2b30a1691554f9658ba7b6',
+ 'Yavimaya, Cradle of Growth': '8e094d081ddbc30ceb3433875193c1bf5014b5e355d1031863174cb5b6619cfd',
+ 'Counterspell': '1f91c0a8810df49b9a726b975bdf388ab41d7f23021dbaf60773dbb557fd81ee',
+ 'Growth Spiral': '117cf1eb8a7004cbac7b87577cd9c6212147905856fc14684165e9f562f82562',
+ 'Llanowar Elves': '09b63eaa5372088bd8715ee4b853c3785d20d66b302292ffa550e1e3cf07f683'}
+
+
+def add(state, name, seat, zone=Zone.BATTLEFIELD, *, full_printing=False):
     raw = ROWS[name]
+    if (full_printing is True and ROWS is _FULL_PRINTING_TABLE
+            and name in _FULL_PRINTING_CASES
+            and hashlib.sha256(repr(tuple((type(raw.get(field)).__name__, raw.get(field))
+                for field in _FULL_PRINTING_FIELDS)).encode()).hexdigest() == _FULL_PRINTING_CASES[name]):
+        full = browser_raw(name) if name == 'Snow-Covered Forest' else _official_card(name)
+        sample = MatchFactory.from_decks(
+            [{**deepcopy(full), 'card_name': name, 'quantity': 8, 'image_uri': None}], [], seed=0)
+        template = next(value for value in sample.cards.values() if value.zone == Zone.LIBRARY)
+        card = replace(template, id=state.allocate_object_id(), owner=seat, controller=seat,
+                       zone=zone, instance_order=0, summoning_sick=False)
+        state.cards[card.id] = card
+        getattr(state.players[seat], zone.value).append(card.id)
+        if zone == Zone.BATTLEFIELD:
+            assign_static_order_on_battlefield_entry(state, card.id)
+        return card
     card = CardInstance(id=state.allocate_object_id(), name=name, owner=seat, controller=seat,
         zone=zone, types=printed_card_types(raw['type_line']), type_line=raw['type_line'],
         oracle_text=raw['oracle_text'], mana_cost=raw['mana_cost'], colors=raw['colors'],
@@ -68,12 +111,12 @@ def activate(state, seat, card, color, index=None):
 ])
 def test_fixed_additions_are_separate_bundles_not_replacement_multiplication(seat, source, color, enhancers, reflection, expected):
     state = position(seat)
-    land = add(state, source, seat)
+    land = add(state, source, seat, full_printing=True)
     for name in enhancers:
         if name in {'Wild Growth', 'Overgrowth'}:
             aura(state, name, 3-seat, land)
         else:
-            add(state, name, seat)
+            add(state, name, seat, full_printing=name == 'Nissa, Who Shakes the World')
     if reflection:
         add(state, 'Mana Reflection', seat)
     before = serialize_match_snapshot(state)
@@ -91,9 +134,9 @@ def test_fixed_additions_are_separate_bundles_not_replacement_multiplication(sea
 @pytest.mark.parametrize('route', ['activate', 'tap_land_for_mana', 'tap_lands_bulk', 'auto_pay'])
 def test_all_tap_and_payment_callers_agree_on_mixed_output(seat, route):
     state = position(seat)
-    land = add(state, 'Tropical Island', seat)
-    add(state, 'Nissa, Who Shakes the World', seat)
-    spell = add(state, 'Growth Spiral', seat, Zone.HAND)
+    land = add(state, 'Tropical Island', seat, full_printing=True)
+    add(state, 'Nissa, Who Shakes the World', seat, full_printing=True)
+    spell = add(state, 'Growth Spiral', seat, Zone.HAND, full_printing=True)
     before = serialize_match_snapshot(state)
     assert can_pay_with_pool_and_lands(state, seat, spell.mana_cost)
     assert not can_pay_with_pool_and_lands(state, seat, '{U}{U}')
@@ -117,10 +160,10 @@ def test_all_tap_and_payment_callers_agree_on_mixed_output(seat, route):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_effective_forest_subtype_and_printed_source_suppression(seat):
     state = position(seat)
-    land = add(state, 'Island', seat)
-    nissa = add(state, 'Nissa, Who Shakes the World', seat)
+    land = add(state, 'Island', seat, full_printing=True)
+    nissa = add(state, 'Nissa, Who Shakes the World', seat, full_printing=True)
     assert not can_pay_with_pool_and_lands(state, seat, '{U}{G}')
-    add(state, 'Yavimaya, Cradle of Growth', 3-seat)
+    add(state, 'Yavimaya, Cradle of Growth', 3-seat, full_printing=True)
     assert can_pay_with_pool_and_lands(state, seat, '{U}{G}')
     resolve_effect(state, 3-seat, 'temporary_ability_loss', {'target_card_id': nissa.id})
     assert not can_pay_with_pool_and_lands(state, seat, '{U}{G}')
@@ -130,15 +173,15 @@ def test_effective_forest_subtype_and_printed_source_suppression(seat):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_type_replacement_controller_and_aura_scope(seat):
     state = position(seat)
-    land = add(state, 'Forest', seat)
-    nissa = add(state, 'Nissa, Who Shakes the World', seat)
+    land = add(state, 'Forest', seat, full_printing=True)
+    nissa = add(state, 'Nissa, Who Shakes the World', seat, full_printing=True)
     aura(state, 'Spreading Seas', 3-seat, land)
     assert mana_source_outputs(state, seat, land.id) == {'U': 1}
     growth = aura(state, 'Wild Growth', 3-seat, land)
     assert can_pay_with_pool_and_lands(state, seat, '{U}{G}')
     resolve_effect(state, seat, 'temporary_ability_loss', {'target_card_id': growth.id})
     assert not can_pay_with_pool_and_lands(state, seat, '{U}{G}')
-    other = add(state, 'Forest', seat)
+    other = add(state, 'Forest', seat, full_printing=True)
     state.players[seat].battlefield.remove(nissa.id)
     state.players[3-seat].battlefield.append(nissa.id)
     nissa.controller = 3-seat
@@ -148,8 +191,8 @@ def test_type_replacement_controller_and_aura_scope(seat):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_snow_mana_provenance_belongs_to_each_producing_ability(seat):
     state = position(seat)
-    land = add(state, 'Snow-Covered Forest', seat)
-    add(state, 'Nissa, Who Shakes the World', seat)
+    land = add(state, 'Snow-Covered Forest', seat, full_printing=True)
+    add(state, 'Nissa, Who Shakes the World', seat, full_printing=True)
     assert can_pay_with_pool_and_lands(state, seat, '{S}{G}')
     assert not can_pay_with_pool_and_lands(state, seat, '{S}{S}')
     planned = deepcopy(state)
@@ -177,8 +220,8 @@ def test_tap_sickness_and_nonmana_tap_are_not_bonus_mana(seat):
     assert state.players[seat].life == before_life-1
     assert state.players[seat].mana_pool['G'] == state.players[seat].mana_pool['U'] == 1
     assert not mana_ability_views(state, state.cards[source.id])
-    land = add(state, 'Forest', seat)
-    add(state, 'Nissa, Who Shakes the World', seat)
+    land = add(state, 'Forest', seat, full_printing=True)
+    add(state, 'Nissa, Who Shakes the World', seat, full_printing=True)
     before_pool = state.players[seat].mana_pool.copy()
     tap_permanents(state, [land.id])
     assert state.players[seat].mana_pool == before_pool
@@ -223,8 +266,8 @@ def test_departed_trigger_source_and_reentered_tap_object_do_not_leave_stale_bon
     from rules_engine.resource_events import tap_permanents
     from game_state.state import object_incarnation
     state = position(seat)
-    land = add(state, 'Forest', seat)
-    nissa = add(state, 'Nissa, Who Shakes the World', seat)
+    land = add(state, 'Forest', seat, full_printing=True)
+    nissa = add(state, 'Nissa, Who Shakes the World', seat, full_printing=True)
     with mana_tap_scope(state, land) as captured:
         tap_permanents(state, [land.id])
         resolve_effect(state, seat, 'destroy_permanent', {'target_card_id': nissa.id})
@@ -233,7 +276,7 @@ def test_departed_trigger_source_and_reentered_tap_object_do_not_leave_stale_bon
     assert state.players[seat].mana_pool['G'] == 1
     land.tapped = False
     assert mana_source_outputs(state, seat, land.id) == {'G': 1}
-    add(state, 'Nissa, Who Shakes the World', seat)
+    add(state, 'Nissa, Who Shakes the World', seat, full_printing=True)
     previous = object_incarnation(land)
     with mana_tap_scope(state, land) as stale:
         # The same card identifier now denotes a new battlefield object.
@@ -245,7 +288,7 @@ def test_departed_trigger_source_and_reentered_tap_object_do_not_leave_stale_bon
 @pytest.mark.parametrize('seat', [1, 2])
 def test_unsupported_color_choice_aura_never_fabricates_bonus_mana(seat):
     state = position(seat)
-    land = add(state, 'Island', seat)
+    land = add(state, 'Island', seat, full_printing=True)
     aura(state, 'Verdant Haven', seat, land)
     assert not can_pay_with_pool_and_lands(state, seat, '{U}{G}')
     state = activate(state, seat, land, 'U')
@@ -290,8 +333,8 @@ def test_tick512_ugin_is_announced_payable_legal_and_really_paid(seat):
 ])
 def test_sphere_replaces_land_base_not_trigger_or_nonforest_creature(seat, source, reflection, color, expected, cost, rejected):
     state = position(seat)
-    card = add(state, source, seat)
-    add(state, 'Nissa, Who Shakes the World', seat)
+    card = add(state, source, seat, full_printing=True)
+    add(state, 'Nissa, Who Shakes the World', seat, full_printing=True)
     sphere = add(state, 'Damping Sphere', 3-seat)
     if reflection:
         add(state, 'Mana Reflection', seat)
