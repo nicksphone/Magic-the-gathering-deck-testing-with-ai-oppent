@@ -4,6 +4,8 @@ Aggro: burn / green counters; control: prevention / layers / recursion / counter
 All spell announcements and priority passes use the production checked action path.
 """
 import json
+import hashlib
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -13,10 +15,16 @@ from game_state.serializers import serialize_match_snapshot, deserialize_match_s
 from rules_engine.action_validation import checked_action, ActionRejected
 from rules_engine.engine import RulesEngine
 from rules_engine.continuous import effective_power, effective_toughness
+from tests.browser_positive83_canonical import entry as printed_entry
 
 CARDS = {r['card']['name']: r['card'] for r in json.loads(
     (Path(__file__).parents[1] / 'fixtures/regression_agent/cards.json').read_text())}
 
+
+_ORIGINAL_CARDS = CARDS
+_ORIGINAL_BEARS = CARDS['Grizzly Bears']
+_BEARS_FIELDS = ('name', 'type_line', 'oracle_text', 'mana_cost', 'power', 'toughness', 'colors', 'keywords', 'layout', 'card_faces')
+_BEARS_SHA = '9931cbc5c956425fd4633dee07850287266caef622354a8962c43364218d9b38'
 
 def position(seat):
     raw = CARDS['Island']
@@ -31,8 +39,22 @@ def position(seat):
     return state
 
 
-def add(state, name, seat, zone=Zone.HAND, owner=None):
+def add(state, name, seat, zone=Zone.HAND, owner=None, *, full_printing=False):
     raw = CARDS[name]
+    if (full_printing is True and name == 'Grizzly Bears' and CARDS is _ORIGINAL_CARDS
+            and raw is _ORIGINAL_BEARS and hashlib.sha256(json.dumps(
+                {key: raw.get(key) for key in _BEARS_FIELDS}, sort_keys=True,
+                separators=(',', ':'), ensure_ascii=False).encode()).hexdigest() == _BEARS_SHA):
+        sample = MatchFactory.from_decks([printed_entry(name, 8)], [], seed=0)
+        template = next(value for value in sample.cards.values() if value.zone == Zone.LIBRARY)
+        card = replace(template, id=state.allocate_object_id(), owner=seat if owner is None else owner,
+                       controller=seat, zone=zone, instance_order=0, summoning_sick=True)
+        state.cards[card.id] = card
+        getattr(state.players[seat], zone.value).append(card.id)
+        if zone == Zone.BATTLEFIELD:
+            assign_static_order_on_battlefield_entry(state, card.id)
+            card.summoning_sick = False
+        return card.id
     card = CardInstance(
         id=state.allocate_object_id(), name=name, owner=seat if owner is None else owner,
         controller=seat, zone=zone,
@@ -106,7 +128,7 @@ def test_two_furnaces_replace_bolt_each_once(seat):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_humility_anthem_counter_pump_and_source_departure(seat):
     state = position(seat)
-    bear = add(state, 'Grizzly Bears', seat, Zone.BATTLEFIELD)
+    bear = add(state, 'Grizzly Bears', seat, Zone.BATTLEFIELD, full_printing=True)
     state.cards[bear].counters['+1/+1'] = 1
     anthem = add(state, 'Glorious Anthem', seat, Zone.BATTLEFIELD)
     add(state, 'Humility', 3-seat, Zone.BATTLEFIELD)
@@ -152,7 +174,7 @@ def test_stolen_undying_returns_only_after_actual_death(seat, rip):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_reanimate_enemy_graveyard_preserves_owner_and_loses_life(seat):
     state = position(seat)
-    bear = add(state, 'Grizzly Bears', 3-seat, Zone.GRAVEYARD)
+    bear = add(state, 'Grizzly Bears', 3-seat, Zone.GRAVEYARD, full_printing=True)
     spell = add(state, 'Reanimate', seat)
     state = settle(restore(cast(state, spell, target_card_id=bear)))
     assert state.cards[bear].zone == Zone.BATTLEFIELD
@@ -167,7 +189,7 @@ def test_reanimate_enemy_graveyard_preserves_owner_and_loses_life(seat):
 @pytest.mark.parametrize('check', ['draw', 'destination'])
 def test_remand_response_preserves_conditional_destination_and_draw(seat, name, check):
     state = position(seat)
-    threat = add(state, name, seat)
+    threat = add(state, name, seat, full_printing=(name == 'Grizzly Bears'))
     remand = add(state, 'Remand', 3-seat)
     state = cast(state, threat)
     target = state.stack[-1].id
@@ -197,7 +219,7 @@ def test_remand_response_preserves_conditional_destination_and_draw(seat, name, 
 @pytest.mark.parametrize('seat', [1, 2])
 def test_bounce_and_recast_do_not_reuse_pump_or_counters(seat):
     state = position(seat)
-    bear = add(state, 'Grizzly Bears', seat, Zone.BATTLEFIELD)
+    bear = add(state, 'Grizzly Bears', seat, Zone.BATTLEFIELD, full_printing=True)
     state.cards[bear].counters['+1/+1'] = 1
     pump = add(state, 'Giant Growth', seat)
     bounce = add(state, 'Unsummon', seat)
@@ -215,7 +237,7 @@ def test_bounce_and_recast_do_not_reuse_pump_or_counters(seat):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_response_without_priority_is_atomic(seat):
     state = position(seat)
-    threat = add(state, 'Grizzly Bears', seat)
+    threat = add(state, 'Grizzly Bears', seat, full_printing=True)
     remand = add(state, 'Remand', 3-seat)
     state = cast(state, threat)
     before = serialize_match_snapshot(state)
@@ -258,7 +280,7 @@ def test_no_graveyard_cast_permission_is_atomic_after_restore(seat):
 @pytest.mark.parametrize('seat', [1, 2])
 def test_reanimate_removed_target_does_not_return_or_lose_life(seat):
     state = position(seat)
-    bear = add(state, 'Grizzly Bears', 3-seat, Zone.GRAVEYARD)
+    bear = add(state, 'Grizzly Bears', 3-seat, Zone.GRAVEYARD, full_printing=True)
     spell = add(state, 'Reanimate', seat)
     response = add(state, 'Cremate', 3-seat)
     state = cast(state, spell, target_card_id=bear)

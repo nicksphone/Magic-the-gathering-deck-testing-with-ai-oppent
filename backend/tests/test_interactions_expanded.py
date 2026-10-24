@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import replace
+from tests.test_knowledge_ingest import _official_card
+
 from effects.registry import resolve_effect
 from game_state.state import CardInstance, MatchFactory, Zone
 from rules_engine import combat
@@ -49,14 +52,21 @@ def test_search_library_returns_all_matching_cards() -> None:
     player.library = []
     for name in ["Goblin Guide", "Goblin Piledriver", "Goblin War Marshal", "Lightning Bolt"]:
         cid = f"card-{name.lower().replace(' ', '-')}"
-        state.cards[cid] = CardInstance(
-            id=cid,
-            name=name,
-            owner=1,
-            controller=1,
-            zone=Zone.LIBRARY,
-            types=["Creature"],
-        )
+        if name == "Goblin Guide":
+            raw = _official_card(name)
+            sample = MatchFactory.from_decks([{**raw, 'card_name': name, 'quantity': 8}], [], seed=0)
+            template = next(value for value in sample.cards.values() if value.zone == Zone.LIBRARY)
+            state.cards[cid] = replace(template, id=cid, owner=1, controller=1, zone=Zone.LIBRARY,
+                                       instance_order=0, summoning_sick=True)
+        else:
+            state.cards[cid] = CardInstance(
+                id=cid,
+                name=name,
+                owner=1,
+                controller=1,
+                zone=Zone.LIBRARY,
+                types=["Creature"],
+            )
         player.library.append(cid)
 
     hand_before = len(player.hand)
