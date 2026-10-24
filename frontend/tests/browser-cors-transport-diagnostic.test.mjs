@@ -263,6 +263,10 @@ test('source never requests response bodies via CDP and prints typed records bef
 });
 test('ordinary-only launcher hook preserves the entire original program by byte inverse', () => {
   let source = fs.readFileSync(new URL('./run-browser-ci.sh', import.meta.url), 'utf8');
+  // Undo exactly the separately exercised zone-keyword scenario before the legacy checks.
+  const zoneScenario = '(cd frontend && run_browser_program "browser-zone-keyword-actions.mjs" timeout 300s node tests/browser-zone-keyword-actions.mjs)\n';
+  assert.equal(source.split(zoneScenario).length, 2);
+  source = source.replace(zoneScenario, '');
   // Undo only the separately tested program-reporting layer before the old hash.
   let wrapped = 0;
   source = source.replace(/run_browser_program ("[a-z0-9._-]+"|"\$scenario") (timeout \d+s )?(node|bash) ("tests\/\$scenario"|(?:frontend\/)?tests\/[a-z0-9._-]+)/g,
