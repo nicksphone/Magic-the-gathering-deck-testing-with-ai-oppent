@@ -41,6 +41,24 @@ def register_zone_keyword_fixtures():
             raise ValueError('Not a supported canonical RAW object: ' + name)
     scenes = {}
 
+    @app.middleware('http')
+    async def record_zone_actions(request, call_next):
+        scene = next((value for match_id, value in scenes.items()
+                      if request.url.path == f'/matches/{match_id}/action'), None)
+        if request.method != 'POST' or scene is None:
+            return await call_next(request)
+        receipts = scene[-1]
+        if len(receipts) >= 64:
+            raise RuntimeError('Zone-keyword action receipt limit exceeded')
+        body = await request.body()
+        response = await call_next(request)
+        try:
+            payload = json.loads(body)
+        except ValueError:
+            payload = None
+        receipts.append({'body': payload, 'status': response.status_code})
+        return response
+
     def target_entry(name):
         value = deepcopy(raw[name])
         normalized = ScryfallSyncService._normalize_payload(value, 'unused:browser-fixture-display')
@@ -86,7 +104,7 @@ def register_zone_keyword_fixtures():
         state.log.append('Trusted zone-keyword browser position; not a played-game checkpoint.')
         publish(state, deck, capture_original_stock=False, mainboards=decks)
         scenes.clear()
-        scenes[state.id] = (seat, card_id, attacker_ids, land_ids)
+        scenes[state.id] = (seat, card_id, attacker_ids, land_ids, [])
         return {'id': state.id, 'card_id': card_id, 'attacker_ids': attacker_ids,
                 'attacker_id': attacker_ids[1] if attacker_ids else None}
 
@@ -94,13 +112,14 @@ def register_zone_keyword_fixtures():
     def facts(match_id: str):
         if match_id not in scenes or match_id not in ACTIVE_MATCHES:
             raise HTTPException(404, 'Unknown zone-keyword fixture')
-        seat, cid, attacker_ids, lands = scenes[match_id]
+        seat, cid, attacker_ids, lands, action_requests = scenes[match_id]
         state = ACTIVE_MATCHES[match_id].state
         player, card = state.players[seat], state.cards[cid]
         # Exercise real serializer look permissions, not an invented privacy filter.
         views = [serialize_match(state, look_players=look)['players'][seat]['exile']
                  for look in ([], [3 - seat], [seat])]
         return {
+            'action_requests': deepcopy(action_requests),
             'zone': card.zone.value, 'face_down': card.exile_face_down,
             'hand_count': len(player.hand), 'library_count': len(player.library),
             'graveyard_count': len(player.graveyard), 'exile_count': len(player.exile),

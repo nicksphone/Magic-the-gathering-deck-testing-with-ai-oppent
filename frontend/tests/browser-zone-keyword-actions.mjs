@@ -14,20 +14,23 @@ for (const seat of [1, 2]) for (const kind of ['foretell', 'cycle_card', 'ninjut
   assert.equal(response.status, 200, 'Registered complete-RAW fixture is mandatory');
   const fixture = await response.json();
   const browser = await openBrowser(frontend + '/');
-  const {command, evaluate, waitFor, click, reload, close} = browser;
+  const {evaluate, waitFor, click, reload, close} = browser;
   const calls = [];
-  let fatal;
-  const facts = () => get(`/fixture/zone-keyword/${fixture.id}/facts`);
+  const facts = async () => {
+    const value = await get(`/fixture/zone-keyword/${fixture.id}/facts`);
+    assert.ok(Array.isArray(value.action_requests));
+    calls.splice(0, calls.length, ...value.action_requests);
+    return value;
+  };
   const current = () => get(`/matches/${fixture.id}`);
   async function settled() {
-    if (fatal) throw fatal;
     const view = await current();
     await waitFor(`document.querySelector('.battlefield')?.dataset.matchRevision === ${JSON.stringify(String(view.revision))} && !document.body.innerText.includes('Match operation pending')`);
-    if (fatal) throw fatal;
     return facts();
   }
   async function action(label, expectedType, player) {
     const before = await current();
+    await facts();
     const count = calls.length;
     await click(label);
     await waitFor(`(async () => {const r = await fetch(${JSON.stringify(api + '/matches/' + fixture.id)}); return r.ok && (await r.json()).revision === ${before.revision + 1};})()`);
@@ -58,22 +61,6 @@ for (const seat of [1, 2]) for (const kind of ['foretell', 'cycle_card', 'ninjut
     await waitFor("document.querySelector('.saved-games') && !document.body.innerText.includes('Restoring saved session')");
     await evaluate(`localStorage.setItem('mtg.activeMatch', ${JSON.stringify(fixture.id)})`);
     await reload();
-    await command('Network.enable');
-    browser.onIntercept(async event => {
-      try {
-        if (event.request.method === 'POST') {
-          assert.ok(event.networkId);
-          const data = await command('Network.getRequestPostData', {requestId: event.networkId});
-          const text = data.base64Encoded ? Buffer.from(data.postData, 'base64').toString() : data.postData;
-          calls.push({body: JSON.parse(text), status: event.responseStatusCode});
-        }
-      } catch (error) { fatal = error; }
-      finally {
-        try { await command('Fetch.continueResponse', {requestId: event.requestId}); }
-        catch (error) { fatal = error; }
-      }
-    });
-    await command('Fetch.enable', {patterns: [{urlPattern: `${api}/matches/${fixture.id}/action`, requestStage: 'Response'}]});
     const initial = await settled();
     assert.equal(initial.zone, 'hand');
     assert.equal(initial.hand_count, 1);
@@ -117,7 +104,15 @@ for (const seat of [1, 2]) for (const kind of ['foretell', 'cycle_card', 'ninjut
       assert.equal(fixture.attacker_ids.length, 2);
       assert.equal(fixture.attacker_id, fixture.attacker_ids[1], 'Select the SECOND attacker deliberately');
       assert.notEqual(fixture.attacker_ids[0], fixture.attacker_ids[1]);
-      let combat = await action('Attack all eligible', 'attack', seat);
+      const beforeSelection = await current();
+      const selectionCalls = calls.length;
+      await click('Attack all eligible');
+      await waitFor("document.body.innerText.includes('No attack has been declared.')");
+      const selected = await facts();
+      assert.equal(calls.length, selectionCalls, 'Selection must not send an action');
+      assert.equal((await current()).revision, beforeSelection.revision);
+      assert.deepEqual(selected.attackers, []);
+      let combat = await action('Submit Attackers', 'attack', seat);
       assert.deepEqual(calls.at(-1).body.action.attackers, fixture.attacker_ids);
       assert.deepEqual(combat.attackers, fixture.attacker_ids);
       for (let n = 0; n < 4 && combat.step !== 'declare_blockers'; n++) {
@@ -158,10 +153,7 @@ for (const seat of [1, 2]) for (const kind of ['foretell', 'cycle_card', 'ninjut
     // Numeric/coordinate-only receipt; never publish private match snapshots.
     console.log(JSON.stringify({seat, kind, accepted: calls.length, outcome: 'PASS'}));
   } finally {
-    try { await command('Fetch.disable'); }
-    finally {
-      try { await evaluate("localStorage.removeItem('mtg.activeMatch')"); }
-      finally { await close(); }
-    }
+    try { await evaluate("localStorage.removeItem('mtg.activeMatch')"); }
+    finally { await close(); }
   }
 }

@@ -53,8 +53,10 @@ Its existing complete-suite command, sandbox checks and closure rules are unchan
 ## Six unconditional cases
 
 Each of foretell, cycle_card and ninjutsu runs for both actor seats. Real built-App
-DOM clicks submit unmodified public requests. Existing response-stage driver
-capture checks payload/actor/HTTP 200; exact revision and authoritative engine
+DOM clicks submit unmodified public requests. A fixture-scoped middleware records
+actual action JSON and status after the unchanged API handles it, without pausing
+or replacing responses. It uses the existing Cathar/Suspend cached-body recording
+pattern and rejects receipt overflow. Payload/actor/HTTP 200, exact revision and authoritative engine
 facts independently verify acceptance and outcome. Missing routes/cards/windows
 fail; there is no conditional skip, synthetic HTTP response, or direct game-action
 call from the fixture. Fact responses contain targeted counts/coordinates/booleans,
@@ -71,7 +73,9 @@ is explicitly disabled. No floating mana, injected StackItem, or forced winner.
   priority, no spell count or printed name in log; real serializer look checks.
 - Cycle Hollow One: pay two lands and discard as cost; no premature draw. Two
   actual UI priority passes resolve its real ability, drawing one library card.
-- Ninjutsu: actual attack-all sends BOTH Bears, followed by actual empty blocks.
+- Ninjutsu: attack-all selects BOTH Bears for review without sending an action
+  or changing the revision/declared attackers. Submit Attackers then explicitly
+  commits both, followed by actual empty blocks.
   Deliberately select the SECOND Bear ID (not the first/default). It returns as
   cost; the first remains on the battlefield and attacking through the subsequent
   passes. Pay the real one-blue-plus-generic cost using two Islands. The Ninja
@@ -91,3 +95,11 @@ SQL, browser, native C, or browser test execution. All six outcomes and browser
 vendor/closure proofs remain UNRUN pending execution. Existing production,
 assertions, frontend controls and dependencies are unchanged. Launcher and native
 workflow additions only register the new coverage; they are not passing evidence.
+
+The first native run on `611734f7` failed in both vendors. Chrome passed seat-1
+foretell/cycling, then stopped because the new test treated selection as submission.
+Brave passed seat-1 foretell, then reported `Invalid InterceptionId`; its precise
+protocol cause is unproved. Both failures are preserved. The test now uses the
+existing two-step attack UI and a server receipt recorder instead of unnecessary
+Fetch interception. All gameplay payload/status/count/outcome assertions remain;
+no production behavior or time limit is relaxed. Corrected runtime remains unrun.
