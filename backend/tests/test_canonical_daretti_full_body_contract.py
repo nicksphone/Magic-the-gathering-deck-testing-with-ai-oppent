@@ -2,6 +2,7 @@
 import json
 import random
 from copy import deepcopy
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,7 @@ from effects.handlers import destroy_permanent, sacrifice
 from effects.registry import resolve_effect
 from game_state.serializers import deserialize_match_snapshot, serialize_match_snapshot
 from game_state.state import (
-    CardInstance, MatchState, PlayerState, Step, Zone,
+    CardInstance, MatchFactory, MatchState, PlayerState, Step, Zone,
     assign_static_order_on_battlefield_entry,
 )
 from rules_engine.action_validation import ActionRejected, checked_action
@@ -22,6 +23,7 @@ from rules_engine.printed_body import printed_body_gaps
 from rules_engine.stack_engine import resolve_top_of_stack
 from rules_engine.type_effects import add_type_effect
 from rules_engine.zone_actions import discard_selected
+from tests.test_entry_unadapted_two_families_641 import raw as full_raw
 
 
 NAME = 'Daretti, Scrap Savant'
@@ -60,10 +62,15 @@ def board(seat=1, *, loyalty=3):
     state.active_player = state.priority_player = seat
     state.step = Step.PRECOMBAT_MAIN
     state.mechanic_choice_players = {1, 2}
-    source = put(state, 'daretti', Zone.BATTLEFIELD, owner=seat,
-                 types=('Planeswalker',), text=ROW['oracle_text'])
-    source.name, source.type_line, source.mana_cost = NAME, ROW['type_line'], ROW['mana_cost']
-    source.colors, source.loyalty = list(ROW['colors']), loyalty
+    sample = MatchFactory.from_decks(
+        [{**full_raw(NAME), 'card_name': NAME, 'quantity': 8}], [], seed=0)
+    template = next(card for card in sample.cards.values() if card.zone == Zone.LIBRARY)
+    source = replace(template, id='daretti', owner=seat, controller=seat,
+                     zone=Zone.BATTLEFIELD, instance_order=0, summoning_sick=True)
+    source.loyalty = loyalty
+    state.cards[source.id] = source
+    state.players[seat].battlefield.append(source.id)
+    assign_static_order_on_battlefield_entry(state, source.id)
     for pid in (1, 2):
         for index in range(8):
             put(state, f'library-{pid}-{index}', Zone.LIBRARY, owner=pid, types=('Land',))

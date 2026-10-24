@@ -12,6 +12,7 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import resolve_top_of_stack
 from tests.test_counterability_scope import add_card, state_with_card
 from tests.test_copy_stack_characteristics import add_counter
+from tests.browser_positive83_canonical import card as canonical_card
 
 
 def prepare(name="Carnage Tyrant", counter="Counterspell"):
@@ -85,10 +86,7 @@ def test_ai_can_materialize_counter_for_ability_from_spell_protected_source():
 
 
 def add_cryptic(state):
-    raw = json.loads((Path(__file__).parent / "fixtures" / "cryptic_command.json").read_text())
-    cryptic = CardInstance("cryptic", raw["name"], 1, 1, Zone.HAND, ["Instant"],
-                           mana_cost=raw["mana_cost"], oracle_text=raw["oracle_text"],
-                           type_line=raw["type_line"], colors=raw["colors"])
+    cryptic = canonical_card("Cryptic Command", id="cryptic", owner=1, controller=1, zone=Zone.HAND)
     state.cards[cryptic.id] = cryptic
     state.players[1].hand.append(cryptic.id)
     state.players[1].mana_pool.update({"U": 3, "C": 1})
