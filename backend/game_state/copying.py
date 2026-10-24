@@ -78,8 +78,9 @@ def _copy_card_field(value, memo):
             result.append(memo.get(id(item), item) if type(item) in _immutable_card_types
                           else _copy_card_field(item, memo))
     elif kind is dict:
-        if not all(type(key) in _immutable_card_types for key in value):
-            return deepcopy(value, memo)
+        for key in value:
+            if type(key) not in _immutable_card_types:
+                return deepcopy(value, memo)
         result = {}
         memo[identity] = result
         for key, item in value.items():
