@@ -172,7 +172,10 @@ export function Controls(props: Props) {
   const sideboardStatus = betweenGames ? (humanSeats.length ? "Sideboarding open" : "No human sideboarding") : matchComplete ? "Match complete" : "Sideboarding locked";
   const stackSize = props.match?.stack?.length ?? 0;
   const currentController = props.match?.controllers?.[String(props.actingPlayerId ?? props.match?.priority_player ?? 1)] ?? "human";
-  const interruptWindowLive = !props.autoResponsePaused && props.responseCountdown !== null;
+  const humanResponseTimerAvailable = props.match?.mode === "player_vs_ai"
+    && currentController === "human" && stackSize > 0
+    && props.legalMoves.some((move) => move.type === "pass_priority");
+  const interruptWindowLive = humanResponseTimerAvailable && !props.autoResponsePaused && props.responseCountdown !== null;
   const replacementPaused = replacementMoves.length > 0 || Boolean(props.match?.pending_replacement_choice);
   const triggerOrderPaused = triggerOrderMoves.length > 0 || Boolean(props.match?.pending_trigger_order);
   const aiSeries = props.match?.mode === 'ai_vs_ai'
@@ -181,8 +184,8 @@ export function Controls(props: Props) {
     || ((replacementPaused || triggerOrderPaused || mechanicPaused) && !aiChoicePending);
   const interruptWindowLabel = interruptWindowLive
     ? "Response window open"
-    : props.autoResponsePaused
-      ? "Response timer paused"
+    : props.autoResponsePaused && humanResponseTimerAvailable
+      ? "Human auto-pass timer off"
       : stackSize > 0 && currentController === "human"
         ? "Priority held for human response"
         : stackSize > 0
@@ -191,8 +194,8 @@ export function Controls(props: Props) {
   const interruptWindowSeat = props.match ? `P${props.match.priority_player} • ${currentController.toUpperCase()}` : "";
   const interruptWindowDetail = interruptWindowLive
     ? `Auto-pass in ${props.responseCountdown}s unless you respond.`
-    : props.autoResponsePaused
-      ? "Auto-response is paused on a human interrupt window."
+    : props.autoResponsePaused && humanResponseTimerAvailable
+      ? "Human priority has no time limit. Enable the optional timer only to auto-pass this response window."
       : stackSize > 0 && currentController !== "human"
         ? `Priority is with ${props.match ? `P${props.match.priority_player}` : "the active player"} and the current controller is AI.`
         : stackSize > 0
@@ -476,8 +479,8 @@ export function Controls(props: Props) {
               Stack objects: {stackSize} | Priority: P{props.match.priority_player}
             </p>
           ) : null}
-          <button onClick={props.onToggleAutoResponsePause}>
-            {props.autoResponsePaused ? "Resume Auto Response Timer" : "Hold Priority Timer"}
+          <button disabled={!humanResponseTimerAvailable} onClick={props.onToggleAutoResponsePause}>
+            {props.autoResponsePaused ? "Enable 6-second timer for this response" : "Hold Priority Timer"}
           </button>
         </div>
       ) : null}
