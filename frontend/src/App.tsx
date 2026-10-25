@@ -49,7 +49,7 @@ export function App() {
   const [combatDraft, setCombatDraft] = useState(emptyCombatDraft);
   useEffect(() => { setCombatDraft(emptyCombatDraft()); }, [match?.id, match?.game_number, match?.turn, match?.step]);
   const [responseCountdown, setResponseCountdown] = useState<number | null>(null);
-  const [autoResponsePaused, setAutoResponsePaused] = useState(false);
+  const [autoResponsePaused, setAutoResponsePaused] = useState(true);
   const [autoLoopBeat, setAutoLoopBeat] = useState(0);
   const [autoplayDelayMs, setAutoplayDelayMs] = useState<number>(1800);
   const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">("checking");
@@ -455,14 +455,20 @@ export function App() {
   useEffect(() => {
     if (!humanResponseWindowActive) {
       setResponseCountdown(null);
-      setAutoResponsePaused(false);
+      setAutoResponsePaused(true);
       responseWindowSigRef.current = "";
+      return;
+    }
+    const sig = `${match?.id ?? ""}|${(match?.stack ?? []).map((s) => s.id).join(",")}|${legalPlayerId}`;
+    if (responseWindowSigRef.current && responseWindowSigRef.current !== sig) {
+      responseWindowSigRef.current = "";
+      setResponseCountdown(null);
+      setAutoResponsePaused(true);
       return;
     }
     if (autoResponsePaused) {
       return;
     }
-    const sig = `${match?.id ?? ""}|${(match?.stack ?? []).map((s) => s.id).join(",")}|${legalPlayerId}`;
     if (responseWindowSigRef.current !== sig) {
       responseWindowSigRef.current = sig;
       setResponseCountdown(6);
@@ -483,6 +489,7 @@ export function App() {
     if (autoResponsePaused) return;
     if (responseCountdown !== 0) return;
     if (!match || responsePassInFlight.current || gate.current.busy) return;
+    if (responseWindowSigRef.current !== `${match.id}|${(match.stack ?? []).map((s) => s.id).join(",")}|${legalPlayerId}`) return;
     responsePassInFlight.current = true;
     void (async () => {
       try {
@@ -495,7 +502,7 @@ export function App() {
         setResponseCountdown(null);
       }
     })();
-  }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match, passPriority]);
+  }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match, legalPlayerId, passPriority]);
 
   return (
     <main className={`layout ${match ? "workspace-match" : "workspace-lobby"}${match?.winner != null ? " game-ended" : ""}`}>
