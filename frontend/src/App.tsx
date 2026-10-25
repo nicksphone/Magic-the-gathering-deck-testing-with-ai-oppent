@@ -9,6 +9,8 @@ import { Controls } from "./components/Controls";
 import { DeckPanel } from "./components/DeckPanel";
 import { StackLog } from "./components/StackLog";
 import { PlayGuide } from "./components/PlayGuide";
+import { AiPlayNotice } from "./components/AiPlayNotice";
+import { newAiPlays, type AiPlay } from "./lib/ai-plays";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "./types";
 import { emptyCombatDraft } from "./components/combat-selection";
 import { canStartReviewed, parsePendingInteractiveStart, reviewMatchesPayload, startSignature, startControllers,
@@ -44,6 +46,8 @@ export function App() {
   const [difficulty, setDifficulty] = useState("master");
   const [bestOf, setBestOf] = useState<number>(3);
   const [match, setMatch] = useState<MatchState | null>(null);
+  const [aiPlays, setAiPlays] = useState<AiPlay[]>([]);
+  const aiPlaySequence = useRef(0);
   const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
   const [legalPlayerId, setLegalPlayerId] = useState<number>(1);
   const [canAutoPass, setCanAutoPass] = useState(false);
@@ -118,13 +122,19 @@ export function App() {
     clearPendingStart(key);
   }, []);
 
-  const applyMatch = useCallback(async (next: MatchState) => {
+  const applyMatch = useCallback(async (next: MatchState, announce = true) => {
     let data = next;
     let legal = await api.legalMoves(data.id);
     if (legal.revision !== undefined && legal.revision !== data.revision) {
       data = await api.getMatch(data.id);
       legal = await api.legalMoves(data.id);
       if (legal.revision !== data.revision) throw new Error("Match keeps changing in another window. Pause it, then reload.");
+    }
+    const previous = currentMatch.current;
+    if (!announce || previous?.id !== data.id || previous?.game_number !== data.game_number) setAiPlays([]);
+    else {
+      const added = newAiPlays(previous, data, ++aiPlaySequence.current);
+      if (added.length) setAiPlays(plays => [...plays, ...added].slice(-8));
     }
     currentMatch.current = data;
     setMatch(data);
@@ -158,7 +168,7 @@ export function App() {
     await gate.current.run(async () => {
       setMutationPending(true);
       setAutoProgressPaused(true);
-      try { await applyMatch(await api.getMatch(id)); }
+      try { await applyMatch(await api.getMatch(id), false); }
       finally { setMutationPending(false); }
     });
   }
@@ -548,7 +558,7 @@ export function App() {
       </section>
       <section className="left-column" id="match-controls" tabIndex={-1} aria-label="Actions and choices">
         {match && (match.winner != null || match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.winner != null ? (match.match_complete ? "Series complete" : "Between games") : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.winner != null ? "This game is over. Review the result above and the series controls below." : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
-        {match ? <StackLog match={match} /> : null}
+        {match ? <><AiPlayNotice plays={aiPlays} /><StackLog match={match} aiPlays={aiPlays} /></> : null}
         <section className="panel" aria-label="Interactive match support preflight">
           <details open={Boolean(visibleReview || preflightChecking || pendingStart || preflightNote)}>
           <summary>Deck support check</summary>

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { MatchState } from "../types";
+import type { AiPlay } from "../lib/ai-plays";
 
-export function StackLog({ match }: { match: MatchState }) {
+export function StackLog({ match, aiPlays = [] }: { match: MatchState; aiPlays?: AiPlay[] }) {
   const [limit, setLimit] = useState(5);
   return (
     <section className="panel stack-log" aria-label="Stack and match log">
@@ -16,6 +17,12 @@ export function StackLog({ match }: { match: MatchState }) {
           </div>
         ))}
       </div>
+      {aiPlays.length ? <details className="recent-ai-plays">
+        <summary>Recent AI plays <span>{aiPlays.length}</span></summary>
+        <ol>{[...aiPlays].reverse().map(play => <li key={play.id}>
+          <strong>{play.name}</strong><span>AI P{play.controller} · Turn {play.turn}{play.targets.length ? ` · Target: ${play.targets.join(', ')}` : ''}</span>
+        </li>)}</ol>
+      </details> : null}
       <details className="match-log">
         <summary>Match log <span>{match.log.length} events</span></summary>
         <div id="match-log-lines" className="log-box">

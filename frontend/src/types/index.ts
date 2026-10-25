@@ -111,7 +111,7 @@ export type MatchState = {
   kept_hands?: number[];
   priority_stops?: Record<string, string[]>;
   players: Record<string, PlayerView>;
-  stack: { id: string; label: string; controller: number; effect_key: string }[];
+  stack: { id: string; label: string; controller: number; effect_key: string; targets?: string[] }[];
   attackers?: string[];
   attack_targets?: Record<string, string>;
   attack_bands?: string[][];
