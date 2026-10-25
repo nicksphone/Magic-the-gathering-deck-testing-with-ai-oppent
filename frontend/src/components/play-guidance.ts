@@ -4,7 +4,7 @@ type PlayGuidance = {
   title: string;
   detail: string;
   href: "#match-controls" | "#table" | "#automatic-play-toggle" | "#your-hand"
-    | "#attack-declaration" | "#block-declaration" | "#opening-hand-choice";
+    | "#attack-declaration" | "#block-declaration" | "#opening-hand-choice" | "#turn-commands";
   linkLabel: string;
 };
 const guide = (title: string, detail: string, href: PlayGuidance["href"] = "#match-controls",
@@ -57,7 +57,7 @@ export function getPlayGuidance(
     return guide(`${who}: an effect is waiting`, offered("pass_priority")
       ? "Pass Priority means taking no action now. The waiting effect resolves only after both players pass."
       : "Review the waiting effects and required-choice messages. No response action is currently offered.",
-    "#match-controls", "Review the response window");
+    offered("pass_priority") ? "#turn-commands" : "#match-controls", "Review the response window");
   }
   if (offered("play_land")) return guide(`${who}: a land play is offered`,
     "Find the offered land play in Hand & permitted plays. Choose it there only when ready.", "#your-hand", "Find the land play");
@@ -65,7 +65,8 @@ export function getPlayGuidance(
     "The table shows available spell and ability controls. Review their targets and costs before choosing; nothing is selected automatically.",
     playLocation, "Find available plays");
   if (moves.length && moves.every(move => move.type === "pass_priority")) return guide(`${who}: take no action for now`,
-    "Pass Priority takes no action now; it does not end the turn. The other player gets a chance to act.");
+    "Pass Priority takes no action now; it does not end the turn. The other player gets a chance to act.",
+    "#turn-commands", "Show turn commands");
   return guide(moves.length ? "No guided action for this move" : "No action is offered",
     "Review the current state and required-choice messages. This guide does not invent a legal action or advance play.");
 }

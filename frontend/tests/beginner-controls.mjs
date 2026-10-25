@@ -14,7 +14,9 @@ assert.ok(render({startMode:'human_vs_human'}).includes('Player 1'),'Shared tabl
 assert.ok(render({startMode:'ai_vs_ai'}).includes('Player 2'));
 const html=render({});
 assert.match(html,/<details[^>]*class="[^"]*advanced-turn-controls[^>]*><summary>Advanced turn controls<\/summary>/,'Technical turn stepping is initially collapsed');
-assert.match(html,/Pass Priority/);assert.match(html,/aria-label="Deck A"/);assert.match(html,/aria-label="Deck B"/);
+assert.ok(!html.includes('aria-label="Turn commands"'),'No in-game commands clutter the lobby');
+assert.match(render({match:{id:'protocol',turn:1,step:'precombat_main',winner:null,priority_player:1,active_player:1,score:{1:0,2:0},players:{1:{battlefield:[]},2:{battlefield:[]}},stack:[]}}),/Pass Priority/);
+assert.match(html,/aria-label="Deck A"/);assert.match(html,/aria-label="Deck B"/);
 const PlayGuide=await component('PlayGuide.tsx','PlayGuide');
 const guide=renderToStaticMarkup(createElement(PlayGuide,{match:null,legalMoves:[],actingPlayerId:1,autoProgressPaused:false}));
 assert.match(guide,/aria-label="Play guide"/);assert.match(guide,/What to do next/);

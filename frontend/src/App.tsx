@@ -524,12 +524,12 @@ export function App() {
       <nav className="table-navigation" aria-label="Workspace">
         <a href="#table">{match ? "01 / Table" : "01 / Play"}</a><a href="#match-controls">{match ? "02 / Actions & choices" : "02 / Matchup"}{match?.stack.length ? ` · Stack ${match.stack.length}` : ""}</a><a href="#lab-tools" aria-expanded={labOpen} onClick={() => setLabOpen(true)}>03 / Decks & lab</a>
         {match && (match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <a className="choice-notice" href="#match-controls" role="status">Choice required · P{legalPlayerId} · {match.pending_mechanic_choice?.label ?? (match.pregame_pending ? "Opening hand" : "Review pending decision")} →</a> : null}
-        {match ? <button id="automatic-play-toggle" disabled={mutationPending || restoring || !!match.match_complete || (match.winner != null && !isAiSeries(match))} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
+        {match ? <a href="#turn-commands">Turn commands</a> : null}
         {mutationPending ? <span role="status">Match operation pending...</span> : null}
       </nav>
       <div className="play-guide-slot">
         {actionError ? <p className="operation-alert" role="alert">Match operation: {actionError}</p> : null}
-        <PlayGuide match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} autoProgressPaused={autoProgressPaused} />
+        <PlayGuide match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} autoProgressPaused={autoProgressPaused} compact={Boolean(match)} />
       </div>
       <section className="lab-tools" id="lab-tools" aria-label="Lab tools" hidden={!labOpen}>
         <header className="workspace-heading"><div><span className="eyebrow">The workbench</span><h2>Prepare. Review. Refine.</h2></div><button onClick={() => { setLabOpen(false); document.querySelector<HTMLAnchorElement>('a[href="#lab-tools"]')?.focus(); }}>Close lab</button></header>
@@ -547,7 +547,7 @@ export function App() {
         <details className="panel tool-disclosure"><summary>Simulator & diagnostics</summary><AnalyticsPanel decks={decks} /></details>
       </section>
       <section className="left-column" id="match-controls" tabIndex={-1} aria-label="Actions and choices">
-        {match ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.winner != null ? (match.match_complete ? "Series complete" : "Between games") : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.winner != null ? "This game is over. Review the result above and the series controls below." : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
+        {match && (match.winner != null || match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.winner != null ? (match.match_complete ? "Series complete" : "Between games") : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.winner != null ? "This game is over. Review the result above and the series controls below." : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
         {match ? <StackLog match={match} /> : null}
         <section className="panel" aria-label="Interactive match support preflight">
           <details open={Boolean(visibleReview || preflightChecking || pendingStart || preflightNote)}>
@@ -621,6 +621,9 @@ export function App() {
           responseCountdown={responseCountdown}
           autoResponsePaused={autoResponsePaused}
           onToggleAutoResponsePause={() => setAutoResponsePaused((v) => !v)}
+          autoProgressPaused={autoProgressPaused}
+          onToggleAutomaticPlay={() => setAutoProgressPaused(value => !value)}
+          automaticPlayDisabled={mutationPending || restoring || !!match?.match_complete || (match?.winner != null && !isAiSeries(match))}
           legalMoves={legalMoves}
           actingPlayerId={legalPlayerId}
           match={match}

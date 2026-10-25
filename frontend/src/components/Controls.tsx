@@ -3,6 +3,8 @@ import { combatDraftGuidance, selectAttackers, toggleAttacker, type CombatDraft 
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { CardArt } from "./CardArt";
 import { TriggerOrderPicker } from "./TriggerOrderPicker";
+import { TurnCommandBar } from "./TurnCommandBar";
+import { cardStates } from "./table-model";
 
 // Includes engine-supported generic selections not yet listed in LegalMove.kind.
 const supportedMechanicControls = new Set<string>([
@@ -53,6 +55,9 @@ type Props = {
   responseCountdown: number | null;
   autoResponsePaused: boolean;
   onToggleAutoResponsePause: () => void;
+  autoProgressPaused?: boolean;
+  onToggleAutomaticPlay?: () => void;
+  automaticPlayDisabled?: boolean;
   legalMoves: LegalMove[];
   match: MatchState | null;
   combatDraft?: CombatDraft;
@@ -208,7 +213,7 @@ export function Controls(props: Props) {
     : `Player ${seat}`;
   return (
     <section className="panel controls">
-      <h2>{props.match ? "Command the turn" : "Choose your matchup"}</h2>
+      <h2>{props.match ? "Choices & match details" : "Choose your matchup"}</h2>
       {!props.match ? <p className="setup-hint">Choose your deck and an opponent. Start checks deck support before creating a match.</p> : null}
       <details className="match-setup" open={!props.match}><summary>Match setup</summary>
       <div className="row">
@@ -341,7 +346,7 @@ export function Controls(props: Props) {
             return <button type="button" key={cid} data-legend-keeper-id={cid}
               onClick={() => props.onChooseMechanic(mechanicMove.player_id!, { type: "choose_mechanic", card_ids: [cid] })}>
               Keep {mechanicMove.option_labels?.[cid] ?? cid} ({cid})
-              {permanent ? <span> - {permanent.tapped ? "Tapped" : "Untapped"}{permanent.summoning_sick ? ", summoning sick" : ""}
+              {permanent ? <span> - {permanent.tapped ? "Tapped" : "Untapped"}{cardStates(permanent, {}).includes("Summoning sick") ? ", summoning sick" : ""}
                 {permanent.power !== null && permanent.toughness !== null ? `, ${permanent.power}/${permanent.toughness}` : ""}
                 {Object.entries(permanent.counters ?? {}).map(([name, count]) => `, ${name}: ${count}`).join("")}</span> : null}
             </button>;
@@ -526,12 +531,15 @@ export function Controls(props: Props) {
           </div>
         </details>
       ) : null}
-      <div className="grid-actions">
-        <button onClick={props.onPassPriority} disabled={!props.match || currentController !== "human" || !props.legalMoves.some(move => move.type === "pass_priority") || replacementPaused || triggerOrderPaused || mechanicPaused}>
-          Pass Priority
-        </button>
-      </div>
-      {props.match ? <p className="priority-help">Finished with this chance to act? Pass Priority lets the other player act. It does not skip your entire turn.</p> : null}
+      {props.match ? <TurnCommandBar match={props.match} moves={props.legalMoves}
+        actor={props.actingPlayerId ?? props.match.priority_player}
+        passDisabled={currentController !== "human" || !props.legalMoves.some(move => move.type === "pass_priority") || replacementPaused || triggerOrderPaused || mechanicPaused}
+        onPassPriority={props.onPassPriority}
+        combatForm={blockMove ? "block-declaration" : attackMove ? "attack-declaration" : undefined}
+        combatDisabled={blockMove ? blockNeedsPayment : attackNeedsPayment}
+        choiceRequired={replacementPaused || triggerOrderPaused || mechanicPaused || triggerTargetMoves.length > 0 || optionalEffectMoves.length > 0 || Boolean(props.match.pregame_pending)}
+        draftGuidance={combatGuidance} autoProgressPaused={props.autoProgressPaused ?? false}
+        onToggleAutomaticPlay={props.onToggleAutomaticPlay} automaticPlayDisabled={props.automaticPlayDisabled} /> : null}
       <details className="advanced-turn-controls"><summary>Advanced turn controls</summary>
       <p>Manual stepping and batched AI progression. Human card and target choices still need your input.</p>
       <div className="grid-actions">

@@ -5,7 +5,7 @@ const helper = new URL('../src/components/play-guidance.ts', import.meta.url);
 assert.ok(existsSync(helper), 'RED: getPlayGuidance implementation is not present');
 const {getPlayGuidance} = await import(helper);
 const anchors = ['#match-controls', '#table', '#automatic-play-toggle',
-  '#your-hand', '#attack-declaration', '#block-declaration', '#opening-hand-choice'];
+  '#your-hand', '#attack-declaration', '#block-declaration', '#opening-hand-choice', '#turn-commands'];
 let cases = 0;
 const hidden = () => {throw Error('Guidance must not inspect hidden cards, deck names, or callbacks');};
 function move(type, fields = {}) {
@@ -83,12 +83,12 @@ for (const seat of [1, 2]) {
   check('human stack response', state(seat, {stack}), [move('cast_spell'), move('pass_priority')], seat, false,
     /effect is waiting/, '#your-hand', /offered response/i);
   check('stack pass', state(seat, {stack}), [move('pass_priority')], seat, false,
-    /effect is waiting/, '#match-controls', /both players.*pass/i);
+    /effect is waiting/, '#turn-commands', /both players.*pass/i);
   const unavailable = check('stack without offered actions', state(seat, {stack}), [], seat, false,
     /effect is waiting/, '#match-controls');
   assert.doesNotMatch(unavailable.detail, /Pass Priority|cast a spell|activate an ability/i);
   const pass = check('pass only', state(seat), [move('pass_priority')], seat, true,
-    /take no action/, '#match-controls', /not.*end.*turn/i);
+    /take no action/, '#turn-commands', /not.*end.*turn/i);
   assert.match(pass.detail, /Pass Priority/);
   for (const step of ['declare_attackers', 'declare_blockers', 'untap']) {
     check('phase is not a legal-action offer', state(seat, {step}), [], seat, false,

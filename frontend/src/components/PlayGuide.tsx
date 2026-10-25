@@ -6,12 +6,13 @@ type Props = {
   legalMoves: LegalMove[];
   actingPlayerId: number;
   autoProgressPaused: boolean;
+  compact?: boolean;
 };
 
-export function PlayGuide({ match, legalMoves, actingPlayerId, autoProgressPaused }: Props) {
+export function PlayGuide({ match, legalMoves, actingPlayerId, autoProgressPaused, compact = false }: Props) {
   const guide = getPlayGuidance(match, legalMoves, actingPlayerId, autoProgressPaused);
   return <section className="panel play-guide" aria-label="Play guide">
-    <details open>
+    <details open={!compact}>
       <summary>What to do next <small>Show or hide guidance</small></summary>
       <div className="play-guide-content">
         <div><h2>{guide.title}</h2><p>{guide.detail}</p></div>

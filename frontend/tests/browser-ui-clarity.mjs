@@ -54,6 +54,10 @@ try {
       assert.equal(await evaluate('window.fixtureActions.length'), 1, 'Empty offers never dispatch');
     }
     await reset('etb', seat);
+    assert.equal(await evaluate(`window.fixtureState.players['${seat}'].battlefield[0].summoning_sick`), true);
+    assert.equal(await evaluate("document.querySelector('[data-card-id=attacker] .badge-summoning-sick')"), null,
+      'Effective haste never renders the misleading sickness badge');
+    assert.match(await evaluate("document.querySelector('[data-card-id=attacker] .card-badges').textContent"), /haste/);
     await click('Cast Protocol ETB creature');
     await waitFor('window.fixtureActions.length === 1');
     assert.deepEqual(await evaluate('window.fixtureActions[0].action.targets'), {});

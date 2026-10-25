@@ -1,5 +1,6 @@
 @import "./table.css";
 @import "./competitive.css";
+@import "./play-shell.css";
 
 .game-result { border: 2px solid var(--gold); background: var(--panel); padding: clamp(1rem, 3vw, 2rem); margin-bottom: 1rem; }
 .game-result h2 { margin: .5rem 0; }
