@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import random
+
 from game_state.state import Zone
 from game_state.state import CardInstance, MatchFactory, Step
 from rules_engine.engine import RulesEngine
 from rules_engine.action_validation import ActionRejected, checked_action
 from rules_engine.mana import add_generic_to_cost, auto_pay_cost, can_pay_with_pool_and_lands, hybrid_payment_symbols, land_mana_amount, mana_value
 import pytest
-from tests.mana_remaining_current191 import from_scene as mana_match, take as mana_take
+from tests.mana_remaining_current191 import from_scene as mana_match, row as mana_row, take as mana_take
+from tests.mana_canonical_76 import mana_game
 
 
 def test_restricted_x_and_fixed_generic_have_distinct_payment_colors() -> None:
@@ -614,7 +617,7 @@ def test_explicit_colorless_symbols_require_colorless_mana() -> None:
 
 def test_dual_land_type_line_counts_as_blue_source_for_double_blue_cost() -> None:
     deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck)
+    state = mana_game(deck, deck, births={53: "Hallowed Fountain", 52: "Hallowed Fountain"})
     p1 = state.players[1]
     p1.battlefield = []
     # Two Hallowed Fountains should satisfy {U}{U}.
@@ -623,9 +626,6 @@ def test_dual_land_type_line_counts_as_blue_source_for_double_blue_cost() -> Non
         p1.battlefield.append(cid)
         card = state.cards[cid]
         card.zone = Zone.BATTLEFIELD
-        card.types = ["Land"]
-        card.name = "Hallowed Fountain"
-        card.type_line = "Land — Plains Island"
         card.tapped = False
 
     assert can_pay_with_pool_and_lands(state, 1, "{U}{U}") is True
@@ -636,7 +636,7 @@ def test_dual_land_type_line_counts_as_blue_source_for_double_blue_cost() -> Non
 
 def test_dual_land_type_line_supports_multiple_other_colors() -> None:
     deck = [{"quantity": 60, "card_name": "Forest"}]
-    state = MatchFactory.from_decks(deck, deck)
+    state = mana_game(deck, deck, births={53: "Stomping Ground", 52: "Stomping Ground"})
     p1 = state.players[1]
     p1.battlefield = []
     # Two Stomping Ground should satisfy {R}{G}.
@@ -645,9 +645,6 @@ def test_dual_land_type_line_supports_multiple_other_colors() -> None:
         p1.battlefield.append(cid)
         card = state.cards[cid]
         card.zone = Zone.BATTLEFIELD
-        card.types = ["Land"]
-        card.name = "Stomping Ground"
-        card.type_line = "Land — Mountain Forest"
         card.tapped = False
 
     assert can_pay_with_pool_and_lands(state, 1, "{R}{G}") is True
@@ -656,25 +653,29 @@ def test_dual_land_type_line_supports_multiple_other_colors() -> None:
 
 def test_oracle_text_dual_land_without_basic_subtypes_is_supported() -> None:
     deck = [{"quantity": 60, "card_name": "Plains"}]
-    state = MatchFactory.from_decks(deck, deck)
+    state = mana_game(deck, deck, births={53: "Battlefield Forge"})
     p1 = state.players[1]
     p1.battlefield = []
     cid = p1.library.pop()
     p1.battlefield.append(cid)
     card = state.cards[cid]
     card.zone = Zone.BATTLEFIELD
-    card.types = ["Land"]
-    card.name = "Battlefield Forge"
-    card.type_line = "Land"
-    card.oracle_text = "{T}: Add {R} or {W}."
     card.tapped = False
 
     assert can_pay_with_pool_and_lands(state, 1, "{W}") is True
 
 
 def test_tap_land_for_mana_honors_requested_color_when_available() -> None:
-    deck = [{"quantity": 60, "card_name": "Island"}]
-    state = MatchFactory.from_decks(deck, deck)
+    island = mana_row("Island")
+    fountain = mana_row("Hallowed Fountain")
+    deck = [{**island, "quantity": 1} for _ in range(60)]
+    # Bind the original p1-053 library-pop slot before native birth, not by retagging.
+    order = list(range(60))
+    preview = random.Random(0)
+    preview.setstate(random.getstate())
+    preview.shuffle(order)
+    deck[order[52]] = fountain
+    state = MatchFactory.from_decks(deck, [{**island, "quantity": 60}])
     engine = RulesEngine()
     state.pregame_pending = False
     state.kept_hands = {1, 2}
@@ -688,11 +689,11 @@ def test_tap_land_for_mana_honors_requested_color_when_available() -> None:
     cid = p1.library.pop()
     p1.battlefield.append(cid)
     card = state.cards[cid]
+    assert (card.id, card.instance_order, card.owner, card.controller) == ("p1-053", 53, 1, 1)
+    for field in ("name", "type_line", "oracle_text", "mana_cost", "colors", "layout", "card_faces"):
+        assert getattr(card, field) == fountain[field]
+    assert card.types == ["Land"] and card.keywords == fountain["keywords"]
     card.zone = Zone.BATTLEFIELD
-    card.types = ["Land"]
-    card.name = "Hallowed Fountain"
-    card.type_line = "Land — Plains Island"
-    card.oracle_text = "{T}: Add {W} or {U}."
     card.tapped = False
 
     engine.take_action(state, 1, {"type": "tap_land_for_mana", "card_id": cid, "color": "W"})
