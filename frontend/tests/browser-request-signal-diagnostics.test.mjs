@@ -191,7 +191,7 @@ test('signal record and context identity collections have independent finite16 c
   assert.equal(d.requestSignalAttribution.atRecordCap, true);
   assert.ok(d.requestSignalAttribution.contextOverflow >= 1); privateFree(d);
 });
-test('CI development builder explicitly opts in without changing its native six-page build', async () => {
+test('CI development builder opts in with the original pages plus the UI clarity fixture', async () => {
   const source = fs.readFileSync(new URL('./prepare-development-frontend.mjs', import.meta.url), 'utf8');
   const begin = source.indexOf('export function buildDevelopmentFrontend'), end = source.indexOf('\nif (process.argv[1]', begin);
   let config;
@@ -200,7 +200,14 @@ test('CI development builder explicitly opts in without changing its native six-
   await fn({root: '/unit-owned', configFile: '/unit-config', outDir: '/unit-out'});
   assert.equal(config.define?.['import.meta.env.VITE_REQUEST_SIGNAL_DIAGNOSTICS'], '"1"');
   assert.equal(config.mode, 'development'); assert.equal(config.build.target, 'es2022');
-  assert.equal(Object.keys(config.build.rollupOptions.input).length, 6);
+  assert.deepEqual({...config.build.rollupOptions.input}, {
+    application: '/unit-owned/index.html', attackAll: '/unit-owned/tests/attack-all.html',
+    humanActions: '/unit-owned/tests/human-actions.html',
+    interactivePreflight: '/unit-owned/tests/interactive-preflight.html',
+    simulationPreflight: '/unit-owned/tests/simulation-preflight.html',
+    uiClarity: '/unit-owned/tests/ui-clarity.html',
+    developmentProof: '/unit-owned/tests/fixtures/ci-development-runtime/probe.html',
+  });
 });
 test('a context ID reused for a foreign origin invalidates its former signal ownership', () => {
   const f = observer(); f.context(); f.context(3, {origin: 'https://foreign.invalid'}); f.message();

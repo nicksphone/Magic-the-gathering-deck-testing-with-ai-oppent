@@ -734,7 +734,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             Decline suspended casting
           </button> : null}
         </div> : null}
-        <h3 className="zone-heading">Hand & permitted plays <span>{playableCards.length}</span></h3>
+        <h3 className="zone-heading" id="your-hand" tabIndex={-1}>Hand & permitted plays <span>{playableCards.length}</span></h3>
         <CardRail className="hand-row playable-hand" label="Hand and permitted plays">
           {playableCards.map((card) => {
             const cardCastMoves = castMoves.filter((m) => m.card_id === card.id);

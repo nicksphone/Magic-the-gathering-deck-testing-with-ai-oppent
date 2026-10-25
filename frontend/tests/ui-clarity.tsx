@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Battlefield} from '../src/components/Battlefield';
 import {Controls} from '../src/components/Controls';
+import {PlayGuide} from '../src/components/PlayGuide';
 import {emptyCombatDraft} from '../src/components/combat-selection';
 import type {CardView, LegalMove, MatchState, PlayerView} from '../src/types';
 import '../src/styles/app.css';
@@ -97,6 +98,7 @@ function Fixture() {
       </div>
       <output data-testid="fixture-ready">Ready: {labels[scenario]}, seat {seat}</output>
     </section>
+    <div className="play-guide-slot"><PlayGuide match={match} legalMoves={moves} actingPlayerId={seat} autoProgressPaused={false} /></div>
     <Controls key={'controls-' + epoch} {...controls} />
     <Battlefield key={'battlefield-' + epoch} match={match} legalMoves={moves} actingPlayerId={seat}
       combatDraft={draft} onCombatDraftChange={setDraft}

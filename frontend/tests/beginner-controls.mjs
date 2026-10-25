@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {build} from 'esbuild';
+const require=createRequire(import.meta.url);
+const {createElement}=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+async function component(file,name){const code=await build({entryPoints:[new URL('../src/components/'+file,import.meta.url).pathname],bundle:true,write:false,platform:'node',format:'cjs',packages:'external',jsx:'automatic',define:{'import.meta.env.VITE_API_BASE_URL':"''"}});const mod={exports:{}};new Function('require','module','exports',code.outputFiles[0].text)(require,mod,mod.exports);return mod.exports[name];}
+const Controls=await component('Controls.tsx','Controls');
+const props={decks:[],selectedA:null,selectedB:null,startMode:'player_vs_ai',humanSeat:1,difficulty:'strong',bestOf:3,autoplayDelayMs:600,responseCountdown:null,autoResponsePaused:true,legalMoves:[]};
+const render=p=>renderToStaticMarkup(createElement(Controls,{...props,...p}));
+assert.ok(render({}).includes('Your deck'),'Lobby identifies the human deck without P1 jargon');
+assert.ok(render({}).includes('Opponent&#x27;s deck'),'Lobby identifies the opposing deck');
+assert.match(render({humanSeat:2}),/Your deck/);
+assert.ok(render({startMode:'human_vs_human'}).includes('Player 1'),'Shared table does not misidentify both seats as you');
+assert.ok(render({startMode:'ai_vs_ai'}).includes('Player 2'));
+const html=render({});
+assert.match(html,/<details[^>]*class="[^"]*advanced-turn-controls[^>]*><summary>Advanced turn controls<\/summary>/,'Technical turn stepping is initially collapsed');
+assert.match(html,/Pass Priority/);assert.match(html,/aria-label="Deck A"/);assert.match(html,/aria-label="Deck B"/);
+const PlayGuide=await component('PlayGuide.tsx','PlayGuide');
+const guide=renderToStaticMarkup(createElement(PlayGuide,{match:null,legalMoves:[],actingPlayerId:1,autoProgressPaused:false}));
+assert.match(guide,/aria-label="Play guide"/);assert.match(guide,/What to do next/);
+assert.match(guide,/href="#match-controls"/);assert.match(guide,/New to Magic/);
+for(const term of ['Priority','Stack','Mana','Tapped'])assert.ok(guide.includes(term),'Defines '+term);
+assert.ok(!guide.includes('<button'),'Guide only navigates; it cannot submit a game action');
+console.log('PASS beginner setup labels, collapsed technical tools, retained selectors/priority, public guide and short glossary');
