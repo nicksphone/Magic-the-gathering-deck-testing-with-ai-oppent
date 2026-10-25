@@ -262,6 +262,7 @@ export type LegalMove = {
   target_name?: string;
   accept?: boolean;
   target_hints?: {
+    action_has_target_text?: boolean;
     linked_target_pairs?: {
       primary_kind: 'player' | 'planeswalker';
       primary_id: number | string;

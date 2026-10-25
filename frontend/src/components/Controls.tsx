@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
-import { selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
+import { combatDraftGuidance, selectAttackers, toggleAttacker, type CombatDraft } from "./combat-selection";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "../types";
 import { CardArt } from "./CardArt";
 import { TriggerOrderPicker } from "./TriggerOrderPicker";
@@ -135,6 +135,7 @@ export function Controls(props: Props) {
   const [attackBandNumbers, setAttackBandNumbers] = useState<Record<string, number>>({});
   const [attackReviewRequired, setAttackReviewRequired] = useState(false);
   const selectedAttackers = (attackMove?.options ?? []).filter(id => !excludedAttackers.includes(id));
+  const combatGuidance = combatDraftGuidance(props.combatDraft, attackMove, blockMove);
   const attackNeedsPayment = selectedAttackers.some(id => {
     const defender = attackTargets[id] || `player:${3 - (props.match?.active_player ?? 1)}`;
     const cost = attackMove?.attack_costs?.[id]?.[defender];
@@ -564,6 +565,7 @@ export function Controls(props: Props) {
           props.onSubmitBlocks(Object.fromEntries(Object.entries(blockMap).filter(([, ids]) => ids.length > 0)), choices.length ? choices : undefined);
         }}>
           <h3>Declare Blockers</h3>
+          {combatGuidance ? <p className="combat-draft-status" role="status">{combatGuidance}</p> : null}
           {props.combatDraft ? <p>Click a blocker, then its attacker, or drag the blocker onto an attacker. Confirm the assignments together.</p> : null}
           {props.onCombatDraftChange ? <button type="button" onClick={() => props.onCombatDraftChange?.(draft => ({ ...draft, blocks: {}, selectedBlocker: null }))}>Clear blocks</button> : null}
           <details open={props.combatDraft ? undefined : true}>
@@ -632,6 +634,7 @@ export function Controls(props: Props) {
           props.onSubmitAttack(attackers, targets, bands, choices.length ? choices : undefined);
         }}>
           <h3>Declare Attackers</h3>
+          {combatGuidance ? <p className="combat-draft-status" role="status">{combatGuidance}</p> : null}
           <p>{props.combatDraft ? "Click creatures on the battlefield to select them. Drag an eligible attacker onto another to form a legal band. Confirm when ready." : "Select attackers. To form a band, give its members the same band number; a band needs at least one creature with banding and at most one without."}</p>
           <div className="row">
             <button type="button" disabled={!attackMove.options?.length} onClick={() => {
