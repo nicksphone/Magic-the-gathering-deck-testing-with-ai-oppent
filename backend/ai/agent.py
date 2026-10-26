@@ -1157,6 +1157,11 @@ class AIAgent:
         # from the real search state or guessing unresolved/hidden-zone choices.
         projected = settled_public_position(state, player_id, opaque_draw_counts=True)
         position = projected if projected is not None else state
+        # A priority-action horizon is not the end of an announced attack.
+        # Forecast its public combat while response search keeps the real prefix.
+        combat_position = self._forecast_strategic_combat(position)
+        if combat_position is not None:
+            position = combat_position
         with rule_query_scope(position):
             expectation = (topdeck_deployment_value(state, player_id) if projected is None else 0.0)
             expectation += (pending_selection_expectation(state, player_id) or 0.0) * 1.25 if projected is None else 0.0
@@ -1165,6 +1170,49 @@ class AIAgent:
                 # Same count valuation as evaluate_board; no guessed hand/land settlement.
                 expectation += (counts[player_id] - counts[3-player_id]) * 0.9
             return evaluate_board(position, player_id) + self._strategic_features(position, player_id) + expectation
+
+    def _forecast_strategic_combat(self, state: MatchState) -> MatchState | None:
+        """Conditional public combat, never a certificate of unanswered damage."""
+        if (not state.attackers_declared or not state.attackers
+                or state.step not in {Step.DECLARE_ATTACKERS, Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE}
+                or state.stack or state.pending_mechanic_choice or state.pending_replacement_choice
+                or state.pending_trigger_order or state.winner is not None):
+            return None
+        from ai.information import decision_view
+        from ai.pending_effects import _settle_announced_stack
+        from rules_engine.combat_constraints import combat_rule_view
+        if any(combat_rule_view(state, cid)['unsupported'] for player in state.players.values()
+               for cid in player.battlefield if 'Creature' in effective_types(state, state.cards[cid])):
+            return None
+        sim, _ = decision_view(state, state.active_player, [])
+        before = planning_copy(sim)
+        defender = 3 - sim.active_player
+        try:
+            if sim.step == Step.DECLARE_ATTACKERS:
+                self.engine.next_step(sim)
+            if sim.step == Step.DECLARE_BLOCKERS and not sim.blockers_declared:
+                blockers = [cid for cid in sim.players[defender].battlefield
+                            if 'Creature' in effective_types(sim, sim.cards[cid]) and not sim.cards[cid].tapped]
+                blocks = {}
+                if blockers:
+                    blocks = self._search_block_assignments(sim,
+                        [{'id': cid, 'name': sim.cards[cid].name} for cid in sim.attackers],
+                        [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers],
+                        consider_next_combat=False)
+                    if blocks is None:
+                        return None
+                simulation_take_action(self.engine, sim, defender,
+                    {'type': 'block', 'blocks': blocks}, reject_invalid=True)
+                if not _settle_announced_stack(sim):
+                    return None
+                self.engine.next_step(sim)
+            if not self._finish_combat_projection(sim, before):
+                return None
+            if any(line.startswith('Oracle effect not inferred') for line in sim.log):
+                return None
+            return sim
+        except (ValueError, KeyError):
+            return None
 
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
         try:
@@ -4516,6 +4564,51 @@ class AIAgent:
                 # If we have prevented enough to avoid lethal and remaining trades are poor, stop.
                 if lethal_pressure and incoming_total - prevented < life:
                     lethal_pressure = False
+        if (self.difficulty == 'strong' and isinstance(state, MatchState)
+                and state.step == Step.DECLARE_BLOCKERS
+                and len(attackers) <= 4 and len(blockers) <= 5
+                and assignments and not (state.stack or state.pending_trigger_order
+                    or state.pending_mechanic_choice or state.pending_replacement_choice)):
+            from ai.pending_effects import _settle_announced_stack
+
+            def project(groups):
+                try:
+                    sim = planning_copy(state)
+                    normalized = {aid: [bids] if isinstance(bids, str) else list(bids)
+                                  for aid, bids in groups.items()}
+                    simulation_take_action(self.engine, sim, player_id,
+                        {'type': 'block', 'blocks': normalized}, reject_invalid=True)
+                    if _settle_announced_stack(sim) and self._finish_combat_projection(sim, state):
+                        return sim
+                except (KeyError, ValueError, UncertainSimulation):
+                    pass
+                return None
+
+            incumbent = project(assignments)
+            if incumbent is None or incumbent.winner is not None:
+                return assignments
+            score = evaluate_board(incumbent, player_id)
+            selected = sorted({bid for bids in assignments.values()
+                               for bid in ([bids] if isinstance(bids, str) else bids)})
+            # At most five checked deletions, not an exhaustive Strong search.
+            # Resolve marked damage, hit/death triggers and payments before valuing retention.
+            for bid in selected:
+                if incumbent.cards[bid].zone == Zone.BATTLEFIELD:
+                    continue
+                candidate = {}
+                for aid, bids in assignments.items():
+                    retained = [other for other in ([bids] if isinstance(bids, str) else bids)
+                                if other != bid]
+                    if retained:
+                        candidate[aid] = retained
+                alternative = project(candidate)
+                if alternative is None or alternative.winner not in {None, player_id}:
+                    continue
+                value = evaluate_board(alternative, player_id)
+                if alternative.winner == player_id or value > score:
+                    assignments, incumbent, score = candidate, alternative, value
+                    if alternative.winner == player_id:
+                        break
         return assignments
 
     def _search_block_assignments(
