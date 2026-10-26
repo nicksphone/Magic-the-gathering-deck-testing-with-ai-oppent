@@ -213,9 +213,22 @@ class _Bindings:
         for item in observation['stack']:
             self._add(item['id'], 'stack', {key: value for key, value in item.items()
                                           if key not in {'id', 'targets'}})
+        trigger_ids = None
         for prompt in prompts:
             hint = prompt['hint']
             source = hint.get('card_id')
+            if hint.get('type') == 'choose_trigger_order':
+                ids, labels = hint.get('trigger_order'), hint.get('trigger_labels')
+                if (type(ids) is not list or not ids or type(labels) is not list
+                        or len(ids) != len(labels)
+                        or any(type(value) is not str or not value.strip() for value in ids + labels)
+                        or len(set(ids)) != len(ids)):
+                    raise ValueError('Trigger order requires unique IDs and parallel public labels')
+                if trigger_ids is not None and set(ids) != trigger_ids:
+                    raise ValueError('Trigger permutations must describe the same offered choices')
+                trigger_ids = set(ids)
+                for choice_id, label in zip(ids, labels):
+                    self._add(choice_id, 'option', {'choice_kind': 'trigger_order', 'label': label})
             for card in hint.get('inspected_cards', []):
                 if isinstance(card, dict) and card.get('id'):
                     self._add(card['id'], 'card', _card_facts(card))

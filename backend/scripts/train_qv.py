@@ -275,7 +275,7 @@ def train_samples(samples, *, contract, dataset_sha256, split_sha256,
 
 
 def _read_run(root, expected_engine_hash):
-    from training.dataset import MAX_BYTES, MAX_EPISODES, baseline_teacher_config, validate_episode
+    from training.dataset import MAX_BYTES, MAX_EPISODES, validate_teacher_config, validate_episode
     from training.decision_frame import feature_contract
 
     root = Path(root)
@@ -305,9 +305,7 @@ def _read_run(root, expected_engine_hash):
                for value in hashes + manifest['deck_hashes']):
             raise ValueError('Dataset provenance hashes required')
         if manifest['origin'] == 'heuristic':
-            teacher = manifest.get('teacher_config')
-            if type(teacher) is not dict or teacher != baseline_teacher_config(teacher.get('difficulty')):
-                raise ValueError('Actual heuristic teacher provenance required')
+            validate_teacher_config(manifest.get('teacher_config'))
         entries = list(root.iterdir())
         shards = sorted(p for p in entries if re.fullmatch(r'episode-\d{4}\.jsonl', p.name))
         if (not 1 <= len(shards) <= MAX_EPISODES
