@@ -8,6 +8,7 @@ import math
 from ai.action_contract import complete_action
 from ai.declaration_policy import finalize_declaration
 from ai.learned_qv import MAX_CHECKPOINT_BYTES, QVPolicy, strict_json
+from game_state.state import Step
 from rules_engine.action_validation import ActionRejected
 from training import decision_frame
 from training.dataset import DECISION_DATASET_VERSION
@@ -85,6 +86,7 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
             return None
         prepared = binding._policy.prepare(decision_frame.encode_state(frame))
         best, best_key = None, None
+        known_outcome = False
         for action in candidates:
             result = prepared.predict(decision_frame.encode_action(frame, references.action(action)))
             if (type(result) is not dict or set(result) != {'q', 'v'}
@@ -93,11 +95,16 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
                            for key in ('q', 'v'))):
                 return None
             # Checked terminal forecasts outrank utility, not every possible reply.
-            win = unanswered_action_wins(view, seat, action)
-            loss = win is False and unanswered_action_loses(view, seat, action) is True
-            key = (win is True, not loss, result['q'])
+            win = unanswered_action_wins(view, seat, action, settle_declared_combat=True)
+            loss = (unanswered_action_loses(view, seat, action, settle_declared_combat=True)
+                    if win is False else None)
+            known_outcome |= win is True or (win is False and (loss is True or loss is False))
+            key = (win is True, loss is not True, result['q'])
             if best is None or key > best_key:
                 best, best_key = action, key
+        if (view.step == Step.DECLARE_BLOCKERS and view.active_player != seat
+                and not known_outcome):
+            return None
         return deepcopy(best)
     except (ActionRejected, ValueError, OverflowError):
         return None

@@ -132,7 +132,14 @@ forecast class, highest Q and stable ties are retained. Unknown choices or
 hidden-zone changes cannot establish that forecast. Every Q/V prediction still
 requires validation, including candidates examined after a winning line. This
 is tactical-safeguarded ranking, not a forced win against possible responses or
-evidence that the weights learned the tactic. Shared actor-view projection
+evidence that the weights learned the tactic. The router explicitly opts into
+finishing already-declared defensive combat using the existing bounded checked
+pass loop; default forecast callers keep their original stack-only horizon.
+Any later own non-pass response, including a mana ability with potentially
+nontrivial costs, prevents that forecast. Unresolved choices, unsupported combat
+and hidden-zone changes stay unknown. If every critical block forecast is
+unknown, the router defers to the normal heuristic rather than claiming neural
+survival analysis. Shared actor-view projection
 uses the supplied public moves without constructing another game or recomputing
 legal moves in a masked world. Only semantic feature packs reach the model;
 the original state is retained solely for authoritative action admission.

@@ -10,7 +10,7 @@ import pickle
 import re
 from typing import Literal, TypedDict
 
-from game_state.state import CardInstance, MatchState, StackItem, Zone
+from game_state.state import CardInstance, MatchState, StackItem, Step, Zone
 from game_state.copying import copy_match_state, _copy_card_field
 from rules_engine.engine import RulesEngine
 from rules_engine.oracle_effects import infer_effect_from_oracle
@@ -559,13 +559,40 @@ def _opaque_acquisition_stack(state, player_id):
     return True
 
 
+def _unsupported_forecast_combat(projected):
+    from rules_engine.combat_constraints import combat_rule_view
+    return any(combat_rule_view(projected, cid)['unsupported']
+               for player in projected.players.values() for cid in player.battlefield
+               if 'Creature' in effective_types(projected, projected.cards[cid]))
+
+
+def _has_forecast_response(projected, player_id, rules):
+    response = planning_copy(projected)
+    response.priority_player = player_id
+    try:
+        # Even a mana ability may sacrifice a creature or cause public triggers.
+        return any(move['type'] != 'pass_priority' for move in rules.legal_moves(response, player_id))
+    except (UncertainSimulation, ValueError):
+        return True
+
+
 def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None,
-                           own_choice_action=None, opaque_hand_choices=False) -> bool:
+                           own_choice_action=None, opaque_hand_choices=False,
+                           settle_declared_combat=False) -> bool:
     rules = RulesEngine()
+    combat = settle_declared_combat is True
+    if combat and player_id not in projected.players:
+        return False
     # ponytail: bounded projection; unknown choices/loops keep backup options.
     for _ in range(128):
+        if combat and _unsupported_forecast_combat(projected):
+            return False
+        if combat and projected.winner is not None:
+            return True
         choice = projected.pending_mechanic_choice or projected.pending_replacement_choice or projected.pending_trigger_order
         if choice:
+            if combat:
+                return False
             chooser = choice.get("player_id", choice.get("current_controller"))
             action = _opaque_selection_choice(projected) if opaque_hand_choices else None
             if action is None:
@@ -579,8 +606,17 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
             except UncertainSimulation:
                 return False
             continue
-        if projected.winner is not None or not projected.stack:
+        if projected.winner is not None:
             return True
+        if not projected.stack:
+            if not combat or projected.step == Step.END_COMBAT:
+                return True
+            if (projected.step not in {Step.DECLARE_BLOCKERS, Step.COMBAT_DAMAGE}
+                    or not projected.blockers_declared):
+                return False
+        if (combat and projected.priority_player == player_id
+                and _has_forecast_response(projected, player_id, rules)):
+            return False
         try:
             simulation_take_action(rules, projected, projected.priority_player, {"type": "pass_priority"}, reject_invalid=True)
         except UncertainSimulation:
@@ -588,9 +624,11 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
     return False
 
 
-def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *, own_choice_action=None) -> bool | None:
+def unanswered_action_wins(state: MatchState, player_id: int, action: dict, *,
+                          own_choice_action=None, settle_declared_combat=False) -> bool | None:
     """Evaluate a legal announced line, never optimize from hidden-zone changes."""
-    outcome = _unanswered_action_outcome(state, player_id, action, own_choice_action=own_choice_action)
+    outcome = _unanswered_action_outcome(state, player_id, action,
+        own_choice_action=own_choice_action, settle_declared_combat=settle_declared_combat)
     return None if outcome is None else outcome == "win"
 
 
@@ -654,15 +692,24 @@ def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_co
     return projected
 
 
-def unanswered_action_loses(state: MatchState, player_id: int, action: dict) -> bool | None:
+def unanswered_action_loses(state: MatchState, player_id: int, action: dict, *,
+                           settle_declared_combat=False) -> bool | None:
     """Unknown choices/hidden-zone changes never establish a certain loss."""
-    outcome = _unanswered_action_outcome(state, player_id, action)
+    outcome = _unanswered_action_outcome(state, player_id, action,
+        settle_declared_combat=settle_declared_combat)
     return None if outcome is None else outcome == "loss"
 
 
-def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, *, own_choice_action=None):
+def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, *,
+                               own_choice_action=None, settle_declared_combat=False):
     from rules_engine.action_validation import ActionRejected, checked_action
     projected = _projection_copy(state)
+    log_start = len(projected.log)
+    combat = (settle_declared_combat is True and state.step == Step.DECLARE_BLOCKERS
+              and state.active_player != player_id)
+    # Coverage must be established before a last-chance pass can resolve damage.
+    if combat and _unsupported_forecast_combat(projected):
+        return None
     libraries = {pid: tuple(player.library) for pid, player in state.players.items()}
     opponent = 3 - player_id
     opposing_hand = tuple(state.players[opponent].hand)
@@ -672,7 +719,12 @@ def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, 
         return None
     except ActionRejected:
         return "rejected"
-    if not _settle_announced_stack(projected, player_id=player_id, own_choice_action=own_choice_action):
+    options = {'player_id': player_id, 'own_choice_action': own_choice_action}
+    if combat:
+        options['settle_declared_combat'] = True
+    if not _settle_announced_stack(projected, **options):
+        return None
+    if combat and any(line.startswith('Oracle effect not inferred') for line in projected.log[log_start:]):
         return None
     if any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items()) or tuple(projected.players[opponent].hand) != opposing_hand:
         return None
