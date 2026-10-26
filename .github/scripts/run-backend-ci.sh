@@ -448,7 +448,8 @@ if ((statuses[0] != 0)); then exit "${statuses[0]}"; fi
 work_exit_stage=SINK
 if ((statuses[1] != 0)); then exit "${statuses[1]}"; fi
 work_exit_stage=CONTROL
-if ((pressure_status != 0 || diagnostic_failed != 0)); then exit 2; fi
+# Preserve an audit failure; secondary diagnostics remain in the closeout receipt.
+if ((audit_status == 0 && (pressure_status != 0 || diagnostic_failed != 0))); then exit 2; fi
 work_exit_stage=EVIDENCE
 if ((evidence_status != 0)); then exit "$evidence_status"; fi
 work_exit_stage=AUDIT
