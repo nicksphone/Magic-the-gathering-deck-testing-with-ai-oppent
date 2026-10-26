@@ -57,7 +57,7 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
     if not isinstance(binding, LivePolicyBinding) or binding.contract != _current_contract():
         return None
     try:
-        from ai.pending_effects import unanswered_action_wins
+        from ai.pending_effects import unanswered_action_loses, unanswered_action_wins
 
         observation, prompts, context = decision_inputs_from_view(view, supplied_moves, seat)
         frame, references = decision_frame.build_decision_frame(
@@ -92,8 +92,10 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
                            or not math.isfinite(result[key]) or not -1 <= result[key] <= 1
                            for key in ('q', 'v'))):
                 return None
-            # A checked unanswered win outranks utility, not every possible reply.
-            key = (unanswered_action_wins(view, seat, action) is True, result['q'])
+            # Checked terminal forecasts outrank utility, not every possible reply.
+            win = unanswered_action_wins(view, seat, action)
+            loss = win is False and unanswered_action_loses(view, seat, action) is True
+            key = (win is True, not loss, result['q'])
             if best is None or key > best_key:
                 best, best_key = action, key
         return deepcopy(best)

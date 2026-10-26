@@ -125,7 +125,9 @@ request, saved-match instruction or ambient setting as activation authority.
 
 The bound agent ranks an existing heuristic shortlist of at most nine checked
 actions, not the exhaustive legal-action space. A candidate with a genuinely
-checked unanswered-win forecast takes priority over Q utility; within the same
+checked unanswered-win forecast takes priority over Q utility. Without a winning
+line, an alternative not known to lose takes priority over a checked terminal
+loss; unknown forecasts are not presented as proof of survival. Within the same
 forecast class, highest Q and stable ties are retained. Unknown choices or
 hidden-zone changes cannot establish that forecast. Every Q/V prediction still
 requires validation, including candidates examined after a winning line. This
