@@ -57,6 +57,8 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
     if not isinstance(binding, LivePolicyBinding) or binding.contract != _current_contract():
         return None
     try:
+        from ai.pending_effects import unanswered_action_wins
+
         observation, prompts, context = decision_inputs_from_view(view, supplied_moves, seat)
         frame, references = decision_frame.build_decision_frame(
             observation, prompts, public_context=context)
@@ -82,7 +84,7 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
         if not candidates:
             return None
         prepared = binding._policy.prepare(decision_frame.encode_state(frame))
-        best, best_q = None, None
+        best, best_key = None, None
         for action in candidates:
             result = prepared.predict(decision_frame.encode_action(frame, references.action(action)))
             if (type(result) is not dict or set(result) != {'q', 'v'}
@@ -90,8 +92,10 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
                            or not math.isfinite(result[key]) or not -1 <= result[key] <= 1
                            for key in ('q', 'v'))):
                 return None
-            if best is None or result['q'] > best_q:
-                best, best_q = action, result['q']
+            # A checked unanswered win outranks utility, not every possible reply.
+            key = (unanswered_action_wins(view, seat, action) is True, result['q'])
+            if best is None or key > best_key:
+                best, best_key = action, key
         return deepcopy(best)
     except (ActionRejected, ValueError, OverflowError):
         return None

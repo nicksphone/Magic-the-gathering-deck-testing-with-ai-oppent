@@ -154,7 +154,7 @@ class AIAgent:
                         admit=lambda proposed: checked_action(authoritative_state, self.engine, player_id, proposed))
                     if action is not None:
                         return AIDecision(action=action,
-                            reasoning='Rank a checked heuristic subset using the explicitly bound Q/V model',
+                            reasoning='Tactical-safeguarded Q ranking over a checked heuristic subset',
                             knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
                 decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
                 if decision.action.get('type') == 'pass_priority':
