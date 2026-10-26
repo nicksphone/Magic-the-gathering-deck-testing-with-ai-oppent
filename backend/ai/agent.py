@@ -3229,7 +3229,7 @@ class AIAgent:
             options = inspect_target_hints(state, card, player_id, {"mode_text": mode_text}).get("stack_targets") or []
             if self._choose_best_stack_target_id(state, player_id, options, allow_protected=False) is None:
                 return -8.0
-        tags = self._spell_tags(card)
+        tags = tactical_tags(mode_text, getattr(card, 'type_line', '') or '')
         opp_id = 1 if player_id == 2 else 2
         opp_creatures = sum(
             1
@@ -3324,6 +3324,24 @@ class AIAgent:
             score -= 1.0
         if turn >= 6 and ("draw" in text or "counter" in text or "destroy" in text or "exile" in text):
             score += 0.4
+        if isinstance(state, MatchState) and state.stack and 'indestructible' in text:
+            from ai.pending_effects import settled_public_position, simulation_checked_action
+            baseline = settled_public_position(state, player_id)
+            if baseline is not None:
+                projected = planning_copy(state)
+                try:
+                    action = self._materialize_action(projected, {
+                        'type': 'cast_spell', 'card_id': card.id,
+                        'targets': {'mode_text': mode_text}}, player_id)
+                    if not action.get('_invalid_ai_choice'):
+                        projected = simulation_checked_action(projected, self.engine, player_id, action)
+                        protected = settled_public_position(projected, player_id)
+                        if protected is not None:
+                            # Reward an actual public save, not the keyword alone.
+                            score += max(0.0, evaluate_board(protected, player_id)
+                                         - evaluate_board(baseline, player_id))
+                except (ValueError, KeyError):
+                    pass
         return score
 
     def _select_mode_text(self, state: MatchState, card, modes: list[str], player_id: int) -> str:
