@@ -2666,7 +2666,7 @@ class AIAgent:
         if is_creature:
             engine_bonus = (recurring_engine_value(state, cid, surface_card=card)
                             + repeatable_mana_value(state, cid, surface_card=card))
-            if arche in {"Aggro", "Tribal", "Tokens", "Tempo"}:
+            if arche in {"Aggro", "Burn", "Tribal", "Tokens", "Tempo"}:
                 bonus = 4.0
                 if in_main:
                     bonus += 1.2
@@ -5798,15 +5798,19 @@ class AIAgent:
                         and selection_activation_score(plan, hand_value=1.25, interaction_reservation=6) > 0)]
         if not non_pass:
             return None
-        burn_convert = self._best_burn_conversion_cast(non_pass, state, player_id)
-        if burn_convert is not None:
-            return burn_convert
-        tempo_convert = self._best_tempo_threat_first_cast(non_pass, state, player_id)
-        if tempo_convert is not None:
-            return tempo_convert
-        cheap = self._best_cheap_proactive_cast(non_pass, state, player_id)
-        if cheap is not None:
-            return cheap
+        if isinstance(state, MatchState) and player_id in {1, 2}:
+            from ai.pending_effects import unanswered_action_wins
+            for move in non_pass:
+                card = _card_for_move(state, move) if move.get('type') == 'cast_spell' else None
+                if card is None or self._burn_damage_estimate(_oracle_text(card)) < state.players[3 - player_id].life:
+                    continue
+                action = self._materialize_action(state, move, player_id)
+                # Printed damage is only a prefilter: payment, targets and
+                # prevention must produce a real checked, unanswered win.
+                if not action.get('_invalid_ai_choice') and unanswered_action_wins(state, player_id, action) is True:
+                    return move
+        # Anti-stall conversion must preserve the strategic ranking, not replace
+        # it with an unrelated cheap-spell or direct-damage preference.
         if getattr(state, "stack", []) or []:
             for move in non_pass:
                 if move.get("type") == "cast_spell":
@@ -5866,19 +5870,6 @@ class AIAgent:
                     return proactive
 
         ranked = self._rank_moves(state, legal_moves, player_id)
-        early_cheap = self._best_cheap_proactive_cast(
-            [m for m in ranked if m.get("type") not in {"pass_priority", "tap_land_for_mana", "tap_lands_bulk"}],
-            state,
-            player_id,
-        )
-        if early_cheap is not None:
-            early_cheap = self._materialize_action(state, early_cheap, player_id)
-            if (
-                not early_cheap.get("_invalid_ai_choice")
-                and eligible_conversion(early_cheap)
-                and not self._is_action_obviously_illegal(state, early_cheap, player_id)
-            ):
-                return early_cheap
         if ranked and ranked[0].get("type") == "pass_priority":
             return chosen
         proactive = self._best_proactive_non_pass(ranked, state, player_id)
