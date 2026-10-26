@@ -1,0 +1,208 @@
+"""Offline heuristic-preference ranking, not invented counterfactual returns.
+
+Q becomes a bounded preference utility. V still fits the actual actor-relative
+terminal return. The existing feature/checkpoint/inference contracts are reused;
+neither successful fitting nor teacher agreement authorizes live activation.
+"""
+from hashlib import sha256
+import json
+import math
+from pathlib import Path
+import random
+import re
+import time
+
+from ai.learned_qv import (QVPolicy, checkpoint, normalized_number,
+                          validate_contract, validate_features)
+from scripts.train_qv import export_weights, torch_model
+
+
+def _canonical(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False)
+
+
+def semantic_action_key(pack):
+    """Recognize guaranteed feature-equivalence, not guessed equal game outcomes."""
+    validate_features(pack)
+    bank = []
+
+    def node(value):
+        kind = value['kind']
+        content = None
+        if kind == 'ref':
+            content = bank[value['index']]
+        elif kind == 'map':
+            content = sorted([node(key), node(item)] for key, item in value['items'])
+        elif kind in {'set', 'list'}:
+            content = [node(item) for item in value['items']]
+            if kind == 'set':
+                content.sort()
+        elif kind == 'number':
+            content = normalized_number(value['value']) or 0.0
+        elif kind != 'null':
+            content = value['value']
+        return sha256(_canonical([kind, content]).encode()).hexdigest()
+
+    for entity in pack['entities']:
+        bank.append(node(entity))
+    return sha256(_canonical([pack['version'], node(pack['root'])]).encode()).hexdigest()
+
+
+def validate_preferences(rows, *, contract):
+    validate_contract(contract)
+    if type(rows) is not list or not 1 <= len(rows) <= 4096:
+        raise ValueError('Use 1..4096 bounded preference decisions')
+    for row in rows:
+        if type(row) is not dict or set(row) != {'state', 'preferred', 'alternatives', 'return'}:
+            raise ValueError('Only semantic preferences and actual returns are accepted')
+        target = row['return']
+        if type(target) not in (int, float) or not math.isfinite(target) or not -1 <= target <= 1:
+            raise ValueError('Finite actor-relative terminal return required')
+        alternatives = row['alternatives']
+        if type(alternatives) is not list or not 1 <= len(alternatives) <= 8:
+            raise ValueError('Use 1..8 distinct same-state alternatives')
+        packs = [row['state'], row['preferred'], *alternatives]
+        for pack in packs:
+            validate_features(pack, expected_version=contract['feature_version'])
+        bank = _canonical(row['state']['entities'])
+        if any(_canonical(pack['entities']) != bank for pack in packs[1:]):
+            raise ValueError('All candidates must share the same authorized entity bank')
+        candidates = [semantic_action_key(pack) for pack in packs[1:]]
+        if len(set(candidates)) != len(candidates):
+            raise ValueError('Preferred and alternative actions must be semantically distinct')
+
+
+def _scores(model, row, torch):
+    # Reuse one differentiable state/entity graph for the whole choice group.
+    cache = {}
+    state = model.encode(row['state'], cache)
+    scores = []
+    for action in [row['preferred'], *row['alternatives']]:
+        encoded = model.encode(action, cache)
+        scores.append(model.q_out(model.q_hidden(torch.cat((state, encoded))).relu()).tanh().squeeze())
+    value = model.v_out(model.v_hidden(state).relu()).tanh().squeeze()
+    return torch.stack(scores), value
+
+
+def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
+                      epochs=8, learning_rate=.001, seconds=1800,
+                      temperature=.25, value_weight=.25, progress=None):
+    """Fit original heuristic choices against admitted same-position alternatives.
+
+    The caller must validate original dataset provenance and grouped partitions.
+    This API never reads evaluation rows or assigns outcomes to unchosen actions.
+    No checkpoint is returned if validation, budget, finiteness or parity fails.
+    """
+    validate_preferences(rows, contract=contract)
+    if (type(seed) is not int or not 0 <= seed < 2**63
+            or type(epochs) is not int or not 1 <= epochs <= 1000
+            or epochs * len(rows) > 100000
+            or type(seconds) is not int or not 1 <= seconds <= 3600):
+        raise ValueError('Explicit finite seed, epoch, update and time budgets required')
+    for name, value, allow_zero in [('learning_rate', learning_rate, False),
+                                   ('temperature', temperature, False),
+                                   ('value_weight', value_weight, True)]:
+        if (type(value) not in (int, float) or not math.isfinite(value)
+                or value > 1 or value < 0 or not allow_zero and value == 0):
+            raise ValueError('Invalid bounded ' + name)
+    if progress is not None and not callable(progress):
+        raise ValueError('Optional progress callback must be callable')
+    if any(type(value) is not str or not re.fullmatch('[0-9a-f]{64}', value)
+           for value in (dataset_sha256, split_sha256)):
+        raise ValueError('Exact dataset and split provenance hashes required')
+
+    import torch
+    from torch.nn import functional as functional
+
+    old_threads = torch.get_num_threads()
+    torch.set_num_threads(1)
+    started = time.monotonic()
+    updates = 0
+    try:
+        model = torch_model(seed=seed)
+        initial_weights = export_weights(model)
+        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+        zero = torch.zeros(1, dtype=torch.long)
+
+        def budget():
+            if time.monotonic() - started >= seconds:
+                raise ValueError('Preference training deadline reached; no checkpoint published')
+
+        def notify(phase, event, processed):
+            if progress is not None:
+                progress({'phase': phase, 'event': event, 'processed': processed,
+                          'total': epochs * len(rows) if phase == 'updates' else len(rows),
+                          'updates': updates, 'elapsed_seconds': time.monotonic() - started})
+
+        def measure(phase, policy=None):
+            notify(phase, 'start', 0)
+            losses, margins, values = [], [], []
+            correct = parity_actions = 0
+            max_error = 0.0
+            with torch.no_grad():
+                for index, row in enumerate(rows):
+                    budget()
+                    scores, value = _scores(model, row, torch)
+                    loss = functional.cross_entropy((scores / temperature).unsqueeze(0), zero)
+                    margin = float(scores[0] - scores[1:].max())
+                    losses.append(float(loss))
+                    margins.append(margin)
+                    values.append(float((value - row['return']).square()))
+                    correct += margin > 0
+                    if policy is not None:
+                        prepared = policy.prepare(row['state'])
+                        for score, action in zip(scores, [row['preferred'], *row['alternatives']]):
+                            predicted = prepared.predict(action)
+                            error = max(abs(predicted['q'] - float(score)),
+                                        abs(predicted['v'] - float(value)))
+                            if not math.isfinite(error) or error > 1e-9:
+                                raise ValueError('Preference Torch/stdlib export parity failed')
+                            max_error = max(max_error, error)
+                            parity_actions += 1
+                    if (index + 1) % 32 == 0:
+                        notify(phase, 'progress', index + 1)
+            notify(phase, 'end', len(rows))
+            return {'preference_loss': math.fsum(losses) / len(rows),
+                    'strict_top1': correct / len(rows),
+                    'mean_preferred_margin': math.fsum(margins) / len(rows),
+                    'v_mse': math.fsum(values) / len(rows),
+                    'parity_actions': parity_actions, 'max_parity_error': max_error}
+
+        initial = measure('initial_preferences')
+        order = list(range(len(rows)))
+        rng = random.Random(seed)
+        notify('updates', 'start', 0)
+        for _ in range(epochs):
+            rng.shuffle(order)
+            for index in order:
+                budget()
+                row = rows[index]
+                optimizer.zero_grad(set_to_none=True)
+                scores, value = _scores(model, row, torch)
+                ranking = functional.cross_entropy((scores / temperature).unsqueeze(0), zero)
+                loss = ranking + value_weight * (value - row['return']).square()
+                if not torch.isfinite(loss).item():
+                    raise ValueError('Nonfinite preference loss')
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0, error_if_nonfinite=True)
+                optimizer.step()
+                updates += 1
+                if updates % 32 == 0:
+                    notify('updates', 'progress', updates)
+        notify('updates', 'end', updates)
+        payload = checkpoint(export_weights(model), contract, {
+            'dataset_sha256': dataset_sha256, 'split_sha256': split_sha256,
+            'trainer_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
+            'torch_version': str(torch.__version__), 'trainer_seed': seed,
+            'updates': updates, 'samples': len(rows)})
+        final = measure('final_preferences_and_parity', QVPolicy(payload, expected=contract))
+        budget()
+        return payload, {'objective': 'heuristic_listwise_preferences_plus_actual_return_V',
+                         'q_semantics': 'preference_utility_not_calibrated_return',
+                         'samples': len(rows), 'updates': updates,
+                         'temperature': temperature, 'value_weight': value_weight,
+                         'initial': initial, 'final': final,
+                         'weights_changed': export_weights(model) != initial_weights,
+                         'elapsed_seconds': time.monotonic() - started}
+    finally:
+        torch.set_num_threads(old_threads)

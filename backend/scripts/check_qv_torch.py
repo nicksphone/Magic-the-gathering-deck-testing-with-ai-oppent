@@ -82,6 +82,31 @@ class TorchLearningTests(unittest.TestCase):
         self.assertGreater(policy.predict(number(1), number(0))['v'], 0.5)
         self.assertTrue(report['weights_changed'])
 
+    def test_preferences_learn_context_sensitive_rankings_and_export_parity(self):
+        from scripts.train_qv_preferences import train_preferences
+
+        # Synthetic numeric rankings, not expert labels or game-quality evidence.
+        rows = [dict(state=number(x), preferred=number(x),
+                     alternatives=[number(-x)], **{'return': float(x)})
+                for x in (1, -1)]
+        before = deepcopy(rows)
+        payload, report = train_preferences(rows, contract=contract(),
+            dataset_sha256='b' * 64, split_sha256='c' * 64,
+            seed=17, epochs=150, learning_rate=.001, seconds=60)
+        self.assertEqual(rows, before)
+        self.assertEqual(report['updates'], 300)
+        self.assertTrue(report['weights_changed'])
+        self.assertEqual(report['final']['strict_top1'], 1)
+        self.assertLess(report['final']['preference_loss'],
+                        report['initial']['preference_loss'] * .1)
+        self.assertEqual(report['final']['parity_actions'], 4)
+        self.assertLessEqual(report['final']['max_parity_error'], 1e-9)
+        policy = subject(self).QVPolicy(payload, expected=contract())
+        for row in rows:
+            preferred = policy.predict(row['state'], row['preferred'])['q']
+            alternative = policy.predict(row['state'], row['alternatives'][0])['q']
+            self.assertGreater(preferred, alternative)
+
 
 if __name__ == '__main__':
     unittest.main()

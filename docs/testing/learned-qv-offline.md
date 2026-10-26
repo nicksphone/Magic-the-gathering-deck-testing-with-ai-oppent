@@ -79,6 +79,40 @@ actor-projection change before final real-game export/training, or the resulting
 dataset/checkpoint engine binding will become stale. The cooperative training
 timer does not replace an independently enforced outer deadline.
 
+## Same-State Preference Training
+
+`scripts.train_qv_preferences.train_preferences` is an optional offline API that
+reuses the same model and checkpoint contracts. Each row contains `state`,
+`preferred`, `alternatives` and the actual actor-relative terminal `return`.
+All actions must share the state's authorized entity bank. Only checked actions
+from that same position belong in the comparison; an unchosen action receives
+no invented terminal outcome. The caller must verify original dataset/teacher
+provenance and group-disjoint train/evaluation partitions before calling it.
+
+The Q objective is listwise preference cross entropy, with a separate weighted
+actual-return V loss. Q is therefore a bounded ranking utility, not a calibrated
+return or win probability. Heuristic teacher choices are not expert labels.
+Feature-equivalent alternatives must be filtered before fitting, with original
+rows retained and filtering reported; the API rejects indistinguishable labels.
+
+Torch is imported only after admission checks. The trainer checks finite losses,
+clips gradients, enforces bounded updates/time, and checks every training
+candidate against standard-library inference before returning a checkpoint.
+Its timer is cooperative, so callers still need an independent outer deadline.
+Keep held-out rows out of optimizer updates and evaluate the saved/reloaded model
+on separate tactical checks and fresh games. A successful fit or increased
+teacher agreement does not authorize activation or establish playing strength.
+
+Pure admission checks require no Torch installation:
+
+```sh
+python -m pytest tests/test_qv_preference_training.py
+```
+
+In the optional CPU-Torch runtime, `python -m scripts.check_qv_torch` also checks
+actual context-sensitive preference learning and exported inference parity on
+explicitly synthetic numeric inputs. This is not a gameplay-quality benchmark.
+
 ## Explicit Live Binding
 
 `ai.learned_policy.bind_live_policy(raw_checkpoint_bytes)` validates and hashes
