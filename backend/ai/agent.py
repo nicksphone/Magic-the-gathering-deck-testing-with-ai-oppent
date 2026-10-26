@@ -1653,6 +1653,14 @@ class AIAgent:
             mat = self._materialize_action(state, move, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
+            targets = mat.get("targets") or {}
+            selected = [targets.get("target_card_id"), *(targets.get("target_card_ids") or [])]
+            if ("burn" in tags and "sweeper" not in tags
+                    and {"Instant", "Sorcery"}.intersection(effective_types(state, card))
+                    and not targets.get("mode_targets") and not targets.get("target_distribution")
+                    and not any(target in opp_creatures for target in selected)):
+                # Face damage is not removal of the creature pressuring us.
+                continue
             selected_card = _card_for_move(state, mat)
             if (selected_card is not None and "{X}" in (getattr(selected_card, "mana_cost", "") or "").upper()
                     and ALL_CREATURES_X_DEBUFF_RE.search(getattr(selected_card, "oracle_text", "") or "")):
@@ -2019,7 +2027,12 @@ class AIAgent:
                 base += self._rollout_delta(state, move, player_id)
             return base
 
-        ranked = sorted(moves, key=lambda mv: (score(mv), self._move_sort_key(mv)), reverse=True)
+        # Save mana for another proactive play; keep response-window ordering.
+        ranked = sorted(moves, key=lambda mv: (
+            score(mv), str(mv.get("type") or ""),
+            -mana_value(str(mv.get("mana_cost") or ""))
+            if own_main_sorcery_window and mv.get("type") == "cast_spell" else 0,
+            self._move_sort_key(mv)), reverse=True)
         normalized = []
         for move in ranked:
             if move.get("type") == "attack" and "attackers" not in move:
@@ -2040,7 +2053,11 @@ class AIAgent:
             self._approximate_resolution_for_creature_cast(sim_state, materialized, player_id)
             self._approximate_resolution_for_ramp_spell(sim_state, materialized, player_id)
             self._approximate_resolution_for_activated_action(sim_state, materialized, player_id)
-            after = evaluate_board(sim_state, player_id)
+            from ai.pending_effects import settled_public_position
+            # Value known effects without discarding the pending response frame.
+            forecast = (settled_public_position(sim_state, player_id)
+                        if isinstance(state, MatchState) and state.stack else None)
+            after = evaluate_board(forecast if forecast is not None else sim_state, player_id)
             opp_id = 1 if player_id == 2 else 2
             opp_moves = self.engine.legal_moves(sim_state, sim_state.priority_player)
             if sim_state.priority_player == opp_id and opp_moves:

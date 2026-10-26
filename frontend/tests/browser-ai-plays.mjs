@@ -73,10 +73,10 @@ try {
     state.revision++;state.log.push('Synthetic priority update.');window.interactiveFixture.nextStates.push(state);
   })()`);
   await click('Pass Priority');
-  await waitFor("document.querySelector('.debug-ai-hands small')?.textContent.includes('current match revision 5')");
-  assert.equal(await evaluate('window.interactiveFixture.debugRequests'),1,'An advancing match does not cancel/restart the hand request');
+  await waitFor("document.querySelector('.debug-ai-hands small')?.textContent.includes('revision 5;') && window.interactiveFixture.debugRequests===2");
+  assert.equal(await evaluate('window.interactiveFixture.debugRequests'),2,'A committed update refreshes the hand without requiring a manual click');
   await click('Refresh AI hand snapshot');
-  await waitFor('window.interactiveFixture.debugRequests===2 && !document.querySelector(".debug-ai-hands button").disabled');
+  await waitFor('window.interactiveFixture.debugRequests===3 && !document.querySelector(".debug-ai-hands button").disabled');
   assert.match(await evaluate("document.querySelector('.debug-ai-hands small').textContent"),/revision 5/);
   await evaluate('window.interactiveFixture.debugDenied=true');
   await click('Refresh AI hand snapshot');

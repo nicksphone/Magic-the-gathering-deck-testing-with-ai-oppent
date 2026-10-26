@@ -10,9 +10,15 @@ export function AiHandDebug({ match }: { match: MatchState }) {
   const [error, setError] = useState('');
   const [refresh, setRefresh] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [lastAutoRevision, setLastAutoRevision] = useState('');
   const hasAi = Object.values(match.controllers ?? {}).includes('ai');
+  const current = snapshot?.match_id === match.id && snapshot.game_number === match.game_number
+    ? snapshot : undefined;
+  const stale = Boolean(current && typeof match.revision === 'number' && current.revision < match.revision);
+  const autoRevision = JSON.stringify([match.id, match.game_number, match.revision]);
   useEffect(() => {
-    setSnapshot(undefined);
+    setSnapshot(previous => enabled && hasAi && previous?.match_id === match.id
+      && previous.game_number === match.game_number ? previous : undefined);
     setError('');
     if (!enabled || !hasAi) { setLoading(false); return; }
     let cancelled = false;
@@ -30,9 +36,14 @@ export function AiHandDebug({ match }: { match: MatchState }) {
     });
     return () => { cancelled = true; };
   }, [enabled, hasAi, match.id, match.game_number, refresh]);
+  useEffect(() => {
+    if (enabled && hasAi && current && typeof match.revision === 'number'
+      && current.revision < match.revision && !loading && !error && lastAutoRevision !== autoRevision) {
+      setLastAutoRevision(autoRevision);
+      setRefresh(value => value + 1);
+    }
+  }, [enabled, hasAi, current, match.revision, loading, error, lastAutoRevision, autoRevision]);
   if (!hasAi) return null;
-  const current = snapshot?.match_id === match.id && snapshot.game_number === match.game_number
-    ? snapshot : undefined;
   return <section className="panel debug-ai-hands" aria-label="AI hand debug inspection">
     <label><input type="checkbox" checked={enabled} onChange={event => setEnabled(event.target.checked)} /> Reveal AI hands (debug)</label>
     {enabled ? <>
@@ -40,7 +51,10 @@ export function AiHandDebug({ match }: { match: MatchState }) {
       <button type="button" disabled={loading} onClick={() => setRefresh(value => value + 1)}>Refresh AI hand snapshot</button>
       {error ? <p role="alert">{error}</p> : !current ? <p role="status">Loading AI hand snapshot...</p> : <>
         <small>Captured snapshot: game {current.game_number}, turn {current.turn}, revision {current.revision}; current match revision {match.revision ?? 'unknown'}.</small>
-        <p>This snapshot does not auto-refresh as play advances. Refresh to inspect again.</p>
+        {loading || stale ? <p role="status">
+          {loading ? 'Refreshing AI hand snapshot...' : 'AI hand snapshot is stale.'}
+          {stale ? ' Showing a stale snapshot of the last captured hand. Refresh manually if it remains out of date.' : ''}
+        </p> : <p>AI hand snapshots refresh after committed match changes.</p>}
         {Object.entries(current.hands).map(([seat, cards]) => <div key={seat}>
           <h3>P{seat} AI hand · {cards.length} cards</h3>
           <div className="debug-ai-hand-cards">{cards.map(card => <details key={card.id}>
