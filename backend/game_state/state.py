@@ -294,6 +294,8 @@ class MatchState:
     discards_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     land_entries_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
     land_entry_history_known: bool = True
+    life_lost_this_turn: dict[int, int] = field(default_factory=lambda: {1: 0, 2: 0})
+    life_loss_history_known: bool = True
     players_with_permanent_departure: set[int] = field(default_factory=set)
     temporary_control_changes: dict[str, dict[str, int]] = field(default_factory=dict)
     linked_exiles: list[dict] = field(default_factory=list)

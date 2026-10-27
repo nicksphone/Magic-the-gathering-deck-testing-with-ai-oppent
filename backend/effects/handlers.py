@@ -482,6 +482,8 @@ def lose_life(state: MatchState, controller: int, payload: dict) -> None:
         state.log.append(f"{state.players[target_player].name} can't lose life.")
         return
     state.players[target_player].life -= amount
+    from rules_engine.resource_events import record_life_loss
+    record_life_loss(state, target_player, amount)
     state.log.append(f"{state.players[target_player].name} loses {amount} life.")
 
 

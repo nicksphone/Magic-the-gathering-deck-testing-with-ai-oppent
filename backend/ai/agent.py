@@ -3884,6 +3884,20 @@ class AIAgent:
         cost_options = move.get("cost_options") or []
         if cost_options and not (move.get("cost_choice") or {}).get("id"):
             selected_cost = cost_options[0]
+            if selected_cost['id'] == 'base':
+                from rules_engine.mana import parse_mana_cost
+                for alternative in cost_options:
+                    fields = (set(selected_cost) | set(alternative)) - {'id', 'label', 'mana_cost'}
+                    prices = [selected_cost.get('mana_cost', ''), alternative.get('mana_cost', '')]
+                    if (alternative['id'] != 'spectacle'
+                            or any(selected_cost.get(key) != alternative.get(key) for key in fields)
+                            or not all(re.fullmatch(r'(?:\{(?:[0-9]+|[WUBRGCS])\})+', price) for price in prices)):
+                        continue
+                    base_price, discount = map(parse_mana_cost, prices)
+                    if (all(discount[key] <= base_price[key] for key in base_price)
+                            and any(discount[key] < base_price[key] for key in base_price)):
+                        selected_cost = alternative
+                        break
             if selected_cost.get('graveyard_permission_key'):
                 from ai.casting_resources import graveyard_permission_opportunity
                 from rules_engine.costs import casting_method

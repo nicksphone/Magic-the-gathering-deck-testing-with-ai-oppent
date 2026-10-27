@@ -809,6 +809,8 @@ def pay_life(state, player_id: int, amount: int) -> bool:
         return False
     if amount:
         state.players[player_id].life -= amount
+        from rules_engine.resource_events import record_life_loss
+        record_life_loss(state, player_id, amount)
         from rules_engine.events import emit_event
         emit_event(state, "life_paid", {"player_id": player_id, "amount": amount})
     return True
