@@ -31,6 +31,50 @@ There is no pickle, executable deserializer, app Torch dependency or default
 model download. A zero-update checkpoint may serve protocol fixtures; it must
 not be presented as a fitted or gameplay-qualified policy.
 
+### Opt-In Life-Context Q Codec
+
+The default remains `mtg.qv.v1` / `relu-tanh`, with the original parameter set,
+seeded initialization and v1/v2 feature behavior. The explicit new pair is
+`mtg.qv.v2` / `relu-softsign-life-context`; it requires the registered feature-v2
+contract and adds only `q_context.weight` of shape `1 x 192`, without a bias.
+Unknown or mixed discriminators, extra/missing parameters and retagged old
+weights fail closed. There is no converter, normalization or warm start.
+
+The same complete 64-wide tree encoder and original Q/V heads remain. Let `a`
+be the encoded action. New raw Q is the old raw Q plus the linear projection of
+`outer([1, self_life / 20, opponent_life / 20], a)`, flattened context-major.
+Life is extracted strictly from unique typed-map paths
+`state.root.observation.players.self.life` and the corresponding `opponent`
+path. Both must be explicit finite number nodes. Missing, duplicate, boolean,
+nonfinite or incorrectly typed paths are errors, never default-zero inputs.
+There is no label, card-name or private-identity lookup for this term.
+The 192 context parameters initialize to zero after all legacy modules, leaving
+legacy seeded weights identical and restoring the caller's CPU RNG state.
+
+Only the new Q uses softsign `x / (1 + abs(x))`; V remains `tanh(raw V)`.
+Torch forward, raw preference logits and stdlib prepared inference use the same
+contextual raw Q. In a synthetic binary64 fixture, logits 22 and 19 have
+negligible tanh separation, while softsign retains a margin about 0.00652.
+The CPU Torch fixture separately checks an exact tanh tie at 22 versus 20.
+Softsign can still lose separation at
+extreme finite magnitudes; it is not a universal no-ties guarantee.
+
+The return-fitting API and its existing CLI accept explicit
+`q_activation='relu-softsign-life-context'` and
+`--q-activation relu-softsign-life-context`, respectively. The preference API
+accepts the same `q_activation` keyword; it has no standalone CLI. Omitting the
+option leaves legacy activation unchanged. No live binding, activation gate,
+model selection or current-engine contract check is changed by this codec work.
+`backend/ai/learned_policy.py::bind_live_policy` delegates architecture validation
+to `QVPolicy`; it has no independent hardcoded model-version restriction. A valid
+positive-update/sample V2 checkpoint with the current engine/feature contract is
+therefore admissible through the existing explicit operator authority.
+`backend/main.py::_live_policy_provenance` emits the `mtg.live-policy.v1`
+provenance envelope and checks the module constant `VERSION`, not the payload's
+checkpoint version. That envelope is not a V1-only checkpoint barrier. No model
+is activated by this offline pipeline, and admissibility is not deployment or
+playing-strength qualification.
+
 ## Corpus And Training
 
 The existing exporter defaults to the unchanged v1 path. Its explicit
@@ -101,7 +145,8 @@ return or win probability. Heuristic teacher choices are not expert labels.
 Feature-equivalent alternatives must be filtered before fitting, with original
 rows retained and filtering reported; the API rejects indistinguishable labels.
 
-Ranking optimization uses the unbounded Q-head logits, before runtime `tanh`.
+Ranking optimization uses the unbounded Q-head logits, before runtime squashing
+(`tanh` by default, softsign only in the explicit new mode).
 Squashing first can attenuate the gradient or reduce the loss by saturating both
 choices without correcting their ordering. This follows the
 [cross-entropy logit convention](https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html).
@@ -109,8 +154,32 @@ The existing `preference_loss` remains a bounded-score diagnostic;
 `ranking_logit_loss` separately records the actual optimization loss, identified
 by `ranking_loss_input`. Neither loss is a playing-strength measurement.
 Strict ranking, margins and export parity still use bounded runtime Q, so
-saturated runtime ties are not counted as successful rankings. Runtime Q/V,
-checkpoint shapes, feature encoding and value-target masking are unchanged.
+saturated runtime ties are not counted as successful rankings. Legacy runtime
+Q/V, checkpoint shapes and feature encoding remain unchanged.
+
+Preference `batch_size` is an optional integer in `1..256`, default `1`.
+Each shuffled batch uses mean per-row raw-logit cross entropy, so rows with more
+alternatives do not receive extra weight. The objective is the masked per-row
+mean `mean_i[CE_i + value_weight * indicator_return_i * Verror_i]`: sum observed
+V errors and divide by the actual batch length, including rows without returns.
+Omitting a missing row's V-loss contribution is not an invented zero V target;
+no V error or target is constructed for that row. A batch with no returns has no
+V term and does not train the V head. Final partial batches use their actual
+length, not the configured batch size or the number of observed returns. The default
+one-row update order and resulting weights remain identical to the pinned old
+trainer in the synthetic regression. The report separates `optimizer_updates`
+(also `updates`) from `row_exposures` and records `batch_size`; progress
+`processed` counts row exposures. Checkpoint provenance `updates` counts optimizer
+steps and `samples` counts admitted rows, not epochs or exposures. The unchanged
+100,000-row-exposure maximum and finite cooperative time budget apply regardless
+of batch size. Batching does not authorize a larger corpus or training budget.
+
+`tests/test_qv_life_context.py` exercises synthetic codec/boundary protocols.
+`tests/test_qv_life_context_training.py` adds optional CPU Torch checks for raw
+formula and Q/V parity, seeded/zero initialization, default-one-row equivalence,
+observed-only V masking, batching/accounting and a two-row synthetic joint fit.
+These tests do not copy archived private rows, publish fitted weights, qualify
+full canonical game features, establish playing strength or authorize deployment.
 
 Torch is imported only after admission checks. The trainer checks finite losses,
 clips gradients, enforces bounded updates/time, and checks every training
@@ -180,8 +249,12 @@ The caller must explicitly supply a trusted agent whose actual validated
 `LivePolicyBinding` has the same checkpoint SHA, contract and current engine;
 otherwise the recorded identity remains with visible `restore_requires_opt_in`
 heuristic fallback. An ordinary agent plus matching strings is not eligible.
-The `mtg.live-policy.v1` envelope registers only the loader-validated
-`mtg.qv.v1` model. Empty metadata preserves the legacy snapshot format.
+The `mtg.live-policy.v1` envelope is emitted by
+`backend/main.py::_live_policy_provenance`; its identifier is a provenance schema,
+not a checkpoint architecture filter. Model validation is delegated to `QVPolicy`
+by `backend/ai/learned_policy.py::bind_live_policy`, with the existing explicit
+authority, positive update/sample and current-contract requirements.
+Empty metadata preserves the legacy snapshot format.
 
 The original three whole import-only controller/persistence modules pass all
 40 cases. The later four-module lifecycle declaration passes all 69 cases,

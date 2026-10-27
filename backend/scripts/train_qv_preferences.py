@@ -14,6 +14,8 @@ import re
 import time
 
 from ai.learned_qv import (QVPolicy, checkpoint, normalized_number,
+                          LEGACY_ACTIVATION, LIFE_CONTEXT_ACTIVATION,
+                          life_context, validate_q_activation,
                           validate_contract, validate_features)
 from scripts.train_qv import export_weights, torch_model
 
@@ -77,21 +79,23 @@ def validate_preferences(rows, *, contract):
 
 
 def _scores(model, row, torch):
-    # Optimize raw logits: tanh can hide a wrong ranking by saturating both
+    # Optimize raw logits: squashing can hide a wrong ranking by saturating both
     # choices. Runtime scores and ranking/parity diagnostics remain bounded.
     cache = {}
     state = model.encode(row['state'], cache)
+    context = life_context(row['state']) if model.q_activation == LIFE_CONTEXT_ACTIVATION else None
     scores = []
     for action in [row['preferred'], *row['alternatives']]:
         encoded = model.encode(action, cache)
-        scores.append(model.q_out(model.q_hidden(torch.cat((state, encoded))).relu()).squeeze())
+        scores.append(model.raw_q(state, encoded, context))
     value = model.v_out(model.v_hidden(state).relu()).tanh().squeeze()
     return torch.stack(scores), value
 
 
 def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                       epochs=8, learning_rate=.001, seconds=1800,
-                      temperature=.25, value_weight=.25, progress=None):
+                      temperature=.25, value_weight=.25, progress=None,
+                      q_activation=LEGACY_ACTIVATION, batch_size=1):
     """Fit checked preferences against admitted same-position alternatives.
 
     The caller must validate original dataset provenance and grouped partitions.
@@ -99,10 +103,15 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
     No checkpoint is returned if validation, budget, finiteness or parity fails.
     """
     validate_preferences(rows, contract=contract)
+    validate_q_activation(q_activation, contract)
+    if q_activation == LIFE_CONTEXT_ACTIVATION:
+        for row in rows:
+            life_context(row['state'])
     if (type(seed) is not int or not 0 <= seed < 2**63
             or type(epochs) is not int or not 1 <= epochs <= 1000
             or epochs * len(rows) > 100000
-            or type(seconds) is not int or not 1 <= seconds <= 3600):
+            or type(seconds) is not int or not 1 <= seconds <= 3600
+            or type(batch_size) is not int or not 1 <= batch_size <= 256):
         raise ValueError('Explicit finite seed, epoch, update and time budgets required')
     for name, value, allow_zero in [('learning_rate', learning_rate, False),
                                    ('temperature', temperature, False),
@@ -122,9 +131,10 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
     old_threads = torch.get_num_threads()
     torch.set_num_threads(1)
     started = time.monotonic()
-    updates = 0
+    updates = row_exposures = 0
     try:
-        model = torch_model(seed=seed)
+        model = (torch_model(seed=seed) if q_activation == LEGACY_ACTIVATION
+                 else torch_model(seed=seed, q_activation=q_activation))
         initial_weights = export_weights(model)
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
         zero = torch.zeros(1, dtype=torch.long)
@@ -137,7 +147,8 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
             if progress is not None:
                 progress({'phase': phase, 'event': event, 'processed': processed,
                           'total': epochs * len(rows) if phase == 'updates' else len(rows),
-                          'updates': updates, 'elapsed_seconds': time.monotonic() - started})
+                          'updates': updates, 'row_exposures': row_exposures,
+                          'elapsed_seconds': time.monotonic() - started})
 
         def measure(phase, policy=None):
             notify(phase, 'start', 0)
@@ -148,7 +159,7 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                 for index, row in enumerate(rows):
                     budget()
                     logits, value = _scores(model, row, torch)
-                    scores = logits.tanh()
+                    scores = model.bounded_q(logits)
                     loss = functional.cross_entropy((scores / temperature).unsqueeze(0), zero)
                     logit_loss = functional.cross_entropy((logits / temperature).unsqueeze(0), zero)
                     margin = float(scores[0] - scores[1:].max())
@@ -184,28 +195,36 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
         notify('updates', 'start', 0)
         for _ in range(epochs):
             rng.shuffle(order)
-            for index in order:
+            for start in range(0, len(order), batch_size):
                 budget()
-                row = rows[index]
                 optimizer.zero_grad(set_to_none=True)
-                logits, value = _scores(model, row, torch)
-                ranking = functional.cross_entropy((logits / temperature).unsqueeze(0), zero)
-                loss = (ranking + value_weight * (value - row['return']).square()
-                        if 'return' in row else ranking)
+                batch = order[start:start + batch_size]
+                rankings, observed_values = [], []
+                for index in batch:
+                    budget()
+                    row = rows[index]
+                    logits, value = _scores(model, row, torch)
+                    rankings.append(functional.cross_entropy((logits / temperature).unsqueeze(0), zero))
+                    if 'return' in row:
+                        observed_values.append((value - row['return']).square())
+                loss = torch.stack(rankings).mean()
+                if observed_values:
+                    loss = loss + value_weight * torch.stack(observed_values).sum() / len(batch)
                 if not torch.isfinite(loss).item():
                     raise ValueError('Nonfinite preference loss')
                 loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 10.0, error_if_nonfinite=True)
                 optimizer.step()
                 updates += 1
+                row_exposures += len(batch)
                 if updates % 32 == 0:
-                    notify('updates', 'progress', updates)
-        notify('updates', 'end', updates)
+                    notify('updates', 'progress', row_exposures)
+        notify('updates', 'end', row_exposures)
         payload = checkpoint(export_weights(model), contract, {
             'dataset_sha256': dataset_sha256, 'split_sha256': split_sha256,
             'trainer_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
             'torch_version': str(torch.__version__), 'trainer_seed': seed,
-            'updates': updates, 'samples': len(rows)})
+            'updates': updates, 'samples': len(rows)}, activation=q_activation)
         final = measure('final_preferences_and_parity', QVPolicy(payload, expected=contract))
         budget()
         value_samples = sum('return' in row for row in rows)
@@ -216,6 +235,8 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                          'ranking_loss_input': 'unbounded_q_logits',
                          'q_semantics': 'preference_utility_not_calibrated_return',
                          'samples': len(rows), 'updates': updates,
+                         'optimizer_updates': updates, 'row_exposures': row_exposures,
+                         'batch_size': batch_size, 'q_activation': q_activation,
                          'value_samples': value_samples,
                          'preference_only_samples': len(rows) - value_samples,
                          'temperature': temperature, 'value_weight': value_weight,

@@ -8,6 +8,9 @@ import stat
 
 
 VERSION = 'mtg.qv.v1'
+LEGACY_ACTIVATION = 'relu-tanh'
+LIFE_CONTEXT_VERSION = 'mtg.qv.v2'
+LIFE_CONTEXT_ACTIVATION = 'relu-softsign-life-context'
 FEATURE_VERSION = 'mtg.features.v1'
 FEATURE_SCHEMA_SHA256 = '0b3aadfead9f66999c8b6c3ddc13699ad7dc5dd1c76179e95585042ba0339ed5'
 FEATURE_CONTEXT_VERSION = 'mtg.features.v2'
@@ -32,6 +35,21 @@ PARAMETERS = {
     'v_hidden.weight': (WIDTH, WIDTH), 'v_hidden.bias': (WIDTH,),
     'v_out.weight': (1, WIDTH), 'v_out.bias': (1,),
 }
+
+
+def parameter_shapes(activation):
+    if type(activation) is str and activation == LEGACY_ACTIVATION:
+        return PARAMETERS
+    if type(activation) is str and activation == LIFE_CONTEXT_ACTIVATION:
+        return {**PARAMETERS, 'q_context.weight': (1, 3 * WIDTH)}
+    raise ValueError('Unsupported Q/V activation')
+
+
+def validate_q_activation(activation, contract):
+    parameter_shapes(activation)
+    if (activation == LIFE_CONTEXT_ACTIVATION
+            and contract['feature_version'] != FEATURE_CONTEXT_VERSION):
+        raise ValueError('Life-context Q requires the registered v2 feature contract')
 
 
 def _keys(value, expected):
@@ -142,12 +160,39 @@ def validate_features(pack, *, expected_version=None):
     node(pack['root'], len(pack['entities']))
 
 
+def life_context(state):
+    """Read only the unique authorized actor-relative numeric life paths."""
+    validate_features(state, expected_version=FEATURE_CONTEXT_VERSION)
+
+    def field(value, key):
+        if value['kind'] != 'map':
+            raise ValueError('Explicit life-context map required')
+        matches = [item for name, item in value['items']
+                   if name['kind'] == 'text' and name['value'] == key]
+        if len(matches) != 1:
+            raise ValueError('Unique life-context key required')
+        return matches[0]
+
+    players = field(field(state['root'], 'observation'), 'players')
+    values = [1.0]
+    for role in ('self', 'opponent'):
+        life = field(field(players, role), 'life')
+        if life['kind'] != 'number':
+            raise ValueError('Explicit finite life number required')
+        # validate_features already rejects booleans, overflow and nonfinite numbers.
+        values.append(float(life['value']) / 20)
+    return tuple(values)
+
+
 def _validate(payload, expected):
     _keys(payload, ('version', 'width', 'activation', 'contract', 'provenance', 'weights'))
-    if (payload['version'] != VERSION or type(payload['width']) is not int
-            or payload['width'] != WIDTH or payload['activation'] != 'relu-tanh'):
+    parameters = parameter_shapes(payload['activation'])
+    version = VERSION if payload['activation'] == LEGACY_ACTIVATION else LIFE_CONTEXT_VERSION
+    if (type(payload['version']) is not str or payload['version'] != version
+            or type(payload['width']) is not int or payload['width'] != WIDTH):
         raise ValueError('Unsupported Q/V architecture')
     validate_contract(payload['contract'])
+    validate_q_activation(payload['activation'], payload['contract'])
     validate_contract(expected)
     if payload['contract'] != expected:
         raise ValueError('Q/V engine or feature contract mismatch')
@@ -165,8 +210,8 @@ def _validate(payload, expected):
         limit = 2**63 - 1 if key == 'trainer_seed' else 100000
         if type(p[key]) is not int or not 0 <= p[key] <= limit:
             raise ValueError('Invalid bounded training provenance')
-    _keys(payload['weights'], PARAMETERS)
-    for name, shape in PARAMETERS.items():
+    _keys(payload['weights'], parameters)
+    for name, shape in parameters.items():
         rows = payload['weights'][name]
         if type(rows) is not list or len(rows) != shape[0]:
             raise ValueError('Q/V tensor shape mismatch')
@@ -180,8 +225,10 @@ def _validate(payload, expected):
             _numeric(value, 100)
 
 
-def checkpoint(weights, contract, provenance):
-    payload = {'version': VERSION, 'width': WIDTH, 'activation': 'relu-tanh',
+def checkpoint(weights, contract, provenance, *, activation=LEGACY_ACTIVATION):
+    parameter_shapes(activation)
+    version = VERSION if activation == LEGACY_ACTIVATION else LIFE_CONTEXT_VERSION
+    payload = {'version': version, 'width': WIDTH, 'activation': activation,
                'contract': contract, 'provenance': provenance, 'weights': weights}
     _validate(payload, contract)
     if len(json.dumps(payload, separators=(',', ':'), allow_nan=False).encode()) > MAX_CHECKPOINT_BYTES:
@@ -192,7 +239,8 @@ def checkpoint(weights, contract, provenance):
 class QVPolicy:
     def __init__(self, payload, *, expected):
         _validate(payload, expected)
-        self._payload = checkpoint(payload['weights'], payload['contract'], payload['provenance'])
+        self._payload = checkpoint(payload['weights'], payload['contract'], payload['provenance'],
+                                   activation=payload['activation'])
 
     def payload(self):
         return deepcopy(self._payload)
@@ -267,6 +315,8 @@ class QVDecision:
 
     def __init__(self, policy, state):
         self._policy, self._cache = policy, {}
+        self._context = (life_context(state)
+                         if policy._payload['activation'] == LIFE_CONTEXT_ACTIVATION else None)
         self._state = policy._encode(state, self._cache)
         self._value = math.tanh(policy._linear('v_out', policy._linear('v_hidden', self._state), False)[0])
 
@@ -275,6 +325,10 @@ class QVDecision:
         cache = {key: dict(value) for key, value in self._cache.items()}
         vector = self._policy._encode(action, cache)
         q = self._policy._linear('q_out', self._policy._linear('q_hidden', self._state + vector), False)[0]
+        if self._context is not None:
+            q += self._policy._linear('q_context',
+                [scale * item for scale in self._context for item in vector], False)[0]
+            return {'q': normalized_number(q), 'v': self._value}
         return {'q': math.tanh(q), 'v': self._value}
 
 
