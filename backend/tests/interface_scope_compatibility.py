@@ -36,6 +36,14 @@ assert REPOSITORY_DELTAS['accepted_public_commits'] == [
     'cd271b9edac81018e68a64cafd35ec9ca1b71530', '357680de093b0048b96f1f8596defae0f19f5b9d']
 ACCEPTED_REPOSITORY_DELTA = REPOSITORY_DELTAS['accepted_repository_delta']
 
+SPECTACLE_COST_PATH = PATH.with_name('accepted_spectacle_cost_delta.json')
+spectacle_cost_raw = SPECTACLE_COST_PATH.read_bytes()
+assert hashlib.sha256(spectacle_cost_raw).hexdigest() == 'aa8eed59662da52702084af7d166fb1facd554bbfad8ae098266c4ea5f11ddaf'
+SPECTACLE_COST = json.loads(spectacle_cost_raw)
+assert SPECTACLE_COST['accepted_public_commit'] == '3d691056ba34b9f578f6d038b871c233a41fe869'
+assert SPECTACLE_COST['source'] == 'rules_engine/costs.py'
+ACCEPTED_SPECTACLE_COST_DELTA = SPECTACLE_COST['accepted_delta']
+
 FINITE_PATH = PATH.with_name('accepted_76_source_inverses.json')
 finite_raw = FINITE_PATH.read_bytes()
 assert hashlib.sha256(finite_raw).hexdigest() == '268baa65862fe5eab759629e5b8370a8943f4d3dcae8077009515f2e0494324d'
@@ -113,6 +121,7 @@ def compatible_product_hash(name, current, historical):
 def restore_reviewed_source(name, current, historical):
     recipes = {'main.py': ACCEPTED_MAIN_DELTA,
                'persistence/repository.py': ACCEPTED_REPOSITORY_DELTA,
+               'rules_engine/costs.py': ACCEPTED_SPECTACLE_COST_DELTA,
                'tests/private_choice_boundary_fixture_server.py': ACCEPTED_DELTAS['accepted_private_fixture_delta']}
     assert name in recipes, 'No approved current delta for this source'
     recipe = recipes[name]
