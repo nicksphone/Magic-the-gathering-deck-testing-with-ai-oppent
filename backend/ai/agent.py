@@ -146,16 +146,31 @@ class AIAgent:
                                                          'fallback_reasons': {}}}
         try:
             with decision_projection_scope(state, player_id):
+                action = None
                 if self.learned_binding is not None:
                     from ai.learned_policy import choose_learned_action
                     from rules_engine.action_validation import checked_action
                     action = choose_learned_action(
                         self.learned_binding, self, state, legal_moves, player_id,
                         admit=lambda proposed: checked_action(authoritative_state, self.engine, player_id, proposed))
-                    if action is not None:
-                        return AIDecision(action=action,
-                            reasoning='Tactical-safeguarded Q ranking over a checked heuristic subset',
-                            knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                from ai.pending_effects import unanswered_action_wins
+                from ai.damage_sequences import winning_damage_action
+                if action is None or unanswered_action_wins(state, player_id, action) is not True:
+                    finishing = winning_damage_action(self, state, legal_moves, player_id)
+                    if finishing is not None:
+                        from rules_engine.action_validation import ActionRejected, checked_action
+                        try:
+                            checked_action(authoritative_state, self.engine, player_id, finishing)
+                        except ActionRejected:
+                            pass
+                        else:
+                            return AIDecision(action=finishing,
+                                reasoning='Checked current-turn damage sequence if unanswered',
+                                knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                if action is not None:
+                    return AIDecision(action=action,
+                        reasoning='Tactical-safeguarded Q ranking over a checked heuristic subset',
+                        knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
                 decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
                 if decision.action.get('type') == 'pass_priority':
                     from ai.foretell_policy import idle_foretell_action
