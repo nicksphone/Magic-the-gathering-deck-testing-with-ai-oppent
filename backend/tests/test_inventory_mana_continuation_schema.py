@@ -13,13 +13,14 @@ from tests.test_numeric_inventory_adapter import positive, pure_inventory
 
 
 REVIEWED_MATCH91 = '6781fbd7d6aa55cfb6d6b9aee82506ba9f824d0603ef60fe733263a982551867'
+REVIEWED_MATCH93 = 'cbeb9f80f6473744268be74235a1616122da8a0b0578f2b9c61e3f955d57ef31'
 PRIVATE_SENTINEL = 'PRIVATE_MANA_PAYLOAD_MUST_NOT_ENTER_PUBLIC_COVERAGE'
 
 
 @pytest.fixture
 def reviewed_pin_only_protocol_negative(monkeypatch):
     """Expose missing context vetoes without changing data or production code."""
-    monkeypatch.setitem(inventory._SCHEMA_PINS, MatchState, REVIEWED_MATCH91)
+    monkeypatch.setitem(inventory._SCHEMA_PINS, MatchState, REVIEWED_MATCH93)
 
 
 class PrivatePayload:
@@ -110,3 +111,12 @@ def test_future_field_still_requires_separate_review(
         reason = 'incomplete state metadata'
     assert pure_inventory(state, seat) == {
         'status': 'unknown', 'reason': reason, 'receipts': []}
+
+
+@pytest.mark.parametrize('seat', [1, 2])
+def test_historical_91_field_pin_still_refuses_current_schema(seat, monkeypatch):
+    state = positive(seat)
+    assert pure_inventory(state, seat)['status'] == 'inert'
+    monkeypatch.setitem(inventory._SCHEMA_PINS, MatchState, REVIEWED_MATCH91)
+    assert pure_inventory(state, seat) == {
+        'status': 'unknown', 'reason': 'incomplete state metadata', 'receipts': []}
