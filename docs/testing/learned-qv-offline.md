@@ -83,14 +83,20 @@ timer does not replace an independently enforced outer deadline.
 
 `scripts.train_qv_preferences.train_preferences` is an optional offline API that
 reuses the same model and checkpoint contracts. Each row contains `state`,
-`preferred`, `alternatives` and the actual actor-relative terminal `return`.
+`preferred` and `alternatives`. Supply `return` only when the actual
+actor-relative terminal return was observed; otherwise omit it, not `null`.
 All actions must share the state's authorized entity bank. Only checked actions
 from that same position belong in the comparison; an unchosen action receives
 no invented terminal outcome. The caller must verify original dataset/teacher
 provenance and group-disjoint train/evaluation partitions before calling it.
 
 The Q objective is listwise preference cross entropy, with a separate weighted
-actual-return V loss. Q is therefore a bounded ranking utility, not a calibrated
+actual-return V loss only for rows with an observed return. A checked
+nonterminal ordering preference can train Q without inventing a future value.
+V MSE counts only observed targets; it is `null` when none exist. Metrics report
+`value_samples` and `preference_only_samples` separately. Preference-only
+updates leave the V-head parameters untouched, although shared-encoder changes
+can still affect V predictions. Q is therefore a bounded ranking utility, not a calibrated
 return or win probability. Heuristic teacher choices are not expert labels.
 Feature-equivalent alternatives must be filtered before fitting, with original
 rows retained and filtering reported; the API rejects indistinguishable labels.
@@ -106,7 +112,7 @@ teacher agreement does not authorize activation or establish playing strength.
 Pure admission checks require no Torch installation:
 
 ```sh
-python -m pytest tests/test_qv_preference_training.py
+python -m pytest tests/test_qv_preference_training.py tests/test_qv_preference_optional_returns.py
 ```
 
 In the optional CPU-Torch runtime, `python -m scripts.check_qv_torch` also checks

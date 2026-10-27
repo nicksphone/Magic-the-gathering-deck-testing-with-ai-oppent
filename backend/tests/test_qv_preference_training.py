@@ -138,3 +138,94 @@ def test_equivalent_reference_keys_do_not_collapse_different_observable_facts():
             'root': {'kind': 'ref', 'index': 0}}
     right = {**left, 'root': {'kind': 'ref', 'index': 1}}
     assert trainer.semantic_action_key(left) != trainer.semantic_action_key(right)
+
+
+def _preference_only():
+    row = preference()
+    del row['return']
+    return row
+
+
+def test_preference_only_rows_accept_valid_features_without_inventing_return():
+    rows = [_preference_only()]
+    before = deepcopy(rows)
+    trainer.validate_preferences(rows, contract=contract())
+    assert rows == before and 'return' not in rows[0]
+
+
+def test_optional_return_when_present_still_rejects_invalid_values():
+    for value in (None, True, False, float('nan'), float('inf'), float('-inf'),
+                  -1.01, 1.01, '1'):
+        row = {**_preference_only(), 'return': value}
+        with pytest.raises(ValueError):
+            trainer.validate_preferences([row], contract=contract())
+
+
+def test_preference_only_rows_still_reject_bad_features_and_mismatched_bank():
+    bad = _preference_only()
+    bad['preferred']['root'] = {'kind': 'number', 'value': True}
+    mismatch = _preference_only()
+    mismatch['alternatives'][0]['entities'] = [{'kind': 'number', 'value': 7}]
+    for row in (bad, mismatch):
+        with pytest.raises(ValueError):
+            trainer.validate_preferences([row], contract=contract())
+
+
+def _fit_optional_return_protocol(rows):
+    # Synthetic numeric protocol, not game observations or invented outcomes.
+    torch = pytest.importorskip('torch', reason='Actual CPU trainer needs optional Torch')
+    from scripts.train_qv import export_weights, torch_model
+
+    initial_model = torch_model(seed=17)
+    initial_weights = export_weights(initial_model)
+    with torch.no_grad():
+        initial_values = [float(initial_model(row['state'], row['preferred'])[1])
+                          for row in rows]
+    before, threads = deepcopy(rows), torch.get_num_threads()
+    payload, report = trainer.train_preferences(rows, **{**options(), 'epochs': 2})
+    assert rows == before and torch.get_num_threads() == threads
+    assert report['updates'] == 2 * len(rows)
+    assert report['final']['parity_actions'] == 2 * len(rows)
+    assert report['final']['max_parity_error'] <= 1e-9
+    return payload, report, initial_weights, initial_values
+
+
+def test_all_preference_only_updates_leave_value_heads_untrained_and_value_stats_absent():
+    payload, report, initial, _ = _fit_optional_return_protocol([_preference_only()])
+    assert report['value_samples'] == 0 and report['preference_only_samples'] == 1
+    for stage in ('initial', 'final'):
+        assert report[stage]['v_mse'] is None
+    for name in ('v_hidden.weight', 'v_hidden.bias', 'v_out.weight', 'v_out.bias'):
+        assert payload['weights'][name] == initial[name], name
+    assert any(payload['weights'][name] != initial[name]
+               for name in ('q_hidden.weight', 'q_hidden.bias', 'q_out.weight', 'q_out.bias'))
+
+
+def test_mixed_preferences_value_mse_counts_only_observed_returns():
+    from ai.learned_qv import QVPolicy
+
+    observed = preference()
+    unobserved = {'state': number(-1), 'preferred': number(-1),
+                  'alternatives': [number(1)]}
+    payload, report, _, initial_values = _fit_optional_return_protocol([observed, unobserved])
+    assert report['value_samples'] == report['preference_only_samples'] == 1
+    policy = QVPolicy(payload, expected=contract())
+    actual = policy.predict(observed['state'], observed['preferred'])['v']
+    assert report['initial']['v_mse'] == pytest.approx((initial_values[0] - observed['return']) ** 2)
+    assert report['final']['v_mse'] == pytest.approx((actual - observed['return']) ** 2)
+
+
+def test_observed_return_only_training_preserves_existing_qv_parity_and_mse():
+    from ai.learned_qv import QVPolicy
+
+    rows = [preference(), {'state': number(-1), 'preferred': number(-1),
+                           'alternatives': [number(1)], 'return': -1.0}]
+    payload, report, _, initial_values = _fit_optional_return_protocol(rows)
+    assert report['value_samples'] == 2 and report['preference_only_samples'] == 0
+    policy = QVPolicy(payload, expected=contract())
+    initial_mse = sum((value - row['return']) ** 2
+                      for value, row in zip(initial_values, rows)) / len(rows)
+    final_mse = sum((policy.predict(row['state'], row['preferred'])['v'] - row['return']) ** 2
+                    for row in rows) / len(rows)
+    assert report['initial']['v_mse'] == pytest.approx(initial_mse)
+    assert report['final']['v_mse'] == pytest.approx(final_mse)

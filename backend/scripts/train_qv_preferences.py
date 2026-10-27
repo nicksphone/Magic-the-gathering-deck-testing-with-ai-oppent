@@ -1,7 +1,8 @@
 """Offline heuristic-preference ranking, not invented counterfactual returns.
 
-Q becomes a bounded preference utility. V still fits the actual actor-relative
-terminal return. The existing feature/checkpoint/inference contracts are reused;
+Q becomes a bounded preference utility. V fits only supplied, observed
+actor-relative terminal returns; a preference-only row omits that target.
+The existing feature/checkpoint/inference contracts are reused;
 neither successful fitting nor teacher agreement authorizes live activation.
 """
 from hashlib import sha256
@@ -53,11 +54,14 @@ def validate_preferences(rows, *, contract):
     if type(rows) is not list or not 1 <= len(rows) <= 4096:
         raise ValueError('Use 1..4096 bounded preference decisions')
     for row in rows:
-        if type(row) is not dict or set(row) != {'state', 'preferred', 'alternatives', 'return'}:
-            raise ValueError('Only semantic preferences and actual returns are accepted')
-        target = row['return']
-        if type(target) not in (int, float) or not math.isfinite(target) or not -1 <= target <= 1:
-            raise ValueError('Finite actor-relative terminal return required')
+        if type(row) is not dict or set(row) not in (
+                {'state', 'preferred', 'alternatives'},
+                {'state', 'preferred', 'alternatives', 'return'}):
+            raise ValueError('Only semantic preferences and optional observed returns are accepted')
+        if 'return' in row:
+            target = row['return']
+            if type(target) not in (int, float) or not math.isfinite(target) or not -1 <= target <= 1:
+                raise ValueError('Finite actor-relative terminal return required')
         alternatives = row['alternatives']
         if type(alternatives) is not list or not 1 <= len(alternatives) <= 8:
             raise ValueError('Use 1..8 distinct same-state alternatives')
@@ -87,7 +91,7 @@ def _scores(model, row, torch):
 def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                       epochs=8, learning_rate=.001, seconds=1800,
                       temperature=.25, value_weight=.25, progress=None):
-    """Fit original heuristic choices against admitted same-position alternatives.
+    """Fit checked preferences against admitted same-position alternatives.
 
     The caller must validate original dataset provenance and grouped partitions.
     This API never reads evaluation rows or assigns outcomes to unchosen actions.
@@ -147,7 +151,8 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                     margin = float(scores[0] - scores[1:].max())
                     losses.append(float(loss))
                     margins.append(margin)
-                    values.append(float((value - row['return']).square()))
+                    if 'return' in row:
+                        values.append(float((value - row['return']).square()))
                     correct += margin > 0
                     if policy is not None:
                         prepared = policy.prepare(row['state'])
@@ -165,7 +170,7 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
             return {'preference_loss': math.fsum(losses) / len(rows),
                     'strict_top1': correct / len(rows),
                     'mean_preferred_margin': math.fsum(margins) / len(rows),
-                    'v_mse': math.fsum(values) / len(rows),
+                    'v_mse': math.fsum(values) / len(values) if values else None,
                     'parity_actions': parity_actions, 'max_parity_error': max_error}
 
         initial = measure('initial_preferences')
@@ -180,7 +185,8 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                 optimizer.zero_grad(set_to_none=True)
                 scores, value = _scores(model, row, torch)
                 ranking = functional.cross_entropy((scores / temperature).unsqueeze(0), zero)
-                loss = ranking + value_weight * (value - row['return']).square()
+                loss = (ranking + value_weight * (value - row['return']).square()
+                        if 'return' in row else ranking)
                 if not torch.isfinite(loss).item():
                     raise ValueError('Nonfinite preference loss')
                 loss.backward()
@@ -197,9 +203,15 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
             'updates': updates, 'samples': len(rows)})
         final = measure('final_preferences_and_parity', QVPolicy(payload, expected=contract))
         budget()
-        return payload, {'objective': 'heuristic_listwise_preferences_plus_actual_return_V',
+        value_samples = sum('return' in row for row in rows)
+        objective = ('heuristic_listwise_preferences_plus_actual_return_V'
+                     if value_samples == len(rows)
+                     else 'listwise_preferences_plus_available_actual_return_V')
+        return payload, {'objective': objective,
                          'q_semantics': 'preference_utility_not_calibrated_return',
                          'samples': len(rows), 'updates': updates,
+                         'value_samples': value_samples,
+                         'preference_only_samples': len(rows) - value_samples,
                          'temperature': temperature, 'value_weight': value_weight,
                          'initial': initial, 'final': final,
                          'weights_changed': export_weights(model) != initial_weights,
