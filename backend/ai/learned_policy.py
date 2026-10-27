@@ -89,6 +89,7 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
             return None
         prepared = binding._policy.prepare(decision_frame.encode_state(frame))
         best, best_key = None, None
+        terminal_classes = []
         known_outcome = False
         for action in candidates:
             result = prepared.predict(decision_frame.encode_action(frame, references.action(action)))
@@ -103,11 +104,38 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
                     if win is False else None)
             known_outcome |= win is True or (win is False and (loss is True or loss is False))
             key = (win is True, loss is not True, result['q'])
+            terminal_classes.append((action, key[:2]))
             if best is None or key > best_key:
                 best, best_key = action, key
         if (view.step == Step.DECLARE_BLOCKERS and view.active_player != seat
                 and not known_outcome):
             return None
+        if best.get('type') == 'pass_priority' and not best_key[0]:
+            stall = getattr(agent, '_should_break_stall', None)
+            proactive = getattr(agent, '_best_proactive_non_pass', None)
+            unplayable_x = getattr(agent, '_is_unplayable_x_action', None)
+            if (callable(stall) and callable(proactive) and callable(unplayable_x)
+                    and stall(view, supplied_moves, seat)):
+                # Only an equal-or-better checked unanswered terminal class;
+                # this is not a safety claim about unknown future replies.
+                eligible = {
+                    json.dumps(action, sort_keys=True, separators=(',', ':'), allow_nan=False): action
+                    for action, terminal_class in terminal_classes
+                    if terminal_class >= best_key[:2]
+                    and action.get('type') not in {'pass_priority', 'tap_land_for_mana', 'tap_lands_bulk',
+                                                  'activate_mana_ability', 'tap_nonland_for_mana'}
+                    and not action.get('_invalid_ai_choice') and not unplayable_x(action)
+                    and (action.get('type') != 'attack' or bool(action.get('attackers')))
+                }
+                if eligible:
+                    proposed = proactive(deepcopy(list(eligible.values())), view, seat)
+                    if type(proposed) is dict:
+                        try:
+                            identity = json.dumps(proposed, sort_keys=True, separators=(',', ':'), allow_nan=False)
+                        except (TypeError, ValueError, OverflowError):
+                            identity = None
+                        if identity in eligible:
+                            best = eligible[identity]
         return deepcopy(best)
     except (ActionRejected, ValueError, OverflowError):
         return None
