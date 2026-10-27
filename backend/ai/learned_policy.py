@@ -55,6 +55,9 @@ def bind_live_policy(raw_checkpoint_bytes):
 
 def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
     """Rank a checked SUBSET; admission retains the caller's original-state boundary."""
+    # The tactical preference corpus does not qualify opening-hand decisions.
+    if getattr(view, 'pregame_pending', False):
+        return None
     if not isinstance(binding, LivePolicyBinding) or binding.contract != _current_contract():
         return None
     try:

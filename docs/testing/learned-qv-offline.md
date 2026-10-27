@@ -168,6 +168,12 @@ and invalid numerical predictions retain the normal heuristic fallback. Stable
 ties preserve shortlist order. A configured learned adapter does not mean every
 decision uses neural scoring.
 
+Registered learned ranking is in-game only. While `pregame_pending` is true,
+keep, mulligan, required bottoming and opening-hand choices use the existing
+heuristics, even with a valid learned binding. The tactical preference corpus
+does not qualify those decision families; binding a model must not replace
+opening-hand policy with untrained rankings.
+
 Saved controller snapshots may retain a closed per-seat checkpoint identity and
 feature/engine contract. Restoration never activates weights from that metadata.
 The caller must explicitly supply a trusted agent whose actual validated
