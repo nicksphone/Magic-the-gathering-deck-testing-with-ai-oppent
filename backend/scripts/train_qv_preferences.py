@@ -77,13 +77,14 @@ def validate_preferences(rows, *, contract):
 
 
 def _scores(model, row, torch):
-    # Reuse one differentiable state/entity graph for the whole choice group.
+    # Optimize raw logits: tanh can hide a wrong ranking by saturating both
+    # choices. Runtime scores and ranking/parity diagnostics remain bounded.
     cache = {}
     state = model.encode(row['state'], cache)
     scores = []
     for action in [row['preferred'], *row['alternatives']]:
         encoded = model.encode(action, cache)
-        scores.append(model.q_out(model.q_hidden(torch.cat((state, encoded))).relu()).tanh().squeeze())
+        scores.append(model.q_out(model.q_hidden(torch.cat((state, encoded))).relu()).squeeze())
     value = model.v_out(model.v_hidden(state).relu()).tanh().squeeze()
     return torch.stack(scores), value
 
@@ -140,16 +141,19 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
 
         def measure(phase, policy=None):
             notify(phase, 'start', 0)
-            losses, margins, values = [], [], []
+            losses, logit_losses, margins, values = [], [], [], []
             correct = parity_actions = 0
             max_error = 0.0
             with torch.no_grad():
                 for index, row in enumerate(rows):
                     budget()
-                    scores, value = _scores(model, row, torch)
+                    logits, value = _scores(model, row, torch)
+                    scores = logits.tanh()
                     loss = functional.cross_entropy((scores / temperature).unsqueeze(0), zero)
+                    logit_loss = functional.cross_entropy((logits / temperature).unsqueeze(0), zero)
                     margin = float(scores[0] - scores[1:].max())
                     losses.append(float(loss))
+                    logit_losses.append(float(logit_loss))
                     margins.append(margin)
                     if 'return' in row:
                         values.append(float((value - row['return']).square()))
@@ -168,6 +172,7 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                         notify(phase, 'progress', index + 1)
             notify(phase, 'end', len(rows))
             return {'preference_loss': math.fsum(losses) / len(rows),
+                    'ranking_logit_loss': math.fsum(logit_losses) / len(rows),
                     'strict_top1': correct / len(rows),
                     'mean_preferred_margin': math.fsum(margins) / len(rows),
                     'v_mse': math.fsum(values) / len(values) if values else None,
@@ -183,8 +188,8 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                 budget()
                 row = rows[index]
                 optimizer.zero_grad(set_to_none=True)
-                scores, value = _scores(model, row, torch)
-                ranking = functional.cross_entropy((scores / temperature).unsqueeze(0), zero)
+                logits, value = _scores(model, row, torch)
+                ranking = functional.cross_entropy((logits / temperature).unsqueeze(0), zero)
                 loss = (ranking + value_weight * (value - row['return']).square()
                         if 'return' in row else ranking)
                 if not torch.isfinite(loss).item():
@@ -208,6 +213,7 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                      if value_samples == len(rows)
                      else 'listwise_preferences_plus_available_actual_return_V')
         return payload, {'objective': objective,
+                         'ranking_loss_input': 'unbounded_q_logits',
                          'q_semantics': 'preference_utility_not_calibrated_return',
                          'samples': len(rows), 'updates': updates,
                          'value_samples': value_samples,

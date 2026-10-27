@@ -101,6 +101,17 @@ return or win probability. Heuristic teacher choices are not expert labels.
 Feature-equivalent alternatives must be filtered before fitting, with original
 rows retained and filtering reported; the API rejects indistinguishable labels.
 
+Ranking optimization uses the unbounded Q-head logits, before runtime `tanh`.
+Squashing first can attenuate the gradient or reduce the loss by saturating both
+choices without correcting their ordering. This follows the
+[cross-entropy logit convention](https://docs.pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html).
+The existing `preference_loss` remains a bounded-score diagnostic;
+`ranking_logit_loss` separately records the actual optimization loss, identified
+by `ranking_loss_input`. Neither loss is a playing-strength measurement.
+Strict ranking, margins and export parity still use bounded runtime Q, so
+saturated runtime ties are not counted as successful rankings. Runtime Q/V,
+checkpoint shapes, feature encoding and value-target masking are unchanged.
+
 Torch is imported only after admission checks. The trainer checks finite losses,
 clips gradients, enforces bounded updates/time, and checks every training
 candidate against standard-library inference before returning a checkpoint.
@@ -118,6 +129,9 @@ python -m pytest tests/test_qv_preference_training.py tests/test_qv_preference_o
 In the optional CPU-Torch runtime, `python -m scripts.check_qv_torch` also checks
 actual context-sensitive preference learning and exported inference parity on
 explicitly synthetic numeric inputs. This is not a gameplay-quality benchmark.
+The optional CPU module `tests/test_qv_ranking_logits.py` additionally checks
+wrong preferences under large positive and negative common score offsets,
+including actual parameter updates and unchanged bounded inference diagnostics.
 
 ## Explicit Live Binding
 
