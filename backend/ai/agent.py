@@ -36,6 +36,8 @@ _PURE_COUNTER_SPELL_RE = re.compile(
 )
 
 NEXT_COMBAT_FORECAST_BUDGET = 13
+STRATEGIC_COMBAT_ATTACKER_LIMIT = 16
+STRATEGIC_COMBAT_BLOCKER_LIMIT = 8
 
 
 def _terminal_utility(winner, player_id, magnitude):
@@ -1194,7 +1196,7 @@ class AIAgent:
                 or state.pending_trigger_order or state.winner is not None):
             return None
         from ai.information import decision_view
-        from ai.pending_effects import _settle_announced_stack
+        from ai.pending_effects import _settle_announced_stack, simulation_checked_action
         from rules_engine.combat_constraints import combat_rule_view
         if any(combat_rule_view(state, cid)['unsupported'] for player in state.players.values()
                for cid in player.battlefield if 'Creature' in effective_types(state, state.cards[cid])):
@@ -1209,15 +1211,30 @@ class AIAgent:
                 blockers = [cid for cid in sim.players[defender].battlefield
                             if 'Creature' in effective_types(sim, sim.cards[cid]) and not sim.cards[cid].tapped]
                 blocks = {}
+                heuristic_blocks = False
                 if blockers:
+                    attackers = [{'id': cid, 'name': sim.cards[cid].name} for cid in sim.attackers]
+                    defenders = [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers]
                     blocks = self._search_block_assignments(sim,
-                        [{'id': cid, 'name': sim.cards[cid].name} for cid in sim.attackers],
-                        [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers],
+                        attackers, defenders,
                         consider_next_combat=False)
+                    if (blocks is None and (len(attackers) > 4 or len(defenders) > 5)
+                            and len(attackers) <= STRATEGIC_COMBAT_ATTACKER_LIMIT
+                            and len(defenders) <= STRATEGIC_COMBAT_BLOCKER_LIMIT):
+                        # Conditional heuristic only, never an exhaustive win certificate.
+                        # Keep small-board search failures unknown; do not expand its tree.
+                        blocks = self._choose_blocks(sim, attackers, defenders)
+                        heuristic_blocks = True
                     if blocks is None:
                         return None
-                simulation_take_action(self.engine, sim, defender,
-                    {'type': 'block', 'blocks': blocks}, reject_invalid=True)
+                if heuristic_blocks:
+                    sim = simulation_checked_action(sim, self.engine, defender,
+                        {'type': 'block', 'blocks': {
+                            aid: [bids] if isinstance(bids, str) else bids
+                            for aid, bids in blocks.items()}})
+                else:
+                    simulation_take_action(self.engine, sim, defender,
+                        {'type': 'block', 'blocks': blocks}, reject_invalid=True)
                 if not _settle_announced_stack(sim):
                     return None
                 self.engine.next_step(sim)
