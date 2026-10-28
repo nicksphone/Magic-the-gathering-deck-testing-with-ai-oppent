@@ -123,7 +123,8 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
                     for action, terminal_class in terminal_classes
                     if terminal_class >= best_key[:2]
                     and action.get('type') not in {'pass_priority', 'tap_land_for_mana', 'tap_lands_bulk',
-                                                  'activate_mana_ability', 'tap_nonland_for_mana'}
+                                                  'activate_mana_ability', 'tap_nonland_for_mana',
+                                                  'foretell', 'suspend'}
                     and not action.get('_invalid_ai_choice') and not unplayable_x(action)
                     and (action.get('type') != 'attack' or bool(action.get('attackers')))
                 }
@@ -136,6 +137,30 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
                             identity = None
                         if identity in eligible:
                             best = eligible[identity]
+            if best.get('type') == 'pass_priority':
+                idle = {
+                    json.dumps(action, sort_keys=True, separators=(',', ':'), allow_nan=False): action
+                    for action, terminal_class in terminal_classes
+                    if terminal_class >= best_key[:2] and action.get('type') in {'foretell', 'suspend'}
+                }
+                if idle:
+                    from ai.foretell_policy import idle_foretell_action
+                    from ai.suspend_policy import idle_suspend
+                    # Preserve full-move reservation/timing checks, but never
+                    # let a helper add an action outside the admitted subset.
+                    for kind, helper in (('foretell', idle_foretell_action), ('suspend', idle_suspend)):
+                        if not any(action['type'] == kind for action in idle.values()):
+                            continue
+                        try:
+                            proposed = helper(agent, deepcopy(view), deepcopy(supplied_moves), seat)
+                            identity = (json.dumps(proposed, sort_keys=True, separators=(',', ':'), allow_nan=False)
+                                        if type(proposed) is dict else None)
+                        except (ActionRejected, TypeError, ValueError, OverflowError):
+                            identity = None
+                        selected = idle.get(identity)
+                        if selected is not None and selected['type'] == kind:
+                            best = selected
+                            break
         return deepcopy(best)
     except (ActionRejected, ValueError, OverflowError):
         return None
