@@ -277,9 +277,12 @@ class QVPolicy:
                 if text in texts:
                     return texts[text]
                 moments, length = text_moments(text)
-                pooled = [math.fsum(coefficient * weights['byte.weight'][byte][index]
-                                   for byte, coefficient in enumerate(row) if coefficient)
-                          for row in moments for index in range(WIDTH)]
+                pooled = []
+                for row in moments:
+                    products = [[coefficient * weight for weight in weights['byte.weight'][byte]]
+                                for byte, coefficient in enumerate(row) if coefficient]
+                    # Preserve product rounding and byte order in every fsum.
+                    pooled.extend(map(math.fsum, zip(*products)) if products else [0.0] * WIDTH)
                 texts[text] = self._linear('text', pooled + [length])
                 return texts[text]
             elif kind == 'list':
