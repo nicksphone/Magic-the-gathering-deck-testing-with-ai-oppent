@@ -23,6 +23,7 @@ SECONDARY_EFFECT_RE = re.compile(
 )
 
 _decision_projection = ContextVar("ai_decision_projection", default=None)
+_projection_choice_path = ContextVar("ai_projection_choice_path", default=())
 POSITION_SCORE_CACHE_BYTES = 16 * 1024 * 1024
 POSITION_SCORE_CACHE_ENTRIES = 256
 
@@ -598,7 +599,22 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
             if action is None:
                 if own_choice_action is None or chooser != player_id:
                     return False
-                action = own_choice_action(projected, rules.legal_moves(projected, player_id), player_id)
+                path = _projection_choice_path.get()
+                if len(path) >= 8:
+                    return False
+                try:
+                    position = (player_id, pickle.dumps(choice, protocol=5))
+                except (pickle.PicklingError, TypeError, ValueError, AttributeError, RecursionError):
+                    return False
+                # A counterfactual can change the board but revisit the same choice.
+                # Keep that cyclic/deep forecast unknown, not a resolved payoff.
+                if position in path:
+                    return False
+                token = _projection_choice_path.set(path + (position,))
+                try:
+                    action = own_choice_action(projected, rules.legal_moves(projected, player_id), player_id)
+                finally:
+                    _projection_choice_path.reset(token)
             if action.get("type") == "pass_priority":
                 return False
             try:
