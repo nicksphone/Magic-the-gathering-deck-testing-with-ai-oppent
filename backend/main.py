@@ -2066,12 +2066,16 @@ def _force_ai_land_action(match: MatchController, player_id: int, legal_moves: l
     if not land_moves:
         return None
     # Let AI keep color-aware land selection by choosing among only play-land actions.
-    # Return an offered move, not an unverified card ID from the AI.
+    # Match every chosen parameter, not just the card/face of another offer.
     picked = match.ai[player_id].choose_action(state, land_moves, player_id).action
     if isinstance(picked, dict) and picked.get("type") == "play_land":
-        for move in land_moves:
-            if move.get("card_id") == picked.get("card_id") and move.get("selected_face_index") == picked.get("selected_face_index"):
-                return move
+        try:
+            chosen = complete_action(picked)
+            for move in land_moves:
+                if complete_action(move) == chosen:
+                    return move
+        except ActionRejected:
+            pass
     return land_moves[0]
 
 
