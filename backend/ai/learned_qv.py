@@ -248,8 +248,12 @@ class QVPolicy:
     def _linear(self, name, values, relu=True):
         weights = self._payload['weights']
         bias = weights.get(name + '.bias', [0.0] * len(weights[name + '.weight']))
-        result = [sum(a * b for a, b in zip(row, values)) + offset
-                  for row, offset in zip(weights[name + '.weight'], bias)]
+        if self._payload['activation'] == LIFE_CONTEXT_ACTIVATION:
+            result = [math.sumprod(row, values) + offset
+                      for row, offset in zip(weights[name + '.weight'], bias)]
+        else:
+            result = [sum(a * b for a, b in zip(row, values)) + offset
+                      for row, offset in zip(weights[name + '.weight'], bias)]
         if any(not math.isfinite(value) for value in result):
             raise ValueError('Nonfinite Q/V activation')
         return [max(0.0, value) for value in result] if relu else result
