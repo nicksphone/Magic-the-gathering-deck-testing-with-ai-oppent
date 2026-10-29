@@ -1,0 +1,229 @@
+{
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "whole_bulk_verified": true,
+  "full_objects_unchanged": true,
+  "cards": {
+    "Boros Charm": {
+      "bulk_line": 5780,
+      "line_sha256_including_newline": "2e8f2dd9c806b9ee6ff809808761ee8ad6338db9529813622e481aefac6eac22",
+      "object_sha256": "b3747f3d415c1da64589dc0ffa2865e4ade25d8b3f7ca99233bf356951fd6512",
+      "id": "e0d8c9f6-cbbd-4694-b100-01cfb81036cc",
+      "oracle_id": "2679d0dd-ba30-4a1c-b6a0-b3ac6c790496",
+      "fields": 63,
+      "mana_cost": "{R}{W}",
+      "type_line": "Instant"
+    },
+    "Lava Spike": {
+      "bulk_line": 6029,
+      "line_sha256_including_newline": "3ede28ca4c3de4cbf1f9711b588b94a6c61ab70672a45a4e286be6e82b710645",
+      "object_sha256": "58ee743a0407d178167858ec0e813b9dca0af2d47f9f1d8af55dd031d4b98c9f",
+      "id": "79c21c1f-eaa4-454d-a1c7-b41466d0a428",
+      "oracle_id": "2837888c-bfa8-4955-9334-0605ad409f7e",
+      "fields": 62,
+      "mana_cost": "{R}",
+      "type_line": "Sorcery — Arcane"
+    },
+    "Rift Bolt": {
+      "bulk_line": 6491,
+      "line_sha256_including_newline": "5f7235b20c126d07e0a76e3858a060f11756c9049514f24c90cae0bd4a92bc15",
+      "object_sha256": "a46b46fc599493c45769bbc97a9b9070b9b23e907d1af7af0324e721a445b2a7",
+      "id": "4ccd0ada-92b2-48f3-b5ae-96346fc138b6",
+      "oracle_id": "2b8afa9f-4236-4c02-a8d5-3c145caecfd6",
+      "fields": 63,
+      "mana_cost": "{2}{R}",
+      "type_line": "Sorcery"
+    },
+    "Eidolon of the Great Revel": {
+      "bulk_line": 7131,
+      "line_sha256_including_newline": "eba4846ac644a1ce24e780675dc338ba6f71fe8eb0b4163c9a39aefdad01f0ec",
+      "object_sha256": "9b6eec9b4d07150a6b8d0a2edc19f54984dd3a129f1ae34f90a9b68140260213",
+      "id": "183ef738-0559-49ca-85b4-e6836521f203",
+      "oracle_id": "2fd7018e-1c36-4d7f-8f72-22f2f7f60c60",
+      "fields": 68,
+      "mana_cost": "{R}{R}",
+      "type_line": "Enchantment Creature — Spirit"
+    },
+    "Doomskar": {
+      "bulk_line": 8510,
+      "line_sha256_including_newline": "45708ccd133437bb84c616344144829220eba6d7016506434db6094c493d9a68",
+      "object_sha256": "f21190c5d5cd202f6f484ede0828d306efaa8f1628b990c26ac583d71a94d0cd",
+      "id": "130ee895-1e5e-4f82-bb66-e1275bac75dd",
+      "oracle_id": "38ece0fa-2c94-4eae-b6ab-74b783862f3e",
+      "fields": 68,
+      "mana_cost": "{3}{W}{W}",
+      "type_line": "Sorcery"
+    },
+    "Lightning Bolt": {
+      "bulk_line": 10255,
+      "line_sha256_including_newline": "420536045c9f3067b927bf6ae6d3a0dbdc727297e799ca5733d3765d56ba994e",
+      "object_sha256": "faad8b64b05be249244f0fec337a2745c81e2cece5aae154536f5aa358e56f3e",
+      "id": "7673784e-db4b-43a1-8d55-1bb9fc1e284f",
+      "oracle_id": "4457ed35-7c10-48c8-9776-456485fdf070",
+      "fields": 66,
+      "mana_cost": "{R}",
+      "type_line": "Instant"
+    },
+    "Serra Angel": {
+      "bulk_line": 11336,
+      "line_sha256_including_newline": "8d2e77815724fdf236461dd9c1ae3822076ec4f9bbffcc029fd8dc0b0f32019d",
+      "object_sha256": "c4db702f81d92880abb48c0dc1170bb863c8666ce5b5087c7dde8e0c49c61e97",
+      "id": "b8c5e74c-96e7-4a1f-93b7-14d776fe4b2d",
+      "oracle_id": "4b7ac066-e5c7-43e6-9e7e-2739b24a905d",
+      "fields": 66,
+      "mana_cost": "{3}{W}{W}",
+      "type_line": "Creature — Angel"
+    },
+    "Goblin Guide": {
+      "bulk_line": 12279,
+      "line_sha256_including_newline": "c251836a7cd834066240b34848b8a5e78064097f094dd3be98e99e919146dd7e",
+      "object_sha256": "2c4b1fd0b3fa2f1494d3b7ffebb3ae62b88584cd96178495bf6b7a6b006b7606",
+      "id": "3c0f5411-1940-410f-96ce-6f92513f753a",
+      "oracle_id": "51d9564b-44fc-4de1-9119-09d7b4089378",
+      "fields": 66,
+      "mana_cost": "{R}",
+      "type_line": "Creature — Goblin Scout"
+    },
+    "Cosmos Charger": {
+      "bulk_line": 14436,
+      "line_sha256_including_newline": "d8bfa13b6429c92200855169ae1626a27063049b3f7cda9d67e1832348bb12b4",
+      "object_sha256": "c5181c59c522fbed97d55302c9f9fc41d7e3df2464dede05581b604b1e03ce27",
+      "id": "4ec318c6-b718-436f-b9e8-e0c6154e5010",
+      "oracle_id": "603e518c-8f12-432c-ae03-790db5be77bf",
+      "fields": 69,
+      "mana_cost": "{3}{U}",
+      "type_line": "Creature — Horse Spirit"
+    },
+    "Opt": {
+      "bulk_line": 17024,
+      "line_sha256_including_newline": "7e3270a2cbc577cf91d5ec6f28c92a88657fdb311c965d40c8e02449130fb132",
+      "object_sha256": "5d5b7f6d2eaf40a3802a1f0bd80ae68b2a7d6435e42427b4197d789a70816feb",
+      "id": "bbc99a51-1501-4525-a3cc-f48249b64bed",
+      "oracle_id": "713332c1-5bd8-400f-bfff-c1ca0697a043",
+      "fields": 63,
+      "mana_cost": "{U}",
+      "type_line": "Instant"
+    },
+    "Searing Blaze": {
+      "bulk_line": 17559,
+      "line_sha256_including_newline": "61abc0088c5ba2ab9c5d8f1963222c557e5c3954e5f7ce7df7a574609cdedfe0",
+      "object_sha256": "1b8bc7f90175405ca8664fb22de68a40bb1184b5b2f678de93dfd2f1a015fa86",
+      "id": "f659d464-13dd-49e2-a842-098dcba49659",
+      "oracle_id": "74b08a70-b0bb-4340-98a0-b1d5b7c9d2cc",
+      "fields": 62,
+      "mana_cost": "{R}{R}",
+      "type_line": "Instant"
+    },
+    "Saw It Coming": {
+      "bulk_line": 21799,
+      "line_sha256_including_newline": "8a79fa7f7fd8ee4abceea7e7b241d1706fd34c30cafe4da96dc05b600438272d",
+      "object_sha256": "630157a79220e82d058095e55cf485f532aee86882304204ada7c1c02d895fc5",
+      "id": "877a1bb9-5eae-453a-bec0-a9de20ea6815",
+      "oracle_id": "90edaf33-d0ab-47e0-8f6a-6fba38286e6e",
+      "fields": 67,
+      "mana_cost": "{1}{U}{U}",
+      "type_line": "Instant"
+    },
+    "Mountain": {
+      "bulk_line": 24715,
+      "line_sha256_including_newline": "b57d8ce5dcbbb01e1c128aaa9ebeab8a26d5f297edb51eac6adce5c4af770033",
+      "object_sha256": "b9dda46a4c5305f3ee220d17f93b150d284c0a43ddbdfa19d894523b0b7ab47d",
+      "id": "2a844b96-6616-4c39-8f4f-5d14a3b2bd55",
+      "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+      "fields": 59,
+      "mana_cost": "",
+      "type_line": "Basic Land — Mountain"
+    },
+    "Skullcrack": {
+      "bulk_line": 25141,
+      "line_sha256_including_newline": "58365f2020b251314fb48b4b6f1d552eeeb07c546e89da57ff6cda02d91d4055",
+      "object_sha256": "d10cd9c16e1f828e2118dc6e08fe851abfa7c27cf90ae920c59af8b6467ecfd1",
+      "id": "7f399983-d70a-4cf3-b76e-bb0c472e7c69",
+      "oracle_id": "a6fc0b0c-9ba2-47f2-ab92-26fd20d0f86d",
+      "fields": 63,
+      "mana_cost": "{1}{R}",
+      "type_line": "Instant"
+    },
+    "Swords to Plowshares": {
+      "bulk_line": 26694,
+      "line_sha256_including_newline": "11cbc10f3cd0d6b5125757b51342aa67fa1ab699fe83353ea64eb04704a209a4",
+      "object_sha256": "7b3508d23fcf27231aefa195dec9c2a762e2ff0ec4590bc765d911211aa79b3f",
+      "id": "f7e12477-d59f-442b-a678-1be746d0b7be",
+      "oracle_id": "b1544f21-7e98-461b-aed5-e748b0168c52",
+      "fields": 61,
+      "mana_cost": "{W}",
+      "type_line": "Instant"
+    },
+    "Island": {
+      "bulk_line": 26902,
+      "line_sha256_including_newline": "5e0e3077123cff035ee4a723370c00c7e58925b619c6431277724895d159e9f6",
+      "object_sha256": "3dc84687094c5831a9901fbbaa489f78006bdaf0275fffda1c5f8985df8b3a37",
+      "id": "f3cc07cd-cc79-4745-b0b7-eade60175cc3",
+      "oracle_id": "b2c6aa39-2d2a-459c-a555-fb48ba993373",
+      "fields": 59,
+      "mana_cost": "",
+      "type_line": "Basic Land — Island"
+    },
+    "Plains": {
+      "bulk_line": 28321,
+      "line_sha256_including_newline": "af82e883368b8211c1845af680e1b4dab52666b41969cc6987bffdde7ada86b7",
+      "object_sha256": "96d267598e275ed64ad08a1390234dfc87cc50a29e14778c48d874b7344941b5",
+      "id": "8ab0f4c0-b331-4c57-b68f-2e24bb5ba06c",
+      "oracle_id": "bc71ebf6-2056-41f7-be35-b2e5c34afa99",
+      "fields": 59,
+      "mana_cost": "",
+      "type_line": "Basic Land — Plains"
+    },
+    "Plateau": {
+      "bulk_line": 30049,
+      "line_sha256_including_newline": "d8875463e0b7d85dae3cf4feea82db3c127eec04f824906b4e58bb40dafe1280",
+      "object_sha256": "6788d9995db8e32e7c98ab4e417d17d3e8a63d1d225786f2d7b893c9ccee5792",
+      "id": "bb979a96-a57d-4fb5-8ebe-0bd398272abe",
+      "oracle_id": "c7a15ca4-085f-4d92-8387-c3711c04c8fa",
+      "fields": 62,
+      "mana_cost": "",
+      "type_line": "Land — Mountain Plains"
+    },
+    "Counterspell": {
+      "bulk_line": 30747,
+      "line_sha256_including_newline": "55dbf2a71104f8c4309fd842e3f5d6e4096800637ece6d932d28a32cafef98db",
+      "object_sha256": "fe9513a8443f2f78ceb48e835c4e81d5b6d6eb995581683c73dfff9acecdb6b9",
+      "id": "4f616706-ec97-4923-bb1e-11a69fbaa1f8",
+      "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+      "fields": 62,
+      "mana_cost": "{U}{U}",
+      "type_line": "Instant"
+    },
+    "Behold the Multiverse": {
+      "bulk_line": 32558,
+      "line_sha256_including_newline": "fb027929123946b6a8008bb64da3854f64ede063e910d9b706bae6d0cfabdfc6",
+      "object_sha256": "f8eecc1825a7f51ad8bfc43a23bea8b9c4697e70cb026f6666e147dd62641646",
+      "id": "27855a38-a682-4f97-ad22-ac625e86faec",
+      "oracle_id": "d7d2f701-77df-4169-bf98-0d51d6886e9b",
+      "fields": 67,
+      "mana_cost": "{3}{U}",
+      "type_line": "Instant"
+    },
+    "Monastery Swiftspear": {
+      "bulk_line": 33049,
+      "line_sha256_including_newline": "53d9549c52a5c94e422c1c5781ed5e82a201d399e1d3b65a6b0aff25b67bbd15",
+      "object_sha256": "56a8c91d623e980dd75c9744f80a51716d503a8d7a3e6e8698931e6899e56c2f",
+      "id": "d6bfa227-4309-40ed-952c-279595eab17e",
+      "oracle_id": "dafd2713-d1bc-474b-b390-d2ff20b5375e",
+      "fields": 67,
+      "mana_cost": "{R}",
+      "type_line": "Creature — Human Monk"
+    },
+    "Augury Raven": {
+      "bulk_line": 35957,
+      "line_sha256_including_newline": "2e734c1846135b288d8496f9d261c9e3d3446471eeaf2046f04000d18537a67e",
+      "object_sha256": "9b10bbc88bd8d531d0a9941de2adfee8952fc65f05cf6afcb8bcb12eb6a49c41",
+      "id": "a9947cfd-91d6-479e-a7f6-2a2050f020f3",
+      "oracle_id": "ee05fc58-1356-4b2f-b9ce-bda8cc716aee",
+      "fields": 68,
+      "mana_cost": "{3}{U}",
+      "type_line": "Creature — Bird"
+    }
+  },
+  "source_rule_support": "PENDING_SEPARATE_METADATA_PREFLIGHT_NOT_NATIVE_CERTIFICATION",
+  "bulk_file": "oracle-cards-20260927090157.jsonl.gz"
+}
