@@ -3818,7 +3818,7 @@ class AIAgent:
             allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
         action = choose_resource_payment(self, state, action, player_id)
         action = complete_cast_hybrid_choices(self, state, action, player_id)
-        if not self._harmful_friendly_damage(state, action, player_id):
+        if not self._harmful_friendly_removal(state, action, player_id):
             return action
         from rules_engine.cast_choice import build_cast_hints
         card = _card_for_move(state, action)
@@ -3844,7 +3844,7 @@ class AIAgent:
                 return redirected
         return {**action, '_invalid_ai_choice': True}
 
-    def _harmful_friendly_damage(self, state, action, player_id):
+    def _harmful_friendly_removal(self, state, action, player_id):
         if (not isinstance(state, MatchState) or action.get('_invalid_ai_choice')
                 or action.get('type') != 'cast_spell'):
             return False
@@ -3854,7 +3854,8 @@ class AIAgent:
         from rules_engine.oracle_effects import infer_effect_from_oracle
         effect, payload = infer_effect_from_oracle(state, _card_for_move(state, action), player_id,
             action.get('targets') or {}, report_unsupported=False)
-        if (payload.get('effect_key') if effect == 'conditional_instruction' else effect) != 'deal_damage':
+        effect_key = payload.get('effect_key') if effect == 'conditional_instruction' else effect
+        if effect_key not in {'deal_damage', 'exile'}:
             return False
         from ai.pending_effects import friendly_destruction_profit, _projection_copy
         choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype,
@@ -3863,6 +3864,8 @@ class AIAgent:
             own_choice_action=lambda projected, legal, pid: choice_agent.choose_action(projected, legal, pid).action)
         if profitable is not None:
             return not profitable
+        if effect_key != 'deal_damage':
+            return False
         from rules_engine.action_validation import ActionRejected, checked_action
         rules = RulesEngine()
         try:
