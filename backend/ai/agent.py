@@ -4664,9 +4664,9 @@ class AIAgent:
         state: MatchState,
         attackers: list[dict],
         blockers: list[dict],
-        *, consider_next_combat=True,
+        *, consider_next_combat=True, require_complete=False,
     ) -> dict[str, str | list[str]] | None:
-        """Evaluate small-board blocker assignments by resolving cloned combat."""
+        """Resolve a bounded choice set; exact-response callers keep unknowns."""
         if self.difficulty not in {"master", "master_plus"} and (
                 self.difficulty != 'strong' or not isinstance(state, MatchState)):
             return None
@@ -4693,10 +4693,16 @@ class AIAgent:
                 return None
             # Reuse checked outcomes for survival or retained recurring material.
             consider_next_combat = False
-        from ai.block_search import block_intents
+        from ai.block_search import block_intents, block_projection_intents, EXACT_BLOCK_INTENT_LIMIT
         assignments = block_intents(state, attacker_ids, blocker_ids)
         if not assignments:
             return None
+        if require_complete and len(assignments) > EXACT_BLOCK_INTENT_LIMIT:
+            return None
+        if not require_complete:
+            assignments = block_projection_intents(state, assignments)
+            if assignments is None:
+                return None
         best: tuple[int, float, tuple[tuple[str, tuple[str, ...]], ...], dict[str, str | list[str]]] | None = None
         initial_life = state.players[defender].life
         opponent = 1 if defender == 2 else 2
@@ -4731,7 +4737,7 @@ class AIAgent:
 
         followups = []
         for assignment in assignments:
-            if face_only and initial_life > incoming_power and assignment and not keyword_combat:
+            if not require_complete and face_only and initial_life > incoming_power and assignment and not keyword_combat:
                 chump_only = True
                 for aid, bids in assignment.items():
                     attacker = state.cards[aid]
@@ -4750,6 +4756,8 @@ class AIAgent:
                     continue
             sim = project(assignment)
             if sim is None:
+                if require_complete:
+                    return None
                 continue
             score = evaluate_board(sim, defender)
             score += (sim.players[defender].life - initial_life) * 4.0
@@ -4763,7 +4771,7 @@ class AIAgent:
             # the proposed assignment only chumps. This is a general combat
             # value rule, not an archetype/card exception; lethal prevention
             # and profitable trades remain preferred.
-            if face_only and initial_life > incoming_power and sim.winner != defender and blockers_lost > attackers_lost:
+            if not require_complete and face_only and initial_life > incoming_power and sim.winner != defender and blockers_lost > attackers_lost:
                 if attackers_lost == 0:
                     continue
                 score -= (blockers_lost - attackers_lost) * (12.0 + incoming_power)
@@ -5073,6 +5081,7 @@ class AIAgent:
                 blocks = self._search_block_assignments(sim,
                     [{'id': cid, 'name': sim.cards[cid].name} for cid in sim.attackers],
                     [{'id': cid, 'name': sim.cards[cid].name} for cid in blockers],
+                    require_complete=True,
                     **({} if consider_next_combat else {'consider_next_combat': False}))
                 if blocks is None:
                     return None
