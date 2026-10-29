@@ -188,6 +188,12 @@ def spell_cost_modifier(clause):
 
 
 def _apply_static_spell_taxes(context: CostContext) -> CostContext:
+    from rules_engine.query_context import rule_query_scope
+    with rule_query_scope(context.state):
+        return _apply_static_spell_taxes_query(context)
+
+
+def _apply_static_spell_taxes_query(context: CostContext) -> CostContext:
     from rules_engine.continuous import printed_abilities_suppressed
     from rules_engine.activation_modifiers import turn_cost_taxes
     from game_state.state import Zone
