@@ -8,7 +8,7 @@ import unittest
 
 
 SOURCE = Path(__file__).resolve().parents[3]
-MAIN_SHA256 = '70e637100bea9ddcc1eabd23bad17a07fd37725f7b16f40103511298b77c7143'
+MAIN_SHA256 = '4bc041adc47412fb97f0b4527ada9ca2f823c27dea4bb999fd9b95cee997512c'
 
 
 def load(relative, name):
@@ -63,6 +63,14 @@ class CurrentMainSourceBindingsTests(unittest.TestCase):
     def test_unapproved_policy_field_change_inside_delta_still_rejects(self):
         changed = self.main.replace(b'policy_provenance: dict[int, dict]',
                                     b'policy_provenance: dict[int, object]', 1)
+        self.assertNotEqual(changed, self.main)
+        historical = self.api.ACCEPTED_MAIN_DELTA['old_sha256']
+        with self.assertRaises(AssertionError):
+            self.api.restore_reviewed_source('main.py', changed, historical)
+
+    def test_full_land_choice_comparison_mutation_still_rejects(self):
+        changed = self.main.replace(b'if complete_action(move) == chosen:',
+                                    b'if complete_action(move) != chosen:', 1)
         self.assertNotEqual(changed, self.main)
         historical = self.api.ACCEPTED_MAIN_DELTA['old_sha256']
         with self.assertRaises(AssertionError):

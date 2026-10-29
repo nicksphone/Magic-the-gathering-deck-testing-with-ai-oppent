@@ -14,12 +14,18 @@ BACKEND = Path(__file__).parents[1]
 def test_actual_current_main_requires_both_exact_historical_inverses():
     current = (BACKEND / 'main.py').read_bytes()
     recipe = api.CONTRACT['production']['main.py']
+    assert api.LAND_CHOICE_MAIN_DELTA['old_sha256'] == api.CURRENT_MAIN_DELTA['new_sha256']
+    predecessor = api._restore(current.decode(), api.LAND_CHOICE_MAIN_DELTA)
+    assert hashlib.sha256(predecessor.encode()).hexdigest() == api.CURRENT_MAIN_DELTA['new_sha256']
+    accepted = api._restore(predecessor, api.CURRENT_MAIN_DELTA)
+    assert hashlib.sha256(accepted.encode()).hexdigest() == api.ACCEPTED_MAIN_DELTA['new_sha256']
     intermediate = api.restore_reviewed_source('main.py', current, recipe['new_sha256'])
+    assert api._restore(accepted, api.ACCEPTED_MAIN_DELTA).encode() == intermediate
     assert hashlib.sha256(intermediate).hexdigest() == recipe['new_sha256']
     historical = api._restore(intermediate.decode(), recipe)
     assert hashlib.sha256(historical.encode()).hexdigest() == recipe['old_sha256']
     assert api.compatible_product_hash('main.py', current, recipe['old_sha256']) == hashlib.sha256(current).hexdigest()
-    assert hashlib.sha256(current).hexdigest() == api.CURRENT_MAIN_DELTA['new_sha256']
+    assert hashlib.sha256(current).hexdigest() == api.LAND_CHOICE_MAIN_DELTA['new_sha256']
 
 
 def test_actual_private_fixture_restores_only_reviewed_delver_identity_clause():
