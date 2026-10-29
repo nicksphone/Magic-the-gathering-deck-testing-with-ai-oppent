@@ -7,9 +7,10 @@ import math
 
 from ai.action_contract import complete_action
 from ai.declaration_policy import finalize_declaration
+from ai.interaction_reservation import affordable_interactions, preserves_interactions
 from ai.learned_qv import MAX_CHECKPOINT_BYTES, QVPolicy, strict_json
 from game_state.state import Step
-from rules_engine.action_validation import ActionRejected
+from rules_engine.action_validation import ActionRejected, checked_action
 from training import decision_frame
 from training.dataset import DECISION_DATASET_VERSION
 from training.environment import (
@@ -91,6 +92,7 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
         best, best_key = None, None
         terminal_classes = []
         known_outcome = False
+        answers = None
         for action in candidates:
             result = prepared.predict(decision_frame.encode_action(frame, references.action(action)))
             if (type(result) is not dict or set(result) != {'q', 'v'}
@@ -102,11 +104,21 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
             win = unanswered_action_wins(view, seat, action, settle_declared_combat=True)
             loss = (unanswered_action_loses(view, seat, action, settle_declared_combat=True)
                     if win is False else None)
+            if action['type'] in {'foretell', 'suspend'} and win is not True:
+                if answers is None:
+                    answers = affordable_interactions(agent, view, seat)
+                # Preserve known wins; reserve answers using only the actor projection.
+                if answers and not preserves_interactions(
+                        checked_action(view, agent.engine, seat, action),
+                        seat, action['card_id'], answers):
+                    continue
             known_outcome |= win is True or (win is False and (loss is True or loss is False))
             key = (win is True, loss is not True, result['q'])
             terminal_classes.append((action, key[:2]))
             if best is None or key > best_key:
                 best, best_key = action, key
+        if best is None:
+            return None
         if (view.step == Step.DECLARE_BLOCKERS and view.active_player != seat
                 and not known_outcome):
             return None
