@@ -1,6 +1,6 @@
 # MTG Deck Testing Lab Finish Plan
 
-Updated: 2026-10-16 UTC. This is the execution index, not a release certificate.
+Updated: 2026-10-29 UTC. This is the execution index, not a release certificate.
 The complete previous plan and its evidence remain in
 [historical plan](docs/history/finish-plan-through-b81862a.md). Historical pass
 counts belong to their exact source revisions; they do not certify current HEAD.
@@ -29,6 +29,27 @@ full rules/arbitrary-deck ambition remains open beyond a bounded local beta.
   passing characterization tests are not proof of correct gameplay.
 - Preserve baseline failures, setup errors and timeout ledgers. No hidden skips,
   expected failures or weakened assertions to make a release gate look green.
+
+## October 29 AI Iteration
+
+Published `b4313031` passes the complete hosted workflow, including browser,
+frontend, backend reference, all four backend workers and their aggregate job.
+That source qualification is not an AI-strength or release certificate.
+
+The latest source-bound offline fit completed, but its fixed-data weights do not
+improve on the previous candidate. Raw decision-quality weaknesses, a slow
+captured decision and a baseline combat timeout remain open. Missing explicit
+hybrid payments in a rejected training-game cast have been corrected; the
+integrated fix passes 99 tests across three complete modules, without relaxing
+strict action validation. The new candidate is not activated. Native training collection and
+replay produced five new distinct examples, now admitted under a finite provenance
+contract and validated in a 457-row dataset, not yet fitted. Incomplete games
+are not assigned terminal rewards. See
+[current learned-policy progress and limits](docs/plans/learned-policy-groundwork.md).
+
+The next work is to fix those observed decisions and latency problems, qualify
+new training data without evaluation leakage, and complete meaningful paired
+gameplay evaluation. None of the original AI/data or release scope is removed.
 
 ## October 16 Canonical Death And Layered Toxic
 

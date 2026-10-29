@@ -3765,10 +3765,11 @@ class AIAgent:
         return score
 
     def _materialize_action(self, state: MatchState, move: dict, player_id: int, *, allow_friendly_target: bool = False, allow_zero_x: bool = False) -> dict:
-        from ai.casting_resources import choose_resource_payment
+        from ai.casting_resources import choose_resource_payment, complete_cast_hybrid_choices
         action = self._materialize_action_without_resources(state, move, player_id,
             allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
         action = choose_resource_payment(self, state, action, player_id)
+        action = complete_cast_hybrid_choices(self, state, action, player_id)
         if not self._harmful_friendly_damage(state, action, player_id):
             return action
         from rules_engine.cast_choice import build_cast_hints
