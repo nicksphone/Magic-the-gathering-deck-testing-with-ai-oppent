@@ -756,6 +756,7 @@ class AIAgent:
             return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Resolve mandatory mechanic choice")
         from ai.mana_resource_policy import resource_change_plan
         legal_moves = [move for move in legal_moves if not self._bad_shared_draw_cast(state, move, player_id)
+                       and not self._defer_landfall_burn(state, move, player_id)
                        and not ((plan := resource_change_plan(self, state, move, player_id))
                                 and move.get('type') == 'cast_spell' and plan['defer'])]
         self_removal_win = self._winning_self_removal_action(state, legal_moves, player_id)
@@ -2676,6 +2677,40 @@ class AIAgent:
             return None
         power = max(0, effective_power(state, cid)) if 'Creature' in effective_types(state, card) else 0
         return major or power >= 4 or power >= state.players[player_id].life
+
+    def _defer_landfall_burn(self, state: MatchState, move: dict, player_id: int) -> bool:
+        if (move.get('type') != 'cast_spell' or state.active_player != player_id
+                or state.step not in {Step.UPKEEP, Step.DRAW} or state.stack):
+            return False
+        from rules_engine.land_history import landfall_status
+        from rules_engine.linked_targets import linked_damage_instruction
+        card = _card_for_move(state, move)
+        instruction = linked_damage_instruction(card.oracle_text, card.name) if card else None
+        if (not instruction or instruction['landfall_amount'] <= instruction['ordinary_amount']
+                or landfall_status(state, player_id) is not False
+                or self._remaining_land_plays(state, player_id) <= 0):
+            return False
+        known_lands = {cid for cid in state.players[player_id].hand
+                       if 'Land' in effective_types(state, state.cards[cid])}
+        if not known_lands:
+            return False
+        # Test only today's known cards/resources, not the next draw or replies.
+        main = planning_copy(state)
+        main.step = Step.PRECOMBAT_MAIN
+        main.players[player_id].mana_pool.clear()
+        main.players[player_id].snow_mana_pool.clear()
+        main_moves = self.engine.legal_moves(main, player_id)
+        if (not any(action['type'] == 'play_land' and action.get('card_id') in known_lands
+                    for action in main_moves)
+                or not any(action['type'] == 'cast_spell' and action.get('card_id') == card.id
+                           for action in main_moves)):
+            return False
+        from ai.pending_effects import _unanswered_action_outcome
+        action = self._materialize_action(state, move, player_id)
+        if action.get('_invalid_ai_choice'):
+            return False
+        # Preserve terminal lines and unknown forecasts rather than guessing.
+        return _unanswered_action_outcome(state, player_id, action) == 'neutral'
 
     def _cast_bias(self, state: MatchState, move: dict, player_id: int) -> float:
         cid = move.get("card_id")
