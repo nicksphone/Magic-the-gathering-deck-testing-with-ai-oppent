@@ -3993,10 +3993,17 @@ class AIAgent:
         if isinstance(state, MatchState) and card is not None:
             from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
             ability_text = str(move.get("ability_label") or "").partition(":")[2].strip() if mtype != "cast_spell" else None
+            destruction_candidates = {target.get('id') for key, group in hints.items()
+                if key.endswith('_targets') and isinstance(group, list)
+                for target in group if isinstance(target, dict)} | {targets.get('target_card_id')}
+            if (set(targets) == {'target_card_id'} and targets['target_card_id']
+                    and not any(key in hints for key in ('linked_target_pairs', 'required_target_instance_count',
+                                                        'required_distinct_target_count', 'supports_divide'))):
+                # Later materialization retains this single, already selected target.
+                destruction_candidates = {targets['target_card_id']}
             excluded = unproductive_destroy_targets(state, card, player_id, targets, ability_text=ability_text,
                 action=out, own_choice_action=lambda projected, legal, pid: self.choose_action(projected, legal, pid).action,
-                candidates={target.get('id') for key, group in hints.items() if key.endswith('_targets') and isinstance(group, list)
-                            for target in group if isinstance(target, dict)} | {targets.get('target_card_id')})
+                candidates=destruction_candidates)
             friendly_target = targets.get("target_card_id")
             if allow_friendly_target and friendly_target in state.players[player_id].battlefield:
                 excluded.discard(friendly_target)
