@@ -3546,18 +3546,19 @@ class AIAgent:
             return None, 0.0
         casting = move.get("type") == "cast_spell"
         targets = (move.get("target_hints") or {}).get("aura_targets", []) if casting else move.get("targets", [])
+        chosen_target = (move.get("targets") or {}).get("target_card_id") if casting else None
+        if chosen_target is not None:
+            targets = [target for target in targets if target["id"] == chosen_target]
         before = evaluate_board(state, player_id)
         best = None
         for target in targets:
             action = {"type": "equip", "card_id": source.id, "target_card_id": target["id"]}
             if casting:
                 compatible = move["target_hints"].get("aura_cost_options", {}).get(target["id"], [])
-                action = {"type": "cast_spell", "card_id": source.id, "targets": {"target_card_id": target["id"]}}
-                action.update({flag: True for flag in ("from_exile", "from_graveyard", "from_library") if move.get(flag)})
-                if compatible:
+                action = copy.deepcopy(move)
+                action["targets"] = {**(action.get("targets") or {}), "target_card_id": target["id"]}
+                if compatible and not (action.get("cost_choice") or {}).get("id"):
                     action["cost_choice"] = {"id": compatible[0]}
-                if move.get("selected_face_index") is not None:
-                    action["selected_face_index"] = move["selected_face_index"]
             projected = planning_copy(state)
             acquisitions = {pid: 0 for pid in state.players}
             try:
