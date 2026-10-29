@@ -1,0 +1,16 @@
+{
+  "accepted_public_commit": "3d691056ba34b9f578f6d038b871c233a41fe869",
+  "source": "rules_engine/costs.py",
+  "accepted_delta": {
+    "old_sha256": "9294bde1dc08d5cf78df988ae7efeea53ab20d0e65152c94b855a428fb0cca6c",
+    "new_sha256": "08a45918b5adfd2f09fb8d762e6a6019e064fb77794cdb991399aa8c845516b8",
+    "hunks": [
+      {
+        "start": 484,
+        "end": 490,
+        "old": "",
+        "new": "    from rules_engine.oracle_text import without_reminder_text\n    spectacle = re.search(r'^spectacle[ \\t]+((?:\\{[^}]+\\})+)\\.?[ \\t]*$',\n                          without_reminder_text(card.oracle_text or ''), re.I | re.M)\n    if (spectacle and not without_mana\n            and state.life_lost_this_turn.get(3-player_id, 0) > 0):\n        ordinary_methods.append(CostOption(id='spectacle', label='Spectacle', mana_cost=spectacle[1]))\n"
+      }
+    ]
+  }
+}

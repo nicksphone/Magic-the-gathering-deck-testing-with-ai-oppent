@@ -252,6 +252,8 @@ def apply_player_damage(state, player_id: int, amount: int, source_id: str | Non
     reason = 'infect' if infect else 'toxic'
     if not infect and not player_cant_lose_life(state, player_id):
         player.life -= amount
+        from rules_engine.resource_events import record_life_loss
+        record_life_loss(state, player_id, amount)
     if combat and source_id in state.cards:
         toxic = _toxic_value(state, source_id)
         if toxic:

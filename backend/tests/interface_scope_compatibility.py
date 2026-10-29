@@ -27,6 +27,16 @@ assert CURRENT_MAIN['source'] == 'main.py'
 CURRENT_MAIN_DELTA = CURRENT_MAIN['accepted_main_delta']
 assert CURRENT_MAIN_DELTA['old_sha256'] == ACCEPTED_MAIN_DELTA['new_sha256']
 
+LAND_CHOICE_MAIN_PATH = PATH.with_name('accepted_530_main_delta.json')
+land_choice_main_raw = LAND_CHOICE_MAIN_PATH.read_bytes()
+assert hashlib.sha256(land_choice_main_raw).hexdigest() == '801c67183bcd84d68ef6ef032a37c1e8299715b4e5ef29efe73611b9f7b6a434'
+LAND_CHOICE_MAIN = json.loads(land_choice_main_raw)
+assert LAND_CHOICE_MAIN['accepted_public_commit'] == '530bac216012b2ec6ed5f0e7e5c20d97b630165b'
+assert LAND_CHOICE_MAIN['previous_accepted_public_commit'] == CURRENT_MAIN['accepted_public_commit']
+assert LAND_CHOICE_MAIN['source'] == 'main.py'
+LAND_CHOICE_MAIN_DELTA = LAND_CHOICE_MAIN['accepted_main_delta']
+assert LAND_CHOICE_MAIN_DELTA['old_sha256'] == CURRENT_MAIN_DELTA['new_sha256']
+
 REPOSITORY_DELTA_PATH = PATH.with_name('accepted_phase1_repository_delta.json')
 repository_raw = REPOSITORY_DELTA_PATH.read_bytes()
 assert hashlib.sha256(repository_raw).hexdigest() == '7617e4b9dbf6f1512bfd7bba51dc5a5e2506ade3163c28dca035e90c53b0e144'
@@ -35,6 +45,14 @@ assert REPOSITORY_DELTAS['source'] == 'persistence/repository.py'
 assert REPOSITORY_DELTAS['accepted_public_commits'] == [
     'cd271b9edac81018e68a64cafd35ec9ca1b71530', '357680de093b0048b96f1f8596defae0f19f5b9d']
 ACCEPTED_REPOSITORY_DELTA = REPOSITORY_DELTAS['accepted_repository_delta']
+
+SPECTACLE_COST_PATH = PATH.with_name('accepted_spectacle_cost_delta.json')
+spectacle_cost_raw = SPECTACLE_COST_PATH.read_bytes()
+assert hashlib.sha256(spectacle_cost_raw).hexdigest() == 'aa8eed59662da52702084af7d166fb1facd554bbfad8ae098266c4ea5f11ddaf'
+SPECTACLE_COST = json.loads(spectacle_cost_raw)
+assert SPECTACLE_COST['accepted_public_commit'] == '3d691056ba34b9f578f6d038b871c233a41fe869'
+assert SPECTACLE_COST['source'] == 'rules_engine/costs.py'
+ACCEPTED_SPECTACLE_COST_DELTA = SPECTACLE_COST['accepted_delta']
 
 FINITE_PATH = PATH.with_name('accepted_76_source_inverses.json')
 finite_raw = FINITE_PATH.read_bytes()
@@ -113,10 +131,13 @@ def compatible_product_hash(name, current, historical):
 def restore_reviewed_source(name, current, historical):
     recipes = {'main.py': ACCEPTED_MAIN_DELTA,
                'persistence/repository.py': ACCEPTED_REPOSITORY_DELTA,
+               'rules_engine/costs.py': ACCEPTED_SPECTACLE_COST_DELTA,
                'tests/private_choice_boundary_fixture_server.py': ACCEPTED_DELTAS['accepted_private_fixture_delta']}
     assert name in recipes, 'No approved current delta for this source'
     recipe = recipes[name]
     assert historical == recipe['old_sha256'], 'Historical operand changed'
+    if name == 'main.py' and hashlib.sha256(current).hexdigest() == LAND_CHOICE_MAIN_DELTA['new_sha256']:
+        current = _restore(current.decode(), LAND_CHOICE_MAIN_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() not in {
             recipe['old_sha256'], recipe['new_sha256']}:
         current = _restore(current.decode(), CURRENT_MAIN_DELTA).encode()

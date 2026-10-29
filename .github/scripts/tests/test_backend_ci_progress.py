@@ -494,6 +494,29 @@ class PublisherBoundaryTests(unittest.TestCase):
                 self.fixture.assert_local_only(result, evidence)
                 self.assert_reaped(evidence)
 
+    def test_audit_failure_survives_a_retained_pressure_watcher_failure(self):
+        script = self.fixture.source / '.github/scripts/ci_backend_storage.py'
+        needle = "if __name__ == '__main__':\n"
+        original = script.read_text()
+        self.assertEqual(original.count(needle), 1)
+        script.write_text(original.replace(needle, needle +
+            "    if sys.argv[1] == 'watch':\n        raise SystemExit(23)\n"))
+        subprocess.run(['git', '-C', str(self.fixture.source), 'add', '.'],
+                       env=self.fixture.environment, check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(self.fixture.source), '-c', 'commit.gpgsign=false',
+                        'commit', '-qm', 'synthetic pressure failure'],
+                       env=self.fixture.environment, check=True, capture_output=True)
+        for mode, expected in (('audit', 19), ('pass', 2)):
+            with self.subTest(mode=mode):
+                result, evidence, elapsed = self.run_progress(mode)
+                self.assertEqual(result.returncode, expected)
+                closeout = json.loads((evidence / 'runner-closeout.json').read_text())
+                self.assertEqual(closeout['pressure_exit_code'], 23)
+                self.assertTrue(closeout['diagnostic_failed'])
+                self.assertEqual(closeout['audit_exit_code'], 19 if mode == 'audit' else 0)
+                self.fixture.assert_local_only(result, evidence)
+                self.assert_reaped(evidence)
+
     def test_workflow_optin_does_not_add_upload_or_permissions(self):
         workflow = (SCRIPTS.parent / 'workflows/ci.yml').read_text()
         reference = workflow.split('  backend-reference:\n', 1)[1].split('  backend-workers:\n', 1)[0]

@@ -175,6 +175,7 @@ export type LegalMovesResponse = { player_id: number; moves: LegalMove[]; revisi
 
 function targetHints(value: unknown): boolean {
   if (!record(value)) return false;
+  if (value.action_has_target_text !== undefined && typeof value.action_has_target_text !== 'boolean') return false;
   if (value.choose_one_or_more_modes !== undefined && typeof value.choose_one_or_more_modes !== 'boolean') return false;
   for (const key of ['mode_additional_mana_costs', 'mode_base_mana_costs']) {
     const costs = value[key];

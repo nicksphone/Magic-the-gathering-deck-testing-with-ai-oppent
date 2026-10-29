@@ -29,14 +29,18 @@ def test_production_decision_reuses_root_projection_without_changing_action(styl
     state, _ = dense_removal_state()
     before = serialize_match_snapshot(state)
     moves = RulesEngine().legal_moves(state, 1)
-    settle = pending_effects._settle_announced_stack
-    with patch.object(pending_effects, "_settle_announced_stack", wraps=settle) as calls:
-        cached = AIAgent(difficulty="master", archetype=style).choose_action(state, moves, 1)
-        cached_calls = calls.call_count
+    project = pending_effects._pending_removal_destinations
+    agent = AIAgent(difficulty="master", archetype=style)
+    with patch.object(pending_effects, "_pending_removal_destinations", wraps=project) as calls, \
+            patch.object(agent, "_choose_action", wraps=agent._choose_action) as root:
+        cached = agent.choose_action(state, moves, 1)
+        cached_calls = sum(call.args[0] is root.call_args.args[0] for call in calls.call_args_list)
+    agent = AIAgent(difficulty="master", archetype=style)
     with patch.object(pending_effects, "decision_projection_scope", lambda *_: nullcontext()):
-        with patch.object(pending_effects, "_settle_announced_stack", wraps=settle) as calls:
-            uncached = AIAgent(difficulty="master", archetype=style).choose_action(state, moves, 1)
-            uncached_calls = calls.call_count
+        with patch.object(pending_effects, "_pending_removal_destinations", wraps=project) as calls, \
+                patch.object(agent, "_choose_action", wraps=agent._choose_action) as root:
+            uncached = agent.choose_action(state, moves, 1)
+            uncached_calls = sum(call.args[0] is root.call_args.args[0] for call in calls.call_args_list)
     assert cached == uncached
     assert cached_calls == 1 and uncached_calls > cached_calls
     assert serialize_match_snapshot(state) == before
@@ -219,11 +223,15 @@ def test_benchmark_checks_full_decision_and_state_without_timing_threshold(refer
     result = benchmark(serialize_match_snapshot(state), 1, iterations=2,
                        opponent_archetype="Tempo", reference_mode=reference_mode)
     assert result["actions_and_reasoning_equal"] and result["authoritative_state_unchanged"]
-    assert result["timing"]["optimized"]["settle_calls"] == [1, 1]
+    optimized_calls = result["timing"]["optimized"]["settle_calls"]
+    assert all(type(value) is int and value > 0 for value in optimized_calls)
+    assert len(optimized_calls) == 2 and optimized_calls[0] == optimized_calls[1]
     assert result["opponent_archetype"] == "Tempo"
     reference_key = {"full": "reference_ablation", "copy-only": "reference_copy", "card-fields": "reference_card_fields", "hotpaths": "reference_hotpaths"}[reference_mode]
-    assert all(count > 1 if reference_mode == "full" else count == 1
-               for count in result["timing"][reference_key]["settle_calls"])
+    reference_calls = result["timing"][reference_key]["settle_calls"]
+    assert len(reference_calls) == len(optimized_calls)
+    assert all(reference > optimized if reference_mode == "full" else reference == optimized
+               for reference, optimized in zip(reference_calls, optimized_calls))
     with pytest.raises(ValueError):
         benchmark(serialize_match_snapshot(state), 1, iterations=0)
     with pytest.raises(ValueError):

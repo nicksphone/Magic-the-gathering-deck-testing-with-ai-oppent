@@ -12,7 +12,7 @@ from rules_engine.oracle_text import without_reminder_text
 
 _SCHEMA_PINS = {
     # Emblems, loyalty permissions and control ledgers require empty defaults below.
-    MatchState: '6781fbd7d6aa55cfb6d6b9aee82506ba9f824d0603ef60fe733263a982551867',
+    MatchState: 'cbeb9f80f6473744268be74235a1616122da8a0b0578f2b9c61e3f955d57ef31',
     CardInstance: 'c6cd00f22c8838effbffa7cdd9d19d29fd16f5879346a071a25d5253bceef8e4',
     PlayerState: 'dd8f36bedf446625796592fe8045ce675eb471d167ffe68cedb2124ccae1e973',
 }
@@ -65,7 +65,12 @@ def _unmodified_characteristics_covered(card):
 
 def _reviewed_context_covered(state):
     history = state.spell_color_history
-    return (type(history) is dict and set(history) == {1, 2}
+    losses = state.life_lost_this_turn
+    return (type(losses) is dict and all(type(seat) is int for seat in losses)
+            and set(losses) == {1, 2}
+            and all(type(amount) is int and amount == 0 for amount in losses.values())
+            and state.life_loss_history_known is True
+            and type(history) is dict and set(history) == {1, 2}
             and all(type(seat) is int for seat in history)
             and all(type(colors) is set and not colors for colors in history.values())
             and state.spell_color_history_known is True

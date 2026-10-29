@@ -21,7 +21,8 @@ from rules_engine.engine import RulesEngine
 from tests.browser_positive83_canonical import entry
 
 
-OLD_FUNCTION_SHA = 'da8815ee4044556ae5d7eda619f6ed1fd968ec07bab75d0b70417f4b67427eef'
+# Current tactical routing, with only Suspend's phase optimization removed.
+OLD_FUNCTION_SHA = '95ce2fa7a39e809a07138674715f749ef32d175cca170aaf22f036feece2dac8'
 NEW_IF = "if decision.action.get('type') == 'pass_priority' and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:"
 OLD_IF = "if decision.action.get('type') == 'pass_priority':"
 

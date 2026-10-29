@@ -1,6 +1,36 @@
 # Learned Policy Groundwork
 
-## Status
+## Current Status: October 29
+
+Offline neural Q/V fitting and source-bound evaluation are implemented and have
+run. The latest candidate completed 912 optimizer updates on 452 preference rows,
+with 204 observed terminal value targets and 248 preference-only rows. Its
+export agreed with the trainer on 1,040 checked action predictions. This fresh
+deterministic fit reproduced the previous weights on the same data; it establishes
+source compatibility, not improved strategy.
+
+The candidate remains inactive. Raw idle choices are correct on only 2/6 reused
+checks, land choices on 8/16 roots, and held-out preference agreement on 27/47
+examples. A captured decision took about 98 seconds. A planned 24-game comparison
+stopped after ten attempts: nine natural completions, one baseline combat
+timeout, and fourteen unstarted games. It does not establish a campaign win rate
+or expert play. Two prowess-order regression cases overlap training and are not
+independent generalization evidence.
+
+Work continues on decision latency, rejected actions and training coverage.
+New data comes from recorded native games with replay-checked actor views and
+observed outcomes, not evaluation answers. Five new examples passed finite
+provenance and duplicate screening; the additive 457-row dataset passed validation
+with all original rows unchanged. Missing historical continuation frames remain
+an explicit evaluation limitation, and future evaluation must exclude the sealed
+training origins. This prepared dataset has not been fitted. Private game traces
+and model artifacts are not public fixtures.
+
+The earlier groundwork status below is historical, not a claim that no fitting
+has occurred. The full gates remain applicable; successful fitting and regression
+tests do not complete gameplay-quality, broader evaluation or live deployment.
+
+## Earlier Groundwork
 
 The deterministic [training environment](../testing/training-environment.md)
 is implemented for built-in decks, private observations, accepted complete
@@ -14,11 +44,12 @@ bounded immutable shards and explicit incomplete outcomes. Its teacher is a
 generic heuristic, not expert supervision. Grouped datasets without a held-out
 partition explicitly report NOT evaluation-ready.
 
-Complete choice encoding, useful feature coverage, expert data, training and
-learned-policy evaluation remain unfinished. Existing simulations are regression/evaluation runs.
+At this earlier stage, complete choice encoding, useful feature coverage, expert
+data, training and learned-policy evaluation remained unfinished.
 Canonical metadata, rulings evidence and tactical tags are knowledge inputs,
-not learned gameplay or proof of effect execution. No neural policy is trained
-or deployed, and no expert supervision is claimed from heuristic self-play.
+not learned gameplay or proof of effect execution. No neural policy had been
+trained or deployed at that stage. Heuristic self-play is still not expert
+supervision; the current offline results above do not authorize deployment.
 
 ## Step-By-Step Gates
 

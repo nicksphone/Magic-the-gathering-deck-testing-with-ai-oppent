@@ -118,8 +118,8 @@ jobs:
               sys.modules[spec.name] = module
               spec.loader.exec_module(module)
               suite.addTests(loader.loadTestsFromModule(module))
-          if suite.countTestCases() != 12:
-              raise SystemExit('Exact twelve schedule methods required')
+          if suite.countTestCases() != 16:
+              raise SystemExit('Exact sixteen schedule methods required')
           result = unittest.TextTestRunner(verbosity=2).run(suite)
           status = int(not result.wasSuccessful())
           errors = {getattr(test, 'test_case', test).id() for test, _ in result.errors}

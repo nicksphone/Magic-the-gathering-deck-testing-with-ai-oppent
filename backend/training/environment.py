@@ -108,7 +108,9 @@ def _engine_hash():
     files = [root / 'api_contracts.py', root / 'decks/builtin_decks.py']
     for directory in ('rules_engine', 'effects', 'game_state', 'ai', 'card_data', 'training'):
         files.extend(path for path in (root / directory).rglob('*')
-                     if path.suffix in {'.py', '.json'})
+                     if path.suffix in {'.py', '.json'}
+                     and not (path.suffix == '.json'
+                              and path.is_relative_to(root / 'card_data/image_cache')))
     digest = sha256()
     for path in sorted(files):
         digest.update(str(path.relative_to(root)).encode('ascii') + b'\0')

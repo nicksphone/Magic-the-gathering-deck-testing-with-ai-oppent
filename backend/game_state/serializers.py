@@ -263,6 +263,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
         "discards_this_turn": {str(key): value for key, value in state.discards_this_turn.items()},
         "land_entries_this_turn": {str(key): value for key, value in state.land_entries_this_turn.items()},
         "land_entry_history_known": state.land_entry_history_known,
+        "life_lost_this_turn": {str(key): value for key, value in state.life_lost_this_turn.items()},
+        "life_loss_history_known": state.life_loss_history_known,
         "players_with_permanent_departure": sorted(state.players_with_permanent_departure),
         "temporary_control_changes": {
             str(cid): {str(key): int(value) for key, value in data.items()}
@@ -451,6 +453,15 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     }
     state.land_entry_history_known = ('land_entries_this_turn' in payload
                                      and payload.get('land_entry_history_known', True) is True)
+    losses = payload.get('life_lost_this_turn', {str(pid): 0 for pid in players})
+    known = payload.get('life_loss_history_known', True)
+    if (type(losses) is not dict or type(known) is not bool
+            or any(type(key) not in (int, str) or str(key) not in {str(pid) for pid in players}
+                   or type(value) is not int or value < 0 for key, value in losses.items())
+            or len(losses) != len(players) or {int(key) for key in losses} != set(players)):
+        raise ValueError('Invalid current-turn life-loss history')
+    state.life_lost_this_turn = {int(key): value for key, value in losses.items()}
+    state.life_loss_history_known = 'life_lost_this_turn' in payload and known
     from rules_engine.control_effects import validate_temporary_control_snapshot
     validate_temporary_control_snapshot(payload.get('temporary_control_changes', {}), cards, players)
     state.temporary_control_changes = {
@@ -525,6 +536,8 @@ def serialize_match(state: MatchState, *, look_players=()) -> dict:
         "day_night": state.day_night,
         "spells_cast_this_turn": state.spells_cast_this_turn,
         "discards_this_turn": dict(state.discards_this_turn),
+        "life_lost_this_turn": dict(state.life_lost_this_turn),
+        "life_loss_history_known": state.life_loss_history_known,
         "turn_cant_gain_life": sorted(state.turn_cant_gain_life),
         "turn_damage_cant_be_prevented": state.turn_damage_cant_be_prevented,
         "combat_damage_stage": state.combat_damage_stage,

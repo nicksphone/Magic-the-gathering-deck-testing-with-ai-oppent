@@ -176,6 +176,13 @@ def _normalize(action):
         raise ValueError('Complete action schema mismatch') from exc
 
 
+def _selected_face(action):
+    face = action.get('selected_face_index')
+    if face is None:
+        face = (action.get('targets') or {}).get('selected_face_index')
+    return face or 0
+
+
 class _Bindings:
     """Private addressing only. Neither maps nor raw identifiers enter feature nodes."""
 
@@ -213,9 +220,22 @@ class _Bindings:
         for item in observation['stack']:
             self._add(item['id'], 'stack', {key: value for key, value in item.items()
                                           if key not in {'id', 'targets'}})
+        trigger_ids = None
         for prompt in prompts:
             hint = prompt['hint']
             source = hint.get('card_id')
+            if hint.get('type') == 'choose_trigger_order':
+                ids, labels = hint.get('trigger_order'), hint.get('trigger_labels')
+                if (type(ids) is not list or not ids or type(labels) is not list
+                        or len(ids) != len(labels)
+                        or any(type(value) is not str or not value.strip() for value in ids + labels)
+                        or len(set(ids)) != len(ids)):
+                    raise ValueError('Trigger order requires unique IDs and parallel public labels')
+                if trigger_ids is not None and set(ids) != trigger_ids:
+                    raise ValueError('Trigger permutations must describe the same offered choices')
+                trigger_ids = set(ids)
+                for choice_id, label in zip(ids, labels):
+                    self._add(choice_id, 'option', {'choice_kind': 'trigger_order', 'label': label})
             for card in hint.get('inspected_cards', []):
                 if isinstance(card, dict) and card.get('id'):
                     self._add(card['id'], 'card', _card_facts(card))
@@ -244,9 +264,10 @@ class _Bindings:
                 key = option.get('id')
                 if source not in self.references or not key:
                     raise ValueError('Cost option lacks its visible source')
-                alias = self._add((source, key), 'cost', {'card_id': source,
+                identity = (source, key, _selected_face(hint))
+                alias = self._add(identity, 'cost', {'card_id': source,
                     **{k: v for k, v in option.items() if k != 'id'}})
-                self.costs[(source, key)] = alias
+                self.costs[identity] = alias
             permission = hint.get('graveyard_permission_key')
             if permission is not None:
                 if source not in self.references:
@@ -288,30 +309,31 @@ class _Bindings:
             return self.references[value]
         raise ValueError('Unresolved actor-authorized reference')
 
-    def _walk(self, value, key=None, *, inverse=False, source=None):
+    def _walk(self, value, key=None, *, inverse=False, source=None, face=0):
         if isinstance(value, dict):
             if value.get('type') and value.get('card_id') is not None:
                 source = self._ref(value['card_id'], True) if inverse else value['card_id']
+                face = _selected_face(value)
             result = {}
             for name, item in value.items():
                 mapped = self._ref(name, inverse) if key in _REFERENCE_MAPS and name not in {'1', '2'} else name
                 if name == 'id' and key == 'cost_choice':
                     if inverse:
                         match = [entry[2] for entry in self.entries if entry[0] == item and entry[1] == 'cost']
-                        if len(match) != 1 or match[0][0] != source:
-                            raise ValueError('Cost reference source mismatch')
+                        if len(match) != 1 or match[0][0] != source or match[0][2] != face:
+                            raise ValueError('Cost reference source/face mismatch')
                         item = match[0][1]
                     else:
-                        item = self.costs.get((source, item))
+                        item = self.costs.get((source, item, face))
                         if item is None:
                             raise ValueError('Cost option is not offered for this source')
                     result[mapped] = item
                 else:
                     result[mapped] = self._walk(item, name if key not in _REFERENCE_MAPS else key,
-                                                inverse=inverse, source=source)
+                                                inverse=inverse, source=source, face=face)
             return result
         if isinstance(value, list):
-            return [self._walk(item, key, inverse=inverse, source=source) for item in value]
+            return [self._walk(item, key, inverse=inverse, source=source, face=face) for item in value]
         if isinstance(value, str):
             if key == 'graveyard_permission_key':
                 if inverse:
@@ -362,7 +384,8 @@ class _Bindings:
                     mapped['hint'][field] = {self._ref(key): value for key, value in hint[field].items()}
             if 'cost_options' in hint:
                 mapped['hint']['cost_options'] = [{**self._walk(option),
-                    'id': self.costs[(hint['card_id'], option['id'])]} for option in hint['cost_options']]
+                    'id': self.costs[(hint['card_id'], option['id'], _selected_face(hint))]}
+                    for option in hint['cost_options']]
             prompts.append(mapped)
         if observation['pending_choice'] is not None and 'prompts' in observation['pending_choice']:
             observation['pending_choice']['prompts'] = deepcopy(prompts)

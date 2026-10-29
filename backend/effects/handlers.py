@@ -482,6 +482,8 @@ def lose_life(state: MatchState, controller: int, payload: dict) -> None:
         state.log.append(f"{state.players[target_player].name} can't lose life.")
         return
     state.players[target_player].life -= amount
+    from rules_engine.resource_events import record_life_loss
+    record_life_loss(state, target_player, amount)
     state.log.append(f"{state.players[target_player].name} loses {amount} life.")
 
 
@@ -1337,11 +1339,20 @@ def exile_permanent(state: MatchState, controller: int, payload: dict) -> None:
     battlefield_owner = state.players[card.controller]
     zone_owner = state.players[getattr(card, "owner", card.controller)]
     if target in battlefield_owner.battlefield:
+        # Capture before leave events and the zone reset remove battlefield characteristics.
+        life_gain = ((card.controller, effective_combat_stats(state, target)[0])
+                     if payload.get('__gain_exiled_power_life') is True else None)
+        if life_gain is not None and life_gain[1] is None:
+            state.log.append('Unsupported exile instruction: target power is unknown.')
+            return
         emit_event(state, "leaves_battlefield", {"card_id": target, "controller": card.controller})
         battlefield_owner.battlefield.remove(target)
         zone_owner.exile.append(target)
         card.move_to_zone(Zone.EXILE)
         state.log.append(f"{card.name} is exiled.")
+        if life_gain is not None:
+            gain_life(state, controller, {**payload, 'target_player': life_gain[0],
+                                          'amount': max(0, life_gain[1])})
 
 
 def exile_return_immediate(state: MatchState, controller: int, payload: dict) -> None:

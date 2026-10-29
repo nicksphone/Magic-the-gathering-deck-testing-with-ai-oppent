@@ -15,6 +15,54 @@ from rules_engine.type_effects import effective_types
 from rules_engine.query_context import rule_query_scope, query_cache
 
 
+def complete_cast_hybrid_choices(agent, state, action, player_id):
+    """Make the selected cast's first payable native branch explicit, on copies."""
+    if (action.get('type') != 'cast_spell' or action.get('_invalid_ai_choice')
+            or action.get('hybrid_choices') is not None):
+        return action
+    choice = (action.get('cost_choice') or {}).get('id')
+    if not choice:
+        return action  # Cost selection belongs to the caller, not this completion.
+    options = action.get('cost_options')
+    if options is None:
+        from dataclasses import asdict
+        from rules_engine.costs import collect_cost_options, casting_method
+        source = state.cards.get(action.get('card_id'))
+        if source is None:
+            return action
+        card = select_cast_face(source, action.get('selected_face_index',
+                                (action.get('targets') or {}).get('selected_face_index')))
+        if casting_method(choice) == 'bestow':
+            from rules_engine.bestow import bestow_cast_view
+            card = bestow_cast_view(card)
+        free = (state.pending_mechanic_choice or {}).get('kind') in {'effect_cast', 'suspend_cast'}
+        options = [asdict(option) for option in collect_cost_options(
+            state, player_id, card, without_mana=free, action_targets=action.get('targets') or {})]
+    option = next((option for option in options if option['id'] == choice), None)
+    from rules_engine.mana import hybrid_payment_symbols, _payment_requirements
+    symbols = hybrid_payment_symbols(option['mana_cost']) if option is not None else []
+    if not symbols:
+        return action
+    # Bound enumeration before native expansion; never use a truncated branch set.
+    branch_count = 1
+    for symbol in symbols:
+        branch_count *= len(symbol['choices'])
+        if branch_count > 64:
+            return {**action, '_invalid_ai_choice': True}
+    branches = []
+    _payment_requirements(option['mana_cost'], False, 0, 0, 0, branch_output=branches)
+    from ai.action_contract import complete_action
+    from ai.pending_effects import simulation_checked_action
+    for selected in branches:
+        candidate = {**action, 'hybrid_choices': selected}
+        try:
+            simulation_checked_action(state, agent.engine, player_id, complete_action(candidate))
+        except ActionRejected:
+            continue
+        return candidate
+    return {**action, '_invalid_ai_choice': True}
+
+
 def graveyard_permission_opportunity(state, player_id, spell_id, option):
     """Estimate scarce-slot loss using only other cards in our graveyard."""
     key = option.get('graveyard_permission_key')

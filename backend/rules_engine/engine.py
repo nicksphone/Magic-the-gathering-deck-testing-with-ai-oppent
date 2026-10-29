@@ -242,6 +242,8 @@ class RulesEngine:
             state.discards_this_turn = {1: 0, 2: 0}
             state.land_entries_this_turn = {1: 0, 2: 0}
             state.land_entry_history_known = True
+            state.life_lost_this_turn = {pid: 0 for pid in state.players}
+            state.life_loss_history_known = True
             state.players_with_permanent_departure = set()
             state.loyalty_activated_this_turn = set()
             state.trigger_once_seen_this_turn = set()

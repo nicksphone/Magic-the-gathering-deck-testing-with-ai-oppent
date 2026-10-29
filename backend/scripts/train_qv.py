@@ -16,13 +16,16 @@ import re
 import stat
 import time
 
-from ai.learned_qv import (FEATURE_SCHEMA_SHA256, KINDS, PARAMETERS, QVPolicy,
+from ai.learned_qv import (FEATURE_SCHEMA_SHA256, KINDS, QVPolicy,
+                          LEGACY_ACTIVATION, LIFE_CONTEXT_ACTIVATION, life_context,
+                          parameter_shapes, validate_q_activation,
                           WIDTH, checkpoint, read_bytes, read_json, save_checkpoint,
                           normalized_number, strict_json, text_moments,
                           validate_contract, validate_features)
 
 
-def torch_model(*, seed):
+def torch_model(*, seed, q_activation=LEGACY_ACTIVATION):
+    parameter_shapes(q_activation)
     import torch
     from torch import nn
 
@@ -32,6 +35,7 @@ def torch_model(*, seed):
     class TreeQV(nn.Module):
         def __init__(self):
             super().__init__()
+            self.q_activation = q_activation
             self.kind = nn.Embedding(8, WIDTH)
             self.byte = nn.Embedding(256, WIDTH)
             self.text = nn.Linear(3 * WIDTH + 1, WIDTH)
@@ -41,6 +45,10 @@ def torch_model(*, seed):
             self.q_out = nn.Linear(WIDTH, 1)
             self.v_hidden = nn.Linear(WIDTH, WIDTH)
             self.v_out = nn.Linear(WIDTH, 1)
+            if q_activation == LIFE_CONTEXT_ACTIVATION:
+                # Added after every legacy module: seeded legacy weights stay identical.
+                self.q_context = nn.Linear(3 * WIDTH, 1, bias=False)
+                nn.init.zeros_(self.q_context.weight)
 
         def encode(self, pack, cache):
             validate_features(pack)
@@ -89,12 +97,22 @@ def torch_model(*, seed):
                 banks[bank_key] = bank
             return node(pack['root'])
 
+        def raw_q(self, state, action, context=None):
+            q = self.q_out(self.q_hidden(torch.cat((state, action))).relu()).squeeze()
+            if self.q_activation == LIFE_CONTEXT_ACTIVATION:
+                q = q + self.q_context(torch.outer(action.new_tensor(context), action).flatten()).squeeze()
+            return q
+
+        def bounded_q(self, q):
+            return q / (1 + q.abs()) if self.q_activation == LIFE_CONTEXT_ACTIVATION else q.tanh()
+
         def forward(self, state, action):
             if state.get('version') != action.get('version'):
                 raise ValueError('State/action feature epochs differ')
             cache = {}
+            context = life_context(state) if self.q_activation == LIFE_CONTEXT_ACTIVATION else None
             s, a = self.encode(state, cache), self.encode(action, cache)
-            q = self.q_out(self.q_hidden(torch.cat((s, a))).relu()).tanh().squeeze()
+            q = self.bounded_q(self.raw_q(s, a, context))
             v = self.v_out(self.v_hidden(s).relu()).tanh().squeeze()
             return q, v
 
@@ -106,7 +124,9 @@ def torch_model(*, seed):
 
 def export_weights(model):
     values = model.state_dict()
-    if set(values) != set(PARAMETERS):
+    parameters = parameter_shapes(model.q_activation)
+    if (set(values) != set(parameters)
+            or any(tuple(values[key].shape) != shape for key, shape in parameters.items())):
         raise ValueError('Unexpected Torch model parameters')
     return {key: value.detach().cpu().tolist() for key, value in values.items()}
 
@@ -179,9 +199,14 @@ def _samples(samples, *, feature_version=None):
 
 
 def train_samples(samples, *, contract, dataset_sha256, split_sha256,
-                  seed, epochs=20, learning_rate=0.01, seconds=300, progress=None):
+                  seed, epochs=20, learning_rate=0.01, seconds=300, progress=None,
+                  q_activation=LEGACY_ACTIVATION):
     validate_contract(contract)
     _samples(samples, feature_version=contract['feature_version'])
+    validate_q_activation(q_activation, contract)
+    if q_activation == LIFE_CONTEXT_ACTIVATION:
+        for row in samples:
+            life_context(row['state'])
     if progress is not None and not callable(progress):
         raise ValueError('Optional progress callback must be callable')
     if (type(epochs) is not int or not 1 <= epochs <= 1000 or epochs * len(samples) > 100000
@@ -195,7 +220,8 @@ def train_samples(samples, *, contract, dataset_sha256, split_sha256,
     torch.set_num_threads(1)
     started = time.monotonic()
     try:
-        model = torch_model(seed=seed)
+        model = (torch_model(seed=seed) if q_activation == LEGACY_ACTIVATION
+                 else torch_model(seed=seed, q_activation=q_activation))
         initial = export_weights(model)
         optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 
@@ -248,7 +274,8 @@ def train_samples(samples, *, contract, dataset_sha256, split_sha256,
             'dataset_sha256': dataset_sha256, 'split_sha256': split_sha256,
             'trainer_sha256': sha256(Path(__file__).read_bytes()).hexdigest(),
             'torch_version': str(torch.__version__),
-            'trainer_seed': seed, 'updates': updates, 'samples': len(samples)})
+            'trainer_seed': seed, 'updates': updates, 'samples': len(samples)},
+            activation=q_activation)
         policy = QVPolicy(payload, expected=contract)
         verified = 0
         final_errors = []
@@ -275,7 +302,7 @@ def train_samples(samples, *, contract, dataset_sha256, split_sha256,
 
 
 def _read_run(root, expected_engine_hash):
-    from training.dataset import MAX_BYTES, MAX_EPISODES, baseline_teacher_config, validate_episode
+    from training.dataset import MAX_BYTES, MAX_EPISODES, validate_teacher_config, validate_episode
     from training.decision_frame import feature_contract
 
     root = Path(root)
@@ -305,9 +332,7 @@ def _read_run(root, expected_engine_hash):
                for value in hashes + manifest['deck_hashes']):
             raise ValueError('Dataset provenance hashes required')
         if manifest['origin'] == 'heuristic':
-            teacher = manifest.get('teacher_config')
-            if type(teacher) is not dict or teacher != baseline_teacher_config(teacher.get('difficulty')):
-                raise ValueError('Actual heuristic teacher provenance required')
+            validate_teacher_config(manifest.get('teacher_config'))
         entries = list(root.iterdir())
         shards = sorted(p for p in entries if re.fullmatch(r'episode-\d{4}\.jsonl', p.name))
         if (not 1 <= len(shards) <= MAX_EPISODES
@@ -452,6 +477,8 @@ def main(argv=None):
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--learning-rate', type=float, default=0.01)
     parser.add_argument('--seconds', type=int, default=300)
+    parser.add_argument('--q-activation', choices=(LEGACY_ACTIVATION, LIFE_CONTEXT_ACTIVATION),
+                        default=LEGACY_ACTIVATION, help='Explicit checkpoint architecture opt-in')
     args = parser.parse_args(argv)
     if args.collect_only:
         if not args.split_out or args.out or args.split or args.seed is not None:
@@ -494,7 +521,8 @@ def main(argv=None):
             max_corpus_bytes=args.max_corpus_bytes)
         payload, report = train_samples(samples['train'], contract=contract,
             dataset_sha256=dataset_hash, split_sha256=split_hash, seed=args.seed,
-            epochs=args.epochs, learning_rate=args.learning_rate, seconds=args.seconds)
+            epochs=args.epochs, learning_rate=args.learning_rate, seconds=args.seconds,
+            q_activation=args.q_activation)
         policy = QVPolicy(payload, expected=contract)
         errors = [((result['q'] - row['return']) ** 2, (result['v'] - row['return']) ** 2)
                   for row in samples['eval']

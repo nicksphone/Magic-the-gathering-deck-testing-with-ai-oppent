@@ -18,7 +18,7 @@ def test_real_public_production_delta_reconciles_history_but_mutations_do_not(na
     raw = (Path(__file__).parents[1] / name).read_bytes()
     recipe = api.CONTRACT['production'][name]
     assert api.compatible_product_hash(name, raw, recipe['old_sha256']) == (
-        api.CURRENT_MAIN_DELTA['new_sha256'] if name == 'main.py' else api.ACCEPTED_REPOSITORY_DELTA['new_sha256'])
+        api.LAND_CHOICE_MAIN_DELTA['new_sha256'] if name == 'main.py' else api.ACCEPTED_REPOSITORY_DELTA['new_sha256'])
     with pytest.raises(AssertionError):
         api.compatible_product_hash(name, raw + b'\n# unauthorized\n', recipe['old_sha256'])
     mutation_recipe = api.ACCEPTED_REPOSITORY_DELTA if name == 'persistence/repository.py' else recipe

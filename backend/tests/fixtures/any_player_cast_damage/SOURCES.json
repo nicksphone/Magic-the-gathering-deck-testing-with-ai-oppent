@@ -1,0 +1,10 @@
+{
+  "Eidolon of the Great Revel": {
+    "file": "any_player_cast_damage/eidolon.json",
+    "sha256": "795d75d080c48e43f6828092de827679634ab3ae3d3798ec87aa19b5d7a7b6e5",
+    "id": "183ef738-0559-49ca-85b4-e6836521f203",
+    "oracle_id": "2fd7018e-1c36-4d7f-8f72-22f2f7f60c60",
+    "canonical_uri": "https://api.scryfall.com/cards/183ef738-0559-49ca-85b4-e6836521f203",
+    "provenance": "Full unmodified canonical Scryfall row; no gameplay or model data."
+  }
+}

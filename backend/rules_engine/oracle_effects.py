@@ -570,6 +570,13 @@ def infer_effect_from_oracle(
     if "Planeswalker" in (effective_types(state, card) or []):
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
+    if (re.match(r'exile target creature\b', oracle.strip(), re.I)
+            and re.search(r'\bits controller gains? life\b', oracle, re.I)):
+        if not re.fullmatch(r'exile target creature\.\s*its controller gains life equal to its power\.?',
+                            oracle.strip(), re.I):
+            return 'noop', {'__unsupported_instruction': oracle}
+        return 'exile', {'target_card_id': action_targets.get('target_card_id'),
+                         '__gain_exiled_power_life': True}
     if set(getattr(card, 'types', []) or []).intersection({'Instant', 'Sorcery'}):
         cost_draw = compile_additional_cost_draw_instruction(oracle, name)
         if cost_draw is not None:

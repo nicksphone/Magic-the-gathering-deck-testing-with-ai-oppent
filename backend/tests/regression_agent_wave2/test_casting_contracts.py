@@ -304,8 +304,14 @@ def test_actual_ai_chooses_payable_action_with_hidden_information_invariance(sty
     assert sum(result.players[seat].mana_pool.values()) < sum(s.players[seat].mana_pool.values())
     result = settle(resume(result))
     assert result.cards[action['card_id']].zone in {Zone.GRAVEYARD, Zone.BATTLEFIELD}
-    # This is a legality/progress contract, not an optimal-target policy test.
-    following = ai.choose_action(result, RULES.legal_moves(result, seat), seat).action
-    record('actual-ai-following', result, action=following, style=style)
-    assert following.get('card_id') != action['card_id']
-    checked_action(result, RULES, seat, following)
+    if result.winner is not None:
+        # A completed lethal line has no legal follow-up action.
+        assert result.winner == seat
+        assert result.players[3-seat].life <= 0
+        record('actual-ai-terminal', result, action=action, style=style)
+    else:
+        # This is a legality/progress contract, not an optimal-target policy test.
+        following = ai.choose_action(result, RULES.legal_moves(result, seat), seat).action
+        record('actual-ai-following', result, action=following, style=style)
+        assert following.get('card_id') != action['card_id']
+        checked_action(result, RULES, seat, following)

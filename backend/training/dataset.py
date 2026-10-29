@@ -92,15 +92,52 @@ def baseline_teacher_config(difficulty):
             'opponent_archetype': None, 'deck_identity_analysis': False}
 
 
+def teacher_config(difficulty, *, archetypes=None):
+    baseline = baseline_teacher_config(difficulty)
+    if archetypes is None:
+        return baseline
+    from ai.deck_analysis import ARCHETYPES
+    if (type(archetypes) is not dict or set(archetypes) != {1, 2}
+            or any(type(seat) is not int for seat in archetypes)
+            or any(type(style) is not str or style not in ARCHETYPES for style in archetypes.values())):
+        raise ValueError('Two explicit supported public matchup archetypes required')
+    return {'implementation': 'AIAgent', 'mode': 'public_matchup', 'difficulty': difficulty,
+            'archetypes': {str(seat): archetypes[seat] for seat in (1, 2)},
+            'opponent_archetypes': {str(seat): archetypes[3-seat] for seat in (1, 2)},
+            'deck_identity_analysis': True}
+
+
+def validate_teacher_config(config):
+    if type(config) is not dict:
+        raise ValueError('Exact supported heuristic teacher configuration required')
+    if config.get('mode') == 'baseline_generic':
+        expected = baseline_teacher_config(config.get('difficulty'))
+    elif config.get('mode') == 'public_matchup':
+        styles = config.get('archetypes')
+        opponents = config.get('opponent_archetypes')
+        if (type(styles) is not dict or set(styles) != {'1', '2'}
+                or type(opponents) is not dict or set(opponents) != {'1', '2'}):
+            raise ValueError('Exact public per-seat archetype configuration required')
+        expected = teacher_config(config.get('difficulty'),
+                                  archetypes={seat: styles[str(seat)] for seat in (1, 2)})
+    else:
+        raise ValueError('Unknown heuristic teacher mode')
+    if canonical(config) != canonical(expected):
+        raise ValueError('Teacher configuration differs from the supported profile')
+    return deepcopy(expected)
+
+
 class HeuristicTeacher:
     """Trusted adapter: only this teacher accesses the environment's private view."""
     origin = 'heuristic'
 
-    def __init__(self, difficulty='strong'):
+    def __init__(self, difficulty='strong', *, archetypes=None):
         from ai.agent import AIAgent
-        self.config = baseline_teacher_config(difficulty)
-        self.agents = {seat: AIAgent(difficulty=difficulty, archetype='Midrange',
-                                   opponent_archetype=None) for seat in (1, 2)}
+        self.config = teacher_config(difficulty, archetypes=archetypes)
+        self.agents = {seat: AIAgent(difficulty=difficulty,
+            archetype=self.config.get('archetypes', {}).get(str(seat), 'Midrange'),
+            opponent_archetype=self.config.get('opponent_archetypes', {}).get(str(seat)))
+            for seat in (1, 2)}
         root = Path(__file__).resolve().parents[1]
         files = [path for path in (root / 'ai').rglob('*') if path.suffix in {'.py', '.json'}]
         files.extend((root / 'knowledge').glob('*.py'))
@@ -337,9 +374,7 @@ class DatasetRun:
         fields = {'configuration_hash', 'engine_hash', 'deck_hashes', 'policy_hash', 'origin'}
         if manifest.get('origin') == 'heuristic':
             fields.add('teacher_config')
-            config = manifest.get('teacher_config')
-            if not isinstance(config, dict) or config != baseline_teacher_config(config.get('difficulty')):
-                raise ValueError('Heuristic provenance requires exact baseline teacher configuration')
+            validate_teacher_config(manifest.get('teacher_config'))
         if set(manifest) != fields or manifest['origin'] not in ORIGINS:
             raise ValueError('Only versioned hash provenance is accepted; no expert certification')
         hashes = [manifest[key] for key in ('configuration_hash', 'engine_hash', 'policy_hash')]

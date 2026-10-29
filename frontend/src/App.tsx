@@ -8,6 +8,9 @@ import { Battlefield } from "./components/Battlefield";
 import { Controls } from "./components/Controls";
 import { DeckPanel } from "./components/DeckPanel";
 import { StackLog } from "./components/StackLog";
+import { PlayGuide } from "./components/PlayGuide";
+import { AiPlayNotice } from "./components/AiPlayNotice";
+import { newAiPlays, type AiPlay } from "./lib/ai-plays";
 import type { DeckItem, DeckRecord, LegalMove, MatchState } from "./types";
 import { emptyCombatDraft } from "./components/combat-selection";
 import { canStartReviewed, parsePendingInteractiveStart, reviewMatchesPayload, startSignature, startControllers,
@@ -43,6 +46,8 @@ export function App() {
   const [difficulty, setDifficulty] = useState("master");
   const [bestOf, setBestOf] = useState<number>(3);
   const [match, setMatch] = useState<MatchState | null>(null);
+  const [aiPlays, setAiPlays] = useState<AiPlay[]>([]);
+  const aiPlaySequence = useRef(0);
   const [legalMoves, setLegalMoves] = useState<LegalMove[]>([]);
   const [legalPlayerId, setLegalPlayerId] = useState<number>(1);
   const [canAutoPass, setCanAutoPass] = useState(false);
@@ -117,13 +122,19 @@ export function App() {
     clearPendingStart(key);
   }, []);
 
-  const applyMatch = useCallback(async (next: MatchState) => {
+  const applyMatch = useCallback(async (next: MatchState, announce = true) => {
     let data = next;
     let legal = await api.legalMoves(data.id);
     if (legal.revision !== undefined && legal.revision !== data.revision) {
       data = await api.getMatch(data.id);
       legal = await api.legalMoves(data.id);
       if (legal.revision !== data.revision) throw new Error("Match keeps changing in another window. Pause it, then reload.");
+    }
+    const previous = currentMatch.current;
+    if (!announce || previous?.id !== data.id || previous?.game_number !== data.game_number) setAiPlays([]);
+    else {
+      const added = newAiPlays(previous, data, ++aiPlaySequence.current);
+      if (added.length) setAiPlays(plays => [...plays, ...added].slice(-8));
     }
     currentMatch.current = data;
     setMatch(data);
@@ -157,7 +168,7 @@ export function App() {
     await gate.current.run(async () => {
       setMutationPending(true);
       setAutoProgressPaused(true);
-      try { await applyMatch(await api.getMatch(id)); }
+      try { await applyMatch(await api.getMatch(id), false); }
       finally { setMutationPending(false); }
     });
   }
@@ -520,13 +531,16 @@ export function App() {
         </div>
       </header>
 
-      {actionError ? <p className="operation-alert" role="alert">Match operation: {actionError}</p> : null}
       <nav className="table-navigation" aria-label="Workspace">
         <a href="#table">{match ? "01 / Table" : "01 / Play"}</a><a href="#match-controls">{match ? "02 / Actions & choices" : "02 / Matchup"}{match?.stack.length ? ` · Stack ${match.stack.length}` : ""}</a><a href="#lab-tools" aria-expanded={labOpen} onClick={() => setLabOpen(true)}>03 / Decks & lab</a>
         {match && (match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <a className="choice-notice" href="#match-controls" role="status">Choice required · P{legalPlayerId} · {match.pending_mechanic_choice?.label ?? (match.pregame_pending ? "Opening hand" : "Review pending decision")} →</a> : null}
-        {match ? <button disabled={mutationPending || restoring || !!match.match_complete || (match.winner != null && !isAiSeries(match))} onClick={() => setAutoProgressPaused((value) => !value)}>{autoProgressPaused ? "Resume automatic play" : "Pause automatic play"}</button> : null}
+        {match ? <a href="#turn-commands">Turn commands</a> : null}
         {mutationPending ? <span role="status">Match operation pending...</span> : null}
       </nav>
+      <div className="play-guide-slot">
+        {actionError ? <p className="operation-alert" role="alert">Match operation: {actionError}</p> : null}
+        <PlayGuide match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} autoProgressPaused={autoProgressPaused} compact={Boolean(match)} />
+      </div>
       <section className="lab-tools" id="lab-tools" aria-label="Lab tools" hidden={!labOpen}>
         <header className="workspace-heading"><div><span className="eyebrow">The workbench</span><h2>Prepare. Review. Refine.</h2></div><button onClick={() => { setLabOpen(false); document.querySelector<HTMLAnchorElement>('a[href="#lab-tools"]')?.focus(); }}>Close lab</button></header>
         <details className="panel saved-games">
@@ -543,9 +557,11 @@ export function App() {
         <details className="panel tool-disclosure"><summary>Simulator & diagnostics</summary><AnalyticsPanel decks={decks} /></details>
       </section>
       <section className="left-column" id="match-controls" tabIndex={-1} aria-label="Actions and choices">
-        {match ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.winner != null ? (match.match_complete ? "Series complete" : "Between games") : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.winner != null ? "This game is over. Review the result above and the series controls below." : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
-        {match ? <StackLog match={match} /> : null}
+        {match && (match.winner != null || match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.winner != null ? (match.match_complete ? "Series complete" : "Between games") : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.winner != null ? "This game is over. Review the result above and the series controls below." : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
+        {match ? <><AiPlayNotice plays={aiPlays} /><StackLog match={match} aiPlays={aiPlays} /></> : null}
         <section className="panel" aria-label="Interactive match support preflight">
+          <details open={Boolean(visibleReview || preflightChecking || pendingStart || preflightNote)}>
+          <summary>Deck support check</summary>
           <h3>Rules support preflight</h3>
           <p>Interactive matches are exploratory, not rules-certified. This check reports known gaps only; an empty result is not certification.</p>
           {preflightNote ? <p role="status">{preflightNote}</p> : null}
@@ -576,6 +592,7 @@ export function App() {
               }} /> I understand this exact deck pair and configuration is exploratory, not rules-certified.</label>
           </> : null}
           {pendingStart ? <button disabled={restoring || mutationPending || preflightChecking || (!!visibleReview && !visibleReview.exploratoryAcknowledged)} onClick={reportAction(() => startMatch(true))}>Recover pending match start</button> : null}
+          </details>
         </section>
         <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <Controls
@@ -614,6 +631,9 @@ export function App() {
           responseCountdown={responseCountdown}
           autoResponsePaused={autoResponsePaused}
           onToggleAutoResponsePause={() => setAutoResponsePaused((v) => !v)}
+          autoProgressPaused={autoProgressPaused}
+          onToggleAutomaticPlay={() => setAutoProgressPaused(value => !value)}
+          automaticPlayDisabled={mutationPending || restoring || !!match?.match_complete || (match?.winner != null && !isAiSeries(match))}
           legalMoves={legalMoves}
           actingPlayerId={legalPlayerId}
           match={match}
@@ -623,7 +643,7 @@ export function App() {
         </fieldset>
       </section>
 
-      <section className="right-column" id="table" aria-label="Card table">
+      <section className="right-column" id="table" tabIndex={-1} aria-label="Card table">
         {match ? <AiHandDebug match={match} /> : null}
         {match ? (
           <>

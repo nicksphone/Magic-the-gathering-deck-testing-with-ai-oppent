@@ -11,6 +11,7 @@ import { manaShortcut } from './manual-mana-shortcut';
 import { formatManaVector } from './manual-mana-output';
 import { CardRail } from "./CardRail";
 import { CardArt } from "./CardArt";
+import { singleCardTargetReady } from "./target-readiness";
 
 type Props = {
   match: MatchState;
@@ -306,6 +307,11 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
       : t;
     const optionId = costChoice[cardId] || move?.cost_options?.[0]?.id;
     const option = move?.cost_options?.find(candidate => candidate.id === optionId);
+    if (singleCardTargetReady(option?.target_hints ?? move?.target_hints, t.target_card_id) === false) {
+      (document.getElementById(`cast-target-${cardId}`)
+        ?? document.getElementById(`cast-target-help-${cardId}`))?.focus();
+      return;
+    }
     const symbols = move?.cost_options?.find((option) => option.id === optionId)?.hybrid_symbols ?? [];
     const branches = symbols.map((_, index) => hybridChoice[`${cardId}:${selectedFaceIndex ?? 0}:${optionId}:${index}`] ?? "");
     onCardAction(viewerSeat, {
@@ -728,7 +734,7 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             Decline suspended casting
           </button> : null}
         </div> : null}
-        <h3 className="zone-heading">Hand & permitted plays <span>{playableCards.length}</span></h3>
+        <h3 className="zone-heading" id="your-hand" tabIndex={-1}>Hand & permitted plays <span>{playableCards.length}</span></h3>
         <CardRail className="hand-row playable-hand" label="Hand and permitted plays">
           {playableCards.map((card) => {
             const cardCastMoves = castMoves.filter((m) => m.card_id === card.id);
@@ -812,6 +818,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const duplicateResources = new Set(resourceIds).size !== resourceIds.length;
             const selectedCost = move.cost_options?.find((option) => option.id === selectedCostId);
             const hints = selectedCost?.target_hints ?? move.target_hints;
+            const cardTargetReady = singleCardTargetReady(hints, targets[card.id]?.target_card_id);
+            const missingCardTarget = cardTargetReady === false;
+            const targetSelectId = `cast-target-${card.id}`;
+            const targetHelpId = `cast-target-help-${card.id}`;
             const linkedPairs = hints?.linked_target_pairs;
             const linkedPairIndex = linkedPairs?.findIndex(pair =>
               pair.targets.target_player === targets[card.id]?.target_player
@@ -853,7 +863,10 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
             const targetingText = Array.isArray(chosenModes) && chosenModes.length
               ? chosenModes.join(" ") : typeof chosenMode === "string" && chosenMode ? chosenMode : targetText;
             const exclusiveTarget = Boolean(hints?.single_target_alternative || (/\bany target\b/i.test(targetText) && (targetText.match(/\btarget\b/gi)?.length ?? 0) === 1));
-            const alternativeTargets = !hints?.aura_targets?.length && !/\btargets?\b/i.test(targetingText) ? [] : [...new Map([
+            const alternativeTargets = cardTargetReady !== undefined ? [...new Map([
+                ...(hints?.creature_targets ?? []), ...(hints?.permanent_targets ?? []),
+              ].map(target => [target.id, target])).values()]
+              : !hints?.aura_targets?.length && !/\btargets?\b/i.test(targetingText) ? [] : [...new Map([
               ...(hints?.creature_targets ?? []), ...(hints?.planeswalker_targets ?? []),
               ...(hints?.permanent_targets ?? []), ...(hints?.artifact_targets ?? []),
               ...(hints?.enchantment_targets ?? []), ...(hints?.land_targets ?? []),
@@ -902,10 +915,12 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                 {suspendControl}
                 <button
                   disabled={incompleteModes || incompleteSpreeTargets || incompleteSpreeCosts || incompleteHybridChoice || incompatibleAuraCost || incompleteCostCards || incompleteOrderedTargets || incompleteBoundedTargets || incompleteLinkedPair || duplicateResources}
+                  aria-describedby={missingCardTarget ? targetHelpId : undefined}
                   onClick={() => castAction(card.id, faceNames.length > 1 ? selectedFaceIndex : undefined)}
                 >
                   Cast {move.card_name ?? card.name} {displayedManaCost ? `(${displayedManaCost})` : ""}
                 </button>
+                {missingCardTarget ? <p className="cast-readiness-guidance" id={targetHelpId} tabIndex={-1}>Choose a target before casting.</p> : null}
                 {cycleControl}
                 {faceNames.length > 1 ? (
                   <select
@@ -1174,6 +1189,8 @@ export function Battlefield({ match, legalMoves: authoritativeMoves, onCardActio
                   ) : (
                     <select
                       aria-label={`Target for ${card.name}`}
+                      id={targetSelectId}
+                      aria-describedby={missingCardTarget ? targetHelpId : undefined}
                       onChange={(e) =>
                         setTargets((prev) => ({
                           ...prev,
