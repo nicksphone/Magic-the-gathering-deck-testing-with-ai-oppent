@@ -1013,6 +1013,7 @@ def _collect_triggers(state: MatchState, event: str, payload: dict[str, Any]) ->
             elif event == "block_declared" and _matches_block_trigger(state, card, oracle, payload):
                 out.append(_trigger_from_oracle(state, cid, card.controller, oracle, default_label=f"{card.name} block trigger", event=event, payload=payload))
             elif event in {"spell_cast", "spell_copy"}:
+                out.extend(_any_player_cast_damage_triggers(state, card, event, payload, oracle))
                 from rules_engine.nth_spell_triggers import collect_nth_spell_triggers
                 nth_triggers, oracle = collect_nth_spell_triggers(state, card, event, payload, oracle)
                 out.extend(nth_triggers)
@@ -1690,6 +1691,31 @@ def _cast_event_source(state, event, payload):
                 and item.payload == payload.get('stack_payload')):
             return stack_source_card(state, item)
     return state.cards.get(payload.get('source_card_id'))
+
+
+def _any_player_cast_damage_triggers(state, source, event, payload, oracle):
+    if event != 'spell_cast' or 'whenever a player casts a spell with mana value ' not in oracle:
+        return []
+    caster = payload.get('controller')
+    spell = _cast_event_source(state, event, payload)
+    x_value = (payload.get('stack_payload') or {}).get('x_value', 0)
+    if (type(caster) is not int or caster not in state.players or spell is None
+            or type(x_value) is not int or x_value < 0):
+        return []
+    from rules_engine.mana import mana_value
+    value = mana_value(spell.mana_cost, x_value=x_value)
+    subject = r'(?:this (?:artifact|creature|enchantment|permanent)|' + re.escape(source.name.lower()) + r')'
+    triggers = []
+    for clause in oracle.splitlines():
+        match = re.fullmatch(
+            r'whenever a player casts a spell with mana value ([0-9]+) or less, '
+            + subject + r' deals ([0-9]+) damage to that player\.', clause.strip())
+        if match and value <= int(match[1]):
+            triggers.append({'source_card_id': source.id, 'controller': source.controller,
+                             'label': f'{source.name} cast trigger', 'effect_key': 'deal_damage',
+                             'payload': {'amount': int(match[2]), 'target_player': caster,
+                                         '__trigger_full_clause': clause.strip()}})
+    return triggers
 
 
 def _matched_cast_trigger_clauses(state, source, oracle, event, payload):

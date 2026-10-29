@@ -1,0 +1,18 @@
+{
+  "bulk_sha256": "17cf0c4d0c96dde18337326626037732d0ff219c498d19ef0c9536f6db62dc13",
+  "full_objects_unchanged": true,
+  "whole_bulk_verified": true,
+  "cards": {
+    "Behold the Multiverse": {
+      "bulk_line": 32558,
+      "line_sha256_including_newline": "fb027929123946b6a8008bb64da3854f64ede063e910d9b706bae6d0cfabdfc6",
+      "object_sha256": "f8eecc1825a7f51ad8bfc43a23bea8b9c4697e70cb026f6666e147dd62641646",
+      "id": "27855a38-a682-4f97-ad22-ac625e86faec",
+      "oracle_id": "d7d2f701-77df-4169-bf98-0d51d6886e9b",
+      "fields": 67,
+      "mana_cost": "{3}{U}",
+      "type_line": "Instant"
+    }
+  },
+  "bulk_filename": "oracle-cards-20260927090157.jsonl.gz"
+}
