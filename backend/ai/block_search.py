@@ -7,6 +7,7 @@ from rules_engine.combat_payments import block_tax_sources, block_payment_state
 from rules_engine.combat_requirements import best_required_blocks, block_requirement_score, requirement_weights, target_block_requirements
 from rules_engine.declaration_limits import blockers_within_limits
 from rules_engine.restrictions import card_cant_block, card_cant_block_alone
+from rules_engine.query_context import rule_query_scope
 
 
 def block_intents(state, attacker_ids, blocker_ids, *, node_budget=4096):
@@ -15,6 +16,12 @@ def block_intents(state, attacker_ids, blocker_ids, *, node_budget=4096):
     A budget exhaustion never labels a partially explored choice as optimal.
     Declaration costs are voluntary; requirement optima depend on volunteered IDs.
     """
+    # Payment probes mutate detached clones, never this query-scoped root.
+    with rule_query_scope(state):
+        return _block_intents(state, attacker_ids, blocker_ids, node_budget=node_budget)
+
+
+def _block_intents(state, attacker_ids, blocker_ids, *, node_budget=4096):
     if node_budget < 1:
         raise ValueError('AI search node budget must be positive')
     defender = 3-state.active_player
