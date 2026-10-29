@@ -3502,13 +3502,21 @@ class AIAgent:
         )
 
     def _without_losing_mass_destruction(self, state, moves, player_id):
-        """Do not wipe into a proven public death-trigger loss; unknowns stay."""
-        if not isinstance(state, MatchState) or not any(
+        """Reject proven death losses or unprofitable own-only wipes; unknowns stay."""
+        if not isinstance(state, MatchState):
+            return moves
+        death_loss = any(
             re.search(r"\bdies\b[^.\n]*\bloses?\s+\d+\s+life", _oracle_text(state.cards[cid]))
             for cid in state.players[3 - player_id].battlefield
-        ):
+        )
+        own_only = (not state.stack
+            and any("Creature" in effective_types(state, state.cards[cid])
+                    for cid in state.players[player_id].battlefield)
+            and not any("Creature" in effective_types(state, state.cards[cid])
+                        for cid in state.players[3 - player_id].battlefield))
+        if not death_loss and not own_only:
             return moves
-        from ai.pending_effects import unanswered_action_loses
+        from ai.pending_effects import friendly_destruction_profit, unanswered_action_loses
         kept = []
         for move in moves:
             card = _card_for_move(state, move)
@@ -3516,8 +3524,12 @@ class AIAgent:
                     and "{X}" not in card.mana_cost.upper()
                     and re.search(r"\bdestroy all (?:creatures|nonland permanents|permanents)\b", _oracle_text(card))):
                 action = self._materialize_action(state, move, player_id)
-                if not action.get("_invalid_ai_choice") and unanswered_action_loses(state, player_id, action) is True:
-                    continue
+                if not action.get("_invalid_ai_choice"):
+                    if death_loss and unanswered_action_loses(state, player_id, action) is True:
+                        continue
+                    if (own_only and re.search(r"\bdestroy all creatures\b", _oracle_text(card))
+                            and friendly_destruction_profit(state, player_id, action) is False):
+                        continue
             kept.append(move)
         return kept
 
@@ -5957,6 +5969,8 @@ class AIAgent:
             return None
         scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         top = scored[0][1]
+        if scored[0][0] <= 0 and any(move.get('type') == 'pass_priority' for move in legal_moves):
+            return None
         if top.get("type") == "attack" and not (top.get("attackers") or []):
             return None
         return top
