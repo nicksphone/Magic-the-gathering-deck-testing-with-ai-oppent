@@ -82,6 +82,9 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, 
                 admit(action)
             except (ActionRejected, ValueError):
                 continue
+            draw_loss = getattr(agent, '_draw_cast_loses', None)
+            if callable(draw_loss) and draw_loss(view, action, seat):
+                continue
             identity = json.dumps(action, sort_keys=True, separators=(',', ':'), allow_nan=False)
             if identity not in seen:
                 candidates.append(action)

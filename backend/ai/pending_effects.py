@@ -553,25 +553,49 @@ def _opaque_acquisition_items(state):
     return [item, *items]
 
 
+def _opaque_acquisition_steps(state):
+    """Read complete native sequences without making partial or synthetic items."""
+    items = _opaque_acquisition_items(state)
+    if items is None:
+        return None
+    steps = []
+
+    def visit(item, key, payload, depth):
+        if depth >= 8:
+            return False
+        if key == 'effect_sequence':
+            children = payload.get('effects')
+            return isinstance(children, list) and bool(children) and all(
+                isinstance(child, dict) and isinstance(child.get('payload'), dict)
+                and visit(item, child.get('effect_key'), child['payload'], depth+1)
+                for child in children)
+        steps.append((item, key, payload))
+        return True
+
+    if not all(visit(item, item.effect_key, item.payload, 0) for item in items):
+        return None
+    return steps
+
+
 def _opaque_acquisition_stack(state, player_id):
     """Admit full, unfiltered typed acquisitions, not partial Oracle matches."""
     if getattr(state, 'ai_information_player', None) != player_id:
         return False
-    items = _opaque_acquisition_items(state)
-    if items is None:
+    steps = _opaque_acquisition_steps(state)
+    if steps is None:
         return False
     acquisitions = {'draw_cards', 'look_top_select_hand', 'look_top_choose'}
-    if (not any(item.effect_key in acquisitions for item in items)
-            or any(item.effect_key not in acquisitions | {'counter_spell', 'counter_ability'}
-                   for item in items)):
+    if (not any(key in acquisitions for _, key, _ in steps)
+            or any(key not in acquisitions | {'counter_spell', 'counter_ability', 'gain_life',
+                                             'scry', 'surveil', 'put_hand_on_library'}
+                   for _, key, _ in steps)):
         return False
     from rules_engine.oracle_effects import _parse_count_token
     allowed_payload = {'top_n', 'play_exiled_until', 'mana_spent_to_cast', 'mana_spent',
                        'snow_mana_spent', 'snow_mana_colors'}
-    for item in items:
-        if item.effect_key != 'look_top_choose':
+    for item, key, payload in steps:
+        if key != 'look_top_choose':
             continue
-        payload = item.payload
         if any(not key.startswith('__') and key not in allowed_payload for key in payload):
             return False
         source = state.cards.get(item.source_card_id)
@@ -616,13 +640,21 @@ def _has_forecast_response(projected, player_id, rules):
 
 def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None,
                            own_choice_action=None, opaque_hand_choices=False,
-                           settle_declared_combat=False) -> bool:
+                           settle_declared_combat=False, stop_at_private_action_frontier=False) -> bool:
     rules = RulesEngine()
     combat = settle_declared_combat is True
     if combat and player_id not in projected.players:
         return False
+    if stop_at_private_action_frontier and player_id not in projected.players:
+        return False
+    initial_hand = set(projected.players[player_id].hand) if stop_at_private_action_frontier else set()
     # ponytail: bounded projection; unknown choices/loops keep backup options.
     for _ in range(128):
+        # A newly acquired hand can answer the remaining stack. Passing that
+        # opportunity is not an immediate hard-loss proof, even for opaque cards.
+        if (stop_at_private_action_frontier and projected.winner is None
+                and set(projected.players[player_id].hand) - initial_hand):
+            return False
         if combat and _unsupported_forecast_combat(projected):
             return False
         if combat and projected.winner is not None:
@@ -689,9 +721,9 @@ def _opaque_draw_count_changes(state, projected, player_id):
     from ai.information import is_unknown
     if not _opaque_acquisition_stack(state, player_id):
         return False
-    items = _opaque_acquisition_items(state)
-    may_reorder = any(item.effect_key in {'look_top_select_hand', 'look_top_choose'} for item in items)
-    may_exile = any(item.effect_key == 'look_top_choose' for item in items)
+    steps = _opaque_acquisition_steps(state)
+    may_reorder = any(key in {'look_top_select_hand', 'look_top_choose'} for _, key, _ in steps)
+    may_exile = any(key == 'look_top_choose' for _, key, _ in steps)
     for pid, original in state.players.items():
         final = projected.players[pid]
         removed = set(original.library) - set(final.library)
@@ -716,7 +748,8 @@ def _opaque_draw_count_changes(state, projected, player_id):
     return True
 
 
-def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_counts=False) -> MatchState | None:
+def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_counts=False,
+                            stop_at_private_action_frontier=False) -> MatchState | None:
     """Forecast declared effects; opt-in opaque hand counts never reveal identities."""
     if not state.stack and not (state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order):
         return state
@@ -725,7 +758,8 @@ def settled_public_position(state: MatchState, player_id: int, *, opaque_draw_co
     opposing_hand = tuple(state.players[opponent].hand)
     projected = _projection_copy(state)
     opaque_selection = opaque_draw_counts and _opaque_acquisition_stack(state, player_id)
-    if not _settle_announced_stack(projected, player_id=player_id, opaque_hand_choices=opaque_selection):
+    if not _settle_announced_stack(projected, player_id=player_id, opaque_hand_choices=opaque_selection,
+                                  stop_at_private_action_frontier=stop_at_private_action_frontier):
         return None
     if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
             or tuple(projected.players[opponent].hand) != opposing_hand):

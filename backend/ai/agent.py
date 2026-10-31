@@ -938,7 +938,41 @@ class AIAgent:
         value, negative_count = max(scored)
         return -negative_count, value
 
+    def _draw_cast_loses(self, state: MatchState, move: dict, player_id: int) -> bool | None:
+        """Reject only an immediate native loss before a new private frontier.
+
+        Draw tags only select proof attempts. Native programs decide outcomes;
+        new hands, private choices and unresolved replacements stay unknown.
+        """
+        if move.get('type') != 'cast_spell':
+            return False
+        card = _card_for_move(state, move)
+        if card is None:
+            return False
+        if 'draw' not in tactical_tags(card.oracle_text, card.type_line, card.types):
+            return None
+        from ai.action_contract import complete_action
+        from ai.information import decision_view
+        from ai.pending_effects import simulation_checked_action, settled_public_position
+        from rules_engine.action_validation import ActionRejected
+        view = state if getattr(state, 'ai_information_player', None) == player_id else decision_view(state, player_id, [move])[0]
+        action = self._materialize_action(view, move, player_id)
+        if action.get('_invalid_ai_choice'):
+            return False
+        try:
+            projected = simulation_checked_action(view, self.engine, player_id, complete_action(action))
+            if (projected.winner is None and set(projected.players[player_id].hand)
+                    - set(view.players[player_id].hand)):
+                return None
+            settled = settled_public_position(projected, player_id, opaque_draw_counts=True,
+                                              stop_at_private_action_frontier=True)
+        except (ActionRejected, UncertainSimulation):
+            return None
+        return None if settled is None or settled.winner is None else settled.winner == 3-player_id
+
     def _bad_shared_draw_cast(self, state: MatchState, move: dict, player_id: int) -> bool:
+        if self._draw_cast_loses(state, move, player_id):
+            return True
         if move.get("type") != "cast_spell":
             return False
         card = state.cards.get(move.get("card_id"))
