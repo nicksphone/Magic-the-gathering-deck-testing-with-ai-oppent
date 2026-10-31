@@ -1,10 +1,15 @@
 """Bounded JSON Q/V weights and stdlib inference; no training framework import."""
 from copy import deepcopy
+from contextlib import contextmanager
+from contextvars import ContextVar
+from asyncio import current_task
+from threading import current_thread
 import json
 import math
 import os
 from pathlib import Path
 import stat
+import struct
 
 
 VERSION = 'mtg.qv.v1'
@@ -236,6 +241,98 @@ def checkpoint(weights, contract, provenance, *, activation=LEGACY_ACTIVATION):
     return deepcopy(payload)
 
 
+_encoder_state = ContextVar('decision_encoder_scope', default=None)
+_ENTITY_KEY_LIMIT = 8192
+_ENTITY_VECTOR_LIMIT = 1024
+
+
+def _entity_identifier(value, prior, cache):
+    """Intern validated ordered syntax, resolving refs to prior structural IDs."""
+    kind = value['kind']
+    if kind == 'ref':
+        key = (kind, prior[value['index']])
+    elif kind == 'map':
+        key = (kind, tuple(tuple(_entity_identifier(item, prior, cache) for item in pair)
+                           for pair in value['items']))
+    elif kind in ('list', 'set'):
+        key = (kind, tuple(_entity_identifier(item, prior, cache) for item in value['items']))
+    elif kind == 'number':
+        scalar = value['value']
+        key = (kind, type(scalar).__name__, struct.pack('!d', scalar) if type(scalar) is float else scalar)
+    else:
+        key = (kind, value.get('value'))
+    nodes = cache.setdefault('entity_nodes', {})
+    identifier = nodes.get(key)
+    if identifier is None:
+        serial = cache.setdefault('entity_serial', {'next': 0})
+        serial['next'] += 1
+        identifier = nodes[key] = serial['next']
+    return identifier
+
+
+def _encoder_owner():
+    try:
+        task = current_task()
+    except RuntimeError:
+        task = None
+    return current_thread(), task
+
+
+def _active_encoder(policy):
+    scope = _encoder_state.get()
+    if scope is None or not scope['active'] or scope['policy'] is not policy:
+        return None
+    owner = _encoder_owner()
+    return scope if (scope['lane'][0] is owner[0] and scope['lane'][1] is owner[1]
+                     and scope['active_agents']) else None
+
+
+def _capture_encoder_scope(owner, policy):
+    scope = _active_encoder(policy)
+    identity = id(owner)
+    return scope if (scope is not None and identity in scope['active_agents']
+                     and scope['approved'].get(identity) is owner) else None
+
+
+def _register_encoder_child(scope, child, policy):
+    if scope is not None and _active_encoder(policy) is scope:
+        scope['approved'][id(child)] = child
+
+
+@contextmanager
+def _decision_encoder_scope(policy, owner=None, actor=None):
+    native = type(policy) is QVPolicy and (actor is None or type(actor) is int and actor in (1, 2))
+    inherited = _active_encoder(policy) if native else None
+    identity = id(owner)
+    joins = (inherited is not None and inherited['actor'] == actor
+             and identity not in inherited['active_agents'] and identity in inherited['approved']
+             and inherited['approved'][identity] is owner)
+    scope = inherited if joins else None
+    if scope is None and native:
+        scope = dict(policy=policy, lane=_encoder_owner(), actor=actor, cache={}, active=True,
+                     approved={identity: owner}, active_agents=set())
+    if scope is not None:
+        scope['active_agents'].add(identity)
+    token = _encoder_state.set(scope)
+    try:
+        yield
+    finally:
+        if scope is not None:
+            scope['active_agents'].discard(identity)
+            if not joins:
+                scope['active'] = False
+                scope['approved'].clear()
+        _encoder_state.reset(token)
+
+
+def _trim_encoder_cache(cache):
+    for name, limit in (('banks', 4), ('texts', 1024),
+                        ('entity_nodes', _ENTITY_KEY_LIMIT), ('entity_vectors', _ENTITY_VECTOR_LIMIT)):
+        values = cache.get(name, {})
+        if len(values) > limit:
+            cache[name] = {key: values[key] for key in list(values)[-limit:]}
+
+
 class QVPolicy:
     def __init__(self, payload, *, expected):
         _validate(payload, expected)
@@ -305,8 +402,18 @@ class QVPolicy:
         if bank_key in banks:
             bank = banks[bank_key]
         else:
+            shared = _active_encoder(self) is not None
+            identifiers = []
             for entity in pack['entities']:
-                bank.append(node(entity))
+                if shared:
+                    identifier = _entity_identifier(entity, identifiers, cache)
+                    identifiers.append(identifier)
+                    vectors = cache.setdefault('entity_vectors', {})
+                    if identifier not in vectors:
+                        vectors[identifier] = node(entity)
+                    bank.append(vectors[identifier])
+                else:
+                    bank.append(node(entity))
             banks[bank_key] = bank
         return node(pack['root'])
 
@@ -321,11 +428,16 @@ class QVDecision:
     """One fixed-checkpoint decision, retaining no engine or raw-reference objects."""
 
     def __init__(self, policy, state):
-        self._policy, self._cache = policy, {}
-        self._context = (life_context(state)
-                         if policy._payload['activation'] == LIFE_CONTEXT_ACTIVATION else None)
-        self._state = policy._encode(state, self._cache)
-        self._value = math.tanh(policy._linear('v_out', policy._linear('v_hidden', self._state), False)[0])
+        scope = _active_encoder(policy)
+        self._policy, self._cache = policy, {} if scope is None else scope['cache']
+        try:
+            self._context = (life_context(state)
+                             if policy._payload['activation'] == LIFE_CONTEXT_ACTIVATION else None)
+            self._state = policy._encode(state, self._cache)
+            self._value = math.tanh(policy._linear('v_out', policy._linear('v_hidden', self._state), False)[0])
+        finally:
+            if scope is not None:
+                _trim_encoder_cache(self._cache)
 
     def predict(self, action):
         # New action-only entries cannot accumulate across arbitrarily many proposals.

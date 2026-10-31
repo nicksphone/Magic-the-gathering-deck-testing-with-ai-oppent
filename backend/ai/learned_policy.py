@@ -54,7 +54,7 @@ def bind_live_policy(raw_checkpoint_bytes):
                              tuple(sorted(contract.items())))
 
 
-def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
+def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, _terminal_win=None):
     """Rank a checked SUBSET; admission retains the caller's original-state boundary."""
     # The tactical preference corpus does not qualify opening-hand decisions.
     if getattr(view, 'pregame_pending', False):
@@ -62,7 +62,7 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
     if not isinstance(binding, LivePolicyBinding) or binding.contract != _current_contract():
         return None
     try:
-        from ai.pending_effects import unanswered_action_loses, unanswered_action_wins
+        from ai.pending_effects import unanswered_action_classification
 
         observation, prompts, context = decision_inputs_from_view(view, supplied_moves, seat)
         frame, references = decision_frame.build_decision_frame(
@@ -101,9 +101,8 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
                            for key in ('q', 'v'))):
                 return None
             # Checked terminal forecasts outrank utility, not every possible reply.
-            win = unanswered_action_wins(view, seat, action, settle_declared_combat=True)
-            loss = (unanswered_action_loses(view, seat, action, settle_declared_combat=True)
-                    if win is False else None)
+            win, loss = unanswered_action_classification(
+                view, seat, action, settle_declared_combat=True)
             if action['type'] in {'foretell', 'suspend'} and win is not True:
                 if answers is None:
                     answers = affordable_interactions(agent, view, seat)
@@ -122,6 +121,11 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
         if (view.step == Step.DECLARE_BLOCKERS and view.active_player != seat
                 and not known_outcome):
             return None
+        if best.get('type') == 'play_land' and not best_key[0]:
+            from ai.mana_resource_policy import prefer_nonregressive_land
+            alternatives = [action for action, prefix in terminal_classes
+                            if action.get('type') == 'play_land' and prefix >= best_key[:2]]
+            best = prefer_nonregressive_land(agent, view, seat, best, alternatives)
         if best.get('type') == 'pass_priority' and not best_key[0]:
             stall = getattr(agent, '_should_break_stall', None)
             proactive = getattr(agent, '_best_proactive_non_pass', None)
@@ -173,6 +177,10 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit):
                         if selected is not None and selected['type'] == kind:
                             best = selected
                             break
+        if (_terminal_win is not None
+                and not (view.step == Step.DECLARE_BLOCKERS and view.active_player != seat)):
+            # The caller asks only "is a win?". Defensive combat used a different horizon.
+            _terminal_win.extend(prefix[0] for candidate, prefix in terminal_classes if candidate == best)
         return deepcopy(best)
     except (ActionRejected, ValueError, OverflowError):
         return None

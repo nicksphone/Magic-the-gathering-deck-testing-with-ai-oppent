@@ -141,54 +141,81 @@ class AIAgent:
     def choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         from ai.pending_effects import decision_projection_scope
         from ai.information import decision_view
-        authoritative_state = state
-        state, legal_moves = decision_view(state, player_id, legal_moves)
-        previous_usage = self._knowledge_usage
-        self._knowledge_usage = {'seen': set(), 'counts': {'persisted': 0, 'fallback': 0, 'opaque': 0,
-                                                         'fallback_reasons': {}}}
-        try:
-            with decision_projection_scope(state, player_id):
-                action = None
-                if self.learned_binding is not None:
-                    from ai.learned_policy import choose_learned_action
-                    from rules_engine.action_validation import checked_action
-                    action = choose_learned_action(
-                        self.learned_binding, self, state, legal_moves, player_id,
-                        admit=lambda proposed: checked_action(authoritative_state, self.engine, player_id, proposed))
-                from ai.pending_effects import unanswered_action_wins
-                from ai.damage_sequences import winning_damage_action
-                if action is None or unanswered_action_wins(state, player_id, action) is not True:
-                    finishing = winning_damage_action(self, state, legal_moves, player_id)
-                    if finishing is not None:
+        from ai.learned_qv import _decision_encoder_scope
+        encoder_policy = (self.learned_binding._policy if _native_planner_snapshot(self) is not None
+                          and self.learned_binding is not None else None)
+        with _decision_encoder_scope(encoder_policy, self, player_id):
+            authoritative_state = state
+            state, legal_moves = decision_view(state, player_id, legal_moves)
+            previous_usage = self._knowledge_usage
+            self._knowledge_usage = {'seen': set(), 'counts': {'persisted': 0, 'fallback': 0, 'opaque': 0,
+                                                             'fallback_reasons': {}}}
+            try:
+                with decision_projection_scope(state, player_id):
+                    action = None
+                    terminal_win = []
+                    if self.learned_binding is not None:
+                        from ai.learned_policy import choose_learned_action
+                        from rules_engine.action_validation import checked_action
+                        action = choose_learned_action(
+                            self.learned_binding, self, state, legal_moves, player_id,
+                            admit=lambda proposed: checked_action(authoritative_state, self.engine, player_id, proposed),
+                            _terminal_win=terminal_win)
+                    from ai.pending_effects import unanswered_action_wins
+                    from ai.damage_sequences import winning_damage_action
+                    win = ((terminal_win[0] if len(terminal_win) == 1
+                            else unanswered_action_wins(state, player_id, action)) if action is not None else None)
+                    if action is None or win is not True:
+                        finishing = winning_damage_action(self, state, legal_moves, player_id)
+                        if finishing is not None:
+                            from rules_engine.action_validation import ActionRejected, checked_action
+                            try:
+                                checked_action(authoritative_state, self.engine, player_id, finishing)
+                            except ActionRejected:
+                                pass
+                            else:
+                                return AIDecision(action=finishing,
+                                    reasoning='Checked current-turn damage sequence if unanswered',
+                                    knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                    if action is not None:
+                        if win is not True and (replacement := self._early_prowess_burn_action(state, action, player_id)):
+                            from rules_engine.action_validation import ActionRejected, checked_action
+                            try:
+                                checked_action(authoritative_state, self.engine, player_id, replacement)
+                            except ActionRejected:
+                                pass
+                            else:
+                                return AIDecision(action=replacement,
+                                    reasoning='Develop a checked main-phase prowess sequence before nonlethal burn',
+                                    knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                        return AIDecision(action=action,
+                            reasoning='Tactical-safeguarded Q ranking over a checked heuristic subset',
+                            knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+                    decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
+                    if replacement := self._early_prowess_burn_action(state, decision.action, player_id):
                         from rules_engine.action_validation import ActionRejected, checked_action
                         try:
-                            checked_action(authoritative_state, self.engine, player_id, finishing)
+                            checked_action(authoritative_state, self.engine, player_id, replacement)
                         except ActionRejected:
                             pass
                         else:
-                            return AIDecision(action=finishing,
-                                reasoning='Checked current-turn damage sequence if unanswered',
-                                knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
-                if action is not None:
-                    return AIDecision(action=action,
-                        reasoning='Tactical-safeguarded Q ranking over a checked heuristic subset',
-                        knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
-                decision = self._choose_action(state, [move for move in legal_moves if move['type'] not in {'foretell', 'suspend'}], player_id)
-                if decision.action.get('type') == 'pass_priority':
-                    from ai.foretell_policy import idle_foretell_action
-                    action = idle_foretell_action(self, state, legal_moves, player_id)
-                    if action:
-                        decision = AIDecision(action=action, reasoning='Bank idle mana without displacing a play or known answer')
-                if decision.action.get('type') == 'pass_priority' and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
-                    from ai.suspend_policy import idle_suspend
-                    action = idle_suspend(self, state, legal_moves, player_id)
-                    if action:
-                        decision = AIDecision(action=action, reasoning='Invest idle mana in supported Suspend without spending a known answer')
-                from ai.declaration_policy import finalize_declaration
-                return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning,
-                                  knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
-        finally:
-            self._knowledge_usage = previous_usage
+                            decision = AIDecision(action=replacement,
+                                reasoning='Develop a checked main-phase prowess sequence before nonlethal burn')
+                    if decision.action.get('type') == 'pass_priority':
+                        from ai.foretell_policy import idle_foretell_action
+                        action = idle_foretell_action(self, state, legal_moves, player_id)
+                        if action:
+                            decision = AIDecision(action=action, reasoning='Bank idle mana without displacing a play or known answer')
+                    if decision.action.get('type') == 'pass_priority' and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:
+                        from ai.suspend_policy import idle_suspend
+                        action = idle_suspend(self, state, legal_moves, player_id)
+                        if action:
+                            decision = AIDecision(action=action, reasoning='Invest idle mana in supported Suspend without spending a known answer')
+                    from ai.declaration_policy import finalize_declaration
+                    return AIDecision(action=finalize_declaration(state, decision.action), reasoning=decision.reasoning,
+                                      knowledge_usage=copy.deepcopy(self._knowledge_usage['counts']))
+            finally:
+                self._knowledge_usage = previous_usage
 
     def _choose_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> AIDecision:
         trigger_choice = getattr(state, 'pending_trigger_order', None) or {}
@@ -2678,6 +2705,123 @@ class AIAgent:
         power = max(0, effective_power(state, cid)) if 'Creature' in effective_types(state, card) else 0
         return major or power >= 4 or power >= state.players[player_id].life
 
+    def _early_prowess_burn_action(self, state: MatchState, action: dict, player_id: int) -> dict | None:
+        """Return the next checked setup action, or None when no sequence is proved."""
+        if (action.get('type') != 'cast_spell' or state.active_player != player_id
+                or state.priority_player != player_id
+                or state.step not in {Step.UPKEEP, Step.DRAW, Step.PRECOMBAT_MAIN}
+                or (action.get('targets') or {}).get('target_player') != 3-player_id
+                or set(action.get('targets') or {}) - {'target_player', 'replacement_source_id'}
+                or state.pending_mechanic_choice or state.pending_replacement_choice
+                or state.pending_trigger_order):
+            return None
+        pending_creature = None
+        if state.stack:
+            if (state.step != Step.PRECOMBAT_MAIN or len(state.stack) != 1
+                    or state.stack[0].controller != player_id
+                    or stack_object_kind(state, state.stack[0]) != 'spell'):
+                return None
+            pending_creature = state.stack[0].source_card_id
+        candidates = {cid for cid in [*state.players[player_id].hand,
+                                     *([pending_creature] if pending_creature else [])]
+                      if 'Creature' in effective_types(state, state.cards[cid])
+                      and re.search(r'\bprowess\b', _oracle_text(state.cards[cid]))
+                      and has_keyword(state, cid, 'haste')}
+        if not candidates or (pending_creature and pending_creature not in candidates):
+            return None
+        from ai.action_contract import complete_action
+        from ai.pending_effects import (_projection_copy, _settle_announced_stack, _unanswered_action_outcome,
+                                        simulation_checked_action)
+        from rules_engine.action_validation import ActionRejected
+        from rules_engine.oracle_effects import infer_effect_from_oracle
+        card = _card_for_move(state, action)
+        effect, _ = infer_effect_from_oracle(state, card, player_id,
+                                            action.get('targets') or {}, report_unsupported=False)
+        def own_choice(projected, legal, actor):
+            return self._choose_action(projected, legal, actor).action
+
+        if (effect != 'deal_damage' or _unanswered_action_outcome(state, player_id, action,
+                own_choice_action=own_choice) != 'neutral'):
+            return None
+        main = _projection_copy(state)
+        before_main = state.step in {Step.UPKEEP, Step.DRAW}
+        if before_main:
+            main.step = Step.PRECOMBAT_MAIN
+            main.priority_player = player_id
+            main.passed_priority.clear()
+            main.players[player_id].mana_pool.clear()
+            main.players[player_id].snow_mana_pool.clear()
+        libraries = {pid: tuple(player.library) for pid, player in main.players.items()}
+        opposing_hand = tuple(main.players[3-player_id].hand)
+
+        def known_branch(projected):
+            return (projected.winner is None
+                    and all(tuple(player.library) == libraries[pid] for pid, player in projected.players.items())
+                    and tuple(projected.players[3-player_id].hand) == opposing_hand)
+
+        def gains_after_burn(developed, cid):
+            if (cid not in developed.players[player_id].battlefield
+                    or not has_keyword(developed, cid, 'haste')):
+                return False
+            burn = next((m for m in self.engine.legal_moves(developed, player_id)
+                if m['type'] == 'cast_spell' and m.get('card_id') == action.get('card_id')
+                and m.get('selected_face_index', 0) == action.get('selected_face_index', 0)
+                and m.get('cast_variant') == action.get('cast_variant')), None)
+            if burn is None:
+                return False
+            power = effective_power(developed, cid)
+            # Never replace a chosen cost/mode/resource announcement with fresh defaults.
+            future = complete_action(copy.deepcopy(action))
+            result = simulation_checked_action(developed, self.engine, player_id, future)
+            return (_settle_announced_stack(result, player_id=player_id,
+                        own_choice_action=own_choice) and known_branch(result)
+                    and cid in result.players[player_id].battlefield
+                    and effective_power(result, cid) > power
+                    and result.players[3-player_id].life < developed.players[3-player_id].life)
+
+        if pending_creature:
+            # Only our single setup spell: opposing responses retain their native route.
+            try:
+                if (_settle_announced_stack(main, player_id=player_id,
+                        own_choice_action=own_choice) and known_branch(main)
+                        and gains_after_burn(main, pending_creature)):
+                    return {'type': 'pass_priority'}
+            except (ActionRejected, UncertainSimulation):
+                pass
+            return None
+
+        branches = [(main, None)]
+        # Bounded, unanswered timing comparison; never assume a future draw or reply.
+        land_moves = [m for m in self.engine.legal_moves(main, player_id) if m['type'] == 'play_land']
+        for move in land_moves[:2]:
+            try:
+                land_action = complete_action(self._materialize_action(main, move, player_id))
+                played = simulation_checked_action(main, self.engine, player_id,
+                    land_action)
+                if (not played.stack and not played.pending_mechanic_choice
+                        and not played.pending_replacement_choice and not played.pending_trigger_order
+                        and known_branch(played)):
+                    branches.append((played, land_action))
+            except (ActionRejected, UncertainSimulation):
+                continue
+        for branch, first_action in branches:
+            moves = [m for m in self.engine.legal_moves(branch, player_id)
+                     if m['type'] == 'cast_spell' and m.get('card_id') in candidates]
+            for move in moves[:4]:
+                try:
+                    creature_action = complete_action(self._materialize_action(branch, move, player_id))
+                    developed = simulation_checked_action(branch, self.engine, player_id,
+                        creature_action)
+                    if (not _settle_announced_stack(developed, player_id=player_id,
+                            own_choice_action=own_choice) or not known_branch(developed)):
+                        continue
+                    if gains_after_burn(developed, move['card_id']):
+                        return ({'type': 'pass_priority'} if before_main
+                                else copy.deepcopy(first_action or creature_action))
+                except (ActionRejected, UncertainSimulation):
+                    continue
+        return None
+
     def _defer_landfall_burn(self, state: MatchState, move: dict, player_id: int) -> bool:
         if (move.get('type') != 'cast_spell' or state.active_player != player_id
                 or state.step not in {Step.UPKEEP, Step.DRAW} or state.stack):
@@ -4051,9 +4195,14 @@ class AIAgent:
                                                         'required_distinct_target_count', 'supports_divide'))):
                 # Later materialization retains this single, already selected target.
                 destruction_candidates = {targets['target_card_id']}
+            native_planner = _native_planner_snapshot(self)
+            own_choice = ((lambda projected, legal, pid: native_planner().choose_action(projected, legal, pid).action)
+                          if native_planner is not None else
+                          (lambda projected, legal, pid: self.choose_action(projected, legal, pid).action))
             excluded = unproductive_destroy_targets(state, card, player_id, targets, ability_text=ability_text,
-                action=out, own_choice_action=lambda projected, legal, pid: self.choose_action(projected, legal, pid).action,
-                candidates=destruction_candidates)
+                action=out, own_choice_action=own_choice,
+                candidates=destruction_candidates,
+                _native_shared_baseline=native_planner is not None)
             friendly_target = targets.get("target_card_id")
             if allow_friendly_target and friendly_target in state.players[player_id].battlefield:
                 excluded.discard(friendly_target)
@@ -6549,3 +6698,104 @@ def _step_key(step) -> str:
     if s.startswith("Step."):
         s = s.split(".", 1)[1]
     return s.lower()
+
+
+def _native_class_attributes(cls):
+    expected = next((names for native, names in _NATIVE_SLOT_CACHE_NAMES if cls is native), None)
+    if expected is None:
+        return None
+    attributes = dict(vars(cls))
+    if '__slotnames__' in attributes:
+        cached = attributes.pop('__slotnames__')
+        if (type(cached) is not list or any(type(name) is not str for name in cached)
+                or tuple(cached) != expected):
+            return None
+    return attributes
+
+
+def _native_planner_snapshot(owner):
+    """Batch-frozen native configuration; fresh private history for each continuation."""
+    from ai.pending_effects import friendly_destruction_profit, _NATIVE_FRIENDLY_DESTRUCTION_PROFIT
+    if friendly_destruction_profit is not _NATIVE_FRIENDLY_DESTRUCTION_PROFIT:
+        return None
+    agent_attributes = _native_class_attributes(AIAgent)
+    engine_attributes = _native_class_attributes(RulesEngine)
+    if (type(owner) is not AIAgent
+            or agent_attributes is None or engine_attributes is None
+            or frozenset(agent_attributes) != _NATIVE_PLANNER_ATTRIBUTES
+            or any(agent_attributes.get(name) is not method for name, method in _NATIVE_PLANNER_METHODS.items())
+            or set(vars(owner)) != {'learned_binding', 'difficulty', 'archetype', 'opponent_archetype',
+                                   'matchup_profile', 'engine', '_main_pass_signature_counts', '_knowledge_usage'}):
+        return None
+    attrs = dict(vars(owner))
+    if (type(owner.engine) is not RulesEngine or vars(owner.engine)
+            or frozenset(engine_attributes) != _NATIVE_ENGINE_ATTRIBUTES
+            or any(engine_attributes.get(name) is not method for name, method in _NATIVE_ENGINE_METHODS.items())
+            or any(type(attrs[key]) is not str for key in ('difficulty', 'archetype'))
+            or type(owner.opponent_archetype) not in (str, type(None))
+            or type(owner.matchup_profile) is not dict
+            or any(type(v) not in (int, float) for v in owner.matchup_profile.values())
+            or type(owner._main_pass_signature_counts) is not dict):
+        return None
+    if any(type(key) is not tuple or len(key) != 5
+           or any(type(key[i]) is not int for i in (0, 1, 3, 4))
+           or type(key[2]) is not tuple or any(type(name) is not str for name in key[2])
+           or type(value) is not int for key, value in owner._main_pass_signature_counts.items()):
+        return None
+    if owner.learned_binding is not None and not _native_learned_provider(owner.learned_binding):
+        return None
+    counts = dict(owner._main_pass_signature_counts)
+    attrs['matchup_profile'] = dict(owner.matchup_profile)
+    policy = attrs['learned_binding']._policy if attrs['learned_binding'] is not None else None
+    encoder_scope = _native_qv._capture_encoder_scope(owner, policy)
+    def spawn():
+        planner = object.__new__(AIAgent)
+        planner.__dict__ = dict(attrs)
+        planner._main_pass_signature_counts = dict(counts)
+        _native_qv._register_encoder_child(encoder_scope, planner, policy)
+        return planner
+    return spawn
+
+
+def _native_learned_provider(binding):
+    binding_class, policy_class, decision_class = _NATIVE_PROVIDER_CLASSES
+    if type(binding) is not binding_class:
+        return False
+    for cls, attributes, getattribute in _NATIVE_PROVIDER_LAYOUTS:
+        current = _native_class_attributes(cls)
+        if (current is None or current.keys() != attributes.keys()
+                or any(current[name] is not value for name, value in attributes.items())):
+            return False
+        if cls.__getattribute__ is not getattribute:
+            return False
+    if (any(vars(module).get(name) is not cls for module, name, cls in _NATIVE_PROVIDER_ALIASES)
+            or policy_class.prepare.__globals__.get('QVDecision') is not decision_class):
+        return False
+    try:
+        policy = object.__getattribute__(binding, '_policy')
+        checkpoint = object.__getattribute__(binding, 'checkpoint_sha256')
+        contract = object.__getattribute__(binding, '_contract')
+    except AttributeError:
+        return False
+    if type(policy) is not policy_class or type(checkpoint) is not str or type(contract) is not tuple:
+        return False
+    attributes = object.__getattribute__(policy, '__dict__')
+    return set(attributes) == {'_payload'} and type(attributes['_payload']) is dict
+
+
+_NATIVE_CHOOSE_ACTION = AIAgent.choose_action
+from ai import learned_policy as _native_lp, learned_qv as _native_qv
+_NATIVE_PROVIDER_CLASSES = (_native_lp.LivePolicyBinding, _native_qv.QVPolicy, _native_qv.QVDecision)
+# copyreg may add this canonical cache during ordinary snapshot serialization.
+_NATIVE_SLOT_CACHE_NAMES = tuple((cls, tuple(vars(cls).get('__slots__', ())))
+                               for cls in (AIAgent, RulesEngine, *_NATIVE_PROVIDER_CLASSES))
+_NATIVE_PLANNER_ATTRIBUTES = frozenset(_native_class_attributes(AIAgent))
+_NATIVE_ENGINE_ATTRIBUTES = frozenset(_native_class_attributes(RulesEngine))
+_NATIVE_PLANNER_METHODS = {name: method for name, method in _native_class_attributes(AIAgent).items() if callable(method)}
+_NATIVE_ENGINE_METHODS = {name: method for name, method in _native_class_attributes(RulesEngine).items() if callable(method)}
+_NATIVE_PROVIDER_LAYOUTS = tuple((cls, _native_class_attributes(cls), cls.__getattribute__)
+                               for cls in _NATIVE_PROVIDER_CLASSES)
+_NATIVE_PROVIDER_ALIASES = ((_native_lp, 'LivePolicyBinding', _NATIVE_PROVIDER_CLASSES[0]),
+                          (_native_lp, 'QVPolicy', _NATIVE_PROVIDER_CLASSES[1]),
+                          (_native_qv, 'QVPolicy', _NATIVE_PROVIDER_CLASSES[1]),
+                          (_native_qv, 'QVDecision', _NATIVE_PROVIDER_CLASSES[2]))

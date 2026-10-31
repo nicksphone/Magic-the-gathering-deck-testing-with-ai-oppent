@@ -40,10 +40,8 @@ def direct_bank(monkeypatch, state, seat, action, *, forecast=None, nonfinite=No
     proposals = [deepcopy(action)] + ([dict(WAIT)] if include_pass else [])
     monkeypatch.setattr(agent, '_strategic_top_actions', lambda *_: deepcopy(proposals))
     if forecast:
-        monkeypatch.setattr(pending_effects, 'unanswered_action_wins',
-                            lambda _view, _seat, move, **_kwargs: forecast(move)[0])
-        monkeypatch.setattr(pending_effects, 'unanswered_action_loses',
-                            lambda _view, _seat, move, **_kwargs: forecast(move)[1])
+        monkeypatch.setattr(pending_effects, 'unanswered_action_classification',
+                            lambda _view, _seat, move, **_kwargs: forecast(move))
     before = serialize_match_snapshot(state)
     moves = RULES.legal_moves(deepcopy(state), seat)
     old_moves = deepcopy(moves)

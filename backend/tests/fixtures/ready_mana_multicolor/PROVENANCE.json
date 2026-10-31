@@ -1,0 +1,129 @@
+{
+  "provider": "Scryfall public named API",
+  "retrieval_method": "GET exact named card; Accept: application/json",
+  "offline_tests": true,
+  "fixture_bytes": "Unmodified complete response bodies, identical to original archived intake.",
+  "http_sanitization": "Only status/protocol and public Date, Content-Type, ETag response headers are included.",
+  "rows": [
+    {
+      "name": "Azorius First-Wing",
+      "file": "azorius-first-wing.json",
+      "request_url": "https://api.scryfall.com/cards/named?exact=Azorius+First-Wing",
+      "retrieved_utc": "2026-10-31T17:22:31.545518+00:00",
+      "utc_note": "Intake batch provenance recorded after the requests; HTTP Date is the per-response server timestamp.",
+      "http": {
+        "protocol": "HTTP/2",
+        "status": 200,
+        "response_headers": {
+          "date": "Sat, 31 Oct 2026 17:20:32 GMT",
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"e622137546f57c6f3f0ffcc2e80a983c\""
+        }
+      },
+      "sha256": "e622137546f57c6f3f0ffcc2e80a983c759a6e08cd00d908080cde02820420e6",
+      "oracle_id": "08d02fdb-4b3f-4f55-b5fc-6bb4d2a14b1f",
+      "scryfall_id": "b675c1e6-add5-4959-a5be-f2571ccebcb4",
+      "full_response_retained": true
+    },
+    {
+      "name": "Azorius Guildgate",
+      "file": "azorius-guildgate.json",
+      "request_url": "https://api.scryfall.com/cards/named?exact=Azorius+Guildgate",
+      "retrieved_utc": "2026-10-31T17:22:31.545721+00:00",
+      "utc_note": "Intake batch provenance recorded after the requests; HTTP Date is the per-response server timestamp.",
+      "http": {
+        "protocol": "HTTP/2",
+        "status": 200,
+        "response_headers": {
+          "date": "Sat, 31 Oct 2026 17:20:31 GMT",
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"b3141d3be29cb1b257fd0a0870981e64\""
+        }
+      },
+      "sha256": "b3141d3be29cb1b257fd0a0870981e641abab94b54e034bd8a220527d08aa7fc",
+      "oracle_id": "ad1712d8-809f-410c-8b91-ffe6fb8a69a1",
+      "scryfall_id": "f98a7264-0a83-42c8-a94d-05ad4c234242",
+      "full_response_retained": true
+    },
+    {
+      "name": "Duress",
+      "file": "duress.json",
+      "request_url": "https://api.scryfall.com/cards/named?exact=Duress",
+      "retrieved_utc": "2026-10-31T17:22:31.545878+00:00",
+      "utc_note": "Intake batch provenance recorded after the requests; HTTP Date is the per-response server timestamp.",
+      "http": {
+        "protocol": "HTTP/2",
+        "status": 200,
+        "response_headers": {
+          "date": "Sat, 31 Oct 2026 17:20:32 GMT",
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"c2e7958f4f41bfe25335d229c4f40243\""
+        }
+      },
+      "sha256": "c2e7958f4f41bfe25335d229c4f402430ea3136620bb9fe9f24b33d426492a8d",
+      "oracle_id": "33d405ea-7a9a-4970-b70f-9c05d90dd6f0",
+      "scryfall_id": "34c3a894-ee75-4db9-a69f-711bb3cc150a",
+      "full_response_retained": true
+    },
+    {
+      "name": "Hallowed Fountain",
+      "file": "hallowed-fountain.json",
+      "request_url": "https://api.scryfall.com/cards/named?exact=Hallowed+Fountain",
+      "retrieved_utc": "2026-10-31T17:22:31.546014+00:00",
+      "utc_note": "Intake batch provenance recorded after the requests; HTTP Date is the per-response server timestamp.",
+      "http": {
+        "protocol": "HTTP/2",
+        "status": 200,
+        "response_headers": {
+          "date": "Sat, 31 Oct 2026 17:20:30 GMT",
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"d7bfd49a11c28b34e3ca6582b1ae875a\""
+        }
+      },
+      "sha256": "d7bfd49a11c28b34e3ca6582b1ae875a69710b92ec21d1958aba5050c2b511a8",
+      "oracle_id": "f1750962-a87c-49f6-b731-02ae971ac6ea",
+      "scryfall_id": "b7285986-7e08-4969-86ef-452dc5bfdd9f",
+      "full_response_retained": true
+    },
+    {
+      "name": "Mountain",
+      "file": "mountain.json",
+      "request_url": "https://api.scryfall.com/cards/named?exact=Mountain",
+      "retrieved_utc": "2026-10-31T17:22:31.546144+00:00",
+      "utc_note": "Intake batch provenance recorded after the requests; HTTP Date is the per-response server timestamp.",
+      "http": {
+        "protocol": "HTTP/2",
+        "status": 200,
+        "response_headers": {
+          "date": "Sat, 31 Oct 2026 17:20:30 GMT",
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"42164f50c321bed93616d0b5ce4525e0\""
+        }
+      },
+      "sha256": "42164f50c321bed93616d0b5ce4525e057d9edb2e7e3c4ba9c974d5d828a9284",
+      "oracle_id": "a3fb7228-e76b-4e96-a40e-20b5fed75685",
+      "scryfall_id": "85177bd7-6c50-48da-b692-ae5fe7bd357c",
+      "full_response_retained": true
+    },
+    {
+      "name": "Savage Lands",
+      "file": "savage-lands.json",
+      "request_url": "https://api.scryfall.com/cards/named?exact=Savage+Lands",
+      "retrieved_utc": "2026-10-31T17:22:31.546292+00:00",
+      "utc_note": "Intake batch provenance recorded after the requests; HTTP Date is the per-response server timestamp.",
+      "http": {
+        "protocol": "HTTP/2",
+        "status": 200,
+        "response_headers": {
+          "date": "Sat, 31 Oct 2026 17:20:31 GMT",
+          "content-type": "application/json; charset=utf-8",
+          "etag": "W/\"6baba2357f8949d3912743d3a71ea641\""
+        }
+      },
+      "sha256": "6baba2357f8949d3912743d3a71ea641d3ebf5d1bcd16d76493cf0b6a7a1e201",
+      "oracle_id": "a3292406-3f49-42d6-a547-e43dd5797f84",
+      "scryfall_id": "428df1ff-e13e-48a3-bcc9-301bdc9470fb",
+      "full_response_retained": true
+    }
+  ]
+}

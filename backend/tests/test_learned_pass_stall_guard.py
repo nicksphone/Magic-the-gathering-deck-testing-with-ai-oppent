@@ -57,15 +57,11 @@ def route(monkeypatch,state,seat,proposals,*,agent=None,bad_last=False,forecasts
     binding=_binding(learned_policy)
     agent=agent or AIAgent(difficulty='master',archetype='Burn')
     monkeypatch.setattr(agent,'_strategic_top_actions',lambda *_:deepcopy(proposals))
-    wins,losses=pending_effects.unanswered_action_wins,pending_effects.unanswered_action_loses
-    def win(view,pid,action,**kwargs):
-        calls['events'].append('win')
-        return forecasts(action)[0] if forecasts else wins(view,pid,action,**kwargs)
-    def loss(view,pid,action,**kwargs):
-        calls['events'].append('loss')
-        return forecasts(action)[1] if forecasts else losses(view,pid,action,**kwargs)
-    monkeypatch.setattr(pending_effects,'unanswered_action_wins',win)
-    monkeypatch.setattr(pending_effects,'unanswered_action_loses',loss)
+    delegate=pending_effects.unanswered_action_classification
+    def classification(view,pid,action,**kwargs):
+        calls['events'].append('classification')
+        return forecasts(action) if forecasts else delegate(view,pid,action,**kwargs)
+    monkeypatch.setattr(pending_effects,'unanswered_action_classification',classification)
     before=serialize_match_snapshot(state)
     moves=RULES.legal_moves(deepcopy(state),seat);old_moves=deepcopy(moves)
     view,supplied=decision_view(state,seat,moves)
@@ -119,7 +115,7 @@ def test_terminal_prefix_constrains_helper_after_all_qv_and_forecasts(monkeypatc
         offered.append(deepcopy(rows))
         assert view.ai_information_player==pid==seat
         assert events['scores']==['pass_priority','cast_spell']
-        assert events['events']==['score','win','loss','score','win','loss']
+        assert events['events']==['score','classification','score','classification']
         return deepcopy(rows[0])
     monkeypatch.setattr(agent,'_best_proactive_non_pass',proactive)
     def forecasts(move):

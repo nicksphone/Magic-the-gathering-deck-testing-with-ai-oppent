@@ -1,5 +1,6 @@
 """Value checked public resource changes, without predicting hidden spells."""
 import re
+import random
 
 from ai.pending_effects import planning_copy, _projection_copy, _settle_announced_stack, _decision_projection
 from game_state.state import MatchState
@@ -81,6 +82,177 @@ def resource_delta(before, after, player_id, *, excluded_card_ids=()):
     access = sum(int(has_access(new, new_hand, card_ids))
                  - int(has_access(old, old_hand, card_ids)) for card_ids in costs.values())
     return new_value - old_value + enemy_old - enemy_new + 3.0 * access
+
+
+_LAND_PROFILE_MAX_PROBES = 1024
+
+
+def _unmodeled_land_capability(card):
+    from rules_engine.costs import ActivatedCost, parse_activated_cost
+    from rules_engine.cycling import cycling_cost
+    from rules_engine.keyword_actions import ninjutsu_cost
+    from rules_engine.move_generator import _extract_equip_cost
+    from rules_engine.oracle_effects import ACTIVATED_ABILITY_RE, extract_activated_abilities, extract_loyalty_abilities, crew_value
+    from rules_engine.suspend import instruction as suspend_instruction
+    # These native resource domains are not represented by spell-payment bits.
+    # Abstain even when an ability is not payable or has no target right now.
+    return bool(extract_activated_abilities(card) or extract_loyalty_abilities(card)
+                or cycling_cost(card.oracle_text, allow_variable=True)
+                or _extract_equip_cost(card.oracle_text) or crew_value(card) is not None
+                or ninjutsu_cost(card) or suspend_instruction(card)
+                or any(parse_activated_cost(match[1]) != ActivatedCost(tap_source=True)
+                       for match in ACTIVATED_ABILITY_RE.finditer(without_reminder_text(card.oracle_text))))
+
+
+def _known_land_costs(state, player_id):
+    from ai.information import is_unknown
+    from rules_engine.card_faces import exile_candidates, exile_permission
+    from rules_engine.costs import collect_cost_options
+    from rules_engine.foretell import can_look
+    from rules_engine.mana import MANA_SYMBOL_RE, parse_mana_cost
+    costs, demand = [], dict.fromkeys('WUBRGCS', 0)
+    demand['generic'] = 0
+    for zone in ('hand', 'graveyard', 'exile', 'battlefield'):
+        candidates = exile_candidates(state, player_id) if zone == 'exile' else getattr(state.players[player_id], zone)
+        for cid in candidates:
+            card = state.cards[cid]
+            if zone == 'exile' and not exile_permission(state, player_id, cid):
+                continue
+            if card.exile_face_down and not can_look(card, player_id):
+                return None
+            if is_unknown(card):
+                return None
+            if _unmodeled_land_capability(card):
+                return None
+            if zone == 'battlefield' or 'Land' in effective_types(state, card):
+                continue
+            options = tuple(collect_cost_options(state, player_id, card))
+            if not options:
+                if zone == 'hand':
+                    return None
+                continue
+            requirements = []
+            for option in options:
+                symbols = MANA_SYMBOL_RE.findall(option.mana_cost.upper())
+                if (''.join('{' + symbol + '}' for symbol in symbols) != option.mana_cost.upper()
+                        or any(not symbol.isdecimal() and symbol not in set('WUBRGCS') for symbol in symbols)
+                        or option.pay_life_x or option.discard_x or option.discard_cards
+                        or option.discard_all or option.sacrifice_all or option.sacrifice_creatures
+                        or option.exile_graveyard or option.hand_exile_color):
+                    return None
+                requirements.append(parse_mana_cost(option.mana_cost))
+            costs.append((cid, options))
+            # Options on one card are alternatives; different physical cards
+            # still compete for the same finite mana sources.
+            for color in 'WUBRGCS':
+                demand[color] += max(req[color] for req in requirements)
+            demand['generic'] += max(sum(req.values()) for req in requirements)
+    return costs, demand
+
+
+def _land_coverage(state, player_id, costs, demand):
+    from game_state.state import Zone
+    from rules_engine.alternative_casts import spell_cast_view
+    from rules_engine.card_faces import exile_permission
+    from rules_engine.costs import casting_method, check_cost_option_available, collect_cost_options
+    ready = _ready_board(state, player_id)
+    profile = []
+    for cid, options in costs:
+        card = state.cards[cid]
+        # Availability alone does not validate a spell's zone or permission.
+        # In particular a modal spell consumed as a land is no retained spell.
+        if (card.zone not in {Zone.HAND, Zone.GRAVEYARD, Zone.EXILE}
+                or 'Land' in effective_types(state, card)
+                or (card.zone == Zone.EXILE and not exile_permission(state, player_id, cid))
+                or tuple(collect_cost_options(state, player_id, card)) != options):
+            return None
+        for option in options:
+            for resources in (state, ready):
+                profile.append(check_cost_option_available(resources, player_id, resources.cards[cid], option))
+                source = spell_cast_view(resources.cards[cid], casting_method(option.id))
+                for color in 'WUBRGCS':
+                    profile.extend(_can_pay(resources, player_id, ('{' + color + '}') * n, source)
+                                   for n in range(1, demand[color] + 1))
+                profile.extend(_can_pay(resources, player_id, '{' + str(n) + '}', source)
+                               for n in range(1, demand['generic'] + 1))
+    return tuple(profile)
+
+
+def prefer_nonregressive_land(agent, state, player_id, selected, alternatives):
+    """Bounded cast-resource improvement; unmodeled known abilities retain Q."""
+    from ai.information import decision_view
+    from game_state.state import Zone
+    if (not isinstance(state, MatchState) or selected.get('type') != 'play_land'
+            or state.winner is not None or state.pregame_pending or state.stack
+            or state.pending_mechanic_choice or state.pending_replacement_choice or state.pending_trigger_order
+            or state.active_player != player_id or state.priority_player != player_id):
+        return selected
+    choices = [action for action in alternatives if action.get('type') == 'play_land']
+    if selected not in choices or len(choices) < 2:
+        return selected
+    rng = random.getstate()
+    try:
+        view = state
+        if getattr(view, 'ai_information_player', None) != player_id:
+            view, _ = decision_view(state, player_id, choices)
+        base = _projection_copy(view)
+        universe = _known_land_costs(base, player_id)
+        if universe is None or not universe[0]:
+            return selected
+        costs, demand = universe
+        # Additional resource-selection costs abstain above, so availability
+        # makes at most one native payment probe per option per board. Count every
+        # current/ready capacity probe for every admitted candidate up front.
+        probes = len(choices) * sum(len(options) for _, options in costs) * (
+            2 + 2 * sum(demand.values()))
+        if probes > _LAND_PROFILE_MAX_PROBES:
+            return selected
+
+        def project(action):
+            cid = action.get('card_id')
+            if cid not in base.players[player_id].hand or base.cards[cid].zone != Zone.HAND:
+                return None
+            projected = checked_action(_projection_copy(base), RulesEngine(), player_id, action)
+            if (random.getstate() != rng or projected.winner is not None or projected.stack
+                    or projected.pending_mechanic_choice or projected.pending_replacement_choice or projected.pending_trigger_order
+                    or (projected.turn, projected.step, projected.active_player, projected.priority_player)
+                       != (base.turn, base.step, base.active_player, base.priority_player)):
+                return None
+            # Opaque private-zone equality is only a preservation check;
+            # no opposing hand or library card is used for valuation.
+            for pid, before in base.players.items():
+                after = projected.players[pid]
+                expected_hand = [card_id for card_id in before.hand if card_id != cid] if pid == player_id else before.hand
+                if (after.hand != expected_hand or after.library != before.library
+                        or after.graveyard != before.graveyard or after.exile != before.exile
+                        or after.life != before.life):
+                    return None
+            return projected
+
+        selected_state = project(selected)
+        if selected_state is None:
+            return selected
+        current = _land_coverage(selected_state, player_id, *universe)
+        if current is None:
+            return selected
+        improving = []
+        for action in choices:
+            if action == selected:
+                continue
+            projected = project(action)
+            if projected is None:
+                return selected
+            coverage = _land_coverage(projected, player_id, *universe)
+            if coverage is None or len(coverage) != len(current):
+                return selected
+            if all(new >= old for old, new in zip(current, coverage)) and any(new > old for old, new in zip(current, coverage)):
+                improving.append(action)
+        result = agent._best_land_move(base, improving, player_id) if improving else selected
+        return result if random.getstate() == rng and result in choices else selected
+    except (ActionRejected, ValueError, TypeError, KeyError, AttributeError, OverflowError):
+        return selected
+    finally:
+        random.setstate(rng)
 
 
 def resource_change_plan(agent, state, move, player_id, *, include_normal_land=False):

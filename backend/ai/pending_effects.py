@@ -7,8 +7,9 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 import json
 import pickle
+import random
 import re
-from typing import Literal, TypedDict
+from typing import Callable, Literal, TypedDict
 
 from game_state.state import CardInstance, MatchState, StackItem, Step, Zone
 from game_state.copying import copy_match_state, _copy_card_field
@@ -303,7 +304,8 @@ def keyword_target_value(state, card, player_id, targets):
 
 
 def unproductive_destroy_targets(state: MatchState, card, player_id: int, targets: dict, *, ability_text: str | None = None,
-                                action: dict | None = None, own_choice_action=None, candidates=None) -> set[str]:
+                                action: dict | None = None, own_choice_action=None, candidates=None,
+                                _native_shared_baseline=False) -> set[str]:
     """Conserve pure destruction against indestructible or friendly targets."""
     if ability_text is None and not set(effective_types(state, card)).intersection({"Instant", "Sorcery"}):
         return set()
@@ -323,6 +325,13 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
     if key != "destroy_permanent":
         return set()
     excluded = set()
+    baseline_reference = None
+    if _native_shared_baseline and friendly_destruction_profit is _NATIVE_FRIENDLY_DESTRUCTION_PROFIT:
+        reference = []
+        def baseline_reference():
+            if not reference:
+                reference.append(_native_destruction_baseline(state, player_id, own_choice_action))
+            return reference[0]
     for player in state.players.values():
         for cid in player.battlefield:
             if candidates is not None and cid not in candidates:
@@ -336,8 +345,14 @@ def unproductive_destroy_targets(state: MatchState, card, player_id: int, target
             if not friendly and not has_keyword(state, cid, 'indestructible'):
                 continue
             if friendly and action is not None:
-                profitable = friendly_destruction_profit(state, player_id,
-                    {**action, 'targets': {**targets, 'target_card_id': cid}}, own_choice_action=own_choice_action)
+                if baseline_reference is not None:
+                    # Native batch: run each candidate fully against one lazy reference.
+                    profitable = _friendly_destruction_profit(state, player_id,
+                        {**action, 'targets': {**targets, 'target_card_id': cid}}, own_choice_action=own_choice_action,
+                        _baseline_supplier=baseline_reference)
+                else:
+                    profitable = friendly_destruction_profit(state, player_id,
+                        {**action, 'targets': {**targets, 'target_card_id': cid}}, own_choice_action=own_choice_action)
                 if profitable is not False:
                     continue
             excluded.add(cid)
@@ -351,16 +366,35 @@ def friendly_destruction_profit(state, player_id, action, *, own_choice_action=N
         own_choice_action)
 
 
+_NATIVE_FRIENDLY_DESTRUCTION_PROFIT = friendly_destruction_profit
+
+
 def _choice_free_projection(state, player_id, kind, action, compute, policy):
+    return _memoized_projection(state, player_id, kind, action, compute, policy,
+        namespace='choice_free_outcomes')
+
+
+def _native_destruction_baseline(state: MatchState, player_id: int,
+                                 policy: Callable[..., dict] | None) -> tuple[Literal['known', 'unknown'], int | None, float | None]:
+    return _memoized_projection(state, player_id, 'destruction_baseline', None,
+        lambda own_policy: _destruction_baseline(state, player_id, own_policy), policy,
+        namespace='native_reference_baselines')
+
+
+def _memoized_projection(state, player_id, kind, action, compute, policy, *, namespace):
     scope = _decision_projection.get()
     if scope is None or scope[0] is not state or scope[1] != player_id:
         return compute(policy)
+    native_reference = namespace == 'native_reference_baselines'
 
     def key():
         try:
             # Bytes remain private in this short-lived scope; never unpickle input.
             # Include RNG, object incarnations, aliases and extra gameplay fields.
-            return (pickle.dumps(state, protocol=5),
+            snapshot = pickle.dumps(state, protocol=5)
+            if native_reference:
+                snapshot = (snapshot, random.getstate())
+            return (snapshot,
                     (kind, policy is None,
                      json.dumps(action, sort_keys=True, separators=(',', ':'), allow_nan=False)))
         except (pickle.PicklingError, TypeError, ValueError, AttributeError, RecursionError):
@@ -369,11 +403,11 @@ def _choice_free_projection(state, player_id, kind, action, compute, policy):
     announced = key()
     if announced is None:
         return compute(policy)
-    memo = scope[2].get('choice_free_outcomes')
+    memo = scope[2].get(namespace)
     if memo is None or memo[0] != announced[0]:
         # One shared snapshot, not a complete board copy for every target.
         memo = (announced[0], {})
-        scope[2]['choice_free_outcomes'] = memo
+        scope[2][namespace] = memo
     if announced[1] in memo[1]:
         return memo[1][announced[1]]
     choice_used = False
@@ -386,12 +420,12 @@ def _choice_free_projection(state, player_id, kind, action, compute, policy):
     result = compute(choice if policy is not None else None)
     # A skipped callback must not erase mutable agent/closure side effects.
     if (not choice_used and key() == announced
-            and scope[2].get('choice_free_outcomes') is memo):
+            and scope[2].get(namespace) is memo):
         memo[1][announced[1]] = result
     return result
 
 
-def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=None):
+def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=None, _baseline_supplier=None):
     from ai.heuristics import evaluate_board
     from rules_engine.action_validation import ActionRejected, checked_action
     projected = _projection_copy(state)
@@ -410,8 +444,11 @@ def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=
     if (any(tuple(player.library) != libraries[pid] for pid, player in projected.players.items())
             or tuple(projected.players[3-player_id].hand) != opposing_hand):
         return None
-    status, winner, value = _choice_free_projection(state, player_id, 'destruction_baseline', None,
-        lambda policy: _destruction_baseline(state, player_id, policy), own_choice_action)
+    if _baseline_supplier is None:
+        status, winner, value = _choice_free_projection(state, player_id, 'destruction_baseline', None,
+            lambda policy: _destruction_baseline(state, player_id, policy), own_choice_action)
+    else:
+        status, winner, value = _baseline_supplier()
     if status == 'unknown':
         return None
     if winner is not None:
@@ -714,6 +751,16 @@ def unanswered_action_loses(state: MatchState, player_id: int, action: dict, *,
     outcome = _unanswered_action_outcome(state, player_id, action,
         settle_declared_combat=settle_declared_combat)
     return None if outcome is None else outcome == "loss"
+
+
+def unanswered_action_classification(state: MatchState, player_id: int, action: dict, *,
+                                     settle_declared_combat=False) -> tuple[bool | None, bool | None]:
+    """Classify one complete forecast; a known win needs no loss question."""
+    outcome = _unanswered_action_outcome(state, player_id, action,
+        settle_declared_combat=settle_declared_combat)
+    win = None if outcome is None else outcome == "win"
+    loss = outcome == "loss" if win is False else None
+    return win, loss
 
 
 def _unanswered_action_outcome(state: MatchState, player_id: int, action: dict, *,

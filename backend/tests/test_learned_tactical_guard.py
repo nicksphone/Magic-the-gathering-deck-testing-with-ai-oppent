@@ -87,13 +87,13 @@ def _route(monkeypatch, state, seat, proposals, scores):
     """Only shortlist/Q are protocol doubles; admission/forecast stay genuine."""
     binding = _binding(learned_policy)
     calls = {'scored': [], 'state_packs': [], 'forecast': []}
-    delegate = pending_effects.unanswered_action_wins
+    delegate = pending_effects.unanswered_action_classification
 
     def forecast(view, player_id, action, **kwargs):
         assert view.ai_information_player == player_id == seat
         assert all(is_unknown(view.cards[cid]) for cid in view.players[3-seat].hand)
         result = delegate(view, player_id, action, **kwargs)
-        calls['forecast'].append((deepcopy(action), result))
+        calls['forecast'].append((deepcopy(action), result[0]))
         return result
 
     class SyntheticScores:
@@ -117,7 +117,7 @@ def _route(monkeypatch, state, seat, proposals, scores):
     monkeypatch.setattr(AIAgent, '_strategic_top_actions',
                         lambda _agent, _view, _moves, _seat, _limit: deepcopy(proposals))
     monkeypatch.setattr(learned_qv.QVPolicy, 'prepare', prepare)
-    monkeypatch.setattr(pending_effects, 'unanswered_action_wins', forecast)
+    monkeypatch.setattr(pending_effects, 'unanswered_action_classification', forecast)
     before = serialize_match_snapshot(state)
     moves = RULES.legal_moves(deepcopy(state), seat)
     old_moves = deepcopy(moves)
@@ -281,14 +281,15 @@ def test_protocol_truthy_integer_is_not_an_exact_true_forecast(monkeypatch, seat
     creature = _cast(state, cards, seat, 'Monastery Swiftspear')
     assert _forecast(state, seat, bolt) is False
     assert _forecast(state, seat, creature) is False
-    delegate = pending_effects.unanswered_action_wins
+    delegate = pending_effects.unanswered_action_classification
 
     def protocol_result(view, player_id, action, **kwargs):
-        assert delegate(view, player_id, action, **kwargs) is False
+        win, loss = delegate(view, player_id, action, **kwargs)
+        assert win is False
         # Deliberately invalid classifier metadata, NOT an asserted game win.
-        return 1 if action.get('card_id') == cards['Lightning Bolt'] else False
+        return (1 if action.get('card_id') == cards['Lightning Bolt'] else False), loss
 
-    monkeypatch.setattr(pending_effects, 'unanswered_action_wins', protocol_result)
+    monkeypatch.setattr(pending_effects, 'unanswered_action_classification', protocol_result)
     action, _ = _route(monkeypatch, state, seat, [bolt, creature],
                        {'Lightning Bolt': -0.5, 'Monastery Swiftspear': 0.5})
     assert action == creature
