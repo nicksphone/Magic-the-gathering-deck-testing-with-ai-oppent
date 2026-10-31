@@ -14,7 +14,7 @@ _SCHEMA_PINS = {
     # Emblems, loyalty permissions and control ledgers require empty defaults below.
     MatchState: 'cbeb9f80f6473744268be74235a1616122da8a0b0578f2b9c61e3f955d57ef31',
     CardInstance: 'c6cd00f22c8838effbffa7cdd9d19d29fd16f5879346a071a25d5253bceef8e4',
-    PlayerState: 'dd8f36bedf446625796592fe8045ce675eb471d167ffe68cedb2124ccae1e973',
+    PlayerState: '9d6bba14bc8fdfae5e10148dedff0487a62dd40205f5c93c618e2f68edf4bcae',
 }
 
 
@@ -139,7 +139,7 @@ def public_graveyard_inventory(state, actor_id):
         return result('unknown', 'uncovered public zone membership')
 
     for pid, player in state.players.items():
-        if player.exile or player.exile_play_until:
+        if player.exile or player.exile_play_until or player.exile_play_durations:
             return result('unknown', 'uncovered exile context')
         for zone in (Zone.GRAVEYARD, Zone.BATTLEFIELD):
             ids = getattr(player, zone.value)

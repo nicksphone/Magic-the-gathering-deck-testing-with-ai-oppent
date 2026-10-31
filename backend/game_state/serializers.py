@@ -301,6 +301,8 @@ def serialize_match_snapshot(state: MatchState) -> dict:
                 "graveyard": list(player.graveyard),
                 "exile": list(player.exile),
                 "exile_play_until": dict(player.exile_play_until),
+                **({"exile_play_durations": deepcopy(player.exile_play_durations)}
+                   if player.exile_play_durations else {}),
                 "mana_pool": dict(player.mana_pool),
                 "snow_mana_pool": dict(player.snow_mana_pool),
                 "restricted_mana_pool": deepcopy(player.restricted_mana_pool),
@@ -345,6 +347,8 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
         for key in ("library", "hand", "battlefield", "graveyard", "exile"):
             setattr(player, key, list(raw.get(key, [])))
         player.exile_play_until = {str(key): int(value) for key, value in raw.get("exile_play_until", {}).items()}
+        from rules_engine.card_faces import restore_exile_play_durations
+        player.exile_play_durations = restore_exile_play_durations(raw.get("exile_play_durations", {}), int(payload["turn"]))
         player.mana_pool = {str(key): int(value) for key, value in raw.get("mana_pool", {}).items()}
         player.snow_mana_pool = {str(key): int(value) for key, value in raw.get("snow_mana_pool", {}).items()}
         player.restricted_mana_pool = deepcopy(raw.get("restricted_mana_pool", []))

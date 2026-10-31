@@ -163,6 +163,26 @@ SHARK_TOKEN_RE = re.compile(
     re.IGNORECASE,
 )
 EXILE_TOP_PLAYABLE_RE = re.compile(r"exile the top\s+(a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+cards?.*?may play those cards", re.IGNORECASE)
+
+
+def compile_exile_play_instruction(text):
+    """Compile complete duration-bearing bodies; never infer a missing duration."""
+    lines = without_reminder_text(text).strip().splitlines()
+    if lines and re.fullmatch(r'(?:casualty\s+\d+|spectacle\s+(?:\{[^{}]+\})+)\.?', lines[0].strip(), re.I):
+        lines = lines[1:]
+    body = ' '.join(' '.join(lines).split())
+    candidate = EXILE_TOP_PLAYABLE_RE.search(body)
+    if candidate:
+        prefix = rf'exile the top\s+{re.escape(candidate[1])}\s+cards? of your library\.\s*'
+        endings = {
+            'this_turn': r'you may play those cards this turn\.?',
+            'controller_next_turn': r'until the end of your next turn,\s*you may play those cards\.?',
+            'next_controller_end_step': r'until your next end step,\s*you may play those cards\.?',
+        }
+        for duration, ending in endings.items():
+            if re.fullmatch(prefix + ending, body, re.I):
+                return {'amount': _parse_count_token(candidate[1]), 'play_duration': duration}
+    return {'__unsupported_exile_play_duration': text}
 REVEAL_DEFENDING_TOP_LAND_RE = re.compile(r"defending player reveals the top card of their library.*?if it's a land card", re.IGNORECASE)
 LAND_FROM_HAND_RE = re.compile(
     r"put (?:a|one) land card from your hand onto the battlefield tapped",
@@ -614,10 +634,11 @@ def infer_effect_from_oracle(
         return self_change
     oracle = without_reminder_text(spell_resolution_text(card, oracle))
     # Whole permanent surfaces contain costs/abilities; activation proxies do not.
-    if (not set(getattr(card, 'types', []) or []).intersection(
+    graveyard_body = without_reminder_text(action_targets.get('mode_text') or oracle)
+    if (not action_targets.get('mode_texts') and not set(getattr(card, 'types', []) or []).intersection(
             {'Artifact', 'Creature', 'Enchantment', 'Land', 'Planeswalker', 'Battle'})
-            and re.search(r"\bexile target player's graveyard\b", oracle, re.I)):
-        if not re.fullmatch(r"exile target player's graveyard\.?", oracle.strip(), re.I):
+            and re.search(r"\bexile target player's graveyard\b", graveyard_body, re.I)):
+        if not re.fullmatch(r"exile target player's graveyard\.?", graveyard_body.strip(), re.I):
             return 'noop', {'__unsupported_instruction': oracle}
         return 'exile_all_graveyards', {'target_player': action_targets.get('target_player')}
     from rules_engine.turn_spell_protection import compile_instruction as compile_turn_protection
@@ -951,7 +972,12 @@ def infer_effect_from_oracle(
         return "topdeck_reveal_creature_to_hand", payload
     exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
     if exile_playable:
-        return "exile_top_cards_playable", {"amount": _parse_count_token(exile_playable.group(1))}
+        program = compile_exile_play_instruction(oracle)
+        if '__unsupported_exile_play_duration' in program:
+            if report_unsupported:
+                state.log.append(f'Unsupported complete exile-play duration/body on {card.name}.')
+            return 'noop', program
+        return "exile_top_cards_playable", program
     if REVEAL_DEFENDING_TOP_LAND_RE.search(oracle):
         return "reveal_defending_top_land", {
             "target_player": action_targets.get("target_player", 1 if controller == 2 else 2),
@@ -2207,6 +2233,9 @@ def _infer_clause_effect(
     action_targets: dict[str, Any],
     x_value: int,
 ) -> tuple[str, dict[str, Any]] | None:
+    if EXILE_TOP_PLAYABLE_RE.search(oracle):
+        program = compile_exile_play_instruction(oracle)
+        return ('noop' if '__unsupported_exile_play_duration' in program else 'exile_top_cards_playable'), program
     self_return = _pure_self_graveyard_return_instruction(card, oracle)
     if self_return and _pure_self_graveyard_return_instruction(card, card.oracle_text) == self_return:
         payload = {'target_card_id': card.id, 'target_player': controller,
@@ -2646,10 +2675,6 @@ def _infer_clause_effect(
         if "x_value" in action_targets:
             payload["x_value"] = max(0, int(action_targets.get("x_value", 0) or 0))
         return "create_shark_token", payload
-
-    exile_playable = EXILE_TOP_PLAYABLE_RE.search(oracle)
-    if exile_playable:
-        return "exile_top_cards_playable", {"amount": _parse_count_token(exile_playable.group(1))}
 
     token_match = TOKEN_PT_RE.search(oracle)
     if "token" in oracle and token_match:

@@ -343,6 +343,8 @@ class RulesEngine:
         elif state.step == Step.PRECOMBAT_MAIN:
             self._advance_sagas(state)
         elif state.step == Step.END_STEP:
+            from rules_engine.card_faces import expire_exile_play_durations
+            expire_exile_play_durations(state, boundary='end_step')
             emit_event(state, "begin_step", {"step": "end_step", "active_player": state.active_player})
         elif state.step == Step.END_COMBAT:
             emit_event(state, "begin_step", {"step": "end_combat", "active_player": state.active_player})
@@ -358,6 +360,8 @@ class RulesEngine:
         self._clear_prevention_shields(state)
         self._revert_expired_control_changes(state)
         self._revert_crew_vehicles(state)
+        from rules_engine.card_faces import expire_exile_play_durations
+        expire_exile_play_durations(state)
         state.pending_entry_counters = [
             entry
             for entry in getattr(state, "pending_entry_counters", [])

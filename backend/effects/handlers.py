@@ -2347,6 +2347,12 @@ def create_shark_token(state: MatchState, controller: int, payload: dict) -> Non
 
 
 def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) -> None:
+    from rules_engine.card_faces import EXILE_PLAY_DURATIONS, grant_exile_play_duration
+    duration, numeric = payload.get('play_duration'), payload.get('play_exiled_until')
+    if (duration is not None and (type(duration) is not str or duration not in EXILE_PLAY_DURATIONS)
+            or duration is None and type(numeric) is not int
+            or duration is not None and numeric is not None):
+        raise ValueError('Unsupported or conflicting exile play duration')
     player = state.players[controller]
     amount = max(1, int(payload.get("amount", 2)))
     cards = []
@@ -2354,10 +2360,15 @@ def exile_top_cards_playable(state: MatchState, controller: int, payload: dict) 
         cid = player.library.pop()
         player.exile.append(cid)
         state.cards[cid].move_to_zone(Zone.EXILE)
-        player.exile_play_until[cid] = state.turn + 1
+        if duration is not None:
+            grant_exile_play_duration(state, controller, cid, duration)
+        else:
+            player.exile_play_until[cid] = numeric
         cards.append(state.cards[cid].name)
     if cards:
-        state.log.append(f"{player.name} exiles cards playable until the end of turn {state.turn + 1}: {', '.join(cards)}.")
+        label = {'this_turn': 'the end of this turn', 'controller_next_turn': 'the end of their next turn',
+                 'next_controller_end_step': 'their next end step'}.get(duration, f'the end of turn {numeric}')
+        state.log.append(f"{player.name} exiles cards playable until {label}: {', '.join(cards)}.")
 
 
 def look_top_select_hand(state: MatchState, controller: int, payload: dict) -> None:

@@ -198,6 +198,7 @@ class PlayerState:
     lands_played_this_turn: int = 0
     last_land_play_turn: int = 0
     land_plays_recorded_on_turn: int = 0
+    exile_play_durations: dict[str, dict] = field(default_factory=dict)
 
 
 @dataclass
