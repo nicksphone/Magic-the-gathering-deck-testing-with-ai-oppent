@@ -4218,6 +4218,11 @@ class AIAgent:
             from rules_engine.kicker import spell_kicker_view
             card = spell_kicker_view(card, bool(selected_cost and selected_cost.get('kicked')))
             tags = self._spell_tags(card)
+        if (mtype == 'cast_spell' and hints.get('action_has_target_text') is False
+                and not any(key.startswith('target_') for key in hints.get('choice_schema', {}))):
+            from rules_engine.cast_choice import TARGET_KEYS
+            # Resource candidates are not spell targets. Keep already chosen fields.
+            hints = {key: value for key, value in hints.items() if key not in TARGET_KEYS}
         if isinstance(state, MatchState) and card is not None:
             from ai.pending_effects import covered_removal_targets, unproductive_destroy_targets
             ability_text = str(move.get("ability_label") or "").partition(":")[2].strip() if mtype != "cast_spell" else None
@@ -4691,6 +4696,10 @@ class AIAgent:
                     if count and key not in choice and key in selected:
                         choice[key] = sorted(selected[key], key=lambda cid: (rank(state, cid, player_id), cid))[:count]
                 out['cost_choice'] = choice
+                from ai.casting_resources import complete_fixed_cost_choice
+                out = complete_fixed_cost_choice(self, state, out, player_id, selected, move.get('cost_choice'))
+                if out.get('_invalid_ai_choice'):
+                    return out
                 if (selected.get('sacrifice_all') and selected.get('sacrifice_card_ids')
                         and isinstance(state, MatchState) and not out.get('_invalid_ai_choice')):
                     from ai.pending_effects import unanswered_action_wins
