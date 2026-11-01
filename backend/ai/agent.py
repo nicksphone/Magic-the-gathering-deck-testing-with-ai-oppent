@@ -1662,7 +1662,7 @@ class AIAgent:
             return None
         if getattr(state, "stack", []) or []:
             return None
-        candidates: list[dict] = []
+        candidates: list[tuple[float, dict]] = []
         for move in legal_moves:
             if move.get("type") != "cast_spell":
                 continue
@@ -1678,8 +1678,20 @@ class AIAgent:
             mat = self._materialize_action(state, move, player_id)
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
-            candidates.append(mat)
-        return candidates[0] if candidates else None
+            choice = mat.get('cost_choice') or {}
+            selected = next((option for option in mat.get('cost_options', [])
+                             if option['id'] == choice.get('id')), {})
+            loss = self._spell_payment_loss(state, player_id, selected, cost_choice=choice,
+                                           x_value=int((mat.get('targets') or {}).get('x_value') or 0))
+            if loss and self._cast_bias(state, mat, player_id) - loss <= self._pass_bias(state, player_id):
+                from ai.pending_effects import unanswered_action_wins
+                choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype,
+                                       opponent_archetype=self.opponent_archetype)
+                if unanswered_action_wins(state, player_id, mat,
+                        own_choice_action=lambda projected, legal, pid: choice_agent.choose_action(projected, legal, pid).action) is not True:
+                    continue
+            candidates.append((loss, mat))
+        return min(candidates, key=lambda item: item[0])[1] if candidates else None
 
     def _profile_cast_advice(self, state, move, player_id, *, resource_plan=None):
         """Pure bounded printed advice; unestablished live context stays legacy."""
@@ -3832,7 +3844,18 @@ class AIAgent:
                 best = (score, action)
         return (best[1], best[0][0]) if best else (None, 0.0)
 
-    def _spell_payment_loss(self, state, player_id, option, life_value=1):
+    def _spell_payment_loss(self, state, player_id, option, life_value=1, *, cost_choice=None, x_value=0):
+        if cost_choice is not None:
+            option = dict(option)
+            # Price the final native selection, not the cheaper offered subset
+            # that joint mana feasibility may have replaced during completion.
+            for key in ('discard_card_ids', 'sacrifice_card_ids'):
+                if cost_choice.get(key) is not None:
+                    option['fixed_' + key] = cost_choice[key]
+            if option.get('discard_x'):
+                option['discard_cards'] = option.get('discard_cards', 0) + x_value
+            if option.get('pay_life_x'):
+                option['pay_life'] = option.get('pay_life', 0) + x_value
         life = option.get('pay_life', 0)
         remaining = state.players[player_id].life - life
         loss = float('inf') if life and remaining <= 0 else life * (2 if remaining <= 5 else life_value)
