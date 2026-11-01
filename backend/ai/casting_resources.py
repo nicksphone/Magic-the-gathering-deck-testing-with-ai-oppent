@@ -371,9 +371,22 @@ def choose_resource_payment(agent, state, action, player_id):
     card = select_cast_face(source, action.get('selected_face_index', (action.get('targets') or {}).get('selected_face_index')))
     if not resource_keywords(card):
         return action
+    automatic = (state.pending_mechanic_choice is None
+                 and _materialization_without_mana(state, player_id, card.id))
+
+    def trial(candidate):
+        projected = planning_copy(state)
+        if automatic:
+            from rules_engine.effect_casts import admit_cast
+            admit_cast(projected, player_id, candidate, {'target_card_id': card.id})
+        else:
+            validate_action(projected, agent.engine, player_id, candidate)
+            agent.engine.take_action(projected, player_id, candidate, reject_invalid=True)
+        return projected
+
     with rule_query_scope(state):
         cache = query_cache(state)
-        key = ('ai_cast_resources', agent, player_id, agent.archetype, json.dumps(action, sort_keys=True))
+        key = ('ai_cast_resources', agent, player_id, agent.archetype, automatic, json.dumps(action, sort_keys=True))
         if key in cache:
             return {**action, **deepcopy(cache[key])}
         best, score = action, float('-inf')
@@ -381,10 +394,8 @@ def choose_resource_payment(agent, state, action, player_id):
             candidate = dict(action)
             if choice is not None:
                 candidate['resource_payment'] = choice
-            projected = planning_copy(state)
             try:
-                validate_action(projected, agent.engine, player_id, candidate)
-                agent.engine.take_action(projected, player_id, candidate, reject_invalid=True)
+                projected = trial(candidate)
                 if choice is None:
                     # Preserve the native fallback, but publish its actual payment.
                     old_stack_ids = {item.id for item in state.stack}
@@ -404,9 +415,7 @@ def choose_resource_payment(agent, state, action, player_id):
                         continue
                     candidate['resource_payment'] = deepcopy(payment)
                     # Score the explicit proposal, never an unservable default.
-                    projected = planning_copy(state)
-                    validate_action(projected, agent.engine, player_id, candidate)
-                    agent.engine.take_action(projected, player_id, candidate, reject_invalid=True)
+                    projected = trial(candidate)
             except ActionRejected:
                 continue
             value = _score(agent, state, projected, player_id)
