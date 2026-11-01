@@ -1480,6 +1480,21 @@ class AIAgent:
             picked.append(mat)
             if len(picked) >= limit:
                 break
+        if (limit > 1 and isinstance(state, MatchState)
+                and state.step == Step.DECLARE_BLOCKERS
+                and state.priority_player == player_id != state.active_player
+                and not state.stack and not state.blockers_declared and not state.pregame_pending
+                and not (state.pending_mechanic_choice or state.pending_replacement_choice
+                         or state.pending_trigger_order)):
+            block_index = next((i for i, action in enumerate(picked)
+                                if action.get('type') == 'block' and action.get('blocks')), None)
+            if block_index is not None and not any(
+                    action.get('type') == 'block' and action.get('blocks') == {} for action in picked):
+                # Final native intent, not an empty descriptor to auto-materialize.
+                # Reserve a bounded slot without removing the heuristic declaration.
+                if len(picked) >= limit:
+                    picked.pop(next(i for i in range(len(picked) - 1, -1, -1) if i != block_index))
+                picked.append({'type': 'block', 'blocks': {}})
         return _shortlist_with_priority_pass(picked, legal_moves, limit)
 
     def _move_sort_key(self, move: dict) -> tuple:
