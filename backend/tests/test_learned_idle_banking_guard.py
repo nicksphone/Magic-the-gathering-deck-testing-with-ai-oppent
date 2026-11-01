@@ -89,7 +89,7 @@ def test_helper_gets_full_public_isolated_inputs_after_all_finite_results(monkey
         assert view.ai_information_player==pid==seat
         assert any(m['type']=='activate_mana_ability' for m in moves)
         assert seen['events']['scores']==['pass_priority',family]
-        assert seen['events']['events']==['score','win','loss','score','win','loss']
+        assert seen['events']['events']==['score','classification','score','classification']
         view.players[pid].life=999;moves.clear()
         return deepcopy(action)
     hook(monkeypatch,family,helper)

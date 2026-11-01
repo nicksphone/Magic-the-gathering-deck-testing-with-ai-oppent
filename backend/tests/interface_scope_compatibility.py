@@ -102,11 +102,36 @@ SMOTHERING_INVERSE = {
 assert SMOTHERING_INVERSE['old_sha256'] == EXPECTED_FUNCTIONS[SMOTHERING_IDENTITY]
 
 
+# Public38389136 changed only this assertion after the canonical fixture inverse.
+# The obsolete turn-number assertion is inert reconstruction text, never executed.
+CONTROLLER_NEXT_TURN_IDENTITY = (
+    'test_oracle_effects.py:'
+    'test_light_up_the_stage_style_exiles_cards_with_temporary_play_permission')
+CONTROLLER_NEXT_TURN_INVERSE = {
+    'old_sha256': '7da9b68bcddbcb870ec13b88c0a316b9dbb7a4a9b972249e4cb608490e2a66f4',
+    'new_sha256': 'a248fcf85394619977cb9c929a1b54a81a4989b26ba82591ca1c61abfb20adca',
+    'hunks': [{
+        'start': 13, 'end': 19,
+        'new': ('    from rules_engine.card_faces import ordinary_exile_permission\n'
+                '    from rules_engine.source_linked_exile import reference\n'
+                '    assert state.players[1].exile_play_durations[top_id] == {\n'
+                "        'version': 1, 'duration': 'controller_next_turn', 'grant_turn': state.turn,\n"
+                "        'reference': reference(state.cards[top_id])}\n"
+                '    assert ordinary_exile_permission(state, 1, top_id)'),
+        'old': '    assert state.players[1].exile_play_until[top_id] == state.turn + 1',
+    }],
+}
+assert CONTROLLER_NEXT_TURN_INVERSE['old_sha256'] == (
+    FINITE['functions'][CONTROLLER_NEXT_TURN_IDENTITY]['new_sha256'])
+
+
 def _restore(text, recipe):
     if hashlib.sha256(text.encode()).hexdigest() == recipe['old_sha256']:
         return text
     lines = text.splitlines(keepends=True)
     for hunk in reversed(recipe['hunks']):
+        start, end = hunk['start'], hunk['end']
+        assert type(start) is int and type(end) is int and 0 <= start <= end <= len(lines), 'Invalid approved hunk span'
         assert ''.join(lines[hunk['start']:hunk['end']]) == hunk['new'], 'Approved hunk changed'
         lines[hunk['start']:hunk['end']] = hunk['old'].splitlines(keepends=True)
     result = ''.join(lines)
@@ -178,7 +203,13 @@ def restore_printed_protocol_source(module, text):
         assert len(matches) == 1, 'Protected function missing or duplicated'
         segment = ast.get_source_segment(text, matches[0])
         assert text.count(segment) == 1, 'Protected function source is ambiguous'
-        restored = _restore(segment, recipe)
+        reviewed = segment
+        if identity == CONTROLLER_NEXT_TURN_IDENTITY:
+            measured = hashlib.sha256(segment.encode()).hexdigest()
+            if measured not in {recipe['old_sha256'], recipe['new_sha256']}:
+                assert measured == CONTROLLER_NEXT_TURN_INVERSE['new_sha256'], 'Unapproved duration assertion'
+                reviewed = _restore(segment, CONTROLLER_NEXT_TURN_INVERSE)
+        restored = _restore(reviewed, recipe)
         text = text.replace(segment, restored, 1)
         nodes = ast.parse(text).body
     return text

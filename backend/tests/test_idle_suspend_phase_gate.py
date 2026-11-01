@@ -10,6 +10,7 @@ import sys
 import textwrap
 from types import MethodType
 from unittest import TestCase
+from unittest.mock import patch
 
 import ai.agent as agent_module
 from ai.agent import AIAgent
@@ -22,16 +23,18 @@ from tests.browser_positive83_canonical import entry
 
 
 # Current tactical routing, with only Suspend's phase optimization removed.
-OLD_FUNCTION_SHA = '95ce2fa7a39e809a07138674715f749ef32d175cca170aaf22f036feece2dac8'
+# The edd74a5f routing/encoder changes remain in both comparison arms. The
+# earlier 95ce2fa7... reference predates those changes, not just the phase gate.
+REFERENCE_FUNCTION_SHA = '1c6eea245223f88d6e89361d5a540da8ba9c64c3ff9103969b9f791a4bb24b77'
 NEW_IF = "if decision.action.get('type') == 'pass_priority' and state.step in {Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN}:"
 OLD_IF = "if decision.action.get('type') == 'pass_priority':"
 
 
 def legacy_choose_action():
     source = textwrap.dedent(inspect.getsource(AIAgent.choose_action))
-    assert source.count(NEW_IF) in {0, 1}
+    assert source.count(NEW_IF) == 1
     source = source.replace(NEW_IF, OLD_IF, 1)
-    assert hashlib.sha256(source.encode()).hexdigest() == OLD_FUNCTION_SHA
+    assert hashlib.sha256(source.encode()).hexdigest() == REFERENCE_FUNCTION_SHA
     tree = ast.parse(source)
     assert len(tree.body) == 1 and isinstance(tree.body[0], ast.FunctionDef)
     namespace = vars(agent_module).copy()
@@ -67,6 +70,21 @@ def scene(pid, step):
 
 
 class IdleSuspendPhaseGate(TestCase):
+    def test_reference_rejects_unrelated_routing_changes(self):
+        source = inspect.getsource(AIAgent.choose_action)
+        changed = source.replace('decision = self._choose_action(',
+                                 'decision = self._different_action(', 1)
+        self.assertNotEqual(source, changed)
+        with patch.object(inspect, 'getsource', return_value=changed):
+            with self.assertRaises(AssertionError):
+                legacy_choose_action()
+
+    def test_reference_requires_the_exact_phase_gate(self):
+        source = inspect.getsource(AIAgent.choose_action)
+        with patch.object(inspect, 'getsource', return_value=source.replace(NEW_IF, OLD_IF, 1)):
+            with self.assertRaises(AssertionError):
+                legacy_choose_action()
+
     def compare(self, pid, step):
         state, moves = scene(pid, step)
         self.assertEqual(moves, [{'type': 'pass_priority'}])

@@ -13,7 +13,7 @@ from rules_engine.engine import RulesEngine
 from rules_engine.stack_engine import add_to_stack
 
 
-def complete_card_bookkeeping(state):
+def complete_card_bookkeeping(state, *, native_state=False):
     """Give policy-test doubles the same zone/identity bookkeeping as live cards."""
     if not isinstance(state, MatchState):
         defaults = MatchState(id='policy-fixture', players=state.players, cards=state.cards, stack=[])
@@ -21,6 +21,7 @@ def complete_card_bookkeeping(state):
         for field in fields(MatchState):
             if not hasattr(state, field.name):
                 setattr(state, field.name, deepcopy(getattr(defaults, field.name)))
+    state.step = Step(state.step)
     for seat, player in state.players.items():
         defaults = PlayerState(id=seat, name=f'Player {seat}')
         for field in fields(PlayerState):
@@ -44,6 +45,37 @@ def complete_card_bookkeeping(state):
             for field in fields(CardInstance):
                 if not hasattr(card, field.name):
                     setattr(card, field.name, deepcopy(getattr(defaults, field.name)))
+            # The draw guard uses native transitions, not just printed attributes.
+            state.cards[cid] = CardInstance(**{
+                field.name: deepcopy(getattr(card, field.name))
+                for field in fields(CardInstance) if field.init
+            })
+        state.cards[cid].zone = Zone(state.cards[cid].zone)
+    if native_state and not isinstance(state, MatchState):
+        state.players = {seat: PlayerState(**{
+            field.name: deepcopy(getattr(player, field.name))
+            for field in fields(PlayerState) if field.init
+        }) for seat, player in state.players.items()}
+        return MatchState(**{
+            field.name: getattr(state, field.name)
+            for field in fields(MatchState) if field.init
+        })
+    return state
+
+
+def complete_count_only_control_zones(state):
+    """Replace these fixtures' repeated a/b/g/h aliases without changing counts."""
+    for seat, player in state.players.items():
+        for zone in (Zone.LIBRARY, Zone.GRAVEYARD):
+            aliases = getattr(player, zone.value)
+            assert all(cid not in state.cards for cid in aliases)
+            cards = [canonical_card('Island', as_instance=True,
+                                    id=f'control-{seat}-{zone.value}-{index}',
+                                    owner=seat, controller=seat, zone=zone)
+                     for index in range(len(aliases))]
+            setattr(player, zone.value, [card.id for card in cards])
+            state.cards.update({card.id: card for card in cards})
+            assert len(getattr(player, zone.value)) == len(aliases)
     return state
 
 
@@ -361,7 +393,7 @@ def test_control_ai_prefers_value_draw_over_idle_hold_up_when_stable() -> None:
             "i4": canonical_card('Island', tapped=False),
         }
 
-    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState(), native_state=True), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "draw-1"
 
@@ -499,7 +531,7 @@ def test_control_ai_prefers_sweeper_over_draw_when_stabilizing() -> None:
             "atk-3": type("C", (), {"types": ["Creature"], "name": "3/3", "power": 3, "toughness": 3, "tapped": False})(),
         }
 
-    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState(), native_state=True), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "sweeper-1"
 
@@ -2021,7 +2053,7 @@ def test_control_ai_deploys_major_threat_instead_of_holding_counter_late() -> No
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
+    decision = ai.choose_action(complete_card_bookkeeping(FakeState(), native_state=True), moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "threat-1"
 
@@ -2351,7 +2383,8 @@ def test_control_inevitability_planner_prefers_draw_over_pass() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
+    state = complete_count_only_control_zones(complete_card_bookkeeping(FakeState()))
+    decision = ai.choose_action(state, moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "draw-1"
 
@@ -2408,7 +2441,8 @@ def test_control_inevitability_planner_avoids_counter_on_empty_stack() -> None:
         passed_priority = set()
         loyalty_activated_this_turn = set()
 
-    decision = ai.choose_action(complete_card_bookkeeping(FakeState()), moves, 1)
+    state = complete_count_only_control_zones(complete_card_bookkeeping(FakeState()))
+    decision = ai.choose_action(state, moves, 1)
     assert decision.action["type"] == "cast_spell"
     assert decision.action["card_id"] == "draw-1"
 
