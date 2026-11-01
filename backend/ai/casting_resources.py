@@ -1,5 +1,7 @@
 """Bounded, public/own-information payment alternatives; rules remain authoritative."""
 from copy import deepcopy
+from contextlib import contextmanager
+from contextvars import ContextVar
 import json
 import re
 
@@ -13,6 +15,29 @@ from rules_engine.continuous import effective_power, effective_toughness, has_ke
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.type_effects import effective_types
 from rules_engine.query_context import rule_query_scope, query_cache
+
+
+_automatic_effect_cost_context = ContextVar('automatic_effect_cost_context', default=None)
+
+
+@contextmanager
+def _automatic_effect_cost_scope(state, player_id, card_id):
+    """Carry the trusted effect caller's waiver, never an action-dict flag."""
+    grant = {'state': state, 'player_id': player_id, 'card_id': card_id, 'active': True}
+    token = _automatic_effect_cost_context.set(grant)
+    try:
+        yield
+    finally:
+        # Copied contexts share this grant and must observe revocation too.
+        grant['active'] = False
+        _automatic_effect_cost_context.reset(token)
+
+
+def _materialization_without_mana(state, player_id, card_id):
+    context = _automatic_effect_cost_context.get()
+    return ((state.pending_mechanic_choice or {}).get('kind') in {'effect_cast', 'suspend_cast'}
+            or (context is not None and context['active'] is True and context['state'] is state
+                and context['player_id'] == player_id and context['card_id'] == card_id))
 
 
 def complete_fixed_cost_choice(agent, state, action, player_id, offered, explicit=None):
@@ -34,7 +59,7 @@ def complete_fixed_cost_choice(agent, state, action, player_id, offered, explici
     if casting_method(action['cost_choice']['id']) == 'bestow':
         from rules_engine.bestow import bestow_cast_view
         card = bestow_cast_view(card)
-    free = (state.pending_mechanic_choice or {}).get('kind') in {'effect_cast', 'suspend_cast'}
+    free = _materialization_without_mana(state, player_id, action['card_id'])
     option = next((o for o in collect_cost_options(state, player_id, card, without_mana=free,
                     action_targets=targets) if o.id == action['cost_choice']['id']), None)
     if option is None:
@@ -167,7 +192,7 @@ def complete_cast_hybrid_choices(agent, state, action, player_id):
         if casting_method(choice) == 'bestow':
             from rules_engine.bestow import bestow_cast_view
             card = bestow_cast_view(card)
-        free = (state.pending_mechanic_choice or {}).get('kind') in {'effect_cast', 'suspend_cast'}
+        free = _materialization_without_mana(state, player_id, action['card_id'])
         options = [asdict(option) for option in collect_cost_options(
             state, player_id, card, without_mana=free, action_targets=action.get('targets') or {})]
     option = next((option for option in options if option['id'] == choice), None)
