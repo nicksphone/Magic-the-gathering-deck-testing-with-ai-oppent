@@ -385,10 +385,34 @@ def choose_resource_payment(agent, state, action, player_id):
             try:
                 validate_action(projected, agent.engine, player_id, candidate)
                 agent.engine.take_action(projected, player_id, candidate, reject_invalid=True)
+                if choice is None:
+                    # Preserve the native fallback, but publish its actual payment.
+                    old_stack_ids = {item.id for item in state.stack}
+                    payment = next((item.payload.get('__casting_resource_payment')
+                                    for item in projected.stack
+                                    if item.id not in old_stack_ids
+                                    and item.source_card_id == card.id
+                                    and item.controller == player_id
+                                    and item.payload.get('__casting_resource_payment') is not None), None)
+                    if payment is None:
+                        payment = next((frame['data']['payment_details'].get('resource_payment')
+                                        for frame in (projected.mana_continuation or {}).get('frames', [])
+                                        if frame.get('tag') == 'owner' and frame.get('op') == 'cast'
+                                        and frame.get('payer') == player_id
+                                        and frame['data']['source']['card_id'] == card.id), None)
+                    if payment is None:
+                        continue
+                    candidate['resource_payment'] = deepcopy(payment)
+                    # Score the explicit proposal, never an unservable default.
+                    projected = planning_copy(state)
+                    validate_action(projected, agent.engine, player_id, candidate)
+                    agent.engine.take_action(projected, player_id, candidate, reject_invalid=True)
             except ActionRejected:
                 continue
             value = _score(agent, state, projected, player_id)
             if value > score:
                 best, score = candidate, value
-        cache[key] = {'resource_payment': deepcopy(best['resource_payment'])} if 'resource_payment' in best else {}
+        if 'resource_payment' not in best:
+            return {**best, '_invalid_ai_choice': True}
+        cache[key] = {'resource_payment': deepcopy(best['resource_payment'])}
         return best
