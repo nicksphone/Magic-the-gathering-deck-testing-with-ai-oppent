@@ -387,6 +387,10 @@ def _plan_mana_sources(
 def _plan_payment(state: MatchState, player_id: int, req: dict[str, int], *, payment_context=None, excluded_sources=None, optimize_paid=False, reserved_card_ids=(), protected_life=0, post_payment_condition=None):
     if post_payment_condition is not None and not post_payment_condition.visit():
         return None
+    if post_payment_condition is not None:
+        from rules_engine.spell_cost_witness import escape_fuel_proven_impossible
+        if escape_fuel_proven_impossible(state, player_id, post_payment_condition):
+            return None
     from rules_engine.mana_abilities import proven_missing_fixed_color
     if proven_missing_fixed_color(state, player_id, req, payment_context):
         return None
