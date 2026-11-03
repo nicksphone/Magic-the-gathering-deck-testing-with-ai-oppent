@@ -146,8 +146,20 @@ was exported. The worker overwrote the inner error with its generic no-export
 error, so the exact originating exception and solver progress were not retained.
 That is not evidence of infeasibility or convergence. An observability-only
 correction preserves those diagnostics without changing the objective, limits or
-acceptance rules. A new fit and native gameplay acceptance remain pending; no
-new fit or live policy has been admitted.
+acceptance rules. A second fit with that correction confirmed the actual cause:
+the restoration attempted its 97th distinct evaluation against a limit of 96,
+after 49 major-iteration callbacks. It accepted no block and exported no point;
+terminal checks verified that all 16 tensors were restored to the initializer.
+This is a budget failure, not a converged or infeasible solution.
+
+A prospective revision increases only the restoration evaluation allowance from
+96 to 192. The 64-major-iteration setting, objective, retention gates, four-block
+limit, fixed trial scales and global resource limits remain unchanged. Exceeding
+the new evaluation limit is still fatal and cannot export an earlier prefix.
+All 78 pure implementation checks passed, followed by fresh genuine API and
+full-data parity checks under the revised policy. These checks accepted no model
+and ran no optimizer. A new fit and native gameplay acceptance remain pending;
+no new fit or live policy has been admitted.
 
 ### C19 Development Record
 
