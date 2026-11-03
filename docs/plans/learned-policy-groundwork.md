@@ -1,6 +1,41 @@
 # Learned Policy Groundwork
 
-## Current Status: October 29
+## Current Status: November 3
+
+The learned policy remains inactive and unfinished. The current experimental
+candidate preserves the 1,358 retained ranking floors, including 1,328 strict
+comparisons, but still makes two confirmed costly-creature choices for Village
+Rites in the reused development checks. Two other disagreements about Opt are
+not established misplays. Passing training constraints is not evidence of
+general playing strength, and these development cases are not held-out tests.
+
+New supervision separates conditional heuristic preferences from observed
+game returns. Thirty-eight admitted conditional preferences have been fitted;
+they are not expert demonstrations. Forty additional observed-return examples
+have passed official numerical encoding and prediction parity checks, without
+another fit or model activation. Their original engine provenance is retained.
+
+A subsequent batch ran eight controlled-root continuations concurrently on the
+current engine. It accepted and replayed 2,212 actions exactly. Seven branches
+reached natural win/loss outcomes; one exhausted its work budget and retains a
+null outcome. These are deliberately selected training roots, not eight fresh
+unbiased games or a strength comparison. Equal returns in a pair do not supply
+an action preference. Current-root input encoding and further observed-return
+admission are separate from collecting the games; no new training or deployment
+is implied by successful collection.
+
+An independently checked [escape-fuel search improvement](../escape-mana-fuel-bound.md)
+reduces an impossible-payment search without changing spell costs or payment
+choices. The selected regression cohort passes 321 cases. This fixes an engine
+latency problem, not learned decision quality. Private traces and model files
+remain protected artifacts, not public fixtures.
+
+The next candidate must use the new admissible evidence, retain earlier
+regressions, pass the current source/encoding contract, and demonstrate better
+native decisions and broader seat-balanced play. No current campaign win-rate,
+expert-play, live-policy or complete-AI claim is supported.
+
+## Historical Status: October 29
 
 Offline neural Q/V fitting and source-bound evaluation are implemented and have
 run. The latest candidate completed 912 optimizer updates on 452 preference rows,
