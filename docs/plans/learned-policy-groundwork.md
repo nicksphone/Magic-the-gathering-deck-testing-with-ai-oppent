@@ -158,8 +158,24 @@ limit, fixed trial scales and global resource limits remain unchanged. Exceeding
 the new evaluation limit is still fatal and cannot export an earlier prefix.
 All 78 pure implementation checks passed, followed by fresh genuine API and
 full-data parity checks under the revised policy. These checks accepted no model
-and ran no optimizer. A new fit and native gameplay acceptance remain pending;
-no new fit or live policy has been admitted.
+and ran no optimizer.
+
+An initial fit under this revision stopped when available host RAM crossed the
+unchanged runtime floor. It exported nothing and restored the initializer. A
+separate resource-admitted run then completed all six planned scales in 942.51
+seconds without a resource stop. Every restoration returned normally at its
+64-major-iteration limit, without convergence. Evaluation counts ranged from
+97 to 123, below the new 192 limit. All six failed only the original-loss ceiling;
+ranking floors, strict comparisons, older-data bound and frozen tensors passed.
+No block was accepted and no point was exported. This bounded search result is
+not a proof of infeasibility or a reason to relax the final ceiling.
+
+The next prospective change targets the interior of that ceiling during
+restoration, leaving a fixed fraction of the initializer's available loss
+headroom as a numerical margin. Final certification and the training objective
+remain unchanged. Fresh code and numerical qualification are still required.
+No new fit or live policy has been admitted; native gameplay acceptance remains
+unfinished.
 
 ### C19 Development Record
 
