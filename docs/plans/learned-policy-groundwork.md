@@ -180,12 +180,22 @@ all 11 gradient terms, 8,513 components at two points, and the declared finite
 differences. Source, inputs and all 16 initializer tensors remained unchanged.
 
 The separately authorized fit passed a fresh 60-second memory-admission window
-and is running. Its first update passed the original acceptance checks and
-reduced the training objective from 3.733 to 3.368. The solver returned at its
-64-major-iteration limit without convergence; the update is validated feasible,
-not a converged solution. Later blocks and final certification are still pending.
-Any fatal error still forbids exporting an earlier prefix. This provisional
-training result does not establish better gameplay or authorize a live policy.
+and accepted two provisional updates under the original checks, reducing the
+training objective from 3.733 to 3.108. Their solvers returned at the
+64-major-iteration limit without convergence. A later trial then reached the
+global CPU limit: 1,799.51 recorded work-CPU seconds and 1,819.25 wall seconds,
+with raw process exit `SIGXCPU`. The run aborted and exported no point or
+checkpoint. The two earlier updates are not usable candidates after that
+failure. Closure verified unchanged source/inputs/frozen tensors and restored
+the last safe in-memory state, not the initializer. No new gameplay or live
+policy qualification is claimed.
+
+The next proposed scheduling change checks remaining CPU and wall time before
+starting optional work, reserving time for fresh final certification. It retains
+the four-block opportunity, mathematical gates and hard limits. An actual
+timeout or other failure would still reject the entire run. This scheduling
+revision is not yet implemented or numerically qualified; it cannot rescue
+parameters from the failed attempt.
 
 Independent simulation batches support up to eight workers, with fresh memory
 and disk admission before each spawn. A single fit remains sequential; duplicate
