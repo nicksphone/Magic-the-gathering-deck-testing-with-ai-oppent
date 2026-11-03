@@ -170,12 +170,28 @@ ranking floors, strict comparisons, older-data bound and frozen tensors passed.
 No block was accepted and no point was exported. This bounded search result is
 not a proof of infeasibility or a reason to relax the final ceiling.
 
-The next prospective change targets the interior of that ceiling during
-restoration, leaving a fixed fraction of the initializer's available loss
-headroom as a numerical margin. Final certification and the training objective
-remain unchanged. Fresh code and numerical qualification are still required.
-No new fit or live policy has been admitted; native gameplay acceptance remains
-unfinished.
+The next revision targets the interior of that ceiling during restoration,
+leaving one eighth of the authenticated initializer's available loss headroom
+as a numerical margin. Its target is computed once before proposals or probes;
+final certification and the training objective remain unchanged. All 89 isolated
+implementation checks passed. Fresh genuine checkpoint/prepare/prediction checks
+and full numerical parity also passed, including the actual constraint offset,
+all 11 gradient terms, 8,513 components at two points, and the declared finite
+differences. Source, inputs and all 16 initializer tensors remained unchanged.
+
+The separately authorized fit passed a fresh 60-second memory-admission window
+and is running. Its first update passed the original acceptance checks and
+reduced the training objective from 3.733 to 3.368. The solver returned at its
+64-major-iteration limit without convergence; the update is validated feasible,
+not a converged solution. Later blocks and final certification are still pending.
+Any fatal error still forbids exporting an earlier prefix. This provisional
+training result does not establish better gameplay or authorize a live policy.
+
+Independent simulation batches support up to eight workers, with fresh memory
+and disk admission before each spawn. A single fit remains sequential; duplicate
+fits would not accelerate it. Official serialization, native decision quality,
+held-out comparisons against the production heuristic, latency, privacy and
+broader supported-deck coverage remain required before completion.
 
 ### C19 Development Record
 
