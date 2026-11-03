@@ -139,9 +139,15 @@ preference loss also matched an independent cached-score calculation within
 `3.4e-14`. Both runs closed with empty guard ledgers and unchanged source/inputs.
 These verify numerical implementation, not better gameplay.
 
-Next is one bounded full-Q fit that validates retention after each accepted
-block, rather than relying on a final repair. A new fit and native gameplay
-acceptance remain pending. No new fit or live policy has been admitted.
+One bounded full-Q fit was then attempted with retention checks after each
+accepted block. Its first output-restoration call completed 96 distinct
+evaluations without a normal solver return; no block was accepted and no point
+was exported. The worker overwrote the inner error with its generic no-export
+error, so the exact originating exception and solver progress were not retained.
+That is not evidence of infeasibility or convergence. An observability-only
+correction preserves those diagnostics without changing the objective, limits or
+acceptance rules. A new fit and native gameplay acceptance remain pending; no
+new fit or live policy has been admitted.
 
 ### C19 Development Record
 
