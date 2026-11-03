@@ -128,11 +128,20 @@ Eight encoding workers then completed all 96 action occurrences with unchanged
 model parameters and source identity. These cached state/action vectors can be
 reused with the fixed encoder, but hidden activations must be recomputed during
 full-Q fitting. The first merge stopped on an omitted plan-file read permission;
-the successful encodings are retained, and corrected assembly is a separate step.
+corrected assembly subsequently qualified those same encodings without rerunning
+the workers or changing their values.
 
-Next is a full-Q training method that validates retention after each accepted
-block, rather than relying on a final repair. Full-data numerical parity and a
-new fit remain pending. No new fit or live policy has been admitted.
+The genuine checkpoint-load, prepare and prediction check completed with unchanged
+parameters. Full-data numerical parity then passed at the initializer and a fixed
+hidden-bias perturbation: native/batched scores, all 11 loss/gradient terms,
+8,513 gradient components and the declared finite-difference checks. The new
+preference loss also matched an independent cached-score calculation within
+`3.4e-14`. Both runs closed with empty guard ledgers and unchanged source/inputs.
+These verify numerical implementation, not better gameplay.
+
+Next is one bounded full-Q fit that validates retention after each accepted
+block, rather than relying on a final repair. A new fit and native gameplay
+acceptance remain pending. No new fit or live policy has been admitted.
 
 ### C19 Development Record
 
