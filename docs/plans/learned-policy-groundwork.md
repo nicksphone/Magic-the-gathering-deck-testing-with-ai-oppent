@@ -2,7 +2,7 @@
 
 ## Current Status: November 3
 
-The learned policy remains inactive and unfinished. The current experimental
+The learned policy remains inactive and unfinished. The evaluated C19 experimental
 candidate preserves the 1,358 retained ranking floors, including 1,328 strict
 comparisons, but still makes two confirmed costly-creature choices for Village
 Rites in the reused development checks. Two other disagreements about Opt are
@@ -10,19 +10,34 @@ not established misplays. Passing training constraints is not evidence of
 general playing strength, and these development cases are not held-out tests.
 
 New supervision separates conditional heuristic preferences from observed
-game returns. Thirty-eight admitted conditional preferences have been fitted;
-they are not expert demonstrations. Forty additional observed-return examples
-have passed official numerical encoding and prediction parity checks, without
-another fit or model activation. Their original engine provenance is retained.
+game returns. C19 retains 38 conditional preferences and adds 47 observed-return
+examples: 40 earlier observations and seven joined current-root actions. These
+are not expert demonstrations. One bounded head fit reduced error on those 47
+examples from 1.59 to 0.41, but older-data loss rose within its declared bound.
+The optimizer reached its 384-iteration limit without convergence. Original
+engine provenance is retained; iterations are not a count of accepted updates.
 
-A subsequent batch ran eight controlled-root continuations concurrently on the
+A source-current batch ran eight controlled-root continuations concurrently on the
 current engine. It accepted and replayed 2,212 actions exactly. Seven branches
 reached natural win/loss outcomes; one exhausted its work budget and retains a
 null outcome. These are deliberately selected training roots, not eight fresh
 unbiased games or a strength comparison. Equal returns in a pair do not supply
-an action preference. Current-root input encoding and further observed-return
-admission are separate from collecting the games; no new training or deployment
-is implied by successful collection.
+an action preference. Exact input/action joins admitted seven root observations
+for the fit above. A separate extraction admitted 96 continuation observations
+and excluded 16 unfinished-game samples. Nine semantic duplicates of earlier
+observations remain explicitly recorded; these are not 96 independent games.
+The additional 96 were not part of the C19 fit.
+
+The complete source-bound 76-decision cohort ran: 20 public decisions, six
+resource witnesses, eight sacrifice decisions and 42 draw checks. All 42 draw
+checks passed, but C19's actions and recorded payment/material effects were
+identical to the previous candidate in all 28 public/sacrifice comparisons.
+The two confirmed costly-sacrifice errors remain. The first attempt lacked a
+canonical test fixture in its isolated package; that partial result is retained
+separately from the complete, same-checkpoint run after exact fixture restoration.
+Lower training loss has not established better decisions. Targeted new training
+preparation addresses declining costly casts, with profitable-sacrifice controls;
+it does not replace the original tests or establish expert supervision.
 
 An independently checked [escape-fuel search improvement](../escape-mana-fuel-bound.md)
 reduces an impossible-payment search without changing spell costs or payment
