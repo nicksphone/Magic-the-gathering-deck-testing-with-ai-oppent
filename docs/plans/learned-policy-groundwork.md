@@ -37,12 +37,29 @@ loss does not override a failed gate. Neither point was exported, evaluated on
 the development cohort or activated. Process closure and source/input integrity
 checks passed; these were scientific acceptance failures, not resource timeouts.
 
-The next step is a bounded, training-only feasibility diagnosis rather than
-another blind extension of the iteration limit. It will inspect retained
-comparisons, feature geometry and bias calibration without weakening acceptance
-criteria or consulting development answers. A broader, naturally dealt,
-seat-balanced comparison is prepared but has not run with a new candidate.
-Private observations, numerical features and weights remain protected inputs.
+Separate training-only diagnostics have now measured the later checks without
+rescuing either rejected fit. C20 passed the retained comparisons and older-data
+bound but failed the original-loss ceiling. C21 also missed the unchanged
+ranking-floor tolerance: its minimum residual was about `-1.55e-12`, below the
+permitted `-1e-12`. A fixed bias diagnostic measured 19 heads in 11.42 seconds;
+none supplied a feasible proposal. No optimizer, encoding or gameplay ran.
+
+A separately planned diagnostic then measured 27 fixed interpolation points
+between C18 and the rejected endpoints in 12.24 seconds. The midpoint toward C21
+passed all original numerical gates and an additional original-loss safety
+margin. It was selected by the predeclared largest-passing-step rule, not by
+development answers or preference accuracy. Its new training agreement is only
+8/16, compared with 6/16 for C18 and 12/16 for rejected C21; numerical acceptance
+is not evidence of better play. Both diagnostics preserved source, inputs and
+weights and closed their processes cleanly.
+
+The next step is to construct that single point under separate C22 provenance,
+verify the official save/load roundtrip, and only then nominate it for native
+gameplay checks. This is not a converged fit or retroactive C21 success. No C22
+parameter file, checkpoint, development result or activation exists yet. A
+broader, naturally dealt, seat-balanced comparison is prepared but has not run
+with a new candidate. Private observations, numerical features and weights
+remain protected inputs.
 
 ### C19 Development Record
 
