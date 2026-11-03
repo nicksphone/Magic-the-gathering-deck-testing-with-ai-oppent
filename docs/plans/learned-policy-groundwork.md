@@ -53,12 +53,34 @@ development answers or preference accuracy. Its new training agreement is only
 is not evidence of better play. Both diagnostics preserved source, inputs and
 weights and closed their processes cleanly.
 
-The next step is to construct that single point under separate C22 provenance,
-verify the official save/load roundtrip, and only then nominate it for native
-gameplay checks. This is not a converged fit or retroactive C21 success. No C22
-parameter file, checkpoint, development result or activation exists yet. A
-broader, naturally dealt, seat-balanced comparison is prepared but has not run
-with a new candidate. Private observations, numerical features and weights
+### C22 Construction and Development Result
+
+That single midpoint was constructed under separate C22 provenance and passed
+the unchanged numerical gates. Official save/load verification preserved all
+16 tensors exactly. This is a parameter construction, not a converged fit or
+retroactive C21 success. The initializer's older engine contract remains recorded
+separately from the current checkpoint contract. An initial serialization run
+failed because its observer counted the loader's internal checkpoint call as an
+extra external call; that failure is retained. A separate observer-only correction
+verified the actual public and internal call boundaries without changing weights
+or serialization code.
+
+The complete original 76-case development cohort then ran in 98.75 seconds:
+20 public decisions, six resource witnesses, eight sacrifice decisions and
+42 draw checks. C22 met 14 of the 16 scored public targets and six of the eight
+sacrifice targets; all 42 draw checks passed. All 28 public/sacrifice actions and
+their recorded material effects were unchanged from C19, as were the six
+resource witnesses. The same two costly Village Rites sacrifices remain. The
+two Opt disagreements are still not established misplays. This is a quality
+hold, not 76 passing checks or evidence of improved play.
+
+Both confirmed mistakes occur on the opponent's end step, where the own-main
+anti-stall override is inactive. A two-position passive score trace is being
+prepared to distinguish model ranking from tactical classification; no cause
+has yet been established. A separate training-only capacity diagnostic is also
+being prepared. Neither admits development answers into training. A broader,
+naturally dealt, seat-balanced comparison is prepared but has not run with this
+candidate. C22 remains inactive; private observations, features and weights
 remain protected inputs.
 
 ### C19 Development Record
