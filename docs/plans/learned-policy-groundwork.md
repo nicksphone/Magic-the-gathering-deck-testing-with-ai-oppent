@@ -2,12 +2,49 @@
 
 ## Current Status: November 3
 
-The learned policy remains inactive and unfinished. The evaluated C19 experimental
+The experimental learned-policy candidates remain inactive and unfinished. C19
 candidate preserves the 1,358 retained ranking floors, including 1,328 strict
 comparisons, but still makes two confirmed costly-creature choices for Village
 Rites in the reused development checks. Two other disagreements about Opt are
 not established misplays. Passing training constraints is not evidence of
 general playing strength, and these development cases are not held-out tests.
+
+### Latest C20/C21 Trials
+
+Sixteen new controlled cast-versus-pass examples completed with native actions,
+exact branch replay, private-input checks and finite provenance screening. They
+contain eight semantic situations, both player seats and 32 action occurrences.
+Their conditional preferences cover keeping a valuable creature when unthreatened
+and responding when removal has actually been paid. These are not expert labels
+or terminal returns. The eight-worker collection completed in 94.70 seconds;
+the separate eight-worker numerical encoding completed in 20.73 seconds and
+matched the original forward-pass scores without changing any model weights.
+
+Two actual fits then used 143 observed-return rows and those 16 preferences,
+retaining physical multiplicities and source epochs. Both started from C18, not
+from a previously rejected point. Both were rejected by the final original-loss
+ceiling of `1.4735657523454184`:
+
+| Trial | Iteration Limit Reached | Final Original Loss | Result |
+| --- | ---: | ---: | --- |
+| C20 | 384 | 1.4735882896330614 | Rejected |
+| C21 | 1,536 | 1.473565801970536 | Rejected |
+
+Neither optimizer converged. Later acceptance checks were not reached after the
+ceiling failure, so no complete retention pass is claimed for either returned
+point. C21 reduced the new preference loss from 18.08 to 0.41, but lower training
+loss does not override a failed gate. Neither point was exported, evaluated on
+the development cohort or activated. Process closure and source/input integrity
+checks passed; these were scientific acceptance failures, not resource timeouts.
+
+The next step is a bounded, training-only feasibility diagnosis rather than
+another blind extension of the iteration limit. It will inspect retained
+comparisons, feature geometry and bias calibration without weakening acceptance
+criteria or consulting development answers. A broader, naturally dealt,
+seat-balanced comparison is prepared but has not run with a new candidate.
+Private observations, numerical features and weights remain protected inputs.
+
+### C19 Development Record
 
 New supervision separates conditional heuristic preferences from observed
 game returns. C19 retains 38 conditional preferences and adds 47 observed-return
@@ -35,9 +72,9 @@ identical to the previous candidate in all 28 public/sacrifice comparisons.
 The two confirmed costly-sacrifice errors remain. The first attempt lacked a
 canonical test fixture in its isolated package; that partial result is retained
 separately from the complete, same-checkpoint run after exact fixture restoration.
-Lower training loss has not established better decisions. Targeted new training
-preparation addresses declining costly casts, with profitable-sacrifice controls;
-it does not replace the original tests or establish expert supervision.
+Lower training loss has not established better decisions. The targeted training
+above addresses declining costly casts, with profitable-sacrifice controls; it
+does not replace the original tests or establish expert supervision.
 
 An independently checked [escape-fuel search improvement](../escape-mana-fuel-bound.md)
 reduces an impossible-payment search without changing spell costs or payment
