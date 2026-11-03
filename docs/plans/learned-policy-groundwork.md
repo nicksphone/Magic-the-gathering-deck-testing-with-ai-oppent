@@ -75,13 +75,22 @@ two Opt disagreements are still not established misplays. This is a quality
 hold, not 76 passing checks or evidence of improved play.
 
 Both confirmed mistakes occur on the opponent's end step, where the own-main
-anti-stall override is inactive. A two-position passive score trace is being
-prepared to distinguish model ranking from tactical classification; no cause
-has yet been established. A separate training-only capacity diagnostic is also
-being prepared. Neither admits development answers into training. A broader,
-naturally dealt, seat-balanced comparison is prepared but has not run with this
-candidate. C22 remains inactive; private observations, features and weights
-remain protected inputs.
+anti-stall override is inactive. A two-position passive trace now confirms the
+actual cause: passing was admitted and both actions had the same tactical rank,
+but the learned score preferred the sacrifice. No override changed that choice.
+The trace verified the original native snapshots and exact actor decision frames;
+the original full supplied-move lists and process-global RNG history were not
+persisted, so those are not claimed identical.
+
+All 16 new training examples are own-main-phase positions. Work continues on
+phase/body coverage and learned resource valuation without admitting the reused
+development frames into training. A training-only capacity diagnostic returned
+a point but did not validate the original ranking floors. Its report-format
+failure and independent residual checks are retained separately; this is not
+proof that the model cannot represent the desired choices. No model was admitted
+from that diagnostic. A broader, naturally dealt, seat-balanced comparison is
+prepared but has not run with this candidate. C22 remains inactive; private
+observations, features and weights remain protected inputs.
 
 ### C19 Development Record
 
