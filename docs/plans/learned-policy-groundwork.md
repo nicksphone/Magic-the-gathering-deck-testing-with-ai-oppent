@@ -109,9 +109,30 @@ as a mistake. C22 suspended Rift Bolt in positions where C19 held it, but that
 does not prove optimal play. These development observations remain excluded from
 training, and the journals do not constitute an independent second game replay.
 
-Next are separately constructed phase/body-diverse training examples and a
-full-Q training method that validates retention after each accepted block,
-rather than relying on a final repair. No new fit or live policy has been admitted.
+### Phase- and Resource-Diverse Training Data
+
+An eight-worker collection completed 24 controlled positions and 96 checked
+action branches across own-main, opponent-end-step and paid-removal contexts.
+These are 12 semantic states, not 24 independent games. Independent review
+admitted 72 partial pairwise preferences covering 36 semantic edges; encoded
+variants share their state's weight. Unranked action pairs remain unranked.
+The labels are conditional heuristics, not expert decisions or observed returns.
+Battlefield setup is controlled; it does not certify paid deployment or enter
+effects for every fixture card. Development-game observations remain excluded.
+
+The first collection stopped because its accounting check omitted legitimate
+retained records of ceased tokens. The collector was corrected without changing
+the engine; the failed partial attempt contributes no training weight.
+
+Eight encoding workers then completed all 96 action occurrences with unchanged
+model parameters and source identity. These cached state/action vectors can be
+reused with the fixed encoder, but hidden activations must be recomputed during
+full-Q fitting. The first merge stopped on an omitted plan-file read permission;
+the successful encodings are retained, and corrected assembly is a separate step.
+
+Next is a full-Q training method that validates retention after each accepted
+block, rather than relying on a final repair. Full-data numerical parity and a
+new fit remain pending. No new fit or live policy has been admitted.
 
 ### C19 Development Record
 
