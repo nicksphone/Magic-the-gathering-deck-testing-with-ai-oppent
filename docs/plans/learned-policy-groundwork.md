@@ -88,9 +88,30 @@ development frames into training. A training-only capacity diagnostic returned
 a point but did not validate the original ranking floors. Its report-format
 failure and independent residual checks are retained separately; this is not
 proof that the model cannot represent the desired choices. No model was admitted
-from that diagnostic. A broader, naturally dealt, seat-balanced comparison is
-prepared but has not run with this candidate. C22 remains inactive; private
-observations, features and weights remain protected inputs.
+from that diagnostic. C22 remains inactive; private observations, features and
+weights remain protected inputs.
+
+### Naturally Dealt Development Games
+
+The 16-attempt C22-versus-C19 comparison ran with up to eight workers. Eight games
+completed naturally: Burn and Blue Control, both seats and both versions. Each
+version had two wins and two losses. The remaining eight Ramp/Tokens attempts
+stopped before gameplay at the 6 GiB launch-memory check. The scheduler allowed
+refill at 3 GiB instead of waiting for the worker's 6 GiB requirement. A separate
+scheduler correction queues below that requirement and rechecks before each
+spawn; it has not yet been used for a follow-up run. Original failures remain
+recorded. This is not a completed four-style comparison or strength qualification.
+
+A read-only audit of the four completed Burn journals found no immediate missed
+lethal or passed creature/land deployment offer. Some Searing Blaze passes were
+followed by a land drop and landfall-enhanced cast; passing was not established
+as a mistake. C22 suspended Rift Bolt in positions where C19 held it, but that
+does not prove optimal play. These development observations remain excluded from
+training, and the journals do not constitute an independent second game replay.
+
+Next are separately constructed phase/body-diverse training examples and a
+full-Q training method that validates retention after each accepted block,
+rather than relying on a final repair. No new fit or live policy has been admitted.
 
 ### C19 Development Record
 
