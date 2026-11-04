@@ -545,6 +545,28 @@ def infer_effect_from_oracle(
     from rules_engine.kicker import spell_kicker_view
     card = spell_kicker_view(card)
     action_targets = action_targets or {}
+    from rules_engine.activated_grants import compile_instruction as compile_activated_grant, reference
+    try:
+        granted = compile_activated_grant(card.oracle_text or '', card.name)
+    except ValueError:
+        return 'noop', {'__unsupported_instruction': card.oracle_text}
+    if granted is not None:
+        source = state.cards.get(card.id)
+        if source is None:
+            return 'noop', {'__unsupported_instruction': card.oracle_text}
+        return 'grant_activated_ability', {**granted, 'target_card_id': card.id,
+                                          'reference': reference(source)}
+    from rules_engine.token_descriptors import complete_quoted_creature_token_body
+    token = complete_quoted_creature_token_body(card.oracle_text or '')
+    if token is not None:
+        return 'create_token', token
+    if re.match(r'create\b', (card.oracle_text or '').strip(), re.I) and re.search(
+            r'creature tokens? with [\"\u201c\']This (?:token|creature|permanent) gets '
+            r'[+-]\d+/[+-]\d+ for each artifact you control\.', card.oracle_text or '', re.I):
+        return 'noop', {'__unsupported_instruction': card.oracle_text}
+    if 'search your library for' in (card.oracle_text or '').lower() and re.search(
+            r'\bwith mana cost\b', card.oracle_text or '', re.I):
+        return _infer_search_effect(card.oracle_text.lower().strip(), action_targets)
     from rules_engine.graveyard_batch_entry import compile_instruction as compile_graveyard_batch
     from rules_engine.action_validation import ActionRejected
     try:
@@ -1318,6 +1340,17 @@ def compile_search_life_instruction(text):
 
 
 def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    if 'search your library for' in oracle and re.search(r'\bwith mana cost\b', oracle):
+        match = re.fullmatch(
+            r'search your library for (?:a|an|one) '
+            r'(artifact|creature|enchantment|land|planeswalker|instant|sorcery|permanent) card '
+            r'with mana cost (\{(?:0|[1-9]\d*)\}(?: or \{(?:0|[1-9]\d*)\})*), '
+            r'put (?:it|that card) (onto the battlefield(?: tapped)?|into your hand), then shuffle\.', oracle)
+        if match is None:
+            return 'noop', {'__unsupported_instruction': oracle}
+        return 'search_library', {'contains': match[1], 'printed_mana_costs': match[2].split(' or '),
+            'destination': 'battlefield' if match[3].startswith('onto') else 'hand',
+            'tapped': match[3].endswith(' tapped'), 'count': 1, 'shuffle': True}
     targeted = _infer_targeted_search_effect(oracle, action_targets)
     if targeted is not None:
         return targeted
@@ -1389,7 +1422,7 @@ def _infer_search_effect(oracle: str, action_targets: dict[str, Any]) -> tuple[s
     return "search_library", payload
 
 
-def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | None = None) -> bool:
+def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | None = None, *, printed_mana_costs=None) -> bool:
     """Return whether a card satisfies a structured library-search filter."""
     if not contains:
         return False
@@ -1422,6 +1455,12 @@ def search_card_matches(card: CardInstance, contains: str | None, mv_max: int | 
         matched = needle in subtypes or needle in type_line or needle in str(getattr(card, "name", "")).lower()
     if not matched:
         return False
+    if printed_mana_costs is not None:
+        if (type(printed_mana_costs) is not list or not printed_mana_costs
+                or any(type(cost) is not str or not re.fullmatch(r'\{(?:0|[1-9]\d*)\}', cost)
+                       for cost in printed_mana_costs)
+                or (card.mana_cost or '') not in printed_mana_costs):
+            return False
     if mv_max is not None:
         from rules_engine.mana import parse_mana_cost
 
@@ -1725,6 +1764,8 @@ def inspect_target_hints(
             "destination": search_payload.get("destination", "hand"),
             "max_count": int(search_payload.get("count", 0) or 0),
             "allow_zero": True,
+            **({'printed_mana_costs': search_payload['printed_mana_costs']}
+               if 'printed_mana_costs' in search_payload else {}),
         }
         if _infer_targeted_search_effect(oracle, {}) is not None and 'up to one target artifact or creature' in oracle:
             hints['creature_targets'] = [
@@ -2119,7 +2160,7 @@ def _pure_self_graveyard_return_instruction(card, instruction):
             'tapped': bool(match[2])}
 
 
-def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
+def extract_activated_abilities(card: CardInstance, *, state=None) -> list[dict[str, Any]]:
     """Extract simple mana-cost activated abilities from a card surface."""
     out: list[dict[str, Any]] = []
     raw = card.oracle_text or ''
@@ -2193,11 +2234,21 @@ def extract_activated_abilities(card: CardInstance) -> list[dict[str, Any]]:
                     'raw_body': raw_body, 'raw_effect_text': raw_effect,
                     "activation_zone": 'graveyard' if self_return else 'hand' if parse_activated_cost(cost).discard_source else 'battlefield',
                     "cost_modifier": modifier, "label": f"{cost}: {text}"})
-    return out
+    from rules_engine.activated_grants import ordinary_specs
+    return out + ordinary_specs(card, state)
 
 
 def activation_source_eligible(state, player_id, card_id, ability):
     card = state.cards.get(card_id)
+    from rules_engine.continuous import printed_abilities_suppressed
+    if card is None:
+        return False
+    if '__granted_ability' in ability:
+        from rules_engine.activated_grants import ordinary_specs
+        if ability not in ordinary_specs(card, state):
+            return False
+    elif printed_abilities_suppressed(state, card_id):
+        return False
     zone = ability.get('activation_zone', 'battlefield')
     return (card is not None and card.zone.value == zone
             and card_id in getattr(state.players[player_id], zone)

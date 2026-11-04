@@ -2052,6 +2052,9 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     limit = int(payload.get("count", 0) or 0)
     mv_max = payload.get("mv_max")
     mv_max = int(mv_max) if mv_max is not None else None
+    def matches(card):
+        return search_card_matches(card, subtype, mv_max,
+                                   printed_mana_costs=payload.get('printed_mana_costs'))
     owner, effect_controller, frame = _search_resolution_context(state, controller, payload)
     player = state.players[owner]
 
@@ -2078,7 +2081,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     if (payload.get("selected_card_ids") is None
             and (owner in state.mechanic_choice_players
                  or (state.replacement_choice_required and owner in state.replacement_choice_players))):
-        eligible = [cid for cid in player.library if search_card_matches(state.cards[cid], subtype, mv_max)]
+        eligible = [cid for cid in player.library if matches(state.cards[cid])]
         if eligible:
             state.pending_mechanic_choice = {
                 "kind": "search_library", "player_id": owner,
@@ -2104,7 +2107,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
                 or len(selected) != len(set(selected)) or limit and len(selected) > limit
                 or any(cid not in player.library or cid not in state.cards
                        or state.cards[cid].zone != Zone.LIBRARY or state.cards[cid].owner != owner
-                       or not search_card_matches(state.cards[cid], subtype, mv_max)
+                       or not matches(state.cards[cid])
                        for cid in selected)):
             raise ValueError('Unavailable library search selection')
         references = payload.get('__search_references')
@@ -2120,7 +2123,7 @@ def search_library(state: MatchState, controller: int, payload: dict) -> None:
     for cid in candidates:
         if cid not in player.library or cid not in state.cards or cid in chosen:
             continue
-        if search_card_matches(state.cards[cid], subtype, mv_max):
+        if matches(state.cards[cid]):
             chosen.append(cid)
             if limit and len(chosen) >= limit:
                 break

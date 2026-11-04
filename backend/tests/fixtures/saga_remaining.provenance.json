@@ -1,0 +1,133 @@
+{
+  "kind": "FULL_CANONICAL_CARD_OBJECTS_NOT_GAMEPLAY_OR_LABELS",
+  "runtime_network_reads": false,
+  "unchanged_original24_FACTS_sha256": "f8b9067d3be6e52c0f6fe4b59da662a77eb032b8e6074d45ecddc9f4e07d55bc",
+  "Git_control_sources": {
+    "Blood Moon": {
+      "git_commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "git_path": "backend/tests/fixtures/affinity/permanents.json",
+      "file_sha256": "bbba27b92d8c419aa80f39acbcf572ab82751edd82ba835508996be8181679ee"
+    },
+    "Humility": {
+      "git_commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "git_path": "backend/tests/fixtures/creature_observer_fix/humility.json",
+      "file_sha256": "eb68a098b4bd6de1d3c02afe60e37461a5c8268108132b0d3351119a50de8b49"
+    },
+    "Darksteel Citadel": {
+      "git_commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "git_path": "backend/tests/fixtures/affinity/permanents.json",
+      "file_sha256": "bbba27b92d8c419aa80f39acbcf572ab82751edd82ba835508996be8181679ee"
+    },
+    "Walking Ballista": {
+      "git_commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "git_path": "backend/tests/fixtures/graveyard_permissions/walking-ballista.json",
+      "file_sha256": "62383572371967423a185e60cc933c11497a9201d6026a002bbcdb18989810d9"
+    },
+    "Ghostly Flicker": {
+      "git_commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "git_path": "backend/tests/fixtures/canonical_land_animation_response/ghostly-flicker.json",
+      "file_sha256": "c22890ab0ac6a5b6243cda082a269c24a7b7a6939dbdc90385cd298833cb09a9"
+    },
+    "Llanowar Elves": {
+      "git_commit": "199b5842f89c0c5fc541190c61910adbd8bfefc0",
+      "git_path": "backend/tests/fixtures/affinity/permanents.json",
+      "file_sha256": "bbba27b92d8c419aa80f39acbcf572ab82751edd82ba835508996be8181679ee"
+    }
+  },
+  "fixtures": {
+    "saga_remaining.json": {
+      "sha256": "f8b9067d3be6e52c0f6fe4b59da662a77eb032b8e6074d45ecddc9f4e07d55bc",
+      "cards": {
+        "Forest": {
+          "id": "2e781bfd-f8cb-4d20-b977-4359f3a21311",
+          "oracle_id": "b34bb2dc-c1af-4d77-b0b3-a0fb342a5fc6",
+          "uri": "https://api.scryfall.com/cards/2e781bfd-f8cb-4d20-b977-4359f3a21311",
+          "canonical_sha256": "d23c0a4499c4df32cc3d763c70e9209d9a92422627301f4efe98e7f9f2d43e07"
+        },
+        "Hidden Courtyard": {
+          "id": "b8685d46-99fc-44b3-be95-707a4b7b8327",
+          "oracle_id": "e19d5071-4ea1-4883-b067-a21e553f96e0",
+          "uri": "https://api.scryfall.com/cards/b8685d46-99fc-44b3-be95-707a4b7b8327",
+          "canonical_sha256": "c4e05ddaa6377e72b55c993e8e173f13789aad25981435702c4803495b9a3d52"
+        },
+        "Lush Portico": {
+          "id": "c17816e8-28b1-4295-a637-efb0e5c18873",
+          "oracle_id": "d51831b1-7394-456e-a1de-6787a59f5932",
+          "uri": "https://api.scryfall.com/cards/c17816e8-28b1-4295-a637-efb0e5c18873",
+          "canonical_sha256": "9e8196866915d6695f10eca46d431f618d6baf2630c417d7d1c5a46caed0942a"
+        },
+        "Ornithopter": {
+          "id": "305078a5-ac18-4721-bba2-3434eba5b1cf",
+          "oracle_id": "a3a98bc9-caa0-49b7-951c-fe4e4f54e4ba",
+          "uri": "https://api.scryfall.com/cards/305078a5-ac18-4721-bba2-3434eba5b1cf",
+          "canonical_sha256": "894b109b531335cdce74ff334a09e98e9f6c772b138c1927bfb2d2afbea84e63"
+        },
+        "Shuko": {
+          "id": "a47456b8-cef8-4085-90b1-92788e16fd27",
+          "oracle_id": "8abe0577-8fdb-4e4a-a871-01b21732c961",
+          "uri": "https://api.scryfall.com/cards/a47456b8-cef8-4085-90b1-92788e16fd27",
+          "canonical_sha256": "4ea23a059eb2859c937d232ce19f9be47fe106c661785a494cf72c487dc8c18a"
+        },
+        "Soulless Jailer": {
+          "id": "bf9991fd-ea6a-4ed7-b5f1-46a95f8d0634",
+          "oracle_id": "7866ab01-22f3-4d87-bdb0-c0ae0e91ffc9",
+          "uri": "https://api.scryfall.com/cards/bf9991fd-ea6a-4ed7-b5f1-46a95f8d0634",
+          "canonical_sha256": "366850b9d3c59bb46fa4510e8edb01e8b68875f88edb17f3cc36eca191c93a99"
+        },
+        "Spelunking": {
+          "id": "d3be4257-2316-4a2e-b347-f71c0368a947",
+          "oracle_id": "2962fe4c-bf48-454b-8a6b-0f8253352ae8",
+          "uri": "https://api.scryfall.com/cards/d3be4257-2316-4a2e-b347-f71c0368a947",
+          "canonical_sha256": "8cdb135d3cfef913d56b78c3ba9dc325453519c8947d893792b322c5c34450e0"
+        },
+        "Urza's Saga": {
+          "id": "c1e0f201-42cb-46a1-901a-65bb4fc18f6c",
+          "oracle_id": "4c6a0c30-b547-4eff-8ff4-0ca25803c076",
+          "uri": "https://api.scryfall.com/cards/c1e0f201-42cb-46a1-901a-65bb4fc18f6c",
+          "canonical_sha256": "0555791aa99f643011aaf70fde680718e0b43ee503106fc508f4d2c3e644ccd9"
+        }
+      }
+    },
+    "saga_remaining_controls.json": {
+      "sha256": "ea5832ad0ac6b309866adf97d3c712111ff7d174e40176f426a6f73b118f3ddf",
+      "cards": {
+        "Blood Moon": {
+          "id": "d072e9ca-aae7-45dc-8025-3ce590bae63f",
+          "oracle_id": "94fac5fe-97d5-4c12-a80c-8efff9d853ae",
+          "uri": "https://api.scryfall.com/cards/d072e9ca-aae7-45dc-8025-3ce590bae63f",
+          "canonical_sha256": "c364d5ee05234d60c369ad6939d450c423546069a56e03c92632d9f501d92567"
+        },
+        "Humility": {
+          "id": "55ad6a45-a840-45ba-89ad-066e20e983f3",
+          "oracle_id": "ed7bdb3e-5c51-4547-9266-76a791e0b2b0",
+          "uri": "https://api.scryfall.com/cards/55ad6a45-a840-45ba-89ad-066e20e983f3",
+          "canonical_sha256": "101256314f30f442342e57197c8da462bf463e99c66645988a64ab1c609c26b6"
+        },
+        "Darksteel Citadel": {
+          "id": "2ba7597d-6d76-45b8-b172-342999e401bd",
+          "oracle_id": "8dc067bf-f78f-4ac4-b6e7-b305c42cf0bc",
+          "uri": "https://api.scryfall.com/cards/2ba7597d-6d76-45b8-b172-342999e401bd",
+          "canonical_sha256": "38b006e89208ec9793d441c50e8678777f6a529a05842fd9908d4a5b17fa6558"
+        },
+        "Walking Ballista": {
+          "id": "5272436e-74f0-44c4-a291-ea8ebc3f1525",
+          "oracle_id": "4b515bb0-f275-4400-8032-3173b799ab40",
+          "uri": "https://api.scryfall.com/cards/5272436e-74f0-44c4-a291-ea8ebc3f1525",
+          "canonical_sha256": "8dc4aef49d0ee4625dc001e686313b98858b681adc9624207b8c7f7ad326b2cf"
+        },
+        "Ghostly Flicker": {
+          "id": "dc143ba3-2a58-4980-9fa0-a05a9e9ed082",
+          "oracle_id": "ad0070db-6454-41cb-861f-8f5b8fc2a3b8",
+          "uri": "https://api.scryfall.com/cards/dc143ba3-2a58-4980-9fa0-a05a9e9ed082",
+          "canonical_sha256": "261cdc96d4dd6c13139a2ceb6fdbca44f8cdbe3015890b13199ad1737cfd5735"
+        },
+        "Llanowar Elves": {
+          "id": "6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+          "oracle_id": "68954295-54e3-4303-a6bc-fc4547a4e3a3",
+          "uri": "https://api.scryfall.com/cards/6a0b230b-d391-4998-a3f7-7b158a0ec2cd",
+          "canonical_sha256": "03ad1ad4ad4523b4b0f6a0f4d167c95d1a5d1895dfc5695e687efcb7f6fc79bd"
+        }
+      }
+    }
+  }
+}

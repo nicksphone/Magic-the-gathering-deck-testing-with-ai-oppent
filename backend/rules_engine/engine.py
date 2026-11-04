@@ -576,7 +576,7 @@ class RulesEngine:
             if split_second_active(state):
                 reject("Split second prevents spells and nonmana activated abilities")
                 return
-        if kind in {'activate_ability', 'activate_loyalty', 'equip', 'crew'}:
+        if kind in {'activate_loyalty', 'equip', 'crew'}:
             from rules_engine.continuous import printed_abilities_suppressed
             if printed_abilities_suppressed(state, action.get('card_id')):
                 reject("This permanent has lost its printed abilities")
@@ -1341,10 +1341,14 @@ class RulesEngine:
             if not cid or cid not in state.cards:
                 apply_state_based_actions(state)
                 return
-            abilities = extract_activated_abilities(state.cards[cid])
+            abilities = extract_activated_abilities(state.cards[cid], state=state)
             ability_index = int(action.get("ability_index", -1))
             ability = next((item for item in abilities if item["index"] == ability_index), None)
             from rules_engine.oracle_effects import activation_source_eligible
+            from rules_engine.continuous import printed_abilities_suppressed
+            if ability is not None and '__granted_ability' not in ability and printed_abilities_suppressed(state, cid):
+                reject("This permanent has lost its printed abilities")
+                return
             if ability is None or not activation_source_eligible(state, player_id, cid, ability):
                 apply_state_based_actions(state)
                 return

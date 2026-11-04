@@ -98,6 +98,7 @@ def _card_snapshot(card):
         "type_line": card.type_line,
         "image_uri": card.image_uri,
         "keyword_effects": deepcopy(card.keyword_effects),
+        "activated_ability_effects": deepcopy(card.activated_ability_effects),
         "base_stat_effects": deepcopy(card.base_stat_effects),
         "type_effects": deepcopy(card.type_effects),
         "type_effect_base": deepcopy(card.type_effect_base),
@@ -144,6 +145,7 @@ def _card_from_snapshot(raw, players):
         entered_turn=int(raw.get("entered_turn", 0)), counters=dict(raw.get("counters", {})),
         counter_timestamps={str(key): int(value) for key, value in raw.get('counter_timestamps', {}).items()},
         keywords=list(raw.get("keywords", [])), keyword_effects=restore_keyword_effects(raw), oracle_text=str(raw.get("oracle_text", "")),
+        activated_ability_effects=deepcopy(raw.get('activated_ability_effects', [])),
         base_stat_effects=deepcopy(raw.get('base_stat_effects', [])),
         type_effects=deepcopy(raw.get('type_effects', [])),
         type_effect_base=deepcopy(raw.get('type_effect_base')),
@@ -171,6 +173,8 @@ def _card_from_snapshot(raw, players):
         was_kicked=bool(raw.get('was_kicked', False)),
         kicker_count=raw.get('kicker_count'),
     )
+    from rules_engine.activated_grants import validate_records
+    validate_records(card)
     from rules_engine.control_effects import restore_control_effects
     restore_control_effects(raw, card, players)
     return card
@@ -497,6 +501,24 @@ def deserialize_match_snapshot(payload: dict) -> MatchState:
     state.staged_triggers = list(payload.get("staged_triggers", []))
     state.pending_trigger_order = payload.get("pending_trigger_order")
     state.pending_mechanic_choice = payload.get("pending_mechanic_choice")
+    # Old suspended land entries retained asdict(face) before this additive field.
+    for attribute, packet_key in (('pending_replacement_choice', 'counter_payload'),
+                                  ('pending_mechanic_choice', 'effect_payload')):
+        pending = getattr(state, attribute)
+        packet = pending.get(packet_key) if type(pending) is dict else None
+        if type(packet) is not dict or packet.get('entry_effect') != 'land_play_entry':
+            continue
+        completion = packet.get('entry_completion_payload')
+        if type(completion) is not dict:
+            continue
+        action, origin = completion.get('land_action'), completion.get('land_origin')
+        if (type(action) is not dict or action.get('type') != 'play_land'
+                or type(origin) is not dict or type(origin.get('face')) is not dict
+                or 'activated_ability_effects' in origin['face']):
+            continue
+        restored = deepcopy(pending)
+        restored[packet_key]['entry_completion_payload']['land_origin']['face']['activated_ability_effects'] = []
+        setattr(state, attribute, restored)
     state.rng.setstate(_tupleize(payload["rng_state"]))
     from rules_engine.mana_continuation import validate
     state.mana_continuation = validate(state, payload.get('mana_continuation'))

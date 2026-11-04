@@ -10,6 +10,7 @@ from rules_engine.spree import resolve_copy as resolve_spree_copy, offer_change 
 from rules_engine.end_step_ownership_draw import resolve as resolve_ownership_end_step_draw
 from rules_engine.graveyard_batch_entry import resolve as resolve_graveyard_batch
 from rules_engine.activation_copy import resolve_copy_referred_ability
+from rules_engine.activated_grants import resolve_grant as resolve_activated_grant
 
 from collections.abc import Callable
 
@@ -21,6 +22,7 @@ from rules_engine.ward import resolve_ward
 EffectHandler = Callable[[MatchState, int, dict], None]
 
 EFFECT_HANDLERS: dict[str, EffectHandler] = {
+    'grant_activated_ability': resolve_activated_grant,
     'return_graveyard_permanents_batch': resolve_graveyard_batch,
     'add_artifact_type_until_end_of_turn': handlers.add_artifact_type_until_end_of_turn,
     'ownership_end_step_draw': resolve_ownership_end_step_draw,

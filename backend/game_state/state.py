@@ -74,6 +74,7 @@ class CardInstance:
     counter_timestamps: dict[str, int] = field(default_factory=dict)
     keywords: list[str] = field(default_factory=list)
     keyword_effects: list[dict] = field(default_factory=list)
+    activated_ability_effects: list[dict] = field(default_factory=list, kw_only=True)
     base_stat_effects: list[dict] = field(default_factory=list)
     type_effects: list[dict] = field(default_factory=list)
     type_effect_base: list[str] | None = None
@@ -138,6 +139,7 @@ class CardInstance:
 
     def move_to_zone(self, zone: Zone) -> None:
         if zone != self.zone and self.zone == Zone.BATTLEFIELD:
+            self.activated_ability_effects.clear()
             from rules_engine.control_effects import clear_control_effects
             clear_control_effects(self)
             from rules_engine.type_effects import clear_type_effects
