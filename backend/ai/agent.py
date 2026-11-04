@@ -1666,6 +1666,14 @@ class AIAgent:
                 best = (score, mat)
         return best[1] if best else None
 
+    def _endstep_draw_payment_preference(self, state, action, player_id, selected):
+        """Existing economic preference, priced on the final immutable payment."""
+        choice = action.get('cost_choice') or {}
+        loss = self._spell_payment_loss(state, player_id, selected, cost_choice=choice,
+                                       x_value=int((action.get('targets') or {}).get('x_value') or 0))
+        return loss, bool(loss and self._cast_bias(state, action, player_id) - loss
+                          <= self._pass_bias(state, player_id))
+
     def _forced_endstep_card_advantage(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if self.archetype not in {"Control", "Counter-heavy", "Tempo"}:
             return None
@@ -1696,9 +1704,8 @@ class AIAgent:
             choice = mat.get('cost_choice') or {}
             selected = next((option for option in mat.get('cost_options', [])
                              if option['id'] == choice.get('id')), {})
-            loss = self._spell_payment_loss(state, player_id, selected, cost_choice=choice,
-                                           x_value=int((mat.get('targets') or {}).get('x_value') or 0))
-            if loss and self._cast_bias(state, mat, player_id) - loss <= self._pass_bias(state, player_id):
+            loss, prefer_pass = self._endstep_draw_payment_preference(state, mat, player_id, selected)
+            if prefer_pass:
                 from ai.pending_effects import unanswered_action_wins
                 choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype,
                                        opponent_archetype=self.opponent_archetype)

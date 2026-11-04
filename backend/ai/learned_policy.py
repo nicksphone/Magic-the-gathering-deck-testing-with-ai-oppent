@@ -54,6 +54,68 @@ def bind_live_policy(raw_checkpoint_bytes):
                              tuple(sorted(contract.items())))
 
 
+def _public_cost_option(action, supplied_moves):
+    """Retain one authentic offered option, never rehydrate a stripped action."""
+    if not isinstance(action, dict) or action.get('type') != 'cast_spell':
+        return None
+    choice = action.get('cost_choice')
+    if not isinstance(choice, dict) or type(choice.get('id')) is not str or not choice['id']:
+        return None
+    selected = choice['id']
+    selectors = ('card_id', 'selected_face_index', 'cast_variant', 'graveyard_permission_key')
+    origins = ('from_graveyard', 'from_exile', 'from_library')
+    options = []
+    for move in supplied_moves:
+        if (move.get('type') != 'cast_spell'
+                or any(move.get(key) != action.get(key) for key in selectors)
+                or any(bool(move.get(key)) != bool(action.get(key)) for key in origins)):
+            continue
+        offered = move.get('cost_options')
+        if (type(offered) is not list or not offered
+                or any(type(option) is not dict or type(option.get('id')) is not str
+                       or not option['id'] for option in offered)):
+            return None
+        options.extend(option for option in offered if option['id'] == selected)
+    return deepcopy(options[0]) if len(options) == 1 else None
+
+
+def _prefer_pass_to_paid_draw(agent, view, action, seat, option):
+    """Narrow conditional preference; unresolved payoff contexts retain Q ordering."""
+    if (option is None or action.get('type') != 'cast_spell'
+            or action.get('selected_face_index') is not None or action.get('cast_variant') is not None
+            or agent.archetype not in {'Control', 'Counter-heavy', 'Tempo'}
+            or view.priority_player != seat or view.active_player == seat or view.step != Step.END_STEP
+            or view.stack or view.pending_trigger_order or view.pending_mechanic_choice
+            or view.pending_replacement_choice or view.delayed_triggers or view.staged_triggers
+            or view.emblems):
+        return False
+    from ai.information import is_unknown
+    from rules_engine.continuous import effective_keywords
+    import re
+    # Public text/keyword matches only abstain; they do not certify any payoff.
+    for player in view.players.values():
+        for cid in player.battlefield:
+            public_card = view.cards.get(cid)
+            if public_card is None or is_unknown(public_card):
+                return False
+            text = (public_card.oracle_text or '').lower()
+            if ('instead' in text or re.search(r'\b(?:when|whenever|at the beginning)\b', text)
+                    or any(keyword.split()[0] in {'prowess', 'training', 'undying', 'decayed',
+                                                  'exalted', 'bushido', 'rampage', 'flanking'}
+                           for keyword in effective_keywords(view, cid) if keyword.split())):
+                return False
+    from rules_engine.type_effects import effective_types
+    card = view.cards[action['card_id']]
+    if ('Instant' not in effective_types(view, card)
+            or ('draw' not in agent._spell_tags(card)
+                and not any(word in (card.oracle_text or '').lower() for word in ('scry', 'surveil')))):
+        return False
+    if not all(type(option.get(key)) is int for key in ('pay_life', 'discard_cards', 'sacrifice_creatures')):
+        return False
+    loss, prefer_pass = agent._endstep_draw_payment_preference(view, action, seat, option)
+    return math.isfinite(loss) and prefer_pass
+
+
 def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, _terminal_win=None):
     """Rank a checked SUBSET; admission retains the caller's original-state boundary."""
     # The tactical preference corpus does not qualify opening-hand decisions.
@@ -74,10 +136,12 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, 
         # The existing shortlist may retain one extra priority pass. Not exhaustive.
         if not isinstance(proposals, list) or len(proposals) > 9:
             return None
-        candidates, seen = [], set()
+        candidates, seen, public_costs = [], set(), {}
         for proposal in proposals:
             try:
-                action = complete_action(finalize_declaration(view, deepcopy(proposal)))
+                intent = finalize_declaration(view, deepcopy(proposal))
+                offered_cost = _public_cost_option(intent, supplied_moves)
+                action = complete_action(intent)
                 require_choices_from_view(view, supplied_moves, action, seat)
                 admit(action)
             except (ActionRejected, ValueError):
@@ -89,11 +153,13 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, 
             if identity not in seen:
                 candidates.append(action)
                 seen.add(identity)
+                public_costs[identity] = offered_cost
         if not candidates:
             return None
         prepared = binding._policy.prepare(decision_frame.encode_state(frame))
         best, best_key = None, None
         terminal_classes = []
+        ranked = []
         known_outcome = False
         answers = None
         for action in candidates:
@@ -117,6 +183,7 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, 
             known_outcome |= win is True or (win is False and (loss is True or loss is False))
             key = (win is True, loss is not True, result['q'])
             terminal_classes.append((action, key[:2]))
+            ranked.append((action, key))
             if best is None or key > best_key:
                 best, best_key = action, key
         if best is None:
@@ -124,6 +191,15 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, 
         if (view.step == Step.DECLARE_BLOCKERS and view.active_player != seat
                 and not known_outcome):
             return None
+        while best['type'] != 'pass_priority' and not best_key[0]:
+            if not any(action['type'] == 'pass_priority' and key[:2] >= best_key[:2]
+                       for action, key in ranked):
+                break
+            identity = json.dumps(best, sort_keys=True, separators=(',', ':'), allow_nan=False)
+            if not _prefer_pass_to_paid_draw(agent, view, best, seat, public_costs[identity]):
+                break
+            ranked = [(action, key) for action, key in ranked if action != best]
+            best, best_key = max(ranked, key=lambda item: item[1])
         if best.get('type') == 'play_land' and not best_key[0]:
             from ai.mana_resource_policy import prefer_nonregressive_land
             alternatives = [action for action, prefix in terminal_classes
