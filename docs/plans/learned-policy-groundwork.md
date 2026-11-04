@@ -1,6 +1,6 @@
 # Learned Policy Groundwork
 
-## Current Status: November 3
+## Current Status: November 4
 
 The experimental learned-policy candidates remain inactive and unfinished. C19
 candidate preserves the 1,358 retained ranking floors, including 1,328 strict
@@ -190,12 +190,21 @@ failure. Closure verified unchanged source/inputs/frozen tensors and restored
 the last safe in-memory state, not the initializer. No new gameplay or live
 policy qualification is claimed.
 
-The next proposed scheduling change checks remaining CPU and wall time before
-starting optional work, reserving time for fresh final certification. It retains
-the four-block opportunity, mathematical gates and hard limits. An actual
-timeout or other failure would still reject the entire run. This scheduling
-revision is not yet implemented or numerically qualified; it cannot rescue
-parameters from the failed attempt.
+The scheduling change is now implemented and independently reviewed, with all
+108 isolated implementation checks passing. It checks remaining absolute CPU
+and elapsed wall time before starting optional work, reserving time for fresh
+final certification. It retains the four-block opportunity, mathematical gates
+and hard limits. An actual timeout or other failure still rejects the entire
+run; no parameters from the failed attempt are reused.
+
+The revised implementation passed its genuine API smoke check. Its first fresh
+numerical parity attempt was interrupted after 111.46 seconds when available
+host RAM fell just below the unchanged 2 GiB runtime floor. The partial check is
+not a parity pass or a reusable model. All 16 terminal tensors were verified,
+but they did not match the initializer after the interrupted perturbation;
+the frozen tensors, source and inputs remained unchanged, and process/lease
+closure passed. A fresh parity attempt requires sustained launch-memory headroom.
+The revised fit has not run and is not yet numerically qualified.
 
 Independent simulation batches support up to eight workers, with fresh memory
 and disk admission before each spawn. A single fit remains sequential; duplicate
