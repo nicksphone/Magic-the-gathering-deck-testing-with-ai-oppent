@@ -553,8 +553,8 @@ class AIAgent:
                 selected = candidates[0] if candidates else "__finish_opening__"
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]}, reasoning="Use supported free opening-hand permanent")
             if choice["kind"] in {"mulligan_bottom", "opening_hand_exile"}:
-                options.sort(key=lambda cid: (self._hand_retention_value(state, cid, player_id), cid))
-                return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Select least useful cards for required pregame instruction")
+                selected = self._choose_opening_hand_removals(state, options, choice["count"], player_id)
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning="Preserve a coherent retained opening hand")
             if choice["kind"] == "copy_target":
                 copied = next((item for item in state.stack if item.id == choice.get("stack_id")), None)
                 if copied and choice.get('linked_target_index') is not None:
@@ -1925,6 +1925,28 @@ class AIAgent:
         if mulligans < 2 and self._is_burn_matchup() and (lands < 2 or cheap_interaction == 0):
             return AIDecision(action={"type": "mulligan"}, reasoning="Burn matchup requires stable mana and early interaction")
         return AIDecision(action={"type": "keep_hand", "bottom_card_ids": []}, reasoning="Keep acceptable hand")
+
+    def _choose_opening_hand_removals(self, state, options, count, player_id):
+        hand = list(state.players[player_id].hand)
+        values = {cid: self._hand_retention_value(state, cid, player_id) for cid in hand}
+        ranked = sorted(dict.fromkeys(options), key=lambda cid: (values[cid], cid))
+        if len(hand) > 7 or not 0 <= count <= len(ranked):
+            return ranked[:count]
+        # A free opening entry is already on the battlefield when exile is chosen.
+        lands_in_play = [state.cards[cid] for cid in state.players[player_id].battlefield
+                         if 'Land' in effective_types(state, state.cards[cid])]
+        low, high = self._preferred_land_window()
+
+        def retained_key(removed):
+            retained = [cid for cid in hand if cid not in removed]
+            profile = self._opening_hand_profile([state.cards[cid] for cid in retained] + lands_in_play)
+            lands = profile['lands']
+            return (not profile['critical_miss'], not profile['missing_primary_color'],
+                    -max(low - lands, lands - high, 0), profile['quality'],
+                    sum(values[cid] for cid in retained))
+
+        # At most35 subsets. First exact tie preserves the legacy value/ID order.
+        return list(max(combinations(ranked, count), key=retained_key))
 
     def _opening_hand_profile(self, hand: list) -> dict[str, object]:
         lands = 0
