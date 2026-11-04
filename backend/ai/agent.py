@@ -4089,6 +4089,37 @@ class AIAgent:
                 return redirected
         return {**action, '_invalid_ai_choice': True}
 
+    def _friendly_removal_instruction(self, effect, payload, target_id):
+        """Classify complete native wrappers; unknown children never justify a veto."""
+        budget = [16]
+
+        def visit(key, data, depth):
+            budget[0] -= 1
+            if depth >= 8 or budget[0] < 0 or not isinstance(data, dict):
+                return None
+            if key == 'effect_sequence':
+                children = data.get('effects')
+                if not isinstance(children, list) or not children or len(children) > budget[0]:
+                    return None
+                found = False
+                for child in children:
+                    answer = (visit(child.get('effect_key'), child.get('payload'), depth + 1)
+                              if isinstance(child, dict) else None)
+                    if answer is None:
+                        return None
+                    found |= answer
+                return found
+            if key == 'conditional_instruction':
+                if (data.get('condition') not in {'permanent_departure', 'graveyard_types'}
+                        or data.get('effect_key') not in {'destroy_permanent', 'deal_damage'}):
+                    return None
+                return visit(data['effect_key'], data, depth + 1)
+            if key in {'deal_damage', 'destroy_permanent', 'exile'}:
+                return data.get('target_card_id') == target_id
+            return False if key == 'gain_life' else None
+
+        return visit(effect, payload, 0)
+
     def _harmful_friendly_removal(self, state, action, player_id):
         if (not isinstance(state, MatchState) or action.get('_invalid_ai_choice')
                 or action.get('type') != 'cast_spell'):
@@ -4099,16 +4130,18 @@ class AIAgent:
         from rules_engine.oracle_effects import infer_effect_from_oracle
         effect, payload = infer_effect_from_oracle(state, _card_for_move(state, action), player_id,
             action.get('targets') or {}, report_unsupported=False)
-        effect_key = payload.get('effect_key') if effect == 'conditional_instruction' else effect
-        if effect_key not in {'deal_damage', 'exile'}:
+        if self._friendly_removal_instruction(effect, payload, target.id) is not True:
             return False
         from ai.pending_effects import friendly_destruction_profit, _projection_copy
         choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype,
                               opponent_archetype=self.opponent_archetype)
         profitable = friendly_destruction_profit(state, player_id, action,
             own_choice_action=lambda projected, legal, pid: choice_agent.choose_action(projected, legal, pid).action)
-        if profitable is not None:
-            return not profitable
+        if profitable is True:
+            return False
+        if profitable is False:
+            return True
+        effect_key = payload.get('effect_key') if effect == 'conditional_instruction' else effect
         if effect_key != 'deal_damage':
             return False
         from rules_engine.action_validation import ActionRejected, checked_action

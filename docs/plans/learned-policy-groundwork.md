@@ -266,8 +266,11 @@ ingestion of development games into training. Private traces remain protected.
 Read-only review found opening selections that retained five lands while removing
 both available creatures, and healthy friendly-creature removal for life gain.
 The subsequent joint retained-hand fix is published as `7fd7c17e`; its complete
-18-module pure regression gate passed 490 tests and thirteen subtests. Friendly
-removal and empty-payoff Aura decisions remain under investigation. The diagnostic
+18-module pure regression gate passed 490 tests and thirteen subtests. The later
+friendly-material conservation correction passed 696 tests and thirteen subtests
+across thirty whole pure modules, preserving rescue plays and conditional damage
+protection. Empty-payoff Aura decisions and a source-linked return defect remain
+under investigation. The diagnostic
 used the older frozen engine, so its outcomes do not qualify these later source
 changes or a newly trained policy. Thirteen deck entries also do not certify all
 profile styles or arbitrary-card play.

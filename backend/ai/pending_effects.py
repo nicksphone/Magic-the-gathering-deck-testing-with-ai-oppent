@@ -425,6 +425,72 @@ def _memoized_projection(state, player_id, kind, action, compute, policy, *, nam
     return result
 
 
+class _DestructionBaseline(tuple):
+    """Keep the three-item baseline ABI; private summary reuses the same settlement."""
+    def __new__(cls, values, public_material=None):
+        result = tuple.__new__(cls, values)
+        result.public_material = public_material
+        return result
+
+
+def _public_destruction_material(state, player_id):
+    from ai.information import is_unknown
+    from game_state.state import object_incarnation
+    from rules_engine.continuous import effective_keywords
+    if state.delayed_triggers or state.staged_triggers or state.emblems:
+        return None
+    boards = {}
+    useful = set()
+    for pid, player in state.players.items():
+        boards[pid] = {}
+        for cid in player.battlefield:
+            card = state.cards.get(cid)
+            if card is None or is_unknown(card):
+                return None
+            key = (cid, object_incarnation(card), card.zone_change_sequence)
+            types = tuple(sorted(effective_types(state, card)))
+            stats = effective_combat_stats(state, cid) if 'Creature' in types else None
+            if stats is not None and any(type(value) is not int for value in stats):
+                return None
+            traits = (types, stats, tuple(sorted(effective_keywords(state, cid))),
+                      tuple(sorted(card.counters.items())), card.attached_to)
+            boards[pid][key] = (traits, card.tapped)
+            if (pid == player_id and stats is not None
+                    and stats[1] > max(0, card.counters.get('__damage_marked', 0))):
+                useful.add(key)
+    return dict(boards=boards, useful=useful, hand=set(state.players[player_id].hand),
+        graveyard=set(state.players[player_id].graveyard),
+        life={pid:p.life for pid,p in state.players.items()},
+        mana={pid:dict(p.mana_pool) for pid,p in state.players.items()},
+        resources={pid:(p.poison, dict(p.counters), dict(p.snow_mana_pool),
+            deepcopy(p.restricted_mana_pool), p.prevent_damage_shield, p.max_land_plays_this_turn,
+            dict(p.exile_play_until), deepcopy(p.exile_play_durations)) for pid,p in state.players.items()})
+
+
+def _uncompensated_life_material_loss(before, after, player_id, spell_id):
+    """A local material-conservation preference, not a global life price or theorem."""
+    if before is None or after is None:
+        return None
+    opponent = 3 - player_id
+    old, new = before['boards'][player_id], after['boards'][player_id]
+    if (not (before['useful'] - set(new)) or set(new) - set(old)
+            or after['life'][player_id] <= before['life'][player_id]
+            or after['life'][opponent] != before['life'][opponent]
+            or before['boards'][opponent] != after['boards'][opponent]
+            or before['resources'] != after['resources']
+            or after['hand'] - before['hand']
+            or after['graveyard'] - before['graveyard'] - {spell_id}):
+        return False
+    for key in set(old) & set(new):
+        if old[key][0] != new[key][0] or (old[key][1] and not new[key][1]):
+            return False
+    if (after['mana'][opponent] != before['mana'][opponent]
+            or any(n > before['mana'][player_id].get(color, 0)
+                   for color,n in after['mana'][player_id].items())):
+        return False
+    return True
+
+
 def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=None, _baseline_supplier=None):
     from ai.heuristics import evaluate_board
     from rules_engine.action_validation import ActionRejected, checked_action
@@ -445,15 +511,26 @@ def _friendly_destruction_profit(state, player_id, action, *, own_choice_action=
             or tuple(projected.players[3-player_id].hand) != opposing_hand):
         return None
     if _baseline_supplier is None:
-        status, winner, value = _choice_free_projection(state, player_id, 'destruction_baseline', None,
+        baseline = _choice_free_projection(state, player_id, 'destruction_baseline', None,
             lambda policy: _destruction_baseline(state, player_id, policy), own_choice_action)
     else:
-        status, winner, value = _baseline_supplier()
+        baseline = _baseline_supplier()
+    status, winner, value = baseline
     if status == 'unknown':
         return None
     if winner is not None:
         return winner != player_id
-    return evaluate_board(projected, player_id) > value
+    profitable = evaluate_board(projected, player_id) > value
+    if not profitable:
+        return False
+    if isinstance(baseline, _DestructionBaseline):
+        material = _uncompensated_life_material_loss(baseline.public_material,
+            _public_destruction_material(projected, player_id), player_id, action.get('card_id'))
+        if material is None:
+            return None
+        if material is True:
+            return False
+    return profitable
 
 
 def _destruction_baseline(state, player_id, policy):
@@ -467,7 +544,8 @@ def _destruction_baseline(state, player_id, policy):
             for pid, player in baseline.players.items())
             or tuple(baseline.players[3-player_id].hand) != tuple(state.players[3-player_id].hand)):
         return ('unknown', None, None)
-    return ('known', None, evaluate_board(baseline, player_id))
+    return _DestructionBaseline(('known', None, evaluate_board(baseline, player_id)),
+                                _public_destruction_material(baseline, player_id))
 
 
 def pending_counter_gain(state, player_id, stack_id):
