@@ -269,9 +269,18 @@ The subsequent joint retained-hand fix is published as `7fd7c17e`; its complete
 18-module pure regression gate passed 490 tests and thirteen subtests. The later
 friendly-material conservation correction passed 696 tests and thirteen subtests
 across thirty whole pure modules, preserving rescue plays and conditional damage
-protection. Empty-payoff Aura decisions and a source-linked return defect remain
-under investigation. The diagnostic
-used the older frozen engine, so its outcomes do not qualify these later source
+protection. The subsequent empty-payoff Aura guard distinguishes a held trigger
+from an active battlefield payoff. The linked-exile compiler and target menu now
+preserve the actual creature/planeswalker choice and source-linked return; fixed
+controller life gain retains its complete two-step instruction and pre-departure
+recipient. The corrected forty-module gate passed 966 tests and thirteen subtests,
+with the four initial compound-shape failures preserved separately. The two
+original private empty-Aura projection regressions also passed on the final
+source, without loading a learned model. These are component regressions, not a
+new match comparison. Spelunking and land-Saga entry/chapter coverage gaps have
+separate tests-only diagnostics and remain open.
+
+The diagnostic used the older frozen engine, so its outcomes do not qualify these later source
 changes or a newly trained policy. Thirteen deck entries also do not certify all
 profile styles or arbitrary-card play.
 

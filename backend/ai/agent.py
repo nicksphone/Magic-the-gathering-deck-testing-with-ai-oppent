@@ -78,6 +78,23 @@ def _card_for_move(state, move):
     return card
 
 
+def _entry_only_removal_aura_instruction(card):
+    """A complete, narrow public surface, not a substring removal tag."""
+    from rules_engine.attachments import enchant_restriction, is_aura
+    if (card is None or not is_aura(card) or card.card_faces
+            or card.selected_face_index is not None):
+        return None
+    lines = [line.strip() for line in (card.oracle_text or '').splitlines() if line.strip()]
+    if len(lines) != 2 or enchant_restriction(lines[0]) is None:
+        return None
+    reference = r'(?:this (?:aura|enchantment)|' + re.escape(card.name) + r')'
+    match = re.fullmatch(
+        r'(?:When|Whenever) ' + reference + r' enters(?: the battlefield)?, '
+        r'(exile target creature(?: or planeswalker)? an opponent controls until '
+        + reference + r' leaves the battlefield\.?)', lines[1], re.I)
+    return match[1] if match else None
+
+
 def _fixed_color_pips(mana_cost: str) -> dict[str, int]:
     symbols = re.findall(r"\{([^{}]+)\}", (mana_cost or "").upper())
     return parse_mana_cost("".join(
@@ -3818,6 +3835,109 @@ class AIAgent:
                     return action
         return None
 
+    def _empty_entry_only_removal_aura(self, before, after, action, player_id):
+        """Defer only a checked empty entry with no known compensating context."""
+        from ai.information import is_unknown
+        from ai.pending_effects import _public_destruction_material
+        from rules_engine.oracle_effects import (
+            _infer_immediate_return_effect, infer_effect_from_oracle, inspect_target_hints,
+        )
+        from rules_engine.targeting import validate_cast_targets
+        card = _card_for_move(before, action)
+        instruction = _entry_only_removal_aura_instruction(card)
+        if (instruction is None or action.get('type') != 'cast_spell'
+                or action.get('cast_variant') is not None
+                or card.id not in before.players[player_id].hand):
+            return False
+        for state in (before, after):
+            if (state.stack or state.winner is not None or state.pending_mechanic_choice
+                    or state.pending_trigger_order or state.pending_replacement_choice
+                    or state.delayed_triggers or state.staged_triggers or state.emblems):
+                return False
+        proxy = copy.copy(card)
+        proxy.oracle_text, proxy.card_faces, proxy.selected_face_index = instruction, [], None
+        key, _ = infer_effect_from_oracle(before, proxy, player_id, report_unsupported=False)
+        if key != 'exile_until_source_leaves':
+            return False
+        for pid, player in before.players.items():
+            for cid in player.battlefield:
+                public = before.cards.get(cid)
+                if public is None or is_unknown(public):
+                    return False
+                if (pid != player_id
+                        and {'Creature', 'Planeswalker'} & set(effective_types(before, public))):
+                    return False
+        host = before.cards.get((action.get('targets') or {}).get('target_card_id'))
+        if (host is None or is_unknown(host) or 'Basic' not in (host.type_line or '').split()
+                or set(effective_types(before, host)) != {'Land'}
+                or _oracle_text(host) and not re.fullmatch(r'\{t\}: add \{[wubrgc]\}\.?', _oracle_text(host))
+                or any(before.cards[cid].attached_to == host.id
+                       and (_entry_only_removal_aura_instruction(before.cards[cid]) is None
+                            or before.cards[cid].counters != {'__attached_to': 0})
+                       for player in before.players.values() for cid in player.battlefield)):
+            return False
+        for pid, player in before.players.items():
+            known = list(player.battlefield) + (list(player.hand) if pid == player_id else [])
+            for cid in known:
+                if cid == card.id:
+                    continue
+                other = before.cards.get(cid)
+                if other is None or is_unknown(other):
+                    return False
+                # Another complete self-only entry is not a cross-card synergy.
+                if _entry_only_removal_aura_instruction(other) is not None:
+                    continue
+                text = _oracle_text(other)
+                immediate = _infer_immediate_return_effect(before, text, {})
+                if immediate is not None and immediate[0] == 'exile_return_immediate':
+                    hints = inspect_target_hints(after, after.cards[cid], pid)
+                    if validate_cast_targets(hints, {'target_card_id': card.id})[0]:
+                        return False
+                    continue
+                if (re.search(r'\b(?:auras?|enchantments?|devotion|affinity|instead)\b', text)
+                        or (cid in player.battlefield
+                            and re.search(r'\b(?:when|whenever|at the beginning)\b', text))
+                        or any(word.split()[0] in (
+                                   {'prowess', 'affinity', 'cascade', 'storm', 'extort'}
+                                   if cid in player.battlefield else {'affinity', 'storm'})
+                               for word in effective_keywords(before, cid) if word.split())):
+                    return False
+        old = _public_destruction_material(before, player_id)
+        new = _public_destruction_material(after, player_id)
+        if old is None or new is None or old['life'] != new['life'] or old['resources'] != new['resources']:
+            return False
+        entered = after.cards.get(card.id)
+        if (entered is None or entered.zone != Zone.BATTLEFIELD
+                or entered.controller != player_id or entered.attached_to != host.id
+                or entered.counters != {'__attached_to': 0} or entered.tapped):
+            return False
+        new['boards'][player_id] = {k: v for k, v in new['boards'][player_id].items() if k[0] != card.id}
+        for pid in before.players:
+            original, projected = before.players[pid], after.players[pid]
+            if (len(original.library) != len(projected.library)
+                    or len(original.exile) != len(projected.exile)
+                    or original.graveyard != projected.graveyard
+                    or (pid != player_id and len(original.hand) != len(projected.hand))):
+                return False
+            old_board, new_board = old['boards'][pid], new['boards'][pid]
+            if old_board.keys() != new_board.keys():
+                return False
+            for ref, (traits, tapped) in old_board.items():
+                other_traits, other_tapped = new_board[ref]
+                if traits != other_traits:
+                    return False
+                if (tapped != other_tapped
+                        and not (pid == player_id and not tapped and other_tapped and traits[0] == ('Land',))):
+                    return False
+            if pid != player_id and old['mana'][pid] != new['mana'][pid]:
+                return False
+        if (new['hand'] != old['hand'] - {card.id}
+                or before.linked_exiles != after.linked_exiles
+                or any(amount > old['mana'][player_id].get(color, 0)
+                       for color, amount in new['mana'][player_id].items())):
+            return False
+        return True
+
     def _attachment_projection(self, state: MatchState, move: dict, player_id: int) -> tuple[dict | None, float]:
         from ai.pending_effects import granted_acquisition_forecast
         from ai.pending_effects import simulation_resolve_top as resolve_top_of_stack
@@ -3873,6 +3993,8 @@ class AIAgent:
                     continue
                 apply_state_based_actions(projected)
             except (ValueError, KeyError):
+                continue
+            if casting and self._empty_entry_only_removal_aura(state, projected, action, player_id):
                 continue
             from ai.mana_resource_policy import resource_delta
             from rules_engine.land_types import land_type_instructions

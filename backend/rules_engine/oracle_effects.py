@@ -591,6 +591,19 @@ def infer_effect_from_oracle(
         return "noop", {}
     card, oracle, name = _resolve_effective_card_surface(card, action_targets)
     if (re.match(r'exile target creature\b', oracle.strip(), re.I)
+            and re.search(r'\bits controller gains? \d+ life\b', oracle, re.I)):
+        fixed_life = re.fullmatch(
+            r'exile target creature(?: with mana value less than or equal to '
+            r'the number of [a-z]+ you control)?\.\s*its controller gains (\d+) life\.?',
+            oracle.strip(), re.I)
+        if fixed_life is None:
+            return 'noop', {'__unsupported_instruction': oracle}
+        return 'effect_sequence', {'__exile_controller_life': True, 'effects': [
+            {'effect_key': 'exile', 'payload': {
+                'target_card_id': action_targets.get('target_card_id')}},
+            {'effect_key': 'gain_life', 'payload': {'amount': int(fixed_life[1])}},
+        ]}
+    if (re.match(r'exile target creature\b', oracle.strip(), re.I)
             and re.search(r'\bits controller gains? life\b', oracle, re.I)):
         if not re.fullmatch(r'exile target creature\.\s*its controller gains life equal to its power\.?',
                             oracle.strip(), re.I):
@@ -807,8 +820,8 @@ def infer_effect_from_oracle(
             "linked_source_id": card.id, "linked_source_timestamp": object_incarnation(card),
         }
     linked_target = re.fullmatch(
-        r'exile target (?:creature|permanent|nonland permanent|artifact|enchantment)'
-        r'(?: an opponent controls| you control)? until (?:this (?:creature|permanent|artifact|enchantment)|'
+        r'exile target (?:creature(?: or planeswalker)?|permanent|nonland permanent|artifact|enchantment)'
+        r'(?: an opponent controls| you control)? until (?:this (?:creature|permanent|artifact|enchantment|aura)|'
         + re.escape(card.name.lower()) + r') leaves the battlefield\.?', oracle.strip())
     if linked_target:
         return 'exile_until_source_leaves', {

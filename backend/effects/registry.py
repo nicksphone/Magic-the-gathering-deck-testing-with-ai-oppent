@@ -14,7 +14,7 @@ from rules_engine.activation_copy import resolve_copy_referred_ability
 from collections.abc import Callable
 
 from effects import handlers
-from game_state.state import MatchState
+from game_state.state import MatchState, Zone
 from rules_engine.ward import resolve_ward
 
 
@@ -246,6 +246,19 @@ def _resolve_effect(state: MatchState, controller: int, effect_key: str, payload
         source_lki = payload.get("__source_lki")
         snow_mana_spent = payload.get("snow_mana_spent")
         effects = payload.get("effects", [])
+        if payload.get('__exile_controller_life') is True:
+            if (len(effects) != 2 or effects[0].get('effect_key') != 'exile'
+                    or effects[1].get('effect_key') != 'gain_life'):
+                return
+            target = state.cards.get(effects[0].get('payload', {}).get('target_card_id'))
+            if (target is None or target.zone != Zone.BATTLEFIELD
+                    or target.id not in state.players[target.controller].battlefield):
+                return
+            # Prepare the real recipient before departure resets control, including
+            # continuation payloads if an effect pauses. Read the resolved target,
+            # not a separate cast-time ID that a spell copy could retarget.
+            effects = [effects[0], {**effects[1], 'payload': {
+                **effects[1].get('payload', {}), 'target_player': target.controller}}]
         for index, item in enumerate(effects):
             key = item.get("effect_key")
             data = {**retained, **dict(item.get("payload", {}) or {})}

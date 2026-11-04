@@ -579,8 +579,13 @@ def trigger_target_options(state: MatchState, item: StackItem) -> list[dict[str,
         key = "artifact_targets"
     else:
         key = "enchantment_targets"
+    targets = hints.get(key, [])
+    if (item.effect_key == 'exile_until_source_leaves'
+            and re.search(r'\btarget creature or planeswalker\b', low)):
+        targets = list({target['id']: target for target in
+                        [*targets, *hints.get('planeswalker_targets', [])]}.values())
     options = []
-    for target in hints.get(key, []):
+    for target in targets:
         choice = {"target_card_id": target["id"]}
         if validate_protection_targets(state, proxy, choice)[0] and validate_hexproof_shroud_targets(state, item.controller, choice, proxy, source_kind=source_kind)[0]:
             options.append({**choice, "target_name": target["name"]})
@@ -2422,18 +2427,26 @@ def _trigger_from_oracle(
                 'label': default_label, 'effect_key': key, 'payload': data}
     if self_instructions:
         linked = [body for _, body in self_instructions if re.match(
-            r'exile target (?:creature|permanent|nonland permanent|artifact|enchantment)'
+            r'exile target (?:creature(?: or planeswalker)?|permanent|nonland permanent|artifact|enchantment)'
             r'(?: an opponent controls| you control)? until\b', body, re.I)]
         if linked:
             from rules_engine.oracle_effects import infer_effect_from_oracle
             compiled = None
-            if len(self_instructions) == 1 and oracle.strip() == self_instructions[0][0]:
+            if len(self_instructions) == 1:
                 clause, instruction = self_instructions[0]
-                proxy = copy(source)
-                proxy.oracle_text, proxy.card_faces, proxy.selected_face_index = instruction, [], None
-                key, data = infer_effect_from_oracle(state, proxy, controller, report_unsupported=False)
-                if key == 'exile_until_source_leaves':
-                    compiled = key, data
+                raw_surface = raw_entry if event == 'enters_battlefield' else oracle
+                lines = [line.strip() for line in (raw_surface or '').splitlines() if line.strip()]
+                if event == 'enters_battlefield' and len(lines) == 2:
+                    from rules_engine.attachments import enchant_restriction, is_aura
+                    if is_aura(source, state) and enchant_restriction(lines[0]) is not None:
+                        lines = lines[1:]
+                # Account for the complete raw body, not a normalized substring.
+                if len(lines) == 1 and lines[0].casefold() == clause.casefold():
+                    proxy = copy(source)
+                    proxy.oracle_text, proxy.card_faces, proxy.selected_face_index = instruction, [], None
+                    key, data = infer_effect_from_oracle(state, proxy, controller, report_unsupported=False)
+                    if key == 'exile_until_source_leaves':
+                        compiled = key, data
             key, data = compiled if compiled is not None else ('noop', {
                 '__unsupported_trigger_instruction': '\n'.join(linked)})
             data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
