@@ -225,9 +225,18 @@ binary64 tensors were preserved exactly, with one external checkpoint, save and
 load call, no inference or optimizer calls, and clean guard/resource closure.
 Provenance records two accepted blocks and 7,807 physical training rows, not that
 many independent games. The sole candidate was fixed from TRAIN evidence before
-reading its new development results. Native decision tests and game comparisons
-are still pending; lower training loss and successful serialization do not prove
-better play or authorize live activation.
+reading its new development results. Lower training loss and successful
+serialization do not prove better play or authorize live activation.
+
+The unchanged 76-case native development/retention packet then completed with
+clean process, input, model and source closure. All 42 draw cases and six resource
+witnesses passed, but public target checks reached only 14 of 16 and sacrifice
+target checks six of eight, matching the earlier candidate's counts. The native
+consumer correctly returned non-success and the candidate remains on hold. Two
+cases still spend an expensive creature on a draw spell; the other two target
+disagreements need separate assessment rather than an assumption that every
+assertion is an independently established misplay. This reused packet is not a
+fresh held-out strength test, and no whole-game quality gain is established.
 
 Independent simulation batches support up to eight workers, with fresh memory
 and disk admission before each spawn. A single fit remains sequential; duplicate
