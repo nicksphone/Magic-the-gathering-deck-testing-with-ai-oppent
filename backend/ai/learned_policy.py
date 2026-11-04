@@ -157,6 +157,15 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, 
         if not candidates:
             return None
         prepared = binding._policy.prepare(decision_frame.encode_state(frame))
+
+        def own_choice(projected, moves, actor):
+            from ai.agent import AIAgent
+            # Follow public continuations without recursively invoking learned ranking.
+            chooser = AIAgent(difficulty=getattr(agent, 'difficulty', 'master'),
+                              archetype=getattr(agent, 'archetype', 'Midrange'),
+                              opponent_archetype=getattr(agent, 'opponent_archetype', None))
+            return chooser.choose_action(projected, moves, actor).action
+
         best, best_key = None, None
         terminal_classes = []
         ranked = []
@@ -171,7 +180,7 @@ def choose_learned_action(binding, agent, view, supplied_moves, seat, *, admit, 
                 return None
             # Checked terminal forecasts outrank utility, not every possible reply.
             win, loss = unanswered_action_classification(
-                view, seat, action, settle_declared_combat=True)
+                view, seat, action, settle_declared_combat=True, own_choice_action=own_choice)
             if action['type'] in {'foretell', 'suspend'} and win is not True:
                 if answers is None:
                     answers = affordable_interactions(agent, view, seat)

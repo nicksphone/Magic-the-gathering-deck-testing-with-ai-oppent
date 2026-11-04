@@ -877,10 +877,11 @@ def unanswered_action_loses(state: MatchState, player_id: int, action: dict, *,
 
 
 def unanswered_action_classification(state: MatchState, player_id: int, action: dict, *,
-                                     settle_declared_combat=False) -> tuple[bool | None, bool | None]:
+                                     settle_declared_combat=False,
+                                     own_choice_action=None) -> tuple[bool | None, bool | None]:
     """Classify one complete forecast; a known win needs no loss question."""
     outcome = _unanswered_action_outcome(state, player_id, action,
-        settle_declared_combat=settle_declared_combat)
+        settle_declared_combat=settle_declared_combat, own_choice_action=own_choice_action)
     win = None if outcome is None else outcome == "win"
     loss = outcome == "loss" if win is False else None
     return win, loss
