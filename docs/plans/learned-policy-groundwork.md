@@ -244,6 +244,34 @@ fits would not accelerate it. Official serialization, native decision quality,
 held-out comparisons against the production heuristic, latency, privacy and
 broader supported-deck coverage remain required before completion.
 
+### Thirteen-Deck Diagnostic and Subsequent Logic Fixes
+
+A later locked diagnostic ran all 52 declared physical attempts: thirteen deck
+matchups, both focal seats and both candidate/reference arms. The reference used
+the production heuristic with no learned binding. The batch used eight concurrent
+workers and closed normally in 3,024.09 seconds; 37 games had intact natural
+outcomes and fifteen remained incomplete. No attempts were substituted or retried.
+
+| Arm | Wins | Losses | Draws | Unknown/incomplete |
+| --- | ---: | ---: | ---: | ---: |
+| Candidate | 4 | 13 | 0 | 9 |
+| Production reference | 8 | 12 | 0 | 6 |
+
+The incomplete games are not losses, draws or successful prefixes. Seven report
+the deadline dimension; eight retain a null raw resource dimension, rather than
+an inferred explanation. This diagnostic does not establish improvement or close
+the earlier native hold. It authorizes neither live activation nor automatic
+ingestion of development games into training. Private traces remain protected.
+
+Read-only review found opening selections that retained five lands while removing
+both available creatures, and healthy friendly-creature removal for life gain.
+The subsequent joint retained-hand fix is published as `7fd7c17e`; its complete
+18-module pure regression gate passed 490 tests and thirteen subtests. Friendly
+removal and empty-payoff Aura decisions remain under investigation. The diagnostic
+used the older frozen engine, so its outcomes do not qualify these later source
+changes or a newly trained policy. Thirteen deck entries also do not certify all
+profile styles or arbitrary-card play.
+
 ### C19 Development Record
 
 New supervision separates conditional heuristic preferences from observed
