@@ -753,6 +753,18 @@ class AIAgent:
                     if kind == "topdeck_reveal_creature" and not selected:
                         selected = ["__none__"]
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": selected}, reasoning=f"Choose {kind} cards at resolution")
+            if choice["kind"] == "legend_keeper":
+                def keeper_value(cid):
+                    card = state.cards[cid]
+                    ready = not card.tapped and (
+                        "Creature" not in effective_types(state, card)
+                        or not card.summoning_sick or has_keyword(state, cid, "haste"))
+                    return (self._sacrifice_loss(state, cid, player_id), card.loyalty or 0,
+                            cid in state.attackers, ready, not card.tapped, cid)
+
+                selected = max(options, key=keeper_value)
+                return AIDecision(action={"type": "choose_mechanic", "card_ids": [selected]},
+                                  reasoning="Keep the most valuable legend; preserve combat readiness on comparable copies")
             if choice["kind"] == "sacrifice":
                 options.sort(key=lambda cid: (self._sacrifice_loss(state, cid, player_id), cid))
                 return AIDecision(action={"type": "choose_mechanic", "card_ids": options[:choice["count"]]}, reasoning="Sacrifice least valuable permanents")
