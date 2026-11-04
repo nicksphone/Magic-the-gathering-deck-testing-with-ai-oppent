@@ -209,8 +209,25 @@ terms and 8,513 components at two points, the declared finite differences and
 the original-loss offset. All 16 tensors were restored exactly, with unchanged
 source/inputs/frozen tensors and clean process/lease closure. Separate real-clock
 controls also verified positive-budget admission and reserve refusal; those are
-source-slice checks, not a full fit. The revised fit has not run, and no new
-candidate or gameplay improvement is claimed.
+source-slice checks, not a full fit.
+
+A fresh revised fit subsequently finished normally after 1,297.05 work-CPU
+seconds and 1,303.79 wall seconds. It accepted two updates, reducing the training
+objective from 3.733 to 3.108 while retaining the original numerical gates.
+Admission refused a third proposal with positive remaining time, allowing fresh
+final certification and clean process/lease closure. All 16 returned tensors
+matched the final certificate; the 11 frozen tensors, source and inputs remained
+unchanged. This is a new clean execution, not reuse of the earlier aborted run.
+Solver iteration-limit returns are not a claim of convergence.
+
+The actual official save/load round trip then passed in 19.13 seconds. All 16
+binary64 tensors were preserved exactly, with one external checkpoint, save and
+load call, no inference or optimizer calls, and clean guard/resource closure.
+Provenance records two accepted blocks and 7,807 physical training rows, not that
+many independent games. The sole candidate was fixed from TRAIN evidence before
+reading its new development results. Native decision tests and game comparisons
+are still pending; lower training loss and successful serialization do not prove
+better play or authorize live activation.
 
 Independent simulation batches support up to eight workers, with fresh memory
 and disk admission before each spawn. A single fit remains sequential; duplicate
