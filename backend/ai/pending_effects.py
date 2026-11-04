@@ -718,7 +718,8 @@ def _has_forecast_response(projected, player_id, rules):
 
 def _settle_announced_stack(projected: MatchState, *, player_id: int | None = None,
                            own_choice_action=None, opaque_hand_choices=False,
-                           settle_declared_combat=False, stop_at_private_action_frontier=False) -> bool:
+                           settle_declared_combat=False, stop_at_private_action_frontier=False,
+                           retained_stack: tuple[str, ...] | None = None) -> bool:
     rules = RulesEngine()
     combat = settle_declared_combat is True
     if combat and player_id not in projected.players:
@@ -728,6 +729,16 @@ def _settle_announced_stack(projected: MatchState, *, player_id: int | None = No
     initial_hand = set(projected.players[player_id].hand) if stop_at_private_action_frontier else set()
     # ponytail: bounded projection; unknown choices/loops keep backup options.
     for _ in range(128):
+        if retained_stack is not None:
+            if projected.winner is not None:
+                return True
+            current = tuple(item.id for item in projected.stack)
+            if current == retained_stack:
+                return not (projected.pending_mechanic_choice or projected.pending_replacement_choice
+                            or projected.pending_trigger_order)
+            # Older frames are a hard frontier, never a forecast of their hidden effects.
+            if len(current) <= len(retained_stack) or current[:len(retained_stack)] != retained_stack:
+                return False
         # A newly acquired hand can answer the remaining stack. Passing that
         # opportunity is not an immediate hard-loss proof, even for opaque cards.
         if (stop_at_private_action_frontier and projected.winner is None

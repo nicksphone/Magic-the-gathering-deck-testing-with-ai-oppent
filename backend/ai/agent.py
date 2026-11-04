@@ -4266,7 +4266,8 @@ class AIAgent:
             action.get('targets') or {}, report_unsupported=False)
         if self._friendly_removal_instruction(effect, payload, target.id) is not True:
             return False
-        from ai.pending_effects import friendly_destruction_profit, _projection_copy
+        from ai.pending_effects import (friendly_destruction_profit, _projection_copy,
+                                        _settle_announced_stack, _public_destruction_material)
         choice_agent = AIAgent(difficulty=self.difficulty, archetype=self.archetype,
                               opponent_archetype=self.opponent_archetype)
         profitable = friendly_destruction_profit(state, player_id, action,
@@ -4276,8 +4277,30 @@ class AIAgent:
         if profitable is False:
             return True
         effect_key = payload.get('effect_key') if effect == 'conditional_instruction' else effect
-        if effect_key != 'deal_damage':
+        if effect_key not in {'deal_damage', 'destroy_permanent', 'exile'}:
             return False
+        # An older public frame can make losing this object useful (for example, pending theft).
+        if len(state.stack) > 128 or any(item.source_card_id == target.id for item in state.stack):
+            return False
+        references = [(item.payload, 0) for item in state.stack]
+        budget = 128
+        while references:
+            if budget <= 0:
+                return False
+            budget -= 1
+            value, depth = references.pop()
+            if depth > 8 or isinstance(value, str) and value == target.id:
+                return False
+            if isinstance(value, dict):
+                if len(value) * 2 > budget:
+                    return False
+                references.extend((child, depth + 1) for pair in value.items() for child in pair)
+            elif isinstance(value, (list, tuple)):
+                if len(value) > budget:
+                    return False
+                references.extend((child, depth + 1) for child in value)
+            elif value is not None and type(value) not in (str, int, float, bool):
+                return False
         from rules_engine.action_validation import ActionRejected, checked_action
         rules = RulesEngine()
         try:
@@ -4289,6 +4312,7 @@ class AIAgent:
                 or len(projected.stack) != len(original_stack) + 1):
             return False
         announced = projected.stack[-1].id
+        extended_prefix = effect_key != 'deal_damage'
         # Stop before older effects or any unresolved choice/payoff; never guess a library continuation.
         while projected.stack and projected.stack[-1].id == announced:
             if projected.pending_mechanic_choice or projected.pending_trigger_order or projected.pending_replacement_choice:
@@ -4297,6 +4321,10 @@ class AIAgent:
                 rules.take_action(projected, projected.priority_player, {'type': 'pass_priority'}, reject_invalid=True)
             except ActionRejected:
                 return False
+        if tuple(item.id for item in projected.stack) != original_stack and projected.winner is None:
+            if not _settle_announced_stack(projected, retained_stack=original_stack):
+                return False
+            extended_prefix = True
         if projected.winner is not None:
             return projected.winner != player_id
         if (tuple(item.id for item in projected.stack) != original_stack
@@ -4308,6 +4336,27 @@ class AIAgent:
                 or projected.players[3-player_id].hand != state.players[3-player_id].hand
                 or projected.players[player_id].hand != expected_hand):
             return False
+        if extended_prefix:
+            if target.id in state.temporary_control_changes:
+                return False
+            before = _public_destruction_material(state, player_id)
+            after = _public_destruction_material(projected, player_id)
+            if before is None or after is None:
+                return False
+            opponent = 3-player_id
+            old, new = before['boards'][player_id], after['boards'][player_id]
+            if (set(new) - set(old) or before['boards'][opponent] != after['boards'][opponent]
+                    or before['resources'] != after['resources']
+                    or after['life'][player_id] > before['life'][player_id]
+                    or after['life'][opponent] < before['life'][opponent]
+                    or after['graveyard'] - before['graveyard'] - {action['card_id'], target.id}
+                    or after['mana'][opponent] != before['mana'][opponent]
+                    or any(n > before['mana'][player_id].get(color, 0)
+                           for color, n in after['mana'][player_id].items())):
+                return False
+            for key in set(old) & set(new):
+                if old[key][0] != new[key][0] or (old[key][1] and not new[key][1]):
+                    return False
         return (projected.cards[target.id].zone != Zone.BATTLEFIELD
                 and evaluate_board(projected, player_id) < evaluate_board(state, player_id))
 
