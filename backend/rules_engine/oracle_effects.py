@@ -254,19 +254,26 @@ def optional_land_instruction_candidate(instruction: str) -> bool:
 
 
 def compile_optional_land_instruction(instruction: str) -> tuple[str, dict[str, Any]] | None:
-    """Recognize the complete optional own-hand clause, with an ordered draw."""
+    """Recognize a complete ordered draw/hand-land/selected-subtype instruction."""
     body = re.sub(r'\s+', ' ', instruction.strip()).lower()
-    draw = None
-    if body.startswith('draw '):
-        prefix, separator, body = body.partition('. ')
-        draw = compile_draw_life_instruction(prefix)
-        if not separator or draw is None or draw[0] != 'draw_cards':
-            return None
-    land = re.fullmatch(r'you may put (?:a|one) land card from your hand onto the battlefield'
-                        r'(?P<tapped> tapped)?\.?', body)
+    number = r'(?:a|an|one|two|three|four|five|six|seven|eight|nine|ten|\d+)'
+    land = re.fullmatch(
+        r'(?:(?P<draw>draw [^.]+?)(?:, then|\.) )?'
+        r'you may put (?:a|one) land card from your hand onto the battlefield'
+        r'(?P<tapped> tapped)?(?:\. if you put (?:a|an) (?P<subtype>[a-z\x27 -]+) '
+        r'onto the battlefield this way, you gain (?P<life>' + number + r') life)?\.?', body)
     if land is None:
         return None
+    draw = compile_draw_life_instruction(land['draw']) if land['draw'] else None
+    if land['draw'] and (draw is None or draw[0] != 'draw_cards'):
+        return None
     data = {'optional': True, 'tapped': bool(land['tapped'])}
+    if land['subtype']:
+        from rules_engine.land_types import LAND_TYPES
+        subtype = next((kind for kind in LAND_TYPES if kind.lower() == land['subtype']), None)
+        if subtype is None:
+            return None
+        data['gain_life_if_put_subtype'] = {'subtype': subtype, 'amount': _parse_count_token(land['life'])}
     if draw is None:
         return 'put_land_from_hand', data
     return 'effect_sequence', {'effects': [

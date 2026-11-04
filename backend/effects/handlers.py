@@ -1801,6 +1801,13 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     This is distinct from a normal land play: it does not consume the
     controller's land-play allowance and the effect may enter the land tapped.
     """
+    condition = payload.get('gain_life_if_put_subtype')
+    if condition is not None:
+        from rules_engine.land_types import LAND_TYPES
+        if (type(condition) is not dict or set(condition) != {'subtype', 'amount'}
+                or type(condition['subtype']) is not str or condition['subtype'] not in LAND_TYPES
+                or type(condition['amount']) is not int or condition['amount'] < 0):
+            raise ValueError('Invalid conditional hand-land entry')
     player = state.players[controller]
     eligible = [cid for cid in player.hand if cid in state.cards
                 and state.cards[cid].owner == controller and state.cards[cid].zone == Zone.HAND
@@ -1828,6 +1835,7 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     if reference is not None and reference != [object_incarnation(state.cards[land_id]),
                                                state.cards[land_id].zone_change_sequence]:
         return
+    from_reference = [object_incarnation(state.cards[land_id]), state.cards[land_id].zone_change_sequence]
     if pause_for_land_entries(state, controller, [land_id], "put_land_from_hand", {**payload, "land_id": land_id}):
         return
     land = state.cards[land_id]
@@ -1839,11 +1847,25 @@ def put_land_from_hand(state: MatchState, controller: int, payload: dict) -> Non
     land.summoning_sick = True
     land.entered_turn = state.turn
     assign_static_order_on_battlefield_entry(state, land_id)
+    receipt = None
+    if condition is not None:
+        from rules_engine.land_types import has_land_type
+        receipt = {'card_id': land_id, 'controller': controller, 'from_reference': from_reference,
+                   'entry_reference': [object_incarnation(land), land.zone_change_sequence],
+                   'subtype': condition['subtype'],
+                   'matched_subtype': has_land_type(state, land, condition['subtype'])}
     emit_event(state, "enters_battlefield", {"card_id": land_id, "controller": controller})
     state.log.append(
         f"{player.name} puts {land.name} from hand onto the battlefield"
         f"{' tapped' if land.tapped else ''}."
     )
+    if receipt is not None and receipt['matched_subtype']:
+        from effects.registry import resolve_effect
+        context = {key: payload[key] for key in ('__source_card_id', '__source_lki', '__resolving_item')
+                   if key in payload}
+        resolve_effect(state, controller, 'gain_life', {
+            **context, 'amount': condition['amount'], 'target_player': controller,
+            '__put_land_receipt': receipt})
 
 
 def cast_from_graveyard(state: MatchState, controller: int, payload: dict) -> None:

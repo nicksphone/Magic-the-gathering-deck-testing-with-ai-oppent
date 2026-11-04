@@ -2457,12 +2457,19 @@ def _trigger_from_oracle(
         from rules_engine.oracle_effects import (compile_optional_land_instruction,
                                                  optional_land_instruction_candidate)
         if any(optional_land_instruction_candidate(body) for _, body in self_instructions):
-            clause, instruction = self_instructions[0]
-            compiled = compile_optional_land_instruction(instruction) if len(self_instructions) == 1 else None
+            entries = self_instructions
+            if event == 'enters_battlefield':
+                entries = []
+                for line in raw_entry.splitlines():
+                    if re.fullmatch(self_entry_pattern, without_reminder_text(line).strip(), re.I):
+                        raw_match = re.fullmatch(self_entry_pattern, line.strip(), re.I)
+                        entries.append((line.strip(), raw_match[1] if raw_match else None))
+            instruction = entries[0][1] if len(entries) == 1 else None
+            compiled = compile_optional_land_instruction(instruction) if instruction is not None else None
             key, data = compiled if compiled is not None else ('noop', {})
-            data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in self_instructions)
+            data['__trigger_full_clause'] = '\n'.join(clause for clause, _ in entries)
             if compiled is None:
-                data['__unsupported_trigger_instruction'] = '\n'.join(body for _, body in self_instructions)
+                data['__unsupported_trigger_instruction'] = data['__trigger_full_clause']
                 state.log.append(f'Unsupported optional land trigger instruction on {source.name}: '
                                  + data['__unsupported_trigger_instruction'])
             return {'source_card_id': source_card_id, 'controller': controller,

@@ -179,7 +179,11 @@ def _normalize(action):
 def _selected_face(action):
     face = action.get('selected_face_index')
     if face is None:
-        face = (action.get('targets') or {}).get('selected_face_index')
+        targets = action.get('targets')
+        if isinstance(targets, dict):
+            face = targets.get('selected_face_index')
+        elif targets is not None and not isinstance(targets, list):
+            raise ValueError('Expected selected target mapping or display target list')
     return face or 0
 
 
