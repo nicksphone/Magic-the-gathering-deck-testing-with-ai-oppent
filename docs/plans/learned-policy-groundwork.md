@@ -203,8 +203,14 @@ host RAM fell just below the unchanged 2 GiB runtime floor. The partial check is
 not a parity pass or a reusable model. All 16 terminal tensors were verified,
 but they did not match the initializer after the interrupted perturbation;
 the frozen tensors, source and inputs remained unchanged, and process/lease
-closure passed. A fresh parity attempt requires sustained launch-memory headroom.
-The revised fit has not run and is not yet numerically qualified.
+closure passed. After a separate 60-second sampled memory-admission window, a
+fresh parity attempt passed in 143.03 seconds. It checked the same 11 gradient
+terms and 8,513 components at two points, the declared finite differences and
+the original-loss offset. All 16 tensors were restored exactly, with unchanged
+source/inputs/frozen tensors and clean process/lease closure. Separate real-clock
+controls also verified positive-budget admission and reserve refusal; those are
+source-slice checks, not a full fit. The revised fit has not run, and no new
+candidate or gameplay improvement is claimed.
 
 Independent simulation batches support up to eight workers, with fresh memory
 and disk admission before each spawn. A single fit remains sequential; duplicate
