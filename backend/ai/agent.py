@@ -24,7 +24,7 @@ from rules_engine.restrictions import card_cant_block
 from rules_engine.mana import can_pay_with_pool_and_lands, mana_value, parse_mana_cost
 from rules_engine.replacement import graveyard_destination
 from rules_engine.costs import PAY_X_LIFE_RE
-from rules_engine.oracle_effects import ALL_CREATURES_X_DEBUFF_RE, EACH_PLAYER_DRAW_RE, _parse_count_token
+from rules_engine.oracle_effects import ALL_CREATURES_X_DEBUFF_RE, EACH_PLAYER_DRAW_RE, TARGETED_DRAW_RE, _parse_count_token
 from rules_engine.oracle_text import without_reminder_text
 from rules_engine.targeting import spell_cant_be_countered, stack_object_kind
 
@@ -4662,6 +4662,35 @@ class AIAgent:
                     if all(score is not None for score in scores.values()):
                         preferred = max(sorted(allowed_players),
                                         key=lambda target: (scores[target], target == player_id))
+            elif TARGETED_DRAW_RE.fullmatch(without_reminder_text(target_text).strip()):
+                from ai.action_contract import complete_action
+                from ai.information import decision_view
+                from ai.pending_effects import simulation_checked_action, settled_public_position
+                from rules_engine.action_validation import ActionRejected
+                view = (state if getattr(state, 'ai_information_player', None) == player_id
+                        else decision_view(state, player_id, [move])[0])
+                scores = {}
+                wins = set()
+                unknown = False
+                for target in sorted(allowed_players):
+                    action = {**out, 'targets': {**targets, 'target_player': target}}
+                    try:
+                        projected = simulation_checked_action(view, self.engine, player_id, complete_action(action))
+                        settled = settled_public_position(projected, player_id, opaque_draw_counts=True)
+                    except (ActionRejected, UncertainSimulation):
+                        unknown = True
+                        continue
+                    if settled is not None:
+                        terminal = _terminal_utility(settled.winner, player_id, 100000)
+                        scores[target] = terminal if terminal is not None else evaluate_board(settled, player_id)
+                        if settled.winner == player_id:
+                            wins.add(target)
+                    else:
+                        unknown = True
+                # An unresolved private/replacement choice is not a safe draw forecast.
+                if not scores or (unknown and not wins):
+                    return {**out, '_invalid_ai_choice': True}
+                preferred = max(sorted(wins or scores), key=lambda target: (scores[target], target == player_id))
             else:
                 preferred = opponent
             targets["target_player"] = preferred if preferred in allowed_players else min(allowed_players)
