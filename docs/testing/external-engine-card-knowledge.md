@@ -75,7 +75,10 @@ The in-process protocol is **not itself a privacy boundary**: native views and
 tracked deltas contain actual hidden card data, with visibility checks separate
 from storage. A browser integration must project an explicitly actor-authorized
 view, not serialize the native object graph. That adapter, real UI choices,
-save/restart and production distribution review remain unfinished.
+save/restart and production distribution review remain unfinished. A subsequent
+[bounded actor-boundary prototype](forge-native-boundary.md) passed native
+privacy/token tests and actual human-controller land plays; it is not yet that
+production browser adapter.
 
 ## Retained Setup History
 

@@ -39,10 +39,14 @@ saved matches and private training artifacts are not modified or exposed.
 
 - [x] Audit native human-controller callbacks and hidden-card visibility before
   serializing anything for an app client; no raw `GameView` passthrough.
-- [ ] Add failing privacy/choice tests before implementing an actor-scoped adapter.
-- [ ] Prove an actual user choice reaches the native engine and updates state,
+- [x] Add failing privacy/choice tests before implementing an actor-scoped adapter.
+- [x] Prove an actual user choice reaches the native engine and updates state,
   with wrong-actor and unavailable-choice rejection and no private-zone leakage.
-- [ ] Report unresolved privacy, sideboarding, persistence and packaging gaps.
+- [x] Report unresolved privacy, sideboarding, persistence and packaging gaps.
+
+This boundary evidence uses an in-process JSON-shaped token client, not an HTTP
+or browser adapter. The two human-controller cases end by harness concession
+after the real land play. See [the exact evidence and remaining work](../../testing/forge-native-boundary.md).
 
 ## Completion Boundary
 

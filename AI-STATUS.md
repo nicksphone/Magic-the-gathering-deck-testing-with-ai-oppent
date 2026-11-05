@@ -87,14 +87,23 @@ Synthetic game traces stay protected and are not public Git fixtures.
   2-0, with actual Ramp sideboarding and conserved deck inventories. Default
   heuristic, open deck lists, constructed diagnostic sideboards; not a strategy
   quality or application-integration certificate.
+- [x] Isolated actor projection and one-use choice prototype: 26 boundary checks
+  plus two actual human-controller land plays, both seats, passed with the
+  selected unchanged upstream cases (154 total). Review found and closed a
+  virtual-count leak and request-lifetime gap. No browser/HTTP bridge is live.
 - [ ] Prototype the recommended Forge integration without changing the live app;
   prove user choices, privacy, full matches/BO3 and saved-state behavior.
 - [ ] Make a production adoption decision, including distribution/license review.
+- [ ] Verify native AI information fairness: the shuffle guard does not fence
+  all heuristics. Source review found opponent-library reads in some naming
+  routes; those were not demonstrated in the initial BO3. Client privacy and
+  fair AI observations are distinct requirements.
 
 See [the comparison and limits](docs/testing/external-engine-card-knowledge.md).
 Neither engine is integrated into the application yet. Raw Forge views are not
-safe browser payloads; an actor-authorized projection remains required. Further
-bespoke training is not the immediate priority while this shortcut is evaluated.
+safe browser payloads; the tested projection must still be integrated with real
+API authentication, complete choices and saved-state handling. Further bespoke
+training is not the immediate priority while this shortcut is evaluated.
 
 ## Next Work, In Order
 

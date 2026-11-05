@@ -76,8 +76,10 @@ classpath, including compiled classes and dependency jars. From that checkout's
 `forge/native-match`, compile and run:
 
 ```sh
+mkdir -p "$INPUT/classes" "$INPUT/home" "$INPUT/tmp"
 javac --release 17 -cp "$CP" -d "$INPUT/classes" "$INPUT/NativeMatchProbe.java"
 timeout -k 20s 600 java -Xmx2g -Djava.awt.headless=true \
+  -Duser.home="$INPUT/home" -Djava.io.tmpdir="$INPUT/tmp" -Dsentry.dsn= \
   -cp "$INPUT/classes:$CP" forge.evaluation.NativeMatchProbe "$INPUT"
 ```
 
@@ -87,3 +89,30 @@ commit generated game traces. Require exit zero **and** the
 `native_match_complete` JSON footer. The runner never assigns an outcome to
 convert a timeout or error into a draw. This is not yet an app backend or a
 browser-facing protocol.
+
+## Actor Boundary Prototype
+
+[`forge/actor-boundary`](forge/actor-boundary) contains our original
+GPL-3.0-or-later actor projection, one-use choice broker and native tests. The
+native engine, human-controller protocol and test helpers are upstream work by
+the Forge Team/Card-Forge contributors. Each source header credits them; retain
+[Forge's original license](forge/LICENSE) and upstream notices.
+
+From the pinned checkout's `forge-gui-desktop` directory, using the native
+classpath `CP` described above and an isolated copy at `BOUNDARY`:
+
+```sh
+mkdir -p "$BOUNDARY/classes" "$BOUNDARY/home" "$BOUNDARY/tmp"
+javac --release 17 -cp "$CP" -d "$BOUNDARY/classes" "$BOUNDARY/"*.java
+timeout -k 15s 360 java -Xmx2g -Djava.awt.headless=true \
+  -Duser.home="$BOUNDARY/home" -Djava.io.tmpdir="$BOUNDARY/tmp" -Dsentry.dsn= \
+  --add-opens java.base/java.lang=ALL-UNNAMED \
+  -cp "$BOUNDARY/classes:$CP" org.testng.TestNG \
+  -testclass forge.evaluation.ActorBoundaryTest,forge.evaluation.NativeHumanBoundaryTest,forge.net.embedded.ProtocolGuiGameInProcessTest,forge.ai.simulation.GameSimulationTest,forge.gamesimulationtests.ReplacementHandlerTest \
+  -d "$BOUNDARY/results"
+```
+
+Our actual run used the existing network-isolated sandbox and separate home and
+temp directories. Keep generated native logs/results protected. These tests do
+not expose raw native objects to a browser, certify all native dialogs or switch
+the running application. Read [the evidence and remaining integration work](../../docs/testing/forge-native-boundary.md).
