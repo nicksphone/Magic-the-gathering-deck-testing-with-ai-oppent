@@ -60,6 +60,9 @@ def analyze_deck(mainboard: list[dict]) -> dict:
     creatures = [card for card in expanded_cards if "creature" in card["type_line"].split("//", 1)[0].lower()]
     creature_like = len(creatures)
     avg_cmc = sum(_cmc(card["mana_cost"]) for card in expanded_cards) / total_cards
+    # Lands dilute the reported deck average, but not the spells' curve.
+    spell_avg_cmc = (sum(_cmc(card["mana_cost"]) for card in expanded_cards if not is_land_card(card))
+                     / max(1, len(expanded_cards) - land_count))
     cheap_spells = sum(1 for card in expanded_cards if card["type_line"] and _cmc(card["mana_cost"]) <= 2 and not is_land_card(card))
     expensive_spells = sum(1 for card in expanded_cards if _cmc(card["mana_cost"]) >= 5)
     def tagged(*tags):
@@ -134,12 +137,12 @@ def analyze_deck(mainboard: list[dict]) -> dict:
         score["Midrange"] += 1
     if creature_like / total_cards <= 0.18:
         score["Control"] += 1
-    if avg_cmc <= 2.4:
+    if spell_avg_cmc <= 2.4:
         score["Aggro"] += 1
         score["Tempo"] += 1
         if cheap_spells >= total_cards * 0.35:
             score["Burn"] += 1
-    if avg_cmc >= 3.4:
+    if spell_avg_cmc >= 3.4:
         score["Control"] += 1
         score["Ramp"] += 1
     if draw_cards + counter_cards + removal_cards >= max(6, total_cards // 4):
@@ -164,7 +167,7 @@ def analyze_deck(mainboard: list[dict]) -> dict:
     if cheap_spells >= max(8, total_cards // 3) and creature_like >= total_cards * 0.25:
         score["Aggro"] += 1
         score["Burn"] += 1
-    if 2.2 <= avg_cmc <= 3.8 and creature_like >= total_cards * 0.25 and draw_cards + removal_cards >= 6:
+    if 2.0 <= spell_avg_cmc <= 3.8 and creature_like >= total_cards * 0.25 and draw_cards + removal_cards >= 6:
         score["Midrange"] += 2
     if token_cards >= 6 and tagged("anthem"):
         score["Tokens"] += 1
@@ -242,7 +245,7 @@ def _summarize_card_metadata(meta: dict, item: dict) -> tuple[str, str, str, str
         type_line = " // ".join([part for part in [type_line, " | ".join(face_types)] if part]).strip()
     if face_oracles:
         oracle_text = " ".join([part for part in [oracle_text, " ".join(face_oracles)] if part]).strip()
-    if not mana_cost and face_mana_costs:
+    if face_mana_costs and (not mana_cost or ("//" in mana_cost and not split_like)):
         mana_cost = _derive_face_based_mana_cost(face_mana_costs, split_like)
     if not name and face_names:
         name = " // ".join(face_names)
