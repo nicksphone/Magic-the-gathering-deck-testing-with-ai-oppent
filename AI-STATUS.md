@@ -76,8 +76,8 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 | Matchup | Evidence | What It Does Not Prove |
 | --- | --- | --- |
 | Burn / White Weenie | Two fresh `ecda33bd` games finished naturally, with the deck seats reversed; 251 and 477 accepted moves | All Burn/WW decisions are good, or either strategy is finished |
-| Blue Control / Midrange | One fresh `ecda33bd` game finished naturally in 352 accepted moves; the reverse pairing hit its 300-second CPU limit and remains incomplete | Whole-pair quality or performance acceptance |
-| Tribal / Tempo | Two earlier `fffcca07` games finished naturally in 204 and 323 moves | Current-source acceptance or strategic superiority |
+| Blue Control / Midrange | A fresh `812c91bc` Midrange/Control game finished naturally in 695 accepted moves; all 695 frames/actions replayed exactly. An earlier reverse `ecda33bd` game finished in 352 moves | A current matched pair, whole-strategy acceptance or a controlled speedup claim |
+| Tribal / Tempo | Two fresh `812c91bc` games finished naturally in 302 and 298 moves with deck seats reversed; all frames/actions replayed exactly | Held-out strategic superiority or BO3 acceptance |
 | Ramp and other complex strategies | Not current-qualified by the evidence above | Completion inferred from shared engine support |
 
 Every accepted action and actor-visible hand is recorded. One new Burn/WW game
@@ -85,10 +85,15 @@ has already replayed exactly through all 251 decision frames. Its wider quality
 review is not closed; no zero-error gameplay claim is inferred from completion.
 Synthetic game traces stay protected and are not public Git fixtures.
 
-The incomplete Midrange/Blue Control prefix has now replayed through all 584
+The historical incomplete Midrange/Blue Control prefix replayed through all 584
 recorded actor frames. At that frontier the next choice took 0.1104 seconds,
-not a demonstrated stall. The original game remains incomplete; exporter view
-reuse and a single-position timing do not close full-game performance acceptance.
+not a demonstrated stall. The new 695-action run preserves that input/action
+prefix and finishes with a larger declared budget; the original censored run is
+not relabeled as completed. See [current gameplay review](docs/testing/current-ai-gameplay-812.md).
+
+The three current games' available decision screens raised no flags. One Control
+block producer returned an uncertain result, so that metric remains unavailable,
+not a certified zero. These heuristic screens do not establish optimal play.
 
 ## Foundation Evaluation
 
