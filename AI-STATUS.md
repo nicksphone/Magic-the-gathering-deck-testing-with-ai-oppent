@@ -1,6 +1,6 @@
 # AI Status Checklist
 
-Updated: 2026-11-05 07:30 UTC. Gameplay source: `ecda33bd`.
+Updated: 2026-11-05. Gameplay source: `ecda33bd`.
 
 **Status: working heuristic AI with implemented improvements; playing strength
 and AI release acceptance are NOT complete. No reliable percentage estimate.**
@@ -83,13 +83,18 @@ Synthetic game traces stay protected and are not public Git fixtures.
   test counts are not a head-to-head AI ranking.
 - [x] Forge's additional in-process human-controller callback check passed.
 - [x] README/source attribution and original license texts are retained.
+- [x] One isolated native Forge BO3 completed naturally: Dimir Control beat Ramp
+  2-0, with actual Ramp sideboarding and conserved deck inventories. Default
+  heuristic, open deck lists, constructed diagnostic sideboards; not a strategy
+  quality or application-integration certificate.
 - [ ] Prototype the recommended Forge integration without changing the live app;
   prove user choices, privacy, full matches/BO3 and saved-state behavior.
 - [ ] Make a production adoption decision, including distribution/license review.
 
 See [the comparison and limits](docs/testing/external-engine-card-knowledge.md).
-Neither engine is integrated into the application yet. Further bespoke training
-is not the immediate priority while this foundation shortcut is evaluated.
+Neither engine is integrated into the application yet. Raw Forge views are not
+safe browser payloads; an actor-authorized projection remains required. Further
+bespoke training is not the immediate priority while this shortcut is evaluated.
 
 ## Next Work, In Order
 

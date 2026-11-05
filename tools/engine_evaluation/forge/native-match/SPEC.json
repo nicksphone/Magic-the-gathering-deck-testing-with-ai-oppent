@@ -1,0 +1,74 @@
+{
+  "best_of": 3,
+  "builtin_source_sha256": "236bc11807d9aeea3134c2b1ec9d1fa73a29d9dc366bf0e11a79ed605a14c0b3",
+  "decks": [
+    {
+      "file": "ramp.dck",
+      "main": {
+        "Arboreal Grazer": 4,
+        "Cultivate": 4,
+        "Fatal Push": 4,
+        "Forest": 10,
+        "Go for the Throat": 4,
+        "Growth Spiral": 4,
+        "Hydroid Krasis": 1,
+        "Migration Path": 4,
+        "Nissa, Who Shakes the World": 2,
+        "Storm the Festival": 1,
+        "Swamp": 4,
+        "The Meathook Massacre": 4,
+        "Topiary Stomper": 4,
+        "Tropical Island": 4,
+        "Ugin, the Spirit Dragon": 2,
+        "Underground Sea": 4
+      },
+      "main_origin": "unchanged application builtin",
+      "name": "Ramp",
+      "sideboard": {
+        "Disdainful Stroke": 2,
+        "Duress": 4,
+        "Mystical Dispute": 2,
+        "Negate": 4,
+        "Return to Nature": 3
+      },
+      "sideboard_origin": "constructed diagnostic list, not tournament provenance"
+    },
+    {
+      "file": "dimir-control.dck",
+      "main": {
+        "Consider": 4,
+        "Counterspell": 4,
+        "Drown in the Loch": 4,
+        "Fatal Push": 4,
+        "Go for the Throat": 4,
+        "Island": 16,
+        "Memory Deluge": 4,
+        "Sheoldred, the Apocalypse": 3,
+        "Swamp": 8,
+        "The Meathook Massacre": 3,
+        "Torrential Gearhulk": 2,
+        "Underground Sea": 4
+      },
+      "main_origin": "unchanged application builtin",
+      "name": "Dimir Control",
+      "sideboard": {
+        "Disdainful Stroke": 3,
+        "Duress": 4,
+        "Extinction Event": 3,
+        "Go Blank": 2,
+        "Negate": 3
+      },
+      "sideboard_origin": "constructed diagnostic list, not tournament provenance"
+    }
+  ],
+  "engine_pin": "61e9442c433711a82258daca3236f936a1d6f70e",
+  "games_to_win": 2,
+  "heap_bytes": 2147483648,
+  "live_application_changed": false,
+  "max_natural_games": 5,
+  "native_AI": "Default heuristic, Monte Carlo disabled for initial lifecycle proof",
+  "no_forced_results": true,
+  "open_decklists": true,
+  "seed": 4391731612967343281,
+  "wall_bound_seconds": 600
+}

@@ -57,3 +57,33 @@ matches for the shipped 155-card reference plus 32 harder cards. XMage basic
 lands live in its core module, not `Mage.Sets`. Presence is not a gameplay pass.
 
 See [the results and limits](../../docs/testing/external-engine-card-knowledge.md).
+
+## Native Forge BO3 Probe
+
+[`forge/native-match/NativeMatchProbe.java`](forge/native-match/NativeMatchProbe.java)
+is our original GPL-3.0-or-later caller of the Forge Team's native match engine,
+not our own card/rules implementation. Its source header credits the upstream
+authors and exact revision. The [original Forge license](forge/LICENSE) applies
+to this separately marked probe; retain it and the upstream notices.
+
+The accompanying `SPEC.json` and `.dck` files use the app's unchanged Ramp and
+Dimir Control main decks. The sideboards are constructed diagnostic lists, not
+tournament-provenance lists. Deck lists are explicitly public for this check.
+
+After building the pinned Forge checkout, set `CP` to its complete native test
+classpath, including compiled classes and dependency jars. From that checkout's
+`forge-gui-desktop` directory, with `INPUT` an isolated writable copy of
+`forge/native-match`, compile and run:
+
+```sh
+javac --release 17 -cp "$CP" -d "$INPUT/classes" "$INPUT/NativeMatchProbe.java"
+timeout -k 20s 600 java -Xmx2g -Djava.awt.headless=true \
+  -cp "$INPUT/classes:$CP" forge.evaluation.NativeMatchProbe "$INPUT"
+```
+
+Our observed run additionally used the existing network-isolated sandbox and
+separate home/temp directories. Keep `game-logs.private.jsonl` protected; do not
+commit generated game traces. Require exit zero **and** the
+`native_match_complete` JSON footer. The runner never assigns an outcome to
+convert a timeout or error into a draw. This is not yet an app backend or a
+browser-facing protocol.

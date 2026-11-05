@@ -52,6 +52,31 @@ behavior and packaged startup. The current app and saved data remain untouched
 until those checks justify a cutover. No Rust rewrite or new custom training fit
 was needed for this evaluation.
 
+## First Complex Native Match
+
+An isolated Forge probe subsequently completed an actual first-to-two-wins
+series using the unchanged app Ramp and Dimir Control main decks, with explicitly
+constructed 15-card diagnostic sideboards and open deck lists. Dimir Control won
+2-0 through native life-total outcomes: games lasted 48 and 28 turns, taking
+9.113 and 2.631 seconds inside `startGame`, respectively. This is one series,
+not a matched performance comparison or proof of strong play.
+
+Before game two, Forge sideboarded four Fatal Push out of Ramp and four Duress
+in. Both players' complete main-plus-sideboard card multisets were preserved.
+The probe used the Default heuristic with Monte Carlo disabled. It called the
+native match API directly, not the CLI's timeout-to-draw fallback. Exit zero and
+the actual `native_match_complete` footer were both verified.
+
+The [credited runner and public inputs](../../tools/engine_evaluation/README.md#native-forge-bo3-probe)
+are published; generated per-move logs remain in protected evidence storage.
+Neither upstream engine production source nor the live app was changed.
+
+The in-process protocol is **not itself a privacy boundary**: native views and
+tracked deltas contain actual hidden card data, with visibility checks separate
+from storage. A browser integration must project an explicitly actor-authorized
+view, not serialize the native object graph. That adapter, real UI choices,
+save/restart and production distribution review remain unfinished.
+
 ## Retained Setup History
 
 The first source-name lookup missed XMage's five basic lands because they are
