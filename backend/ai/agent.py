@@ -3722,9 +3722,34 @@ class AIAgent:
                     pass
         return score
 
-    def _select_mode_text(self, state: MatchState, card, modes: list[str], player_id: int) -> str:
+    def _select_mode_text(self, state: MatchState, card, modes: list[str], player_id: int, *, move: dict | None = None) -> str:
         if not modes:
             return ""
+        if len(modes) == 1:
+            return modes[0]
+        base = move or {'type': 'cast_spell', 'card_id': card.id}
+        for mode in modes:
+            if (not isinstance(state, MatchState)
+                    or not TARGETED_DRAW_RE.fullmatch(without_reminder_text(mode).strip())):
+                continue
+            from ai.action_contract import complete_action
+            from ai.information import decision_view
+            from ai.pending_effects import simulation_checked_action, settled_public_position
+            from rules_engine.action_validation import ActionRejected
+            candidate = {**base, 'targets': {**(base.get('targets') or {}), 'mode_text': mode}}
+            view = (state if getattr(state, 'ai_information_player', None) == player_id
+                    else decision_view(state, player_id, [candidate])[0])
+            try:
+                action = self._materialize_action(view, candidate, player_id)
+                if action.get('_invalid_ai_choice'):
+                    continue
+                projected = simulation_checked_action(view, self.engine, player_id, complete_action(action))
+                settled = settled_public_position(projected, player_id, opaque_draw_counts=True)
+            except (ActionRejected, UncertainSimulation):
+                continue
+            # Only a proved win outranks mode heuristics; preserve announced targets and costs.
+            if settled is not None and settled.winner == player_id:
+                return mode
         scored = [(self._score_mode_text(state, card, mode, player_id), idx, mode) for idx, mode in enumerate(modes)]
         scored.sort(key=lambda item: (item[0], -item[1]), reverse=True)
         best_score, _, best_mode = scored[0]
@@ -4562,7 +4587,8 @@ class AIAgent:
             if hints.get("choose_two_modes"):
                 targets["mode_texts"] = self._select_mode_texts(state, card, available_modes, player_id)
             else:
-                targets["mode_text"] = self._select_mode_text(state, card, available_modes, player_id)
+                targets["mode_text"] = self._select_mode_text(
+                    state, card, available_modes, player_id, move={**out, 'targets': targets})
         if targets.get("mode_text") or targets.get("mode_texts"):
             from rules_engine.cast_choice import build_cast_hints
 
