@@ -34,6 +34,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   The retained 102.60-second decision chose the same checked attack in 11.31
   seconds. This component is live on `f9b3d123`; overall practical performance
   remains open. See [the measured scope](docs/testing/master-combat-budget.md).
+- [x] **Stop discarded search work:** after a denied combat expansion, private
+  strategic searches stop instead of continuing work the root will discard.
+  Previously checked candidates and ordinary legal fallback remain usable;
+  difficulty and allowances are unchanged. Affected cohorts passed 682 tests
+  plus six subtests and 114 HTTP tests. The retained decision took 6.75 seconds;
+  this follow-up is not live yet. See [scope and limits](docs/testing/post-denial-speculation.md).
 - [x] Spell-curve classification no longer diluted by the land count (`fffcca07`).
 - [x] Ordinary targeted draw spells compare actual legal recipients instead of
   defaulting to the opponent (`ecda33bd`). The affected eight whole modules
@@ -87,8 +93,9 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   removes the reproduced minute-long expansion on a retained position, but one
   mirrored Master series still reached the original CPU limit in game three at
   1-1. A separate 64-unit development override also reached that limit and was
-  not promoted. The next patch targets work performed after sticky denial,
-  not another arbitrary allowance reduction.
+  not promoted. Stopping work after sticky denial is now implemented and tested,
+  but the same-budget reversed-seat series still reached its limit. A distinct
+  longer-limit outcome check does not replace that incomplete comparison.
 - [ ] **BO3 strategy:** sideboarding and matchup-prior code exist, but current
   measured series quality and a completed comparison matrix remain unfinished.
 - [ ] **No-regression comparison:** complete matched, source-pinned old/new games

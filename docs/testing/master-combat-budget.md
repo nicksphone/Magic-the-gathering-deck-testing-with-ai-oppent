@@ -94,9 +94,11 @@ to the source default or live app, and it is not an approved learned model.
 
 A follow-up diagnostic observed 79 of 102 materializations beginning after
 sticky denial, including all 63 repeated materializations. Instrumented timings
-are not production savings. The next scoped correction must stop discarded
-speculation while preserving completed incumbents, ordinary legal fallback and
-the shared learned-ranking route; those properties remain to be qualified.
+are not production savings. The [post-denial correction](post-denial-speculation.md)
+now stops discarded speculation while preserving completed incumbents, ordinary
+legal fallback and the shared learned-ranking route. Its affected cohorts passed
+682 tests plus six subtests and 114 HTTP tests; it is not live yet. The same-budget
+reverse comparison remains incomplete, so overall performance acceptance is open.
 General Forge adoption and reliable human-choice replay remain separate,
 unfinished work.
 

@@ -1207,6 +1207,8 @@ class AIAgent:
         shortlist = _shortlist_with_priority_pass(self._rank_moves(state, legal_moves, player_id),
                                                  legal_moves, beam_limit)
         for mv in shortlist:
+            if not combat_expansion_available():
+                break
             mat = self._materialize_action(state, mv, player_id)
             if not combat_expansion_available():
                 break
@@ -1221,7 +1223,12 @@ class AIAgent:
         for mv in candidates:
             if not combat_expansion_available():
                 break
-            score = self._strategic_line_score(state, mv, player_id, depth=search_depth)
+            try:
+                score = self._strategic_line_score(state, mv, player_id, depth=search_depth)
+            except UncertainSimulation:
+                if not combat_expansion_available():
+                    break
+                raise
             if not combat_expansion_available():
                 break
             from ai.action_contract import complete_action
@@ -1362,18 +1369,37 @@ class AIAgent:
             return None
 
     def _strategic_line_score(self, state: MatchState, move: dict, player_id: int, depth: int) -> float:
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         try:
             sim = planning_copy(state)
             simulation_take_action(self.engine, sim, player_id, move, reject_invalid=True)
         except Exception:
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             return -9999.0
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         combat_outcome = self._complete_strategic_combat_leaf(sim, player_id)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         if combat_outcome is not None:
-            return (self._strategic_position_score(combat_outcome, player_id)
-                    + self._instant_value_reservation(state, move, player_id))
+            score = self._strategic_position_score(combat_outcome, player_id)
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
+            score += self._instant_value_reservation(state, move, player_id)
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
+            return score
         score = self._strategic_position_score(sim, player_id)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         score += self._stack_two_ply_value(sim, player_id, score)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         score += self._instant_value_reservation(state, move, player_id)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         plan = selection_activation_plan(state, move, player_id)
         score -= 6 if plan is not None and plan["loses_known_interaction"] else 0
         return self._strategic_state_score(sim, player_id, depth, score)
@@ -1437,29 +1463,52 @@ class AIAgent:
 
     def _strategic_state_score(self, sim: MatchState, player_id: int, depth: int, score: float) -> float:
         """Continue the chosen, already executed prefix from its original perspective."""
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         if depth <= 0 or sim.winner is not None:
             combat_outcome = self._complete_strategic_combat_leaf(sim, player_id)
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             if combat_outcome is not None:
-                return (score - self._strategic_position_score(sim, player_id)
-                        + self._strategic_position_score(combat_outcome, player_id))
+                previous = self._strategic_position_score(sim, player_id)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
+                current = self._strategic_position_score(combat_outcome, player_id)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
+                return score - previous + current
             return score
         pid = sim.priority_player
         available = self.engine.legal_moves(sim, pid)
         legal = self._rank_moves(sim, available, pid, shallow=True)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         if not legal:
             return score
         beam: list[tuple[float, MatchState]] = []
         for cand in _shortlist_with_priority_pass(legal, available, 6):
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             try:
                 materialized = self._materialize_action(sim, cand, pid)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 if materialized.get("_invalid_ai_choice") or self._is_unplayable_x_action(materialized):
                     continue
                 nxt = planning_copy(sim)
                 simulation_take_action(self.engine, nxt, pid, materialized, reject_invalid=True)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 val = self._strategic_position_score(nxt, player_id)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 val += self._stack_two_ply_value(nxt, player_id, val)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 beam.append((val, nxt))
             except Exception:
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 continue
         if not beam:
             return score
@@ -1471,6 +1520,8 @@ class AIAgent:
 
     def _stack_two_ply_value(self, state: MatchState, player_id: int, baseline_score: float | None = None) -> float:
         """Depth-limited stack planner for counter wars; only runs while stack is active."""
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         stack_items = list(getattr(state, "stack", []) or [])
         if not stack_items or getattr(state, "winner", None) is not None:
             return 0.0
@@ -1478,33 +1529,51 @@ class AIAgent:
         legal = self.engine.legal_moves(state, pid)
         if not legal:
             return 0.0
-        top_actions = self._strategic_top_actions(state, legal, pid, limit=3)
+        top_actions = self._strategic_top_actions(state, legal, pid, limit=3, _speculative=True)
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         if not top_actions:
             return 0.0
         maximizing = pid == player_id
         best = -9999.0 if maximizing else 9999.0
         for act in top_actions:
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             try:
                 sim = planning_copy(state)
                 simulation_take_action(self.engine, sim, pid, act, reject_invalid=True)
             except Exception:
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 continue
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             if getattr(sim, "winner", None) is not None or not (getattr(sim, "stack", []) or []):
                 val = self._strategic_position_score(sim, player_id)
             else:
                 reply_pid = getattr(sim, "priority_player", pid)
                 reply_legal = self.engine.legal_moves(sim, reply_pid)
-                replies = self._strategic_top_actions(sim, reply_legal, reply_pid, limit=2)
+                replies = self._strategic_top_actions(sim, reply_legal, reply_pid, limit=2, _speculative=True)
+                if not combat_expansion_available():
+                    raise UncertainSimulation('Combat expansion allowance denied')
                 if not replies:
                     val = self._strategic_position_score(sim, player_id)
                 else:
                     reply_vals: list[float] = []
                     for rep in replies:
+                        if not combat_expansion_available():
+                            raise UncertainSimulation('Combat expansion allowance denied')
                         try:
                             nxt = planning_copy(sim)
                             simulation_take_action(self.engine, nxt, reply_pid, rep, reject_invalid=True)
+                            if not combat_expansion_available():
+                                raise UncertainSimulation('Combat expansion allowance denied')
                             reply_vals.append(self._strategic_position_score(nxt, player_id))
+                            if not combat_expansion_available():
+                                raise UncertainSimulation('Combat expansion allowance denied')
                         except Exception:
+                            if not combat_expansion_available():
+                                raise UncertainSimulation('Combat expansion allowance denied')
                             continue
                     if not reply_vals:
                         val = self._strategic_position_score(sim, player_id)
@@ -1512,6 +1581,8 @@ class AIAgent:
                         val = max(reply_vals)
                     else:
                         val = min(reply_vals)
+            if not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             best = max(best, val) if maximizing else min(best, val)
         if best in {-9999.0, 9999.0}:
             return 0.0
@@ -1519,13 +1590,25 @@ class AIAgent:
         # not a second absolute score that rewards stacks while ahead and punishes
         # them while behind.
         baseline = self._strategic_position_score(state, player_id) if baseline_score is None else baseline_score
+        if not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         return 0.2 * (best - baseline)
 
-    def _strategic_top_actions(self, state: MatchState, legal_moves: list[dict], player_id: int, limit: int) -> list[dict]:
+    def _strategic_top_actions(self, state: MatchState, legal_moves: list[dict], player_id: int, limit: int,
+                               *, _speculative: bool = False) -> list[dict]:
+        # The learned-policy caller needs this shortlist even after search denial.
+        if _speculative and not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         ranked = self._rank_moves(state, legal_moves, player_id)
+        if _speculative and not combat_expansion_available():
+            raise UncertainSimulation('Combat expansion allowance denied')
         picked: list[dict] = []
         for mv in ranked[: max(1, limit * 2)]:
+            if _speculative and not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             mat = self._materialize_action(state, mv, player_id)
+            if _speculative and not combat_expansion_available():
+                raise UncertainSimulation('Combat expansion allowance denied')
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
             if self._is_action_obviously_illegal(state, mat, player_id):
