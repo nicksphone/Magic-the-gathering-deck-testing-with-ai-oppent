@@ -50,9 +50,11 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 ## Not Done
 
 - [ ] **Resource-aware trained decisions:** the previous fits failed resource
-  contrast checks and were not deployed. A fresh current-source comparison of
-  the old and new heads is underway; the synthetic correction is not its result.
-  More training steps alone are not assumed to solve the problem.
+  contrast checks and were not deployed. Fresh `029a3174` comparisons also fail:
+  old/new heads reach 8/16 and 10/16 development decisions, with 0/2 complete
+  resource contrast groups. Fixed-encoder controls do not solve it either.
+  All four new checkpoints remain rejected; more steps alone are not assumed
+  to fix this. See [the actual four-arm evidence](docs/testing/current-resource-conditioning-029a.md).
 - [ ] **Broad full-game quality:** demonstrate competent play on a fixed current
   source across Aggro/Burn, Control, Midrange, Tempo, Ramp and Tribal, then the
   supported more complex deck families. Historical games are not current acceptance.

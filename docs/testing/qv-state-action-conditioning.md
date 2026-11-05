@@ -90,3 +90,7 @@ and untouched development contrasts before any model is considered useful.
 Matched full games, hidden-information safeguards, latency, broad archetypes
 and BO3 strategy remain necessary. Improving this synthetic protocol neither
 closes those requirements nor authorizes switching the live checkpoint.
+
+The subsequent [fresh current-source four-arm resource check](current-resource-conditioning-029a.md)
+does not pass: the new head reaches 10/16 development decisions and 0/2 complete
+contrast groups. Its checkpoints and the fixed-encoder controls are not deployed.
