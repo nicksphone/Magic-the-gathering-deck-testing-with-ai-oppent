@@ -5333,6 +5333,29 @@ class AIAgent:
                     assignments, incumbent, score = candidate, alternative, value
                     if alternative.winner == player_id:
                         break
+            # Refill only retained blockers: at most 5 * 4 checked augmentations.
+            for bid in selected:
+                if incumbent.winner is not None:
+                    break
+                used = {cid for bids in assignments.values()
+                        for cid in ([bids] if isinstance(bids, str) else bids)}
+                if bid in used or incumbent.cards[bid].zone != Zone.BATTLEFIELD:
+                    continue
+                best_groups, best_result = assignments, incumbent
+                for attacker in attackers:
+                    aid = attacker['id']
+                    if aid in assignments:
+                        continue
+                    candidate = {**assignments, aid: bid}
+                    alternative = project(candidate)
+                    if alternative is None or alternative.winner not in {None, player_id}:
+                        continue
+                    value = material_score(alternative)
+                    if alternative.winner == player_id or value > score:
+                        best_groups, best_result, score = candidate, alternative, value
+                        if alternative.winner == player_id:
+                            break
+                assignments, incumbent = best_groups, best_result
         return assignments
 
     def _search_block_assignments(

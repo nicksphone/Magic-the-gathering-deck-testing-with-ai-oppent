@@ -23,6 +23,11 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 - [x] Better legendary-permanent retention and avoidance of paid duplicate
   legends with no public payoff (`310c74d5`, `402e19b0`).
 - [x] Symmetric material valuation when retaining early blockers (`87b17594`).
+- [x] Strong reuses a blocker freed by retention when a checked block against
+  an uncovered attacker improves the outcome. The coupled 38 whole modules
+  passed 1,230 tests plus six subtests; bounded projections, hidden-input
+  controls and weak/large-board fallbacks remain covered. See
+  [the recorded defect and correction](docs/testing/ai-unused-blocker-refill.md).
 - [x] Spell-curve classification no longer diluted by the land count (`fffcca07`).
 - [x] Ordinary targeted draw spells compare actual legal recipients instead of
   defaulting to the opponent (`ecda33bd`). The affected eight whole modules
@@ -115,7 +120,8 @@ Context checks do not establish those passes or one chump block as mistakes.
 One block has a checked local improvement: after retaining Stomper from a losing
 block, use it against the unblocked Elves. A recorded pass-only continuation
 preserves Stomper, removes Elves and saves one life with the same Grazer loss.
-The shared blocking correction is being tested; no alternate-game win is claimed.
+The shared blocking correction passed its coupled 38-module qualification;
+no alternate-game win or measured strategy-strength gain is claimed.
 One Ramp removal metric remains unavailable.
 
 ## Foundation Evaluation
