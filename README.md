@@ -1,5 +1,9 @@
 # MTG Deck Testing Lab
 
+AI progress: [what is implemented, what remains, and current game coverage](AI-STATUS.md).
+Working features and passing regressions are not a claim that AI playing strength
+or RC acceptance is complete.
+
 Ordered noncreature copy choices now have
 [current 1,129-case qualification](docs/testing/ordered-copy-current.md), with
 the original corpus retained and both-seat paid copy/blink regressions. The new
