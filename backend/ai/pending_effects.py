@@ -221,10 +221,35 @@ def reuse_position_score(state, player_id, owner, compute):
     return result
 
 
+def combat_expansion_available(*, charge=False):
+    """Query sticky denial, or debit one new native combat forecast attempt."""
+    scope = _decision_projection.get()
+    budget = scope[2].get('combat_expansions') if scope is not None else None
+    if budget is None:
+        return True
+    if budget['denied']:
+        return False
+    if charge:
+        if budget['remaining'] == 0:
+            budget['denied'] = True
+            return False
+        budget['remaining'] -= 1
+    return True
+
+
 @contextmanager
-def decision_projection_scope(state, player_id):
+def decision_projection_scope(state, player_id, combat_expansion_limit=None):
     """Memoize only the immutable root of one synchronous AI decision."""
-    token = _decision_projection.set((state, player_id, {}))
+    if combat_expansion_limit is not None and (
+            type(combat_expansion_limit) is not int or combat_expansion_limit < 0):
+        raise ValueError('Combat expansion allowance must be a nonnegative integer')
+    previous = _decision_projection.get()
+    budget = previous[2].get('combat_expansions') if previous is not None else None
+    if budget is None and combat_expansion_limit is not None:
+        budget = {'remaining': combat_expansion_limit, 'denied': False}
+    # Nested choices isolate memoized roots, but never replenish decision work.
+    cache = {'combat_expansions': budget} if budget is not None else {}
+    token = _decision_projection.set((state, player_id, cache))
     try:
         from rules_engine.query_context import rule_query_scope
         with rule_query_scope(state):

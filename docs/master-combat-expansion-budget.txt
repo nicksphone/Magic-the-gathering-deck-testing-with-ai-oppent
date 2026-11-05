@@ -1,0 +1,37 @@
+Master combat expansion allowance (development)
+
+The existing synchronous decision_projection_scope owns an optional mutable
+allowance in its cache dictionary. Public Master decisions start at128 attempts,
+MasterPlus at256. Strong/casual/normal and helpers outside a limited scope are
+unlimited. Nested scopes, including recursive choose_action, inherit the same
+allowance while retaining separate root memo dictionaries. No new cache exists.
+
+An attempt is debited before native combat projection copies/execution:
+attack-line declaration; each candidate block projection/re-projection; final
+native block declaration within an attack/strategic forecast; a new next-combat
+forecast; direct strategic forecast/completion; checked root admission of a
+strategic attack/block incumbent. Unsupported preflight may return unknown
+without a debit when no projection begins. No wall clock changes policy.
+
+A successful last token is not exhaustion. Only a denied subsequent attempt
+sets sticky denial. Exhausted complete-defense searches return None even when
+an earlier incumbent exists or denial happens only during follow-up forecasts.
+Empty {} or [] can be a completed result, distinct from None. Unknown next
+combat cannot certify a win. A strategic candidate interrupted by denial is
+not scored; the best fully completed root-legal checked candidate is retained.
+If none exists, the existing native legal fallback runs at unchanged difficulty.
+
+The128/256 values are provisional development bounds, not measured strength or
+held-out quality claims. A work bound is not a bound on seconds spent within
+one native projection or in unrelated noncombat search. Canonical tactical,
+lethal/survival, payments and hidden-information controls remain required.
+
+Original97f MASTER mirror exit137 and the CPU-bounded incomplete profile remain
+unchanged evidence. The profile demonstrated multiplying strategic/stack/combat
+search, not a proven identical-state cache hit rate. No model/schema/rule/card
+changes, sideboard qualification, deployment or complete app qualification.
+
+Review corrections: the already-blocked setup-combat completion also debits
+before cloning/execution. Response-free leaf attempts first reject pure printed
+or board ineligibility, then debit before any actor-view/projection copy. The
+same actor view is reused for the public graveyard guard and combat completion.

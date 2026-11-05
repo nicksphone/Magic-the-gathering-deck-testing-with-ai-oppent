@@ -14,7 +14,7 @@ from ai.matchup_profiles import profile_for
 from card_data.tactical import tactical_tags
 from game_state.state import CardInstance, MatchState, Step, Zone, object_incarnation
 from rules_engine.engine import RulesEngine
-from ai.pending_effects import planning_copy, prospective_creature_stats, simulation_take_action, UncertainSimulation
+from ai.pending_effects import planning_copy, prospective_creature_stats, simulation_take_action, UncertainSimulation, combat_expansion_available
 from rules_engine import combat
 from rules_engine.continuous import effective_combat_stats, effective_keywords, effective_power, effective_toughness, has_keyword
 from rules_engine.card_types import is_land_card as _card_looks_like_land, is_token_card
@@ -168,7 +168,8 @@ class AIAgent:
             self._knowledge_usage = {'seen': set(), 'counts': {'persisted': 0, 'fallback': 0, 'opaque': 0,
                                                              'fallback_reasons': {}}}
             try:
-                with decision_projection_scope(state, player_id):
+                with decision_projection_scope(state, player_id,
+                        {'master': 128, 'master_plus': 256}.get(self.difficulty)):
                     action = None
                     terminal_win = []
                     if self.learned_binding is not None:
@@ -1184,6 +1185,8 @@ class AIAgent:
     def _strategic_plan_action(self, state: MatchState, legal_moves: list[dict], player_id: int) -> dict | None:
         if self.difficulty not in {"master", "master_plus"}:
             return None
+        if not combat_expansion_available():
+            return None
         turn = int(getattr(state, "turn", 1) or 1)
         if not self._is_complex_board_state(state, player_id):
             return None
@@ -1205,6 +1208,8 @@ class AIAgent:
                                                  legal_moves, beam_limit)
         for mv in shortlist:
             mat = self._materialize_action(state, mv, player_id)
+            if not combat_expansion_available():
+                break
             if mat.get("_invalid_ai_choice") or self._is_unplayable_x_action(mat):
                 continue
             if self._is_action_obviously_illegal(state, mat, player_id):
@@ -1214,8 +1219,23 @@ class AIAgent:
             return None
         scored: list[tuple[float, dict]] = []
         for mv in candidates:
+            if not combat_expansion_available():
+                break
             score = self._strategic_line_score(state, mv, player_id, depth=search_depth)
+            if not combat_expansion_available():
+                break
+            from ai.action_contract import complete_action
+            from rules_engine.action_validation import ActionRejected, checked_action
+            try:
+                action = complete_action(mv)
+                if action['type'] in {'attack', 'block'} and not combat_expansion_available(charge=True):
+                    break
+                checked_action(state, self.engine, player_id, action)
+            except (ActionRejected, KeyError, ValueError):
+                continue
             scored.append((score, mv))
+        if not scored:
+            return None
         scored.sort(key=lambda x: (x[0], self._move_sort_key(x[1])), reverse=True)
         return scored[0][1]
 
@@ -1292,6 +1312,8 @@ class AIAgent:
         if any(combat_rule_view(state, cid)['unsupported'] for player in state.players.values()
                for cid in player.battlefield if 'Creature' in effective_types(state, state.cards[cid])):
             return None
+        if not combat_expansion_available(charge=True):
+            return None
         sim, _ = decision_view(state, state.active_player, [])
         before = planning_copy(sim)
         defender = 3 - sim.active_player
@@ -1318,6 +1340,8 @@ class AIAgent:
                         heuristic_blocks = True
                     if blocks is None:
                         return None
+                if not combat_expansion_available(charge=True):
+                    return None
                 if heuristic_blocks:
                     sim = simulation_checked_action(sim, self.engine, defender,
                         {'type': 'block', 'blocks': {
@@ -1364,12 +1388,6 @@ class AIAgent:
         opponent = state.players[3 - player_id]
         if opponent.hand or opponent.exile:
             return None
-        if opponent.graveyard:
-            from ai.information import decision_view
-            from rules_engine.graveyard_inventory import public_graveyard_inventory
-            public, _ = decision_view(state, player_id, [])
-            if public_graveyard_inventory(public, player_id)['status'] != 'inert':
-                return None
 
         from rules_engine.land_types import BASIC_TYPES, effective_type_line, has_land_type
         from rules_engine.mana_abilities import tap_only_outputs
@@ -1396,8 +1414,14 @@ class AIAgent:
                     or combat_rule_view(state, cid)['unsupported']
                     or re.search(r'\b(?:when|whenever)\b[^\n]*\b(?:attack\w*|block\w*|damage)\b', text)):
                 return None
+        if not combat_expansion_available(charge=True):
+            return None
         from ai.information import decision_view
         projected, _ = decision_view(state, player_id, [])
+        if opponent.graveyard:
+            from rules_engine.graveyard_inventory import public_graveyard_inventory
+            if public_graveyard_inventory(projected, player_id)['status'] != 'inert':
+                return None
         # Preserve every offered effectful response; do not silently pass it away.
         for pid in state.players:
             response = planning_copy(projected)
@@ -5366,6 +5390,8 @@ class AIAgent:
         *, consider_next_combat=True, require_complete=False,
     ) -> dict[str, str | list[str]] | None:
         """Resolve a bounded choice set; exact-response callers keep unknowns."""
+        if not combat_expansion_available():
+            return None
         if self.difficulty not in {"master", "master_plus"} and (
                 self.difficulty != 'strong' or not isinstance(state, MatchState)):
             return None
@@ -5413,6 +5439,8 @@ class AIAgent:
         face_only = all(state.attack_targets.get(aid, f'player:{defender}') == f'player:{defender}' for aid in attacker_ids)
 
         def project(assignment):
+            if not combat_expansion_available(charge=True):
+                return None
             try:
                 sim = planning_copy(state)
                 normalized = {aid: sorted(bids) for aid, bids in assignment.items()}
@@ -5436,6 +5464,10 @@ class AIAgent:
 
         followups = []
         for assignment in assignments:
+            if not combat_expansion_available():
+                if require_complete:
+                    return None
+                break
             if not require_complete and face_only and initial_life > incoming_power and assignment and not keyword_combat:
                 chump_only = True
                 for aid, bids in assignment.items():
@@ -5502,6 +5534,8 @@ class AIAgent:
                 sim = project(dict(candidate[2]))
                 if sim is not None and self._next_board_attack_wins(sim, defender):
                     return candidate[3]
+        if require_complete and not combat_expansion_available():
+            return None
         return best[3] if best is not None else None
 
     def _requires_two_or_more_blockers(self, state, attacker) -> bool:
@@ -5730,6 +5764,8 @@ class AIAgent:
 
     def _next_board_attack_wins(self, state, player_id):
         """Bounded next-combat race forecast; unseen draws stay opaque."""
+        if not combat_expansion_available(charge=True):
+            return None
         from ai.information import decision_view
         from ai.pending_effects import _settle_announced_stack
         sim, _ = decision_view(state, player_id, [])
@@ -5751,6 +5787,8 @@ class AIAgent:
                 if not candidates or len(candidates) > 3 or len(blockers) > 2:
                     return False
                 outcome = self._project_attack_line(sim, player_id, candidates, consider_next_combat=False)
+                if not combat_expansion_available():
+                    return None
                 return outcome is not None and outcome[0].winner == player_id
             self.engine.next_step(sim)
         return False
@@ -5763,6 +5801,8 @@ class AIAgent:
                for cid in player.battlefield if 'Creature' in effective_types(state, state.cards[cid])):
             return None
         from ai.pending_effects import _settle_announced_stack
+        if not combat_expansion_available(charge=True):
+            return None
         sim = planning_copy(state)
         opponent = 3 - player_id
         try:
@@ -5784,6 +5824,8 @@ class AIAgent:
                     **({} if consider_next_combat else {'consider_next_combat': False}))
                 if blocks is None:
                     return None
+            if not combat_expansion_available(charge=True):
+                return None
             simulation_take_action(self.engine, sim, opponent, {'type': 'block', 'blocks': blocks}, reject_invalid=True)
             if not _settle_announced_stack(sim):
                 return None
@@ -5868,6 +5910,8 @@ class AIAgent:
             if sim.winner is not None:
                 return sim.winner == player_id
             if sim.step == Step.DECLARE_BLOCKERS and sim.blockers_declared:
+                if not combat_expansion_available(charge=True):
+                    return None
                 original = planning_copy(sim)
                 if not self._finish_combat_projection(sim, original):
                     return None
@@ -5886,6 +5930,8 @@ class AIAgent:
 
     def _search_attack_assignments(self, state: MatchState, candidates: list[str], player_id: int, *, force=False) -> list[str] | None:
         """Search small-board attack subsets through the defender's best legal blocks."""
+        if not combat_expansion_available():
+            return None
         if self.difficulty not in {"master", "master_plus"}:
             return None
         if not force and int(getattr(state, "turn", 1) or 1) < 5 and not self._combat_keyword_board(state, player_id):
@@ -5913,6 +5959,8 @@ class AIAgent:
         for subset in subsets:
             outcome = self._project_attack_line(state, player_id, subset)
             if outcome is None:
+                if not combat_expansion_available():
+                    break
                 continue
             sim, actual_attackers = outcome
 

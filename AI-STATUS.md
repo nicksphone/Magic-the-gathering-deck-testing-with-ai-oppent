@@ -28,6 +28,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   passed 1,230 tests plus six subtests; bounded projections, hidden-input
   controls and weak/large-board fallbacks remain covered. See
   [the recorded defect and correction](docs/testing/ai-unused-blocker-refill.md).
+- [x] Master/MasterPlus share a deterministic combat-expansion allowance across
+  nested planning, rather than multiplying independent local search limits.
+  The two affected cohorts passed 649 tests plus six subtests and 114 tests.
+  The retained 102.60-second decision chose the same checked attack in 11.31
+  seconds. This component is not live, and overall practical performance remains
+  open; see [the measured scope](docs/testing/master-combat-budget.md).
 - [x] Spell-curve classification no longer diluted by the land count (`fffcca07`).
 - [x] Ordinary targeted draw spells compare actual legal recipients instead of
   defaulting to the opponent (`ecda33bd`). The affected eight whole modules
@@ -77,7 +83,10 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   and meaningful comparison against the fixed baseline. Learning from the current
   heuristic does not make its choices expert labels.
 - [ ] **Practical decision time:** close slow decisions and resource-capped games;
-  a CPU timeout is not a completed game or a draw.
+  a CPU timeout is not a completed game or a draw. The new combat allowance
+  removes the reproduced minute-long expansion on a retained position, but one
+  mirrored Master series still reached the original CPU limit in game three at
+  1-1. Lower-budget development comparisons are not acceptance or live delivery.
 - [ ] **BO3 strategy:** sideboarding and matchup-prior code exist, but current
   measured series quality and a completed comparison matrix remain unfinished.
 - [ ] **No-regression comparison:** complete matched, source-pinned old/new games
@@ -99,7 +108,7 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 | Blue Control / Midrange | A fresh `812c91bc` Midrange/Control game finished naturally in 695 accepted moves; all 695 frames/actions replayed exactly. An earlier reverse `ecda33bd` game finished in 352 moves | A current matched pair, whole-strategy acceptance or a controlled speedup claim |
 | Tribal / Tempo | Two fresh `812c91bc` games finished naturally in 302 and 298 moves with deck seats reversed; all frames/actions replayed exactly | Held-out strategic superiority or BO3 acceptance |
 | Ramp | Four frozen `070b4da1` games replayed all 2,358 actions; four same-deck/seed/budget `97f9c309` games replayed all 2,403 actions | Ramp lost all eight; this small diagnostic is not a win-rate estimate, BO3 or strategic acceptance |
-| Drain/combo and other complex strategies | Not current-qualified by the evidence above | Completion inferred from shared engine support |
+| Drain / Tribal core BO3 | Two `97f9c309` Strong series finished five games with 1,988 checked actions. The new Master budget candidate completed one 2-0 series; its reverse reached 1-1 before a game-three resource cap | UI-default Master acceptance inferred from Strong, an unresolved series counted as a draw, sideboarding/API persistence, or expert play |
 
 Every accepted action and actor-visible hand is recorded. One new Burn/WW game
 has already replayed exactly through all 251 decision frames. Its wider quality
