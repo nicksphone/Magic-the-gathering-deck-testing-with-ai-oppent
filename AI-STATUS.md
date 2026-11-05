@@ -67,6 +67,11 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   This is not accepted card strategy or an activated model; see
   [the conditioning evidence and limits](docs/testing/qv-state-action-conditioning.md).
 - [x] Failed experimental checkpoints are rejected rather than installed.
+- [x] **Current complex core BO3 completion:** default Master on `15aa3c77`
+  finished both Drain/Tribal deck orders naturally: five games and 2,257 checked
+  committed actions. The reverse needed a separately declared longer operator
+  limit; its original capped comparison remains incomplete. This is not
+  sideboarding, UI or strategy-strength acceptance. See [actual outcomes](docs/testing/current-master-complex-bo3.md).
 
 ## Not Done
 
@@ -118,7 +123,7 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 | Blue Control / Midrange | A fresh `812c91bc` Midrange/Control game finished naturally in 695 accepted moves; all 695 frames/actions replayed exactly. An earlier reverse `ecda33bd` game finished in 352 moves | A current matched pair, whole-strategy acceptance or a controlled speedup claim |
 | Tribal / Tempo | Two fresh `812c91bc` games finished naturally in 302 and 298 moves with deck seats reversed; all frames/actions replayed exactly | Held-out strategic superiority or BO3 acceptance |
 | Ramp | Four frozen `070b4da1` games replayed all 2,358 actions; four same-deck/seed/budget `97f9c309` games replayed all 2,403 actions | Ramp lost all eight; this small diagnostic is not a win-rate estimate, BO3 or strategic acceptance |
-| Drain / Tribal core BO3 | Two `97f9c309` Strong series finished five games with 1,988 checked actions. The new Master budget candidate completed one 2-0 series; its reverse reached 1-1 before a game-three resource cap | UI-default Master acceptance inferred from Strong, an unresolved series counted as a draw, sideboarding/API persistence, or expert play |
+| Drain / Tribal core BO3 | Current `15aa3c77` Master finished five natural games across both deck orders: Tribal 2-0 and 2-1, with 2,257 checked actions. The reverse used a separate longer-limit qualification; the original capped result is preserved | Same-budget performance acceptance, sideboarding/API persistence, or expert play |
 
 Every accepted action and actor-visible hand is recorded. One new Burn/WW game
 has already replayed exactly through all 251 decision frames. Its wider quality
