@@ -5238,9 +5238,27 @@ class AIAgent:
             incumbent = project(assignments)
             if incumbent is None or incumbent.winner is not None:
                 return assignments
-            score = evaluate_board(incumbent, player_id)
             selected = sorted({bid for bids in assignments.values()
                                for bid in ([bids] if isinstance(bids, str) else bids)})
+            from ai.heuristics import _creature_value
+
+            premiums = {
+                (pid, cid): max(0.0, self._sacrifice_loss(state, cid, pid)
+                                    - 0.95 * _creature_value(state, cid))
+                for pid, ids in ((player_id, selected), (3-player_id, set(state.attackers)))
+                for cid in ids
+            }
+
+            def material_score(sim):
+                value = evaluate_board(sim, player_id)
+                for (pid, cid), premium in premiums.items():
+                    if sim.cards[cid].zone not in {Zone.BATTLEFIELD, Zone.HAND}:
+                        # Board score already prices the body. Retain only the missing
+                        # material premium, symmetrically for both sides of a trade.
+                        value += premium if pid != player_id else -premium
+                return value
+
+            score = material_score(incumbent)
             # At most five checked deletions, not an exhaustive Strong search.
             # Resolve marked damage, hit/death triggers and payments before valuing retention.
             for bid in selected:
@@ -5255,7 +5273,7 @@ class AIAgent:
                 alternative = project(candidate)
                 if alternative is None or alternative.winner not in {None, player_id}:
                     continue
-                value = evaluate_board(alternative, player_id)
+                value = material_score(alternative)
                 if alternative.winner == player_id or value > score:
                     assignments, incumbent, score = candidate, alternative, value
                     if alternative.winner == player_id:
