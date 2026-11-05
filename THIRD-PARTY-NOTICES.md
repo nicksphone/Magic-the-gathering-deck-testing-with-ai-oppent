@@ -14,7 +14,7 @@ were retained. We did not author their engines or card implementations.
 - Evaluated revision: `61e9442c433711a82258daca3236f936a1d6f70e`.
 - Upstream source headers specify GPL-3.0-or-later; its GPL v3 license text is
   retained in [the evaluation's Forge LICENSE](tools/engine_evaluation/forge/LICENSE).
-- Our original Forge compatibility tests, native match and actor-boundary
+- Our original Forge compatibility tests, native match, naming and actor-boundary
   prototypes are separately marked GPL-3.0-or-later
   and explicitly acknowledge the upstream engine and test helpers.
 

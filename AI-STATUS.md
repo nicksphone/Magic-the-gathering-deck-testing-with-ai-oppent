@@ -98,12 +98,22 @@ Synthetic game traces stay protected and are not public Git fixtures.
   all heuristics. Source review found opponent-library reads in some naming
   routes; those were not demonstrated in the initial BO3. Client privacy and
   fair AI observations are distinct requirements.
+- [x] Reproduced blind-name private-state dependence in paid native spells and
+  verified a scoped public-information correction: seven whole classes, 181
+  passes. Other native heuristics remain unqualified.
+- [x] Four paired native BO3s finished naturally: 11 games, 5,729 actor-priority
+  observations, nine actual naming choices. Outcomes were mixed, including a
+  corrected-policy loss where baseline won. No overall strength gain claimed.
 
 See [the comparison and limits](docs/testing/external-engine-card-knowledge.md).
 Neither engine is integrated into the application yet. Raw Forge views are not
 safe browser payloads; the tested projection must still be integrated with real
 API authentication, complete choices and saved-state handling. Further bespoke
 training is not the immediate priority while this shortcut is evaluated.
+
+See [native naming and complete-series evidence](docs/testing/forge-public-naming.md).
+The next native work is practical search comparison and real UI/IPC/save support,
+not declaring the default heuristic or this scoped correction finished.
 
 ## Next Work, In Order
 

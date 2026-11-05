@@ -116,3 +116,40 @@ Our actual run used the existing network-isolated sandbox and separate home and
 temp directories. Keep generated native logs/results protected. These tests do
 not expose raw native objects to a browser, certify all native dialogs or switch
 the running application. Read [the evidence and remaining integration work](../../docs/testing/forge-native-boundary.md).
+
+## Public-Information Naming
+
+[`forge/public-naming`](forge/public-naming) contains an original GPL-3.0-or-later
+controller subclass and probes, credited to the Forge Team/Card-Forge native
+engine/AI work. Retain [the upstream license](forge/LICENSE) and its notices.
+No original upstream card program was edited. This is a scoped evaluation, not
+an app migration or globally fair/expert AI claim.
+
+Copy `PublicNameController.java` and `NativeNameInformationTest.java` into an
+owned `NAMING` directory, along with `ActorBoundary.java` from the earlier
+prototype. With the same pinned native classpath `CP` and working directory:
+
+```sh
+mkdir -p "$NAMING/classes" "$NAMING/home" "$NAMING/tmp"
+javac --release 17 -cp "$CP" -d "$NAMING/classes" "$NAMING/"*.java
+timeout -k 15s 360 java -Xmx2g -Djava.awt.headless=true \
+  -Duser.home="$NAMING/home" -Djava.io.tmpdir="$NAMING/tmp" -Dsentry.dsn= \
+  -cp "$NAMING/classes:$CP" org.testng.TestNG \
+  -testclass forge.evaluation.NativeNameInformationTest -d "$NAMING/results"
+```
+
+The final seven-class regression cohort additionally included both earlier
+boundary classes and upstream `ProtocolGuiGameInProcessTest`,
+`GameSimulationTest`, `ReplacementHandlerTest`, `FlatMonteCarloNamedDiscardTest`.
+It required `--add-opens java.base/java.lang=ALL-UNNAMED` for the upstream protocol
+test. All 181 cases passed; this is not the entire native test suite.
+
+`NativeNameMatchProbe.java` also requires the actor-boundary class. Its
+`match-input` directory is the exact corrected seed-zero input. A separate copy
+with `use_public_name_controller=false` selects the baseline; use seed
+`873109261490271` for the second development pair. Run its class like the earlier
+BO3 caller, with a fresh owned home/tmp per series, heap limit and 300-second
+external bound. Require process exit zero and the actual terminal footer.
+Keep both generated `.private.jsonl` files protected, not in Git.
+
+See [full results, mixed outcomes and remaining work](../../docs/testing/forge-public-naming.md).
