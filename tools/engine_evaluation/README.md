@@ -153,3 +153,20 @@ external bound. Require process exit zero and the actual terminal footer.
 Keep both generated `.private.jsonl` files protected, not in Git.
 
 See [full results, mixed outcomes and remaining work](../../docs/testing/forge-public-naming.md).
+
+## Practical Native Search
+
+The same credited `NativeNameMatchProbe` accepts an optional boolean
+`flat_monte_carlo` in `SPEC.json` (omitted means off). It configures each real
+game before play, leaves MAX/LITE off and records the existing upstream
+`FlatMonteCarloStats` after each game. `NativeSearchConfigurationTest` checks
+both settings. No native search implementation was copied or rewritten here.
+
+[`forge/practical-search/match-input`](forge/practical-search/match-input) is the
+exact first search-on input using unchanged app Burn/White Weenie main decks
+and empty sideboards. For matched copies set the boolean false/true and use seeds
+`2026110501` and `2026110502`. Use the native classpath, isolated homes/tmp and
+300-second bounds described above, adding `-Dforge.flatmc.debug=true` and
+`-Dflatmc.trace=true`. Require every process exit and real terminal footer;
+an aggregate shell exit alone is not match acceptance. Keep generated traces
+private. Read [actual results and limitations](../../docs/testing/forge-practical-search.md).

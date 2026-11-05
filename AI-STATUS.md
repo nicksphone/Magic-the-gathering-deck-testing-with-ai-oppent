@@ -83,6 +83,11 @@ Synthetic game traces stay protected and are not public Git fixtures.
   test counts are not a head-to-head AI ranking.
 - [x] Forge's additional in-process human-controller callback check passed.
 - [x] README/source attribution and original license texts are retained.
+- [x] Existing native Forge search ran on unchanged Burn/White Weenie mains:
+  four completed matched BO3s, 10 natural games, 51 search decisions and 33
+  decisions made by rollouts. Eight whole native classes passed 183 tests.
+  Both players changed policy together; the two development pairs do not prove
+  strength improvement. See [the actual search results](docs/testing/forge-practical-search.md).
 - [x] One isolated native Forge BO3 completed naturally: Dimir Control beat Ramp
   2-0, with actual Ramp sideboarding and conserved deck inventories. Default
   heuristic, open deck lists, constructed diagnostic sideboards; not a strategy

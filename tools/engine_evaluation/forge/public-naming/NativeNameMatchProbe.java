@@ -12,6 +12,7 @@ import com.google.gson.JsonParser;
 import com.google.common.eventbus.Subscribe;
 import forge.ai.LobbyPlayerAi;
 import forge.ai.PlayerControllerAi;
+import forge.ai.simulation.FlatMonteCarloStats;
 import forge.GuiDesktop;
 import forge.deck.CardPool;
 import forge.deck.Deck;
@@ -49,6 +50,14 @@ public final class NativeNameMatchProbe {
     private static void emit(Map<String, Object> row) {
         System.out.println("@@MTG_PROBE_JSON " + JSON.toJson(row));
         System.out.flush();
+    }
+
+    static void configureSearch(Game game, boolean enabled) {
+        game.AI_FLAT_MONTE_CARLO = enabled;
+        game.AI_FLAT_MONTE_CARLO_MAX = false;
+        game.AI_FLAT_MONTE_CARLO_LITE = false;
+        game.AI_TIMEOUT = 5;
+        FlatMonteCarloStats.reset();
     }
 
     private static Map<String, Integer> pool(CardPool cards) {
@@ -97,6 +106,7 @@ public final class NativeNameMatchProbe {
             FModel.getPreferences().setPref(FPref.FILTERED_HANDS, false);
             MyRandom.setRandom(new Random(spec.get("seed").getAsLong()));
             boolean corrected = spec.get("use_public_name_controller").getAsBoolean();
+            boolean search = spec.has("flat_monte_carlo") && spec.get("flat_monte_carlo").getAsBoolean();
             Map<Integer,Map<String,Integer>> publicDecks = new TreeMap<>();
             for (int i=0;i<2;i++) {
                 JsonObject row=spec.getAsJsonArray("decks").get(i).getAsJsonObject();
@@ -133,7 +143,7 @@ public final class NativeNameMatchProbe {
             rules.setAllowCheatShuffle(false);
             Match match = new Match(rules, players, "Isolated native BO3 probe");
             emit(Map.of("kind", "match_started", "decks", decks(players), "seed", spec.get("seed").getAsLong(),
-                        "open_decklists", true, "AI", "Default heuristic; MC off", "corrected_naming", corrected,
+                        "open_decklists", true, "AI", search ? "Default Flat-MC" : "Default heuristic; MC off", "corrected_naming", corrected,
                         "filtered_hands",FModel.getPreferences().getPrefBoolean(FPref.FILTERED_HANDS)));
             int games = 0;
             AtomicInteger totalObservations=new AtomicInteger();
@@ -145,7 +155,7 @@ public final class NativeNameMatchProbe {
                     final int index = games;
                     Game game = match.createGame();
                     game.setNoGUIUser();
-                    game.AI_FLAT_MONTE_CARLO = false;
+                    configureSearch(game,search);
                     List<String> observationErrors=new ArrayList<>();
                     game.subscribeToEvents(new Object() {
                         @Subscribe public void priority(GameEventPlayerPriority event) {
@@ -183,6 +193,12 @@ public final class NativeNameMatchProbe {
                     if (!observationErrors.isEmpty() || observations.checkError() || logs.checkError()) {
                         throw new IllegalStateException("Native observer capture incomplete: "+observationErrors);
                     }
+                    emit(Map.of("kind","native_search_stats","game",index,"enabled",search,
+                            "decisions",FlatMonteCarloStats.getDecisions(),"rollouts",FlatMonteCarloStats.getRollouts(),
+                            "failures",FlatMonteCarloStats.getFailureCount(),
+                            "unsimulatable_cards",FlatMonteCarloStats.getUnsimulatableCardCount(),
+                            "p95_ms",FlatMonteCarloStats.getPercentileMillis(95),
+                            "summary",FlatMonteCarloStats.summary()));
                     emit(Map.of("kind", "native_game_complete", "game", index,
                             "seconds", (System.nanoTime()-started)/1e9,
                             "turns", game.getOutcome().getLastTurnNumber(),
