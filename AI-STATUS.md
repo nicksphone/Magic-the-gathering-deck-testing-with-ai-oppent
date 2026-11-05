@@ -1,6 +1,6 @@
 # AI Status Checklist
 
-Updated: 2026-11-05. Gameplay source: `ecda33bd`.
+Updated: 2026-11-05. Live gameplay source: `7bfbfad4`.
 
 **Status: working heuristic AI with implemented improvements; playing strength
 and AI release acceptance are NOT complete. No reliable percentage estimate.**
@@ -27,7 +27,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 - [x] Ordinary targeted draw spells compare actual legal recipients instead of
   defaulting to the opponent (`ecda33bd`). The affected eight whole modules
   passed 354 tests; the unchanged 14-case paid-spell check passed. This does not
-  close the separate multi-mode targeting route.
+  close every multi-mode targeting route.
+- [x] A checked terminal targeted-draw win now takes priority over the ordinary
+  counter-mode heuristic (`7bfbfad4`). Both-seat paid Archmage's Charm outcomes,
+  explicit choices and private-draw safeguards are covered. Independent nine
+  whole modules passed 378 tests; multi-select modes remain separate.
+  See [the modal-win scope](docs/testing/ai-modal-draw-win.md).
 - [x] Source-bound trajectory collection, exact action/frame replay, training
   and checkpoint evaluation infrastructure. Infrastructure is not a strong model.
 - [x] Paired preference batches and state-contrast checks that expose a model
@@ -55,8 +60,8 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   measured series quality and a completed comparison matrix remain unfinished.
 - [ ] **No-regression comparison:** complete matched, source-pinned old/new games
   and compare decision quality as well as outcomes. Self-play wins alone prove little.
-- [x] **Live delivery of the targeted-draw fix:** the preview now runs
-  `ecda33bd` (2026-11-05). A fresh 354-test cohort passed before switching;
+- [x] **Live delivery of the draw fixes:** the preview now runs
+  `7bfbfad4` (2026-11-05). The latest 378-test cohort passed before switching;
   all 1,254 saved matches remain listed, two historical matches restored and
   sampled cached images retained identical bytes. No experimental weights
   were activated. See [delivery scope](docs/testing/targeted-draw-live-delivery.md).
