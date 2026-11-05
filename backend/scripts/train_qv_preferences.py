@@ -95,7 +95,7 @@ def _scores(model, row, torch):
 def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                       epochs=8, learning_rate=.001, seconds=1800,
                       temperature=.25, value_weight=.25, progress=None,
-                      q_activation=LEGACY_ACTIVATION, batch_size=1):
+                      q_activation=LEGACY_ACTIVATION, batch_size=1, batch_pairs=None):
     """Fit checked preferences against admitted same-position alternatives.
 
     The caller must validate original dataset provenance and grouped partitions.
@@ -124,6 +124,17 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
     if any(type(value) is not str or not re.fullmatch('[0-9a-f]{64}', value)
            for value in (dataset_sha256, split_sha256)):
         raise ValueError('Exact dataset and split provenance hashes required')
+    pair_plan = None
+    if batch_pairs is not None:
+        if (batch_size != 2 or type(batch_pairs) is not list
+                or len(batch_pairs) * 2 != len(rows)
+                or any(type(pair) is not list or len(pair) != 2 for pair in batch_pairs)):
+            raise ValueError('Explicit two-row batches must cover all training rows')
+        indices = [index for pair in batch_pairs for index in pair]
+        if (any(type(index) is not int or not 0 <= index < len(rows) for index in indices)
+                or len(set(indices)) != len(rows)):
+            raise ValueError('Each training occurrence must appear exactly once')
+        pair_plan = tuple(tuple(pair) for pair in batch_pairs)
 
     import torch
     from torch.nn import functional as functional
@@ -190,15 +201,17 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                     'parity_actions': parity_actions, 'max_parity_error': max_error}
 
         initial = measure('initial_preferences')
-        order = list(range(len(rows)))
+        order = list(range(len(rows) if pair_plan is None else len(pair_plan)))
         rng = random.Random(seed)
         notify('updates', 'start', 0)
         for _ in range(epochs):
             rng.shuffle(order)
-            for start in range(0, len(order), batch_size):
+            batches = ([order[start:start + batch_size]
+                        for start in range(0, len(order), batch_size)] if pair_plan is None
+                       else [pair_plan[index] for index in order])
+            for batch in batches:
                 budget()
                 optimizer.zero_grad(set_to_none=True)
-                batch = order[start:start + batch_size]
                 rankings, observed_values = [], []
                 for index in batch:
                     budget()
@@ -231,7 +244,7 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
         objective = ('heuristic_listwise_preferences_plus_actual_return_V'
                      if value_samples == len(rows)
                      else 'listwise_preferences_plus_available_actual_return_V')
-        return payload, {'objective': objective,
+        report = {'objective': objective,
                          'ranking_loss_input': 'unbounded_q_logits',
                          'q_semantics': 'preference_utility_not_calibrated_return',
                          'samples': len(rows), 'updates': updates,
@@ -243,5 +256,9 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
                          'initial': initial, 'final': final,
                          'weights_changed': export_weights(model) != initial_weights,
                          'elapsed_seconds': time.monotonic() - started}
+        if pair_plan is not None:
+            report['batch_pairing'] = {'version': 1,
+                'pairs_sha256': sha256(_canonical(pair_plan).encode()).hexdigest()}
+        return payload, report
     finally:
         torch.set_num_threads(old_threads)
