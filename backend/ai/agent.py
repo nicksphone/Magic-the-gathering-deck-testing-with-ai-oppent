@@ -4197,6 +4197,8 @@ class AIAgent:
             allow_friendly_target=allow_friendly_target, allow_zero_x=allow_zero_x)
         action = choose_resource_payment(self, state, action, player_id)
         action = complete_cast_hybrid_choices(self, state, action, player_id)
+        if self._empty_duplicate_legend_cast(state, action, player_id):
+            return {**action, '_invalid_ai_choice': True}
         if not self._harmful_friendly_removal(state, action, player_id):
             return action
         from rules_engine.cast_choice import build_cast_hints
@@ -4222,6 +4224,75 @@ class AIAgent:
                     continue
                 return redirected
         return {**action, '_invalid_ai_choice': True}
+
+    def _empty_duplicate_legend_cast(self, state, action, player_id):
+        """Local no-progress preference; unknown continuations keep the option."""
+        card = _card_for_move(state, action)
+        if (action.get('type') != 'cast_spell' or action.get('_invalid_ai_choice')
+                or card is None or card.id not in state.players[player_id].hand
+                or action.get('selected_face_index') is not None or action.get('cast_variant') is not None
+                or 'legendary' not in (card.type_line or '').lower()
+                or state.stack or state.pending_mechanic_choice or state.pending_trigger_order
+                or state.pending_replacement_choice):
+            return False
+        if not any(state.cards[cid].name.casefold() == card.name.casefold()
+                   and 'legendary' in (state.cards[cid].type_line or '').lower()
+                   for cid in state.players[player_id].battlefield):
+            return False
+        from ai.pending_effects import (_projection_copy, _settle_announced_stack,
+                                        _public_destruction_material, simulation_checked_action)
+        from rules_engine.action_validation import ActionRejected
+        before = _public_destruction_material(state, player_id)
+        if before is None:
+            return False
+        chooser = AIAgent(self.difficulty, self.archetype, self.opponent_archetype)
+        try:
+            projected = simulation_checked_action(_projection_copy(state), RulesEngine(), player_id, action)
+            # A permanent's legitimate cast body can be noop; entry still happens natively.
+            if any(any(key.startswith('__unsupported') for key in item.payload)
+                   for item in projected.stack):
+                return False
+            if not _settle_announced_stack(projected, player_id=player_id,
+                    own_choice_action=lambda s, m, p: chooser.choose_action(s, m, p).action):
+                return False
+        except (ActionRejected, UncertainSimulation):
+            return False
+        after = _public_destruction_material(projected, player_id)
+        if (after is None or projected.winner is not None
+                or any('unsupported' in line.lower() or 'Oracle effect not inferred' in line
+                       or 'Missing effect handler' in line for line in projected.log)
+                or projected.cards[card.id].zone != Zone.GRAVEYARD
+                or before['life'] != after['life'] or before['resources'] != after['resources']
+                or after['hand'] != before['hand'] - {card.id}
+                or after['graveyard'] != before['graveyard'] | {card.id}):
+            return False
+        for field in ('extra_turns', 'phase_plan', 'normal_turn_successor', 'turn_spell_protection',
+                      'turn_player_hexproof', 'turn_cant_gain_life', 'turn_damage_cant_be_prevented',
+                      'pending_entry_counters', 'combat_cost_effects', 'loyalty_permissions',
+                      'adventure_permissions', 'graveyard_permission_uses', 'linked_exiles',
+                      'retained_counter_prohibitions'):
+            if getattr(state, field) != getattr(projected, field):
+                return False
+        for pid, player in state.players.items():
+            final = projected.players[pid]
+            if (player.library != final.library or player.exile != final.exile
+                    or pid != player_id and (player.hand != final.hand or player.graveyard != final.graveyard)
+                    or pid != player_id and before['boards'][pid] != after['boards'][pid]
+                    or set(before['boards'][pid]) != set(after['boards'][pid])):
+                return False
+            for key, (traits, tapped) in before['boards'][pid].items():
+                new_traits, new_tapped = after['boards'][pid][key]
+                old, new = state.cards[key[0]], projected.cards[key[0]]
+                if (traits != new_traits or tapped and not new_tapped
+                        or old.summoning_sick != new.summoning_sick or old.loyalty != new.loyalty
+                        or any(getattr(old, field) != getattr(new, field) for field in
+                               ('keyword_effects', 'activated_ability_effects', 'base_stat_effects',
+                                'type_effects', 'control_effects', 'selected_face_index'))):
+                    return False
+            if (pid != player_id and before['mana'][pid] != after['mana'][pid]
+                    or any(n > before['mana'][pid].get(color, 0) for color, n in after['mana'][pid].items())):
+                return False
+        return True
 
     def _friendly_removal_instruction(self, effect, payload, target_id):
         """Classify complete native wrappers; unknown children never justify a veto."""

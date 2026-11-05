@@ -69,7 +69,8 @@ def test_public_mandatory_choice_win_outranks_synthetic_scores(
     chosen = learned_policy.choose_learned_action(binding, agent, view, moves, seat,
         admit=lambda action: checked_action(view, rules, seat, action))
     assert chosen is not None
-    if winning_payoff or not prefer_pass:
+    # A synthetic high score must not force the now-qualified no-payoff duplicate.
+    if winning_payoff:
         assert chosen['type'] == 'cast_spell' and chosen['card_id'] == fresh.id
         assert chosen['targets'] == {}
         checked_action(view, rules, seat, chosen)
