@@ -4,6 +4,13 @@ AI progress: [what is implemented, what remains, and current game coverage](AI-S
 Working features and passing regressions are not a claim that AI playing strength
 or RC acceptance is complete.
 
+External engine evaluation credits the **Forge Team/Card-Forge contributors** and
+**XMage contributors** for their card/rules implementations. See the
+[comparison](docs/testing/external-engine-card-knowledge.md),
+[credited test code](tools/engine_evaluation/README.md) and
+[third-party license notices](THIRD-PARTY-NOTICES.md). Neither engine has replaced
+the running backend; their work is not represented as ours.
+
 Ordered noncreature copy choices now have
 [current 1,129-case qualification](docs/testing/ordered-copy-current.md), with
 the original corpus retained and both-seat paid copy/blink regressions. The new

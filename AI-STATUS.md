@@ -1,6 +1,6 @@
 # AI Status Checklist
 
-Updated: 2026-11-05 06:39 UTC. Gameplay source: `ecda33bd`.
+Updated: 2026-11-05 07:30 UTC. Gameplay source: `ecda33bd`.
 
 **Status: working heuristic AI with implemented improvements; playing strength
 and AI release acceptance are NOT complete. No reliable percentage estimate.**
@@ -74,10 +74,27 @@ has already replayed exactly through all 251 decision frames. Its wider quality
 review is not closed; no zero-error gameplay claim is inferred from completion.
 Synthetic game traces stay protected and are not public Git fixtures.
 
+## Foundation Evaluation
+
+- [x] Forge and XMage both contain definitions for our 155 shipped cards and
+  the 32 harder canonical reference cards. Presence alone is not an execution pass.
+- [x] Both passed the four-card, both-seat native compatibility checks: 8 each.
+- [x] Selected upstream native tests passed: Forge 125 and XMage 8. The different
+  test counts are not a head-to-head AI ranking.
+- [x] Forge's additional in-process human-controller callback check passed.
+- [x] README/source attribution and original license texts are retained.
+- [ ] Prototype the recommended Forge integration without changing the live app;
+  prove user choices, privacy, full matches/BO3 and saved-state behavior.
+- [ ] Make a production adoption decision, including distribution/license review.
+
+See [the comparison and limits](docs/testing/external-engine-card-knowledge.md).
+Neither engine is integrated into the application yet. Further bespoke training
+is not the immediate priority while this foundation shortcut is evaluated.
+
 ## Next Work, In Order
 
-1. Finish reviewing the recorded full games; identify reproducible decisions,
-   not merely increase the number of simulations.
+1. Prove or reject the external-engine integration shortcut in an isolated
+   prototype; keep the existing app and saved data as the fallback.
 2. Fix the highest-impact observed decision/performance problems and deliver
    verified fixes to the running app.
 3. Expand current completed-game coverage beyond Burn/WW, with fixed budgets
