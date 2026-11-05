@@ -55,8 +55,11 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   measured series quality and a completed comparison matrix remain unfinished.
 - [ ] **No-regression comparison:** complete matched, source-pinned old/new games
   and compare decision quality as well as outcomes. Self-play wins alone prove little.
-- [ ] **Live delivery:** deploy and check the latest verified fix. The running
-  preview is still the older `fffcca07` build; experimental weights are not live.
+- [x] **Live delivery of the targeted-draw fix:** the preview now runs
+  `ecda33bd` (2026-11-05). A fresh 354-test cohort passed before switching;
+  all 1,254 saved matches remain listed, two historical matches restored and
+  sampled cached images retained identical bytes. No experimental weights
+  were activated. See [delivery scope](docs/testing/targeted-draw-live-delivery.md).
 - [ ] **AI RC acceptance:** complete the broader evidence above, plus current
   application integration. Isolated test counts cannot close this item.
 
@@ -124,17 +127,19 @@ Synthetic game traces stay protected and are not public Git fixtures.
 See [the comparison and limits](docs/testing/external-engine-card-knowledge.md).
 Neither engine is integrated into the application yet. Raw Forge views are not
 safe browser payloads; the tested projection must still be integrated with real
-API authentication, complete choices and saved-state handling. Further bespoke
-training is not the immediate priority while this shortcut is evaluated.
+API authentication, complete choices and saved-state handling. The bounded
+prototype demonstrates useful rules reuse, not an approved live cutover.
 
 See [native naming and complete-series evidence](docs/testing/forge-public-naming.md).
-The next native work is practical search comparison and real UI/IPC/save support,
-not declaring the default heuristic or this scoped correction finished.
+Practical native search and a human-controller process bridge have now been
+exercised. The save audit found a real pending-spell compatibility gap. Keep the
+existing app and saved matches; further native integration is not a reason to
+delay verified Python AI fixes or practical decision-quality work.
 
 ## Next Work, In Order
 
-1. Prove or reject the external-engine integration shortcut in an isolated
-   prototype; keep the existing app and saved data as the fallback.
+1. Keep the existing app and saved data while using the bounded native-engine
+   findings as a reference; do not start an open-ended persistence rewrite.
 2. Fix the highest-impact observed decision/performance problems and deliver
    verified fixes to the running app.
 3. Expand current completed-game coverage beyond Burn/WW, with fixed budgets
