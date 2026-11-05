@@ -1,6 +1,6 @@
 # AI Status Checklist
 
-Updated: 2026-11-05. Live gameplay source: `f9b3d123`.
+Updated: 2026-11-05. Live gameplay source: `15aa3c77`.
 
 **Status: working heuristic AI with implemented improvements; playing strength
 and AI release acceptance are NOT complete. No reliable percentage estimate.**
@@ -32,14 +32,14 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   nested planning, rather than multiplying independent local search limits.
   The two affected cohorts passed 649 tests plus six subtests and 114 tests.
   The retained 102.60-second decision chose the same checked attack in 11.31
-  seconds. This component is live on `f9b3d123`; overall practical performance
+  seconds. This component is live on `15aa3c77`; overall practical performance
   remains open. See [the measured scope](docs/testing/master-combat-budget.md).
 - [x] **Stop discarded search work:** after a denied combat expansion, private
   strategic searches stop instead of continuing work the root will discard.
   Previously checked candidates and ordinary legal fallback remain usable;
   difficulty and allowances are unchanged. Affected cohorts passed 682 tests
   plus six subtests and 114 HTTP tests. The retained decision took 6.75 seconds;
-  this follow-up is not live yet. See [scope and limits](docs/testing/post-denial-speculation.md).
+  this follow-up is live on `15aa3c77`. See [scope and limits](docs/testing/post-denial-speculation.md).
 - [x] Spell-curve classification no longer diluted by the land count (`fffcca07`).
 - [x] Ordinary targeted draw spells compare actual legal recipients instead of
   defaulting to the opponent (`ecda33bd`). The affected eight whole modules
@@ -101,9 +101,9 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 - [ ] **No-regression comparison:** complete matched, source-pinned old/new games
   and compare decision quality as well as outcomes. Self-play wins alone prove little.
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
-  preview now runs `f9b3d123` (2026-11-05). Earlier draw/block qualification passed
-  1,230 tests plus six subtests; the additional search-limit cohorts passed 649
-  plus six subtests and 114 tests before their code-only switch;
+  preview now runs `15aa3c77` (2026-11-05). Earlier draw/block qualification passed
+  1,230 tests plus six subtests; the current search-limit/post-denial cohorts
+  passed 682 plus six subtests and 114 HTTP tests before their code-only switch;
   all 1,254 saved matches remain listed, two historical matches restored and
   sampled cached images retained identical bytes. No experimental weights
   were activated. See [current delivery scope](docs/testing/master-combat-budget.md#live-component-delivery).

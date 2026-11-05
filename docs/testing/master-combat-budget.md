@@ -83,6 +83,12 @@ all 148 copied cache files. Rollback is restricted to code; old overrides/instal
 remain available. No experimental weights or 64-unit override were activated.
 This is operational delivery of a tested component, not overall AI acceptance.
 
+The subsequent `15aa3c77` delivery includes the post-denial correction below.
+Its 4,333 Git-attested files run with the same runtime, frontend and persistent
+database; all 1,254 saved IDs, two restore samples and 148 copied cache files were
+preserved. Its closed local database backup was verified before new code started.
+No database restore, experimental-weight activation or native-engine cutover occurred.
+
 ## Remaining Work
 
 The allowance implementation has bounded regression evidence, but overall AI
@@ -97,7 +103,7 @@ sticky denial, including all 63 repeated materializations. Instrumented timings
 are not production savings. The [post-denial correction](post-denial-speculation.md)
 now stops discarded speculation while preserving completed incumbents, ordinary
 legal fallback and the shared learned-ranking route. Its affected cohorts passed
-682 tests plus six subtests and 114 HTTP tests; it is not live yet. The same-budget
+682 tests plus six subtests and 114 HTTP tests; it is live on `15aa3c77`. The same-budget
 reverse comparison remains incomplete, so overall performance acceptance is open.
 General Forge adoption and reliable human-choice replay remain separate,
 unfinished work.

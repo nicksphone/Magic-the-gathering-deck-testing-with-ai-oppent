@@ -49,6 +49,22 @@ run is intended to establish the complete outcome, not improve the comparison
 by silently changing difficulty or the combat allowance.
 
 This is bounded component evidence, not full-suite, playing-strength, latency
-SLA, live delivery or overall AI acceptance. Forge integration remains separate.
+SLA or overall AI acceptance. Forge integration remains separate.
 Generated game hands and traces remain in protected evidence storage, not public
 fixtures. No learned checkpoint was loaded or activated.
+
+## Live Component Delivery
+
+On 2026-11-05, the preview switched from `f9b3d123` to `15aa3c77` through the
+existing reviewed code-only procedure. All 4,333 installed regular Git files
+were attested. Runtime, environment, frontend and persistent database path were
+unchanged. Before starting new code, the closed local database passed its
+integrity check and its protected NFS backup matched bytes.
+
+The new backend passed health and retained all 1,254 saved match IDs, two
+historical restore samples, sampled images and all 148 copied cache files.
+The database was not restored or overwritten. Existing code-only rollback
+remains available; no rollback occurred. Difficulty and allowances remain
+unchanged, and neither experimental weights nor the native Forge engine was
+activated. Operational delivery does not close the incomplete performance,
+strategy or broader AI release requirements.
