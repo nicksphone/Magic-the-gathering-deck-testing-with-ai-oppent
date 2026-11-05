@@ -68,14 +68,37 @@ resource limit during game three: 594.80 CPU seconds, 597.81 wall seconds. Its
 winner is unavailable, not a draw or loss. The old reverse ended unfinished with
 exit 137; the new bounded result does not retroactively complete it.
 
+## Live Component Delivery
+
+On 2026-11-05, the preview switched from `97f9c309` to `f9b3d123` after a separate
+preparation review. All 4,331 installed regular files were attested to Git blobs
+and modes. The existing runtime, environment, frontend and database path remained
+unchanged. Before starting the new code, the closed 367,837,184-byte database
+passed its local integrity check and its protected NFS backup matched bytes.
+The database was never restored or overwritten by the delivery script.
+
+The new backend passed health, preserved all 1,254 saved match IDs, restored two
+historical GET samples identically, and retained identical sampled images and
+all 148 copied cache files. Rollback is restricted to code; old overrides/installations
+remain available. No experimental weights or 64-unit override were activated.
+This is operational delivery of a tested component, not overall AI acceptance.
+
 ## Remaining Work
 
 The allowance implementation has bounded regression evidence, but overall AI
 performance/strength acceptance is open. A lower-allowance development comparison
-must retain legal choices, tactical behavior and hidden-information boundaries;
-it is not the current UI default or an approved model. Live preview remains on
-`97f9c309` until a further delivery decision. General Forge adoption and reliable
-human-choice replay are separate, unfinished work.
+must retain legal choices, tactical behavior and hidden-information boundaries.
+The separate 64-unit override retained the same attack in 8.70 seconds but also
+hit the original reverse-series limit in game three at 1-1. It was not promoted
+to the source default or live app, and it is not an approved learned model.
+
+A follow-up diagnostic observed 79 of 102 materializations beginning after
+sticky denial, including all 63 repeated materializations. Instrumented timings
+are not production savings. The next scoped correction must stop discarded
+speculation while preserving completed incumbents, ordinary legal fallback and
+the shared learned-ranking route; those properties remain to be qualified.
+General Forge adoption and reliable human-choice replay remain separate,
+unfinished work.
 
 Generated hands, traces and SQLite evidence remain in protected project storage,
 not public fixtures.

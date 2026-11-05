@@ -1,6 +1,6 @@
 # AI Status Checklist
 
-Updated: 2026-11-05. Live gameplay source: `97f9c309`.
+Updated: 2026-11-05. Live gameplay source: `f9b3d123`.
 
 **Status: working heuristic AI with implemented improvements; playing strength
 and AI release acceptance are NOT complete. No reliable percentage estimate.**
@@ -32,8 +32,8 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   nested planning, rather than multiplying independent local search limits.
   The two affected cohorts passed 649 tests plus six subtests and 114 tests.
   The retained 102.60-second decision chose the same checked attack in 11.31
-  seconds. This component is not live, and overall practical performance remains
-  open; see [the measured scope](docs/testing/master-combat-budget.md).
+  seconds. This component is live on `f9b3d123`; overall practical performance
+  remains open. See [the measured scope](docs/testing/master-combat-budget.md).
 - [x] Spell-curve classification no longer diluted by the land count (`fffcca07`).
 - [x] Ordinary targeted draw spells compare actual legal recipients instead of
   defaulting to the opponent (`ecda33bd`). The affected eight whole modules
@@ -86,17 +86,20 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   a CPU timeout is not a completed game or a draw. The new combat allowance
   removes the reproduced minute-long expansion on a retained position, but one
   mirrored Master series still reached the original CPU limit in game three at
-  1-1. Lower-budget development comparisons are not acceptance or live delivery.
+  1-1. A separate 64-unit development override also reached that limit and was
+  not promoted. The next patch targets work performed after sticky denial,
+  not another arbitrary allowance reduction.
 - [ ] **BO3 strategy:** sideboarding and matchup-prior code exist, but current
   measured series quality and a completed comparison matrix remain unfinished.
 - [ ] **No-regression comparison:** complete matched, source-pinned old/new games
   and compare decision quality as well as outcomes. Self-play wins alone prove little.
-- [x] **Live delivery of the current draw/block fixes:** the preview now runs
-  `97f9c309` (2026-11-05). The coupled 38 whole modules passed 1,230 tests and
-  six subtests before switching;
+- [x] **Live delivery of the current draw/block and search-limit fixes:** the
+  preview now runs `f9b3d123` (2026-11-05). Earlier draw/block qualification passed
+  1,230 tests plus six subtests; the additional search-limit cohorts passed 649
+  plus six subtests and 114 tests before their code-only switch;
   all 1,254 saved matches remain listed, two historical matches restored and
   sampled cached images retained identical bytes. No experimental weights
-  were activated. See [delivery scope](docs/testing/targeted-draw-live-delivery.md).
+  were activated. See [current delivery scope](docs/testing/master-combat-budget.md#live-component-delivery).
 - [ ] **AI RC acceptance:** complete the broader evidence above, plus current
   application integration. Isolated test counts cannot close this item.
 
