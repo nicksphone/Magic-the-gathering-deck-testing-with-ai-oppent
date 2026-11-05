@@ -170,3 +170,11 @@ and empty sideboards. For matched copies set the boolean false/true and use seed
 `-Dflatmc.trace=true`. Require every process exit and real terminal footer;
 an aggregate shell exit alone is not match acceptance. Keep generated traces
 private. Read [actual results and limitations](../../docs/testing/forge-practical-search.md).
+
+## Native Human Worker
+
+[`forge/stdio`](forge/stdio) is an original, credited GPL-3.0-or-later process
+adapter around the unchanged Forge human controller. It reuses the actor-scoped
+projection and one-use choice broker, with JSON-lines stdin/stdout rather than
+raw Java views. Diagnostics and game traces remain private. Read the
+[contract, runnable commands and open adoption requirements](../../docs/testing/forge-native-human-worker.md).

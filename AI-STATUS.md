@@ -96,6 +96,11 @@ Synthetic game traces stay protected and are not public Git fixtures.
   plus two actual human-controller land plays, both seats, passed with the
   selected unchanged upstream cases (154 total). Review found and closed a
   virtual-count leak and request-lifetime gap. No browser/HTTP bridge is live.
+- [x] Native process bridge: real human-controller choices crossed JSON-lines
+  stdin/stdout with either seat; two complete natural games and two explicit
+  disconnect aborts passed. The selected nine-class cohort passed 209 checks.
+  This is not browser integration, durable resume or AI-strength acceptance.
+  See [the process contract and actual evidence](docs/testing/forge-native-human-worker.md).
 - [ ] Prototype the recommended Forge integration without changing the live app;
   prove user choices, privacy, full matches/BO3 and saved-state behavior.
 - [ ] Make a production adoption decision, including distribution/license review.
