@@ -40,12 +40,19 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   See [measured scope and provenance](docs/testing/training-decision-view-reuse.md).
 - [x] Paired preference batches and state-contrast checks that expose a model
   choosing the same answer in situations needing different decisions (`6c4ad5bf`).
+- [x] Explicit opt-in state/action interaction fixes a reproduced synthetic
+  context-learning failure, with strict old-checkpoint compatibility and no
+  default change. Independent 15 whole modules passed 272 tests and 27 subtests.
+  This is not accepted card strategy or an activated model; see
+  [the conditioning evidence and limits](docs/testing/qv-state-action-conditioning.md).
 - [x] Failed experimental checkpoints are rejected rather than installed.
 
 ## Not Done
 
-- [ ] **Resource-aware trained decisions:** both latest fits failed the resource
-  contrast checks. Neither was deployed. More training steps alone are not a fix.
+- [ ] **Resource-aware trained decisions:** the previous fits failed resource
+  contrast checks and were not deployed. A fresh current-source comparison of
+  the old and new heads is underway; the synthetic correction is not its result.
+  More training steps alone are not assumed to solve the problem.
 - [ ] **Broad full-game quality:** demonstrate competent play on a fixed current
   source across Aggro/Burn, Control, Midrange, Tempo, Ramp and Tribal, then the
   supported more complex deck families. Historical games are not current acceptance.

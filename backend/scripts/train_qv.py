@@ -18,6 +18,7 @@ import time
 
 from ai.learned_qv import (FEATURE_SCHEMA_SHA256, KINDS, QVPolicy,
                           LEGACY_ACTIVATION, LIFE_CONTEXT_ACTIVATION, life_context,
+                          STATE_PRODUCT_ACTIVATION,
                           parameter_shapes, validate_q_activation,
                           WIDTH, checkpoint, read_bytes, read_json, save_checkpoint,
                           normalized_number, strict_json, text_moments,
@@ -45,10 +46,13 @@ def torch_model(*, seed, q_activation=LEGACY_ACTIVATION):
             self.q_out = nn.Linear(WIDTH, 1)
             self.v_hidden = nn.Linear(WIDTH, WIDTH)
             self.v_out = nn.Linear(WIDTH, 1)
-            if q_activation == LIFE_CONTEXT_ACTIVATION:
+            if q_activation in (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION):
                 # Added after every legacy module: seeded legacy weights stay identical.
                 self.q_context = nn.Linear(3 * WIDTH, 1, bias=False)
                 nn.init.zeros_(self.q_context.weight)
+            if q_activation == STATE_PRODUCT_ACTIVATION:
+                self.q_interaction = nn.Linear(WIDTH, 1, bias=False)
+                nn.init.zeros_(self.q_interaction.weight)
 
         def encode(self, pack, cache):
             validate_features(pack)
@@ -99,18 +103,25 @@ def torch_model(*, seed, q_activation=LEGACY_ACTIVATION):
 
         def raw_q(self, state, action, context=None):
             q = self.q_out(self.q_hidden(torch.cat((state, action))).relu()).squeeze()
-            if self.q_activation == LIFE_CONTEXT_ACTIVATION:
+            if self.q_activation in (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION):
                 q = q + self.q_context(torch.outer(action.new_tensor(context), action).flatten()).squeeze()
+            if self.q_activation == STATE_PRODUCT_ACTIVATION:
+                # Match stdlib's weight-first products without skipping zero-head gradients.
+                q = q + (self.q_interaction.weight.squeeze(0) * state * action).sum()
+                if not torch.isfinite(q).item():
+                    raise ValueError('Nonfinite Q/V activation')
             return q
 
         def bounded_q(self, q):
-            return q / (1 + q.abs()) if self.q_activation == LIFE_CONTEXT_ACTIVATION else q.tanh()
+            return (q / (1 + q.abs()) if self.q_activation in
+                    (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION) else q.tanh())
 
         def forward(self, state, action):
             if state.get('version') != action.get('version'):
                 raise ValueError('State/action feature epochs differ')
             cache = {}
-            context = life_context(state) if self.q_activation == LIFE_CONTEXT_ACTIVATION else None
+            context = (life_context(state) if self.q_activation in
+                       (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION) else None)
             s, a = self.encode(state, cache), self.encode(action, cache)
             q = self.bounded_q(self.raw_q(s, a, context))
             v = self.v_out(self.v_hidden(s).relu()).tanh().squeeze()
@@ -204,7 +215,7 @@ def train_samples(samples, *, contract, dataset_sha256, split_sha256,
     validate_contract(contract)
     _samples(samples, feature_version=contract['feature_version'])
     validate_q_activation(q_activation, contract)
-    if q_activation == LIFE_CONTEXT_ACTIVATION:
+    if q_activation in (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION):
         for row in samples:
             life_context(row['state'])
     if progress is not None and not callable(progress):
@@ -477,7 +488,8 @@ def main(argv=None):
     parser.add_argument('--epochs', type=int, default=20)
     parser.add_argument('--learning-rate', type=float, default=0.01)
     parser.add_argument('--seconds', type=int, default=300)
-    parser.add_argument('--q-activation', choices=(LEGACY_ACTIVATION, LIFE_CONTEXT_ACTIVATION),
+    parser.add_argument('--q-activation', choices=(LEGACY_ACTIVATION, LIFE_CONTEXT_ACTIVATION,
+                                                 STATE_PRODUCT_ACTIVATION),
                         default=LEGACY_ACTIVATION, help='Explicit checkpoint architecture opt-in')
     args = parser.parse_args(argv)
     if args.collect_only:

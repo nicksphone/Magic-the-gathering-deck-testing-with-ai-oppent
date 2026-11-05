@@ -16,6 +16,7 @@ VERSION = 'mtg.qv.v1'
 LEGACY_ACTIVATION = 'relu-tanh'
 LIFE_CONTEXT_VERSION = 'mtg.qv.v2'
 LIFE_CONTEXT_ACTIVATION = 'relu-softsign-life-context'
+STATE_PRODUCT_ACTIVATION = 'relu-softsign-life-state-product'
 FEATURE_VERSION = 'mtg.features.v1'
 FEATURE_SCHEMA_SHA256 = '0b3aadfead9f66999c8b6c3ddc13699ad7dc5dd1c76179e95585042ba0339ed5'
 FEATURE_CONTEXT_VERSION = 'mtg.features.v2'
@@ -47,12 +48,15 @@ def parameter_shapes(activation):
         return PARAMETERS
     if type(activation) is str and activation == LIFE_CONTEXT_ACTIVATION:
         return {**PARAMETERS, 'q_context.weight': (1, 3 * WIDTH)}
+    if type(activation) is str and activation == STATE_PRODUCT_ACTIVATION:
+        return {**PARAMETERS, 'q_context.weight': (1, 3 * WIDTH),
+                'q_interaction.weight': (1, WIDTH)}
     raise ValueError('Unsupported Q/V activation')
 
 
 def validate_q_activation(activation, contract):
     parameter_shapes(activation)
-    if (activation == LIFE_CONTEXT_ACTIVATION
+    if (activation in (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION)
             and contract['feature_version'] != FEATURE_CONTEXT_VERSION):
         raise ValueError('Life-context Q requires the registered v2 feature contract')
 
@@ -345,7 +349,7 @@ class QVPolicy:
     def _linear(self, name, values, relu=True):
         weights = self._payload['weights']
         bias = weights.get(name + '.bias', [0.0] * len(weights[name + '.weight']))
-        if self._payload['activation'] == LIFE_CONTEXT_ACTIVATION:
+        if self._payload['activation'] in (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION):
             result = [math.sumprod(row, values) + offset
                       for row, offset in zip(weights[name + '.weight'], bias)]
         else:
@@ -432,7 +436,8 @@ class QVDecision:
         self._policy, self._cache = policy, {} if scope is None else scope['cache']
         try:
             self._context = (life_context(state)
-                             if policy._payload['activation'] == LIFE_CONTEXT_ACTIVATION else None)
+                             if policy._payload['activation'] in
+                             (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION) else None)
             self._state = policy._encode(state, self._cache)
             self._value = math.tanh(policy._linear('v_out', policy._linear('v_hidden', self._state), False)[0])
         finally:
@@ -447,6 +452,10 @@ class QVDecision:
         if self._context is not None:
             q += self._policy._linear('q_context',
                 [scale * item for scale in self._context for item in vector], False)[0]
+            if self._policy._payload['activation'] == STATE_PRODUCT_ACTIVATION:
+                # Weight first: finite embeddings can overflow their unweighted product.
+                weights = self._policy._payload['weights']['q_interaction.weight'][0]
+                q += sum(w * s * a for w, s, a in zip(weights, self._state, vector))
             return {'q': normalized_number(q), 'v': self._value}
         return {'q': math.tanh(q), 'v': self._value}
 

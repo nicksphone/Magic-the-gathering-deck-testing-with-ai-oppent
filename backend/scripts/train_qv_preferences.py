@@ -15,6 +15,7 @@ import time
 
 from ai.learned_qv import (QVPolicy, checkpoint, normalized_number,
                           LEGACY_ACTIVATION, LIFE_CONTEXT_ACTIVATION,
+                          STATE_PRODUCT_ACTIVATION,
                           life_context, validate_q_activation,
                           validate_contract, validate_features)
 from scripts.train_qv import export_weights, torch_model
@@ -83,7 +84,8 @@ def _scores(model, row, torch):
     # choices. Runtime scores and ranking/parity diagnostics remain bounded.
     cache = {}
     state = model.encode(row['state'], cache)
-    context = life_context(row['state']) if model.q_activation == LIFE_CONTEXT_ACTIVATION else None
+    context = (life_context(row['state']) if model.q_activation in
+               (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION) else None)
     scores = []
     for action in [row['preferred'], *row['alternatives']]:
         encoded = model.encode(action, cache)
@@ -104,7 +106,7 @@ def train_preferences(rows, *, contract, dataset_sha256, split_sha256, seed,
     """
     validate_preferences(rows, contract=contract)
     validate_q_activation(q_activation, contract)
-    if q_activation == LIFE_CONTEXT_ACTIVATION:
+    if q_activation in (LIFE_CONTEXT_ACTIVATION, STATE_PRODUCT_ACTIVATION):
         for row in rows:
             life_context(row['state'])
     if (type(seed) is not int or not 0 <= seed < 2**63
