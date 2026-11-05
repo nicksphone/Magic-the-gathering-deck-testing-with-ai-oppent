@@ -41,6 +41,20 @@ whole modules under its native I/O guard.
 
 ## Limits
 
+The actual private game position was also checked with the full Strong actor,
+not only a forced alternative. It selects the extra Stomper/Elves block; twelve
+recorded checked passes reach upkeep with the same local improvement and no
+root, legal-menu or RNG mutation. That diagnostic uses the worker's frozen
+`070b4da1` engine plus the exact correction, separately from the parent suite.
+
+Four same-deck/seed/budget `97f9c309` games then completed naturally; all 2,403
+accepted actions and actor frames replay exactly on that source. Ramp still
+loses all four. The affected game changes from 526 to 571 actions; the other
+three action/frame streams are unchanged. The first changed action is block
+383; its pre-action frame is unchanged. The bad-block screen still flags Grazer's death
+at the corrected block, not proof that the entire plan is wrong. The small
+comparison does not establish strategic strength or a speedup.
+
 The correction adds only 23 lines inside `_choose_blocks`. All bytes and AST
 outside that method are unchanged. The existing small-board Strong gate
 limits new work to at most five blockers times four attackers: 20 additional

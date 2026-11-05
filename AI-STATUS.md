@@ -1,6 +1,6 @@
 # AI Status Checklist
 
-Updated: 2026-11-05. Live gameplay source: `7bfbfad4`.
+Updated: 2026-11-05. Live gameplay source: `97f9c309`.
 
 **Status: working heuristic AI with implemented improvements; playing strength
 and AI release acceptance are NOT complete. No reliable percentage estimate.**
@@ -82,8 +82,9 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   measured series quality and a completed comparison matrix remain unfinished.
 - [ ] **No-regression comparison:** complete matched, source-pinned old/new games
   and compare decision quality as well as outcomes. Self-play wins alone prove little.
-- [x] **Live delivery of the draw fixes:** the preview now runs
-  `7bfbfad4` (2026-11-05). The latest 378-test cohort passed before switching;
+- [x] **Live delivery of the current draw/block fixes:** the preview now runs
+  `97f9c309` (2026-11-05). The coupled 38 whole modules passed 1,230 tests and
+  six subtests before switching;
   all 1,254 saved matches remain listed, two historical matches restored and
   sampled cached images retained identical bytes. No experimental weights
   were activated. See [delivery scope](docs/testing/targeted-draw-live-delivery.md).
@@ -97,7 +98,7 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 | Burn / White Weenie | Two fresh `ecda33bd` games finished naturally, with the deck seats reversed; 251 and 477 accepted moves | All Burn/WW decisions are good, or either strategy is finished |
 | Blue Control / Midrange | A fresh `812c91bc` Midrange/Control game finished naturally in 695 accepted moves; all 695 frames/actions replayed exactly. An earlier reverse `ecda33bd` game finished in 352 moves | A current matched pair, whole-strategy acceptance or a controlled speedup claim |
 | Tribal / Tempo | Two fresh `812c91bc` games finished naturally in 302 and 298 moves with deck seats reversed; all frames/actions replayed exactly | Held-out strategic superiority or BO3 acceptance |
-| Ramp | Four frozen `070b4da1` games against Control/Midrange finished naturally with seats reversed; all 2,358 frames/actions replayed exactly | Ramp lost all four; not a win-rate estimate, BO3 or new-fix acceptance |
+| Ramp | Four frozen `070b4da1` games replayed all 2,358 actions; four same-deck/seed/budget `97f9c309` games replayed all 2,403 actions | Ramp lost all eight; this small diagnostic is not a win-rate estimate, BO3 or strategic acceptance |
 | Drain/combo and other complex strategies | Not current-qualified by the evidence above | Completion inferred from shared engine support |
 
 Every accepted action and actor-visible hand is recorded. One new Burn/WW game
@@ -123,6 +124,13 @@ preserves Stomper, removes Elves and saves one life with the same Grazer loss.
 The shared blocking correction passed its coupled 38-module qualification;
 no alternate-game win or measured strategy-strength gain is claimed.
 One Ramp removal metric remains unavailable.
+
+The four corrected-code games finish naturally with the same winners. Three
+action/frame streams are unchanged; the affected Ramp/Midrange game first
+changes at block 383 and continues for 571 rather than 526 actions. Its remaining bad-block
+screen still counts Grazer dying at that block; it does not establish that the
+corrected whole plan is a mistake. These are checked local outcomes, not
+evidence that Ramp strategy is finished.
 
 ## Foundation Evaluation
 
@@ -160,6 +168,11 @@ One Ramp removal metric remains unavailable.
   observer comparisons remain failed; mana contents, RNG, pending dialogs and
   BO3 resume are not qualified. Do not switch live saved matches to this loader.
   See [the executed compatibility diagnostic](docs/testing/forge-native-save-compatibility.md).
+- [x] **Bounded native action replay:** replaying a genuine accepted paid Bolt
+  in a fresh JVM recreates the pending stack and resolution for both seats.
+  Independent verification checked 3,574 pins and ten unequal-observation
+  controls. This is a trusted canonical pose using native AI payment, not
+  human-choice replay, arbitrary-game resume or a repaired GameState loader.
 - [ ] Verify native AI information fairness: the shuffle guard does not fence
   all heuristics. Source review found opponent-library reads in some naming
   routes; those were not demonstrated in the initial BO3. Client privacy and

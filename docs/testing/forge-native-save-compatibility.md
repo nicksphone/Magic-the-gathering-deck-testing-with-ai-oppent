@@ -57,4 +57,32 @@ are in the evidence directory. `run_audit.py` performs serial native calls;
 the explicitly narrower compatibility controls. Do not interpret the runner's
 observation-complete exit as a successful complete-save assertion.
 
-No dependency rebuild, commit, publication, graph update, or cleanup was done.
+No dependency rebuild, commit, publication, graph update, or cleanup was done
+by that original diagnostic.
+
+## Separate Accepted-Action Replay Prototype
+
+A later bounded experiment records a real accepted `ComputerUtil.playStack`
+action, then replays it through native payment/play in a fresh JVM. Both seats
+strictly match the declared initial, genuinely paid-pending and resolved
+observations. All four final JVMs returned zero in 18-21 seconds. The pending
+Bolt spends one red mana from the actually tapped Mountain; resolution puts
+that physical card in the graveyard and the opponent at 17. Inventories retain
+120 unique physical IDs across the two players. No stack or payment is forged.
+
+An independent source review found no issue within that scope. Verification
+returned zero after checking 3,574 current pins, both strict pairs and ten
+unequal-observation controls. Full source/evidence archive readback also passed.
+An early observer incorrectly followed a pre-move Java Card object; its failed
+logs remain, and the corrected observer reads the actual native spell host.
+
+The same explicitly trusted turn-two canonical pose is used, not a natural
+opening or a human-choice transcript. The new original helper is credited and
+GPL-3.0-or-later, retaining Forge's license and notices. The inherited engine
+revision remains not independently Git-attested.
+
+This demonstrates a possible action-replay route around the pending-spell
+loader gap. It does not repair or requalify the original GameState loader, and
+does not prove arbitrary games, complete RNG state, human choices, crash-safe
+resume, BO3 persistence, AI fairness or application adoption. Existing saved
+matches remain on the Python application; no live engine cutover occurred.
