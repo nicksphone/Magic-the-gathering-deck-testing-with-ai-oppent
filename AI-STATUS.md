@@ -104,6 +104,12 @@ Synthetic game traces stay protected and are not public Git fixtures.
 - [ ] Prototype the recommended Forge integration without changing the live app;
   prove user choices, privacy, full matches/BO3 and saved-state behavior.
 - [ ] Make a production adoption decision, including distribution/license review.
+- [ ] **Native durable resume:** a six-process Forge compatibility check restored
+  selected settled life/card-placement controls, but lost a genuinely paid spell
+  on the stack in both seats (stack 1 to 0; caster inventory 60 to 59). Raw
+  observer comparisons remain failed; mana contents, RNG, pending dialogs and
+  BO3 resume are not qualified. Do not switch live saved matches to this loader.
+  See [the executed compatibility diagnostic](docs/testing/forge-native-save-compatibility.md).
 - [ ] Verify native AI information fairness: the shuffle guard does not fence
   all heuristics. Source review found opponent-library reads in some naming
   routes; those were not demonstrated in the initial BO3. Client privacy and

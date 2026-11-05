@@ -178,3 +178,12 @@ adapter around the unchanged Forge human controller. It reuses the actor-scoped
 projection and one-use choice broker, with JSON-lines stdin/stdout rather than
 raw Java views. Diagnostics and game traces remain private. Read the
 [contract, runnable commands and open adoption requirements](../../docs/testing/forge-native-human-worker.md).
+
+## Native Save Compatibility
+
+[`forge/save`](forge/save) contains an original credited GPL-3.0-or-later
+fresh-JVM diagnostic, not a replacement persistence implementation. Real native
+payment/resolution and strict observed-fact comparisons are retained, including
+failed pending-stack recovery. Separate, explicitly narrower placement controls
+do not waive full save/resume requirements. Keep native state text and facts
+private. Read [the executed result and observer limitations](../../docs/testing/forge-native-save-compatibility.md).
