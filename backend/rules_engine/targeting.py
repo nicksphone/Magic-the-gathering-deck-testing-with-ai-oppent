@@ -303,8 +303,15 @@ def validate_cast_targets(target_hints: dict[str, Any], action_targets: dict[str
         for mode in selected:
             if mode not in modes:
                 return False, "Invalid mode selected."
-    elif modes and action_targets.get("mode_text") and action_targets.get("mode_text") not in modes:
-        return False, "Invalid mode selected."
+    elif modes:
+        one = action_targets.get('mode_text')
+        many = action_targets.get('mode_texts')
+        if one is not None and many is not None:
+            return False, 'Use one mode selection representation.'
+        selected = many if many is not None else ([one] if one is not None else [])
+        if (not isinstance(selected, list) or len(selected) != 1
+                or not isinstance(selected[0], str) or selected[0] not in modes):
+            return False, 'Select exactly one printed mode.'
 
     if target_hints.get("requires_x_value"):
         raw_x = action_targets.get("x_value", None)

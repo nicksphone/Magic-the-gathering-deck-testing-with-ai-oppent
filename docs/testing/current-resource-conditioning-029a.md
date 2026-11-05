@@ -67,3 +67,17 @@ fixtures. The actual tar name is `source-evidence.private.tar.gz`; its
 `train-diagnostic/REPORT.json` contains the latent measurements.
 Code qualification is separately archived as
 `qv-state-action-conditioning-20261105-ReU6Oy3C`.
+
+## Subsequent Capacity Check
+
+A TRAIN-only closed-form diagnostic separates all 16 directions using the fixed
+encoder's interaction features, including after scaling weights into the bound.
+A registered-inference readout prototype reaches 16/16 TRAIN but only 6/16
+already-examined development and 0/2 development contrast groups. Torch/stdlib
+maximum error is `1.81e-16`: generalization, not parity, fails.
+
+The prototype remains rejected; its zero-update header was actually rejected by
+live policy binding. No production training API or checkpoint format was added
+from this failed experiment. Protected evidence is
+`current-resource-readout-diagnostic-20261105-5d0vi1ja`. This is not a held-out-card
+or gameplay result, nor a reason to add epochs without investigating the failure.

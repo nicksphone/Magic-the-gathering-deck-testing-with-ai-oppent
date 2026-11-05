@@ -878,6 +878,8 @@ def infer_effect_from_oracle(
         if target:
             return "exile_return_transformed", {"target_card_id": target}
     if mode_text:
+        action_targets = {**action_targets,
+                          **(action_targets.get("mode_targets") or {}).get(mode_text, {})}
         oracle = without_reminder_text(mode_text.lower())
     elif mode_texts:
         effects = []

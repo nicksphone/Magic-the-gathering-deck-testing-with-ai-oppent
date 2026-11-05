@@ -33,6 +33,10 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   explicit choices and private-draw safeguards are covered. Independent nine
   whole modules passed 378 tests; multi-select modes remain separate.
   See [the modal-win scope](docs/testing/ai-modal-draw-win.md).
+- [x] Explicit one-mode scalar/list declarations retain per-mode draw recipients
+  and selected stack targets instead of crashing or countering an unselected top
+  spell. Nullable unused selectors remain valid. Independent 18 whole modules
+  passed 844 tests; see [scope and controls](docs/testing/modal-selected-targets.md).
 - [x] Source-bound trajectory collection, exact action/frame replay, training
   and checkpoint evaluation infrastructure. Infrastructure is not a strong model.
   The exporter now reuses one actor view per decision-frame capture; all four
@@ -54,7 +58,8 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   old/new heads reach 8/16 and 10/16 development decisions, with 0/2 complete
   resource contrast groups. Fixed-encoder controls do not solve it either.
   All four new checkpoints remain rejected; more steps alone are not assumed
-  to fix this. See [the actual four-arm evidence](docs/testing/current-resource-conditioning-029a.md).
+  to fix this. A subsequent readout prototype fits TRAIN but fails development
+  too. See [the actual evidence](docs/testing/current-resource-conditioning-029a.md).
 - [ ] **Broad full-game quality:** demonstrate competent play on a fixed current
   source across Aggro/Burn, Control, Midrange, Tempo, Ramp and Tribal, then the
   supported more complex deck families. Historical games are not current acceptance.
@@ -87,7 +92,8 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 | Burn / White Weenie | Two fresh `ecda33bd` games finished naturally, with the deck seats reversed; 251 and 477 accepted moves | All Burn/WW decisions are good, or either strategy is finished |
 | Blue Control / Midrange | A fresh `812c91bc` Midrange/Control game finished naturally in 695 accepted moves; all 695 frames/actions replayed exactly. An earlier reverse `ecda33bd` game finished in 352 moves | A current matched pair, whole-strategy acceptance or a controlled speedup claim |
 | Tribal / Tempo | Two fresh `812c91bc` games finished naturally in 302 and 298 moves with deck seats reversed; all frames/actions replayed exactly | Held-out strategic superiority or BO3 acceptance |
-| Ramp and other complex strategies | Not current-qualified by the evidence above | Completion inferred from shared engine support |
+| Ramp | Four frozen `070b4da1` games against Control/Midrange finished naturally with seats reversed; all 2,358 frames/actions replayed exactly | Ramp lost all four; not a win-rate estimate, BO3 or new-fix acceptance |
+| Drain/combo and other complex strategies | Not current-qualified by the evidence above | Completion inferred from shared engine support |
 
 Every accepted action and actor-visible hand is recorded. One new Burn/WW game
 has already replayed exactly through all 251 decision frames. Its wider quality
@@ -103,6 +109,14 @@ not relabeled as completed. See [current gameplay review](docs/testing/current-a
 The three current games' available decision screens raised no flags. One Control
 block producer returned an uncertain result, so that metric remains unavailable,
 not a certified zero. These heuristic screens do not establish optimal play.
+
+The four Ramp reviews produced three unused-mana and two bad-block flags.
+Context checks do not establish those passes or one chump block as mistakes.
+One block has a checked local improvement: after retaining Stomper from a losing
+block, use it against the unblocked Elves. A recorded pass-only continuation
+preserves Stomper, removes Elves and saves one life with the same Grazer loss.
+The shared blocking correction is being tested; no alternate-game win is claimed.
+One Ramp removal metric remains unavailable.
 
 ## Foundation Evaluation
 
