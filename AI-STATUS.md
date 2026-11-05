@@ -35,6 +35,9 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   See [the modal-win scope](docs/testing/ai-modal-draw-win.md).
 - [x] Source-bound trajectory collection, exact action/frame replay, training
   and checkpoint evaluation infrastructure. Infrastructure is not a strong model.
+  The exporter now reuses one actor view per decision-frame capture; all four
+  whole compatibility modules passed 151 tests including real CLI resume/refusal.
+  See [measured scope and provenance](docs/testing/training-decision-view-reuse.md).
 - [x] Paired preference batches and state-contrast checks that expose a model
   choosing the same answer in situations needing different decisions (`6c4ad5bf`).
 - [x] Failed experimental checkpoints are rejected rather than installed.
@@ -81,6 +84,11 @@ Every accepted action and actor-visible hand is recorded. One new Burn/WW game
 has already replayed exactly through all 251 decision frames. Its wider quality
 review is not closed; no zero-error gameplay claim is inferred from completion.
 Synthetic game traces stay protected and are not public Git fixtures.
+
+The incomplete Midrange/Blue Control prefix has now replayed through all 584
+recorded actor frames. At that frontier the next choice took 0.1104 seconds,
+not a demonstrated stall. The original game remains incomplete; exporter view
+reuse and a single-position timing do not close full-game performance acceptance.
 
 ## Foundation Evaluation
 

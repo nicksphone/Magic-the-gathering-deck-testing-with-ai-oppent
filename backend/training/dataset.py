@@ -8,7 +8,8 @@ from pathlib import Path
 import re
 
 from rules_engine.action_validation import ActionRejected
-from training.environment import decode_action, encode_action
+from training.environment import (TrainingEnvironment, decision_inputs_from_view,
+                                  decode_action, encode_action)
 
 
 VERSION = 'mtg.dataset.v1'
@@ -192,9 +193,16 @@ def episode_records(environment, teacher, *, episode, groups, tick_budget,
             seat = environment.acting_seat
             if decision_frame:
                 from training.decision_frame import build_decision_frame
+                # Custom adapters retain their public-method behavior.
+                if type(environment) is TrainingEnvironment and not any(
+                        name in vars(environment) for name in
+                        ('observe', 'prompts', 'decision_context', '_view', '_prompts')):
+                    observation, prompts, context = decision_inputs_from_view(*environment._view(seat), seat)
+                else:
+                    observation, prompts = environment.observe(seat), environment.prompts(seat)
+                    context = environment.decision_context(seat) if public_context else None
                 observation, decision_bindings = build_decision_frame(
-                    environment.observe(seat), environment.prompts(seat),
-                    public_context=environment.decision_context(seat) if public_context else None)
+                    observation, prompts, public_context=context if public_context else None)
             else:
                 observation = aliases.observation(environment.observe(seat))
             proposed = teacher(environment)
