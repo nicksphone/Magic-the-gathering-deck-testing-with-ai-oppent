@@ -54,6 +54,9 @@ def result():
 
 def main():
     mode, root = sys.argv[1], Path(sys.argv[2])
+    if mode == "group-descendant":
+        time.sleep(60)
+        return
     if mode == "parent-death":
         import ctypes
         libc = ctypes.CDLL(None, use_errno=True)
@@ -67,7 +70,7 @@ def main():
         time.sleep(60)
         return
     if mode == "group":
-        child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(60)"])
+        child = subprocess.Popen([sys.executable, "-u", __file__, "group-descendant", str(root)])
         (root / "DESCENDANT.pid").write_text(str(child.pid))
 
         def terminate(_signum, _frame):
@@ -173,6 +176,23 @@ def main():
         if mode == "bad-completion":
             completion(99, 1)
             continue
+        if mode in {"stderr-after-start", "stderr-after-result"}:
+            if mode == "stderr-after-start":
+                emit(choice(number + 2, number + 2))
+            else:
+                completion(number, number + 1)
+                result()
+            (root / "STDERR_READY").touch(mode=0o600)
+            while not (root / "RELEASE_STDERR").exists():
+                time.sleep(.01)
+            sys.stderr.buffer.write(b"SYNTHETIC STDERR PREFIX\n")
+            sys.stderr.buffer.flush()
+            while not (root / "RELEASE_STDERR_FLOOD").exists():
+                time.sleep(.01)
+            sys.stderr.buffer.write(b"SYNTHETIC PRIVATE\n" * 20000)
+            sys.stderr.buffer.flush()
+            time.sleep(60)
+            return
         if mode == "nested":
             if number == 0:
                 emit(choice(2, 2))

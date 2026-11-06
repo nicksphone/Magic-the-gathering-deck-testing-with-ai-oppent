@@ -167,6 +167,15 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   82.296 seconds (Burn wins turn 10), with all nine loaded origins verified.
   The earlier Control UI attempt remains incomplete at the prototype's 30-turn
   cap. See [scope and remaining work](docs/testing/native-linked-draw-ai.md).
+- [x] **Native late-turn integration:** the worker no longer rejects an otherwise
+  unfinished game solely for passing turn 30. A fixed 512 MiB aggregate journal
+  bound and strict encoding preserve failure/resource boundaries. The new
+  independently rebuilt profile passed 85 native SDK tests; profile and transport
+  cohorts separately passed 26 tests and 65 tests plus 52 subtests. One retained-seed
+  built-UI Control/Ramp game then finished naturally at turn 35 through 439 rendered
+  answers, with all fifteen overlay origins checked and owned processes closed.
+  This is not a live switch, win-rate, cold-save or BO3 certificate. See
+  [the exact boundary, original failure and limits](docs/testing/native-long-game-boundary.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
   1,230 tests plus six subtests; the current search-limit/post-denial cohorts

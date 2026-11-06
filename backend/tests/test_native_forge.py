@@ -514,6 +514,78 @@ class SyntheticForgeProcessOwnerTests(unittest.TestCase):
             done = self.wait(manager, sid, lambda row: row["status"] == "failed")
             self.assertEqual(done["error"]["code"], "native_output_limit")
 
+    def assert_transcript_failure_closed(self, manager, sid, receipt_status):
+        directory = self.directory(sid)
+        self.wait(manager, sid, lambda row: (directory / "stderr.private.log").stat().st_size > 0)
+        (directory / "RELEASE_STDERR_FLOOD").touch(mode=0o600)
+        done = self.wait(manager, sid, lambda row: row["status"] == "failed")
+        self.assertEqual(done["error"]["code"], "native_output_limit")
+        self.assertEqual(done["last_answer"]["status"], receipt_status)
+        self.assertIsNone(done["result"])
+        self.assertIsNone(done["question"])
+        closed = manager.close(sid, CAP)
+        self.assertEqual(closed["status"], "failed")
+        self.assertIsNone(closed["result"])
+        self.assertIsNone(closed["question"])
+        session = manager._sessions[sid]
+        self.assertTrue(session.closed.is_set())
+        self.assertFalse(session.reader.is_alive())
+        self.assertIsNotNone(session.process.poll())
+        self.assertTrue(all(pipe.closed for pipe in (
+            session.process.stdin, session.process.stdout, session.process.stderr)))
+        self.assertTrue(all(handle.closed for handle in session.files))
+        directory = self.directory(sid)
+        self.assertGreater((directory / "stderr.private.log").stat().st_size, 0)
+        self.assertLessEqual(sum((directory / name).stat().st_size for name in (
+            "stdout.private.jsonl", "stderr.private.log")), 32768)
+        return closed
+
+    def test_stderr_breach_invalidates_observed_processing_receipt(self):
+        with mock.patch.object(NF, "_TRANSCRIPT_LIMIT", 32768):
+            manager, sid, first = self.start("stderr-after-start")
+            answer = self.answer_payload(first)
+            manager.answer(sid, CAP, answer)
+            directory = self.directory(sid)
+            processing = self.wait(manager, sid, lambda row: row["last_answer"] is not None
+                and row["last_answer"]["status"] == "processing" and row["question"] is not None
+                and (directory / "STDERR_READY").exists())
+            self.assertNotEqual(processing["question"]["request_id"], first["question"]["request_id"])
+            self.assertIsNone(processing["result"])
+            session = manager._sessions[sid]
+            self.assertIsNone(session.process.poll())
+            self.assertEqual((directory / "stderr.private.log").stat().st_size, 0)
+            (directory / "RELEASE_STDERR").touch(mode=0o600)
+            closed = self.assert_transcript_failure_closed(manager, sid, "uncertain")
+            self.assertEqual(closed["last_answer"]["reason"], "native_output_limit")
+            self.assertEqual(manager.answer(sid, CAP, answer), closed)
+            self.assertEqual(len(self.received(sid)), 1)
+
+    def test_stderr_breach_discards_valid_pending_result_before_eof(self):
+        with mock.patch.object(NF, "_TRANSCRIPT_LIMIT", 32768):
+            manager, sid, first = self.start("stderr-after-result")
+            manager.answer(sid, CAP, self.answer_payload(first))
+            session, directory = manager._sessions[sid], self.directory(sid)
+
+            def result_pending(_snapshot):
+                with session.lock:
+                    return session.pending_result is not None and (directory / "STDERR_READY").exists()
+
+            pending = self.wait(manager, sid, result_pending)
+            with session.lock:
+                self.assertEqual(session.pending_result, {"outcomes": ["SYNTHETIC TRANSPORT ONLY"],
+                    "turns": 3, "draw": False, "win_condition": "SYNTHETIC"})
+                self.assertEqual((session.starts, session.completions), (1, 1))
+                self.assertFalse(session.awaiting or session.invocations)
+            self.assertEqual(pending["status"], "running")
+            self.assertEqual(pending["last_answer"]["status"], "processed")
+            self.assertIsNone(pending["result"])
+            self.assertIsNone(pending["question"])
+            self.assertIsNone(session.process.poll())
+            self.assertEqual((directory / "stderr.private.log").stat().st_size, 0)
+            (directory / "RELEASE_STDERR").touch(mode=0o600)
+            closed = self.assert_transcript_failure_closed(manager, sid, "processed")
+            self.assertIsNone(closed["last_answer"]["reason"])
+
     def test_frame_count_is_bounded(self):
         with mock.patch.object(NF, "_FRAME_COUNT_LIMIT", 5):
             manager, sid, _ = self.start("frame-flood")

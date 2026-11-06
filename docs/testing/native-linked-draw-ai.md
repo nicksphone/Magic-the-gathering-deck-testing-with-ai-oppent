@@ -1,5 +1,9 @@
 # Native Linked Damage And Targeted Draw
 
+The later [long-game worker qualification](native-long-game-boundary.md) removes
+the prototype's turn-30 cutoff with a separate bounded-worker profile and one
+natural turn-35 UI result. The historical failures below remain unchanged.
+
 These are modifications of the Forge Team/Card-Forge AI, not a replacement
 engine or learned model authored from scratch. Upstream revision
 `61e9442c433711a82258daca3236f936a1d6f70e`, complete source pre/postimages,

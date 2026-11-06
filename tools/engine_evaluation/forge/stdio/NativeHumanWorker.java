@@ -65,6 +65,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public final class NativeHumanWorker implements IRemote {
+    private static final long JOURNAL_BYTE_LIMIT = 536870912L;
+    private long journalBytes;
     private Path evidence;
     private JsonObject matchSpec;
     private final Map<String,String> importedDecks = new TreeMap<>();
@@ -90,8 +92,16 @@ public final class NativeHumanWorker implements IRemote {
             row.getAsJsonObject().add("producer",producerTrace.completion(id));
         }
         try {
-            Files.writeString(evidence.resolve(stream+".jsonl"), row+"\n", StandardCharsets.UTF_8,
+            var utf8 = StandardCharsets.UTF_8.newEncoder().encode(java.nio.CharBuffer.wrap(row+"\n"));
+            byte[] encoded = new byte[utf8.remaining()];
+            utf8.get(encoded);
+            if (encoded.length > JOURNAL_BYTE_LIMIT - journalBytes) {
+                failed = true;
+                throw new IllegalStateException("journal_budget");
+            }
+            Files.write(evidence.resolve(stream+".jsonl"), encoded,
                     java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+            journalBytes += encoded.length;
             int index = cursors.getOrDefault(stream,0);
             try {
                 if (causalVerifier == null) causalVerifier = new CausalCompletionVerifier(replay ? expected : null);
@@ -166,7 +176,6 @@ public final class NativeHumanWorker implements IRemote {
             var sa=item.getSpellAbility();
             if (sa.isSpell() && sa.getActivatingPlayer()==actor && sa.getTotalManaSpent()>0) paidSeen=true;
         }
-        if (game.getPhaseHandler().getTurn()>30) { failed=true; throw new IllegalStateException("turn_budget"); }
         journal("native",Map.of("event",kind,"state",nativeState(game)));
         if (!wasPaidSeen && paidSeen) journal("paid-pending",nativeState(game));
     }

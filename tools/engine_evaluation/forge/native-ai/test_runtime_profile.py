@@ -408,6 +408,59 @@ class SyntheticProfileTests(unittest.TestCase):
                 self.assertFalse((root / ("rejected-" + folder)).exists())
                 path.write_bytes(original)
 
+    def worker_bundle(self):
+        bundle = self.draw_bundle()
+        bundle['schema'] = 6
+        bundle['sources']['tools/engine_evaluation/forge/stdio/NativeHumanWorker.java'] = '6' * 64
+        for suffix in ('', '$1', '$2', '$3', '$Answer', '$Input'):
+            bundle['classes']['forge/evaluation/NativeHumanWorker' + suffix + '.class'] = '7' * 64
+        return bundle
+
+    def test_worker_bundle_requires_complete_fifteen_class_composition_and_new_identity(self):
+        bundle = self.worker_bundle()
+        runtime, profile = P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bundle)
+        self.assertEqual(profile['overrides'], bundle)
+        self.assertEqual((len(bundle['sources']), len(bundle['classes'])), (8, 15))
+        self.assertNotEqual(runtime['build_id'], P.derive_bundle(
+            self.base, self.identity, '/build/shadow', '/profile', self.draw_bundle())[0]['build_id'])
+        for bad in (
+            {**bundle, 'schema': 6.0}, {**bundle, 'schema': 5},
+            {**bundle, 'sources': {k: v for k, v in bundle['sources'].items() if 'NativeHumanWorker' not in k}},
+            {**bundle, 'classes': {k: v for k, v in bundle['classes'].items() if '$Input' not in k}},
+            {**bundle, 'classes': {k: v for k, v in bundle['classes'].items() if 'DrawAi' not in k}},
+            {**bundle, 'classes': {**bundle['classes'], 'forge/evaluation/NativeHumanWorker$4.class': '8' * 64}},
+            {**bundle, 'classes': {**bundle['classes'], 'forge/game/Game.class': '8' * 64}},
+        ):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bad)
+
+    def test_worker_publication_checks_all_six_class_payloads_and_source(self):
+        with tempfile.TemporaryDirectory(prefix='synthetic-worker-profile-') as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.worker_bundle()
+            for folder, key in [('source', 'sources'), ('shadow', 'classes')]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(('SYNTHETIC; NOT NATIVE: ' + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / 'approval.json'
+            approval.write_text(json.dumps(bundle))
+            P.main(*args, root / 'output', approval)
+            self.assertEqual(json.loads((root / 'output/BUILD-IDENTITY.json').read_text())['overrides'], bundle)
+            cases = [('shadow', name) for name in bundle['classes'] if 'NativeHumanWorker' in name]
+            cases.append(('source', 'tools/engine_evaluation/forge/stdio/NativeHumanWorker.java'))
+            for index, (folder, relative) in enumerate(cases):
+                path = build / folder / relative
+                original = path.read_bytes()
+                path.write_bytes(b'SYNTHETIC CHANGED')
+                output = root / ('rejected-' + str(index))
+                with self.assertRaisesRegex(ValueError, 'byte identity'):
+                    P.main(*args, output, approval)
+                self.assertFalse(output.exists())
+                path.write_bytes(original)
+
     def test_approved_bundle_files_must_match_before_atomic_publication(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)
