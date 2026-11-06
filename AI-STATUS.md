@@ -1,6 +1,6 @@
 # AI Status Checklist
 
-Updated: 2026-11-05. Live gameplay source: `15aa3c77`.
+Updated: 2026-11-06. Live gameplay source: `3c054542`.
 
 **Status: working heuristic AI with implemented improvements; playing strength
 and AI release acceptance are NOT complete. No reliable percentage estimate.**
@@ -32,22 +32,23 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   nested planning, rather than multiplying independent local search limits.
   The two affected cohorts passed 649 tests plus six subtests and 114 tests.
   The retained 102.60-second decision chose the same checked attack in 11.31
-  seconds. This component is live on `15aa3c77`; overall practical performance
+  seconds. This component is included in live `3c054542`; overall practical performance
   remains open. See [the measured scope](docs/testing/master-combat-budget.md).
 - [x] **Stop discarded search work:** after a denied combat expansion, private
   strategic searches stop instead of continuing work the root will discard.
   Previously checked candidates and ordinary legal fallback remain usable;
   difficulty and allowances are unchanged. Affected cohorts passed 682 tests
   plus six subtests and 114 HTTP tests. The retained decision took 6.75 seconds;
-  this follow-up is live on `15aa3c77`. See [scope and limits](docs/testing/post-denial-speculation.md).
+  this follow-up is included in live `3c054542`. See [scope and limits](docs/testing/post-denial-speculation.md).
 - [x] **Retain selected block plans:** ranking keeps its selected allocation
   after shared-budget denial rather than selecting again. Generic empty-descriptor
   behavior is preserved, losing partial searches retain fallback, and draws are
   not defeats. Final affected qualification passed 933 tests plus six subtests
   across 34 whole pure modules in three process shards, and 114 tests in two
   whole HTTP modules. Two final-code decisions retain the evaluated plan with
-  root/RNG and hidden-view controls. This candidate is not yet live and does not
-  establish overall playing strength; see [scope and retained failures](docs/testing/retained-block-intents.md).
+  root/RNG and hidden-view controls. This correction is now live on `3c054542`;
+  it does not establish overall playing strength. See
+  [scope, delivery and retained failures](docs/testing/retained-block-intents.md).
 - [x] Spell-curve classification no longer diluted by the land count (`fffcca07`).
 - [x] Ordinary targeted draw spells compare actual legal recipients instead of
   defaulting to the opponent (`ecda33bd`). The affected eight whole modules
@@ -113,13 +114,22 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   measured series quality and a completed comparison matrix remain unfinished.
 - [ ] **No-regression comparison:** complete matched, source-pinned old/new games
   and compare decision quality as well as outcomes. Self-play wins alone prove little.
+- [ ] **Reuse an existing card/rules engine:** the isolated Forge bridge has a
+  completed native game and genuine reference replay, plus a coupled stale-mana
+  payment check. Its source bundle rebuilds all 28 qualified payload classes
+  byte-for-byte. Complex-deck testing exposed a multi-card selection gap in the
+  bridge; integration, durable resume and broader AI quality remain unfinished.
+  Forge has not replaced the live backend. See [current scope](docs/testing/native-engine-integration-status.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
-  preview now runs `15aa3c77` (2026-11-05). Earlier draw/block qualification passed
+  preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
   1,230 tests plus six subtests; the current search-limit/post-denial cohorts
   passed 682 plus six subtests and 114 HTTP tests before their code-only switch;
+  the retained-block follow-up passed 933 plus six subtests and 114 HTTP tests;
   all 1,254 saved matches remain listed, two historical matches restored and
   sampled cached images retained identical bytes. No experimental weights
-  were activated. See [current delivery scope](docs/testing/master-combat-budget.md#live-component-delivery).
+  were activated. The existing runtime, frontend and database path were preserved,
+  and the database was not restored or overwritten. See
+  [current delivery scope](docs/testing/retained-block-intents.md#live-delivery).
 - [ ] **AI RC acceptance:** complete the broader evidence above, plus current
   application integration. Isolated test counts cannot close this item.
 

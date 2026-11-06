@@ -89,3 +89,17 @@ results are retained as superseded assumptions, not legitimate consumer bugs.
 An earlier six-failure test-boundary mistake bypassed the public declaration
 normalizer and is likewise retained separately. Whole-game playing strength,
 sideboarding, current UI behavior and overall AI acceptance remain separate.
+
+## Live Delivery
+
+On 2026-11-06, the preview switched from `15aa3c77` to `3c054542`. Its 4,337
+installed regular source files were attested to the committed Git blobs and
+modes. Before starting the new code, the closed local database passed its
+integrity check and its protected NFS backup was byte-verified. The database was
+never restored or overwritten.
+
+The new backend passed health checks and preserved all 1,254 saved match IDs,
+two historical match GET samples, two sampled cached-image responses and all
+148 copied cache files. The database path, runtime, environment and frontend
+were unchanged. No experimental model or Forge cutover was activated. This is
+delivery of the tested block-planning correction, not overall AI acceptance.

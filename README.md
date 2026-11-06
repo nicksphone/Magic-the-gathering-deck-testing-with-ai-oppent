@@ -10,6 +10,8 @@ External engine evaluation credits the **Forge Team/Card-Forge contributors** an
 [credited test code](tools/engine_evaluation/README.md) and
 [third-party license notices](THIRD-PARTY-NOTICES.md). Neither engine has replaced
 the running backend; their work is not represented as ours.
+The [native-engine integration status](docs/testing/native-engine-integration-status.md)
+distinguishes the reusable implementation from the bridge work still needed.
 
 Ordered noncreature copy choices now have
 [current 1,129-case qualification](docs/testing/ordered-copy-current.md), with
