@@ -185,6 +185,15 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   empty-source checks also passed. This does not cover detain, suppression, every
   future response window, a new-profile UI game or global AI fairness. See
   [source, original failures and reproduction](tools/engine_evaluation/forge/native-ai/fog-activation-legality/README.md).
+- [x] **Native Chalice knowledge boundary:** equal hidden hand/library partitions
+  now produce equal first choices without discarding known public spent/returned
+  cards or genuine Escape permissions. The unchanged eight-row audit and ten
+  additional goldens satisfy their contracts; a separate original-main run and
+  sixteen Fog preservation cases also pass. A fresh combined-profile UI game
+  finished naturally on turn 35 with 439 rendered answers and all sixteen actual
+  class origins checked. These are distinct checks, not a summed game count or
+  a live-default/strength/save/BO3 certificate. See
+  [the correction, disclosure premise and executed scope](docs/testing/native-chalice-knowledge.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
   1,230 tests plus six subtests; the current search-limit/post-denial cohorts

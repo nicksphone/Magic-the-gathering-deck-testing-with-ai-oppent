@@ -1,0 +1,20 @@
+{
+  "status": "PASS_SOURCE_ONLY_PRESERVATION_CHECK",
+  "preimage_sha256": "4384a7d23c3d28f5ad99c408354625f343eb3c3fa7d9c2a325c7d684696c685c",
+  "postimage_sha256": "5608d80db5a78f164dbdf582c13a887968fc52c7c0e5e628e66709dae7b26fc2",
+  "diff_sha256": "7e412bb05fec59c07665b3dbbd0e285887d01346c533f99071c67185ac61132b",
+  "all_non_Chalice_upstream_method_bytes_equal": true,
+  "approved_changes_only": [
+    "requested SPDX/derived-work header",
+    "imports",
+    "Chalice count branch",
+    "3 private static helpers"
+  ],
+  "no_new_classes_or_persistent_fields": true,
+  "no_hidden_zone_iteration_or_generic_play_cost_condition_probes_in_helpers": true,
+  "native_EffectZone_via_zonesCheck": true,
+  "native_AffectedZone_via_ZoneType_listValueOf": true,
+  "syntax_compilation_or_runtime_not_verified": true,
+  "JVM_compile_gate": false,
+  "S_K_E4_edits": false
+}

@@ -1,0 +1,15 @@
+Chalice knowledge correction and controlled native audits
+
+Derived from Forge Team / Card-Forge, revision
+61e9442c433711a82258daca3236f936a1d6f70e.
+https://github.com/Card-Forge/forge
+
+GPL-3.0-or-later. The unchanged upstream license is included as LICENSE.
+PermanentAi.java is a derived modification, not a from-scratch implementation.
+Its preimage, complete patch, and requested SPDX/derived-work attribution are
+included. The six canonical card programs and both frozen audit sources are
+copied byte-for-byte; retain their existing notices.
+
+All results described here are bounded controlled fixtures or separately
+identified parent observations, not a claim of general AI fairness, strategy,
+all-card behavior, BO3, persistence, or app qualification by this public runner.
