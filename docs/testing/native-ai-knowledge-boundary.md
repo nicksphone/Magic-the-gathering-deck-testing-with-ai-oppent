@@ -155,6 +155,41 @@ These results close the demonstrated identity/mana-source leaks and the observed
 cleanup parser mismatch in their stated scopes, not every cost hook, broader
 strategic quality, both-seat final-profile UI coverage, durable BO3 or app save/resume.
 
+## Additional-Cost Held-Piece Correction
+
+A [separate unchanged paired audit](../../tools/engine_evaluation/forge/ai-boundary/additional-cost-followup/README.md)
+reproduced another channel on `ff89fd32`: a public discard-cost mana source had
+already passed the knowledge filter, but a later native held-piece heuristic
+inspected concealed hand identities. Both strict checks failed, with four
+independent public/legitimate-disclosure controls passing. The printed payment
+was legal in both variants; this was leaked strategic willingness, not a rules
+prohibition on discarding the card.
+
+The [incremental correction](../../tools/engine_evaluation/forge/ai-boundary/additional-cost-followup/held-piece-fix/README.md)
+applies the existing knowledge predicate before inspecting hand-card types,
+keywords, roles/names or abilities for that veto. Unrestricted owner queries
+delegate to the original policy. No hand is replaced and no mana solver or
+card-name special case is introduced. The rebuilt candidate is `75d4ac39`.
+An independent parent rebuild reproduced all three source/four class payloads
+byte-for-byte and passed all **38 native checks**: the unchanged thirty, unchanged
+held-piece six and two new owner-parity controls. This does not certify other
+additional-cost or global-condition hooks.
+
+The candidate was also composed with the [retained public stack-source fix](native-deck-quality-2026-11-06.md).
+On those same six override classes, separate complete runs passed **38 native AI
+checks**, **48 stack/actor-boundary checks** and **four labelled synthetic empty-
+source checks**. The approval format names exactly four sources/six classes,
+including `ActorBoundary$Pending`, and still checks all approved bytes before
+atomic publication. Its **18 synthetic profile tests** are not game evidence.
+That six-class profile is prepared locally; no app game, deployment or positive
+cold save on that composition is claimed here. The earlier `1643` UI result
+retains its original build and does not qualify this candidate by implication.
+
+A source-only follow-up found Charmed Pendant excluded before the tested mana
+forecast route. It ran zero paired checks and is not additional fairness evidence.
+The separately diagnosed Burn timing rejection is still a strategy-correction
+task, not a closed result in the checks above.
+
 ## Profile Publication
 
 The operator-only [profile builder](../../tools/engine_evaluation/forge/native-ai/runtime_profile.py)
@@ -162,7 +197,7 @@ pins the qualified base build and complete launch command. Changed JVM settings
 or later overriding mounts cannot silently reuse its identity. Source/class
 approval is checked before artifact reads; explicit null approval rejects.
 It publishes both profile files through private descriptor-anchored staging,
-file/directory fsync and a no-replace directory rename. Fifteen labelled synthetic
+file/directory fsync and a no-replace directory rename. Eighteen labelled synthetic
 checks pass, including partial-write failure, parent replacement and competing
 output/staging directories. These are not native games or a general hostile-host
 sandbox proof. The earlier one-class profile/game above retains its historical

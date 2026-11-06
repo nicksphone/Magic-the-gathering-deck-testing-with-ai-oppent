@@ -73,13 +73,16 @@ def _check_bundle(bundle):
                for name in ["ComputerUtil", "ComputerUtilCost", "ComputerUtilMana"]}
     classes = {"forge/ai/" + name + ".class"
                for name in ["ComputerUtil", "ComputerUtilCost", "ComputerUtilCost$1", "ComputerUtilMana"]}
+    if isinstance(bundle, dict) and bundle.get("schema") == 2:
+        sources.add("tools/engine_evaluation/forge/actor-boundary/ActorBoundary.java")
+        classes.update({"forge/evaluation/ActorBoundary.class", "forge/evaluation/ActorBoundary$Pending.class"})
     if (not isinstance(bundle, dict) or set(bundle) != {"schema", "sources", "classes"}
-            or type(bundle["schema"]) is not int or bundle["schema"] != 1
+            or type(bundle["schema"]) is not int or bundle["schema"] not in (1, 2)
             or not isinstance(bundle["sources"], dict) or set(bundle["sources"]) != sources
             or not isinstance(bundle["classes"], dict) or set(bundle["classes"]) != classes
             or not all(isinstance(v, str) and HEX.fullmatch(v)
                        for group in [bundle["sources"], bundle["classes"]] for v in group.values())):
-        raise ValueError("Expected the approved three-source, four-class bundle")
+        raise ValueError("Expected the approved AI or AI-and-actor-boundary bundle")
 
 
 def derive_bundle(runtime, identity, shadow, output, bundle):

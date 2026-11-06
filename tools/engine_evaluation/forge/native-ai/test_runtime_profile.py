@@ -176,6 +176,61 @@ class SyntheticProfileTests(unittest.TestCase):
                     P.main(*args, root / "output", approval)
             self.assertFalse((root / "output").exists())
 
+    def composed_bundle(self):
+        sources = {"forge-ai/src/main/java/forge/ai/" + name + ".java": "c" * 64
+                   for name in ["ComputerUtil", "ComputerUtilCost", "ComputerUtilMana"]}
+        classes = {"forge/ai/" + name + ".class": "d" * 64
+                   for name in ["ComputerUtil", "ComputerUtilCost", "ComputerUtilCost$1", "ComputerUtilMana"]}
+        sources["tools/engine_evaluation/forge/actor-boundary/ActorBoundary.java"] = "a" * 64
+        classes.update({"forge/evaluation/ActorBoundary.class": "b" * 64,
+                        "forge/evaluation/ActorBoundary$Pending.class": "e" * 64})
+        return {"schema": 2, "sources": sources, "classes": classes}
+
+    def test_composed_actor_boundary_bundle_retains_launch_fence_and_distinct_identity(self):
+        bundle = self.composed_bundle()
+        before = copy.deepcopy(self.base)
+        runtime, profile = P.derive_bundle(self.base, self.identity, "/build/shadow", "/profile", bundle)
+        self.assertEqual(self.base, before)
+        self.assertEqual(profile["overrides"], bundle)
+        self.assertNotEqual(runtime["build_id"], self.make()[0]["build_id"])
+        self.assertEqual(runtime["argv"].count("--ro-bind"), 1)
+        changed = copy.deepcopy(bundle)
+        changed["classes"]["forge/evaluation/ActorBoundary.class"] = "f" * 64
+        self.assertNotEqual(runtime["build_id"], P.derive_bundle(
+            self.base, self.identity, "/build/shadow", "/profile", changed)[0]["build_id"])
+
+    def test_composed_bundle_cannot_admit_partial_boundary_or_other_native_classes(self):
+        bundle = self.composed_bundle()
+        for bad in [
+            {**bundle, "schema": True}, {**bundle, "schema": 2.0}, {**bundle, "schema": 3},
+            {**bundle, "sources": {k: v for k, v in bundle["sources"].items() if "ActorBoundary" not in k}},
+            {**bundle, "classes": {k: v for k, v in bundle["classes"].items() if "$Pending" not in k}},
+            {**bundle, "classes": {**bundle["classes"], "forge/game/Game.class": "f" * 64}},
+            {**bundle, "schema": 1},
+        ]:
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, "/build/shadow", "/profile", bad)
+
+    def test_composed_bundle_publication_checks_all_adapter_bytes(self):
+        with tempfile.TemporaryDirectory(prefix="synthetic-composed-profile-") as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.composed_bundle()
+            for folder, key in [("source", "sources"), ("shadow", "classes")]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(("SYNTHETIC; NOT NATIVE: " + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / "approval.json"
+            approval.write_text(json.dumps(bundle))
+            P.main(*args, root / "output", approval)
+            self.assertEqual(json.loads((root / "output/BUILD-IDENTITY.json").read_text())["overrides"], bundle)
+            (build / "shadow/forge/evaluation/ActorBoundary$Pending.class").write_bytes(b"SYNTHETIC CHANGED")
+            with self.assertRaisesRegex(ValueError, "byte identity"):
+                P.main(*args, root / "rejected", approval)
+            self.assertFalse((root / "rejected").exists())
+
     def test_explicit_null_bundle_is_not_single_class_approval(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)

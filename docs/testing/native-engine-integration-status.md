@@ -9,6 +9,12 @@ backend. Upstream authorship and GPL notices remain in the
 [evaluation sources](../../tools/engine_evaluation/README.md) and
 [third-party notices](../../THIRD-PARTY-NOTICES.md).
 
+Later checkpoints are documented separately: the [opt-in app session](forge-app-session.md),
+[native AI knowledge corrections](native-ai-knowledge-boundary.md), and
+[broader deck coverage/retained stack-source fix](native-deck-quality-2026-11-06.md).
+The stage-specific findings below retain their original sources and results;
+they are not the latest app or AI qualification by implication.
+
 ## Verified Prototype
 
 The isolated prototype uses Forge revision
