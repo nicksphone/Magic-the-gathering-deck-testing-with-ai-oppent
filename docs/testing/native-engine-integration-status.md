@@ -26,7 +26,7 @@ the opposing player uses the native AI. That client is not an expert policy.
   replacement selection remained usable and the original payment completed.
   This is a controlled native payment check, not another natural game.
 - The earlier 17-source checkpoint reproduces all 28 qualified payload classes
-  byte-for-byte. The current build adds a native boundary unit and lists 18
+  byte-for-byte. The current build adds native boundary/completion units and lists 19
   explicit Java inputs, without implicitly compiling another upstream copy.
   Source reproducibility is not application integration.
 
@@ -66,24 +66,44 @@ enabled native OK, even where native rules permit an early finish. One-click
 responses, native validation and one-use tokens remain; no card-name policy,
 invented choice or enlarged game budget is used.
 
-- **219 passed, zero failed/skipped, 41.53 seconds:** the unchanged original
-  nine whole classes and ten new native units. All 209 inherited invocation
+- **223 passed, zero failed/skipped, 41.60 seconds:** the unchanged original
+  nine whole classes, ten stack-boundary units and four completion cases in
+  eleven whole classes. All 209 inherited invocation
   identities/parameters and all 28 loaded before/end payload pins are checked.
 - Separate public test-client checks pass **20 selection** and **nine stack**
   labelled synthetic protocol cases, plus the original batched-frame/EOF check.
   These are not natural games or a summed full suite.
-- New native units use trusted object/queue poses and negative inputs, not paid
-  game wins. They cover distinct same-source stack entries, real dispatch,
+- Stack-boundary units use trusted object/queue poses and negative inputs, not
+  natural games. They cover distinct same-source stack entries, real dispatch,
   redaction, stale references, highlight separation and fail-fast behavior.
 
 The first inherited run had 207 passes/two failures: an early no-action context
 dereference and a missing launcher module-opening flag. Neither inherited test
 was edited. The next 219-case run had 217 passes/two failures: the missing partial
 stack completion receipt and a new fixture lacking native retained marks. The
-final correction changes that callback body and only the new fixture setup,
+stack correction changes that callback body and only the new fixture setup,
 retaining every assertion. Earlier failures remain archived, not relabelled green.
-Corrected complex games, mixed card/stack dialogs and full callback coverage
-remain separate acceptance work.
+
+## Completion Reporting
+
+Two later complex games reached actual native outcomes: Ramp won at turn 16
+and Control won at turn 18. The old worker nevertheless exited with
+`coverage_missing`: its diagnostic reverse-order scenario had not occurred.
+Those old executions remain failed bridge qualifications, not successful exits.
+
+The correction removes only that test-coverage veto from `finishTerminal`.
+`completed` still requires a genuine native game-over/outcome, callbacks must
+balance, and the causal verifier and every replay-reference stream must finish.
+The completion frame reports observed coverage separately without forcing a
+reorder, paid spell or winner. No native AI policy, card rule or game limit changed.
+
+The four new cases first produced two failures on real Default-AI paid Bolt wins
+and two passing unfinished-game controls in both seats. The same four cases now
+pass within the full 223-case cohort above. Only the Worker class changes among
+the 28 loaded payload classes; all other payload bytes and inherited test inputs
+are unchanged. Current-source complex games and reference replay are a separate
+acceptance cohort, not implied by these controlled positions. Mixed card/stack
+dialogs and the full callback surface remain unqualified.
 
 ## Bounded Native AI Checks
 

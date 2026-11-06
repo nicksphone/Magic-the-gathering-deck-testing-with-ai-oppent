@@ -363,11 +363,11 @@ public final class NativeHumanWorker implements IRemote {
         causalVerifier.finish();
         try { Files.writeString(evidence.resolve("COMPLETION-CONTRACT.json"),JSON.toJson(causalVerifier.diagnostic())); }
         catch (IOException error) { failed=true; throw new IllegalStateException(error); }
-        if (!reversedSeen || !paidSeen) { failed=true; emit(Map.of("event","coverage_missing","reverse_order",reversedSeen,"paid_human",paidSeen)); return; }
         invalidate();
         emit(Map.of("event","game_complete","turns",game.getOutcome().getLastTurnNumber(),
                 "outcomes",game.getOutcome().getOutcomeStrings(),"draw",game.getOutcome().isDraw(),
-                "win_condition",game.getOutcome().getWinCondition().name()));
+                "win_condition",game.getOutcome().getWinCondition().name(),
+                "coverage",Map.of("reverse_order",reversedSeen,"paid_human",paidSeen)));
         terminal = true;
     }
 

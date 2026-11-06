@@ -118,7 +118,9 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   completed native game and genuine reference replay, plus a coupled stale-mana
   payment check. Its source bundle rebuilds all 28 qualified payload classes
   byte-for-byte. Real multi-card selection now completes; the corrected stack
-  boundary and unchanged inherited cases pass a 219-case native cohort.
+  boundary and unchanged inherited cases pass a 223-case native cohort. Genuine
+  completion is no longer rejected for absent test-only coverage; native outcome,
+  balanced callbacks and causal/reference verification remain mandatory.
   Integration, complete complex games, durable resume and broad quality remain open.
   Forge has not replaced the live backend. See [current scope](docs/testing/native-engine-integration-status.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the

@@ -27,6 +27,10 @@ not an authenticated HTTP service or a live engine replacement.
   A source with zero eligible abilities returns the native no-action result.
 - EOF emits an abort, not a manufactured game result. A late completion callback
   cannot overwrite that abort. Native terminal results come from actual outcomes.
+- `game_complete` retains the native outcomes, turn and win condition. Its nested
+  `coverage` reports observed reverse-order and paid-human scenarios as diagnostics,
+  not prerequisites for a real game result. Balanced callbacks, causal completion
+  and complete reference consumption remain required.
 
 The current worker supports the exercised scalar/list dialogs and native
 card/player/stack-instance clicks. Selection metadata describes the actual current
@@ -35,7 +39,7 @@ choosing defaults. Combat-damage allocations, mixed card/stack targeting,
 partial/sideboard ordering, arbitrary text input, all delayed-reveal contexts
 and the complete native dialog surface remain unqualified. Browser rendering
 and reconnect/auth are not supplied. See the
-[current 219-case component and game limits](native-engine-integration-status.md#current-choice-checkpoint).
+[current 223-case component and game limits](native-engine-integration-status.md#current-choice-checkpoint).
 
 ## Earlier Checkpoint Qualification
 
@@ -86,7 +90,7 @@ are not relabeled as successful games.
 ## Reproduce
 
 Use the previously built pinned Forge classpath. From the application checkout,
-compile the explicit 18-source list; this includes all current helpers and the
+compile the explicit 19-source list; this includes all current helpers and the
 four modified native input classes, rather than relying on an older cached
 adapter. The output directory must not exist and must be outside this repository:
 

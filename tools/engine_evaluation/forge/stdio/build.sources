@@ -16,3 +16,4 @@ stdio/unit-source/CausalProtocolUnit.java
 stdio/unit-source/PartialManaReadyUnit.java
 stdio/unit-source/CombinedControlledUnit.java
 stdio/unit-source/NativeStackBoundaryTest.java
+stdio/unit-source/NativeWorkerCompletionTest.java

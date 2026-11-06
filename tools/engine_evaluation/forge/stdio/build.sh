@@ -13,7 +13,7 @@ OUT=$(realpath -m -- "$1")
 case "$OUT/" in "$REPO/"*) echo 'Output must be outside the repository' >&2; exit 2;; esac
 [[ ! -e "$OUT" && ! -L "$OUT" ]] || { echo 'Output must be fresh' >&2; exit 2; }
 mapfile -t SOURCES < "$FORGE/stdio/build.sources"
-[[ ${#SOURCES[@]} == 18 ]]
+[[ ${#SOURCES[@]} == 19 ]]
 for i in "${!SOURCES[@]}"; do
     [[ "${SOURCES[i]}" != /* && "${SOURCES[i]}" != *..* ]]
     SOURCES[i]="$FORGE/${SOURCES[i]}"
