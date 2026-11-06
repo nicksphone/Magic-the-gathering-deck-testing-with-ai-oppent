@@ -34,7 +34,7 @@ def test_classification_runs_exactly_one_complete_forecast(monkeypatch, settle, 
 
     monkeypatch.setattr(pending_effects, '_unanswered_action_outcome', forecast)
     assert classify(state, 2, action, settle_declared_combat=settle) == expected
-    assert seen == [{'settle_declared_combat': settle}]
+    assert seen == [{'settle_declared_combat': settle, 'own_choice_action': None}]
 
 
 @pytest.mark.parametrize('error', [ValueError('protocol uncertainty'), RuntimeError('protocol fault')])

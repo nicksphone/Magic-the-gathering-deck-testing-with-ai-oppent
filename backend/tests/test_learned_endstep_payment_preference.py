@@ -100,8 +100,8 @@ def test_expensive_native_winning_payoff_is_not_vetoed(monkeypatch, seat):
     moves = offered(state, seat, ids['Serra Angel'])
     action, calls = route(monkeypatch, state, seat, moves)
     assert action['cost_choice']['sacrifice_card_ids'] == [ids['Serra Angel']]
-    # The targeted trigger may require a public choice; do not invent a forecast certificate.
-    assert calls['classes'][0][1][0] is None
+    # The real actor-choice callback now settles the public targeted trigger.
+    assert calls['classes'][0][1] == (True, None)
     assert settle(checked_action(state, RULES, seat, action)).winner == seat
 
 

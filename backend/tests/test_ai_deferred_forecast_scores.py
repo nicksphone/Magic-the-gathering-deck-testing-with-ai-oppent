@@ -21,7 +21,8 @@ def test_only_relevant_response_or_fallback_positions_are_scored(seat, reply):
     before = serialize_match_snapshot(state)
     calls = []
 
-    def actions(_state, _legal, _actor, limit):
+    def actions(_state, _legal, _actor, limit, *, _speculative):
+        assert _speculative is True
         if limit == 3 or reply in {'valid', 'resolved'}:
             return [{'type': 'pass_priority'}]
         return [] if reply == 'none' else [{'type': 'cast_spell', 'card_id': 'invalid-test-id'}]

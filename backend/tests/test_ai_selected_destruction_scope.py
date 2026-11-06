@@ -33,7 +33,7 @@ def test_selected_target_does_not_forecast_unrelated_friends(monkeypatch, side):
         visits.append(action['targets']['target_card_id'])
         return profit(root, seat, action, **kwargs)
     monkeypatch.setattr(p, 'friendly_destruction_profit', observed)
-    result = actor._materialize_action(state, announced, 1, allow_friendly_target=True)
+    result = actor._materialize_action_without_resources(state, announced, 1, allow_friendly_target=True)
     assert result['targets']['target_card_id'] == selected
     if side == 'invalid':
         with pytest.raises(ActionRejected):

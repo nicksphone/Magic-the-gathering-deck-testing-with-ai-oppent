@@ -3005,7 +3005,7 @@ def test_control_prefers_removal_mode_over_draw_when_opponent_has_board_pressure
         }
         stack = []
 
-    mode = ai._select_mode_text(complete_card_bookkeeping(FakeState()), type("C", (), {"oracle_text": "", "types": ["Instant"]})(), ["Draw two cards.", "Destroy target creature."], 1)
+    mode = ai._select_mode_text(complete_card_bookkeeping(FakeState()), type("C", (), {"id": "modal-removal", "oracle_text": "", "types": ["Instant"]})(), ["Draw two cards.", "Destroy target creature."], 1)
     assert mode == "Destroy target creature."
 
 
@@ -3023,7 +3023,7 @@ def test_aggro_prefers_token_mode_over_draw_when_board_is_empty() -> None:
         cards = {}
         stack = []
 
-    mode = ai._select_mode_text(complete_card_bookkeeping(FakeState()), type("C", (), {"oracle_text": "", "types": ["Sorcery"]})(), ["Draw a card.", "Create two 1/1 creature tokens."], 1)
+    mode = ai._select_mode_text(complete_card_bookkeeping(FakeState()), type("C", (), {"id": "modal-tokens", "oracle_text": "", "types": ["Sorcery"]})(), ["Draw a card.", "Create two 1/1 creature tokens."], 1)
     assert mode == "Create two 1/1 creature tokens."
 
 
@@ -3059,10 +3059,11 @@ def test_strategic_planner_considers_beyond_top_four_moves_on_complex_boards() -
         }
 
     moves = [{"type": "pass_priority"}] + [
-        {"type": "cast_spell", "card_id": f"m{i}", "card_name": f"Move {i}"} for i in range(1, 7)
+        {"type": "cast_spell", "card_id": f"m{i}", "card_name": "Opt"} for i in range(1, 7)
     ]
     for idx in range(1, 7):
-        FakeState.cards[f"m{idx}"] = type("C", (), {"types": ["Instant"], "name": f"Move {idx}", "oracle_text": f"Mode {idx}.", "mana_cost": "{1}{U}"})()
+        FakeState.cards[f"m{idx}"] = canonical_card('Opt')
+        FakeState.players[1].hand.append(f"m{idx}")
 
     ranked = [moves[1], moves[2], moves[3], moves[4], moves[5], moves[6], moves[0]]
 
@@ -3079,7 +3080,7 @@ def test_strategic_planner_considers_beyond_top_four_moves_on_complex_boards() -
     ai._materialize_action = fake_materialize  # type: ignore[method-assign]
     ai._strategic_line_score = fake_score  # type: ignore[method-assign]
 
-    result = ai._strategic_plan_action(complete_card_bookkeeping(FakeState()), moves, 1)
+    result = ai._strategic_plan_action(complete_card_bookkeeping(FakeState(), native_state=True), moves, 1)
     assert result is not None
     assert result["card_id"] == "m6"
 
