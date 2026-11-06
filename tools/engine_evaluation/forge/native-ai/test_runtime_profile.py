@@ -513,6 +513,58 @@ class SyntheticProfileTests(unittest.TestCase):
                 self.assertFalse(output.exists())
                 path.write_bytes(original)
 
+    def counter_bundle(self):
+        bundle = self.chalice_bundle()
+        bundle['schema'] = 8
+        bundle['sources']['forge-ai/src/main/java/forge/ai/ability/CounterAi.java'] = 'a' * 64
+        bundle['classes']['forge/ai/ability/CounterAi.class'] = 'b' * 64
+        return bundle
+
+    def test_counter_bundle_requires_complete_ten_source_seventeen_class_prefix(self):
+        bundle = self.counter_bundle()
+        runtime, profile = P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bundle)
+        self.assertEqual(profile['overrides'], bundle)
+        self.assertEqual((len(bundle['sources']), len(bundle['classes'])), (10, 17))
+        self.assertNotEqual(runtime['build_id'], P.derive_bundle(
+            self.base, self.identity, '/build/shadow', '/profile', self.chalice_bundle())[0]['build_id'])
+        for bad in (
+            {**bundle, 'schema': 8.0}, {**bundle, 'schema': 7},
+            {**bundle, 'sources': {k: v for k, v in bundle['sources'].items() if 'CounterAi' not in k}},
+            {**bundle, 'classes': {k: v for k, v in bundle['classes'].items() if 'CounterAi' not in k}},
+            {**bundle, 'classes': {k: v for k, v in bundle['classes'].items() if '$Input' not in k}},
+            {**bundle, 'classes': {**bundle['classes'], 'forge/ai/ability/CounterAi$Extra.class': 'c' * 64}},
+        ):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, '/build/shadow', '/profile', bad)
+
+    def test_counter_publication_checks_new_policy_source_and_class(self):
+        with tempfile.TemporaryDirectory(prefix='synthetic-counter-profile-') as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.counter_bundle()
+            for folder, key in [('source', 'sources'), ('shadow', 'classes')]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(('SYNTHETIC; NOT NATIVE: ' + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / 'approval.json'
+            approval.write_text(json.dumps(bundle))
+            P.main(*args, root / 'output', approval)
+            self.assertEqual(json.loads((root / 'output/BUILD-IDENTITY.json').read_text())['overrides'], bundle)
+            for folder, relative in (
+                ('source', 'forge-ai/src/main/java/forge/ai/ability/CounterAi.java'),
+                ('shadow', 'forge/ai/ability/CounterAi.class'),
+            ):
+                path = build / folder / relative
+                original = path.read_bytes()
+                path.write_bytes(b'SYNTHETIC CHANGED')
+                output = root / ('rejected-' + folder)
+                with self.assertRaisesRegex(ValueError, 'byte identity'):
+                    P.main(*args, output, approval)
+                self.assertFalse(output.exists())
+                path.write_bytes(original)
+
     def test_approved_bundle_files_must_match_before_atomic_publication(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)

@@ -1,0 +1,238 @@
+--- a/CounterAi.java
++++ b/CounterAi.java
+@@ -1,7 +1,13 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Derived from Forge Team/Card-Forge CounterAi; local critical counter targeting correction.
+ package forge.ai.ability;
+ 
+ import java.util.Iterator;
+ import java.util.List;
++import java.util.Map;
++import java.util.Set;
++
++import com.google.common.collect.Iterables;
+ 
+ import org.apache.commons.lang3.StringUtils;
+ import org.apache.commons.lang3.tuple.ImmutablePair;
+@@ -10,6 +16,7 @@
+ import forge.ai.*;
+ import forge.game.Game;
+ import forge.game.ability.AbilityUtils;
++import forge.game.ability.AbilityKey;
+ import forge.game.ability.ApiType;
+ import forge.game.ability.effects.CounterEffect;
+ import forge.game.card.Card;
+@@ -19,7 +26,11 @@
+ import forge.game.cost.CostDiscard;
+ import forge.game.cost.CostExile;
+ import forge.game.cost.CostSacrifice;
++import forge.game.keyword.Keyword;
+ import forge.game.player.Player;
++import forge.game.replacement.ReplaceLifeReduced;
++import forge.game.replacement.ReplacementEffect;
++import forge.game.replacement.ReplacementType;
+ import forge.game.spellability.SpellAbility;
+ import forge.game.spellability.SpellAbilityStackInstance;
+ import forge.game.zone.ZoneType;
+@@ -35,6 +46,7 @@
+         final Game game = ai.getGame();
+         int tgtCMC = 0;
+         SpellAbility tgtSA = null;
++        boolean selectedCritical = false;
+ 
+         if (game.getStack().isEmpty()) {
+             return new AiAbilityDecision(0, AiPlayDecision.TargetingFailed);
+@@ -47,18 +59,11 @@
+         }
+ 
+         if (sa.usesTargeting()) {
+-            final SpellAbility topSA = ComputerUtilAbility.getTopSpellAbilityOnStack(game, sa);
+-            if ((topSA.isSpell() && !topSA.isCounterableBy(sa)) || ai.getYourTeam().contains(topSA.getActivatingPlayer())) {
+-                // might as well check for player's friendliness
+-                return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
+-            }
+-            if (sa.hasParam("ConditionWouldDestroy") && !CounterEffect.checkForConditionWouldDestroy(sa, topSA)) {
+-                return new AiAbilityDecision(0, AiPlayDecision.CantPlaySa);
+-            }
+-
+-            // check if the top ability on the stack corresponds to the AI-specific targeting declaration, if provided
+-            if (sa.hasParam("AITgts") && (topSA.getHostCard() == null
+-                    || !topSA.getHostCard().isValid(sa.getParam("AITgts"), sa.getActivatingPlayer(), source, sa))) {
++            sa.resetTargets();
++            Pair<SpellAbility, Boolean> selected = chooseOptionalCounterTarget(game, sa, ai);
++            tgtSA = selected.getLeft();
++            selectedCritical = selected.getRight();
++            if (tgtSA == null) {
+                 return new AiAbilityDecision(0, AiPlayDecision.TargetingFailed);
+             }
+ 
+@@ -67,7 +72,7 @@
+                 if (unlessCost.hasSpecificCostType(CostDiscard.class)) {
+                     CostDiscard discardCost = unlessCost.getCostPartByType(CostDiscard.class);
+                     if ("Hand".equals(discardCost.getType())) {
+-                        if (topSA.getActivatingPlayer().getCardsIn(ZoneType.Hand).size() < 2) {
++                        if (tgtSA.getActivatingPlayer().getCardsIn(ZoneType.Hand).size() < 2) {
+                             return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
+                         }
+                     }
+@@ -75,16 +80,10 @@
+                 // TODO check if Player can pay the unless cost?
+             }
+ 
+-            sa.resetTargets();
+-            if (sa.canTargetSpellAbility(topSA)) {
+-                sa.getTargets().add(topSA);
+-                if (topSA.getPayCosts().getTotalMana() != null) {
+-                    tgtSA = topSA;
+-                    tgtCMC = topSA.getPayCosts().getTotalMana().getCMC();
+-                    tgtCMC += topSA.getPayCosts().getTotalMana().countX() > 0 ? 3 : 0; // TODO: somehow determine the value of X paid and account for it?
+-                }
+-            } else {
+-                return new AiAbilityDecision(0, AiPlayDecision.TargetingFailed);
++            sa.getTargets().add(tgtSA);
++            if (tgtSA.getPayCosts().getTotalMana() != null) {
++                tgtCMC = tgtSA.getPayCosts().getTotalMana().getCMC();
++                tgtCMC += tgtSA.getPayCosts().getTotalMana().countX() > 0 ? 3 : 0; // TODO: somehow determine the value of X paid and account for it?
+             }
+         } else {
+             // This spell doesn't target. Must be a "Counter All" or "Counter trigger" type of ability.
+@@ -216,13 +215,138 @@
+             }
+         }
+ 
+-        if (dontCounter) {
++        if (dontCounter && !selectedCritical) {
+             return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
+         }
+ 
+         return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
+     }
+ 
++    private Pair<SpellAbility, Boolean> chooseOptionalCounterTarget(Game game, SpellAbility sa, Player ai) {
++        SpellAbility firstEligible = null;
++        final Card source = sa.getHostCard();
++        // Same native stack order as chooseTargetSpellAbility, without its mandatory fallback.
++        for (SpellAbilityStackInstance instance : game.getStack()) {
++            final SpellAbility candidate = instance.getSpellAbility();
++            if (!sa.canTargetSpellAbility(candidate) || candidate.getActivatingPlayer() == null
++                    || !candidate.getActivatingPlayer().isOpponentOf(ai) || !candidate.isCounterableBy(sa)) {
++                continue;
++            }
++            if (sa.hasParam("ConditionWouldDestroy") && !CounterEffect.checkForConditionWouldDestroy(sa, candidate)) {
++                continue;
++            }
++            if (sa.hasParam("AITgts") && (candidate.getHostCard() == null
++                    || !candidate.getHostCard().isValid(sa.getParam("AITgts"), sa.getActivatingPlayer(), source, sa))) {
++                continue;
++            }
++            if (firstEligible == null) {
++                firstEligible = candidate;
++            }
++            if (isCriticalDamageTarget(ai, candidate)) {
++                return new ImmutablePair<>(candidate, true);
++            }
++        }
++        return new ImmutablePair<>(firstEligible, false);
++    }
++
++    private boolean isCriticalDamageTarget(Player ai, SpellAbility target) {
++        final Card source = target.getHostCard();
++        if (source == null || !source.getView().canBeShownTo(ai.getView())
++                || !source.getView().canFaceDownBeShownTo(ai.getView())) {
++            return false;
++        }
++        if (target.getApi() != ApiType.DealDamage || target.isWrapper() || target.isTrigger()
++                || target.isOptionalTrigger() || target.getParent() != null || target.getSubAbility() != null
++                || !target.getAdditionalAbilities().isEmpty() || !target.getAdditionalAbilityLists().isEmpty()
++                || !target.usesTargeting() || !Iterables.contains(target.getTargets().getTargetPlayers(), ai)
++                || !target.canTarget(ai, true)) {
++            return false;
++        }
++        // Only plain literal targeted damage: unknown semantic parameters do not earn an override.
++        // This excludes conditions, optional/unless effects, alternate sources and divided damage.
++        for (String parameter : target.getMapParams().keySet()) {
++            if (!parameter.equals("SP") && !parameter.equals("AB") && !parameter.equals("DB")
++                    && !parameter.equals("Cost") && !parameter.equals("ValidTgts")
++                    && !parameter.equals("NumDmg") && !parameter.equals("SpellDescription")
++                    && !parameter.equals("StackDescription") && !parameter.equals("TgtPrompt")) {
++                return false;
++            }
++        }
++        final String amount = target.getParam("NumDmg");
++        if (amount == null || !amount.matches("[1-9][0-9]*")
++                || source.isInfectDamage(ai) || source.hasKeyword(Keyword.LIFELINK)
++                || !ai.canLoseLife() || ai.cantLoseForZeroOrLessLife()) {
++            return false;
++        }
++        final int damage;
++        try {
++            damage = Integer.parseInt(amount);
++        } catch (NumberFormatException ex) {
++            return false;
++        }
++        // Native replacement/prevention estimate, not a complete or observer-fenced simulation.
++        final int predictedDamage = ComputerUtilCombat.predictDamageTo(ai, damage, source, false);
++        return predictedDamage >= ai.getLife() && !hasPublicLifeReducedUncertainty(ai, predictedDamage);
++    }
++
++    private boolean hasPublicLifeReducedUncertainty(Player ai, int damage) {
++        final Game game = ai.getGame();
++        final Map<AbilityKey, Object> event = AbilityKey.mapFromAffected(ai);
++        event.put(AbilityKey.Amount, damage);
++        event.put(AbilityKey.IsDamage, true);
++        for (Card card : game.getCardsIn(ZoneType.STATIC_ABILITIES_SOURCE_ZONES)) {
++            // Never inspect replacement collections on hidden sources, including face-down exile.
++            if (!card.getView().canBeShownTo(ai.getView())
++                    || !card.getView().canFaceDownBeShownTo(ai.getView())) {
++                continue;
++            }
++            for (ReplacementEffect replacement : card.getReplacementEffects()) {
++                if (replacement.getMode() != ReplacementType.LifeReduced || replacement.isSuppressed()
++                        || replacement.hasRun() || !replacement.zonesCheck(game.getZoneOf(card))) {
++                    continue;
++                }
++                // Only this native implementation has the bounded applicability contract below.
++                if (replacement.getClass() != ReplaceLifeReduced.class
++                        || !hasPublicLifeReducedApplicability(replacement)) {
++                    return true;
++                }
++                if (!replacement.canReplace(event)) {
++                    continue;
++                }
++                // Unknown requirements are not evaluated and cannot establish certain lethality.
++                if (!hasPublicLifeReducedRequirements(replacement) || replacement.requirementsCheck(game)) {
++                    return true;
++                }
++            }
++        }
++        return false;
++    }
++
++    private boolean hasPublicLifeReducedApplicability(ReplacementEffect replacement) {
++        return replacement.getParamOrDefault("ValidPlayer", "Player")
++                    .matches("(?:You|Opponent|Player)(?:\\.life(?:LT|LE|EQ|GE|GT|NE)-?[0-9]{1,9})?")
++                && replacement.getParamOrDefault("IsDamage", "True").matches("True|False")
++                && replacement.getParamOrDefault("Result", "GE0").matches("(?:LT|LE|EQ|GE|GT|NE)-?[0-9]{1,9}");
++    }
++
++    private boolean hasPublicLifeReducedRequirements(ReplacementEffect replacement) {
++        // All other native common requirements (including SVar/defined/private-zone queries)
++        // remain unresolved. Replacement output is deliberately not constructed or executed.
++        if (!Set.of("Event", "ActiveZones", "Layer", "Description", "ReplaceWith", "ValidPlayer",
++                "IsDamage", "Result", "PlayerTurn", "ActivePhases", "IsPresent", "PresentZone",
++                "PresentPlayer", "PresentCompare").containsAll(replacement.getMapParams().keySet())) {
++            return false;
++        }
++        if (replacement.hasParam("PlayerTurn") && !"True".equals(replacement.getParam("PlayerTurn"))) {
++            return false;
++        }
++        return (!replacement.hasParam("IsPresent") || replacement.getParam("IsPresent")
++                    .matches("(?:Card|Permanent|Creature|Artifact|Enchantment|Land|Planeswalker|Battle)(?:\\.(?:YouCtrl|OppCtrl))?"))
++                && "Battlefield".equals(replacement.getParamOrDefault("PresentZone", "Battlefield"))
++                && replacement.getParamOrDefault("PresentPlayer", "Any").matches("You|Opponent|Any")
++                && replacement.getParamOrDefault("PresentCompare", "GE1").matches("(?:LT|LE|EQ|GE|GT|NE)-?[0-9]{1,9}");
++    }
++
+     @Override
+     public AiAbilityDecision chkDrawback(Player aiPlayer, SpellAbility sa) {
+         return doTriggerNoCost(aiPlayer, sa, true);

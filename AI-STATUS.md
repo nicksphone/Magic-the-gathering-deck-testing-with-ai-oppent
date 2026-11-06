@@ -97,6 +97,18 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 - [ ] **Decision review:** turn recorded passes, attacks, blocks, targets and
   sequencing into verified findings. A pass with playable cards is a review
   candidate, not automatically a mistake.
+- [x] **Bounded native counterspell tactics:** an unchanged sixteen-case audit exposed
+  six declined funded counters against lethal Bolt and two missed lower-stack
+  responses before Vexing Shusher. The current isolated correction passes all
+  sixteen, ten preservation controls and eight real-state protocol cases for
+  illegal targets and applicable/nonapplicable life-loss replacements. Eight
+  ordinary-choice rows, including full serialized RNG, exactly match baseline.
+  Eight separate synthetic parameter checks reject unsafe private/defined
+  condition queries. Fog/Chalice preservation passes, and eight matched natural
+  games finish without errors. These are distinct checks, not forty-two games
+  or a playing-strength estimate. Both rejected drafts and the new-test fixture
+  failures remain recorded. Application adoption and broad Control strategy are
+  still open. See [the executed scope and limits](docs/testing/native-counter-tactics.md).
 - [ ] **Multi-card planning and complex targeting:** validate whole-hand lines,
   modal targets and supported synergies beyond the individual fixed regressions.
 - [ ] **Useful learned policy:** demonstrate generalization to unseen situations

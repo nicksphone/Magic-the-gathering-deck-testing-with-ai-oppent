@@ -1,0 +1,50 @@
+{
+  "cost_preference_region_unchanged_from_upstream": true,
+  "cost_preference_sha256": "b114455da382be690bbead1d8136e39f9d2faa0a9c06362daf99ecf71f477dc1",
+  "entire_checkApiLogic_unchanged_from_830a": true,
+  "frozen_revision_actual_four_roundtrips_receipt": "DRJBkqHF/SOURCE-PRESERVATION.md; PASS; no package native execution",
+  "full_patch_sha256": "bd6acebd4d7d5a1cc1be4dff7367fc217986126f8aa97de9a066c7d41109e0bf",
+  "method_suffix_sha256": "d968cc8c89a21a081d9023927d2e8127722e6ddf8fae4786aa71fb784038a758",
+  "method_suffix_unchanged_from_upstream": true,
+  "preimage_sha256": "3356ef3e411547b2bab56a19a2405ace757d08d65c58410d4b80dd01dcb044fd",
+  "public_replacement_contract": {
+    "activity": [
+      "LifeReduced mode",
+      "not suppressed",
+      "not hasRun",
+      "native zonesCheck"
+    ],
+    "both_cardview_guards_before_replacement_inspection": true,
+    "canReplace_admission": "ValidPlayer You/Opponent/Player optionally one literal life comparison; literal Result; IsDamage True/False",
+    "complete_replacement_or_observer_purity_claim": false,
+    "known_native_implementation": "exact ReplaceLifeReduced.class",
+    "no_global_collector_run_or_ensureAbility": true,
+    "numeric_operands": "signed decimal, one through nine digits; LT/LE/EQ/GE/GT/NE",
+    "presence_controller_qualifiers": [
+      "YouCtrl",
+      "OppCtrl"
+    ],
+    "presence_types": [
+      "Card",
+      "Permanent",
+      "Creature",
+      "Artifact",
+      "Enchantment",
+      "Land",
+      "Planeswalker",
+      "Battle"
+    ],
+    "requirementsCheck_admission": "closed parameter key allowlist; PlayerTurn True; native ActivePhases; BF-only public type/controller presence; PresentPlayer You/Opponent/Any; literal PresentCompare",
+    "source_zones": [
+      "Battlefield",
+      "Graveyard",
+      "Exile",
+      "Command",
+      "Stack"
+    ],
+    "unknown_dependencies": "never evaluate; withhold critical override only"
+  },
+  "schema": 1,
+  "source_sha256": "fa781549b9272dd3b8fc05e80febc9baf470722cb5edce67a2ae4c9e3e423659",
+  "zero_fuzz_forward_reverse_dry_run": "PASS"
+}
