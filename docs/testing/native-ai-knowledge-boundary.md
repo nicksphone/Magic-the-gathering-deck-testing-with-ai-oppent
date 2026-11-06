@@ -187,8 +187,58 @@ retains its original build and does not qualify this candidate by implication.
 
 A source-only follow-up found Charmed Pendant excluded before the tested mana
 forecast route. It ran zero paired checks and is not additional fairness evidence.
-The separately diagnosed Burn timing rejection is still a strategy-correction
-task, not a closed result in the checks above.
+The later Burn timing correction and combined app result are separate below.
+
+## Lethal Timing And Combined App Qualification
+
+An observer-only branch diagnostic located the actual rejection: at a matched
+native Burn decision, the opponent had one life and the damage mode was
+targetable, but ordinary instant timing rejected it before `shouldTgtP` ran.
+The [generic one-source correction](../../tools/engine_evaluation/forge/native-ai/lethal-timing/README.md)
+adds a predicted-life-lethal exception to that timing condition. It retains
+targeting, native prevention/replacement forecasting, `shouldTgtP`, affordability,
+reservations and own-cast safety checks. It does not name a card or rewrite a
+deck policy. Zero-life loss protection and infect conversion exclude this new
+life-total exception; it is not a new poison-lethal policy.
+
+The unchanged final controlled cohort produced **6 expected failures / 20 passes**
+on the baseline and **26 passes** on the final class. It includes actual native
+payment, resolution and native wins for modal/instant/activated damage, alongside
+nonlethal timing, prevention, hexproof, unpaid tax, loss protection, poison
+conversion and own-Eidolon safety. These are explicitly constructed positions.
+In a separate natural series, baseline Burn lost on turns 19/20; the corrected
+candidate won on turns 16/12. Its first divergence is an earlier paid turn-16
+Charm lethal, not a same-position turn-18 replay or a general win-rate benchmark.
+
+The parent independently rebuilt the final source/class byte identity and ran
+the complete **26 tactical**, **38 knowledge**, **48 boundary** and **four synthetic
+empty-source** checks on the coupled seven-class shadow. The profile's **20
+synthetic publication checks** are separate from those native checks. Approval
+schema 3 requires exactly five sources/seven classes; missing, extra or altered
+payloads reject, and the original sandbox command remains pinned.
+
+One fresh built-UI game used that exact composition, profile
+`042bcecf8deeba938fc6135e4ed91378eef020d8c3e2951982309a0dbfe04ddf`.
+Native Burn faced human-side Ramp in seat 1. Ramp won naturally on turn 18 after
+**246 accepted rendered-control answers and 246 native starts/returns**, in
+**129.516 seconds**, supervisor exit zero. Reload retained the session, actor and
+question; wrong-capability/stale/duplicate handling and all four root-purity
+checks passed. The human-side picker is an integration driver, not expert play.
+
+Independent checks verified all seven actual override origins, five source hashes,
+the unchanged 33-resource base inventory, and 29 loaded unoverridden base origins.
+All 4,532 tracked files in the clean app checkout retained their bytes; that
+checkout is committed `ca81c3b7`, not the separate save/resume draft. All eleven
+private gate inputs retained their hashes. All 23 observed owned processes ended,
+the closed local database passed integrity checking, and actual default/backup
+database fuser checks were empty. No live service or default opponent was changed.
+
+Native forecasts are approximate. Scripted prevention expressions such as
+`Count$Random` can consume native RNG during the extra forecast; this is not a
+universal RNG-purity or all-replacement correctness claim. The combined game is
+not strategic superiority, both-seat/browser-family acceptance, durable BO3,
+new-profile cold-save qualification or a complete native-AI fairness audit.
+Generated hands, RNG/game streams and screenshots remain private NFS evidence.
 
 ## Profile Publication
 
@@ -197,7 +247,7 @@ pins the qualified base build and complete launch command. Changed JVM settings
 or later overriding mounts cannot silently reuse its identity. Source/class
 approval is checked before artifact reads; explicit null approval rejects.
 It publishes both profile files through private descriptor-anchored staging,
-file/directory fsync and a no-replace directory rename. Eighteen labelled synthetic
+file/directory fsync and a no-replace directory rename. Twenty labelled synthetic
 checks pass, including partial-write failure, parent replacement and competing
 output/staging directories. These are not native games or a general hostile-host
 sandbox proof. The earlier one-class profile/game above retains its historical

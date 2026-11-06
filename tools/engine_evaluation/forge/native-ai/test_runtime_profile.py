@@ -231,6 +231,48 @@ class SyntheticProfileTests(unittest.TestCase):
                 P.main(*args, root / "rejected", approval)
             self.assertFalse((root / "rejected").exists())
 
+    def tactical_bundle(self):
+        bundle = self.composed_bundle()
+        bundle["schema"] = 3
+        bundle["sources"]["forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java"] = "f" * 64
+        bundle["classes"]["forge/ai/ability/DamageDealAi.class"] = "a" * 64
+        return bundle
+
+    def test_tactical_bundle_requires_the_exact_complete_seven_class_composition(self):
+        bundle = self.tactical_bundle()
+        runtime, profile = P.derive_bundle(self.base, self.identity, "/build/shadow", "/profile", bundle)
+        self.assertEqual(profile["overrides"], bundle)
+        self.assertNotEqual(runtime["build_id"], P.derive_bundle(
+            self.base, self.identity, "/build/shadow", "/profile", self.composed_bundle())[0]["build_id"])
+        for bad in [
+            {**bundle, "schema": 3.0},
+            {**bundle, "sources": {k: v for k, v in bundle["sources"].items() if "DamageDealAi" not in k}},
+            {**bundle, "classes": {k: v for k, v in bundle["classes"].items() if "DamageDealAi" not in k}},
+            {**bundle, "classes": {**bundle["classes"], "forge/game/Game.class": "d" * 64}},
+        ]:
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, "/build/shadow", "/profile", bad)
+
+    def test_tactical_publication_rejects_changed_damage_class_bytes(self):
+        with tempfile.TemporaryDirectory(prefix="synthetic-tactical-profile-") as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.tactical_bundle()
+            for folder, key in [("source", "sources"), ("shadow", "classes")]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(("SYNTHETIC; NOT NATIVE: " + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / "approval.json"
+            approval.write_text(json.dumps(bundle))
+            P.main(*args, root / "output", approval)
+            self.assertEqual(json.loads((root / "output/BUILD-IDENTITY.json").read_text())["overrides"], bundle)
+            (build / "shadow/forge/ai/ability/DamageDealAi.class").write_bytes(b"SYNTHETIC CHANGED")
+            with self.assertRaisesRegex(ValueError, "byte identity"):
+                P.main(*args, root / "rejected", approval)
+            self.assertFalse((root / "rejected").exists())
+
     def test_explicit_null_bundle_is_not_single_class_approval(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)

@@ -1,0 +1,31 @@
+--- a/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
++++ b/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
+@@ -470,6 +470,17 @@
+         return damageChoosingTargets(ai, saMe, tgt, dmg, saMe.isMandatory(), immediately);
+     }
+ 
++    private boolean isLethalDamageToPlayer(final Player enemy, final Card source, final int damage,
++            final boolean noPrevention) {
++        if (damage <= 0 || !enemy.canLoseLife() || enemy.cantLoseForZeroOrLessLife()
++                || source.isInfectDamage(enemy)) {
++            return false;
++        }
++        final int predicted = noPrevention ? enemy.staticReplaceDamage(damage, source, false)
++                : ComputerUtilCombat.predictDamageTo(enemy, damage, source, false);
++        return predicted > 0 && predicted >= enemy.getLife();
++    }
++
+     /**
+      * <p>
+      * damageChoosingTargets.
+@@ -697,7 +708,9 @@
+                 if ((freePing && !avoidTargetP(ai, sa))
+                         || (((phase.is(PhaseType.END_OF_TURN) && phase.isPlayerNextTurn(ai))
+                         || (isSorcerySpeed(sa, ai) && phase.is(PhaseType.MAIN2))
+-                        || ("BurnCreatures".equals(logic) && !enemy.getCreaturesInPlay().isEmpty()))
++                        || ("BurnCreatures".equals(logic) && !enemy.getCreaturesInPlay().isEmpty())
++                        // Lethal damage need not wait; all ordinary target and cast gates still apply.
++                        || isLethalDamageToPlayer(enemy, source, dmg, noPrevention))
+                         && ((sa.isPwAbility() && sa.getPayCosts().hasSpecificCostType(CostPutCounter.class))
+                         || shouldTgtP(ai, sa, dmg, noPrevention)))) {
+                     tcs.add(enemy);
