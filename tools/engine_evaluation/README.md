@@ -192,7 +192,7 @@ projection and one-use choice broker, with JSON-lines stdin/stdout rather than
 raw Java views. Diagnostics and game traces remain private. Read the
 [contract, runnable commands and open adoption requirements](../../docs/testing/forge-native-human-worker.md).
 The current source checkpoint includes the causal replay/identity helpers and
-four [native input patches](forge/native-ui/NOTICE). Build the explicit 18-source
+four [native input patches](forge/native-ui/NOTICE). Build the explicit 23-source
 list with `FORGE_CP="$CP" bash forge/stdio/build.sh /absolute/fresh/output`
 from this directory. Do not compile a recursive Java glob or rely on old cached
 adapter classes. Tests labelled INTERNALPROTOCOL or SYNTHETIC are not full games.

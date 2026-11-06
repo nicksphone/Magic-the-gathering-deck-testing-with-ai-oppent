@@ -95,7 +95,7 @@ are not relabeled as successful games.
 ## Reproduce
 
 Use the previously built pinned Forge classpath. From the application checkout,
-compile the explicit 22-source list; this includes all current helpers and the
+compile the explicit 23-source list; this includes all current helpers and the
 four modified native input classes, rather than relying on an older cached
 adapter. The output directory must not exist and must be outside this repository:
 
@@ -153,8 +153,15 @@ bytes under a trusted deployment-supplied build ID, rejects altered/mismatched
 inputs and restores only spec/deck files into a fresh private directory. It never
 executes a stored command, installs an engine or restores opaque wire tokens.
 `verify_frontier` requires the entire validated captured frontier to match before
-new play. Supplying a build ID is the deployment host's responsibility, not an
-automatic installation-authenticity check by this helper.
+new play. Exact equality remains the default. For a balanced arrival-order-only
+difference, a trusted host can pass `causal_verifier=[absolute_java, ..., "-cp",
+pinned_classpath, "forge.evaluation.CausalCompletionVerifier", "--checkpoint-prefix"]`.
+Only the pinned Java rule can authorize an inversion; all other state and whole
+completion rows must match first. The optional return value is a diagnostic proof,
+not permission to skip build compatibility or proof that a game finished. Invoke
+Java directly, not through shell or process wrappers. Supplying the build ID and
+pinning the executable/classpath are deployment responsibilities, not automatic
+installation-authenticity checks by this helper.
 
 Private atomic directory publication uses Linux `renameat2(RENAME_NOREPLACE)` and
 fails closed if unavailable. The Java snapshot also requires POSIX private-file

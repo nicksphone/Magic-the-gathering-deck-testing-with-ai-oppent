@@ -212,6 +212,13 @@ evidence that Ramp strategy is finished.
   See [the process contract and actual evidence](docs/testing/forge-native-human-worker.md).
 - [ ] Prototype the recommended Forge integration without changing the live app;
   prove user choices, privacy, full matches/BO3 and saved-state behavior.
+- [x] **Bounded native pending-choice continuation:** a fresh process reconstructed
+  a real one-of-two-selected Memory Deluge checkpoint at 186 starts/returns, then
+  completed the game at 236. A third uninterrupted game matched all native/RNG,
+  choice, observation and outcome records exactly. Current regression: 243 native
+  cases and 150 Python checks passed. This is one observed cold-resume scope,
+  not application integration or every-choice/BO3 persistence. See
+  [the current result and retained failures](docs/testing/native-engine-integration-status.md#actual-cold-reconstruction-and-continuation).
 - [ ] Make a production adoption decision, including distribution/license review.
 - [ ] **Native durable resume:** a six-process Forge compatibility check restored
   selected settled life/card-placement controls, but lost a genuinely paid spell

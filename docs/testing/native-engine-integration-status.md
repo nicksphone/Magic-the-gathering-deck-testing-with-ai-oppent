@@ -28,7 +28,8 @@ the opposing player uses the native AI. That client is not an expert policy.
 - The earlier 17-source checkpoint reproduces all 28 qualified payload classes
   byte-for-byte. The current build adds native boundary/checkpoint units and lists 22
   explicit Java inputs, without implicitly compiling another upstream copy.
-  Source reproducibility is not application integration.
+  Source reproducibility is not application integration. The later checkpoint-prefix
+  build below lists 23 sources; the earlier 22-source results remain historical.
 
 An earlier run labelled replay did not actually load a reference; a later
 explicitly interrupted run was incomplete. Those results remain unqualified.
@@ -168,7 +169,7 @@ The actual cold pending-choice experiment below is separate evidence. Existing f
 reference/causal verification, AI policy, game budgets, costs and card rules are
 unchanged. All earlier failing stages are preserved rather than relabelled green.
 
-### Actual Cold Reconstruction: Held
+### Earlier Cold Reconstruction: Held
 
 The original native process genuinely reached a Memory Deluge two-of-four choice
 after its first selected card. It saved with 186 balanced starts/returns, then
@@ -184,9 +185,78 @@ The resumed process was stopped without a completed game; the declared third
 uninterrupted run was not started. These are **two processes and a failed resume
 qualification**, not completed games or an accepted save/resume feature.
 
-The next correction must verify any permitted inversion with the existing
-producer/parent causal rules, while retaining every completion row and all other
-frontier checks. Matching current board state or sorting IDs alone is insufficient.
+Matching current board state or sorting IDs alone is insufficient. The correction
+below retains this failed experiment separately; it does not turn either earlier
+process into a completed resumed game.
+
+### Causal Prefix Verification
+
+The host remains exact-by-default. An operator may configure the pinned local
+Java verifier for an arrival-order-only difference at a balanced checkpoint.
+Every other frontier field, journal stream and typed completion row must still
+match. The Java prefix mode reuses the existing producer/parent inversion rule,
+retains actual arrival order and consumes every stream. It requires zero final
+rows and cannot certify a complete game. Full-game verification remains separate.
+
+- Current native regression: **243 passed**, zero failures/skips, in 46.88 seconds
+  across the same thirteen whole classes. All inherited test bytes and original
+  209 invocation identities/parameters remain unchanged. Actual loaded origins
+  and all 28 payload resources are checked before/end.
+- **150 Python tests passed**: the unchanged 92 client/store checks plus 58 new
+  labelled synthetic verifier-transport checks. These are not game episodes.
+  Invalid proof fields, state/row changes and non-Java command wrappers reject.
+- Separate pure Java checks passed: **31 prefix**, **60 unchanged full causal
+  protocol** and **four unchanged checkpoint reply** assertions. The prefix/full
+  distinction also rejects conversion by mutating a reference's final vector.
+- The actual new verifier accepts the archived real `(53,51)` inversion. A matched
+  pair of altered producer records rejects through the Java rule, while an RNG
+  change rejects in the host before launching Java. No native Game was initialized
+  by these verifier-only processes. This is executed policy evidence on archived
+  data, not a new game or successful save/resume run.
+
+The verifier command comes only from trusted host configuration, never checkpoint
+or browser data. It launches Java directly with a timeout and minimal environment;
+the returned proof binds the exact input bytes and records every displaced pair.
+All private checkpoints, hands and RNG receipts remain protected evidence.
+Fresh reconstructed continuation and uninterrupted reference qualification are
+separate from these component results.
+
+### Actual Cold Reconstruction And Continuation
+
+Three fresh, serial processes used the fixed 23-source build, unchanged
+60-card Control/Ramp mains, empty sideboards, human seat 0, the same seed and
+Default native AI with Monte Carlo off. The original game genuinely reached
+Memory Deluge's two-of-four choice with one card already selected.
+
+| Process | Observed Result | Starts/Returns | Wall Time |
+| --- | --- | --- | --- |
+| Save And Disconnect | Saved pending choice; EOF abort, exit 2 | 186 / 186 | 43.19 s |
+| Fresh Cold Reconstruction | Continued to Ramp's native win, turn 16, exit 0 | 236 / 236 | 50.69 s |
+| Uninterrupted Reference | Same native outcome, turn 16, exit 0 | 236 / 236 | 51.27 s |
+
+The real host store saved/loaded the checkpoint and restored spec/deck inputs
+under the current build identity. The second process replayed the saved semantic
+choices using fresh native tokens, with no `REPLAY.path`. Before any new answer,
+all nine captured fields and every journal row matched exactly. This run did not
+need the optional causal-order exception; the separately executed archived
+inversion above keeps that path nonvacuously tested without forcing a reorder.
+
+The remaining selection was a different offered card. Both selected registered
+cards later appeared in the actor's native hand, and the resumed game reached a
+genuine game-over. Only then did the uninterrupted reference run. All 236 starts,
+236 completion rows including arrival order, 407 native/RNG records, paid-pending
+data, final outcome, observations and registered native identity matched. A
+separate pure runner fed the actual wire's start/completion order through the
+existing full constructor, `accept` and `finish`; it consumed one real final row
+and reported no displaced pairs. It did not substitute prefix verification for
+full-game verification or construct a native Game.
+
+The source/build/resource pins remained unchanged; all three game processes and
+the pure verifier ended. Earlier failed checkpoints remain separate and failed.
+This verifies one real pending-choice cold continuation, not arbitrary internal
+heap equivalence, every native callback, either-seat coverage, durable BO3,
+browser reconnect, strong strategy or live application adoption. The next app
+slice must own native sessions/choices separately from Python actions and saves.
 
 ## Bounded Native AI Checks
 
@@ -210,7 +280,8 @@ not a claim of clean zero-attempted-IO qualification.
 - Review ordinary native-AI hidden-information boundaries and strategic play;
   a protected human view alone does not establish that native AI never peeks.
 - Integrate game state, choices, payments and rendering with the application.
-- Qualify durable saves and resume through pending choices, not just replay.
+- Qualify application saves across other pending choices, both seats and BO3;
+  the one observed cold reconstruction is not full persistence coverage.
 - Establish broader strategy quality, practical performance and release gates.
 
 This prototype removes implementation work we would otherwise duplicate. It

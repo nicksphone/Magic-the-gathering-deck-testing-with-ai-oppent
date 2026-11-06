@@ -20,3 +20,4 @@ stdio/unit-source/NativeWorkerCompletionTest.java
 stdio/unit-source/NativeWorkerCheckpointTest.java
 stdio/unit-source/NativeWorkerCheckpointRaceTest.java
 stdio/unit-source/CheckpointReplyContractUnit.java
+stdio/unit-source/CheckpointPrefixUnit.java

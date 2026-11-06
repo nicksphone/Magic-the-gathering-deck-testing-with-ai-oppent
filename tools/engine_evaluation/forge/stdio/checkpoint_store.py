@@ -14,6 +14,8 @@ import os
 from pathlib import Path
 import re
 import stat
+import subprocess
+from typing import Sequence
 import uuid
 
 
@@ -345,9 +347,76 @@ def restore_inputs(checkpoint: dict, destination: Path) -> None:
                  {name: text.encode("utf-8") for name, text in checkpoint["decks"].items()})
 
 
-def verify_frontier(saved: dict, current: dict) -> None:
-    """Require the entire validated native frontier to match before further play."""
+def _causal_prefix_proof(reference, actual, argv):
+    _require(type(argv) in (list, tuple) and bool(argv)
+             and all(type(arg) is str and bool(arg) and "\x00" not in arg for arg in argv),
+             "Invalid trusted causal verifier command")
+    _require(os.path.isabs(argv[0]) and os.path.basename(argv[0]) == "java"
+             and list(argv[-2:]) == ["forge.evaluation.CausalCompletionVerifier",
+                                     "--checkpoint-prefix"],
+             "Invalid trusted causal verifier command")
+    raw = _encode({"reference": reference, "actual": actual})
+    _require(len(raw) <= 128 * 1024 * 1024, "Causal verifier input exceeds size limit")
+    try:
+        result = subprocess.run(argv, input=raw, capture_output=True, timeout=10,
+                                env={"LANG": "C.UTF-8"}, check=False)
+    except (subprocess.TimeoutExpired, OSError):
+        raise CheckpointError("Causal checkpoint verifier unavailable") from None
+    _require(result.returncode == 0, "Causal checkpoint verifier rejected prefix")
+    _require(type(result.stdout) is bytes and len(result.stdout) <= 262144,
+             "Invalid causal checkpoint verifier output")
+    try:
+        proof = _decode(result.stdout)
+    except (ValueError, RecursionError):
+        raise CheckpointError("Invalid causal checkpoint verifier proof") from None
+
+    # Check the diagnostic inversions only; authorization belongs to Java.
+    reference_ids = [row["start_id"] for row in reference["completions"]]
+    actual_ids = [row["start_id"] for row in actual["completions"]]
+    arrived, displaced = set(), []
+    for index in actual_ids:
+        for predecessor in reference_ids:
+            if predecessor == index:
+                break
+            if predecessor not in arrived:
+                displaced.append({"arrived_before": index, "reference_predecessor": predecessor})
+        arrived.add(index)
+    expected = {
+        "contract": "CAUSAL_CHECKPOINT_PREFIX", "reference_comparison": True,
+        "strict_global_completion_order": False, "displaced_pairs": displaced,
+        "completed_ids_in_arrival_order": actual_ids,
+        "final_rows": 0, "game_complete": False,
+        "input_sha256": hashlib.sha256(raw).hexdigest(),
+    }
+    _require(_same_json(proof, expected), "Invalid causal checkpoint verifier proof")
+    return proof
+
+
+def verify_frontier(saved: dict, current: dict, *,
+                    causal_verifier: Sequence[str] | None = None) -> dict | None:
+    """Require an exact frontier, or Java-proven arrival order via trusted host argv.
+
+    The operator supplies argv, never checkpoint/browser data. Build compatibility
+    remains the separate load_checkpoint contract; no engine setup is performed.
+    Launch the local JVM directly: no shell, bwrap or timeout wrappers. The
+    subprocess timeout applies to that JVM, not a wrapper's descendant process.
+    """
     with _errors():
         _validate(saved)
         _validate(current)
-        _require(_same_json(saved, current), "Native checkpoint frontier mismatch")
+        if _same_json(saved, current):
+            return None
+        _require(causal_verifier is not None, "Native checkpoint frontier mismatch")
+        _require(all(_same_json(saved[key], current[key]) for key in saved if key != "journals"),
+                 "Native checkpoint frontier mismatch")
+        reference, actual = saved["journals"], current["journals"]
+        _require(all(_same_json(reference[key], actual[key])
+                     for key in reference if key != "completions"),
+                 "Native checkpoint journal mismatch")
+        _require(saved["starts"] == saved["completions"]
+                 and current["starts"] == current["completions"],
+                 "Causal checkpoint prefix requires balanced invocation domains")
+        reference_rows = {row["start_id"]: row for row in reference["completions"]}
+        actual_rows = {row["start_id"]: row for row in actual["completions"]}
+        _require(_same_json(reference_rows, actual_rows), "Native checkpoint completion mismatch")
+        return _causal_prefix_proof(reference, actual, causal_verifier)

@@ -4,10 +4,13 @@ package forge.evaluation;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import java.util.*;
 
 public final class CausalCompletionVerifier {
     private final Map<String,List<JsonElement>> expected;
+    private final boolean prefixMode;
     private final Map<String,Integer> cursors=new HashMap<>(), positions=new HashMap<>();
     private final Map<Integer,JsonObject> referenceStarts=new LinkedHashMap<>(), referenceReturns=new LinkedHashMap<>();
     private final Map<Integer,Integer> returnPositions=new HashMap<>();
@@ -16,7 +19,12 @@ public final class CausalCompletionVerifier {
     private final List<Map<String,Integer>> displaced=new ArrayList<>();
 
     public CausalCompletionVerifier(Map<String,List<JsonElement>> reference) {
+        this(reference,1);
+    }
+
+    private CausalCompletionVerifier(Map<String,List<JsonElement>> reference,int finalRows) {
         expected=reference;
+        prefixMode=finalRows==0;
         if(reference==null) return;
         need(reference.containsKey("starts")&&reference.containsKey("completions")&&reference.containsKey("final"),"reference streams absent");
         for(JsonElement e:reference.get("starts")) {
@@ -39,7 +47,7 @@ public final class CausalCompletionVerifier {
             if(edge.equals("SYNCHRONOUS_CALL"))need(returnPositions.get(num(s,"start_id"))<returnPositions.get(parent),"reference synchronous child after parent");
             if(edge.equals("DEFERRED_INPUT_REQUEST"))need(returnPositions.get(parent)<returnPositions.get(num(s,"start_id")),"reference deferred child before parent return");
         }
-        need(reference.get("final").size()==1,"reference final absent/extra");
+        need(reference.get("final").size()==finalRows,"reference final absent/extra");
     }
 
     static void need(boolean ok,String reason) { if(!ok)throw new IllegalStateException(reason); }
@@ -168,6 +176,7 @@ public final class CausalCompletionVerifier {
         return matchedChildren==1;
     }
     public void finish() {
+        need(!prefixMode,"a checkpoint prefix is not a full game");
         need(returns.keySet().equals(starts.keySet()),"missing completion domain");
         need(cursors.getOrDefault("final",0)==1,"missing/extra final");
         if(expected!=null) {
@@ -180,5 +189,72 @@ public final class CausalCompletionVerifier {
         return Map.of("contract","CAUSAL_COMPLETION_REPLAY","reference_comparison",expected!=null,
                 "strict_global_completion_order",expected==null||arrival.equals(expected.get("completions")),
                 "displaced_pairs",List.copyOf(displaced),"completed_ids_in_arrival_order",new ArrayList<>(returns.keySet()));
+    }
+
+    private static final Set<String> PREFIX_STREAMS=Set.of("starts","completions","native","paid-pending","final");
+
+    public static CausalCompletionVerifier prefix(Map<String,List<JsonElement>> reference) {
+        need(reference!=null&&reference.keySet().equals(PREFIX_STREAMS),"checkpoint prefix streams differ");
+        return new CausalCompletionVerifier(reference,0);
+    }
+
+    public void finishPrefix() {
+        need(prefixMode&&expected!=null&&expected.get("final").isEmpty(),"not an unfinished reference prefix");
+        need(returns.keySet().equals(starts.keySet()),"missing prefix completion domain");
+        need(starts.keySet().equals(referenceStarts.keySet())&&returns.keySet().equals(referenceReturns.keySet()),"prefix invocation domain differs");
+        for(String stream:expected.keySet())need(cursors.getOrDefault(stream,0)==expected.get(stream).size(),"unconsumed_prefix_"+stream);
+    }
+
+    public static Map<String,Object> verifyPrefix(Map<String,List<JsonElement>> reference,Map<String,List<JsonElement>> actual) {
+        CausalCompletionVerifier verifier=prefix(reference);
+        need(actual!=null&&actual.keySet().equals(PREFIX_STREAMS),"actual prefix streams differ");
+        need(actual.get("final").isEmpty(),"checkpoint prefix has a final row");
+        int nextReturn=0;
+        List<JsonElement> completed=actual.get("completions");
+        // Reconstruct only declared parent dependencies. Completion arrivals retain
+        // their actual order; accept() still proves each inversion and whole row.
+        for(JsonElement row:actual.get("starts")) {
+            JsonObject start=row.getAsJsonObject();
+            if(edgeKind(start).equals("DEFERRED_INPUT_REQUEST")) {
+                int parent=num(start,"parent_start");
+                while(!verifier.returns.containsKey(parent)) {
+                    need(nextReturn<completed.size(),"deferred prefix parent has not returned");
+                    verifier.accept("completions",completed.get(nextReturn++));
+                }
+            }
+            verifier.accept("starts",row);
+        }
+        while(nextReturn<completed.size())verifier.accept("completions",completed.get(nextReturn++));
+        for(String stream:List.of("native","paid-pending","final"))
+            for(JsonElement row:actual.get(stream))verifier.accept(stream,row);
+        verifier.finishPrefix();
+        Map<String,Object> result=new LinkedHashMap<>(verifier.diagnostic());
+        result.put("contract","CAUSAL_CHECKPOINT_PREFIX");
+        result.put("final_rows",0);
+        result.put("game_complete",false);
+        return result;
+    }
+
+    private static Map<String,List<JsonElement>> prefixStreams(JsonObject value) {
+        need(value.keySet().equals(PREFIX_STREAMS),"checkpoint prefix stream keys differ");
+        Map<String,List<JsonElement>> streams=new LinkedHashMap<>();
+        for(String key:PREFIX_STREAMS) {
+            need(value.get(key).isJsonArray(),"checkpoint prefix stream must be an array");
+            List<JsonElement> rows=new ArrayList<>();value.getAsJsonArray(key).forEach(rows::add);streams.put(key,rows);
+        }
+        return streams;
+    }
+
+    // Local trusted-host verifier, not a game launcher or browser command API.
+    public static void main(String[] args)throws Exception {
+        need(args.length==1&&args[0].equals("--checkpoint-prefix"),"expected checkpoint-prefix mode");
+        int limit=128*1024*1024;
+        byte[] raw=System.in.readNBytes(limit+1);
+        need(raw.length<=limit,"checkpoint prefix input too large");
+        JsonObject input=JsonParser.parseString(new String(raw,java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        need(input.keySet().equals(Set.of("reference","actual")),"checkpoint prefix request keys differ");
+        Map<String,Object> proof=new LinkedHashMap<>(verifyPrefix(prefixStreams(input.getAsJsonObject("reference")),prefixStreams(input.getAsJsonObject("actual"))));
+        proof.put("input_sha256",java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(raw)));
+        System.out.println(new Gson().toJson(proof));
     }
 }
