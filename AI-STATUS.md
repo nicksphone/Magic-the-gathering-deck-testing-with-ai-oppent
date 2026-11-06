@@ -176,6 +176,15 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   answers, with all fifteen overlay origins checked and owned processes closed.
   This is not a live switch, win-rate, cold-save or BO3 certificate. See
   [the exact boundary, original failure and limits](docs/testing/native-long-game-boundary.md).
+- [x] **Bounded native static Fog restrictions:** the forecast now checks the
+  native activation prohibition before treating a known activated Fog as usable.
+  Both disabled-Spore-Frog failures close in 16 controlled cases and two privacy
+  pairs; complete baseline rows and serialized RNG boundaries remain matched on
+  unchanged routes. Independent existing knowledge programs passed 30 top-level
+  rows plus eight separately reported owner/payment/memory checks; four synthetic
+  empty-source checks also passed. This does not cover detain, suppression, every
+  future response window, a new-profile UI game or global AI fairness. See
+  [source, original failures and reproduction](tools/engine_evaluation/forge/native-ai/fog-activation-legality/README.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
   1,230 tests plus six subtests; the current search-limit/post-denial cohorts

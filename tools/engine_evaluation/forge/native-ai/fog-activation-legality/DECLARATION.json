@@ -1,0 +1,14 @@
+{
+  "label": "CONTROLLED native Fog activation legality; not natural games",
+  "original8": "Exact unchanged NativeFogActivationAudit.java/ORIGINAL-DECLARATION.json; same order/initial seed/model setup, private runCase methods reflectively invoked; predecessor standalone main not relabelled as this coupled driver",
+  "supplement8": ["ManifestFrog", "ManifestForest", "InstantFunded", "InstantUnfunded"],
+  "seats": [0, 1],
+  "extra_pair_checks": "Two same-public-view/incoming-and-ending-serialized-RNG hidden-manifest comparisons, separate from eight case counts",
+  "manifest_setup": "Canonical Scroll of Fate ability explicitly selected for trusted setup, actual native tap payment/stack/resolution; sole hand card selected normally. Controlled tapping then removes blocker, not a natural history claim",
+  "instant_setup": "Canonical Future Sight public top Fog, native Needle entry names Fog; untapped/tapped Forest controls actual funding",
+  "seed_rule": "Original8 seed once before FModel; supplemental fresh declared seed before each game construction (same seed for a hidden pair), never reset/restore after setup or decision; reject rather than repair unmatched pair RNG",
+  "first_actor_choice": "One native Default attack callback before any diagnostic Fog/legality query in every case",
+  "limits": {"seconds": 300, "heap": "1500m", "processors": 1, "owned_concurrent_JVMs": 1, "total_concurrent_JVMs": 2},
+  "unexpected_controls": "Report separately; do not weaken old expectations or broaden product condition",
+  "natural_win_claim": false
+}

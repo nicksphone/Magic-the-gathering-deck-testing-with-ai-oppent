@@ -1,0 +1,12 @@
+--- forge-ai/src/main/java/forge/ai/ComputerUtil.java
++++ forge-ai/src/main/java/forge/ai/ComputerUtil.java
+@@ -1622,6 +1622,9 @@
+                     continue;
+                 }
+ 
++                if (sa.isActivatedAbility() && !sa.checkRestrictions(defender)) {
++                    continue;
++                }
+                 if (!ComputerUtilCost.canPayCost(sa, defender, false, knownCard)) {
+                     continue;
+                 }
