@@ -1,8 +1,10 @@
 # External Magic Engine Evaluation
 
 These original test adapters exercise the Forge and XMage contributors' card
-implementations. They are not replacements for either upstream engine and do
-not bundle their code or card programs. See [the third-party notices](../../THIRD-PARTY-NOTICES.md).
+implementations. They are not replacements for either upstream engine. The
+Forge bridge additionally includes four explicitly modified GPL native input
+classes, not the complete engine or card programs. See
+[the third-party notices](../../THIRD-PARTY-NOTICES.md).
 
 ## Pinned Sources
 
@@ -11,8 +13,9 @@ not bundle their code or card programs. See [the third-party notices](../../THIR
 | [Forge](https://github.com/Card-Forge/forge) | `61e9442c433711a82258daca3236f936a1d6f70e` | GPL-3.0-or-later source headers; accompanying GPL v3 text |
 | [XMage](https://github.com/magefree/mage) | `987fd4e9c73e9f113e235f8d8f98628f2d391667` | MIT |
 
-Original upstream notices were retained. Our Forge adapter's GPL marking is
-specific to that file; the app's root Apache license does not override it.
+Original upstream notices were retained. Forge-related adapters, units and
+modified native sources are separately marked GPL; the app's root Apache
+license does not override them.
 
 ## What Was Executed
 
@@ -98,12 +101,21 @@ native engine, human-controller protocol and test helpers are upstream work by
 the Forge Team/Card-Forge contributors. Each source header credits them; retain
 [Forge's original license](forge/LICENSE) and upstream notices.
 
-From the pinned checkout's `forge-gui-desktop` directory, using the native
-classpath `CP` described above and an isolated copy at `BOUNDARY`:
+From the application checkout, using the native classpath `CP` described above
+and an isolated output root at `BOUNDARY`, build the current sources:
 
 ```sh
-mkdir -p "$BOUNDARY/classes" "$BOUNDARY/home" "$BOUNDARY/tmp"
-javac --release 17 -cp "$CP" -d "$BOUNDARY/classes" "$BOUNDARY/"*.java
+# Build the current boundary and its helpers using the explicit source list.
+FORGE_CP="$CP" bash tools/engine_evaluation/forge/stdio/build.sh "$BOUNDARY/classes"
+mkdir -p "$BOUNDARY/home" "$BOUNDARY/tmp"
+javac --release 17 -cp "$BOUNDARY/classes:$CP" -d "$BOUNDARY/classes" \
+  tools/engine_evaluation/forge/actor-boundary/*Test.java
+```
+
+Then change to the pinned Forge checkout's `forge-gui-desktop` directory for
+its native resource layout and run:
+
+```sh
 timeout -k 15s 360 java -Xmx2g -Djava.awt.headless=true \
   -Duser.home="$BOUNDARY/home" -Djava.io.tmpdir="$BOUNDARY/tmp" -Dsentry.dsn= \
   --add-opens java.base/java.lang=ALL-UNNAMED \
@@ -127,14 +139,15 @@ an app migration or globally fair/expert AI claim.
 
 Copy `PublicNameController.java` and `NativeNameInformationTest.java` into an
 owned `NAMING` directory, along with `ActorBoundary.java` from the earlier
-prototype. With the same pinned native classpath `CP` and working directory:
+prototype. Build the current boundary/helpers using `forge/stdio/build.sh`
+first. With the same pinned native classpath `CP` and working directory:
 
 ```sh
 mkdir -p "$NAMING/classes" "$NAMING/home" "$NAMING/tmp"
-javac --release 17 -cp "$CP" -d "$NAMING/classes" "$NAMING/"*.java
+javac --release 17 -cp "$BOUNDARY/classes:$CP" -d "$NAMING/classes" "$NAMING/"*.java
 timeout -k 15s 360 java -Xmx2g -Djava.awt.headless=true \
   -Duser.home="$NAMING/home" -Djava.io.tmpdir="$NAMING/tmp" -Dsentry.dsn= \
-  -cp "$NAMING/classes:$CP" org.testng.TestNG \
+  -cp "$NAMING/classes:$BOUNDARY/classes:$CP" org.testng.TestNG \
   -testclass forge.evaluation.NativeNameInformationTest -d "$NAMING/results"
 ```
 
@@ -178,6 +191,11 @@ adapter around the unchanged Forge human controller. It reuses the actor-scoped
 projection and one-use choice broker, with JSON-lines stdin/stdout rather than
 raw Java views. Diagnostics and game traces remain private. Read the
 [contract, runnable commands and open adoption requirements](../../docs/testing/forge-native-human-worker.md).
+The current source checkpoint includes the causal replay/identity helpers and
+four [native input patches](forge/native-ui/NOTICE). Build the explicit 18-source
+list with `FORGE_CP="$CP" bash forge/stdio/build.sh /absolute/fresh/output`
+from this directory. Do not compile a recursive Java glob or rely on old cached
+adapter classes. Tests labelled INTERNALPROTOCOL or SYNTHETIC are not full games.
 
 ## Native Save Compatibility
 

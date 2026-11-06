@@ -2,11 +2,17 @@
 // Original host adapter for the Forge Team/Card-Forge engine and human controller.
 // https://github.com/Card-Forge/forge, revision 61e9442c433711a82258daca3236f936a1d6f70e.
 // Retain upstream notices and the accompanying Forge GPL license.
+// Owned 2026-11-05 presentation-fence adapter; requires base61e944 + owned native patch.
+// Owned R7 additive producer provenance + CAUSAL_COMPLETION_REPLAY verification.
 package forge.evaluation;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonElement;
+import com.google.common.eventbus.Subscribe;
+import forge.game.card.Card;
+import forge.game.zone.ZoneType;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import forge.GuiDesktop;
@@ -59,6 +65,125 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public final class NativeHumanWorker implements IRemote {
+    private Path evidence;
+    private boolean replay;
+    private long rngBase;
+    private final Map<String,List<JsonElement>> expected = new TreeMap<>();
+    private final Map<String,Integer> cursors = new TreeMap<>();
+    private JsonElement pendingOffer, submitted;
+    private JsonObject pendingEdge, submittedEdge;
+    private int decisions, starts;
+    private final ThreadLocal<Integer> activeStart = ThreadLocal.withInitial(() -> -1);
+    private int pendingParent = -1, submittedParent = -1;
+    private boolean reversedSeen, paidSeen;
+    private final NativeProducerTrace producerTrace = new NativeProducerTrace();
+    private CausalCompletionVerifier causalVerifier;
+    private Game pendingTerminal;
+
+    private synchronized void journal(String stream, Object value) {
+        if (failed) throw new IllegalStateException("diagnostic_already_stopped");
+        JsonElement row = JSON.toJsonTree(value);
+        if (stream.equals("completions")) {
+            int id=row.getAsJsonObject().get("start_id").getAsInt();
+            row.getAsJsonObject().add("producer",producerTrace.completion(id));
+        }
+        try {
+            Files.writeString(evidence.resolve(stream+".jsonl"), row+"\n", StandardCharsets.UTF_8,
+                    java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.APPEND);
+            int index = cursors.getOrDefault(stream,0);
+            try {
+                if (causalVerifier == null) causalVerifier = new CausalCompletionVerifier(replay ? expected : null);
+                causalVerifier.accept(stream,row);
+            } catch (IllegalStateException mismatch) {
+                Files.writeString(evidence.resolve("MISMATCH.json"),JSON.toJson(Map.of("stream",stream,"index",index,
+                        "actual",row,"reason",mismatch.getMessage(),"contract","CAUSAL_COMPLETION_REPLAY")));
+                failed = true;
+                throw mismatch;
+            }
+            cursors.put(stream,index+1);
+        } catch (IOException error) { failed = true; throw new IllegalStateException(error); }
+    }
+
+    private List<Object> physical(Game game, Player p, ZoneType zone) {
+        List<Object> list = new ArrayList<>();
+        for (Card c : p.getCardsIn(zone)) list.add(List.of(c.getId(),c.getName(),c.getOwner().getId(),
+                c.getController().getId(),c.isTapped(),c.hasSickness(),c.isFaceDown(),c.isToken(),
+                c.getGameTimestamp(),c.getManaCost().toString(),c.getSetCode()));
+        return list;
+    }
+
+    private Object nativeState(Game game) {
+        try {
+        List<Object> players = new ArrayList<>(), stack = new ArrayList<>();
+        for (Player p : game.getRegisteredPlayers()) {
+            Map<String,Object> zones = new TreeMap<>();
+            for (ZoneType z : List.of(ZoneType.Hand,ZoneType.Library,ZoneType.Battlefield,ZoneType.Graveyard,
+                    ZoneType.Exile,ZoneType.Command,ZoneType.Sideboard)) zones.put(z.name(),physical(game,p,z));
+            List<Object> mana = new ArrayList<>();
+            for (var m : p.getManaPool()) mana.add(List.of(m.getColor(),m.getSourceCard().getId(),m.getPlayer().getId(),m.isRestricted(),m.isSnow()));
+            players.add(Map.of("id",p.getId(),"life",p.getLife(),"zones",zones,"mana",mana));
+        }
+        for (var entry : game.getStack()) {
+            var sa = entry.getSpellAbility();
+            List<Object> targets = new ArrayList<>(), paid = new ArrayList<>();
+            for (var t : sa.getTargets()) {
+                if (t instanceof Player p) targets.add(List.of("player",p.getId()));
+                else if (t instanceof Card c) targets.add(List.of("card",c.getId(),c.getGameTimestamp()));
+                else if (t instanceof forge.game.spellability.SpellAbility target) {
+                    Map<String,Object> actual = new java.util.LinkedHashMap<>();
+                    actual.put("type","spell_ability"); actual.put("ability_id",target.getId());
+                    Card host = target.getHostCard();
+                    actual.put("host",host == null ? null : Map.of("card_id",host.getId(),"game_timestamp",host.getGameTimestamp()));
+                    Player activating = target.getActivatingPlayer();
+                    actual.put("activating_player",activating == null ? null : activating.getId());
+                    targets.add(actual);
+                } else throw new IllegalStateException("unsupported_native_target");
+            }
+            for (var m : sa.getPayingMana()) paid.add(List.of(m.getColor(),m.getSourceCard().getId(),m.getPlayer().getId()));
+            stack.add(Map.of("id",entry.getId(),"ability_id",sa.getId(),"source",sa.getHostCard().getId(),
+                    "controller",sa.getActivatingPlayer().getId(),"targets",targets,"paid",paid,
+                    "mana_cost",sa.getPayCosts().getCostMana()==null ? "none" : sa.getPayCosts().getCostMana().getMana().toString()));
+        }
+        return Map.of("players",players,"stack",stack,"turn",game.getPhaseHandler().getTurn(),
+                "phase",String.valueOf(game.getPhaseHandler().getPhase()),"rng_delta",MyRandom.callCount()-rngBase);
+        } catch (RuntimeException | Error error) { fail(error); throw error; }
+    }
+
+    @Subscribe public void nativeEvent(forge.game.event.GameEvent event) {
+        String kind = event.getClass().getSimpleName();
+        if (kind.equals("GameEventPlayerPriority") || kind.equals("GameEventGameFinished")) synchronized (this) {
+            if (kind.equals("GameEventPlayerPriority")) priorityEpoch++;
+            readyInput = null;
+            invalidate();
+        }
+        if (!Set.of("GameEventGameStarted","GameEventShuffle","GameEventSpellAbilityCast",
+                "GameEventSpellResolved","GameEventPlayerPriority","GameEventGameFinished").contains(kind)) return;
+        Game game = actor.getGame();
+        boolean wasPaidSeen = paidSeen;
+        if (kind.equals("GameEventPlayerPriority")) for (var item : game.getStack()) {
+            var sa=item.getSpellAbility();
+            if (sa.isSpell() && sa.getActivatingPlayer()==actor && sa.getTotalManaSpent()>0) paidSeen=true;
+        }
+        if (game.getPhaseHandler().getTurn()>30) { failed=true; throw new IllegalStateException("turn_budget"); }
+        journal("native",Map.of("event",kind,"state",nativeState(game)));
+        if (!wasPaidSeen && paidSeen) journal("paid-pending",nativeState(game));
+    }
+
+    // Causal starts drive replay. They are not successful dispatches, casts, or payments.
+    private synchronized int begin(String kind, JsonElement ticket, int parent,JsonObject edge) {
+        if (starts>=1000) { failed=true; throw new IllegalStateException("input_budget"); }
+        int id=starts++;
+        journal("starts",Map.of("start_id",id,"parent_start",parent,"kind",kind,"ticket",ticket,"parent_edge",edge));
+        emit(Map.of("event","started","count",starts,"start_id",id,"role","invocation_not_acceptance"));
+        return id;
+    }
+
+    private synchronized void decision(int start, String kind, JsonElement ticket, String result) {
+        if (++decisions>1000) { failed=true; throw new IllegalStateException("input_budget"); }
+        journal("completions",Map.of("start_id",start,"kind",kind,"ticket",ticket,"result",result));
+        emit(Map.of("event","completion","count",decisions,"start_id",start,"role","native_return_not_cast_receipt"));
+        if (pendingTerminal != null && decisions == starts) finishTerminal(pendingTerminal);
+    }
     private static final Gson JSON = new Gson();
     private static final int MAX_LINE = 16_384;
     record Answer(String request, List<String> tokens) { }
@@ -143,10 +268,14 @@ public final class NativeHumanWorker implements IRemote {
     void dispatch(Runnable action) {
         try { action.run(); }
         catch (RuntimeException | Error error) {
-            error.printStackTrace(System.err);
-            invalidate();
-            failed = true;
+            fail(error);
         }
+    }
+
+    private void fail(Throwable error) {
+        error.printStackTrace(System.err);
+        invalidate();
+        failed = true;
     }
 
     private final PrintWriter wire;
@@ -160,6 +289,10 @@ public final class NativeHumanWorker implements IRemote {
     private Consumer<List<Object>> reply;
     private volatile boolean terminal, failed;
     private boolean aborted;
+    private volatile long priorityEpoch;
+    private volatile long inputRevision;
+    private forge.gamemodes.match.input.Input readyInput;
+    private long readyGeneration = -1, readyEpoch = -1;
 
     NativeHumanWorker(PrintWriter wire) { this.wire = wire; }
 
@@ -170,24 +303,36 @@ public final class NativeHumanWorker implements IRemote {
     }
 
     private synchronized void invalidate() {
+        inputRevision++;
         if (boundary != null) boundary.invalidate();
         request = null;
         reply = null;
     }
 
     private synchronized void publish(String kind,List<?> choices,int min,int max,
-                                      Consumer<List<Object>> handler,Map<String,Object> info) {
+                                      Consumer<List<Object>> handler,Map<String,Object> info,String producerForm) {
         if (aborted || terminal) throw new IllegalStateException("worker_closed");
         Map<String,Object> question = boundary.offer(kind,choices,min,max);
+        List<Object> descriptors = new ArrayList<>();
+        for (Object value : choices) descriptors.add(boundary.describe(value));
+        pendingOffer = JSON.toJsonTree(Map.of("kind",kind,"min",min,"max",max,"choices",descriptors,
+                "info",info,"turn",gui.getGameView().getTurn(),"phase",String.valueOf(gui.getGameView().getPhase()),"actor",actor.getId()));
+        pendingParent=activeStart.get();
+        pendingEdge=producerTrace.publicationEdge(producerForm,pendingParent);
         request = (String) question.get("request_id");
         reply = handler;
-        emit(Map.of("event","choice","question",question,"info",info,
+        emit(Map.of("event","choice","question",question,"info",info,"replay_offer",pendingOffer,
                 "state",boundary.snapshot(gui.getGameView())));
     }
 
     private synchronized void accept(Answer answer) {
         if (reply == null || !answer.request().equals(request)) throw new IllegalArgumentException("stale_response");
         List<Object> values = boundary.answer(actor,answer.request(),answer.tokens());
+        List<Object> selected = new ArrayList<>();
+        for (Object v : values) selected.add(boundary.describe(v));
+        submitted = JSON.toJsonTree(Map.of("offer",pendingOffer,"selected",selected));
+        submittedParent=pendingParent;
+        submittedEdge=pendingEdge.deepCopy();
         Consumer<List<Object>> callback = reply;
         request = null;
         reply = null;
@@ -204,6 +349,21 @@ public final class NativeHumanWorker implements IRemote {
     synchronized void completed(Game game) {
         if (aborted || terminal || failed) return;
         if (!game.isGameOver() || game.getOutcome() == null) { failed = true; return; }
+        if (pendingTerminal != null) throw new IllegalStateException("duplicate_native_terminal");
+        journal("final",Map.of("state",nativeState(game),"outcomes",game.getOutcome().getOutcomeStrings()));
+        pendingTerminal = game;
+        if (decisions == starts) finishTerminal(game);
+    }
+
+    private synchronized void finishTerminal(Game game) {
+        if (aborted || terminal || failed) return;
+        if (replay) for (String stream : expected.keySet()) if (cursors.getOrDefault(stream,0)!=expected.get(stream).size()) {
+            failed=true; throw new IllegalStateException("unconsumed_journal_"+stream);
+        }
+        causalVerifier.finish();
+        try { Files.writeString(evidence.resolve("COMPLETION-CONTRACT.json"),JSON.toJson(causalVerifier.diagnostic())); }
+        catch (IOException error) { failed=true; throw new IllegalStateException(error); }
+        if (!reversedSeen || !paidSeen) { failed=true; emit(Map.of("event","coverage_missing","reverse_order",reversedSeen,"paid_human",paidSeen)); return; }
         invalidate();
         emit(Map.of("event","game_complete","turns",game.getOutcome().getLastTurnNumber(),
                 "outcomes",game.getOutcome().getOutcomeStrings(),"draw",game.getOutcome().isDraw(),
@@ -211,33 +371,96 @@ public final class NativeHumanWorker implements IRemote {
         terminal = true;
     }
 
-    private void publishInput() {
+    private void observeInputReadiness() {
+        var controller = (PlayerControllerHuman) gui.getGameController(actor.getView());
+        var queue = controller.getInputQueue();
+        queue.setRemovalObserver(producerTrace::removed);
+        queue.setPresentationListener(new forge.gamemodes.match.input.InputQueue.PresentationListener() {
+            @Override public void invalidated() {
+                synchronized (NativeHumanWorker.this) { readyInput = null; invalidate(); }
+            }
+            @Override public void presented(forge.gamemodes.match.input.Input input, long generation) {
+                dispatch(() -> {
+                synchronized (NativeHumanWorker.this) {
+                    if (!queue.isCurrentPresentation(input,generation) || blocking || aborted || terminal) return;
+                    readyInput = input;
+                    readyGeneration = generation;
+                    readyEpoch = priorityEpoch;
+                    invalidate();
+                    publishInput();
+                }
+                });
+            }
+        });
+    }
+
+    private synchronized void publishInput() {
         if (actor == null || blocking) return;
         IGameController controller = gui.getGameController(actor.getView());
         if (!(controller instanceof PlayerControllerHuman human)) throw new IllegalStateException("not_human_controller");
         var input = human.getInputQueue().getInput();
         if (input == null || input.getClass().getSimpleName().equals("InputLockUI")) return;
+        final long generation = readyGeneration, epoch = readyEpoch, revision = inputRevision;
+        if (input != readyInput || epoch != priorityEpoch ||
+                !human.getInputQueue().isCurrentPresentation(input,generation)) return;
+        // Owned selection receipt: choices and chosen values share one native snapshot.
+        final Selection currentSelection = selection;
         LinkedHashSet<Object> choices = new LinkedHashSet<>();
-        choices.addAll(selection.cards());
-        choices.addAll(selection.targets());
-        choices.addAll(selection.actionable());
+        choices.addAll(currentSelection.cards());
+        choices.addAll(currentSelection.targets());
+        choices.addAll(currentSelection.actionable());
         if (ok) choices.add("button_ok");
         if (cancel) choices.add("button_cancel");
         if (choices.isEmpty()) return;
+        Map<String,Object> info = new java.util.LinkedHashMap<>(Map.of(
+                "ok_label",okLabel,"cancel_label",cancelLabel,"prompt",prompt));
+        if (input instanceof forge.gamemodes.match.input.InputSelectEntitiesFromList<?>) {
+            List<Object> chosen = new ArrayList<>();
+            for (var entity : List.copyOf(((forge.gamemodes.match.input.InputSelectEntitiesFromList<?>)input).getSelected())) chosen.add(boundary.describe(entity.getView()));
+            info.put("selection",Map.of("min",currentSelection.min(),"max",currentSelection.max(),
+                    "chosen",List.copyOf(chosen),"input",input.getClass().getSimpleName(),
+                    "generation",generation,"priority_epoch",epoch,"revision",revision,"actor",actor.getId()));
+        }
+        if (input instanceof forge.gamemodes.match.input.InputSelectStackItems stackInput) {
+            List<Object> chosen = new ArrayList<>();
+            for (var entry : List.copyOf(stackInput.getSelected())) chosen.add(boundary.describe(entry.getView()));
+            info.put("stack_selection",Map.of("chosen",List.copyOf(chosen),
+                    "input",input.getClass().getSimpleName(),"generation",generation,
+                    "priority_epoch",epoch,"revision",revision,"actor",actor.getId()));
+        } else if (choices.stream().anyMatch(forge.game.spellability.StackItemView.class::isInstance)) {
+            throw new IllegalArgumentException("unqualified_mixed_stack_target_input");
+        }
+        emit(Map.of("event","input_ready","input",input.getClass().getSimpleName(),
+                "generation",generation,"priority_epoch",epoch,"revision",revision));
         publish("input:"+input.getClass().getSimpleName(),new ArrayList<>(choices),1,1,answer -> {
             Object selected = answer.get(0);
+            JsonElement ticket = submitted.deepCopy();
+            int parent=submittedParent;
+            JsonObject publicationEdge=submittedEdge.deepCopy();
             FThreads.invokeInEdtLater(() -> dispatch(() -> {
-                if (human.getInputQueue().getInput() != input) {
+                if (!human.getInputQueue().isCurrentPresentation(input,generation) ||
+                        epoch != priorityEpoch || revision != inputRevision) {
                     emit(Map.of("event","rejected","reason","input_replaced_before_dispatch"));
                     return;
                 }
-                if (selected instanceof CardView card) controller.selectCard(card,null,null);
+                if (selected instanceof forge.game.spellability.StackItemView item) boundary.requireCurrentStackItem(item);
+                int start=begin("dispatch",ticket,parent,producerTrace.inputInvocationEdge(publicationEdge));
+                int previous=activeStart.get();
+                activeStart.set(start);
+                NativeProducerTrace.Dispatch producer = producerTrace.enterDispatch(start,input,generation,actor);
+                try {
+                String result = "void";
+                if (selected instanceof CardView card) result=String.valueOf(controller.selectCard(card,null,null));
                 else if (selected instanceof PlayerView player) controller.selectPlayer(player,null);
+                else if (selected instanceof forge.game.spellability.StackItemView item) controller.selectStackItem(item);
                 else if (selected.equals("button_ok")) controller.selectButtonOk();
                 else if (selected.equals("button_cancel")) controller.selectButtonCancel();
                 else throw new IllegalArgumentException("unsupported_click");
+                producerTrace.dispatchReturned(producer);
+                decision(start,"dispatch",ticket,result);
+                } finally { producerTrace.leaveDispatch(); activeStart.set(previous); }
             }));
-        },Map.of("ok_label",okLabel,"cancel_label",cancelLabel,"prompt",prompt));
+        },info,"INPUT_REQUEST_INVOKE_LATER");
     }
 
     @Override
@@ -252,20 +475,33 @@ public final class NativeHumanWorker implements IRemote {
                     PlayerView owner = ((TrackableCollection<PlayerView>) a[0]).iterator().next();
                     actor = gui.getGameView().getGame().getPlayer(owner.getId());
                     boundary = new ActorBoundary(actor);
+                    NativeNameMatchProbe.configureSearch(actor.getGame(),false);
+                    for (Player p : actor.getGame().getPlayers()) if (p.getController() instanceof forge.ai.PlayerControllerAi ai) ai.getAi().setUseSimulation(null);
+                    actor.getGame().subscribeToEvents(this);
+                    observeInputReadiness();
+                    List<Object> identities=new ArrayList<>();
+                    for (Player p : actor.getGame().getPlayers()) identities.add(Map.of(
+                            "native_player_id",p.getId(),"name",p.getName(),"is_ai",p.getController().isAI()));
+                    try { Files.writeString(evidence.resolve("NATIVE-IDENTITY.json"),JSON.toJson(identities)); }
+                    catch (IOException error) { throw new IllegalStateException(error); }
                 }
                 case setSelection -> {
                     selection = (Selection) a[0];
-                    if (!blocking) { invalidate(); publishInput(); }
+                    if (!blocking) invalidate();
                 }
                 case updateButtons -> {
                     if (actor == null || a[0] == null || ((PlayerView) a[0]).getId() != actor.getId() || blocking) return;
                     okLabel = (String) a[1]; cancelLabel = (String) a[2];
                     ok = (Boolean) a[3]; cancel = (Boolean) a[4];
-                    invalidate(); publishInput();
+                    invalidate();
                 }
                 case showPromptMessage -> {
-                    if (actor != null && a[0] instanceof PlayerView owner && owner.getId() == actor.getId()) prompt = (String) a[1];
+                    if (actor != null && a[0] instanceof PlayerView owner && owner.getId() == actor.getId()) {
+                        prompt = (String) a[1];
+                        if (!blocking) invalidate();
+                    }
                 }
+                case finishGame -> { readyInput = null; invalidate(); }
                 case applyDelta, showRevealedCards -> {
                     if (actor != null) emit(Map.of("event","view","state",boundary.snapshot(gui.getGameView())));
                 }
@@ -279,7 +515,11 @@ public final class NativeHumanWorker implements IRemote {
         try {
             GuiGameEvent call = (GuiGameEvent) event;
             Object[] a = call.getObjects();
+            if (call.getMethod() == forge.gamemodes.net.ProtocolMethod.getAbilityToPlay
+                    && ((List<?>)a[1]).isEmpty()) return null;
             List<?> choices;
+            NativeProducerTrace.Dialog producer = producerTrace.enterDialog(call,actor,
+                    (PlayerControllerHuman)gui.getGameController(actor.getView()));
             int min = 1, max = 1;
             Map<String,Object> info = dialogInfo(call);
             switch (call.getMethod()) {
@@ -306,12 +546,24 @@ public final class NativeHumanWorker implements IRemote {
                 default -> throw new IllegalArgumentException("unsupported_native_dialog");
             }
             CompletableFuture<List<Object>> result = new CompletableFuture<>();
+            final JsonElement[] ticket = new JsonElement[1];
+            final int[] start = new int[1];
             synchronized (this) {
                 blocking = true;
-                publish(call.getMethod().name(),choices,min,max,result::complete,info);
+                publish(call.getMethod().name(),choices,min,max,values -> {
+                    ticket[0]=submitted.deepCopy();
+                    start[0]=begin("dialog",ticket[0],submittedParent,submittedEdge.deepCopy());
+                    result.complete(values);
+                },info,"BLOCKING_SEND_AND_WAIT");
             }
             try {
                 List<Object> answer = result.get(120,TimeUnit.SECONDS);
+                producerTrace.dialogReturned(producer,start[0],answer);
+                decision(start[0],"dialog",ticket[0],"returned");
+                if (call.getMethod()==forge.gamemodes.net.ProtocolMethod.order && choices.size()>=2) {
+                    List<Object> reverse=new ArrayList<>(choices); java.util.Collections.reverse(reverse);
+                    if (reverse.equals(answer)) reversedSeen=true;
+                }
                 if (call.getMethod() == forge.gamemodes.net.ProtocolMethod.order) {
                     // Keep order preferences session-local; never silently remember a gameplay choice.
                     return new forge.gui.interfaces.IGuiGame.OrderResult<>(answer,false);
@@ -350,6 +602,16 @@ public final class NativeHumanWorker implements IRemote {
         try {
             if (args.length != 1) throw new IllegalArgumentException("expected_owned_input_directory");
             Path root = Path.of(args[0]);
+            remote.evidence=root;
+            remote.replay=Files.exists(root.resolve("REPLAY.path"));
+            if (remote.replay) {
+                Path original=Path.of(Files.readString(root.resolve("REPLAY.path")).trim());
+                for (String stream : List.of("starts","completions","native","paid-pending","final")) {
+                    List<JsonElement> rows=new ArrayList<>();
+                    for (String line : Files.readAllLines(original.resolve(stream+".jsonl"))) rows.add(JsonParser.parseString(line));
+                    remote.expected.put(stream,rows);
+                }
+            }
             JsonObject spec = JsonParser.parseString(Files.readString(root.resolve("SPEC.json"))).getAsJsonObject();
             int seat = spec.get("human_seat").getAsInt();
             if (seat < 0 || seat > 1 || !spec.get("open_decklists").getAsBoolean() || spec.getAsJsonArray("decks").size() != 2) {
@@ -365,6 +627,7 @@ public final class NativeHumanWorker implements IRemote {
             FModel.getPreferences().setPref(FPref.UI_RECORD_REPLAYS,false);
             FModel.getPreferences().setPref(FPref.FILTERED_HANDS,false);
             MyRandom.setRandom(new Random(spec.get("seed").getAsLong()));
+            remote.rngBase=MyRandom.callCount();
             List<RegisteredPlayer> players = new ArrayList<>();
             Map<Integer,Map<String,Integer>> disclosed = new TreeMap<>();
             for (int i=0;i<2;i++) {

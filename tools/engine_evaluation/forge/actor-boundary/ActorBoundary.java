@@ -86,7 +86,18 @@ public final class ActorBoundary {
         return visible;
     }
 
-    private Object describe(Object value) {
+    void requireCurrentStackItem(StackItemView item) {
+        for (var entry : actor.getGame().getStack()) {
+            if (entry.getView() == item && entry.getId() == item.getId()) return;
+        }
+        throw new IllegalArgumentException("Foreign, removed or aliased stack item");
+    }
+
+    Object describe(Object value) {
+        if (value instanceof StackItemView item) {
+            requireCurrentStackItem(item);
+            return Map.of("stack_id",item.getId(),"source",card(item.getSourceCard()));
+        }
         if (value instanceof CardView card) return card(card);
         if (value instanceof PlayerView player) return Map.of("player_id", player.getId(), "name", player.getName());
         if (value instanceof SpellAbilityView ability) {
@@ -95,7 +106,7 @@ public final class ActorBoundary {
                     (host.isFaceDown() && !host.canFaceDownBeShownTo(actor.getView()))) {
                 throw new IllegalArgumentException("Hidden ability description");
             }
-            return Map.of("description", ability.getDescription(), "source", card(host));
+            return Map.of("ability_id", ability.getId(), "description", ability.getDescription(), "source", card(host));
         }
         if (value instanceof String || value instanceof Boolean || value instanceof Integer) return value;
         if (value instanceof Enum<?> item) return item.name();
@@ -131,7 +142,9 @@ public final class ActorBoundary {
         List<Object> result = new ArrayList<>();
         for (String token : choices) {
             if (token == null || !p.values().containsKey(token)) throw new IllegalArgumentException("Unoffered choice");
-            result.add(p.values().get(token));
+            Object value = p.values().get(token);
+            if (value instanceof StackItemView item) requireCurrentStackItem(item);
+            result.add(value);
         }
         pending = null;
         return List.copyOf(result);

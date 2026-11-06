@@ -4,6 +4,7 @@
 # Retain upstream notices and the accompanying Forge GPL license.
 # This is a bounded integration-test client, NOT an expert gameplay policy.
 import collections,json,os,pathlib,queue,subprocess,sys,threading,time,uuid
+from structural_picker import pick
 
 def drain_frames(frames,first):
     batch=[first]
@@ -47,46 +48,10 @@ t=threading.Thread(target=read,daemon=True); t.start()
 counts=collections.Counter(); completed=None; injected=False; answered=0; max_turn=0; errors=[]; answered_ids=set(); checked_views=0
 disconnect_requested=False
 kinds=collections.Counter()
-tried=collections.defaultdict(set)
 
 def send(value):
     p.stdin.write(json.dumps(value)+'\n'); p.stdin.flush()
     decisions.write(json.dumps(value)+'\n'); decisions.flush()
-
-def pick(frame):
-    q=frame['question']; options=q['choices']; kind=q['kind']; actor=q['actor_id']; info=frame['info']
-    hand={c['card_id'] for p in frame['state']['players'] if p['player_id']==actor for c in p['zones']['Hand']['visible_cards']}
-    def find(test): return next((x for x in options if test(x['display'])),None)
-    ok=find(lambda d:d=='button_ok'); cancel=find(lambda d:d=='button_cancel')
-    if kind.startswith('input:'):
-        subtype=kind[6:]
-        if subtype=='InputAttack':
-            attacker=find(lambda x:isinstance(x,dict) and 'card_id' in x)
-            if attacker and cancel and 'alpha' in info.get('cancel_label','').lower(): return [cancel['token']]
-            return [ok['token']] if ok else [options[0]['token']]
-        if subtype=='InputPassPriority':
-            window=(frame['state']['turn'],frame['state']['phase'])
-            def available(x): return isinstance(x,dict) and x.get('card_id') in hand and x['card_id'] not in tried[window]
-            card=find(lambda x:available(x) and 'Land' in x.get('face',{}).get('type',''))
-            if card is None: card=find(lambda x:available(x) and 'Creature' in x.get('face',{}).get('type',''))
-            if card is None: card=find(available)
-            if card:
-                tried[window].add(card['display']['card_id'])
-                return [card['token']]
-        if subtype.startswith('InputPayMana'):
-            if ok: return [ok['token']]
-            if cancel: return [cancel['token']]
-        if subtype=='InputSelectTargets':
-            target=find(lambda x:isinstance(x,dict) and 'player_id' in x and x['player_id']!=actor)
-            if target is None: target=find(lambda x:isinstance(x,dict) and 'card_id' in x and x.get('controller_id')!=actor)
-            if target: return [target['token']]
-        if ok: return [ok['token']]
-        card=find(lambda x:isinstance(x,dict) and 'card_id' in x)
-        return [(card or cancel or options[0])['token']]
-    n=q['min']
-    if kind=='getChoices': n=max(n,min(q['max'],1))
-    if kind=='chooseSingleEntityForEffect': n=1 if options else 0
-    return [x['token'] for x in options[:n]]
 
 try:
     deadline=time.monotonic()+260

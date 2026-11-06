@@ -25,10 +25,10 @@ the opposing player uses the native AI. That client is not an expert policy.
   queued callback without a GUI callback or native-state mutation. A current
   replacement selection remained usable and the original payment completed.
   This is a controlled native payment check, not another natural game.
-- The source-only build compiles all 17 distributed inputs in one explicit
-  Java batch. All 28 qualified payload classes reproduce byte-for-byte with
-  the pinned compiler and cached dependency classpath. This establishes source
-  reproducibility, not application integration.
+- The earlier 17-source checkpoint reproduces all 28 qualified payload classes
+  byte-for-byte. The current build adds a native boundary unit and lists 18
+  explicit Java inputs, without implicitly compiling another upstream copy.
+  Source reproducibility is not application integration.
 
 An earlier run labelled replay did not actually load a reference; a later
 explicitly interrupted run was incomplete. Those results remain unqualified.
@@ -45,11 +45,60 @@ The generic test picker repeatedly selected and deselected the first card,
 eventually hitting the existing 1,000-input limit. This was a failed game,
 not a natural outcome, and the reverse game was not run under that cohort.
 
-The observed gap is in the bridge: the necessary native `Selection` API already
-exists. The correction is to expose actor-visible selection metadata at the
-current-input boundary and consume it structurally, while preserving one-click
-responses, native validation, input generations and one-use tokens. No card-name
-exception, invented selection or enlarged game budget is an adequate fix.
+The correction completed that actual native two-of-four choice: two distinct
+clicks succeeded and both cards subsequently appeared in the actor's hand.
+The follow-up game still did not finish: at 216 starts and returns, an unsupported
+stack-target type left the adapter waiting until its wall limit. Neither
+incomplete game is a scored result.
+
+## Current Choice Checkpoint
+
+The bridge now projects distinct current stack IDs with actor-filtered source
+views and dispatches through native `selectStackItem`, not a source-card alias.
+Foreign, removed and same-ID alias views reject. Native stack-only clicks publish
+their completed interaction through the existing generation fence; other ability
+paths are unchanged. Publication/snapshot errors fail promptly instead of hanging.
+
+Multi-card metadata uses the current native input's actual `getSelected()`.
+GUI highlights can retain earlier spell targets during payment and must not be
+mistaken for selections. The picker uses offered identities and honors genuinely
+enabled native OK, even where native rules permit an early finish. One-click
+responses, native validation and one-use tokens remain; no card-name policy,
+invented choice or enlarged game budget is used.
+
+- **219 passed, zero failed/skipped, 41.53 seconds:** the unchanged original
+  nine whole classes and ten new native units. All 209 inherited invocation
+  identities/parameters and all 28 loaded before/end payload pins are checked.
+- Separate public test-client checks pass **20 selection** and **nine stack**
+  labelled synthetic protocol cases, plus the original batched-frame/EOF check.
+  These are not natural games or a summed full suite.
+- New native units use trusted object/queue poses and negative inputs, not paid
+  game wins. They cover distinct same-source stack entries, real dispatch,
+  redaction, stale references, highlight separation and fail-fast behavior.
+
+The first inherited run had 207 passes/two failures: an early no-action context
+dereference and a missing launcher module-opening flag. Neither inherited test
+was edited. The next 219-case run had 217 passes/two failures: the missing partial
+stack completion receipt and a new fixture lacking native retained marks. The
+final correction changes that callback body and only the new fixture setup,
+retaining every assertion. Earlier failures remain archived, not relabelled green.
+Corrected complex games, mixed card/stack dialogs and full callback coverage
+remain separate acceptance work.
+
+## Bounded Native AI Checks
+
+Six controlled Default-AI burn checks passed in both seats: one Bolt at three
+opposing life, two genuinely chosen/paid Bolts taking six life to three then zero,
+and an unpayable case without a cast or fabricated win. The harness schedules
+priority after each resolution; this is not a full natural priority loop.
+
+Twelve controlled draw/counter pairs observed matching decisions and ending RNG
+under the tested concealed variants, including paid draw/counter controls.
+Neither experiment proves broad fairness or strength. Their strict zero-denial
+environment checks failed separately: each recorded two blocked hostname/connect
+checks. Burn traced its port-minus-one checks to TestNG reporting after the tests;
+the earlier draw/counter run lacked attribution data. Functional observations are
+not a claim of clean zero-attempted-IO qualification.
 
 ## Still Required
 

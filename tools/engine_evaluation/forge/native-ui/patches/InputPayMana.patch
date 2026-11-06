@@ -1,0 +1,29 @@
+--- a/forge-gui/src/main/java/forge/gamemodes/match/input/InputPayMana.java
++++ b/forge-gui/src/main/java/forge/gamemodes/match/input/InputPayMana.java
+@@ -1,3 +1,6 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++// Forge Team/Card-Forge upstream source, base 61e9442. See accompanying LICENSE.
++// Modified 2026-11-05: optional generation-bound receipt after native mana UI refresh.
+ package forge.gamemodes.match.input;
+ 
+ import com.google.common.collect.Lists;
+@@ -438,8 +441,18 @@
+         if (isAlreadyPaid()) {
+             done();
+             stop();
++        } else if (!getController().getInputQueue().hasPresentationListener()) {
++            FThreads.invokeInEdtNowOrLater(this::updateMessage);
+         } else {
+-            FThreads.invokeInEdtNowOrLater(this::updateMessage);
++            // Bind the resumed input before enqueueing, after any nested native prompts.
++            final long generation = interactionGeneration();
++            FThreads.invokeInEdtNowOrLater(() -> {
++                if (isFinished() || !getController().getInputQueue().isCurrentPresentation(this, generation)) {
++                    return;
++                }
++                updateMessage();
++                interactionCompleted(generation);
++            });
+         }
+     }
+ 

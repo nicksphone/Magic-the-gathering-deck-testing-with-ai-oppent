@@ -28,14 +28,20 @@ not an authenticated HTTP service or a live engine replacement.
 - EOF emits an abort, not a manufactured game result. A late completion callback
   cannot overwrite that abort. Native terminal results come from actual outcomes.
 
-The worker supports the exercised scalar/list dialogs and native card/player
-clicks. It deliberately errors on unimplemented callbacks rather than selecting
-defaults. Combat-damage allocations, stack-item selection, partial/sideboard
-ordering, arbitrary text input, all delayed-reveal contexts and the complete
-native dialog surface remain unqualified. Browser rendering and reconnect/auth
-are not supplied by this checkpoint.
+The current worker supports the exercised scalar/list dialogs and native
+card/player/stack-instance clicks. Selection metadata describes the actual current
+native selection, not GUI highlights. Unsupported callbacks fail rather than
+choosing defaults. Combat-damage allocations, mixed card/stack targeting,
+partial/sideboard ordering, arbitrary text input, all delayed-reveal contexts
+and the complete native dialog surface remain unqualified. Browser rendering
+and reconnect/auth are not supplied. See the
+[current 219-case component and game limits](native-engine-integration-status.md#current-choice-checkpoint).
 
-## Actual Qualification
+## Earlier Checkpoint Qualification
+
+This section records the earlier published worker, before the causal replay and
+native input patch checkpoint. It is not a rerun of that cohort on every later
+worker revision. See [current integration evidence and limits](native-engine-integration-status.md).
 
 Nine whole native classes passed **209 tests, zero failures/skips** in 16.686
 seconds: the earlier 183-case regression set plus 26 worker/transport checks.
@@ -79,16 +85,19 @@ are not relabeled as successful games.
 
 ## Reproduce
 
-Use the previously built pinned Forge classpath, with working directory
-`forge-gui-desktop`. Copy the two Java files here plus `ActorBoundary.java`,
-`PublicNameController.java` and `NativeNameMatchProbe.java` from the earlier
-prototype folders into an owned local source directory, then compile:
+Use the previously built pinned Forge classpath. From the application checkout,
+compile the explicit 18-source list; this includes all current helpers and the
+four modified native input classes, rather than relying on an older cached
+adapter. The output directory must not exist and must be outside this repository:
 
 ```sh
-javac --release 17 -cp "$CP" -d "$OWNED/classes" "$OWNED/"*.java
+FORGE_CP="$CP" JAVAC=/path/to/jdk/bin/javac \
+  bash tools/engine_evaluation/forge/stdio/build.sh "$OWNED/classes"
 ```
 
-Copy the existing practical-search `SPEC.json` and two deck files into a fresh
+Run from the pinned Forge checkout's `forge-gui-desktop` working directory.
+Keep the owned classes first on the runtime classpath. Copy the existing
+practical-search `SPEC.json` and two deck files into a fresh
 owned input directory. Add `human_seat` as integer 0 or 1. Retain the explicit
 deck inventories, `open_decklists`, `seed` and `flat_monte_carlo` settings.
 
@@ -106,6 +115,12 @@ its executable/path configuration to a browser client. The exercise client is
 an intentionally simple integration driver, **not an expert AI or training label**.
 Its privacy assertions are specific to the declared Burn/White Weenie matchup,
 not universal rules forbidding legitimate larger reveals.
+
+The supplied controlled-unit launcher additionally expects its original native
+test layout; compiling it does not make that layout or its scene files part of
+this distribution. The compiler flags target Java 17 and disable implicit source
+discovery. Byte-identical reproduction additionally requires the qualified JDK
+21.0.13+9 and the same pinned dependency classpath, not arbitrary newer builds.
 
 ## Save/Resume Boundary
 

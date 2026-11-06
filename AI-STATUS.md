@@ -117,8 +117,9 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
 - [ ] **Reuse an existing card/rules engine:** the isolated Forge bridge has a
   completed native game and genuine reference replay, plus a coupled stale-mana
   payment check. Its source bundle rebuilds all 28 qualified payload classes
-  byte-for-byte. Complex-deck testing exposed a multi-card selection gap in the
-  bridge; integration, durable resume and broader AI quality remain unfinished.
+  byte-for-byte. Real multi-card selection now completes; the corrected stack
+  boundary and unchanged inherited cases pass a 219-case native cohort.
+  Integration, complete complex games, durable resume and broad quality remain open.
   Forge has not replaced the live backend. See [current scope](docs/testing/native-engine-integration-status.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed

@@ -1,0 +1,30 @@
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Forge: Play Magic: the Gathering.
+Copyright (C) 2011 Forge Team
+Upstream: Card-Forge/forge, https://github.com/Card-Forge/forge
+Revision: 61e9442c433711a82258daca3236f936a1d6f70e
+
+These four native input classes derive from Forge, not from our application's
+rules implementation. Original upstream copyright and license comments are
+retained. Our changes add input-presentation/provenance notifications and prevent
+stale queued mana callbacks from interacting with a replacement prompt. The
+2026-11-06 InputProxy change also publishes completed synchronous stack-target
+clicks through the same native presentation fence, without changing other
+ability-click paths. The
+modified sources identify their changes. InputPayMana's original source has no
+file header; its modified copy explicitly credits Forge and identifies GPL3+.
+
+LICENSE is the unchanged upstream forge-gui module license. The Forge root
+license is also retained at ../LICENSE. Keep the notices and source headers.
+The application's root Apache license does not override these GPL-licensed files.
+
+UPSTREAM-SHA256.json identifies the exact upstream preimages used to make the
+patches. Apply either patches/native-coupled.patch or the four individual patches,
+not both. Do not compile another copy of these FQNs from an upstream source tree
+in the same source batch; the build's explicit source list selects these copies.
+
+The adjacent adapter/helper and unit sources are separately marked
+GPL-3.0-or-later. Generated private game traces, dependencies, compiled engine
+binaries and card programs are not distributed in this checkpoint. This is a
+local process prototype, not a completed application migration.

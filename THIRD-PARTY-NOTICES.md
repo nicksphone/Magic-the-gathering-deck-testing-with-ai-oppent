@@ -17,6 +17,10 @@ were retained. We did not author their engines or card implementations.
 - Our original Forge compatibility tests, native match/search, naming and actor-boundary
   prototypes are separately marked GPL-3.0-or-later
   and explicitly acknowledge the upstream engine and test helpers.
+- The local process bridge also includes four modified Forge native input
+  classes under `tools/engine_evaluation/forge/native-ui`. Their original notices,
+  module license, modification notices, exact upstream source hashes and patches
+  are retained. See [their NOTICE](tools/engine_evaluation/forge/native-ui/NOTICE).
 
 ### XMage
 
@@ -30,8 +34,9 @@ were retained. We did not author their engines or card implementations.
 
 ### Scope
 
-These are evaluation sources, not bundled game-engine implementations. The
-running application has not been switched to either project. The application's
+These are evaluation sources and four native input modifications, not a bundled
+complete engine or card-script distribution. The running application has not
+been switched to either project. The application's
 root Apache-2.0 license does not relicense separately licensed evaluation files
 or upstream software.
 
