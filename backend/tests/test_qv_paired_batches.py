@@ -4,7 +4,6 @@ from copy import deepcopy
 import random
 
 import pytest
-import torch
 
 from scripts import train_qv, train_qv_preferences as trainer
 from tests.test_qv_preference_training import preference, options
@@ -27,6 +26,7 @@ def test_invalid_batch_pairs_rejected_before_torch(pairs, batch_size, monkeypatc
 
 
 def test_paired_optimizer_matches_independent_per_pair_mean_and_order(monkeypatch):
+    torch = pytest.importorskip('torch', reason='Actual CPU trainer needs optional Torch')
     rows = [preference() for _ in range(4)]
     for i, row in enumerate(rows):
         row['state']['root']['value'] = i+1
