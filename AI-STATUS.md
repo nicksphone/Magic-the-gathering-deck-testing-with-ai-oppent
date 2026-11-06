@@ -40,6 +40,14 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   difficulty and allowances are unchanged. Affected cohorts passed 682 tests
   plus six subtests and 114 HTTP tests. The retained decision took 6.75 seconds;
   this follow-up is live on `15aa3c77`. See [scope and limits](docs/testing/post-denial-speculation.md).
+- [x] **Retain selected block plans:** ranking keeps its selected allocation
+  after shared-budget denial rather than selecting again. Generic empty-descriptor
+  behavior is preserved, losing partial searches retain fallback, and draws are
+  not defeats. Final affected qualification passed 933 tests plus six subtests
+  across 34 whole pure modules in three process shards, and 114 tests in two
+  whole HTTP modules. Two final-code decisions retain the evaluated plan with
+  root/RNG and hidden-view controls. This candidate is not yet live and does not
+  establish overall playing strength; see [scope and retained failures](docs/testing/retained-block-intents.md).
 - [x] Spell-curve classification no longer diluted by the land count (`fffcca07`).
 - [x] Ordinary targeted draw spells compare actual legal recipients instead of
   defaulting to the opponent (`ecda33bd`). The affected eight whole modules

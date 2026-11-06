@@ -2233,6 +2233,7 @@ class AIAgent:
             return self._rank_moves_query(state, moves, player_id, shallow=shallow)
 
     def _rank_moves_query(self, state: MatchState, moves: list[dict], player_id: int, *, shallow: bool = False) -> list[dict]:
+        moves = [dict(move) if move.get('type') == 'block' else move for move in moves]
         in_main = _step_key(getattr(state, "step", "")) in {"precombat_main", "postcombat_main"}
         own_main_sorcery_window = (
             in_main
@@ -2307,6 +2308,12 @@ class AIAgent:
             elif mtype == "attack":
                 base += self._attack_bias(state, move, player_id)
             elif mtype == "block":
+                # Keep the chosen allocation with this ranked intent: later
+                # forecasts can exhaust the shared search allowance.
+                action = self._materialize_action_without_resources(state, move, player_id)
+                if isinstance(action.get('blocks'), dict):
+                    move['blocks'] = action['blocks']
+                    move['_ai_retained_blocks'] = True
                 base += self._block_bias(state, move, player_id)
             elif mtype == "activate_ability":
                 base += 2.5
@@ -4587,9 +4594,10 @@ class AIAgent:
             return out
         if mtype == "block":
             out = dict(move)
+            retained = out.pop('_ai_retained_blocks', False) is True
             attackers = list(move.get("attackers") or [])
             blockers = list(move.get("blockers") or [])
-            if attackers and blockers and not out.get("blocks"):
+            if attackers and blockers and not out.get('blocks') and not retained:
                 out["blocks"] = self._choose_blocks(state, attackers, blockers)
             return out
         if mtype == "crew":
@@ -5593,7 +5601,7 @@ class AIAgent:
             if sim.winner == defender:
                 outcome_rank = 2
                 score += 1000.0
-            elif sim.winner is not None:
+            elif sim.winner == opponent:
                 outcome_rank = -1
                 score -= 1000.0
             normalized = {aid: sorted(bids) if len(bids) > 1 else bids[0] for aid, bids in assignment.items()}
@@ -5618,6 +5626,10 @@ class AIAgent:
                 if sim is not None and self._next_board_attack_wins(sim, defender):
                     return candidate[3]
         if require_complete and not combat_expansion_available():
+            return None
+        if best is not None and best[0] < 0 and not combat_expansion_available():
+            # A losing partial incumbent must not displace a legal fallback
+            # that may still block lethal damage without another projection.
             return None
         return best[3] if best is not None else None
 
