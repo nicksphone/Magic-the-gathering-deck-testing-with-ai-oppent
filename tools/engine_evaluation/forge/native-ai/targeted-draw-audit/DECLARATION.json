@@ -1,0 +1,18 @@
+{
+  "schema": "newtests-only-native-targeted-draw-v1",
+  "seed": 2026110629,
+  "seed_boundary": "Once before FModel initialization, no reset/retry/search",
+  "upstream": "Card-Forge/forge 61e9442c433711a82258daca3236f936a1d6f70e; Forge Team; GPL-3.0-or-later; ../../LICENSE",
+  "pose": "Constructed native Game, not naturally reached; full unchanged canonical card programs",
+  "runtime": "Pinned current eight-class prefix before frozen qualified base; unmodified base DrawAi",
+  "seats": [0, 1],
+  "scenes": ["inspiration-lethal", "opportunity-lethal", "safe-self", "avoid-selfdeck", "enemy-maniac", "enemy-hexproof"],
+  "lethal_phase": "actor MAIN2 with actual priority",
+  "control_phase": "opponent END_OF_TURN with PhaseHandler.setPriority(actor)",
+  "funding": "Six untapped canonical Islands, no pool mana",
+  "ai_method": "One fresh Default chooseSpellAbilityToPlay before probes; exact selected ability native payment/stack/SBA; no fabricated targets or forced casts; decline of positive is strict RED and stops that case",
+  "independent_controls": "Separate constructed games, explicit-target legal paid native actions for both lethal spells and seats; trusted execution, never AI passes",
+  "diagnostics": "Separate games after all AI cases; original DrawAi full canPlayWithSubs plus checkApiLogic reflection, targets chosen only by native gate",
+  "bounds": {"engine_jvms": 1, "heap_mb": 1500, "active_processors": 1, "seconds": 180},
+  "scope": "No production, existing test, prefix, profile, graph, registry, CI or database modifications; no natural-game/app/profile qualification"
+}

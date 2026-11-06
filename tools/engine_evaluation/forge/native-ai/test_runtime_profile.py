@@ -360,6 +360,54 @@ class SyntheticProfileTests(unittest.TestCase):
             self.assertEqual(writes, [], "Profile publication wrote into a replacement parent")
             self.assertEqual(list(foreign.iterdir()), [])
 
+    def draw_bundle(self):
+        bundle = self.pressure_bundle()
+        bundle["schema"] = 5
+        bundle["sources"]["forge-ai/src/main/java/forge/ai/ability/DrawAi.java"] = "3" * 64
+        bundle["classes"]["forge/ai/ability/DrawAi.class"] = "4" * 64
+        return bundle
+
+    def test_draw_bundle_requires_exact_seven_sources_and_nine_classes(self):
+        bundle = self.draw_bundle()
+        runtime, profile = P.derive_bundle(self.base, self.identity, "/build/shadow", "/profile", bundle)
+        self.assertEqual(profile["overrides"], bundle)
+        self.assertEqual((len(bundle["sources"]), len(bundle["classes"])), (7, 9))
+        self.assertNotEqual(runtime["build_id"], P.derive_bundle(
+            self.base, self.identity, "/build/shadow", "/profile", self.pressure_bundle())[0]["build_id"])
+        for bad in [
+            {**bundle, "schema": 5.0}, {**bundle, "schema": 4},
+            {**bundle, "sources": {k: v for k, v in bundle["sources"].items() if "DrawAi" not in k}},
+            {**bundle, "classes": {k: v for k, v in bundle["classes"].items() if "DrawAi" not in k}},
+            {**bundle, "classes": {**bundle["classes"], "forge/game/Game.class": "5" * 64}},
+        ]:
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                P.derive_bundle(self.base, self.identity, "/build/shadow", "/profile", bad)
+
+    def test_draw_publication_rejects_changed_draw_bytes_before_publication(self):
+        with tempfile.TemporaryDirectory(prefix="synthetic-draw-profile-") as name:
+            root = Path(name)
+            args = self.fixture(root)
+            build, bundle = args[2], self.draw_bundle()
+            for folder, key in [("source", "sources"), ("shadow", "classes")]:
+                for relative in bundle[key]:
+                    path = build / folder / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_bytes(("SYNTHETIC; NOT NATIVE: " + relative).encode())
+                    bundle[key][relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            approval = root / "approval.json"
+            approval.write_text(json.dumps(bundle))
+            P.main(*args, root / "output", approval)
+            self.assertEqual(json.loads((root / "output/BUILD-IDENTITY.json").read_text())["overrides"], bundle)
+            for folder, relative in [("shadow", "forge/ai/ability/DrawAi.class"),
+                                     ("source", "forge-ai/src/main/java/forge/ai/ability/DrawAi.java")]:
+                path = build / folder / relative
+                original = path.read_bytes()
+                path.write_bytes(b"SYNTHETIC CHANGED")
+                with self.assertRaisesRegex(ValueError, "byte identity"):
+                    P.main(*args, root / ("rejected-" + folder), approval)
+                self.assertFalse((root / ("rejected-" + folder)).exists())
+                path.write_bytes(original)
+
     def test_approved_bundle_files_must_match_before_atomic_publication(self):
         with tempfile.TemporaryDirectory(prefix="synthetic-profile-") as name:
             root = Path(name)

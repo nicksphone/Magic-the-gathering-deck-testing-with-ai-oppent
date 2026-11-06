@@ -1,0 +1,17 @@
+{
+  "schema": "newtests-only-targeted-draw-replacement-eight-v1",
+  "seed": 2026110673,
+  "seed_boundary": "Once before model initialization; no reset/search/retry",
+  "ai_scenes_both_seats": ["enemy-jace", "spirit-cap", "positive-no-replacement", "enemy-maniac"],
+  "ai_expected": ["native self-target draw2, no opponent win", "native self-target draw1, no false enemy decking", "native opponent-target and native Milled win", "native self-target draw2, no opponent win"],
+  "spirit_control": "Spirit controlled by actor in seat0 case, opponent in seat1 case; canonical global draw cap. Neither player has drawn this turn.",
+  "jace_fixture": "Full canonical Jace cast from enemy hand using native legal paid action with four Islands; actual stack/entry and printed native loyalty4 verified; no manual counters, zero-loyalty battlefield pose or SVar edits",
+  "supplemental": "Four SEPARATE games, Jace/Spirit both seats, explicit-target legal paid opponent Inspiration: Jace native enemy win, Spirit one card drawn and no native loss; trusted execution, never AI passes",
+  "method": "Exactly one fresh Default chooser per AI case, before policy/cost probes; execute its unchanged selected ability and targets even if tactically wrong, then preserve RED and actual outcome",
+  "pose": "Constructed native games with full unchanged canonical card programs, not naturally reached games",
+  "phase": "Opponent END_OF_TURN for Jace/Spirit/Maniac; actor MAIN2 for ordinary positive; actual setPriority(actor) and native turn/phase assertions",
+  "funding": "Actor six untapped canonical Islands, own library10/opponent library1, Inspiration draw2/pay4; separate Jace fixture funded by enemy four Islands",
+  "runtime": "Allowed original one-DrawAi layer 9763dbe0 plus old eight-class prefix 3f595b71 plus qualified592 base; exact bytes/origins pinned; parent8526 manifest not claimed verified",
+  "bounds": {"engine_jvm_workers": 1, "heap_mb": 1500, "processors": 1, "seconds": 180, "native_clock": "unchanged"},
+  "scope": "Tests only. Prior22/4 archive and source immutable; no native product, app, CI, graph, SQL, hidden replacement enumeration, model, lock, environment/key or dependency changes"
+}

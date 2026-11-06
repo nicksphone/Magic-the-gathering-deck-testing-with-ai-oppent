@@ -156,6 +156,17 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   built-UI Burn/Ramp game completed naturally with 248 answers in 138.752 seconds
   (Burn wins turn 17). This is not a win-rate, expert-play, durable-BO3 or live
   adoption certificate. See [the exact scope](docs/testing/native-ai-knowledge-boundary.md#fallback-only-sorcery-pressure).
+- [x] **Bounded native linked damage and draw decisions:** required creature
+  targets no longer prevent the tested player-lethal damage line. Targeted draw
+  takes checked decking wins without treating equal library size, draw caps or
+  known draw-win replacements as ordinary decking. The combined independently
+  rebuilt nine-class prefix passes 32 linked-damage and 34 draw AI checks, plus
+  existing 70 pressure/safety, 38 knowledge, 48 boundary and four empty-source
+  checks. These are controlled cases, not a strategic win-rate or live change.
+  One final-profile Burn/Ramp UI game completed naturally with 142 answers in
+  82.296 seconds (Burn wins turn 10), with all nine loaded origins verified.
+  The earlier Control UI attempt remains incomplete at the prototype's 30-turn
+  cap. See [scope and remaining work](docs/testing/native-linked-draw-ai.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
   1,230 tests plus six subtests; the current search-limit/post-denial cohorts

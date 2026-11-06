@@ -1,0 +1,29 @@
+{
+  "label": "LINKED-DAMAGE-POLICY-DESIGN-BASELINE-NO-PRODUCT",
+  "seed": 2026110627,
+  "old12": "Unmodified NativeLinkedDamageLethalAudit.check methods, one new runtime/cohort history; not a rerun of the old standalone main or manual6 gate.",
+  "new_scenes": [
+    {"name":"admitted-nonlethal-root", "spell":"Searing Blaze", "creature":"Topiary Stomper", "landfall":true, "enemy_life":6, "own_life":20, "expect":"decline"},
+    {"name":"nonlethal-retaliation", "spell":"Searing Blaze", "creature":"Boros Reckoner", "landfall":false, "enemy_life":4, "own_life":1, "expect":"decline"},
+    {"name":"creature-only-removal", "spell":"Flame Slash", "creature":"Topiary Stomper", "landfall":false, "enemy_life":20, "own_life":20, "expect":"removal"},
+    {"name":"player-prevention", "spell":"Searing Blaze", "creature":"Topiary Stomper", "landfall":true, "enemy_life":1, "own_life":20, "expect":"decline", "enemy_permanent":"Glacial Chasm"},
+    {"name":"player-cannot-lose", "spell":"Searing Blaze", "creature":"Topiary Stomper", "landfall":true, "enemy_life":1, "own_life":20, "expect":"decline", "enemy_permanent":"Platinum Angel"},
+    {"name":"player-unlife", "spell":"Searing Blaze", "creature":"Topiary Stomper", "landfall":true, "enemy_life":1, "own_life":20, "expect":"decline", "enemy_permanent":"Phyrexian Unlife"},
+    {"name":"infect-activated-boundary", "spell":"Goblin Fireslinger", "creature":"", "landfall":false, "enemy_life":1, "own_life":20, "expect":"decline"},
+    {"name":"cast-backlash", "spell":"Searing Blaze", "creature":"Topiary Stomper", "landfall":true, "enemy_life":1, "own_life":2, "expect":"decline", "own_permanent":"Eidolon of the Great Revel"},
+    {"name":"protected-creature", "spell":"Searing Blaze", "creature":"Paladin en-Vec", "landfall":true, "enemy_life":1, "own_life":20, "expect":"decline"},
+    {"name":"side-effect-chain", "spell":"Searing Blood", "creature":"Runeclaw Bear", "landfall":false, "enemy_life":1, "own_life":20, "expect":"side-effect-win"}
+  ],
+  "seats":[0,1],
+  "new_cases":20,
+  "old_cases":12,
+  "total_cases":32,
+  "default_choice_invocations_per_case":1,
+  "manual_execution_controls":0,
+  "canonical_infect_boundary_limit":"Phyresis legally attaches to the native creature Fireslinger in the trusted existing battlefield pose; it is an activated nonlinked boundary, not a fabricated infect Searing Blaze spell.",
+  "normal_resolution":"Chosen abilities pay natively; SBA and APNAP pending-trigger ordering are processed before each stack resolution without another chooseSpellAbilityToPlay call.",
+  "no_rng_reset_after_model":true,
+  "limits":{"engine_jvms_concurrent":1,"outer_seconds":180,"heap_mb":1500,"active_processors":1,"native_clocks":"unchanged"},
+  "production_edits":false,
+  "natural_game_reproduction":false
+}

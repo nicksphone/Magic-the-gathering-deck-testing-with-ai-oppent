@@ -30,6 +30,10 @@ were retained. We did not author their engines or card implementations.
   notices, and are marked GPL-3.0-or-later. These are our modifications to their
   existing AI, not an AI or card implementation authored from scratch here.
   See [the native-AI notice](tools/engine_evaluation/forge/native-ai/NOTICE.md).
+  The separate linked-damage and targeted-draw changes likewise retain full
+  Forge source preimages/postimages, original headers and GPL text. See their
+  [combined scope](docs/testing/native-linked-draw-ai.md); the upstream rules,
+  card programs and baseline AI remain the Forge contributors' work.
   The separate [known-mana increment notice](tools/engine_evaluation/forge/native-ai/known-mana/NOTICE.md)
   identifies the three modified upstream AI sources and their retained headers.
 

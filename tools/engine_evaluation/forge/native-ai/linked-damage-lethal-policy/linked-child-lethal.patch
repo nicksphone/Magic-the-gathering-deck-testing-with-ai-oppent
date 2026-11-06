@@ -1,0 +1,85 @@
+--- a/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
++++ b/forge-ai/src/main/java/forge/ai/ability/DamageDealAi.java
+@@ -91,9 +91,82 @@
+         if (damageTargetAI(ai, sa, dmg, true)) {
+             return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
+         }
++        if (completeLethalLinkedDamage(ai, sa, dmg)) {
++            return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
++        }
+         return new AiAbilityDecision(0, AiPlayDecision.TargetingFailed);
+     }
+ 
++    private boolean completeLethalLinkedDamage(final Player ai, final SpellAbility child, final int damage) {
++        final SpellAbility root = child.getRootAbility();
++        final SpellAbility resolve = child.getSubAbility();
++        if (damage <= 0 || !root.isSpell() || root.isTrigger() || root.isCopied() || root.getParent() != null
++                || root.getSubAbility() != child || child.getParent() != root
++                || root.getApi() != ApiType.DealDamage || child.getApi() != ApiType.DealDamage
++                || !"DealDamage".equals(root.getParam("SP")) || !"DealDamage".equals(child.getParam("DB"))
++                || !ai.equals(root.getActivatingPlayer()) || !ai.equals(child.getActivatingPlayer())
++                || root.getHostCard() != child.getHostCard() || !root.getHostCard().isInZone(ZoneType.Hand)
++                || root.getHostCard().getManaCost().countX() != 0 || !"True".equals(root.getParam("DamageMap"))
++                || resolve == null || resolve.getApi() != ApiType.DamageResolve || resolve.getSubAbility() != null
++                || resolve.getMapParams().size() != 1 || !"DamageResolve".equals(resolve.getParam("DB"))) {
++            return false;
++        }
++        // Unknown conditions, optional targets and extra effect parameters are outside this fallback.
++        if (!Arrays.asList("SP", "ValidTgts", "TgtPrompt", "NumDmg", "DamageMap", "SubAbility", "AILogic",
++                "SpellDescription", "NoPrevention", "TargetMin", "TargetMax").containsAll(root.getMapParams().keySet())
++                || !Arrays.asList("DB", "ValidTgts", "TgtPrompt", "NumDmg", "SubAbility", "SpellDescription",
++                "NoPrevention", "TargetMin", "TargetMax").containsAll(child.getMapParams().keySet())
++                || !root.usesTargeting() || !child.usesTargeting() || !child.getTargets().isEmpty()) {
++            return false;
++        }
++        final TargetRestrictions rootTargets = root.getTargetRestrictions();
++        final TargetRestrictions childTargets = child.getTargetRestrictions();
++        if (!"1".equals(rootTargets.getMinTargets()) || !"1".equals(rootTargets.getMaxTargets())
++                || !"1".equals(childTargets.getMinTargets()) || !"1".equals(childTargets.getMaxTargets())
++                || rootTargets.isRandomTarget() || childTargets.isRandomTarget()
++                || root.getTargets().size() != 1 || !root.getTargets().isTargetingAnyPlayer()
++                || rootTargets.getValidTgts().length == 0 || childTargets.getValidTgts().length == 0) {
++            return false;
++        }
++        for (String selector : rootTargets.getValidTgts()) {
++            if (!selector.equals("Player") && !selector.equals("Opponent") && !selector.equals("Planeswalker")) {
++                return false;
++            }
++        }
++        for (String selector : childTargets.getValidTgts()) {
++            if (!selector.equals("Creature.ControlledBy ParentTargetedController")
++                    && !selector.equals("Creature.ControlledBy ParentTarget")) {
++                return false;
++            }
++        }
++        final String amount = root.getParam("NumDmg");
++        if (amount == null || amount.equals("X") || !amount.equals(child.getParam("NumDmg"))
++                || root.hasParam("NoPrevention") != child.hasParam("NoPrevention")) {
++            return false;
++        }
++        if (!amount.matches("[0-9]+")) {
++            final String definition = root.getSVar(amount);
++            if (!definition.equals(child.getSVar(amount))
++                    || !definition.matches("(?:Number\\$[0-9]+|Count\\$Landfall\\.[0-9]+\\.[0-9]+)")) {
++                return false;
++            }
++        }
++        final Player enemy = root.getTargets().getFirstTargetedPlayer();
++        if (!enemy.isOpponentOf(ai) || !root.canTarget(enemy)) {
++            return false;
++        }
++        final List<Card> targets = getTargetableCards(ai, child, enemy, childTargets, ai,
++                child.getHostCard(), ai.getGame());
++        StaticAbilityMustTarget.filterMustTargetCards(ai, targets, child);
++        // Reuse the child's existing amount; the native forecast can evaluate authored replacement SVars.
++        if (targets.isEmpty() || !isLethalDamageToPlayer(enemy, root.getHostCard(), damage,
++                root.hasParam("NoPrevention"))) {
++            return false;
++        }
++        child.getTargets().add(targets.get(0));
++        return true;
++    }
++
+     @Override
+     protected AiAbilityDecision canPlay(Player ai, SpellAbility sa) {
+         final Cost abCost = sa.getPayCosts();

@@ -1,0 +1,92 @@
+--- forge-ai/src/main/java/forge/ai/ability/DrawAi.java
++++ forge-ai/src/main/java/forge/ai/ability/DrawAi.java
+@@ -18,7 +18,11 @@
+  */
+ package forge.ai.ability;
+ 
++import java.util.ArrayDeque;
++import java.util.Collections;
++import java.util.IdentityHashMap;
+ import java.util.Map;
++import java.util.Set;
+ 
+ import forge.ai.*;
+ import forge.game.Game;
+@@ -30,6 +34,8 @@
+ import forge.game.phase.PhaseHandler;
+ import forge.game.phase.PhaseType;
+ import forge.game.player.*;
++import forge.game.replacement.ReplacementEffect;
++import forge.game.replacement.ReplacementType;
+ import forge.game.spellability.SpellAbility;
+ import forge.game.zone.ZoneType;
+ import forge.util.MyRandom;
+@@ -361,10 +367,9 @@
+                 }
+ 
+                 // try to mill opponent
+-                if (numCards > oppA.getCardsIn(ZoneType.Library).size()) {
+-                    // but only it he doesn't have Laboratory Maniac
+-                    // also disable it for other checks later too
+-                    if (oppA.isCardInPlay("Laboratory Maniac")) {
++                final int opponentLibrarySize = oppA.getCardsIn(ZoneType.Library).size();
++                if (numCards > opponentLibrarySize && oppA.canDraw(opponentLibrarySize + 1)) {
++                    if (hasKnownDrawWinReplacement(ai, oppA)) {
+                         continue;
+                     }
+ 
+@@ -566,6 +571,54 @@
+         return true;
+     }
+ 
++    private static boolean hasKnownDrawWinReplacement(final Player ai, final Player opponent) {
++        final Game game = ai.getGame();
++        for (final Card source : game.getCardsInGame()) {
++            if (!source.getView().canBeShownTo(ai.getView())
++                    || !source.getView().canFaceDownBeShownTo(ai.getView())) {
++                continue;
++            }
++            for (final ReplacementEffect replacement : source.getReplacementEffects()) {
++                if (replacement.getMode() != ReplacementType.Draw || replacement.isSuppressed()
++                        || !replacement.zonesCheck(game.getZoneOf(source))
++                        || !replacement.matchesValidParam("ValidPlayer", opponent)) {
++                    continue;
++                }
++                // Empty-library conditions can become true during the draw sequence.
++                if (containsWinInstruction(replacement.ensureAbility())) {
++                    return true;
++                }
++            }
++        }
++        return false;
++    }
++
++    private static boolean containsWinInstruction(final SpellAbility root) {
++        if (root == null) {
++            return false;
++        }
++        final ArrayDeque<SpellAbility> pending = new ArrayDeque<>();
++        final Set<SpellAbility> seen = Collections.newSetFromMap(new IdentityHashMap<>());
++        pending.add(root);
++        while (!pending.isEmpty()) {
++            final SpellAbility ability = pending.removeFirst();
++            if (!seen.add(ability)) {
++                continue;
++            }
++            if (ability.getApi() == ApiType.WinsGame) {
++                return true;
++            }
++            if (ability.getSubAbility() != null) {
++                pending.add(ability.getSubAbility());
++            }
++            pending.addAll(ability.getAdditionalAbilities().values());
++            for (final var children : ability.getAdditionalAbilityLists().values()) {
++                pending.addAll(children);
++            }
++        }
++        return false;
++    }
++
+     @Override
+     protected AiAbilityDecision doTriggerNoCost(Player ai, SpellAbility sa, boolean mandatory) {
+         if (targetAI(ai, sa, mandatory)) {

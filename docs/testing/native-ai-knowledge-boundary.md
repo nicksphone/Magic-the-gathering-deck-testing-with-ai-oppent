@@ -290,6 +290,13 @@ Native/game/RNG/browser evidence remains private NFS data, not public fixtures.
 
 ## Profile Publication
 
+Later [linked-damage and targeted-draw corrections](native-linked-draw-ai.md)
+retain this historical pressure checkpoint separately. Their combined prefix
+has seven sources/nine classes, 32 linked and 34 draw AI checks, preserved
+knowledge/boundary checks and one new 142-answer Burn/Ramp UI game. The earlier
+draw-only Control attempt hit the unchanged 30-turn prototype cap; it is not a
+completed game or a frontend-rendering regression.
+
 The operator-only [profile builder](../../tools/engine_evaluation/forge/native-ai/runtime_profile.py)
 pins the qualified base build and complete launch command. Changed JVM settings
 or later overriding mounts cannot silently reuse its identity. Source/class
