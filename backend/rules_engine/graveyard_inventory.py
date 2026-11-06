@@ -11,9 +11,9 @@ from rules_engine.oracle_text import without_reminder_text
 
 
 _SCHEMA_PINS = {
-    # Emblems, loyalty permissions and control ledgers require empty defaults below.
+    # Emblems, loyalty permissions and grant/control ledgers require empty defaults below.
     MatchState: 'cbeb9f80f6473744268be74235a1616122da8a0b0578f2b9c61e3f955d57ef31',
-    CardInstance: 'c6cd00f22c8838effbffa7cdd9d19d29fd16f5879346a071a25d5253bceef8e4',
+    CardInstance: '9ec94d05825ea801accc8ac4e230421ea6bbb2d36e1ab582e9e83f12a6d69c8f',
     PlayerState: '9d6bba14bc8fdfae5e10148dedff0487a62dd40205f5c93c618e2f68edf4bcae',
 }
 
@@ -169,7 +169,7 @@ def public_graveyard_inventory(state, actor_id):
                         or card.printed_characteristics or card.bestow_characteristics
                         or card.type_effects or card.type_effect_base is not None
                         or card.control_effects or card.control_effect_base is not None
-                        or card.keyword_effects or card.base_stat_effects
+                        or card.keyword_effects or card.activated_ability_effects or card.base_stat_effects
                         or card.was_kicked is not False
                         or card.kicker_count is not None and (
                             type(card.kicker_count) is not int or card.kicker_count != 0)

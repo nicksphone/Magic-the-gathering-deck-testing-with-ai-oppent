@@ -100,11 +100,9 @@ async def lifespan(app_instance: FastAPI):
                 if native is not None:
                     native.close_all()
         finally:
-            try:
-                owner.fence_admission()
-                owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)
-            finally:
-                owner.close()
+            owner.fence_admission()
+        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)
+        owner.close()
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
 

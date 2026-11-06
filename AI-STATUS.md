@@ -230,6 +230,11 @@ evidence that Ramp strategy is finished.
   test counts are not a head-to-head AI ranking.
 - [x] Forge's additional in-process human-controller callback check passed.
 - [x] README/source attribution and original license texts are retained.
+- [x] The combined native AI candidate completed eight natural core-engine games:
+  Burn/Control, Midrange/Tempo, Ramp/Tribal and White Weenie/Tokens, each in both
+  registration orders. No retry, deadline or forced outcome. This is broader
+  coverage, not expert-play, app-save/BO3 or live-default acceptance. See
+  [the actual outcomes and limits](docs/testing/native-linked-draw-ai.md#eight-natural-cross-deck-games).
 - [x] Existing native Forge search ran on unchanged Burn/White Weenie mains:
   four completed matched BO3s, 10 natural games, 51 search decisions and 33
   decisions made by rollouts. Eight whole native classes passed 183 tests.

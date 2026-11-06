@@ -93,3 +93,32 @@ fairness, durable saves/BO3, practical control-game limits and live adoption
 remain open. Private hands, RNG/game streams and browser evidence remain in
 private NFS archives, not public fixtures. Isolated passing checks do not close
 AI release acceptance.
+
+## Eight Natural Cross-Deck Games
+
+A separate core-engine run used that same combined prefix and native Default AI
+on both sides. Four predeclared deck pairs ran once in each registration order,
+with a fresh JVM per game and the pair's predeclared seed. All eight games
+finished naturally, without retries, deadline/turn-cap outcomes or forced wins.
+
+| Registration Order | Winner | Global Turn |
+| --- | --- | --- |
+| Burn / Dimir Control | Dimir Control | 26 |
+| Dimir Control / Burn | Burn | 13 |
+| Midrange / Tempo | Tempo | 14 |
+| Tempo / Midrange | Tempo | 13 |
+| Ramp / Tribal | Tribal | 10 |
+| Tribal / Ramp | Tribal | 11 |
+| White Weenie / Tokens | Tokens | 15 |
+| Tokens / White Weenie | White Weenie | 15 |
+
+All 3,682 declared source/runtime inputs matched before and after execution;
+all owned JVMs ended. Full hands, RNG streams and decision evidence remain in
+private storage. A bounded review of public events and actor-visible positions
+found no confirmed tactical error; it was not an exhaustive review of every
+decision or proof that every playable-looking card was payable.
+
+This broadens natural-game coverage beyond Burn/White Weenie. It is not a
+win-rate estimate, matched strength comparison, new UI/save/BO3 qualification
+or default-opponent deployment. The earlier human-worker 30-turn limit is
+unchanged: these were core-engine games, not runs through that adapter.

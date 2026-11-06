@@ -84,6 +84,23 @@ NATIVE_FORGE_MAIN_DELTA = {
 }
 assert NATIVE_FORGE_MAIN_DELTA['old_sha256'] == LAND_CHOICE_MAIN_DELTA['new_sha256']
 
+# The retention-only correction has one exact inverse; the native witness above stays intact.
+LIFECYCLE_RETENTION_MAIN_DELTA = {
+    'old_sha256': NATIVE_FORGE_MAIN_DELTA['new_sha256'],
+    'new_sha256': '97dd7e0c0629c01eaa546048470e292995e268159f38b30a39d81cdfe3ce3c44',
+    'hunks': [{
+        'start': 102, 'end': 105,
+        'new': ('            owner.fence_admission()\n'
+                '        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n'
+                '        owner.close()\n'),
+        'old': ('            try:\n'
+                '                owner.fence_admission()\n'
+                '                owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)\n'
+                '            finally:\n'
+                '                owner.close()\n'),
+    }],
+}
+
 REPOSITORY_DELTA_PATH = PATH.with_name('accepted_phase1_repository_delta.json')
 repository_raw = REPOSITORY_DELTA_PATH.read_bytes()
 assert hashlib.sha256(repository_raw).hexdigest() == '7617e4b9dbf6f1512bfd7bba51dc5a5e2506ade3163c28dca035e90c53b0e144'
@@ -208,6 +225,8 @@ def restore_reviewed_source(name, current, historical):
     assert name in recipes, 'No approved current delta for this source'
     recipe = recipes[name]
     assert historical == recipe['old_sha256'], 'Historical operand changed'
+    if name == 'main.py' and hashlib.sha256(current).hexdigest() == LIFECYCLE_RETENTION_MAIN_DELTA['new_sha256']:
+        current = _restore(current.decode(), LIFECYCLE_RETENTION_MAIN_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() == NATIVE_FORGE_MAIN_DELTA['new_sha256']:
         current = _restore(current.decode(), NATIVE_FORGE_MAIN_DELTA).encode()
     if name == 'main.py' and hashlib.sha256(current).hexdigest() == LAND_CHOICE_MAIN_DELTA['new_sha256']:

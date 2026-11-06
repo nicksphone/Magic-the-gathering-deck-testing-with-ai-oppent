@@ -13,7 +13,7 @@ from tests.test_numeric_inventory_adapter import positive, pure_inventory
 from tests.test_public_graveyard_inventory import DIVINATION
 
 
-CURRENT_CARD_SCHEMA = 'c6cd00f22c8838effbffa7cdd9d19d29fd16f5879346a071a25d5253bceef8e4'
+CURRENT_CARD_SCHEMA = '9ec94d05825ea801accc8ac4e230421ea6bbb2d36e1ab582e9e83f12a6d69c8f'
 
 
 def grave(state, seat):

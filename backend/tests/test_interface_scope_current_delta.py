@@ -14,8 +14,10 @@ BACKEND = Path(__file__).parents[1]
 def test_actual_current_main_requires_all_exact_historical_inverses():
     current = (BACKEND / 'main.py').read_bytes()
     recipe = api.CONTRACT['production']['main.py']
+    native = api._restore(current.decode(), api.LIFECYCLE_RETENTION_MAIN_DELTA)
+    assert hashlib.sha256(native.encode()).hexdigest() == api.NATIVE_FORGE_MAIN_DELTA['new_sha256']
     assert api.NATIVE_FORGE_MAIN_DELTA['old_sha256'] == api.LAND_CHOICE_MAIN_DELTA['new_sha256']
-    land_choice = api._restore(current.decode(), api.NATIVE_FORGE_MAIN_DELTA)
+    land_choice = api._restore(native, api.NATIVE_FORGE_MAIN_DELTA)
     assert hashlib.sha256(land_choice.encode()).hexdigest() == api.LAND_CHOICE_MAIN_DELTA['new_sha256']
     assert api.LAND_CHOICE_MAIN_DELTA['old_sha256'] == api.CURRENT_MAIN_DELTA['new_sha256']
     predecessor = api._restore(land_choice, api.LAND_CHOICE_MAIN_DELTA)
@@ -28,7 +30,7 @@ def test_actual_current_main_requires_all_exact_historical_inverses():
     historical = api._restore(intermediate.decode(), recipe)
     assert hashlib.sha256(historical.encode()).hexdigest() == recipe['old_sha256']
     assert api.compatible_product_hash('main.py', current, recipe['old_sha256']) == hashlib.sha256(current).hexdigest()
-    assert hashlib.sha256(current).hexdigest() == api.NATIVE_FORGE_MAIN_DELTA['new_sha256']
+    assert hashlib.sha256(current).hexdigest() == api.LIFECYCLE_RETENTION_MAIN_DELTA['new_sha256']
 
 
 def test_actual_private_fixture_restores_only_reviewed_delver_identity_clause():

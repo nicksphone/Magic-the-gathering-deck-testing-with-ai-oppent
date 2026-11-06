@@ -19,6 +19,7 @@ class BatchProtocol(unittest.TestCase):
         events=[]
         ids=['f'+str(i) for i in range(len(kinds))]
         state=SimpleNamespace(branch='reference', winner=None, score=0,
+            delayed_triggers=[], staged_triggers=[], emblems=[],
             players={1:SimpleNamespace(battlefield=ids, library=['l1'], hand=[]),
                      2:SimpleNamespace(battlefield=[], library=['l2'], hand=[])},
             cards={cid:SimpleNamespace(controller=1) for cid in ids})
