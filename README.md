@@ -12,6 +12,9 @@ External engine evaluation credits the **Forge Team/Card-Forge contributors** an
 the running backend; their work is not represented as ours.
 The [native-engine integration status](docs/testing/native-engine-integration-status.md)
 distinguishes the reusable implementation from the bridge work still needed.
+An [opt-in native app table](docs/testing/forge-app-session.md) adds separate
+session ownership, native choices and reload reconnection. It requires an
+operator-configured runtime and does not switch the live Python service.
 
 Ordered noncreature copy choices now have
 [current 1,129-case qualification](docs/testing/ordered-copy-current.md), with

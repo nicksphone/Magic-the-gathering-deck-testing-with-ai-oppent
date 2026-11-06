@@ -1,0 +1,29 @@
+.forge-game { min-width: 0; margin-bottom: 16px; border-color: var(--gold); }
+.forge-game > header h2 { margin: 5px 0 12px; }
+.forge-game p { line-height: 1.5; overflow-wrap: anywhere; }
+.forge-game .forge-meta { color: var(--muted); font-size: .78rem; }
+.forge-toolbar, .forge-options { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.forge-choice { padding: 14px; margin: 16px 0; border: 1px solid var(--gold); border-radius: 8px; background: var(--bg-2); }
+.forge-options > button { flex: 1 1 160px; text-align: left; overflow-wrap: anywhere; }
+.forge-options > label { display: flex; align-items: baseline; gap: 8px; padding: 8px; border: 1px solid var(--line); border-radius: 6px; flex: 1 1 180px; }
+.forge-order { padding-left: 24px; }
+.forge-order li { margin: 8px 0; }
+.forge-order li span { display: block; margin-bottom: 5px; }
+.forge-order button { margin: 0 5px 4px 0; font-size: .75rem; }
+.forge-seat { border-block-start: 1px solid var(--line); margin-top: 18px; padding-top: 12px; }
+.forge-seat h3 { display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; }
+.forge-seat h3 b { color: var(--gold); }
+.forge-zone h4 { margin: 12px 0 4px; font-size: .78rem; }
+.forge-zone > p { margin: 2px 0; }
+.forge-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 155px), 1fr)); gap: 8px; }
+.forge-card { display: flex; flex-direction: column; gap: 6px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg-1); overflow-wrap: anywhere; }
+.forge-card > strong { color: var(--gold); }
+.forge-card small { color: var(--muted); }
+.forge-card details p { white-space: pre-wrap; font-size: .8rem; }
+.forge-tapped { border-style: dashed; }
+.forge-stack-item { border-inline-start: 3px solid var(--gold); padding: 8px; margin: 8px 0; }
+.forge-result { padding: 12px; border: 2px solid var(--gold); margin: 12px 0; }
+@media (max-width: 600px) {
+  .forge-toolbar > button, .forge-options > button { width: 100%; flex-basis: 100%; }
+  .forge-choice { padding: 10px; }
+}

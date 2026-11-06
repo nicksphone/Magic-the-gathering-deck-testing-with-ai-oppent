@@ -273,13 +273,24 @@ checks. Burn traced its port-minus-one checks to TestNG reporting after the test
 the earlier draw/counter run lacked attribution data. Functional observations are
 not a claim of clean zero-attempted-IO qualification.
 
+## Opt-In Application Slice
+
+The separate process owner, strict HTTP routes and native React table now have
+[bounded built-app qualification](forge-app-session.md): one real Control/Ramp
+game completed naturally through 433 rendered-control answers, same-session
+reload, negative protocol checks and a genuine rendered result. The first
+runtime failures and their corrections remain separate evidence. No native
+rule or AI policy changed. This does not enable the runtime by default, switch
+the live service or establish broad AI strength.
+
 ## Still Required
 
 - Broaden completed native games beyond the qualified Control/Ramp pair and
   cover the remaining native choice surface.
 - Review ordinary native-AI hidden-information boundaries and strategic play;
   a protected human view alone does not establish that native AI never peeks.
-- Integrate game state, choices, payments and rendering with the application.
+- Broaden the first app integration across both seats, remaining choices,
+  card art, beginner interaction polish and practical runtime packaging.
 - Qualify application saves across other pending choices, both seats and BO3;
   the one observed cold reconstruction is not full persistence coverage.
 - Establish broader strategy quality, practical performance and release gates.

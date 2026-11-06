@@ -49,6 +49,8 @@ from data_ingest.service import TournamentIngestService
 from game_state.serializers import deserialize_match_snapshot, serialize_match, serialize_match_snapshot, serialize_card_view
 from game_state.state import MatchFactory, Step, pregame_actor
 from game_state.series_policy import game_seed, next_play_draw_chooser
+from forge_routes import create_forge_router
+from native_forge import ForgeManager
 from persistence.db import engine, get_session, init_db, initialize_resource_capacity
 from persistence.capacity import (DatabaseOwner, CapacityExceeded, CapacityIntegrityError,
                                   CapacityAdmissionClosed, owner_for_engine, owner_uncertain)
@@ -91,13 +93,35 @@ async def lifespan(app_instance: FastAPI):
         yield
     finally:
         try:
-            _shutdown_simulation_workers()
+            try:
+                _shutdown_simulation_workers()
+            finally:
+                native = getattr(app_instance.state, "forge_manager", None)
+                if native is not None:
+                    native.close_all()
         finally:
-            owner.fence_admission()
-        owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)
-        owner.close()
+            try:
+                owner.fence_admission()
+                owner.drain_producers(timeout=SIM_JOB_SHUTDOWN_TIMEOUT)
+            finally:
+                owner.close()
 
 app = FastAPI(title="MTG Deck Testing Lab API", version="0.1.0", lifespan=lifespan)
+
+FORGE_MANAGER_LOCK = threading.Lock()
+
+
+def _forge_manager() -> ForgeManager:
+    # Opt-in and lazy: importing the app never installs or launches an engine.
+    with FORGE_MANAGER_LOCK:
+        manager = getattr(app.state, "forge_manager", None)
+        if manager is None:
+            manager = ForgeManager.from_environment()
+            app.state.forge_manager = manager
+        return manager
+
+
+app.include_router(create_forge_router(_forge_manager))
 
 
 @app.exception_handler(SimulationResourceLimit)

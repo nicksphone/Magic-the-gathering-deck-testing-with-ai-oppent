@@ -21,6 +21,10 @@ were retained. We did not author their engines or card implementations.
   classes under `tools/engine_evaluation/forge/native-ui`. Their original notices,
   module license, modification notices, exact upstream source hashes and patches
   are retained. See [their NOTICE](tools/engine_evaluation/forge/native-ui/NOTICE).
+- The opt-in Python session owner and React table also explicitly credit Forge
+  beside their use. They transport native views and choices; the upstream
+  rules, card scripts and Default AI are not our implementations. See the
+  [app integration scope](docs/testing/forge-app-session.md).
 
 ### XMage
 
@@ -34,8 +38,9 @@ were retained. We did not author their engines or card implementations.
 
 ### Scope
 
-These are evaluation sources and four native input modifications, not a bundled
-complete engine or card-script distribution. The running application has not
+These include evaluation sources, four native input modifications and an opt-in
+host integration, not a bundled complete engine or card-script distribution.
+The running application has not
 been switched to either project. The application's
 root Apache-2.0 license does not relicense separately licensed evaluation files
 or upstream software.

@@ -7,6 +7,8 @@ import { AiHandDebug } from "./components/AiHandDebug";
 import { Battlefield } from "./components/Battlefield";
 import { Controls } from "./components/Controls";
 import { DeckPanel } from "./components/DeckPanel";
+import { ForgeGame } from "./components/ForgeGame";
+import { hasForgeSession } from "./api/forge";
 import { StackLog } from "./components/StackLog";
 import { PlayGuide } from "./components/PlayGuide";
 import { AiPlayNotice } from "./components/AiPlayNotice";
@@ -77,6 +79,17 @@ export function App() {
   const autoTickInFlight = useRef(false);
   const responsePassInFlight = useRef(false);
   const responseWindowSigRef = useRef("");
+  const [nativeActive, setNativeActive] = useState(hasForgeSession);
+  const nativeActiveRef = useRef(nativeActive);
+  const onForgeActiveChange = useCallback((active: boolean) => {
+    if (active && (gate.current.busy || startIntentInFlight.current || autoTickInFlight.current || responsePassInFlight.current)) return false;
+    nativeActiveRef.current = active;
+    setNativeActive(active);
+    setAutoProgressPaused(true);
+    setAutoResponsePaused(true);
+    setResponseCountdown(null);
+    return true;
+  }, []);
 
   const deckA = decks.find(deck => deck.id === selectedA);
   const deckB = decks.find(deck => deck.id === selectedB);
@@ -123,6 +136,7 @@ export function App() {
   }, []);
 
   const applyMatch = useCallback(async (next: MatchState, announce = true) => {
+    if (nativeActiveRef.current) return;
     let data = next;
     let legal = await api.legalMoves(data.id);
     if (legal.revision !== undefined && legal.revision !== data.revision) {
@@ -130,6 +144,7 @@ export function App() {
       legal = await api.legalMoves(data.id);
       if (legal.revision !== data.revision) throw new Error("Match keeps changing in another window. Pause it, then reload.");
     }
+    if (nativeActiveRef.current) return;
     const previous = currentMatch.current;
     if (!announce || previous?.id !== data.id || previous?.game_number !== data.game_number) setAiPlays([]);
     else {
@@ -147,7 +162,9 @@ export function App() {
   }, []);
 
   const mutateMatch = useCallback(async (operation: (state: MatchState, write: MatchWrite) => Promise<MatchState>, allowBetweenGames = false) => {
+    if (nativeActiveRef.current) return;
     await gate.current.run(async () => {
+      if (nativeActiveRef.current) return;
       const state = currentMatch.current;
       if (!state || restoring || state.match_complete || (state.winner != null && !allowBetweenGames)) return;
       setMutationPending(true);
@@ -165,6 +182,7 @@ export function App() {
   }, [applyMatch, restoring]);
 
   async function resumeMatch(id: string) {
+    if (nativeActiveRef.current) return;
     await gate.current.run(async () => {
       setMutationPending(true);
       setAutoProgressPaused(true);
@@ -180,6 +198,7 @@ export function App() {
         const records = await api.savedMatches();
         if (disposed) return;
         setSavedMatches(records);
+        if (nativeActiveRef.current) return;
         const pending = pendingStartRef.current;
         let pendingMatch: MatchState | null = null;
         if (pending && canStartReviewed(pending.review, pending.payload)) {
@@ -245,6 +264,7 @@ export function App() {
   }, []);
 
   async function startMatch(recover = false) {
+    if (nativeActiveRef.current) return;
     if (restoring || startIntentInFlight.current) return;
     const previousPending = pendingStartRef.current;
     const storedPending = readPendingStart();
@@ -296,6 +316,7 @@ export function App() {
         return;
       }
       await gate.current.run(async () => {
+        if (nativeActiveRef.current) return;
         if (!isCurrent()) return;
         setMutationPending(true);
         const pending: PendingStart = { key: previousPending?.key ?? newMutationKey(), payload, review: startReview };
@@ -326,6 +347,7 @@ export function App() {
   }
 
   const passPriority = useCallback(async () => {
+    if (nativeActiveRef.current) return;
     await mutateMatch((state, write) => api.act(state.id, legalPlayerId, { type: "pass_priority" }, write));
   }, [legalPlayerId, mutateMatch]);
 
@@ -419,6 +441,7 @@ export function App() {
   }
 
   useEffect(() => {
+    if (nativeActiveRef.current) return;
     if (!match || restoring || mutationPending || autoProgressPaused) return;
     if (autoTickInFlight.current) return;
     if (match.match_complete) return;
@@ -433,6 +456,7 @@ export function App() {
     if (!shouldAutoRun) return;
 
     const timer = window.setTimeout(async () => {
+      if (nativeActiveRef.current) return;
       if (!match || autoTickInFlight.current || gate.current.busy) return;
       autoTickInFlight.current = true;
       try {
@@ -449,7 +473,7 @@ export function App() {
     }, emptyHumanWindow ? 150 : autoplayDelayMs);
 
     return () => window.clearTimeout(timer);
-  }, [match, legalPlayerId, canAutoPass, autoLoopBeat, autoplayDelayMs, mutationPending, restoring, autoProgressPaused, autoplayTick]);
+  }, [nativeActive, match, legalPlayerId, canAutoPass, autoLoopBeat, autoplayDelayMs, mutationPending, restoring, autoProgressPaused, autoplayTick]);
 
   const humanResponseWindowActive =
     match?.mode === "player_vs_ai"
@@ -516,7 +540,7 @@ export function App() {
   }, [humanResponseWindowActive, autoResponsePaused, responseCountdown, match, legalPlayerId, passPriority]);
 
   return (
-    <main className={`layout ${match ? "workspace-match" : "workspace-lobby"}${match?.winner != null ? " game-ended" : ""}`}>
+    <main className={`layout ${match || nativeActive ? "workspace-match" : "workspace-lobby"}${!nativeActive && match?.winner != null ? " game-ended" : ""}`}>
       <header className="topbar">
         <h1>MTG Deck Testing Lab</h1>
         <p>THE PLAYTEST TABLE · Two seats. Real decisions.</p>
@@ -532,14 +556,16 @@ export function App() {
       </header>
 
       <nav className="table-navigation" aria-label="Workspace">
+        {nativeActive ? <><a href="#table">Native table</a><a href="#forge-native-choice">Native choices</a></> : <>
         <a href="#table">{match ? "01 / Table" : "01 / Play"}</a><a href="#match-controls">{match ? "02 / Actions & choices" : "02 / Matchup"}{match?.stack.length ? ` · Stack ${match.stack.length}` : ""}</a><a href="#lab-tools" aria-expanded={labOpen} onClick={() => setLabOpen(true)}>03 / Decks & lab</a>
         {match && (match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <a className="choice-notice" href="#match-controls" role="status">Choice required · P{legalPlayerId} · {match.pending_mechanic_choice?.label ?? (match.pregame_pending ? "Opening hand" : "Review pending decision")} →</a> : null}
         {match ? <a href="#turn-commands">Turn commands</a> : null}
         {mutationPending ? <span role="status">Match operation pending...</span> : null}
+        </>}
       </nav>
       <div className="play-guide-slot">
         {actionError ? <p className="operation-alert" role="alert">Match operation: {actionError}</p> : null}
-        <PlayGuide match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} autoProgressPaused={autoProgressPaused} compact={Boolean(match)} />
+        {!nativeActive ? <PlayGuide match={match} legalMoves={legalMoves} actingPlayerId={legalPlayerId} autoProgressPaused={autoProgressPaused} compact={Boolean(match)} /> : null}
       </div>
       <section className="lab-tools" id="lab-tools" aria-label="Lab tools" hidden={!labOpen}>
         <header className="workspace-heading"><div><span className="eyebrow">The workbench</span><h2>Prepare. Review. Refine.</h2></div><button onClick={() => { setLabOpen(false); document.querySelector<HTMLAnchorElement>('a[href="#lab-tools"]')?.focus(); }}>Close lab</button></header>
@@ -557,8 +583,12 @@ export function App() {
         <details className="panel tool-disclosure"><summary>Simulator & diagnostics</summary><AnalyticsPanel decks={decks} /></details>
       </section>
       <section className="left-column" id="match-controls" tabIndex={-1} aria-label="Actions and choices">
+        {nativeActive ? <section className="panel" aria-label="Paused Python table">
+          <h2>Python controls paused</h2><p>Forge owns the active table. Python saves are unchanged; close the native session to return to the Python controls.</p>
+          <a href="#forge-native-choice">Go to native choices</a>
+        </section> : <>
         {match && (match.winner != null || match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending) ? <header className="command-heading"><div><span className="eyebrow">{match.stack.length ? "Response window" : "At the table"}</span><h2>{match.winner != null ? (match.match_complete ? "Series complete" : "Between games") : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? `Decision required · P${legalPlayerId}` : `P${match.priority_player} holds priority`}</h2><p>{match.winner != null ? "This game is over. Review the result above and the series controls below." : match.pending_mechanic_choice || match.pending_replacement_choice || match.pending_trigger_order || match.pregame_pending ? "Complete the required choice below before continuing." : match.stack.length ? `${match.stack[match.stack.length - 1].label} · top of stack. Passing gives the other seat a chance to act.` : "Choose an available play, or pass priority to the other seat."}</p></div><a href="#table">Return to cards ↑</a></header> : null}
-        {match ? <><AiPlayNotice plays={aiPlays} /><StackLog match={match} aiPlays={aiPlays} /></> : null}
+        {!nativeActive && match ? <><AiPlayNotice plays={aiPlays} /><StackLog match={match} aiPlays={aiPlays} /></> : null}
         <section className="panel" aria-label="Interactive match support preflight">
           <details open={Boolean(visibleReview || preflightChecking || pendingStart || preflightNote)}>
           <summary>Deck support check</summary>
@@ -594,7 +624,7 @@ export function App() {
           {pendingStart ? <button disabled={restoring || mutationPending || preflightChecking || (!!visibleReview && !visibleReview.exploratoryAcknowledged)} onClick={reportAction(() => startMatch(true))}>Recover pending match start</button> : null}
           </details>
         </section>
-        <fieldset disabled={mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+        <fieldset disabled={nativeActive || mutationPending || restoring} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
         <Controls
           decks={decks}
           selectedA={selectedA}
@@ -641,11 +671,13 @@ export function App() {
           onCombatDraftChange={setCombatDraft}
         />
         </fieldset>
+        </>}
       </section>
 
       <section className="right-column" id="table" tabIndex={-1} aria-label="Card table">
-        {match ? <AiHandDebug match={match} /> : null}
-        {match ? (
+        <ForgeGame deckA={deckA} deckB={deckB} humanSeat={humanSeat} disabled={restoring || mutationPending} onActiveChange={onForgeActiveChange} />
+        {!nativeActive && match ? <AiHandDebug match={match} /> : null}
+        {!nativeActive && (match ? (
           <>
             {match.winner != null ? <section className="game-result" role="status" aria-label="Game result">
               <span className="eyebrow">{match.match_complete ? "Series complete" : "Between games"}</span>
@@ -666,7 +698,7 @@ export function App() {
             <div className="lobby-steps"><span><b>01</b> Choose two decks</span><span><b>02</b> Set your seats</span><span><b>03</b> Take the table</span></div>
             <a href="#lab-tools" onClick={() => setLabOpen(true)}>Build your library · Import & saved matches ↗</a>
           </article>
-        )}
+        ))}
       </section>
     </main>
   );

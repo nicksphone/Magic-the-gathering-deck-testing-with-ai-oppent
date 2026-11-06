@@ -123,11 +123,18 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   balanced callbacks and causal/reference verification remain mandatory.
   Fresh Control/Ramp games now finish in both seats, and a separate process
   consumes the first game's reference with matching choices, native/RNG states
-  and outcome. Application integration, durable resume and broad quality remain open.
-  New checkpoint capture passes 243 native cases and 92 client/store checks, but
-  actual cold continuation is held: the recovered choice/state matches, while
-  completion arrival order differs. No new choice was released after that mismatch;
-  it is not accepted save/resume support.
+  and outcome. A later fixed build passes 243 native cases and 150 client/store
+  checks. One genuine cold pending-choice reconstruction now continues to the
+  same outcome as its uninterrupted reference, with captured frontier fields
+  and full streams checked. The earlier rejected arrival-order experiment stays
+  separate; this is not universal save/resume support.
+  An opt-in [native app table](docs/testing/forge-app-session.md) adds independent
+  ownership, current native controls and browser reload reconnection. One real
+  built-UI Control/Ramp game finished naturally through 433 accepted rendered
+  answers and a visible native result, with authorization and reload checks.
+  That automated human-side picker is not expert play or a training label. Whole-app
+  adoption, durable BO3, remaining choices, fairness and broad strategic quality
+  remain open; native Default AI is not an accepted trained replacement.
   Forge has not replaced the live backend. See [current scope](docs/testing/native-engine-integration-status.md).
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
