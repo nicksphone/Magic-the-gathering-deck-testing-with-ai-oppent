@@ -115,6 +115,46 @@ game. This is failed qualification, not a game outcome. The UI must accept that
 diagnostic label without weakening actor, generation, token or selection checks.
 The earlier bcd4 game above does not qualify this final profile by implication.
 
+### Final Guarded Profile And UI Correction
+
+On committed app source `8bee1327`, the UI now accepts an empty diagnostic input
+name while retaining its type/length bound, actor, generation, epoch, revision,
+chosen-value and cardinality checks. The old negative-test assumption was moved
+into two explicit anonymous-input positives; every other negative case remains.
+The actual failed native frame, passed through the unchanged backend projection,
+rejects in the old parser and accepts in the corrected one. That projection is
+not represented as an exact captured HTTP response.
+
+The final guarded candidate is `ff89fd32`, with app profile
+`1643f3fdff7b2d13367272310a9a521eb136b116629eb59962d5e0de49623053`.
+The unchanged thirty native checks and four separate synthetic chooser checks
+pass on its exact classes. A fresh built-UI game then completed naturally:
+human seat 1/Ramp, native Control won on turn 17, **222 accepted answers and
+222 starts/returns, 122.451 seconds**, supervisor exit zero. All four loaded
+override origins/hashes, 33 adapter resources, 31 loaded adapter origins and
+the sixteen app gate-source pins were independently verified. Reload and the
+404/409/duplicate/purity checks passed. Old-build saves reject the new profile;
+positive cold-save compatibility is still unqualified.
+
+That full game did not encounter anonymous cleanup. A separate **controlled UI
+prefix** used legal human passes to reach it: the genuine anonymous input rendered,
+an actual offered card was clicked, the hand went from eight to seven and that
+same card appeared in its owner's graveyard. All 18 starts/returns balanced in
+21.337 seconds, followed by one deliberate UI close. The resulting native abort
+is intentional and is not counted as a completed game or assigned a winner.
+The prior 46-answer failure remains separate and failed.
+
+The clean committed frontend passed its complete `npm test` command: 1,033 TAP
+checks across the command's groups plus its other assertion scripts, zero
+failures/skips, and lint/build passed. The published native subset has 37 checks;
+the fourteen separate checkpoint-UI draft fixtures are not part of this release.
+All observed owned processes ended and the local databases closed cleanly.
+Hands, native/RNG streams, screenshots and database evidence remain private.
+
+These results close the demonstrated identity/mana-source leaks and the observed
+cleanup parser mismatch in their stated scopes, not every cost hook, broader
+strategic quality, both-seat final-profile UI coverage, durable BO3 or app save/resume.
+
 ## Profile Publication
 
 The operator-only [profile builder](../../tools/engine_evaluation/forge/native-ai/runtime_profile.py)

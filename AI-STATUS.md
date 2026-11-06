@@ -142,6 +142,12 @@ all cards. This is the AI checklist, not the whole application's RC checklist.
   native checks on an independently rebuilt three-source candidate; broad
   fairness and expert-AI acceptance remain open. See [the exact boundary and remaining
   work](docs/testing/native-ai-knowledge-boundary.md).
+  The final guarded profile also passes four direct chooser checks and a fresh
+  222-answer built-UI game on `8bee1327` (Control wins turn 17). A real anonymous
+  cleanup exposed and corrected a frontend metadata mismatch; a separate legal
+  18-answer prefix now executes that actual discard and closes deliberately.
+  Those are not additional expert-policy games, app cold-save or broad-fairness
+  acceptance. The complete committed frontend command/lint/build also pass.
 - [x] **Live delivery of the current draw/block and search-limit fixes:** the
   preview now runs `3c054542` (2026-11-06). Earlier draw/block qualification passed
   1,230 tests plus six subtests; the current search-limit/post-denial cohorts

@@ -51,3 +51,11 @@ and broad fairness/strategy acceptance are separate. The original cost-profile
 game remains historical; the final profile's first UI attempt failed on the old
 frontend's rejection of a genuine anonymous cleanup input, not a native AI
 exception. That failure is preserved rather than relabelled green.
+
+After the separate parser correction on app source `8bee1327`, profile `1643f3fd`
+completed a natural built-UI game (222 starts/returns, Control win turn 17).
+A separate deliberate-pass UI prefix reached the real anonymous cleanup input,
+clicked an offered card and verified hand eight to seven plus the same card in
+graveyard, then explicitly closed without claiming a winner. See the
+[final scope and evidence](../../../../../docs/testing/native-ai-knowledge-boundary.md).
+No broad strategy/fairness or positive new-build cold-save claim follows.
