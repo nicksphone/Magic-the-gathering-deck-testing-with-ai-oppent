@@ -20,6 +20,10 @@ foreign-game rejection and scalar-only payloads. Choice tests cover opaque token
 wrong actors, forged/duplicate/stale/null answers, optional declines, order,
 unsupported values, prompt invalidation and unclassified card rejection.
 
+The later [retained stack-source correction](native-deck-quality-2026-11-06.md)
+adds an exact-native-entry, public face-up battlefield-LKI path for stack
+projection only. It does not relax ordinary unclassified card rejection.
+
 Two actual native human-controller cases passed token answers through Forge's
 `ProtocolGuiGame`/`IGameController`. A land really entered the battlefield; wrong
 actors and forged answers were rejected before native action. Each game then

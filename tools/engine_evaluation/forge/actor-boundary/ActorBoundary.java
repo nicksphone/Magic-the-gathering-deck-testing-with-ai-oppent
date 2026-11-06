@@ -10,6 +10,7 @@ import forge.game.card.CardView.CardStateView;
 import forge.game.player.Player;
 import forge.game.player.PlayerView;
 import forge.game.spellability.SpellAbilityView;
+import forge.game.spellability.SpellAbilityStackInstance;
 import forge.game.spellability.StackItemView;
 import forge.game.zone.ZoneType;
 import java.util.ArrayList;
@@ -56,7 +57,7 @@ public final class ActorBoundary {
         }
         List<Map<String, Object>> stack = new ArrayList<>();
         for (StackItemView item : game.getStack()) {
-            stack.add(Map.of("stack_id", item.getId(), "source", card(item.getSourceCard())));
+            stack.add(stackItem(item));
         }
         return Map.of("actor_id", actor.getId(), "turn", game.getTurn(),
                       "phase", game.getPhase() == null ? "" : game.getPhase().name(),
@@ -73,6 +74,10 @@ public final class ActorBoundary {
     private Map<String, Object> card(CardView card) {
         if (card == null || card.getZone() == null) throw new IllegalArgumentException("Unclassified card");
         if (!card.canBeShownTo(actor.getView())) return Map.of("hidden", true);
+        return visibleCard(card);
+    }
+
+    private Map<String, Object> visibleCard(CardView card) {
         Map<String, Object> visible = new LinkedHashMap<>();
         visible.put("card_id", card.getId());
         visible.put("controller_id", card.getController().getId());
@@ -86,17 +91,42 @@ public final class ActorBoundary {
         return visible;
     }
 
-    void requireCurrentStackItem(StackItemView item) {
+    private SpellAbilityStackInstance currentStackItem(StackItemView item) {
         for (var entry : actor.getGame().getStack()) {
-            if (entry.getView() == item && entry.getId() == item.getId()) return;
+            if (entry.getView() == item && entry.getId() == item.getId()) {
+                var source = entry.getSourceCard();
+                if (source == null || source.getGame() != actor.getGame() || source.getView() != item.getSourceCard()) {
+                    throw new IllegalArgumentException("Mismatched native stack source");
+                }
+                return entry;
+            }
         }
         throw new IllegalArgumentException("Foreign, removed or aliased stack item");
     }
 
+    void requireCurrentStackItem(StackItemView item) { currentStackItem(item); }
+
+    private Map<String, Object> stackItem(StackItemView item) {
+        var source = currentStackItem(item).getSourceCard();
+        CardView view = source.getView();
+        Map<String, Object> projected;
+        if (view.getZone() != null) {
+            projected = card(view);
+        } else {
+            // Null-zone visibility is not authority. Only this exact retained,
+            // public face-up battlefield LKI is classified for stack display.
+            if (source.getZone() != null || !source.isLKI() || source.getLastKnownZone() == null ||
+                    !source.getLastKnownZone().is(ZoneType.Battlefield) || source.isFaceDown() || view.isFaceDown()) {
+                throw new IllegalArgumentException("Unclassified native stack source");
+            }
+            projected = visibleCard(view);
+        }
+        return Map.of("stack_id", item.getId(), "source", projected);
+    }
+
     Object describe(Object value) {
         if (value instanceof StackItemView item) {
-            requireCurrentStackItem(item);
-            return Map.of("stack_id",item.getId(),"source",card(item.getSourceCard()));
+            return stackItem(item);
         }
         if (value instanceof CardView card) return card(card);
         if (value instanceof PlayerView player) return Map.of("player_id", player.getId(), "name", player.getName());
